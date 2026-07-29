@@ -1,9 +1,9 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IAuthSessionRepository } from '../../../domain';
-import type { RevokeSessionReq } from '@dailyuse/contracts/authentication';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { RevokeSessionReq } from '@memoflow/contracts/authentication';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { AuthSessionId } from '../../../domain';
 
 export class RevokeSessionUseCase {

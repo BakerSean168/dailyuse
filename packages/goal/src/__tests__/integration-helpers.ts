@@ -6,4 +6,4 @@ export {
   disconnectPrisma,
   cleanAll,
   seedAccount,
-} from '@dailyuse/test-utils/setup/integration-helpers';
+} from '@memoflow/test-utils/setup/integration-helpers';

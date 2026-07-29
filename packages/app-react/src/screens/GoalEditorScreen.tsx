@@ -3,8 +3,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import type { CreateGoalReq, UpdateGoalReq } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, type ImportanceLevel as ImportanceLevelType } from '@dailyuse/contracts/shared';
+import type { CreateGoalReq, UpdateGoalReq } from '@memoflow/contracts/goal';
+import { ImportanceLevel, type ImportanceLevel as ImportanceLevelType } from '@memoflow/contracts/shared';
 
 import { useGoalDetail } from '../hooks/useGoalDetail';
 import { useGoalService } from '../hooks/useGoalService';
@@ -17,7 +17,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 const IMPORTANCE_OPTIONS: ImportanceLevelType[] = [
   ImportanceLevel.Vital,

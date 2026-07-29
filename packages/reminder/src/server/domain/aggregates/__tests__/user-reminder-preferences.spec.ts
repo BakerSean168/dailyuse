@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { UserReminderPreferences } from '../user-reminder-preferences';
-import type { TimeSlotDTO } from '@dailyuse/contracts/reminder';
+import type { TimeSlotDTO } from '@memoflow/contracts/reminder';
 
 // ===========================================================================
 // Tests

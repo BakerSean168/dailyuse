@@ -62,9 +62,9 @@ release PR 合并后，release-please 会：
 
 `.github/workflows/docker-deploy.yml` 监听 `v*` tag，负责：
 
-- 构建 `dailyuse-api`
-- 构建 `dailyuse-web`
-- 构建 `dailyuse-ai-service`
+- 构建 `memoflow-api`
+- 构建 `memoflow-web`
+- 构建 `memoflow-ai-service`
 - 推送不可变 tag
 - 同时更新 `prod-latest`
 

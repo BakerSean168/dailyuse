@@ -67,7 +67,7 @@ import {
   type AgentExecutedAction,
   type AgentResumePayload,
   type AgentRunResult,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 // Residual 1121: asNonEmptyString sole (shared/as-non-empty-string).
 import { asNonEmptyString } from '../../../shared/as-non-empty-string';

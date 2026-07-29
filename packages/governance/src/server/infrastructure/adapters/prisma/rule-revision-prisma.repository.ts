@@ -18,12 +18,12 @@
  * @internal Prisma 具体实现 —— 消费方应使用 IRuleRevisionRepository 接口。
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
 import { RuleRevision } from '../../../domain/entities/rule-revision';
 import { RuleId } from '../../../domain/value-objects';
-import { toResultErrorException } from '@dailyuse/contracts/result';
-import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
+import { toResultErrorException } from '@memoflow/contracts/result';
+import { mapInfraErrorToResultError } from '@memoflow/utils/errors';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
 
 /**

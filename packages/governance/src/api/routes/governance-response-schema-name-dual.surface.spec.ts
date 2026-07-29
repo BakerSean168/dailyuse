@@ -22,7 +22,7 @@ describe('governance response schema name dual retired (residual 681)', () => {
     expect(shared).not.toMatch(/export const GovernanceListRulesResponseSchema\b/);
     expect(shared).not.toMatch(/export const GovernanceSearchRulesResponseSchema\b/);
     expect(shared).not.toMatch(/export const GovernanceRuleRevisionsResponseSchema\b/);
-    expect(shared).not.toMatch(/from '@dailyuse\/contracts\/governance'/);
+    expect(shared).not.toMatch(/from '@memoflow\/contracts\/governance'/);
   });
 
   it('rules and revisions routes use contracts response schemas only', () => {

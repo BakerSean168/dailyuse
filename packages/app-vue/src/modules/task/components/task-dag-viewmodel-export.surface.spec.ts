@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 247/487: task DAG types are single-track.
  * Canonical names: TaskForDAG / TaskGraphData / TaskGraphEdge
- * (modules/task/types/task-dag.types + @dailyuse/task/client).
+ * (modules/task/types/task-dag.types + @memoflow/task/client).
  * No dual-alias *ViewModel names in components/types or consumers.
  */
 describe('task component DAG type single-track surface (residual 247/487)', () => {
@@ -34,7 +34,7 @@ describe('task component DAG type single-track surface (residual 247/487)', () =
     expect(typesSource).not.toContain('TaskGraphDataViewModel');
     expect(typesSource).not.toMatch(/export type \w+ViewModel = TaskForDAG/);
     expect(typesSource).not.toMatch(/export type \w+ViewModel = TaskGraph/);
-    expect(typesSource).not.toContain("from '@dailyuse/task/client'");
+    expect(typesSource).not.toContain("from '@memoflow/task/client'");
   });
 
   it('consumers use canonical TaskForDAG/TaskGraph* names (residual 487)', () => {

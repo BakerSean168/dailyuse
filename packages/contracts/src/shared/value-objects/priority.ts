@@ -10,7 +10,7 @@
  * Priority Level Enum
  *
  * 基于 ImportanceLevel 和 UrgencyLevel 计算得出的最终优先级
- * 计算公式见 @dailyuse/utils 中的 calculatePriority 函数
+ * 计算公式见 @memoflow/utils 中的 calculatePriority 函数
  */
 export const PriorityLevel = {
   /**

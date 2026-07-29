@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { GoalStatus, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { Goal } from '@dailyuse/goal/client';
+import type { GoalStatus, KeyResultClientDTO } from '@memoflow/contracts/goal';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { Goal } from '@memoflow/goal/client';
 
 import { useAppSession } from './useAppSession';
 import { useGoalService } from './useGoalService';

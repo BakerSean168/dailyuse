@@ -8,8 +8,8 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
-import { GenerateGoalsSchema, GoalWorkflowResultDTOSchema } from '@dailyuse/contracts/ai';
+} from '@memoflow/utils/result';
+import { GenerateGoalsSchema, GoalWorkflowResultDTOSchema } from '@memoflow/contracts/ai';
 import type { AIGoalGenerationController } from '../../server/transport/ai-goal-generation.controller';
 
 interface PlatformMiddleware {

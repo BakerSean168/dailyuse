@@ -6,11 +6,11 @@
  * INotificationPreferenceRepository 的 Prisma 实现。
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import type { INotificationPreferenceRepository } from '../../../domain';
 import { NotificationPreference } from '../../../domain/aggregates/notification-preference';
-import { NotificationChannelType } from '@dailyuse/contracts/notification';
-import { generateUUID } from '@dailyuse/utils/shared';
+import { NotificationChannelType } from '@memoflow/contracts/notification';
+import { generateUUID } from '@memoflow/utils/shared';
 import {
   NotificationPreferencePrismaMapper,
   type PrismaNotificationPreferenceRow,

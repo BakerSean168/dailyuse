@@ -1,6 +1,6 @@
 import { ScheduleExecution } from '../../../../domain/entities/schedule-execution';
 import type { ScheduleExecutionState } from '../../../../domain/entities/schedule-execution';
-import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import type { ExecutionStatus } from '@memoflow/contracts/schedule';
 
 export type PowerSyncScheduleExecutionRow = {
   id: string;

@@ -1,4 +1,4 @@
-import type { AuthSessionId, IdentityId } from '@dailyuse/contracts/authentication';
+import type { AuthSessionId, IdentityId } from '@memoflow/contracts/authentication';
 import type { AuthSession } from '../aggregates/auth-session';
 
 /**

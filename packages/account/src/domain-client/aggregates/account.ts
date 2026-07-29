@@ -1,13 +1,13 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * Account Aggregate Root - Domain Client
  *
  * Read-only client-side representation of the Account aggregate.
  */
 
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { AccountClientDTO } from '@memoflow/contracts/account';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import {
   AccountProfile,
   AccountSettings,

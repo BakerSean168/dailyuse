@@ -14,8 +14,8 @@ import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Loader2 } from '@lucide/vue';
-import { SystemChannels } from '@dailyuse/contracts/electron';
-import { isOk, type Result } from '@dailyuse/contracts/result';
+import { SystemChannels } from '@memoflow/contracts/electron';
+import { isOk, type Result } from '@memoflow/contracts/result';
 
 import AppearanceSettings from '../components/AppearanceSettings.vue';
 import AISettings from '../components/AISettings.vue';
@@ -34,7 +34,7 @@ import { useDataPortability } from '../composables/useDataPortability';
 import { applyThemeMode } from '../composables';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import type { AppLocale } from '../../../plugins/i18n';
-import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
+import type { UserSettingPreferences } from '@memoflow/contracts/setting';
 import { inject } from 'vue';
 import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 

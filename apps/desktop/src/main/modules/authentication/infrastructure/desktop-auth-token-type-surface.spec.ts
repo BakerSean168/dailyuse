@@ -15,7 +15,7 @@ describe('desktop auth token/network type single-track surface', () => {
   const guest = readFileSync(resolve(dir, 'guest-identity-helper.ts'), 'utf8');
 
   it('token-manager does not re-export contracts types or TokenData alias', () => {
-    expect(tokenManager).toContain("from '@dailyuse/contracts/authentication'");
+    expect(tokenManager).toContain("from '@memoflow/contracts/authentication'");
     expect(tokenManager).toContain('TokenStorageData');
     expect(tokenManager).not.toContain('Type Re-exports');
     expect(tokenManager).not.toContain('export type { TokenStorageData');
@@ -24,7 +24,7 @@ describe('desktop auth token/network type single-track surface', () => {
   });
 
   it('network-state-manager does not re-export contracts network types', () => {
-    expect(network).toContain("from '@dailyuse/contracts/authentication'");
+    expect(network).toContain("from '@memoflow/contracts/authentication'");
     expect(network).toContain('export interface NetworkStateManagerConfig');
     expect(network).not.toContain('Re-export for convenience');
     expect(network).not.toContain(

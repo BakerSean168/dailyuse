@@ -6,13 +6,13 @@
  */
 
 import { http, HttpResponse } from 'msw';
-import type { GetRuleRevisionsRes } from '@dailyuse/contracts/governance';
-import type { RuleId } from '@dailyuse/contracts/primitives';
+import type { GetRuleRevisionsRes } from '@memoflow/contracts/governance';
+import type { RuleId } from '@memoflow/contracts/primitives';
 import {
   createMockRule,
   createMockRuleList,
   createMockRuleRevisionList,
-} from '@dailyuse/contracts/mocks';
+} from '@memoflow/contracts/mocks';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const BASE = `${API_BASE}/governance/rules`;

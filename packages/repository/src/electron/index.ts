@@ -8,15 +8,15 @@ import {
   RepositoryChannels,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
+} from '@memoflow/contracts/electron';
 import type {
   ExecuteKnowledgeRepositoryReconciliationRes,
   KnowledgeRepositoryContentState,
   KnowledgeRepositoryReconciliationPreview,
   SyncKnowledgeRepositoryRes,
-} from '@dailyuse/contracts/repository';
-import { fail, ok, type Result } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/repository';
+import { fail, ok, type Result } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import { LocalVaultRuntimeError, type LocalVaultElectronPort } from './local-vault-runtime';
 import type { IRepositoryApiClient } from '../application-client/ports/repository-api-client.port';

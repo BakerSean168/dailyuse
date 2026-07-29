@@ -1,4 +1,4 @@
-import { CredentialStatus as CredentialStatusContract, type CredentialStatus as ICredentialStatus } from '@dailyuse/contracts/authentication';
+import { CredentialStatus as CredentialStatusContract, type CredentialStatus as ICredentialStatus } from '@memoflow/contracts/authentication';
 
 /**
  * Credential Status - lifecycle state for authentication credentials.
@@ -11,7 +11,7 @@ export type CredentialStatus = ICredentialStatus & { readonly __brand: unique sy
  * Valid value set - Single Source of Truth
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ICredentialStatus[] = Object.values(CredentialStatusContract);
 
 /**

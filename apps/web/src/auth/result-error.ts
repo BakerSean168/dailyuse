@@ -1,9 +1,9 @@
-import type { ResultError } from '@dailyuse/contracts/result';
+import type { ResultError } from '@memoflow/contracts/result';
 import {
   translateResultErrorMessage,
   type ResultErrorTranslateFn,
   type TranslateResultErrorOptions,
-} from '@dailyuse/http-client';
+} from '@memoflow/http-client';
 
 /**
  * Prefer domainCode (e.g. EMAIL_VERIFICATION_REQUIRED, INVALID_OR_EXPIRED_CODE)

@@ -19,7 +19,7 @@ export {
   DependencyType,
   TaskGoalBindingTrigger,
   TaskType,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 // Class Value Objects
 export { RecurrenceRule } from './recurrence-rule';

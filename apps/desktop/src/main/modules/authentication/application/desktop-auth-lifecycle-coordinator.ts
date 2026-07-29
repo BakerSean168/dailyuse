@@ -1,14 +1,14 @@
-import type { ILogger } from '@dailyuse/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/electron';
+} from '@memoflow/authentication/electron';
 import {
   type IpcResult,
   toIpcResult,
   ok,
   fail,
-} from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/result';
 import {
   AuthMode,
   AuthRuntimeState,
@@ -19,7 +19,7 @@ import {
   type AuthStatus,
   type TokenStorageData,
   type AuthBootstrapSnapshot,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import {
   TokenManager,
   SessionManager,

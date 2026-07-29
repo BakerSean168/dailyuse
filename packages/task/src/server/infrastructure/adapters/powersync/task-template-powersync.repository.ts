@@ -3,14 +3,14 @@ import type {
   TaskFilters,
 } from '../../../domain/repositories/i-task-template-repository';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
-import type { IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
-import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import type { IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
+import type { TaskTemplateStatus } from '@memoflow/contracts/task';
 import {
   AggregateRepositoryBase,
   createEventBusAdapter,
   type IEventBus,
-} from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import {
   PowerSyncTaskTemplateMapper,
   type PowerSyncTaskTemplateRow,

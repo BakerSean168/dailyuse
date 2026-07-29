@@ -10,9 +10,9 @@
 import type { IGoalRecordRepository, IGoalRepository } from '../../../domain';
 import type { GoalRecord } from '../../../domain';
 import { KeyResultProgress } from '../../../domain';
-import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { GoalRecordClientDTO } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 export interface ListGoalRecordsParams {
   identityId: string;

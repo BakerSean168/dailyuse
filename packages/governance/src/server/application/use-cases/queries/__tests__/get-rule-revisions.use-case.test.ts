@@ -1,9 +1,9 @@
 import { vi, describe, it, expect } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils';
+import { createMockRepo } from '@memoflow/test-utils';
 import { GetRuleRevisionsUseCase } from '../get-rule-revisions.use-case';
 import type { IRuleRevisionRepository } from '../../../../domain/repositories/i-rule-revision-repository';
-import type { GetRuleRevisionsQuery } from '@dailyuse/contracts/governance';
-import type { RuleId } from '@dailyuse/contracts/governance';
+import type { GetRuleRevisionsQuery } from '@memoflow/contracts/governance';
+import type { RuleId } from '@memoflow/contracts/governance';
 
 // ============ Constants ============
 

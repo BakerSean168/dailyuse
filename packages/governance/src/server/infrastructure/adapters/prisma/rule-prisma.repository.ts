@@ -20,7 +20,7 @@
  * @internal Prisma 具体实现 —— 消费方应使用 IRuleRepository 接口。
  */
 
-import type { Prisma, PrismaClient } from '@dailyuse/database';
+import type { Prisma, PrismaClient } from '@memoflow/database';
 import type {
   IRuleRepository,
   RuleFilter,
@@ -28,12 +28,12 @@ import type {
 import type { Rule } from '../../../domain/aggregates/rule';
 import type { RuleRevision } from '../../../domain/entities/rule-revision';
 import { RuleId } from '../../../domain/value-objects/rule-id';
-import { toResultErrorException } from '@dailyuse/contracts/result';
-import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
+import { toResultErrorException } from '@memoflow/contracts/result';
+import { mapInfraErrorToResultError } from '@memoflow/utils/errors';
 import { RulePrismaMapper } from './mappers/rule-prisma.mapper';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
-import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createEventBusAdapter, publishAggregateEvents } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/authentication",
+  "name": "@memoflow/authentication",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -22,13 +22,13 @@
     }
   },
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/database": "workspace:*",
-    "@dailyuse/domain-shared": "workspace:*",
-    "@dailyuse/http-client": "workspace:*",
-    "@dailyuse/ipc-client": "workspace:*",
-    "@dailyuse/patterns": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/database": "workspace:*",
+    "@memoflow/domain-shared": "workspace:*",
+    "@memoflow/http-client": "workspace:*",
+    "@memoflow/ipc-client": "workspace:*",
+    "@memoflow/patterns": "workspace:*",
+    "@memoflow/utils": "workspace:*",
     "argon2": "0.44.0",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.2",

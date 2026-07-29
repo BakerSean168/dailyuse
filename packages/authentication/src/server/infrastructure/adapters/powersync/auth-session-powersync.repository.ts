@@ -1,8 +1,8 @@
-import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import type { IAuthSessionRepository } from '../../../domain';
 import { AuthSession } from '../../../domain';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import {
   PowerSyncAuthSessionMapper,
   type PowerSyncAuthSessionRow,

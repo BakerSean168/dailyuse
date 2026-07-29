@@ -47,7 +47,7 @@ export async function initializeDesktopFeatures(
   console.log('[Desktop Features] Shortcut manager initialized');
 
   const autoLaunchManager = new AutoLaunchManager({
-    name: 'Memoflow',
+    name: 'MemoFlow',
     isHidden: true,
   });
   await autoLaunchManager.init();

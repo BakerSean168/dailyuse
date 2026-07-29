@@ -53,10 +53,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
-import { Progress } from '@dailyuse/ui-vue-shadcn';
+import type { GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Card, CardContent, CardHeader, CardTitle } from '@memoflow/ui-vue-shadcn';
+import { Progress } from '@memoflow/ui-vue-shadcn';
 import KeyResultCard from './KeyResultCard.vue';
 import { getGoalOverallProgress } from '../../utils/progress';
 

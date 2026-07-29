@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { AIProviderType } from '@dailyuse/contracts/ai';
+import { AIProviderType } from '@memoflow/contracts/ai';
 
 import type {
   AIExecutionLogInput,

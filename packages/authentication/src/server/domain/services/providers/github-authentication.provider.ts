@@ -3,10 +3,10 @@
  *
  * The second pluggable login method (ADR-034). It authenticates a user via a
  * GitHub authorization code, resolving a stable GitHub subject id, then
- * find-or-creates the owning Daily Use identity.
+ * find-or-creates the owning MemoFlow identity.
  *
  * 第二个可插拔登录方式（ADR-034）。通过 GitHub 授权码认证用户，解析稳定的
- * GitHub subject id，再查找或创建对应的 Daily Use 身份。
+ * GitHub subject id，再查找或创建对应的 MemoFlow 身份。
  *
  * Boundaries enforced here:
  * - GitHub login is identity-only; it does NOT create or authorize a knowledge
@@ -79,7 +79,7 @@ export class GithubAuthenticationProvider implements AuthenticationProvider<Gith
       throw new AccountLinkRequiredError(AuthenticationMethod.Github, verifiedEmail);
     }
 
-    // 3. First-time GitHub login provisions a new Daily Use identity.
+    // 3. First-time GitHub login provisions a new MemoFlow identity.
     //    No repository access is requested or granted here.
     const identity = AuthIdentity.createWithOAuth({
       provider: OAuthProvider.Github,

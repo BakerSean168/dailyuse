@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import type { GoalSummary } from '../hooks/useGoals';
 
-import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText, ThemedView } from '@dailyuse/ui-react-native';
+import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText, ThemedView } from '@memoflow/ui-react-native';
 
 import { formatProductDate, emptyKind } from '../utils/product-time';
 

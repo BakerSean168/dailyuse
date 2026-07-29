@@ -13,14 +13,14 @@
 import { app, safeStorage } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { ILogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
 import type {
   TokenStorageData,
   SaveTokenRequest,
   TokenRefreshResult,
   TokenStatus,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 // ============ Constants ============
 

@@ -8,7 +8,7 @@ export * from './types';
 
 // Logger 实现
 export { Logger } from './logger';
-// WinstonLogger 移至专门的入口点 '@dailyuse/utils/winston' 以避免污染浏览器环境
+// WinstonLogger 移至专门的入口点 '@memoflow/utils/winston' 以避免污染浏览器环境
 // export { WinstonLogger } from './winston-logger';
 export { LoggerFactory, createLogger } from './logger-factory';
 

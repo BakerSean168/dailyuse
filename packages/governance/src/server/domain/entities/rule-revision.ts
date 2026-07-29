@@ -36,15 +36,15 @@
  * ```
  */
 
-import { Entity } from '@dailyuse/utils/domain';
-import type { Result } from '@dailyuse/contracts/result';
-import { error, ok } from '@dailyuse/contracts/result';
-import type { RuleRevisionClientDTO } from '@dailyuse/contracts/governance';
-import type { RuleRevisionServerDTO } from '@dailyuse/contracts/governance';
+import { Entity } from '@memoflow/utils/domain';
+import type { Result } from '@memoflow/contracts/result';
+import { error, ok } from '@memoflow/contracts/result';
+import type { RuleRevisionClientDTO } from '@memoflow/contracts/governance';
+import type { RuleRevisionServerDTO } from '@memoflow/contracts/governance';
 import { RuleRevisionId } from '../value-objects/rule-revision-id';
 import { RuleId } from '../value-objects/rule-id';
 import type { ChangeType } from '../value-objects/change-type';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 
 // ================= Props Object（参数对象） =================
 

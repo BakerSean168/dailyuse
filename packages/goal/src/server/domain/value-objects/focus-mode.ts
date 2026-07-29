@@ -5,15 +5,15 @@
  * 用于管理专注周期的创建和查询
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   FocusMode as IFocusMode,
   FocusModeDTO,
   HiddenGoalsMode,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import { FocusModeId } from './focus-mode-id';
 import type { GoalId } from './goal-id';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 
 /**
  * FocusMode 值对象实现

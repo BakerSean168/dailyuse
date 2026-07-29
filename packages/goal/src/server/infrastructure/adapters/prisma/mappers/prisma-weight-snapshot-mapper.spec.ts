@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { PrismaWeightSnapshotMapper } from './prisma-weight-snapshot-mapper';
 import { KeyResultWeightSnapshot } from '../../../../domain';
-import type { SnapshotTrigger } from '@dailyuse/contracts/goal';
+import type { SnapshotTrigger } from '@memoflow/contracts/goal';
 
 describe('PrismaWeightSnapshotMapper', () => {
   const domainSnapshot = new KeyResultWeightSnapshot(

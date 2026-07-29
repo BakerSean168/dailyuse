@@ -1,8 +1,8 @@
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   EmailAddressDTO,
   EmailAddress as IEmailAddress,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 /**
  * Email address value object.

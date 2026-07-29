@@ -7,7 +7,7 @@ import { useGoalStore } from '../stores/goal-store';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import type { AddKeyResultReq, UpdateKeyResultReq } from '@dailyuse/contracts/goal';
+import type { AddKeyResultReq, UpdateKeyResultReq } from '@memoflow/contracts/goal';
 import { executeGoalOperation, executeGoalAction, createGoalErrorHandler } from './goalOperations';
 
 type KeyResultEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['keyResults'][number] };

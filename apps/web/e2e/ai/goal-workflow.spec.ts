@@ -2,7 +2,7 @@ import { expect, test, type Page, type Route } from '@playwright/test';
 import {
   createMockGoal,
   createMockUserSetting,
-} from '@dailyuse/contracts/mocks';
+} from '@memoflow/contracts/mocks';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
 
@@ -353,7 +353,7 @@ test.describe('AI Goal Workflow', () => {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
     await expect(answerPanel).toContainText(/Grounded answers cite repository excerpts/i);
-    await expect(answerPanel).toContainText(/Memoflow grounding policy/i);
+    await expect(answerPanel).toContainText(/MemoFlow grounding policy/i);
     await expect(answerPanel).toContainText(/notes\/ai\/grounding-policy\.md/i);
     await expect(page.getByTestId('knowledge-citation-open')).toBeVisible();
 
@@ -1499,7 +1499,7 @@ async function installGoalWorkflowMocks(
         {
           resourceId: 'resource-grounding-1',
           resourcePath: 'notes/ai/grounding-policy.md',
-          title: 'Memoflow grounding policy',
+          title: 'MemoFlow grounding policy',
           chunkIndex: 0,
           excerpt: 'Knowledge answers must cite repository evidence before sounding certain.',
           score: 0.94,
@@ -1587,7 +1587,7 @@ async function installGoalWorkflowMocks(
             {
               resourceId: 'resource-grounding-1',
               resourcePath: 'notes/ai/grounding-policy.md',
-              title: 'Memoflow grounding policy',
+              title: 'MemoFlow grounding policy',
               chunkIndex: 0,
               excerpt: 'Knowledge answers must cite repository evidence before sounding certain.',
               score: 0.94,
@@ -1675,7 +1675,7 @@ async function installGoalWorkflowMocks(
       expect(request.input?.title).toContain(
         'How should knowledge answers stay grounded in citations?',
       );
-      expect(source).toContain('Memoflow grounding policy');
+      expect(source).toContain('MemoFlow grounding policy');
     } else {
       expect(source).toContain(
         'User: Turn this planning conversation into a reusable knowledge note about agent checkpoints.',

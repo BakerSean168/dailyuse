@@ -11,18 +11,18 @@
 import { Notification, nativeImage, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import type {
   NotificationDispatchDesktopEvent,
   NotificationEventMap,
-} from '@dailyuse/contracts/notification';
-import type { SettingEventMap } from '@dailyuse/contracts/setting';
+} from '@memoflow/contracts/notification';
+import type { SettingEventMap } from '@memoflow/contracts/setting';
 import { CustomNotificationManager } from './custom-notification.manager';
 import type { WindowManager } from '../lifecycle/window-manager';
 import { resolveAssetPath, resolveAssetPathFromKey } from '../utils/asset-path';
-import { assetManifest, type AssetImageKey } from '@dailyuse/assets';
-import { RendererEventChannels } from '@dailyuse/contracts/electron';
+import { assetManifest, type AssetImageKey } from '@memoflow/assets';
+import { RendererEventChannels } from '@memoflow/contracts/electron';
 
 const logger = createLogger('NotificationService');
 type NotificationServiceEventMap = Pick<NotificationEventMap, 'notification:dispatch_desktop'> &
@@ -201,7 +201,7 @@ export class NotificationService {
     try {
       const iconPath =
         resolveAssetPathFromKey('images', 'logo128', assetManifest) ??
-        resolveAssetPath('images/logos/Memoflow-128.png');
+        resolveAssetPath('images/logos/MemoFlow-128.png');
       this.defaultIcon = nativeImage.createFromPath(iconPath);
     } catch (err) {
       console.warn('[NotificationService] Failed to load default icon:', err);

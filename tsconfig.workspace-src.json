@@ -2,174 +2,174 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@dailyuse/database": [
+      "@memoflow/database": [
         "packages/database/src/index.ts"
       ],
-      "@dailyuse/database/prisma": [
+      "@memoflow/database/prisma": [
         "packages/database/src/generated/prisma/client.js"
       ],
-      "@dailyuse/powersync-schema": [
+      "@memoflow/powersync-schema": [
         "packages/powersync-schema/src/index.ts"
       ],
-      "@dailyuse/patterns": [
+      "@memoflow/patterns": [
         "packages/patterns/src/index.ts"
       ],
-      "@dailyuse/time": [
+      "@memoflow/time": [
         "packages/time/src/index.ts"
       ],
-      "@dailyuse/time/*": [
+      "@memoflow/time/*": [
         "packages/time/src/*/index.ts",
         "packages/time/src/*.ts"
       ],
-      "@dailyuse/utils": [
+      "@memoflow/utils": [
         "packages/utils/src/index.ts"
       ],
-      "@dailyuse/utils/*": [
+      "@memoflow/utils/*": [
         "packages/utils/src/*/index.ts",
         "packages/utils/src/*.ts"
       ],
-      "@dailyuse/contracts": [
+      "@memoflow/contracts": [
         "packages/contracts/src/index.ts"
       ],
-      "@dailyuse/contracts/notification": [
+      "@memoflow/contracts/notification": [
         "packages/contracts/src/modules/notification/index.ts"
       ],
-      "@dailyuse/contracts/*": [
+      "@memoflow/contracts/*": [
         "packages/contracts/src/modules/*/index.ts",
         "packages/contracts/src/*/index.ts"
       ],
-      "@dailyuse/assets": [
+      "@memoflow/assets": [
         "packages/assets/src/index.ts"
       ],
-      "@dailyuse/assets/*": [
+      "@memoflow/assets/*": [
         "packages/assets/src/*/index.ts",
         "packages/assets/src/*.ts"
       ],
-      "@dailyuse/domain-shared": [
+      "@memoflow/domain-shared": [
         "packages/domain-shared/src/index.ts"
       ],
-      "@dailyuse/domain-shared/*": [
+      "@memoflow/domain-shared/*": [
         "packages/domain-shared/src/*/index.ts"
       ],
-      "@dailyuse/governance": [
+      "@memoflow/governance": [
         "packages/governance/src/index.ts"
       ],
-      "@dailyuse/governance/*": [
+      "@memoflow/governance/*": [
         "packages/governance/src/*/index.ts"
       ],
-      "@dailyuse/account": [
+      "@memoflow/account": [
         "packages/account/src/index.ts"
       ],
-      "@dailyuse/account/*": [
+      "@memoflow/account/*": [
         "packages/account/src/*/index.ts"
       ],
-      "@dailyuse/authentication": [
+      "@memoflow/authentication": [
         "packages/authentication/src/index.ts"
       ],
-      "@dailyuse/authentication/*": [
+      "@memoflow/authentication/*": [
         "packages/authentication/src/*/index.ts"
       ],
-      "@dailyuse/goal": [
+      "@memoflow/goal": [
         "packages/goal/src/index.ts"
       ],
-      "@dailyuse/goal/*": [
+      "@memoflow/goal/*": [
         "packages/goal/src/*/index.ts"
       ],
-      "@dailyuse/task": [
+      "@memoflow/task": [
         "packages/task/src/index.ts"
       ],
-      "@dailyuse/task/*": [
+      "@memoflow/task/*": [
         "packages/task/src/*/index.ts"
       ],
-      "@dailyuse/repository": [
+      "@memoflow/repository": [
         "packages/repository/src/index.ts"
       ],
-      "@dailyuse/repository/*": [
+      "@memoflow/repository/*": [
         "packages/repository/src/*/index.ts"
       ],
-      "@dailyuse/reminder": [
+      "@memoflow/reminder": [
         "packages/reminder/src/index.ts"
       ],
-      "@dailyuse/reminder/*": [
+      "@memoflow/reminder/*": [
         "packages/reminder/src/*/index.ts"
       ],
-      "@dailyuse/notification": [
+      "@memoflow/notification": [
         "packages/notification/src/index.ts"
       ],
-      "@dailyuse/notification/*": [
+      "@memoflow/notification/*": [
         "packages/notification/src/*/index.ts"
       ],
-      "@dailyuse/schedule": [
+      "@memoflow/schedule": [
         "packages/schedule/src/index.ts"
       ],
-      "@dailyuse/schedule/*": [
+      "@memoflow/schedule/*": [
         "packages/schedule/src/*/index.ts"
       ],
-      "@dailyuse/schedule-orchestration": [
+      "@memoflow/schedule-orchestration": [
         "packages/schedule-orchestration/src/index.ts"
       ],
-      "@dailyuse/schedule-orchestration/*": [
+      "@memoflow/schedule-orchestration/*": [
         "packages/schedule-orchestration/src/*/index.ts",
         "packages/schedule-orchestration/src/*.ts"
       ],
-      "@dailyuse/setting": [
+      "@memoflow/setting": [
         "packages/setting/src/index.ts"
       ],
-      "@dailyuse/setting/*": [
+      "@memoflow/setting/*": [
         "packages/setting/src/*/index.ts"
       ],
-      "@dailyuse/data-portability": [
+      "@memoflow/data-portability": [
         "packages/data-portability/src/index.ts"
       ],
-      "@dailyuse/data-portability/*": [
+      "@memoflow/data-portability/*": [
         "packages/data-portability/src/*/index.ts"
       ],
-      "@dailyuse/ai": [
+      "@memoflow/ai": [
         "packages/ai/src/index.ts"
       ],
-      "@dailyuse/ai/*": [
+      "@memoflow/ai/*": [
         "packages/ai/src/*/index.ts"
       ],
-      "@dailyuse/http-client": [
+      "@memoflow/http-client": [
         "packages/http-client/src/index.ts"
       ],
-      "@dailyuse/ipc-client": [
+      "@memoflow/ipc-client": [
         "packages/ipc-client/src/index.ts"
       ],
-      "@dailyuse/ui-core": [
+      "@memoflow/ui-core": [
         "packages/ui-core/src/index.ts"
       ],
-      "@dailyuse/ui-core/*": [
+      "@memoflow/ui-core/*": [
         "packages/ui-core/src/*",
         "packages/ui-core/src/*/index.ts"
       ],
-      "@dailyuse/ui-react-native": [
+      "@memoflow/ui-react-native": [
         "packages/ui-react-native/src/index.ts"
       ],
-      "@dailyuse/app-react": [
+      "@memoflow/app-react": [
         "packages/app-react/src/index.ts"
       ],
-      "@dailyuse/app-vue": [
+      "@memoflow/app-vue": [
         "packages/app-vue/src/index.ts"
       ],
-      "@dailyuse/ui-vue-shadcn": [
+      "@memoflow/ui-vue-shadcn": [
         "packages/ui-vue-shadcn/src/index.ts"
       ],
-      "@dailyuse/ui-vue-shadcn/*": [
+      "@memoflow/ui-vue-shadcn/*": [
         "packages/ui-vue-shadcn/src/*",
         "packages/ui-vue-shadcn/src/*/index.ts"
       ],
-      "@dailyuse/dashboard": [
+      "@memoflow/dashboard": [
         "packages/dashboard/src/index.ts"
       ],
-      "@dailyuse/dashboard/*": [
+      "@memoflow/dashboard/*": [
         "packages/dashboard/src/*/index.ts",
         "packages/dashboard/src/*.ts"
       ],
-      "@dailyuse/test-utils": [
+      "@memoflow/test-utils": [
         "packages/test-utils/src/index.ts"
       ],
-      "@dailyuse/nx-test-system": [
+      "@memoflow/nx-test-system": [
         "tools/nx-test-system/index.js"
       ],
       "@api/shared": [

@@ -2,7 +2,7 @@
 mode: agent
 ---
 
-# DailyUse Overview Prompt
+# MemoFlow Overview Prompt
 
 优先参考这些真实入口，不要复述历史目录结构：
 

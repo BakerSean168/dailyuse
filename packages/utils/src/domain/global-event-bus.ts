@@ -1,5 +1,5 @@
 import { CrossPlatformEventBus } from './cross-platform-event-bus';
-import type { AppEventRegistry } from '@dailyuse/contracts/shared';
+import type { AppEventRegistry } from '@memoflow/contracts/shared';
 
 // ===================== 全局事件总线 =====================
 
@@ -21,7 +21,7 @@ export class GlobalEventBus extends CrossPlatformEventBus<AppEventRegistry> {
  * 1. 发布事件: eventBus.send('user:login', { userId: '1', timestamp: Date.now() })
  * 2. 订阅事件: eventBus.on('user:login', (e) => console.log(e.userId))
  *
- * 需要请求-响应（拿返回值）请走 Port（同进程）或 @dailyuse/ipc-client / HTTP（跨进程），
+ * 需要请求-响应（拿返回值）请走 Port（同进程）或 @memoflow/ipc-client / HTTP（跨进程），
  * 不要在事件总线上做 RPC。
  */
 export const eventBus = new GlobalEventBus();

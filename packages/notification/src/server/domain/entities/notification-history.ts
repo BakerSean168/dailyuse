@@ -3,13 +3,13 @@
  * 通知历史记录
  */
 
-import { Entity } from '@dailyuse/utils/domain';
+import { Entity } from '@memoflow/utils/domain';
 import { NotificationHistoryId } from '../value-objects/notification-history-id';
 import type {
   NotificationId,
   NotificationHistoryId as INotificationHistoryId,
-} from '@dailyuse/contracts/primitives';
-import type { NotificationHistoryServerDTO } from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/primitives';
+import type { NotificationHistoryServerDTO } from '@memoflow/contracts/notification';
 
 export type { NotificationHistoryServerDTO };
 

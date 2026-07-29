@@ -324,7 +324,7 @@ import { describe, expect, it } from 'vitest';
     it('notification port re-exports contracts UnreadCountResponse without interface dual', () => {
       expect(port).toContain('Residual 801');
       expect(port).toContain('UnreadCountResponse');
-      expect(port).toContain("from '@dailyuse/contracts/notification'");
+      expect(port).toContain("from '@memoflow/contracts/notification'");
       expect(port).toContain('export type { UnreadCountResponse }');
       expect(port).not.toMatch(/export interface UnreadCountResponse\b/);
     });

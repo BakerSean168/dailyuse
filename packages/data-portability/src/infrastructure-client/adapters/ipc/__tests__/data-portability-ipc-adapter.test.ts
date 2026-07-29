@@ -5,8 +5,8 @@ import type {
   ExportUserDataRes,
   ImportUserDataReq,
   ImportUserDataRes,
-} from '@dailyuse/contracts/data-portability';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/data-portability';
+import type { Result } from '@memoflow/contracts/result';
 import { DataPortabilityIpcAdapter } from '../data-portability-ipc.adapter';
 
 function createMockIpcClient(): IResultIpcClient & { invoke: ReturnType<typeof vi.fn> } {

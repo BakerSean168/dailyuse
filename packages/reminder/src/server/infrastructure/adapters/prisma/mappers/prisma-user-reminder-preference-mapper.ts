@@ -4,10 +4,10 @@
  * Maps between UserReminderPreferences domain aggregate and Prisma model.
  */
 
-import type { UserReminderPreference as PrismaUserReminderPreference } from '@dailyuse/database';
-import type { TimeSlotDTO } from '@dailyuse/contracts/reminder';
+import type { UserReminderPreference as PrismaUserReminderPreference } from '@memoflow/database';
+import type { TimeSlotDTO } from '@memoflow/contracts/reminder';
 import { UserReminderPreferences } from '../../../../domain/aggregates/user-reminder-preferences';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 
 export class PrismaUserReminderPreferenceMapper {
   /**

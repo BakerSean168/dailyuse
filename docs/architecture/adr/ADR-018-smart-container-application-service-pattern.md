@@ -74,7 +74,7 @@ packages/application-client/src/goal/
 └─ index.ts                         (exports service singleton)
 
 📌 KEY PRINCIPLES:
-  - No types/ folder - All types from @dailyuse/contracts/goal
+  - No types/ folder - All types from @memoflow/contracts/goal
   - Each file = One use case service with execute() method
   - Singleton pattern with getInstance()
   - Dependency injection from infrastructure-client containers
@@ -142,10 +142,10 @@ apps/desktop/src/renderer/modules/goal/presentation/
 // apps/web/src/modules/goal/presentation/composables/use-goal.ts
 
 import { ref, computed } from 'vue';
-import { goalApplicationService } from '@dailyuse/application-client/goal';
-import type { Goal, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import { goalApplicationService } from '@memoflow/application-client/goal';
+import type { Goal, CreateGoalRequest, UpdateGoalRequest } from '@memoflow/contracts/goal';
 import { useGoalStore } from '../stores/goal.store';
-import { useMessage } from '@dailyuse/ui-vuetify';
+import { useMessage } from '@memoflow/ui-vuetify';
 
 /**
  * Vue Composable - Goal Management
@@ -153,7 +153,7 @@ import { useMessage } from '@dailyuse/ui-vuetify';
  * ✅ Imports ApplicationService from packages
  * ✅ No local ApplicationService needed
  * ✅ Same logic can be ported to React Hook
- * ✅ All types from @dailyuse/contracts
+ * ✅ All types from @memoflow/contracts
  */
 export function useGoal() {
   const store = useGoalStore();
@@ -203,17 +203,17 @@ export function useGoal() {
 // apps/desktop/src/renderer/modules/goal/hooks/use-goal.ts
 
 import { useState, useCallback } from 'react';
-import { goalApplicationService } from '@dailyuse/application-client/goal';
-import type { Goal, CreateGoalRequest } from '@dailyuse/contracts/goal';
+import { goalApplicationService } from '@memoflow/application-client/goal';
+import type { Goal, CreateGoalRequest } from '@memoflow/contracts/goal';
 import { useGoalStore } from '../stores/goal.store';
-import { useMessage } from '@dailyuse/ui-react';
+import { useMessage } from '@memoflow/ui-react';
 
 /**
  * React Hook - Goal Management
  *
  * ✅ Same imports and logic as Vue version!
  * ✅ Only React-specific state management syntax
- * ✅ All types from @dailyuse/contracts (shared)
+ * ✅ All types from @memoflow/contracts (shared)
  */
 export function useGoal() {
   const store = useGoalStore();
@@ -281,7 +281,7 @@ export function useGoal() {
 
 ### Update Composables/Hooks
 
-- [ ] Modify imports: `from '../../application/services'` → `from '@dailyuse/application-client/goal'`
+- [ ] Modify imports: `from '../../application/services'` → `from '@memoflow/application-client/goal'`
 - [ ] Test in Web app first
 - [ ] Port logic to React hooks in Desktop
 

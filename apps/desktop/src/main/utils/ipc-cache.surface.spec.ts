@@ -7,7 +7,7 @@ import {
   GoalChannels,
   ReminderChannels,
   TaskChannels,
-} from '@dailyuse/contracts/electron';
+} from '@memoflow/contracts/electron';
 
 /**
  * IPC cache management surface (stage-6 residual):
@@ -24,7 +24,7 @@ describe('ipc-cache channel surface', () => {
   });
 
   it('returns contracts Result ok envelopes for cache management handlers', () => {
-    expect(source).toContain("import { ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain("import { ok } from '@memoflow/contracts/result'");
     expect(source).toContain('return ok(');
     expect(source).not.toMatch(/success:\s*true/);
   });

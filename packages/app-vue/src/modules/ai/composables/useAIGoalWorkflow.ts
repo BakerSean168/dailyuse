@@ -29,7 +29,7 @@ import type {
   GoalClarificationDTO,
   GoalWorkflowDraftResultDTO,
   KeyResultPreview,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import {
   createEmptyGoalDraft,
   createEmptyGoalReminderDraft,
@@ -50,7 +50,7 @@ import {
   handleExecuteAutomation,
   type AutomationContext,
 } from './goalAutomationHelpers';
-import { unwrap } from '@dailyuse/contracts/result';
+import { unwrap } from '@memoflow/contracts/result';
 import {
   applyHostGoalPatchToAgentActions,
   applyHostTaskPatchToAgentActions,
@@ -64,7 +64,7 @@ import { createAgentId } from './createAgentId';
 // Residual 955: getRecordString dual retired — sole AI composable helper (was local getString).
 import { getRecordString } from './getRecordString';
 // Residual 1007: sole normalizeReminderTimeOfDay (local dual retired).
-import { normalizeReminderTimeOfDay } from '@dailyuse/utils/shared';
+import { normalizeReminderTimeOfDay } from '@memoflow/utils/shared';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -321,7 +321,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       : 'weekly';
   }
 
-  // Residual 1007: normalizeReminderTimeOfDay elevated to @dailyuse/utils/shared.
+  // Residual 1007: normalizeReminderTimeOfDay elevated to @memoflow/utils/shared.
 
   function coerceKeyResults(value: unknown): KeyResultPreview[] | undefined {
     if (!Array.isArray(value)) return undefined;

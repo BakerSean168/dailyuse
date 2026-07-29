@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef } from 'vue';
-import { createDialogStore, type DialogState } from '@dailyuse/ui-core';
+import { createDialogStore, type DialogState } from '@memoflow/ui-core';
 
 export interface UseDialogReturn {
   /** Whether dialog is open */
@@ -20,7 +20,7 @@ export interface UseDialogReturn {
 
 /**
  * Vue composable for dialog state management
- * Wraps @dailyuse/ui-core dialog logic with Vue reactivity
+ * Wraps @memoflow/ui-core dialog logic with Vue reactivity
  */
 export function useDialog(): UseDialogReturn {
   const stateRef = ref<DialogState>({

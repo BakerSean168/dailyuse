@@ -7,9 +7,9 @@
  */
 
 import { ipcMain } from 'electron';
-import { ok } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import { ok } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
+import type { IElectronModule, IElectronModuleContext } from '@memoflow/contracts/electron';
 import {
   GovernanceChannels,
   type CreateRuleReq,
@@ -19,7 +19,7 @@ import {
   type GovernanceRpcRequest,
   type ListRulesQueryInput,
   type SearchRulesQueryInput,
-} from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/governance';
 import { GovernanceController } from '../server/transport/governance.controller';
 import { createGovernancePowerSyncModule } from '../server/infrastructure/powersync';
 import type { GovernanceModuleInstance } from '../server/infrastructure';

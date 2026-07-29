@@ -248,7 +248,7 @@ import { useI18n } from 'vue-i18n';
 import { formatProductDateTime } from '../../../../shared/utils/product-time';
 import {
   AggregationMethod,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import {
   Dialog,
   DialogContent,
@@ -264,7 +264,7 @@ import {
   Textarea,
   Separator,
   Progress,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   CheckCircle,
   Calendar,

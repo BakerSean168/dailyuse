@@ -6,9 +6,9 @@
 
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import { TaskExpirationService } from '../../../domain/services/index';
-import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { TaskInstanceClientDTO } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 export class CheckExpiredInstancesUseCase {
   private readonly expirationService: TaskExpirationService;

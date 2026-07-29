@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import type { PreferenceCategory, UserSettingClientDTO } from '@dailyuse/contracts/setting';
+import type { PreferenceCategory, UserSettingClientDTO } from '@memoflow/contracts/setting';
 
 import { useAppSession } from './useAppSession';
 import { useSettingService } from './useSettingService';

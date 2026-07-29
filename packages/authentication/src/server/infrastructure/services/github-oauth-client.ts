@@ -23,7 +23,7 @@ import type {
   GithubUserIdentity,
   IGithubOAuthClient,
 } from '../../domain/services/providers/i-github-oauth-client';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('GithubOAuthClient');
 

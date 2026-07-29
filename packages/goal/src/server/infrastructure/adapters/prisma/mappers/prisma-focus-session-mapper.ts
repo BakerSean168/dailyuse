@@ -4,10 +4,10 @@
  * Maps between FocusSession domain entity and Prisma model.
  */
 
-import type { FocusSession as PrismaFocusSession } from '@dailyuse/database';
-import { FocusSessionStatus } from '@dailyuse/contracts/goal';
+import type { FocusSession as PrismaFocusSession } from '@memoflow/database';
+import { FocusSessionStatus } from '@memoflow/contracts/goal';
 import { FocusSession } from '../../../../domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { FocusSessionId, GoalId } from '../../../../domain';
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */

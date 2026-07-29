@@ -17,13 +17,13 @@ import { detectBrowserLocale, normalizeLocale, normalizeTheme } from './presenta
 import { previewText } from './preview-text';
 import { readNestedNumber } from './read-nested-number';
 import { DEFAULT_REMINDER_TIME_OF_DAY, REMINDER_TIME_OF_DAY_PATTERN, buildReminderStartTimestamp, normalizeReminderTimeOfDay } from './reminder-time-of-day';
-import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contracts/reminder';
+import { ReminderType, TriggerType, NotificationChannel } from '@memoflow/contracts/reminder';
 
 // --- merged from build-recurrence-rule-dual.surface.spec.ts ---
 {
   /**
    * Residual 1015: buildRecurrenceRule dual retired (API + Desktop automation).
-   * Sole body in @dailyuse/utils/shared/build-recurrence-rule.
+   * Sole body in @memoflow/utils/shared/build-recurrence-rule.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Soft residual 1013: buildReminderTemplateInput dual retired.
    * Does not flip §13.2 checkboxes.
@@ -62,7 +62,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
         ['desktop', desktop],
       ] as const) {
         expect(source, label).toContain('Residual 1015');
-        expect(source, label).toContain("from '@dailyuse/utils/shared'");
+        expect(source, label).toContain("from '@memoflow/utils/shared'");
         expect(source, label).toMatch(/buildRecurrenceRule/);
         expect(source, label).not.toMatch(/function buildRecurrenceRule\b/);
         expect(source, label).not.toMatch(/private buildRecurrenceRule\b/);
@@ -105,7 +105,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 {
   /**
    * Residual 1013: buildReminderTemplateInput dual retired (API + Desktop automation).
-   * Sole body in @dailyuse/utils/shared/build-reminder-template-input.
+   * Sole body in @memoflow/utils/shared/build-reminder-template-input.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Soft residual 1007: reminder time-of-day helpers remain sole dependency.
    * Soft residual 835: activeTime uses activatedAt only.
@@ -147,7 +147,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
         ['desktop', desktop],
       ] as const) {
         expect(source, label).toContain('Residual 1013');
-        expect(source, label).toContain("from '@dailyuse/utils/shared'");
+        expect(source, label).toContain("from '@memoflow/utils/shared'");
         expect(source, label).toMatch(/buildReminderTemplateInput/);
         expect(source, label).not.toMatch(/function buildReminderTemplateInput\b/);
         expect(source, label).not.toMatch(/const DAILY_REVIEW_INTERVAL_MINUTES\b/);
@@ -221,7 +221,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 {
   /**
    * Residual 1019: database CLI toErrorMessage dual retired onto residual 999 sole.
-   * Sole body in @dailyuse/utils/shared/error-message; scripts alias import as toErrorMessage.
+   * Sole body in @memoflow/utils/shared/error-message; scripts alias import as toErrorMessage.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Soft residual 999: AI runtime + local vault already on sole.
    * Does not flip §13.2 checkboxes.
@@ -261,7 +261,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
       for (const [label, source] of Object.entries(scripts)) {
         expect(source, label).toContain('Residual 1019');
         expect(source, label).toContain(
-          "import { errorMessage as toErrorMessage } from '@dailyuse/utils/shared'",
+          "import { errorMessage as toErrorMessage } from '@memoflow/utils/shared'",
         );
         expect(source, label).not.toMatch(/function toErrorMessage\b/);
         expect(source, label).not.toMatch(/function errorMessage\b/);
@@ -290,7 +290,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 {
   /**
    * Residual 999: errorMessage dual retired (AI runtime + app-vue local vault).
-   * Sole body in @dailyuse/utils/shared/error-message.
+   * Sole body in @memoflow/utils/shared/error-message.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Soft residual 1019: database CLI scripts dual retired onto this sole (toErrorMessage alias).
    * Soft residual 1127: extractErrorMessage dual retired onto this sole (withCause).
@@ -334,7 +334,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
         ['useLocalVault', localVault],
       ] as const) {
         expect(source, label).toContain('Residual 999');
-        expect(source, label).toContain("import { errorMessage } from '@dailyuse/utils/shared'");
+        expect(source, label).toContain("import { errorMessage } from '@memoflow/utils/shared'");
         expect(source, label).not.toMatch(/function errorMessage\b/);
         expect(source, label).toContain('errorMessage(');
       }
@@ -367,7 +367,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
       ] as const) {
         expect(source, label).toContain('Residual 1019');
         expect(source, label).toContain(
-          "import { errorMessage as toErrorMessage } from '@dailyuse/utils/shared'",
+          "import { errorMessage as toErrorMessage } from '@memoflow/utils/shared'",
         );
         expect(source, label).not.toMatch(/function toErrorMessage\b/);
         expect(source, label).toContain('toErrorMessage(');
@@ -388,7 +388,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 {
   /**
    * Residual 943: escapeHtml dual retired.
-   * Sole body in @dailyuse/utils/shared/escape-html; desktop main + app-vue
+   * Sole body in @memoflow/utils/shared/escape-html; desktop main + app-vue
    * safe-markdown import it (local function duals dropped).
    * Residual 945 (soft): formatZodErrors dual retired
    *   (result/format-zod-errors-dual.surface.spec.ts).
@@ -420,11 +420,11 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 
     it('desktop main and safe-markdown import sole helper without local dual bodies', () => {
       expect(desktopMain).toContain('Residual 943');
-      expect(desktopMain).toContain("import { escapeHtml } from '@dailyuse/utils/shared'");
+      expect(desktopMain).toContain("import { escapeHtml } from '@memoflow/utils/shared'");
       expect(desktopMain).not.toMatch(/function escapeHtml\b/);
 
       expect(safeMarkdown).toContain('Residual 943');
-      expect(safeMarkdown).toContain("import { escapeHtml } from '@dailyuse/utils/shared'");
+      expect(safeMarkdown).toContain("import { escapeHtml } from '@memoflow/utils/shared'");
       expect(safeMarkdown).not.toMatch(/function escapeHtml\b/);
     });
 
@@ -548,7 +548,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
         ['template-repo', template],
       ] as const) {
         expect(source, label).toContain('Residual 1025');
-        expect(source, label).toContain("import { parseJsonSafe } from '@dailyuse/utils/shared'");
+        expect(source, label).toContain("import { parseJsonSafe } from '@memoflow/utils/shared'");
         expect(source, label).not.toMatch(/function parseJsonSafe\b/);
         expect(source, label).toContain('parseJsonSafe');
       }
@@ -556,7 +556,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 
     it('notification powersync repository imports sole without local parseJson dual body', () => {
       expect(powersync).toContain('Residual 1025');
-      expect(powersync).toContain("import { parseJsonSafe } from '@dailyuse/utils/shared'");
+      expect(powersync).toContain("import { parseJsonSafe } from '@memoflow/utils/shared'");
       expect(powersync).not.toMatch(/function parseJson\b/);
       expect(powersync).not.toMatch(/function parseJsonSafe\b/);
       expect(powersync).toContain('parseJsonSafe');
@@ -614,7 +614,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
     it('notification imports sole without local dual body', () => {
       expect(notification).toContain('Residual 1021');
       expect(notification).toContain(
-        "import { parseBoolean, parseNumber, parseString } from '@dailyuse/utils/shared'",
+        "import { parseBoolean, parseNumber, parseString } from '@memoflow/utils/shared'",
       );
       expect(notification).not.toMatch(/function parseBoolean\b/);
       expect(notification).toContain('parseBoolean(req.query?.isRead)');
@@ -624,7 +624,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
       expect(schedule).toMatch(/function parseBoolean\b/);
       expect(schedule).toContain('value === true');
       expect(schedule).toContain("value === ''");
-      expect(schedule).not.toContain('@dailyuse/utils/shared');
+      expect(schedule).not.toContain('@memoflow/utils/shared');
       expect(goalSole).toContain('Residual 985');
       expect(goalSole).toMatch(/export function parseBoolean\b/);
       expect(goalSole).not.toContain("'1'");
@@ -648,7 +648,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
   /**
    * Residual 989: parseString + parseNumber dual retired (notification + reminder API routes).
    * Residual 1021: parseBoolean dual retired for notification query filters.
-   * Sole body in @dailyuse/utils/shared/parse-query-value.
+   * Sole body in @memoflow/utils/shared/parse-query-value.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Soft residual 1023: governance parseString/parseNumber dual retired (re-export this sole).
    * Soft residual: schedule route parsers keep-boundary (different empty/boolean handling).
@@ -691,7 +691,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
       expect(notification).toContain('Residual 989');
       expect(notification).toContain('Residual 1021');
       expect(notification).toContain(
-        "import { parseBoolean, parseNumber, parseString } from '@dailyuse/utils/shared'",
+        "import { parseBoolean, parseNumber, parseString } from '@memoflow/utils/shared'",
       );
       expect(notification).not.toMatch(/function parseString\b/);
       expect(notification).not.toMatch(/function parseNumber\b/);
@@ -702,7 +702,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 
       expect(reminder).toContain('Residual 989');
       expect(reminder).toContain(
-        "import { parseNumber, parseString } from '@dailyuse/utils/shared'",
+        "import { parseNumber, parseString } from '@memoflow/utils/shared'",
       );
       expect(reminder).not.toMatch(/function parseString\b/);
       expect(reminder).not.toMatch(/function parseNumber\b/);
@@ -714,7 +714,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
       expect(schedule).toMatch(/function parseString\b/);
       expect(schedule).toMatch(/function parseNumber\b/);
       expect(schedule).toContain("value === ''");
-      expect(schedule).not.toContain('@dailyuse/utils/shared');
+      expect(schedule).not.toContain('@memoflow/utils/shared');
     });
 
     it('parses first query string entry and finite numbers', () => {
@@ -786,7 +786,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 
     it('governance-route-shared re-exports utils sole without local dual bodies', () => {
       expect(govShared).toContain('Residual 1023');
-      expect(govShared).toContain("export { parseNumber, parseString } from '@dailyuse/utils/shared'");
+      expect(govShared).toContain("export { parseNumber, parseString } from '@memoflow/utils/shared'");
       expect(govShared).not.toMatch(/export function parseString\b/);
       expect(govShared).not.toMatch(/export function parseNumber\b/);
       expect(govShared).toMatch(/export function parseStringArray\b/);
@@ -807,7 +807,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
     it('schedule remains keep-boundary; sole still parses arrays and finite numbers', () => {
       expect(schedule).toMatch(/function parseString\b/);
       expect(schedule).toContain("value === ''");
-      expect(schedule).not.toContain('@dailyuse/utils/shared');
+      expect(schedule).not.toContain('@memoflow/utils/shared');
       expect(parseString(['a', 'b'])).toBe('a');
       expect(parseNumber('12')).toBe(12);
       expect(parseNumber('nope')).toBeUndefined();
@@ -820,7 +820,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
   /**
    * Residual 1005: presentation preference duals retired
    * (detectBrowserLocale + normalizeLocale + normalizeTheme).
-   * Sole bodies in @dailyuse/utils/shared/presentation-preference.
+   * Sole bodies in @memoflow/utils/shared/presentation-preference.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Does not flip §13.2 checkboxes.
    */
@@ -860,7 +860,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
         ['app-vue-store', appVueStore],
       ] as const) {
         expect(source, label).toContain('Residual 1005');
-        expect(source, label).toContain("from '@dailyuse/utils/shared'");
+        expect(source, label).toContain("from '@memoflow/utils/shared'");
         expect(source, label).toContain('detectBrowserLocale');
         expect(source, label).toContain('normalizeLocale');
         expect(source, label).toContain('normalizeTheme');
@@ -900,7 +900,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 {
   /**
    * Residual 1011: previewText dual retired (AI package re-export + API automation).
-   * Sole body in @dailyuse/utils/shared/preview-text (default maxLength 240).
+   * Sole body in @memoflow/utils/shared/preview-text (default maxLength 240).
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Soft residual 1009: readNestedNumber dual retired (read-nested-number-dual.surface.spec.ts).
    * Soft residual 995: AI consumers keep package-local re-export path (preview-text.ts).
@@ -935,14 +935,14 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
     it('AI package re-exports utils sole without local dual body', () => {
       expect(aiReexport).toContain('Residual 995');
       expect(aiReexport).toContain('Residual 1011');
-      expect(aiReexport).toContain("export { previewText } from '@dailyuse/utils/shared'");
+      expect(aiReexport).toContain("export { previewText } from '@memoflow/utils/shared'");
       expect(aiReexport).not.toMatch(/export function previewText\b/);
       expect(aiReexport).not.toContain('maxLength = 240');
     });
 
     it('API automation imports sole without local dual body and keeps maxLength 200', () => {
       expect(api).toContain('Residual 1011');
-      expect(api).toContain("from '@dailyuse/utils/shared'");
+      expect(api).toContain("from '@memoflow/utils/shared'");
       expect(api).toMatch(/previewText/);
       expect(api).not.toMatch(/function previewText\b/);
       expect(api).toMatch(/previewText\([^)]+,\s*200\)/);
@@ -970,7 +970,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 {
   /**
    * Residual 1009: readNestedNumber dual retired (API + Desktop automation executors).
-   * Sole body in @dailyuse/utils/shared/read-nested-number.
+   * Sole body in @memoflow/utils/shared/read-nested-number.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Soft residual 1011: previewText dual retired (utils sole; API maxLength 200 call sites).
    * Does not flip §13.2 checkboxes.
@@ -1008,7 +1008,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
         ['desktop', desktop],
       ] as const) {
         expect(source, label).toContain('Residual 1009');
-        expect(source, label).toContain("from '@dailyuse/utils/shared'");
+        expect(source, label).toContain("from '@memoflow/utils/shared'");
         expect(source, label).toMatch(/readNestedNumber/);
         expect(source, label).not.toMatch(/function readNestedNumber\b/);
         expect(source, label).toContain("readNestedNumber(context.dashboard, ['stats', 'activeGoals'])");
@@ -1018,7 +1018,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 
     it('API previewText dual retired to utils sole (residual 1011)', () => {
       expect(api).toContain('Residual 1011');
-      expect(api).toContain("from '@dailyuse/utils/shared'");
+      expect(api).toContain("from '@memoflow/utils/shared'");
       expect(api).not.toMatch(/function previewText\b/);
       expect(api).toMatch(/previewText\([^)]+,\s*200\)/);
       const aiReexport = readFileSync(
@@ -1027,7 +1027,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
       );
       const utilsSole = readFileSync(resolve(sharedDir, 'preview-text.ts'), 'utf8');
       expect(aiReexport).toContain('Residual 1011');
-      expect(aiReexport).toContain("export { previewText } from '@dailyuse/utils/shared'");
+      expect(aiReexport).toContain("export { previewText } from '@memoflow/utils/shared'");
       expect(utilsSole).toContain('Residual 1011');
       expect(utilsSole).toContain('maxLength = 240');
     });
@@ -1052,7 +1052,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 {
   /**
    * Residual 1007: normalizeReminderTimeOfDay + buildReminderStartTimestamp dual retired.
-   * Sole bodies in @dailyuse/utils/shared/reminder-time-of-day.
+   * Sole bodies in @memoflow/utils/shared/reminder-time-of-day.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
    * Soft residual 1013: API/Desktop compose via buildReminderTemplateInput sole (no direct import).
    * Does not flip §13.2 checkboxes.
@@ -1113,7 +1113,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
       ] as const) {
         expect(source, label).toContain('Residual 1007');
         expect(source, label).toContain('Residual 1013');
-        expect(source, label).toContain("from '@dailyuse/utils/shared'");
+        expect(source, label).toContain("from '@memoflow/utils/shared'");
         expect(source, label).toContain('buildReminderTemplateInput');
         expect(source, label).not.toMatch(/function normalizeReminderTimeOfDay\b/);
         expect(source, label).not.toMatch(/function buildReminderStartTimestamp\b/);
@@ -1128,7 +1128,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
         ['useAIWorkflowPersistence', workflowPersistence],
       ] as const) {
         expect(source, label).toContain('Residual 1007');
-        expect(source, label).toContain("from '@dailyuse/utils/shared'");
+        expect(source, label).toContain("from '@memoflow/utils/shared'");
         expect(source, label).toContain('normalizeReminderTimeOfDay');
         expect(source, label).not.toMatch(/function normalizeReminderTimeOfDay\b/);
         expect(source, label).not.toMatch(/const DEFAULT_REMINDER_TIME_OF_DAY\b/);

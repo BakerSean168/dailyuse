@@ -41,7 +41,7 @@ describe('api PowerSync parseJsonLikeString keep-boundary (residual 1091)', () =
     expect(crud).toContain('catch');
     expect(crud).toContain('return value');
     // must not import utils parsers
-    expect(crud).not.toContain('@dailyuse/utils');
+    expect(crud).not.toContain('@memoflow/utils');
     expect(crud).not.toMatch(/import\s*\{[^}]*parseJsonSafe[^}]*\}/);
     expect(crud).not.toMatch(/import\s*\{[^}]*\bparseJson\b[^}]*\}/);
   });

@@ -21,12 +21,12 @@ import type {
   CloseAccountReq,
   UpdateAccountSettingsReq,
   AccountClientDTO,
-} from '@dailyuse/contracts/account';
+} from '@memoflow/contracts/account';
 import { useAccountStore } from '../stores/account-store';
 import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { ACCOUNT_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { AuthMode } from '@dailyuse/contracts/authentication';
+import { AuthMode } from '@memoflow/contracts/authentication';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 

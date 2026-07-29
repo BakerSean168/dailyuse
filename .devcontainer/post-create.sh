@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 DailyUse Dev Environment - Post Create Setup"
+echo "🚀 MemoFlow Dev Environment - Post Create Setup"
 echo "================================================"
 
 # 1. 安装 pnpm (如果未安装)

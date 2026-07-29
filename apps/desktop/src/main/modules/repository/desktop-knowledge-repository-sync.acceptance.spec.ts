@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { KnowledgeRepositoryConnectionClientDTO } from '@dailyuse/contracts/repository';
-import { ok } from '@dailyuse/contracts/result';
+import type { KnowledgeRepositoryConnectionClientDTO } from '@memoflow/contracts/repository';
+import { ok } from '@memoflow/contracts/result';
 import {
   DesktopKnowledgeRepositoryGitRuntime,
   NodeGitProcessPort,
@@ -89,7 +89,7 @@ async function cloneRemoteWorktree(remote: string): Promise<string> {
   const parent = await temporaryDirectory('sync-acceptance-worktree');
   const worktree = path.join(parent, 'worktree');
   await realGit.run(['clone', '--branch', 'main', remote, worktree]);
-  await realGit.run(['config', '--local', 'user.name', 'Memoflow Test'], { cwd: worktree });
+  await realGit.run(['config', '--local', 'user.name', 'MemoFlow Test'], { cwd: worktree });
   await realGit.run(['config', '--local', 'user.email', 'test@memoflow.local'], {
     cwd: worktree,
   });

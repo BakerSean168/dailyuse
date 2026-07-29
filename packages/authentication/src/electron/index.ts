@@ -3,7 +3,7 @@
  *
  * Desktop-main callers use this seam for auth-specific Electron helpers.
  * Public DTO/schema contracts remain centralized in
- * `@dailyuse/contracts/authentication`.
+ * `@memoflow/contracts/authentication`.
  */
 
 export { DeviceInfo } from '../server/domain';

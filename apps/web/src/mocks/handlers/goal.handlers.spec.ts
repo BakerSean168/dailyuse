@@ -12,8 +12,8 @@ import {
   GetGoalAggregateResSchema,
   QueryGoalsResSchema,
   UpdateGoalSchema,
-} from '@dailyuse/contracts/goal';
-import { createMockGoal, createMockQueryGoalsRes } from '@dailyuse/contracts/mocks';
+} from '@memoflow/contracts/goal';
+import { createMockGoal, createMockQueryGoalsRes } from '@memoflow/contracts/mocks';
 
 describe('goal handlers contracts', () => {
   it('uses the current goal adapter route prefixes', () => {
@@ -31,7 +31,7 @@ describe('goal handlers contracts', () => {
   it(
     'uses name-based create, update, search, aggregate, and clone contracts',
     async () => {
-      const { GoalHttpAdapter } = await import('@dailyuse/goal/client');
+      const { GoalHttpAdapter } = await import('@memoflow/goal/client');
       const httpClient = createHttpClientSpy();
       const adapter = new GoalHttpAdapter(httpClient);
       const aggregateResponse = createMockGoalAggregateResponse(createMockGoal().id);

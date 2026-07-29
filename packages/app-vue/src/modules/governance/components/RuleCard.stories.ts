@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import RuleCard from './RuleCard.vue';
-import type { RuleClientDTO } from '@dailyuse/contracts/governance';
+import type { RuleClientDTO } from '@memoflow/contracts/governance';
 
 const mockRule = {
   code: 'RULE-001',

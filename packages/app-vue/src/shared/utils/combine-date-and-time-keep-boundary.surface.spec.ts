@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 1234: combineDateAndTime / parseTimestamp keep-boundary (local always-number vs ISO null).
  * - app-react TaskEditor combineDateAndTime: split YMD/HH:mm → local Date ctor → getTime() always number
  * - app-react ScheduleEventEditor parseTimestamp: trim; empty→null; Date.parse; isNaN→null
- * Soft residual 1234: utils Date-mutate helpers dual-retired onto @dailyuse/time (ADR-037 T9).
+ * Soft residual 1234: utils Date-mutate helpers dual-retired onto @memoflow/time (ADR-037 T9).
  * Soft residual 1231: toTimeInput keep-boundary remains separate.
  * Soft residual 1228: toDateInput keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.

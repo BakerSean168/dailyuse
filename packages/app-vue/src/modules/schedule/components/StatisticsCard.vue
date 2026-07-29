@@ -197,11 +197,11 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-vue-shadcn';
-import { Separator } from '@dailyuse/ui-vue-shadcn';
-import { Progress } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent, CardHeader, CardTitle } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Alert, AlertDescription, AlertTitle } from '@memoflow/ui-vue-shadcn';
+import { Separator } from '@memoflow/ui-vue-shadcn';
+import { Progress } from '@memoflow/ui-vue-shadcn';
 import {
   ChartBar,
   ChartBarBig,
@@ -214,7 +214,7 @@ import {
   BellDot,
   HelpCircle,
 } from '@lucide/vue';
-import type { SourceModule } from '@dailyuse/contracts/schedule';
+import type { SourceModule } from '@memoflow/contracts/schedule';
 
 interface ScheduleStatisticsData {
   totalTasks: number;

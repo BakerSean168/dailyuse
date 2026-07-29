@@ -182,7 +182,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import {
   TaskGoalBindingTrigger,
   type TaskGoalBindingTriggerValue,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 import type { TaskTemplateViewModel, GoalBindingOption, KeyResultBindingOption } from '../../types';
 import {
   Card,
@@ -200,7 +200,7 @@ import {
   SelectItem,
   Input,
   Badge,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Target, CheckCircle, Info, Flag, PlusCircle, Link2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 

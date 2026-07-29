@@ -5,7 +5,7 @@
  * Each runtime (web, desktop renderer) explicitly calls this during startup.
  */
 
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { useGoalStore } from '../stores/goal-store';
 
 const logger = createLogger('goal:init');

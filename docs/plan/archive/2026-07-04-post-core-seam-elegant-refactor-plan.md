@@ -22,13 +22,13 @@ updated: 2026-07-05T10:37:17.8247222+08:00
 1. `reminder` thin-facade 收口完成
 2. `notification` remaining facade orchestration downshift 完成
 3. 高价值 raw `eventBus` 入口 typed 化完成两批收口
-4. 新增 `tools/governance/raw-event-bus-audit.mjs`，并接入 `daily-use:governance-check`
+4. 新增 `tools/governance/raw-event-bus-audit.mjs`，并接入 `memoflow:governance-check`
 
 最终验证结论：
 
 1. `reminder` / `notification` / `schedule` 最近邻 typecheck 与 test 通过
 2. `api:test:smoke`、`desktop:test:main` 通过
-3. `daily-use:governance-check` 通过
+3. `memoflow:governance-check` 通过
 4. `packages/app-vue` 独立 typecheck 仍有既有测试类型错误，不属于本计划引入
 
 ## 1. 文档定位
@@ -37,8 +37,8 @@ updated: 2026-07-05T10:37:17.8247222+08:00
 
 它不重新打开已经完成并归档的主线，而是承接以下两份历史方案在当前代码里留下的真实残留：
 
-1. [2026-07-01-code-quality-consistency-remediation-plan.md](D:/home/projects/dailyuse/docs/plan/archive/2026-07-01-code-quality-consistency-remediation-plan.md)
-2. [2026-07-04-core-seam-reconvergence-multi-round-executable-plan.md](D:/home/projects/dailyuse/docs/plan/archive/2026-07-04-core-seam-reconvergence-multi-round-executable-plan.md)
+1. [2026-07-01-code-quality-consistency-remediation-plan.md](D:/home/projects/memoflow/docs/plan/archive/2026-07-01-code-quality-consistency-remediation-plan.md)
+2. [2026-07-04-core-seam-reconvergence-multi-round-executable-plan.md](D:/home/projects/memoflow/docs/plan/archive/2026-07-04-core-seam-reconvergence-multi-round-executable-plan.md)
 
 当前真值不是“主线没做完”，而是：
 
@@ -236,7 +236,7 @@ updated: 2026-07-05T10:37:17.8247222+08:00
 
 1. `notification` facade 的 `list/get/delete/batchDelete/cleanupOldNotifications` 已下沉到 application services
 2. `schedule`、`desktop`、`notification`、`reminder`、`authentication`、`governance`、`data-portability`、`app-vue` 的高价值 raw event seam 已改为 typed publisher / subscriber
-3. 新增 `tools/governance/raw-event-bus-audit.mjs`，并接入 `daily-use:governance-check`
+3. 新增 `tools/governance/raw-event-bus-audit.mjs`，并接入 `memoflow:governance-check`
 
 补充说明：
 
@@ -329,7 +329,7 @@ updated: 2026-07-05T10:37:17.8247222+08:00
 
 验证：
 
-1. `pnpm nx run daily-use:governance-check`
+1. `pnpm nx run memoflow:governance-check`
 
 ## 7. 推荐 PR 切分
 
@@ -371,7 +371,7 @@ updated: 2026-07-05T10:37:17.8247222+08:00
 2. `notification` facade 不再承担主要删除/批量/清理编排
 3. 第一批高价值 raw `eventBus.on/off/send` 生产入口已 typed 化
 4. 至少一条新治理规则能发现本轮同类回退
-5. 最近邻验证与 `daily-use:governance-check` 通过
+5. 最近邻验证与 `memoflow:governance-check` 通过
 
 ## 10. 最小验证矩阵
 
@@ -381,7 +381,7 @@ updated: 2026-07-05T10:37:17.8247222+08:00
 4. `pnpm nx run schedule:test`
 5. `pnpm nx run desktop:test:main`
 6. `pnpm nx run api:test:smoke`
-7. `pnpm nx run daily-use:governance-check`
+7. `pnpm nx run memoflow:governance-check`
 
 ## 11. 与历史方案的关系
 

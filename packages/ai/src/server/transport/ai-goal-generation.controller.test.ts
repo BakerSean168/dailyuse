@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { GenerateGoalsRes } from '@dailyuse/contracts/ai';
-import { ok } from '@dailyuse/contracts/result';
+import type { GenerateGoalsRes } from '@memoflow/contracts/ai';
+import { ok } from '@memoflow/contracts/result';
 import { AIGoalGenerationController } from './ai-goal-generation.controller';
 
 describe('AIGoalGenerationController', () => {

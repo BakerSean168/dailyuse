@@ -24,7 +24,7 @@ import {
   AuthSession,
   OAuthProvider,
 } from '../../domain';
-import type { AuthSessionId, IdentityId } from '@dailyuse/contracts/authentication';
+import type { AuthSessionId, IdentityId } from '@memoflow/contracts/authentication';
 
 // ---------------------------------------------------------------------------
 // In-memory test doubles

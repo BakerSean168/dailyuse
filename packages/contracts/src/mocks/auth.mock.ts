@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```ts
- * import { createMockAuthResponse } from '@dailyuse/contracts/mocks';
+ * import { createMockAuthResponse } from '@memoflow/contracts/mocks';
  * const authResponse = createMockAuthResponse();
  * ```
  */

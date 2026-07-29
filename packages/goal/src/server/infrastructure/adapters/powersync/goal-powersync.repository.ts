@@ -1,8 +1,8 @@
 import type { IGoalRepository } from '../../../domain';
 import { Goal } from '../../../domain';
-import type { KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import type { KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import type { GoalPowerSyncDatabase, PowerSyncLockContext } from './shared';
 import { toDbDateTime } from './shared';
 import { PowerSyncGoalMapper } from './mappers/powersync-goal.mapper';

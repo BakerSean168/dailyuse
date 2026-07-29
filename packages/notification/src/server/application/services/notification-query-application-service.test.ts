@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { INotificationRepository } from '../../domain/repositories';
 import { NotificationQueryApplicationService } from './notification-query-application-service';
 import {
   NotificationCategory,
   NotificationStatus,
   NotificationType,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 const IDENTITY_ID = 'IdentityId_550e8400-e29b-41d4-a716-446655440001';
 

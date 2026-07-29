@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ReminderTemplate } from '../reminder-template';
 import type { ReminderTemplateState } from '../reminder-template';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { ReminderTemplateId } from '../../value-objects/reminder-template-id';
 import {
   TriggerConfig,
@@ -11,8 +11,8 @@ import {
   FrequencyAdjustment,
 } from '../../value-objects';
 import { ReminderNotificationConfig } from '../../value-objects/reminder-notification-config';
-import { ReminderStatus, ReminderType, TriggerResult } from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ReminderStatus, ReminderType, TriggerResult } from '@memoflow/contracts/reminder';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers

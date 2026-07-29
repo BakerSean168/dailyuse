@@ -38,8 +38,8 @@ export default defineConfig({
 
   // External dependencies (don't bundle these)
   external: [
-    // ✅ 所有 @dailyuse/* workspace 包（运行时从 node_modules 加载）
-    /^@dailyuse\//,
+    // ✅ 所有 @memoflow/* workspace 包（运行时从 node_modules 加载）
+    /^@memoflow\//,
 
     // ✅ Prisma Client（必须外部化，包含二进制引擎）
     '@prisma/client',

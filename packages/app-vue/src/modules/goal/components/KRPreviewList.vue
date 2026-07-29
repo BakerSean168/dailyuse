@@ -223,28 +223,28 @@ import {
   Square,
   XCircle,
 } from '@lucide/vue';
-import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Card } from '@dailyuse/ui-vue-shadcn';
-import { Checkbox } from '@dailyuse/ui-vue-shadcn';
+import { Alert, AlertTitle, AlertDescription } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Card } from '@memoflow/ui-vue-shadcn';
+import { Checkbox } from '@memoflow/ui-vue-shadcn';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@dailyuse/ui-vue-shadcn';
-import { Textarea, useConfirm } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Textarea, useConfirm } from '@memoflow/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { KeyResultDraft, KeyResultPreview } from '../types';

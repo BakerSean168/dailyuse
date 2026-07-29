@@ -1,4 +1,4 @@
-import { ControlMode as ControlModeContract, type ControlMode as IControlMode } from '@dailyuse/contracts/reminder';
+import { ControlMode as ControlModeContract, type ControlMode as IControlMode } from '@memoflow/contracts/reminder';
 
 /**
  * 📝 控制模式 - 提醒的控制方式
@@ -13,7 +13,7 @@ export type ControlMode = IControlMode & { readonly __brand: unique symbol };
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IControlMode[] = Object.values(ControlModeContract);
 
 /**

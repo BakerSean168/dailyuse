@@ -7,16 +7,16 @@ import type {
   NotificationActionDTO,
   NotificationMetadataDTO,
   NotificationEventMap,
-} from '@dailyuse/contracts/notification';
-import type { IdentityId, NotificationId as NotificationIdBranded } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/notification';
+import type { IdentityId, NotificationId as NotificationIdBranded } from '@memoflow/contracts/primitives';
 import {
   NotificationCategory,
   NotificationStatus,
   NotificationType,
-} from '@dailyuse/contracts/notification';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/notification';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import {
   NotificationId,
   NotificationAction,

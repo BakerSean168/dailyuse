@@ -1,4 +1,4 @@
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   CalendarEntryClientDTO,
   CreateScheduleRequest,
@@ -10,7 +10,7 @@ import type {
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
   ScheduleBatchOperationResponseDTO,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import type { ScheduleTask } from '../domain-client/aggregates/schedule-task';
 
 export interface ScheduleClientPort {

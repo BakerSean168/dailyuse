@@ -67,7 +67,7 @@ export type ExternalProcessProbeResult =
  * Security invariants (fail closed):
  * - productDefault is always false (never open-chat default)
  * - must not use real Vault as process cwd
- * - must not inject Daily Use / GitHub / Provider tokens into process env
+ * - must not inject MemoFlow / GitHub / Provider tokens into process env
  * - must not treat CLI-native file writes as completed business mutations
  */
 export interface IExternalProcessTurnAdapterPort extends ITurnEnginePort {

@@ -8,12 +8,12 @@ import type {
   ResetPasswordReq,
   SendEmailCodeReq,
   VerifyEmailCodeReq,
-} from '@dailyuse/contracts/authentication';
-import type { ResultError } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/authentication';
+import type { ResultError } from '@memoflow/contracts/result';
 import {
   classifyNetworkErrorMessage,
   resetEmailVerificationCircuit,
-} from '@dailyuse/http-client';
+} from '@memoflow/http-client';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

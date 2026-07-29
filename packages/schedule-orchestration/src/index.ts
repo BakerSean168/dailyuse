@@ -1,5 +1,5 @@
 /**
- * @dailyuse/schedule-orchestration
+ * @memoflow/schedule-orchestration
  *
  * System-level orchestration for schedule projections and source execution.
  * 负责把跨 feature 的 schedule owner 收回成一个更深的 Module。

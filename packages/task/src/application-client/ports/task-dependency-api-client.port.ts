@@ -5,7 +5,7 @@
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   TaskDependencyClientDTO,
   DependencyChainClientDTO,
@@ -13,7 +13,7 @@ import type {
   UpdateTaskDependencyBody,
   ValidateDependencyBody,
   ValidateDependencyResponse,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 export interface ITaskDependencyApiClient {
   createDependency(

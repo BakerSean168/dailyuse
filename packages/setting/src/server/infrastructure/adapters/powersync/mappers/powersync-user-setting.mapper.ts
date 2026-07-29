@@ -1,10 +1,10 @@
-import { UserPreferencesSchema } from '@dailyuse/contracts/setting';
+import { UserPreferencesSchema } from '@memoflow/contracts/setting';
 import {
   UserSetting,
   type UserSettingState,
 } from '../../../../domain/aggregates/user-setting';
 import { SettingId } from '../../../../domain/value-objects/setting-id';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 
 export type PowerSyncUserSettingRow = {
   id: string;

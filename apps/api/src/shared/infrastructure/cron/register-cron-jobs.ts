@@ -6,7 +6,7 @@
  */
 
 import { CronSchedulerManager } from './cron-scheduler-manager';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { env } from '../config/env';
 import { rebuildAllProfileSnapshots } from './jobs/snapshot-rebuild.job.js';
 

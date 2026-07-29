@@ -7,9 +7,9 @@ import type { IReminderTemplateRepository } from '../domain/repositories/i-remin
 import type { IReminderGroupRepository } from '../domain/repositories/i-reminder-group-repository';
 import type { IReminderResponseRepository } from '../domain/repositories/i-reminder-response-repository';
 import type { IUserReminderPreferenceRepository } from '../domain/repositories/i-user-reminder-preference-repository';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import { fail } from '@dailyuse/contracts/result';
-import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import { fail } from '@memoflow/contracts/result';
+import type { ReminderResponseAction } from '@memoflow/contracts/reminder';
 import type { ReminderTemplate } from '../domain/aggregates/reminder-template';
 import { ReminderDomainService } from '../domain/services/reminder-domain-service';
 import type { ReminderApplicationPort } from '../application';

@@ -12,7 +12,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthSession, ACCESS_TOKEN_DURATION_MS, REFRESH_TOKEN_DURATION_MS } from '../auth-session';
 import type { AuthSessionState } from '../auth-session';
 import { SessionStatus, AuthSessionId, DeviceInfo } from '../..';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import type { ITokenProvider } from '../../services/token-provider.interface';
 
 // ---------------------------------------------------------------------------

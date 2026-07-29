@@ -10,7 +10,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 declare global {
   // eslint-disable-next-line no-var
-  var __dailyuse_prisma: PrismaClient | undefined;
+  var __memoflow_prisma: PrismaClient | undefined;
 }
 
 function resolveDatabaseConnectionString(): string {
@@ -23,12 +23,12 @@ function resolveDatabaseConnectionString(): string {
     throw new Error('DATABASE_URL or DB_HOST must be set before initializing PrismaClient');
   }
 
-  const username = encodeURIComponent(process.env.DB_USER || 'dailyuse');
+  const username = encodeURIComponent(process.env.DB_USER || 'memoflow');
   const password = process.env.DB_PASSWORD
     ? `:${encodeURIComponent(process.env.DB_PASSWORD)}`
     : '';
   const port = process.env.DB_PORT || '5432';
-  const database = encodeURIComponent(process.env.DB_NAME || 'dailyuse');
+  const database = encodeURIComponent(process.env.DB_NAME || 'memoflow');
   const connectionString =
     `postgresql://${username}${password}@${host}:${port}/${database}?schema=public`;
 
@@ -43,8 +43,8 @@ function resolveDatabaseConnectionString(): string {
  * 开发环境下挂载到 globalThis 以防热重载创建多个连接。
  */
 export const prisma: PrismaClient = (() => {
-  if (globalThis.__dailyuse_prisma) {
-    return globalThis.__dailyuse_prisma;
+  if (globalThis.__memoflow_prisma) {
+    return globalThis.__memoflow_prisma;
   }
 
   const connectionString = resolveDatabaseConnectionString();
@@ -64,7 +64,7 @@ export const prisma: PrismaClient = (() => {
   });
 
   if (process.env.NODE_ENV !== 'production') {
-    globalThis.__dailyuse_prisma = client;
+    globalThis.__memoflow_prisma = client;
   }
 
   return client;

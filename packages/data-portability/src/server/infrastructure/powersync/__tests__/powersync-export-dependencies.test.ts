@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import { createPowerSyncDataPortabilityDependencies } from '../powersync-export-dependencies';
 
 function createFakeDb() {

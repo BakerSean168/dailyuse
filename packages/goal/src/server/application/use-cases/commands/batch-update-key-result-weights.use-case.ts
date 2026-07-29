@@ -7,9 +7,9 @@
  */
 
 import type { IGoalRepository } from '../../../domain';
-import type { GetGoalRes } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { GetGoalRes } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { UpdateGoalKeyResultUseCase } from './update-goal-key-result.use-case';
 
 export interface KeyResultWeightUpdate {

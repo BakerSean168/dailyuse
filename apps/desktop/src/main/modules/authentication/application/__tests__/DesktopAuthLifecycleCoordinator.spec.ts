@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ILogger } from '@dailyuse/utils/logger';
-import type { IAuthIdentityRepository, IAuthSessionRepository } from '@dailyuse/authentication/electron';
+import type { ILogger } from '@memoflow/utils/logger';
+import type { IAuthIdentityRepository, IAuthSessionRepository } from '@memoflow/authentication/electron';
 import type { TokenManager } from '../../infrastructure/token-manager';
 import type { SessionManager } from '../../infrastructure/session-manager';
 import type { NetworkStateManager } from '../../infrastructure/network-state-manager';

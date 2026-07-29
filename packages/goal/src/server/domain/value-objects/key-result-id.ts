@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { KeyResultId as IKeyResultId } from '@dailyuse/contracts/primitives';
+import type { KeyResultId as IKeyResultId } from '@memoflow/contracts/primitives';
 
 /**
  * KeyResultId 值对象

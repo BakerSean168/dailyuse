@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
+import type { AccountClientDTO } from '@memoflow/contracts/account';
 
 import { useAppSession } from './useAppSession';
 import { useAccountService } from './useAccountService';

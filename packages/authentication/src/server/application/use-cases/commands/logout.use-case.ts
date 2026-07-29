@@ -4,12 +4,12 @@
  * Application use case for user logout.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { IAuthSessionRepository } from '../../../domain';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('Logout');
 

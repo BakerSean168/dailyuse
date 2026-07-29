@@ -74,7 +74,7 @@
 - `packages/repository` 测试通过
 - `packages/goal` 测试通过
 - `packages/schedule` 回归测试通过
-- `pnpm nx run daily-use:governance-check` 通过
+- `pnpm nx run memoflow:governance-check` 通过
 - active 计划文档状态与实际代码进度一致
 
 ## 文档状态同步规则

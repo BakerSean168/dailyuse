@@ -104,11 +104,11 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { Bell, CheckCheck } from '@lucide/vue';
-import { Badge, Button, Skeleton } from '@dailyuse/ui-vue-shadcn';
+import { Badge, Button, Skeleton } from '@memoflow/ui-vue-shadcn';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import NotificationList from '../components/NotificationList.vue';
 import { useNotification } from '../composables/useNotification';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 const {
   notifications,

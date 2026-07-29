@@ -11,13 +11,13 @@
  */
 
 import { net, powerMonitor } from 'electron';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { ILogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
 import type {
   NetworkStatus,
   NetworkStateChangeEvent,
   NetworkCheckConfig,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { EventEmitter } from 'events';
 
 /**

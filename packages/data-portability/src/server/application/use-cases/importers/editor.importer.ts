@@ -3,7 +3,7 @@
  */
 
 import type { ImportContext } from '../../portable-runtime';
-import type { PortableEditorData } from '@dailyuse/contracts/data-portability';
+import type { PortableEditorData } from '@memoflow/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { allocateId, optRef, inc, rec, timestamps } from './import-helpers';
 

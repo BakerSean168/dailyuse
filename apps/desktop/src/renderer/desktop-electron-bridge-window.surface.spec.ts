@@ -14,13 +14,13 @@ describe('desktop window electronAPI ElectronBridge surface', () => {
   const preload = readFileSync(resolve(__dirname, '../preload/preload.ts'), 'utf8');
 
   it('env.d.ts types window.electronAPI as ElectronBridge', () => {
-    expect(env).toContain("from '@dailyuse/ipc-client'");
+    expect(env).toContain("from '@memoflow/ipc-client'");
     expect(env).toContain('electronAPI?: ElectronBridge');
     expect(env).not.toMatch(/interface ElectronAPI\s*\{/);
   });
 
   it('preload re-exports ElectronBridge and drops ElectronAPI type dual', () => {
-    expect(preload).toContain("export type { ElectronBridge } from '@dailyuse/ipc-client'");
+    expect(preload).toContain("export type { ElectronBridge } from '@memoflow/ipc-client'");
     expect(preload).not.toContain('export type ElectronAPI');
     expect(preload).toContain('ElectronBridge');
   });

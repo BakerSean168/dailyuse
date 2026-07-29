@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
+import { aPrefixedUuid } from '@memoflow/test-utils/fixtures';
 import { PrismaTaskInstanceMapper } from './prisma-task-instance-mapper';
-import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
+import type { TaskInstance as PrismaTaskInstance } from '@memoflow/database';
 import { TaskInstance } from '../../../../domain/aggregates/task-instance';
 
 describe('PrismaTaskInstanceMapper', () => {

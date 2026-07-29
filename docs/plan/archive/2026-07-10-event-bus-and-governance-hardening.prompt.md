@@ -20,7 +20,7 @@ updated: 2026-07-10T18:30:00+08:00
 
 任务：按现有方案实施 Event Bus & Governance Hardening（含 ADR-033）
 
-你是资深软件架构工程师。在 /opt/dailyuse（pnpm + Nx monorepo）里，按已有方案与决策文档，完整、优雅地实施跨模块通信范式重构。代码是唯一真值，方案与决策文档只是路线图。
+你是资深软件架构工程师。在 /opt/memoflow（pnpm + Nx monorepo）里，按已有方案与决策文档，完整、优雅地实施跨模块通信范式重构。代码是唯一真值，方案与决策文档只是路线图。
 
 ## 强制第一步：读完这些再开始动手（不要跳过）
 
@@ -41,13 +41,13 @@ updated: 2026-07-10T18:30:00+08:00
 - **H2** 在使用 flushDomainEvents 的仓储（reminder / ai / schedule / notification 等，详见 plan H2 列出的调用点）里：save() 用事务包裹多条 execute；pullDomainEvents() 在事务前后位置需要设计准确；事件派发放到事务成功提交之后，派发失败不回滚业务（用一个 publishSafely 或直接依赖 H3 的隔离即可）。
 - **L1/L2** 顺手：generateUUID 收敛为 globalThis.crypto?.randomUUID()；pendingRequests 若因 H1 被移除，则一并消失。
 
-**验收：** pnpm nx affected -t lint test typecheck 全绿；pnpm nx run daily-use:governance-check 通过；全仓 grep -r "eventBus.invoke\|eventBus.handle" 零命中。
+**验收：** pnpm nx affected -t lint test typecheck 全绿；pnpm nx run memoflow:governance-check 通过；全仓 grep -r "eventBus.invoke\|eventBus.handle" 零命中。
 
 ### PR-2｜阶段一 · Goal↔Task 联动重构（M6，作为 ADR-033 范式 A 标杆）
 
 三段：
 
-- **Task 侧**：task:instance-completed 事件 payload 扩展 goalBinding 与"是否全部实例完成"标志。判定逻辑（shouldTriggerOnAllInstancesCompleted）从 desktop handler 迁到 Task 应用层，在事件发布前算好。同步更新 @dailyuse/contracts/task 事件形状。
+- **Task 侧**：task:instance-completed 事件 payload 扩展 goalBinding 与"是否全部实例完成"标志。判定逻辑（shouldTriggerOnAllInstancesCompleted）从 desktop handler 迁到 Task 应用层，在事件发布前算好。同步更新 @memoflow/contracts/task 事件形状。
 - **Goal 侧**：把 packages/goal/src/application-server/event-handlers/index.ts 从空壳桩改为真实现——订阅 task:instance-completed，直接消费 payload，调 CreateGoalRecordUseCase，不得回查 Task 的 repository。返回可停止函数（幂等 start()/stop()，仿 register-account-event-listeners.ts）。
 - **宿主**：apps/api 与 apps/desktop 分别在启动时调用同一份 registerGoalEventListeners。desktop 的 initialize-event-listeners.ts 中 task-goal 那段删除（不是注释掉）；web 端由此自动获得同款能力。
 

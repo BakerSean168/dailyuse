@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * GoalFolder Aggregate Root - Domain Client
  * 目标文件夹聚合根 - 领域客户端
@@ -10,10 +10,10 @@ import type { Instant } from '@dailyuse/contracts/primitives';
  * - Instance toDTO(): GoalFolderClientDTO
  */
 
-import type { GoalFolderClientDTO, FolderType } from '@dailyuse/contracts/goal';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import type { GoalFolderClientDTO, FolderType } from '@memoflow/contracts/goal';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { GoalFolderId } from '../../server/domain';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 
 export interface GoalFolderState {
   id: GoalFolderId;

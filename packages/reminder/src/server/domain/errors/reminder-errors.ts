@@ -2,11 +2,11 @@
  * Reminder 相关错误类
  * 用于提醒应用服务
  *
- * 继承自 @dailyuse/utils 的 DomainError 基类，统一错误码、上下文与 HTTP 状态语义，
+ * 继承自 @memoflow/utils 的 DomainError 基类，统一错误码、上下文与 HTTP 状态语义，
  * 与 setting/governance 等其他 feature 的领域错误保持一致，避免各自扩展裸 Error。
  */
 
-import { DomainError } from '@dailyuse/utils/errors';
+import { DomainError } from '@memoflow/utils/errors';
 
 /**
  * 提醒模板未找到

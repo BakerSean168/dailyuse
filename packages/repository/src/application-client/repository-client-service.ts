@@ -4,7 +4,7 @@
  * Knowledge repository + Desktop Local Vault application service.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   LocalVaultBindingClientDTO,
   SelectLocalVaultReq,
@@ -40,7 +40,7 @@ import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import type { IRepositoryApiClient } from './ports/repository-api-client.port';
 
 export class RepositoryClientService implements IRepositoryApiClient {

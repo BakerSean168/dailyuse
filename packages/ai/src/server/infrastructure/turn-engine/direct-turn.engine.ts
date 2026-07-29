@@ -8,8 +8,8 @@
  * Open-ended chat/analysis only. Never exposes mutation tools or knowledge-write
  * capabilities; those stay on the Agent Host proposal/executor path.
  */
-import type { ITurnEnginePort } from '@dailyuse/contracts/ai';
-import { MessageRole } from '@dailyuse/contracts/ai';
+import type { ITurnEnginePort } from '@memoflow/contracts/ai';
+import { MessageRole } from '@memoflow/contracts/ai';
 import type { IAIConversationRepository } from '../../domain/repositories/i-ai-conversation-repository';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import type {

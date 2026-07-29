@@ -5,9 +5,9 @@
  * Communicates with Electron main process for data operations.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
-import { AIChannels, GoalChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { fail } from '@memoflow/contracts/result';
+import { AIChannels, GoalChannels } from '@memoflow/contracts/electron';
 import type { IGoalApiClient, IResultIpcClient } from '../types';
 import type {
   GoalClientDTO,
@@ -28,7 +28,7 @@ import type {
   CreateGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 export class GoalIpcAdapter implements IGoalApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

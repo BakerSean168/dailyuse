@@ -1,5 +1,5 @@
 {
-  "name": "DailyUse Development Environment",
+  "name": "MemoFlow Development Environment",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
   "runArgs": ["--cpus=2", "--memory=8g"],
 

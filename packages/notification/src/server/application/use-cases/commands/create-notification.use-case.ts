@@ -5,9 +5,9 @@
  */
 
 import { NotificationPolicy } from '../../../domain/services/notification-policy';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
-import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
+import { BusinessRuleViolationError } from '@memoflow/utils/errors';
+import { createLogger } from '@memoflow/utils/logger';
 import type {
   NotificationClientDTO,
   NotificationDispatchDesktopEvent,
@@ -16,11 +16,11 @@ import type {
   NotificationCategory,
   RelatedEntityType,
   NotificationChannelType,
-} from '@dailyuse/contracts/notification';
-import { NotificationChannelType as ChannelTypeEnum } from '@dailyuse/contracts/notification';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/notification';
+import { NotificationChannelType as ChannelTypeEnum } from '@memoflow/contracts/notification';
+import type { IdentityId } from '@memoflow/contracts/primitives';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type {
   INotificationRepository,
   INotificationTemplateRepository,

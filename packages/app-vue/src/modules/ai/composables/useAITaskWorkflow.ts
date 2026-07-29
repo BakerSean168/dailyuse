@@ -15,13 +15,13 @@
 
 import { computed, ref, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { unwrap } from '@dailyuse/contracts/result';
+import { unwrap } from '@memoflow/contracts/result';
 import type {
   AgentExecutedAction,
   AgentResumePayload,
   AgentRunResult,
   AgentStartRunClientRequest,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { AIChatService, ChatModelOption, ChatItem } from './types';
 import { getAIErrorMessage } from './error';
 // Residual 953: createAgentId dual retired — sole AI composable helper.

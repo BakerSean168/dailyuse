@@ -14,7 +14,7 @@
  * 替代: `api/initialization.ts` (registerGoalInitializationTasks)
  */
 
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { GoalModuleRuntimeContribution } from '../goal.module';
 
 const logger = createLogger('GoalRuntime');

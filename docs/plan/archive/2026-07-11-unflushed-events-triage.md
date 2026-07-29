@@ -57,7 +57,7 @@ PR #167 引入 `unflushed-events-audit` 时，仓库仍使用 `domain-server` / 
 
 目录扫描修正后，`unflushed-events-audit` 应扫描非零文件，并报告 0 baseline exemption。
 
-完整 `daily-use:governance-check` 还暴露了 PR #162 留下的独立 shape 问题：
+完整 `memoflow:governance-check` 还暴露了 PR #162 留下的独立 shape 问题：
 `data-portability` 缺少 ADR-031 要求的 `server/domain`。PR #170 同时补齐最小 domain 入口，
 使完整治理检查恢复通过。
 
@@ -68,6 +68,6 @@ PR #167 引入 `unflushed-events-audit` 时，仓库仍使用 `domain-server` / 
 - baseline allowlist 为空。
 - account PowerSync 事务参数行为有回归测试。
 - 相关包 lint、typecheck、test、build 全绿。
-- `daily-use:governance-check` 全绿。
+- `memoflow:governance-check` 全绿。
 
 以上标准已在 PR #170 分支及合并后的 `main` 验证通过。

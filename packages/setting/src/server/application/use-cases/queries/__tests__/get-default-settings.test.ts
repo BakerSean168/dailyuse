@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDefaultPreferences } from '@dailyuse/contracts/setting';
+import { getDefaultPreferences } from '@memoflow/contracts/setting';
 import { DEFAULT_SETTINGS_IDENTITY_ID, GetDefaultSettings } from '../get-default-settings';
 
 describe('GetDefaultSettings', () => {

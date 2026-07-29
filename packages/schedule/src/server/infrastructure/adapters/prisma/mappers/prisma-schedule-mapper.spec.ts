@@ -11,9 +11,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
+import { aPrefixedUuid } from '@memoflow/test-utils/fixtures';
 import { PrismaScheduleMapper } from './prisma-schedule-mapper';
-import type { Schedule as PrismaSchedule } from '@dailyuse/database';
+import type { Schedule as PrismaSchedule } from '@memoflow/database';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 

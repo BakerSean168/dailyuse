@@ -8,8 +8,8 @@
  */
 
 import { defineStore } from 'pinia';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
-import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO } from '@memoflow/contracts/setting';
+import type { PreferenceCategory, UserSettingPreferences } from '@memoflow/contracts/setting';
 
 export interface SettingState {
   userSetting: UserSettingClientDTO | null;

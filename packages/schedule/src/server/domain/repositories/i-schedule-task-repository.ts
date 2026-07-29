@@ -11,7 +11,7 @@
  */
 
 import type { ScheduleTask } from '../aggregates/schedule-task';
-import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskStatus, SourceModule } from '@memoflow/contracts/schedule';
 
 /**
  * ScheduleTask 鏌ヨ閫夐」

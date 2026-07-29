@@ -4,7 +4,7 @@ import {
   generatePassword,
   type PasswordStrengthLevel,
   type PasswordStrengthResult,
-} from '@dailyuse/ui-core';
+} from '@memoflow/ui-core';
 
 export interface UsePasswordStrengthReturn {
   /** The password being analyzed */
@@ -25,7 +25,7 @@ export interface UsePasswordStrengthReturn {
 
 /**
  * Vue composable for password strength analysis
- * Wraps @dailyuse/ui-core password strength logic with Vue reactivity
+ * Wraps @memoflow/ui-core password strength logic with Vue reactivity
  */
 export function usePasswordStrength(initialPassword = ''): UsePasswordStrengthReturn {
   const password = ref(initialPassword);

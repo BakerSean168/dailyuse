@@ -5,14 +5,14 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   ITriggerConfig,
   TriggerConfigDTO,
   TriggerType,
   FixedTimeTrigger,
   IntervalTrigger,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 /**
  * TriggerConfig 值对象实现

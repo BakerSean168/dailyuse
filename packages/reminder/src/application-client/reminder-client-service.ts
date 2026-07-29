@@ -7,7 +7,7 @@
  * @module application-client/reminder-client-service
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
@@ -20,8 +20,8 @@ import type {
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
   GetReminderTodayScheduleRes,
-} from '@dailyuse/contracts/reminder';
-import type { ControlMode } from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
+import type { ControlMode } from '@memoflow/contracts/reminder';
 import type { IReminderApiClient } from './ports/reminder-api-client.port';
 
 export class ReminderClientService implements IReminderApiClient {

@@ -15,26 +15,26 @@ import {
   SystemChannels,
   TaskChannels,
   WindowChannels,
-} from '@dailyuse/contracts/electron';
-import { GovernanceChannels } from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/electron';
+import { GovernanceChannels } from '@memoflow/contracts/governance';
 import { ALLOWED_CHANNELS, SUPPORTED_REPOSITORY_CHANNELS } from '../allowed-channels';
-import { createAccountIpcClient } from '@dailyuse/account/client';
-import { AuthIpcAdapter } from '@dailyuse/authentication/client';
-import { createDataPortabilityIpcClient } from '@dailyuse/data-portability/client';
+import { createAccountIpcClient } from '@memoflow/account/client';
+import { AuthIpcAdapter } from '@memoflow/authentication/client';
+import { createDataPortabilityIpcClient } from '@memoflow/data-portability/client';
 import {
   AIConversationIpcAdapter,
   AIGoalIpcAdapter,
   AIKnowledgeNoteIpcAdapter,
   AIMessageIpcAdapter,
   AIProviderConfigIpcAdapter,
-} from '@dailyuse/ai/client';
-import { createGovernanceIpcClient } from '@dailyuse/governance/client';
-import { NotificationIpcAdapter } from '@dailyuse/notification/client';
-import { TaskTemplateIpcAdapter } from '@dailyuse/task/client';
-import { ScheduleEventIpcAdapter, ScheduleTaskIpcAdapter } from '@dailyuse/schedule/client';
-import { ReminderIpcAdapter } from '@dailyuse/reminder/client';
-import { RepositoryIpcAdapter } from '@dailyuse/repository/client';
-import { createSettingIpcClient } from '@dailyuse/setting/client';
+} from '@memoflow/ai/client';
+import { createGovernanceIpcClient } from '@memoflow/governance/client';
+import { NotificationIpcAdapter } from '@memoflow/notification/client';
+import { TaskTemplateIpcAdapter } from '@memoflow/task/client';
+import { ScheduleEventIpcAdapter, ScheduleTaskIpcAdapter } from '@memoflow/schedule/client';
+import { ReminderIpcAdapter } from '@memoflow/reminder/client';
+import { RepositoryIpcAdapter } from '@memoflow/repository/client';
+import { createSettingIpcClient } from '@memoflow/setting/client';
 
 function channelSet(values: Record<string, string>) {
   return new Set<string>(Object.values(values) as string[]);

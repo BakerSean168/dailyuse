@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/setting",
+  "name": "@memoflow/setting",
   "version": "0.0.1",
   "description": "设置模块 - 用户与系统配置",
   "type": "module",
@@ -26,12 +26,12 @@
   },
   "scripts": {},
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/database": "workspace:*",
-    "@dailyuse/domain-shared": "workspace:*",
-    "@dailyuse/http-client": "workspace:*",
-    "@dailyuse/ipc-client": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/database": "workspace:*",
+    "@memoflow/domain-shared": "workspace:*",
+    "@memoflow/http-client": "workspace:*",
+    "@memoflow/ipc-client": "workspace:*",
+    "@memoflow/utils": "workspace:*",
     "date-fns": "^4.1.0",
     "express": "^5.2.1",
     "zod": "^4.4.3"

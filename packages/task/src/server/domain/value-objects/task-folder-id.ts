@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { TaskFolderId as ITaskFolderId } from '@dailyuse/contracts/primitives';
+import type { TaskFolderId as ITaskFolderId } from '@memoflow/contracts/primitives';
 
 /**
  * TaskFolderId 值对象

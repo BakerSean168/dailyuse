@@ -7,7 +7,7 @@ import type {
   KeyResultProgressDTO,
   GoalRecordClientDTO,
   GoalReviewClientDTO,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 const now = Date.now();
 const DAY = 86400000;

@@ -4,8 +4,8 @@
  * Residual 967: isAbortLikeError sole import (packages/ai/src/shared/is-abort-like-error.ts).
  */
 import type { IAIMessageApiClient, IResultHttpClient } from '../types';
-import type { Result, ResultErrorDetail } from '@dailyuse/contracts/result';
-import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
+import type { Result, ResultErrorDetail } from '@memoflow/contracts/result';
+import type { MessageListRes, SendMessageReq, SendMessageRes } from '@memoflow/contracts/ai';
 import {
   createResultClientError,
   createResultClientErrorFromResponse,

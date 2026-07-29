@@ -1,4 +1,4 @@
-import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
 import { NotificationTemplate } from '../../aggregates/notification-template';
 import { NotificationTemplateDomainService } from '../notification-template-domain-service';
 

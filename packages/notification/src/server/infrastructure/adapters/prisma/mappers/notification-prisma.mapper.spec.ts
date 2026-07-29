@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ChannelStatus, NotificationChannelType } from '@dailyuse/contracts/notification';
+import { ChannelStatus, NotificationChannelType } from '@memoflow/contracts/notification';
 import {
   NotificationPrismaMapper,
   type PrismaNotificationChannelRow,

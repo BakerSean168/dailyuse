@@ -19,7 +19,7 @@ import {
   StatusPill,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 function buildGreeting(name: string | null) {
   if (!name) {
@@ -69,7 +69,7 @@ export function HomeScreen() {
     <PageShell
       actionMenuSubtitle="主页常用入口和会话操作。"
       actionSections={actionSections}
-      eyebrow="DailyUse Mobile"
+      eyebrow="MemoFlow Mobile"
       title={buildGreeting(currentUser?.displayName ?? null)}
       subtitle="今日概览、快捷入口和收件信息。">
       <SectionCard

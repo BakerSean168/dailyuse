@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { eventBus } from '@dailyuse/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared/shared';
+import { eventBus } from '@memoflow/utils/domain';
 import { Account } from '../../../domain';
 import {
   PowerSyncAccountRepository,

@@ -5,8 +5,8 @@
  * Uses tryCatch for consistent Result<T> error handling.
  */
 
-import { fail, type Result } from '@dailyuse/contracts/result';
-import { RepositoryChannels } from '@dailyuse/contracts/electron';
+import { fail, type Result } from '@memoflow/contracts/result';
+import { RepositoryChannels } from '@memoflow/contracts/electron';
 import type {
   IResultIpcClient,
   IRepositoryApiClient,
@@ -46,7 +46,7 @@ import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 
 
 /**

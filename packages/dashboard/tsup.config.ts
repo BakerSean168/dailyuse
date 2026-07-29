@@ -1,6 +1,6 @@
 import { baseLibraryConfig, createLocalOnlyDtsPaths } from '../../tools/build/tsup.base.config.ts';
 
-const config = baseLibraryConfig('@dailyuse/dashboard');
+const config = baseLibraryConfig('@memoflow/dashboard');
 
 export default {
   ...config,

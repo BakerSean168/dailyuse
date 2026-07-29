@@ -1,9 +1,9 @@
 import type { IReminderTemplateRepository } from '../../../domain/repositories/i-reminder-template-repository';
-import type { ReminderStatus, ReminderEventMap } from '@dailyuse/contracts/reminder';
-import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
+import type { ReminderStatus, ReminderEventMap } from '@memoflow/contracts/reminder';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import { ReminderTemplate } from '../../../domain/aggregates/reminder-template';
-import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import {
   PowerSyncReminderTemplateMapper,
   type PowerSyncReminderTemplateRow,

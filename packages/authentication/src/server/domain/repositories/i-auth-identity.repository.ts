@@ -1,4 +1,4 @@
-import type { IdentityId } from '@dailyuse/contracts/authentication';
+import type { IdentityId } from '@memoflow/contracts/authentication';
 import type { OAuthProvider } from '..';
 import type { AuthIdentity } from '../aggregates/auth-identity';
 

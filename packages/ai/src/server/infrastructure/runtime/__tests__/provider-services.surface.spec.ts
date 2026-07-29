@@ -4,7 +4,7 @@
  * Default provider is selected via setDefault + list/isDefault (no getDefault use case).
  */
 import { describe, expect, it } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../../../domain';
 import type { AIModuleDependencies } from '../../ai.module';
 import { createDirectProviderAIRuntime } from '../direct-provider-ai.runtime';

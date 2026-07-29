@@ -3,7 +3,7 @@ import { createI18n } from 'vue-i18n';
 import type {
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import {
   getGlobalSwitchLabel,
   getGroupActiveStatusLabel,

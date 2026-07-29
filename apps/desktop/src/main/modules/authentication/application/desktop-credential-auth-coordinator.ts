@@ -1,14 +1,14 @@
-import type { ILogger } from '@dailyuse/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/electron';
+} from '@memoflow/authentication/electron';
 import {
   type IpcResult,
   toIpcResult,
   ok,
   fail,
-} from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/result';
 import {
   AuthMode,
   AuthRuntimeState,
@@ -16,7 +16,7 @@ import {
   type EmailLoginCredentials,
   type EmailRegisterCredentials,
   type RememberedDesktopAccountLoginReq,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 // Residual 871: RegisterRequest dual retired.
 // Residual 931: RegisterRequest name fully retired — EmailRegisterCredentials sole body.
 export type { EmailRegisterCredentials };

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ConflictAlert from './ConflictAlert.vue';
-import type { ConflictDetectionResult } from '@dailyuse/contracts/schedule';
+import type { ConflictDetectionResult } from '@memoflow/contracts/schedule';
 import { createScheduleConflict } from './story-fixtures';
 
 const mockConflict: ConflictDetectionResult = createScheduleConflict({

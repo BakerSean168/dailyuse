@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/powersync-schema",
+  "name": "@memoflow/powersync-schema",
   "version": "0.0.1",
   "private": false,
   "description": "Pure PowerSync schema definitions for desktop and sync consumers",

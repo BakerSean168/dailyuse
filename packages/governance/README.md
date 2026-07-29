@@ -1,26 +1,26 @@
-# @dailyuse/governance
+# @memoflow/governance
 
 治理模块（活文档）— 当前仓库的参考模块。它展示的是目标架构，而不是历史兼容结构：公共 contracts 集中、public seam 收敛、服务端内部统一为 `server/*` 切片。
 
 ## 公开 seam
 
 ```text
-@dailyuse/contracts/governance
-@dailyuse/contracts/mocks
+@memoflow/contracts/governance
+@memoflow/contracts/mocks
 
-@dailyuse/governance
-@dailyuse/governance/api
-@dailyuse/governance/client
-@dailyuse/governance/electron
+@memoflow/governance
+@memoflow/governance/api
+@memoflow/governance/client
+@memoflow/governance/electron
 ```
 
 ## 模块职责
 
-- `@dailyuse/contracts/governance`：治理公共契约唯一真值源
-- `@dailyuse/governance`：规范化服务端组合根
-- `@dailyuse/governance/api`：HTTP API 模块
-- `@dailyuse/governance/client`：Web / Desktop renderer 客户端 seam
-- `@dailyuse/governance/electron`：Desktop main 入口
+- `@memoflow/contracts/governance`：治理公共契约唯一真值源
+- `@memoflow/governance`：规范化服务端组合根
+- `@memoflow/governance/api`：HTTP API 模块
+- `@memoflow/governance/client`：Web / Desktop renderer 客户端 seam
+- `@memoflow/governance/electron`：Desktop main 入口
 
 ## 内部结构标准
 
@@ -39,13 +39,13 @@ packages/governance/src/
 
 ## 明确不再保留的公开层
 
-- `@dailyuse/governance/domain-shared`
-- `@dailyuse/governance/domain-server`
-- `@dailyuse/governance/domain-client`
-- `@dailyuse/governance/application-client`
-- `@dailyuse/governance/infrastructure-client`
-- `@dailyuse/governance/electron-entry`
-- `@dailyuse/governance/mocks`
+- `@memoflow/governance/domain-shared`
+- `@memoflow/governance/domain-server`
+- `@memoflow/governance/domain-client`
+- `@memoflow/governance/application-client`
+- `@memoflow/governance/infrastructure-client`
+- `@memoflow/governance/electron-entry`
+- `@memoflow/governance/mocks`
 
 ## 关键收敛点
 
@@ -54,7 +54,7 @@ packages/governance/src/
 - former `controllers` 收敛为 `server/transport`
 - 模块运行时副作用归位到 `server/infrastructure/runtime`
 - root 只暴露 `createGovernanceModule()`，不暴露技术命名工厂
-- governance IPC channel / payload 统一收口到 `@dailyuse/contracts/governance/protocol`
+- governance IPC channel / payload 统一收口到 `@memoflow/contracts/governance/protocol`
 - UI display logic 不放在治理包内，app 层自行派生展示模型
 
 ## 活文档定位

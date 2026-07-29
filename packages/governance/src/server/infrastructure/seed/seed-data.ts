@@ -9,11 +9,11 @@
  */
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import { prisma } from '@dailyuse/database';
-import { Language } from '@dailyuse/contracts/governance';
-import { RuleSeverity } from '@dailyuse/contracts/governance';
-import { RuleStatus } from '@dailyuse/contracts/governance';
-import { SnippetType } from '@dailyuse/contracts/governance';
+import { prisma } from '@memoflow/database';
+import { Language } from '@memoflow/contracts/governance';
+import { RuleSeverity } from '@memoflow/contracts/governance';
+import { RuleStatus } from '@memoflow/contracts/governance';
+import { SnippetType } from '@memoflow/contracts/governance';
 
 /**
  * In-memory seed snippet shape before persistence serialization.
@@ -168,7 +168,7 @@ class SearchRulesUseCase {
       makeSnippet(
         Language.TypeScript,
         SnippetType.BadExample,
-        `import { prisma } from '@dailyuse/database';
+        `import { prisma } from '@memoflow/database';
 
 class SearchRulesUseCase {
   async execute(code: string) {

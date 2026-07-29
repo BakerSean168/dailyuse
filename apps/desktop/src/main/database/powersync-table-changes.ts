@@ -1,4 +1,4 @@
-import { PowerSyncAppSchema } from '@dailyuse/powersync-schema';
+import { PowerSyncAppSchema } from '@memoflow/powersync-schema';
 
 export const POWER_SYNC_CHANGE_TABLES = Object.freeze(Object.keys(PowerSyncAppSchema.props));
 

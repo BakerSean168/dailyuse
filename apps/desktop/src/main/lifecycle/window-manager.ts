@@ -14,10 +14,10 @@
 import { BrowserWindow, ipcMain, app } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
-import { fail, ok } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
-import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron';
+import { RendererEventChannels, WindowChannels } from '@memoflow/contracts/electron';
+import { fail, ok } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
+import { startScheduleRuntime, stopScheduleRuntime } from '@memoflow/schedule/electron';
 import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './desktop-chrome';
 import type { DesktopChromeTheme } from './desktop-chrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';

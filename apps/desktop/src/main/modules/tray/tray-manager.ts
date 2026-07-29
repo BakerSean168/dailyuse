@@ -7,7 +7,7 @@
  */
 
 import { Tray, Menu, app, type BrowserWindow, type NativeImage } from 'electron';
-import { APP_DISPLAY_NAME } from '@dailyuse/assets';
+import { APP_DISPLAY_NAME } from '@memoflow/assets';
 import { resolveTrayIcon } from '../../utils/app-icon';
 
 /**

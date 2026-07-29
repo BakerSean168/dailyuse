@@ -2,10 +2,10 @@
  * Setting IPC Adapter — Aligned with patchCategory API
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { SettingChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { SettingChannels } from '@memoflow/contracts/electron';
 import type { IResultIpcClient, ISettingApiClient } from '../types';
-import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO, PreferenceCategory } from '@memoflow/contracts/setting';
 
 export class SettingIpcAdapter implements ISettingApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

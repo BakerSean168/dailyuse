@@ -4,11 +4,11 @@
  * Validates input and delegates to GoalGenerationApplicationService.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
-import { GenerateGoalsSchema } from '@dailyuse/contracts/ai';
-import type { GenerateGoalsReq, GenerateGoalsRes } from '@dailyuse/contracts/ai';
-import { formatZodErrors } from '@dailyuse/utils/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail } from '@memoflow/contracts/result';
+import { GenerateGoalsSchema } from '@memoflow/contracts/ai';
+import type { GenerateGoalsReq, GenerateGoalsRes } from '@memoflow/contracts/ai';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 interface AIGoalGenerationControllerService {
   generateGoal(

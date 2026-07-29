@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 911: CustomNotificationView local ElectronBridge dual retired.
  * Residual 941: local getElectronBridge dual retired — sole host helper in platform/electron-bridge.
- * Uses @dailyuse/ipc-client ElectronBridge sole body (same as residual 270 window typing).
+ * Uses @memoflow/ipc-client ElectronBridge sole body (same as residual 270 window typing).
  * Residual 270 (soft): window.electronAPI typed as ElectronBridge
  *   (desktop-electron-bridge-window.surface.spec.ts).
  * Residual 909 (soft): app-vue Window uses DesktopAuthApi invoke-only keep-boundary

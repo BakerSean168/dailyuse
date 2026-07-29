@@ -239,7 +239,7 @@ uv run pytest tests/test_agent_runtime_routes.py
 ### TypeScript 类型检查
 
 ```bash
-pnpm --filter @dailyuse/ai exec tsc --noEmit
+pnpm --filter @memoflow/ai exec tsc --noEmit
 # ✅ 通过，无类型错误
 ```
 

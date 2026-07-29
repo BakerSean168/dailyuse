@@ -1,5 +1,5 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 
 export class DeleteAIProviderUseCase {

@@ -147,16 +147,16 @@ status: active
 
 1. `IGoalService`
 - 从 `PublicInterface<any>` 改为：
-  `PublicInterface<import('@dailyuse/goal/application-client').GoalClientService>`
+  `PublicInterface<import('@memoflow/goal/application-client').GoalClientService>`
 
 2. `ITaskService`
 - 从 `PublicInterface<any>` 改为：
-  `PublicInterface<import('@dailyuse/task/application-client').TaskClientService>`
+  `PublicInterface<import('@memoflow/task/application-client').TaskClientService>`
 
 3. `IAIService`
 - 放弃当前手写的 `Promise<unknown>` 接口
 - 改为：
-  `PublicInterface<import('@dailyuse/ai/application-client').AIClientService>`
+  `PublicInterface<import('@memoflow/ai/application-client').AIClientService>`
 
 注意事项：
 

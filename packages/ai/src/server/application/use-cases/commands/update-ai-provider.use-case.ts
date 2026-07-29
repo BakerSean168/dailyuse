@@ -1,10 +1,10 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type {
   AIProviderConfigServerDTO,
   UpdateAIProviderConfigReq,
   AIProviderConfigClientDTO,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import { toClientDTO } from './ai-provider-config-helpers';
 import { normalizeOpenAICompatibleModelId } from '../../../shared/openai-compatible-normalize';

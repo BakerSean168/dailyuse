@@ -24,7 +24,7 @@ interface DesktopRuntimeConfigFile {
 }
 
 const DEFAULT_API_PATH = '/api/v1';
-const PACKAGED_DEFAULT_API_ORIGIN = 'https://dailyuse.bakersean.top';
+const PACKAGED_DEFAULT_API_ORIGIN = 'https://memoflow.bakersean.top';
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
@@ -94,13 +94,13 @@ function resolveRuntimeConfigBaseUrl(): string | null {
  * 获取 API 基础 URL
  *
  * 优先级：
- * 1. 环境变量 DAILYUSE_API_URL
+ * 1. 环境变量 MEMOFLOW_API_URL
  * 2. 环境变量 VITE_API_BASE_URL (开发模式)
  * 3. 默认远程服务器
  */
 export function getApiBaseUrl(): string {
   const {
-    DAILYUSE_API_URL,
+    MEMOFLOW_API_URL,
     API_BASE_URL,
     VITE_API_BASE_URL,
     VITE_API_URL,
@@ -108,7 +108,7 @@ export function getApiBaseUrl(): string {
     API_DOMAIN,
   } = process.env;
 
-  const directBaseUrl = DAILYUSE_API_URL || API_BASE_URL;
+  const directBaseUrl = MEMOFLOW_API_URL || API_BASE_URL;
   if (directBaseUrl) {
     return normalizeBaseUrl(directBaseUrl);
   }
@@ -147,7 +147,7 @@ export function getApiBaseUrl(): string {
   }
 
   throw new Error(
-    'Desktop API base URL is not configured. Set DAILYUSE_API_URL, API_BASE_URL, VITE_API_URL, PROXY_TARGET_URL, or API_DOMAIN.',
+    'Desktop API base URL is not configured. Set MEMOFLOW_API_URL, API_BASE_URL, VITE_API_URL, PROXY_TARGET_URL, or API_DOMAIN.',
   );
 }
 

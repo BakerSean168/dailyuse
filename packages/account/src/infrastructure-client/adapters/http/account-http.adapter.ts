@@ -6,8 +6,8 @@
  */
 
 import type { IAccountApiClient } from '../types';
-import type { IResultHttpClient } from '@dailyuse/http-client';
-import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   AccountClientDTO,
   UpdateAccountReq,
@@ -16,7 +16,7 @@ import type {
   CloseAccountReq,
   UpdateAccountSettingsReq,
   UpdateAccountSettingsRes,
-} from '@dailyuse/contracts/account';
+} from '@memoflow/contracts/account';
 
 export class AccountHttpAdapter implements IAccountApiClient {
   private readonly baseUrl = '/accounts';

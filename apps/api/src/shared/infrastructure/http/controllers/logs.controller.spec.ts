@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Request, Response } from 'express';
 import { logsController } from './logs.controller';
 
-vi.mock('@dailyuse/utils/logger', () => ({
+vi.mock('@memoflow/utils/logger', () => ({
   createLogger: () => ({
     error: vi.fn(),
     warn: vi.fn(),

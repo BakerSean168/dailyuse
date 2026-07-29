@@ -92,9 +92,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Avatar, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Avatar, AvatarFallback } from '@memoflow/ui-vue-shadcn';
 import {
   Target,
   Clock,
@@ -106,11 +106,11 @@ import {
   Pencil,
   Trash2,
 } from '@lucide/vue';
-import { cn } from '@dailyuse/ui-vue-shadcn';
+import { cn } from '@memoflow/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
 import { getCompletedKeyResultCount } from '../../utils/progress';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
 
 const props = defineProps<{
   goal: GoalClientDTO;

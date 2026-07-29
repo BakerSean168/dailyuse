@@ -4,11 +4,11 @@
  * 统一的路由注册器，同时完成 Express 路由绑定和 OpenAPI 文档注册。
  * 消除"双重记账"问题 —— 路由路径、方法、参数只需要写在一个地方。
  *
- * @module @dailyuse/utils/result/route-registrar
+ * @module @memoflow/utils/result/route-registrar
  *
  * @example
  * ```ts
- * import { RouteRegistrar, successResponse, errorResponse } from '@dailyuse/utils/result';
+ * import { RouteRegistrar, successResponse, errorResponse } from '@memoflow/utils/result';
  *
  * const registrar = new RouteRegistrar(router, openApiRegistry, {
  *   basePath: '/api/v1/goals',
@@ -31,8 +31,8 @@
  * ```
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
 import { expressAdapter, type ExpressAdapterOptions } from './express-adapter';
 
 // ============================================================================

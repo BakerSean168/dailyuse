@@ -1,9 +1,9 @@
 /**
- * Codemod: Migrate `@dailyuse/utils` root barrel imports to subpath imports.
+ * Codemod: Migrate `@memoflow/utils` root barrel imports to subpath imports.
  *
  * Usage: npx tsx scripts/migrate-utils-subpath-imports.ts [--dry-run]
  *
- * For each file that imports from `@dailyuse/utils`, this script:
+ * For each file that imports from `@memoflow/utils`, this script:
  * 1. Maps each imported symbol to its correct subpath
  * 2. Splits mixed imports into multiple subpath-specific import statements
  * 3. Preserves type-only imports and formatting
@@ -28,19 +28,19 @@ function map(subpath: string, symbols: string[]) {
 }
 
 // Logger
-map('@dailyuse/utils/logger', [
+map('@memoflow/utils/logger', [
   'createLogger', 'ILogger', 'LoggerFactory', 'Logger',
   'ConsoleTransport', 'HttpTransport',
   'LogLevel', 'LogLevelString', 'LogMetadata', 'LogEntry', 'LogTransport', 'LoggerConfig',
 ]);
 
 // Domain
-map('@dailyuse/utils/domain', [
+map('@memoflow/utils/domain', [
   'Entity', 'AggregateRoot', 'ValueObject', 'eventBus', 'createIdType',
 ]);
 
 // Errors
-map('@dailyuse/utils/errors', [
+map('@memoflow/utils/errors', [
   'DomainError', 'BusinessRuleViolationError', 'NotFoundError', 'ValidationError',
   'UnauthorizedError', 'ForbiddenError', 'ConflictError', 'InternalServerError',
   'isDomainError', 'extractErrorInfo',
@@ -49,7 +49,7 @@ map('@dailyuse/utils/errors', [
 ]);
 
 // Shared
-map('@dailyuse/utils/shared', [
+map('@memoflow/utils/shared', [
   'generateUUID', 'newId', 'isValidUUID', 'generateShortId',
   'ensureDate', 'toDayStart', 'toDayEnd', 'formatDateToInput', 'formatTimeToInput',
   'updateDateKeepTime', 'updateTimeKeepDate',
@@ -60,7 +60,7 @@ map('@dailyuse/utils/shared', [
 ]);
 
 // Result
-map('@dailyuse/utils/result', [
+map('@memoflow/utils/result', [
   // Core Result
   'ok', 'fail', 'error', 'isOk', 'isFail', 'unwrap', 'unwrapOrThrowError', 'unwrapOr',
   'toResultErrorException', 'map', 'mapError', 'flatMap', 'tryCatch', 'tryCatchSync',
@@ -85,7 +85,7 @@ map('@dailyuse/utils/result', [
 ]);
 
 // Frontend
-map('@dailyuse/utils/frontend', [
+map('@memoflow/utils/frontend', [
   'EnvironmentConfig', 'getEnvironmentConfig', 'createAuthHeader',
   'isDevelopment', 'isProduction', 'safeParseJSON', 'formatFileSize',
   'validateFileType', 'validateFileSize', 'generateRequestId',
@@ -100,7 +100,7 @@ map('@dailyuse/utils/frontend', [
 ]);
 
 // Validation
-map('@dailyuse/utils/validation', [
+map('@memoflow/utils/validation', [
   'FormValidator', 'BuiltinValidators', 'createSimpleValidator',
   'validators', 'defaultConfig', 'version',
   'ValidationRule', 'RequiredRule', 'LengthRule', 'PatternRule', 'NumberRule', 'RangeRule',
@@ -110,7 +110,7 @@ map('@dailyuse/utils/validation', [
 ]);
 
 // Lifecycle (initialization managers)
-map('@dailyuse/utils/lifecycle', [
+map('@memoflow/utils/lifecycle', [
   'InitializationPhase', 'InitializationTask', 'InitializationManager',
   'ModuleLoader', 'ModuleDefinition', 'LoadingProgress', 'ModuleGroup', 'WebInitializationManager',
 ]);
@@ -212,7 +212,7 @@ function buildExportLine(symbols: ImportClause[], subpath: string): string {
 }
 
 function transformFile(source: string): { transformed: string; changed: boolean; stats: { total: number; migrated: number; unmapped: string[] } } {
-  const statements = findImportStatements(source, '@dailyuse/utils');
+  const statements = findImportStatements(source, '@memoflow/utils');
   if (statements.length === 0) {
     return { transformed: source, changed: false, stats: { total: 0, migrated: 0, unmapped: [] } };
   }
@@ -270,9 +270,9 @@ function transformFile(source: string): { transformed: string; changed: boolean;
     // Keep unmapped symbols as original import
     if (unmapped.length > 0) {
       if (isExport) {
-        lines.push(buildExportLine(unmapped, '@dailyuse/utils'));
+        lines.push(buildExportLine(unmapped, '@memoflow/utils'));
       } else {
-        lines.push(buildImportLine(unmapped, '@dailyuse/utils', stmt.isTypeOnly));
+        lines.push(buildImportLine(unmapped, '@memoflow/utils', stmt.isTypeOnly));
       }
     }
 
@@ -298,7 +298,7 @@ function transformFile(source: string): { transformed: string; changed: boolean;
 
 async function main() {
   const files = await glob('**/*.{ts,tsx,vue}', {
-    cwd: 'D:\\home\\projects\\dailyuse',
+    cwd: 'D:\\home\\projects\\memoflow',
     ignore: [
       '**/node_modules/**',
       '**/dist/**',
@@ -335,7 +335,7 @@ async function main() {
       } else {
         fs.writeFileSync(filePath, transformed, 'utf-8');
         modifiedFiles++;
-        console.log(`Modified: ${path.relative('D:\\home\\projects\\dailyuse', filePath)} (${stats.migrated}/${stats.total})`);
+        console.log(`Modified: ${path.relative('D:\\home\\projects\\memoflow', filePath)} (${stats.migrated}/${stats.total})`);
       }
     }
   }

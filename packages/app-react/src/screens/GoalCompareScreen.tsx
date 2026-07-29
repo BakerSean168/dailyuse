@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
-import { GoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
 import { useGoals, type GoalSummary } from '../hooks/useGoals';
 
 import {
@@ -14,7 +14,7 @@ import {
   StatusPill,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 import { formatProductDate, emptyKind } from '../utils/product-time';
 

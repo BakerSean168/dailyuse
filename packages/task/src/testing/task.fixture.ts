@@ -5,10 +5,10 @@
  * Uses the domain's own factory methods to ensure valid objects.
  */
 
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { DayOfWeek, TaskType } from '@dailyuse/contracts/task';
-import { anIdentityId } from '@dailyuse/test-utils/fixtures';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { DayOfWeek, TaskType } from '@memoflow/contracts/task';
+import { anIdentityId } from '@memoflow/test-utils/fixtures';
 import {
   TaskTemplateId,
   TaskInstanceId,
@@ -27,7 +27,7 @@ function titleFor(prefix: string): string {
   return `${prefix} ${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/** Residual 1033: anIdentityId dual retired onto @dailyuse/test-utils/fixtures sole. */
+/** Residual 1033: anIdentityId dual retired onto @memoflow/test-utils/fixtures sole. */
 export { anIdentityId };
 
 export interface OneTimeTaskOverrides {

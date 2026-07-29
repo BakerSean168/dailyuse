@@ -120,7 +120,7 @@
 
 - 相关模块 `typecheck` 通过
 - 相关模块 `test` 通过
-- 文档改动后 `pnpm nx run daily-use:governance-check` 通过
+- 文档改动后 `pnpm nx run memoflow:governance-check` 通过
 
 模块级最小验证：
 

@@ -7,7 +7,7 @@
  * - 由基础设施层实现（Prisma / PowerSync / memory）
  */
 
-import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 
 /**
  * IAIProviderConfigRepository 仓储接口

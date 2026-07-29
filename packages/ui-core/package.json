@@ -1,7 +1,7 @@
 {
-  "name": "@dailyuse/ui-core",
+  "name": "@memoflow/ui-core",
   "version": "0.0.1",
-  "description": "Framework-agnostic headless UI logic for Memoflow applications",
+  "description": "Framework-agnostic headless UI logic for MemoFlow applications",
   "private": false,
   "type": "module",
   "main": "dist/index.js",

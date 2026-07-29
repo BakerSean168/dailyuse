@@ -4,7 +4,7 @@ import {
   type MessageType,
   type MessageOptions,
   type MessageState,
-} from '@dailyuse/ui-core';
+} from '@memoflow/ui-core';
 
 export interface UseMessageReturn {
   /** Current messages */
@@ -27,7 +27,7 @@ export interface UseMessageReturn {
 
 /**
  * Vue composable for message/snackbar management
- * Wraps @dailyuse/ui-core message logic with Vue reactivity
+ * Wraps @memoflow/ui-core message logic with Vue reactivity
  */
 export function useMessage(): UseMessageReturn {
   const messagesRef = ref<MessageState[]>([]);

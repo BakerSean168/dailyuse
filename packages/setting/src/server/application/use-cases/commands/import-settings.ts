@@ -6,7 +6,7 @@
 
 import type { IUserSettingRepository } from '../../../domain/repositories/i-user-setting-repository';
 import { UserSetting } from '../../../domain/aggregates/user-setting';
-import type { UserSettingClientDTO, UserSettingPreferences } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO, UserSettingPreferences } from '@memoflow/contracts/setting';
 
 export class ImportSettings {
   constructor(private readonly userSettingRepository: IUserSettingRepository) {}

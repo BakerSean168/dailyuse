@@ -3,9 +3,9 @@ import {
   PowerSyncAuthIdentityRepository,
   PowerSyncAuthSessionRepository,
   Argon2Hasher,
-} from '@dailyuse/authentication/electron';
-import { PowerSyncAccountRepository } from '@dailyuse/account/electron';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/authentication/electron';
+import { PowerSyncAccountRepository } from '@memoflow/account/electron';
+import { createLogger } from '@memoflow/utils/logger';
 import { AuthDesktopApplicationService } from './auth-desktop-application-service';
 import type { TokenManager, RememberedAccountsService, NetworkStateManager } from '../infrastructure';
 import type { WindowManager } from '../../../lifecycle/window-manager';

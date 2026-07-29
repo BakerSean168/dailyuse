@@ -2,10 +2,10 @@ import { defineComponent, h } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createTestPinia } from '@dailyuse/test-utils';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
-import { SystemChannels } from '@dailyuse/contracts/electron';
-import { fail, ok } from '@dailyuse/contracts/result';
+import { SystemChannels } from '@memoflow/contracts/electron';
+import { fail, ok } from '@memoflow/contracts/result';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import type { IRepositoryService } from '../../../di/types';
 import KnowledgeRepositorySettings from './KnowledgeRepositorySettings.vue';
@@ -22,8 +22,8 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ replace: routerMocks.replace, resolve: routerMocks.resolve }),
 }));
 
-vi.mock('@dailyuse/ui-vue-shadcn', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@dailyuse/ui-vue-shadcn')>()),
+vi.mock('@memoflow/ui-vue-shadcn', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@memoflow/ui-vue-shadcn')>()),
   useConfirm: confirmMock,
 }));
 

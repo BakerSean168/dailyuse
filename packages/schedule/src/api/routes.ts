@@ -23,7 +23,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   CreateScheduleTaskRequestSchema,
   UpdateScheduleTaskRequestSchema,
@@ -32,9 +32,9 @@ import {
   ScheduleTaskResponseSchema,
   ScheduleBatchOperationResponseSchema,
   UpdateTaskMetadataRequestSchema,
-} from '@dailyuse/contracts/schedule';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { ScheduleTaskId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/schedule';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { ScheduleTaskId } from '@memoflow/contracts/primitives';
 import type { ScheduleApplicationPort } from '../server/application';
 import { ScheduleController } from '../server/transport/schedule.controller';
 

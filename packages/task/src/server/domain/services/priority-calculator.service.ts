@@ -14,7 +14,7 @@
  * 其中 W1=0.6, W2=0.4（Story 1.3 定义）
  */
 
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import { PriorityCalculationError } from '../errors/priority-calculation.error';
 
 /**

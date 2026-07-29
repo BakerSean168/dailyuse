@@ -13,10 +13,10 @@ export default defineConfig({
   sourcemap: true,
   external: [
     'electron',
-    '@dailyuse/utils',
-    '@dailyuse/contracts',
-    '@dailyuse/http-client',
-    '@dailyuse/database',
+    '@memoflow/utils',
+    '@memoflow/contracts',
+    '@memoflow/http-client',
+    '@memoflow/database',
     'express',
   ],
 });

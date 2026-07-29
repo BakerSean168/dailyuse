@@ -15,15 +15,15 @@ import { PrismaReminderTemplateMapper } from './prisma-reminder-template-mapper'
 import type {
   ReminderHistory as PrismaReminderHistory,
   ReminderTemplate as PrismaReminderTemplate,
-} from '@dailyuse/database';
+} from '@memoflow/database';
 import {
   NotificationChannel,
   ReminderType,
   ReminderStatus,
   TriggerResult,
   TriggerType,
-} from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/reminder';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 

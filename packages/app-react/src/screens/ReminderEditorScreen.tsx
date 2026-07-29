@@ -9,8 +9,8 @@ import {
   TriggerType,
   type CreateReminderTemplateReq,
   type UpdateReminderTemplateReq,
-} from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/reminder';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 import { useAppSession } from '../hooks/useAppSession';
 import { useReminderService } from '../hooks/useReminderService';
@@ -22,7 +22,7 @@ import {
   SectionCard,
   Spacing,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 const IMPORTANCE_OPTIONS = Object.values(ImportanceLevel);
 const TYPE_OPTIONS = Object.values(ReminderType);

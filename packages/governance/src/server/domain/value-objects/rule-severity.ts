@@ -21,16 +21,16 @@
  * @see {@link RuleStatus} 状态机中对 Mandatory 废弃的约束
  */
 
-import { RuleSeverity as RuleSeverityContract, type RuleSeverity as IRuleSeverity } from '@dailyuse/contracts/governance';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { RuleSeverity as RuleSeverityContract, type RuleSeverity as IRuleSeverity } from '@memoflow/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 /** Branded type —— 编译时防止与普通字符串混用 */
 export type RuleSeverity = IRuleSeverity & { readonly __brand: unique symbol };
 
 /** 全部合法严重级别 */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IRuleSeverity[] = Object.values(RuleSeverityContract);
 
 /**

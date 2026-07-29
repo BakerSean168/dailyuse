@@ -8,8 +8,8 @@
  * Middleware comes from context.middleware, no dependency on apps/api internals.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
-import type { ServerModuleContext } from '@dailyuse/contracts/shared';
+import type { PrismaClient } from '@memoflow/database';
+import type { ServerModuleContext } from '@memoflow/contracts/shared';
 import {
   createAccountPrismaModule,
   type AccountModuleInstance,

@@ -5,13 +5,13 @@
  * Internal storage remains TransferDate ≡ Instant.
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   GoalTimeRange as IGoalTimeRange,
   GoalTimeRangeDTO,
-} from '@dailyuse/contracts/goal';
-import type { Instant } from '@dailyuse/contracts/primitives';
-import { createTimeFacade } from '@dailyuse/time';
+} from '@memoflow/contracts/goal';
+import type { Instant } from '@memoflow/contracts/primitives';
+import { createTimeFacade } from '@memoflow/time';
 
 const time = createTimeFacade();
 

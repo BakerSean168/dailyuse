@@ -1,13 +1,13 @@
-import { toResultErrorException } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@memoflow/contracts/result';
 import type {
   CalendarEntryServerDTO,
   ConflictDetectionResult,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import type { CalendarEntryState } from '../../domain/aggregates/calendar-entry';
 import { CalendarEntry as DomainCalendarEntry } from '../../domain/aggregates/calendar-entry';
 import type { IScheduleRepository } from '../../domain/repositories/i-schedule-repository';
 import { ScheduleId } from '../../domain/value-objects/schedule-id';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 
 export class ScheduleConflictDetectionService {
   constructor(private readonly scheduleRepository: IScheduleRepository) {}

@@ -9,10 +9,10 @@
 
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error, fail } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { TaskTemplateClientDTO } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error, fail } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import {
   createInlineTaskWriteTransactionRunner,
   mapTaskWriteErrorToResultError,

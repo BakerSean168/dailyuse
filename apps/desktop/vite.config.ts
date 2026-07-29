@@ -18,18 +18,18 @@ import {
 } from '../../vite.workspace-aliases';
 
 const desktopRendererDevWorkspaceEntries = [
-  ['@dailyuse/ai/client', 'packages/ai/src/client/index.ts'],
-  ['@dailyuse/ai/electron', 'packages/ai/src/electron/index.ts'],
-  ['@dailyuse/goal/client', 'packages/goal/src/client/index.ts'],
-  ['@dailyuse/goal/electron', 'packages/goal/src/electron/index.ts'],
-  ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
-  ['@dailyuse/task/client', 'packages/task/src/client/index.ts'],
-  ['@dailyuse/schedule/client', 'packages/schedule/src/client/index.ts'],
-  ['@dailyuse/schedule/electron', 'packages/schedule/src/electron/index.ts'],
-  ['@dailyuse/reminder/client', 'packages/reminder/src/client/index.ts'],
-  ['@dailyuse/reminder/electron', 'packages/reminder/src/electron/index.ts'],
-  ['@dailyuse/notification/client', 'packages/notification/src/client/index.ts'],
-  ['@dailyuse/notification/electron', 'packages/notification/src/electron/index.ts'],
+  ['@memoflow/ai/client', 'packages/ai/src/client/index.ts'],
+  ['@memoflow/ai/electron', 'packages/ai/src/electron/index.ts'],
+  ['@memoflow/goal/client', 'packages/goal/src/client/index.ts'],
+  ['@memoflow/goal/electron', 'packages/goal/src/electron/index.ts'],
+  ['@memoflow/ipc-client', 'packages/ipc-client/src/index.ts'],
+  ['@memoflow/task/client', 'packages/task/src/client/index.ts'],
+  ['@memoflow/schedule/client', 'packages/schedule/src/client/index.ts'],
+  ['@memoflow/schedule/electron', 'packages/schedule/src/electron/index.ts'],
+  ['@memoflow/reminder/client', 'packages/reminder/src/client/index.ts'],
+  ['@memoflow/reminder/electron', 'packages/reminder/src/electron/index.ts'],
+  ['@memoflow/notification/client', 'packages/notification/src/client/index.ts'],
+  ['@memoflow/notification/electron', 'packages/notification/src/electron/index.ts'],
 ] as const;
 
 const nativeModules = electronNativeModules;
@@ -47,13 +47,13 @@ function isElectronMainExternal(id: string): boolean {
 
 // Workspace packages to exclude from optimizeDeps
 const workspacePkgs = [
-  '@dailyuse/utils',
-  '@dailyuse/contracts',
-  '@dailyuse/app-vue',
-  '@dailyuse/dashboard',
-  '@dailyuse/ui-vue-shadcn',
-  '@dailyuse/ipc-client',
-  '@dailyuse/assets',
+  '@memoflow/utils',
+  '@memoflow/contracts',
+  '@memoflow/app-vue',
+  '@memoflow/dashboard',
+  '@memoflow/ui-vue-shadcn',
+  '@memoflow/ipc-client',
+  '@memoflow/assets',
 ];
 
 // https://vitejs.dev/config/

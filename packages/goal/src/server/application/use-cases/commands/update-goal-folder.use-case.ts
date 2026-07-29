@@ -6,9 +6,9 @@
  */
 
 import type { IGoalFolderRepository } from '../../../domain';
-import type { UpdateGoalFolderReq, UpdateGoalFolderRes } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { UpdateGoalFolderReq, UpdateGoalFolderRes } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 /**
  * Update Goal Folder Use Case

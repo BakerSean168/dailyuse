@@ -18,7 +18,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   ChangePasswordSchema,
   ForgotPasswordSchema,
@@ -39,10 +39,10 @@ import {
   UnbindOAuthSchema,
   CurrentUserResponseSchema,
   SessionListResponseSchema,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { AuthenticationController } from '../server/transport';
 import type { AuthenticationApplicationPort } from '../server/application';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import { createDefaultAuthChallengeIpRateLimit } from './challenge-ip-rate-limit';
 import { ConsoleEmailSender } from '../server/infrastructure/services/console-email-sender';
 import { isTestEmailCodeEndpointEnabled } from './is-test-email-code-endpoint-enabled';

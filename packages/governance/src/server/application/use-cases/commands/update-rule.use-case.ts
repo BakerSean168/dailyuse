@@ -7,11 +7,11 @@ import type { IRuleRepository } from '../../../domain/repositories/i-rule-reposi
 import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
 import { RuleRevision } from '../../../domain/entities/rule-revision';
 import { ChangeType } from '../../../domain/value-objects/change-type';
-import type { Result } from '@dailyuse/contracts/result';
-import { toResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { resultify } from '@dailyuse/utils/result';
-import type { UpdateRuleReq, UpdateRuleRes } from '@dailyuse/contracts/governance';
-import type { RuleId } from '@dailyuse/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { toResultErrorException, unwrapOrThrowError } from '@memoflow/contracts/result';
+import { resultify } from '@memoflow/utils/result';
+import type { UpdateRuleReq, UpdateRuleRes } from '@memoflow/contracts/governance';
+import type { RuleId } from '@memoflow/contracts/governance';
 import type { ExecutionContext } from '../execution-context';
 
 /**

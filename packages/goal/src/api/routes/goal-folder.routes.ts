@@ -11,16 +11,16 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   CreateGoalFolderSchema,
   UpdateGoalFolderSchema,
   GoalFolderClientDTOSchema,
   ListGoalFolderFiltersSchema,
   QueryGoalFoldersResSchema,
-} from '@dailyuse/contracts/goal';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { GoalFolderId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/goal';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { GoalFolderId } from '@memoflow/contracts/primitives';
 import type { GoalFolderController } from '../../server/transport/goal-folder.controller';
 // Residual 985: sole parseBoolean (local dual retired).
 import { parseBoolean } from './parse-boolean';

@@ -3,10 +3,10 @@
  */
 
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
-import type { TaskEventMap } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
+import type { TaskEventMap } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
 
 const taskEvents = createTypedEventPublisher<Pick<TaskEventMap, 'task:instance-deleted'>>(eventBus);
 

@@ -7,9 +7,9 @@
  * 4. HTML: Network First (确保获取最新版本)
  */
 
-const CACHE_NAME = 'dailyuse-cache-v2';
-const STATIC_CACHE_NAME = 'dailyuse-static-v2';
-const DYNAMIC_CACHE_NAME = 'dailyuse-dynamic-v2';
+const CACHE_NAME = 'memoflow-cache-v2';
+const STATIC_CACHE_NAME = 'memoflow-static-v2';
+const DYNAMIC_CACHE_NAME = 'memoflow-dynamic-v2';
 
 // 需要预缓存的核心资源（应用外壳）
 const PRECACHE_URLS = [

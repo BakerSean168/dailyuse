@@ -1,4 +1,4 @@
-import { AIChannels } from '@dailyuse/contracts/electron';
+import { AIChannels } from '@memoflow/contracts/electron';
 import type {
   AgentEvent,
   AgentRun,
@@ -6,8 +6,8 @@ import type {
   AgentResumePayload,
   AgentRunResult,
   AgentStartRunClientRequest,
-} from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 import type { AIAgentRuntimeApiClient, IResultIpcClient } from '../types';
 
 /** IPC adapter — returns Result, never throws (residual 100). */

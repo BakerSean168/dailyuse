@@ -357,7 +357,7 @@ function buildCommandPlan(options, changedFiles, categories) {
     plan.push({
       label: 'governance-check',
       command: pnpm,
-      args: ['nx', 'run', 'daily-use:governance-check'],
+      args: ['nx', 'run', 'memoflow:governance-check'],
       cwd: options.workspace,
       env,
     });
@@ -606,7 +606,7 @@ function buildRecommendedActions({
 
   for (const issue of blockingIssues) {
     if (issue.includes('governance-check')) {
-      actions.push('Fix governance or documentation issues reported by daily-use:governance-check, then rerun validation.');
+      actions.push('Fix governance or documentation issues reported by memoflow:governance-check, then rerun validation.');
     }
     if (issue.includes('affected-lint')) {
       actions.push('Resolve affected lint failures before considering the branch ready for PR.');

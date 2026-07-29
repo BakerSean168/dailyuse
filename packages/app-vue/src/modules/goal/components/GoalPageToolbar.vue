@@ -155,8 +155,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Input,
-} from '@dailyuse/ui-vue-shadcn';
-import type { FocusModeDTO, GoalFolderClientDTO, GoalSystemView } from '@dailyuse/contracts/goal';
+} from '@memoflow/ui-vue-shadcn';
+import type { FocusModeDTO, GoalFolderClientDTO, GoalSystemView } from '@memoflow/contracts/goal';
 
 const props = defineProps<{
   systemViews: Array<{ id: GoalSystemView; label: string; count: number }>;

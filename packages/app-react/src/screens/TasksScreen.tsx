@@ -2,7 +2,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus } from '@memoflow/contracts/task';
 
 import { TaskTemplateCard } from '../components/TaskTemplateCard';
 import { useAppSession } from '../hooks/useAppSession';
@@ -16,7 +16,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 const FILTERS: Array<{ label: string; value: TaskStatusFilter }> = [
   { label: 'All', value: 'all' },

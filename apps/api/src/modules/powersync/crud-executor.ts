@@ -5,7 +5,7 @@
  * them to Postgres via Prisma inside a transaction.
  */
 
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { normalizeCrudData } from './crud-normalization.js';
 import {
   IDENTITY_ID_TABLES,

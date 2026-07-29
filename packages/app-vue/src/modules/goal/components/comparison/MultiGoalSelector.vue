@@ -106,10 +106,10 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { AlertCircle, Eye, GitCompare, Info, Target, X } from '@lucide/vue';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
+import { Alert, AlertDescription, AlertTitle } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import {
   Card,
   CardContent,
@@ -117,8 +117,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
 
 const props = withDefaults(
   defineProps<{

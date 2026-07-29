@@ -5,11 +5,11 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   RateLimit as IRateLimit,
   RateLimitDTO,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 /**
  * RateLimit 值对象实现

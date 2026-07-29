@@ -14,7 +14,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 export function RemindersScreen() {
   const router = useRouter();

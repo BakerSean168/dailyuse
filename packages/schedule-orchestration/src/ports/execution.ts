@@ -1,7 +1,7 @@
-import type { GoalScheduleExecutionSource } from '@dailyuse/goal/schedule-execution';
-import type { ScheduleNotificationPort, ScheduleNotificationRequest } from '@dailyuse/notification/schedule-execution';
-import type { ReminderScheduleExecutionSource } from '@dailyuse/reminder/schedule-execution';
-import type { TaskScheduleExecutionSource } from '@dailyuse/task/schedule-execution';
+import type { GoalScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
+import type { ScheduleNotificationPort, ScheduleNotificationRequest } from '@memoflow/notification/schedule-execution';
+import type { ReminderScheduleExecutionSource } from '@memoflow/reminder/schedule-execution';
+import type { TaskScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 
 export type { ScheduleNotificationPort, ScheduleNotificationRequest };
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import { PowerSyncDataPortabilityImportStore } from '../powersync-import-store';
 
 interface ExecutedStatement {

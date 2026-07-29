@@ -6,7 +6,7 @@
  * workbench yet; open chat default path remains the existing chat session until residual follow-up.
  */
 import { ref } from 'vue';
-import type { AssistantClientCommand, AssistantEvent } from '@dailyuse/contracts/ai';
+import type { AssistantClientCommand, AssistantEvent } from '@memoflow/contracts/ai';
 import type { AIChatService } from './types';
 
 export interface UseAssistantDispatchOptions {

@@ -19,9 +19,9 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 // Residual 989: sole parseString/parseNumber (local dual retired).
-import { parseNumber, parseString } from '@dailyuse/utils/shared';
+import { parseNumber, parseString } from '@memoflow/utils/shared';
 import {
   CreateReminderTemplateSchema,
   UpdateReminderTemplateSchema,
@@ -37,13 +37,13 @@ import {
   ResponseStatsResultSchema,
   FrequencyAnalysisResultSchema,
   FrequencyAdjustmentResultSchema,
-} from '@dailyuse/contracts/reminder';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { ReminderTemplateId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/reminder';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { ReminderTemplateId } from '@memoflow/contracts/primitives';
 import type { ReminderController } from '../../server/transport/reminder.controller';
 
 // ============ Helpers ============
-// Residual 989: parseString/parseNumber elevated to @dailyuse/utils/shared.
+// Residual 989: parseString/parseNumber elevated to @memoflow/utils/shared.
 
 // ============ Types ============
 

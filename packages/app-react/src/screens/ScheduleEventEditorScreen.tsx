@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import type { ConflictDetectionResult, CreateScheduleRequest, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
+import type { ConflictDetectionResult, CreateScheduleRequest, UpdateScheduleRequest } from '@memoflow/contracts/schedule';
 
 import { useScheduleService } from '../hooks/useScheduleService';
 
@@ -15,7 +15,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 /**
  * Soft residual 1228: app-react schedule toDateInput — null|undefined → ''; UTC ISO YMD.

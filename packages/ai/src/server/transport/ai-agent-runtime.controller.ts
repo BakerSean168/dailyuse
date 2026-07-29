@@ -1,5 +1,5 @@
-import { fail, type Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { fail, type Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   AgentResumePayloadSchema,
   AgentRunListParamsSchema,
@@ -11,8 +11,8 @@ import {
   type AgentResumePayload,
   type AgentRunResult,
   type AgentStartRunRequest,
-} from '@dailyuse/contracts/ai';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/ai';
+import { formatZodErrors } from '@memoflow/utils/result';
 import { z } from 'zod';
 
 interface AIAgentRuntimeControllerService {

@@ -164,7 +164,7 @@ import {
   ScrollArea,
   Separator,
   Progress,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import ReviewProgressChart from '../components/echarts/ReviewProgressChart.vue';
 import { useGoal } from '../composables/useGoal';
 

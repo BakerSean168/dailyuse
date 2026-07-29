@@ -6,7 +6,7 @@ import type {
   AuthTokens,
   ITokenProvider,
 } from '../../domain';
-import { type Result, ok, fail, ResultCode } from '@dailyuse/contracts/result';
+import { type Result, ok, fail, ResultCode } from '@memoflow/contracts/result';
 
 export class JwtTokenProvider implements ITokenProvider {
   constructor(

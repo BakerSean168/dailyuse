@@ -4,17 +4,17 @@
  * Transport-agnostic interface for Notification API operations.
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
- * Types imported from @dailyuse/contracts/notification.
+ * Types imported from @memoflow/contracts/notification.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   BatchOperationResultDTO,
   NotificationClientDTO,
   NotificationPreferenceClientDTO,
   UnreadCountResponse,
   UpdateNotificationPreferenceReq,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 // ============ Local Request/Response Types ============
 

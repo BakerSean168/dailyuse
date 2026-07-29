@@ -1,12 +1,12 @@
 /**
  * Account client seam.
  *
- * Public account contracts stay centralized in `@dailyuse/contracts/account`.
+ * Public account contracts stay centralized in `@memoflow/contracts/account`.
  * Callers depend on this seam instead of the old application-client /
  * infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   createAccountClientService,
   type AccountClientPort,

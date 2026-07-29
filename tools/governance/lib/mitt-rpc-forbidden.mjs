@@ -3,7 +3,7 @@
  *
  * Enforces ADR-033: the same-process message-style RPC (`eventBus.invoke` /
  * `eventBus.handle`) is deprecated. Same-process request/response goes through a
- * Port; cross-process goes through @dailyuse/ipc-client / HTTP. This audit fails
+ * Port; cross-process goes through @memoflow/ipc-client / HTTP. This audit fails
  * if business code reintroduces `eventBus.invoke(` / `eventBus.handle(`.
  *
  * Scoped to the `eventBus.` receiver on purpose: bare `.invoke(` / `.handle(`
@@ -62,5 +62,5 @@ export function findMittRpcViolations(files, options = {}) {
 }
 
 export function formatMittRpcViolation({ file, line, method }) {
-  return `${file}:${line}: eventBus.${method}() is deprecated (ADR-033) — use a Port (same-process) or @dailyuse/ipc-client / HTTP (cross-process)`;
+  return `${file}:${line}: eventBus.${method}() is deprecated (ADR-033) — use a Port (same-process) or @memoflow/ipc-client / HTTP (cross-process)`;
 }

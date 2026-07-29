@@ -68,7 +68,7 @@ import {
   Card,
   CardContent,
   Button,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { LayoutGrid, Loader2, FolderOpen, FileText } from '@lucide/vue';
 import type { TaskTemplateViewModel } from '../types';
 

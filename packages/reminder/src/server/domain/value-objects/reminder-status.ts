@@ -1,4 +1,4 @@
-import { ReminderStatus as ReminderStatusContract, type ReminderStatus as IReminderStatus } from '@dailyuse/contracts/reminder';
+import { ReminderStatus as ReminderStatusContract, type ReminderStatus as IReminderStatus } from '@memoflow/contracts/reminder';
 
 /**
  * 📝 提醒状态 - 提醒的生命周期状态
@@ -13,7 +13,7 @@ export type ReminderStatus = IReminderStatus & { readonly __brand: unique symbol
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IReminderStatus[] = Object.values(ReminderStatusContract);
 
 /**

@@ -18,8 +18,8 @@ import { RuleRevision } from '../../../../domain/entities/rule-revision';
 import { RuleId } from '../../../../domain/value-objects/rule-id';
 import { RuleRevisionId } from '../../../../domain/value-objects/rule-revision-id';
 import type { ChangeType } from '../../../../domain/value-objects/change-type';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { toDate, parseStringArray, parseRecord } from '@dailyuse/utils/shared';
+import type { IdentityId } from '@memoflow/contracts/primitives';
+import { toDate, parseStringArray, parseRecord } from '@memoflow/utils/shared';
 
 /**
  * Represents a row in the PowerSync `rule_revisions` table.

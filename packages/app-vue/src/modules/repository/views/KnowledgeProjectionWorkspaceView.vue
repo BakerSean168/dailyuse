@@ -418,13 +418,13 @@ import {
   Input,
   Label,
   Textarea,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   CreateConfirmedKnowledgeNoteSchema,
   type CreateConfirmedKnowledgeNoteReq,
   type KnowledgeNoteProjectionClientDTO,
   type KnowledgeRepositoryConnectionClientDTO,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import { renderSafeMarkdown } from '../../../shared/utils/safe-markdown';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';

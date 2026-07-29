@@ -1,9 +1,9 @@
-import { AccountStatus as AccountStatusContract, type AccountStatus as IAccountStatus } from '@dailyuse/contracts/account';
+import { AccountStatus as AccountStatusContract, type AccountStatus as IAccountStatus } from '@memoflow/contracts/account';
 
 export type AccountStatus = IAccountStatus & { readonly __brand: unique symbol };
 
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IAccountStatus[] = Object.values(AccountStatusContract);
 
 export const AccountStatus = {

@@ -129,7 +129,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { KeyResultClientDTO } from '@memoflow/contracts/goal';
 import {
   Dialog,
   DialogScrollContent,
@@ -147,7 +147,7 @@ import {
   Alert,
   AlertDescription,
   Separator,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Bot, Check, Circle, Lightbulb, List } from '@lucide/vue';
 import {
   weightRecommendationService,

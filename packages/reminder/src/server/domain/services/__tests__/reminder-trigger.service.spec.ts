@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { TriggerResult, ReminderType } from '@dailyuse/contracts/reminder';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { TriggerResult, ReminderType } from '@memoflow/contracts/reminder';
+import { IdentityId } from '@memoflow/domain-shared';
 import { ReminderTemplate } from '../../aggregates/reminder-template';
 import { ReminderTriggerService } from '../reminder-trigger-service';
 

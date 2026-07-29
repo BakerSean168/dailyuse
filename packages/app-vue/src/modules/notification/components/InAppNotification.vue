@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import { X } from '@lucide/vue';
 import type { NotificationItem } from './types';
 

@@ -47,17 +47,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Alert, AlertTitle, AlertDescription } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import { AlertCircle, X } from '@lucide/vue';
-import { splitDurationMs } from '@dailyuse/time';
+import { splitDurationMs } from '@memoflow/time';
 import { useI18n } from 'vue-i18n';
 import { formatProductHm } from '../../../shared/utils/product-time';
 import {
   ConflictSuggestionType,
   type ConflictDetectionResult,
   type ConflictSuggestion,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 interface Props {
   conflictResult: ConflictDetectionResult | null;

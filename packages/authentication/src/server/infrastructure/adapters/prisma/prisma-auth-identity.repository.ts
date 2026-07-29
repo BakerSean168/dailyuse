@@ -7,12 +7,12 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient, Prisma } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@memoflow/database';
 import type { IAuthIdentityRepository } from '../../../domain';
 import { AuthIdentity } from '../../../domain';
 import type { OAuthProvider } from '../../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { createLogger } from '@memoflow/utils/logger';
+import { AggregateRepositoryBase, type IEventBus } from '@memoflow/patterns';
 import { PrismaAuthIdentityMapper } from './mappers';
 import type { PrismaAuthIdentityWithRelations } from '../../types';
 

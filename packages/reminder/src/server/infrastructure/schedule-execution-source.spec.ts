@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SourceModule } from '@dailyuse/contracts/schedule';
+import { SourceModule } from '@memoflow/contracts/schedule';
 import {
   NotificationCategory,
   NotificationChannelType,
   NotificationType,
   RelatedEntityType,
-} from '@dailyuse/contracts/notification';
-import { ScheduleTask } from '@dailyuse/schedule';
+} from '@memoflow/contracts/notification';
+import { ScheduleTask } from '@memoflow/schedule';
 import { createReminderScheduleExecutionSource } from './schedule-execution-source';
 
 function createScheduleTask() {

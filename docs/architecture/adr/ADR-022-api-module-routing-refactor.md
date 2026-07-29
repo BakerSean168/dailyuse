@@ -10,7 +10,7 @@
 ## 背景
 
 ## Implementation note (Residual 619 / 2026-07-22)
-Historical route samples used the removed `@dailyuse/contracts/response` package. Use `@dailyuse/contracts/result` `createHttpResponseBuilder` / `Result` + `expressAdapter` / `RouteRegistrar` instead.
+Historical route samples used the removed `@memoflow/contracts/response` package. Use `@memoflow/contracts/result` `createHttpResponseBuilder` / `Result` + `expressAdapter` / `RouteRegistrar` instead.
 
 
 在 API 项目的早期阶段，我们采用了**单文件路由**的架构模式：每个模块的所有路由都放在一个单一的文件中。
@@ -96,9 +96,9 @@ modules/
 import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { SomeApplicationService } from '@dailyuse/application-server';
-import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
+import { SomeApplicationService } from '@memoflow/application-server';
+import { createHttpResponseBuilder } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils';
 
 const logger = createLogger('[Module][Feature]Routes');
 const responseBuilder = createHttpResponseBuilder();
@@ -208,7 +208,7 @@ api.use('/goals', authMiddleware, registerGoalRoutes());
 | 问题              | 影响                   | 应对方案                       |
 | ----------------- | ---------------------- | ------------------------------ |
 | 文件数量增加      | 项目结构复杂化         | 使用清晰的命名规范和文件夹结构 |
-| 导入路径变长      | IDE 自动补全可能不够准 | 使用 path aliases (@dailyuse/) |
+| 导入路径变长      | IDE 自动补全可能不够准 | 使用 path aliases (@memoflow/) |
 | 重复的 middleware | 代码有轻微重复         | 接受必要的重复（为了清晰）     |
 | 学习成本          | 新模式需要学习         | 提供完整文档和示例             |
 

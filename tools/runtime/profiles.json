@@ -1,7 +1,7 @@
 {
   "$schema": "./profiles.schema.json",
   "version": 1,
-  "description": "Single source of truth for Memoflow local runtime host ports and lane rules. Compose defaults, preflight, Playwright, and docs must not invent conflicting host ports.",
+  "description": "Single source of truth for MemoFlow local runtime host ports and lane rules. Compose defaults, preflight, Playwright, and docs must not invent conflicting host ports.",
   "reservedHostPorts": {
     "3000": ["host-dev", "e2e"],
     "5173": ["host-dev", "e2e"],

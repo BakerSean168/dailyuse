@@ -32,7 +32,7 @@ status: archived
 - 新建根 `AGENT.md` 作为唯一维护中的 AI 协作规范入口。
 - `AGENTS.md`、`CLAUDE.md` 改为极薄 shim，只做指向 `AGENT.md`。
 - `.github/copilot-instructions.md` 保留为平台入口，但只引用 `AGENT.md` 和少量 GitHub/Copilot 专属补充。
-- `.github/prompts/dailyuse.*` 改成轻量入口，引用 canonical docs，不再重复仓库规范。
+- `.github/prompts/memoflow.*` 改成轻量入口，引用 canonical docs，不再重复仓库规范。
 - 旧 GitFlow 文档退役，不再作为正式流程来源。
 
 ### 2. 统一计划目录与计划生命周期
@@ -51,7 +51,7 @@ status: archived
 
 ### 4. 把治理变成可执行检查
 
-- 升级 `tools/docs/check-docs-config.mjs`，新增 agent 入口、计划目录、dailyuse prompt、deprecated gitflow 文档、project tags 和局部 eslint 配置检查。
+- 升级 `tools/docs/check-docs-config.mjs`，新增 agent 入口、计划目录、memoflow prompt、deprecated gitflow 文档、project tags 和局部 eslint 配置检查。
 - 在根 `project.json` 增加 `governance-check` target，并保留 `docs-check` 兼容入口。
 - 在根 `package.json` 增加 `governance:check` 脚本。
 
@@ -59,12 +59,12 @@ status: archived
 
 - canonical 协作入口：`AGENT.md`
 - canonical 计划目录：`docs/plan/active`、`docs/plan/archive`
-- 治理检查入口：`pnpm nx run daily-use:governance-check`
+- 治理检查入口：`pnpm nx run memoflow:governance-check`
 - `AGENTS.md`、`CLAUDE.md`、`.github/copilot-instructions.md` 不再承载独立仓库规范
 
 ## Test Plan
 
-- 运行 `pnpm nx run daily-use:governance-check`
+- 运行 `pnpm nx run memoflow:governance-check`
 - 运行 `pnpm nx run-many -t lint,typecheck --all`
 - 人工核对 `README.md`、`docs/governance/README.md`、`AGENT.md`、`.github/copilot-instructions.md` 的入口一致性
 

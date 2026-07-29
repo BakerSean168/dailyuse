@@ -6,7 +6,7 @@
  */
 
 import { Router, type RequestHandler } from 'express';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import type { TaskTemplateController } from '../../server/transport/task-template.controller';
 import type { TaskInstanceController } from '../../server/transport/task-instance.controller';
 import type { TaskDependencyController } from '../../server/transport/task-dependency.controller';

@@ -5,11 +5,11 @@
  * Handles timestamp/Date conversions and JSON serialization.
  */
 
-import type { Schedule as PrismaSchedule } from '@dailyuse/database';
+import type { Schedule as PrismaSchedule } from '@memoflow/database';
 import { CalendarEntry } from '../../../../domain/aggregates/calendar-entry';
 import type { CalendarEntryState } from '../../../../domain/aggregates/calendar-entry';
 import { ScheduleId } from '../../../../domain/value-objects/schedule-id';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 
 export class PrismaScheduleMapper {
   /** Converts a Prisma Schedule to a Domain CalendarEntry aggregate. */

@@ -282,7 +282,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
@@ -300,7 +300,7 @@ import {
   Badge,
   Button,
   Separator,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   Pencil,
   Trash2,

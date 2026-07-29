@@ -1,11 +1,11 @@
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
 import {
   createGoalScheduleProjectionEventHandlers,
   type GoalScheduleProjectionEventMap,
   type GoalScheduleProjectionSource,
-} from '@dailyuse/goal/schedule-projection';
-import type { IScheduleTaskRepository } from '@dailyuse/schedule';
-import type { Publisher, Subscriber } from '@dailyuse/utils/domain';
+} from '@memoflow/goal/schedule-projection';
+import type { IScheduleTaskRepository } from '@memoflow/schedule';
+import type { Publisher, Subscriber } from '@memoflow/utils/domain';
 import type { RuntimeContribution } from '../ports/runtime-contribution';
 import { createGoalProjector } from '../projectors/goal-projector';
 

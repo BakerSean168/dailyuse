@@ -5,12 +5,12 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   ITaskMetadata,
   TaskMetadataDTO,
   TaskPriority,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 /**
  * TaskMetadata 值对象实现（Schedule模块专用）

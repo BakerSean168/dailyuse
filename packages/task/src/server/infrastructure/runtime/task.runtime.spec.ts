@@ -8,7 +8,7 @@ const { loggerInfo, taskEventBus } = vi.hoisted(() => ({
   loggerInfo: vi.fn(),
 }));
 
-vi.mock('@dailyuse/utils/domain', () => ({
+vi.mock('@memoflow/utils/domain', () => ({
   eventBus: taskEventBus,
   createTypedEventSubscriber: (source: typeof taskEventBus) => ({
     on: source.on,
@@ -16,7 +16,7 @@ vi.mock('@dailyuse/utils/domain', () => ({
   }),
 }));
 
-vi.mock('@dailyuse/utils/logger', () => ({
+vi.mock('@memoflow/utils/logger', () => ({
   createLogger: () => ({
     info: loggerInfo,
   }),

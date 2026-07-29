@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { WindowChannels } from '@dailyuse/contracts/electron';
+import { WindowChannels } from '@memoflow/contracts/electron';
 
 /**
  * Window manager IPC surface (stage-6 residual):
@@ -18,7 +18,7 @@ describe('window-manager IPC channel surface', () => {
   });
 
   it('returns contracts Result ok/fail envelopes instead of { success } dual-track', () => {
-    expect(source).toContain("import { fail, ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain("import { fail, ok } from '@memoflow/contracts/result'");
     expect(source).toContain('return ok(');
     expect(source).toContain('return fail({');
     // Restrict to registerIpcHandlers body: no success: true/false returns

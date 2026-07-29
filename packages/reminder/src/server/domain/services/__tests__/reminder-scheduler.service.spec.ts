@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { TriggerResult } from '@dailyuse/contracts/reminder';
+import { TriggerResult } from '@memoflow/contracts/reminder';
 import { ReminderSchedulerService } from '../reminder-scheduler-service';
 
 function createStubTemplate(id: string, title: string, nextTriggerAt: number | null) {

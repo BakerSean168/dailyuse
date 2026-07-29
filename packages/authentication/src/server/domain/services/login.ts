@@ -1,4 +1,4 @@
-import type { LoginByEmailReq } from '@dailyuse/contracts/authentication';
+import type { LoginByEmailReq } from '@memoflow/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
 import type { IPasswordHasher } from '..';

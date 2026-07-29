@@ -31,11 +31,11 @@ import type {
   AgentRunResult,
   AssistantEvent,
   AssistantProposalPatch,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import {
   AGENT_RUN_HOST_PROPOSAL_REVISION,
   buildAgentRunHostProposalRef,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { AIChatService } from './types';
 
 export type HostProposalLifecycleService = Pick<AIChatService, 'dispatchAssistant'>;

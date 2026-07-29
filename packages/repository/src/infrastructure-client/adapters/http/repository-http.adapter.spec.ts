@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import { ok } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import { RepositoryHttpAdapter } from './repository-http.adapter';
 
 function createResultHttpClientStub() {

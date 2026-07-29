@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { RepositoryChannels } from '@dailyuse/contracts/electron';
+import { RepositoryChannels } from '@memoflow/contracts/electron';
 
 /**
  * Repository IPC adapter surface (stage-6 residual):
@@ -11,7 +11,7 @@ describe('RepositoryIpcAdapter channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'repository-ipc.adapter.ts'), 'utf8');
 
   it('invokes RepositoryChannels and does not hardcode repository: channel strings', () => {
-    expect(source).toContain("import { RepositoryChannels } from '@dailyuse/contracts/electron'");
+    expect(source).toContain("import { RepositoryChannels } from '@memoflow/contracts/electron'");
     expect(source).not.toContain("private readonly channel = 'repository'");
     expect(source).not.toMatch(/\$\{this\.channel\}/);
     expect(source).toContain('RepositoryChannels.KNOWLEDGE_CONNECTION_LIST');

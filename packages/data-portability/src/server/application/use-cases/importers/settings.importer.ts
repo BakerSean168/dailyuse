@@ -2,9 +2,9 @@
  * Settings module importer — handles singletons: settings, notification preference, reminder preference.
  */
 
-import { newId } from '@dailyuse/utils';
+import { newId } from '@memoflow/utils';
 import type { ImportContext } from '../../portable-runtime';
-import type { PortableSettings, PortableNotificationPreference, PortableUserReminderPreference } from '@dailyuse/contracts/data-portability';
+import type { PortableSettings, PortableNotificationPreference, PortableUserReminderPreference } from '@memoflow/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { jsonStringify, incSingleton } from './import-helpers';
 

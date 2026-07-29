@@ -1,5 +1,5 @@
 /**
- * @dailyuse/ui-vue-shadcn
+ * @memoflow/ui-vue-shadcn
  *
  * Vue 3 UI 组件库（合并 ui-vue）
  *
@@ -9,7 +9,7 @@
  * 3. `composables/*` - Vue Composables（封装 ui-core 逻辑）
  *
  * 使用方式：
- *   import { Button, useFormValidation } from '@dailyuse/ui-vue-shadcn'
+ *   import { Button, useFormValidation } from '@memoflow/ui-vue-shadcn'
  *
  * 添加新组件：
  *   pnpm dlx shadcn-vue@latest add button
@@ -35,7 +35,7 @@ export type {
   ColorPickerState,
   ColorPickerStore,
   UseColorPickerOptions,
-} from '@dailyuse/ui-core';
+} from '@memoflow/ui-core';
 
 export {
   VALIDATION_RULES,
@@ -44,7 +44,7 @@ export {
   isLightColor,
   hexToRgb,
   rgbToHex,
-} from '@dailyuse/ui-core';
+} from '@memoflow/ui-core';
 
 // ==========================================
 // 2. Vue Composables
@@ -159,4 +159,4 @@ export * from './components/custom/linear';
 
 // NOTE: All business components (account, authentication, task, schedule,
 // reminder, repository, notification, governance, setting, application)
-// have been migrated to @dailyuse/app-vue.
+// have been migrated to @memoflow/app-vue.

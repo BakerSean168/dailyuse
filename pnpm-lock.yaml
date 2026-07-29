@@ -29,13 +29,13 @@ importers:
       '@asteasolutions/zod-to-openapi':
         specifier: ^8.5.0
         version: 8.5.0(zod@4.4.3)
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:packages/contracts
-      '@dailyuse/time':
+      '@memoflow/time':
         specifier: workspace:*
         version: link:packages/time
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:packages/utils
       '@prisma/client':
@@ -306,67 +306,67 @@ importers:
       '@asteasolutions/zod-to-openapi':
         specifier: ^8.5.0
         version: 8.5.0(zod@4.4.3)
-      '@dailyuse/account':
+      '@memoflow/account':
         specifier: workspace:*
         version: link:../../packages/account
-      '@dailyuse/ai':
+      '@memoflow/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@dailyuse/authentication':
+      '@memoflow/authentication':
         specifier: workspace:*
         version: link:../../packages/authentication
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@dailyuse/dashboard':
+      '@memoflow/dashboard':
         specifier: workspace:*
         version: link:../../packages/dashboard
-      '@dailyuse/data-portability':
+      '@memoflow/data-portability':
         specifier: workspace:*
         version: link:../../packages/data-portability
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../../packages/database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../../packages/domain-shared
-      '@dailyuse/goal':
+      '@memoflow/goal':
         specifier: workspace:*
         version: link:../../packages/goal
-      '@dailyuse/governance':
+      '@memoflow/governance':
         specifier: workspace:*
         version: link:../../packages/governance
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../../packages/http-client
-      '@dailyuse/notification':
+      '@memoflow/notification':
         specifier: workspace:*
         version: link:../../packages/notification
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../../packages/patterns
-      '@dailyuse/powersync-schema':
+      '@memoflow/powersync-schema':
         specifier: workspace:*
         version: link:../../packages/powersync-schema
-      '@dailyuse/reminder':
+      '@memoflow/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
-      '@dailyuse/repository':
+      '@memoflow/repository':
         specifier: workspace:*
         version: link:../../packages/repository
-      '@dailyuse/schedule':
+      '@memoflow/schedule':
         specifier: workspace:*
         version: link:../../packages/schedule
-      '@dailyuse/schedule-orchestration':
+      '@memoflow/schedule-orchestration':
         specifier: workspace:*
         version: link:../../packages/schedule-orchestration
-      '@dailyuse/setting':
+      '@memoflow/setting':
         specifier: workspace:*
         version: link:../../packages/setting
-      '@dailyuse/task':
+      '@memoflow/task':
         specifier: workspace:*
         version: link:../../packages/task
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../../packages/utils
       '@powersync/node':
@@ -475,73 +475,73 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@dailyuse/account':
+      '@memoflow/account':
         specifier: workspace:*
         version: link:../../packages/account
-      '@dailyuse/ai':
+      '@memoflow/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@dailyuse/app-vue':
+      '@memoflow/app-vue':
         specifier: workspace:*
         version: link:../../packages/app-vue
-      '@dailyuse/assets':
+      '@memoflow/assets':
         specifier: workspace:*
         version: link:../../packages/assets
-      '@dailyuse/authentication':
+      '@memoflow/authentication':
         specifier: workspace:*
         version: link:../../packages/authentication
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@dailyuse/dashboard':
+      '@memoflow/dashboard':
         specifier: workspace:*
         version: link:../../packages/dashboard
-      '@dailyuse/data-portability':
+      '@memoflow/data-portability':
         specifier: workspace:*
         version: link:../../packages/data-portability
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../../packages/database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../../packages/domain-shared
-      '@dailyuse/goal':
+      '@memoflow/goal':
         specifier: workspace:*
         version: link:../../packages/goal
-      '@dailyuse/governance':
+      '@memoflow/governance':
         specifier: workspace:*
         version: link:../../packages/governance
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../../packages/ipc-client
-      '@dailyuse/notification':
+      '@memoflow/notification':
         specifier: workspace:*
         version: link:../../packages/notification
-      '@dailyuse/powersync-schema':
+      '@memoflow/powersync-schema':
         specifier: workspace:*
         version: link:../../packages/powersync-schema
-      '@dailyuse/reminder':
+      '@memoflow/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
-      '@dailyuse/repository':
+      '@memoflow/repository':
         specifier: workspace:*
         version: link:../../packages/repository
-      '@dailyuse/schedule':
+      '@memoflow/schedule':
         specifier: workspace:*
         version: link:../../packages/schedule
-      '@dailyuse/schedule-orchestration':
+      '@memoflow/schedule-orchestration':
         specifier: workspace:*
         version: link:../../packages/schedule-orchestration
-      '@dailyuse/setting':
+      '@memoflow/setting':
         specifier: workspace:*
         version: link:../../packages/setting
-      '@dailyuse/task':
+      '@memoflow/task':
         specifier: workspace:*
         version: link:../../packages/task
-      '@dailyuse/ui-vue-shadcn':
+      '@memoflow/ui-vue-shadcn':
         specifier: workspace:*
         version: link:../../packages/ui-vue-shadcn
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../../packages/utils
       '@powersync/common':
@@ -767,10 +767,10 @@ importers:
 
   apps/mobile:
     dependencies:
-      '@dailyuse/app-react':
+      '@memoflow/app-react':
         specifier: workspace:*
         version: link:../../packages/app-react
-      '@dailyuse/ui-react-native':
+      '@memoflow/ui-react-native':
         specifier: workspace:*
         version: link:../../packages/ui-react-native
       '@react-native-async-storage/async-storage':
@@ -873,72 +873,72 @@ importers:
 
   apps/web:
     dependencies:
-      '@dailyuse/account':
-        specifier: workspace:*
-        version: link:../../packages/account
-      '@dailyuse/ai':
-        specifier: workspace:*
-        version: link:../../packages/ai
-      '@dailyuse/app-vue':
-        specifier: workspace:*
-        version: link:../../packages/app-vue
-      '@dailyuse/assets':
-        specifier: workspace:*
-        version: link:../../packages/assets
-      '@dailyuse/authentication':
-        specifier: workspace:*
-        version: link:../../packages/authentication
-      '@dailyuse/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@dailyuse/data-portability':
-        specifier: workspace:*
-        version: link:../../packages/data-portability
-      '@dailyuse/database':
-        specifier: workspace:*
-        version: link:../../packages/database
-      '@dailyuse/goal':
-        specifier: workspace:*
-        version: link:../../packages/goal
-      '@dailyuse/governance':
-        specifier: workspace:*
-        version: link:../../packages/governance
-      '@dailyuse/http-client':
-        specifier: workspace:*
-        version: link:../../packages/http-client
-      '@dailyuse/notification':
-        specifier: workspace:*
-        version: link:../../packages/notification
-      '@dailyuse/reminder':
-        specifier: workspace:*
-        version: link:../../packages/reminder
-      '@dailyuse/repository':
-        specifier: workspace:*
-        version: link:../../packages/repository
-      '@dailyuse/schedule':
-        specifier: workspace:*
-        version: link:../../packages/schedule
-      '@dailyuse/setting':
-        specifier: workspace:*
-        version: link:../../packages/setting
-      '@dailyuse/task':
-        specifier: workspace:*
-        version: link:../../packages/task
-      '@dailyuse/test-utils':
-        specifier: workspace:*
-        version: link:../../packages/test-utils
-      '@dailyuse/ui-core':
-        specifier: workspace:*
-        version: link:../../packages/ui-core
-      '@dailyuse/ui-vue-shadcn':
-        specifier: workspace:*
-        version: link:../../packages/ui-vue-shadcn
-      '@dailyuse/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
       '@lucide/vue':
         specifier: ^1.24.0
         version: 1.24.0(vue@3.5.39(typescript@6.0.3))
+      '@memoflow/account':
+        specifier: workspace:*
+        version: link:../../packages/account
+      '@memoflow/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@memoflow/app-vue':
+        specifier: workspace:*
+        version: link:../../packages/app-vue
+      '@memoflow/assets':
+        specifier: workspace:*
+        version: link:../../packages/assets
+      '@memoflow/authentication':
+        specifier: workspace:*
+        version: link:../../packages/authentication
+      '@memoflow/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@memoflow/data-portability':
+        specifier: workspace:*
+        version: link:../../packages/data-portability
+      '@memoflow/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@memoflow/goal':
+        specifier: workspace:*
+        version: link:../../packages/goal
+      '@memoflow/governance':
+        specifier: workspace:*
+        version: link:../../packages/governance
+      '@memoflow/http-client':
+        specifier: workspace:*
+        version: link:../../packages/http-client
+      '@memoflow/notification':
+        specifier: workspace:*
+        version: link:../../packages/notification
+      '@memoflow/reminder':
+        specifier: workspace:*
+        version: link:../../packages/reminder
+      '@memoflow/repository':
+        specifier: workspace:*
+        version: link:../../packages/repository
+      '@memoflow/schedule':
+        specifier: workspace:*
+        version: link:../../packages/schedule
+      '@memoflow/setting':
+        specifier: workspace:*
+        version: link:../../packages/setting
+      '@memoflow/task':
+        specifier: workspace:*
+        version: link:../../packages/task
+      '@memoflow/test-utils':
+        specifier: workspace:*
+        version: link:../../packages/test-utils
+      '@memoflow/ui-core':
+        specifier: workspace:*
+        version: link:../../packages/ui-core
+      '@memoflow/ui-vue-shadcn':
+        specifier: workspace:*
+        version: link:../../packages/ui-vue-shadcn
+      '@memoflow/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@vueuse/core':
         specifier: 14.3.0
         version: 14.3.0(vue@3.5.39(typescript@6.0.3))
@@ -985,28 +985,28 @@ importers:
 
   packages/account:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/time':
+      '@memoflow/time':
         specifier: workspace:*
         version: link:../time
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1025,28 +1025,28 @@ importers:
 
   packages/ai:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/repository':
+      '@memoflow/repository':
         specifier: workspace:*
         version: link:../repository
-      '@dailyuse/setting':
+      '@memoflow/setting':
         specifier: workspace:*
         version: link:../setting
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1062,46 +1062,46 @@ importers:
 
   packages/app-react:
     dependencies:
-      '@dailyuse/account':
+      '@memoflow/account':
         specifier: workspace:*
         version: link:../account
-      '@dailyuse/ai':
+      '@memoflow/ai':
         specifier: workspace:*
         version: link:../ai
-      '@dailyuse/authentication':
+      '@memoflow/authentication':
         specifier: workspace:*
         version: link:../authentication
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/goal':
+      '@memoflow/goal':
         specifier: workspace:*
         version: link:../goal
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/notification':
+      '@memoflow/notification':
         specifier: workspace:*
         version: link:../notification
-      '@dailyuse/reminder':
+      '@memoflow/reminder':
         specifier: workspace:*
         version: link:../reminder
-      '@dailyuse/repository':
+      '@memoflow/repository':
         specifier: workspace:*
         version: link:../repository
-      '@dailyuse/schedule':
+      '@memoflow/schedule':
         specifier: workspace:*
         version: link:../schedule
-      '@dailyuse/setting':
+      '@memoflow/setting':
         specifier: workspace:*
         version: link:../setting
-      '@dailyuse/task':
+      '@memoflow/task':
         specifier: workspace:*
         version: link:../task
-      '@dailyuse/time':
+      '@memoflow/time':
         specifier: workspace:*
         version: link:../time
-      '@dailyuse/ui-react-native':
+      '@memoflow/ui-react-native':
         specifier: workspace:*
         version: link:../ui-react-native
       '@react-native-async-storage/async-storage':
@@ -1162,63 +1162,6 @@ importers:
       '@codemirror/view':
         specifier: 6.39.14
         version: 6.39.14
-      '@dailyuse/account':
-        specifier: workspace:*
-        version: link:../account
-      '@dailyuse/ai':
-        specifier: workspace:*
-        version: link:../ai
-      '@dailyuse/assets':
-        specifier: workspace:*
-        version: link:../assets
-      '@dailyuse/authentication':
-        specifier: workspace:*
-        version: link:../authentication
-      '@dailyuse/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@dailyuse/data-portability':
-        specifier: workspace:*
-        version: link:../data-portability
-      '@dailyuse/goal':
-        specifier: workspace:*
-        version: link:../goal
-      '@dailyuse/governance':
-        specifier: workspace:*
-        version: link:../governance
-      '@dailyuse/http-client':
-        specifier: workspace:*
-        version: link:../http-client
-      '@dailyuse/ipc-client':
-        specifier: workspace:*
-        version: link:../ipc-client
-      '@dailyuse/notification':
-        specifier: workspace:*
-        version: link:../notification
-      '@dailyuse/reminder':
-        specifier: workspace:*
-        version: link:../reminder
-      '@dailyuse/repository':
-        specifier: workspace:*
-        version: link:../repository
-      '@dailyuse/schedule':
-        specifier: workspace:*
-        version: link:../schedule
-      '@dailyuse/setting':
-        specifier: workspace:*
-        version: link:../setting
-      '@dailyuse/task':
-        specifier: workspace:*
-        version: link:../task
-      '@dailyuse/time':
-        specifier: workspace:*
-        version: link:../time
-      '@dailyuse/ui-vue-shadcn':
-        specifier: workspace:*
-        version: link:../ui-vue-shadcn
-      '@dailyuse/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@internationalized/date':
         specifier: ^3.11.0
         version: 3.11.0
@@ -1228,6 +1171,63 @@ importers:
       '@lucide/vue':
         specifier: ^1.24.0
         version: 1.24.0(vue@3.5.39(typescript@6.0.3))
+      '@memoflow/account':
+        specifier: workspace:*
+        version: link:../account
+      '@memoflow/ai':
+        specifier: workspace:*
+        version: link:../ai
+      '@memoflow/assets':
+        specifier: workspace:*
+        version: link:../assets
+      '@memoflow/authentication':
+        specifier: workspace:*
+        version: link:../authentication
+      '@memoflow/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@memoflow/data-portability':
+        specifier: workspace:*
+        version: link:../data-portability
+      '@memoflow/goal':
+        specifier: workspace:*
+        version: link:../goal
+      '@memoflow/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@memoflow/http-client':
+        specifier: workspace:*
+        version: link:../http-client
+      '@memoflow/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
+      '@memoflow/notification':
+        specifier: workspace:*
+        version: link:../notification
+      '@memoflow/reminder':
+        specifier: workspace:*
+        version: link:../reminder
+      '@memoflow/repository':
+        specifier: workspace:*
+        version: link:../repository
+      '@memoflow/schedule':
+        specifier: workspace:*
+        version: link:../schedule
+      '@memoflow/setting':
+        specifier: workspace:*
+        version: link:../setting
+      '@memoflow/task':
+        specifier: workspace:*
+        version: link:../task
+      '@memoflow/time':
+        specifier: workspace:*
+        version: link:../time
+      '@memoflow/ui-vue-shadcn':
+        specifier: workspace:*
+        version: link:../ui-vue-shadcn
+      '@memoflow/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@vueuse/core':
         specifier: 14.3.0
         version: 14.3.0(vue@3.5.39(typescript@6.0.3))
@@ -1304,25 +1304,25 @@ importers:
 
   packages/authentication:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       argon2:
@@ -1396,7 +1396,7 @@ importers:
 
   packages/dashboard:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
     devDependencies:
@@ -1409,46 +1409,46 @@ importers:
 
   packages/data-portability:
     dependencies:
-      '@dailyuse/ai':
+      '@memoflow/ai':
         specifier: workspace:*
         version: link:../ai
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/goal':
+      '@memoflow/goal':
         specifier: workspace:*
         version: link:../goal
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/notification':
+      '@memoflow/notification':
         specifier: workspace:*
         version: link:../notification
-      '@dailyuse/reminder':
+      '@memoflow/reminder':
         specifier: workspace:*
         version: link:../reminder
-      '@dailyuse/repository':
+      '@memoflow/repository':
         specifier: workspace:*
         version: link:../repository
-      '@dailyuse/schedule':
+      '@memoflow/schedule':
         specifier: workspace:*
         version: link:../schedule
-      '@dailyuse/setting':
+      '@memoflow/setting':
         specifier: workspace:*
         version: link:../setting
-      '@dailyuse/task':
+      '@memoflow/task':
         specifier: workspace:*
         version: link:../task
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1464,7 +1464,7 @@ importers:
 
   packages/database:
     dependencies:
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       '@prisma/adapter-pg':
@@ -1498,10 +1498,10 @@ importers:
 
   packages/domain-shared:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
     devDependencies:
@@ -1517,31 +1517,31 @@ importers:
 
   packages/goal:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/schedule':
+      '@memoflow/schedule':
         specifier: workspace:*
         version: link:../schedule
-      '@dailyuse/time':
+      '@memoflow/time':
         specifier: workspace:*
         version: link:../time
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1551,7 +1551,7 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@dailyuse/test-utils':
+      '@memoflow/test-utils':
         specifier: workspace:*
         version: link:../test-utils
       '@types/express':
@@ -1560,22 +1560,22 @@ importers:
 
   packages/governance:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1591,7 +1591,7 @@ importers:
 
   packages/http-client:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
       axios:
@@ -1607,7 +1607,7 @@ importers:
 
   packages/ipc-client:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
     devDependencies:
@@ -1620,25 +1620,25 @@ importers:
 
   packages/notification:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1654,10 +1654,10 @@ importers:
 
   packages/patterns:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
     devDependencies:
@@ -1689,28 +1689,28 @@ importers:
 
   packages/reminder:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/schedule':
+      '@memoflow/schedule':
         specifier: workspace:*
         version: link:../schedule
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1720,7 +1720,7 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@dailyuse/test-utils':
+      '@memoflow/test-utils':
         specifier: workspace:*
         version: link:../test-utils
       '@types/express':
@@ -1729,25 +1729,25 @@ importers:
 
   packages/repository:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1769,25 +1769,25 @@ importers:
 
   packages/schedule:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       express:
@@ -1797,7 +1797,7 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@dailyuse/test-utils':
+      '@memoflow/test-utils':
         specifier: workspace:*
         version: link:../test-utils
       '@types/express':
@@ -1806,25 +1806,25 @@ importers:
 
   packages/schedule-orchestration:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/goal':
+      '@memoflow/goal':
         specifier: workspace:*
         version: link:../goal
-      '@dailyuse/notification':
+      '@memoflow/notification':
         specifier: workspace:*
         version: link:../notification
-      '@dailyuse/reminder':
+      '@memoflow/reminder':
         specifier: workspace:*
         version: link:../reminder
-      '@dailyuse/schedule':
+      '@memoflow/schedule':
         specifier: workspace:*
         version: link:../schedule
-      '@dailyuse/task':
+      '@memoflow/task':
         specifier: workspace:*
         version: link:../task
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
     devDependencies:
@@ -1837,22 +1837,22 @@ importers:
 
   packages/setting:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       date-fns:
@@ -1871,34 +1871,34 @@ importers:
 
   packages/task:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/http-client':
+      '@memoflow/http-client':
         specifier: workspace:*
         version: link:../http-client
-      '@dailyuse/ipc-client':
+      '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
-      '@dailyuse/patterns':
+      '@memoflow/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/schedule':
+      '@memoflow/schedule':
         specifier: workspace:*
         version: link:../schedule
-      '@dailyuse/test-utils':
+      '@memoflow/test-utils':
         specifier: workspace:*
         version: link:../test-utils
-      '@dailyuse/time':
+      '@memoflow/time':
         specifier: workspace:*
         version: link:../time
-      '@dailyuse/utils':
+      '@memoflow/utils':
         specifier: workspace:*
         version: link:../utils
       date-fns:
@@ -1917,10 +1917,10 @@ importers:
 
   packages/test-utils:
     dependencies:
-      '@dailyuse/database':
+      '@memoflow/database':
         specifier: workspace:*
         version: link:../database
-      '@dailyuse/domain-shared':
+      '@memoflow/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
       '@vue/test-utils':
@@ -1951,7 +1951,7 @@ importers:
 
   packages/time:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
       date-fns:
@@ -2014,18 +2014,18 @@ importers:
       '@codemirror/view':
         specifier: 6.39.14
         version: 6.39.14
-      '@dailyuse/ui-core':
-        specifier: workspace:*
-        version: link:../ui-core
-      '@dailyuse/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@internationalized/date':
         specifier: ^3.11.0
         version: 3.11.0
       '@lucide/vue':
         specifier: ^1.24.0
         version: 1.24.0(vue@3.5.39(typescript@6.0.3))
+      '@memoflow/ui-core':
+        specifier: workspace:*
+        version: link:../ui-core
+      '@memoflow/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@radix-icons/vue':
         specifier: 1.0.0
         version: 1.0.0(vue@3.5.39(typescript@6.0.3))
@@ -2084,7 +2084,7 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
       '@vitejs/plugin-vue':
@@ -2117,10 +2117,10 @@ importers:
 
   packages/utils:
     dependencies:
-      '@dailyuse/contracts':
+      '@memoflow/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@dailyuse/time':
+      '@memoflow/time':
         specifier: workspace:*
         version: link:../time
       date-fns:
@@ -16680,83 +16680,6 @@ snapshots:
     dependencies:
       uuid: 8.3.2
 
-  '@expo/cli@57.0.6(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0)))(expo-font@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(expo-router@57.0.4)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)':
-    dependencies:
-      '@expo/code-signing-certificates': 0.0.6
-      '@expo/config': 57.0.3(typescript@6.0.3)
-      '@expo/config-plugins': 57.0.3(typescript@6.0.3)
-      '@expo/devcert': 1.2.1
-      '@expo/env': 2.4.1
-      '@expo/image-utils': 0.11.1(typescript@6.0.3)
-      '@expo/inline-modules': 0.1.2(typescript@6.0.3)
-      '@expo/json-file': 11.0.0
-      '@expo/log-box': 57.0.0(@expo/dom-webview@57.0.0)(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      '@expo/metro': 56.0.0
-      '@expo/metro-config': 57.0.3(expo@57.0.4)(typescript@6.0.3)
-      '@expo/metro-file-map': 57.0.0
-      '@expo/osascript': 2.7.0
-      '@expo/package-manager': 1.13.0
-      '@expo/plist': 0.8.0
-      '@expo/prebuild-config': 57.0.5(typescript@6.0.3)
-      '@expo/require-utils': 57.0.1(typescript@6.0.3)
-      '@expo/router-server': 57.0.2(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0)))(expo-font@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(expo-router@57.0.4)(expo-server@57.0.0)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react@19.2.0)
-      '@expo/schema-utils': 57.0.1
-      '@expo/spawn-async': 1.8.0
-      '@expo/ws-tunnel': 2.0.0(ws@8.21.0)
-      '@expo/xcpretty': 4.4.4
-      '@react-native/dev-middleware': 0.86.0
-      accepts: 1.3.8
-      agent-cli-detector: 0.1.2
-      arg: 5.0.2
-      bplist-creator: 0.1.0
-      bplist-parser: 0.3.2
-      chalk: 4.1.2
-      ci-info: 3.9.0
-      compression: 1.8.1
-      connect: 3.7.0
-      debug: 4.4.3
-      dnssd-advertise: 1.1.4
-      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
-      expo-server: 57.0.0
-      fetch-nodeshim: 0.4.10
-      getenv: 2.0.0
-      glob: 13.0.3
-      lan-network: 0.2.1
-      multitars: 1.0.0
-      node-forge: 1.4.0
-      npm-package-arg: 11.0.3
-      ora: 3.4.0
-      picomatch: 4.0.5
-      pretty-format: 29.7.0
-      progress: 2.0.3
-      prompts: 2.4.2
-      resolve-from: 5.0.0
-      semver: 7.7.4
-      send: 0.19.1
-      slugify: 1.6.8
-      stacktrace-parser: 0.1.11
-      structured-headers: 0.4.1
-      terminal-link: 2.1.1
-      toqr: 0.1.1
-      wrap-ansi: 7.0.0
-      ws: 8.21.0
-      zod: 3.25.76
-    optionalDependencies:
-      expo-router: 57.0.4(38e50b47fe506634d1b452e4c457ccf5)
-      react-native: 0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0)
-    transitivePeerDependencies:
-      - '@expo/dom-webview'
-      - '@expo/metro-runtime'
-      - bufferutil
-      - expo-constants
-      - expo-font
-      - react
-      - react-dom
-      - react-server-dom-webpack
-      - supports-color
-      - typescript
-      - utf-8-validate
-
   '@expo/cli@57.0.6(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3)(expo-font@57.0.0)(expo-router@57.0.4)(expo@57.0.4)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)':
     dependencies:
       '@expo/code-signing-certificates': 0.0.6
@@ -16821,6 +16744,83 @@ snapshots:
     optionalDependencies:
       expo-router: 57.0.4(d9bb5d5f26df33dd6e3d8d4a7140b6b4)
       react-native: 0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3)
+    transitivePeerDependencies:
+      - '@expo/dom-webview'
+      - '@expo/metro-runtime'
+      - bufferutil
+      - expo-constants
+      - expo-font
+      - react
+      - react-dom
+      - react-server-dom-webpack
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@expo/cli@57.0.6(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3)(expo-font@57.0.0)(expo-router@57.0.4)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)':
+    dependencies:
+      '@expo/code-signing-certificates': 0.0.6
+      '@expo/config': 57.0.3(typescript@6.0.3)
+      '@expo/config-plugins': 57.0.3(typescript@6.0.3)
+      '@expo/devcert': 1.2.1
+      '@expo/env': 2.4.1
+      '@expo/image-utils': 0.11.1(typescript@6.0.3)
+      '@expo/inline-modules': 0.1.2(typescript@6.0.3)
+      '@expo/json-file': 11.0.0
+      '@expo/log-box': 57.0.0(@expo/dom-webview@57.0.0)(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      '@expo/metro': 56.0.0
+      '@expo/metro-config': 57.0.3(expo@57.0.4)(typescript@6.0.3)
+      '@expo/metro-file-map': 57.0.0
+      '@expo/osascript': 2.7.0
+      '@expo/package-manager': 1.13.0
+      '@expo/plist': 0.8.0
+      '@expo/prebuild-config': 57.0.5(typescript@6.0.3)
+      '@expo/require-utils': 57.0.1(typescript@6.0.3)
+      '@expo/router-server': 57.0.2(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3)(expo-font@57.0.0)(expo-router@57.0.4)(expo-server@57.0.0)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react@19.2.0)
+      '@expo/schema-utils': 57.0.1
+      '@expo/spawn-async': 1.8.0
+      '@expo/ws-tunnel': 2.0.0(ws@8.21.0)
+      '@expo/xcpretty': 4.4.4
+      '@react-native/dev-middleware': 0.86.0
+      accepts: 1.3.8
+      agent-cli-detector: 0.1.2
+      arg: 5.0.2
+      bplist-creator: 0.1.0
+      bplist-parser: 0.3.2
+      chalk: 4.1.2
+      ci-info: 3.9.0
+      compression: 1.8.1
+      connect: 3.7.0
+      debug: 4.4.3
+      dnssd-advertise: 1.1.4
+      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
+      expo-server: 57.0.0
+      fetch-nodeshim: 0.4.10
+      getenv: 2.0.0
+      glob: 13.0.3
+      lan-network: 0.2.1
+      multitars: 1.0.0
+      node-forge: 1.4.0
+      npm-package-arg: 11.0.3
+      ora: 3.4.0
+      picomatch: 4.0.5
+      pretty-format: 29.7.0
+      progress: 2.0.3
+      prompts: 2.4.2
+      resolve-from: 5.0.0
+      semver: 7.7.4
+      send: 0.19.1
+      slugify: 1.6.8
+      stacktrace-parser: 0.1.11
+      structured-headers: 0.4.1
+      terminal-link: 2.1.1
+      toqr: 0.1.1
+      wrap-ansi: 7.0.0
+      ws: 8.21.0
+      zod: 3.25.76
+    optionalDependencies:
+      expo-router: 57.0.4(311a3acbf45de6b8caba22c215a47780)
+      react-native: 0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0)
     transitivePeerDependencies:
       - '@expo/dom-webview'
       - '@expo/metro-runtime'
@@ -17165,7 +17165,7 @@ snapshots:
       postcss: 8.5.19
       resolve-from: 5.0.0
     optionalDependencies:
-      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
+      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.3(react@19.2.3))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -17363,21 +17363,6 @@ snapshots:
 
   '@expo/results@1.0.0': {}
 
-  '@expo/router-server@57.0.2(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0)))(expo-font@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(expo-router@57.0.4)(expo-server@57.0.0)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      debug: 4.4.3
-      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
-      expo-constants: 57.0.3(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))
-      expo-font: 57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      expo-server: 57.0.0
-      react: 19.2.0
-    optionalDependencies:
-      '@expo/metro-runtime': 57.0.3(@expo/log-box@57.0.0)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      expo-router: 57.0.4(38e50b47fe506634d1b452e4c457ccf5)
-      react-dom: 19.2.4(react@19.2.0)
-    transitivePeerDependencies:
-      - supports-color
-
   '@expo/router-server@57.0.2(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3)(expo-font@57.0.0)(expo-router@57.0.4)(expo-server@57.0.0)(expo@57.0.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       debug: 4.4.3
@@ -17390,6 +17375,21 @@ snapshots:
       '@expo/metro-runtime': 57.0.3(@expo/log-box@57.0.0)(expo@57.0.4)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
       expo-router: 57.0.4(d9bb5d5f26df33dd6e3d8d4a7140b6b4)
       react-dom: 19.2.3(react@19.2.3)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@expo/router-server@57.0.2(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3)(expo-font@57.0.0)(expo-router@57.0.4)(expo-server@57.0.0)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      debug: 4.4.3
+      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
+      expo-constants: 57.0.3(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))
+      expo-font: 57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      expo-server: 57.0.0
+      react: 19.2.0
+    optionalDependencies:
+      '@expo/metro-runtime': 57.0.3(@expo/log-box@57.0.0)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      expo-router: 57.0.4(311a3acbf45de6b8caba22c215a47780)
+      react-dom: 19.2.4(react@19.2.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -21673,7 +21673,7 @@ snapshots:
       react-refresh: 0.14.2
     optionalDependencies:
       '@babel/runtime': 7.28.4
-      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
+      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.3(react@19.2.3))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
@@ -23935,7 +23935,7 @@ snapshots:
 
   expo-device@57.0.0(expo@57.0.4):
     dependencies:
-      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
+      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.3(react@19.2.3))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)
       ua-parser-js: 0.7.41
 
   expo-document-picker@57.0.0(expo@57.0.4):
@@ -24124,58 +24124,6 @@ snapshots:
       - react-native-worklets
       - supports-color
 
-  expo-router@57.0.4(38e50b47fe506634d1b452e4c457ccf5):
-    dependencies:
-      '@expo/log-box': 57.0.0(@expo/dom-webview@57.0.0)(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      '@expo/metro-runtime': 57.0.3(@expo/log-box@57.0.0)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      '@expo/schema-utils': 57.0.1
-      '@expo/ui': 57.0.4(@babel/core@7.28.5)(@types/react@19.2.14)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      '@radix-ui/react-slot': 1.2.4(@types/react@19.2.14)(react@19.2.0)
-      '@radix-ui/react-tabs': 1.1.13(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.0))(react@19.2.0)
-      '@react-native-masked-view/masked-view': 0.3.2(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      '@testing-library/jest-dom': 6.9.1
-      '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
-      client-only: 0.0.1
-      color: 4.2.3
-      debug: 4.4.3
-      escape-string-regexp: 4.0.0
-      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
-      expo-constants: 57.0.3(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))
-      expo-glass-effect: 57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      expo-linking: 57.0.2(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      expo-server: 57.0.0
-      expo-symbols: 57.0.0(expo-font@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      fast-deep-equal: 3.1.3
-      invariant: 2.2.4
-      nanoid: 3.3.16
-      query-string: 7.1.3
-      react: 19.2.0
-      react-fast-compare: 3.2.2
-      react-is: 19.2.4
-      react-native: 0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0)
-      react-native-drawer-layout: 4.2.7(react-native-gesture-handler@2.32.0(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native-reanimated@4.5.0(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      react-native-safe-area-context: 5.7.0(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      react-native-screens: 4.25.2(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      server-only: 0.0.1
-      sf-symbols-typescript: 2.2.0
-      shallowequal: 1.1.0
-      standard-navigation: 0.0.5
-      vaul: 1.1.2(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.0))(react@19.2.0)
-    optionalDependencies:
-      react-dom: 19.2.4(react@19.2.0)
-      react-native-gesture-handler: 2.32.0(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      react-native-reanimated: 4.5.0(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      react-native-web: 0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@testing-library/dom'
-      - '@types/react'
-      - '@types/react-dom'
-      - expo-font
-      - react-native-worklets
-      - supports-color
-    optional: true
-
   expo-router@57.0.4(d9bb5d5f26df33dd6e3d8d4a7140b6b4):
     dependencies:
       '@expo/log-box': 57.0.0(@expo/dom-webview@57.0.0)(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
@@ -24250,16 +24198,6 @@ snapshots:
       expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.3(react@19.2.3))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)
       react: 19.2.3
       react-native: 0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.3)
-
-  expo-symbols@57.0.0(expo-font@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0):
-    dependencies:
-      '@expo-google-fonts/material-symbols': 0.4.27
-      expo: 57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
-      expo-font: 57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      react: 19.2.0
-      react-native: 0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0)
-      sf-symbols-typescript: 2.2.0
-    optional: true
 
   expo-symbols@57.0.0(expo-font@57.0.0)(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0):
     dependencies:
@@ -24345,7 +24283,7 @@ snapshots:
   expo@57.0.4(@babel/core@7.28.5)(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-router@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.2.4(react@19.2.0))(react@19.2.0))(react-native-worklets@0.10.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3):
     dependencies:
       '@babel/runtime': 7.28.4
-      '@expo/cli': 57.0.6(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0)))(expo-font@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(expo-router@57.0.4)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
+      '@expo/cli': 57.0.6(@expo/dom-webview@57.0.0)(@expo/metro-runtime@57.0.3)(expo-constants@57.0.3)(expo-font@57.0.0)(expo-router@57.0.4)(expo@57.0.4)(react-dom@19.2.4(react@19.2.0))(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@6.0.3)
       '@expo/config': 57.0.3(typescript@6.0.3)
       '@expo/config-plugins': 57.0.3(typescript@6.0.3)
       '@expo/devtools': 57.0.0(react-native@0.86.0(@babel/core@7.28.5)(@react-native/metro-config@0.86.0(@babel/core@7.28.5))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)

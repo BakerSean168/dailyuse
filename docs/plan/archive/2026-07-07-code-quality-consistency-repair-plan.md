@@ -50,8 +50,8 @@ updated: 2026-07-07T16:55:00+00:00
 | `pnpm nx run repository:test --skipSync` | 通过 | 12 files / 58 tests，包含 storage config helper 测试 |
 | `pnpm nx run editor:test --skipSync` | 通过 | 19 files / 103 tests，覆盖 editor 相关调整 |
 | `pnpm nx run api:typecheck --skipSync` | 通过 | 包含 24 个依赖任务；同时暴露并确认修复 `data-portability` server seam 构建破口 |
-| `pnpm nx run daily-use:governance-check --skipSync` | 通过 | server feature shape 与治理脚本已对齐 |
-| `pnpm nx run daily-use:docs-check --skipSync` | 通过 | 测试文档 coverage 路径更新后通过 |
+| `pnpm nx run memoflow:governance-check --skipSync` | 通过 | server feature shape 与治理脚本已对齐 |
+| `pnpm nx run memoflow:docs-check --skipSync` | 通过 | 测试文档 coverage 路径更新后通过 |
 
 ## 风险排序
 
@@ -197,7 +197,7 @@ pnpm nx run schedule-orchestration:test --skipSync
 
 ```bash
 pnpm nx run schedule:test --skipSync
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 ```
 
 ### 完成标准
@@ -334,13 +334,13 @@ ADR-031 把 `src/server/index.ts` 定义为 canonical server feature shape 的�
 ### 验证命令
 
 ```bash
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 ```
 
 必要时追加：
 
 ```bash
-pnpm nx run daily-use:docs-check
+pnpm nx run memoflow:docs-check
 ```
 
 ### 完成标准
@@ -353,7 +353,7 @@ pnpm nx run daily-use:docs-check
 
 ### 问题摘要
 
-`REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage'` 在多个模块重复维护，且未纳入 API env schema、`.env.example` 或 docs。当前重复点包括 API AI adapters、repository module、editor module、repository prisma adapter。
+`REPOSITORY_STORAGE_PATH || '/tmp/memoflow-repository-storage'` 在多个模块重复维护，且未纳入 API env schema、`.env.example` 或 docs。当前重复点包括 API AI adapters、repository module、editor module、repository prisma adapter。
 
 关键证据：
 
@@ -406,7 +406,7 @@ pnpm nx run repository:test
 
 ```bash
 pnpm nx run editor:test
-pnpm nx run daily-use:docs-check
+pnpm nx run memoflow:docs-check
 ```
 
 ### 完成标准
@@ -440,7 +440,7 @@ pnpm nx run daily-use:docs-check
 ### 验证命令
 
 ```bash
-pnpm nx run daily-use:docs-check
+pnpm nx run memoflow:docs-check
 ```
 
 ### 完成标准
@@ -544,10 +544,10 @@ pnpm nx run desktop:test:main
 | --- | --- | --- |
 | Q-001 | `schedule` runtime/module/API/Electron 启动语义改为可等待，启动失败可传播并可重试 | `pnpm nx run schedule:test --skipSync` |
 | Q-002 | `schedule-orchestration` 测试 alias 恢复，4 个 suite 能真实执行 | `pnpm nx run schedule-orchestration:test --skipSync` |
-| Q-003 | server feature canonical seam 与治理检查对齐；`data-portability` 无 domain 层的 seam 构建破口已修正 | `pnpm nx run daily-use:governance-check --skipSync`、`pnpm nx run api:typecheck --skipSync` |
+| Q-003 | server feature canonical seam 与治理检查对齐；`data-portability` 无 domain 层的 seam 构建破口已修正 | `pnpm nx run memoflow:governance-check --skipSync`、`pnpm nx run api:typecheck --skipSync` |
 | Q-004 | 删除 route 中与 `[auth]` 冲突的 `requireAuth: false`，清理过时 smoke 注释 | `pnpm nx run api:test:smoke --skipSync` |
 | Q-005 | 新增 repository storage resolver，API/repository/editor 共用单一解析入口，env schema 与 example 已补齐 | `pnpm nx run repository:test --skipSync`、`pnpm nx run editor:test --skipSync`、`pnpm nx run api:typecheck --skipSync` |
-| Q-006 | `docs/test/running-tests.md` coverage 路径改为当前 `src/server/domain/**` roots | `pnpm nx run daily-use:docs-check --skipSync` |
+| Q-006 | `docs/test/running-tests.md` coverage 路径改为当前 `src/server/domain/**` roots | `pnpm nx run memoflow:docs-check --skipSync` |
 | Q-007 | Electron schedule seam 改用明确 PowerSync repository factory，不再构建临时完整 module | `pnpm nx run schedule:test --skipSync` |
 
 ## 后续提示词
@@ -561,7 +561,7 @@ pnpm nx run desktop:test:main
 ### Server feature shape regression review
 
 ```text
-请检查新增或迁移中的 feature package 是否符合 ADR-031 和 tools/governance/server-feature-shape-audit.mjs。重点检查 src/server/index.ts、root barrel、无 domain 层包的显式例外，以及 schedule-orchestration 的例外说明。完成后运行 pnpm nx run daily-use:governance-check --skipSync 和 pnpm nx run api:typecheck --skipSync。
+请检查新增或迁移中的 feature package 是否符合 ADR-031 和 tools/governance/server-feature-shape-audit.mjs。重点检查 src/server/index.ts、root barrel、无 domain 层包的显式例外，以及 schedule-orchestration 的例外说明。完成后运行 pnpm nx run memoflow:governance-check --skipSync 和 pnpm nx run api:typecheck --skipSync。
 ```
 
 ### Repository storage config regression review

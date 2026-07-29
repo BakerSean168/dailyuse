@@ -1,4 +1,4 @@
-import type { Hm, Instant, TransferDate, Ymd } from '@dailyuse/contracts/primitives';
+import type { Hm, Instant, TransferDate, Ymd } from '@memoflow/contracts/primitives';
 import type { OnInvalid, TimeEngine, TimeStyle, TimeZonePolicy } from '../types';
 import {
   asHm,

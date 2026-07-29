@@ -1,4 +1,4 @@
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 
 import {
   type DesktopAuthApi,

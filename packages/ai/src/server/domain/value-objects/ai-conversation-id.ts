@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';
+import type { AiConversationId as IAiConversationId } from '@memoflow/contracts/primitives';
 
 /**
  * AiConversationId 值对象

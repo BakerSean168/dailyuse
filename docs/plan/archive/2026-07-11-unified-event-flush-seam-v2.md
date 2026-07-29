@@ -33,7 +33,7 @@ flush 收敛。PR #162 将业务包迁移到 `src/server/*` 后，旧提交无�
 
 - 相关业务包 typecheck、test、lint。
 - `governance-tools:test`。
-- `daily-use:governance-check`。
+- `memoflow:governance-check`。
 - `git diff --check`。
 
 ## 完成标准

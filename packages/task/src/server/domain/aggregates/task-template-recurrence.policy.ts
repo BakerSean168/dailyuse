@@ -5,8 +5,8 @@
  * Extracted from TaskTemplate aggregate to reduce aggregate size.
  */
 
-import type { TaskEventMap } from '@dailyuse/contracts/task';
-import { RecurrenceEndConditionType } from '@dailyuse/contracts/task';
+import type { TaskEventMap } from '@memoflow/contracts/task';
+import { RecurrenceEndConditionType } from '@memoflow/contracts/task';
 import { TaskType } from '../value-objects';
 import { InvalidTaskTemplateStateError } from '../value-objects/task-errors';
 import type { RecurrenceRule } from '../value-objects';
@@ -19,7 +19,7 @@ export interface RecurrenceContext {
   props: TaskTemplateProps;
   addHistory(action: string, changes?: unknown): void;
   publishDomainEvent<T>(eventName: string, payload: T): void;
-  toServerDTO(): import('@dailyuse/contracts/task').TaskTemplateServerDTO;
+  toServerDTO(): import('@memoflow/contracts/task').TaskTemplateServerDTO;
 }
 
 /** Updates the recurrence rule (Recurring tasks only). */

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { DependencyChainClientDTO } from '@dailyuse/contracts/task';
+import type { DependencyChainClientDTO } from '@memoflow/contracts/task';
 
 import { useAppSession } from './useAppSession';
 import { useTaskService } from './useTaskService';

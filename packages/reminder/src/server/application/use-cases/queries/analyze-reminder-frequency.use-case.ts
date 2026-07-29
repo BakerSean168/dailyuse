@@ -4,8 +4,8 @@
  * 分析提醒频率效果
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IReminderTemplateRepository } from '../../../domain/repositories/i-reminder-template-repository';
 import type { IReminderResponseRepository } from '../../../domain/repositories/i-reminder-response-repository';
 import type { ReminderTemplate } from '../../../domain/aggregates/reminder-template';

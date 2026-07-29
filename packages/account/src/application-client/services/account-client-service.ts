@@ -5,8 +5,8 @@
  * All methods return Result<T>, with success/failure handled by the Composable layer.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, map as mapResult } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, map as mapResult } from '@memoflow/contracts/result';
 import type { IAccountApiClient } from '../ports/account-api-client.port';
 import type {
   UpdateAccountReq,
@@ -17,9 +17,9 @@ import type {
   UpdateAccountSettingsRes,
   AccountClientDTO,
   AccountProfileDTO,
-} from '@dailyuse/contracts/account';
+} from '@memoflow/contracts/account';
 import { Account } from '../../domain-client';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import {
   AccountProfile,
   AccountSettings,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PrismaTaskDependencyMapper } from './prisma-task-dependency-mapper';
-import type { TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
+import type { TaskDependency as PrismaTaskDependency } from '@memoflow/database';
 
 describe('PrismaTaskDependencyMapper', () => {
   const createMinimalRow = (): PrismaTaskDependency => ({

@@ -5,8 +5,8 @@
  * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { TaskChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { TaskChannels } from '@memoflow/contracts/electron';
 import type { ITaskDependencyApiClient, IResultIpcClient } from '../types';
 import type {
   TaskDependencyClientDTO,
@@ -15,7 +15,7 @@ import type {
   ValidateDependencyBody,
   ValidateDependencyResponse,
   DependencyChainClientDTO,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

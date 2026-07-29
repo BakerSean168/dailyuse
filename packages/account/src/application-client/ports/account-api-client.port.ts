@@ -2,8 +2,8 @@
  * Account API Client Port Interface
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
+import type { Result } from '@memoflow/contracts/result';
+import type { AccountClientDTO } from '@memoflow/contracts/account';
 import type {
   UpdateAccountReq,
   CheckAvailabilityReq,
@@ -11,7 +11,7 @@ import type {
   CloseAccountReq,
   UpdateAccountSettingsReq,
   UpdateAccountSettingsRes,
-} from '@dailyuse/contracts/account';
+} from '@memoflow/contracts/account';
 
 export interface IAccountApiClient {
   getMyProfile(): Promise<Result<AccountClientDTO>>;

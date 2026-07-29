@@ -8,7 +8,7 @@
 
 本轮已经实现的主线结果：
 
-- `@dailyuse/patterns` 已抽出通用 `publishAggregateEvents(...)` helper，并由 `AggregateRepositoryBase.save()` 复用。
+- `@memoflow/patterns` 已抽出通用 `publishAggregateEvents(...)` helper，并由 `AggregateRepositoryBase.save()` 复用。
 - `editor workspace`、`calendar entry`、`task dependency` 三条删除命令链都已切到仓储级 `deleteAggregate(...)`。
 - Prisma 与 PowerSync 两套服务端适配器都已补上删除后发布聚合事件的路径。
 - `task dependency` 已补齐命令侧 aggregate 查询入口 `findAggregateById(...)`，不再临时构造无人接管的聚合实例。
@@ -98,7 +98,7 @@
 
 ### 当前剩余验证问题
 
-- `pnpm nx run daily-use:governance-check` 当前未通过，但原因不是本计划代码错误。
+- `pnpm nx run memoflow:governance-check` 当前未通过，但原因不是本计划代码错误。
 - 失败原因是文档扫描过程访问 `apps/ai-service/.pytest_cache` 时触发 `EPERM`。
 - 该问题需要单独清理环境或调整检查脚本后再复跑。
 
@@ -119,7 +119,7 @@
 - `calendar entry` 删除事件通过仓储进入统一事件总线
 - `task dependency` 删除事件通过仓储进入统一事件总线
 - 这 3 条删除命令链不再依赖应用层手工事件派发
-- `@dailyuse/patterns` 中已存在可复用的“删除后发布聚合事件”公共能力
+- `@memoflow/patterns` 中已存在可复用的“删除后发布聚合事件”公共能力
 - 相关包 typecheck 已通过
 
 尚未满足的只是文档治理检查的环境性前提，不属于本计划实现缺口。

@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { Target } from '@lucide/vue';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
 import ScheduleTasksCard from './ScheduleTasksCard.vue';
 
 defineProps<{

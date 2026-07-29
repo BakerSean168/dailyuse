@@ -15,7 +15,7 @@ import { GoalPowerSyncRepository } from './adapters/powersync/goal-powersync.rep
 import { GoalFolderPowerSyncRepository } from './adapters/powersync/goal-folder-powersync.repository';
 import { GoalRecordPowerSyncRepository } from './adapters/powersync/goal-record-powersync.repository';
 import { FocusModePowerSyncRepository } from './adapters/powersync/focus-mode-powersync.repository';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import { createGoalScheduleExecutionSource } from './schedule-execution-source';
 import { createGoalScheduleProjectionSource } from './schedule-projection-source';
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';

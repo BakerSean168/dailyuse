@@ -6,7 +6,7 @@ import { defineConfig } from 'vitest/config';
 process.setMaxListeners(32);
 
 /**
- * Vitest Configuration for Memoflow Monorepo
+ * Vitest Configuration for MemoFlow Monorepo
  *
  * This file configures all test projects in the monorepo using the test.projects field.
  * Each project can have its own configuration while inheriting common settings.

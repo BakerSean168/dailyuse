@@ -1,9 +1,9 @@
 /**
  * Residual 1324: sole formatScheduleDurationMinutes — total minutes → schedule.duration.* i18n.
- * P4: arithmetic via @dailyuse/time splitDurationMinutes; L4 only picks i18n dictionary.
+ * P4: arithmetic via @memoflow/time splitDurationMinutes; L4 only picks i18n dictionary.
  * Soft residual 1243: ConflictAlert ms floor / task graph concatenative / formatTaskDuration Intl / AI formatDurationMs.
  */
-import { splitDurationMinutes } from '@dailyuse/time';
+import { splitDurationMinutes } from '@memoflow/time';
 
 export type ScheduleDurationTranslate = (
   key: string,

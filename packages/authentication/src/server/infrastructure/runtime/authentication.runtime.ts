@@ -11,10 +11,10 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
-import type { AccountEventMap } from '@dailyuse/contracts/account';
-import type { AuthEventMap } from '@dailyuse/contracts/authentication';
-import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { AccountEventMap } from '@memoflow/contracts/account';
+import type { AuthEventMap } from '@memoflow/contracts/authentication';
+import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import type {
   IAuthIdentityRepository,
   IAuthSessionRepository,

@@ -1,7 +1,7 @@
 import type {
   KnowledgeNoteProjectionClientDTO,
   KnowledgeNoteProjectionIndexStatus,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 
 export type GithubWebhookDeliveryStatus =
   'Received' | 'Processing' | 'Processed' | 'Ignored' | 'Failed';

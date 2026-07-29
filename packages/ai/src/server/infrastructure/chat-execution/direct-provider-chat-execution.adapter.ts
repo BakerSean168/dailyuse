@@ -4,7 +4,7 @@ import type {
   ChatExecutionStreamChunk,
   IAIChatExecutionPort,
 } from '../../application/ports';
-import type { IModelGatewayPort } from '@dailyuse/contracts/ai';
+import type { IModelGatewayPort } from '@memoflow/contracts/ai';
 import { CustomModelGateway } from '../model-gateway';
 
 /**

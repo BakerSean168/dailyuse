@@ -11,7 +11,7 @@
  * Soft residual 1065: goal createGoalErrorHandler rich-log keep-boundary (scope/details ≠ sole).
  */
 
-import type { ResultErrorTranslateFn } from '@dailyuse/http-client';
+import type { ResultErrorTranslateFn } from '@memoflow/http-client';
 import { translateResultError } from './translate-result-error';
 
 export interface ComposableHandleErrorOptions {

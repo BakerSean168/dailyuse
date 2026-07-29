@@ -11,8 +11,8 @@ import type {
   ListKnowledgeRepositoryConnectionsRes,
   StartKnowledgeRepositoryInstallationReq,
   StartKnowledgeRepositoryInstallationRes,
-} from '@dailyuse/contracts/repository';
-import { fail, ok, type Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/repository';
+import { fail, ok, type Result } from '@memoflow/contracts/result';
 import { createApiUrl } from '../../utils/api-config';
 import { toCloudAccessToken } from '../authentication/infrastructure/session-types';
 // Residual 947: isRecord/hasDataKey duals retired — sole desktop http-envelope-guards.
@@ -20,7 +20,7 @@ import { hasDataKey, isRecord } from '../../utils/http-envelope-guards';
 
 /**
  * First-party knowledge-repository HTTP body.
- * Memoflow API serializes Result as HttpResponse (`ok` + `data`/`error`).
+ * MemoFlow API serializes Result as HttpResponse (`ok` + `data`/`error`).
  * No raw dual-track business payloads.
  */
 interface HttpEnvelope<T> {
@@ -152,7 +152,7 @@ export class KnowledgeRepositoryRemoteGateway {
           accept: 'application/json',
           authorization: `Bearer ${accessToken}`,
           'content-type': 'application/json',
-          'user-agent': 'Memoflow Desktop Electron',
+          'user-agent': 'MemoFlow Desktop Electron',
         },
         body: options.body === undefined ? undefined : JSON.stringify(options.body),
       });

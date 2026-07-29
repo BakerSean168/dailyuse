@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { AIChannels, GoalChannels } from '@dailyuse/contracts/electron';
+import { AIChannels, GoalChannels } from '@memoflow/contracts/electron';
 
 /**
  * Goal IPC adapter channel surface (stage-6 residual 79):
@@ -13,13 +13,13 @@ describe('GoalIpcAdapter channel surface', () => {
 
   it('imports both GoalChannels and AIChannels for their respective surfaces', () => {
     expect(source).toContain(
-      "import { AIChannels, GoalChannels } from '@dailyuse/contracts/electron'",
+      "import { AIChannels, GoalChannels } from '@memoflow/contracts/electron'",
     );
     expect(source).toContain('GoalChannels.CREATE');
     expect(source).toContain('GoalChannels.LIST');
     expect(source).toContain('GoalChannels.ARCHIVE_EXPIRED');
     expect(source).toContain('AIChannels.GOAL_GENERATE');
-    expect(source).not.toMatch(/import \{ AIChannels \} from '@dailyuse\/contracts\/electron'/);
+    expect(source).not.toMatch(/import \{ AIChannels \} from '@memoflow\/contracts\/electron'/);
   });
 
   it('keeps contracts channel constants stable', () => {

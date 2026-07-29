@@ -5,7 +5,7 @@ import type {
   AgentCheckpointUpsertInput,
   IAgentCheckpointPort,
 } from '../application/ports';
-import type { AgentRun, AgentRunResult } from '@dailyuse/contracts/ai';
+import type { AgentRun, AgentRunResult } from '@memoflow/contracts/ai';
 
 export class AIAgentCheckpointController {
   constructor(private readonly checkpointPort: IAgentCheckpointPort) {}

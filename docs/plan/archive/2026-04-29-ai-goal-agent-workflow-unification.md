@@ -127,7 +127,7 @@ status: archived
 - 文档治理：
   - `docs/guides/ai` 的入口链接有效
   - `docs/plan/active` 与 `docs/plan/archive` 的迁移链接有效
-  - 运行 `pnpm nx run daily-use:governance-check`
+  - 运行 `pnpm nx run memoflow:governance-check`
 - 契约与服务：
   - 覆盖 `clarification`、`draft`、`plan/confirm` 响应形态
   - 覆盖 clarification -> draft 两步流

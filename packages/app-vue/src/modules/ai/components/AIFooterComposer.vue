@@ -270,7 +270,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import type { ChatModelOption, WorkflowMode } from '../composables/types';
 import {
   COMPOSER_TEXTAREA_MAX_PX,

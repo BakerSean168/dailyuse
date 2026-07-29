@@ -2,17 +2,17 @@
  * ReminderGroup 聚合根实现
  */
 
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 import type {
   IGroupStats,
   ReminderEventMap,
   ReminderGroupClientDTO,
   ReminderGroupServerDTO,
-} from '@dailyuse/contracts/reminder';
-import type { ReminderGroupId } from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { generateUUID } from '@dailyuse/utils/shared';
-import { IdentityId } from '@dailyuse/domain-shared';
+} from '@memoflow/contracts/reminder';
+import type { ReminderGroupId } from '@memoflow/contracts/primitives';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { generateUUID } from '@memoflow/utils/shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { GroupStats } from '../value-objects';
 
 /**

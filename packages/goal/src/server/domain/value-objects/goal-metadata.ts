@@ -7,12 +7,12 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ValueObject } from '@memoflow/utils/domain';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type {
   GoalMetadata as IGoalMetadata,
   GoalMetadataDTO,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 /**
  * GoalMetadata 值对象实现

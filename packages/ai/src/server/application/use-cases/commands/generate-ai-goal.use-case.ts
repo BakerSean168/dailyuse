@@ -1,12 +1,12 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import {
   type GenerateGoalsReq,
   type GenerateGoalsRes,
   type GoalAutomationAction,
   type GoalAutomationExecutedAction,
-} from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/ai';
+import { createLogger } from '@memoflow/utils/logger';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type {

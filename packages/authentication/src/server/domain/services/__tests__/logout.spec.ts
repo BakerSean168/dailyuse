@@ -13,8 +13,8 @@ import { AuthIdentity } from '../../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../../repositories/i-auth-identity.repository';
 import type { IPasswordHasher } from '../..';
 import { AuthIdentityStatus } from '../..';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import type { Context } from '@dailyuse/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
+import type { Context } from '@memoflow/contracts/shared';
 
 // ---------------------------------------------------------------------------
 // Shared mock helpers

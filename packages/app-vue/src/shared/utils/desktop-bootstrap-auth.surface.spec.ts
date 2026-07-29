@@ -13,7 +13,7 @@ describe('desktop-bootstrap-auth Result surface', () => {
 
   it('unwraps bootstrap snapshot IpcResult envelopes', () => {
     expect(source).toContain(
-      "import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result'",
+      "import { fromIpcResult, isOk, type IpcResult } from '@memoflow/contracts/result'",
     );
     expect(source).toContain('fromIpcResult(response)');
     expect(source).toContain('isOk(result)');

@@ -1,4 +1,4 @@
-import { ChannelStatus as ChannelStatusContract, type ChannelStatus as IChannelStatus } from '@dailyuse/contracts/notification';
+import { ChannelStatus as ChannelStatusContract, type ChannelStatus as IChannelStatus } from '@memoflow/contracts/notification';
 
 /**
  * 📝 渠道状态 - 通知在具体投递渠道中的状态
@@ -13,7 +13,7 @@ export type ChannelStatus = IChannelStatus & { readonly __brand: unique symbol }
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IChannelStatus[] = Object.values(ChannelStatusContract);
 
 /**

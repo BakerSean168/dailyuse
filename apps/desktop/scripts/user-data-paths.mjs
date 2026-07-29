@@ -2,14 +2,14 @@ import os from 'node:os';
 import path from 'node:path';
 
 const CANONICAL_USER_DATA_DIR_SEGMENTS = Object.freeze([
-  ['Memoflow'],
-  ['Memoflow-Dev'],
-  ['Memoflow-Test'],
+  ['MemoFlow'],
+  ['MemoFlow-Dev'],
+  ['MemoFlow-Test'],
 ]);
 
 const LEGACY_USER_DATA_DIR_SEGMENTS = Object.freeze([
-  ['@dailyuse', 'desktop'],
-  ['dailyuse-desktop'],
+  ['@memoflow', 'desktop'],
+  ['memoflow-desktop'],
 ]);
 
 function resolveAppDataRoot() {

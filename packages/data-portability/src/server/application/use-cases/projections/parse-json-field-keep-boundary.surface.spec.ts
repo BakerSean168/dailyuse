@@ -43,7 +43,7 @@ describe('data-portability parseJsonField keep-boundary (residual 1095)', () => 
     expect(helpers).toContain('return fallback ?? value');
     expect(helpers).toContain('JSON.parse(value)');
     // must not import utils parsers
-    expect(helpers).not.toContain('@dailyuse/utils');
+    expect(helpers).not.toContain('@memoflow/utils');
     expect(helpers).not.toMatch(/import\s*\{[^}]*parseJsonSafe[^}]*\}/);
     expect(helpers).not.toMatch(/import\s*\{[^}]*\bparseJson\b[^}]*\}/);
   });

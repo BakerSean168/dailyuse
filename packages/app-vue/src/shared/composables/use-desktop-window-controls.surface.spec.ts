@@ -19,7 +19,7 @@ describe('useDesktopWindowControls ElectronBridge keep-boundary (residual 929)',
   const electronDts = readFileSync(resolve(__dirname, '../types/electron.d.ts'), 'utf8');
 
   it('unwraps Result envelopes instead of casting raw IPC payloads', () => {
-    expect(source).toContain("import { isOk, type Result } from '@dailyuse/contracts/result'");
+    expect(source).toContain("import { isOk, type Result } from '@memoflow/contracts/result'");
     expect(source).toContain('function readResultData');
     expect(source).toContain('isOk(result)');
     expect(source).not.toMatch(/as\s*\|\s*Partial<WindowControlsState>/);
@@ -44,7 +44,7 @@ describe('useDesktopWindowControls ElectronBridge keep-boundary (residual 929)',
 
   it('keeps ElectronBridge InjectionKey and DesktopAuthApi invoke-only sole body separate', () => {
     expect(keys).toContain('export const DESKTOP_BRIDGE_KEY: InjectionKey<ElectronBridge>');
-    expect(keys).toContain("import type { ElectronBridge } from '@dailyuse/ipc-client'");
+    expect(keys).toContain("import type { ElectronBridge } from '@memoflow/ipc-client'");
     expect(recovery).toMatch(/export type DesktopAuthApi = \{/);
     expect(recovery).toContain(
       'invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>',

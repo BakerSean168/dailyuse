@@ -15,7 +15,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 type ReadFilter = 'all' | 'unread' | 'read';
 

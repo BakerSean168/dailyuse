@@ -1,9 +1,9 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskType } from '@dailyuse/contracts/task';
-import { eventBus } from '@dailyuse/utils/domain';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { TaskType } from '@memoflow/contracts/task';
+import { eventBus } from '@memoflow/utils/domain';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { RecurrenceRule, TaskTimeConfig } from '../../../domain/value-objects';
 import { createTaskPrismaModule } from '../../prisma';

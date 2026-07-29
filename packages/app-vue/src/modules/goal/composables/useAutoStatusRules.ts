@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import type { StatusRule } from '@dailyuse/contracts/goal';
+import type { StatusRule } from '@memoflow/contracts/goal';
 
 const configState = ref({
   enabled: false,

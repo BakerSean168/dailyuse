@@ -5,7 +5,7 @@
  */
 
 import type { AIChatService, WorkflowMode, GoalWorkflowStage } from './types';
-import { unwrap } from '@dailyuse/contracts/result';
+import { unwrap } from '@memoflow/contracts/result';
 
 /** Parameters for workflowStatusText computation. */
 export interface WorkflowStatusParams {

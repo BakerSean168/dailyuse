@@ -96,10 +96,10 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent, CardHeader, CardTitle } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Alert, AlertDescription, AlertTitle } from '@memoflow/ui-vue-shadcn';
 import {
   Plus,
   Calendar,
@@ -112,7 +112,7 @@ import {
 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { formatProductDateTime } from '../../../shared/utils/product-time';
-import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEntryClientDTO } from '@memoflow/contracts/schedule';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 

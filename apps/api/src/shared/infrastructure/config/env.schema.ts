@@ -55,8 +55,8 @@ export const envSchema = z.object({
   // 当 DATABASE_URL 未提供时，应用会从这些值自动生成
   DB_HOST: z.string().default('localhost'),
   DB_PORT: z.coerce.number().default(5432),
-  DB_NAME: z.string().default('dailyuse'),
-  DB_USER: z.string().default('dailyuse'),
+  DB_NAME: z.string().default('memoflow'),
+  DB_USER: z.string().default('memoflow'),
   DB_PASSWORD: z.string().default(''),
 
   // ========== Redis 缓存配置 ==========
@@ -271,12 +271,12 @@ export type Env = z.infer<typeof envSchema>;
 export function processEnv(env: Env): Env {
   // 如果没有 DATABASE_URL，从分解式配置生成
   if (!env.DATABASE_URL && env.DB_HOST) {
-    const username = encodeURIComponent(env.DB_USER || 'dailyuse');
+    const username = encodeURIComponent(env.DB_USER || 'memoflow');
     // ⚠️ 密码必须 URL 编码，否则特殊字符（如 / = @ 等）会破坏 URL 解析
     const password = env.DB_PASSWORD ? `:${encodeURIComponent(env.DB_PASSWORD)}` : '';
     const host = env.DB_HOST;
     const port = env.DB_PORT || 5432;
-    const database = encodeURIComponent(env.DB_NAME || 'dailyuse');
+    const database = encodeURIComponent(env.DB_NAME || 'memoflow');
 
     const databaseUrl = `postgresql://${username}${password}@${host}:${port}/${database}?schema=public`;
     env.DATABASE_URL = databaseUrl;

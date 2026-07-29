@@ -48,8 +48,8 @@
 
 ### 本次审计的硬证据
 
-- `pnpm nx run daily-use:docs-check --skipNxCache` 当前通过。
-- `pnpm nx run daily-use:governance-check --skipNxCache` 当前通过。
+- `pnpm nx run memoflow:docs-check --skipNxCache` 当前通过。
+- `pnpm nx run memoflow:governance-check --skipNxCache` 当前通过。
 - `pnpm nx run app-react:typecheck --skipNxCache` 当前通过。
 - `pnpm nx run desktop:typecheck --skipNxCache` 当前通过。
 - `pnpm nx run desktop:lint` 当前通过，结果为 `0` error、`118` warning。
@@ -63,7 +63,7 @@
 - `rg “getWindowManager\\(|getDesktopAuthService\\(|let runtimeManager|_windowManager” apps/desktop/src/main` 当前只剩注释或测试局部变量，不再命中生产运行路径。
 - `rg "^export \\*" packages/app-react/src/index.ts packages/app-vue/src/index.ts packages/patterns/src/index.ts packages/test-utils/src/index.ts` 当前无命中。
 - `rg "window\\.electronAPI" packages/app-vue packages/app-react packages/contracts packages/utils packages/patterns packages/http-client packages/ipc-client` 当前只命中 `packages/ipc-client/src/index.ts` 的注释示例。
-- desktop renderer 当前对 `@dailyuse/app-vue` 的消费，已经以 `router`、`plugins/i18n`、`modules/*`、`di`、`desktop` 等明确子路径为主。
+- desktop renderer 当前对 `@memoflow/app-vue` 的消费，已经以 `router`、`plugins/i18n`、`modules/*`、`di`、`desktop` 等明确子路径为主。
 - 热点文件行数已明显下降：
   - [`packages/app-vue/src/modules/ai/views/AIChatView.vue`](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue) `221` 行
   - [`packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts`](../../../packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts) `125` 行
@@ -229,7 +229,7 @@
   - 主要残留问题集中在 `platform/di-app.ts` 和 startup lifecycle，不在页面 app 壳本身。
 - `mobile`
   - 当前是最薄的 app runtime。
-  - `apps/mobile/src/app/*` 基本只是 Expo Router route wrapper，例如 [`apps/mobile/src/app/explore/repository.tsx`](../../../apps/mobile/src/app/explore/repository.tsx) 直接 re-export `@dailyuse/app-react` screen。
+  - `apps/mobile/src/app/*` 基本只是 Expo Router route wrapper，例如 [`apps/mobile/src/app/explore/repository.tsx`](../../../apps/mobile/src/app/explore/repository.tsx) 直接 re-export `@memoflow/app-react` screen。
   - 这说明移动端大体遵守“app 只做 runtime shell”，可作为 container 正例。
 - `api`
   - [`apps/api/src/bootstrap.ts`](../../../apps/api/src/bootstrap.ts) 已经形成比较清楚的 `ApiBootstrapper`。
@@ -1858,8 +1858,8 @@
 
 **关键 gate 已统一验证为绿**
 
-- `pnpm nx run daily-use:docs-check --skipNxCache`
-- `pnpm nx run daily-use:governance-check --skipNxCache`
+- `pnpm nx run memoflow:docs-check --skipNxCache`
+- `pnpm nx run memoflow:governance-check --skipNxCache`
 - `pnpm nx run app-react:typecheck --skipNxCache`
 - `pnpm nx run desktop:typecheck --skipNxCache`
 - `pnpm nx run desktop:lint`
@@ -1879,7 +1879,7 @@
   - 当前无命中。
 - `rg "window\\.electronAPI" packages/app-vue packages/app-react packages/contracts packages/utils packages/patterns packages/http-client packages/ipc-client`
   - 当前只命中 `packages/ipc-client/src/index.ts` 的注释示例，不是实现代码。
-- `rg -n "@dailyuse/app-vue" apps/desktop/src/renderer`
+- `rg -n "@memoflow/app-vue" apps/desktop/src/renderer`
   - 当前以 `router`、`plugins/i18n`、`modules/*`、`di`、`desktop` 等明确子路径为主；根入口只剩 `App.vue` / `DesktopAuthApp.vue` 这类 shell surface。
 
 **热点文件终态**
@@ -1909,7 +1909,7 @@
 2. 处理 `database:build` 的 Nx flaky 提示
    - 当前不影响成功结果，但值得作为 CI 稳定性观察项记录。
 3. 进一步收窄 shell surface
-   - `App.vue` / `DesktopAuthApp.vue` 仍从 `@dailyuse/app-vue` 根入口消费 UI shell 导出；当前可接受，但如需更极致收敛，可继续改成专用 surface。
+   - `App.vue` / `DesktopAuthApp.vue` 仍从 `@memoflow/app-vue` 根入口消费 UI shell 导出；当前可接受，但如需更极致收敛，可继续改成专用 surface。
 
 ### 可选 issue backlog
 
@@ -1939,14 +1939,14 @@
   - Web / React / Editor runtime 都消费同一种 client creation language
   - startup plan 不再依赖 feature 自注册全局 phase task
   - `apps/api` / `apps/desktop` / `apps/web` 的活跃启动路径不再执行 `InitializationManager`
-  - desktop renderer 不再从 `@dailyuse/app-vue` 根入口消费 router / dashboard adapter / store hook
+  - desktop renderer 不再从 `@memoflow/app-vue` 根入口消费 router / dashboard adapter / store hook
   - 剩余根入口导入只允许是 UI shell / layout / desktop surface
 - 最小命令
   - `pnpm nx run web:typecheck`
   - `pnpm nx run app-react:typecheck`
   - `pnpm nx run desktop:typecheck`
   - `rg "InitializationManager.getInstance\\(|registerNotificationInitializationTasks|registerGoalInitializationTasks" apps packages`
-  - `rg "@dailyuse/app-vue" apps/desktop/src/renderer`
+  - `rg "@memoflow/app-vue" apps/desktop/src/renderer`
   - 对应 package `test`
 
 ### Batch 3 / 3.5 验证

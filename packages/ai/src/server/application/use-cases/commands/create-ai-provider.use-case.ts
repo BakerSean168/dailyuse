@@ -1,13 +1,13 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   AIProviderType,
   type AIProviderConfigServerDTO,
   type CreateAIProviderConfigReq,
   type AIProviderConfigClientDTO,
-} from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/ai';
+import { createLogger } from '@memoflow/utils/logger';
 import { AiProviderConfigId } from '../../../domain/value-objects/ai-provider-config-id';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import { toClientDTO } from './ai-provider-config-helpers';

@@ -12,7 +12,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   CreateGoalSchema,
   UpdateGoalSchema,
@@ -24,10 +24,10 @@ import {
   ArchiveExpiredResSchema,
   ProgressBreakdownResSchema,
   BatchUpdateKeyResultWeightsReqSchema,
-} from '@dailyuse/contracts/goal';
-import type { CloneGoalReq, ListGoalFilters } from '@dailyuse/contracts/goal';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { GoalId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/goal';
+import type { CloneGoalReq, ListGoalFilters } from '@memoflow/contracts/goal';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { GoalId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
 // Residual 985: sole parseBoolean (local dual retired).
 import { parseBoolean } from './parse-boolean';

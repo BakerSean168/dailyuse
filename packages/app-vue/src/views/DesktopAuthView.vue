@@ -3,8 +3,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { WindowChannels } from '@dailyuse/contracts/electron';
-import type { RememberedDesktopAccountDTO } from '@dailyuse/contracts/authentication';
+import { WindowChannels } from '@memoflow/contracts/electron';
+import type { RememberedDesktopAccountDTO } from '@memoflow/contracts/authentication';
 import {
   UserRound,
   Trash2,
@@ -37,7 +37,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { useAuth } from '../modules/authentication/composables/useAuth';
 import { inject } from 'vue';
 import { DESKTOP_AUTH_API_KEY } from '../di/keys';

@@ -22,8 +22,8 @@
  * @internal 持久化映射器 — 非公开 API。
  */
 
-import type { Rule as PrismaRule } from '@dailyuse/database';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { Rule as PrismaRule } from '@memoflow/database';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 import { Rule } from '../../../../domain/aggregates/rule';
 import { RuleId } from '../../../../domain/value-objects/rule-id';
 import { RuleTag } from '../../../../domain/value-objects/rule-tag';
@@ -31,7 +31,7 @@ import { CodeSnippet } from '../../../../domain/value-objects/code-snippet';
 import type { RuleStatus } from '../../../../domain/value-objects/rule-status';
 import type { RuleSeverity } from '../../../../domain/value-objects/rule-severity';
 import type { CodeSnippetPersistenceDTO } from '../../../../domain/value-objects/code-snippet';
-import { fromDbDate, parseJson } from '@dailyuse/utils/shared';
+import { fromDbDate, parseJson } from '@memoflow/utils/shared';
 
 // ---------------------------------------------------------------------------
 // Mapper

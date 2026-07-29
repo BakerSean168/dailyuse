@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NotificationChannel, TriggerResult } from '@dailyuse/contracts/reminder';
+import { NotificationChannel, TriggerResult } from '@memoflow/contracts/reminder';
 import { ReminderHistory } from '../reminder-history';
 import { ReminderHistoryId } from '../../value-objects/reminder-history-id';
 

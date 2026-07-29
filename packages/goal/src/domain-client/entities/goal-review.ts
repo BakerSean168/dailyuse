@@ -9,8 +9,8 @@
  * - Instance toDTO(): GoalReviewClientDTO
  */
 
-import type { GoalReviewClientDTO, KeyResultSnapshot, ReviewType } from '@dailyuse/contracts/goal';
-import { Entity } from '@dailyuse/utils/domain';
+import type { GoalReviewClientDTO, KeyResultSnapshot, ReviewType } from '@memoflow/contracts/goal';
+import { Entity } from '@memoflow/utils/domain';
 import { GoalReviewId, GoalId } from '../../server/domain';
 
 export interface GoalReviewState {

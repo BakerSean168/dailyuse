@@ -30,7 +30,7 @@ export const WithSidebar: Story = {
     template: `
       <div class="h-[400px]">
         <LinearPanel class="w-[220px]">
-          <div class="p-3 text-sm font-semibold text-foreground border-b">知行 (Memoflow)</div>
+          <div class="p-3 text-sm font-semibold text-foreground border-b">知行 (MemoFlow)</div>
           <div class="p-2 space-y-0.5">
             <LinearSidebarItem label="Inbox" :count="3">
               <template #icon>📥</template>

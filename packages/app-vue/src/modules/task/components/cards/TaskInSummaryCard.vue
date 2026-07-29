@@ -105,7 +105,7 @@ import {
   Separator,
   Button,
   Checkbox,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { CheckCircle, Clock, Plus } from '@lucide/vue';
 import type { TaskInstanceViewModel } from '../types';
 import { useI18n } from 'vue-i18n';

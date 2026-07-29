@@ -1,7 +1,7 @@
 import {
   createAuthenticatedIdentityIpcWrapper,
   createAuthenticatedIpcWrapper,
-} from '@dailyuse/contracts/electron';
+} from '@memoflow/contracts/electron';
 
 export const withAuthenticatedValue = createAuthenticatedIpcWrapper({
   unexpectedErrorCode: 'INTERNAL_ERROR',

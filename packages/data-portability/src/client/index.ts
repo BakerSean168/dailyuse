@@ -2,12 +2,12 @@
  * Data portability client seam.
  *
  * Public data portability contracts stay centralized in
- * `@dailyuse/contracts/data-portability`.
+ * `@memoflow/contracts/data-portability`.
  * Callers depend on this seam instead of the old
  * application-client / infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   createDataPortabilityClientService,
   type DataPortabilityClientPort,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import type { ScheduleTaskStatus, SourceModule, TaskPriority } from '@dailyuse/contracts/schedule';
-import type { ScheduleTask } from '@dailyuse/schedule/client';
+import type { ScheduleTaskStatus, SourceModule, TaskPriority } from '@memoflow/contracts/schedule';
+import type { ScheduleTask } from '@memoflow/schedule/client';
 
 import { useAppSession } from './useAppSession';
 import { useScheduleService } from './useScheduleService';

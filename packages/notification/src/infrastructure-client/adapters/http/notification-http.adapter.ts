@@ -4,8 +4,8 @@
  * HTTP implementation of INotificationApiClient.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type {
   INotificationApiClient,
   CreateNotificationRequest,
@@ -18,7 +18,7 @@ import type {
   NotificationClientDTO,
   NotificationPreferenceClientDTO,
   UpdateNotificationPreferenceReq,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 /**
  * NotificationHttpAdapter

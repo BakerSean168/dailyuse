@@ -1,4 +1,4 @@
-import type { ElectronBridge } from '@dailyuse/ipc-client';
+import type { ElectronBridge } from '@memoflow/ipc-client';
 
 /**
  * Residual 941: sole host ElectronBridge access helpers for desktop renderer.

@@ -1,11 +1,11 @@
-import { fail, type Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { fail, type Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   QueryAnalyticsSchema,
   type QueryAnalyticsReq,
   type QueryAnalyticsRes,
-} from '@dailyuse/contracts/ai';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/ai';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 interface AIAnalyticsQueryControllerService {
   queryAnalytics(request: QueryAnalyticsReq, cx: ExecutionContext): Promise<Result<QueryAnalyticsRes>>;

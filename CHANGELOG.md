@@ -1,222 +1,222 @@
 # Changelog
 
-## [0.9.0](https://github.com/BakerSean168/dailyuse/compare/v0.8.0...v0.9.0) (2026-06-08)
+## [0.9.0](https://github.com/BakerSean168/memoflow/compare/v0.8.0...v0.9.0) (2026-06-08)
 
 
 ### Features
 
-* Add AI Agent system architecture and workflow plans ([0115b45](https://github.com/BakerSean168/dailyuse/commit/0115b45ce3f4a6b67c6b19efa9fca1960ddac064))
-* **contracts:** add data portability contract module ([1096bbd](https://github.com/BakerSean168/dailyuse/commit/1096bbd81ccc0cc96fb007cabdef0d1b4026a3cf))
-* **data-portability:** add core package with use-cases, importers, projections, and tests ([640cff8](https://github.com/BakerSean168/dailyuse/commit/640cff808a336b0de0c47a8e04ca326c2bc99fc9))
-* **data-portability:** add DataPortabilityChannels to shared IPC contracts ([6f16ad8](https://github.com/BakerSean168/dailyuse/commit/6f16ad8c6fb2feea93cd71143f1d459b8bc8adfc))
-* **data-portability:** wire up platform DI, API module, and UI integration ([6c58539](https://github.com/BakerSean168/dailyuse/commit/6c58539bf81a11cb00cb70aedadeb9e0163853e9))
+* Add AI Agent system architecture and workflow plans ([0115b45](https://github.com/BakerSean168/memoflow/commit/0115b45ce3f4a6b67c6b19efa9fca1960ddac064))
+* **contracts:** add data portability contract module ([1096bbd](https://github.com/BakerSean168/memoflow/commit/1096bbd81ccc0cc96fb007cabdef0d1b4026a3cf))
+* **data-portability:** add core package with use-cases, importers, projections, and tests ([640cff8](https://github.com/BakerSean168/memoflow/commit/640cff808a336b0de0c47a8e04ca326c2bc99fc9))
+* **data-portability:** add DataPortabilityChannels to shared IPC contracts ([6f16ad8](https://github.com/BakerSean168/memoflow/commit/6f16ad8c6fb2feea93cd71143f1d459b8bc8adfc))
+* **data-portability:** wire up platform DI, API module, and UI integration ([6c58539](https://github.com/BakerSean168/memoflow/commit/6c58539bf81a11cb00cb70aedadeb9e0163853e9))
 
-## [0.8.0](https://github.com/BakerSean168/dailyuse/compare/v0.7.0...v0.8.0) (2026-06-02)
-
-
-### Features
-
-* **api:** add powersync profile snapshot pipeline ([e0375de](https://github.com/BakerSean168/dailyuse/commit/e0375de160df6bc95cca3d193f0f3ae6ff3780d2))
-* **desktop:** add shared user files settings flow ([9b51e52](https://github.com/BakerSean168/dailyuse/commit/9b51e523a5afc3b546edc637ce27b822f26177c4))
-* **setting:** implement file picker for importing settings in UserSettingsView ([ca42567](https://github.com/BakerSean168/dailyuse/commit/ca42567283689d20c7e819ff1db5cb23e096432d))
-
-
-### Bug Fixes
-
-* **ai:** use workspace database export ([3c81441](https://github.com/BakerSean168/dailyuse/commit/3c814419af2ef0bfa0ab364befd276fde1f75786))
-* **nx:** address code review findings for target governance ([4ff3830](https://github.com/BakerSean168/dailyuse/commit/4ff3830830a2da0d466ef21225b78c60752eae3f))
-* **test:** restore AIChatView goal workflow test rendering ([bef8d46](https://github.com/BakerSean168/dailyuse/commit/bef8d467b6b4d02db04bc0e3ab8340f2464f3def))
-* **web:** add eslint-disable for governance mock boundary import ([8d14846](https://github.com/BakerSean168/dailyuse/commit/8d1484600b5fc525084ac3d855e3f60bd24996d2))
-* 修复desktop 的 Vite dev alias 配置错误 ([62d4dc1](https://github.com/BakerSean168/dailyuse/commit/62d4dc15be26a8e48ff4fe6d52829060b4d36794))
-
-
-### Performance Improvements
-
-* 修改文件名 ([92f41cb](https://github.com/BakerSean168/dailyuse/commit/92f41cb52e91441cd65c1ac3b72837ee04b825b3))
-* 修正 desktop 开发模式热更新失效与启动前全量依赖构建的问题 ([e1cc94b](https://github.com/BakerSean168/dailyuse/commit/e1cc94b77898382df58eff7d450a4141a4755ed7))
-* 登录界面样式优化 ([6cb065e](https://github.com/BakerSean168/dailyuse/commit/6cb065ea688d05a4db6ab95335cefe66b217a3f1))
-
-## [0.7.0](https://github.com/BakerSean168/dailyuse/compare/v0.6.0...v0.7.0) (2026-05-15)
+## [0.8.0](https://github.com/BakerSean168/memoflow/compare/v0.7.0...v0.8.0) (2026-06-02)
 
 
 ### Features
 
-* add desktop screenshot E2E tests and configuration ([678eda2](https://github.com/BakerSean168/dailyuse/commit/678eda254cea153d88672b6b9fc0b8191457341d))
-* add notification-runtime package and refactor notification initialization tasks ([09bc0b2](https://github.com/BakerSean168/dailyuse/commit/09bc0b2972a0a6ea16fadcbe277b45c307b63001))
-* consolidate CI workflows and enhance coverage detection; add optional Python/uv setup ([fa5ba9c](https://github.com/BakerSean168/dailyuse/commit/fa5ba9cfd69323550556980861f02f6b22fd3176))
-* implement web:typecheck failure chain fix plan ([459daf6](https://github.com/BakerSean168/dailyuse/commit/459daf60947386407c8fd2c6f4a8bc8a3b8c0573))
-* **schedule:** 简易日程冲突检测功能，添加日程时，如果有冲突，能实现！标记 ([c5c5397](https://github.com/BakerSean168/dailyuse/commit/c5c5397c4267d0be18373e41b34b0b111add9b03))
-* 实现真正的 agent（goal workflow） ([c0a6856](https://github.com/BakerSean168/dailyuse/commit/c0a6856d5e93d573b788b956010d94d0c4a4a8e4))
+* **api:** add powersync profile snapshot pipeline ([e0375de](https://github.com/BakerSean168/memoflow/commit/e0375de160df6bc95cca3d193f0f3ae6ff3780d2))
+* **desktop:** add shared user files settings flow ([9b51e52](https://github.com/BakerSean168/memoflow/commit/9b51e523a5afc3b546edc637ce27b822f26177c4))
+* **setting:** implement file picker for importing settings in UserSettingsView ([ca42567](https://github.com/BakerSean168/memoflow/commit/ca42567283689d20c7e819ff1db5cb23e096432d))
 
 
 ### Bug Fixes
 
-* action2 ([6cfac63](https://github.com/BakerSean168/dailyuse/commit/6cfac63086e7f340f8ec4b799d36a992af8caca6))
-* action3 ([1ea9475](https://github.com/BakerSean168/dailyuse/commit/1ea9475e50cdab4f90b8181551d600380f022d6a))
-* action4 ([02ba628](https://github.com/BakerSean168/dailyuse/commit/02ba6287f1070f620f2e0fe1077c50f0aa976ca1))
-* add domain-shared and account paths to vitest IPC config ([d0d4531](https://github.com/BakerSean168/dailyuse/commit/d0d4531cb203b14eac4fd36790f719624737318c))
-* add notification-runtime package to pnpm-lock.yaml and link dependencies ([3acc268](https://github.com/BakerSean168/dailyuse/commit/3acc26895ca671453ae835f73662ada021618a98))
-* add path resolution for domain-shared and account aliases in vitest config ([ce16b3d](https://github.com/BakerSean168/dailyuse/commit/ce16b3d93f350e282dbfbf49aa57786c889a5cf5))
-* align test specs with current type contracts ([ecca76c](https://github.com/BakerSean168/dailyuse/commit/ecca76c1536c4f942e9e030a5a163403a0c165b5))
-* **config:** add e2e test file patterns to ESLint configuration ([7fb353c](https://github.com/BakerSean168/dailyuse/commit/7fb353cbfb4f3820e8186a073fe446a425c930b0))
-* correct two TypeScript typecheck errors in spec files ([7fb540b](https://github.com/BakerSean168/dailyuse/commit/7fb540b1d2d977d25f77125efe3b475feed11e6f))
-* fix typecheck errors in spec files - title→name, import path, LocalePreferences casts ([bb319a9](https://github.com/BakerSean168/dailyuse/commit/bb319a948396fbdf662264404bd0b9dc32d121b2))
-* remove baseUrl from authentication tsconfig ([5acb063](https://github.com/BakerSean168/dailyuse/commit/5acb063f6f3c44510d994dd6d08dc887febbd829))
-* resolve pnpm cache issue in setup-node; implement actions/cache for pnpm store ([3fff4c0](https://github.com/BakerSean168/dailyuse/commit/3fff4c00b766d5c27253e5cbc41c8585d39840b0))
-* resolve two TypeScript typecheck errors in spec files ([e850d14](https://github.com/BakerSean168/dailyuse/commit/e850d144143523c79f61d71514fa60bb3f643d51))
-* **settings:** unwrap client results in web settings flows ([6392b81](https://github.com/BakerSean168/dailyuse/commit/6392b81db571d44babb17b347ac49196085aea54))
-* **task:** normalize template time config updates ([6d670fe](https://github.com/BakerSean168/dailyuse/commit/6d670fe9a5f9f3107e3eed7f8649652ac565e845))
-* **ui:** preserve dialog attrs for reminder flows ([b212a2b](https://github.com/BakerSean168/dailyuse/commit/b212a2b6476ae917962f05b6c1a0fca68f09a1ea))
-* update mapping methods to use create instead of fromDTO ([d1d7233](https://github.com/BakerSean168/dailyuse/commit/d1d7233a780ca1841044c595e23bb19cb30340d5))
-* update pnpm-lock.yaml to add @vue/test-utils, pinia, and vue dependencies ([c3ccb99](https://github.com/BakerSean168/dailyuse/commit/c3ccb99ac3faa071445c2673d84e106e63d57849))
-* update pnpm-lock.yaml to include http-client and bump vue-component-type-helpers version ([237bdba](https://github.com/BakerSean168/dailyuse/commit/237bdba366f2502c88a999aa0c8c9eccdfb3ada1))
-* update server cwd paths and adjust build commands in project configuration ([b475114](https://github.com/BakerSean168/dailyuse/commit/b475114047988e880d165ef389ebd8df7420c221))
-* update TaskInstanceCard.vue to use PascalCase timeType values ([61981f3](https://github.com/BakerSean168/dailyuse/commit/61981f305a2b2fcf88667896f7370531a0da87a6))
-* update TypeScript configuration and add test-utils paths; modify dependency status in task fixture ([3db9377](https://github.com/BakerSean168/dailyuse/commit/3db93776e3fb529befb439788aaadab8fe5d9508))
-* **web:** stabilize playwright e2e server startup ([5c6888d](https://github.com/BakerSean168/dailyuse/commit/5c6888ddf59a091ff945015004948e5a9508c5f2))
-* 修typecheck 任务，添加前置依赖；给 mobile 项目补充开发依赖 ([64a1101](https://github.com/BakerSean168/dailyuse/commit/64a1101fd4e51d7cc52217a37312c0611c1d0b58))
-* 修复 ruff 错误， 集成测试漂移， 统一测试环境 ([0c1c5ca](https://github.com/BakerSean168/dailyuse/commit/0c1c5ca3d412cbfd044942244c5935ce6baf2ece))
-* 修复action ([0832457](https://github.com/BakerSean168/dailyuse/commit/0832457474535859561b00ef7d5e7eeb6e101928))
-* 修复api 侧的 SSE 路由把 req.close 视为客户端断开导致没有响应的 bug ([f2d2da7](https://github.com/BakerSean168/dailyuse/commit/f2d2da7292d7ce293139ed3bdb33de2d9718d653))
-* 修复application层导出更新后， app层没有同步更改导致的报错 ([98bd278](https://github.com/BakerSean168/dailyuse/commit/98bd2781aeaadfadd959fb83857e77eb7fab168e))
-* 修复web端的笔记打开报错问题 ([1b5baaa](https://github.com/BakerSean168/dailyuse/commit/1b5baaa6ac1c80e320c868ebcc5fb08972340def))
-* 修复测试文件错误 ([fd58854](https://github.com/BakerSean168/dailyuse/commit/fd58854d2755ad2b7c99748e77430bf47dd73945))
-* 修复语言切换功能 ([9d484f5](https://github.com/BakerSean168/dailyuse/commit/9d484f5e75be28cf4678ccbc572ec936a5bac372))
-* 修复输出文件路径错误 ([e4a1cc7](https://github.com/BakerSean168/dailyuse/commit/e4a1cc7876cd0a35ff5fe7afdf9c35d42ce39c7a))
-* 修复进入 setting 页面会刷新主题为 auto的问题。修复editor路径配置问题 ([b9c0d43](https://github.com/BakerSean168/dailyuse/commit/b9c0d4322eb16884f562c1fe9856ce40fe7a1b28))
-* 修复错误JSON格式数据（多了个，） ([80bbd96](https://github.com/BakerSean168/dailyuse/commit/80bbd962c00b35f2a6b59930c3137fbbc622ea9e))
-* 更新 pnpmlock ([eac2f4a](https://github.com/BakerSean168/dailyuse/commit/eac2f4a7df73903540852c18964fc994d57aae43))
-* 正确实现了reminder模块的相关计数功能 ([9c329ca](https://github.com/BakerSean168/dailyuse/commit/9c329cad957febd27a3c4eb6e1b6e9d62ce50cbb))
-* 补充依赖 ([392ccee](https://github.com/BakerSean168/dailyuse/commit/392ccee691d8b0154ff7fb984abcd3c8894ecd91))
+* **ai:** use workspace database export ([3c81441](https://github.com/BakerSean168/memoflow/commit/3c814419af2ef0bfa0ab364befd276fde1f75786))
+* **nx:** address code review findings for target governance ([4ff3830](https://github.com/BakerSean168/memoflow/commit/4ff3830830a2da0d466ef21225b78c60752eae3f))
+* **test:** restore AIChatView goal workflow test rendering ([bef8d46](https://github.com/BakerSean168/memoflow/commit/bef8d467b6b4d02db04bc0e3ab8340f2464f3def))
+* **web:** add eslint-disable for governance mock boundary import ([8d14846](https://github.com/BakerSean168/memoflow/commit/8d1484600b5fc525084ac3d855e3f60bd24996d2))
+* 修复desktop 的 Vite dev alias 配置错误 ([62d4dc1](https://github.com/BakerSean168/memoflow/commit/62d4dc15be26a8e48ff4fe6d52829060b4d36794))
 
 
 ### Performance Improvements
 
-* Application-Client 层标准化计划 ([974fad8](https://github.com/BakerSean168/dailyuse/commit/974fad8ca43a1db35b166bba4c2883aeaeb6a318))
-* Application-Server 层标准化计划 ([f3f330c](https://github.com/BakerSean168/dailyuse/commit/f3f330c5cf094abbf54c1d9dc8a0788f77da410a))
-* contract中部分代码规范统一 ([693119a](https://github.com/BakerSean168/dailyuse/commit/693119a5d26777117785fd298e343608f5a94a9f))
-* Task Prisma Mapper toPersistence 统一接受聚合根 ([13ed935](https://github.com/BakerSean168/dailyuse/commit/13ed93552407be3dcf7f4d58810a1a35cbe40a02))
-* task 模块的contracts优化 ([e949dec](https://github.com/BakerSean168/dailyuse/commit/e949dec12fccb72cf1bb5ee89432b76d0f67d983))
-* 事件命名部分优化 ([cb027a6](https://github.com/BakerSean168/dailyuse/commit/cb027a6be88268b1ddca0385bf0c97dc162f72ed))
-* 事件总线相关更新 ([00a7d6e](https://github.com/BakerSean168/dailyuse/commit/00a7d6ee0be920f6a56bb6ccadf2dbc42567cafd))
-* 仓储层标准化 — 事务修复、Mapper 提取、共享工具 ([bbb9fc2](https://github.com/BakerSean168/dailyuse/commit/bbb9fc2cee5af39eaee5899bee74bc80e16d11cc))
-* 优1.化测试系统 2. 统一命令心智模型，使用 nx 命令 ([f6e5eda](https://github.com/BakerSean168/dailyuse/commit/f6e5eda1a35212099eff9c62de0e1db9b1bd6d5a))
-* 优化domain层代码，统一规范 ([77c10da](https://github.com/BakerSean168/dailyuse/commit/77c10da0b6aed64e462284dbe346a506abc8e334))
-* 优化配置文件和测试系统，添加覆盖率要求，完善goal模块的领域层的测试文件。基于TDD思想。 ([dac4a6c](https://github.com/BakerSean168/dailyuse/commit/dac4a6ce68860dabdeed1663bca76405c9159b1c))
-* 展示字段移除后相应的修改 ([c314df1](https://github.com/BakerSean168/dailyuse/commit/c314df1b2b394131d5792ef68f4c8a5638407540))
-* 测试系统（稳定器）的搭建。 优化 reminder 的 修改 template 的接口为 post 方法 ([07c6603](https://github.com/BakerSean168/dailyuse/commit/07c6603506007fdaa47e6d9adda6c145d576e12d))
-* 移除两个文件的跟踪 ([ee88046](https://github.com/BakerSean168/dailyuse/commit/ee880466f38a420a6faa1040bd00a5059f07a910))
-* 补充了 success、warning相关的主题 ([6bbf9e8](https://github.com/BakerSean168/dailyuse/commit/6bbf9e8c0a5597e8b6d54ff92907e25d327393f2))
+* 修改文件名 ([92f41cb](https://github.com/BakerSean168/memoflow/commit/92f41cb52e91441cd65c1ac3b72837ee04b825b3))
+* 修正 desktop 开发模式热更新失效与启动前全量依赖构建的问题 ([e1cc94b](https://github.com/BakerSean168/memoflow/commit/e1cc94b77898382df58eff7d450a4141a4755ed7))
+* 登录界面样式优化 ([6cb065e](https://github.com/BakerSean168/memoflow/commit/6cb065ea688d05a4db6ab95335cefe66b217a3f1))
 
-## [0.6.0](https://github.com/BakerSean168/dailyuse/compare/v0.5.2...v0.6.0) (2026-04-18)
+## [0.7.0](https://github.com/BakerSean168/memoflow/compare/v0.6.0...v0.7.0) (2026-05-15)
 
 
 ### Features
 
-* add support for streaming messages with abort functionality ([69a88ff](https://github.com/BakerSean168/dailyuse/commit/69a88ffe7af98e4909d57af986a229b0c75715f3))
-* update vitest performance config for deterministic benchmarks and forked Node runtime ([8b9a9af](https://github.com/BakerSean168/dailyuse/commit/8b9a9af61ae397f0c7c37442bb5b9624eb44ad03))
+* add desktop screenshot E2E tests and configuration ([678eda2](https://github.com/BakerSean168/memoflow/commit/678eda254cea153d88672b6b9fc0b8191457341d))
+* add notification-runtime package and refactor notification initialization tasks ([09bc0b2](https://github.com/BakerSean168/memoflow/commit/09bc0b2972a0a6ea16fadcbe277b45c307b63001))
+* consolidate CI workflows and enhance coverage detection; add optional Python/uv setup ([fa5ba9c](https://github.com/BakerSean168/memoflow/commit/fa5ba9cfd69323550556980861f02f6b22fd3176))
+* implement web:typecheck failure chain fix plan ([459daf6](https://github.com/BakerSean168/memoflow/commit/459daf60947386407c8fd2c6f4a8bc8a3b8c0573))
+* **schedule:** 简易日程冲突检测功能，添加日程时，如果有冲突，能实现！标记 ([c5c5397](https://github.com/BakerSean168/memoflow/commit/c5c5397c4267d0be18373e41b34b0b111add9b03))
+* 实现真正的 agent（goal workflow） ([c0a6856](https://github.com/BakerSean168/memoflow/commit/c0a6856d5e93d573b788b956010d94d0c4a4a8e4))
 
 
 ### Bug Fixes
 
-* add missing entry for @dailyuse/app-vue in desktop renderer and test configurations ([5bdb110](https://github.com/BakerSean168/dailyuse/commit/5bdb1107fdd78d2e3a349bb9545dcecfae38b709))
-* ensure current session before fetching auth status and bootstrap snapshot ([66e2141](https://github.com/BakerSean168/dailyuse/commit/66e214149e8cc0524254c6f626dcebd049418ba7))
-* **goal:** replace goal module initialization with Prisma-backed factory ([81c5ec7](https://github.com/BakerSean168/dailyuse/commit/81c5ec7f3121dd4a5433cfa5041b4ffd622b2efe))
-* **goal:** 修复专注模式目标显示与文案 ([4375103](https://github.com/BakerSean168/dailyuse/commit/437510358a5bcb28abc2e42b69b041856b5f0f6a))
-* improve vitest config comments for clarity on project setup and integration target ([8b9a9af](https://github.com/BakerSean168/dailyuse/commit/8b9a9af61ae397f0c7c37442bb5b9624eb44ad03))
-* update powersync image to use dynamic registry and tag variables ([b2b0e3d](https://github.com/BakerSean168/dailyuse/commit/b2b0e3d516d7aa723e5a0af3086c8786f5b9c525))
-* 修复 app-vue 没有子包导出的问题 ([2b94dfe](https://github.com/BakerSean168/dailyuse/commit/2b94dfe2c07c5198268e776a8e79ac99352b0b53))
-* 修复app-vue/web-notification 源码没有导出子路径问题 ([2d5ea79](https://github.com/BakerSean168/dailyuse/commit/2d5ea797e77669f231e2304c5137102f42ae2cfd))
-* 修复desktop端原生弹窗失效问题 ([cc9aa6f](https://github.com/BakerSean168/dailyuse/commit/cc9aa6f3dd741f610830a5c76551e2de92b97e4f))
+* action2 ([6cfac63](https://github.com/BakerSean168/memoflow/commit/6cfac63086e7f340f8ec4b799d36a992af8caca6))
+* action3 ([1ea9475](https://github.com/BakerSean168/memoflow/commit/1ea9475e50cdab4f90b8181551d600380f022d6a))
+* action4 ([02ba628](https://github.com/BakerSean168/memoflow/commit/02ba6287f1070f620f2e0fe1077c50f0aa976ca1))
+* add domain-shared and account paths to vitest IPC config ([d0d4531](https://github.com/BakerSean168/memoflow/commit/d0d4531cb203b14eac4fd36790f719624737318c))
+* add notification-runtime package to pnpm-lock.yaml and link dependencies ([3acc268](https://github.com/BakerSean168/memoflow/commit/3acc26895ca671453ae835f73662ada021618a98))
+* add path resolution for domain-shared and account aliases in vitest config ([ce16b3d](https://github.com/BakerSean168/memoflow/commit/ce16b3d93f350e282dbfbf49aa57786c889a5cf5))
+* align test specs with current type contracts ([ecca76c](https://github.com/BakerSean168/memoflow/commit/ecca76c1536c4f942e9e030a5a163403a0c165b5))
+* **config:** add e2e test file patterns to ESLint configuration ([7fb353c](https://github.com/BakerSean168/memoflow/commit/7fb353cbfb4f3820e8186a073fe446a425c930b0))
+* correct two TypeScript typecheck errors in spec files ([7fb540b](https://github.com/BakerSean168/memoflow/commit/7fb540b1d2d977d25f77125efe3b475feed11e6f))
+* fix typecheck errors in spec files - title→name, import path, LocalePreferences casts ([bb319a9](https://github.com/BakerSean168/memoflow/commit/bb319a948396fbdf662264404bd0b9dc32d121b2))
+* remove baseUrl from authentication tsconfig ([5acb063](https://github.com/BakerSean168/memoflow/commit/5acb063f6f3c44510d994dd6d08dc887febbd829))
+* resolve pnpm cache issue in setup-node; implement actions/cache for pnpm store ([3fff4c0](https://github.com/BakerSean168/memoflow/commit/3fff4c00b766d5c27253e5cbc41c8585d39840b0))
+* resolve two TypeScript typecheck errors in spec files ([e850d14](https://github.com/BakerSean168/memoflow/commit/e850d144143523c79f61d71514fa60bb3f643d51))
+* **settings:** unwrap client results in web settings flows ([6392b81](https://github.com/BakerSean168/memoflow/commit/6392b81db571d44babb17b347ac49196085aea54))
+* **task:** normalize template time config updates ([6d670fe](https://github.com/BakerSean168/memoflow/commit/6d670fe9a5f9f3107e3eed7f8649652ac565e845))
+* **ui:** preserve dialog attrs for reminder flows ([b212a2b](https://github.com/BakerSean168/memoflow/commit/b212a2b6476ae917962f05b6c1a0fca68f09a1ea))
+* update mapping methods to use create instead of fromDTO ([d1d7233](https://github.com/BakerSean168/memoflow/commit/d1d7233a780ca1841044c595e23bb19cb30340d5))
+* update pnpm-lock.yaml to add @vue/test-utils, pinia, and vue dependencies ([c3ccb99](https://github.com/BakerSean168/memoflow/commit/c3ccb99ac3faa071445c2673d84e106e63d57849))
+* update pnpm-lock.yaml to include http-client and bump vue-component-type-helpers version ([237bdba](https://github.com/BakerSean168/memoflow/commit/237bdba366f2502c88a999aa0c8c9eccdfb3ada1))
+* update server cwd paths and adjust build commands in project configuration ([b475114](https://github.com/BakerSean168/memoflow/commit/b475114047988e880d165ef389ebd8df7420c221))
+* update TaskInstanceCard.vue to use PascalCase timeType values ([61981f3](https://github.com/BakerSean168/memoflow/commit/61981f305a2b2fcf88667896f7370531a0da87a6))
+* update TypeScript configuration and add test-utils paths; modify dependency status in task fixture ([3db9377](https://github.com/BakerSean168/memoflow/commit/3db93776e3fb529befb439788aaadab8fe5d9508))
+* **web:** stabilize playwright e2e server startup ([5c6888d](https://github.com/BakerSean168/memoflow/commit/5c6888ddf59a091ff945015004948e5a9508c5f2))
+* 修typecheck 任务，添加前置依赖；给 mobile 项目补充开发依赖 ([64a1101](https://github.com/BakerSean168/memoflow/commit/64a1101fd4e51d7cc52217a37312c0611c1d0b58))
+* 修复 ruff 错误， 集成测试漂移， 统一测试环境 ([0c1c5ca](https://github.com/BakerSean168/memoflow/commit/0c1c5ca3d412cbfd044942244c5935ce6baf2ece))
+* 修复action ([0832457](https://github.com/BakerSean168/memoflow/commit/0832457474535859561b00ef7d5e7eeb6e101928))
+* 修复api 侧的 SSE 路由把 req.close 视为客户端断开导致没有响应的 bug ([f2d2da7](https://github.com/BakerSean168/memoflow/commit/f2d2da7292d7ce293139ed3bdb33de2d9718d653))
+* 修复application层导出更新后， app层没有同步更改导致的报错 ([98bd278](https://github.com/BakerSean168/memoflow/commit/98bd2781aeaadfadd959fb83857e77eb7fab168e))
+* 修复web端的笔记打开报错问题 ([1b5baaa](https://github.com/BakerSean168/memoflow/commit/1b5baaa6ac1c80e320c868ebcc5fb08972340def))
+* 修复测试文件错误 ([fd58854](https://github.com/BakerSean168/memoflow/commit/fd58854d2755ad2b7c99748e77430bf47dd73945))
+* 修复语言切换功能 ([9d484f5](https://github.com/BakerSean168/memoflow/commit/9d484f5e75be28cf4678ccbc572ec936a5bac372))
+* 修复输出文件路径错误 ([e4a1cc7](https://github.com/BakerSean168/memoflow/commit/e4a1cc7876cd0a35ff5fe7afdf9c35d42ce39c7a))
+* 修复进入 setting 页面会刷新主题为 auto的问题。修复editor路径配置问题 ([b9c0d43](https://github.com/BakerSean168/memoflow/commit/b9c0d4322eb16884f562c1fe9856ce40fe7a1b28))
+* 修复错误JSON格式数据（多了个，） ([80bbd96](https://github.com/BakerSean168/memoflow/commit/80bbd962c00b35f2a6b59930c3137fbbc622ea9e))
+* 更新 pnpmlock ([eac2f4a](https://github.com/BakerSean168/memoflow/commit/eac2f4a7df73903540852c18964fc994d57aae43))
+* 正确实现了reminder模块的相关计数功能 ([9c329ca](https://github.com/BakerSean168/memoflow/commit/9c329cad957febd27a3c4eb6e1b6e9d62ce50cbb))
+* 补充依赖 ([392ccee](https://github.com/BakerSean168/memoflow/commit/392ccee691d8b0154ff7fb984abcd3c8894ecd91))
 
 
 ### Performance Improvements
 
-* **app:** split startup entrypoints and lazy-load heavy shared features ([d04bb74](https://github.com/BakerSean168/dailyuse/commit/d04bb74820075d5d9ba8ca999cea7316e0e20be1))
-* ui-vue-shadcn实现深度子包导出 ([f9013eb](https://github.com/BakerSean168/dailyuse/commit/f9013eb9c87ea139cc4fe4869a27917439384937))
+* Application-Client 层标准化计划 ([974fad8](https://github.com/BakerSean168/memoflow/commit/974fad8ca43a1db35b166bba4c2883aeaeb6a318))
+* Application-Server 层标准化计划 ([f3f330c](https://github.com/BakerSean168/memoflow/commit/f3f330c5cf094abbf54c1d9dc8a0788f77da410a))
+* contract中部分代码规范统一 ([693119a](https://github.com/BakerSean168/memoflow/commit/693119a5d26777117785fd298e343608f5a94a9f))
+* Task Prisma Mapper toPersistence 统一接受聚合根 ([13ed935](https://github.com/BakerSean168/memoflow/commit/13ed93552407be3dcf7f4d58810a1a35cbe40a02))
+* task 模块的contracts优化 ([e949dec](https://github.com/BakerSean168/memoflow/commit/e949dec12fccb72cf1bb5ee89432b76d0f67d983))
+* 事件命名部分优化 ([cb027a6](https://github.com/BakerSean168/memoflow/commit/cb027a6be88268b1ddca0385bf0c97dc162f72ed))
+* 事件总线相关更新 ([00a7d6e](https://github.com/BakerSean168/memoflow/commit/00a7d6ee0be920f6a56bb6ccadf2dbc42567cafd))
+* 仓储层标准化 — 事务修复、Mapper 提取、共享工具 ([bbb9fc2](https://github.com/BakerSean168/memoflow/commit/bbb9fc2cee5af39eaee5899bee74bc80e16d11cc))
+* 优1.化测试系统 2. 统一命令心智模型，使用 nx 命令 ([f6e5eda](https://github.com/BakerSean168/memoflow/commit/f6e5eda1a35212099eff9c62de0e1db9b1bd6d5a))
+* 优化domain层代码，统一规范 ([77c10da](https://github.com/BakerSean168/memoflow/commit/77c10da0b6aed64e462284dbe346a506abc8e334))
+* 优化配置文件和测试系统，添加覆盖率要求，完善goal模块的领域层的测试文件。基于TDD思想。 ([dac4a6c](https://github.com/BakerSean168/memoflow/commit/dac4a6ce68860dabdeed1663bca76405c9159b1c))
+* 展示字段移除后相应的修改 ([c314df1](https://github.com/BakerSean168/memoflow/commit/c314df1b2b394131d5792ef68f4c8a5638407540))
+* 测试系统（稳定器）的搭建。 优化 reminder 的 修改 template 的接口为 post 方法 ([07c6603](https://github.com/BakerSean168/memoflow/commit/07c6603506007fdaa47e6d9adda6c145d576e12d))
+* 移除两个文件的跟踪 ([ee88046](https://github.com/BakerSean168/memoflow/commit/ee880466f38a420a6faa1040bd00a5059f07a910))
+* 补充了 success、warning相关的主题 ([6bbf9e8](https://github.com/BakerSean168/memoflow/commit/6bbf9e8c0a5597e8b6d54ff92907e25d327393f2))
 
-## [0.5.2](https://github.com/BakerSean168/dailyuse/compare/v0.5.1...v0.5.2) (2026-04-12)
-
-
-### Bug Fixes
-
-* remove token expiration handling from auth state updates ([b824d29](https://github.com/BakerSean168/dailyuse/commit/b824d29c9d65c23dfb1e729c9928a76fc5f683d6))
-* 修复桌面端构建问题，把powersync放到 asarUnpack 中。 还有优化构建目录，差分 package 和 renderer。 ([99ee1b9](https://github.com/BakerSean168/dailyuse/commit/99ee1b918165e346ef5f938a8c784e547e74f0a9))
-
-
-### Performance Improvements
-
-* 优化desktop端的 powersync 同步数据库的连接语义和认证逻辑 ([7d7294a](https://github.com/BakerSean168/dailyuse/commit/7d7294a634f69ee71f80f5940ab85aea49adf9ed))
-* 优化配置，添加powersync的容器 ([08ce381](https://github.com/BakerSean168/dailyuse/commit/08ce38147e01781355920320c9388903ef55a4b5))
-
-## [0.5.1](https://github.com/BakerSean168/dailyuse/compare/v0.5.0...v0.5.1) (2026-04-06)
-
-
-### Bug Fixes
-
-* 修复 native-rebuid 构建指令 ([0f0347f](https://github.com/BakerSean168/dailyuse/commit/0f0347f6e3cea4bc512d2fdb7f5b635810ccacac))
-
-
-### Performance Improvements
-
-* 在desktop 端的 render也差分 auth 和 主应用 ([d648d2c](https://github.com/BakerSean168/dailyuse/commit/d648d2c186ec50025c208035d40d43505ef28a00))
-
-## [0.5.0](https://github.com/BakerSean168/dailyuse/compare/v0.4.0...v0.5.0) (2026-04-06)
+## [0.6.0](https://github.com/BakerSean168/memoflow/compare/v0.5.2...v0.6.0) (2026-04-18)
 
 
 ### Features
 
-* initialize web application with Vite configuration, MSW mock handlers, and comprehensive E2E test suite ([54e3859](https://github.com/BakerSean168/dailyuse/commit/54e3859babd507313a251e1ad02d6cf139846a4d))
+* add support for streaming messages with abort functionality ([69a88ff](https://github.com/BakerSean168/memoflow/commit/69a88ffe7af98e4909d57af986a229b0c75715f3))
+* update vitest performance config for deterministic benchmarks and forked Node runtime ([8b9a9af](https://github.com/BakerSean168/memoflow/commit/8b9a9af61ae397f0c7c37442bb5b9624eb44ad03))
 
 
 ### Bug Fixes
 
-* add MSW handlers for settings and utility functions for component testing ([de83382](https://github.com/BakerSean168/dailyuse/commit/de833826d387a18300c343d71be0767a41d61e62))
-* **deploy:** stabilize production web delivery ([8ffcd65](https://github.com/BakerSean168/dailyuse/commit/8ffcd65fd16e3bc3fdab774893c5df6385a88847))
-* 修复 github action 构建产物流程的错误：1. 明确 electron 版本。 2. 把 argon2 也明确原生编译 ([a3edbea](https://github.com/BakerSean168/dailyuse/commit/a3edbea4ad874d023979ae275185dc59aa53fd51))
-* 修复锁文件不一致导致的报错 ([be38d2f](https://github.com/BakerSean168/dailyuse/commit/be38d2fea2184e2c6eb4ecaedaa9bffd879c72d0))
+* add missing entry for @memoflow/app-vue in desktop renderer and test configurations ([5bdb110](https://github.com/BakerSean168/memoflow/commit/5bdb1107fdd78d2e3a349bb9545dcecfae38b709))
+* ensure current session before fetching auth status and bootstrap snapshot ([66e2141](https://github.com/BakerSean168/memoflow/commit/66e214149e8cc0524254c6f626dcebd049418ba7))
+* **goal:** replace goal module initialization with Prisma-backed factory ([81c5ec7](https://github.com/BakerSean168/memoflow/commit/81c5ec7f3121dd4a5433cfa5041b4ffd622b2efe))
+* **goal:** 修复专注模式目标显示与文案 ([4375103](https://github.com/BakerSean168/memoflow/commit/437510358a5bcb28abc2e42b69b041856b5f0f6a))
+* improve vitest config comments for clarity on project setup and integration target ([8b9a9af](https://github.com/BakerSean168/memoflow/commit/8b9a9af61ae397f0c7c37442bb5b9624eb44ad03))
+* update powersync image to use dynamic registry and tag variables ([b2b0e3d](https://github.com/BakerSean168/memoflow/commit/b2b0e3d516d7aa723e5a0af3086c8786f5b9c525))
+* 修复 app-vue 没有子包导出的问题 ([2b94dfe](https://github.com/BakerSean168/memoflow/commit/2b94dfe2c07c5198268e776a8e79ac99352b0b53))
+* 修复app-vue/web-notification 源码没有导出子路径问题 ([2d5ea79](https://github.com/BakerSean168/memoflow/commit/2d5ea797e77669f231e2304c5137102f42ae2cfd))
+* 修复desktop端原生弹窗失效问题 ([cc9aa6f](https://github.com/BakerSean168/memoflow/commit/cc9aa6f3dd741f610830a5c76551e2de92b97e4f))
 
 
 ### Performance Improvements
 
-* web端首包构建优化，拆分auth和主页面的js ([c76065c](https://github.com/BakerSean168/dailyuse/commit/c76065c080fe9d5ef13774d20dbe12291ac7549f))
+* **app:** split startup entrypoints and lazy-load heavy shared features ([d04bb74](https://github.com/BakerSean168/memoflow/commit/d04bb74820075d5d9ba8ca999cea7316e0e20be1))
+* ui-vue-shadcn实现深度子包导出 ([f9013eb](https://github.com/BakerSean168/memoflow/commit/f9013eb9c87ea139cc4fe4869a27917439384937))
 
-## [0.4.0](https://github.com/BakerSean168/dailyuse/compare/v0.3.0...v0.4.0) (2026-04-05)
+## [0.5.2](https://github.com/BakerSean168/memoflow/compare/v0.5.1...v0.5.2) (2026-04-12)
+
+
+### Bug Fixes
+
+* remove token expiration handling from auth state updates ([b824d29](https://github.com/BakerSean168/memoflow/commit/b824d29c9d65c23dfb1e729c9928a76fc5f683d6))
+* 修复桌面端构建问题，把powersync放到 asarUnpack 中。 还有优化构建目录，差分 package 和 renderer。 ([99ee1b9](https://github.com/BakerSean168/memoflow/commit/99ee1b918165e346ef5f938a8c784e547e74f0a9))
+
+
+### Performance Improvements
+
+* 优化desktop端的 powersync 同步数据库的连接语义和认证逻辑 ([7d7294a](https://github.com/BakerSean168/memoflow/commit/7d7294a634f69ee71f80f5940ab85aea49adf9ed))
+* 优化配置，添加powersync的容器 ([08ce381](https://github.com/BakerSean168/memoflow/commit/08ce38147e01781355920320c9388903ef55a4b5))
+
+## [0.5.1](https://github.com/BakerSean168/memoflow/compare/v0.5.0...v0.5.1) (2026-04-06)
+
+
+### Bug Fixes
+
+* 修复 native-rebuid 构建指令 ([0f0347f](https://github.com/BakerSean168/memoflow/commit/0f0347f6e3cea4bc512d2fdb7f5b635810ccacac))
+
+
+### Performance Improvements
+
+* 在desktop 端的 render也差分 auth 和 主应用 ([d648d2c](https://github.com/BakerSean168/memoflow/commit/d648d2c186ec50025c208035d40d43505ef28a00))
+
+## [0.5.0](https://github.com/BakerSean168/memoflow/compare/v0.4.0...v0.5.0) (2026-04-06)
 
 
 ### Features
 
-* add user data path utilities and enhance logging ([cdba01b](https://github.com/BakerSean168/dailyuse/commit/cdba01b94c17c4f141061226cda724663aabeedf))
-* deploy ([ca80405](https://github.com/BakerSean168/dailyuse/commit/ca80405c1f7ea9742ef12cccc81be496e6727039))
-* enhance page navigation with action drawers and improve UI consistency ([93dca44](https://github.com/BakerSean168/dailyuse/commit/93dca44f0df133d4732edfe088a2940ef0825aee))
-* enhance test database configuration with environment variables ([09836a1](https://github.com/BakerSean168/dailyuse/commit/09836a14b16dbf9e185dc1e4c7366598bde2912f))
-* implement centralized error handling middleware, Docker CI/CD pipeline, and IPC result adapters for cross-platform consistency. ([8a7c5e3](https://github.com/BakerSean168/dailyuse/commit/8a7c5e3bea046ea34c3f44db23e6d01626a8b944))
-* implement global error middleware, add AI workspace hook, and configure UI/mobile project structures ([cad47f1](https://github.com/BakerSean168/dailyuse/commit/cad47f16880434fa3e1db00d16d9683937854163))
-* 任务模板依赖图和依赖相关属性增强 ([79a0ee1](https://github.com/BakerSean168/dailyuse/commit/79a0ee1eda18eeabf0a1901517f7c5ef237e4254))
-* 初始化react-native，手机端 ([c797cbd](https://github.com/BakerSean168/dailyuse/commit/c797cbd4271dbba1ee5628367dc0765a4f4b7525))
-* 初步实现 mobile 端 ([4c27377](https://github.com/BakerSean168/dailyuse/commit/4c27377ad5d4ccf3ceeaf351ce4730f38868515f))
+* initialize web application with Vite configuration, MSW mock handlers, and comprehensive E2E test suite ([54e3859](https://github.com/BakerSean168/memoflow/commit/54e3859babd507313a251e1ad02d6cf139846a4d))
 
 
 ### Bug Fixes
 
-* action1 ([bf7906b](https://github.com/BakerSean168/dailyuse/commit/bf7906ba03e900ddf2b4798219a829826fe27141))
-* action2 ([96fb889](https://github.com/BakerSean168/dailyuse/commit/96fb8890ea5c99bcc970c7a2bc99baca0ba8e2d7))
-* action3 ([a65596e](https://github.com/BakerSean168/dailyuse/commit/a65596ee1acc053f92458bf4f28d3d8723be221b))
-* **ai:** normalize result errors and polish web chat workspace ([706ab26](https://github.com/BakerSean168/dailyuse/commit/706ab26c2f0dba4907203d06922613fc8f2aa1c1))
-* docker deploy fix ([02f0e70](https://github.com/BakerSean168/dailyuse/commit/02f0e70f9a81e5776d9eff52578ed6db3881b5db))
-* hardcode database credentials in test workflow for consistency ([3545c43](https://github.com/BakerSean168/dailyuse/commit/3545c43bfa4a957c5ee93d4a28ba5d054c4ff5d2))
-* taskId 问题 ([4eaf02a](https://github.com/BakerSean168/dailyuse/commit/4eaf02a638f1916700bb7ee5fa9d56d64b9fe516))
-* **ui-core:** use cryptographically secure randomness for passwords ([5dd7137](https://github.com/BakerSean168/dailyuse/commit/5dd713774fcb40d681e5a947ed10628f377896e2))
-* **ui-core:** use cryptographically secure randomness for passwords ([cde3118](https://github.com/BakerSean168/dailyuse/commit/cde31188535c3c3bc41309107ad10220e1c618da))
-* update lodash version and add assets dependency in pnpm-lock.yaml ([ce8b792](https://github.com/BakerSean168/dailyuse/commit/ce8b79281149d6d5ad0981da72ee3a2aaab6702e))
-* 修复冷启动后访客模式的 id 会重新生成而非 读取磁盘上已有 guest token 的问题 ([d05b8e2](https://github.com/BakerSean168/dailyuse/commit/d05b8e2e962bb73c4975a39ea1d912f5b726313c))
-* 修复图标路径错误导致托盘图片空白的问题 ([bb361b3](https://github.com/BakerSean168/dailyuse/commit/bb361b391bf850c96cf667687d2906895449774c))
+* add MSW handlers for settings and utility functions for component testing ([de83382](https://github.com/BakerSean168/memoflow/commit/de833826d387a18300c343d71be0767a41d61e62))
+* **deploy:** stabilize production web delivery ([8ffcd65](https://github.com/BakerSean168/memoflow/commit/8ffcd65fd16e3bc3fdab774893c5df6385a88847))
+* 修复 github action 构建产物流程的错误：1. 明确 electron 版本。 2. 把 argon2 也明确原生编译 ([a3edbea](https://github.com/BakerSean168/memoflow/commit/a3edbea4ad874d023979ae275185dc59aa53fd51))
+* 修复锁文件不一致导致的报错 ([be38d2f](https://github.com/BakerSean168/memoflow/commit/be38d2fea2184e2c6eb4ecaedaa9bffd879c72d0))
 
 
 ### Performance Improvements
 
-* uuid 库移除的锁文件更改 ([1d6bd6b](https://github.com/BakerSean168/dailyuse/commit/1d6bd6b6b6c30659369727e19fb698bee555d8d3))
-* 优化 uuid相关方法移除 uuid库 ， 使用 原生 crypto.randomUUID 的方法，并且统一工具函数，移除重复文件 ([ef60854](https://github.com/BakerSean168/dailyuse/commit/ef60854a15b66dabc4b5973e62f02f5f9c8dda5f))
+* web端首包构建优化，拆分auth和主页面的js ([c76065c](https://github.com/BakerSean168/memoflow/commit/c76065c080fe9d5ef13774d20dbe12291ac7549f))
+
+## [0.4.0](https://github.com/BakerSean168/memoflow/compare/v0.3.0...v0.4.0) (2026-04-05)
+
+
+### Features
+
+* add user data path utilities and enhance logging ([cdba01b](https://github.com/BakerSean168/memoflow/commit/cdba01b94c17c4f141061226cda724663aabeedf))
+* deploy ([ca80405](https://github.com/BakerSean168/memoflow/commit/ca80405c1f7ea9742ef12cccc81be496e6727039))
+* enhance page navigation with action drawers and improve UI consistency ([93dca44](https://github.com/BakerSean168/memoflow/commit/93dca44f0df133d4732edfe088a2940ef0825aee))
+* enhance test database configuration with environment variables ([09836a1](https://github.com/BakerSean168/memoflow/commit/09836a14b16dbf9e185dc1e4c7366598bde2912f))
+* implement centralized error handling middleware, Docker CI/CD pipeline, and IPC result adapters for cross-platform consistency. ([8a7c5e3](https://github.com/BakerSean168/memoflow/commit/8a7c5e3bea046ea34c3f44db23e6d01626a8b944))
+* implement global error middleware, add AI workspace hook, and configure UI/mobile project structures ([cad47f1](https://github.com/BakerSean168/memoflow/commit/cad47f16880434fa3e1db00d16d9683937854163))
+* 任务模板依赖图和依赖相关属性增强 ([79a0ee1](https://github.com/BakerSean168/memoflow/commit/79a0ee1eda18eeabf0a1901517f7c5ef237e4254))
+* 初始化react-native，手机端 ([c797cbd](https://github.com/BakerSean168/memoflow/commit/c797cbd4271dbba1ee5628367dc0765a4f4b7525))
+* 初步实现 mobile 端 ([4c27377](https://github.com/BakerSean168/memoflow/commit/4c27377ad5d4ccf3ceeaf351ce4730f38868515f))
+
+
+### Bug Fixes
+
+* action1 ([bf7906b](https://github.com/BakerSean168/memoflow/commit/bf7906ba03e900ddf2b4798219a829826fe27141))
+* action2 ([96fb889](https://github.com/BakerSean168/memoflow/commit/96fb8890ea5c99bcc970c7a2bc99baca0ba8e2d7))
+* action3 ([a65596e](https://github.com/BakerSean168/memoflow/commit/a65596ee1acc053f92458bf4f28d3d8723be221b))
+* **ai:** normalize result errors and polish web chat workspace ([706ab26](https://github.com/BakerSean168/memoflow/commit/706ab26c2f0dba4907203d06922613fc8f2aa1c1))
+* docker deploy fix ([02f0e70](https://github.com/BakerSean168/memoflow/commit/02f0e70f9a81e5776d9eff52578ed6db3881b5db))
+* hardcode database credentials in test workflow for consistency ([3545c43](https://github.com/BakerSean168/memoflow/commit/3545c43bfa4a957c5ee93d4a28ba5d054c4ff5d2))
+* taskId 问题 ([4eaf02a](https://github.com/BakerSean168/memoflow/commit/4eaf02a638f1916700bb7ee5fa9d56d64b9fe516))
+* **ui-core:** use cryptographically secure randomness for passwords ([5dd7137](https://github.com/BakerSean168/memoflow/commit/5dd713774fcb40d681e5a947ed10628f377896e2))
+* **ui-core:** use cryptographically secure randomness for passwords ([cde3118](https://github.com/BakerSean168/memoflow/commit/cde31188535c3c3bc41309107ad10220e1c618da))
+* update lodash version and add assets dependency in pnpm-lock.yaml ([ce8b792](https://github.com/BakerSean168/memoflow/commit/ce8b79281149d6d5ad0981da72ee3a2aaab6702e))
+* 修复冷启动后访客模式的 id 会重新生成而非 读取磁盘上已有 guest token 的问题 ([d05b8e2](https://github.com/BakerSean168/memoflow/commit/d05b8e2e962bb73c4975a39ea1d912f5b726313c))
+* 修复图标路径错误导致托盘图片空白的问题 ([bb361b3](https://github.com/BakerSean168/memoflow/commit/bb361b391bf850c96cf667687d2906895449774c))
+
+
+### Performance Improvements
+
+* uuid 库移除的锁文件更改 ([1d6bd6b](https://github.com/BakerSean168/memoflow/commit/1d6bd6b6b6c30659369727e19fb698bee555d8d3))
+* 优化 uuid相关方法移除 uuid库 ， 使用 原生 crypto.randomUUID 的方法，并且统一工具函数，移除重复文件 ([ef60854](https://github.com/BakerSean168/memoflow/commit/ef60854a15b66dabc4b5973e62f02f5f9c8dda5f))
 
 ## [0.3.0](https://github.com/BakerSean168/memoflow/compare/v0.2.0...v0.3.0) (2026-03-29)
 
@@ -427,7 +427,7 @@
 * **repository:** mark monolithic services as deprecated ([39375fc](https://github.com/BakerSean168/memoflow/commit/39375fcc002fccb7c17ad2a05e002586e5bd3666))
 * **repository:** support yaml frontmatter and file storage ([013d5fc](https://github.com/BakerSean168/memoflow/commit/013d5fcee5bf3ecdb2c507bba9ffe5f330ac3a42))
 * **repository:** support yaml frontmatter and file storage ([2a58766](https://github.com/BakerSean168/memoflow/commit/2a587664ced45bc0073fe134b82ad835d87e4127))
-* **research:** document Phase 0 research decisions for Memoflow productivity platform ([aeb8343](https://github.com/BakerSean168/memoflow/commit/aeb83435d6353a1729082b271bd3517325565f49))
+* **research:** document Phase 0 research decisions for MemoFlow productivity platform ([aeb8343](https://github.com/BakerSean168/memoflow/commit/aeb83435d6353a1729082b271bd3517325565f49))
 * **schedule:** add use-case pattern for schedule operations ([25b000e](https://github.com/BakerSean168/memoflow/commit/25b000e74ee1dfc7432d11938f459d0b1a3d3eea))
 * **schedule:** implement complete API module with routes, initialization, and module wiring ([179289b](https://github.com/BakerSean168/memoflow/commit/179289b4cef3026b12ae0bf946450ae2d0f04850))
 * server-side adapter pattern, controller layer for all modules, and zod-to-openapi documentation ([7688bb4](https://github.com/BakerSean168/memoflow/commit/7688bb44471e8ba677c95be417d8f332dadabe87))
@@ -509,7 +509,7 @@
 * repository模块primitives类型导出问题 ([a479170](https://github.com/BakerSean168/memoflow/commit/a4791708c667456faa8035074693d4423738770f))
 * resolve CI build errors in ai and contracts packages ([16fd67b](https://github.com/BakerSean168/memoflow/commit/16fd67b094dde9854efdf21814d6336c7506c4bb))
 * resolve CI build errors in ai and contracts packages ([daf5260](https://github.com/BakerSean168/memoflow/commit/daf5260353c960af7588cb5c2d3c8b1172697fb0))
-* resolve DTS build errors - add @dailyuse/http-client to externals and fix barrel exports ([f59502a](https://github.com/BakerSean168/memoflow/commit/f59502a5b5d5478b067c8444ddfa0baa8b8c1de6))
+* resolve DTS build errors - add @memoflow/http-client to externals and fix barrel exports ([f59502a](https://github.com/BakerSean168/memoflow/commit/f59502a5b5d5478b067c8444ddfa0baa8b8c1de6))
 * resolve persistent CI type and test container failures ([3d9f4b6](https://github.com/BakerSean168/memoflow/commit/3d9f4b6244e532f595255ced9249a9399d2395d7))
 * resolve pervasive typescript errors in desktop, api, app-vue, ui-vue-shadcn ([8a536c7](https://github.com/BakerSean168/memoflow/commit/8a536c752df6465180f158b4e6c6de9c034ffe43))
 * resolve type errors from Prisma string-to-enum conversions ([9fc2e7f](https://github.com/BakerSean168/memoflow/commit/9fc2e7ff449e34531e44e7e2fcd6ebed76ffc627))

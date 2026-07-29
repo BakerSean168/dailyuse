@@ -57,7 +57,7 @@ describe('ResendEmailSender + factory', () => {
       env: {
         EMAIL_PROVIDER: 'resend',
         RESEND_API_KEY: 're_test',
-        RESEND_FROM: 'Memoflow <n@mail.example.com>',
+        RESEND_FROM: 'MemoFlow <n@mail.example.com>',
         LOCAL_VALIDATION: '1',
         SMTP_LOCALE: 'en',
       },

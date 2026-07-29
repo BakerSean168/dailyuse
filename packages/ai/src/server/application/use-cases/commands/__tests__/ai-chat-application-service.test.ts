@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { AIConversation } from '../../../../domain/aggregates/ai-conversation';
-import { AIProviderType } from '@dailyuse/contracts/ai';
+import { AIProviderType } from '@memoflow/contracts/ai';
 import type { IAIConversationRepository } from '../../../../domain/repositories/i-ai-conversation-repository';
 import type { IAIProviderConfigRepository } from '../../../../domain/repositories/i-ai-provider-config-repository';
 import { SendAIMessageUseCase } from '../send-ai-message.use-case';

@@ -33,7 +33,7 @@ function createAdapter(): AIServiceAgentRuntimeAdapter {
   return new AIServiceAgentRuntimeAdapter({
     baseUrl: 'http://127.0.0.1:8100',
     serviceSecret: 'shared-secret',
-    serviceName: 'dailyuse-api',
+    serviceName: 'memoflow-api',
     timeoutMs: 5_000,
   });
 }
@@ -51,7 +51,7 @@ function expectSignedRequest(
   const headers = init.headers as Record<string, string>;
   const timestamp = Number(headers[INTERNAL_TIMESTAMP_HEADER]);
   const signature = signInternalRequest({
-    serviceName: 'dailyuse-api',
+    serviceName: 'memoflow-api',
     method: options.method,
     path: options.path,
     timestamp,
@@ -60,7 +60,7 @@ function expectSignedRequest(
   });
 
   expect(init.method).toBe(options.method);
-  expect(headers[INTERNAL_SERVICE_HEADER]).toBe('dailyuse-api');
+  expect(headers[INTERNAL_SERVICE_HEADER]).toBe('memoflow-api');
   expect(headers['X-Request-Id']).toBe(options.requestId);
   expect(headers['X-Identity-Id']).toBe(options.identityId);
   expect(headers[INTERNAL_CONTENT_HASH_HEADER]).toBe(signature.contentSha256);

@@ -1,4 +1,4 @@
-import { ConflictSeverity as ConflictSeverityContract, type ConflictSeverity as IConflictSeverity } from '@dailyuse/contracts/schedule';
+import { ConflictSeverity as ConflictSeverityContract, type ConflictSeverity as IConflictSeverity } from '@memoflow/contracts/schedule';
 
 /**
  * 📝 冲突严重程度 - 日程冲突的严重程度分类
@@ -13,7 +13,7 @@ export type ConflictSeverity = IConflictSeverity & { readonly __brand: unique sy
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IConflictSeverity[] = Object.values(ConflictSeverityContract);
 
 /**

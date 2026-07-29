@@ -5,11 +5,11 @@
  * Handles CRUD operations for goal progress records.
  */
 
-import type { PrismaClient, GoalRecord as PrismaGoalRecord, Prisma } from '@dailyuse/database';
+import type { PrismaClient, GoalRecord as PrismaGoalRecord, Prisma } from '@memoflow/database';
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '../../../domain';
 import { GoalRecord } from '../../../domain';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import { PrismaGoalRecordMapper } from './mappers/prisma-goal-record-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

@@ -1,5 +1,5 @@
 /**
- * @dailyuse/app-react — React application shell
+ * @memoflow/app-react — React application shell
  *
  * Root export only exposes what external consumers (apps/mobile) need:
  * - Screens (route-level components)

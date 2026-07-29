@@ -1,12 +1,12 @@
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
-import type { GoalScheduleProjectionEventMap } from '@dailyuse/goal/schedule-projection';
-import type { ReminderScheduleProjectionEventMap } from '@dailyuse/reminder/schedule-projection';
-import type { TaskScheduleProjectionEventMap } from '@dailyuse/task/schedule-projection';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
+import type { GoalScheduleProjectionEventMap } from '@memoflow/goal/schedule-projection';
+import type { ReminderScheduleProjectionEventMap } from '@memoflow/reminder/schedule-projection';
+import type { TaskScheduleProjectionEventMap } from '@memoflow/task/schedule-projection';
 import {
   createTypedEventPublisher,
   createTypedEventSubscriber,
   eventBus,
-} from '@dailyuse/utils/domain';
+} from '@memoflow/utils/domain';
 import type {
   CreateScheduleOrchestrationModuleOptions,
   ScheduleOrchestrationModule,

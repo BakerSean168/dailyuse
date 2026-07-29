@@ -1,7 +1,7 @@
 import type {
   AddKeyResultReq,
   CreateGoalReq,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import type { Ref } from 'vue';
 import type {
   AgentRun,
@@ -15,8 +15,8 @@ import type {
   GenerateGoalsRes,
   KnowledgeNoteIndexStatus,
   QueryKnowledgeRes,
-} from '@dailyuse/contracts/ai';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/ai';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { IAIService } from '../../../di/types';
 
 /** Options for useAIGoalWorkflow composable. */
@@ -31,8 +31,8 @@ export interface UseAIGoalWorkflowOptions {
   buildConversationTranscript: () => string;
   scrollMessagesToBottom: () => void;
   maybeRenameCurrentConversation: (name: string) => Promise<void>;
-  createGoal: (req: import('@dailyuse/contracts/goal').CreateGoalReq) => Promise<{ id: string } | null>;
-  addKeyResult: (goalId: string, req: import('@dailyuse/contracts/goal').AddKeyResultReq) => Promise<unknown>;
+  createGoal: (req: import('@memoflow/contracts/goal').CreateGoalReq) => Promise<{ id: string } | null>;
+  addKeyResult: (goalId: string, req: import('@memoflow/contracts/goal').AddKeyResultReq) => Promise<unknown>;
 }
 
 /** Options for useAIKnowledgeQaWorkflow composable. */

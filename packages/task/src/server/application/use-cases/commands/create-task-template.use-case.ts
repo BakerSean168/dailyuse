@@ -11,11 +11,11 @@ import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '../../../domain/value-objects';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
 import { TaskInstanceGenerationService } from '../../../domain/services/index';
-import type { CreateTaskTemplateInput, CreateTaskTemplateRes } from '@dailyuse/contracts/task';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { Result } from '@dailyuse/contracts/result';
-import { error, fail, ok } from '@dailyuse/contracts/result';
+import type { CreateTaskTemplateInput, CreateTaskTemplateRes } from '@memoflow/contracts/task';
+import { TaskTemplateStatus } from '@memoflow/contracts/task';
+import { createLogger } from '@memoflow/utils/logger';
+import type { Result } from '@memoflow/contracts/result';
+import { error, fail, ok } from '@memoflow/contracts/result';
 import {
   createInlineTaskWriteTransactionRunner,
   mapTaskWriteErrorToResultError,

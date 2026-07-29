@@ -2,8 +2,8 @@
  * Data Portability Application Client Layer
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type {
   ExportServerHeldDataDisclosureReq,
   ExportServerHeldDataDisclosureRes,
@@ -11,7 +11,7 @@ import type {
   ExportUserDataRes,
   ImportUserDataReq,
   ImportUserDataRes,
-} from '@dailyuse/contracts/data-portability';
+} from '@memoflow/contracts/data-portability';
 import type { IDataPortabilityApiClient } from './ports/data-portability-api-client.port';
 import { createDataPortabilityHttpAdapter } from '../infrastructure-client';
 

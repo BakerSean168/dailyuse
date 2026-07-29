@@ -1,7 +1,7 @@
 /**
- * @dailyuse/test-utils
+ * @memoflow/test-utils
  *
- * Unified testing utilities for the Memoflow monorepo.
+ * Unified testing utilities for the MemoFlow monorepo.
  *
  * Sub-modules:
  * - helpers:  Random data generators, Result matchers, async waitFor
@@ -12,12 +12,12 @@
  * @example
  * ```typescript
  * // Import everything
- * import { createMockRepo, anIdentityId } from '@dailyuse/test-utils';
+ * import { createMockRepo, anIdentityId } from '@memoflow/test-utils';
  *
  * // Or import from sub-modules for tree-shaking
- * import { anIdentityId } from '@dailyuse/test-utils/fixtures';
- * import { createMockRepo } from '@dailyuse/test-utils/mocks';
- * import { ensureTestDatabase } from '@dailyuse/test-utils/setup';
+ * import { anIdentityId } from '@memoflow/test-utils/fixtures';
+ * import { createMockRepo } from '@memoflow/test-utils/mocks';
+ * import { ensureTestDatabase } from '@memoflow/test-utils/setup';
  * ```
  */
 
@@ -34,7 +34,7 @@ export {
 export { waitFor } from './helpers/wait-for.js';
 
 // Result matchers: side-effect module — import directly in vitest setup files:
-//   import '@dailyuse/test-utils/helpers/result-matchers';
+//   import '@memoflow/test-utils/helpers/result-matchers';
 
 // Mocks
 export { createMockRepo, createMockEventBus } from './mocks/repository-mock.factory.js';

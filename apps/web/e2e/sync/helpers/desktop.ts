@@ -118,8 +118,8 @@ export class DesktopAppController {
       args: [desktopMainEntrypoint],
       env: {
         ...process.env,
-        DAILYUSE_API_URL: this.apiBaseUrl,
-        DAILYUSE_DESKTOP_USER_DATA_PATH: this.userDataDir,
+        MEMOFLOW_API_URL: this.apiBaseUrl,
+        MEMOFLOW_DESKTOP_USER_DATA_PATH: this.userDataDir,
         ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
         VITEST: 'true',
       },

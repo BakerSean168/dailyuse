@@ -1,5 +1,5 @@
-import type { Result } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
 import type {
   CompleteKnowledgeRepositoryInstallationReq,
   CompleteKnowledgeRepositoryInstallationRes,
@@ -24,7 +24,7 @@ import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 
 /**
  * Transport-neutral knowledge repository application surface.

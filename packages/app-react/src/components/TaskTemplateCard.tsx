@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import type { TaskTemplateSummary } from '../hooks/useTaskTemplates';
 
-import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText, ThemedView } from '@dailyuse/ui-react-native';
+import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText, ThemedView } from '@memoflow/ui-react-native';
 
 import { formatProductDate, formatProductRelative } from '../utils/product-time';
 

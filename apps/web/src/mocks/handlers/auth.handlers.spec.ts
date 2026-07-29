@@ -20,8 +20,8 @@ import {
   ResetPasswordSchema,
   RevokeSessionSchema,
   SessionListResponseSchema,
-} from '@dailyuse/contracts/authentication';
-import { createMockAuthResponse } from '@dailyuse/contracts/mocks';
+} from '@memoflow/contracts/authentication';
+import { createMockAuthResponse } from '@memoflow/contracts/mocks';
 
 type MockHandler = {
   info?: { path?: string; method?: string };
@@ -99,7 +99,7 @@ describe('auth handlers contracts', () => {
   });
 
   it('uses the current auth adapter routes and request schemas', async () => {
-    const { AuthHttpAdapter } = await import('@dailyuse/authentication/client');
+    const { AuthHttpAdapter } = await import('@memoflow/authentication/client');
     const httpClient = createHttpClientSpy();
     const adapter = new AuthHttpAdapter(httpClient);
     const authResponse = createMockAuthResponse();

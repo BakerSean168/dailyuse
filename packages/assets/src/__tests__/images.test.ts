@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { logo, logo128, logos, defaultAvatar } from '../images';
 
-describe('@dailyuse/assets - Images', () => {
+describe('@memoflow/assets - Images', () => {
   it('should export logo paths', () => {
     expect(logo).toBeDefined();
-    expect(logo).toContain('Memoflow.svg');
+    expect(logo).toContain('MemoFlow.svg');
   });
 
   it('should export logo128', () => {
     expect(logo128).toBeDefined();
-    expect(logo128).toContain('Memoflow-128.png');
+    expect(logo128).toContain('MemoFlow-128.png');
   });
 
   it('should export logos object', () => {

@@ -7,13 +7,13 @@
  * @module application-client/notification-client-service
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   BatchOperationResultDTO,
   NotificationClientDTO,
   NotificationPreferenceClientDTO,
   UpdateNotificationPreferenceReq,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 import type {
   INotificationApiClient,
   CreateNotificationRequest,

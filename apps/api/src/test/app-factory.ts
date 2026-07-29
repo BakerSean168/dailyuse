@@ -4,7 +4,7 @@
  */
 
 import type { Express } from 'express';
-import { prisma } from '@dailyuse/database';
+import { prisma } from '@memoflow/database';
 import type { DatabaseClient } from '../shared/contracts/api-module';
 import { ApiBootstrapper } from '../bootstrap';
 

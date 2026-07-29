@@ -11,7 +11,7 @@ import {
   Spacing,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 type RootNavItem = {
   name: string;

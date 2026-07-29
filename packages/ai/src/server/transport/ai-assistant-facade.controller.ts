@@ -4,15 +4,15 @@
  * identityId always comes from ExecutionContext (never trusted from client body).
  * Approve/reject stay lifecycle-only via facade (no executeApproved).
  */
-import { fail, type Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { fail, type Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   AssistantCommand,
   AssistantEvent,
   AssistantExecutionProfileId,
   AssistantSurface,
-} from '@dailyuse/contracts/ai';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/ai';
+import { formatZodErrors } from '@memoflow/utils/result';
 import { z } from 'zod';
 
 const SurfaceSchema = z.enum(['web', 'desktop', 'server']);

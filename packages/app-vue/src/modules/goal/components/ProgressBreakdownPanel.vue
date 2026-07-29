@@ -129,14 +129,14 @@
 /** Soft residual 1237: absolute product pattern (not dashboard relative). */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Badge, type BadgeVariants } from '@dailyuse/ui-vue-shadcn';
-import { Progress } from '@dailyuse/ui-vue-shadcn';
-import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Separator } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Badge, type BadgeVariants } from '@memoflow/ui-vue-shadcn';
+import { Progress } from '@memoflow/ui-vue-shadcn';
+import { Alert, AlertTitle, AlertDescription } from '@memoflow/ui-vue-shadcn';
+import { Separator } from '@memoflow/ui-vue-shadcn';
 import { PieChart, X, Loader2, AlertCircle, BarChart3, Calculator } from '@lucide/vue';
-import type { ProgressBreakdown } from '@dailyuse/contracts/goal';
+import type { ProgressBreakdown } from '@memoflow/contracts/goal';
 import { formatProductPattern } from '../../../shared/utils/product-time';
 
 const props = defineProps<{

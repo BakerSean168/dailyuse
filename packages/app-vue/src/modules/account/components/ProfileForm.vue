@@ -2,12 +2,12 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn';
-import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
+import { Textarea } from '@memoflow/ui-vue-shadcn';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@memoflow/ui-vue-shadcn';
+import { Avatar, AvatarImage, AvatarFallback } from '@memoflow/ui-vue-shadcn';
 import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Select,
@@ -15,10 +15,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@dailyuse/ui-vue-shadcn';
-import { Calendar } from '@dailyuse/ui-vue-shadcn';
-import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
-import type { AccountProfileDTO } from '@dailyuse/contracts/account';
+} from '@memoflow/ui-vue-shadcn';
+import { Calendar } from '@memoflow/ui-vue-shadcn';
+import { Popover, PopoverContent, PopoverTrigger } from '@memoflow/ui-vue-shadcn';
+import type { AccountProfileDTO } from '@memoflow/contracts/account';
 
 interface ProfileFormProps {
   profile: AccountProfileDTO;

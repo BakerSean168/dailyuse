@@ -39,7 +39,7 @@ describe('asRecord/toRecord cross-package keep-boundary (residual 1099)', () => 
     expect(aiGoalPlanning).toContain(': null');
     // must not empty-object fallback
     expect(aiGoalPlanning).not.toMatch(/function asRecord[\s\S]{0,200}: \{\}/);
-    expect(aiGoalPlanning).not.toContain('@dailyuse/data-portability');
+    expect(aiGoalPlanning).not.toContain('@memoflow/data-portability');
   });
 
   it('differs from data-portability schedule asRecord {} fallback (no force-merge)', () => {

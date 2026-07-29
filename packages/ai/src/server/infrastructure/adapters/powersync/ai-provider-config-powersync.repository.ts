@@ -1,5 +1,5 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import { AISecretCipher } from '../../security/ai-secret-cipher';
 import { PowerSyncAIProviderConfigMapper, type PowerSyncAIProviderConfigRow } from './mappers';

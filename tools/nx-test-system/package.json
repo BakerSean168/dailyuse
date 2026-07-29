@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/nx-test-system",
+  "name": "@memoflow/nx-test-system",
   "version": "0.0.1",
   "private": true,
   "type": "commonjs",

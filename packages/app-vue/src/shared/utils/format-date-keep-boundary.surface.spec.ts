@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { resolveEmptyLabel, DEFAULT_EMPTY_LITERALS } from '@dailyuse/time';
+import { resolveEmptyLabel, DEFAULT_EMPTY_LITERALS } from '@memoflow/time';
 
 /**
  * Residual 1240 (P1): empty-label catalog keep-boundary — not dual private formatDate bodies.

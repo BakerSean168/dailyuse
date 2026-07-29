@@ -6,10 +6,10 @@
 
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import type { TaskFilters } from '../../../domain/repositories/i-task-template-repository';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { TaskTemplateClientDTO } from '@memoflow/contracts/task';
+import { TaskTemplateStatus } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 interface TaskDashboardResponse {
   todayTasks: TaskTemplateClientDTO[];

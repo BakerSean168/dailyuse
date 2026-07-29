@@ -8,8 +8,8 @@
  * - 重新计算下次运行时间
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain';
 
 /**

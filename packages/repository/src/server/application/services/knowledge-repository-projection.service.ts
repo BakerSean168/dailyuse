@@ -1,12 +1,12 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import matter from 'gray-matter';
 import { randomUUID } from 'node:crypto';
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   MAX_KNOWLEDGE_ATTACHMENT_BYTES,
   RepositoryNoteMutationType,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
@@ -17,10 +17,10 @@ import type {
   GetKnowledgeNoteLinkGraphReq,
   ListKnowledgeNoteProjectionsReq,
   GitHubInstallationRepositoryDTO,
-} from '@dailyuse/contracts/repository';
-import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { KnowledgeRepositoryConnectionServerDTO } from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
+import type { IdentityId, RepositoryId, ResourceId } from '@memoflow/contracts/primitives';
+import { createLogger } from '@memoflow/utils/logger';
+import type { KnowledgeRepositoryConnectionServerDTO } from '@memoflow/contracts/repository';
 import { GitHubAppClientError } from '../ports/github-app-client.port';
 import type {
   GitHubBlobContent,

@@ -6,10 +6,10 @@
  * Token 注入由外部 httpClient 负责（拦截器自动添加 Authorization Header）。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail } from '@memoflow/contracts/result';
 import type { IAuthApiClient } from '../types';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type {
   AutoLoginResult,
   LoginByEmailReq,
@@ -38,7 +38,7 @@ import type {
   GuestModeRes,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 export class AuthHttpAdapter implements IAuthApiClient {
   private readonly baseUrl = '/auth';

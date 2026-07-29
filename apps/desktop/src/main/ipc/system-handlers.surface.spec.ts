@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DesktopFeatureChannels, SystemChannels } from '@dailyuse/contracts/electron';
+import { DesktopFeatureChannels, SystemChannels } from '@memoflow/contracts/electron';
 
 /**
  * Desktop system/desktop-feature IPC surface (stage-6 residual):
@@ -14,7 +14,7 @@ describe('system-handlers channel surface', () => {
   it('registers system and desktop-feature handlers via contracts channel maps', () => {
     expect(source).toContain('SystemChannels');
     expect(source).toContain('DesktopFeatureChannels');
-    expect(source).toContain("from '@dailyuse/contracts/electron'");
+    expect(source).toContain("from '@memoflow/contracts/electron'");
     expect(source).toContain('SystemChannels.GET_APP_VERSION');
     expect(source).toContain('SystemChannels.OPEN_EXTERNAL_URL');
     expect(source).toContain('DesktopFeatureChannels.AUTO_LAUNCH_IS_ENABLED');
@@ -24,7 +24,7 @@ describe('system-handlers channel surface', () => {
   });
 
   it('returns contracts Result ok/fail envelopes instead of raw dual-track payloads', () => {
-    expect(source).toContain("import { fail, ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain("import { fail, ok } from '@memoflow/contracts/result'");
     expect(source).toContain('return ok(');
     expect(source).toContain('return fail({');
     expect(source).toContain('return ok({ opened: true as const })');

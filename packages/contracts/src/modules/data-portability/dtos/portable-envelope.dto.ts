@@ -19,7 +19,7 @@ export const UserDataExportEnvelopeV1Schema = z
     exportedAt: z.string(),
     exportedBy: z
       .object({
-        appName: z.literal('Memoflow'),
+        appName: z.literal('MemoFlow'),
         appVersion: z.string().optional(),
       })
       .strict()

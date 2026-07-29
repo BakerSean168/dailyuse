@@ -6,7 +6,7 @@
  * Soft residual 1079: removeRememberedAccount toast-only keep-boundary (no force-merge).
  */
 import { toast } from 'vue-sonner';
-import type { ResultError } from '@dailyuse/contracts/result';
+import type { ResultError } from '@memoflow/contracts/result';
 import type { AuthContext } from './useAuthContext';
 
 type AuthFailureDeps = Pick<

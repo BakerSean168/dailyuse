@@ -3,7 +3,7 @@ import { relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 266: IResultIpcClient is canonical in @dailyuse/ipc-client.
+ * Residual 266: IResultIpcClient is canonical in @memoflow/ipc-client.
  * Module infrastructure-client adapters re-export it; no local interface duals.
  */
 describe('IResultIpcClient single-track surface', () => {
@@ -33,7 +33,7 @@ describe('IResultIpcClient single-track surface', () => {
     expect(resultClient).toContain('implements IResultIpcClient');
   });
 
-  it('module adapters re-export IResultIpcClient from @dailyuse/ipc-client only', () => {
+  it('module adapters re-export IResultIpcClient from @memoflow/ipc-client only', () => {
     for (const pkg of dualPackages) {
       const path = resolve(
         __dirname,
@@ -41,7 +41,7 @@ describe('IResultIpcClient single-track surface', () => {
       );
       expect(existsSync(path), path).toBe(true);
       const source = readFileSync(path, 'utf8');
-      expect(source, pkg).toContain("export type { IResultIpcClient } from '@dailyuse/ipc-client'");
+      expect(source, pkg).toContain("export type { IResultIpcClient } from '@memoflow/ipc-client'");
       expect(source, pkg).not.toMatch(/export interface IResultIpcClient\s*\{/);
     }
   });

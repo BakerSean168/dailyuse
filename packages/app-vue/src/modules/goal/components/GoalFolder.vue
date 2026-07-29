@@ -85,13 +85,13 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
 import { Plus, LayoutGrid, Folder, Archive, Pencil, Trash2 } from '@lucide/vue';
-import { cn } from '@dailyuse/ui-vue-shadcn';
+import { cn } from '@memoflow/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
-import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalFolderClientDTO } from '@memoflow/contracts/goal';
 
 defineProps<{
   goalFolders: GoalFolderClientDTO[];

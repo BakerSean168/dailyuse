@@ -2,13 +2,13 @@
  * Server Module Context — shared contract for API module registration.
  *
  * Feature packages extend this interface with their concrete DbClient type
- * (typically PrismaClient from @dailyuse/database) so module registration
+ * (typically PrismaClient from @memoflow/database) so module registration
  * receives the database dependency as a typed seam.
  *
  * @example
  * ```typescript
- * import type { ServerModuleContext } from '@dailyuse/contracts/shared';
- * import type { PrismaClient } from '@dailyuse/database';
+ * import type { ServerModuleContext } from '@memoflow/contracts/shared';
+ * import type { PrismaClient } from '@memoflow/database';
  *
  * interface GovernanceModuleContext extends ServerModuleContext<PrismaClient> {}
  * ```

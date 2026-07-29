@@ -1,10 +1,10 @@
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import type { AIConversationClientDTO, AIConversationServerDTO } from '@dailyuse/contracts/ai';
-import { ConversationStatus } from '@dailyuse/contracts/ai';
-import type { AIEventMap } from '@dailyuse/contracts/ai';
-import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import type { AIConversationClientDTO, AIConversationServerDTO } from '@memoflow/contracts/ai';
+import { ConversationStatus } from '@memoflow/contracts/ai';
+import type { AIEventMap } from '@memoflow/contracts/ai';
+import type { IdentityId as IIdentityId } from '@memoflow/contracts/primitives';
 import { AiConversationId } from '../../domain/value-objects/ai-conversation-id';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { Message } from '../entities/message';
 
 export interface AIConversationState {

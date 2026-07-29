@@ -3,7 +3,7 @@
  * 目标模块领域错误
  */
 
-import { DomainError } from '@dailyuse/utils/errors';
+import { DomainError } from '@memoflow/utils/errors';
 import type { GoalId } from './goal-id';
 
 /**

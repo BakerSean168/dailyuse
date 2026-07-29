@@ -3,8 +3,8 @@ import type {
   CalendarEntryClientDTO,
   ScheduleExecutionClientDTO,
   ScheduleTaskClientDTO,
-} from '@dailyuse/contracts/schedule';
-import { createTestPinia } from '@dailyuse/test-utils';
+} from '@memoflow/contracts/schedule';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useScheduleStore } from './schedule-store';
 
 function createTask(

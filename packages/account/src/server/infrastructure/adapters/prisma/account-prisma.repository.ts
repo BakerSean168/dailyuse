@@ -2,18 +2,18 @@
  * PrismaAccountRepository
  *
  * Prisma implementation of IAccountRepository.
- * Receives PrismaClient via constructor injection from @dailyuse/database.
+ * Receives PrismaClient via constructor injection from @memoflow/database.
  *
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient, Account as PrismaAccount, Prisma } from '@dailyuse/database';
-import type { AccountProfileDTO, AccountSettingsDTO } from '@dailyuse/contracts/account';
+import type { PrismaClient, Account as PrismaAccount, Prisma } from '@memoflow/database';
+import type { AccountProfileDTO, AccountSettingsDTO } from '@memoflow/contracts/account';
 import type { IAccountRepository } from '../../../domain';
 import { Account } from '../../../domain';
 import { AccountPrismaMapper } from './mappers/account-prisma.mapper';
-import { AggregateRepositoryBase, createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { AggregateRepositoryBase, createEventBusAdapter, publishAggregateEvents } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { ReminderTemplateId as IReminderTemplateId } from '@dailyuse/contracts/primitives';
+import type { ReminderTemplateId as IReminderTemplateId } from '@memoflow/contracts/primitives';
 
 /**
  * ReminderTemplateId 值对象

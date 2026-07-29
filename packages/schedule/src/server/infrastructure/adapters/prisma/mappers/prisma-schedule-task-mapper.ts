@@ -8,9 +8,9 @@
 import type {
   ScheduleTask as PrismaScheduleTask,
   ScheduleExecution as PrismaScheduleExecution,
-} from '@dailyuse/database';
-import type { SourceModule, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
-import { ExecutionStatus } from '@dailyuse/contracts/schedule';
+} from '@memoflow/database';
+import type { SourceModule, ScheduleTaskStatus } from '@memoflow/contracts/schedule';
+import { ExecutionStatus } from '@memoflow/contracts/schedule';
 import { ScheduleTask } from '../../../../domain/aggregates/schedule-task';
 import type { ScheduleTaskState } from '../../../../domain/aggregates/schedule-task';
 import { ScheduleExecution } from '../../../../domain/entities/schedule-execution';
@@ -23,7 +23,7 @@ import {
   Timezone,
 } from '../../../../domain/value-objects';
 import { ScheduleTaskId } from '../../../../domain/value-objects/schedule-task-id';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 
 /**
  * Prisma ScheduleTask with optional executions relation

@@ -20,7 +20,7 @@ We enforce strict TypeScript usage to maximize safety and compiler help.
 ### 2. Imports
 *   Use `import type { ... }` for type-only imports to aid bundlers/transpilers.
     ```typescript
-    import type { Task } from '@dailyuse/contracts';
+    import type { Task } from '@memoflow/contracts';
     ```
 
 ### 3. No Inline Types

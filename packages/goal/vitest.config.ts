@@ -10,7 +10,7 @@ const baseConfig = createPackageVitestConfig({
   governedCoverage: true,
   aliasEntries: [
     {
-      find: /^@dailyuse\/schedule$/,
+      find: /^@memoflow\/schedule$/,
       replacement: path.resolve(__dirname, '../test-utils/src/shims/schedule-package-shim.ts'), // Residual 1035 sole
     },
   ],

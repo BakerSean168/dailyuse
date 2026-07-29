@@ -4,14 +4,14 @@
  * HTTP implementation of IGoalFolderApiClient using ResultHttpClient.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type { IGoalFolderApiClient, IResultHttpClient } from '../types';
 import type {
   GoalFolderClientDTO,
   QueryGoalFoldersRes,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 export class GoalFolderHttpAdapter implements IGoalFolderApiClient {
   private readonly baseUrl = '/goal-folders';

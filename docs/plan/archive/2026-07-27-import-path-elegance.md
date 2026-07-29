@@ -4,7 +4,7 @@ tags:
   - archive
   - imports
   - monorepo
-description: 全仓 import 路径收敛 — 消灭包内 @/，默认相对路径 + @dailyuse 公开入口
+description: 全仓 import 路径收敛 — 消灭包内 @/，默认相对路径 + @memoflow 公开入口
 created: 2026-07-27T00:00:00
 updated: 2026-07-29T00:00:00
 status: done
@@ -18,7 +18,7 @@ status: done
 
 在 **不改变运行时行为** 的前提下，把包内 `@/` 一次性收敛为相对路径，使：
 
-1. 跨包：`@dailyuse/*` 公开入口（已成立）
+1. 跨包：`@memoflow/*` 公开入口（已成立）
 2. 包内：**相对路径为唯一源码坐标**（本次）
 3. 解析上下文无关：任意 app typecheck / vitest 深引不再踩 `@/` 错根
 
@@ -44,7 +44,7 @@ status: done
 | governance / task / authentication / goal | 相对化 |
 | schedule / notification / setting / reminder / api | 相对化 |
 
-不改：`@dailyuse/*`、node builtins、第三方包。
+不改：`@memoflow/*`、node builtins、第三方包。
 
 ## 验证
 
@@ -53,4 +53,4 @@ status: done
 
 ## 架构结论（一句话）
 
-> 路径空间只剩两层：**跨包 `@dailyuse` 公开 seam** + **包内相对路径**；`@/` 不再是源码默认坐标，仅作工具配置兼容。
+> 路径空间只剩两层：**跨包 `@memoflow` 公开 seam** + **包内相对路径**；`@/` 不再是源码默认坐标，仅作工具配置兼容。

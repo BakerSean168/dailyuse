@@ -5,7 +5,7 @@ import type {
   GoalAutomationTaskTemplatePreview,
   GeneratedGoalDraft,
   KeyResultPreview,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 export interface GoalAutomationExecutionInput {
   identityId: string;

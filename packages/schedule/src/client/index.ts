@@ -2,12 +2,12 @@
  * Schedule client seam.
  *
  * Public schedule contracts stay centralized in
- * `@dailyuse/contracts/schedule`.
+ * `@memoflow/contracts/schedule`.
  * Callers depend on this seam instead of the old application-client /
  * infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   createScheduleClientService,
   createScheduleServiceFromHttpClient,

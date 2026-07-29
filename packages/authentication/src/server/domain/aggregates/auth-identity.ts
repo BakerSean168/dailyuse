@@ -15,8 +15,8 @@ import type {
   AuthIdentifierDTO,
   OAuthBindingServerDTO,
   AuthIdentityClientDTO,
-} from '@dailyuse/contracts/authentication';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/authentication';
+import { AggregateRoot } from '@memoflow/utils/domain';
 
 import {
   AuthIdentityStatus,
@@ -27,7 +27,7 @@ import {
   PlainPassword,
 } from '..';
 
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 
 import { PasswordCredential, OAuthBinding } from '../entities';
 import { EmailIdentifier, PhoneIdentifier, type ConcreteIdentifier } from '../value-objects';

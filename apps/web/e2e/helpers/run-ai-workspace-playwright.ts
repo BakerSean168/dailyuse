@@ -1,5 +1,5 @@
 import { spawn, type ChildProcess } from 'node:child_process';
-import { delay } from '@dailyuse/utils/frontend';
+import { delay } from '@memoflow/utils/frontend';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,7 +18,7 @@ const webBaseUrl = `http://${webHost}:${webPort}`;
 const apiOrigin = process.env.E2E_API_BASE_URL ?? 'http://localhost:3000';
 const apiHealthUrl = `${apiOrigin.replace(/\/$/, '')}/healthz`;
 
-/** Residual 1192: dual delay retired onto @dailyuse/utils/frontend sole. */
+/** Residual 1192: dual delay retired onto @memoflow/utils/frontend sole. */
 
 async function waitForServer(url: string, timeoutMs: number): Promise<void> {
   const deadline = Date.now() + timeoutMs;

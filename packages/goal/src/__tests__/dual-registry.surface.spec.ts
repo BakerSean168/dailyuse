@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ScheduleTask } from '@dailyuse/test-utils';
+import { ScheduleTask } from '@memoflow/test-utils';
 
 // --- merged from integration-global-setup-dual.surface.spec.ts ---
 {
@@ -40,7 +40,7 @@ import { ScheduleTask } from '@dailyuse/test-utils';
         );
         expect(source, pkg).toContain('Residual 1037');
         expect(source, pkg).toContain(
-          "from '@dailyuse/test-utils/setup/integration-global-setup'",
+          "from '@memoflow/test-utils/setup/integration-global-setup'",
         );
         expect(source, pkg).toContain('setup');
         expect(source, pkg).toContain('teardown');
@@ -97,7 +97,7 @@ import { ScheduleTask } from '@dailyuse/test-utils';
       expect(sole).toMatch(/export async function cleanAll\b/);
       expect(sole).toMatch(/export async function seedAccount\b/);
       expect(sole).toContain('cleanAllTables');
-      expect(sole).toContain("from '@dailyuse/database'");
+      expect(sole).toContain("from '@memoflow/database'");
       expect(sole).toContain('emailPrefix');
     });
 
@@ -109,7 +109,7 @@ import { ScheduleTask } from '@dailyuse/test-utils';
         );
         expect(source, pkg).toContain('Residual 1043');
         expect(source, pkg).toContain(
-          "from '@dailyuse/test-utils/setup/integration-helpers'",
+          "from '@memoflow/test-utils/setup/integration-helpers'",
         );
         expect(source, pkg).toContain('getPrisma');
         expect(source, pkg).toContain('disconnectPrisma');
@@ -194,14 +194,14 @@ import { ScheduleTask } from '@dailyuse/test-utils';
         ['reminder', reminderShim],
       ] as const) {
         expect(source, label).toContain('Residual 1035');
-        expect(source, label).toContain("from '@dailyuse/test-utils'");
+        expect(source, label).toContain("from '@memoflow/test-utils'");
         expect(source, label).toContain('ScheduleTask');
         expect(source, label).not.toMatch(/export class ScheduleTask\b/);
         expect(source, label).not.toMatch(/function createMetadata\b/);
       }
     });
 
-    it('vitest configs alias @dailyuse/schedule to test-utils sole', () => {
+    it('vitest configs alias @memoflow/schedule to test-utils sole', () => {
       for (const [label, source] of [
         ['goal', goalVitest],
         ['task', taskVitest],

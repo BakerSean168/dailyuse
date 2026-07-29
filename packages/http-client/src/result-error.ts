@@ -1,5 +1,5 @@
-import type { ResultError } from '@dailyuse/contracts/result';
-import { ResultCode } from '@dailyuse/contracts/result';
+import type { ResultError } from '@memoflow/contracts/result';
+import { ResultCode } from '@memoflow/contracts/result';
 
 export type ResultErrorMessageKey =
   | 'BAD_REQUEST'

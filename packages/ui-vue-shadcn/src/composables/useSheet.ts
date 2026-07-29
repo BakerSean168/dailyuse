@@ -70,7 +70,7 @@ export function _closeSheet(): void {
  *
  * @example
  * ```ts
- * import { useSheet } from '@dailyuse/ui-vue-shadcn'
+ * import { useSheet } from '@memoflow/ui-vue-shadcn'
  * import EditUserForm from './EditUserForm.vue'
  *
  * function openEdit() {
@@ -101,7 +101,7 @@ export function useSheet(options: SheetOptions): void {
  *
  * @example
  * ```ts
- * import { closeSheet } from '@dailyuse/ui-vue-shadcn'
+ * import { closeSheet } from '@memoflow/ui-vue-shadcn'
  * closeSheet()
  * ```
  */

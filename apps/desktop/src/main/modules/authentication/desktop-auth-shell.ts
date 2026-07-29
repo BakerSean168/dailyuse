@@ -1,16 +1,16 @@
 import { ipcMain } from 'electron';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { AuthMode, AuthRuntimeState } from '@dailyuse/contracts/authentication';
-import { AuthChannels } from '@dailyuse/contracts/electron';
-import { ok, fail, toIpcResult, type IpcResult } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+import { IdentityId } from '@memoflow/domain-shared';
+import { AuthMode, AuthRuntimeState } from '@memoflow/contracts/authentication';
+import { AuthChannels } from '@memoflow/contracts/electron';
+import { ok, fail, toIpcResult, type IpcResult } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import type { WindowManager } from '../../lifecycle/window-manager';
 import type { DesktopProfileRuntimeManager } from '../../profile';
 import type { RememberedAccountsService, NetworkStateManager } from './infrastructure';
 import type { AuthDesktopApplicationService } from './application/auth-desktop-application-service';
 import { loginDesktopAccount } from './application/login-desktop-account';
 import { registerDesktopAccount } from './application/register-desktop-account';
-import type { EmailRegisterCredentials } from '@dailyuse/contracts/authentication';
+import type { EmailRegisterCredentials } from '@memoflow/contracts/authentication';
 // Residual 931: RegisterRequest name dual fully retired — EmailRegisterCredentials sole body.
 import { AuthRemoteGateway } from './application/auth-remote-gateway';
 

@@ -10,17 +10,17 @@
  * 3. Returns a Result<T> (transport-agnostic)
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
-import { fail, isOk, ok } from '@dailyuse/contracts/result';
-import { CompleteTaskInstanceSchema, SkipTaskInstanceSchema } from '@dailyuse/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
+import { fail, isOk, ok } from '@memoflow/contracts/result';
+import { CompleteTaskInstanceSchema, SkipTaskInstanceSchema } from '@memoflow/contracts/task';
 import type {
   CheckExpiredTaskInstancesRes,
   GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   TaskInstanceStatus,
-} from '@dailyuse/contracts/task';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/task';
+import { formatZodErrors } from '@memoflow/utils/result';
 import type { CompleteTaskInstanceUseCase } from '../application/use-cases/commands/complete-task-instance.use-case';
 import type { DeleteTaskInstanceUseCase } from '../application/use-cases/commands/delete-task-instance.use-case';
 import type { GetTaskInstanceUseCase } from '../application/use-cases/queries/get-task-instance.use-case';

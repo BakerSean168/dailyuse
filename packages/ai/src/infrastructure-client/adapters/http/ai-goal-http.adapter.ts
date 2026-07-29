@@ -1,6 +1,6 @@
 import type { IAIGoalApiClient, IResultHttpClient } from '../types';
-import type { GenerateGoalsReq, GenerateGoalsRes } from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+import type { GenerateGoalsReq, GenerateGoalsRes } from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 /** HTTP adapter — returns Result, never throws (residual 98). */
 export class AIGoalHttpAdapter implements IAIGoalApiClient {

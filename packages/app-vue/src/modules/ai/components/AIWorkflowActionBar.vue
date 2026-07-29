@@ -3,7 +3,7 @@ import type {
   AgentAction,
   AgentRunResult,
   GoalClarificationDTO,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 /**
  * AIWorkflowActionBar — 工作流生命周期操作条（V2 §6.0）
  *
@@ -15,7 +15,7 @@ import type {
  * 避免在中间层重写状态机事件。
  */
 import { useI18n } from 'vue-i18n';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import { AlertTriangle } from '@lucide/vue';
 import type {
   KnowledgeAnswer,

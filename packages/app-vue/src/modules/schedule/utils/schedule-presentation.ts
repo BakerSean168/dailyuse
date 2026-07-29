@@ -1,5 +1,5 @@
 import type { ComposerTranslation } from 'vue-i18n';
-import type { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskStatus, SourceModule } from '@memoflow/contracts/schedule';
 import { getProductTime } from '../../../shared/utils/product-time';
 
 type Translate = ComposerTranslation;

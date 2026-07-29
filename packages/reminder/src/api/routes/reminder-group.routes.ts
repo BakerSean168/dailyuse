@@ -20,7 +20,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   CreateReminderGroupSchema,
   UpdateReminderGroupSchema,
@@ -29,9 +29,9 @@ import {
   ReminderGroupResponseSchema,
   ReminderGroupListResponseSchema,
   ReminderBatchResultSchema,
-} from '@dailyuse/contracts/reminder';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { ReminderGroupId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/reminder';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { ReminderGroupId } from '@memoflow/contracts/primitives';
 import type { ReminderController } from '../../server/transport/reminder.controller';
 
 // ============ Types ============

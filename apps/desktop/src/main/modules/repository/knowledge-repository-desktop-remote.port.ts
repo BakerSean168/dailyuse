@@ -5,8 +5,8 @@ import type {
   KnowledgeRepositoryInstallationTokenRes,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
-} from '@dailyuse/contracts/repository';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/repository';
+import type { Result } from '@memoflow/contracts/result';
 
 /**
  * Online operations used by the Desktop-owned local Vault/Git runtime.

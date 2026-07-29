@@ -4,8 +4,8 @@
  * Maps between ReminderResponse domain entity and Prisma model.
  */
 
-import type { ReminderResponse as PrismaReminderResponse } from '@dailyuse/database';
-import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import type { ReminderResponse as PrismaReminderResponse } from '@memoflow/database';
+import type { ReminderResponseAction } from '@memoflow/contracts/reminder';
 import { ReminderResponse } from '../../../../domain/entities/reminder-response';
 import { ReminderResponseId } from '../../../../domain/value-objects/reminder-response-id';
 

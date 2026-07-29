@@ -70,7 +70,7 @@
 import { computed } from 'vue';
 import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from '@lucide/vue';
 import RuleStatusBadge from './RuleStatusBadge.vue';
-import type { RuleClientDTO } from '@dailyuse/contracts/governance';
+import type { RuleClientDTO } from '@memoflow/contracts/governance';
 import { formatProductMonthDay } from '../../../shared/utils/product-time';
 
 const props = defineProps<{

@@ -83,7 +83,7 @@ describe('createEmailSender', () => {
         SMTP_PORT: '587',
         SMTP_USER: 'user',
         SMTP_PASS: 'pass',
-        SMTP_FROM: 'Memoflow <noreply@mail.example.com>',
+        SMTP_FROM: 'MemoFlow <noreply@mail.example.com>',
       },
       smtpTransport: transport,
     });
@@ -94,7 +94,7 @@ describe('createEmailSender', () => {
     expect(sendMail).toHaveBeenCalledTimes(1);
     const arg = sendMail.mock.calls[0][0];
     expect(arg.to).toBe('user@example.com');
-    expect(arg.from).toBe('Memoflow <noreply@mail.example.com>');
+    expect(arg.from).toBe('MemoFlow <noreply@mail.example.com>');
     expect(arg.subject).toMatch(/验证码|verification/i);
     expect(arg.text).toContain('123456');
     expect(arg.html).toContain('123456');

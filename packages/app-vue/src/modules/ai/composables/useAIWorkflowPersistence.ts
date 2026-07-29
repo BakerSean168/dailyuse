@@ -1,11 +1,11 @@
 import { ref, watch, type Ref } from 'vue';
 // Residual 1007: sole normalizeReminderTimeOfDay (local dual retired).
-import { normalizeReminderTimeOfDay } from '@dailyuse/utils/shared';
+import { normalizeReminderTimeOfDay } from '@memoflow/utils/shared';
 import type {
   AgentRunResult,
   GoalClarificationDTO,
   GoalWorkflowDraftResultDTO,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import {
   createEmptyGoalDraft,
   type EditableGoal,
@@ -83,7 +83,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
   function normalizeReminderDraft(item: EditableGoalReminder): EditableGoalReminder {
     return {
       ...item,
-      // Residual 1007: normalizeReminderTimeOfDay elevated to @dailyuse/utils/shared.
+      // Residual 1007: normalizeReminderTimeOfDay elevated to @memoflow/utils/shared.
       timeOfDay: normalizeReminderTimeOfDay(item.timeOfDay),
     };
   }

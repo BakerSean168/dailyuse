@@ -1,7 +1,7 @@
-import type { Result } from '@dailyuse/contracts/result';
-import type { DashboardData } from '@dailyuse/contracts/dashboard';
-import { DashboardChannels } from '@dailyuse/contracts/electron';
-import type { IResultIpcClient } from '@dailyuse/ipc-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { DashboardData } from '@memoflow/contracts/dashboard';
+import { DashboardChannels } from '@memoflow/contracts/electron';
+import type { IResultIpcClient } from '@memoflow/ipc-client';
 import type { IDashboardApiClient } from '../types';
 
 export class DashboardIpcAdapter implements IDashboardApiClient {

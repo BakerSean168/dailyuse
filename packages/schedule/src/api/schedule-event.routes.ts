@@ -18,7 +18,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   CreateScheduleRequestSchema,
   UpdateScheduleRequestSchema,
@@ -28,9 +28,9 @@ import {
   ConflictDetectionResultSchema,
   CreateScheduleResponseSchema,
   ResolveConflictResponseSchema,
-} from '@dailyuse/contracts/schedule';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { ScheduleId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/schedule';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { ScheduleId } from '@memoflow/contracts/primitives';
 import type { ScheduleEventApplicationPort } from '../server/application';
 import { ScheduleEventController } from '../server/transport/schedule-event.controller';
 

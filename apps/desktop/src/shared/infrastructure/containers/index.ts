@@ -6,7 +6,7 @@
  * infrastructure layout complete without re-exporting retired DI shims.
  *
  * Renderer process DI lives under apps/desktop/src/renderer/platform and
- * @dailyuse/app-vue/di.
+ * @memoflow/app-vue/di.
  */
 
 export const MAIN_PROCESS_ONLY = true;

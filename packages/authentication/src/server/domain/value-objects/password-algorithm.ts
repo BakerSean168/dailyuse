@@ -1,4 +1,4 @@
-import { PasswordAlgorithm as PasswordAlgorithmContract, type PasswordAlgorithm as IPasswordAlgorithm } from '@dailyuse/contracts/authentication';
+import { PasswordAlgorithm as PasswordAlgorithmContract, type PasswordAlgorithm as IPasswordAlgorithm } from '@memoflow/contracts/authentication';
 
 /**
  * Password algorithm - identifier for password hashing and verification algorithms.
@@ -12,7 +12,7 @@ export type PasswordAlgorithm = IPasswordAlgorithm & { readonly __brand: unique 
  * Note: Bcrypt and Argon2 are industry-recommended modern password hashing algorithms.
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IPasswordAlgorithm[] = Object.values(PasswordAlgorithmContract);
 
 /**

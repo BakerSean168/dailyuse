@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 247: goal application has no dual types.ts barrel re-exporting
  * ExecutionContext from contracts. Import ExecutionContext from
- * @dailyuse/contracts/shared directly.
+ * @memoflow/contracts/shared directly.
  */
 describe('goal application types barrel single-track surface', () => {
   const dual = resolve(__dirname, 'types.ts');

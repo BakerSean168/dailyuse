@@ -16,14 +16,14 @@ import {
   ReminderType,
   ReminderStatus,
   TriggerType,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import type {
   FixedTimeTrigger,
   IntervalTrigger,
   ReminderTemplateServerDTO,
   TriggerConfigDTO,
   UpcomingReminderDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 const REMINDER_CALCULATION_DEBUG =
   typeof process !== 'undefined' && process.env.DEBUG_REMINDER_CALCULATION === 'true';

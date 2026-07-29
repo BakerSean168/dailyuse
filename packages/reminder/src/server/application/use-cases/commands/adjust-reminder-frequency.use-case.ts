@@ -4,11 +4,11 @@
  * 调整提醒频率
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IReminderTemplateRepository } from '../../../domain/repositories/i-reminder-template-repository';
-import type { ReminderEventMap } from '@dailyuse/contracts/reminder';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
+import type { ReminderEventMap } from '@memoflow/contracts/reminder';
+import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
 
 const reminderAnalyticsEvents = createTypedEventPublisher<
   Pick<

@@ -1,12 +1,12 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   GetReminderTodayScheduleReq,
   GetReminderTodayScheduleRes,
   GetUpcomingRemindersReq,
   GetUpcomingRemindersRes,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import type { IReminderTemplateRepository } from '../../domain/repositories/i-reminder-template-repository';
 import { UpcomingReminderCalculationService } from '../../domain/services/upcoming-reminder-calculation-service';
 

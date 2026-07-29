@@ -1,11 +1,11 @@
-import { fail, type Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { fail, type Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   CreateKnowledgeNoteSchema,
   type CreateKnowledgeNoteReq,
   type CreateKnowledgeNoteRes,
-} from '@dailyuse/contracts/ai';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/ai';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 interface AIKnowledgeNoteControllerService {
   createKnowledgeNote(request: CreateKnowledgeNoteReq, cx: ExecutionContext): Promise<Result<CreateKnowledgeNoteRes>>;

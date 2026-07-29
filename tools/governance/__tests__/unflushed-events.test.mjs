@@ -14,14 +14,14 @@ function projectWith(files) {
 }
 
 const EMITTING_AGGREGATE = `
-  import { AggregateRoot } from '@dailyuse/utils/domain';
+  import { AggregateRoot } from '@memoflow/utils/domain';
   export class Goal extends AggregateRoot {
     complete() { this.addDomainEvent('goal:completed', {}); }
   }
 `;
 
 const SILENT_AGGREGATE = `
-  import { AggregateRoot } from '@dailyuse/utils/domain';
+  import { AggregateRoot } from '@memoflow/utils/domain';
   export class UserSetting extends AggregateRoot {
     rename(name) { this._name = name; }
   }
@@ -64,7 +64,7 @@ describe('auditUnflushedEvents', () => {
       '/agg/goal.ts': EMITTING_AGGREGATE,
       '/repo/goal-repo.ts': `
         import { Goal } from '../agg/goal';
-        import { flushDomainEvents } from '@dailyuse/utils/domain';
+        import { flushDomainEvents } from '@memoflow/utils/domain';
         export class GoalRepository {
           async save(goal: Goal): Promise<void> {
             await this.db.write(goal);
@@ -82,7 +82,7 @@ describe('auditUnflushedEvents', () => {
       '/agg/goal.ts': EMITTING_AGGREGATE,
       '/repo/goal-repo.ts': `
         import { Goal } from '../agg/goal';
-        import { AggregateRepositoryBase } from '@dailyuse/patterns';
+        import { AggregateRepositoryBase } from '@memoflow/patterns';
         export class GoalRepository extends AggregateRepositoryBase<Goal> {
           protected async persist(goal: Goal): Promise<void> { await this.db.write(goal); }
         }

@@ -2,9 +2,9 @@ import { app, safeStorage } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import type { IdentityId } from '@dailyuse/contracts/authentication';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { ILogger } from '@dailyuse/utils/logger';
+import type { IdentityId } from '@memoflow/contracts/authentication';
+import { createLogger } from '@memoflow/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
 // Residual 937: toIdentityId dual retired — session-types sole helper.
 import { toIdentityId } from './session-types';
 

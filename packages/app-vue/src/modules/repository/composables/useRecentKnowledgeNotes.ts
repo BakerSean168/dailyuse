@@ -9,7 +9,7 @@ import {
   EMAIL_VERIFICATION_DOMAIN_CODE,
   EMAIL_VERIFICATION_MESSAGE_KEY,
   isEmailVerificationRequiredError,
-} from '@dailyuse/http-client';
+} from '@memoflow/http-client';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 

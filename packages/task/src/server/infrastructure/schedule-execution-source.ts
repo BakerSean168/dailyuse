@@ -3,7 +3,7 @@ import {
   NotificationChannelType,
   NotificationType,
   RelatedEntityType,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../domain/repositories/i-task-template-repository';
 import type { TaskScheduleExecutionSource } from '../../schedule-execution';

@@ -5,8 +5,8 @@
  * Residual 977: parseSSE sole import (packages/ai/src/shared/parse-sse.ts).
  * Residual 967: isAbortLikeError sole import (packages/ai/src/shared/is-abort-like-error.ts).
  */
-import type { AssistantClientCommand, AssistantEvent } from '@dailyuse/contracts/ai';
-import type { ResultErrorDetail } from '@dailyuse/contracts/result';
+import type { AssistantClientCommand, AssistantEvent } from '@memoflow/contracts/ai';
+import type { ResultErrorDetail } from '@memoflow/contracts/result';
 import type { IAIAssistantApiClient, IResultHttpClient } from '../types';
 import {
   createResultClientError,

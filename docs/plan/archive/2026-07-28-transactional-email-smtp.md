@@ -150,8 +150,8 @@ function createEmailSender(env, deps?: { smtpTransport? }): IEmailSender {
 
 | kind | Subject（可 i18n 后续） | Body 要点 |
 |------|------------------------|-----------|
-| email-verify | `【Memoflow】邮箱验证码` | 6 位码、有效期（与 challenge TTL 一致，默认 10 min）、勿转发 |
-| password-reset | `【Memoflow】密码重置验证码` | 同上 |
+| email-verify | `【MemoFlow】邮箱验证码` | 6 位码、有效期（与 challenge TTL 一致，默认 10 min）、勿转发 |
+| password-reset | `【MemoFlow】密码重置验证码` | 同上 |
 
 文案先中英硬编码或简单按 `SMTP_LOCALE` 二选一；**不**接 app-vue i18n（服务端无浏览器 locale 时以账户/Accept-Language 为后续增强）。
 
@@ -184,7 +184,7 @@ SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_USER=<brevo-login>
 SMTP_PASS=<brevo-smtp-key>
-SMTP_FROM=Memoflow <noreply@mail.example.com>
+SMTP_FROM=MemoFlow <noreply@mail.example.com>
 ```
 
 其他中继只需换 host/user/pass；**代码零改**。
@@ -294,7 +294,7 @@ SMTP_FROM=Memoflow <noreply@mail.example.com>
 | 回归 | `pnpm nx run api:test`；oauth / email-verification 既有用例仍绿 |
 | 默认行为 | 不设 SMTP 时仍 console；local-docker 取码仍可用 |
 | 真发 | 人工清单 §5.3 / Phase C |
-| 治理 | 若只改 docs：`pnpm nx run daily-use:governance-check`；改代码再加最近 lint/typecheck/test |
+| 治理 | 若只改 docs：`pnpm nx run memoflow:governance-check`；改代码再加最近 lint/typecheck/test |
 
 ---
 
@@ -340,7 +340,7 @@ curl -sS 'http://127.0.0.1:53080/api/v1/auth/test/last-email-code?email=test123@
 |---|----------|----------|
 | 1 | **该邮箱从未成功走发码**（只 curl 取码、未注册/未点发送；或 send-code 被冷却/限流/校验挡掉） | 发码前后各 curl 一次；看 Network 里 `POST .../email/send-code` 或 register 是否 200 |
 | 2 | **邮箱字符串不一致**（前后空格、不同账号、UI 与 curl 邮箱不同） | 用 UI 里完全同一字符串；服务端 `normalizeEmail` 后比对 |
-| 3 | **register 发码失败被吞**（`RegisterUseCase` 对发信失败仅 warn，注册仍成功 → 无 capture） | `docker logs dailyuse-api-1` 是否有 `Failed to send email` / 无对应 `Code issued` |
+| 3 | **register 发码失败被吞**（`RegisterUseCase` 对发信失败仅 warn，注册仍成功 → 无 capture） | `docker logs memoflow-api-1` 是否有 `Failed to send email` / 无对应 `Code issued` |
 | 4 | **API 容器在发码后重建**（`docker:local:rebuild` / recreate）清空内存 | 发码后立刻取码；重建后再取必为 null |
 | 5 | **多 worker / 多实例**（发码与取码打到不同进程；当前 compose 多为单容器单进程，概率低） | 确认 api 副本数与 cluster 模式 |
 | 6 | **模块多份 ConsoleEmailSender 类静态字段**（打包/重复实例导致 record 与 getLatestCode 不在同一静态数组——需查构建产物） | 发码后日志有 `Code issued` 但同邮箱取码仍 null → 重点查此项 |
@@ -350,7 +350,7 @@ curl -sS 'http://127.0.0.1:53080/api/v1/auth/test/last-email-code?email=test123@
 
 ```bash
 # 1) 确认接口开着
-docker exec dailyuse-api-1 printenv LOCAL_VALIDATION
+docker exec memoflow-api-1 printenv LOCAL_VALIDATION
 
 # 2) 用 UI 或 API 对「真实已注册未验证」邮箱发码
 curl -sS -X POST 'http://127.0.0.1:53080/api/v1/auth/email/send-code' \
@@ -362,7 +362,7 @@ curl -sS -X POST 'http://127.0.0.1:53080/api/v1/auth/email/send-code' \
 # POST /api/v1/auth/register
 
 # 3) 立刻看日志是否 issued
-docker logs dailyuse-api-1 2>&1 | grep EmailVerify | tail -5
+docker logs memoflow-api-1 2>&1 | grep EmailVerify | tail -5
 
 # 4) 用**完全相同**邮箱取码
 curl -sS "http://127.0.0.1:53080/api/v1/auth/test/last-email-code?email=<same-email>"
@@ -418,7 +418,7 @@ curl -sS "http://127.0.0.1:53080/api/v1/auth/test/last-email-code?email=<same-em
 | 2 | **确认自有域名可改 DNS** | 登录域名 DNS 面板，能添加 TXT/CNAME。 |
 | 3 | **在中继后台添加并验证发信域**（建议子域 `mail.` 或 `send.`） | 按厂商向导添加 **SPF、DKIM**（建议再加 **DMARC** `p=none`）；控制台显示 **Domain verified / Authenticated**。 |
 | 4 | **创建 SMTP 凭据** | 拿到并私密保存：`SMTP_HOST`、`SMTP_PORT`（多为 587）、`SMTP_USER`、`SMTP_PASS`（或 SMTP key）。 |
-| 5 | **定 From 地址** | 例如 `Memoflow <noreply@mail.你的域名>`，且该地址/域已在中继侧允许发送。 |
+| 5 | **定 From 地址** | 例如 `MemoFlow <noreply@mail.你的域名>`，且该地址/域已在中继侧允许发送。 |
 | 6 | **中继控制台先发一封测试信**到你自己的常用邮箱 | 收件箱（或垃圾箱）能看到；记录是否进垃圾箱，便于以后调。 |
 
 ### 15.2 写入本机（实施时用，勿提交）
@@ -431,7 +431,7 @@ SMTP_HOST=...
 SMTP_PORT=587
 SMTP_USER=...
 SMTP_PASS=...
-SMTP_FROM=Memoflow <noreply@mail.example.com>
+SMTP_FROM=MemoFlow <noreply@mail.example.com>
 ```
 
 - **不要** `git add` 含密钥的文件。  

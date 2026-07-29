@@ -1,8 +1,8 @@
 {
-  "name": "@dailyuse/test-utils",
+  "name": "@memoflow/test-utils",
   "version": "0.0.1",
   "type": "module",
-  "description": "Unified testing utilities for Memoflow monorepo",
+  "description": "Unified testing utilities for MemoFlow monorepo",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -16,8 +16,8 @@
     "./setup/*": "./src/setup/*.ts"
   },
   "dependencies": {
-    "@dailyuse/database": "workspace:*",
-    "@dailyuse/domain-shared": "workspace:*",
+    "@memoflow/database": "workspace:*",
+    "@memoflow/domain-shared": "workspace:*",
     "@vue/test-utils": "^2.4.6",
     "pg": "8.22.0",
     "pinia": "^3.0.3",

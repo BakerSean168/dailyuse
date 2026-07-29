@@ -16,8 +16,8 @@ test('production Electron exposes password + guest and enters an isolated guest 
     env: {
       ...process.env,
       NODE_ENV: 'test',
-      DAILYUSE_DESKTOP_USER_DATA_PATH: userDataPath,
-      DAILYUSE_DESKTOP_USER_FILES_PATH: userFilesPath,
+      MEMOFLOW_DESKTOP_USER_DATA_PATH: userDataPath,
+      MEMOFLOW_DESKTOP_USER_FILES_PATH: userFilesPath,
       ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
     },
   });

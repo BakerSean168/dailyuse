@@ -1,4 +1,4 @@
-import type { IDomainEvent } from '@dailyuse/contracts/shared';
+import type { IDomainEvent } from '@memoflow/contracts/shared';
 import type { Publisher } from './typed-event-port';
 
 type TypedEventMap = Record<string, unknown>;

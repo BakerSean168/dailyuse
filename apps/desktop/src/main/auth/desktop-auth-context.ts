@@ -1,7 +1,7 @@
-import type { Context } from '@dailyuse/contracts/shared';
-import { AuthRuntimeState } from '@dailyuse/contracts/authentication';
-import { ElectronAuthResolutionError } from '@dailyuse/contracts/electron';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { Context } from '@memoflow/contracts/shared';
+import { AuthRuntimeState } from '@memoflow/contracts/authentication';
+import { ElectronAuthResolutionError } from '@memoflow/contracts/electron';
+import { createLogger } from '@memoflow/utils/logger';
 
 import type { AuthDesktopApplicationService } from '../modules/authentication/application/auth-desktop-application-service';
 

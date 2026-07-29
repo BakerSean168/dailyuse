@@ -1,5 +1,5 @@
 # =============================================================================
-# Memoflow 本地基础设施 Docker Compose
+# MemoFlow 本地基础设施 Docker Compose
 # =============================================================================
 # 通过 profiles 区分环境，按需启动对应容器：
 #
@@ -22,11 +22,11 @@ services:
   postgres-dev:
     profiles: [dev]
     image: pgvector/pgvector:0.8.5-pg18
-    container_name: Memoflow-dev-db
+    container_name: MemoFlow-dev-db
     environment:
-      POSTGRES_USER: Memoflow
-      POSTGRES_PASSWORD: Memoflow123
-      POSTGRES_DB: Memoflow
+      POSTGRES_USER: MemoFlow
+      POSTGRES_PASSWORD: MemoFlow123
+      POSTGRES_DB: MemoFlow
     ports:
       - '5432:5432'
     volumes:
@@ -36,7 +36,7 @@ services:
       - -c
       - wal_level=logical
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U Memoflow -d Memoflow']
+      test: ['CMD-SHELL', 'pg_isready -U MemoFlow -d MemoFlow']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,14 +47,14 @@ services:
   redis-dev:
     profiles: [dev]
     image: redis:8-alpine
-    container_name: Memoflow-dev-redis
+    container_name: MemoFlow-dev-redis
     ports:
       - '6384:6379'
     volumes:
       - redis-dev-data:/data
-    command: redis-server --appendonly yes --requirepass Memoflow123
+    command: redis-server --appendonly yes --requirepass MemoFlow123
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', 'Memoflow123', '--no-auth-warning', 'ping']
+      test: ['CMD', 'redis-cli', '-a', 'MemoFlow123', '--no-auth-warning', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -65,7 +65,7 @@ services:
   powersync-dev:
     profiles: [dev]
     image: journeyapps/powersync-service:latest
-    container_name: Memoflow-dev-powersync
+    container_name: MemoFlow-dev-powersync
     ports:
       - '8080:8080'
     depends_on:
@@ -75,8 +75,8 @@ services:
       - ./docker/powersync/powersync.yaml:/config/powersync.yaml
     command: ['start', '-c', '/config/powersync.yaml']
     environment:
-      PS_SOURCE_URI: postgresql://Memoflow:Memoflow123@postgres-dev:5432/Memoflow
-      PS_STORAGE_URI: postgresql://Memoflow:Memoflow123@postgres-dev:5432/Memoflow
+      PS_SOURCE_URI: postgresql://MemoFlow:MemoFlow123@postgres-dev:5432/MemoFlow
+      PS_STORAGE_URI: postgresql://MemoFlow:MemoFlow123@postgres-dev:5432/MemoFlow
       PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:-iPsCAeT3UnpBpzEuLxRxsnj3GCGLp8UQrv5_WGLGR4Q0nw8OX_wmYGb4pGIzcnYsjM_JkmzZZxxtdS_lT6pWcQs9UdZbSxb1XDD_nRjohdrFvFEjGrATte05qm1Aj2VzmJnowh1tBC_QhVpljjQLBhfbQupgB4H-nuD4HKuzCYQ2-lo-zr2zRVQM9MBsuSFgijPHdHdejKqCKje4VIFjz-zxygoUvxtct3Fcloz06wtURLu5qSwHVAKOgwyHz008iSEZdvm7FfK0M931PH8iZKMb_2OIXDgc_vfIcXw5fadGo3qCgb0hFTE5WK3kHYlRxTCKDPCdznsdW_ZwIwXGvQ}
       PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
       PS_JWK_KID: ${POWERSYNC_KEY_ID:-powersync-dev-d90f228f}
@@ -102,7 +102,7 @@ services:
   postgres-test:
     profiles: [test]
     image: pgvector/pgvector:0.8.5-pg18
-    container_name: ${TEST_DB_CONTAINER:-Memoflow-test-db}
+    container_name: ${TEST_DB_CONTAINER:-MemoFlow-test-db}
     environment:
       POSTGRES_USER: ${TEST_DB_USER:-test_user}
       POSTGRES_PASSWORD: ${TEST_DB_PASS:-test_pass}
@@ -134,7 +134,7 @@ services:
   powersync-test:
     profiles: [sync-test]
     image: journeyapps/powersync-service:latest
-    container_name: ${TEST_POWERSYNC_CONTAINER:-Memoflow-test-powersync}
+    container_name: ${TEST_POWERSYNC_CONTAINER:-MemoFlow-test-powersync}
     ports:
       - '${TEST_POWERSYNC_PORT:-58082}:8080'
     depends_on:
@@ -177,6 +177,6 @@ services:
 # =============================================================================
 volumes:
   postgres-dev-data:
-    name: Memoflow-dev-db-data
+    name: MemoFlow-dev-db-data
   redis-dev-data:
-    name: Memoflow-dev-redis-data
+    name: MemoFlow-dev-redis-data

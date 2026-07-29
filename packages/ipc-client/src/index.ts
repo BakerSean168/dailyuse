@@ -1,17 +1,17 @@
 /**
- * @dailyuse/ipc-client — Result-mode Electron IPC client
+ * @memoflow/ipc-client — Result-mode Electron IPC client
  *
- * Symmetric with `@dailyuse/http-client` ResultHttpClient:
+ * Symmetric with `@memoflow/http-client` ResultHttpClient:
  * all invokes return `Promise<Result<T>>`, never throw, and require
  * contracts IpcResult envelopes (no raw dual-track passthrough).
  *
  * Desktop DI uses `createResultIpcClient` only; throw-style dual client removed.
  *
- * @module @dailyuse/ipc-client
+ * @module @memoflow/ipc-client
  *
  * @example
  * ```ts
- * import { createResultIpcClient } from '@dailyuse/ipc-client';
+ * import { createResultIpcClient } from '@memoflow/ipc-client';
  *
  * const ipc = createResultIpcClient({ bridge: window.electronAPI });
  * const result = await ipc.invoke<Goal[]>('goal:list');

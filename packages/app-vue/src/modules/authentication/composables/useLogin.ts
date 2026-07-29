@@ -1,4 +1,4 @@
-import type { LoginByEmailReq } from '@dailyuse/contracts/authentication';
+import type { LoginByEmailReq } from '@memoflow/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
 import { completeAuthSuccess } from './completeAuthSuccess';
 import {

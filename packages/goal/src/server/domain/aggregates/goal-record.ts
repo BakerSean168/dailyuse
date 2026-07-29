@@ -26,10 +26,10 @@
  * - keyResultId 必须存在
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { GoalRecordId, KeyResultId } from '../../domain';
-import type { GoalRecordServerDTO, GoalEventMap } from '@dailyuse/contracts/goal';
-import type {IdentityId, Instant} from '@dailyuse/contracts/primitives';
+import type { GoalRecordServerDTO, GoalEventMap } from '@memoflow/contracts/goal';
+import type {IdentityId, Instant} from '@memoflow/contracts/primitives';
 
 // 内部状态接口
 export interface GoalRecordState {
@@ -228,11 +228,11 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
   public toClientDTO(
     goalId: string,
     valueAfter: number = this._props.value,
-  ): import('@dailyuse/contracts/goal').GoalRecordClientDTO {
+  ): import('@memoflow/contracts/goal').GoalRecordClientDTO {
     return {
       id: this.id,
       keyResultId: this._props.keyResultId,
-      goalId: goalId as import('@dailyuse/contracts/goal').GoalRecordClientDTO['goalId'],
+      goalId: goalId as import('@memoflow/contracts/goal').GoalRecordClientDTO['goalId'],
       value: this._props.value,
       valueAfter,
       comment: this._props.note,

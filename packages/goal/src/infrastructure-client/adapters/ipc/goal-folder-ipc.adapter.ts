@@ -4,15 +4,15 @@
  * IPC implementation of IGoalFolderApiClient using ResultIpcClient.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { GoalChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { GoalChannels } from '@memoflow/contracts/electron';
 import type { IGoalFolderApiClient, IResultIpcClient } from '../types';
 import type {
   GoalFolderClientDTO,
   QueryGoalFoldersRes,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 export class GoalFolderIpcAdapter implements IGoalFolderApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

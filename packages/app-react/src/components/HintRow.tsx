@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Spacing, ThemedText, ThemedView } from '@dailyuse/ui-react-native';
+import { Spacing, ThemedText, ThemedView } from '@memoflow/ui-react-native';
 
 type HintRowProps = {
   title?: string;

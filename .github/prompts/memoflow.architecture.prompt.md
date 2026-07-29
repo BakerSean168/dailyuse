@@ -2,7 +2,7 @@
 agent: agent
 ---
 
-# DailyUse Architecture Prompt
+# MemoFlow Architecture Prompt
 
 架构相关信息优先参考：
 

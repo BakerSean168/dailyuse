@@ -6,7 +6,7 @@
  *
  * 模块注册策略：
  * - 每个模块实现 IApiModule 接口（如 GovernanceApiModule）
- * - 模块内部自行管理数据库访问（通过 @dailyuse/database）
+ * - 模块内部自行管理数据库访问（通过 @memoflow/database）
  * - 故障模块：注释掉即可，不影响其他模块启动
  */
 
@@ -17,9 +17,9 @@ import {
   getGithubOAuthConfig,
   getGithubAppConfig,
 } from './shared/infrastructure/config/env.js';
-import { prisma, connectDatabase, disconnectDatabase } from '@dailyuse/database';
+import { prisma, connectDatabase, disconnectDatabase } from '@memoflow/database';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { ApiBootstrapper } from './bootstrap';
 import { ensurePowerSyncPublication } from './shared/infrastructure/database/ensure-powersync-publication.js';
 import {
@@ -29,28 +29,28 @@ import {
 
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
-import { GovernanceApiModule } from '@dailyuse/governance/api';
-import { AccountApiModule } from '@dailyuse/account/api';
-import { createAuthenticationApiModule } from '@dailyuse/authentication/api';
-import { GoalApiModule } from '@dailyuse/goal/api';
-import { createGoalPrismaScheduleExecutionSource } from '@dailyuse/goal/schedule-execution';
-import { createGoalPrismaScheduleProjectionSource } from '@dailyuse/goal/schedule-projection';
-import { NotificationApiModule } from '@dailyuse/notification/api';
-import { createNotificationPrismaScheduleNotificationPort } from '@dailyuse/notification/schedule-execution';
-import { ReminderApiModule } from '@dailyuse/reminder/api';
-import { createReminderPrismaScheduleExecutionSource } from '@dailyuse/reminder/schedule-execution';
-import { createReminderPrismaScheduleProjectionSource } from '@dailyuse/reminder/schedule-projection';
-import { createRepositoryApiModule } from '@dailyuse/repository/api';
-import { resolveRepositoryStorageBaseDir } from '@dailyuse/repository';
-import { createScheduleTaskPrismaRepository } from '@dailyuse/schedule';
-import { createScheduleApiModule } from '@dailyuse/schedule/api';
-import { createScheduleOrchestrationModule } from '@dailyuse/schedule-orchestration';
-import { SettingApiModule } from '@dailyuse/setting/api';
-import { DataPortabilityApiModule } from '@dailyuse/data-portability/api';
-import { createTaskPrismaScheduleExecutionSource } from '@dailyuse/task/schedule-execution';
-import { createTaskPrismaScheduleProjectionSource } from '@dailyuse/task/schedule-projection';
-import { createAIApiModule, type AIApiModuleContext } from '@dailyuse/ai/api';
-import { createTaskApiModule } from '@dailyuse/task/api';
+import { GovernanceApiModule } from '@memoflow/governance/api';
+import { AccountApiModule } from '@memoflow/account/api';
+import { createAuthenticationApiModule } from '@memoflow/authentication/api';
+import { GoalApiModule } from '@memoflow/goal/api';
+import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
+import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
+import { NotificationApiModule } from '@memoflow/notification/api';
+import { createNotificationPrismaScheduleNotificationPort } from '@memoflow/notification/schedule-execution';
+import { ReminderApiModule } from '@memoflow/reminder/api';
+import { createReminderPrismaScheduleExecutionSource } from '@memoflow/reminder/schedule-execution';
+import { createReminderPrismaScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
+import { createRepositoryApiModule } from '@memoflow/repository/api';
+import { resolveRepositoryStorageBaseDir } from '@memoflow/repository';
+import { createScheduleTaskPrismaRepository } from '@memoflow/schedule';
+import { createScheduleApiModule } from '@memoflow/schedule/api';
+import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
+import { SettingApiModule } from '@memoflow/setting/api';
+import { DataPortabilityApiModule } from '@memoflow/data-portability/api';
+import { createTaskPrismaScheduleExecutionSource } from '@memoflow/task/schedule-execution';
+import { createTaskPrismaScheduleProjectionSource } from '@memoflow/task/schedule-projection';
+import { createAIApiModule, type AIApiModuleContext } from '@memoflow/ai/api';
+import { createTaskApiModule } from '@memoflow/task/api';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
@@ -72,7 +72,7 @@ let scheduler: CronSchedulerManager | null = null;
 const repositoryStorageBaseDir = resolveRepositoryStorageBaseDir();
 
 async function bootstrap(): Promise<void> {
-  logger.info('Starting Memoflow API server...', {
+  logger.info('Starting MemoFlow API server...', {
     ...getStartupInfo(),
     port: env.API_PORT,
     nodeEnv: env.NODE_ENV,

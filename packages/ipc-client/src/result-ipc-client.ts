@@ -27,17 +27,17 @@
  * }
  * ```
  *
- * @module @dailyuse/ipc-client
+ * @module @memoflow/ipc-client
  */
 
-import type { Result, ResultError } from '@dailyuse/contracts/result';
+import type { Result, ResultError } from '@memoflow/contracts/result';
 import {
   fail,
   ResultCode,
   fromIpcResult,
   type IpcResult,
   isIpcResultEnvelope,
-} from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/result';
 import type { ElectronBridge, IpcClientConfig, IResultIpcClient } from './types';
 import { DEFAULT_IPC_CLIENT_CONFIG } from './types';
 
@@ -52,7 +52,7 @@ import { DEFAULT_IPC_CLIENT_CONFIG } from './types';
  *
  * @example
  * ```ts
- * import { ResultIpcClient } from '@dailyuse/ipc-client';
+ * import { ResultIpcClient } from '@memoflow/ipc-client';
  *
  * const client = new ResultIpcClient();
  *

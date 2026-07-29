@@ -12,8 +12,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as os from 'os';
 import { app } from 'electron';
-import type { ILogger } from '@dailyuse/utils/logger';
-import type { DeviceInfoClientDTO } from '@dailyuse/contracts/authentication';
+import type { ILogger } from '@memoflow/utils/logger';
+import type { DeviceInfoClientDTO } from '@memoflow/contracts/authentication';
 
 export class DeviceIdentityHelper {
   constructor(

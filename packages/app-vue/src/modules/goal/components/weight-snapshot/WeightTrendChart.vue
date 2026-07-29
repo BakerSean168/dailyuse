@@ -73,10 +73,10 @@ import { CanvasRenderer } from 'echarts/renderers';
 import VChart from 'vue-echarts';
 import type { ECElementEvent } from 'echarts';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
-import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardHeader, CardTitle, CardContent } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Alert, AlertDescription } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
 import { Loader2, Info } from '@lucide/vue';
 
 use([

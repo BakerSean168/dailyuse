@@ -5,7 +5,7 @@
  * Acts as a security barrier, ensuring only authorized IPC channels can be accessed.
  * Follows Electron security best practices (context isolation, sandboxing).
  *
- * The exposed API matches `ElectronBridge` from `@dailyuse/ipc-client`.
+ * The exposed API matches `ElectronBridge` from `@memoflow/ipc-client`.
  *
  * @module preload
  */
@@ -117,4 +117,4 @@ const electronAPI = {
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
 // Export type for TypeScript usage in renderer
-export type { ElectronBridge } from '@dailyuse/ipc-client';
+export type { ElectronBridge } from '@memoflow/ipc-client';

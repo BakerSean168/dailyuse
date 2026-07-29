@@ -12,19 +12,19 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { TaskTemplateId, TaskDependencyId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/utils/result';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { TaskTemplateId, TaskDependencyId } from '@memoflow/contracts/primitives';
 import {
   TaskDependencyResponseSchema,
   DependencyChainResponseSchema,
   ValidateDependencyResponseSchema,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 import {
   CreateDependencyBodySchema,
   UpdateDependencyBodySchema,
   ValidateDependencyBodySchema,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 import type { TaskDependencyController } from '../../server/transport/task-dependency.controller';
 
 // ============ Types ============

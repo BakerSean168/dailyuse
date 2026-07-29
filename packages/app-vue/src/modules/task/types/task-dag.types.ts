@@ -3,11 +3,11 @@ export type {
   TaskForWidget,
   TaskGraphData,
   TaskGraphEdge,
-} from '@dailyuse/task/client';
+} from '@memoflow/task/client';
 export {
   TaskGraphEdgeKind,
   buildTaskGraphData,
   taskTemplateToDAG,
   taskInstanceToDAG,
   taskInstanceToWidget,
-} from '@dailyuse/task/client';
+} from '@memoflow/task/client';

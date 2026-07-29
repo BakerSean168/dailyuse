@@ -5,12 +5,12 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   IExecutionInfo,
   ExecutionInfoDTO,
   ExecutionStatus,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 /**
  * ExecutionInfo 值对象实现

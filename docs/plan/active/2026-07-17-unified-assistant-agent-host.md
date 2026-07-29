@@ -187,7 +187,7 @@ updated: 2026-07-22T00:00:00
 ```text
 Web/Desktop/Mobile UI
         -> AssistantFacade
-        -> Daily Use Agent Host
+        -> MemoFlow Agent Host
              |- Run Coordinator
              |- Event Journal / Projection
              |- Workflow Registry
@@ -290,7 +290,7 @@ interface AgentProposal {
 
 ### 6.3 ProposedAction 与 ToolCall 分离
 
-Engine 内部 ToolCall 可以使用开放 tool ID 和 JSON Schema；进入审批与 Executor 的 ProposedAction 必须是 Daily Use 维护的 Zod discriminated union。
+Engine 内部 ToolCall 可以使用开放 tool ID 和 JSON Schema；进入审批与 Executor 的 ProposedAction 必须是 MemoFlow 维护的 Zod discriminated union。
 
 ```ts
 type ProposedAction =
@@ -417,7 +417,7 @@ type AgentCapability =
 interface CapabilityOffer {
   capabilities: ReadonlySet<AgentCapability>;
   placement: 'desktop' | 'server';
-  dataLocation: 'local' | 'dailyuse-server' | 'third-party';
+  dataLocation: 'local' | 'memoflow-server' | 'third-party';
   toolExecution: 'none' | 'host' | 'backend' | 'hybrid';
   limits?: {
     contextTokens?: number;
@@ -578,7 +578,7 @@ Desktop 可使用本地 Vault 和本地索引；Web 只能使用 GitHub 投影/r
 - 显式注入 `streamFn`/ModelGateway。
 - 只注册 scoped Query/Proposal tools。
 - 禁用默认 bash、read/write/edit、extension discovery、AGENTS/CLAUDE context files。
-- 不使用 Pi JSONL Session 作为 Daily Use transcript/checkpoint 真值。
+- 不使用 Pi JSONL Session 作为 MemoFlow transcript/checkpoint 真值。
 - 将 Pi event 映射到标准 AgentEngineEvent。
 - Pi continuation 仅作为可丢弃优化。
 
@@ -599,7 +599,7 @@ Desktop 可使用本地 Vault 和本地索引；Web 只能使用 GitHub 投影/r
 
 - adapter 映射 session、tool call、stream 和 continuation。
 - 必须声明 backend-managed/host-managed tools。
-- Proposal 必须再次通过 Daily Use schema 校验。
+- Proposal 必须再次通过 MemoFlow schema 校验。
 - 远程服务不能直接获得业务 Mutation token。
 
 ### 11.5 LocalCliTurnEngine
@@ -622,7 +622,7 @@ adapter 负责：
 首期禁止：
 
 - 把真实 Vault 设为 CLI 工作目录。
-- 把 Daily Use/GitHub/Provider token 注入 CLI 环境。
+- 把 MemoFlow/GitHub/Provider token 注入 CLI 环境。
 - 允许任意用户命令模板。
 - 把 CLI 自带文件写入结果当成已完成业务 Mutation。
 - CLI 失败后静默上传本地上下文到云端。

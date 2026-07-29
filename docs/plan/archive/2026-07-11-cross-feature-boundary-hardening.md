@@ -10,7 +10,7 @@ created: 2026-07-11T00:00:00+08:00
 updated: 2026-07-18T07:00:00+00:00
 ---
 
-> **归档说明（2026-07-18）**：阶段二/三与治理验收已完成（`scope:*` depConstraints + `scope-constraint-audit` + `daily-use:governance-check` 绿）。schedule shared-kernel 以显式白名单过渡（决策 (b)）收口；完整下沉 contracts（决策 (a)）不阻塞本计划归档，另开专项。
+> **归档说明（2026-07-18）**：阶段二/三与治理验收已完成（`scope:*` depConstraints + `scope-constraint-audit` + `memoflow:governance-check` 绿）。schedule shared-kernel 以显式白名单过渡（决策 (b)）收口；完整下沉 contracts（决策 (a)）不阻塞本计划归档，另开专项。
 
 # Cross-Feature Boundary Hardening
 
@@ -23,8 +23,8 @@ updated: 2026-07-18T07:00:00+00:00
 ## 问题（诊断结论，已核对代码）
 
 1. **layer 矩阵不区分 feature。** 所有 feature 包同为 `layer:domain`，`@nx/enforce-module-boundaries` 的 `depConstraints` 只按 `layer:*` 约束（`eslint.config.ts` 的 `moduleBoundaryDepConstraints`）。`layer:domain → layer:domain` 被允许，于是**任意 feature 可以 import 任意 feature**，矩阵层面零隔离。
-2. **唯一防火墙是硬编码个案。** `eslint.config.ts` 里两条 `no-restricted-imports` 手写死了 `goal ✗↔ task`（`packages/goal/**` 禁 import `@dailyuse/task`，反之亦然）。这是唯一的跨 feature 拦截，且只覆盖这一对。
-3. **audit 有盲区。** `public-surface-audit.mjs` 只拦「import 别包**内部层子路径**」（deep import），**不拦「import 别包公开 API」**。所以 `reminder` 直接 `import ... from '@dailyuse/goal'`（走公开面）不会被任何检查拦下。
+2. **唯一防火墙是硬编码个案。** `eslint.config.ts` 里两条 `no-restricted-imports` 手写死了 `goal ✗↔ task`（`packages/goal/**` 禁 import `@memoflow/task`，反之亦然）。这是唯一的跨 feature 拦截，且只覆盖这一对。
+3. **audit 有盲区。** `public-surface-audit.mjs` 只拦「import 别包**内部层子路径**」（deep import），**不拦「import 别包公开 API」**。所以 `reminder` 直接 `import ... from '@memoflow/goal'`（走公开面）不会被任何检查拦下。
 4. **`scope:*` tag 已存在但未参与任何约束。** 每个 feature 已有唯一 scope tag（核实：20 个 feature 各一个 `scope:<feature>`），但 `depConstraints` 里没有任何 `scope:*` 条目，tag 处于「声明了但没用」状态。
 
 ## 现存跨 feature 依赖快照（2026-07-11，生产 src，排除 contracts/utils）
@@ -33,9 +33,9 @@ updated: 2026-07-18T07:00:00+00:00
 
 | 源 | 目标 | 导入内容 | 判定 |
 | --- | --- | --- | --- |
-| goal / task / reminder | `@dailyuse/schedule`、`@dailyuse/schedule/domain-shared` | `ScheduleTask`、`ScheduleConfig`、`ScheduleTaskMetadata` | schedule 调度 shared-kernel，需决策：提为 contracts/shared 还是显式白名单 |
-| editor | `@dailyuse/repository/api` | `createRepositoryPrismaModule`（Port 组装） | 合法：走 `/api` 公开面，ADR-033 范式 B |
-| data-portability | `@dailyuse/{goal,task,reminder,notification,setting}/api` | `create*PrismaRepositories`（导入/导出聚合壳） | 合法：data-portability 本就是跨模块聚合宿主，走 `/api` |
+| goal / task / reminder | `@memoflow/schedule`、`@memoflow/schedule/domain-shared` | `ScheduleTask`、`ScheduleConfig`、`ScheduleTaskMetadata` | schedule 调度 shared-kernel，需决策：提为 contracts/shared 还是显式白名单 |
+| editor | `@memoflow/repository/api` | `createRepositoryPrismaModule`（Port 组装） | 合法：走 `/api` 公开面，ADR-033 范式 B |
+| data-portability | `@memoflow/{goal,task,reminder,notification,setting}/api` | `create*PrismaRepositories`（导入/导出聚合壳） | 合法：data-portability 本就是跨模块聚合宿主，走 `/api` |
 
 > 注：`ai → governance` 只是 `ai.module.ts` 的一条 `@see` docstring 引用，不是真实 import，不计入。
 
@@ -61,7 +61,7 @@ updated: 2026-07-18T07:00:00+00:00
 
 1. 用 `pnpm nx graph --file=graph.json` 导出完整依赖图，脚本提取所有 `scope:A → scope:B (A≠B)` 边，作为**权威现状清单**（不靠 grep 拍脑袋）。
 2. 对 `goal/task/reminder → schedule` 这条 shared-kernel 边做决策（三选一，另开小讨论）：
-   - (a) 把 `ScheduleTask` / `ScheduleConfig` / `ScheduleTaskMetadata` 的**契约形态**下沉到 `@dailyuse/contracts/schedule`，feature 只依赖 contracts；或
+   - (a) 把 `ScheduleTask` / `ScheduleConfig` / `ScheduleTaskMetadata` 的**契约形态**下沉到 `@memoflow/contracts/schedule`，feature 只依赖 contracts；或
    - (b) 承认 schedule 是被共享的调度内核，给它单独的 `scope:schedule-kernel` 语义并进白名单；或
    - (c) 经 `schedule-orchestration`（已是 `scope:shared`）中转，feature 不直连 schedule。
    - 倾向 (a)：最符合「feature 间只依赖 contracts」，但工作量取决于 `ScheduleTask` 是否为纯数据。
@@ -85,7 +85,7 @@ updated: 2026-07-18T07:00:00+00:00
 - [x] `moduleBoundaryDepConstraints` 覆盖全部 `scope:<feature>`，默认拒绝跨 feature 依赖。
 - [x] 硬编码 goal↔task `no-restricted-imports` 删除，由 scope 约束等价覆盖。
 - [x] `goal/task/reminder → schedule` 的 shared-kernel 边按阶段一决策收敛：**显式白名单**过渡（决策 (b)）作为本计划完成态；完整下沉 contracts（决策 (a)）另开专项。
-- [x] 相关 feature lint + `daily-use:governance-check` 已绿（2026-07-18 复验 governance-check 绿）。全仓 `run-many -t typecheck` 非本计划阻塞项。
+- [x] 相关 feature lint + `memoflow:governance-check` 已绿（2026-07-18 复验 governance-check 绿）。全仓 `run-many -t typecheck` 非本计划阻塞项。
 - [x] 新增 feature 缺失 scope 约束能被治理拦截（阶段三 scope-constraint-audit）。
 
 ## 非目标 / 后续
@@ -106,8 +106,8 @@ updated: 2026-07-18T07:00:00+00:00
 | 2026-07-18 | **阶段二起步**：`eslint.config.ts` 增加 feature `scope:*` depConstraints；删除 goal↔task 硬编码 `no-restricted-imports`；schedule 暂作白名单 |
 
 | 2026-07-18 | **阶段二完成**：feature/app `scope:*` depConstraints 覆盖；goal↔task 硬编码删除；schedule shared-kernel 暂显式白名单（决策 (b) 过渡） |
-| 2026-07-18 | **阶段三完成**：`tools/governance/scope-constraint-audit.mjs` 纳入 `daily-use:governance-check`；缺失 sourceTag 即 fail；governance-tools 单测 5 绿 |
-| 2026-07-18 | **验收**：feature lint（goal/task/reminder/editor/data-portability/account）+ authentication lint 绿；`daily-use:governance-check` 绿 |
+| 2026-07-18 | **阶段三完成**：`tools/governance/scope-constraint-audit.mjs` 纳入 `memoflow:governance-check`；缺失 sourceTag 即 fail；governance-tools 单测 5 绿 |
+| 2026-07-18 | **验收**：feature lint（goal/task/reminder/editor/data-portability/account）+ authentication lint 绿；`memoflow:governance-check` 绿 |
 
 | 2026-07-18 | **归档**：本计划目标（系统化 scope 默认拒绝 + 治理防回归）已达成；schedule contracts 下沉不在本计划范围 |
 

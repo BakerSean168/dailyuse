@@ -2,12 +2,12 @@
  * Reminder client seam.
  *
  * Public reminder contracts stay centralized in
- * `@dailyuse/contracts/reminder`.
+ * `@memoflow/contracts/reminder`.
  * Callers depend on this seam instead of the old application-client /
  * infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   createReminderClientService,
   createReminderServiceFromHttpClient,

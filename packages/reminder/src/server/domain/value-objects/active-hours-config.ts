@@ -5,11 +5,11 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   IActiveHoursConfig,
   ActiveHoursConfigDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 /**
  * ActiveHoursConfig 值对象实现

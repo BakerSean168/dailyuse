@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
-import { MessageRole } from '@dailyuse/contracts/ai';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { MessageRole } from '@memoflow/contracts/ai';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { AIConversation } from '../../aggregates/ai-conversation';
 import { Message } from '../message';
 

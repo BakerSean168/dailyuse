@@ -4,10 +4,10 @@
  * Transport-agnostic interface for Reminder API operations.
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
- * Types imported from @dailyuse/contracts/reminder.
+ * Types imported from @memoflow/contracts/reminder.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
@@ -20,8 +20,8 @@ import type {
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
   GetReminderTodayScheduleRes,
-} from '@dailyuse/contracts/reminder';
-import type { ControlMode } from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
+import type { ControlMode } from '@memoflow/contracts/reminder';
 
 /**
  * IReminderApiClient

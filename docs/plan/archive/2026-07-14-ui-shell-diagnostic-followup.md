@@ -191,7 +191,7 @@ type ShellLayoutReason = 'default' | 'user' | 'viewport';
 不应照搬的内容：
 
 - Codex 的“插件、浏览器、电脑操控、钩子、Git”等分类属于开发工具领域。
-- Memoflow 保留自己的六组设置与个人生产力语言。
+- MemoFlow 保留自己的六组设置与个人生产力语言。
 - 不强制复制参考客户端的纯黑配色；继续使用当前主题 token，并同时支持浅色/深色。
 
 ### 5.2 页面结构
@@ -382,7 +382,7 @@ Task 当前状态 Tabs 的内部宽度约 374px，无法放入 320px 面板的�
 
 ### 8.4 参考客户端补充样本：宿主区域与附件态
 
-2026-07-14 补充的三张 Codex 桌面端截图形成了可比较的同组样本。截图中打开的白色 Memoflow 图片只是被查看的内容；可借鉴的参考 UI 是其外层 Codex 壳、Composer 和附件状态。由于原图包含会话内容和本机路径，不把原图复制进仓库，仅保留以下测量结论。
+2026-07-14 补充的三张 Codex 桌面端截图形成了可比较的同组样本。截图中打开的白色 MemoFlow 图片只是被查看的内容；可借鉴的参考 UI 是其外层 Codex 壳、Composer 和附件状态。由于原图包含会话内容和本机路径，不把原图复制进仓库，仅保留以下测量结论。
 
 > 下列尺寸是截图物理像素近似值，受 Windows 显示缩放、截图裁切和客户端版本影响，只用于识别比例与锚定关系，不直接等同于最终 CSS 像素。
 
@@ -393,7 +393,7 @@ Task 当前状态 Tabs 的内部宽度约 374px，无法放入 320px 面板的�
 | C-03，`1705 × 1013` | 项目侧栏收起的沉浸内容态          | 浮动 Composer 仍约 738px 宽、距底部约 24px，并重新居中到整个工作区                            | 侧栏切换只改变宿主矩形；Composer 最大宽度和底部节奏保持稳定      |
 | C-02 / C-03 附件态  | 1–2 个图片附件 + 文本 + 底部控制  | 容器宽度基本不变，高度向上增长；缩略图横向排列，单项可移除；上方另有较窄的“最近内容/上下文”条 | 附件属于同一输入表面；增加附件不应推动底部锚点或把输入框横向撑满 |
 
-据此，Memoflow 的 Global Composer 采用“宿主区域”而非“窗口”定位：
+据此，MemoFlow 的 Global Composer 采用“宿主区域”而非“窗口”定位：
 
 ```ts
 composerWidth = Math.min(COMPOSER_MAX, composerHostWidth - 2 * COMPOSER_SIDE_GAP);
@@ -403,7 +403,7 @@ composerLeft = composerHostLeft + (composerHostWidth - composerWidth) / 2;
 - STATE A / B 有 AI 列时，`composerHost` 是 AI 列，不包含侧栏和 BusinessPanel。
 - STATE C 无 AI 列时，`composerHost` 是业务工作区；使用浮动紧凑态，并为业务滚动区预留与 Composer 实际高度一致的底部安全区。
 - STATE D Settings 不创建 `composerHost`，也不渲染 Composer。
-- 首轮建议 `COMPOSER_MAX` 取 `720–760px`、水平安全边距 `24–32px`；最终值在 Memoflow Electron 回归中校准，而不是逐像素复制参考客户端。
+- 首轮建议 `COMPOSER_MAX` 取 `720–760px`、水平安全边距 `24–32px`；最终值在 MemoFlow Electron 回归中校准，而不是逐像素复制参考客户端。
 - Composer 底边保持稳定，单行、多行、附件和上下文内容均向上扩展；达到最大高度后只滚动输入内容或附件区。
 - 附件缩略图位于输入表面顶部，支持单项移除、键盘聚焦和横向溢出；“最近内容/上下文”条是可选的次级层，不与普通附件混为永久固定区域。
 - 侧栏折叠、BusinessPanel resize 和窗口 resize 都必须重新计算 `composerHost`，不得通过固定 `left` 或整窗 `50vw` 假居中。
@@ -469,7 +469,7 @@ composerLeft = composerHostLeft + (composerHostWidth - composerWidth) / 2;
 
 ### 11.1 产品定位
 
-Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开发工具。参考 ChatGPT/Codex 的重点是布局纪律、层级和状态转换，不是复制其开发工具视觉语言。
+MemoFlow 是个人目标、任务、知识与日程的 AI 工作台，不是开发工具。参考 ChatGPT/Codex 的重点是布局纪律、层级和状态转换，不是复制其开发工具视觉语言。
 
 ### 11.2 紧凑 token 方向
 
@@ -492,7 +492,7 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 
 ### 11.3 识别性元素
 
-本轮唯一重点视觉签名是“顶部实时胶囊预览”：五个业务胶囊 + 日程时段胶囊共同形成 Memoflow 的实时个人工作态摘要。其余区域保持安静、精确，避免重复卡片、重复标题和装饰性渐变。
+本轮唯一重点视觉签名是“顶部实时胶囊预览”：五个业务胶囊 + 日程时段胶囊共同形成 MemoFlow 的实时个人工作态摘要。其余区域保持安静、精确，避免重复卡片、重复标题和装饰性渐变。
 
 ## 12. 参考客户端 UI 状态采集
 
@@ -500,7 +500,7 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 
 可以采集，但需要区分表面：
 
-- Memoflow Electron：可使用 Playwright `_electron` 完整读取 DOM、可访问性、事件和几何。
+- MemoFlow Electron：可使用 Playwright `_electron` 完整读取 DOM、可访问性、事件和几何。
 - 已安装 ChatGPT/Codex 桌面客户端：只有在能通过调试端口启动/附加时才能使用 Playwright；Windows Store 单实例客户端不能默认假设可附加。
 - 无调试附加时：仍可通过用户提供截图、屏幕录制、Windows UI Automation 可访问性树和像素测量采集可见状态。
 - 采集目标是布局、间距、层级、控件行为和状态转换，不读取凭据、会话私密内容或客户端内部源码。
@@ -527,7 +527,7 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 - 可访问名称、控件角色和键盘行为（若 UIA 可用）。
 - 关键矩形：侧栏、主内容、Composer、BusinessPanel、Settings 导航。
 - 颜色、圆角、间距、字号只记录近似值，不追求像素复制。
-- 对 Memoflow 的映射结论：复用、调整、拒绝三类。
+- 对 MemoFlow 的映射结论：复用、调整、拒绝三类。
 
 ### 12.4 采集顺序
 
@@ -539,13 +539,13 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 
 ### 12.5 当前参考证据覆盖度
 
-| 能力                        | 当前证据                                      | 状态                         | 对 Memoflow 的影响                                             |
+| 能力                        | 当前证据                                      | 状态                         | 对 MemoFlow 的影响                                             |
 | --------------------------- | --------------------------------------------- | ---------------------------- | -------------------------------------------------------------- |
 | Settings 独立场景           | 1 张完整页截图                                | 已形成结构结论，交互状态仍缺 | 可以先实现独立路由壳；搜索、分类切换和错误态继续采集           |
 | Composer 宿主定位           | 会话列、侧栏展开工作区、侧栏收起工作区各 1 张 | 已确认                       | 实现 `composerHost` 几何层，不使用整窗固定居中                 |
 | Composer 附件态             | 1 个与 2 个图片附件                           | 部分确认                     | 附件进入同一输入表面，容器向上增长、底边稳定                   |
 | Composer 输入/生成态        | 截图中仅有短文本和静止控制                    | 缺失                         | 空态、多行、发送中、停止、错误仍需状态样本或本项目自行定义     |
-| 参考客户端业务右面板 resize | 无连续拖动或边界样本                          | 缺失                         | 动态范围仍以 Memoflow 自身可用性约束为主，不宣称来自参考客户端 |
+| 参考客户端业务右面板 resize | 无连续拖动或边界样本                          | 缺失                         | 动态范围仍以 MemoFlow 自身可用性约束为主，不宣称来自参考客户端 |
 | 用户菜单与 Help             | 无展开态                                      | 缺失                         | 先按信息架构方案实现，不复制未知菜单细节                       |
 
 当前截图足以锁定 Composer 的定位模型，但不足以锁定所有视觉常量或右面板拖动行为。因此 R0 可以进入“部分完成”，不能把整个参考采集阶段标记完成。
@@ -599,7 +599,7 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 
 - [x] app-vue lint / typecheck / test（full：71 files / 249 tests）。
 - [x] web typecheck。
-- [x] 核心 Playwright（初跑 40/53；聚焦修复后 **19/19 全绿**；历史：命令 `pnpm nx run web:e2e`；环境：测试库 `Memoflow-test-db:5433` + Playwright `webServer` 起 API `apps/api/dist` @3000 + Vite @5173；失败：`e2e/ai/goal-workflow.spec.ts` 8（seed JWT malformed / 卡 Sign In）、`dashboard-overview` deep-link 1、`notification-center` filter 1、`task-template-crud` create/edit/delete 3；通过：auth 6、goal CRUD 4、reminder 5、settings/data-portability/notifications/persistence 14、dashboard 其余 5、task 2、notification 其余 4；日志 `.tmp-core-playwright.log`，报告 `apps/web/playwright-report/`）。
+- [x] 核心 Playwright（初跑 40/53；聚焦修复后 **19/19 全绿**；历史：命令 `pnpm nx run web:e2e`；环境：测试库 `MemoFlow-test-db:5433` + Playwright `webServer` 起 API `apps/api/dist` @3000 + Vite @5173；失败：`e2e/ai/goal-workflow.spec.ts` 8（seed JWT malformed / 卡 Sign In）、`dashboard-overview` deep-link 1、`notification-center` filter 1、`task-template-crud` create/edit/delete 3；通过：auth 6、goal CRUD 4、reminder 5、settings/data-portability/notifications/persistence 14、dashboard 其余 5、task 2、notification 其余 4；日志 `.tmp-core-playwright.log`，报告 `apps/web/playwright-report/`）。
 - [x] desktop lint / typecheck / production build。
 - [x] Electron UI 状态矩阵全绿（guest `web:e2e:shell` 7 passed：几何/Settings 独立场景/账户菜单/Help 分离/主题浅深/中英语言；无需 API）。
 - [x] 浅色/深色、中文/英文、900/1024/1200/1440px 截图复核（自动化断言 + `apps/web/test-results/shell-matrix/*.png`）。
@@ -750,10 +750,10 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 - 命令：`PLAYWRIGHT_HTML_OPEN=never pnpm nx run web:e2e`（后台脚本 `.tmp-run-core-playwright.ps1`）。
 - 时长：约 13.9 分钟；结果 **40 passed / 13 failed**；exit 1。
 - 依赖环境：
-  - 测试 DB：`Memoflow-test-db` → `0.0.0.0:5433`（healthy）
-  - Playwright 自启：API `apps/api/dist/main.js` @3000（为释放端口临时 `docker stop dailyuse-api-1`，结束后已 `compose ... up -d --force-recreate api` 恢复 `0.0.0.0:3000`）
+  - 测试 DB：`MemoFlow-test-db` → `0.0.0.0:5433`（healthy）
+  - Playwright 自启：API `apps/api/dist/main.js` @3000（为释放端口临时 `docker stop memoflow-api-1`，结束后已 `compose ... up -d --force-recreate api` 恢复 `0.0.0.0:3000`）
   - Playwright 自启：Vite web @5173
-  - 本地 compose 仍保留：`dailyuse-web-1:8080`、`postgres:5432`、redis/ai/powersync
+  - 本地 compose 仍保留：`memoflow-web-1:8080`、`postgres:5432`、redis/ai/powersync
 - 按文件：
 
 | 文件                                           | pass | fail | 说明                                                               |
@@ -776,7 +776,7 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 - 结果：**19 passed / 0 failed**（约 5.2m；日志 `.tmp-focused-e2e3.log`；EXIT:0）
 - 根因与修复：
   - **AI goal-workflow 8/8**：seed session / mock 文案与 cancel 路径对齐；#8 纳入 `Agent runtime` 断言词
-  - **task template CRUD 5/5**：`TaskInstancePrismaRepository.saveMany` 去掉嵌套 `$transaction`（P2003）；确保 Playwright 不复用陈旧 Docker `dailyuse-api-1:3000`
+  - **task template CRUD 5/5**：`TaskInstancePrismaRepository.saveMany` 去掉嵌套 `$transaction`（P2003）；确保 Playwright 不复用陈旧 Docker `memoflow-api-1:3000`
   - **dashboard retirement 6/6**：deep-link `/account/center` → standalone settings（`/settings?tab=account`），**不**恢复 BusinessPanel Dashboard
 - Dashboard 定位：仅保留退役/重定向/深链覆盖，产品不再有 Dashboard 主 UI
 - **notification-center 5/5**（含 filter P2：all/unread tabs；日志 `.tmp-notif-e2e.log`）
@@ -796,9 +796,9 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 
 ## 18.2 AI goal-workflow 再验证（2026-07-14 夜）
 
-- 命令：`node node_modules/@playwright/test/cli.js test e2e/ai/goal-workflow.spec.ts --reporter=list`（cwd `apps/web`；preflight `e2e`；测试库 `Memoflow-test-db:5433`）
+- 命令：`node node_modules/@playwright/test/cli.js test e2e/ai/goal-workflow.spec.ts --reporter=list`（cwd `apps/web`；preflight `e2e`；测试库 `MemoFlow-test-db:5433`）
 - 结果：`.last-run.json` **status=passed / failedTests=[]**（8/8；约 2.3m；产物 `apps/web/test-results/ai-goal-workflow-*`）
 - 硬化（提交 `8e0f54d82`）：
   - auth/bootstrap 路径 `networkidle` → `domcontentloaded` + 显式认证 UI wait（避免 Vite HMR 卡死）
   - goal.create mock：先 `fulfill` 并写入 `telemetry.lastGoalAgentStart`，断言挪到测试体
-- 附注：若 `pnpm install` 曾以 production 模式跑过导致 `@dailyuse/*` 链丢失，需清 `.package-map.json` / `.pnpm-workspace-state-v1.json` 后 `pnpm install --prod=false` 恢复；Playwright 长任务须 unsandboxed 启动以免 webServer 进程被杀。
+- 附注：若 `pnpm install` 曾以 production 模式跑过导致 `@memoflow/*` 链丢失，需清 `.package-map.json` / `.pnpm-workspace-state-v1.json` 后 `pnpm install --prod=false` 恢复；Playwright 长任务须 unsandboxed 启动以免 webServer 进程被杀。

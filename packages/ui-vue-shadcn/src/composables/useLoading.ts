@@ -1,5 +1,5 @@
 import { ref, computed, type Ref, type ComputedRef } from 'vue';
-import { createLoadingStore, type LoadingState, type LoadingStore } from '@dailyuse/ui-core';
+import { createLoadingStore, type LoadingState, type LoadingStore } from '@memoflow/ui-core';
 
 export interface UseLoadingReturn {
   /** Whether loading is active */
@@ -18,7 +18,7 @@ export interface UseLoadingReturn {
 
 /**
  * Vue composable for loading state management
- * Wraps @dailyuse/ui-core loading logic with Vue reactivity
+ * Wraps @memoflow/ui-core loading logic with Vue reactivity
  */
 export function useLoading(initialMessage?: string): UseLoadingReturn {
   const stateRef = ref<LoadingState>({

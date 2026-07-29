@@ -14,12 +14,12 @@
  * @module server/application/schedule/scheduler
  */
 
-import { MinHeap } from '@dailyuse/patterns/scheduler';
-import type { HeapItem } from '@dailyuse/patterns/scheduler';
-import type { IScheduleTimer } from '@dailyuse/patterns/scheduler';
-import { NodeTimer } from '@dailyuse/patterns/scheduler';
-import type { IScheduleMonitor } from '@dailyuse/patterns/scheduler';
-import { NoopScheduleMonitor } from '@dailyuse/patterns/scheduler';
+import { MinHeap } from '@memoflow/patterns/scheduler';
+import type { HeapItem } from '@memoflow/patterns/scheduler';
+import type { IScheduleTimer } from '@memoflow/patterns/scheduler';
+import { NodeTimer } from '@memoflow/patterns/scheduler';
+import type { IScheduleMonitor } from '@memoflow/patterns/scheduler';
+import { NoopScheduleMonitor } from '@memoflow/patterns/scheduler';
 
 /**
  * 调度队列中的任务项

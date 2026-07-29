@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import NotificationItem from './NotificationItem.vue';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 const now = new Date().toISOString();
 const hourAgo = new Date(Date.now() - 3600_000).toISOString();
@@ -55,7 +55,7 @@ export const Read: Story = {
   args: {
     notification: mockNotification({
       title: '系统升级完成',
-      content: 'Memoflow v2.3.0 已成功部署，包含多项性能优化。',
+      content: 'MemoFlow v2.3.0 已成功部署，包含多项性能优化。',
       type: 'SYSTEM',
       category: 'System',
       importance: 'Minor',

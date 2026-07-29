@@ -58,10 +58,10 @@ updated: 2026-07-04T19:20:00+08:00
 
 它基于以下真值来源：
 
-1. [code-quality-consistency-audit.md](D:/home/projects/dailyuse/docs/audit/code-quality-consistency-audit.md)
+1. [code-quality-consistency-audit.md](D:/home/projects/memoflow/docs/audit/code-quality-consistency-audit.md)
 2. 当前代码与测试
-3. [2026-07-02-core-seam-reconvergence-blueprint.md](D:/home/projects/dailyuse/docs/plan/archive/2026-07-02-core-seam-reconvergence-blueprint.md)
-4. [2026-07-02-core-seam-reconvergence-execution-plan.md](D:/home/projects/dailyuse/docs/plan/archive/2026-07-02-core-seam-reconvergence-execution-plan.md)
+3. [2026-07-02-core-seam-reconvergence-blueprint.md](D:/home/projects/memoflow/docs/plan/archive/2026-07-02-core-seam-reconvergence-blueprint.md)
+4. [2026-07-02-core-seam-reconvergence-execution-plan.md](D:/home/projects/memoflow/docs/plan/archive/2026-07-02-core-seam-reconvergence-execution-plan.md)
 
 本文件的目标不是重复讲“为什么重构”，而是把审计问题直接拆成可执行轮次，供后续 focused repair pass 顺序推进。
 
@@ -654,7 +654,7 @@ pnpm nx run web:test
 pnpm nx run desktop:test:main
 pnpm nx run schedule:test
 pnpm nx run schedule-orchestration:test
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 ```
 
 ### 完成判定

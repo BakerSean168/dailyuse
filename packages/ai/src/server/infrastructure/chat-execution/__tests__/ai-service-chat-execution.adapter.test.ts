@@ -51,7 +51,7 @@ describe('AIServiceChatExecutionAdapter', () => {
     const adapter = new AIServiceChatExecutionAdapter({
       baseUrl: 'http://127.0.0.1:8100',
       serviceSecret: 'shared-secret',
-      serviceName: 'dailyuse-api',
+      serviceName: 'memoflow-api',
       timeoutMs: 5_000,
     });
 
@@ -85,7 +85,7 @@ describe('AIServiceChatExecutionAdapter', () => {
     const body = String(init.body);
     const timestamp = Number((init.headers as Record<string, string>)[INTERNAL_TIMESTAMP_HEADER]);
     const signature = signInternalRequest({
-      serviceName: 'dailyuse-api',
+      serviceName: 'memoflow-api',
       method: 'POST',
       path: '/internal/chat/complete',
       timestamp,
@@ -94,7 +94,7 @@ describe('AIServiceChatExecutionAdapter', () => {
     });
 
     expect((init.headers as Record<string, string>)[INTERNAL_SERVICE_HEADER]).toBe(
-      'dailyuse-api',
+      'memoflow-api',
     );
     expect((init.headers as Record<string, string>)['X-Request-Id']).toBe('request-1');
     expect((init.headers as Record<string, string>)['X-Identity-Id']).toBe('identity-1');
@@ -116,7 +116,7 @@ describe('AIServiceChatExecutionAdapter', () => {
     const adapter = new AIServiceChatExecutionAdapter({
       baseUrl: 'http://127.0.0.1:8100',
       serviceSecret: 'shared-secret',
-      serviceName: 'dailyuse-api',
+      serviceName: 'memoflow-api',
       timeoutMs: 5_000,
     });
 

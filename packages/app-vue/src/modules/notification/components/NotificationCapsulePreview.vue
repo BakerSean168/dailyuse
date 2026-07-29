@@ -86,9 +86,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import { useNotification } from '../composables/useNotification';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 const RECENT_LIMIT = 5;
 

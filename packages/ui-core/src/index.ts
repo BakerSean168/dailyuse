@@ -1,5 +1,5 @@
 /**
- * @dailyuse/ui-core
+ * @memoflow/ui-core
  * 
  * Framework-agnostic headless UI logic.
  * This package contains pure TypeScript logic with zero framework dependencies.

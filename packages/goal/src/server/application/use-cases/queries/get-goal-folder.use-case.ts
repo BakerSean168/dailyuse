@@ -6,9 +6,9 @@
  */
 
 import type { IGoalFolderRepository } from '../../../domain';
-import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { GoalFolderClientDTO } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 /**
  * Get Goal Folder Use Case

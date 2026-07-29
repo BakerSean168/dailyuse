@@ -5,7 +5,7 @@
  */
 
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('PerformanceMiddleware');
 

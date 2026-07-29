@@ -4,10 +4,10 @@
 
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
-import type { CompleteTaskInstanceReq, TaskInstanceOperationRes } from '@dailyuse/contracts/task';
-import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { CompleteTaskInstanceReq, TaskInstanceOperationRes } from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { TaskInstance } from '../../../domain/aggregates/task-instance';
 import type { TaskTemplate } from '../../../domain/aggregates/task-template';
 

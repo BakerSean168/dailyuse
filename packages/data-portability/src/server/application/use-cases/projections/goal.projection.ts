@@ -3,7 +3,7 @@
  */
 
 import type { ExportContext } from '../../portable-runtime';
-import type { PortableGoal, PortableGoalFolder, PortableGoalRecord, PortableKeyResult, PortableGoalReview, PortableFocusSession, PortableFocusMode } from '@dailyuse/contracts/data-portability';
+import type { PortableGoal, PortableGoalFolder, PortableGoalRecord, PortableKeyResult, PortableGoalReview, PortableFocusSession, PortableFocusMode } from '@memoflow/contracts/data-portability';
 // Residual 1017: sole resolveExportRef/OrThrow (local resolveRef dual retired).
 import {
   parseJsonField,

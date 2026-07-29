@@ -1,5 +1,5 @@
 import { vi, describe, it, expect } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { GoalFolder } from '../../../../domain';
 import type { IGoalFolderRepository } from '../../../../domain';
 import { CreateGoalFolderUseCase } from '../create-goal-folder.use-case';

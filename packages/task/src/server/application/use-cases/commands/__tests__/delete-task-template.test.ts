@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { aOneTimeTask } from '../../../../../testing';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';

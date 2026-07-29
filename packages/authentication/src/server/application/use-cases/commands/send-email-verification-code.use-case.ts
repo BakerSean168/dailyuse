@@ -5,10 +5,10 @@
  * Anti-enumeration: unknown emails still return success for EmailVerify.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { SendEmailCodeReq } from '@dailyuse/contracts/authentication';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { SendEmailCodeReq } from '@memoflow/contracts/authentication';
 import type {
   IAuthIdentityRepository,
   IEmailSender,
@@ -19,7 +19,7 @@ import {
   ChallengeCooldownError,
   ChallengeRateLimitError,
 } from '../../../domain';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 // Residual 959: normalizeEmail dual retired — sole server shared normalize-email helper.
 import { normalizeEmail } from '../../../shared/normalize-email';
 // Residual 961: toChallengePurpose dual retired — sole server shared to-challenge-purpose helper.

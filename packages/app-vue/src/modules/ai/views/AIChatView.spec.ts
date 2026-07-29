@@ -2,7 +2,7 @@ import { defineComponent, h, ref } from 'vue';
 import { flushPromises, shallowMount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),

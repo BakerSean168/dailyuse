@@ -1,0 +1,10 @@
+{
+  "$schema": "./tools/governance/product-identity.schema.json",
+  "displayName": "MemoFlow",
+  "slug": "memoflow",
+  "packageScope": "@memoflow",
+  "github": {
+    "owner": "BakerSean168",
+    "repository": "memoflow"
+  }
+}

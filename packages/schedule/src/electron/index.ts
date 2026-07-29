@@ -5,13 +5,13 @@
  */
 
 import { ipcMain } from 'electron';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import {
   ScheduleChannels,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/electron';
+import { createLogger } from '@memoflow/utils/logger';
 import type { ScheduleTaskSourceExecutor } from '../server/application';
 import {
   createScheduleModule,

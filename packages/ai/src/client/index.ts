@@ -1,12 +1,12 @@
 /**
  * AI client seam.
  *
- * Public AI contracts stay centralized in `@dailyuse/contracts/ai`.
+ * Public AI contracts stay centralized in `@memoflow/contracts/ai`.
  * Callers depend on this seam instead of the old application-client /
  * infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   AIClientService,
   createAIClientService,

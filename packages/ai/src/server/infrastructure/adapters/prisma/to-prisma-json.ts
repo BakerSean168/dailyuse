@@ -5,7 +5,7 @@
  * Residual 1159 keep-boundary: AI deep-clone InputJsonValue vs account typed DTO cast InputJsonObject (no force-merge).
  */
 
-import { Prisma } from '@dailyuse/database/prisma';
+import { Prisma } from '@memoflow/database/prisma';
 
 /** Deep-clone value into a Prisma InputJsonValue-safe structure. */
 export function toPrismaJson(value: unknown): Prisma.InputJsonValue {

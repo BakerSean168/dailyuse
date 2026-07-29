@@ -21,9 +21,9 @@ import type {
   IVerificationChallengeStore,
 } from '../domain';
 import type { ITokenProvider } from '../domain/services/token-provider.interface';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { fail } from '@memoflow/contracts/result';
 import type {
   RegisterByEmailReq,
   RegisterByEmailRes,
@@ -48,7 +48,7 @@ import type {
   BindOAuthReq,
   BindOAuthRes,
   UnbindOAuthReq,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import {
   AuthenticateUseCase,
   ChangePasswordUseCase,

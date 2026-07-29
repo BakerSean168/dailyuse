@@ -1,21 +1,21 @@
 import {
   type GoalAutomationExecutionInput,
   type IAIAutomationToolExecutorPort,
-} from '@dailyuse/ai/ports';
-import type { IdentityId } from '@dailyuse/contracts';
-import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
-import { createGoalPowerSyncModule } from '@dailyuse/goal';
-import { createReminderPowerSyncModule } from '@dailyuse/reminder';
-import { createTaskPowerSyncModule } from '@dailyuse/task';
+} from '@memoflow/ai/ports';
+import type { IdentityId } from '@memoflow/contracts';
+import type { GoalAutomationExecutedAction } from '@memoflow/contracts/ai';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { LocalVaultElectronPort } from '@memoflow/repository/electron';
+import type { GoalId, KeyResultId } from '@memoflow/contracts/goal';
+import { createGoalPowerSyncModule } from '@memoflow/goal';
+import { createReminderPowerSyncModule } from '@memoflow/reminder';
+import { createTaskPowerSyncModule } from '@memoflow/task';
 import {
   TaskGoalBindingTrigger,
   TaskType,
-} from '@dailyuse/contracts/task';
-import { unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/task';
+import { unwrapOrThrowError } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 // Residual 1007: sole reminder time helpers (local dual retired).
 // Residual 1009: sole readNestedNumber (local dual retired).
 // Residual 1013: sole buildReminderTemplateInput (local dual retired).
@@ -24,14 +24,14 @@ import {
   buildRecurrenceRule,
   buildReminderTemplateInput,
   readNestedNumber,
-} from '@dailyuse/utils/shared';
+} from '@memoflow/utils/shared';
 
 import { DesktopAnalyticsReadAdapter } from './desktop-analytics-read.adapter';
 import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapter';
 
 const logger = createLogger('DesktopAutomationToolExecutor');
-// Residual 1015: buildRecurrenceRule elevated to @dailyuse/utils/shared.
-// Residual 1013/1011/1009/1007: related helpers elevated to @dailyuse/utils/shared.
+// Residual 1015: buildRecurrenceRule elevated to @memoflow/utils/shared.
+// Residual 1013/1011/1009/1007: related helpers elevated to @memoflow/utils/shared.
 
 export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolExecutorPort {
   private readonly goalModule;

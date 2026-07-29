@@ -2,12 +2,12 @@
  * Authentication client seam.
  *
  * Public authentication contracts stay centralized in
- * `@dailyuse/contracts/authentication`.
+ * `@memoflow/contracts/authentication`.
  * Callers depend on this seam instead of the old application-client /
  * infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   createAuthenticationClientService,
   type AuthenticationClientPort,

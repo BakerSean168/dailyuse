@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 import {
   INTERNAL_CONTENT_HASH_HEADER,

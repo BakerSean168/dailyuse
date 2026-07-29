@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DashboardChannels } from '@dailyuse/contracts/electron';
+import { DashboardChannels } from '@memoflow/contracts/electron';
 
 /**
  * Dashboard IPC surface (stage-6 residual):
@@ -12,7 +12,7 @@ describe('dashboard-handler channel surface', () => {
 
   it('registers via DashboardChannels.GET_STATS', () => {
     expect(source).toContain('DashboardChannels');
-    expect(source).toContain("from '@dailyuse/contracts/electron'");
+    expect(source).toContain("from '@memoflow/contracts/electron'");
     expect(source).toContain('DashboardChannels.GET_STATS');
     expect(source).not.toContain("'dashboard:get-stats'");
     expect(DashboardChannels.GET_STATS).toBe('dashboard:get-stats');

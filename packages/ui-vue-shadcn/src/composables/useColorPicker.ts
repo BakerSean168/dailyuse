@@ -6,7 +6,7 @@ import {
   rgbToHex,
   type ColorPickerState,
   type UseColorPickerOptions,
-} from '@dailyuse/ui-core';
+} from '@memoflow/ui-core';
 
 export interface UseColorPickerReturn {
   /** Current color (hex) */
@@ -27,7 +27,7 @@ export interface UseColorPickerReturn {
 
 /**
  * Vue composable for color picker state management
- * Wraps @dailyuse/ui-core color picker logic with Vue reactivity
+ * Wraps @memoflow/ui-core color picker logic with Vue reactivity
  */
 export function useColorPicker(options: UseColorPickerOptions = {}): UseColorPickerReturn {
   const stateRef = ref<ColorPickerState>({

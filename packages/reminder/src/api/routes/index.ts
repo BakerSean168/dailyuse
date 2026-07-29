@@ -10,7 +10,7 @@
  */
 
 import { Router, type RequestHandler } from 'express';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import type { ReminderApplicationPort } from '../../server/application';
 import { ReminderController } from '../../server/transport/reminder.controller';
 import { registerReminderTemplateRoutes } from './reminder-template.routes';

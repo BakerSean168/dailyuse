@@ -17,7 +17,7 @@ import type { ReminderGroup } from '../aggregates/reminder-group';
 import type { IReminderTemplateRepository } from '../repositories/i-reminder-template-repository';
 import type { IReminderGroupRepository } from '../repositories/i-reminder-group-repository';
 import type { IUserReminderPreferenceRepository } from '../repositories/i-user-reminder-preference-repository';
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 
 // 枚举值使用（避免与类型别名冲突）
 

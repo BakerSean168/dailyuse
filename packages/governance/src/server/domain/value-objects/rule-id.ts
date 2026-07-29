@@ -3,7 +3,7 @@
  *
  * 【规范说明：Type 类型值对象 - 参考 domain-shared-type-value-object-spec.md】
  *
- * 使用 @dailyuse/utils 的 createIdType 工具创建 ID 类型实例
+ * 使用 @memoflow/utils 的 createIdType 工具创建 ID 类型实例
  * - 编译时类型安全（防止 ID 类型混淆）
  * - 运行时就是普通 string（零开销）
  * - 提供统一的工厂方法和校验
@@ -20,9 +20,9 @@
  * ```
  */
 
-import type { RuleId as IRuleId } from '@dailyuse/contracts/governance';
+import type { RuleId as IRuleId } from '@memoflow/contracts/governance';
 
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
 /**
  * RuleId 工具对象

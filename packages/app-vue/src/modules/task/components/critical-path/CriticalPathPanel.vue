@@ -95,7 +95,7 @@ import {
   AlertDescription,
   Button,
   Badge,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Clock, Download, AlertTriangle } from '@lucide/vue';
 import { formatTaskDuration } from '../../utils/format-task-duration';
 

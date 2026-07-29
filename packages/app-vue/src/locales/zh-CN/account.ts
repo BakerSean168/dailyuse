@@ -12,11 +12,11 @@ export default {
     "unbindFailed": "解绑 GitHub 失败",
     "githubUnavailable": "GitHub 登录未配置或不可用",
     "serviceUnavailable": "认证服务不可用",
-    "alreadyLinked": "该 GitHub 账号已绑定其他 Daily Use 身份，禁止静默合并。请改用该 GitHub 登录，或联系支持处理。",
+    "alreadyLinked": "该 GitHub 账号已绑定其他 MemoFlow 身份，禁止静默合并。请改用该 GitHub 登录，或联系支持处理。",
     "lastLoginPath": "这是当前账号最后一条登录路径，无法解绑。请先设置密码或其他登录方式。",
     "invalidState": "OAuth state 无效或已过期，请重试绑定。",
     "unbindConfirmTitle": "解绑 GitHub？",
-    "unbindConfirmDescription": "解绑后将无法再使用该 GitHub 账号登录此 Daily Use 身份。",
+    "unbindConfirmDescription": "解绑后将无法再使用该 GitHub 账号登录此 MemoFlow 身份。",
     "unbindConfirmText": "确认解绑",
     "repoScopeHint": "登录绑定与知识仓库授权分离（ADR-034）。"
   },

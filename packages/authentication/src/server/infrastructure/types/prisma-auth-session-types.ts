@@ -5,7 +5,7 @@
  * 对应 Prisma schema 中的 AuthSession 表。
  */
 
-import type { AuthSession as PrismaAuthSession } from '@dailyuse/database';
+import type { AuthSession as PrismaAuthSession } from '@memoflow/database';
 
 /** AuthSession Prisma row */
 export type PrismaAuthSessionRow = PrismaAuthSession;

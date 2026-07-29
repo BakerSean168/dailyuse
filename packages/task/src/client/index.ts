@@ -2,12 +2,12 @@
  * Task client seam.
  *
  * Public task contracts stay centralized in
- * `@dailyuse/contracts/task`.
+ * `@memoflow/contracts/task`.
  * Callers depend on this seam instead of the old application-client /
  * infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   TaskClientService,
   createTaskClientService,

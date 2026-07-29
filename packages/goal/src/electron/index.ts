@@ -12,12 +12,12 @@
  */
 
 import { ipcMain } from 'electron';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import {
   GoalChannels,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
+} from '@memoflow/contracts/electron';
 import { createGoalPowerSyncModule } from '../server/infrastructure/powersync';
 import { GoalController } from '../server/transport/goal.controller';
 import { GoalFolderController } from '../server/transport/goal-folder.controller';
@@ -27,9 +27,9 @@ import {
 } from '../server/transport';
 import { createGoalRuntimeContribution } from '../server/infrastructure/runtime';
 import { registerGoalEventListeners } from '../server/application/event-handlers';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { IGoalRecordRepository, IGoalRepository } from '../server/domain';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { GoalModuleInstance } from '../server/infrastructure';
 import { withAuthenticatedValue } from './authenticated-ipc';
 

@@ -1,5 +1,5 @@
 # =============================================================================
-# Memoflow 生产环境 Docker Compose
+# MemoFlow 生产环境 Docker Compose
 # =============================================================================
 # 启动全部服务：
 #   docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d
@@ -35,7 +35,7 @@ services:
       - -c
       - max_replication_slots=10
     networks:
-      - dailyuse-network
+      - memoflow-network
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:?set DB_USER} -d ${DB_NAME:?set DB_NAME}']
       interval: 10s
@@ -59,7 +59,7 @@ services:
     volumes:
       - redis-prod-data:/data
     networks:
-      - dailyuse-network
+      - memoflow-network
     healthcheck:
       test:
         [
@@ -80,14 +80,14 @@ services:
   # ---------------------------------------------------------------------------
 
   ai-service:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-ai-service:${AI_SERVICE_TAG:-prod-latest}
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-ai-service:${AI_SERVICE_TAG:-prod-latest}
     restart: unless-stopped
     init: true
     labels:
       com.centurylinklabs.watchtower.enable: 'true'
     environment:
       NODE_ENV: production
-      SERVICE_NAME: dailyuse-ai-service
+      SERVICE_NAME: memoflow-ai-service
       AI_SERVICE_PORT: ${AI_SERVICE_PORT:-8100}
       APP_VERSION: ${APP_VERSION:-0.3.0}
       SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
@@ -104,7 +104,7 @@ services:
       AI_SERVICE_EVAL_BASE_URL: ${AI_SERVICE_EVAL_BASE_URL:-}
       TZ: ${TZ:-Asia/Shanghai}
     networks:
-      - dailyuse-network
+      - memoflow-network
     healthcheck:
       test:
         [
@@ -119,7 +119,7 @@ services:
       start_period: 20s
 
   api:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-api:${API_TAG:-prod-latest}
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-api:${API_TAG:-prod-latest}
     restart: unless-stopped
     init: true
     labels:
@@ -133,7 +133,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      APP_NAME: ${APP_NAME:-DailyUse}
+      APP_NAME: ${APP_NAME:-MemoFlow}
       APP_VERSION: ${APP_VERSION:-0.3.0}
       LOG_LEVEL: ${LOG_LEVEL:-warn}
       API_PORT: 3000
@@ -163,24 +163,24 @@ services:
       QI_NIU_YUN_MODEL_ID: ${QI_NIU_YUN_MODEL_ID:-}
       AI_SERVICE_BASE_URL: http://ai-service:${AI_SERVICE_PORT:-8100}
       AI_SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
-      AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-dailyuse-api}
+      AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-memoflow-api}
       AI_SERVICE_TIMEOUT_MS: ${AI_SERVICE_TIMEOUT_MS:-60000}
       POWERSYNC_URL: ${POWERSYNC_URL:?set POWERSYNC_URL}
       POWERSYNC_PRIVATE_KEY: ${POWERSYNC_PRIVATE_KEY:?set POWERSYNC_PRIVATE_KEY}
       POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
       POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
       POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
-      POWERSYNC_SNAPSHOT_DIR: ${POWERSYNC_SNAPSHOT_DIR:-/var/lib/dailyuse/powersync-snapshots}
+      POWERSYNC_SNAPSHOT_DIR: ${POWERSYNC_SNAPSHOT_DIR:-/var/lib/memoflow/powersync-snapshots}
       SNAPSHOT_REBUILD_ENABLED: ${SNAPSHOT_REBUILD_ENABLED:-false}
       SNAPSHOT_REBUILD_SCHEDULE: '${SNAPSHOT_REBUILD_SCHEDULE:-0 */4 * * *}'
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       - api-logs:/app/apps/api/logs
       - api-uploads:/app/uploads
-      - repository-storage:/tmp/dailyuse-repository-storage
-      - powersync-profile-snapshots:${POWERSYNC_SNAPSHOT_DIR:-/var/lib/dailyuse/powersync-snapshots}
+      - repository-storage:/tmp/memoflow-repository-storage
+      - powersync-profile-snapshots:${POWERSYNC_SNAPSHOT_DIR:-/var/lib/memoflow/powersync-snapshots}
     networks:
-      - dailyuse-network
+      - memoflow-network
     healthcheck:
       test:
         [
@@ -222,7 +222,7 @@ services:
       - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
       - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
     networks:
-      - dailyuse-network
+      - memoflow-network
     healthcheck:
       test:
         [
@@ -237,7 +237,7 @@ services:
       start_period: 30s
 
   web:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-web:${WEB_TAG:-prod-latest}
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-web:${WEB_TAG:-prod-latest}
     restart: unless-stopped
     labels:
       com.centurylinklabs.watchtower.enable: 'true'
@@ -245,7 +245,7 @@ services:
       api:
         condition: service_healthy
     networks:
-      - dailyuse-network
+      - memoflow-network
     healthcheck:
       test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1/']
       interval: 30s
@@ -271,7 +271,7 @@ services:
       - '443:443/udp'
     environment:
       APP_DOMAIN: ${APP_DOMAIN:-memoflow.bakersean.top}
-      LEGACY_DOMAIN: ${LEGACY_DOMAIN:-dailyuse.bakersean.top}
+      LEGACY_DOMAIN: ${LEGACY_DOMAIN:-memoflow.bakersean.top}
       API_DOMAIN: ${API_DOMAIN:-memoflowapi.bakersean.top}
       POWERSYNC_DOMAIN: ${POWERSYNC_DOMAIN:?set POWERSYNC_DOMAIN}
       ACME_EMAIL: ${ACME_EMAIL:-admin@bakersean.top}
@@ -280,7 +280,7 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     networks:
-      - dailyuse-network
+      - memoflow-network
 
   watchtower:
     image: containrrr/watchtower
@@ -296,10 +296,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /root/.docker/config.json:/config.json:ro
     networks:
-      - dailyuse-network
+      - memoflow-network
 
 networks:
-  dailyuse-network:
+  memoflow-network:
     driver: bridge
 
 volumes:

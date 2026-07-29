@@ -7,10 +7,10 @@
  * - DTO 转换
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
 
 /**
  * List Schedule Tasks By Account Use Case

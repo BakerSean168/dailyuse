@@ -5,17 +5,17 @@
  * Shared by both Express (HTTP) and IPC transport layers.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, isOk, ok } from '@dailyuse/contracts/result';
-import type { TaskDependencyClientDTO, DependencyType } from '@dailyuse/contracts/task';
-import type { DependencyChainClientDTO } from '@dailyuse/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, isOk, ok } from '@memoflow/contracts/result';
+import type { TaskDependencyClientDTO, DependencyType } from '@memoflow/contracts/task';
+import type { DependencyChainClientDTO } from '@memoflow/contracts/task';
 import {
   CreateDependencyBodySchema,
   UpdateDependencyBodySchema,
   ValidateDependencyBodySchema,
   type ValidateDependencyResponse,
-} from '@dailyuse/contracts/task';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/task';
+import { formatZodErrors } from '@memoflow/utils/result';
 import type { CreateTaskDependencyUseCase } from '../application/use-cases/commands/create-task-dependency.use-case';
 import type { DeleteTaskDependencyUseCase } from '../application/use-cases/commands/delete-task-dependency.use-case';
 import type { UpdateTaskDependencyUseCase } from '../application/use-cases/commands/update-task-dependency.use-case';

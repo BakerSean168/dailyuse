@@ -39,7 +39,7 @@ status: done
 ## 完整 Goal 提示词（可整段）
 
 ```text
-你是本仓库（Memoflow / dailyuse）协作 agent。目标：在已合入的 ADR-037 基础上，**完整、高质量、长期导向**地实施产品时间体系，而不是写文档或做 dual 刷数。
+你是本仓库（MemoFlow / memoflow）协作 agent。目标：在已合入的 ADR-037 基础上，**完整、高质量、长期导向**地实施产品时间体系，而不是写文档或做 dual 刷数。
 
 ## 必读（按序）
 1. AGENT.md
@@ -53,7 +53,7 @@ status: done
 2. TransferDate ≡ 品牌化 Instant（epoch **毫秒**）；wire 瞬时主型唯一
 3. Ymd / Hm 一等；禁止用「午夜 Date」冒充日历日
 4. DomainDate = Date **长期退役**：禁止新字段；迁移期可 deprecated；目标领域用 Instant 和/或 Ymd（或不可变 VO，不暴露可变 Date）
-5. 新建一等包 @dailyuse/time：Clock · TimeStyle · Codec · Format · Input · Calendar · 可替换 Engine（默认 date-fns，仅 engine 目录引用）
+5. 新建一等包 @memoflow/time：Clock · TimeStyle · Codec · Format · Input · Calendar · 可替换 Engine（默认 date-fns，仅 engine 目录引用）
 6. Domain↔Transfer↔UI 转换只经 Codec（及经其调用的 mapper）；展示/表单只经 Format/Input + TimeStyle
 7. 真门面，禁止「仅 re-export date-fns」假封装
 8. 双 shape 只保留**语义**差（日 vs 瞬时等），禁止同一瞬间 Date vs number 换皮当长期边界
@@ -78,7 +78,7 @@ status: done
 |------|--------|----------|
 | W0 | packages/time 骨架 + createTimeFacade + 默认 Style + System/Fixed Clock + Codec 最小集 + format.hm + DateFnsEngine；Nx project；样例 vitest | 包可 build/test；样例绿 |
 | W1 | contracts primitives：brand Instant ≡ TransferDate；Ymd/Hm 类型；Codec 对齐；DomainDate 标 deprecated | 新代码可用 brand 类型 |
-| W2 | 上提 app-vue sole（formatLocalHHmm、formatDateToYMD、padTwoDigits、formatDisplayDate 等）到 @dailyuse/time；主路径改 import | app-vue 主路径走 time |
+| W2 | 上提 app-vue sole（formatLocalHHmm、formatDateToYMD、padTwoDigits、formatDisplayDate 等）到 @memoflow/time；主路径改 import | app-vue 主路径走 time |
 | W3 | ESLint no-restricted-imports 断供业务 date-fns（error + legacy 名单 + retire_by） | CI 强制 |
 | W4 | 屠龙组件/Screen 私有 format（含 app-react） | rg 私有 format 归零（白名单 0） |
 | W5 | 高优先级字段改 Ymd（生日、全天 start 等）+ 合约/测试 | 字段语义诚实 |
@@ -90,7 +90,7 @@ status: done
 
 ## 工作方式
 - 分支：从最新 main 拉 feat/product-time-system 或按波次 feat/product-time-w0 …
-- 先读代码与 Nx 现有 package 惯例（参考 packages/utils 的 project.json / tsup / vitest），再脚手架 @dailyuse/time
+- 先读代码与 Nx 现有 package 惯例（参考 packages/utils 的 project.json / tsup / vitest），再脚手架 @memoflow/time
 - 复杂波次可先在 docs/plan/active 补短执行笔记，但 **W0 起必须有代码**
 - 每波：一项主题、最近 `pnpm nx` 验证、更新 plan residual（T1/T2…）、commit、push；宜开 PR，描述写清波次与完成定义
 - 使用 pnpm / `pnpm nx ...`；优先 CodeGraph 查符号与 blast radius
@@ -100,7 +100,7 @@ status: done
 ## 验证（每波最低）
 - `pnpm nx run time:test`（或等价 project 名）及触及包 test/typecheck
 - W0+ 起有 surface 或单元测试锁：format.hm、Codec round-trip、FixedClock
-- 触及 docs/governance/多包时：`pnpm nx run daily-use:governance-check`
+- 触及 docs/governance/多包时：`pnpm nx run memoflow:governance-check`
 - 断供波次：证明 eslint 对业务 date-fns 失败或 legacy 表记录
 
 ## 禁止
@@ -110,7 +110,7 @@ status: done
 - 未达波次完成定义就宣称「ADR-037 完成」
 
 ## 开跑
-从 main 同步后执行 **W0**：创建 @dailyuse/time，实现最小可测试门面，写 residual T1，commit/push。
+从 main 同步后执行 **W0**：创建 @memoflow/time，实现最小可测试门面，写 residual T1，commit/push。
 完整 ADR 以 W0–W8 完成定义与成功图像为准；可分多 PR，但决策不得回退。
 ```
 
@@ -135,7 +135,7 @@ status: done
 ### C. 极简
 
 ```text
-查看并执行：docs/plan/archive/2026-07-26-product-time-system-goal-prompt.md（完整 Goal）。基线 ADR-037 已合 main。从 W0 起落地 @dailyuse/time。
+查看并执行：docs/plan/archive/2026-07-26-product-time-system-goal-prompt.md（完整 Goal）。基线 ADR-037 已合 main。从 W0 起落地 @memoflow/time。
 ```
 
 ---

@@ -1,7 +1,7 @@
 import type { IAIGoalApiClient, IResultIpcClient } from '../types';
-import { AIChannels } from '@dailyuse/contracts/electron';
-import type { GenerateGoalsReq, GenerateGoalsRes } from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+import { AIChannels } from '@memoflow/contracts/electron';
+import type { GenerateGoalsReq, GenerateGoalsRes } from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 /** IPC adapter — returns Result, never throws (residual 98). */
 export class AIGoalIpcAdapter implements IAIGoalApiClient {

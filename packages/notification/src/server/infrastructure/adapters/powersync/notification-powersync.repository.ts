@@ -1,18 +1,18 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type {
   NotificationCategory,
   NotificationEventMap,
   NotificationServerDTO,
   NotificationStatus,
   NotificationType,
-} from '@dailyuse/contracts/notification';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/notification';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { INotificationRepository } from '../../../domain/repositories/i-notification-repository';
 import { Notification } from '../../../domain/aggregates/notification';
 import { NotificationId, NotificationAction, NotificationMetadata } from '../../../domain/value-objects';
-import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
 // Residual 1025: sole parseJsonSafe (local dual retired).
-import { parseJsonSafe } from '@dailyuse/utils/shared';
+import { parseJsonSafe } from '@memoflow/utils/shared';
 
 const notificationEventPublisher = createTypedEventPublisher<NotificationEventMap>(eventBus);
 

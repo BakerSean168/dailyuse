@@ -20,7 +20,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'dailyuse-access-token',
+      getAccessToken: () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -36,8 +36,8 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
-          authorization: 'Bearer dailyuse-access-token',
-          'user-agent': 'Memoflow Desktop Electron',
+          authorization: 'Bearer memoflow-access-token',
+          'user-agent': 'MemoFlow Desktop Electron',
         }),
         body: JSON.stringify({ returnUrl: 'memoflow://settings/repository' }),
       }),
@@ -56,7 +56,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'dailyuse-access-token',
+      getAccessToken: () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -74,7 +74,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       .fn<typeof fetch>()
       .mockResolvedValue(response({ ok: true, data: null }));
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'dailyuse-access-token',
+      getAccessToken: () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -102,7 +102,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'dailyuse-access-token',
+      getAccessToken: () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -133,7 +133,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'dailyuse-access-token',
+      getAccessToken: () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -201,7 +201,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       ),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'dailyuse-access-token',
+      getAccessToken: () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => path,
     });
@@ -226,7 +226,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'dailyuse-access-token',
+      getAccessToken: () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => path,
     });

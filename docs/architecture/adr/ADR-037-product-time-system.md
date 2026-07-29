@@ -16,7 +16,7 @@ updated: 2026-07-26T00:00:00
 
 **状态：** 已采纳  
 **日期：** 2026-07-26  
-**影响范围：** contracts primitives、全体 domain VO/Entity、`@dailyuse/utils` 时间相关 API、app-vue / app-react / desktop / api、展示与表单、Prisma/PowerSync mapper、Dual/Time Registry、ESLint 治理
+**影响范围：** contracts primitives、全体 domain VO/Entity、`@memoflow/utils` 时间相关 API、app-vue / app-react / desktop / api、展示与表单、Prisma/PowerSync mapper、Dual/Time Registry、ESLint 治理
 
 **配套详述：** [`../product-time-system.md`](../product-time-system.md)
 
@@ -29,7 +29,7 @@ updated: 2026-07-26T00:00:00
 仓库已选定 **date-fns** 作为主要日期库，并在多轮 dual 清理中收敛了大量本地 `format*`。但时间能力仍分裂为多套并行事实：
 
 1. **开源库直连**：业务与 UI 大量 `import { format } from 'date-fns'`，locale/空值/pattern 各写各的。  
-2. **薄封装未成产品入口**：`@dailyuse/utils` 的 `shared/date.ts` 能力窄，且 UI 主路径很少走它。  
+2. **薄封装未成产品入口**：`@memoflow/utils` 的 `shared/date.ts` 能力窄，且 UI 主路径很少走它。
 3. **组件私有 format**：Vue/React 卡片与 Screen 内仍大量 `function formatDate` / `toLocaleString`。  
 4. **契约双轨**：`DomainDate = Date` 与 `TransferDate = number`（epoch ms）在 contracts 与 domain VO 中广泛使用；VO 内部存 number、getter 返回 `new Date(ms)`；Domain shape 与 DTO shape 用双 interface 锁住（residual 859 类 keep-boundary）。  
 5. **日历日与瞬时混淆**：全天任务日、生日、目标日等被 `Date`/epoch 表达，导致 TaskTimeConfig 等「形状有意不同」却缺少一等日历类型。  
@@ -55,7 +55,7 @@ updated: 2026-07-26T00:00:00
 1. **采纳产品时间体系（Product Time System）** 为全仓时间横切的唯一宪法。  
 2. **规范瞬时类型为品牌化 `Instant`（epoch 毫秒）**；**`TransferDate` 与 `Instant` 同构对齐**（wire 主型）。  
 3. **引入一等日历日 `Ymd` 与钟面 `Hm`**，禁止用「某时区午夜 Date」长期冒充日历日。  
-4. **`DomainDate = Date` 别名已退役（T10）**；领域主型为 `Instant` 和/或 `Ymd`（及必要的不可变日历/区间值对象），禁止 reintroduce 可变 `Date` 别名。  5. **新建一等包 `@dailyuse/time`**（产品时间门面 + Style + Codec + Calendar + 可替换 Engine）；业务与 UI **禁止**直连 date-fns / 散落产品级 `toLocale*`（白名单仅引擎与登记 exemption）。  
+4. **`DomainDate = Date` 别名已退役（T10）**；领域主型为 `Instant` 和/或 `Ymd`（及必要的不可变日历/区间值对象），禁止 reintroduce 可变 `Date` 别名。  5. **新建一等包 `@memoflow/time`**（产品时间门面 + Style + Codec + Calendar + 可替换 Engine）；业务与 UI **禁止**直连 date-fns / 散落产品级 `toLocale*`（白名单仅引擎与登记 exemption）。
 6. **所有 Domain↔Transfer↔展示 转换只允许经 Codec（及经其生成的 mapper）**；展示只经 Format + `TimeStyle`。  
 7. **保留「domain shape ≠ transfer shape」原则**，但升级为**语义化类型差**（例如日 vs 瞬时），而非永远 `Date` vs `number` 别名差。  
 8. **Persistence 时间类型不重回 contracts**；infra 只经 Codec 与本地列类型。  
@@ -68,7 +68,7 @@ updated: 2026-07-26T00:00:00
 ### 3.1 分层（逻辑）
 
 ```text
-L5 UI / Application     → 只消费 @dailyuse/time（+ 可选模块 presentation）
+L5 UI / Application     → 只消费 @memoflow/time（+ 可选模块 presentation）
 L4 Module Presentation  → i18n/业务句子；原子时间串只来自门面
 L3 Product Time Facade  → Clock · Style · Codec · Format · Input · Calendar
 L2 Time Engine          → date-fns / Intl 等，仅 L3 引用
@@ -132,16 +132,16 @@ L1 Platform             → Date / Intl / 可注入 Clock
 #### Persistence
 
 - **不**恢复 contracts 级 `PersistenceDate`。  
-- Prisma `DateTime` 等 ↔ `Instant` **仅**经 `@dailyuse/time` Codec 或模块 mapper（调用 Codec）。
+- Prisma `DateTime` 等 ↔ `Instant` **仅**经 `@memoflow/time` Codec 或模块 mapper（调用 Codec）。
 
 ### 3.4 包与依赖
 
 | 决策 | 说明 |
 |------|------|
-| **`@dailyuse/time`** | 新建一等 package：Facade、Style、Clock、Codec、Format、Input、Calendar、Engine |
-| **类型放置** | `Instant` / `TransferDate` / `Ymd` / `Hm` 的 **品牌类型** 以 **contracts primitives（或极薄 shared types）为真相**；`@dailyuse/time` 实现行为并 re-export 便利入口，**避免** time ↔ 业务 module 循环依赖 |
-| **`@dailyuse/utils` 时间 API** | `shared/date.ts` 等迁入 time 后删除或短命 re-export；utils 不再作为产品时间主入口 |
-| **app-vue `shared/utils/format-*`** | sole 上提至 `@dailyuse/time` 后删除；过渡 re-export 有明确到期 |
+| **`@memoflow/time`** | 新建一等 package：Facade、Style、Clock、Codec、Format、Input、Calendar、Engine |
+| **类型放置** | `Instant` / `TransferDate` / `Ymd` / `Hm` 的 **品牌类型** 以 **contracts primitives（或极薄 shared types）为真相**；`@memoflow/time` 实现行为并 re-export 便利入口，**避免** time ↔ 业务 module 循环依赖 |
+| **`@memoflow/utils` 时间 API** | `shared/date.ts` 等迁入 time 后删除或短命 re-export；utils 不再作为产品时间主入口 |
+| **app-vue `shared/utils/format-*`** | sole 上提至 `@memoflow/time` 后删除；过渡 re-export 有明确到期 |
 | **引擎** | 默认 **date-fns** 实现 Calendar/部分 format；展示可组合 **Intl**；均仅存在于 `packages/time/engine/**` |
 
 ### 3.5 产品门面能力（必须具备的稳定面）
@@ -215,7 +215,7 @@ L1 Platform             → Date / Intl / 可注入 Clock
 - 不恢复 PersistenceDate 进 contracts。  
 - 不强制第一版多用户业务时区。  
 - 不 force-merge 真异语义 boundary。  
-- 不把 fileSize、快捷键等非时间 format 塞进 `@dailyuse/time`。
+- 不把 fileSize、快捷键等非时间 format 塞进 `@memoflow/time`。
 
 ---
 
@@ -223,7 +223,7 @@ L1 Platform             → Date / Intl / 可注入 Clock
 
 新代码审查至少问：
 
-1. 是否绕过 `@dailyuse/time` 做了产品格式化或日期算术？  
+1. 是否绕过 `@memoflow/time` 做了产品格式化或日期算术？
 2. 新字段是 `Instant`/`Ymd` 还是又引入了裸 `Date` / 已删的 `DomainDate`？  3. DTO 与 Domain 若分形，差异是否语义诚实？  
 4. 空值/locale 是否来自 Style 而非魔数？  
 5. mapper 是否只经 Codec？
@@ -245,5 +245,5 @@ L1 Platform             → Date / Intl / 可注入 Clock
 
 | 日期 | 说明 |
 |------|------|
-| 2026-07-26 | 初版采纳：产品时间体系 + Transfer≡Instant + DomainDate 退役 + `@dailyuse/time` |
+| 2026-07-26 | 初版采纳：产品时间体系 + Transfer≡Instant + DomainDate 退役 + `@memoflow/time` |
 | 2026-07-26 | T10：删除 DomainDate 类型与 Codec from/toDomainDate；registry 仅 canonical |

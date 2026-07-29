@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/schedule-orchestration",
+  "name": "@memoflow/schedule-orchestration",
   "version": "0.0.1",
   "private": false,
   "description": "System-level schedule orchestration module",
@@ -13,13 +13,13 @@
     }
   },
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/goal": "workspace:*",
-    "@dailyuse/notification": "workspace:*",
-    "@dailyuse/reminder": "workspace:*",
-    "@dailyuse/schedule": "workspace:*",
-    "@dailyuse/task": "workspace:*",
-    "@dailyuse/utils": "workspace:*"
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/goal": "workspace:*",
+    "@memoflow/notification": "workspace:*",
+    "@memoflow/reminder": "workspace:*",
+    "@memoflow/schedule": "workspace:*",
+    "@memoflow/task": "workspace:*",
+    "@memoflow/utils": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

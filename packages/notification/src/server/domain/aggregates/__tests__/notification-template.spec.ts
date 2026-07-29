@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { NotificationTemplateConfigServerDTO } from '@dailyuse/contracts/notification';
+import type { NotificationTemplateConfigServerDTO } from '@memoflow/contracts/notification';
 import { NotificationTemplate } from '../notification-template';
-import { NotificationType, NotificationCategory } from '@dailyuse/contracts/notification';
+import { NotificationType, NotificationCategory } from '@memoflow/contracts/notification';
 
 describe('NotificationTemplate Aggregate Root', () => {
   function aTemplateConfig(
@@ -141,10 +141,10 @@ describe('NotificationTemplate Aggregate Root', () => {
     it('should substitute variables in title and content', () => {
       const tmpl = aTemplate();
 
-      const result = tmpl.render({ name: 'Alice', app: 'Memoflow' });
+      const result = tmpl.render({ name: 'Alice', app: 'MemoFlow' });
 
       expect(result.title).toBe('Hello Alice');
-      expect(result.content).toBe('Welcome to Memoflow, Alice!');
+      expect(result.content).toBe('Welcome to MemoFlow, Alice!');
     });
 
     it('should replace multiple occurrences of the same variable', () => {
@@ -236,7 +236,7 @@ describe('NotificationTemplate Aggregate Root', () => {
     it('should return valid when all variables are provided', () => {
       const tmpl = aTemplate();
 
-      const result = tmpl.validateVariables({ name: 'Alice', app: 'Memoflow' });
+      const result = tmpl.validateVariables({ name: 'Alice', app: 'MemoFlow' });
 
       expect(result.isValid).toBe(true);
       expect(result.missingVariables).toEqual([]);

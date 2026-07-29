@@ -1,4 +1,4 @@
-import type { AIModelInfo, AIProviderConfigServerDTO, AIProviderType } from '@dailyuse/contracts/ai';
+import type { AIModelInfo, AIProviderConfigServerDTO, AIProviderType } from '@memoflow/contracts/ai';
 import type { AISecretCipher } from '../../../security/ai-secret-cipher';
 
 export interface PowerSyncAIProviderConfigRow {

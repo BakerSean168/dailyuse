@@ -1,4 +1,4 @@
-import { RelatedEntityType as RelatedEntityTypeContract, type RelatedEntityType as IRelatedEntityType } from '@dailyuse/contracts/notification';
+import { RelatedEntityType as RelatedEntityTypeContract, type RelatedEntityType as IRelatedEntityType } from '@memoflow/contracts/notification';
 
 /**
  * 📝 关联实体类型 - 通知关联的业务实体类型
@@ -13,7 +13,7 @@ export type RelatedEntityType = IRelatedEntityType & { readonly __brand: unique 
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IRelatedEntityType[] = Object.values(RelatedEntityTypeContract);
 
 /**

@@ -1,8 +1,8 @@
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   HashedPasswordDTO,
   HashedPassword as IHashedPassword,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { PasswordAlgorithm } from './password-algorithm';
 import { PlainPassword } from './plain-password';
 import type { IPasswordHasher } from '../services/i-password-hasher.service';

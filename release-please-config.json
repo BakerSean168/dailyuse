@@ -5,7 +5,7 @@
   "packages": {
     ".": {
       "release-type": "node",
-      "package-name": "daily-use",
+      "package-name": "memoflow",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {

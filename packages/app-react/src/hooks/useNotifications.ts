@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 import { useAppSession } from './useAppSession';
 import { useNotificationService } from './useNotificationService';

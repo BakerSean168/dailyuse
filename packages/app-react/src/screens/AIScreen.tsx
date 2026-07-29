@@ -15,7 +15,7 @@ import {
   StatusPill,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 export function AIScreen() {
   const router = useRouter();

@@ -5,11 +5,11 @@
  * Focus functionality is only available in Electron desktop.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { GoalChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { GoalChannels } from '@memoflow/contracts/electron';
 import type { IGoalFocusApiClient, IResultIpcClient } from '../types';
-import type { FocusModeDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { FocusModeDTO, ActivateFocusModeRequest } from '@memoflow/contracts/goal';
+import { createLogger } from '@memoflow/utils/logger';
 
 export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   private readonly logger = createLogger('goal:focus-ipc');

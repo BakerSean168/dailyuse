@@ -119,7 +119,7 @@ updated: 2026-07-03T20:54:00+08:00
 .\node_modules\.bin\nx.cmd run api:test
 .\node_modules\.bin\nx.cmd run web:test
 .\node_modules\.bin\nx.cmd run schedule-orchestration:test
-.\node_modules\.bin\nx.cmd run daily-use:governance-check
+.\node_modules\.bin\nx.cmd run memoflow:governance-check
 ```
 
 ### 4.2 判断规则
@@ -127,7 +127,7 @@ updated: 2026-07-03T20:54:00+08:00
 如果出现以下结果：
 
 - `api:test`、`web:test`、`schedule-orchestration:test` 通过
-- `daily-use:governance-check` 通过
+- `memoflow:governance-check` 通过
 - desktop file-targeted bootstrap tests 通过
 
 则把当前工作区视为：
@@ -422,7 +422,7 @@ updated: 2026-07-03T20:54:00+08:00
 .\node_modules\.bin\nx.cmd run web:test
 .\node_modules\.bin\nx.cmd run desktop:test:main
 .\node_modules\.bin\nx.cmd run schedule:test
-.\node_modules\.bin\nx.cmd run daily-use:governance-check
+.\node_modules\.bin\nx.cmd run memoflow:governance-check
 ```
 
 ### Exit Criteria

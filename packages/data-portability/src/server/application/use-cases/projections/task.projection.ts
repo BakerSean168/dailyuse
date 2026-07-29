@@ -3,7 +3,7 @@
  */
 
 import type { ExportContext } from '../../portable-runtime';
-import type { PortableTaskFolder, PortableTaskTemplate, PortableTaskInstance, PortableTaskDependency } from '@dailyuse/contracts/data-portability';
+import type { PortableTaskFolder, PortableTaskTemplate, PortableTaskInstance, PortableTaskDependency } from '@memoflow/contracts/data-portability';
 // Residual 1003: sole resolveExportRef/OrThrow (local dual retired).
 import { parseJsonField, toDateString, toRecord, toStringArray, toTimestamp, resolveExportRef, resolveExportRefOrThrow } from './projection-helpers';
 

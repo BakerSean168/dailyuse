@@ -111,7 +111,7 @@ import {
   Badge,
   Alert,
   AlertDescription,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Plus, Trash2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 

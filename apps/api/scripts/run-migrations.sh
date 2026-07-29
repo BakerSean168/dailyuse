@@ -3,8 +3,8 @@
 # Ensures DATABASE_URL is properly set before running Prisma migrations
 # 
 # Usage:
-#   docker exec dailyuse-prod-api ./scripts/run-migrations.sh
-#   docker exec dailyuse-prod-api ./scripts/run-migrations.sh --verbose
+#   docker exec memoflow-prod-api ./scripts/run-migrations.sh
+#   docker exec memoflow-prod-api ./scripts/run-migrations.sh --verbose
 #
 # This script will:
 #   1. Verify DATABASE_URL is set (from docker-compose env or fallback to DB_* vars)
@@ -39,12 +39,12 @@ if [ -z "$DATABASE_URL" ] || [ "$DATABASE_URL" = "undefined" ]; then
     exit 1
   fi
   
-  DB_USER=${DB_USER:-dailyuse}
+  DB_USER=${DB_USER:-memoflow}
   DB_PORT=${DB_PORT:-5432}
-  DB_NAME=${DB_NAME:-dailyuse}
+  DB_NAME=${DB_NAME:-memoflow}
 
   export DATABASE_URL=$(
-    node -e "const username = encodeURIComponent(process.env.DB_USER || 'dailyuse'); const password = process.env.DB_PASSWORD ? ':' + encodeURIComponent(process.env.DB_PASSWORD) : ''; const host = process.env.DB_HOST; const port = process.env.DB_PORT || '5432'; const database = encodeURIComponent(process.env.DB_NAME || 'dailyuse'); process.stdout.write(\`postgresql://\${username}\${password}@\${host}:\${port}/\${database}?schema=public\`);"
+    node -e "const username = encodeURIComponent(process.env.DB_USER || 'memoflow'); const password = process.env.DB_PASSWORD ? ':' + encodeURIComponent(process.env.DB_PASSWORD) : ''; const host = process.env.DB_HOST; const port = process.env.DB_PORT || '5432'; const database = encodeURIComponent(process.env.DB_NAME || 'memoflow'); process.stdout.write(\`postgresql://\${username}\${password}@\${host}:\${port}/\${database}?schema=public\`);"
   )
   echo "${GREEN}✅ Generated DATABASE_URL from DB_* variables${NC}"
 else
@@ -80,7 +80,7 @@ if command -v pg_isready > /dev/null 2>&1; then
     RETRY_COUNT=$((RETRY_COUNT + 1))
     if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
       echo "${RED}❌ Database not ready after ${MAX_RETRIES} seconds${NC}"
-      echo "${RED}   Check PostgreSQL container status: docker logs dailyuse-prod-db${NC}"
+      echo "${RED}   Check PostgreSQL container status: docker logs memoflow-prod-db${NC}"
       exit 1
     fi
     

@@ -1,12 +1,12 @@
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   errorResponse,
   successResponse,
-} from '@dailyuse/utils/result';
-import { QueryAnalyticsSchema, QueryAnalyticsResSchema } from '@dailyuse/contracts/ai';
+} from '@memoflow/utils/result';
+import { QueryAnalyticsSchema, QueryAnalyticsResSchema } from '@memoflow/contracts/ai';
 import type { AIAnalyticsQueryController } from '../../server/transport/ai-analytics-query.controller';
 
 interface PlatformMiddleware {

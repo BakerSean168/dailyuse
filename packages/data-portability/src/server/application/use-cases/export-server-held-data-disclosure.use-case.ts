@@ -2,15 +2,15 @@ import {
   ServerHeldDataDisclosureEnvelopeV1Schema,
   type ExportServerHeldDataDisclosureRes,
   type ServerHeldDataDisclosureEnvelopeV1,
-} from '@dailyuse/contracts/data-portability';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/data-portability';
+import { createLogger } from '@memoflow/utils/logger';
 import type { ServerHeldDataDisclosureSource } from '../server-held-data-disclosure.source';
 
 const logger = createLogger('ExportServerHeldDataDisclosure');
 
 const DISCLOSURE_NOTES = [
-  'This artifact is a read-only disclosure and cannot be imported into Memoflow.',
-  'GitHub installation identifiers are non-replayable references; no Memoflow-managed OAuth token, installation access token, private key, or other replayable authorization is included.',
+  'This artifact is a read-only disclosure and cannot be imported into MemoFlow.',
+  'GitHub installation identifiers are non-replayable references; no MemoFlow-managed OAuth token, installation access token, private key, or other replayable authorization is included.',
   'User-authored Markdown, frontmatter, and cached repository bytes are disclosed verbatim and may contain secrets the user placed in the repository.',
   'Local Vault files, local Git history, and GitHub repository history are not held in this server disclosure.',
 ] as const;

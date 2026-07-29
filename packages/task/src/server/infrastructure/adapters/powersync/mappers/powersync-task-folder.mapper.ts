@@ -1,4 +1,4 @@
-import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
+import type { TaskFolderServerDTO } from '@memoflow/contracts/task';
 
 export type PowerSyncTaskFolderRow = {
   id: string;

@@ -8,8 +8,8 @@
  * - PasswordCredentialServerDTO -> Prisma CreateInput (write path)
  */
 
-import type { Prisma } from '@dailyuse/database';
-import type { PasswordCredentialServerDTO, HashedPassword, CredentialStatus, AuthCredentialId } from '@dailyuse/contracts/authentication';
+import type { Prisma } from '@memoflow/database';
+import type { PasswordCredentialServerDTO, HashedPassword, CredentialStatus, AuthCredentialId } from '@memoflow/contracts/authentication';
 import {
   CredentialType,
   CredentialStatus as CredentialStatusVO,

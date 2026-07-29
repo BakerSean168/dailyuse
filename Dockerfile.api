@@ -23,7 +23,7 @@ RUN pnpm install --frozen-lockfile
 
 # Residual 1335: package `dist/` is gitignored and may be missing or stale in the
 # docker context. Migration scripts import workspace exports such as
-# `@dailyuse/contracts/reminder` through utils. Always rebuild contracts dist
+# `@memoflow/contracts/reminder` through utils. Always rebuild contracts dist
 # in-image (same as packages/contracts:build). Host-built package dists for
 # other packages are still copied via `COPY packages` when present.
 RUN cd packages/contracts \
@@ -41,8 +41,8 @@ ENV CI=true
 ENV PNPM_HOME=/pnpm
 ENV PATH=/pnpm:$PATH
 
-LABEL org.opencontainers.image.title="dailyuse-api"
-LABEL org.opencontainers.image.description="DailyUse production API service"
+LABEL org.opencontainers.image.title="memoflow-api"
+LABEL org.opencontainers.image.description="MemoFlow production API service"
 LABEL org.opencontainers.image.created=$BUILD_DATE
 LABEL org.opencontainers.image.revision=$VCS_REF
 LABEL org.opencontainers.image.version=$VERSION

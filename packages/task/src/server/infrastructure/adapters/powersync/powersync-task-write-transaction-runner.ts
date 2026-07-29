@@ -1,5 +1,5 @@
-import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
-import type { IEventBus } from '@dailyuse/patterns';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
+import type { IEventBus } from '@memoflow/patterns';
 import type {
   TaskWriteRepositories,
   TaskWriteTransactionRunner,

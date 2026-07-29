@@ -8,7 +8,7 @@
  * @see {@link createAIModule} for the canonical composition root.
  */
 
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type {
   IAIExecutionLogPort,
   IAIEvaluationReportPort,

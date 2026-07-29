@@ -284,45 +284,45 @@ export function createSharedConfig(options: SharedConfigOptions) {
 
   const commonWorkspaceAliasEntries: Alias[] = [
     {
-      find: /^@dailyuse\/database\/prisma$/,
+      find: /^@memoflow\/database\/prisma$/,
       replacement: path.resolve(workspaceRoot, 'packages/database/src/generated/prisma/client.js'),
     },
     {
-      find: /^@dailyuse\/database\/powersync$/,
+      find: /^@memoflow\/database\/powersync$/,
       replacement: path.resolve(workspaceRoot, 'packages/database/src/powersync-schema.ts'),
     },
     {
-      find: /^@dailyuse\/database\/dashboard-schema$/,
+      find: /^@memoflow\/database\/dashboard-schema$/,
       replacement: path.resolve(workspaceRoot, 'packages/database/src/dashboard-schema.ts'),
     },
     {
-      find: /^@dailyuse\/domain-shared\/(.+)$/,
+      find: /^@memoflow\/domain-shared\/(.+)$/,
       replacement: path.resolve(workspaceRoot, 'packages/domain-shared/src/$1'),
     },
     {
-      find: /^@dailyuse\/utils\/(.+)$/,
+      find: /^@memoflow\/utils\/(.+)$/,
       replacement: path.resolve(workspaceRoot, 'packages/utils/src/$1'),
     },
     {
-      find: /^@dailyuse\/test-utils\/(.+)$/,
+      find: /^@memoflow\/test-utils\/(.+)$/,
       replacement: path.resolve(workspaceRoot, 'packages/test-utils/src/$1'),
     },
     ...commonWorkspacePackages.map(
       (packageName) =>
         ({
-          find: new RegExp(`^@dailyuse\\/${packageName}\\/(.+)$`),
+          find: new RegExp(`^@memoflow\\/${packageName}\\/(.+)$`),
           replacement: path.resolve(workspaceRoot, `packages/${packageName}/src/$1`),
         }) satisfies Alias,
     ),
   ];
 
   const commonBareAliases = Object.fromEntries([
-    ['@dailyuse/database', path.resolve(workspaceRoot, 'packages/database/src/index.ts')],
-    ['@dailyuse/domain-shared', path.resolve(workspaceRoot, 'packages/domain-shared/src/index.ts')],
-    ['@dailyuse/utils', path.resolve(workspaceRoot, 'packages/utils/src/index.ts')],
-    ['@dailyuse/test-utils', path.resolve(workspaceRoot, 'packages/test-utils/src/index.ts')],
+    ['@memoflow/database', path.resolve(workspaceRoot, 'packages/database/src/index.ts')],
+    ['@memoflow/domain-shared', path.resolve(workspaceRoot, 'packages/domain-shared/src/index.ts')],
+    ['@memoflow/utils', path.resolve(workspaceRoot, 'packages/utils/src/index.ts')],
+    ['@memoflow/test-utils', path.resolve(workspaceRoot, 'packages/test-utils/src/index.ts')],
     ...commonWorkspacePackages.map((packageName) => [
-      `@dailyuse/${packageName}`,
+      `@memoflow/${packageName}`,
       path.resolve(workspaceRoot, `packages/${packageName}/src/index.ts`),
     ]),
   ]);

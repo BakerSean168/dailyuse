@@ -1,8 +1,8 @@
 import type { IFocusModeRepository } from '../../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { FocusModeDTO } from '@dailyuse/contracts/goal';
+import { createLogger } from '@memoflow/utils/logger';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import type { FocusModeDTO } from '@memoflow/contracts/goal';
 
 export class GetCurrentFocusModeUseCase {
   private readonly logger = createLogger('goal:get-current-focus-mode');

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
 import { createRepositoryModule } from './repository.module';
 

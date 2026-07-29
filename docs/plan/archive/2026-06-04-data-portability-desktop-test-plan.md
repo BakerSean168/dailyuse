@@ -67,7 +67,7 @@ export const DataPortabilityChannels = {
 将硬编码字符串替换为共享常量引用：
 
 ```ts
-import { DataPortabilityChannels } from '@dailyuse/contracts/electron';
+import { DataPortabilityChannels } from '@memoflow/contracts/electron';
 
 // exportUserData:
 return this.ipcClient.invoke(DataPortabilityChannels.EXPORT, data);
@@ -82,7 +82,7 @@ return this.ipcClient.invoke(DataPortabilityChannels.IMPORT, data);
 删除本地 `Ch` 常量，替换为：
 
 ```ts
-import { DataPortabilityChannels } from '@dailyuse/contracts/electron';
+import { DataPortabilityChannels } from '@memoflow/contracts/electron';
 
 // register 中:
 ipcMain.handle(DataPortabilityChannels.EXPORT, ...);

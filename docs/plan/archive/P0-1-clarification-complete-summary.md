@@ -2,7 +2,7 @@
 
 # P0-1 澄清式 Goal 创建 - 完整方案总结
 
-**项目**：dailyuse  
+**项目**：memoflow
 **优先级**：P0（基础产品流）  
 **技术方案**：Route 2 - Unified AI Workflow Orchestrator  
 **完成日期**：2026-04-28

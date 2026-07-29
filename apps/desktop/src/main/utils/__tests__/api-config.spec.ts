@@ -21,7 +21,7 @@ describe('getApiBaseUrl', () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
-    userDataPath = fs.mkdtempSync(path.join(os.tmpdir(), 'dailyuse-api-config-'));
+    userDataPath = fs.mkdtempSync(path.join(os.tmpdir(), 'memoflow-api-config-'));
     isPackaged = false;
   });
 
@@ -32,14 +32,14 @@ describe('getApiBaseUrl', () => {
   });
 
   it('prefers explicit desktop API env injection', () => {
-    process.env.DAILYUSE_API_URL = 'https://desktop-api.example.com/api/v1';
+    process.env.MEMOFLOW_API_URL = 'https://desktop-api.example.com/api/v1';
     delete process.env.PROXY_TARGET_URL;
 
     expect(getApiBaseUrl()).toBe('https://desktop-api.example.com/api/v1');
   });
 
   it('derives desktop API URL from proxy target when explicit env is absent', () => {
-    delete process.env.DAILYUSE_API_URL;
+    delete process.env.MEMOFLOW_API_URL;
     delete process.env.API_BASE_URL;
     delete process.env.VITE_API_URL;
     process.env.VITE_API_BASE_URL = '/api/v1';
@@ -49,7 +49,7 @@ describe('getApiBaseUrl', () => {
   });
 
   it('uses runtime config from user data in packaged mode', () => {
-    delete process.env.DAILYUSE_API_URL;
+    delete process.env.MEMOFLOW_API_URL;
     delete process.env.API_BASE_URL;
     delete process.env.VITE_API_URL;
     delete process.env.VITE_API_BASE_URL;
@@ -69,7 +69,7 @@ describe('getApiBaseUrl', () => {
   });
 
   it('falls back to the production site API in packaged mode when no config is provided', () => {
-    delete process.env.DAILYUSE_API_URL;
+    delete process.env.MEMOFLOW_API_URL;
     delete process.env.API_BASE_URL;
     delete process.env.VITE_API_URL;
     delete process.env.VITE_API_BASE_URL;
@@ -77,11 +77,11 @@ describe('getApiBaseUrl', () => {
     delete process.env.API_DOMAIN;
     isPackaged = true;
 
-    expect(getApiBaseUrl()).toBe('https://dailyuse.bakersean.top/api/v1');
+    expect(getApiBaseUrl()).toBe('https://memoflow.bakersean.top/api/v1');
   });
 
   it('throws when no usable API env is provided in development', () => {
-    delete process.env.DAILYUSE_API_URL;
+    delete process.env.MEMOFLOW_API_URL;
     delete process.env.API_BASE_URL;
     delete process.env.VITE_API_URL;
     delete process.env.VITE_API_BASE_URL;

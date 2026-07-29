@@ -322,7 +322,7 @@ import {
   KeyResultValueType,
   type AddKeyResultReq,
   type CreateGoalReq,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import {
   Button,
   Input,
@@ -333,7 +333,7 @@ import {
   SelectValue,
   TagInput,
   Textarea,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 
 type GoalDraftState = {
   name: string;

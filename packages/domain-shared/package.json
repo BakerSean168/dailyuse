@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/domain-shared",
+  "name": "@memoflow/domain-shared",
   "version": "0.0.1",
   "description": "Shared domain models and business logic for both client and server",
   "type": "module",
@@ -26,8 +26,8 @@
   "author": "bakersean",
   "license": "MIT",
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/utils": "workspace:*"
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.13.3",

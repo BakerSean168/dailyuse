@@ -93,9 +93,9 @@ import {
   HiddenGoalsMode,
   type ActivateFocusModeRequest,
   type FocusModeDTO,
-} from '@dailyuse/contracts/goal';
-import type { GoalId } from '@dailyuse/contracts/primitives';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/contracts/goal';
+import type { GoalId } from '@memoflow/contracts/primitives';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import {
   Dialog,
   DialogContent,
@@ -103,15 +103,15 @@ import {
   DialogHeader,
   DialogDescription,
   DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 
 const props = withDefaults(
   defineProps<{

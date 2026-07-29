@@ -2,20 +2,20 @@
  * Desktop Platform DI — IPC Adapter Injection
  */
 import type { App } from 'vue';
-import { createResultIpcClient } from '@dailyuse/ipc-client';
+import { createResultIpcClient } from '@memoflow/ipc-client';
 import { toast } from 'vue-sonner';
-import { createAccountIpcClient } from '@dailyuse/account/client';
-import { createAuthenticationIpcClient } from '@dailyuse/authentication/client';
-import { createGoalIpcClient } from '@dailyuse/goal/client';
-import { createGovernanceIpcClient } from '@dailyuse/governance/client';
-import { createTaskIpcClient } from '@dailyuse/task/client';
-import { createScheduleIpcClient } from '@dailyuse/schedule/client';
-import { createReminderIpcClient } from '@dailyuse/reminder/client';
-import { createRepositoryIpcClient } from '@dailyuse/repository/client';
-import { createNotificationIpcClient } from '@dailyuse/notification/client';
-import { createSettingIpcClient } from '@dailyuse/setting/client';
-import { createAIIpcClient } from '@dailyuse/ai/client';
-import { createDataPortabilityIpcClient } from '@dailyuse/data-portability/client';
+import { createAccountIpcClient } from '@memoflow/account/client';
+import { createAuthenticationIpcClient } from '@memoflow/authentication/client';
+import { createGoalIpcClient } from '@memoflow/goal/client';
+import { createGovernanceIpcClient } from '@memoflow/governance/client';
+import { createTaskIpcClient } from '@memoflow/task/client';
+import { createScheduleIpcClient } from '@memoflow/schedule/client';
+import { createReminderIpcClient } from '@memoflow/reminder/client';
+import { createRepositoryIpcClient } from '@memoflow/repository/client';
+import { createNotificationIpcClient } from '@memoflow/notification/client';
+import { createSettingIpcClient } from '@memoflow/setting/client';
+import { createAIIpcClient } from '@memoflow/ai/client';
+import { createDataPortabilityIpcClient } from '@memoflow/data-portability/client';
 import {
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
@@ -35,9 +35,9 @@ import {
   MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
   defaultModuleCapsules,
-} from '@dailyuse/app-vue/di';
-import { createDashboardIpcAdapter } from '@dailyuse/app-vue/modules/dashboard/adapters';
-import { useAuthenticationStore } from '@dailyuse/app-vue/modules/authentication';
+} from '@memoflow/app-vue/di';
+import { createDashboardIpcAdapter } from '@memoflow/app-vue/modules/dashboard/adapters';
+import { useAuthenticationStore } from '@memoflow/app-vue/modules/authentication';
 // Residual 941: host bridge via requireElectronBridge sole helper.
 import { requireElectronBridge } from './electron-bridge';
 

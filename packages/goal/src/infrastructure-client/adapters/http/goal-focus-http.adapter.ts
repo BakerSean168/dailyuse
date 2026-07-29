@@ -5,9 +5,9 @@
  * Provides focus session management for web clients.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type { IGoalFocusApiClient, IResultHttpClient } from '../types';
-import type { FocusModeDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
+import type { FocusModeDTO, ActivateFocusModeRequest } from '@memoflow/contracts/goal';
 
 export class GoalFocusHttpAdapter implements IGoalFocusApiClient {
   private readonly baseUrl = '/goals/focus-mode';

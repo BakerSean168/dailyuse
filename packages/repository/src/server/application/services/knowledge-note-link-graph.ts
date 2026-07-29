@@ -7,7 +7,7 @@ import type {
   KnowledgeNoteLinkGraphResponse,
   KnowledgeNoteProjectionClientDTO,
   KnowledgeNoteUnresolvedLinkDTO,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 
 interface ParsedLink {
   id: string;

@@ -1,5 +1,5 @@
-import { prisma } from '@dailyuse/database';
-import { createLogger } from '@dailyuse/utils/logger';
+import { prisma } from '@memoflow/database';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('PowerSyncPublication');
 const PUBLICATION_NAME = 'powersync';

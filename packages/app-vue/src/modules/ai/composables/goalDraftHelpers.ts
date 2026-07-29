@@ -9,12 +9,12 @@ import {
   KeyResultValueType,
   type AddKeyResultReq,
   type CreateGoalReq,
-} from '@dailyuse/contracts/goal';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/goal';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import type {
   GoalClarificationDTO,
   GoalWorkflowDraftResultDTO,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import {
   createEmptyGoalDraft,
   type EditableGoal,

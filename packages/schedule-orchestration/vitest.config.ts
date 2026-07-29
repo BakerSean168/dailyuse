@@ -9,21 +9,21 @@ export default mergeConfig(
     environment: 'node',
     aliasEntries: [
       {
-        find: /^@dailyuse\/task\/schedule-projection$/,
+        find: /^@memoflow\/task\/schedule-projection$/,
         replacement: path.resolve(
           __dirname,
           '../task/src/server/infrastructure/schedule-projection-source.ts',
         ),
       },
       {
-        find: /^@dailyuse\/goal\/schedule-projection$/,
+        find: /^@memoflow\/goal\/schedule-projection$/,
         replacement: path.resolve(
           __dirname,
           '../goal/src/server/infrastructure/schedule-projection-source.ts',
         ),
       },
       {
-        find: /^@dailyuse\/reminder\/schedule-projection$/,
+        find: /^@memoflow\/reminder\/schedule-projection$/,
         replacement: path.resolve(
           __dirname,
           '../reminder/src/server/infrastructure/schedule-projection-source.ts',

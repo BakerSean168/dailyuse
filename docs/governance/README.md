@@ -41,9 +41,9 @@ updated: 2026-07-05T00:15:00+08:00
 
 ## 可执行检查
 
-- `pnpm nx run daily-use:docs-check`：检查退役脚手架残留、ADR 编号与索引、关键文档链接、旧配置引用。
-- `pnpm nx run daily-use:governance-check`：检查 agent 入口、计划目录、治理文档、project tags、局部配置约定、`packages/governance` 活文档顶层 JSDoc、target 基线与 server feature shape 合规性，以及高层生产代码对 raw `eventBus.on/off/send` 的回退。
-- `pnpm nx run daily-use:target-baseline-check`：单独运行 target 基线审计，检查所有项目是否按分类具备必要 target。
+- `pnpm nx run memoflow:docs-check`：检查退役脚手架残留、ADR 编号与索引、关键文档链接、旧配置引用。
+- `pnpm nx run memoflow:governance-check`：检查 agent 入口、计划目录、治理文档、project tags、局部配置约定、`packages/governance` 活文档顶层 JSDoc、target 基线与 server feature shape 合规性，以及高层生产代码对 raw `eventBus.on/off/send` 的回退。
+- `pnpm nx run memoflow:target-baseline-check`：单独运行 target 基线审计，检查所有项目是否按分类具备必要 target。
 - `pnpm nx run-many -t lint,typecheck --all`：验证工作区配置收敛没有引入明显回归。
 
 ## Target 基线治理

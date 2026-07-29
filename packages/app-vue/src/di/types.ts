@@ -11,18 +11,18 @@
  *    追踪到外部源码目录并触发 `rootDir: "./src"` 违规。
  */
 
-import type { AccountClientPort } from '@dailyuse/account/client';
-import type { AIClientPort } from '@dailyuse/ai/client';
-import type { AuthenticationClientPort } from '@dailyuse/authentication/client';
-import type { GovernanceClientPort } from '@dailyuse/governance/client';
-import type { GoalClientPort } from '@dailyuse/goal/client';
-import type { NotificationClientPort } from '@dailyuse/notification/client';
-import type { ReminderClientPort } from '@dailyuse/reminder/client';
-import type { RepositoryClientPort } from '@dailyuse/repository/client';
-import type { ScheduleClientPort } from '@dailyuse/schedule/client';
-import type { SettingClientPort } from '@dailyuse/setting/client';
-import type { TaskClientPort } from '@dailyuse/task/client';
-import type { DataPortabilityClientPort } from '@dailyuse/data-portability/client';
+import type { AccountClientPort } from '@memoflow/account/client';
+import type { AIClientPort } from '@memoflow/ai/client';
+import type { AuthenticationClientPort } from '@memoflow/authentication/client';
+import type { GovernanceClientPort } from '@memoflow/governance/client';
+import type { GoalClientPort } from '@memoflow/goal/client';
+import type { NotificationClientPort } from '@memoflow/notification/client';
+import type { ReminderClientPort } from '@memoflow/reminder/client';
+import type { RepositoryClientPort } from '@memoflow/repository/client';
+import type { ScheduleClientPort } from '@memoflow/schedule/client';
+import type { SettingClientPort } from '@memoflow/setting/client';
+import type { TaskClientPort } from '@memoflow/task/client';
+import type { DataPortabilityClientPort } from '@memoflow/data-portability/client';
 import type { Component } from 'vue';
 
 // ── Service Interfaces (structural, no private members) ──

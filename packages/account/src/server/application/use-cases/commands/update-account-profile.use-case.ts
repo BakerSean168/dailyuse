@@ -2,11 +2,11 @@
  * Update Account Profile Use Case
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IAccountRepository } from '../../../domain';
-import type { AccountClientDTO, UpdateAccountReq } from '@dailyuse/contracts/account';
+import type { AccountClientDTO, UpdateAccountReq } from '@memoflow/contracts/account';
 
 export class UpdateAccountProfileUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}

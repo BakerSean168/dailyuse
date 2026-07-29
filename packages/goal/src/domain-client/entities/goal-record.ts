@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * GoalRecord Entity - Domain Client
  * 目标记录实体 - 领域客户端
@@ -10,8 +10,8 @@ import type { Instant } from '@dailyuse/contracts/primitives';
  * - Instance toDTO(): GoalRecordClientDTO
  */
 
-import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
-import { Entity } from '@dailyuse/utils/domain';
+import type { GoalRecordClientDTO } from '@memoflow/contracts/goal';
+import { Entity } from '@memoflow/utils/domain';
 import { GoalRecordId, KeyResultId, GoalId } from '../../server/domain';
 
 export interface GoalRecordState {

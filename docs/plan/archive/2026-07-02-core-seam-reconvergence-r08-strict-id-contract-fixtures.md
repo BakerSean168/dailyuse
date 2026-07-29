@@ -143,7 +143,7 @@ aScheduleTaskId()
 
 - Date: 2026-07-03
 - Status: done
-- What changed: 在 `@dailyuse/test-utils/fixtures` 新增共享合法 ID builder（`aUuid`、`aPrefixedUuid`）；task smoke app、task/schedule/goal 的高噪声 Prisma mapper specs 已切到合法 branded ID fixture；API automation executor 测试 mock 也已对齐新的 plain function port。
+- What changed: 在 `@memoflow/test-utils/fixtures` 新增共享合法 ID builder（`aUuid`、`aPrefixedUuid`）；task smoke app、task/schedule/goal 的高噪声 Prisma mapper specs 已切到合法 branded ID fixture；API automation executor 测试 mock 也已对齐新的 plain function port。
 - Old path deleted: 本轮触碰到的 task/schedule/goal happy-path 非法 ID 常量与 ad hoc fixture 字面量；`IdentityId_smoke-user-0001` 等不合法 smoke fixture 已移除。
 - Verification: `.\node_modules\.bin\nx.cmd run task:test`、`schedule:test`、`goal:test`、`api:test:smoke` 通过；相关输出中未再出现本轮目标范围内的 branded ID warning。
 - Remaining follow-up: 已由 `R09` 一并收口；desktop auth `SessionManager` 与 remembered-account 相关 fixture 已切到合法 branded ID，`desktop:test` 与 `desktop:test:main` 均已通过。

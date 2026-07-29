@@ -21,59 +21,59 @@ export default defineConfig({
       },
       ...createContractsAliasEntries(resolve(__dirname, '../..')),
       {
-        find: '@dailyuse/domain-shared/shared',
+        find: '@memoflow/domain-shared/shared',
         replacement: resolve(__dirname, '../../packages/domain-shared/src/shared/index.ts'),
       },
       {
-        find: '@dailyuse/domain-shared',
+        find: '@memoflow/domain-shared',
         replacement: resolve(__dirname, '../../packages/domain-shared/src'),
       },
       {
-        find: '@dailyuse/utils',
+        find: '@memoflow/utils',
         replacement: resolve(__dirname, '../../packages/utils/src'),
       },
       {
-        find: '@dailyuse/authentication/electron',
+        find: '@memoflow/authentication/electron',
         replacement: resolve(__dirname, '../../packages/authentication/src/electron/index.ts'),
       },
       {
-        find: '@dailyuse/authentication',
+        find: '@memoflow/authentication',
         replacement: resolve(__dirname, '../../packages/authentication/src/index.ts'),
       },
       {
-        find: '@dailyuse/goal/client',
+        find: '@memoflow/goal/client',
         replacement: resolve(__dirname, '../../packages/goal/src/client/index.ts'),
       },
       {
-        find: '@dailyuse/goal/electron',
+        find: '@memoflow/goal/electron',
         replacement: resolve(__dirname, '../../packages/goal/src/electron/index.ts'),
       },
       {
-        find: '@dailyuse/goal/schedule-execution',
+        find: '@memoflow/goal/schedule-execution',
         replacement: resolve(__dirname, '../../packages/goal/src/schedule-execution/index.ts'),
       },
       {
-        find: '@dailyuse/goal/schedule-projection',
+        find: '@memoflow/goal/schedule-projection',
         replacement: resolve(__dirname, '../../packages/goal/src/schedule-projection/index.ts'),
       },
       {
-        find: '@dailyuse/goal/events',
+        find: '@memoflow/goal/events',
         replacement: resolve(__dirname, '../../packages/goal/src/events/index.ts'),
       },
       {
-        find: '@dailyuse/goal/analytics',
+        find: '@memoflow/goal/analytics',
         replacement: resolve(__dirname, '../../packages/goal/src/analytics/index.ts'),
       },
       {
-        find: '@dailyuse/account/electron',
+        find: '@memoflow/account/electron',
         replacement: resolve(__dirname, '../../packages/account/src/electron/index.ts'),
       },
       {
-        find: '@dailyuse/account',
+        find: '@memoflow/account',
         replacement: resolve(__dirname, '../../packages/account/src/index.ts'),
       },
       {
-        find: '@dailyuse/schedule-orchestration',
+        find: '@memoflow/schedule-orchestration',
         replacement: resolve(__dirname, '../../packages/schedule-orchestration/src/index.ts'),
       },
     ],

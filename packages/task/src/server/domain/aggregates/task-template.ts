@@ -7,24 +7,24 @@ import type {
   TaskTemplateServerDTO,
   TaskEventMap,
   TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 import {
   RecurrenceEndConditionType,
   TaskGoalBindingTrigger,
-} from '@dailyuse/contracts/task';
-import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/task';
+import { ImportanceLevel, PriorityLevel } from '@memoflow/contracts/shared';
 import { DependencyStatus, TaskType } from '../value-objects';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '../../domain/value-objects';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import { TaskFolderId } from '../../domain/value-objects/task-folder-id';
-import { IdentityId } from '@dailyuse/domain-shared';
-import type {GoalId, KeyResultId, Instant} from '@dailyuse/contracts/primitives';
-import { createTimeFacade } from '@dailyuse/time';
+import { IdentityId } from '@memoflow/domain-shared';
+import type {GoalId, KeyResultId, Instant} from '@memoflow/contracts/primitives';
+import { createTimeFacade } from '@memoflow/time';
 
 const taskTime = createTimeFacade();
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import {
   TaskTimeConfig,
   RecurrenceRule,

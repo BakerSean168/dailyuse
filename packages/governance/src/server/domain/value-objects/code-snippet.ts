@@ -10,12 +10,12 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { CodeSnippetDTO } from '@dailyuse/contracts/governance';
-import type { CodeSnippetId } from '@dailyuse/contracts/governance';
-import type { CodeSnippetPersistenceDTO } from '@dailyuse/contracts/governance';
+import { ValueObject } from '@memoflow/utils/domain';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { CodeSnippetDTO } from '@memoflow/contracts/governance';
+import type { CodeSnippetId } from '@memoflow/contracts/governance';
+import type { CodeSnippetPersistenceDTO } from '@memoflow/contracts/governance';
 
 // ============ Persistence DTO (持久化层) ============
 

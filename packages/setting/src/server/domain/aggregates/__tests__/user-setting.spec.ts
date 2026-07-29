@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { UserSetting } from '../user-setting';
-import { getDefaultPreferences } from '@dailyuse/contracts/setting';
+import { getDefaultPreferences } from '@memoflow/contracts/setting';
 
 describe('UserSetting Aggregate Root', () => {
   const testIdentityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440000';

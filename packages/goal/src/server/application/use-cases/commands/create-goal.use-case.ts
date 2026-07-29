@@ -7,12 +7,12 @@
 
 import type { IGoalRepository } from '../../../domain';
 import { Goal, GoalPolicy, GoalReminderConfig } from '../../../domain';
-import { IdentityId } from '@dailyuse/domain-shared';
-import type { CreateGoalReq, CreateGoalRes } from '@dailyuse/contracts/goal';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
+import type { CreateGoalReq, CreateGoalRes } from '@memoflow/contracts/goal';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { GoalId, GoalFolderId } from '../../../domain';
 /**
  * Create Goal Use Case

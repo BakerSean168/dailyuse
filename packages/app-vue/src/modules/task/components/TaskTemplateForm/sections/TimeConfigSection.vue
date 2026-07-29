@@ -213,8 +213,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { TaskTimeType } from '@dailyuse/contracts/task';
-import type { TaskTimeConfigDTO } from '@dailyuse/contracts/task';
+import { TaskTimeType } from '@memoflow/contracts/task';
+import type { TaskTimeConfigDTO } from '@memoflow/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
   Card,
@@ -236,7 +236,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
 import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
@@ -305,7 +305,7 @@ const timeRangeEndMinute = ref<string>('00');
 /** Convert a YYYY-MM-DD string to a Date for Calendar :selected */
 /** Handle Calendar selection — works with both Date and radix DateValue objects */
 /**
- * Residual 1210: task formatDateToInput — epoch ms → local YMD via @dailyuse/time.
+ * Residual 1210: task formatDateToInput — epoch ms → local YMD via @memoflow/time.
  * Soft residual 1210 retired: utils Date bridge deleted (ADR-037 T9).
  */
 const formatDateToInput = (timestamp: number): string => {

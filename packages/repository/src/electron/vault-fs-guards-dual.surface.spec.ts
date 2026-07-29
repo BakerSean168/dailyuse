@@ -55,7 +55,7 @@ describe('vault FS guards dual retired (residual 957)', () => {
 
     expect(autoSync).toContain('Residual 957');
     expect(autoSync).toContain(
-      "import { isMissing, isTemporaryFile } from '@dailyuse/repository/electron'",
+      "import { isMissing, isTemporaryFile } from '@memoflow/repository/electron'",
     );
     expect(autoSync).not.toMatch(/function isMissing\b/);
     expect(autoSync).not.toMatch(/function isTemporaryFile\b/);
@@ -64,7 +64,7 @@ describe('vault FS guards dual retired (residual 957)', () => {
 
     expect(gitRuntime).toContain('Residual 957');
     expect(gitRuntime).toContain(
-      "import { isMissing, isTemporaryFile } from '@dailyuse/repository/electron'",
+      "import { isMissing, isTemporaryFile } from '@memoflow/repository/electron'",
     );
     expect(gitRuntime).not.toMatch(/function isMissing\b/);
     expect(gitRuntime).not.toMatch(/function isTemporaryFile\b/);

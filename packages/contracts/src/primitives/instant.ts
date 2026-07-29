@@ -3,7 +3,7 @@
  *
  * **≡ TransferDate** (ADR-037). Wire/DTO/JSON continue to use number ms.
  *
- * Construction discipline: prefer `@dailyuse/time` Codec (`fromTransfer`,
+ * Construction discipline: prefer `@memoflow/time` Codec (`fromTransfer`,
  * `fromJsDate`, `combineYmdHm`, …). Do not use bare numbers for *calendar days*
  * — those are `Ymd`. Do not mix seconds vs ms.
  *

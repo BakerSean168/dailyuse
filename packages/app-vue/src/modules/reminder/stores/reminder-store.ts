@@ -8,7 +8,7 @@ import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
   UserReminderPreferencesClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 export interface ReminderState {
   templates: ReminderTemplateClientDTO[];

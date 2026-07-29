@@ -5,8 +5,8 @@
  * On success, best-effort sends an EmailVerify challenge (failure does not block registration).
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
 import {
   AuthSession,
   RegistrationService as DomainRegistrationService,
@@ -18,10 +18,10 @@ import {
   type IVerificationChallengeStore,
 } from '../../../domain';
 import type { IPasswordHasher } from '../../../domain';
-import type { RegisterByEmailReq, AuthResponseDTO } from '@dailyuse/contracts/authentication';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { RegisterByEmailReq, AuthResponseDTO } from '@memoflow/contracts/authentication';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { UserAlreadyExistsError } from '../../../domain/services/registration';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 // Residual 949: maskEmail dual retired — sole server shared mask-email helper.
 import { maskEmail } from '../../../shared/mask-email';
 

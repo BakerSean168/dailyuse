@@ -11,7 +11,7 @@ import {
   HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE,
   HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE,
 } from '../host-task-create-resume';
-import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
+import type { AgentStartRunRequest } from '@memoflow/contracts/ai';
 
 function request(runId: string): AgentStartRunRequest {
   return {

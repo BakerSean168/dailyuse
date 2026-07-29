@@ -1,11 +1,11 @@
 import { vi, describe, it, expect } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils';
-import { ok, error } from '@dailyuse/contracts/result';
+import { createMockRepo } from '@memoflow/test-utils';
+import { ok, error } from '@memoflow/contracts/result';
 import { DeleteRuleUseCase } from '../delete-rule.use-case';
 import type { ExecutionContext } from '../../execution-context';
 import type { IRuleRepository } from '../../../../domain/repositories/i-rule-repository';
-import type { DeleteRuleReq } from '@dailyuse/contracts/governance';
-import { RuleStatus } from '@dailyuse/contracts/governance';
+import type { DeleteRuleReq } from '@memoflow/contracts/governance';
+import { RuleStatus } from '@memoflow/contracts/governance';
 
 // ============ Helpers ============
 

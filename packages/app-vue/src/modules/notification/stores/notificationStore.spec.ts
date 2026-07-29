@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import { createTestPinia } from '@dailyuse/test-utils';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useNotificationStore } from './notification-store';
 
 function createNotification(

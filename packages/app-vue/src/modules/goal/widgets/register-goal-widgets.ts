@@ -3,7 +3,7 @@
  *
  * TODO: 待 dashboard 模块迁移到 app-vue 后重新启用。
  * 当前文件仅为占位，避免编译错误。
- * 原实现依赖 @/modules/dashboard (web-app 专属) 和 @dailyuse/contracts/dashboard。
+ * 原实现依赖 @/modules/dashboard (web-app 专属) 和 @memoflow/contracts/dashboard。
  */
 
 /**

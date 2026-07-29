@@ -136,11 +136,11 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { splitDurationMinutes } from '@dailyuse/time';
+import { splitDurationMinutes } from '@memoflow/time';
 import { useI18n } from 'vue-i18n';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
-import { TaskGraphEdgeKind } from '@dailyuse/task/client';
+import { TaskGraphEdgeKind } from '@memoflow/task/client';
 import type {
   TaskForDAG,
   TaskGraphData,
@@ -158,7 +158,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   Share2,
   ScatterChart,

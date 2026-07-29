@@ -1,10 +1,10 @@
 /**
- * @dailyuse/reminder
+ * @memoflow/reminder
  *
  * Reminder module runtime root.
  *
  * Public reminder contracts are centralized in
- * `@dailyuse/contracts/reminder`.
+ * `@memoflow/contracts/reminder`.
  * Root exports are limited to the canonical server composition root.
  * Client / API / Electron seams use dedicated subpaths.
  * Schedule orchestration integrations remain on their dedicated

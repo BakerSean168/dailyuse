@@ -1,4 +1,4 @@
-import { RegisterByEmailSchema } from '@dailyuse/contracts/authentication';
+import { RegisterByEmailSchema } from '@memoflow/contracts/authentication';
 
 export type LoginField = 'email' | 'password';
 export type RegisterField = 'email' | 'password' | 'confirmPassword';

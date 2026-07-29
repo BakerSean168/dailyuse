@@ -8,19 +8,19 @@
 import type {
   ReminderTemplate as PrismaReminderTemplate,
   ReminderHistory as PrismaReminderHistory,
-} from '@dailyuse/database';
+} from '@memoflow/database';
 import type {
   ReminderType,
   ReminderStatus,
   TriggerResult,
   NotificationChannel,
-} from '@dailyuse/contracts/reminder';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/reminder';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import { ReminderTemplate } from '../../../../domain/aggregates/reminder-template';
 import { ReminderHistory } from '../../../../domain/entities/reminder-history';
 import { ReminderTemplateId } from '../../../../domain/value-objects/reminder-template-id';
 import { ReminderHistoryId } from '../../../../domain/value-objects/reminder-history-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import {
   TriggerConfig,
   ActiveTimeConfig,

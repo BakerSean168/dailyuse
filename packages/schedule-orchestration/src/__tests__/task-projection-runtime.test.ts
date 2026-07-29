@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
-import type { IScheduleTaskRepository } from '@dailyuse/schedule';
-import { ScheduleTask } from '@dailyuse/schedule';
+import { SourceModule } from '@memoflow/contracts/schedule';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
+import type { IScheduleTaskRepository } from '@memoflow/schedule';
+import { ScheduleTask } from '@memoflow/schedule';
 import type {
   TaskScheduleProjectionEventMap,
   TaskScheduleProjectionSource,
-} from '@dailyuse/task/schedule-projection';
-import type { Publisher, Subscriber } from '@dailyuse/utils/domain';
+} from '@memoflow/task/schedule-projection';
+import type { Publisher, Subscriber } from '@memoflow/utils/domain';
 import { createTaskProjectionRuntime } from '../runtime/task-projection-runtime';
 
 function createScheduleTask(templateId: string, sourceEntityId: string, name: string) {

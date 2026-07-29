@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * KeyResult 实体实现
  *
@@ -29,9 +29,9 @@ import type { Instant } from '@dailyuse/contracts/primitives';
  * - title 不能为空
  */
 
-import { Entity } from '@dailyuse/utils/domain';
+import { Entity } from '@memoflow/utils/domain';
 import { KeyResultId } from '../../domain';
-import type { KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import type { KeyResultServerDTO } from '@memoflow/contracts/goal';
 
 // 内部状态接口
 export interface KeyResultState {
@@ -317,7 +317,7 @@ export class KeyResult extends Entity<KeyResultId> {
   /**
    * 转换为 Client DTO
    */
-  public toClientDTO(): import('@dailyuse/contracts/goal').KeyResultClientDTO {
+  public toClientDTO(): import('@memoflow/contracts/goal').KeyResultClientDTO {
     return {
       id: this.id as KeyResultId,
       title: this._props.title,

@@ -10,7 +10,7 @@ import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 import { padTwoDigits } from '../../../shared/utils/pad-two-digits';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
-import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@memoflow/contracts/task';
 import { startOfDayMs, endOfDayMs } from '../../../shared/utils/product-time';
 
 // ============ 统一内部事件类型 ============

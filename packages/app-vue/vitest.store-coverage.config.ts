@@ -13,11 +13,11 @@ export default mergeConfig(
     testInclude: ['src/modules/**/stores/**/*.{test,spec}.{ts,tsx}'],
     aliasEntries: createUiVueSourceAliasEntries(workspaceRoot),
     aliases: {
-      '@dailyuse/http-client': '../../packages/http-client/src/index.ts',
-      '@dailyuse/ai/client': '../../packages/ai/src/client/index.ts',
-      '@dailyuse/goal/client': '../../packages/goal/src/client/index.ts',
-      '@dailyuse/task/client': '../../packages/task/src/client/index.ts',
-      '@dailyuse/repository/client': '../../packages/repository/src/client/index.ts',
+      '@memoflow/http-client': '../../packages/http-client/src/index.ts',
+      '@memoflow/ai/client': '../../packages/ai/src/client/index.ts',
+      '@memoflow/goal/client': '../../packages/goal/src/client/index.ts',
+      '@memoflow/task/client': '../../packages/task/src/client/index.ts',
+      '@memoflow/repository/client': '../../packages/repository/src/client/index.ts',
     },
   }),
   defineConfig({

@@ -17,7 +17,7 @@ updated: 2025-11-23T15:00:00
 
 ## 背景
 
-Memoflow 项目包含多个应用（Web、Desktop、API）和多个共享包（contracts、utils、domain 层等）。我们需要决定如何组织代码仓库结构。
+MemoFlow 项目包含多个应用（Web、Desktop、API）和多个共享包（contracts、utils、domain 层等）。我们需要决定如何组织代码仓库结构。
 
 ### 可选方案
 
@@ -77,7 +77,7 @@ Memoflow 项目包含多个应用（Web、Desktop、API）和多个共享包（c
 ### 项目结构
 
 ```
-dailyuse/
+memoflow/
 ├── apps/
 │   ├── api/          # API 服务
 │   ├── web/          # Web 应用
@@ -114,8 +114,8 @@ dailyuse/
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
-      "@dailyuse/utils": ["packages/utils/src/index.ts"]
+      "@memoflow/contracts": ["packages/contracts/src/index.ts"],
+      "@memoflow/utils": ["packages/utils/src/index.ts"]
     }
   }
 }

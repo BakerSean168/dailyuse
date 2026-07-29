@@ -11,16 +11,16 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   AddKeyResultSchema,
   UpdateKeyResultSchema,
   UpdateKeyResultProgressSchema,
   KeyResultClientDTOSchema,
   KeyResultListResSchema,
-} from '@dailyuse/contracts/goal';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/goal';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { GoalId, KeyResultId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
 
 // ============ Types ============

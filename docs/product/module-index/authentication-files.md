@@ -85,7 +85,7 @@ updated: 2026-07-22T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/authentication/src/server/application/use-cases/commands/authenticate.use-case.ts`](../../../packages/authentication/src/server/application/use-cases/commands/authenticate.use-case.ts) | provider 分发后统一签发 Daily Use session |
+| [`packages/authentication/src/server/application/use-cases/commands/authenticate.use-case.ts`](../../../packages/authentication/src/server/application/use-cases/commands/authenticate.use-case.ts) | provider 分发后统一签发 MemoFlow session |
 | [`packages/authentication/src/server/domain/services/authentication-provider.ts`](../../../packages/authentication/src/server/domain/services/authentication-provider.ts) | `AuthenticationProvider` 契约、方式 ID 与领域错误 |
 | [`packages/authentication/src/server/domain/services/authentication-provider-registry.ts`](../../../packages/authentication/src/server/domain/services/authentication-provider-registry.ts) | provider 注册、重复检测与运行时解析 |
 | [`packages/authentication/src/server/domain/services/providers/password-authentication.provider.ts`](../../../packages/authentication/src/server/domain/services/providers/password-authentication.provider.ts) | 既有账密校验的 provider 适配 |
@@ -146,4 +146,4 @@ updated: 2026-07-22T00:00:00
 - GitHub numeric user ID 才是稳定 subject；用户名和邮箱只能用于展示或显式账号合并。
 - GitHub 登录 binding 与知识仓库 GitHub App installation/token 必须隔离（IPC `auth:oauth*` vs `repository:knowledge-connection*`；scopes 仅 `read:user` / `user:email`，永不 repo Contents）；撤销流程也必须独立。
 - 会话恢复、refresh token、Desktop 离线 profile 和访客升级不能因 GitHub 故障失效。
-- client secret、GitHub user token、Daily Use token 和一次性 callback code 不得进入浏览器日志、deep link 或仓库配置。
+- client secret、GitHub user token、MemoFlow token 和一次性 callback code 不得进入浏览器日志、deep link 或仓库配置。

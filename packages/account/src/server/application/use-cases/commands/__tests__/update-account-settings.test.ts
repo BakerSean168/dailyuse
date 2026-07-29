@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IAccountRepository } from '../../../../domain/repositories/i-account-repository';
 import { Account } from '../../../../domain/aggregates/account';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { UpdateAccountSettingsUseCase } from '../update-account-settings.use-case';
 
 describe('UpdateAccountSettingsUseCase', () => {

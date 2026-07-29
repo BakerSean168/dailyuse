@@ -57,8 +57,8 @@ updated: 2026-07-03T19:10:00+08:00
 goal 与 reminder 都需要像 task 一样提供窄公共出口，例如：
 
 ```ts
-@dailyuse/goal/schedule-projection
-@dailyuse/reminder/schedule-projection
+@memoflow/goal/schedule-projection
+@memoflow/reminder/schedule-projection
 ```
 
 这些出口只暴露：
@@ -138,7 +138,7 @@ packages/schedule-orchestration
 
 ## 11. Do Not Do
 
-- 不要在 `schedule-orchestration` 内继续直接 import `@dailyuse/goal/api` 或 `@dailyuse/reminder/api`
+- 不要在 `schedule-orchestration` 内继续直接 import `@memoflow/goal/api` 或 `@memoflow/reminder/api`
 - 不要把 goal/reminder 的 repo factory 直接塞进 orchestration 公共接口
 - 不要在 feature 包保留“旧 runtime 备用”
 - 不要一边做 `R05` 一边顺手做 `R06`
@@ -171,7 +171,7 @@ packages/schedule-orchestration
 
 ### Verification notes
 
-- `.\node_modules\.bin\tsc.cmd --noEmit -p apps/desktop/tsconfig.typecheck.json` 当前仍会因为既有 `electron-entry` 别名解析问题失败，表现为无法解析 `@dailyuse/data-portability/electron-entry` 与 `@dailyuse/governance/electron-entry`；这不是本轮引入的回归，因此只记录为 Existing Failure。
+- `.\node_modules\.bin\tsc.cmd --noEmit -p apps/desktop/tsconfig.typecheck.json` 当前仍会因为既有 `electron-entry` 别名解析问题失败，表现为无法解析 `@memoflow/data-portability/electron-entry` 与 `@memoflow/governance/electron-entry`；这不是本轮引入的回归，因此只记录为 Existing Failure。
 
 ## 13. Exit Criteria
 

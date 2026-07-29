@@ -106,7 +106,7 @@
 
 ### ⚠️ 仍然存在的问题
 - [ ] app-vue:test - 1个测试失败（环境/mock问题）
-- [ ] daily-use:test - 测试失败
+- [ ] memoflow:test - 测试失败
 - [ ] Docker api 服务 - Prisma migration P3005 错误（数据库不为空）
 - [ ] Docker web/powersync 服务 - 未启动
 

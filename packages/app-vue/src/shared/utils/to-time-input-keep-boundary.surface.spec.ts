@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 1231: toTimeInput keep-boundary (task local HH:mm vs schedule UTC ISO slice).
  * - app-react TaskEditorScreen: falsy → '09:00'; getHours/getMinutes padStart (local)
  * - app-react ScheduleEventEditorScreen: falsy → ''; toISOString().slice(11,16) (UTC)
- * Soft residual 1231: utils formatTimeToInput dual-retired onto @dailyuse/time (ADR-037 T9).
+ * Soft residual 1231: utils formatTimeToInput dual-retired onto @memoflow/time (ADR-037 T9).
  * Soft residual 1228: toDateInput keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */

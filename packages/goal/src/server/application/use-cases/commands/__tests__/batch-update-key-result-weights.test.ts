@@ -1,5 +1,5 @@
 import { vi, describe, it, expect } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain';
 import { BatchUpdateKeyResultWeightsUseCase } from '../batch-update-key-result-weights.use-case';
 import type { UpdateGoalKeyResultUseCase } from '../update-goal-key-result.use-case';

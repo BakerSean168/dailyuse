@@ -4,9 +4,9 @@
  * Maps between Prisma model and ScheduleExecution entity.
  */
 
-import type { ScheduleExecution as PrismaScheduleExecution } from '@dailyuse/database';
+import type { ScheduleExecution as PrismaScheduleExecution } from '@memoflow/database';
 import { ScheduleExecution } from '../../../../domain/entities/schedule-execution';
-import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import type { ExecutionStatus } from '@memoflow/contracts/schedule';
 
 /**
  * PrismaScheduleExecutionMapper

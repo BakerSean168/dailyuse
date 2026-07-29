@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { TaskTemplateStatus, TaskTimeConfigDTO } from '@dailyuse/contracts/task';
-import type { TaskTemplate } from '@dailyuse/task/client';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { TaskTemplateStatus, TaskTimeConfigDTO } from '@memoflow/contracts/task';
+import type { TaskTemplate } from '@memoflow/task/client';
 
 import { useAppSession } from './useAppSession';
 import { useTaskService } from './useTaskService';

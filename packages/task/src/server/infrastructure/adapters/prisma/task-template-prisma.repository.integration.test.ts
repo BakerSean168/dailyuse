@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { RecurrenceRule, TaskTimeConfig } from '../../../domain/value-objects';
 import { TaskTemplatePrismaRepository } from './task-template-prisma.repository';

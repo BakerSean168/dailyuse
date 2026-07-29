@@ -24,12 +24,12 @@
  * @internal 持久化映射器 — 非公开 API。
  */
 
-import type { RuleRevision as PrismaRuleRevision } from '@dailyuse/database';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { RuleRevision as PrismaRuleRevision } from '@memoflow/database';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 import { RuleRevision } from '../../../../domain/entities/rule-revision';
 import { RuleId } from '../../../../domain/value-objects/rule-id';
 import { RuleRevisionId } from '../../../../domain/value-objects/rule-revision-id';
-import { fromDbDate, parseStringArray, parseRecord } from '@dailyuse/utils/shared';
+import { fromDbDate, parseStringArray, parseRecord } from '@memoflow/utils/shared';
 
 // ---------------------------------------------------------------------------
 // ChangeType — imported from server/domain value object

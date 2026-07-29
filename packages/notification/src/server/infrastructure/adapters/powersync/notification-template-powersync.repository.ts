@@ -1,10 +1,10 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { INotificationTemplateRepository } from '../../../domain/repositories/i-notification-template-repository';
 import { NotificationTemplate } from '../../../domain/aggregates/notification-template';
 import { NotificationTemplateConfig } from '../../../domain/value-objects/notification-template-config';
-import type { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import type { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

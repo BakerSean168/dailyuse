@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UpdateReminderTemplateUseCase } from './update-reminder-template.use-case';
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 
 describe('UpdateReminderTemplateUseCase', () => {
   const templateRepository = {

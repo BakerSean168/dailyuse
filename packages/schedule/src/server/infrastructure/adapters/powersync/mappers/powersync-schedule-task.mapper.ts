@@ -2,7 +2,7 @@ import type {
   SourceModule,
   ScheduleTaskStatus,
   ExecutionStatus,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import { ScheduleTask } from '../../../../domain/aggregates/schedule-task';
 import type { ScheduleTaskState } from '../../../../domain/aggregates/schedule-task';
 import {
@@ -14,7 +14,7 @@ import {
   Timezone,
 } from '../../../../domain/value-objects';
 import { ScheduleTaskId } from '../../../../domain/value-objects/schedule-task-id';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 import {
   PowerSyncScheduleExecutionMapper,
   type PowerSyncScheduleExecutionRow,

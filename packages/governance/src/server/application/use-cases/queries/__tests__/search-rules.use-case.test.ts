@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { SearchRulesUseCase } from '../search-rules.use-case';
 import type { IRuleRepository } from '../../../../domain/repositories/i-rule-repository';
-import { RuleStatus } from '@dailyuse/contracts/governance';
-import { RuleSeverity } from '@dailyuse/contracts/governance';
+import { RuleStatus } from '@memoflow/contracts/governance';
+import { RuleSeverity } from '@memoflow/contracts/governance';
 
 function createRuleFixture(params: {
   id: string;

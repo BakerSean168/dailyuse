@@ -8,10 +8,10 @@
  * 不再各自维护 bespoke 副本；订阅方直接消费 payload，不回查 Task 的 repository。
  */
 
-import type { TaskEventMap } from '@dailyuse/contracts/task';
-import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
-import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { TaskEventMap } from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
+import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import type { IGoalRepository, IGoalRecordRepository } from '../../domain';
 import { CreateGoalRecordUseCase } from '../use-cases/commands/create-goal-record.use-case';
 

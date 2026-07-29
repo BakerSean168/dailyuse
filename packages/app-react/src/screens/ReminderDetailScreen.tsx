@@ -3,7 +3,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 
 import { useAppSession } from '../hooks/useAppSession';
 import { useReminderService } from '../hooks/useReminderService';
@@ -15,7 +15,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 import {
   getReminderDisplayTitle,
   getReminderImportanceText,

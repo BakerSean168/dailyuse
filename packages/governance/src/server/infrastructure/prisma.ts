@@ -9,7 +9,7 @@
  * 让 HTTP 与 Electron 只更换持久化适配器，而不改变模块生命周期语义。
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import { createGovernanceModule, type GovernanceModuleInstance } from './governance.module';
 import { RulePrismaRepository, RuleRevisionPrismaRepository } from './adapters/prisma';
 import { createGovernanceEventLogRuntime } from './runtime';

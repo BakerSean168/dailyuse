@@ -42,10 +42,10 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent } from '@memoflow/ui-vue-shadcn';
 import { Plus, Clock, FileText } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalRecordClientDTO } from '@memoflow/contracts/goal';
 import { formatProductDateTime } from '../../../shared/utils/product-time';
 
 const { t } = useI18n();

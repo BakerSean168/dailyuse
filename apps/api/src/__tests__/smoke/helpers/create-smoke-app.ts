@@ -10,4 +10,4 @@ export {
   JWT_SECRET,
   TEST_IDENTITY_ID,
   type TaskSmokeApp as SmokeTestApp,
-} from '@dailyuse/task/testing';
+} from '@memoflow/task/testing';

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import TaskModuleTasksCard from './TaskModuleTasksCard.vue';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
 import { createScheduleStoryTask } from './story-fixtures';
 
 function makeTaskModuleTask(

@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 import { Router } from 'express';
-import { RouteRegistrar, successResponse, errorResponse } from '@dailyuse/utils/result';
+import { RouteRegistrar, successResponse, errorResponse } from '@memoflow/utils/result';
 import {
   CreateRuleSchema,
   ListRulesQuerySchema,
@@ -14,10 +14,10 @@ import {
   SearchRulesQuerySchema,
   SearchRulesResSchema,
   UpdateRuleSchema,
-} from '@dailyuse/contracts/governance';
-import type { ListRulesQueryInput, SearchRulesQueryInput } from '@dailyuse/contracts/governance';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { RuleId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/governance';
+import type { ListRulesQueryInput, SearchRulesQueryInput } from '@memoflow/contracts/governance';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { RuleId } from '@memoflow/contracts/primitives';
 import type { GovernanceController } from '../../server/transport/governance.controller';
 import type { GovernanceOpenApiRegistry, PlatformMiddleware } from './governance-route-shared';
 import {

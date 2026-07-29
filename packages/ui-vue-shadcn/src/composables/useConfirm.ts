@@ -57,7 +57,7 @@ export function _getConfirmState(): ConfirmState {
  *
  * @example
  * ```ts
- * import { useConfirm } from '@dailyuse/ui-vue-shadcn'
+ * import { useConfirm } from '@memoflow/ui-vue-shadcn'
  *
  * const confirmed = await useConfirm({
  *   title: '确认删除该账号？',

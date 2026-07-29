@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
-import type { ReminderTemplateClientDTO, UpdateReminderTemplateReq } from '@dailyuse/contracts/reminder';
+import { ok } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
+import type { ReminderTemplateClientDTO, UpdateReminderTemplateReq } from '@memoflow/contracts/reminder';
 import { ReminderHttpAdapter } from './reminder-http.adapter';
 
 function createHttpClientStub(overrides?: Partial<IResultHttpClient>): IResultHttpClient {

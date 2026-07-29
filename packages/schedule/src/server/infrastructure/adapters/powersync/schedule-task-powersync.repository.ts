@@ -3,15 +3,15 @@ import type {
   IScheduleTaskRepository,
 } from '../../../domain/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
-import { ScheduleTaskStatus, type ScheduleEventMap, type SourceModule } from '@dailyuse/contracts/schedule';
-import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import { ScheduleTaskStatus, type ScheduleEventMap, type SourceModule } from '@memoflow/contracts/schedule';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import {
   PowerSyncScheduleTaskMapper,
   type PowerSyncScheduleTaskRow,
 } from './mappers/powersync-schedule-task.mapper';
 import type { PowerSyncScheduleExecutionRow } from './mappers/powersync-schedule-execution.mapper';
-import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 
 const logger = createLogger('ScheduleTaskPowerSyncRepo');
 const scheduleEventPublisher = createTypedEventPublisher<ScheduleEventMap>(eventBus);

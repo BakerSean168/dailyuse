@@ -10,7 +10,7 @@ Type definitions (Interfaces, DTOs, Enums) are currently scattered across `apps/
 We enforce **Absolute Type Centralization**.
 
 ### The Rule
-**All public data types, business entities, DTOs, and shared enumerations MUST reside in `@dailyuse/contracts`.**
+**All public data types, business entities, DTOs, and shared enumerations MUST reside in `@memoflow/contracts`.**
 
 ### Scope
 - **MUST be in Contracts**:
@@ -26,7 +26,7 @@ We enforce **Absolute Type Centralization**.
 
 ### Implementation
 - `packages/contracts` becomes the **Type Registry** of the system.
-- Other packages import types: `import type { Task } from '@dailyuse/contracts/task';`.
+- Other packages import types: `import type { Task } from '@memoflow/contracts/task';`.
 - It is **FORBIDDEN** to `export interface` a domain object from `packages/domain-*`. Domain classes should `implements` the interface from Contracts.
 
 ## Consequences

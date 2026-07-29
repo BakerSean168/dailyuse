@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 import {
   PrimaryButton,
@@ -8,7 +8,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 // Residual 1264: formatDate dual retired onto shared formatDateUnknown sole (datetime + English 'Unknown').
 import { formatDateUnknown as formatDate } from '../utils/format-date-unknown';

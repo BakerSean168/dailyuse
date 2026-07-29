@@ -5,7 +5,7 @@
  * - Express Adapter: 将 Controller 函数适配为 Express 路由处理器
  * - IPC Adapter: 将 Controller 函数适配为 Electron IPC 处理器
  *
- * @module @dailyuse/utils/result
+ * @module @memoflow/utils/result
  */
 
 // ============================================================================
@@ -47,7 +47,7 @@ export {
   // IPC
   toIpcResult,
   fromIpcResult,
-} from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/result';
 
 export type {
   Result,
@@ -64,7 +64,7 @@ export type {
   IpcResult,
   HttpResponse,
   HttpResponseOptions,
-} from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/result';
 
 // ============================================================================
 // Express Adapter

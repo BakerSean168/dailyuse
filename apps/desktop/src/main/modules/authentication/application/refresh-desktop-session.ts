@@ -1,4 +1,4 @@
-import type { AuthResponseDTO, RefreshSessionRequest } from '@dailyuse/contracts/authentication';
+import type { AuthResponseDTO, RefreshSessionRequest } from '@memoflow/contracts/authentication';
 
 import type { AuthRemoteGateway } from './auth-remote-gateway';
 import {

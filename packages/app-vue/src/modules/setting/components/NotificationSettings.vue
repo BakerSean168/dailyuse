@@ -85,9 +85,9 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Switch } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
+import { Switch } from '@memoflow/ui-vue-shadcn';
 import { useUserSetting } from '../composables/useUserSetting';
 import {
   useNotificationPreferences,

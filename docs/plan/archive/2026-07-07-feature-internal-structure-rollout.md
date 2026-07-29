@@ -23,8 +23,8 @@ archived: 2026-07-07T14:10:58+00:00
 
 `2026-07-06-feature-reference-module-rollout.md` 已完成 public seam 收敛：
 
-- `@dailyuse/contracts/<feature>` 作为公共契约真值源
-- `@dailyuse/<feature>` / `api` / `client` / `electron` 作为稳定公开结构
+- `@memoflow/contracts/<feature>` 作为公共契约真值源
+- `@memoflow/<feature>` / `api` / `client` / `electron` 作为稳定公开结构
 
 但这轮工作并没有把其他 feature package 的内部目录真正收敛到
 `packages/governance` 的 `server/*` 参考结构。
@@ -61,7 +61,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run setting:typecheck`
     - `pnpm nx run setting:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
 - `account`
   - 已完成 `server-first` 组合根迁移
   - `AccountApplicationPort` 已沉淀到 `src/server/application`
@@ -73,7 +73,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run account:typecheck`
     - `pnpm nx run account:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `repository`
   - 已完成 `server-first` 组合根迁移
@@ -85,7 +85,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run repository:typecheck`
     - `pnpm nx run repository:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `data-portability`
   - 已完成 `server-first` 组合根迁移
@@ -99,7 +99,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run data-portability:typecheck`
     - `pnpm nx run data-portability:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `authentication`
   - 已完成 `server-first` 组合根迁移
@@ -114,7 +114,7 @@ archived: 2026-07-07T14:10:58+00:00
     - `pnpm nx run authentication:typecheck`
     - `pnpm nx run authentication:test`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
 - `schedule`
   - 已完成 `server-first` 组合根迁移
   - `ScheduleApplicationPort` / `ScheduleEventApplicationPort` 已沉淀到 `src/server/application`
@@ -129,7 +129,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run schedule:typecheck`
     - `pnpm nx run schedule:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `notification`
   - 已完成 `server-first` 组合根迁移
@@ -145,7 +145,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run notification:typecheck`
     - `pnpm nx run notification:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `editor`
   - 已完成 `server-first` 组合根迁移
@@ -160,7 +160,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run editor:typecheck`
     - `pnpm nx run editor:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `reminder`
   - 已完成 `server-first` 组合根迁移
@@ -176,7 +176,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run reminder:typecheck`
     - `pnpm nx run reminder:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `task`
   - 已完成 `server-first` 组合根迁移
@@ -193,7 +193,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run task:typecheck`
     - `pnpm nx run task:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `goal`
   - 已完成 `server-first` 组合根迁移
@@ -210,7 +210,7 @@ archived: 2026-07-07T14:10:58+00:00
   - 最近邻验证已通过：
     - `pnpm nx run goal:typecheck`
     - `pnpm nx run goal:test`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 - `ai`
   - 已完成 `server-first` 组合根迁移
@@ -226,7 +226,7 @@ archived: 2026-07-07T14:10:58+00:00
     - `pnpm nx run ai:typecheck`
     - `pnpm nx run ai:test`
     - `pnpm nx run ai:build`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
     - `pnpm nx run desktop:test:main -- --run src/main/ipc/__tests__/module-handler-contracts.spec.ts`
 
 ### 进行中
@@ -249,7 +249,7 @@ archived: 2026-07-07T14:10:58+00:00
 6. 把运行时副作用统一收敛到 `server/infrastructure/runtime/*`
 7. 清理 `electron-entry`、`transport-handlers`、`api/runtime` 等过渡层
 8. 移除 legacy 根目录，并由治理脚本阻止回归
-9. 运行对应包最近邻验证与 `daily-use:governance-check`
+9. 运行对应包最近邻验证与 `memoflow:governance-check`
 
 ## 当前包级执行顺序
 
@@ -402,14 +402,14 @@ archived: 2026-07-07T14:10:58+00:00
 - `ADR-031`、模块 README、治理脚本与真实代码一致
 - 治理脚本默认只接受 `server/*` 结构
 - 不再需要 governance/legacy 双轨 shape 规则
-- `daily-use:governance-check` 可以阻止新模块继续复制 legacy 结构
+- `memoflow:governance-check` 可以阻止新模块继续复制 legacy 结构
 
 ## 最近邻验证
 
 每迁移一个包，至少运行：
 
 1. 对应包最近邻 `typecheck` / `test` / `build`
-2. `pnpm nx run daily-use:governance-check`
+2. `pnpm nx run memoflow:governance-check`
 3. 受影响调用方的最近邻验证
 
 ## 立即下一步

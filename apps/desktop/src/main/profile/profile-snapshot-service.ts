@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { SharedPathResolver, ProfilePathResolver } from '../paths';
 import type { ProfileDescriptor } from './profile-registry';
 import { createApiUrl, getApiBaseUrl } from '../utils/api-config';

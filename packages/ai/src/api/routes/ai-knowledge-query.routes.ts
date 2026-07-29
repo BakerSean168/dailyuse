@@ -1,11 +1,11 @@
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   errorResponse,
   successResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   ExpandKnowledgeSchema,
   QueryKnowledgeSchema,
@@ -13,7 +13,7 @@ import {
   ReindexKnowledgeResSchema,
   QueryKnowledgeResSchema,
   ExpandKnowledgeResSchema,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { AIKnowledgeQueryController } from '../../server/transport/ai-knowledge-query.controller';
 
 interface PlatformMiddleware {

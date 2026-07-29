@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent } from '@memoflow/ui-vue-shadcn';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { calendarEventBgClass, getWeekStart, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';

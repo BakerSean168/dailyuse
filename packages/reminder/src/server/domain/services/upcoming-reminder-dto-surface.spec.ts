@@ -15,7 +15,7 @@ describe('upcoming reminder DTO single-track surface', () => {
   const index = readFileSync(resolve(dir, 'index.ts'), 'utf8');
 
   it('does not re-export UpcomingReminderDTO from calculation service', () => {
-    expect(service).toContain("from '@dailyuse/contracts/reminder'");
+    expect(service).toContain("from '@memoflow/contracts/reminder'");
     expect(service).toContain('UpcomingReminderDTO');
     expect(service).not.toContain('Re-export for existing consumers');
     expect(service).not.toMatch(/^export type \{ UpcomingReminderDTO \}/m);
@@ -23,7 +23,7 @@ describe('upcoming reminder DTO single-track surface', () => {
 
   it('domain services index re-exports DTO from contracts only', () => {
     expect(index).toContain(
-      "export type { UpcomingReminderDTO } from '@dailyuse/contracts/reminder'",
+      "export type { UpcomingReminderDTO } from '@memoflow/contracts/reminder'",
     );
     expect(index).not.toContain(
       "export type { UpcomingReminderDTO } from './upcoming-reminder-calculation-service'",

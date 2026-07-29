@@ -4,9 +4,9 @@
  * Mirrors AIMessageIpcAdapter stream lifecycle: start/cancel on AIChannels,
  * event/done/error on AIStreamChannels. identityId never appears in the body.
  */
-import { AIChannels, AIStreamChannels } from '@dailyuse/contracts/electron';
-import type { AssistantClientCommand, AssistantEvent } from '@dailyuse/contracts/ai';
-import { unwrapOrThrowError } from '@dailyuse/contracts/result';
+import { AIChannels, AIStreamChannels } from '@memoflow/contracts/electron';
+import type { AssistantClientCommand, AssistantEvent } from '@memoflow/contracts/ai';
+import { unwrapOrThrowError } from '@memoflow/contracts/result';
 import type { IAIAssistantApiClient, IResultIpcClient } from '../types';
 import { createResultClientError } from '../result-client-error';
 // Residual 993: sole createStreamId (local dual retired).

@@ -16,8 +16,8 @@ import {
   NotificationChannels,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
-import { fail, ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/electron';
+import { fail, ok } from '@memoflow/contracts/result';
 import { CreateNotificationUseCase } from '../commands';
 import type { ScheduleNotificationPort } from '../schedule-execution';
 import {
@@ -26,7 +26,7 @@ import {
   PowerSyncNotificationRepository,
   PowerSyncNotificationTemplateRepository,
 } from '../server/infrastructure';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import {
   createNotificationRuntimeContribution,
   type NotificationModuleInstance,

@@ -12,8 +12,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { PrismaScheduleExecutionMapper } from './prisma-schedule-execution-mapper';
-import type { ScheduleExecution as PrismaScheduleExecution } from '@dailyuse/database';
-import { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import type { ScheduleExecution as PrismaScheduleExecution } from '@memoflow/database';
+import { ExecutionStatus } from '@memoflow/contracts/schedule';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 

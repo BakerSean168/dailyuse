@@ -24,7 +24,7 @@ export default {
     "codePlaceholder": "6-digit code"
   },
   "desktop": {
-    "title": "Memoflow Desktop",
+    "title": "MemoFlow Desktop",
     "description": "You choose the account. Auto-login only runs when you explicitly enable it.",
     "tabs": {
       "login": "Login",

@@ -6,11 +6,11 @@
  * INotificationRepository 的 Prisma 实现。
  */
 
-import type { PrismaClient, Prisma } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@memoflow/database';
 import type { INotificationRepository } from '../../../domain';
-import type { NotificationCategory, NotificationEventMap, NotificationStatus } from '@dailyuse/contracts/notification';
+import type { NotificationCategory, NotificationEventMap, NotificationStatus } from '@memoflow/contracts/notification';
 import { Notification } from '../../../domain/aggregates/notification';
-import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
 import {
   NotificationPrismaMapper,
   type PrismaNotificationWithRelations,

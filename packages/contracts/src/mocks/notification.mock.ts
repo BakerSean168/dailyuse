@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```ts
- * import { createMockNotification } from '@dailyuse/contracts/mocks';
+ * import { createMockNotification } from '@memoflow/contracts/mocks';
  * const notification = createMockNotification();
  * ```
  */

@@ -10,9 +10,9 @@
 import { BrowserWindow, screen, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createLogger } from '@dailyuse/utils/logger';
-import { NotificationChannels, RendererEventChannels } from '@dailyuse/contracts/electron';
-import { ok } from '@dailyuse/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
+import { NotificationChannels, RendererEventChannels } from '@memoflow/contracts/electron';
+import { ok } from '@memoflow/contracts/result';
 import type { NotificationOptions } from './notification.service';
 import type { WindowManager } from '../lifecycle/window-manager';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';

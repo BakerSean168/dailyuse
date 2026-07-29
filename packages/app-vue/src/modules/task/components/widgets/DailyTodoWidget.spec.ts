@@ -1,7 +1,7 @@
 import { defineComponent, ref } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@memoflow/contracts/task';
 import { useTask } from '../../composables/useTask';
 import DailyTodoWidget from './DailyTodoWidget.vue';
 

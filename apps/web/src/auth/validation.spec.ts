@@ -1,4 +1,4 @@
-import { RegisterByEmailSchema } from '@dailyuse/contracts/authentication';
+import { RegisterByEmailSchema } from '@memoflow/contracts/authentication';
 import { describe, expect, it } from 'vitest';
 
 import {

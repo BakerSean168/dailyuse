@@ -1,7 +1,7 @@
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { ResultErrorException } from '@dailyuse/contracts/result';
+import { ResultErrorException } from '@memoflow/contracts/result';
 import { applyErrorHandlers } from './error';
 
 function createAppWithError(error: Error) {

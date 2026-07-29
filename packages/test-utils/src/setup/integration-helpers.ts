@@ -3,8 +3,8 @@
  * getPrisma / disconnectPrisma / cleanAll / seedAccount duals retired from
  * goal/schedule/reminder/task __tests__/integration-helpers.ts.
  */
-import type { Prisma, PrismaClient } from '@dailyuse/database';
-import { IdentityId } from '@dailyuse/domain-shared';
+import type { Prisma, PrismaClient } from '@memoflow/database';
+import { IdentityId } from '@memoflow/domain-shared';
 import { cleanAllTables } from './database';
 
 let prismaPromise: Promise<PrismaClient> | null = null;
@@ -12,7 +12,7 @@ type AccountJsonInput = Prisma.AccountUncheckedCreateInput['profile'];
 
 export async function getPrisma(): Promise<PrismaClient> {
   if (!prismaPromise) {
-    prismaPromise = import('@dailyuse/database').then((module) => module.prisma);
+    prismaPromise = import('@memoflow/database').then((module) => module.prisma);
   }
   return prismaPromise;
 }

@@ -1,4 +1,4 @@
-import { NotificationStatus as NotificationStatusContract, type NotificationStatus as INotificationStatus } from '@dailyuse/contracts/notification';
+import { NotificationStatus as NotificationStatusContract, type NotificationStatus as INotificationStatus } from '@memoflow/contracts/notification';
 
 /**
  * 📝 通知状态 - 通知的生命周期状态
@@ -13,7 +13,7 @@ export type NotificationStatus = INotificationStatus & { readonly __brand: uniqu
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: INotificationStatus[] = Object.values(NotificationStatusContract);
 
 /**

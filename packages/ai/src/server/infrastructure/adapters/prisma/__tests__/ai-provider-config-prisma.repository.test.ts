@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { AIProviderType, type AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
-import type { PrismaClient } from '@dailyuse/database';
+import { AIProviderType, type AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
+import type { PrismaClient } from '@memoflow/database';
 
 import { AIProviderConfigPrismaRepository } from '../ai-provider-config-prisma.repository';
 import { AISecretCipher } from '../../../security/ai-secret-cipher';

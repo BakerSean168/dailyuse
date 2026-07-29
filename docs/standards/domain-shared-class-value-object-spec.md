@@ -27,8 +27,8 @@ tags: [standard, domain/shared]
 为了保证同构性，同时支持逻辑下沉，依赖规则如下：
 
 * ✅ **允许依赖**:
-* `@dailyuse/utils` (ValueObject 基类)
-* `@dailyuse/contracts` (DTO 接口, **包含 `PersistenceDTO` 纯类型定义**)
+* `@memoflow/utils` (ValueObject 基类)
+* `@memoflow/contracts` (DTO 接口, **包含 `PersistenceDTO` 纯类型定义**)
 * 自身目录内的其他文件 (其他 ValueObject, Enums)
 * 纯 JS/TS 内置对象 (`Date`, `Math`, `RegExp`)
 
@@ -54,8 +54,8 @@ tags: [standard, domain/shared]
 * 泛型 `DTO` 必须来自 `contracts` 包。
 
 ```typescript
-import { ValueObject } from '@dailyuse/utils';
-import type { MoneyDTO } from '@dailyuse/contracts/finance';
+import { ValueObject } from '@memoflow/utils';
+import type { MoneyDTO } from '@memoflow/contracts/finance';
 
 export class Money extends ValueObject<MoneyDTO> { ... }
 
@@ -94,9 +94,9 @@ export class Money extends ValueObject<MoneyDTO> { ... }
 请 AI 在生成 `domain-shared` 代码时严格参照以下模板：
 
 ```typescript
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@memoflow/utils';
 // 1. 引入 Contracts 中的 DTO 和 PersistenceDTO
-import type { AccountProfileDTO, AccountProfilePersistenceDTO } from '@dailyuse/contracts/account';
+import type { AccountProfileDTO, AccountProfilePersistenceDTO } from '@memoflow/contracts/account';
 import { GenderType } from './gender-type';
 
 export class AccountProfile extends ValueObject<AccountProfileDTO> {

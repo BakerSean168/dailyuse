@@ -15,7 +15,7 @@ import type { IAuthIdentityRepository } from '../../../../domain/repositories/i-
 import type { IAuthSessionRepository } from '../../../../domain/repositories/i-auth-session.repository';
 import type { IPasswordHasher } from '../../../../domain';
 import type { ITokenProvider } from '../../../../domain/services/token-provider.interface';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 
 // ---------------------------------------------------------------------------
 // Shared mock helpers

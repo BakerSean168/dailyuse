@@ -163,8 +163,8 @@ import {
   DayOfWeek,
   RECURRENCE_RULE_DEFAULTS,
   TaskType,
-} from '@dailyuse/contracts/task';
-import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
+import type { RecurrenceRuleDTO } from '@memoflow/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
   Card,
@@ -190,7 +190,7 @@ import {
   PopoverTrigger,
   PopoverContent,
   Calendar,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Repeat, Info, Calendar as CalendarIcon } from '@lucide/vue';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';

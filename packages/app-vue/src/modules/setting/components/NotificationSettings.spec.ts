@@ -2,8 +2,8 @@ import { defineComponent, h } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createTestPinia } from '@dailyuse/test-utils';
-import { ok } from '@dailyuse/contracts/result';
+import { createTestPinia } from '@memoflow/test-utils';
+import { ok } from '@memoflow/contracts/result';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
 import NotificationSettings from './NotificationSettings.vue';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/task",
+  "name": "@memoflow/task",
   "version": "0.0.1",
   "description": "任务模块 - 任务模板、实例与依赖管理",
   "type": "module",
@@ -42,19 +42,19 @@
   },
   "scripts": {},
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/database": "workspace:*",
-    "@dailyuse/domain-shared": "workspace:*",
-    "@dailyuse/http-client": "workspace:*",
-    "@dailyuse/ipc-client": "workspace:*",
-    "@dailyuse/patterns": "workspace:*",
-    "@dailyuse/schedule": "workspace:*",
-    "@dailyuse/test-utils": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/database": "workspace:*",
+    "@memoflow/domain-shared": "workspace:*",
+    "@memoflow/http-client": "workspace:*",
+    "@memoflow/ipc-client": "workspace:*",
+    "@memoflow/patterns": "workspace:*",
+    "@memoflow/schedule": "workspace:*",
+    "@memoflow/test-utils": "workspace:*",
+    "@memoflow/utils": "workspace:*",
     "date-fns": "^4.1.0",
     "express": "^5.2.1",
     "zod": "^4.4.3",
-    "@dailyuse/time": "workspace:*"
+    "@memoflow/time": "workspace:*"
   },
   "devDependencies": {
     "@types/express": "^5.0.0"

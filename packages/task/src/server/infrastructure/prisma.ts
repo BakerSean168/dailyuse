@@ -5,7 +5,7 @@
  * with Prisma-backed repositories.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import {
   createTaskModule,
   type TaskModuleInstance,

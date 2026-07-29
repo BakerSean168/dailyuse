@@ -42,7 +42,7 @@ export const JsonSnippet: Story = {
     snippet: {
       type: 'GoodExample',
       language: 'json',
-      content: `{\n  "name": "@dailyuse/contracts",\n  "version": "1.0.0",\n  "type": "module"\n}`,
+      content: `{\n  "name": "@memoflow/contracts",\n  "version": "1.0.0",\n  "type": "module"\n}`,
     },
   },
 };

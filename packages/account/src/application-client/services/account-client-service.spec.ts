@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { IAccountApiClient } from '../ports/account-api-client.port';
 import { AccountClientService } from './account-client-service';
 

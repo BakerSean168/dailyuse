@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Input,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Check, ChevronDown, Filter, LayoutGrid, Search, Share2, X } from '@lucide/vue';
 import FilterBar from '../../../components/shared/FilterBar.vue';
 import type { TaskRelationFilter, TaskStatusFilter, TaskViewMode } from './types';

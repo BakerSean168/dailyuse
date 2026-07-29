@@ -3,10 +3,10 @@ import type { TaskTemplateState } from '../../../../domain/aggregates/task-templ
 import { TaskFolderId } from '../../../../domain/value-objects/task-folder-id';
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
 import { TaskTemplateStatus } from '../../../../domain/value-objects/task-template-status';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { TaskType } from '@dailyuse/contracts/task';
-import type { DependencyStatus, RecurrenceFrequency, ReminderTimeUnit, TaskTimeType } from '@dailyuse/contracts/task';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
+import { TaskType } from '@memoflow/contracts/task';
+import type { DependencyStatus, RecurrenceFrequency, ReminderTimeUnit, TaskTimeType } from '@memoflow/contracts/task';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import {
   ChecklistItemDefinition,
   RecurrenceRule,

@@ -16,8 +16,8 @@
  * - No PersistenceDTO; mapper converts directly between DB Row and ServerDTO
  */
 
-import type { AuthIdentityServerDTO, AuthIdentifierDTO, OAuthBindingServerDTO, PasswordCredentialServerDTO } from '@dailyuse/contracts/authentication';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { AuthIdentityServerDTO, AuthIdentifierDTO, OAuthBindingServerDTO, PasswordCredentialServerDTO } from '@memoflow/contracts/authentication';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { AuthIdentity } from '../../../../domain';
 import type { PrismaAuthIdentityWithRelations } from '../../../types';
 

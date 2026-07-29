@@ -14,10 +14,10 @@ import type {
   GroupStatsDTO,
   ControlMode,
   ReminderStatus,
-} from '@dailyuse/contracts/reminder';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/reminder';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { ReminderGroupId } from '../../server/domain/value-objects/reminder-group-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 export interface ReminderGroupState {
   id: ReminderGroupId;

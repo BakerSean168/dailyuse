@@ -7,7 +7,7 @@
  */
 
 import { TaskTemplate, TaskInstance } from '../aggregates';
-import { TASK_INSTANCE_GENERATION_CONFIG } from '@dailyuse/contracts/task';
+import { TASK_INSTANCE_GENERATION_CONFIG } from '@memoflow/contracts/task';
 
 const { TARGET_GENERATE_AHEAD_DAYS, REFILL_THRESHOLD_DAYS } =
   TASK_INSTANCE_GENERATION_CONFIG;

@@ -31,10 +31,10 @@ updated: 2026-07-18T06:50:00
 
 ### 版本与交付状态
 
-- 当前工作分支为 `refactor/app-vue-p0-reliability`，本轮实现已整理为跨端可靠性、AI live eval 和计划证据三个提交并推送；最新远程 head 以 [PR #187](https://github.com/BakerSean168/dailyuse/pull/187) 为准。
+- 当前工作分支为 `refactor/app-vue-p0-reliability`，本轮实现已整理为跨端可靠性、AI live eval 和计划证据三个提交并推送；最新远程 head 以 [PR #187](https://github.com/BakerSean168/memoflow/pull/187) 为准。
 - GitHub `main` 仍为 `552471a41ac662601f005d5f4616313cd5496c02`。
 - 功能分支已推送并创建非 Draft PR #187；PR 当前 mergeable，Performance check 已通过，CI Validate 与 Boundary Tests 正在运行，改动尚未合入 `main`。
-- 当前 `/opt/dailyuse` 主机上的 Web、API、AI Service 容器均带有目标 HEAD 的 OCI revision 标签并保持健康。
+- 当前 `/opt/memoflow` 主机上的 Web、API、AI Service 容器均带有目标 HEAD 的 OCI revision 标签并保持健康。
 - 最新本地部署验证结果为 `pass` 且 `Ready for PR: yes`：[`reports/local-deploy-validation/latest.md`](../../../reports/local-deploy-validation/latest.md)。
 - 最终 prod-like 验证覆盖 affected lint 37 个项目、typecheck 35 个项目、test 31 个项目和无缓存 `docker:local:rebuild`；API、Web、AI Service、PowerSync 及其依赖服务均为 healthy，本地镜像 revision 为 `1f9de5b40fef47b7c32df0455e6ed548e46b91ba-dirty`。
 - 目标 HEAD 已完成 Web E2E 67/67 和 Shell E2E 8/8，均无失败、flaky 或跳过；该轮 Web E2E 使用 `http://localhost:58080` 与 `http://localhost:53080/api/v1`。
@@ -503,7 +503,7 @@ Goal 先完成以下收敛：
 2. 使用 `pnpm docker:local:up` 构建带 revision 标签的本地 prod-like 镜像。
 3. 确认 API、Web、AI Service、PowerSync 健康。
 4. 提交、发起 PR，并按仓库发布主线推进。
-5. 在远程 `/opt/dailyuse` 确认目标 revision 后重新构建开发环境。
+5. 在远程 `/opt/memoflow` 确认目标 revision 后重新构建开发环境。
 6. 使用远程 `58080` 完成 Web 实机验收。
 7. 使用 Desktop 完成窗口、BusinessPanel、编辑器和关键业务回归。
 
@@ -555,7 +555,7 @@ Goal 先完成以下收敛：
 - `pnpm nx run web:e2e`
 - `pnpm nx run web:e2e:shell`
 - `pnpm nx run web:e2e:sync`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ## 风险与控制
 
@@ -594,6 +594,6 @@ Goal 先完成以下收敛：
 - [x] Web 认证入口第一阶段全部完成；未实施的密码找回已有独立承接计划且入口保持隐藏。
 - [x] Goal Agent 澄清与中英文评测达到约定策略。生产 graph 使用 Provider 识别具体缺失信息，Goal workflow 7/7、Agent runtime 4/4 deterministic eval 与 Google AI Studio live eval 2/2 均通过；live gate 同时覆盖完整 workflow 和生产 runtime，并验证最多三问、不得提前产出和语言一致。
 - [x] 本地 prod-like 容器验证通过。
-- [x] 当前 `/opt/dailyuse` 主机的 `58080` Web E2E 通过，并记录了可追溯 revision。
+- [x] 当前 `/opt/memoflow` 主机的 `58080` Web E2E 通过，并记录了可追溯 revision。
 - [x] Dashboard 退役、提醒规则、知识索引和旧测试已完成收口。
 

@@ -20,7 +20,7 @@ status: active
 ## 实施摘要
 
 - 统一桌面端主进程 dev 判定，优先使用 `VITE_DEV_SERVER_URL` 决定是否加载 Vite dev server
-- 保留 renderer 对 `@dailyuse/app-vue` 的 workspace 源码 alias，不切回 `dist`
+- 保留 renderer 对 `@memoflow/app-vue` 的 workspace 源码 alias，不切回 `dist`
 - 将 `desktop:serve` 改为快速启动，不再默认依赖 `^build` 和 `native-rebuild`
 - 新增显式的 dev 准备入口，保留需要时的全量依赖构建和原生模块重建能力
 
@@ -33,6 +33,6 @@ status: active
 
 ## 约束
 
-- 不回退到让 desktop 消费 `@dailyuse/app-vue/dist`
+- 不回退到让 desktop 消费 `@memoflow/app-vue/dist`
 - 不删除 `native-rebuild` 能力，只把它移出默认日常启动链
 - 不修改用户当前在 `packages/app-vue/src/views/DesktopAuthView.vue` 上的未提交业务改动

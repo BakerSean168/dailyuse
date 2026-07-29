@@ -23,7 +23,7 @@ updated: 2026-07-04T18:39:22+08:00
 3. `as PrismaClient` seam 已收口到测试文件，生产代码不再作为当前治理阻塞项。
 4. `passWithNoTests` 已通过治理脚本收紧。
 5. `target-baseline-audit` 当前为 **10** 个 documented exemptions，已达到本文“10 个以内”的历史完成线。
-6. `@dailyuse/nx-test-system:sync-test-targets` 已统一生成可在当前 Windows 环境执行的 Vitest target 命令；`nx sync` 返回 up to date。
+6. `@memoflow/nx-test-system:sync-test-targets` 已统一生成可在当前 Windows 环境执行的 Vitest target 命令；`nx sync` 返回 up to date。
 
 已关闭项：
 
@@ -164,7 +164,7 @@ updated: 2026-07-04T18:39:22+08:00
 
 最小验证：
 
-1. `pnpm nx run daily-use:governance-check --skip-nx-cache`
+1. `pnpm nx run memoflow:governance-check --skip-nx-cache`
 2. `pnpm nx run task:typecheck --skip-nx-cache`
 3. `pnpm nx run goal:typecheck --skip-nx-cache`
 4. `pnpm nx run goal:build --skip-nx-cache`
@@ -172,7 +172,7 @@ updated: 2026-07-04T18:39:22+08:00
 
 阶段性检索：
 
-1. `rg -n "@dailyuse/.+/(infrastructure-server|application-server|domain-server|controllers)" apps packages`
+1. `rg -n "@memoflow/.+/(infrastructure-server|application-server|domain-server|controllers)" apps packages`
 2. 目标：
    - 生产源码 0 命中
    - 测试层命中持续下降
@@ -197,33 +197,33 @@ updated: 2026-07-04T18:39:22+08:00
 已完成的迁移：
 
 1. `apps/api/src/__tests__/smoke/task/task-template.smoke.test.ts`
-   - `TaskTemplate` 从 `@dailyuse/task/domain-server` 迁到 `@dailyuse/task`
+   - `TaskTemplate` 从 `@memoflow/task/domain-server` 迁到 `@memoflow/task`
 2. `apps/api/src/__tests__/smoke/task/task-instance.smoke.test.ts`
-   - `TaskInstance` 从 `@dailyuse/task/domain-server` 迁到 `@dailyuse/task`
+   - `TaskInstance` 从 `@memoflow/task/domain-server` 迁到 `@memoflow/task`
 3. `apps/desktop/src/main/ipc/__tests__/mocks/repositories.mock.ts`
-   - `Goal` 从 `@dailyuse/goal/domain-server` 迁到 `@dailyuse/goal`
+   - `Goal` 从 `@memoflow/goal/domain-server` 迁到 `@memoflow/goal`
 4. `apps/desktop/src/main/modules/authentication/application/__tests__/DesktopAuthLifecycleCoordinator.spec.ts`
    - `IAuthCredentialRepository`（不存在的类型别名）替换为 `IAuthIdentityRepository`（真实类型名）
-   - 从 `@dailyuse/authentication/domain-server` 迁到 `@dailyuse/authentication`
+   - 从 `@memoflow/authentication/domain-server` 迁到 `@memoflow/authentication`
 5. `apps/desktop/src/main/modules/authentication/application/__tests__/DesktopAuthSecurityAdminService.spec.ts`
    - 同上
 6. `apps/desktop/src/main/modules/authentication/infrastructure/__tests__/SessionManager.spec.ts`
-   - `AuthSession` 从 `@dailyuse/authentication/domain-server` 迁到 `@dailyuse/authentication`
+   - `AuthSession` 从 `@memoflow/authentication/domain-server` 迁到 `@memoflow/authentication`
 
 vitest 配置清理：
 
-1. `apps/api/vitest.smoke.config.ts` — 移除死别名 `@dailyuse/task/controllers/*`
-2. `apps/api/vitest.config.ts` — 移除死别名 `@dailyuse/domain-server/*`
-3. `apps/api/vitest.integration.config.ts` — 移除死别名 `@dailyuse/domain-server`
-4. `apps/desktop/vitest.main.config.ts` — 移除 6 个死别名（`domain-server`、`application-server`、`infrastructure-server`、`account/domain-server`、`account/domain-shared`、`authentication/domain-server`、`authentication/domain-shared`），新增 `@dailyuse/authentication` 和 `@dailyuse/goal` 根别名
+1. `apps/api/vitest.smoke.config.ts` — 移除死别名 `@memoflow/task/controllers/*`
+2. `apps/api/vitest.config.ts` — 移除死别名 `@memoflow/domain-server/*`
+3. `apps/api/vitest.integration.config.ts` — 移除死别名 `@memoflow/domain-server`
+4. `apps/desktop/vitest.main.config.ts` — 移除 6 个死别名（`domain-server`、`application-server`、`infrastructure-server`、`account/domain-server`、`account/domain-shared`、`authentication/domain-server`、`authentication/domain-shared`），新增 `@memoflow/authentication` 和 `@memoflow/goal` 根别名
 5. `apps/desktop/vitest.ipc.config.ts` — 移除 8 个死别名
 
 验证结果：
 
 - `pnpm nx run api:test --skip-nx-cache` — 通过（15 tests）
 - `pnpm nx run api:test:smoke --skip-nx-cache` — 通过（58 tests）
-- `pnpm nx run daily-use:governance-check --skip-nx-cache` — 通过
-- `rg` 检索 `apps/` 中 `@dailyuse/.+/(infrastructure-server|application-server|domain-server|controllers)` — **0 命中**
+- `pnpm nx run memoflow:governance-check --skip-nx-cache` — 通过
+- `rg` 检索 `apps/` 中 `@memoflow/.+/(infrastructure-server|application-server|domain-server|controllers)` — **0 命中**
 
 #### Phase 8.2: 收测试辅助类型毛刺 — 已完成
 
@@ -266,7 +266,7 @@ vitest 配置清理：
 | 完成要求 | 当前证据 | 结论 |
 | --- | --- | --- |
 | 1. 生产 public surface 继续保持 0 回退 | `public-surface-audit` 通过；`rg` 检索 0 命中 | `已完成` |
-| 2. 测试层 internal-layer 依赖已迁到受控 seam | `apps/` 中 `@dailyuse/.+/(infrastructure-server\|application-server\|domain-server\|controllers)` 检索 0 命中 | `已完成` |
+| 2. 测试层 internal-layer 依赖已迁到受控 seam | `apps/` 中 `@memoflow/.+/(infrastructure-server\|application-server\|domain-server\|controllers)` 检索 0 命中 | `已完成` |
 | 3. `task:typecheck` 不再被测试 helper 断言卡住 | `task:typecheck` 通过 | `已完成` |
 | 4. `goal:typecheck`、`goal:build`、`editor:build` 稳定通过 | 全部通过，`contracts:build`/`database:build` 文件锁问题已修复 | `已完成` |
 | 5. plan 文档已把"主目标完成"和"收尾完成"清楚分层记录 | 本节已更新 | `已完成` |
@@ -283,8 +283,8 @@ vitest 配置清理：
 | `desktop:lint` 失败 | 预存在 | `preload/__tests__/ipc-contracts.spec.ts` 中 `@nx/enforce-module-boundaries` 相对路径导入错误 |
 | `web:lint` 失败 | 预存在 | `mocks/handlers/*.spec.ts` 中 lazy-loaded library 静态导入错误 |
 | `editor:lint` 失败 | 预存在 | `no-explicit-any` warnings + 1 error |
-| `@dailyuse/test-utils:lint` 失败 | 预存在 | 未调查具体原因 |
-| `daily-use:test` 失败 | 预存在 | `@dailyuse/contracts/account` 从 account dist 解析失败，workspace vitest 配置问题 |
+| `@memoflow/test-utils:lint` 失败 | 预存在 | 未调查具体原因 |
+| `memoflow:test` 失败 | 预存在 | `@memoflow/contracts/account` 从 account dist 解析失败，workspace vitest 配置问题 |
 
 **本轮改动验证结果（直接运行）：**
 - `desktop:test` — 通过（210 tests, 22 files）
@@ -315,11 +315,11 @@ vitest 配置清理：
 结论分两层：
 
 1. **实现、治理与非测试文档层面：可以判定为已完成**
-   - `pnpm nx run daily-use:governance-check --skip-nx-cache` 当前全绿
-   - `project.json` 已把 `tools/governance/public-surface-audit.mjs` 纳入 `daily-use:governance-check`
-   - `apps/api/tsconfig.json`、`apps/api/tsconfig.typecheck.json` 中不再保留 `@dailyuse/*/infrastructure-server` path alias
+   - `pnpm nx run memoflow:governance-check --skip-nx-cache` 当前全绿
+   - `project.json` 已把 `tools/governance/public-surface-audit.mjs` 纳入 `memoflow:governance-check`
+   - `apps/api/tsconfig.json`、`apps/api/tsconfig.typecheck.json` 中不再保留 `@memoflow/*/infrastructure-server` path alias
    - `apps/desktop/tsconfig.json`、`apps/desktop/tsconfig.typecheck.json` 中也不再保留同类 privileged alias
-   - 对真实生产源文件执行 `^import ... @dailyuse/*/(domain-server|application-server|infrastructure-server|controllers)` 检索，当前为 **0 命中**
+   - 对真实生产源文件执行 `^import ... @memoflow/*/(domain-server|application-server|infrastructure-server|controllers)` 检索，当前为 **0 命中**
    - package root `src/index.ts` 注释示例与 `packages/governance/README.md` 中的旧导入方式已完成清理
 
 2. **测试与本地验证层面：仍有边界事项，但不再构成 public-surface 未收口**
@@ -341,22 +341,22 @@ vitest 配置清理：
 1. 对 feature server-side 能力，外部消费者只能走**明确声明的稳定公共面**
 2. 允许保留少数显式公共子路径，但这些子路径必须是**功能 seam**，不能是**分层 seam**
 3. 允许的公共面形态：
-   - `@dailyuse/<pkg>`
-   - `@dailyuse/<pkg>/api`
-   - `@dailyuse/<pkg>/electron-entry`
-   - `@dailyuse/<pkg>/ports`
-   - `@dailyuse/<pkg>/commands`
-   - `@dailyuse/<pkg>/testing`
+   - `@memoflow/<pkg>`
+   - `@memoflow/<pkg>/api`
+   - `@memoflow/<pkg>/electron-entry`
+   - `@memoflow/<pkg>/ports`
+   - `@memoflow/<pkg>/commands`
+   - `@memoflow/<pkg>/testing`
    - 仓库中已经长期存在、且语义稳定的少量功能子路径（如 `analytics`、`events`）
 4. 不再允许外部消费者直接使用：
-   - `@dailyuse/<pkg>/domain-server`
-   - `@dailyuse/<pkg>/application-server`
-   - `@dailyuse/<pkg>/infrastructure-server`
-   - `@dailyuse/<pkg>/controllers`
+   - `@memoflow/<pkg>/domain-server`
+   - `@memoflow/<pkg>/application-server`
+   - `@memoflow/<pkg>/infrastructure-server`
+   - `@memoflow/<pkg>/controllers`
 
 ### 第七轮重新验证的硬证据
 
-1. `pnpm nx run daily-use:governance-check --skip-nx-cache`
+1. `pnpm nx run memoflow:governance-check --skip-nx-cache`
    - **通过**
    - 通过项新增包括：
      - `public-surface-audit` 通过
@@ -364,20 +364,20 @@ vitest 配置清理：
      - `package-internal-boundary-audit` 通过
 
 2. `tools/governance/public-surface-audit.mjs`
-   - 已正式纳入 `daily-use:governance-check`
+   - 已正式纳入 `memoflow:governance-check`
    - 规则已经覆盖：
-     - app 源码禁止 import `@dailyuse/*/(domain-server|application-server|infrastructure-server|controllers)`
+     - app 源码禁止 import `@memoflow/*/(domain-server|application-server|infrastructure-server|controllers)`
      - package 源码禁止跨包 import 这些 internal layer subpath
 
 3. `apps/api/tsconfig.json` 与 `apps/api/tsconfig.typecheck.json`
-   - 不再存在 `@dailyuse/*/infrastructure-server` path alias
+   - 不再存在 `@memoflow/*/infrastructure-server` path alias
 
 4. `apps/desktop/tsconfig.json` 与 `apps/desktop/tsconfig.typecheck.json`
-   - 不再存在 `@dailyuse/*/infrastructure-server` path alias
+   - 不再存在 `@memoflow/*/infrastructure-server` path alias
 
 5. 真实 import 语句检索
    - 对 `apps/api/src`、`apps/desktop/src` 与 `packages/**/src` 生产代码执行：
-     - `^import .*@dailyuse/.+/(infrastructure-server|application-server|domain-server|controllers)`
+     - `^import .*@memoflow/.+/(infrastructure-server|application-server|domain-server|controllers)`
    - 当前结果：**0 命中**
 
 6. 剩余命中已经收敛到测试与测试配置
@@ -463,7 +463,7 @@ vitest 配置清理：
 
 `apps/api` 完成后，再删除：
 
-1. `apps/api/tsconfig.json` 中所有 `@dailyuse/*/infrastructure-server` path alias
+1. `apps/api/tsconfig.json` 中所有 `@memoflow/*/infrastructure-server` path alias
 2. `apps/api/tsconfig.typecheck.json` 中同类 alias
 
 #### Phase 3: 迁移 `apps/desktop`
@@ -488,7 +488,7 @@ vitest 配置清理：
 
 `apps/desktop` 完成后，再删除：
 
-1. `apps/desktop/tsconfig.json` 中所有 `@dailyuse/*/infrastructure-server` path alias
+1. `apps/desktop/tsconfig.json` 中所有 `@memoflow/*/infrastructure-server` path alias
 2. `apps/desktop/tsconfig.typecheck.json` 中同类 alias
 
 #### Phase 4: 迁移 cross-feature package imports
@@ -529,23 +529,23 @@ vitest 配置清理：
    - `packages/**/src/**/*.{ts,tsx}`
    - 默认排除测试文件与 `__tests__`
 3. 审计规则：
-   - 禁止外部消费者 import `@dailyuse/*/(domain-server|application-server|infrastructure-server|controllers)`
+   - 禁止外部消费者 import `@memoflow/*/(domain-server|application-server|infrastructure-server|controllers)`
    - 允许显式公共 seam：`api`、`electron-entry`、`ports`、`commands`、`testing`、`analytics`、`events`
    - 对“包内相对路径导入”不做这条审计；该部分继续由 `package-internal-boundary-audit` 负责
-4. 将该审计加入 `daily-use:governance-check`
+4. 将该审计加入 `memoflow:governance-check`
 
 ### 验证矩阵
 
 最小完成验证：
 
-1. `pnpm nx run daily-use:governance-check --skip-nx-cache`
+1. `pnpm nx run memoflow:governance-check --skip-nx-cache`
 2. `pnpm nx run api:typecheck`
 3. `pnpm nx run desktop:typecheck`
 
 阶段性验证：
 
 1. `Phase 2` 结束后
-   - `rg -n "@dailyuse/.+/(infrastructure-server|application-server|domain-server|controllers)" apps/api/src`
+   - `rg -n "@memoflow/.+/(infrastructure-server|application-server|domain-server|controllers)" apps/api/src`
    - 目标：生产代码 0 命中
 2. `Phase 3` 结束后
    - 同样检查 `apps/desktop/src`
@@ -554,7 +554,7 @@ vitest 配置清理：
    - 同样检查 `packages/**/src`
    - 目标：生产代码跨包 internal-layer import 0 命中
 4. `Phase 5` 结束后
-   - 人工引入一条 `@dailyuse/<pkg>/infrastructure-server` 导入，确认 governance-check 失败
+   - 人工引入一条 `@memoflow/<pkg>/infrastructure-server` 导入，确认 governance-check 失败
 
 ### 风险与边界
 
@@ -618,7 +618,7 @@ vitest 配置清理：
    - 验证：`node -e “...filter temporary...”` 返回 0
 
 3. **全量治理门禁验证**
-   - `pnpm nx run daily-use:governance-check --skip-nx-cache` 全绿
+   - `pnpm nx run memoflow:governance-check --skip-nx-cache` 全绿
    - `target-baseline-audit` 通过（12 个永久豁免，0 个临时豁免）
    - `package-export-audit` 通过
    - `package-internal-boundary-audit` 通过（0 known violations）
@@ -677,7 +677,7 @@ vitest 配置清理：
 | --- | --- | --- |
 | Track 1: 包内分层约束机器化 | 已闭环 | `package-internal-boundary-audit` 0 known violations |
 | Track 2: target baseline 豁免收缩 | **已闭环** | 12 个永久豁免，0 个临时豁免 |
-| Track 3: 测试边界治理收紧 | 已闭环 | `@dailyuse/test-utils` 是显式测试 seam，生产代码禁止导入 |
+| Track 3: 测试边界治理收紧 | 已闭环 | `@memoflow/test-utils` 是显式测试 seam，生产代码禁止导入 |
 | Track 4: 稳定公共 API 面收窄 | **已闭环** | `./infrastructure-server` 和 `./application-server` 均从 12 个包的 export map 移除 |
 | Track 5: typed API module context | 已闭环 | 生产 `as PrismaClient` 已清零，`DbClient = unknown` 已移除 |
 | Track 6: governance 活文档审计深化 | 已闭环 | richer docs audit 持续通过 |
@@ -690,7 +690,7 @@ vitest 配置清理：
 | --- | --- | --- |
 | 1. package-internal layering 不再主要靠文档约束 | `package-internal-boundary-audit` 0 known violations | `已完成` |
 | 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | 12 个永久豁免，0 个临时豁免 | `已完成` |
-| 3. 测试边界不再整体豁免 module boundary rules | `@dailyuse/test-utils` 是显式 allowlist seam，生产代码禁止导入 | `已完成` |
+| 3. 测试边界不再整体豁免 module boundary rules | `@memoflow/test-utils` 是显式 allowlist seam，生产代码禁止导入 | `已完成` |
 | 4. `governance` 活文档审计能验证注释质量 | richer docs audit 通过 | `已完成` |
 | 5. `governance` 和至少 3 个高价值 feature 包完成稳定 public surface 收缩 | `./infrastructure-server` 和 `./application-server` 均从 12 个包移除 | `已完成` |
 | 6. 高价值模块开始使用目录级 lint ratchet | 多个包生产代码目录已升为 `error` | `已完成` |
@@ -704,7 +704,7 @@ vitest 配置清理：
 
 ### 本轮重新验证的硬证据
 
-1. `pnpm nx run daily-use:governance-check --skip-nx-cache`
+1. `pnpm nx run memoflow:governance-check --skip-nx-cache`
    - **失败**
    - 通过项：
      - `target-baseline-audit` 通过
@@ -775,7 +775,7 @@ vitest 配置清理：
 
 不能成立的原因不是抽象担忧，而是当前工作树里仍有 4 个硬缺口：
 
-1. `daily-use:governance-check` 现在仍然是红的
+1. `memoflow:governance-check` 现在仍然是红的
    - `package-export-audit` 明确失败
 
 2. 测试边界还没有完全收成受控 allowlist
@@ -813,7 +813,7 @@ vitest 配置清理：
      - 需要时补 app-level dev alias，但前提是 export map 先收窄
    - 验证：
      - `node tools/governance/package-export-audit.mjs`
-     - `pnpm nx run daily-use:governance-check --skip-nx-cache`
+     - `pnpm nx run memoflow:governance-check --skip-nx-cache`
 
 2. **再完成 PR-7 的剩余 typed context 收口**
    - 目标：清零生产 `as PrismaClient`，移除 `DbClient = unknown`
@@ -832,7 +832,7 @@ vitest 配置清理：
 3. **然后完成 Track 3 的最后一段**
    - 目标：收紧测试边界，不再对测试层整体关闭 `@nx/enforce-module-boundaries`
    - 动作：
-     - 为 `@dailyuse/test-utils` 建立可跨层的测试支持语义，或引入专门测试 layer/tag
+     - 为 `@memoflow/test-utils` 建立可跨层的测试支持语义，或引入专门测试 layer/tag
      - 把“测试可跨边界”从全局关闭改成明确 allowlist
    - 验证：
      - `pnpm nx run repository:lint`
@@ -875,7 +875,7 @@ vitest 配置清理：
    - `reminder`
    - `repository`
    - `setting`
-   - 这些包当前没有实际的 runtime/test import 指向 `@dailyuse/<pkg>/application-server`
+   - 这些包当前没有实际的 runtime/test import 指向 `@memoflow/<pkg>/application-server`
 
 2. **真实 runtime consumer，需要先补稳定替代 seam**
    - `ai`
@@ -898,7 +898,7 @@ vitest 配置清理：
    - `task`
      - `apps/api/src/__tests__/smoke/helpers/create-smoke-app.ts` 当前直接 import 多个 use case
    - `goal`
-     - `packages/goal/tsup.config.ts` 中出现 `@dailyuse/goal/application-server`，这是 bundler external，不是稳定 public API 消费
+     - `packages/goal/tsup.config.ts` 中出现 `@memoflow/goal/application-server`，这是 bundler external，不是稳定 public API 消费
 
 #### C. `PR-5 / PR-6` 的推荐最终收口形态
 
@@ -915,7 +915,7 @@ vitest 配置清理：
 3. **对真实消费者先补稳定替代 seam**
    - `ai`
      - 当前最佳候选不是继续暴露整个 `application-server`，而是把 `application-server/ports` 提升为稳定窄 seam：
-       - 新增 `@dailyuse/ai/ports`
+       - 新增 `@memoflow/ai/ports`
        - 或 package-specific 白名单式 `./contracts`
      - 目标只公开当前真实外部需要的组合根协作端口：
        - `IKnowledgeSourcePort`
@@ -933,14 +933,14 @@ vitest 配置清理：
    - `schedule`
      - `createSharedSourceExecutor` 不是一般 application service，而是 runtime wiring helper
      - 它更适合迁到：
-       - `@dailyuse/schedule/api/runtime`
-       - 或 `@dailyuse/schedule/infrastructure-server`
+       - `@memoflow/schedule/api/runtime`
+       - 或 `@memoflow/schedule/infrastructure-server`
      - 当前 `api/runtime.ts` 已经是 runtime contribution seam，因此优先建议把 source-executor helper 收到同一 runtime-facing surface，而不是继续挂在 `application-server`
    - `task`
-     - 当前 `@dailyuse/task/testing` 已存在，但只暴露 fixture
+     - 当前 `@memoflow/task/testing` 已存在，但只暴露 fixture
      - smoke test 仍直接 import 多个 use case
      - 最优路径：
-       - 扩充 `@dailyuse/task/testing`，提供 smoke app / controller wiring helper
+       - 扩充 `@memoflow/task/testing`，提供 smoke app / controller wiring helper
        - 或把 smoke test 改为只依赖 `api`/route registration + mock adapters
      - 不应为了测试继续维持 production `./application-server` public export
 
@@ -988,11 +988,11 @@ vitest 配置清理：
    - 当前消费者：
      - `apps/api/src/__tests__/smoke/helpers/create-smoke-app.ts`
    - 当前问题：
-     - smoke test 直接 import 多个 `@dailyuse/task/application-server` use case
-     - `@dailyuse/task/testing` 已存在，但当前只暴露 fixture
-     - `@dailyuse/task/api` 当前公开的是 `TaskApiModule` 与 schedule runtime contribution，不适合作为 smoke test wiring 替代面
+     - smoke test 直接 import 多个 `@memoflow/task/application-server` use case
+     - `@memoflow/task/testing` 已存在，但当前只暴露 fixture
+     - `@memoflow/task/api` 当前公开的是 `TaskApiModule` 与 schedule runtime contribution，不适合作为 smoke test wiring 替代面
    - 目标 seam：
-     - 首选：扩充 `@dailyuse/task/testing`
+     - 首选：扩充 `@memoflow/task/testing`
    - 目标文件：
      - `packages/task/src/testing/index.ts`
      - 新增 `packages/task/src/testing/create-task-smoke-wiring.ts` 或等价 helper
@@ -1001,7 +1001,7 @@ vitest 配置清理：
      - `packages/task/src/index.ts`
    - 预期改法：
      - 把 smoke app 所需 use case/controller wiring 封装进 testing seam
-     - smoke test 不再直接 import `@dailyuse/task/application-server`
+     - smoke test 不再直接 import `@memoflow/task/application-server`
      - 之后删除：
        - `package.json#exports["./application-server"]`
        - `src/index.ts` 中的 `export * from './application-server'`
@@ -1019,9 +1019,9 @@ vitest 配置清理：
      - `packages/schedule/src/api/runtime.ts` 已经是 runtime-facing seam
      - `packages/schedule/src/api/index.ts` 当前还没有导出 runtime helper，因此这是一个**可在允许 surface 内完成的增量改动**
    - 目标 seam：
-     - 首选：`@dailyuse/schedule/api`
+     - 首选：`@memoflow/schedule/api`
        - 通过 `api/index.ts` 显式 re-export runtime helper
-     - 备选：`@dailyuse/schedule/infrastructure-server`
+     - 备选：`@memoflow/schedule/infrastructure-server`
    - 目标文件：
      - `packages/schedule/src/api/runtime.ts`
      - `packages/schedule/src/api/index.ts`
@@ -1032,7 +1032,7 @@ vitest 配置清理：
      - `packages/schedule/package.json`
    - 预期改法：
      - 将 `createSharedSourceExecutor` 从 `application-server` 移到 runtime-facing API seam
-     - app shell 改从 `@dailyuse/schedule/api` 或明确允许的 runtime subpath 导入
+     - app shell 改从 `@memoflow/schedule/api` 或明确允许的 runtime subpath 导入
      - 再删除 `./application-server` export 与 root barrel re-export
    - 验证：
      - `pnpm nx run schedule:test --skip-nx-cache`
@@ -1062,7 +1062,7 @@ vitest 配置清理：
      - `packages/ai/src/api/index.ts` 只暴露 API module / transport handlers，不适合承载宿主 app 所需的 domain-agnostic port types
      - `packages/ai/src/application-server/ports/*` 已经是高度内聚的 port 集群，最适合被提升为窄稳定 surface
    - 目标 seam：
-     - 首选：新增 `@dailyuse/ai/ports`
+     - 首选：新增 `@memoflow/ai/ports`
      - 备选：package-specific `./contracts`
    - 目标文件：
      - 新增 `packages/ai/src/ports/index.ts` 或等价窄 barrel
@@ -1072,7 +1072,7 @@ vitest 配置清理：
      - `apps/desktop/src/main/modules/ai/*.ts`
    - 预期改法：
      - 只把宿主 app 当前真实依赖的稳定 ports/types 暴露到新窄 seam
-     - 宿主 app 改从 `@dailyuse/ai/ports` 导入
+     - 宿主 app 改从 `@memoflow/ai/ports` 导入
      - 不继续开放完整 use case / service surface
      - 然后删除 `./application-server` export 与 root barrel re-export
    - 验证：
@@ -1093,7 +1093,7 @@ vitest 配置清理：
      - 但 `packages/notification/src/infrastructure-server/notification.module.ts` 已经有稳定的 `NotificationApplicationPort`
      - `NotificationApplicationPort.createNotification(data)` 本身就是 transport-neutral callable seam
    - 目标 seam：
-     - 首选：直接复用 `@dailyuse/notification/infrastructure-server` 上已有的 `NotificationApplicationPort`
+     - 首选：直接复用 `@memoflow/notification/infrastructure-server` 上已有的 `NotificationApplicationPort`
      - app shell 本地补一个极薄适配器，把 `api.createNotification(data)` 适配到 schedule 所需的 `NotificationSourceCreator.execute(params)` 形状
      - 仅当这条路径在实现上不成立时，才退回到新增 runtime-facing command seam
    - 目标文件：
@@ -1121,16 +1121,16 @@ vitest 配置清理：
 
 1. `rg -n "\"\\./application-server\"" packages -g "package.json"` 返回 0
 2. `rg -n "export \\* from './application-server'" packages -g "index.ts"` 返回 0
-3. `rg -n "@dailyuse/.+/application-server" apps packages tools` 只允许：
+3. `rg -n "@memoflow/.+/application-server" apps packages tools` 只允许：
    - package 自身内部相对路径
    - 或 0 结果
-4. `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过
+4. `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过
 
 #### C5. 可复用 seam 与必须新增 seam 总结
 
 1. **可直接复用，无需新增 public surface**
    - `task`
-     - 已有：`@dailyuse/task/testing`
+     - 已有：`@memoflow/task/testing`
      - 只需要扩 testing helper，不需要扩大 root/api public surface
    - `schedule`
      - 已有：`packages/schedule/src/api/runtime.ts`
@@ -1139,14 +1139,14 @@ vitest 配置清理：
 2. **已有内部结构，但需要新增更窄 public seam**
    - `ai`
      - 已有：`application-server/ports/*`
-     - 需要新增：`@dailyuse/ai/ports` 或同等窄 contract surface
+     - 需要新增：`@memoflow/ai/ports` 或同等窄 contract surface
    - `notification`
      - 已有：`NotificationApplicationPort`（位于允许的 `infrastructure-server` surface）
      - 优先复用，不必先新增 package-level public seam
 
 3. **明确不该做的捷径**
    - 不把 `application-server` 留在 whitelist 里当“长期稳定 public surface”
-   - 不把 smoke-test 需要的 use case/controller wiring 直接塞进 `@dailyuse/task/api`
+   - 不把 smoke-test 需要的 use case/controller wiring 直接塞进 `@memoflow/task/api`
    - 不把 `CreateNotificationUseCase` 重新从 root barrel 或 `api` 根面直接公开
    - 不把 AI 的整个 use case/service surface 包装成另一个等价宽入口
 
@@ -1240,7 +1240,7 @@ vitest 配置清理：
 
 当前 2026-05-31 重新扫描后的影响面快照：
 
-1. 仓内真实 `@dailyuse/*/application-server` 消费点
+1. 仓内真实 `@memoflow/*/application-server` 消费点
    - `task`: 1 处（API smoke test）
    - `schedule`: 1 处（`apps/api/src/main.ts`）
    - `notification`: 2 处（`apps/api` + `apps/desktop`）
@@ -1256,10 +1256,10 @@ vitest 配置清理：
 1. `PR-5a`：先收 `task` smoke seam
    - 动作：
      - 新增 `createTaskSmokeWiring(...)`
-     - `apps/api/src/__tests__/smoke/helpers/create-smoke-app.ts` 改依赖 `@dailyuse/task/testing`
+     - `apps/api/src/__tests__/smoke/helpers/create-smoke-app.ts` 改依赖 `@memoflow/task/testing`
      - 删除 `task` 的 `./application-server` export 与 root barrel re-export
    - 完成条件：
-     - `rg -n "@dailyuse/task/application-server" apps/api/src/__tests__/smoke` 返回 0
+     - `rg -n "@memoflow/task/application-server" apps/api/src/__tests__/smoke` 返回 0
      - `packages/task/package.json` 不再导出 `./application-server`
      - `packages/task/src/index.ts` 不再 `export * from './application-server'`
    - 验证：
@@ -1269,10 +1269,10 @@ vitest 配置清理：
 2. `PR-5b`：再收 `schedule` runtime helper
    - 动作：
      - 把 `createSharedSourceExecutor` 迁到 `api` surface，或以 `createScheduleSourceExecutor` 名义重新导出
-     - `apps/api/src/main.ts` 改从 `@dailyuse/schedule/api` 或允许的 runtime seam 导入
+     - `apps/api/src/main.ts` 改从 `@memoflow/schedule/api` 或允许的 runtime seam 导入
      - 删除 `schedule` 的 `./application-server` export 与 root barrel re-export
    - 完成条件：
-     - `rg -n "@dailyuse/schedule/application-server" apps packages tools` 返回 0
+     - `rg -n "@memoflow/schedule/application-server" apps packages tools` 返回 0
      - `packages/schedule/package.json` 不再导出 `./application-server`
      - `packages/schedule/src/index.ts` 不再 `export * from './application-server'`
    - 验证：
@@ -1283,10 +1283,10 @@ vitest 配置清理：
 3. `PR-5c`：补 `ai` 窄 ports seam
    - 动作：
      - 新增 `packages/ai/src/ports/index.ts`
-     - `apps/api/src/modules/ai/*.ts` 与 `apps/desktop/src/main/modules/ai/*.ts` 改从 `@dailyuse/ai/ports` 导入
+     - `apps/api/src/modules/ai/*.ts` 与 `apps/desktop/src/main/modules/ai/*.ts` 改从 `@memoflow/ai/ports` 导入
      - 删除 `ai` 的 `./application-server` export 与 root barrel re-export
    - 完成条件：
-     - `rg -n "@dailyuse/ai/application-server" apps packages tools` 返回 0
+     - `rg -n "@memoflow/ai/application-server" apps packages tools` 返回 0
      - `packages/ai/package.json` 不再导出 `./application-server`
      - `packages/ai/src/index.ts` 不再 `export * from './application-server'`
    - 验证：
@@ -1301,7 +1301,7 @@ vitest 配置清理：
      - `apps/api/src/main.ts` 和 `apps/desktop/src/main/modules/schedule/source-executors.ts` 不再 direct new `CreateNotificationUseCase`
      - 删除 `notification` 的 `./application-server` export 与 root barrel re-export
    - 完成条件：
-     - `rg -n "@dailyuse/notification/application-server" apps packages tools` 返回 0
+     - `rg -n "@memoflow/notification/application-server" apps packages tools` 返回 0
      - `packages/notification/package.json` 不再导出 `./application-server`
      - `packages/notification/src/index.ts` 不再 `export * from './application-server'`
    - 验证：
@@ -1317,10 +1317,10 @@ vitest 配置清理：
    - 完成条件：
      - `rg -n "\"\\./application-server\"" packages -g "package.json"` 返回 0
      - `rg -n "export \\* from './application-server'" packages -g "index.ts"` 返回 0
-     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过
+     - `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过
    - 验证：
      - `node tools/governance/package-export-audit.mjs`
-     - `pnpm nx run daily-use:governance-check --skip-nx-cache`
+     - `pnpm nx run memoflow:governance-check --skip-nx-cache`
 
 #### C9. `PR-5a` 到 `PR-5e` 的关键路径与风险热点
 
@@ -1353,17 +1353,17 @@ vitest 配置清理：
 
 5. **每条子 PR 的最强完成证明**
    - `PR-5a`
-     - `rg -n "@dailyuse/task/application-server" apps/api/src/__tests__/smoke` 返回 0
+     - `rg -n "@memoflow/task/application-server" apps/api/src/__tests__/smoke` 返回 0
    - `PR-5b`
-     - `rg -n "@dailyuse/schedule/application-server" apps packages tools` 返回 0
+     - `rg -n "@memoflow/schedule/application-server" apps packages tools` 返回 0
    - `PR-5c`
-     - `rg -n "@dailyuse/ai/application-server" apps packages tools` 返回 0
+     - `rg -n "@memoflow/ai/application-server" apps packages tools` 返回 0
    - `PR-5d`
-     - `rg -n "@dailyuse/notification/application-server" apps packages tools` 返回 0
+     - `rg -n "@memoflow/notification/application-server" apps packages tools` 返回 0
    - `PR-5e`
      - `rg -n "\"\\./application-server\"" packages -g "package.json"` 返回 0
      - `rg -n "export \\* from './application-server'" packages -g "index.ts"` 返回 0
-     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过
+     - `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过
 
 #### D. `PR-7` 剩余 4 处 Prisma cast 的最短优雅收口路径
 
@@ -1423,9 +1423,9 @@ vitest 配置清理：
    - `package-export-audit.mjs` 已从红线失败恢复为全绿
    - 已从以下 12 个包的 `package.json#exports` 中移除 `./application-server`：
      `account`、`ai`、`authentication`、`editor`、`goal`、`governance`、`notification`、`reminder`、`repository`、`schedule`、`setting`、`task`
-   - 为保持消费方正常解析，已在 `apps/api/tsconfig.json` 新增 `@dailyuse/ai/*` 和 `@dailyuse/task/*` 路径别名
-   - 已在 `apps/desktop/tsconfig.json` 新增 `@dailyuse/ai/application-server` 和 `@dailyuse/notification/application-server` 路径别名
-   - 验证：`daily-use:governance-check --skip-nx-cache` 全绿
+   - 为保持消费方正常解析，已在 `apps/api/tsconfig.json` 新增 `@memoflow/ai/*` 和 `@memoflow/task/*` 路径别名
+   - 已在 `apps/desktop/tsconfig.json` 新增 `@memoflow/ai/application-server` 和 `@memoflow/notification/application-server` 路径别名
+   - 验证：`memoflow:governance-check --skip-nx-cache` 全绿
 
 2. **PR-7 完成：清零生产代码 `as PrismaClient` cast**
    - `schedule-prisma.repository.ts`：新增 `hasTransaction()` 类型守卫，消除 `prisma as PrismaClient`
@@ -1440,12 +1440,12 @@ vitest 配置清理：
    - 将 3 个临时豁免（`ui-vue-shadcn:test`、`app-react:test`、`ui-react-native:test`）转为永久豁免
    - 所有 12 个豁免现在都是永久类型，均有明确平台技术理由
    - 临时豁免数量：3 → 0
-   - 验证：`daily-use:target-baseline-check` 通过
+   - 验证：`memoflow:target-baseline-check` 通过
 
 ### 当日验证的命令
 
-1. `pnpm nx run daily-use:governance-check --skip-nx-cache` — 通过（全绿）
-2. `pnpm nx run daily-use:target-baseline-check --skip-nx-cache` — 通过（12 个永久豁免）
+1. `pnpm nx run memoflow:governance-check --skip-nx-cache` — 通过（全绿）
+2. `pnpm nx run memoflow:target-baseline-check --skip-nx-cache` — 通过（12 个永久豁免）
 3. `pnpm nx run schedule:test --skip-nx-cache` — 通过（263 tests）
 4. `pnpm nx run schedule:lint` — 通过（0 errors）
 5. `pnpm nx run notification:lint` — 通过（0 errors）
@@ -1472,7 +1472,7 @@ vitest 配置清理：
 
 | 完成要求 | 当前证据 | 结论 |
 | --- | --- | --- |
-| 1. package-internal layering 不再主要靠文档约束 | `package-internal-boundary-audit.mjs` 已接入 `daily-use:governance-check`；0 known violations | `已完成` |
+| 1. package-internal layering 不再主要靠文档约束 | `package-internal-boundary-audit.mjs` 已接入 `memoflow:governance-check`；0 known violations | `已完成` |
 | 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | 12 个永久豁免，0 个临时豁免；均有明确平台技术理由 | `已完成` |
 | 3. 测试边界不再整体豁免 module boundary rules | `@nx/enforce-module-boundaries` 仍对测试关闭（因 test-utils 跨层需求）；但 `no-restricted-imports` 保持活跃，`repository`/`ai` 有 package-specific 限制 | `部分完成` |
 | 4. `governance` 活文档审计能验证注释质量 | `governance-module-docs-audit.mjs` 检查文件级 JSDoc 内容量、`@internal`、公开导出 JSDoc | `已完成` |
@@ -1485,14 +1485,14 @@ vitest 配置清理：
 4. **Phase G 启动（历史判断，已被当前工作树反证）：tsconfig 分层统一**
    - `tsconfig.workspace-dist.json` 已创建（空 paths，用于构建态边界解析）
    - `apps/api/tsconfig.json` 已改为 editor-first：移除 `rootDir`、`outDir`、`noEmit: false`、`declaration` 等 build-only 字段；保留 `noEmit: true` + source-linking paths
-   - `apps/api/tsconfig.typecheck.json` 已简化：移除冗余 `rootDir` 覆盖；`@dailyuse/ai` 和 `@dailyuse/task` 保持指向 dist（因跨包 `@/` 别名无法在单 tsconfig 上下文中解析）
+   - `apps/api/tsconfig.typecheck.json` 已简化：移除冗余 `rootDir` 覆盖；`@memoflow/ai` 和 `@memoflow/task` 保持指向 dist（因跨包 `@/` 别名无法在单 tsconfig 上下文中解析）
    - `apps/web/tsconfig.json` 已清理：移除 `outDir`、`declaration`、`declarationMap`、`sourceMap` 等 build-only 字段
    - `apps/desktop/tsconfig.json` 已清理：移除 `outDir`
    - 验证：`api:typecheck` 通过，`web:typecheck` 通过，`governance-check` 全绿
 
 ### 剩余工作（低优先级）
 
-1. `@nx/enforce-module-boundaries` 测试豁免：需要将 `@dailyuse/test-utils` 重新标记为可跨层访问的测试支持库，或为测试创建独立的 layer tag
+1. `@nx/enforce-module-boundaries` 测试豁免：需要将 `@memoflow/test-utils` 重新标记为可跨层访问的测试支持库，或为测试创建独立的 layer tag
 2. Phase G 剩余：library tsconfig 统一（`typecheck` target 显式 `-p`）、tsconfig shape audit
 3. 剩余 `as PrismaClient` 注释文本回收（2 处）
 
@@ -1519,7 +1519,7 @@ vitest 配置清理：
 3. **PR-4 Slice C4/C5 完成：移除测试层全局 `no-restricted-imports` 关闭**
    - `eslint.config.ts` 全局测试豁免块中移除了 `no-restricted-imports: 'off'`
    - `@nx/enforce-module-boundaries: 'off'` 保留（测试作为入口点合法跨包边界）
-   - 测试文件现在继承默认的 subpath import 规则（`@dailyuse/utils` 必须用子路径）
+   - 测试文件现在继承默认的 subpath import 规则（`@memoflow/utils` 必须用子路径）
    - `repository`、`ai` 的 package-specific 测试限制规则现在生效（之前被全局关闭覆盖）
    - 验证：`goal`/`task`/`repository`/`ai`/`schedule`/`notification`/`governance` lint 全部通过，0 新增错误
    - 全量 `governance-check --skip-nx-cache` 通过
@@ -1538,7 +1538,7 @@ vitest 配置清理：
 ### 当日验证的命令
 
 1. `node tools/governance/package-export-audit.mjs` — 通过
-2. `pnpm nx run daily-use:governance-check --skip-nx-cache` — 通过（全绿）
+2. `pnpm nx run memoflow:governance-check --skip-nx-cache` — 通过（全绿）
 3. `pnpm nx run governance:lint` — 通过
 4. `pnpm nx run governance:test --skip-nx-cache` — 通过（139 tests）
 5. `pnpm nx run repository:lint` — 通过
@@ -1590,7 +1590,7 @@ vitest 配置清理：
 
 ### 当日重新验证的命令
 
-1. `pnpm nx run daily-use:governance-check`
+1. `pnpm nx run memoflow:governance-check`
    - 2026-05-30 早些时候曾以 `--skip-nx-cache` 重新执行通过
    - 当前通过链路已包含：
      - `target-baseline-audit`
@@ -1619,7 +1619,7 @@ vitest 配置清理：
      - `packages/ai/src/application-server/use-cases/commands/manage-ai-knowledge-note.use-case.ts`
      - `packages/schedule/src/application-server/source-executors/shared-source-executor.ts`
 
-2. `pnpm nx run daily-use:target-baseline-check`
+2. `pnpm nx run memoflow:target-baseline-check`
    - 2026-05-30 重新执行通过
    - 当前 documented exemptions 已从 2026-05-29 记录的 25 降到 **12**
 
@@ -1651,10 +1651,10 @@ vitest 配置清理：
 
 | Track | 当前状态 | 审计结论 |
 | --- | --- | --- |
-| Track 1: 包内分层约束机器化 | 已闭环第一版 | `project.json` 已把 `package-internal-boundary-audit.mjs` 接入 `daily-use:governance-check`；`docs/standards/architecture.md` 与 `ADR-031` 已改为“规则已落地”的表述；2026-05-30 本轮代码收口已把 known violation 从 4 压到 0 |
+| Track 1: 包内分层约束机器化 | 已闭环第一版 | `project.json` 已把 `package-internal-boundary-audit.mjs` 接入 `memoflow:governance-check`；`docs/standards/architecture.md` 与 `ADR-031` 已改为“规则已落地”的表述；2026-05-30 本轮代码收口已把 known violation 从 4 压到 0 |
 | Track 2: target baseline 豁免收缩 | 已明显推进 | manifest 已升级到 v2，temporary exemption 强制 `owner` + `targetDate`；当前 documented exemption 已降到 12，但尚未收敛到计划要求的 10 以内 |
 | Track 3: 测试边界治理收紧 | `repository + ai` 试点已落地，但 repo-wide 仍未闭环 | `packages/repository/src/testing/` 与 `packages/ai/src/testing/` 已落地；repository application tests 已迁移到 `../../testing`，AI application tests 已迁移到 `../../../../testing`；`eslint.config.ts` 已分别对 repository / ai tests 加入专用 `no-restricted-imports` 拦截 private infra/api import；但全仓测试层仍存在 `@nx/enforce-module-boundaries` 与 `no-restricted-imports` 的全局关闭，尚未进入 package-scoped allowlist 阶段 |
-| Track 4: 稳定公共 API 面收窄 | audit 已扩展，但当前已成为 governance 红线 | `package-export-audit.mjs` 已扩展为同时审计 `src/index.ts` 与 `package.json#exports`；但最新 `daily-use:governance-check` 已因 12 个包仍导出 `./application-server` 而失败，说明 Track 4 仍未收口，且已经从“结构欠账”升级为“当前门禁红线” |
+| Track 4: 稳定公共 API 面收窄 | audit 已扩展，但当前已成为 governance 红线 | `package-export-audit.mjs` 已扩展为同时审计 `src/index.ts` 与 `package.json#exports`；但最新 `memoflow:governance-check` 已因 12 个包仍导出 `./application-server` 而失败，说明 Track 4 仍未收口，且已经从“结构欠账”升级为“当前门禁红线” |
 | Track 5: typed API module context | API module 基本完成，仓库 seam 未清零 | 12 个 feature `api/module.ts` 已统一使用 `ServerModuleContext<PrismaClient>`；但生产代码中仍存在 `as PrismaClient` cast，且 `ServerModuleContext<DbClient = unknown>` 仍保留兼容默认值 |
 | Track 6: governance 活文档审计深化 | 基本落地 | `governance-module-docs-audit.mjs` 已不再只是 existence check，当前会检查文件级 JSDoc 内容量、English-first / 中文 second、`@internal`、公开导出 JSDoc，且 2026-05-30 复跑通过 |
 | Track 7: lint ratchet | 已超出最初 `governance` 试点 | `eslint.config.ts` 已把多组高价值包生产代码目录的 `no-explicit-any` / `no-unused-vars` 升为 `error`，不再只局限于 `governance` |
@@ -1684,8 +1684,8 @@ vitest 配置清理：
 
 | 完成要求 | 当前证据 | 结论 | 仍缺什么 |
 | --- | --- | --- | --- |
-| 1. package-internal layering 不再主要靠文档约束 | `package-internal-boundary-audit.mjs` 已接入 `daily-use:governance-check`；`architecture.md` 与 `ADR-031` 已改为“规则已落地”口径；`goal`、`repository`、`ai`、`schedule` 的 4 条 tracked violation 已在 2026-05-30 全部清零 | `已完成` | 后续只需保持 `KNOWN_VIOLATIONS` 为空并防止回退 |
-| 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | `target-baseline-manifest.json` 已升级到 v2；temporary exemption 强制 `owner` + `targetDate`；`daily-use:target-baseline-check` 当前报告 12 个 documented exemption | `部分完成` | 12 仍高于计划要求的 10 以内 |
+| 1. package-internal layering 不再主要靠文档约束 | `package-internal-boundary-audit.mjs` 已接入 `memoflow:governance-check`；`architecture.md` 与 `ADR-031` 已改为“规则已落地”口径；`goal`、`repository`、`ai`、`schedule` 的 4 条 tracked violation 已在 2026-05-30 全部清零 | `已完成` | 后续只需保持 `KNOWN_VIOLATIONS` 为空并防止回退 |
+| 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | `target-baseline-manifest.json` 已升级到 v2；temporary exemption 强制 `owner` + `targetDate`；`memoflow:target-baseline-check` 当前报告 12 个 documented exemption | `部分完成` | 12 仍高于计划要求的 10 以内 |
 | 3. 测试边界不再整体豁免 module boundary rules | `eslint.config.ts` 的全仓测试块仍对 `@nx/enforce-module-boundaries` 与 `no-restricted-imports` 做全局关闭；但 `repository` 与 `ai` 已新增 `src/testing` seam，application tests 已迁移到 test-support import，且 package-specific `no-restricted-imports` 已能拦截 private infra/api import | `未完成` | 需要把 `repository + ai` 试点扩展成真正的 package-scoped allowlist，并最终移除全局测试关闭 |
 | 4. `governance` 活文档审计能验证注释质量，而不只是 JSDoc 存在性 | `governance-module-docs-audit.mjs` 已检查文件级 JSDoc 内容量、English-first / 中文 second、`@internal`、公开导出 JSDoc；复跑通过 | `已完成` | 后续只需持续维护 |
 | 5. `governance` 和至少 3 个高价值 feature 包完成稳定 public surface 收缩 | `governance` 仅完成了 root barrel 第一层收窄；`governance`、`goal`、`task`、`repository` 的 `package.json#exports` 仍公开宽 surface | `未完成` | 需扩展 package export audit 到 `package.json#exports`，并同时收口 `governance` + 至少 3 个高价值包 |
@@ -1746,7 +1746,7 @@ vitest 配置清理：
 
 ### 当前剩余问题清单（按优先级）
 
-1. 先修复 `package-export-audit` 当前暴露的 12 个 `./application-server` export 红线，让 `daily-use:governance-check` 恢复为绿。
+1. 先修复 `package-export-audit` 当前暴露的 12 个 `./application-server` export 红线，让 `memoflow:governance-check` 恢复为绿。
 
 2. 把已在 `repository` 和 `ai` 落地的 test-support seam + package-scoped lint 模式扩展到更多包，并最终移除“测试文件整体关闭边界规则”。
 
@@ -1756,7 +1756,7 @@ vitest 配置清理：
 
 4. 把 app-level TypeScript 配置从“编辑器 / 源码联调 / 构建意图混在 `tsconfig.json`”收成明确分层。
    - 2026-05-30 当前审计显示 `apps/api/tsconfig.json` 同时包含：
-     - 开发态源码 alias（多个 `@dailyuse/* -> packages/*/src`）
+     - 开发态源码 alias（多个 `@memoflow/* -> packages/*/src`）
      - 构建态字段（`rootDir: "./src"`、`outDir: "./dist"`、`noEmit: false`）
    - 但 `apps/api` 的实际构建目标已经由 `tsup` 驱动，CLI typecheck 又单独走 `tsconfig.typecheck.json`
    - 这意味着当前 `tsconfig.json` 对 VS Code / tsserver 来说承担了错误的双重职责：编辑器默认只认它，不会自动叠加 `tsconfig.typecheck.json`
@@ -1814,7 +1814,7 @@ vitest 配置清理：
      - `api/module.ts` 与 `electron-entry/index.ts` 已经直接从 infra 子路径导入 `FsStorageAdapter`
      - 因此已执行最短且最干净的修复：
        - 删除 `application-server/index.ts` 对 `FsStorageAdapter` 的 re-export
-       - 明确消费者改为从 `@dailyuse/repository/infrastructure-server` 导入
+       - 明确消费者改为从 `@memoflow/repository/infrastructure-server` 导入
      - `repository:lint` 已重新通过；过程中还顺手修复了 `packages/repository/src/index.ts` 中一个既有 root barrel 语法错误，避免 lint 被无关 parse error 阻断
 
 4. `schedule`
@@ -1832,7 +1832,7 @@ vitest 配置清理：
        - `pnpm nx run schedule:lint` 通过（仅剩既有 warnings）
 
 5. 完成后收紧 audit
-   - 当前 `daily-use:governance-check --skip-nx-cache` 已显示 `0 known violation(s) tracked`
+   - 当前 `memoflow:governance-check --skip-nx-cache` 已显示 `0 known violation(s) tracked`
    - `tools/governance/package-internal-boundary-audit.mjs` 中的 `KNOWN_VIOLATIONS` 已清空；后续目标是保持其为空并防止回退
 
 #### Phase C: 让测试边界治理从宽豁免进入受控 seam
@@ -2045,7 +2045,7 @@ vitest 配置清理：
 1. 当前审计结论
    - `apps/api/tsconfig.json` 仍是最典型的混写案例：
      - 默认编辑器工程里同时保留 `rootDir: "./src"`、`outDir: "./dist"`、`noEmit: false`
-     - 同时又保留多个 `@dailyuse/* -> ../../packages/*/src` 的源码联调 alias
+     - 同时又保留多个 `@memoflow/* -> ../../packages/*/src` 的源码联调 alias
      - `typecheck` 实际走 `tsconfig.typecheck.json`
      - `build` 实际走 `tsup`
    - `apps/web/tsconfig.json` 和 `apps/desktop/tsconfig.json` 已经比 `api` 更接近 editor-first，但仍保留了 `outDir` 等 build-like 字段，且 CLI typecheck 口径不统一：
@@ -2364,7 +2364,7 @@ vitest 配置清理：
    - 验证：
      - `pnpm nx run repository:lint` 通过
      - `pnpm nx run goal:lint` 仍失败，但失败点是 `packages/goal/src/infrastructure-server/adapters/prisma/mappers/prisma-weight-snapshot-mapper.ts` 中既有 `no-explicit-any` 错误，不是 `GoalMapper` 修复回归
-     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过，tracked known violations 从 4 降到 2
+     - `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过，tracked known violations 从 4 降到 2
 
 2. `PR-2` 抽离 AI knowledge note 路径解析到 application 层
    - 2026-05-30 执行状态：**已完成**
@@ -2379,7 +2379,7 @@ vitest 配置清理：
    - 验证：
      - `pnpm nx run ai:test --skip-nx-cache` 通过
      - `pnpm nx run ai:lint` 通过
-     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过，tracked known violations 从 2 降到 1
+     - `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过，tracked known violations 从 2 降到 1
 
 3. `PR-3` 抽离 schedule runtime contract，清零最后一条 api 反向依赖
    - 2026-05-30 执行状态：**已完成**
@@ -2395,7 +2395,7 @@ vitest 配置清理：
    - 验证：
      - `pnpm nx run schedule:test --skip-nx-cache` 通过
      - `pnpm nx run schedule:lint` 通过（仅剩既有 warnings）
-     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过，tracked known violations 从 1 降到 0
+     - `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过，tracked known violations 从 1 降到 0
 
 4. `PR-4` 为 `repository + ai` 建立 test-support seam，并把它们作为 Track 3 的前两批受控试点
    - 目标文件：
@@ -2437,7 +2437,7 @@ vitest 配置清理：
    - 验证：
      - `pnpm nx run governance:build`
      - `pnpm nx run repository:build`
-     - `pnpm nx run daily-use:governance-check`
+     - `pnpm nx run memoflow:governance-check`
 
 6. `PR-6` 收口 goal + task export map
    - 目标文件：
@@ -2449,7 +2449,7 @@ vitest 配置清理：
    - 验证：
      - `pnpm nx run goal:build`
      - `pnpm nx run task:build`
-     - `pnpm nx run daily-use:governance-check`
+     - `pnpm nx run memoflow:governance-check`
 
 7. `PR-7` 清零剩余 Prisma cast seam
    - 目标文件：
@@ -2475,8 +2475,8 @@ vitest 配置清理：
      - 再复核 `dashboard:test`、`ui-vue-shadcn:test`、`app-react:test`、`ui-react-native:test`、`http-client:test` 是否误标为 `permanent`
      - 只有在误分类回收后，再以总数 `<=10` 作为最终门槛
    - 验证：
-     - `pnpm nx run daily-use:target-baseline-check`
-     - `pnpm nx run daily-use:governance-check`
+     - `pnpm nx run memoflow:target-baseline-check`
+     - `pnpm nx run memoflow:governance-check`
 
 9. `PR-9` 建立全仓 tsconfig 模板契约，并拿 `apps/api` 做首个 pilot
    - 目标文件：
@@ -2536,7 +2536,7 @@ vitest 配置清理：
      - 给默认 `tsconfig.json` 添加治理门禁，阻止新的 build/editor 混写回归
    - 验证：
      - `pnpm nx run-many -t typecheck --projects=account,ai,authentication,editor,goal,governance,notification,reminder,repository,schedule,setting,task,domain-shared,ui-vue-shadcn,utils,contracts,ui-core`
-     - `pnpm nx run daily-use:governance-check`
+     - `pnpm nx run memoflow:governance-check`
 
 ### Phase G 子切片（进一步细化）
 
@@ -2639,7 +2639,7 @@ vitest 配置清理：
 8. `PR-11c` tsconfig shape audit 治理门禁
    - 目标文件：
      - 新增 `tools/governance/tsconfig-shape-audit.mjs`
-     - `daily-use:governance-check`
+     - `memoflow:governance-check`
    - 预期动作：
      - 拦截默认 `tsconfig.json` 再次引入 build-only 字段
      - 拦截 `typecheck` target 未显式 `-p`
@@ -2716,13 +2716,13 @@ vitest 配置清理：
    - 例如不要在 `PR-4` 同时做 repository test seam、export map 收口和 Prisma cast 清理
    - 否则治理收益会被混在一起，回归范围也会失真
 
-2. **先过项目局部验证，再跑 `daily-use:governance-check`**
+2. **先过项目局部验证，再跑 `memoflow:governance-check`**
    - 推荐顺序：
      - `<project>:lint`
      - `<project>:test`
      - `<project>:typecheck`
      - 如涉及 export / build 再跑 `<project>:build`
-     - 最后再跑 `daily-use:governance-check`
+     - 最后再跑 `memoflow:governance-check`
 
 3. **不要把“治理脚本本身还没覆盖”误判成“问题已经解决”**
    - 当前最典型例子就是 export map：
@@ -2742,12 +2742,12 @@ vitest 配置清理：
 以下证据都要在同一轮 completion audit 中重新采集，才能证明“范式已经优雅完整收口”。
 
 1. 包内分层治理闭环
-   - `pnpm nx run daily-use:governance-check` 通过
+   - `pnpm nx run memoflow:governance-check` 通过
    - 输出中 `Package-Internal Boundary Audit` 不再出现 tracked known violations
    - `tools/governance/package-internal-boundary-audit.mjs` 中不再保留 `KNOWN_VIOLATIONS` 兜底列表，或列表为空
 
 2. target baseline 收口
-   - `pnpm nx run daily-use:target-baseline-check` 通过
+   - `pnpm nx run memoflow:target-baseline-check` 通过
    - `temporary` exemptions = 0
    - `permanent` exemptions 都能被治理文档中的“平台天然例外”口径自洽解释
    - 若仍主张总数 `<=10`，必须有 manifest 真值证明，而不是计划目标本身
@@ -2804,7 +2804,7 @@ vitest 配置清理：
 
 ### 已重新验证的命令
 
-1. `pnpm nx run daily-use:governance-check`
+1. `pnpm nx run memoflow:governance-check`
    - 通过
    - 结论：docs/config/project/governance audit 当前没有红线破坏
    - 但同时暴露了 **25 个 documented exemption**
@@ -2913,17 +2913,17 @@ vitest 配置清理：
 
 1. 先用 repo-level 自定义 audit 脚本落地
 2. 再评估是否抽成 ESLint rule
-3. 如果 ESLint 难度过高，至少保留 `daily-use:governance-check` 中的静态 import 审计
+3. 如果 ESLint 难度过高，至少保留 `memoflow:governance-check` 中的静态 import 审计
 
 ### 完成条件
 
-1. `daily-use:governance-check` 新增 package-internal boundary audit
+1. `memoflow:governance-check` 新增 package-internal boundary audit
 2. 至少 `account`、`goal`、`governance`、`task`、`schedule`、`repository` 被纳入审计范围
 3. `docs/standards/architecture.md` 删除“当前暂以文档约束为主”这类过渡表述
 
 ### 验证
 
-1. `pnpm nx run daily-use:governance-check`
+1. `pnpm nx run memoflow:governance-check`
 2. 制造一条越层导入，确认审计能失败
 
 ---
@@ -2932,7 +2932,7 @@ vitest 配置清理：
 
 ### 证据
 
-`pnpm nx run daily-use:governance-check` 当前输出了 25 个 documented exemption。
+`pnpm nx run memoflow:governance-check` 当前输出了 25 个 documented exemption。
 
 其中最值得优先收敛的不是 React Native / assets 这种天然例外，而是这些已经被制度化的工程欠账：
 
@@ -2993,8 +2993,8 @@ vitest 配置清理：
 
 ### 验证
 
-1. `pnpm nx run daily-use:target-baseline-check`
-2. `pnpm nx run daily-use:governance-check`
+1. `pnpm nx run memoflow:target-baseline-check`
+2. `pnpm nx run memoflow:governance-check`
 
 ---
 
@@ -3107,12 +3107,12 @@ vitest 配置清理：
 
 1. `governance` 成为第一个完成“活文档阅读面”和“稳定消费面”分离的示范包
 2. 至少 `governance`、`goal`、`task`、`repository` 完成 root barrel 收窄
-3. 新增 package export audit 纳入 `daily-use:governance-check`
+3. 新增 package export audit 纳入 `memoflow:governance-check`
 
 ### 验证
 
 1. `pnpm nx run governance:build`
-2. `pnpm nx run daily-use:governance-check`
+2. `pnpm nx run memoflow:governance-check`
 3. 检索根入口是否仍暴露具体 infra adapter
 
 ---
@@ -3222,7 +3222,7 @@ vitest 配置清理：
 
 ### 验证
 
-1. `pnpm nx run daily-use:governance-check`
+1. `pnpm nx run memoflow:governance-check`
 2. 人为删除一个公开方法 JSDoc 或 `@internal` 标记，确认审计失败
 
 ---
@@ -3335,7 +3335,7 @@ vitest 配置清理：
 
 下一轮实际动手时，建议不要同时改全仓，而是按下面的 tracer-bullet 顺序推进：
 
-1. 给 `daily-use:governance-check` 新增 package-internal boundary audit
+1. 给 `memoflow:governance-check` 新增 package-internal boundary audit
 2. 给 `governance-module-docs-audit.mjs` 增加 richer docs rules
 3. 在 `governance` 包上收缩 root export surface
 4. 在 `governance` 包上把生产代码 `no-explicit-any` / `no-unused-vars` 升为 `error`

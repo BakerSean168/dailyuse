@@ -1,4 +1,4 @@
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 
 import { createAIHttpAdapters } from '../infrastructure-client';
 import { AIClientService, createAIClientService } from './ai-client-service';

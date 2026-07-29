@@ -4,7 +4,7 @@
  * Message writes go through chat send/stream; no orphan add/status use cases.
  */
 import { describe, expect, it, vi } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../../../domain';
 import type { AIModuleDependencies } from '../../ai.module';
 import { createDirectProviderAIRuntime } from '../direct-provider-ai.runtime';

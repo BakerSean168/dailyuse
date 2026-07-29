@@ -9,7 +9,7 @@
  */
 
 import type { ReminderTemplate } from '../aggregates/reminder-template';
-import type { ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderStatus } from '@memoflow/contracts/reminder';
 
 /**
  * IReminderTemplateRepository 仓储接口

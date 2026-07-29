@@ -56,7 +56,7 @@ export function _getProgressBarState(): Readonly<ProgressBarState> {
  *
  * @example
  * ```ts
- * import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn'
+ * import { progressStart, progressDone } from '@memoflow/ui-vue-shadcn'
  *
  * router.beforeEach(() => { progressStart() })
  * router.afterEach(() => { progressDone() })

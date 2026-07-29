@@ -7,8 +7,8 @@
  * @module application-client/task-client-service
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { map as mapResult } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { map as mapResult } from '@memoflow/contracts/result';
 import type {
   CreateTaskTemplateReq,
   UpdateTaskTemplateReq,
@@ -33,8 +33,8 @@ import type {
   TaskReminderConfig,
   TaskGoalBinding,
   TaskGoalBindingDTO,
-} from '@dailyuse/contracts/task';
-import type { TaskFolderId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/task';
+import type { TaskFolderId } from '@memoflow/contracts/primitives';
 import type { ITaskTemplateApiClient, TaskTemplateListParams } from './ports/task-template-api-client.port';
 import type { ITaskInstanceApiClient } from './ports/task-instance-api-client.port';
 import type { ITaskDependencyApiClient } from './ports/task-dependency-api-client.port';
@@ -42,7 +42,7 @@ import { TaskTemplate } from '../domain-client/aggregates/task-template';
 import { TaskInstance } from '../domain-client/aggregates/task-instance';
 import { TaskTemplateId } from '../server/domain/value-objects/task-template-id';
 import { TaskInstanceId } from '../server/domain/value-objects/task-instance-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 // ===== DTO-to-State Mappers =====
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IReminderGroupRepository } from '../../domain/repositories/i-reminder-group-repository';
 import type { IReminderTemplateRepository } from '../../domain/repositories/i-reminder-template-repository';
 import { ReminderTemplateActionApplicationService } from './reminder-template-action-application-service';

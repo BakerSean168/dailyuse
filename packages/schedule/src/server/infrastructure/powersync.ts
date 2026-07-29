@@ -14,7 +14,7 @@ import {
 import { PowerSyncScheduleRepository } from './adapters/powersync/schedule-powersync.repository';
 import { PowerSyncScheduleExecutionRepository } from './adapters/powersync/schedule-execution-powersync.repository';
 import { PowerSyncScheduleTaskRepository } from './adapters/powersync/schedule-task-powersync.repository';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 
 type Queryable = IElectronDatabase;
 

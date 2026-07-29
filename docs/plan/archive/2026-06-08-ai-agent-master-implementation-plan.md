@@ -31,7 +31,7 @@ updated: 2026-06-10T00:00:00
 
 `AI Agent Workspace + LangGraph runtime + existing provider abstraction + Pydantic schemas + TS controlled business executors`
 
-也就是说，Memoflow 不做一个任由模型自由调用工具的通用 ReAct agent，而是做一个面向个人目标与知识工作的受控 Agent 系统：
+也就是说，MemoFlow 不做一个任由模型自由调用工具的通用 ReAct agent，而是做一个面向个人目标与知识工作的受控 Agent 系统：
 
 - 首页 `/` 改为 AI Agent Workspace。
 - 前端以对话、上下文面板、结构化 artifact 和确认面板为核心。
@@ -51,7 +51,7 @@ updated: 2026-06-10T00:00:00
 
 - Framework：Vue 3 + Vite。
 - Monorepo / build：Nx + pnpm。
-- UI：`@dailyuse/ui-vue-shadcn`、shadcn-vue 风格组件、Tailwind CSS、lucide-vue-next 图标。
+- UI：`@memoflow/ui-vue-shadcn`、shadcn-vue 风格组件、Tailwind CSS、lucide-vue-next 图标。
 - State/composable：继续以 `packages/app-vue/src/modules/ai/composables` 为 AI 工作台状态入口。
 - Test：Vitest + Vue Test Utils；关键用户流用 Playwright e2e。
 
@@ -601,7 +601,7 @@ Durability 与持久化：
 - Pending action 依赖可视化更新已重跑：`packages/app-vue` 下直接执行 `vitest.CMD run --config vitest.config.ts src/modules/ai/components/AIGoalWorkflowPanel.spec.ts`；新增覆盖 action 顺序编号和 `dependsOn` 可读化展示。
 - Python Agent runtime 验证已补跑：`apps/ai-service` 下执行 `uv run pytest tests/unit/test_agent_runtime.py tests/unit/test_knowledge_generate_enhancements.py`，43 passed（新增 6 个 knowledge generation enhancement 测试）；`uv run ruff check src tests` 通过；`uv run pyright src` 通过；此前 `uv run pytest tests/` 全量通过，145 passed。当前仅剩 pytest cache 写入 warning，未影响测试和报告生成。
 - Knowledge Generation enhancement 测试覆盖：provider-backed 生成与 usage 统计、真实知识库搜索集成、duplicate risk 评估（high/medium/low/none）、related notes 填充、provider 失败 fallback 到模板、provider_config 正确传递。
-- Desktop 相关验证：`nx.CMD run desktop:lint -- --quiet` 通过；`nx.CMD run desktop:typecheck` / 直接 `tsc` 仍受既有依赖构建与 workspace path 问题影响，失败点集中在 `tsup` 命令解析、`ui-vue-shadcn` DTS portable type、`@dailyuse/powersync-schema` / dist-src 混用等既有项目级问题，未指向本次 `DesktopAutomationToolExecutorAdapter` 改动。
+- Desktop 相关验证：`nx.CMD run desktop:lint -- --quiet` 通过；`nx.CMD run desktop:typecheck` / 直接 `tsc` 仍受既有依赖构建与 workspace path 问题影响，失败点集中在 `tsup` 命令解析、`ui-vue-shadcn` DTS portable type、`@memoflow/powersync-schema` / dist-src 混用等既有项目级问题，未指向本次 `DesktopAutomationToolExecutorAdapter` 改动。
 - AI workspace E2E 已补跑：根目录执行 `nx.CMD run web:e2e:ai-workspace`，8 passed。该验证覆盖 `/` Agent Workspace、移动端 smoke、pending Goal Agent approval 刷新恢复、Goal Agent approval -> controlled executor -> partial failure -> retry success、Knowledge Q&A citations、Knowledge note generation/save、证据不足状态，以及显式 debug fallback 下的 legacy clarification -> draft -> confirm -> result 流程；完整 `web:e2e` 尚未在本次更新中重跑。
 - 计划中的 `test_goal_agent_graph.py`、`test_knowledge_qa_graph.py`、`test_knowledge_generation_graph.py` 形态实际被集中在 `apps/ai-service/tests/unit/test_agent_runtime.py`，后续可按可读性拆分。
 
@@ -751,7 +751,7 @@ E2E：
 
 文档改动至少运行：
 
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 代码改动按影响范围补充：
 

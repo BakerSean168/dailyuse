@@ -14,23 +14,23 @@ updated: 2026-07-06T00:00:00+08:00
 
 | seam / 层 | 目录 / 入口 | 负责什么 |
 | --- | --- | --- |
-| Public Contracts | `@dailyuse/contracts/governance` | DTO、Schema、事件、ID 类型、Protocol |
-| Contracts Mocks | `@dailyuse/contracts/mocks` | governance mock 数据 |
+| Public Contracts | `@memoflow/contracts/governance` | DTO、Schema、事件、ID 类型、Protocol |
+| Contracts Mocks | `@memoflow/contracts/mocks` | governance mock 数据 |
 | Server Domain | `src/server/domain/` | 聚合根、实体、仓储接口、值对象 |
 | Server Application | `src/server/application/` | Commands / Queries / `GovernanceApplicationPort` |
 | Server Transport | `src/server/transport/` | 校验、控制器、transport 翻译 |
 | Server Infrastructure | `src/server/infrastructure/` | Prisma / PowerSync / runtime / 组合根 / seed |
-| API | `@dailyuse/governance/api` / `src/api/` | HTTP 模块与路由注册 |
-| Client | `@dailyuse/governance/client` / `src/client/` | Web / Desktop renderer 客户端 seam |
-| Electron | `@dailyuse/governance/electron` / `src/electron/` | Desktop main 注册入口 |
-| Server Root | `@dailyuse/governance` | 规范化服务端组合根 |
+| API | `@memoflow/governance/api` / `src/api/` | HTTP 模块与路由注册 |
+| Client | `@memoflow/governance/client` / `src/client/` | Web / Desktop renderer 客户端 seam |
+| Electron | `@memoflow/governance/electron` / `src/electron/` | Desktop main 注册入口 |
+| Server Root | `@memoflow/governance` | 规范化服务端组合根 |
 
 治理模块公共契约已经外提到 `packages/contracts`，`packages/governance/src/` 内不再维护第二份 contracts，也不再对外暴露 `domain-client`、`application-client`、`infrastructure-client` 这类 layer-named seam。
 
 ## 前端数据流（推荐）
 
 ```text
-@dailyuse/governance/client -> Pinia(POJO cache) -> app-vue display-rule helpers -> components
+@memoflow/governance/client -> Pinia(POJO cache) -> app-vue display-rule helpers -> components
 ```
 
 - Store 里只存 POJO / DTO，不存 class 实例

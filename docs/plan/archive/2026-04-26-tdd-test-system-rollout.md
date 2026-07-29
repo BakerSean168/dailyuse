@@ -37,7 +37,7 @@ Build a fast-feedback, Nx-first testing system for the monorepo so day-to-day wo
 
 1. API fast feedback restored via app-local `vitest.config.ts`
 2. Root Vitest config thinned into registry/shared infra shape
-3. Shared test harness consolidated into `@dailyuse/test-utils`
+3. Shared test harness consolidated into `@memoflow/test-utils`
 4. Nx-native automation added for test target normalization
 
 ## Final Ownership Model

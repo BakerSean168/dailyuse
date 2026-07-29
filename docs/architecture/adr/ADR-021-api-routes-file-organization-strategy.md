@@ -10,7 +10,7 @@
 ## Context
 
 ## Implementation note (Residual 619 / 2026-07-22)
-Historical route samples used the removed `@dailyuse/contracts/response` package. Use `@dailyuse/contracts/result` `createHttpResponseBuilder` / `Result` + `expressAdapter` / `RouteRegistrar` instead.
+Historical route samples used the removed `@memoflow/contracts/response` package. Use `@memoflow/contracts/result` `createHttpResponseBuilder` / `Result` + `expressAdapter` / `RouteRegistrar` instead.
 
 
 在 ADR-020 中，我们决定将所有业务逻辑从 API 项目迁移到 packages。随之而来的是如何组织 API 中剩余的路由文件的问题。
@@ -74,9 +74,9 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { SomeApplicationService } from '@dailyuse/application-server';
-import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
+import { SomeApplicationService } from '@memoflow/application-server';
+import { createHttpResponseBuilder } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils';
 
 const logger = createLogger('FeatureRoutes');
 const responseBuilder = createHttpResponseBuilder();
@@ -344,9 +344,9 @@ import {
 import {
   AuthenticationApplicationService,
   AccountApplicationService,
-} from '@dailyuse/application-server';
-import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
+} from '@memoflow/application-server';
+import { createHttpResponseBuilder } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils';
 
 const logger = createLogger('AuthenticationLoginRoutes');
 const responseBuilder = createHttpResponseBuilder();
@@ -448,9 +448,9 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { SessionManagementApplicationService } from '@dailyuse/application-server';
-import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
+import { SessionManagementApplicationService } from '@memoflow/application-server';
+import { createHttpResponseBuilder } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils';
 
 const logger = createLogger('AuthenticationSessionRoutes');
 const responseBuilder = createHttpResponseBuilder();

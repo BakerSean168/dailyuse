@@ -15,7 +15,7 @@ describe('LocalVaultRuntime', () => {
   let runtime: LocalVaultRuntime;
 
   beforeEach(async () => {
-    root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'dailyuse-local-vault-'));
+    root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'memoflow-local-vault-'));
     vault = path.join(root, 'My Vault');
     await fs.promises.mkdir(vault, { recursive: true });
     platform = {

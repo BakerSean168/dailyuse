@@ -8,7 +8,7 @@
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import type { StrategyOptions, VerifiedCallback } from 'passport-jwt';
 import type { IAuthIdentityRepository, IAuthSessionRepository } from '../../domain';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { AuthSessionId } from '../../domain';
 
 export interface JwtStrategyConfig {

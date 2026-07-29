@@ -10,7 +10,7 @@ updated: 2026-07-22T00:00:00
 
 # 编辑器模块文件索引
 
-本索引连接编辑器模块业务说明与**当前**代码。旧 `@dailyuse/editor` 包与
+本索引连接编辑器模块业务说明与**当前**代码。旧 `@memoflow/editor` 包与
 `packages/app-vue/src/modules/editor` 已删除；知识呈现、安全预览、Web 快捷创建与
 Desktop Obsidian 打开入口落在 repository 工作区与共享 Markdown 工具上。
 

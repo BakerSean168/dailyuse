@@ -29,7 +29,7 @@ server/infrastructure (RulePrismaRepository 实现)
 
 ### 3.1 AggregateRepositoryBase — 模板方法
 
-聚合根仓储应继承 `AggregateRepositoryBase<T>`（来自 `@dailyuse/patterns`）。
+聚合根仓储应继承 `AggregateRepositoryBase<T>`（来自 `@memoflow/patterns`）。
 
 **机制**: `save()` 作为模板方法，先调 `persist()`（子类实现），再自动 `publishDomainEvents()`。
 

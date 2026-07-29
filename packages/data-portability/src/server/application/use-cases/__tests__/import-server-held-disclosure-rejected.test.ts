@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ResultErrorException } from '@dailyuse/contracts/result';
+import { ResultErrorException } from '@memoflow/contracts/result';
 import { ImportUserDataUseCase } from '../import-user-data.use-case';
 import type { DataPortabilityImportStore } from '../../import-store/data-portability-import-store';
 

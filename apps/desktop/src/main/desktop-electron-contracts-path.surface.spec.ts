@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 242: desktop main does not dual-re-export electron contracts.
- * Callers import IElectronModule* from @dailyuse/contracts/electron only.
+ * Callers import IElectronModule* from @memoflow/contracts/electron only.
  */
 describe('desktop electron contracts path single-track surface', () => {
   const mainDir = __dirname;

@@ -1,5 +1,5 @@
-import type { AIModelInfo } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { AIModelInfo } from '@memoflow/contracts/ai';
+import { createLogger } from '@memoflow/utils/logger';
 import type {
   IAIProviderModelCatalogPort,
   ProviderModelCatalogInput,

@@ -11,22 +11,22 @@ import {
 } from '../../vite.workspace-aliases';
 
 const webDevWorkspaceEntries = [
-  ['@dailyuse/app-vue/web-core', 'packages/app-vue/src/web-core.ts'],
-  ['@dailyuse/app-vue/web-shell-core', 'packages/app-vue/src/web-shell-core.ts'],
-  ['@dailyuse/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
-  ['@dailyuse/app-vue/web-shell', 'packages/app-vue/src/web-shell.ts'],
-  ['@dailyuse/app-vue/web-i18n', 'packages/app-vue/src/web-i18n.ts'],
-  ['@dailyuse/app-vue/web-bootstrap', 'packages/app-vue/src/web-bootstrap.ts'],
-  ['@dailyuse/app-vue/web-entry', 'packages/app-vue/src/web-entry.ts'],
-  ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
-  ['@dailyuse/authentication/client', 'packages/authentication/src/client/index.ts'],
-  ['@dailyuse/goal/client', 'packages/goal/src/client/index.ts'],
-  ['@dailyuse/schedule/client', 'packages/schedule/src/client/index.ts'],
-  ['@dailyuse/reminder/client', 'packages/reminder/src/client/index.ts'],
-  ['@dailyuse/notification/client', 'packages/notification/src/client/index.ts'],
-  ['@dailyuse/repository/client', 'packages/repository/src/client/index.ts'],
-  ['@dailyuse/task/client', 'packages/task/src/client/index.ts'],
-  ['@dailyuse/ai/client', 'packages/ai/src/client/index.ts'],
+  ['@memoflow/app-vue/web-core', 'packages/app-vue/src/web-core.ts'],
+  ['@memoflow/app-vue/web-shell-core', 'packages/app-vue/src/web-shell-core.ts'],
+  ['@memoflow/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
+  ['@memoflow/app-vue/web-shell', 'packages/app-vue/src/web-shell.ts'],
+  ['@memoflow/app-vue/web-i18n', 'packages/app-vue/src/web-i18n.ts'],
+  ['@memoflow/app-vue/web-bootstrap', 'packages/app-vue/src/web-bootstrap.ts'],
+  ['@memoflow/app-vue/web-entry', 'packages/app-vue/src/web-entry.ts'],
+  ['@memoflow/app-vue', 'packages/app-vue/src/index.ts'],
+  ['@memoflow/authentication/client', 'packages/authentication/src/client/index.ts'],
+  ['@memoflow/goal/client', 'packages/goal/src/client/index.ts'],
+  ['@memoflow/schedule/client', 'packages/schedule/src/client/index.ts'],
+  ['@memoflow/reminder/client', 'packages/reminder/src/client/index.ts'],
+  ['@memoflow/notification/client', 'packages/notification/src/client/index.ts'],
+  ['@memoflow/repository/client', 'packages/repository/src/client/index.ts'],
+  ['@memoflow/task/client', 'packages/task/src/client/index.ts'],
+  ['@memoflow/ai/client', 'packages/ai/src/client/index.ts'],
 ] as const;
 
 /**

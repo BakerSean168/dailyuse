@@ -9,7 +9,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { PrismaUserReminderPreferenceMapper } from './prisma-user-reminder-preference-mapper';
-import type { UserReminderPreference as PrismaUserReminderPreference } from '@dailyuse/database';
+import type { UserReminderPreference as PrismaUserReminderPreference } from '@memoflow/database';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 

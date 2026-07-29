@@ -2,13 +2,13 @@ import type {
   AgentEvent,
   AgentRun,
   AgentRunResult,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import {
   AgentEventSchema,
   AgentRunSchema,
   AgentRunResultSchema,
-} from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/ai';
+import { createLogger } from '@memoflow/utils/logger';
 import type {
   AgentRuntimeListInput,
   AgentRuntimeResumeInput,

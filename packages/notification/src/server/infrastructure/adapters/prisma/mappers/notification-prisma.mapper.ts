@@ -1,5 +1,5 @@
 // Residual 1025: sole parseJsonSafe (local dual retired).
-import { parseJsonSafe } from '@dailyuse/utils/shared';
+import { parseJsonSafe } from '@memoflow/utils/shared';
 /**
  * NotificationPrismaMapper — Bidirectional mapping between Prisma rows and domain Notification aggregate.
  * NotificationPrismaMapper —— Prisma 行数据与领域 Notification 聚合根之间的双向映射。
@@ -24,8 +24,8 @@ import type {
   ChannelStatus,
   NotificationActionDTO,
   NotificationMetadataDTO,
-} from '@dailyuse/contracts/notification';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/notification';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import { Notification } from '../../../../domain/aggregates/notification';
 import { NotificationChannel } from '../../../../domain/entities/notification-channel';
 import { NotificationHistory } from '../../../../domain/entities/notification-history';

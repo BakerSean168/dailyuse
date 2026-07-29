@@ -5,7 +5,7 @@
 
 import type {
   TokenUsageDTO,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 /**
  * TokenUsage 值对象 - 服务端

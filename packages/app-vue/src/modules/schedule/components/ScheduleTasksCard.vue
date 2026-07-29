@@ -92,11 +92,11 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
-import { Badge, type BadgeVariants } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Separator } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent, CardHeader, CardTitle } from '@memoflow/ui-vue-shadcn';
+import { Badge, type BadgeVariants } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Alert, AlertDescription } from '@memoflow/ui-vue-shadcn';
+import { Separator } from '@memoflow/ui-vue-shadcn';
 import {
   Loader2,
   AlertCircle,
@@ -110,7 +110,7 @@ import {
   XCircle,
   HelpCircle,
 } from '@lucide/vue';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 

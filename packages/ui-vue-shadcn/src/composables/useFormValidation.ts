@@ -4,7 +4,7 @@ import {
   VALIDATION_RULES,
   type ValidationRule,
   type ValidationRules,
-} from '@dailyuse/ui-core';
+} from '@memoflow/ui-core';
 
 export interface UseFormValidationReturn {
   /** All validation rules */
@@ -23,7 +23,7 @@ export interface UseFormValidationReturn {
 
 /**
  * Vue composable for form validation
- * Wraps @dailyuse/ui-core form validation logic with Vue reactivity
+ * Wraps @memoflow/ui-core form validation logic with Vue reactivity
  */
 export function useFormValidation(): UseFormValidationReturn {
   const core = createFormValidation();

@@ -6,12 +6,12 @@
  * @since Story 9.3 (EPIC-SCHEDULE-001)
  */
 
-import type { PrismaClient, Schedule as PrismaSchedule } from '@dailyuse/database';
+import type { PrismaClient, Schedule as PrismaSchedule } from '@memoflow/database';
 import type { IScheduleRepository } from '../../../domain/repositories/i-schedule-repository';
 import { CalendarEntry } from '../../../domain/aggregates/calendar-entry';
 import { PrismaScheduleMapper } from './mappers/prisma-schedule-mapper';
-import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createEventBusAdapter, publishAggregateEvents } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

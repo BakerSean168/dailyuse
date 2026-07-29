@@ -5,11 +5,11 @@
  * Handles JSON serialization for stats field.
  */
 
-import type { ReminderGroup as PrismaReminderGroup } from '@dailyuse/database';
-import type { ControlMode, ReminderStatus, GroupStatsDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderGroup as PrismaReminderGroup } from '@memoflow/database';
+import type { ControlMode, ReminderStatus, GroupStatsDTO } from '@memoflow/contracts/reminder';
 import { ReminderGroup } from '../../../../domain/aggregates/reminder-group';
 import { GroupStats } from '../../../../domain/value-objects';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 
 export class PrismaReminderGroupMapper {
   /**

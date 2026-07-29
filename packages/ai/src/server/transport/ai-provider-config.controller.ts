@@ -1,5 +1,5 @@
-import { fail, ok, type Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { fail, ok, type Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   CreateAIProviderConfigSchema,
   type CreateAIProviderConfigRes,
@@ -12,8 +12,8 @@ import {
   type UpdateAIProviderConfigRes,
   type AIProviderConfigClientDTO,
   type ListAIProviderConfigsRes,
-} from '@dailyuse/contracts/ai';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/ai';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 interface AIProviderConfigControllerService {
   createProvider(

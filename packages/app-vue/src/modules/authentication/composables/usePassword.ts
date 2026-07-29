@@ -18,7 +18,7 @@ import type {
   ChangePasswordReq,
   ForgotPasswordReq,
   ResetPasswordReq,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { useAuthenticationStore } from '../stores/authentication-store';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';

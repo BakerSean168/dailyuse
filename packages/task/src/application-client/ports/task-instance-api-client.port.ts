@@ -5,14 +5,14 @@
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   CheckExpiredTaskInstancesRes,
   GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 export interface ITaskInstanceApiClient {
   getTaskInstances(params?: {

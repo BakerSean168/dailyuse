@@ -3,7 +3,7 @@
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { describe, expect, it, vi } from 'vitest';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 import GridTemplateItem from './GridTemplateItem.vue';
 
 vi.mock('../../../components/shared', async () => {

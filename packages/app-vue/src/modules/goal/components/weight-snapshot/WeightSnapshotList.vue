@@ -189,7 +189,7 @@ import { useI18n } from 'vue-i18n';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
 import type { GoalSnapshotItem } from '../../composables/useWeightSnapshot';
 import { useGoal } from '../../composables/useGoal';
-import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
 import { formatProductPattern } from '../../../../shared/utils/product-time';
 import {
   Card,
@@ -206,7 +206,7 @@ import {
   Alert,
   AlertDescription,
   Separator,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   ArrowUp,
   ArrowDown,

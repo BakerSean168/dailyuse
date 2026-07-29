@@ -8,8 +8,8 @@
  * 负责治理运行时的业务模型：
  * 聚合根、实体、仓储接口和值对象。
  *
- * Public contracts remain centralized in `@dailyuse/contracts/governance`.
- * 公共契约继续集中在 `@dailyuse/contracts/governance`。
+ * Public contracts remain centralized in `@memoflow/contracts/governance`.
+ * 公共契约继续集中在 `@memoflow/contracts/governance`。
  */
 
 export * from './aggregates';

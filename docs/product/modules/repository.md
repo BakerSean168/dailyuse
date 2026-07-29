@@ -12,7 +12,7 @@ updated: 2026-07-21T00:00:00
 
 ## 1. 功能定位
 
-资源库模块负责把用户的 Markdown 知识资产接入 Daily Use 的浏览、搜索、引用、AI 和跨端流程。长期定位不是独立知识编辑器，而是本地 Obsidian Vault、可选 GitHub private repository 和 Memory Flow 业务能力之间的边界。
+资源库模块负责把用户的 Markdown 知识资产接入 MemoFlow 的浏览、搜索、引用、AI 和跨端流程。长期定位不是独立知识编辑器，而是本地 Obsidian Vault、可选 GitHub private repository 和 Memory Flow 业务能力之间的边界。
 
 [ADR-034](../../architecture/adr/ADR-034-obsidian-vault-repository.md) 已采纳：本地 Vault 优先；GitHub 登录与仓库授权解耦；用户需要同步时再连接 GitHub；绑定后 Web 可以安全地快捷创建新笔记。
 
@@ -27,11 +27,11 @@ updated: 2026-07-21T00:00:00
 - 服务端已实现 GitHub webhook、default branch reconciliation、Markdown/附件投影、链接关系、受认证附件读取、短期附件
   cache、Web 幂等新建笔记和 RAG 自动索引。
 - Web 设置页可下载独立、不可导入的服务端持有数据披露，覆盖 retained connection metadata、投影、附件缓存字节、
-  Webhook/write history 与 RAG index，不包含 Memoflow 管理的可重放 GitHub 授权。
+  Webhook/write history 与 RAG index，不包含 MemoFlow 管理的可重放 GitHub 授权。
 - Web 已收缩为投影浏览、搜索、安全 Markdown 预览、关系查看和确认后创建新 Markdown 文件，不开放已有笔记全文编辑。
 - 旧数据库 Repository/Folder/Resource CRUD、Editor content API、Desktop legacy IPC、Vue `/note/:id` 与 Mobile
   Repository/note-editor 路由均已从 host 运行时移除；旧数据只保留在可重新导入备份边界内。
-- 断开仓库默认保留可重建云端数据；用户可显式选择永久清理 Memoflow 投影/cache/ledger/RAG，且两种模式都不删除
+- 断开仓库默认保留可重建云端数据；用户可显式选择永久清理 MemoFlow 投影/cache/ledger/RAG，且两种模式都不删除
   本地 Vault 或 GitHub repository。
 - 真实 Git 服务边界验收已覆盖；真实 GitHub fixture E2E 仍需在具备受控 GitHub App 凭据的环境执行。
 
@@ -71,7 +71,7 @@ Local Obsidian Vault
        -> Web/Mobile
 
 Web create
-  -> Daily Use API
+  -> MemoFlow API
   -> GitHub App commit
   -> webhook/read model
   -> Desktop pull
@@ -103,7 +103,7 @@ Web create
 ## 7. 断开与导出
 
 - 默认断开是可恢复撤销：停止同步并隐藏连接，但保留服务端可重建投影和索引。
-- 勾选“删除 Memoflow 云端投影与 AI 索引”后，服务端按当前 identity 在单事务中永久清理连接及所有派生数据。
+- 勾选“删除 MemoFlow 云端投影与 AI 索引”后，服务端按当前 identity 在单事务中永久清理连接及所有派生数据。
 - 本地 Vault、本地 Git 历史和 GitHub repository 在两种模式下都保留。
 - 设置页“导出可重新导入的数据”生成 `memoflow.user-data-export` JSON，只用于业务数据 append-create-like
   导入；它不是 Vault/GitHub 导出，也不是服务端持有数据披露。
@@ -112,7 +112,7 @@ Web create
 - Web 的“服务端持有数据披露”生成 `memoflow.server-held-data-disclosure` JSON；它按认证 identity 包含 repository
   connection metadata（含不可重放 installation identifier）、Markdown/附件投影、附件 cache bytes、Webhook delivery、
   Web write ledger 与 AI knowledge index。该 artifact 没有 import route，并明确排除本地 Vault/Git history、GitHub
-  repository history、worker lease、数据库内部 retrieval vector 及所有 Memoflow 管理的可重放授权材料。Markdown、
+  repository history、worker lease、数据库内部 retrieval vector 及所有 MemoFlow 管理的可重放授权材料。Markdown、
   frontmatter 和 cache bytes 属于用户仓库内容，按原样进入披露文件。
 
 ## 8. 当前差距
@@ -123,10 +123,10 @@ Web create
 
 ## 9. 风险点
 
-- GitHub private repository 不是对 GitHub/Daily Use 服务端不可见的 E2E 加密。
+- GitHub private repository 不是对 GitHub/MemoFlow 服务端不可见的 E2E 加密。
 - Git 冲突、仓库体积、大附件和 Git LFS 会增加 Desktop 复杂度。
 - GitHub App 撤销、仓库删除/公开、账号限制会影响跨端能力。
-- 同时使用 Obsidian Git 插件与 Daily Use 自动 Git 可能产生 lock 和竞态。
+- 同时使用 Obsidian Git 插件与 MemoFlow 自动 Git 可能产生 lock 和竞态。
 - Agent 读取的知识内容不可信，必须防止路径穿越、命令执行和提示注入越权。
 - Web 创建和 Desktop push 并发时必须通过远端 HEAD 和串行提交控制。
 

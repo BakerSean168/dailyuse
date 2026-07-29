@@ -5,10 +5,10 @@
  * Shared by Prisma and PowerSync mappers.
  */
 
-import type { ReviewType, KeyResultWeightSnapshotDTO, KeyResultValueType, KeyResultCalculationMethod, GoalReminderConfigDTO, KeyResultSnapshotDTO } from '@dailyuse/contracts/goal';
-import { GoalStatus } from '@dailyuse/contracts/goal';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { IdentityId } from '@dailyuse/domain-shared';
+import type { ReviewType, KeyResultWeightSnapshotDTO, KeyResultValueType, KeyResultCalculationMethod, GoalReminderConfigDTO, KeyResultSnapshotDTO } from '@memoflow/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { GoalId, GoalFolderId, GoalReviewId, KeyResultId } from '../../../../domain';
 import {
   KeyResult,

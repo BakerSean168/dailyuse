@@ -8,8 +8,8 @@
  * - 依赖图的构建
  */
 
-import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
-import type { DependencyType } from '@dailyuse/contracts/task';
+import type { TaskDependencyServerDTO } from '@memoflow/contracts/task';
+import type { DependencyType } from '@memoflow/contracts/task';
 import type { TaskDependency } from '../aggregates/task-dependency';
 
 /**

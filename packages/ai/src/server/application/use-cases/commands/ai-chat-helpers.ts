@@ -1,10 +1,10 @@
 import type { IAIConversationRepository } from '../../../domain/repositories/i-ai-conversation-repository';
 import { AIConversation as AIConversationServer } from '../../../domain/aggregates/ai-conversation';
 import { Message as MessageServer } from '../../../domain/entities/message';
-import type { MessageClientDTO } from '@dailyuse/contracts/ai';
-import { MessageRole } from '@dailyuse/contracts/ai';
+import type { MessageClientDTO } from '@memoflow/contracts/ai';
+import { MessageRole } from '@memoflow/contracts/ai';
 import type { ChatExecutionMessage } from '../../ports';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('AIChatHelpers');
 

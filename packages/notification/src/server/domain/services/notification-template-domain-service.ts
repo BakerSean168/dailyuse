@@ -5,9 +5,9 @@
  */
 
 import type { INotificationTemplateRepository } from '../repositories/i-notification-template-repository';
-import type { NotificationTemplateConfigServerDTO } from '@dailyuse/contracts/notification';
+import type { NotificationTemplateConfigServerDTO } from '@memoflow/contracts/notification';
 import { NotificationTemplate } from '../aggregates/notification-template';
-import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
 
 /**
  * NotificationTemplateDomainService

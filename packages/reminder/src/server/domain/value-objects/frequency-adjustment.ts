@@ -5,11 +5,11 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   FrequencyAdjustment as IFrequencyAdjustment,
   FrequencyAdjustmentDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 /**
  * FrequencyAdjustment 值对象实现

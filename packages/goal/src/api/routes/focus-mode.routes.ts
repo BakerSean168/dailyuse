@@ -4,8 +4,8 @@
  */
 
 import { Router, type RequestHandler } from 'express';
-import { RouteRegistrar, type OpenApiRegistryLike, successResponse } from '@dailyuse/utils/result';
-import { ActivateFocusModeSchema, ExtendFocusModeSchema, FocusModeClientDTOSchema } from '@dailyuse/contracts/goal';
+import { RouteRegistrar, type OpenApiRegistryLike, successResponse } from '@memoflow/utils/result';
+import { ActivateFocusModeSchema, ExtendFocusModeSchema, FocusModeClientDTOSchema } from '@memoflow/contracts/goal';
 import type { GoalController } from '../../server/transport/goal.controller';
 
 interface PlatformMiddleware {

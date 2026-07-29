@@ -1,12 +1,12 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { AIEventMap } from '@dailyuse/contracts/ai';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { AIEventMap } from '@memoflow/contracts/ai';
 import { AIConversation } from '../../../domain/aggregates/ai-conversation';
 import { Message } from '../../../domain/entities/message';
 import type {
   AIConversationQueryOptions,
   IAIConversationRepository,
 } from '../../../domain/repositories/i-ai-conversation-repository';
-import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
 import {
   PowerSyncAIConversationMapper,
   type PowerSyncAIConversationRow,

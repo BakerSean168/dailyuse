@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import type { SettingApplicationPort } from '../server/application';
 import { registerSettingRoutes } from './routes';
 

@@ -1,5 +1,5 @@
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleTask } from '@dailyuse/schedule';
+import { SourceModule } from '@memoflow/contracts/schedule';
+import type { ScheduleTask } from '@memoflow/schedule';
 import type { ScheduleNotificationRequest } from '../ports/execution';
 import type { ScheduleOrchestrationExecutionDeps } from '../ports/execution';
 

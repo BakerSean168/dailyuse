@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { productionLocaleMessages } from '../../../locales/production-messages';
 import AIConversationSidebar from './AIConversationSidebar.vue';
 
-vi.mock('@dailyuse/ui-vue-shadcn', async () => {
+vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const vue = await import('vue');
   const passthrough = (name: string) =>
     vue.defineComponent({

@@ -1,5 +1,5 @@
 /**
- * @dailyuse/domain-shared 打包配置
+ * @memoflow/domain-shared 打包配置
  *
  * 包类型：共享域模型库
  * 打包工具：tsup (基于 esbuild)
@@ -13,14 +13,14 @@
 import { createLocalOnlyDtsPaths, createTsupConfig } from '../../tools/build/tsup.base.config.ts';
 
 export default createTsupConfig({
-  packageName: '@dailyuse/domain-shared',
+  packageName: '@memoflow/domain-shared',
   entry: [
     // 根入口
     'src/index.ts',
     // 当前仅保留 shared 子路径（其余模块入口已收缩）
     'src/shared/index.ts',
   ],
-  external: ['@dailyuse/contracts', '@dailyuse/utils'],
+  external: ['@memoflow/contracts', '@memoflow/utils'],
   extraOptions: {
     dts: createLocalOnlyDtsPaths(),
   },

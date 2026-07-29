@@ -102,8 +102,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import type { GoalFolderClientDTO } from '@memoflow/contracts/goal';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import {
   Dialog,
   DialogContent,
@@ -111,18 +111,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
+import { Textarea } from '@memoflow/ui-vue-shadcn';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@dailyuse/ui-vue-shadcn';
-import { Popover, PopoverTrigger, PopoverContent } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Popover, PopoverTrigger, PopoverContent } from '@memoflow/ui-vue-shadcn';
 
 const { t } = useI18n();
 

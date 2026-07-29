@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { anIdentityId } from '@dailyuse/test-utils/fixtures';
+import { IdentityId } from '@memoflow/domain-shared';
+import { anIdentityId } from '@memoflow/test-utils/fixtures';
 
 /**
  * Residual 1033: task anIdentityId dual retired onto test-utils fixtures sole.
@@ -26,7 +26,7 @@ describe('anIdentityId dual retired (residual 1033)', () => {
 
   it('task testing fixture re-exports sole without local dual body', () => {
     expect(taskFixture).toContain('Residual 1033');
-    expect(taskFixture).toContain("from '@dailyuse/test-utils/fixtures'");
+    expect(taskFixture).toContain("from '@memoflow/test-utils/fixtures'");
     expect(taskFixture).toContain('anIdentityId');
     expect(taskFixture).not.toMatch(/export function anIdentityId\b/);
     expect(taskFixture).not.toMatch(/function anIdentityId\b/);

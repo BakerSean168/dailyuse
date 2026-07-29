@@ -1,4 +1,4 @@
-import type { EmailRegisterCredentials } from '@dailyuse/contracts/authentication';
+import type { EmailRegisterCredentials } from '@memoflow/contracts/authentication';
 
 import type { AuthRemoteGateway, RegisterApiResponse } from './auth-remote-gateway';
 import {

@@ -387,7 +387,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
 import { formatProductDateTime } from '../../../../shared/utils/product-time';
 import {
   Card,
@@ -398,7 +398,7 @@ import {
   Button,
   Progress,
   Separator,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   BarChart3,
   Table,

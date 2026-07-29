@@ -5,7 +5,7 @@
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   ListTaskTemplateFilters,
   TaskTemplateClientDTO,
@@ -17,7 +17,7 @@ import type {
   BindToGoalReq,
   QueryTaskTemplateGraphRes,
   TaskTemplateInstancesQuery,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 export interface TaskTemplateListParams extends Record<string, unknown>, ListTaskTemplateFilters {
   page?: number;

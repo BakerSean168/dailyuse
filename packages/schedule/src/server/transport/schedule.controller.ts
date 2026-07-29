@@ -5,9 +5,9 @@
  * Shared by both Express (HTTP) and IPC transport layers.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
 import type { ScheduleApplicationPort } from '../application';
 import {
   CreateScheduleTaskRequestSchema,
@@ -15,12 +15,12 @@ import {
   ScheduleTaskQueryParamsSchema,
   BatchScheduleTaskOperationRequestSchema,
   UpdateTaskMetadataRequestSchema,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import type {
   CreateScheduleTaskRequest,
   UpdateScheduleTaskRequest,
-} from '@dailyuse/contracts/schedule';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/schedule';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 export class ScheduleController {
   constructor(private readonly api: ScheduleApplicationPort) {}

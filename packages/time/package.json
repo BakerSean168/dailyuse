@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/time",
+  "name": "@memoflow/time",
   "version": "0.0.1",
   "private": false,
   "type": "module",
@@ -13,7 +13,7 @@
     }
   },
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
     "date-fns": "^4.1.0"
   },
   "devDependencies": {

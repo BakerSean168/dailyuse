@@ -17,7 +17,7 @@ import {
   PowerSyncAuthSessionRepository,
 } from './adapters/powersync';
 import { Argon2Hasher } from './encryptors/argon2-hasher';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { ITokenProvider } from '../domain/services/token-provider.interface';
 
 export interface AuthenticationPowerSyncModuleOptions {

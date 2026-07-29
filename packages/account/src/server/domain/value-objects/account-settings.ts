@@ -1,8 +1,8 @@
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   AccountSettingsDTO,
   AccountSettings as IAccountSettings,
-} from '@dailyuse/contracts/account';
+} from '@memoflow/contracts/account';
 import { ThemeType } from './theme-type';
 import { LanguageCode } from './language-code';
 

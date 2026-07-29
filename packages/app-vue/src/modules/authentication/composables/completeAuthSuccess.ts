@@ -4,7 +4,7 @@
  * Exact dual retired from useLogin / useRegister / useRememberedAccounts.
  */
 import { toast } from 'vue-sonner';
-import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
+import type { AuthResponseDTO } from '@memoflow/contracts/authentication';
 import { hasDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
 
 export async function completeAuthSuccess(

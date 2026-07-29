@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { vi } from 'vitest';
 
-const electronTestRoot = path.join(tmpdir(), 'dailyuse-electron-test');
+const electronTestRoot = path.join(tmpdir(), 'memoflow-electron-test');
 mkdirSync(electronTestRoot, { recursive: true });
 
 function createEmitterApi<T extends Record<string, unknown>>(shape: T) {
@@ -208,7 +208,7 @@ export const app = createEmitterApi({
   getPath: vi.fn((name: string) => path.join(electronTestRoot, name)),
   setPath: vi.fn(),
   getVersion: vi.fn(() => '1.0.0-test'),
-  getName: vi.fn(() => 'Memoflow-Test'),
+  getName: vi.fn(() => 'MemoFlow-Test'),
   getAppPath: vi.fn(() => electronTestRoot),
   quit: vi.fn(),
   exit: vi.fn(),

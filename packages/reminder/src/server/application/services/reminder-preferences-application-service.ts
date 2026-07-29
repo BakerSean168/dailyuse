@@ -1,7 +1,7 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { UpdateReminderPreferencesReq } from '@dailyuse/contracts/reminder';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { UpdateReminderPreferencesReq } from '@memoflow/contracts/reminder';
 import { UserReminderPreferences } from '../../domain/aggregates/user-reminder-preferences';
 import { ReminderDomainService } from '../../domain/services/reminder-domain-service';
 import type { IUserReminderPreferenceRepository } from '../../domain/repositories/i-user-reminder-preference-repository';

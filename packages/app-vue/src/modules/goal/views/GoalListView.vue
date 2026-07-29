@@ -59,11 +59,11 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Target } from '@lucide/vue';
-import { ScrollArea, Skeleton, useConfirm } from '@dailyuse/ui-vue-shadcn';
+import { ScrollArea, Skeleton, useConfirm } from '@memoflow/ui-vue-shadcn';
 import { GoalCard } from '../components';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGoal } from '../composables/useGoal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
 
 const { t } = useI18n();
 const router = useRouter();

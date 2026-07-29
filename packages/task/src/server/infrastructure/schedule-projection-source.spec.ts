@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../domain/repositories/i-task-template-repository';
 import {
@@ -9,8 +9,8 @@ import {
   anAllDayTimeConfig,
   anIdentityId,
 } from '../../testing';
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '@dailyuse/schedule';
+import { SourceModule } from '@memoflow/contracts/schedule';
+import { ScheduleTask } from '@memoflow/schedule';
 import {
   createTaskScheduleProjectionEventHandlers,
   createTaskScheduleProjectionSource,

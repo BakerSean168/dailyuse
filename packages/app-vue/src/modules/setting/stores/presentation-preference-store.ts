@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
+import type { UserSettingPreferences } from '@memoflow/contracts/setting';
 import type { AppLocale } from '../../../plugins/i18n';
 // Residual 1005: sole presentation helpers (local dual retired).
 import {
@@ -7,11 +7,11 @@ import {
   normalizeLocale,
   normalizeTheme,
   type PresentationThemeMode,
-} from '@dailyuse/utils/shared';
+} from '@memoflow/utils/shared';
 
 export type { PresentationThemeMode };
 
-// Residual 1005: detectBrowserLocale/normalizeLocale/normalizeTheme elevated to @dailyuse/utils/shared.
+// Residual 1005: detectBrowserLocale/normalizeLocale/normalizeTheme elevated to @memoflow/utils/shared.
 
 export interface PresentationPreferenceState {
   locale: AppLocale;

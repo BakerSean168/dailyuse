@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ReminderChannels } from '@dailyuse/contracts/electron';
+import { ReminderChannels } from '@memoflow/contracts/electron';
 
 /**
  * Reminder electron seam surface (stage-6 residual):
@@ -12,7 +12,7 @@ describe('ReminderElectronModule channel surface', () => {
 
   it('registers handlers via ReminderChannels and does not redefine a local Ch map', () => {
     expect(source).toContain('ReminderChannels');
-    expect(source).toContain("from '@dailyuse/contracts/electron'");
+    expect(source).toContain("from '@memoflow/contracts/electron'");
     expect(source).not.toMatch(/const Ch = \{/);
     expect(source).toContain('Object.values(ReminderChannels)');
     expect(source).toContain('ReminderChannels.TEMPLATE_LIST');

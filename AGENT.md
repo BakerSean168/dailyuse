@@ -1,4 +1,4 @@
-# Memoflow Agent Guide
+# MemoFlow Agent Guide
 
 本文件是仓库内 AI 协作的唯一维护入口。`AGENTS.md`、`CLAUDE.md` 和 GitHub/Copilot 相关入口只允许指向这里或补充平台特有说明，不再维护平行规则。
 
@@ -71,10 +71,10 @@
 
 ## 最小验证
 
-- 文档和治理相关改动至少运行 `pnpm nx run daily-use:governance-check`。
+- 文档和治理相关改动至少运行 `pnpm nx run memoflow:governance-check`。
 - 代码和配置改动再补离改动最近的 `lint`、`typecheck`、`test` 或其他相关 target。
 
 桌面端在 Windows 开发模式下的日志目录：
-`C:\Users\xx\AppData\Roaming\Memoflow-Dev\logs`
+`C:\Users\xx\AppData\Roaming\MemoFlow-Dev\logs`
 
 

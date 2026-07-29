@@ -12,11 +12,11 @@
 import type {
   NotificationPreferenceClientDTO,
   NotificationChannelType,
-} from '@dailyuse/contracts/notification';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/notification';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { NotificationPreferenceId } from '../../server/domain/value-objects/notification-preference-id';
-import { IdentityId } from '@dailyuse/domain-shared';
-import type { NotificationPreferenceId as NotificationPreferenceIdBranded, IdentityId as IdentityIdBranded } from '@dailyuse/contracts/primitives';
+import { IdentityId } from '@memoflow/domain-shared';
+import type { NotificationPreferenceId as NotificationPreferenceIdBranded, IdentityId as IdentityIdBranded } from '@memoflow/contracts/primitives';
 
 export interface NotificationPreferenceState {
   id: NotificationPreferenceId;

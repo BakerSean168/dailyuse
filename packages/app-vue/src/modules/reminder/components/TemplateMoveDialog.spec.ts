@@ -7,10 +7,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type {
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import TemplateMoveDialog from './TemplateMoveDialog.vue';
 
-vi.mock('@dailyuse/ui-vue-shadcn', async () => {
+vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const vue = await import('vue');
 
   const passthrough = (name: string) =>

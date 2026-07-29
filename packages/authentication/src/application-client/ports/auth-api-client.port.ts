@@ -8,7 +8,7 @@
  * 所有方法返回 Promise<Result<T>>，统一错误处理。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   AutoLoginResult,
   LoginByEmailReq,
@@ -37,7 +37,7 @@ import type {
   GuestModeRes,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 /**
  * Authentication API Client Interface

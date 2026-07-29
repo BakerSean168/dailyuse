@@ -1,5 +1,5 @@
 /**
- * @dailyuse/contracts 打包配置
+ * @memoflow/contracts 打包配置
  *
  * 包类型：纯类型定义库（支持子路径导出）
  * 打包工具：tsup (基于 esbuild)
@@ -13,7 +13,7 @@
 import { createTsupConfig } from '../../tools/build/tsup.base.config.ts';
 
 export default createTsupConfig({
-  packageName: '@dailyuse/contracts',
+  packageName: '@memoflow/contracts',
   // 多入口：支持子路径导出
   entry: [
     // 根入口（精简版，只导出核心类型和常用枚举）

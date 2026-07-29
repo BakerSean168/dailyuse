@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { GoalStatus } from '@dailyuse/contracts/goal';
-import { TaskInstanceStatus, TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { ReminderStatus } from '@dailyuse/contracts/reminder';
+import { GoalStatus } from '@memoflow/contracts/goal';
+import { TaskInstanceStatus, TaskTemplateStatus } from '@memoflow/contracts/task';
+import { ReminderStatus } from '@memoflow/contracts/reminder';
 import type {
   DashboardReadSource,
   DashboardGoalRecord,

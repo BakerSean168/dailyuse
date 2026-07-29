@@ -105,26 +105,26 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import { Card } from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
+import { Card } from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
+import { Textarea } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
 import { CalendarPlus, Clock, Check, Loader2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type {
   ConflictDetectionResult,
   ConflictSuggestion,
   CreateScheduleRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import { formatDateToYMD } from '../../../shared/utils/format-date-to-ymd';
 import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 import { formatScheduleDurationMinutes } from '../../../shared/utils/format-schedule-duration-minutes';

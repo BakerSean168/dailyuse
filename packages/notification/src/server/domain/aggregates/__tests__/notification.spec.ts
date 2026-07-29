@@ -6,8 +6,8 @@ import {
   NotificationType,
   NotificationCategory,
   NotificationChannelType,
-} from '@dailyuse/contracts/notification';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/notification';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 describe('Notification Aggregate Root', () => {
   const testIdentityId = 'test-identity-123';

@@ -8,11 +8,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { TaskExpirationService } from './task-expiration-service';
 import { TaskInstance } from '../aggregates';
-import { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus } from '@memoflow/contracts/task';
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import { TaskInstanceId } from '../../domain/value-objects/task-instance-id';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskTimeConfig } from '../value-objects';
 import type { TaskInstanceState } from '../aggregates/task-instance';
 

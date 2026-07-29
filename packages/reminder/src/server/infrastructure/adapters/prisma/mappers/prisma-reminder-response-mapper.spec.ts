@@ -10,8 +10,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { PrismaReminderResponseMapper } from './prisma-reminder-response-mapper';
-import type { ReminderResponse as PrismaReminderResponse } from '@dailyuse/database';
-import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import type { ReminderResponse as PrismaReminderResponse } from '@memoflow/database';
+import type { ReminderResponseAction } from '@memoflow/contracts/reminder';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 

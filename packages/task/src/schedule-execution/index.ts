@@ -3,8 +3,8 @@ import type {
   NotificationChannelType,
   NotificationType,
   RelatedEntityType,
-} from '@dailyuse/contracts/notification';
-import type { ScheduleTask } from '@dailyuse/schedule';
+} from '@memoflow/contracts/notification';
+import type { ScheduleTask } from '@memoflow/schedule';
 
 export interface TaskScheduleExecutionNotification {
   readonly identityId: string;

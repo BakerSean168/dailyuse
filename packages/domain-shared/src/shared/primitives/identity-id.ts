@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { IdentityId as IIdentityId } from '@dailyuse/contracts';
+import type { IdentityId as IIdentityId } from '@memoflow/contracts';
 
 /**
  * 全局 IdentityId 类型定义

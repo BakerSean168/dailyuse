@@ -1,9 +1,9 @@
-import type { PrismaClient, FocusSession as PrismaFocusSession, Prisma } from '@dailyuse/database';
+import type { PrismaClient, FocusSession as PrismaFocusSession, Prisma } from '@memoflow/database';
 import type { IFocusSessionRepository } from '../../../domain';
 import { FocusSession } from '../../../domain';
-import { FocusSessionStatus } from '@dailyuse/contracts/goal';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { FocusSessionStatus } from '@memoflow/contracts/goal';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import { PrismaFocusSessionMapper } from './mappers/prisma-focus-session-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

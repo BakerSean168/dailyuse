@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Account } from '../account';
 import { AccountStatus } from '../../value-objects/account-status';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers

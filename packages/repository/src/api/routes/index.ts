@@ -8,7 +8,7 @@
  */
 
 import { Router, type RequestHandler } from 'express';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import type { RepositoryApplicationPort } from '../../server/application';
 import { registerKnowledgeRepositoryConnectionRoutes } from './knowledge-repository-connection.routes';
 

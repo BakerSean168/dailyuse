@@ -9,7 +9,7 @@
  * app-vue 只派生 UI 需要的轻量字段。
  */
 
-import type { RuleClientDTO } from '@dailyuse/contracts/governance';
+import type { RuleClientDTO } from '@memoflow/contracts/governance';
 
 export type GovernanceDisplayRule = Omit<RuleClientDTO, 'createdAt' | 'updatedAt'> & {
   readonly createdAt: Date;

@@ -21,7 +21,7 @@ import type { IReminderGroupRepository } from '../../domain/repositories/i-remin
 import { ReminderSchedulerService } from '../../domain/services/reminder-scheduler-service';
 import { ReminderTriggerService } from '../../domain/services/reminder-trigger-service';
 import { ReminderTemplateControlService } from '../../domain/services/reminder-template-control-service';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { ReminderModuleRuntimeContribution } from '../reminder.module';
 
 const logger = createLogger('ReminderTriggerCronJob');

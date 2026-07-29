@@ -11,7 +11,7 @@
  * - Credentials stay request-scoped via Model Gateway (modelBindingId only)
  * - Not the open-chat default path (DirectTurnEngine remains primary)
  */
-import type { IModelGatewayPort, ITurnEnginePort } from '@dailyuse/contracts/ai';
+import type { IModelGatewayPort, ITurnEnginePort } from '@memoflow/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import {
   resolveActiveProviderConfig,
@@ -21,7 +21,7 @@ import {
 export const PI_READONLY_TURN_ENGINE_ID = 'engine.pi_readonly' as const;
 
 const READONLY_SYSTEM_PROMPT =
-  'You are a readonly analysis assistant for Daily Use. ' +
+  'You are a readonly analysis assistant for MemoFlow. ' +
   'You may explain, summarize, and draft text only. ' +
   'You cannot execute tools, mutate product data, write vault files, or expand capabilities.';
 

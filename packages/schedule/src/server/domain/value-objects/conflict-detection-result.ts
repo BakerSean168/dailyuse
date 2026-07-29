@@ -5,12 +5,12 @@
  * 这是一个简单的只读值对象
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   ConflictDetectionResult as IConflictDetectionResult,
   ConflictDetail,
   ConflictSuggestion,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 interface ConflictDetectionResultDTO {
   hasConflict: boolean;

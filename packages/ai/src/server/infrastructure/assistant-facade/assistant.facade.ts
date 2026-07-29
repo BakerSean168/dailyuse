@@ -20,12 +20,12 @@ import type {
   IAssistantFacadePort,
   IProposalKernelPort,
   ITurnEnginePort,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import {
   applyAgentRunBridgeProposalPatch,
   materializeAgentRunBridgeProposal,
   parseAgentRunHostProposalId,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { IOpenChatTurnPort } from '../../application/ports';
 import { DIRECT_TURN_ENGINE_ID } from '../turn-engine/direct-turn.engine';
 

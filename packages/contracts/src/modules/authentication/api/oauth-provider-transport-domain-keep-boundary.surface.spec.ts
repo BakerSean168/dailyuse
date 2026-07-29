@@ -73,7 +73,7 @@ describe('oauth provider transport≠domain keep-boundary (residual 893)', () =>
   it('domain branded companion derives contracts VO; Microsoft stays unmapped at bind', () => {
     expect(domain).toContain('Residual 893');
     expect(domain).toContain(
-      "import { OAuthProvider as IOAuthProvider } from '@dailyuse/contracts/authentication'",
+      "import { OAuthProvider as IOAuthProvider } from '@memoflow/contracts/authentication'",
     );
     expect(domain).toContain('Object.values(IOAuthProvider)');
     expect(domain).toContain('Facebook:');

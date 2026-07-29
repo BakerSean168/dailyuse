@@ -10,10 +10,10 @@
 import type { IGoalRepository, IGoalRecordRepository } from '../../../domain';
 import { GoalRecord } from '../../../domain';
 import { KeyResultProgress } from '../../../domain';
-import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { IdentityId, KeyResultId } from '@dailyuse/contracts/primitives';
+import type { GoalRecordClientDTO } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { IdentityId, KeyResultId } from '@memoflow/contracts/primitives';
 
 export class CreateGoalRecordUseCase {
   constructor(

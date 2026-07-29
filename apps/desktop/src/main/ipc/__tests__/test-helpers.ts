@@ -113,9 +113,9 @@ export function createMockId(): string {
 }
 
 /**
- * Residual 1192: dual delay retired onto @dailyuse/utils/frontend sole.
+ * Residual 1192: dual delay retired onto @memoflow/utils/frontend sole.
  */
-export { delay } from '@dailyuse/utils/frontend';
+export { delay } from '@memoflow/utils/frontend';
 
 /**
  * 创建 spy 来验证函数调用顺序

@@ -7,7 +7,7 @@
  */
 
 import type { NotificationTemplate } from '../aggregates/notification-template';
-import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
 
 /**
  * INotificationTemplateRepository 浠撳偍鎺ュ彛

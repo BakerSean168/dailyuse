@@ -5,8 +5,8 @@
  * Returns TaskFolderServerDTO directly (no domain entity wrapper).
  */
 
-import type { TaskFolder as PrismaTaskFolder } from '@dailyuse/database';
-import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
+import type { TaskFolder as PrismaTaskFolder } from '@memoflow/database';
+import type { TaskFolderServerDTO } from '@memoflow/contracts/task';
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
 function requiredInstant(value: Date | string | number | null | undefined): number {

@@ -694,7 +694,7 @@ updated: 2026-07-03T22:10:00+08:00
 .\node_modules\.bin\nx.cmd run desktop:test:main
 .\node_modules\.bin\nx.cmd run schedule:test
 .\node_modules\.bin\nx.cmd run schedule-orchestration:test
-.\node_modules\.bin\nx.cmd run daily-use:governance-check
+.\node_modules\.bin\nx.cmd run memoflow:governance-check
 ```
 
 ### Done When

@@ -2,10 +2,10 @@ import type {
   GoalEventMap,
   GoalServerDTO,
   ReminderTrigger,
-} from '@dailyuse/contracts/goal';
-import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
-import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '@dailyuse/schedule';
+} from '@memoflow/contracts/goal';
+import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
+import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@memoflow/contracts/schedule';
+import { ScheduleTask } from '@memoflow/schedule';
 import type { IGoalRepository } from '../domain';
 
 const DAY_MS = 24 * 60 * 60 * 1000;

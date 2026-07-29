@@ -19,19 +19,19 @@
  * - 失败: { ok: false, error: { code, message } }
  */
 
-import { createLogger } from '@dailyuse/utils/logger';
-import type { ILogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/electron';
-import type { IAccountRepository } from '@dailyuse/account/electron';
+} from '@memoflow/authentication/electron';
+import type { IAccountRepository } from '@memoflow/account/electron';
 import {
   type IpcResult,
   toIpcResult,
   ok,
   fail,
-} from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/result';
 import {
   AuthMode,
   AuthRuntimeState,
@@ -43,7 +43,7 @@ import {
   type RememberedDesktopAccountDTO,
   type RememberedDesktopAccountLoginReq,
   type AuthBootstrapSnapshot,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import {
   TokenManager,
   SessionManager
@@ -229,8 +229,8 @@ export class AuthDesktopApplicationService {
    * 将 IAuthIdentityRepository + IPasswordHasher 传递给 SessionManager
    */
   setOfflineAuthDependencies(
-    identityRepository: import('@dailyuse/authentication/electron').IAuthIdentityRepository,
-    passwordHasher: import('@dailyuse/authentication/electron').IPasswordHasher,
+    identityRepository: import('@memoflow/authentication/electron').IAuthIdentityRepository,
+    passwordHasher: import('@memoflow/authentication/electron').IPasswordHasher,
   ): void {
     if (this.sessionManager) {
       this.sessionManager.setOfflineAuthDependencies(identityRepository, passwordHasher);

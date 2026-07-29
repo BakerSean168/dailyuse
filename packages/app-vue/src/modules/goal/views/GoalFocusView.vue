@@ -89,7 +89,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import type { FocusModeDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { FocusModeDTO, GoalClientDTO } from '@memoflow/contracts/goal';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { formatProductDateTime } from '../../../shared/utils/product-time';
@@ -102,7 +102,7 @@ import {
   CardTitle,
   Progress,
   ScrollArea,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { GoalCard } from '../components';
 import { useGoal } from '../composables/useGoal';
 

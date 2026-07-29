@@ -177,7 +177,7 @@ updated: 2026-07-03T20:54:00+08:00
 - Completed: `R01`, `R02`, `R03`, `R04`, `R05`, `R06`, `R07`, `R08`, `R09`
 - In progress: none
 - Active blockers: none
-- Final verification snapshot: `madge --circular`、`task:typecheck`、`task:test`、`goal:test`、`reminder:test`、`schedule:test`、`schedule-orchestration:test`、`api:test`、`api:test:smoke`、`web:test`、`desktop:test:main`、`desktop:test`、`daily-use:governance-check` 均已通过
+- Final verification snapshot: `madge --circular`、`task:typecheck`、`task:test`、`goal:test`、`reminder:test`、`schedule:test`、`schedule-orchestration:test`、`api:test`、`api:test:smoke`、`web:test`、`desktop:test:main`、`desktop:test`、`memoflow:governance-check` 均已通过
 - Current handoff: 该计划已完成，下一步应将整组 core-seam 计划从 `active` 移到 `archive`
 
 ## 4.2 当前接力点
@@ -419,7 +419,7 @@ R04 可以在新包里接管 task projection，而不需要把 task 内部 repo/
 - Status: done
 - What changed: 已经把 task-specific projection 规则抽成 `schedule-projection-source`，并把 API/desktop 上的 runtime owner 提升到 host 级贡献点；`packages/task/src/api/schedule-runtime.ts` 已从 task 包内删除；task 包只保留 projection rules 和 event handler mapping，不再自持系统级 owner。
 - Old path deleted: `packages/task/src/api/schedule-runtime.ts`
-- Verification: `.\node_modules\.bin\nx.cmd run task:typecheck` 通过；`.\node_modules\.bin\nx.cmd run task:test` 通过；`.\node_modules\.bin\nx.cmd run api:typecheck` 通过；`.\node_modules\.bin\tsc.cmd --noEmit -p apps/desktop/tsconfig.typecheck.json` 通过。`.\node_modules\.bin\nx.cmd run api:test:smoke` 仍被现有 `@dailyuse/patterns/scheduler` 解析失败阻塞；`.\node_modules\.bin\nx.cmd run desktop:test:main` 仍被现有 Electron 安装与认证测试空文件基线阻塞；`.\node_modules\.bin\nx.cmd run desktop:typecheck` 的依赖构建链仍被 `ui-vue-shadcn:build` 的现有 `TS2742` 阻塞。
+- Verification: `.\node_modules\.bin\nx.cmd run task:typecheck` 通过；`.\node_modules\.bin\nx.cmd run task:test` 通过；`.\node_modules\.bin\nx.cmd run api:typecheck` 通过；`.\node_modules\.bin\tsc.cmd --noEmit -p apps/desktop/tsconfig.typecheck.json` 通过。`.\node_modules\.bin\nx.cmd run api:test:smoke` 仍被现有 `@memoflow/patterns/scheduler` 解析失败阻塞；`.\node_modules\.bin\nx.cmd run desktop:test:main` 仍被现有 Electron 安装与认证测试空文件基线阻塞；`.\node_modules\.bin\nx.cmd run desktop:typecheck` 的依赖构建链仍被 `ui-vue-shadcn:build` 的现有 `TS2742` 阻塞。
 - Remaining follow-up: 开始 `R04`，新建 `schedule-orchestration` 包并接管 task projection owner。
 
 ## R04：新建 `schedule-orchestration`，接管 task projection
@@ -486,9 +486,9 @@ R05 只需把 goal/reminder 按同一模式并入，而不是重新设计 owner 
 
 - Date: 2026-07-03
 - Status: done
-- What changed: `packages/task` 新增 `@dailyuse/task/schedule-projection` 窄公共出口；`packages/schedule-orchestration` 完整接管 task projection owner；`apps/api` 与 `apps/desktop` 继续只做 source 选择和 module 实例化；host 上的 task 临时 owner 文件已删除。
+- What changed: `packages/task` 新增 `@memoflow/task/schedule-projection` 窄公共出口；`packages/schedule-orchestration` 完整接管 task projection owner；`apps/api` 与 `apps/desktop` 继续只做 source 选择和 module 实例化；host 上的 task 临时 owner 文件已删除。
 - Old path deleted: `apps/api/src/modules/task-schedule-projection/runtime.ts`、`apps/desktop/src/main/modules/schedule/task-schedule-projection.runtime.ts`
-- Verification: `.\node_modules\.bin\nx.cmd run schedule-orchestration:typecheck`、`.\node_modules\.bin\nx.cmd run schedule-orchestration:test`、`.\node_modules\.bin\nx.cmd run schedule:test`、`.\node_modules\.bin\nx.cmd run task:test`、`.\node_modules\.bin\nx.cmd run api:typecheck`、`.\node_modules\.bin\nx.cmd run schedule-orchestration:build`、`.\node_modules\.bin\nx.cmd run daily-use:governance-check` 通过。
+- Verification: `.\node_modules\.bin\nx.cmd run schedule-orchestration:typecheck`、`.\node_modules\.bin\nx.cmd run schedule-orchestration:test`、`.\node_modules\.bin\nx.cmd run schedule:test`、`.\node_modules\.bin\nx.cmd run task:test`、`.\node_modules\.bin\nx.cmd run api:typecheck`、`.\node_modules\.bin\nx.cmd run schedule-orchestration:build`、`.\node_modules\.bin\nx.cmd run memoflow:governance-check` 通过。
 - Remaining follow-up: 进入 `R05`，按同一模式迁移 goal/reminder projection ownership。
 
 ## R05：迁移 goal/reminder projection ownership
@@ -806,7 +806,7 @@ R09 可以在一个更干净的测试基座上补宿主启动链和 runtime 直�
 - `pnpm nx run web:test`
 - `pnpm nx run desktop:test:main`
 - `pnpm nx run schedule:test`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ### Exit Criteria
 

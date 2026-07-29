@@ -1,5 +1,5 @@
 import { normalizeOpenAICompatibleModelId } from '../../../shared/openai-compatible-normalize';
-import { AIProviderType, type AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import { AIProviderType, type AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type { ChatExecutionProviderConfig } from '../../ports';

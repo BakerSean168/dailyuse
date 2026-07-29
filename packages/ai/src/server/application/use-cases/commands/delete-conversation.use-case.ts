@@ -1,7 +1,7 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IAIConversationRepository } from '../../../domain/repositories/i-ai-conversation-repository';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('DeleteConversationUseCase');
 

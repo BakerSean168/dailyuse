@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ensureTestDatabase } from '@dailyuse/test-utils/setup/database';
+import { ensureTestDatabase } from '@memoflow/test-utils/setup/database';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, '..', '..', '..', '..');

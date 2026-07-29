@@ -83,7 +83,7 @@ async function createBareRemote(): Promise<string> {
 async function seedRemote(remote: string, files: Record<string, string>): Promise<string> {
   const worktree = await temporaryDirectory('git-seed');
   await realGit.run(['init', '--initial-branch', 'main'], { cwd: worktree });
-  await realGit.run(['config', '--local', 'user.name', 'Memoflow Test'], { cwd: worktree });
+  await realGit.run(['config', '--local', 'user.name', 'MemoFlow Test'], { cwd: worktree });
   await realGit.run(['config', '--local', 'user.email', 'test@memoflow.local'], { cwd: worktree });
   for (const [relativePath, content] of Object.entries(files)) {
     const filePath = path.join(worktree, relativePath);
@@ -101,7 +101,7 @@ async function cloneRemoteWorktree(remote: string): Promise<string> {
   const parent = await temporaryDirectory('git-remote-worktree');
   const worktree = path.join(parent, 'worktree');
   await realGit.run(['clone', '--branch', 'main', remote, worktree]);
-  await realGit.run(['config', '--local', 'user.name', 'Memoflow Test'], { cwd: worktree });
+  await realGit.run(['config', '--local', 'user.name', 'MemoFlow Test'], { cwd: worktree });
   await realGit.run(['config', '--local', 'user.email', 'test@memoflow.local'], { cwd: worktree });
   return worktree;
 }

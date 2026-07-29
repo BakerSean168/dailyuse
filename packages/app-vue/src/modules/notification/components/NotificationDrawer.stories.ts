@@ -46,7 +46,7 @@ export const Open: Story = {
             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white text-lg">⚙️</div>
             <div class="flex-1 min-w-0">
               <p class="text-sm">系统更新完成</p>
-              <p class="text-sm text-muted-foreground">Memoflow v2.3.0 已部署成功。</p>
+              <p class="text-sm text-muted-foreground">MemoFlow v2.3.0 已部署成功。</p>
               <p class="text-xs text-muted-foreground mt-1">昨天</p>
             </div>
           </div>

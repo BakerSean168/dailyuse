@@ -1,12 +1,12 @@
-import type { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 import type { IReminderGroupRepository } from '../../../domain/repositories/i-reminder-group-repository';
 import { ReminderGroup } from '../../../domain/aggregates/reminder-group';
 import {
   PowerSyncReminderGroupMapper,
   type PowerSyncReminderGroupRow,
 } from './mappers/powersync-reminder-group.mapper';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

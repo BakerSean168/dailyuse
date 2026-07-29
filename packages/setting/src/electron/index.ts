@@ -8,9 +8,9 @@ import {
   SettingChannels,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
-import type { PreferenceCategory } from '@dailyuse/contracts/setting';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/electron';
+import type { PreferenceCategory } from '@memoflow/contracts/setting';
+import { createLogger } from '@memoflow/utils/logger';
 import { createSettingPowerSyncModule, type SettingModuleInstance } from '../server/infrastructure';
 import { withAuthenticatedIdentity } from './authenticated-ipc';
 

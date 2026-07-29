@@ -6,9 +6,9 @@
  * Shared by both Express (HTTP) and IPC transport layers.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
 import type { AuthenticationApplicationPort } from '../application';
 import {
   ChangePasswordSchema,
@@ -24,7 +24,7 @@ import {
   GetOAuthUrlSchema,
   BindOAuthSchema,
   UnbindOAuthSchema,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import type {
   GetCurrentUserRes,
   RegisterByEmailRes,
@@ -36,8 +36,8 @@ import type {
   OAuthProvidersRes,
   BindOAuthRes,
   VerifyEmailCodeRes,
-} from '@dailyuse/contracts/authentication';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/authentication';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 export class AuthenticationController {
   constructor(private readonly api: AuthenticationApplicationPort) {}

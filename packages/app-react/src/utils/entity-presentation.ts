@@ -1,4 +1,4 @@
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 import { formatProductDateTime, emptyKind } from './product-time';
 
 // Soft residual 1101: presentation 0-fallback toTimestamp keep-boundary (≠ projection/AI/notification).

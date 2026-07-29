@@ -44,14 +44,14 @@ SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_USER=...
 SMTP_PASS=...
-SMTP_FROM=Memoflow <noreply@mail.example.com>
+SMTP_FROM=MemoFlow <noreply@mail.example.com>
 SMTP_REPLY_TO=support@example.com   # 可选
 SMTP_LOCALE=zh                      # zh | en 模板
 
 # Resend
 EMAIL_PROVIDER=resend
 RESEND_API_KEY=re_...
-RESEND_FROM=Memoflow <noreply@mail.example.com>
+RESEND_FROM=MemoFlow <noreply@mail.example.com>
 
 # 可选：主通道失败后的第二 SMTP
 SMTP_SECONDARY_HOST=...

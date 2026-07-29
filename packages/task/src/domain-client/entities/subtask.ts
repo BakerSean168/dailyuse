@@ -11,9 +11,9 @@
 
 import type {
   SubtaskClientDTO,
-} from '@dailyuse/contracts/task';
-import type {SubtaskId as ISubtaskId, Instant} from '@dailyuse/contracts/primitives';
-import { Entity } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/task';
+import type {SubtaskId as ISubtaskId, Instant} from '@memoflow/contracts/primitives';
+import { Entity } from '@memoflow/utils/domain';
 import { SubtaskId } from '../../server/domain/value-objects/subtask-id';
 
 export interface SubtaskState {

@@ -1,7 +1,7 @@
-import type { FolderType } from '@dailyuse/contracts/goal';
+import type { FolderType } from '@memoflow/contracts/goal';
 import { GoalFolder } from '../../../../domain';
 import { GoalFolderId } from '../../../../domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { fromDbDateTime } from '../shared';
 
 function requiredMs(value: string | null | undefined): number {

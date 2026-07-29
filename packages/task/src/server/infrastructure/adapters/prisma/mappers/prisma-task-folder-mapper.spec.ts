@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PrismaTaskFolderMapper } from './prisma-task-folder-mapper';
-import type { TaskFolder as PrismaTaskFolder } from '@dailyuse/database';
+import type { TaskFolder as PrismaTaskFolder } from '@memoflow/database';
 
 describe('PrismaTaskFolderMapper', () => {
   const createMinimalRow = (): PrismaTaskFolder => ({

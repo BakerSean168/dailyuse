@@ -13,7 +13,7 @@ updated: 2026-05-16T00:00:00
 
 ## 核心规则
 
-- 业务代码始终只导入稳定包名，例如 `@dailyuse/foo`
+- 业务代码始终只导入稳定包名，例如 `@memoflow/foo`
 - 开发态允许通过 tsconfig / Vite / Vitest alias 解析到 workspace `src`
 - 构建态必须通过 package `exports` 或 `dist` 声明消费上游包
 - 不允许在业务代码中直接导入其他包的 `src` 真实路径

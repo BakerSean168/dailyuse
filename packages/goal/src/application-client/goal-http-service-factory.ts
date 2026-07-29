@@ -1,4 +1,4 @@
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 
 import { createGoalHttpAdapters } from '../infrastructure-client';
 import { GoalClientService, createGoalClientService } from './goal-client-service';

@@ -8,7 +8,7 @@
  * 所有方法返回 Result<T>，由 Composable 层处理成功/失败。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type { IAuthApiClient } from '../ports/auth-api-client.port';
 import type {
   AutoLoginResult,
@@ -38,7 +38,7 @@ import type {
   GuestModeRes,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 // ─── Client Application Port ────────────────────────────────────────────────
 

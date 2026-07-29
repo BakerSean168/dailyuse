@@ -29,7 +29,7 @@ The **Composition Root** (the place where objects are wired together) will be ex
 Application Services class files must be "pure":
 
 - **NO** static `getInstance()` methods.
-- **NO** `import` statements referencing `@dailyuse/infrastructure-server`.
+- **NO** `import` statements referencing `@memoflow/infrastructure-server`.
 - **NO** default parameter values that rely on global state.
 - Dependencies are exclusively received via **Constructor Injection**.
 
@@ -55,7 +55,7 @@ export class ArchiveGoal {
 
 ```typescript
 // packages/application-server/src/goal/services/archive-goal.ts
-import { IGoalRepository } from '@dailyuse/domain-server/goal';
+import { IGoalRepository } from '@memoflow/domain-server/goal';
 
 export class ArchiveGoal {
   // ✅ Pure Constructor Injection

@@ -6,7 +6,7 @@
  *
  * This module deliberately does NOT import `@prisma/client` — it detects Prisma
  * errors by checking the constructor name and the `code` property pattern,
- * keeping `@dailyuse/utils` free of a hard Prisma dependency.
+ * keeping `@memoflow/utils` free of a hard Prisma dependency.
  */
 
 // ============================================================================
@@ -33,7 +33,7 @@ const PRISMA_CODE_RE = /^P\d{4}$/;
  * Check whether an unknown value looks like a PrismaClientKnownRequestError.
  *
  * We intentionally use duck-typing instead of `instanceof` so that
- * `@dailyuse/utils` does not depend on `@prisma/client`.
+ * `@memoflow/utils` does not depend on `@prisma/client`.
  */
 export function isPrismaError(
   err: unknown,

@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   AgentEvent,
   AgentRun,
   AgentResumePayload,
   AgentRunResult,
   AgentStartRunRequest,
-} from '@dailyuse/contracts/ai';
-import { AgentRunResultSchema } from '@dailyuse/contracts/ai';
-import { ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { AgentRunResultSchema } from '@memoflow/contracts/ai';
+import { ok } from '@memoflow/contracts/result';
 import { AIAgentRuntimeController } from './ai-agent-runtime.controller';
 
 const cx: ExecutionContext = { identityId: 'identity-auth' };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PowerSyncAppSchema } from '@dailyuse/powersync-schema';
+import { PowerSyncAppSchema } from '@memoflow/powersync-schema';
 import { normalizePowerSyncTableName, POWER_SYNC_CHANGE_TABLES } from '../powersync-table-changes';
 
 describe('PowerSync table change configuration', () => {

@@ -2,7 +2,7 @@ import type { ComposerTranslation } from 'vue-i18n';
 import type {
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 type Translate = ComposerTranslation;
 

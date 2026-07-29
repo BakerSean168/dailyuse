@@ -4,8 +4,8 @@
  * HTTP implementation of IScheduleEventApiClient.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type { IScheduleEventApiClient } from '../types';
 import type {
   CalendarEntryClientDTO,
@@ -14,7 +14,7 @@ import type {
   GetSchedulesByTimeRangeRequest,
   ConflictDetectionResult,
   ResolveConflictRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 /**
  * ScheduleEventHttpAdapter

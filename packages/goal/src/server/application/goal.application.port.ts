@@ -23,10 +23,10 @@ import type {
   UpdateGoalFolderRes,
   UpdateGoalReq,
   UpdateGoalRes,
-} from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { IdentityId } from '@dailyuse/domain-shared';
+} from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 import type {
   ListGoalRecordsParams,
   ListGoalRecordsResult,

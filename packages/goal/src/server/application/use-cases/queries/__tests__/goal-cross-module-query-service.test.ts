@@ -1,10 +1,10 @@
 import { vi, describe, it, expect } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils';
+import { createMockRepo } from '@memoflow/test-utils';
 import type { IGoalRepository } from '../../../../domain';
 import { GoalCrossModuleQueryServiceUseCase } from '../goal-cross-module-query-service.use-case';
 
-vi.mock('@dailyuse/utils', async () => {
-  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
+vi.mock('@memoflow/utils', async () => {
+  const actual = await vi.importActual<typeof import('@memoflow/utils')>('@memoflow/utils');
   return {
     ...actual,
     createLogger: vi.fn().mockReturnValue({

@@ -1,6 +1,6 @@
 /**
  * DateFnsEngine — the **only** product surface that imports date-fns.
- * Business and UI code must use `@dailyuse/time` facade, not date-fns directly.
+ * Business and UI code must use `@memoflow/time` facade, not date-fns directly.
  */
 import {
   addDays as dfAddDays,
@@ -13,7 +13,7 @@ import {
   startOfDay as dfStartOfDay,
   startOfWeek as dfStartOfWeek,
 } from 'date-fns';
-import type { Hm, Instant, Ymd } from '@dailyuse/contracts/primitives';
+import type { Hm, Instant, Ymd } from '@memoflow/contracts/primitives';
 import type { TimeEngine, TimeStyleCalendar, TimeStyleDisplay } from '../types';
 import { asHm, asInstant, asYmd, isHmShape, isYmdShape } from '../codec/brand';
 

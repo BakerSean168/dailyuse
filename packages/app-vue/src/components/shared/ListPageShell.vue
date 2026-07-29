@@ -8,7 +8,7 @@
  *
  * 适用：仪表盘、目标列表、任务、提醒、通知、治理等「列表 + 过滤」页。
  */
-import { LinearPageHeader } from '@dailyuse/ui-vue-shadcn';
+import { LinearPageHeader } from '@memoflow/ui-vue-shadcn';
 
 defineProps<{
   title: string;

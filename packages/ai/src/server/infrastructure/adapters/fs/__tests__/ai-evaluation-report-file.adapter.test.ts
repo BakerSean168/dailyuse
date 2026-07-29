@@ -9,7 +9,7 @@ import { AIEvaluationReportFileAdapter } from '../ai-evaluation-report-file.adap
 const tempDirs: string[] = [];
 
 async function createTempReportsRoot(): Promise<string> {
-  const tempDir = await mkdtemp(path.join(os.tmpdir(), 'dailyuse-ai-evals-'));
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), 'memoflow-ai-evals-'));
   tempDirs.push(tempDir);
   await mkdir(path.join(tempDir, 'history'), { recursive: true });
   await mkdir(path.join(tempDir, 'live-history'), { recursive: true });

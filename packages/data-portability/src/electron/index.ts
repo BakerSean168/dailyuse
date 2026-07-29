@@ -4,17 +4,17 @@
  * Owns desktop-main registration for the data portability runtime.
  */
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { DataPortabilityChannels } from '@dailyuse/contracts/electron';
-import { ResultCode, ResultErrorException } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
-import { formatZodErrors } from '@dailyuse/utils/result';
+import type { IElectronModule, IElectronModuleContext } from '@memoflow/contracts/electron';
+import { DataPortabilityChannels } from '@memoflow/contracts/electron';
+import { ResultCode, ResultErrorException } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
+import { formatZodErrors } from '@memoflow/utils/result';
 import {
   ExportUserDataReqSchema,
   ImportUserDataReqSchema,
   type ExportUserDataReq,
   type ImportUserDataReq,
-} from '@dailyuse/contracts/data-portability';
+} from '@memoflow/contracts/data-portability';
 import {
   createPowerSyncDataPortabilityModule,
   type DataPortabilityModuleInstance,

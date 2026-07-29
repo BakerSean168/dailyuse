@@ -46,7 +46,7 @@ status: active
 - 保留的服务端值对象职责：
   - `src/domain-server/value-objects/errors.ts`
 - 共享值对象统一从：
-  - `@dailyuse/schedule/domain-shared`
+  - `@memoflow/schedule/domain-shared`
   - `../../domain-shared/value-objects`
 - 对应测试已迁移并补齐：
   - `calendar-entry`

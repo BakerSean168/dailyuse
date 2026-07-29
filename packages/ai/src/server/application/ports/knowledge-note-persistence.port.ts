@@ -1,4 +1,4 @@
-import type { KnowledgeNotePersistedRef } from '@dailyuse/contracts/ai';
+import type { KnowledgeNotePersistedRef } from '@memoflow/contracts/ai';
 
 export interface CreateKnowledgeNotePersistenceInput {
   identityId: string;

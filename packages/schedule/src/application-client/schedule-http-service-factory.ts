@@ -1,4 +1,4 @@
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 
 import { createScheduleHttpAdapters } from '../infrastructure-client';
 import { ScheduleClientService, createScheduleClientService } from './schedule-client-service';

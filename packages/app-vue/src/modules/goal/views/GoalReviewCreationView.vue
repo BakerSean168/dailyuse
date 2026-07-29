@@ -109,8 +109,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft } from '@lucide/vue';
-import { ReviewType } from '@dailyuse/contracts/goal';
-import type { GoalId } from '@dailyuse/contracts/primitives';
+import { ReviewType } from '@memoflow/contracts/goal';
+import type { GoalId } from '@memoflow/contracts/primitives';
 import {
   Button,
   Input,
@@ -123,7 +123,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();

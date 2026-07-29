@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { ReminderGroupApplicationService } from './reminder-group-application-service';
 import type { IReminderGroupRepository } from '../../domain/repositories/i-reminder-group-repository';
 import type { IReminderTemplateRepository } from '../../domain/repositories/i-reminder-template-repository';
 import { ReminderGroup } from '../../domain/aggregates/reminder-group';
 import type { ReminderGroupState } from '../../domain/aggregates/reminder-group';
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 import { GroupStats } from '../../domain/value-objects/group-stats';
-import { generateUUID } from '@dailyuse/utils/shared';
+import { generateUUID } from '@memoflow/utils/shared';
 
 const IDENTITY_ID = 'IdentityId_550e8400-e29b-41d4-a716-446655440001';
 

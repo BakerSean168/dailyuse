@@ -5,11 +5,11 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   NotificationMetadata as INotificationMetadata,
   NotificationMetadataDTO,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 /**
  * NotificationMetadata 值对象实现

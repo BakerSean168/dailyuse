@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import { PrismaServerHeldDataDisclosureSource } from './prisma-server-held-data-disclosure.source';
 
 describe('PrismaServerHeldDataDisclosureSource', () => {

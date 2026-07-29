@@ -1,6 +1,6 @@
-import { AIChannels, AIStreamChannels } from '@dailyuse/contracts/electron';
-import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
-import { unwrapOrThrowError, type Result } from '@dailyuse/contracts/result';
+import { AIChannels, AIStreamChannels } from '@memoflow/contracts/electron';
+import type { MessageListRes, SendMessageReq, SendMessageRes } from '@memoflow/contracts/ai';
+import { unwrapOrThrowError, type Result } from '@memoflow/contracts/result';
 import type { IAIMessageApiClient, IResultIpcClient } from '../types';
 import { createResultClientError, unwrapResultOrThrow } from '../result-client-error';
 // Residual 993: sole createStreamId (local dual retired).

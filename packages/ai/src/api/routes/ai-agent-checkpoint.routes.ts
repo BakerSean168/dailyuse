@@ -10,8 +10,8 @@ import {
   successResponse,
   ok,
   fail,
-} from '@dailyuse/utils/result';
-import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema, AgentEventSchema } from '@dailyuse/contracts/ai';
+} from '@memoflow/utils/result';
+import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema, AgentEventSchema } from '@memoflow/contracts/ai';
 import type { AIAgentCheckpointController } from '../../server/transport/ai-agent-checkpoint.controller';
 import { getRequestId } from '../../shared/get-request-id';
 

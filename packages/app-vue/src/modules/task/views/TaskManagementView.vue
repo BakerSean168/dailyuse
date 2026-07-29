@@ -193,7 +193,7 @@ import {
   Input,
   Label,
   useConfirm,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import TaskFilterBar from '../components/TaskFilterBar.vue';
 import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
 import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
@@ -205,15 +205,15 @@ import type {
   TaskTemplateViewModel,
   TaskViewMode,
 } from '../components/types';
-import { DependencyType, TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
-import type { DependencyType as DependencyTypeValue } from '@dailyuse/contracts/task';
+import { DependencyType, TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
+import type { DependencyType as DependencyTypeValue } from '@memoflow/contracts/task';
 import {
   mapTaskTemplateDtoToViewModel,
   toTaskTimeConfigPayload,
 } from '../utils/task-template-presentation';
-import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
-import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { GoalId, KeyResultId, TaskTemplateId } from '@memoflow/contracts/primitives';
+import type { RecurrenceRuleDTO } from '@memoflow/contracts/task';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { buildTaskGraphData, type TaskForDAG } from '../types/task-dag.types';
 
 const router = useRouter();

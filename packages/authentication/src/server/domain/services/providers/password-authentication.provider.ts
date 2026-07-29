@@ -9,7 +9,7 @@
  * AuthenticationProvider 契约之下，底层校验行为完全不变。
  */
 
-import type { LoginByEmailReq } from '@dailyuse/contracts/authentication';
+import type { LoginByEmailReq } from '@memoflow/contracts/authentication';
 import type {
   AuthenticationContext,
   AuthenticationProvider,

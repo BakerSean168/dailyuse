@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { ReminderGroup } from '../reminder-group';
 import type { ReminderGroupState } from '../reminder-group';
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
+import { IdentityId } from '@memoflow/domain-shared';
 import { GroupStats } from '../../value-objects';
-import { generateUUID } from '@dailyuse/utils/shared';
+import { generateUUID } from '@memoflow/utils/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers

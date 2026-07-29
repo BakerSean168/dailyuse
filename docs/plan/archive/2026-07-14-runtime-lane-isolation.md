@@ -49,7 +49,7 @@ Eliminate host port / env-lane confusion between `host-dev`, Playwright `e2e`, a
 
 ## Follow-up engineering (Nx graph poison)
 
-Root cause of `api:build` circular dependency was **scratch scripts under `packages/database`** dynamically importing `@dailyuse/task`, which created a `database → task` dynamic graph edge (product deps are only `task → database`).
+Root cause of `api:build` circular dependency was **scratch scripts under `packages/database`** dynamically importing `@memoflow/task`, which created a `database → task` dynamic graph edge (product deps are only `task → database`).
 
 Mitigations applied:
 
@@ -70,4 +70,4 @@ curl http://localhost:58080/         → 200
 curl http://localhost:58100/healthz  → healthy
 ```
 
-Test infra `Memoflow-test-db` on `:5433` remains up alongside local-docker (orphan-compatible; not a port conflict).
+Test infra `MemoFlow-test-db` on `:5433` remains up alongside local-docker (orphan-compatible; not a port conflict).

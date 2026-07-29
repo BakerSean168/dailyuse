@@ -7,11 +7,11 @@
  * @module authentication/infrastructure/offline-auth-helper
  */
 
-import { AuthIdentity } from '@dailyuse/authentication/electron';
-import type { IdentityId } from '@dailyuse/contracts/authentication';
-import type { IAuthIdentityRepository } from '@dailyuse/authentication/electron';
-import type { IPasswordHasher } from '@dailyuse/authentication/electron';
-import type { ILogger } from '@dailyuse/utils/logger';
+import { AuthIdentity } from '@memoflow/authentication/electron';
+import type { IdentityId } from '@memoflow/contracts/authentication';
+import type { IAuthIdentityRepository } from '@memoflow/authentication/electron';
+import type { IPasswordHasher } from '@memoflow/authentication/electron';
+import type { ILogger } from '@memoflow/utils/logger';
 // Residual 937: toIdentityId dual retired — session-types sole helper.
 import { toIdentityId } from './session-types';
 

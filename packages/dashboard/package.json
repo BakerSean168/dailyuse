@@ -1,8 +1,8 @@
 {
-  "name": "@dailyuse/dashboard",
+  "name": "@memoflow/dashboard",
   "version": "0.0.1",
   "private": false,
-  "description": "Memoflow dashboard aggregation core",
+  "description": "MemoFlow dashboard aggregation core",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
     }
   },
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*"
+    "@memoflow/contracts": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

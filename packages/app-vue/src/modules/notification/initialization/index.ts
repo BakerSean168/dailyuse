@@ -9,9 +9,9 @@ import type {
   NotificationClientDTO,
   NotificationDispatchInAppEvent,
   NotificationEventMap,
-} from '@dailyuse/contracts/notification';
-import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/notification';
+import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import { useNotificationStore } from '../stores/notification-store';
 
 const logger = createLogger('notification:init');

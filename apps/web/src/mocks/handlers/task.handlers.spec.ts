@@ -17,7 +17,7 @@ describe('task handlers contracts', () => {
   it(
     'uses the same task instance routes and query shape as the adapter',
     async () => {
-      const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
+      const { TaskTemplateHttpAdapter } = await import('@memoflow/task/client');
       const httpClient = createHttpClientSpy();
       const adapter = new TaskTemplateHttpAdapter(httpClient);
 
@@ -41,7 +41,7 @@ describe('task handlers contracts', () => {
   it(
     'uses the current task instance adapter routes and payload shapes',
     async () => {
-    const { TaskInstanceHttpAdapter } = await import('@dailyuse/task/client');
+    const { TaskInstanceHttpAdapter } = await import('@memoflow/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskInstanceHttpAdapter(httpClient);
 
@@ -94,7 +94,7 @@ describe('task handlers contracts', () => {
   it(
     'uses the current task dependency adapter routes and payload shapes',
     async () => {
-    const { TaskDependencyHttpAdapter } = await import('@dailyuse/task/client');
+    const { TaskDependencyHttpAdapter } = await import('@memoflow/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskDependencyHttpAdapter(httpClient);
     const createPayload = {
@@ -165,7 +165,7 @@ describe('task handlers contracts', () => {
   it(
     'uses the same template list route and query shape as the adapter',
     async () => {
-    const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
+    const { TaskTemplateHttpAdapter } = await import('@memoflow/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
 
@@ -200,7 +200,7 @@ describe('task handlers contracts', () => {
   it(
     'uses the graph route shape as the template adapter',
     async () => {
-    const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
+    const { TaskTemplateHttpAdapter } = await import('@memoflow/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
 
@@ -216,7 +216,7 @@ describe('task handlers contracts', () => {
   it(
     'updates templates via PATCH to match the HTTP adapter',
     async () => {
-    const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
+    const { TaskTemplateHttpAdapter } = await import('@memoflow/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
 

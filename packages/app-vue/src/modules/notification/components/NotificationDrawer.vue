@@ -53,8 +53,8 @@ import {
   SheetTitle,
   SheetFooter,
   SheetClose,
-} from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import { X } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 

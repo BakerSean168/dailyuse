@@ -5,8 +5,8 @@
  */
 import { randomUUID } from 'node:crypto';
 
-import type { PrismaClient } from '@dailyuse/database';
-import { Prisma } from '@dailyuse/database/prisma';
+import type { PrismaClient } from '@memoflow/database';
+import { Prisma } from '@memoflow/database/prisma';
 import { toPrismaJson } from './to-prisma-json';
 import type {
   IKnowledgeIndexRepository,

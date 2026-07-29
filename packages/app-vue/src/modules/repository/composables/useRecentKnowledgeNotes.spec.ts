@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
 
 const provideMap = new Map<symbol, unknown>();
 

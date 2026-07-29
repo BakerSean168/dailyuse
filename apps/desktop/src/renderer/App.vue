@@ -10,15 +10,15 @@
  */
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { Toaster } from '@dailyuse/ui-vue-shadcn/components/ui/sonner';
+import { Toaster } from '@memoflow/ui-vue-shadcn/components/ui/sonner';
 import {
   GlobalErrorBoundary,
   GlobalProgressBar,
   useLocaleSync,
   usePresentationBootstrap,
   useThemeSync,
-} from '@dailyuse/app-vue';
-import { GlobalOverlays } from '@dailyuse/app-vue/web-overlays';
+} from '@memoflow/app-vue';
+import { GlobalOverlays } from '@memoflow/app-vue/web-overlays';
 
 const route = useRoute();
 const isCustomNotificationRoute = computed(() => route.name === 'custom-notification');

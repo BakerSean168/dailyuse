@@ -1,11 +1,11 @@
-# @dailyuse/utils
+# @memoflow/utils
 
-Core utility library for the Memoflow application, providing cross-platform support for logging, domain modeling, event handling, and frontend utilities.
+Core utility library for the MemoFlow application, providing cross-platform support for logging, domain modeling, event handling, and frontend utilities.
 
 ## 📦 Installation
 
 ```bash
-pnpm add @dailyuse/utils
+pnpm add @memoflow/utils
 ```
 
 ## 🛠️ Modules
@@ -18,12 +18,12 @@ A robust, cross-platform logging system based on Winston (Node.js) and Console/H
 - **Cross-Platform**: Unified `ILogger` interface.
 - **Node.js**: Uses `winston` with daily file rotation (`logs/app-YYYY-MM-DD.log`).
 - **Browser**: Uses `ConsoleTransport` for dev tools and `HttpTransport` to send logs to the API.
-- **Isolation**: Node.js specific code is isolated in `@dailyuse/utils/winston`.
+- **Isolation**: Node.js specific code is isolated in `@memoflow/utils/winston`.
 
 **Usage:**
 
 ```typescript
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@memoflow/utils';
 
 const logger = createLogger('MyContext');
 
@@ -34,8 +34,8 @@ logger.error('Something went wrong', new Error('Oops'));
 **Configuration (API):**
 
 ```typescript
-import { LoggerFactory } from '@dailyuse/utils';
-import { WinstonLogger } from '@dailyuse/utils/winston';
+import { LoggerFactory } from '@memoflow/utils';
+import { WinstonLogger } from '@memoflow/utils/winston';
 
 LoggerFactory.registerProvider((context) => new WinstonLogger(context));
 ```
@@ -52,7 +52,7 @@ Base classes for Domain-Driven Design (DDD).
 **Usage:**
 
 ```typescript
-import { Entity, ValueObject } from '@dailyuse/utils';
+import { Entity, ValueObject } from '@memoflow/utils';
 
 class UserId extends ValueObject { ... }
 
@@ -69,7 +69,7 @@ A unified, cross-platform event bus (`CrossPlatformEventBus`) supporting:
 **Usage:**
 
 ```typescript
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@memoflow/utils';
 
 // Subscribe
 eventBus.on('USER_CREATED', async (event) => {
@@ -93,7 +93,7 @@ Helper functions for frontend development.
 **Usage:**
 
 ```typescript
-import { getEnvironmentConfig, createAuthHeader } from '@dailyuse/utils';
+import { getEnvironmentConfig, createAuthHeader } from '@memoflow/utils';
 
 const config = getEnvironmentConfig();
 const headers = createAuthHeader(token);

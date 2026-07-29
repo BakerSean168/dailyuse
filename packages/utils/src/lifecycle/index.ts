@@ -1,7 +1,7 @@
 /**
  * Lifecycle subpath — initialization and module-loading primitives.
  *
- * @module @dailyuse/utils/lifecycle
+ * @module @memoflow/utils/lifecycle
  */
 
 export {

@@ -3,10 +3,10 @@ import type {
   TaskEventMap,
   TaskReminderType,
   TaskTemplateServerDTO,
-} from '@dailyuse/contracts/task';
-import { TaskInstanceStatus, TaskTimeType } from '@dailyuse/contracts/task';
-import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '@dailyuse/schedule';
+} from '@memoflow/contracts/task';
+import { TaskInstanceStatus, TaskTimeType } from '@memoflow/contracts/task';
+import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@memoflow/contracts/schedule';
+import { ScheduleTask } from '@memoflow/schedule';
 import type {
   ITaskInstanceRepository,
   ITaskTemplateRepository,

@@ -4,19 +4,19 @@
  * HTTP implementation of IScheduleTaskApiClient.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type {
   IScheduleTaskApiClient,
 } from '../types';
-import type { SourceModule } from '@dailyuse/contracts/schedule';
+import type { SourceModule } from '@memoflow/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
   ScheduleBatchOperationResponseDTO,
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 /**
  * ScheduleTaskHttpAdapter

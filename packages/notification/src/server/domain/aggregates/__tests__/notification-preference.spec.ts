@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { NotificationPreference } from '../notification-preference';
-import { NotificationChannelType } from '@dailyuse/contracts/notification';
+import { NotificationChannelType } from '@memoflow/contracts/notification';
 
 describe('NotificationPreference Aggregate Root', () => {
   const testIdentityId = 'test-identity-456';

@@ -1,4 +1,4 @@
-# 🚀 DailyUse Codespaces 快速入门
+# 🚀 MemoFlow Codespaces 快速入门
 
 ## 第一次使用？
 
@@ -148,7 +148,7 @@ pnpm exec nx format:check
 ## 📁 项目结构快速导航
 
 ```
-DailyUse/
+MemoFlow/
 ├── apps/
 │   ├── api/          # 后端 API (NestJS + Prisma)
 │   ├── web/          # 前端 Web (Vue 3 + Vite)
@@ -243,7 +243,7 @@ pnpm install
 ### Q: Git safe.directory 警告？
 
 ```bash
-git config --global --add safe.directory /workspaces/DailyUse
+git config --global --add safe.directory /workspaces/MemoFlow
 ```
 
 ---

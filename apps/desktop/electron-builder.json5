@@ -15,7 +15,7 @@
     "node_modules/undici/**/*"
   ],
   "electronVersion": "43.1.0",
-  "productName": "Memoflow",
+  "productName": "MemoFlow",
   "directories": {
     "output": "dist-package",
     "buildResources": "build" // 添加资源目录配置
@@ -65,8 +65,8 @@
     "allowElevation": true,   // 允许请求提升权限（如需要管理员权限）
     "createDesktopShortcut": true,    // 创建桌面快捷方式
     "createStartMenuShortcut": true,   // 创建开始菜单快捷方式
-    "shortcutName": "知行 (Memoflow)",
-    "uninstallDisplayName": "知行 (Memoflow)",
+    "shortcutName": "知行 (MemoFlow)",
+    "uninstallDisplayName": "知行 (MemoFlow)",
     "deleteAppDataOnUninstall": false,  // 卸载时是否删除用户数据
     "displayLanguageSelector": true,    // 显示安装程序语言选择界面
     "installerLanguages": [            // 支持的安装程序语言
@@ -87,7 +87,7 @@
   "publish": {
     "provider": "github",
     "owner": "BakerSean168",
-    "repo": "dailyuse",
+    "repo": "memoflow",
     "releaseType": "release" // 配置发布选项
   },
   "generateUpdatesFilesForAllChannels": true, // 为所有渠道生成更新文件

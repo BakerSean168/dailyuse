@@ -5,17 +5,17 @@
  * Handles JSON parsing for goalBinding field and flattened field reconstruction.
  */
 
-import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
-import { toDateOrNull } from '@dailyuse/utils/shared';
+import type { TaskTemplate as PrismaTaskTemplate } from '@memoflow/database';
+import { toDateOrNull } from '@memoflow/utils/shared';
 import { TaskTemplate } from '../../../../domain/aggregates/task-template';
-import { RecurrenceFrequency } from '@dailyuse/contracts/task';
-import { TaskType } from '@dailyuse/contracts/task';
-import type { TaskTimeType } from '@dailyuse/contracts/task';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { DependencyStatus, ReminderTimeUnit } from '@dailyuse/contracts/task';
+import { RecurrenceFrequency } from '@memoflow/contracts/task';
+import { TaskType } from '@memoflow/contracts/task';
+import type { TaskTimeType } from '@memoflow/contracts/task';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { DependencyStatus, ReminderTimeUnit } from '@memoflow/contracts/task';
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
 import { TaskFolderId } from '../../../../domain/value-objects/task-folder-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { TaskTemplateStatus } from '../../../../domain/value-objects/task-template-status';
 import {
   TaskTimeConfig,

@@ -3,7 +3,7 @@ import type {
   GoalPlanningResult,
   IGoalPlanningPort,
 } from '../../application/ports';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
 // Residual 995: sole previewText (local dual retired).

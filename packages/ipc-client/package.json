@@ -1,7 +1,7 @@
 {
-  "name": "@dailyuse/ipc-client",
+  "name": "@memoflow/ipc-client",
   "version": "0.0.1",
-  "description": "Memoflow IPC Client — Electron IPC communication with Result Pattern",
+  "description": "MemoFlow IPC Client — Electron IPC communication with Result Pattern",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -14,7 +14,7 @@
     }
   },
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*"
+    "@memoflow/contracts": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

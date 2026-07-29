@@ -76,10 +76,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalClientDTO, GoalReviewClientDTO } from '@dailyuse/contracts/goal';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
+import type { GoalClientDTO, GoalReviewClientDTO } from '@memoflow/contracts/goal';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Card, CardContent } from '@memoflow/ui-vue-shadcn';
 import { formatProductPattern } from '../../../../shared/utils/product-time';
 import {
   Dialog,
@@ -88,8 +88,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import { Skeleton } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Skeleton } from '@memoflow/ui-vue-shadcn';
 
 const { t } = useI18n();
 

@@ -78,10 +78,10 @@
 
 **关键文件**
 
-- [schedule.module.ts](D:/home/projects/dailyuse/packages/schedule/src/infrastructure-server/schedule.module.ts:246)
-- [schedule.controller.ts](D:/home/projects/dailyuse/packages/schedule/src/controllers/schedule.controller.ts:58)
-- [schedule-event.controller.ts](D:/home/projects/dailyuse/packages/schedule/src/controllers/schedule-event.controller.ts:44)
-- [schedule-event.routes.ts](D:/home/projects/dailyuse/packages/schedule/src/api/schedule-event.routes.ts:86)
+- [schedule.module.ts](D:/home/projects/memoflow/packages/schedule/src/infrastructure-server/schedule.module.ts:246)
+- [schedule.controller.ts](D:/home/projects/memoflow/packages/schedule/src/controllers/schedule.controller.ts:58)
+- [schedule-event.controller.ts](D:/home/projects/memoflow/packages/schedule/src/controllers/schedule-event.controller.ts:44)
+- [schedule-event.routes.ts](D:/home/projects/memoflow/packages/schedule/src/api/schedule-event.routes.ts:86)
 
 **问题**
 
@@ -117,10 +117,10 @@ composition root 只负责接线，不再持有业务 implementation。
 
 **关键文件**
 
-- [repository.module.ts](D:/home/projects/dailyuse/packages/repository/src/infrastructure-server/repository.module.ts:411)
-- [upload-resources.use-case.ts](D:/home/projects/dailyuse/packages/repository/src/application-server/use-cases/commands/upload-resources.use-case.ts:1)
-- [repository.controller.ts](D:/home/projects/dailyuse/packages/repository/src/controllers/repository.controller.ts:78)
-- [repository.routes.ts](D:/home/projects/dailyuse/packages/repository/src/api/routes/repository.routes.ts:55)
+- [repository.module.ts](D:/home/projects/memoflow/packages/repository/src/infrastructure-server/repository.module.ts:411)
+- [upload-resources.use-case.ts](D:/home/projects/memoflow/packages/repository/src/application-server/use-cases/commands/upload-resources.use-case.ts:1)
+- [repository.controller.ts](D:/home/projects/memoflow/packages/repository/src/controllers/repository.controller.ts:78)
+- [repository.routes.ts](D:/home/projects/memoflow/packages/repository/src/api/routes/repository.routes.ts:55)
 
 **问题**
 
@@ -154,9 +154,9 @@ composition root 只负责接线，不再持有业务 implementation。
 
 **关键文件**
 
-- [goal.controller.ts](D:/home/projects/dailyuse/packages/goal/src/controllers/goal.controller.ts:202)
-- [goal.routes.ts](D:/home/projects/dailyuse/packages/goal/src/api/routes/goal.routes.ts:38)
-- [goal.module.ts](D:/home/projects/dailyuse/packages/goal/src/infrastructure-server/goal.module.ts:429)
+- [goal.controller.ts](D:/home/projects/memoflow/packages/goal/src/controllers/goal.controller.ts:202)
+- [goal.routes.ts](D:/home/projects/memoflow/packages/goal/src/api/routes/goal.routes.ts:38)
+- [goal.module.ts](D:/home/projects/memoflow/packages/goal/src/infrastructure-server/goal.module.ts:429)
 
 **问题**
 
@@ -190,10 +190,10 @@ composition root 只负责接线，不再持有业务 implementation。
 
 **关键文件**
 
-- [ai.module.ts](D:/home/projects/dailyuse/packages/ai/src/infrastructure-server/ai.module.ts:108)
-- [ai.module.ts](D:/home/projects/dailyuse/packages/ai/src/infrastructure-server/ai.module.ts:136)
-- [ai.module.ts](D:/home/projects/dailyuse/packages/ai/src/infrastructure-server/ai.module.ts:385)
-- [ai.module.ts](D:/home/projects/dailyuse/packages/ai/src/infrastructure-server/ai.module.ts:682)
+- [ai.module.ts](D:/home/projects/memoflow/packages/ai/src/infrastructure-server/ai.module.ts:108)
+- [ai.module.ts](D:/home/projects/memoflow/packages/ai/src/infrastructure-server/ai.module.ts:136)
+- [ai.module.ts](D:/home/projects/memoflow/packages/ai/src/infrastructure-server/ai.module.ts:385)
+- [ai.module.ts](D:/home/projects/memoflow/packages/ai/src/infrastructure-server/ai.module.ts:682)
 
 **问题**
 
@@ -227,12 +227,12 @@ interface 很宽，但 leverage 不高，caller 仍然需要理解“当前 runt
 
 **关键文件**
 
-- [use-goal-service.ts](D:/home/projects/dailyuse/packages/app-react/src/hooks/use-goal-service.ts:8)
-- [use-task-service.ts](D:/home/projects/dailyuse/packages/app-react/src/hooks/use-task-service.ts:8)
-- [use-repository-service.ts](D:/home/projects/dailyuse/packages/app-react/src/hooks/use-repository-service.ts:8)
-- [use-schedule-service.ts](D:/home/projects/dailyuse/packages/app-react/src/hooks/use-schedule-service.ts:8)
-- [use-ai-service.ts](D:/home/projects/dailyuse/packages/app-react/src/hooks/use-ai-service.ts:8)
-- [use-notification-service.ts](D:/home/projects/dailyuse/packages/app-react/src/hooks/use-notification-service.ts:8)
+- [use-goal-service.ts](D:/home/projects/memoflow/packages/app-react/src/hooks/use-goal-service.ts:8)
+- [use-task-service.ts](D:/home/projects/memoflow/packages/app-react/src/hooks/use-task-service.ts:8)
+- [use-repository-service.ts](D:/home/projects/memoflow/packages/app-react/src/hooks/use-repository-service.ts:8)
+- [use-schedule-service.ts](D:/home/projects/memoflow/packages/app-react/src/hooks/use-schedule-service.ts:8)
+- [use-ai-service.ts](D:/home/projects/memoflow/packages/app-react/src/hooks/use-ai-service.ts:8)
+- [use-notification-service.ts](D:/home/projects/memoflow/packages/app-react/src/hooks/use-notification-service.ts:8)
 
 **问题**
 
@@ -259,9 +259,9 @@ interface 很宽，但 leverage 不高，caller 仍然需要理解“当前 runt
 
 **关键文件**
 
-- [useTask.ts](D:/home/projects/dailyuse/packages/app-vue/src/modules/task/composables/useTask.ts:59)
-- [useReminder.ts](D:/home/projects/dailyuse/packages/app-vue/src/modules/reminder/composables/useReminder.ts:54)
-- [useRepository.ts](D:/home/projects/dailyuse/packages/app-vue/src/modules/repository/composables/useRepository.ts:178)
+- [useTask.ts](D:/home/projects/memoflow/packages/app-vue/src/modules/task/composables/useTask.ts:59)
+- [useReminder.ts](D:/home/projects/memoflow/packages/app-vue/src/modules/reminder/composables/useReminder.ts:54)
+- [useRepository.ts](D:/home/projects/memoflow/packages/app-vue/src/modules/repository/composables/useRepository.ts:178)
 
 **问题**
 
@@ -288,13 +288,13 @@ interface 很宽，但 leverage 不高，caller 仍然需要理解“当前 runt
 
 **关键文件**
 
-- [useRepository.ts](D:/home/projects/dailyuse/packages/app-vue/src/modules/repository/composables/useRepository.ts:199)
-- [repositoryResourceGateway.ts](D:/home/projects/dailyuse/packages/app-vue/src/modules/repository/services/repositoryResourceGateway.ts:22)
-- [useEditorWorkspaceActions.ts](D:/home/projects/dailyuse/packages/app-vue/src/modules/editor/composables/useEditorWorkspaceActions.ts:11)
-- [editorClientGateway.ts](D:/home/projects/dailyuse/packages/app-vue/src/modules/editor/services/editorClientGateway.ts:21)
-- [use-repository-workspace.ts](D:/home/projects/dailyuse/packages/app-react/src/hooks/use-repository-workspace.ts:29)
-- [use-ai-workspace.ts](D:/home/projects/dailyuse/packages/app-react/src/hooks/use-ai-workspace.ts:67)
-- [ai-client-service.ts](D:/home/projects/dailyuse/packages/ai/src/application-client/ai-client-service.ts:46)
+- [useRepository.ts](D:/home/projects/memoflow/packages/app-vue/src/modules/repository/composables/useRepository.ts:199)
+- [repositoryResourceGateway.ts](D:/home/projects/memoflow/packages/app-vue/src/modules/repository/services/repositoryResourceGateway.ts:22)
+- [useEditorWorkspaceActions.ts](D:/home/projects/memoflow/packages/app-vue/src/modules/editor/composables/useEditorWorkspaceActions.ts:11)
+- [editorClientGateway.ts](D:/home/projects/memoflow/packages/app-vue/src/modules/editor/services/editorClientGateway.ts:21)
+- [use-repository-workspace.ts](D:/home/projects/memoflow/packages/app-react/src/hooks/use-repository-workspace.ts:29)
+- [use-ai-workspace.ts](D:/home/projects/memoflow/packages/app-react/src/hooks/use-ai-workspace.ts:67)
+- [ai-client-service.ts](D:/home/projects/memoflow/packages/ai/src/application-client/ai-client-service.ts:46)
 
 **问题**
 
@@ -323,10 +323,10 @@ interface 很宽，但 leverage 不高，caller 仍然需要理解“当前 runt
 
 **关键文件**
 
-- [goal transport-handlers.ts](D:/home/projects/dailyuse/packages/goal/src/api/transport-handlers.ts:28)
-- [schedule transport-handlers.ts](D:/home/projects/dailyuse/packages/schedule/src/api/transport-handlers.ts:26)
-- [task transport-handlers.ts](D:/home/projects/dailyuse/packages/task/src/api/transport-handlers.ts:37)
-- [account transport-handlers.ts](D:/home/projects/dailyuse/packages/account/src/api/transport-handlers.ts:13)
+- [goal transport-handlers.ts](D:/home/projects/memoflow/packages/goal/src/api/transport-handlers.ts:28)
+- [schedule transport-handlers.ts](D:/home/projects/memoflow/packages/schedule/src/api/transport-handlers.ts:26)
+- [task transport-handlers.ts](D:/home/projects/memoflow/packages/task/src/api/transport-handlers.ts:37)
+- [account transport-handlers.ts](D:/home/projects/memoflow/packages/account/src/api/transport-handlers.ts:13)
 
 **问题**
 
@@ -348,12 +348,12 @@ controller 直接依赖 application port；只有确实存在翻译价值时才�
 
 **关键文件**
 
-- [account/index.ts](D:/home/projects/dailyuse/packages/contracts/src/modules/account/index.ts:1)
-- [goal/index.ts](D:/home/projects/dailyuse/packages/contracts/src/modules/goal/index.ts:1)
-- [notification/index.ts](D:/home/projects/dailyuse/packages/contracts/src/modules/notification/index.ts:1)
-- [task/api/response-schemas.ts](D:/home/projects/dailyuse/packages/contracts/src/modules/task/api/response-schemas.ts:1)
-- [goal/api/response-schemas.ts](D:/home/projects/dailyuse/packages/contracts/src/modules/goal/api/response-schemas.ts:1)
-- [ai/api/response-schemas.ts](D:/home/projects/dailyuse/packages/contracts/src/modules/ai/api/response-schemas.ts:1)
+- [account/index.ts](D:/home/projects/memoflow/packages/contracts/src/modules/account/index.ts:1)
+- [goal/index.ts](D:/home/projects/memoflow/packages/contracts/src/modules/goal/index.ts:1)
+- [notification/index.ts](D:/home/projects/memoflow/packages/contracts/src/modules/notification/index.ts:1)
+- [task/api/response-schemas.ts](D:/home/projects/memoflow/packages/contracts/src/modules/task/api/response-schemas.ts:1)
+- [goal/api/response-schemas.ts](D:/home/projects/memoflow/packages/contracts/src/modules/goal/api/response-schemas.ts:1)
+- [ai/api/response-schemas.ts](D:/home/projects/memoflow/packages/contracts/src/modules/ai/api/response-schemas.ts:1)
 
 **问题**
 
@@ -384,12 +384,12 @@ controller 直接依赖 application port；只有确实存在翻译价值时才�
 
 **关键文件**
 
-- [task-template.routes.spec.ts](D:/home/projects/dailyuse/packages/task/src/api/routes/task-template.routes.spec.ts:14)
-- [goal.routes.spec.ts](D:/home/projects/dailyuse/packages/goal/src/api/routes/goal.routes.spec.ts:15)
-- [schedule-event.routes.spec.ts](D:/home/projects/dailyuse/packages/schedule/src/api/schedule-event.routes.spec.ts:14)
-- [repository.routes.spec.ts](D:/home/projects/dailyuse/packages/repository/src/api/routes/repository.routes.spec.ts:14)
-- [openapi-helpers.ts](D:/home/projects/dailyuse/packages/utils/src/result/openapi-helpers.ts:56)
-- [route-registrar.ts](D:/home/projects/dailyuse/packages/utils/src/result/route-registrar.ts:105)
+- [task-template.routes.spec.ts](D:/home/projects/memoflow/packages/task/src/api/routes/task-template.routes.spec.ts:14)
+- [goal.routes.spec.ts](D:/home/projects/memoflow/packages/goal/src/api/routes/goal.routes.spec.ts:15)
+- [schedule-event.routes.spec.ts](D:/home/projects/memoflow/packages/schedule/src/api/schedule-event.routes.spec.ts:14)
+- [repository.routes.spec.ts](D:/home/projects/memoflow/packages/repository/src/api/routes/repository.routes.spec.ts:14)
+- [openapi-helpers.ts](D:/home/projects/memoflow/packages/utils/src/result/openapi-helpers.ts:56)
+- [route-registrar.ts](D:/home/projects/memoflow/packages/utils/src/result/route-registrar.ts:105)
 
 **问题**
 

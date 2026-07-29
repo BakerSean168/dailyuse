@@ -20,7 +20,7 @@ import type {
   INotificationPreferenceRepository,
   INotificationTemplateRepository,
 } from '../domain/repositories';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import {
   CreateNotificationUseCase,
   MarkNotificationAsReadUseCase,
@@ -30,7 +30,7 @@ import {
   GetUnreadNotificationsUseCase,
   GetNotificationPreferenceUseCase,
 } from '../application';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import {
   NotificationMaintenanceApplicationService,
   NotificationQueryApplicationService,

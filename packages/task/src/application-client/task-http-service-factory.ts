@@ -1,4 +1,4 @@
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 
 import { createTaskHttpAdapters } from '../infrastructure-client';
 import { TaskClientService, createTaskClientService } from './task-client-service';

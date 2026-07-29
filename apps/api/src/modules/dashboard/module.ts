@@ -7,9 +7,9 @@
  */
 
 import { Router } from 'express';
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-module.js';
-import type { ServerModuleContext } from '@dailyuse/contracts/shared';
+import type { ServerModuleContext } from '@memoflow/contracts/shared';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/auth-middleware.js';
 import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';
 import { getApiDashboardData } from './dashboard-read-service.js';

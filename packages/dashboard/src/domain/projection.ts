@@ -12,11 +12,11 @@ import type {
   ScheduleItem,
   TaskBoardSummary,
   TrendDay,
-} from '@dailyuse/contracts/dashboard';
-import { GoalStatus } from '@dailyuse/contracts/goal';
-import type { GoalId, ScheduleTaskId } from '@dailyuse/contracts/primitives';
-import { ReminderStatus } from '@dailyuse/contracts/reminder';
-import { TaskInstanceStatus, TaskTemplateStatus } from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/dashboard';
+import { GoalStatus } from '@memoflow/contracts/goal';
+import type { GoalId, ScheduleTaskId } from '@memoflow/contracts/primitives';
+import { ReminderStatus } from '@memoflow/contracts/reminder';
+import { TaskInstanceStatus, TaskTemplateStatus } from '@memoflow/contracts/task';
 import type { DashboardReadSource, DashboardTaskInstanceRecord, DashboardTaskTemplateRecord } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;

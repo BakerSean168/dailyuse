@@ -4,7 +4,7 @@ import type {
   GitHubInstallationRepositoryDTO,
   KnowledgeNoteProjectionClientDTO,
   KnowledgeRepositoryConnectionServerDTO,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import type { IKnowledgeRepositoryConnectionRepository } from '../ports/knowledge-repository-connection.repository';
 import type {
   IKnowledgeRepositoryLeaseRepository,

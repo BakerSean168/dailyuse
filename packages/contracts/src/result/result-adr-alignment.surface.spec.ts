@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 617: standards ADRs must not prescribe retired ActionResult dual-track.
- * Residual 619: route ADRs must not import removed @dailyuse/contracts/response.
+ * Residual 619: route ADRs must not import removed @memoflow/contracts/response.
  * Canonical outcome types are Result / IpcResult / HttpResponse only (residual 615).
  */
 const here = dirname(fileURLToPath(import.meta.url));
@@ -38,7 +38,7 @@ describe('Result ADR alignment (residual 617)', () => {
     }
 
     // ADR-008 must not list ActionResult as the prescribed simple-action type.
-    expect(adr008).toContain('@dailyuse/contracts/result');
+    expect(adr008).toContain('@memoflow/contracts/result');
     expect(adr008).toContain('Result<T>');
     expect(adr008).toContain('IpcResult<T>');
     expect(adr008).toContain('HttpResponse<T>');
@@ -53,7 +53,7 @@ describe('Result ADR alignment (residual 617)', () => {
     expect(adr012).toContain('Result<T>');
     expect(adr012).not.toContain('convert them to `ActionResult`');
 
-    expect(adr030).toContain('@dailyuse/contracts/result');
+    expect(adr030).toContain('@memoflow/contracts/result');
     expect(adr030).toMatch(/ActionResult.*removed|removed.*ActionResult|dual-track helpers are removed/i);
     expect(adr030).toMatch(/contracts\/response.*removed|removed.*contracts\/response/i);
   });
@@ -63,10 +63,10 @@ describe('Result ADR alignment (residual 617)', () => {
     const adr022 = readDoc('docs/architecture/adr/ADR-022-api-module-routing-refactor.md');
     for (const doc of [adr021, adr022]) {
       expect(doc).toContain('Residual 619');
-      expect(doc).toContain('@dailyuse/contracts/result');
+      expect(doc).toContain('@memoflow/contracts/result');
       expect(doc).toContain('createHttpResponseBuilder');
       // No live import of the removed response package in samples.
-      expect(doc).not.toMatch(/from '@dailyuse\/contracts\/response'/);
+      expect(doc).not.toMatch(/from '@memoflow\/contracts\/response'/);
       expect(doc).not.toMatch(/createResponseBuilder\s*\(/);
       expect(doc).not.toMatch(/import\s*\{[^}]*createResponseBuilder/);
     }

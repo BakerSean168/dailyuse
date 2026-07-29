@@ -4,7 +4,7 @@
  * Transport-agnostic interfaces for AI API operations.
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
- * Types imported from @dailyuse/contracts/ai.
+ * Types imported from @memoflow/contracts/ai.
  */
 
 import type {
@@ -44,8 +44,8 @@ import type {
   AgentStartRunClientRequest,
   AssistantClientCommand,
   AssistantEvent,
-} from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 export interface IAIConversationApiClient {
   createConversation(request: CreateConversationReq): Promise<Result<AIConversationClientDTO>>;

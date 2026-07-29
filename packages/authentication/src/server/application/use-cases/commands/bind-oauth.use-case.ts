@@ -2,18 +2,18 @@
  * Bind OAuth Use Case
  *
  * Links a provider identity (GitHub subject) to the currently authenticated
- * Daily Use identity after state/PKCE validation. Never silently merges two
+ * MemoFlow identity after state/PKCE validation. Never silently merges two
  * identities when the subject is already owned by someone else (ADR-036).
  *
- * 将提供者身份（GitHub subject）绑定到当前已登录的 Daily Use 身份（state/PKCE
+ * 将提供者身份（GitHub subject）绑定到当前已登录的 MemoFlow 身份（state/PKCE
  * 校验之后）。若 subject 已属于其他身份，禁止静默合并（ADR-036）。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
-import type { BindOAuthReq, BindOAuthRes } from '@dailyuse/contracts/authentication';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
+import type { BindOAuthReq, BindOAuthRes } from '@memoflow/contracts/authentication';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import type { IAuthIdentityRepository } from '../../../domain';
 import {
   AuthDomainCode,
@@ -22,7 +22,7 @@ import {
 } from '../../../domain';
 import type { IGithubOAuthClient } from '../../../domain/services/providers/i-github-oauth-client';
 import type { IOAuthStateStore } from '../../../domain/services/i-oauth-state-store';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 // Residual 991: sole toDomainProvider (local dual retired).
 import { toDomainProvider } from '../../../shared/to-domain-provider';
 
@@ -96,7 +96,7 @@ export class BindOAuthUseCase {
       // Explicit conflict — never silent-merge (ADR-036).
       return fail({
         code: 'CONFLICT',
-        message: 'This OAuth account is already linked to another Daily Use identity',
+        message: 'This OAuth account is already linked to another MemoFlow identity',
         context: {
           domainCode: AuthDomainCode.OAUTH_ALREADY_LINKED,
           provider: input.provider,

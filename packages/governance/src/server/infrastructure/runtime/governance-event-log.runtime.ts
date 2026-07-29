@@ -6,9 +6,9 @@
  * 模块级诊断事件订阅的可逆运行时适配器。
  */
 
-import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { GovernanceEventMap } from '@dailyuse/contracts/governance';
+import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
+import type { GovernanceEventMap } from '@memoflow/contracts/governance';
 import type { GovernanceRuntimeAdapter } from './module-runtime';
 
 const logger = createLogger('GovernanceRuntime');

@@ -8,7 +8,7 @@ Accepted
 
 ## Implementation note (Residual 617 / 2026-07-22)
 Stage-6 deleted the zero-consumer `ActionResult` / `actionOk` dual-track helpers from
-`@dailyuse/contracts/result`. Transport truth is **only** `Result<T>` plus boundary
+`@memoflow/contracts/result`. Transport truth is **only** `Result<T>` plus boundary
 envelopes `IpcResult<T>` / `HttpResponse<T>`. Do not reintroduce `success: boolean`
 or `ActionResult`-style parallel types.
 
@@ -16,7 +16,7 @@ or `ActionResult`-style parallel types.
 Inconsistent API response formats make frontend integration and cross-service communication error-prone. Different modules using `success: true`, `ok: true`, or just returning raw data leads to confusion and defensive programming overhead.
 
 ## Decision
-All operations must return a unified response object structure. We adopt the `ok: boolean` pattern defined in `@dailyuse/contracts`.
+All operations must return a unified response object structure. We adopt the `ok: boolean` pattern defined in `@memoflow/contracts`.
 
 ### 1. Unified Response Structure
 ```typescript
@@ -32,7 +32,7 @@ interface BaseResponse<T> {
 *   ❌ Raw data return (e.g., returning just `User` object instead of `{ ok: true, data: User }` for operations prone to failure)
 
 ### 3. Usage of Contract Types
-Implementations must use the exact types from `@dailyuse/contracts/result`:
+Implementations must use the exact types from `@memoflow/contracts/result`:
 
 *   **All operations:** `Result<T>` (`ok` / `fail` / `error` helpers)
 *   **IPC boundary:** `IpcResult<T>` (`toIpcResult` / `fromIpcResult`)
@@ -41,8 +41,8 @@ Implementations must use the exact types from `@dailyuse/contracts/result`:
 
 ### 4. Code Example
 ```typescript
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
 
 // Correct
 export async function getUser(id: string): Promise<Result<User>> {

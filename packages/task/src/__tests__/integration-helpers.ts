@@ -2,7 +2,7 @@
  * Residual 1043: shared integration helpers dual retired onto test-utils sole.
  * Task-only seed/cleanup helpers remain local (not cross-package duals).
  */
-import { getPrisma } from '@dailyuse/test-utils/setup/integration-helpers';
+import { getPrisma } from '@memoflow/test-utils/setup/integration-helpers';
 import { TaskFolderId, TaskInstanceId, TaskTemplateId } from '../server/domain/value-objects';
 
 export {
@@ -10,7 +10,7 @@ export {
   disconnectPrisma,
   cleanAll,
   seedAccount,
-} from '@dailyuse/test-utils/setup/integration-helpers';
+} from '@memoflow/test-utils/setup/integration-helpers';
 
 /**
  * Delete only task-related tables, preserving AuthIdentity and Account rows.

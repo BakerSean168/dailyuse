@@ -26,14 +26,14 @@
  *
  * 【依赖规则】
  * ✅ 允许依赖：
- * - @dailyuse/utils（基类：AggregateRoot, Entity）
- * - @dailyuse/contracts（DTO 接口、事件 Map）
- * - @dailyuse/domain-shared（共享身份值对象）
+ * - @memoflow/utils（基类：AggregateRoot, Entity）
+ * - @memoflow/contracts（DTO 接口、事件 Map）
+ * - @memoflow/domain-shared（共享身份值对象）
  *
  * ❌ 禁止依赖：
  * - domain-client（客户端领域模型）
- * - @dailyuse/infrastructure-*（基础设施层）
- * - @dailyuse/application-*（应用层）
+ * - @memoflow/infrastructure-*（基础设施层）
+ * - @memoflow/application-*（应用层）
  * - 外部 I/O 库（axios, openai-sdk 等）
  */
 

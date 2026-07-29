@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * KeyResult Entity - Domain Client
  * 关键成果实体 - 领域客户端
@@ -10,8 +10,8 @@ import type { Instant } from '@dailyuse/contracts/primitives';
  * - Instance toDTO(): KeyResultClientDTO
  */
 
-import type { KeyResultClientDTO, KeyResultProgress } from '@dailyuse/contracts/goal';
-import { Entity } from '@dailyuse/utils/domain';
+import type { KeyResultClientDTO, KeyResultProgress } from '@memoflow/contracts/goal';
+import { Entity } from '@memoflow/utils/domain';
 import { KeyResultId } from '../../server/domain';
 
 export interface KeyResultState {

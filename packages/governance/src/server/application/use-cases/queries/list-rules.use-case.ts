@@ -5,9 +5,9 @@
 
 import type { IRuleRepository } from '../../../domain/repositories/i-rule-repository';
 import type { RuleFilter } from '../../../domain/repositories/i-rule-repository';
-import type { Result } from '@dailyuse/contracts/result';
-import { resultify } from '@dailyuse/utils/result';
-import type { ListRulesQuery, ListRulesRes } from '@dailyuse/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { resultify } from '@memoflow/utils/result';
+import type { ListRulesQuery, ListRulesRes } from '@memoflow/contracts/governance';
 
 /**
  * List Rules Use Case.

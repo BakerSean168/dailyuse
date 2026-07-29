@@ -1,8 +1,8 @@
 /**
  * Soft residual 1243: formatTaskDuration — L4 i18n/Intl dictionary over time duration split (P4).
- * Arithmetic sole: @dailyuse/time splitDurationMinutes.
+ * Arithmetic sole: @memoflow/time splitDurationMinutes.
  */
-import { splitDurationMinutes } from '@dailyuse/time';
+import { splitDurationMinutes } from '@memoflow/time';
 
 export function formatTaskDuration(totalMinutes: number, locale: string): string {
   const { hours, minutes } = splitDurationMinutes(totalMinutes);

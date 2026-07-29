@@ -1,4 +1,4 @@
-import { CredentialType as CredentialTypeContract, type CredentialType as ICredentialType } from '@dailyuse/contracts/authentication';
+import { CredentialType as CredentialTypeContract, type CredentialType as ICredentialType } from '@memoflow/contracts/authentication';
 
 /**
  * 🔑 凭证类型 - 认证方式标识
@@ -19,7 +19,7 @@ export type CredentialType = ICredentialType & { readonly __brand: unique symbol
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ICredentialType[] = Object.values(CredentialTypeContract);
 
 /**

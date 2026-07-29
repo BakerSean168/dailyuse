@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
-import { AccountStatus } from '@dailyuse/contracts/account';
-import { createTestPinia } from '@dailyuse/test-utils';
+import type { AccountClientDTO } from '@memoflow/contracts/account';
+import { AccountStatus } from '@memoflow/contracts/account';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useAccountStore } from './account-store';
 
 function createAccount(

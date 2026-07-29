@@ -3,7 +3,7 @@ import {
   goalAutomationRequirements,
   knowledgeWriteRequirements,
   type CapabilityOffer,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import {
   CapabilityResolver,
   CAPABILITY_RESOLVER_ENGINE_ID,

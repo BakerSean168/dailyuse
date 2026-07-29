@@ -22,9 +22,9 @@
 
 | # | 语义 | 是否需要返回值 | 是否跨进程/网络 | 选用机制 |
 | --- | --- | --- | --- | --- |
-| 1 | 通知式反应 | 否 | 否 | **事件总线 `send`/`on`**（`@dailyuse/utils/domain` 的 typed publisher/subscriber） |
+| 1 | 通知式反应 | 否 | 否 | **事件总线 `send`/`on`**（`@memoflow/utils/domain` 的 typed publisher/subscriber） |
 | 2 | 查询 / 命令回执 | 是 | 否 | **Port（依赖倒置）+ 宿主组装注入** |
-| 3 | 跨进程 / 网络请求 | 是 | 是 | **Electron IPC（`@dailyuse/ipc-client`）或 HTTP** |
+| 3 | 跨进程 / 网络请求 | 是 | 是 | **Electron IPC（`@memoflow/ipc-client`）或 HTTP** |
 
 对应到范式：
 
@@ -32,7 +32,7 @@
 
 - 用于领域事件传播、"某事发生 → 别处反应"的联动。
 - 发布方**不关心也不等待**订阅方的返回。
-- 事件形状在 `@dailyuse/contracts/<module>/protocol/*-event-map.ts` 集中声明。
+- 事件形状在 `@memoflow/contracts/<module>/protocol/*-event-map.ts` 集中声明。
 - 生产代码通过 `createTypedEventPublisher` / `createTypedEventSubscriber` 收窄类型面（见 raw-event-bus-audit）。
 - **Payload 自包含**：订阅方不应因为处理事件而回头查发布方的 repository，需要的字段应放进 payload。
 
@@ -51,7 +51,7 @@
 
 ### 范式 C — 跨进程 / 网络（消息式 RPC）
 
-跨 Electron 主/渲染进程用 `@dailyuse/ipc-client` 的 `ResultIpcClient` / `createResultIpcClient`（自动识别 `IpcResult` 信封、返回 `Result<T>`、支持超时；无 throw 风格双轨客户端）；Web↔API 用 `ResultHttpClient`。两者作为 client-side adapter 出现在 `packages/<feature>/src/infrastructure-client/adapters/{ipc,http}/`，实现同一个 client Port，保证 UI 层写法不变。
+跨 Electron 主/渲染进程用 `@memoflow/ipc-client` 的 `ResultIpcClient` / `createResultIpcClient`（自动识别 `IpcResult` 信封、返回 `Result<T>`、支持超时；无 throw 风格双轨客户端）；Web↔API 用 `ResultHttpClient`。两者作为 client-side adapter 出现在 `packages/<feature>/src/infrastructure-client/adapters/{ipc,http}/`，实现同一个 client Port，保证 UI 层写法不变。
 
 ### 明确弃用
 

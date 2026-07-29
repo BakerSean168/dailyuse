@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { TaskChannels } from '@dailyuse/contracts/electron';
+import { TaskChannels } from '@memoflow/contracts/electron';
 
 /**
  * Task electron seam surface (stage-6 residual):
@@ -13,7 +13,7 @@ describe('TaskElectronModule channel surface', () => {
 
   it('registers handlers via TaskChannels and does not redefine a local Ch map', () => {
     expect(source).toContain('TaskChannels');
-    expect(source).toContain("from '@dailyuse/contracts/electron'");
+    expect(source).toContain("from '@memoflow/contracts/electron'");
     expect(source).not.toMatch(/const Ch = \{/);
     expect(source).toContain('Object.values(TaskChannels)');
     expect(source).toContain('TaskChannels.TEMPLATE_LIST');

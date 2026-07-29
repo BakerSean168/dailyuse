@@ -8,8 +8,8 @@
  * - OAuthBindingServerDTO -> Prisma CreateInput (write path)
  */
 
-import type { Prisma } from '@dailyuse/database';
-import type { OAuthBindingServerDTO, OAuthProvider } from '@dailyuse/contracts/authentication';
+import type { Prisma } from '@memoflow/database';
+import type { OAuthBindingServerDTO, OAuthProvider } from '@memoflow/contracts/authentication';
 import type { PrismaAuthOAuthBindingRow } from '../../../types';
 
 export class PrismaOAuthBindingMapper {

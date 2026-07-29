@@ -8,10 +8,10 @@
  * - 持久化状态变更
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
 
 /**
  * Resume Schedule Task Use Case

@@ -87,10 +87,10 @@
 </template>
 
 <script setup lang="ts">
-import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Separator } from '@dailyuse/ui-vue-shadcn';
+import { Alert, AlertTitle, AlertDescription } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Separator } from '@memoflow/ui-vue-shadcn';
 import { AlertCircle, CheckCircle, Lightbulb, Loader2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { formatScheduleDurationMinutes } from '../../../shared/utils/format-schedule-duration-minutes';
@@ -100,7 +100,7 @@ import {
   ConflictSuggestionType,
   type ConflictDetectionResult,
   type ConflictSuggestion,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 interface Props {
   conflicts: ConflictDetectionResult | null;

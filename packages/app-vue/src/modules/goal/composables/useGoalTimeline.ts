@@ -1,7 +1,7 @@
 import { computed, ref, watch, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TimelineData, TimelineSnapshot } from '../utils/goal-timeline';
-import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
 
 export const useGoalTimeline = (goalRef: Ref<GoalClientDTO | null>) => {
   const { t } = useI18n();

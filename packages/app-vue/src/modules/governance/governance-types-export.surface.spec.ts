@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 250: governance module has no local types.ts dual re-export barrel.
- * Callers import DTO/req types from @dailyuse/contracts/governance.
+ * Callers import DTO/req types from @memoflow/contracts/governance.
  */
 describe('governance types export single-track surface', () => {
   const dir = __dirname;
@@ -18,11 +18,11 @@ describe('governance types export single-track surface', () => {
   });
 
   it('module index and internals import contracts governance types only', () => {
-    expect(index).toContain("from '@dailyuse/contracts/governance'");
+    expect(index).toContain("from '@memoflow/contracts/governance'");
     expect(index).not.toContain("from './types'");
-    expect(useGov).toContain("from '@dailyuse/contracts/governance'");
+    expect(useGov).toContain("from '@memoflow/contracts/governance'");
     expect(useGov).not.toContain("from '../types'");
-    expect(store).toContain("from '@dailyuse/contracts/governance'");
+    expect(store).toContain("from '@memoflow/contracts/governance'");
     expect(store).not.toContain("from '../types'");
   });
 });

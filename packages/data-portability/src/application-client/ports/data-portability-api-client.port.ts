@@ -5,7 +5,7 @@
  * Implementations: HTTP adapters (web), IPC adapters (desktop).
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   ExportServerHeldDataDisclosureReq,
   ExportServerHeldDataDisclosureRes,
@@ -13,7 +13,7 @@ import type {
   ExportUserDataRes,
   ImportUserDataReq,
   ImportUserDataRes,
-} from '@dailyuse/contracts/data-portability';
+} from '@memoflow/contracts/data-portability';
 
 export interface IDataPortabilityApiClient {
   exportUserData(data: ExportUserDataReq): Promise<Result<ExportUserDataRes>>;

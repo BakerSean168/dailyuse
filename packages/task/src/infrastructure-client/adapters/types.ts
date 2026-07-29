@@ -10,9 +10,9 @@
 
 /**
  * IPC Client interface (Result-returning).
- * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
+ * Canonical definition in @memoflow/ipc-client (ResultIpcClient).
  */
-export type { IResultIpcClient } from '@dailyuse/ipc-client';
+export type { IResultIpcClient } from '@memoflow/ipc-client';
 
 // ============ Port Interface Re-exports ============
 export type { ITaskTemplateApiClient, TaskTemplateListParams } from '../../application-client/ports/task-template-api-client.port';

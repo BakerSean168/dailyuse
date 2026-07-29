@@ -5,7 +5,7 @@
  * Handles CRUD and query operations for KeyResultWeightSnapshot.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import type { IWeightSnapshotRepository, SnapshotQueryResult } from '../../../domain';
 import { KeyResultWeightSnapshot } from '../../../domain';
 import { PrismaWeightSnapshotMapper } from './mappers/prisma-weight-snapshot-mapper';

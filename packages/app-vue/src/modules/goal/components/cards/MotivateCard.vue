@@ -48,10 +48,10 @@
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Flag, Lightbulb, RefreshCw } from '@lucide/vue';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@memoflow/ui-vue-shadcn';
 
 const { t } = useI18n();
 

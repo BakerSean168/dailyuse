@@ -1,8 +1,8 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import type {
   KnowledgeNoteProjectionClientDTO,
   KnowledgeNoteProjectionIndexStatus,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import type {
   IKnowledgeNoteProjectionRepository,
   KnowledgeNoteProjectionDeletion,

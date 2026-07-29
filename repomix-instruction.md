@@ -1,4 +1,4 @@
-# Repomix Usage For Memoflow
+# Repomix Usage For MemoFlow
 
 Use this snapshot for resume writing, project summaries, architecture overviews, interview preparation, and README updates.
 

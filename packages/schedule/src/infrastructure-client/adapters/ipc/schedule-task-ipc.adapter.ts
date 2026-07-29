@@ -5,19 +5,19 @@
  * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ScheduleChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { ScheduleChannels } from '@memoflow/contracts/electron';
 import type {
   IResultIpcClient,
   IScheduleTaskApiClient,
 } from '../types';
-import type { SourceModule } from '@dailyuse/contracts/schedule';
+import type { SourceModule } from '@memoflow/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
   ScheduleBatchOperationResponseDTO,
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

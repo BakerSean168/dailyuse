@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import { ExecutionStatus } from '@memoflow/contracts/schedule';
 import { ScheduleExecution } from '../schedule-execution';
 
 describe('ScheduleExecution Entity', () => {

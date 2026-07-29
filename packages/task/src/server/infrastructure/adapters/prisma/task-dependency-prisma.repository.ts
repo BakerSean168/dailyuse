@@ -5,15 +5,15 @@
  * 聚合根：TaskDependency
  */
 
-import type { PrismaClient, TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { PrismaClient, TaskDependency as PrismaTaskDependency } from '@memoflow/database';
+import type { IdentityId } from '@memoflow/domain-shared';
 import type { ITaskDependencyRepository } from '../../../domain/repositories/i-task-dependency-repository';
-import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
-import type { DependencyType } from '@dailyuse/contracts/task';
+import type { TaskDependencyServerDTO } from '@memoflow/contracts/task';
+import type { DependencyType } from '@memoflow/contracts/task';
 import { TaskDependency } from '../../../domain/aggregates/task-dependency';
 import { PrismaTaskDependencyMapper } from './mappers/prisma-task-dependency-mapper';
-import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createEventBusAdapter, publishAggregateEvents } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

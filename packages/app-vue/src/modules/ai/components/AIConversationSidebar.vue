@@ -267,8 +267,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@dailyuse/ui-vue-shadcn';
-import type { AgentRun } from '@dailyuse/contracts/ai';
+} from '@memoflow/ui-vue-shadcn';
+import type { AgentRun } from '@memoflow/contracts/ai';
 import type {
   AIWorkspaceRecentGoal,
   AIWorkspaceRecentKnowledgeNote,

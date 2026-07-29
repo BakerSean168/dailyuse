@@ -5,8 +5,8 @@
  * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { AuthChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { AuthChannels } from '@memoflow/contracts/electron';
 import type { IAuthApiClient, IResultIpcClient } from '../types';
 import type {
   AutoLoginResult,
@@ -36,7 +36,7 @@ import type {
   GuestModeRes,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 export class AuthIpcAdapter implements IAuthApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

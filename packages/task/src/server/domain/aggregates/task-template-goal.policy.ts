@@ -7,8 +7,8 @@
 
 import type {
   TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
-} from '@dailyuse/contracts/task';
-import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import { TaskType } from '../value-objects';
 import { TaskGoalBinding } from '../value-objects';
@@ -17,7 +17,7 @@ import {
   TaskTemplateArchivedError,
   InvalidGoalBindingError,
 } from '../value-objects/task-errors';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import type { GoalId, KeyResultId } from '@memoflow/contracts/primitives';
 import type { TaskTemplateProps } from './task-template.state';
 
 /** Mutable context for goal operations. */

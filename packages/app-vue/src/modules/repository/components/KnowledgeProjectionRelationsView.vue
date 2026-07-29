@@ -184,12 +184,12 @@
 import { computed, defineComponent, h, ref, watch, type Component, type PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ArrowUpRight, CornerDownLeft, Loader2, Network, RefreshCw, Unlink } from '@lucide/vue';
-import { Badge, Button } from '@dailyuse/ui-vue-shadcn';
+import { Badge, Button } from '@memoflow/ui-vue-shadcn';
 import type {
   KnowledgeNoteLinkGraphEdgeDTO,
   KnowledgeNoteLinkGraphNodeDTO,
   KnowledgeNoteLinkGraphResponse,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 

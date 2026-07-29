@@ -39,7 +39,7 @@
  * ```
  */
 
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 
 /**
  * 重要性加分映射

@@ -36,7 +36,7 @@ tags: [standard, domain/shared]
 * 原始类型应来自 `contracts` 包。
 
 ```typescript
-import type { OrderStatusDTO } from '@dailyuse/contracts/order';
+import type { OrderStatusDTO } from '@memoflow/contracts/order';
 
 // 定义
 export type OrderStatus = OrderStatusDTO & { readonly __brand: unique symbol };
@@ -69,7 +69,7 @@ export type OrderStatus = OrderStatusDTO & { readonly __brand: unique symbol };
 
 ```typescript
 // 1. 引入 Contract 定义
-import type { ThemeModeDTO } from '@dailyuse/contracts/settings';
+import type { ThemeModeDTO } from '@memoflow/contracts/settings';
 
 // 2. 定义 Branded Type
 export type ThemeMode = ThemeModeDTO & { readonly __brand: unique symbol };

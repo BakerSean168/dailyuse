@@ -10,7 +10,7 @@ import type {
   NotificationPreferenceServerDTO,
   NotificationPreferenceClientDTO,
   NotificationChannelClientDTO,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 export function toNotificationClientDTO(serverDTO: NotificationServerDTO): NotificationClientDTO {
   const notificationChannels: NotificationChannelClientDTO[] | null =

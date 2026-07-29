@@ -1,5 +1,5 @@
 /**
- * @dailyuse/database — 共享数据库基础设施
+ * @memoflow/database — 共享数据库基础设施
  *
  * 提供统一的 PrismaClient 和所有模块的 Model 类型。
  * 这是数据库运行时连接管理与 Prisma 生成客户端的 Single Source of Truth。
@@ -7,13 +7,13 @@
  * @example
  * ```typescript
  * // 获取单例连接
- * import { prisma } from '@dailyuse/database';
+ * import { prisma } from '@memoflow/database';
  *
  * // 使用 PrismaClient 类型（用于 DI）
- * import type { PrismaClient } from '@dailyuse/database';
+ * import type { PrismaClient } from '@memoflow/database';
  *
  * // 使用 Model 类型
- * import type { Rule, RuleRevision } from '@dailyuse/database';
+ * import type { Rule, RuleRevision } from '@memoflow/database';
  * ```
  */
 

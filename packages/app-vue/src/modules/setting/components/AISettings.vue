@@ -323,12 +323,12 @@ import {
   Label,
   Separator,
   Switch,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   AI_PROVIDER_TEMPLATES,
   type AIProviderConfigClientDTO,
   type AIProviderTemplate,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import { useAI } from '../../ai/composables/useAI';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 

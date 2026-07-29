@@ -4,10 +4,10 @@
  * Transport-agnostic interfaces for AI API operations.
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
- * Types imported from @dailyuse/contracts/ai.
+ * Types imported from @memoflow/contracts/ai.
  */
 
-export type { IResultHttpClient } from '@dailyuse/http-client';
+export type { IResultHttpClient } from '@memoflow/http-client';
 
 // Re-export port interfaces from application-client ports
 export type {
@@ -28,6 +28,6 @@ export type {
 
 /**
  * IPC Client interface (Result-returning).
- * Canonical definition in @dailyuse/ipc-client (ResultIpcClient), including optional getBridge.
+ * Canonical definition in @memoflow/ipc-client (ResultIpcClient), including optional getBridge.
  */
-export type { IResultIpcClient } from '@dailyuse/ipc-client';
+export type { IResultIpcClient } from '@memoflow/ipc-client';

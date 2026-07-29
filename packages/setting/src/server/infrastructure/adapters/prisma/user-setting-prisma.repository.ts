@@ -4,12 +4,12 @@
  * Prisma implementation of IUserSettingRepository.
  */
 
-import type { PrismaClient, UserSetting as PrismaUserSetting } from '@dailyuse/database';
-import type { IDomainEvent } from '@dailyuse/contracts/shared';
-import type { SettingEventMap } from '@dailyuse/contracts/setting';
+import type { PrismaClient, UserSetting as PrismaUserSetting } from '@memoflow/database';
+import type { IDomainEvent } from '@memoflow/contracts/shared';
+import type { SettingEventMap } from '@memoflow/contracts/setting';
 import type { IUserSettingRepository } from '../../../domain/repositories/i-user-setting-repository';
 import { UserSetting } from '../../../domain/aggregates/user-setting';
-import { eventBus } from '@dailyuse/utils/domain';
+import { eventBus } from '@memoflow/utils/domain';
 import { PrismaUserSettingMapper } from './mappers';
 
 export class UserSettingPrismaRepository implements IUserSettingRepository {

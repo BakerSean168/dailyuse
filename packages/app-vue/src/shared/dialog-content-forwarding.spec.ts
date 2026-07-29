@@ -10,7 +10,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 
 const DialogHost = defineComponent({
   components: {

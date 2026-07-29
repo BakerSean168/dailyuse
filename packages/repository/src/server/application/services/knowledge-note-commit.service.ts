@@ -1,16 +1,16 @@
 import { createHash, randomUUID } from 'node:crypto';
 import matter from 'gray-matter';
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   CreateConfirmedKnowledgeNoteSchema,
   type CreateConfirmedKnowledgeNoteReq,
   type CreateConfirmedKnowledgeNoteResponse,
   type GitHubInstallationRepositoryDTO,
   RepositoryNoteMutationType,
-} from '@dailyuse/contracts/repository';
-import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/repository';
+import type { IdentityId, RepositoryId, ResourceId } from '@memoflow/contracts/primitives';
+import { createLogger } from '@memoflow/utils/logger';
 import type { GitHubFileCommitResult, IGitHubAppClient } from '../ports/github-app-client.port';
 import type { IKnowledgeRepositoryConnectionRepository } from '../ports/knowledge-repository-connection.repository';
 import type { IKnowledgeRepositoryLeaseRepository } from '../ports/knowledge-repository-lease.repository';

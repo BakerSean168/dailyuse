@@ -1,8 +1,8 @@
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   PhoneNumberDTO,
   PhoneNumber as IPhoneNumber,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 /**
  * Phone number value object.

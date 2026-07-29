@@ -18,7 +18,7 @@ import type {
   CapabilityOffer,
   ExecutionReceipt,
   IProposalKernelPort,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 export const PROPOSAL_KERNEL_PROVIDER_ID = 'proposal-kernel' as const;
 

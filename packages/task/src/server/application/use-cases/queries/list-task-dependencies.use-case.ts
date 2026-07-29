@@ -5,10 +5,10 @@
  */
 
 import type { ITaskDependencyRepository } from '../../../domain/repositories/i-task-dependency-repository';
-import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
-import { dependencyServerToClientDTO } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { TaskDependencyClientDTO } from '@memoflow/contracts/task';
+import { dependencyServerToClientDTO } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 export class ListTaskDependenciesUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}

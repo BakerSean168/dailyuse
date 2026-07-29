@@ -15,17 +15,17 @@ import type {
   NotificationType,
   NotificationCategory,
   NotificationStatus,
-} from '@dailyuse/contracts/notification';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/notification';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import {
   NotificationId,
   NotificationAction,
   NotificationMetadata,
 } from '../../server/domain/value-objects';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { NotificationChannel } from '../entities/notification-channel.js';
-import type { NotificationId as NotificationIdBranded, IdentityId as IdentityIdBranded } from '@dailyuse/contracts/primitives';
+import type { NotificationId as NotificationIdBranded, IdentityId as IdentityIdBranded } from '@memoflow/contracts/primitives';
 
 export interface NotificationState {
   id: NotificationId;

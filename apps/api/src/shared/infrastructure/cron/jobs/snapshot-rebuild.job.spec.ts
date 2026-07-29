@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   getPowerSyncConfig: vi.fn(),
 }));
 
-vi.mock('@dailyuse/database', () => ({
+vi.mock('@memoflow/database', () => ({
   prisma: {
     account: {
       findMany: mocks.findMany,

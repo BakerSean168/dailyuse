@@ -6,8 +6,8 @@ import type {
   QueryKnowledgeRes,
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
-} from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 /** HTTP adapter — returns Result, never throws (residual 98). */
 export class AIKnowledgeQueryHttpAdapter implements AIKnowledgeQueryApiClient {

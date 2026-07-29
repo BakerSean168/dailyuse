@@ -6,8 +6,8 @@ import {
   type AgentRun,
   type AgentResumePayload,
   type AgentStartRunClientRequest,
-} from '@dailyuse/contracts/ai';
-import { ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { ok } from '@memoflow/contracts/result';
 import type { IResultHttpClient } from '../types';
 import { AIAgentRuntimeHttpAdapter } from './ai-agent-runtime-http.adapter';
 

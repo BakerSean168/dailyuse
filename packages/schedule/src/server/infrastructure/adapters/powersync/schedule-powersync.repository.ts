@@ -4,8 +4,8 @@ import {
   PowerSyncScheduleMapper,
   type PowerSyncScheduleRow,
 } from './mappers/powersync-schedule.mapper';
-import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createEventBusAdapter, publishAggregateEvents } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

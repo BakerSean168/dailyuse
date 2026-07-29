@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * TaskInstance Aggregate Root - Domain Client
  * 任务实例聚合根 - 领域客户端
@@ -15,12 +15,12 @@ import type {
   TaskTimeConfig,
   TaskTimeConfigDTO,
   TaskInstanceStatus,
-} from '@dailyuse/contracts/task';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/task';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskInstanceId } from '../../server/domain/value-objects/task-instance-id';
 import { TaskTemplateId } from '../../server/domain/value-objects/task-template-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 export interface TaskInstanceState {
   id: TaskInstanceId;

@@ -1,8 +1,8 @@
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   DeleteNotificationsBatchReq,
   MarkAsReadBatchReq,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 export interface NotificationApplicationPort {
   createNotification(data: unknown): Promise<Result<unknown>>;

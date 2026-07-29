@@ -15,15 +15,15 @@
  */
 
 import { ipcMain } from 'electron';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import {
   ReminderChannels,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
+} from '@memoflow/contracts/electron';
 import { createReminderPowerSyncModule } from '../server/infrastructure';
 import { ReminderController } from '../server/transport/reminder.controller';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { ReminderModuleInstance } from '../server/infrastructure';
 import type { IReminderTemplateRepository } from '../server/domain/repositories/i-reminder-template-repository';

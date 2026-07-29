@@ -86,7 +86,7 @@
 import { computed, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Bell, CalendarClock, FolderInput, Pencil, Power, Repeat2, Trash2 } from '@lucide/vue';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import {

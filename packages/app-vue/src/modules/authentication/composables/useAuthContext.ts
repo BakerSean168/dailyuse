@@ -1,8 +1,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
-import type { ResultError } from '@dailyuse/contracts/result';
+import type { AuthResponseDTO } from '@memoflow/contracts/authentication';
+import type { ResultError } from '@memoflow/contracts/result';
 import type { IAuthService } from '../../../di/types';
 import { useAuthenticationStore } from '../stores/authentication-store';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';

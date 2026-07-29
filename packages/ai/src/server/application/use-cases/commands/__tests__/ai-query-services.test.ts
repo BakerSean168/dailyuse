@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   REPOSITORY_NOTE_MUTATED_EVENT,
   RepositoryNoteMutationType,
-} from '@dailyuse/contracts/repository';
-import { eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/repository';
+import { eventBus } from '@memoflow/utils/domain';
 
 import {
   AIProviderType,
   type ExpandKnowledgeReq,
   type QueryAnalyticsReq,
   type QueryKnowledgeReq,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 import type { IAIProviderConfigRepository } from '../../../../domain/repositories/i-ai-provider-config-repository';
 import type {

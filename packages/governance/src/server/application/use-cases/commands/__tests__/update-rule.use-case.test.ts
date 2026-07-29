@@ -1,5 +1,5 @@
 import { vi, describe, it, expect } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils';
+import { createMockRepo } from '@memoflow/test-utils';
 import { UpdateRuleUseCase } from '../update-rule.use-case';
 import type { ExecutionContext } from '../../execution-context';
 import type { IRuleRepository } from '../../../../domain/repositories/i-rule-repository';

@@ -1,4 +1,4 @@
-import { SourceModule as SourceModuleContract, type SourceModule as ISourceModule } from '@dailyuse/contracts/schedule';
+import { SourceModule as SourceModuleContract, type SourceModule as ISourceModule } from '@memoflow/contracts/schedule';
 
 /**
  * 📝 来源模块 - 调度任务的源模块
@@ -13,7 +13,7 @@ export type SourceModule = ISourceModule & { readonly __brand: unique symbol };
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ISourceModule[] = Object.values(SourceModuleContract);
 
 /**

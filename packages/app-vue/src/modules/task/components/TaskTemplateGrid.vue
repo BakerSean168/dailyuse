@@ -7,7 +7,7 @@
  * DraggableTaskCard 拖拽建依赖契约原样保留。
  */
 import { useI18n } from 'vue-i18n';
-import { Button, Skeleton } from '@dailyuse/ui-vue-shadcn';
+import { Button, Skeleton } from '@memoflow/ui-vue-shadcn';
 import { ListChecks } from '@lucide/vue';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';

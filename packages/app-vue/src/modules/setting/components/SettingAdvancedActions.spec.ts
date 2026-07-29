@@ -25,7 +25,7 @@ const i18n = createI18n({
           exportServerDataDisclosure: 'Download Server-held Data Disclosure',
           exportingServerDataDisclosure: 'Preparing disclosure...',
           serverDataDisclosureDescription:
-            'Non-importable JSON with projections, cached bytes, history, and RAG; no Memoflow-managed replayable GitHub authorization.',
+            'Non-importable JSON with projections, cached bytes, history, and RAG; no MemoFlow-managed replayable GitHub authorization.',
           createBackup: 'Create Backup',
           restoreBackup: 'Restore Backup',
           restoreBackupNoBackups: 'No Backups',
@@ -141,7 +141,7 @@ describe('SettingAdvancedActions', () => {
 
     expect(wrapper.text()).toContain('Download Server-held Data Disclosure');
     expect(wrapper.get('[data-testid="server-data-scope"]').text()).toContain(
-      'no Memoflow-managed replayable GitHub authorization',
+      'no MemoFlow-managed replayable GitHub authorization',
     );
     expect(wrapper.get('[data-testid="server-data-scope"]').text()).toContain('Non-importable');
   });

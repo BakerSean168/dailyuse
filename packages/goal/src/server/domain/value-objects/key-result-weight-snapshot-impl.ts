@@ -8,7 +8,7 @@
 import type {
   KeyResultWeightSnapshotDTO,
   SnapshotTrigger,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import { InvalidWeightError } from './weight-errors';
 
 // 类型别名

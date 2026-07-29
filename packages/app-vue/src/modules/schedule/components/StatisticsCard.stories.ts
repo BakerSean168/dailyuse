@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import StatisticsCard from './StatisticsCard.vue';
-import type { SourceModule } from '@dailyuse/contracts/schedule';
+import type { SourceModule } from '@memoflow/contracts/schedule';
 
 const mockStatistics = {
   totalTasks: 24,

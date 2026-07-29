@@ -12,7 +12,7 @@ const logger = createLogger('CrossPlatformEventBus');
  *
  * 只承载「通知式反应」（ADR-033 范式 A）：发布方 `send`，订阅方 `on`/`off`，
  * 发布方不关心也不等待订阅方返回。同进程请求-响应走 Port（范式 B），
- * 跨进程走 `@dailyuse/ipc-client` / HTTP（范式 C）。
+ * 跨进程走 `@memoflow/ipc-client` / HTTP（范式 C）。
  *
  * @see docs/architecture/adr/ADR-033-cross-module-communication-patterns.md
  */

@@ -1,7 +1,7 @@
 /**
  * Result Pattern core types and utilities.
  *
- * @module @dailyuse/contracts/result/core
+ * @module @memoflow/contracts/result/core
  */
 
 export { ResultCode, type ResultCode as ResultCodeType } from './codes';

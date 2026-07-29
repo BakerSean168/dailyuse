@@ -1,5 +1,5 @@
 import type { Goal } from '../aggregates/goal';
-import { GoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
 import { GoalArchivedError } from '../value-objects';
 
 /**

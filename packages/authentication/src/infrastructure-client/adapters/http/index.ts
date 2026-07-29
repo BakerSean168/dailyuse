@@ -2,7 +2,7 @@
  * Authentication HTTP Adapters - Registration
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import { AuthHttpAdapter } from './auth-http.adapter';
 
 export { AuthHttpAdapter, createAuthHttpAdapter } from './auth-http.adapter';

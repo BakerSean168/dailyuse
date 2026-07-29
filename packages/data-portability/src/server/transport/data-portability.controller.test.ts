@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { Context } from '@memoflow/contracts/shared';
 import { ServerHeldDataDisclosureController } from './data-portability.controller';
 
 const context = { identityId: 'identity-1' } as Context;

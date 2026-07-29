@@ -7,7 +7,7 @@
  * user-authored content.
  */
 
-import { isBannedPortableDataKey } from '@dailyuse/contracts/data-portability';
+import { isBannedPortableDataKey } from '@memoflow/contracts/data-portability';
 
 /**
  * Recursively remove fields whose keys match the sensitive pattern.

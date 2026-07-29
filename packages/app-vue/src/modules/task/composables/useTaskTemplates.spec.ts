@@ -3,16 +3,16 @@ import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { toast } from 'vue-sonner';
-import { fail, ok } from '@dailyuse/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import type {
   CreateTaskTemplateReq,
   TaskGraphDependencyDTO,
   TaskTemplateClientDTO,
   UpdateTaskTemplateReq,
-} from '@dailyuse/contracts/task';
-import { DependencyType } from '@dailyuse/contracts/task';
-import type { TaskDependencyId, TaskTemplateId } from '@dailyuse/contracts/primitives';
-import { createTestPinia } from '@dailyuse/test-utils';
+} from '@memoflow/contracts/task';
+import { DependencyType } from '@memoflow/contracts/task';
+import type { TaskDependencyId, TaskTemplateId } from '@memoflow/contracts/primitives';
+import { createTestPinia } from '@memoflow/test-utils';
 import { TASK_SERVICE_KEY } from '../../../di/keys';
 import { useTaskStore } from '../stores/task-store';
 import { useTaskTemplates } from './useTaskTemplates';

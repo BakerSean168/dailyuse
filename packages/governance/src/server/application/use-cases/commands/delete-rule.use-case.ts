@@ -4,12 +4,12 @@
  */
 
 import type { IRuleRepository } from '../../../domain/repositories/i-rule-repository';
-import type { Result } from '@dailyuse/contracts/result';
-import { toResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { resultify } from '@dailyuse/utils/result';
-import type { DeleteRuleReq, DeleteRuleRes } from '@dailyuse/contracts/governance';
-import type { RuleId } from '@dailyuse/contracts/governance';
-import { RuleStatus } from '@dailyuse/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { toResultErrorException, unwrapOrThrowError } from '@memoflow/contracts/result';
+import { resultify } from '@memoflow/utils/result';
+import type { DeleteRuleReq, DeleteRuleRes } from '@memoflow/contracts/governance';
+import type { RuleId } from '@memoflow/contracts/governance';
+import { RuleStatus } from '@memoflow/contracts/governance';
 import type { ExecutionContext } from '../execution-context';
 
 /**

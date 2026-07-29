@@ -1,4 +1,4 @@
-import { NotificationChannel as NotificationChannelContract, type NotificationChannel as INotificationChannel } from '@dailyuse/contracts/reminder';
+import { NotificationChannel as NotificationChannelContract, type NotificationChannel as INotificationChannel } from '@memoflow/contracts/reminder';
 
 /**
  * 📝 通知渠道 - 提醒的通知投递渠道
@@ -13,7 +13,7 @@ export type NotificationChannel = INotificationChannel & { readonly __brand: uni
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: INotificationChannel[] = Object.values(NotificationChannelContract);
 
 /**

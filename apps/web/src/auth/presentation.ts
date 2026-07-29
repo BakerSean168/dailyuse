@@ -5,7 +5,7 @@ import {
   normalizeTheme,
   type PresentationLocale,
   type PresentationThemeMode,
-} from '@dailyuse/utils/shared';
+} from '@memoflow/utils/shared';
 
 export { normalizeLocale };
 
@@ -19,7 +19,7 @@ interface PresentationPreferenceState {
   theme: AuthThemeMode;
 }
 
-// Residual 1005: detectBrowserLocale/normalizeLocale/normalizeTheme elevated to @dailyuse/utils/shared.
+// Residual 1005: detectBrowserLocale/normalizeLocale/normalizeTheme elevated to @memoflow/utils/shared.
 
 export function readPresentationPreferenceState(): PresentationPreferenceState {
   if (typeof window === 'undefined') {

@@ -58,7 +58,7 @@ function buildApiBaseUrl(raw: RawCredentialsFile): string {
   // Prefer env overrides so CI and local proxy-based debugging can redirect the
   // suite without rewriting the credential file.
   const envFullApiUrl =
-    process.env.DAILYUSE_API_URL?.trim() || process.env.E2E_API_FULL_URL?.trim();
+    process.env.MEMOFLOW_API_URL?.trim() || process.env.E2E_API_FULL_URL?.trim();
   if (envFullApiUrl) {
     return envFullApiUrl.replace(/\/+$/, '').match(/\/api\/v\d+$/i)
       ? envFullApiUrl.replace(/\/+$/, '')

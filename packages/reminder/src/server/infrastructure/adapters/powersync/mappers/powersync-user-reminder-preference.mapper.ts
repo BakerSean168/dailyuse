@@ -1,6 +1,6 @@
-import type { TimeSlotDTO } from '@dailyuse/contracts/reminder';
+import type { TimeSlotDTO } from '@memoflow/contracts/reminder';
 import { UserReminderPreferences } from '../../../../domain/aggregates/user-reminder-preferences';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 
 export type PowerSyncUserReminderPreferenceRow = {
   id: string;

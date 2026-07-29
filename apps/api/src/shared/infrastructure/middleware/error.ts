@@ -9,9 +9,9 @@
  */
 
 import type { Express, Request, Response, NextFunction } from 'express';
-import { mapPrismaError } from '@dailyuse/utils/errors';
-import { createLogger } from '@dailyuse/utils/logger';
-import { errorCodeToHttpStatus, extractStructuredResultError } from '@dailyuse/contracts/result';
+import { mapPrismaError } from '@memoflow/utils/errors';
+import { createLogger } from '@memoflow/utils/logger';
+import { errorCodeToHttpStatus, extractStructuredResultError } from '@memoflow/contracts/result';
 import { createApiResponseBuilder } from '../http/response-builder.js';
 
 const logger = createLogger('ErrorHandler');

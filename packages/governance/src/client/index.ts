@@ -4,16 +4,16 @@
  *
  * The governance package only exposes one client-facing interface:
  * callers depend on this seam, while DTO/schema truth stays in
- * `@dailyuse/contracts/governance`.
+ * `@memoflow/contracts/governance`.
  *
  * 治理模块只保留一个客户端公开 seam：
  * 调用方依赖这里，DTO/schema 真值继续集中在
- * `@dailyuse/contracts/governance`。
+ * `@memoflow/contracts/governance`。
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
-import type { IResultIpcClient } from '@dailyuse/ipc-client';
-import { error, type Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
+import type { IResultIpcClient } from '@memoflow/ipc-client';
+import { error, type Result } from '@memoflow/contracts/result';
 import {
   GovernanceChannels,
   type CreateRuleReq,
@@ -31,7 +31,7 @@ import {
   type SearchRulesRes,
   type UpdateRuleReq,
   type UpdateRuleRes,
-} from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/governance';
 
 /**
  * Stable governance client interface used by UI callers.

@@ -4,7 +4,7 @@
  * 初始化测试环境，配置全局 mock
  */
 
-import { delay } from '@dailyuse/utils/frontend';
+import { delay } from '@memoflow/utils/frontend';
 import { vi, beforeEach, afterEach } from 'vitest';
 
 // Mock Electron once here so handler tests can focus on registration and

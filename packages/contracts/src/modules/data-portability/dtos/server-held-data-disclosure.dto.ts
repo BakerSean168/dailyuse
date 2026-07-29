@@ -3,7 +3,7 @@
  *
  * This artifact is intentionally distinct from `memoflow.user-data-export`:
  * it is a disclosure of repository-cloud records currently held by the
- * Memoflow server and must never be accepted by an import route.
+ * MemoFlow server and must never be accepted by an import route.
  */
 
 import { z } from 'zod';

@@ -1,5 +1,5 @@
-import type { CircularDependencyValidationResult, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
-import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
+import type { CircularDependencyValidationResult, TaskDependencyServerDTO } from '@memoflow/contracts/task';
+import type { TaskTemplateId } from '@memoflow/contracts/primitives';
 
 /**
  * TaskDependencyPolicy

@@ -6,11 +6,11 @@ import type {
   TimeSlotDTO,
   UserReminderPreferencesClientDTO,
   UserReminderPreferencesServerDTO,
-} from '@dailyuse/contracts/reminder';
-import type { UserReminderPreferencesId } from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { generateUUID } from '@dailyuse/utils/shared';
-import { IdentityId } from '@dailyuse/domain-shared';
+} from '@memoflow/contracts/reminder';
+import type { UserReminderPreferencesId } from '@memoflow/contracts/primitives';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { generateUUID } from '@memoflow/utils/shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 /**
  * UserReminderPreferences 内部状态接口

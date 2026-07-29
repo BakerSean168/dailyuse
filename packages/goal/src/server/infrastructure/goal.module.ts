@@ -59,7 +59,7 @@ import {
   CloneGoalUseCase,
   BatchUpdateKeyResultWeightsUseCase,
 } from '../application';
-import type { GoalSystemView } from '@dailyuse/contracts/goal';
+import type { GoalSystemView } from '@memoflow/contracts/goal';
 import type { GoalApplicationPort } from '../application';
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import type { KeyResult } from '@dailyuse/goal/client';
+import type { KeyResult } from '@memoflow/goal/client';
 
 import { useAppSession } from './useAppSession';
 import { mapGoalDetail, type GoalDetail } from './useGoals';

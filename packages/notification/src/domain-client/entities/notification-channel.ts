@@ -14,15 +14,15 @@ import type {
   NotificationChannelClientDTO,
   NotificationChannelType,
   ChannelStatus,
-} from '@dailyuse/contracts/notification';
-import { Entity } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/notification';
+import { Entity } from '@memoflow/utils/domain';
 import {
   NotificationChannelId,
   NotificationId,
   ChannelError,
   ChannelResponse,
 } from '../../server/domain/value-objects';
-import type { NotificationChannelId as NotificationChannelIdBranded, NotificationId as NotificationIdBranded } from '@dailyuse/contracts/primitives';
+import type { NotificationChannelId as NotificationChannelIdBranded, NotificationId as NotificationIdBranded } from '@memoflow/contracts/primitives';
 
 export interface NotificationChannelState {
   id: NotificationChannelId;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRecordRepository } from '../../../../domain';
 import { DeleteGoalRecordUseCase } from '../delete-goal-record.use-case';
 

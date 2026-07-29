@@ -1,4 +1,4 @@
-export const DEFAULT_REPOSITORY_STORAGE_BASE_DIR = '/tmp/dailyuse-repository-storage';
+export const DEFAULT_REPOSITORY_STORAGE_BASE_DIR = '/tmp/memoflow-repository-storage';
 
 export interface ResolveRepositoryStorageBaseDirOptions {
   readonly storageBaseDir?: string | null;

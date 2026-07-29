@@ -1,10 +1,10 @@
-import { fail, type Result } from '@dailyuse/contracts/result';
+import { fail, type Result } from '@memoflow/contracts/result';
 import {
   GetAIEvaluationOverviewSchema,
   type GetAIEvaluationOverviewReq,
   type GetAIEvaluationOverviewRes,
-} from '@dailyuse/contracts/ai';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/ai';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 interface AIEvaluationReportControllerService {
   getEvaluationOverview(

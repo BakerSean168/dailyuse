@@ -1,9 +1,9 @@
-import { ReviewType as ReviewTypeContract, type ReviewType as IReviewType } from '@dailyuse/contracts/goal';
+import { ReviewType as ReviewTypeContract, type ReviewType as IReviewType } from '@memoflow/contracts/goal';
 
 export type ReviewType = IReviewType & { readonly __brand: unique symbol };
 
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IReviewType[] = Object.values(ReviewTypeContract);
 
 export const ReviewType = {

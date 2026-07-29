@@ -12,7 +12,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 // Residual 1261: formatDate dual retired onto shared formatDateNotSet sole (date-only + English 'Not set').
 import { formatDateNotSet as formatDate } from '../utils/format-date-not-set';

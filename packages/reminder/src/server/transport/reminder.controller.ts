@@ -5,9 +5,9 @@
  * Shared by both Express (HTTP) and IPC transport layers.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { ReminderApplicationPort } from '../application';
 import {
   CreateReminderTemplateSchema,
@@ -19,12 +19,12 @@ import {
   SwitchGroupControlModeSchema,
   BatchGroupTemplatesSchema,
   UpdateReminderPreferencesSchema,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import type {
   GetUpcomingRemindersRes,
   GetReminderTodayScheduleRes,
-} from '@dailyuse/contracts/reminder';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/reminder';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 export class ReminderController {
   constructor(private readonly useCases: ReminderApplicationPort) {}

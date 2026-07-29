@@ -3,16 +3,16 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 // Residual 957: isMissing/isTemporaryFile duals retired — sole repository electron vault-fs-guards.
-import { isMissing, isTemporaryFile } from '@dailyuse/repository/electron';
+import { isMissing, isTemporaryFile } from '@memoflow/repository/electron';
 import type {
   KnowledgeRepositoryExecutableReconciliationAction,
   KnowledgeRepositorySyncConflictContext,
   KnowledgeRepositorySyncOutcome,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 const MAX_CAPTURE_BYTES = 1024 * 1024;
-const COMMIT_MESSAGE = 'chore(vault): initialize Memoflow knowledge repository';
+const COMMIT_MESSAGE = 'chore(vault): initialize MemoFlow knowledge repository';
 const SYNC_COMMIT_MESSAGE = 'chore(vault): synchronize knowledge changes';
 const GIT_OWNERSHIP_MARKER = 'memoflow-repository.json';
 const GIT_SYNC_STATE = 'memoflow-sync-state.json';
@@ -955,7 +955,7 @@ export class DesktopKnowledgeRepositoryGitRuntime
 
     await writeFileIfMissing(
       path.join(root, 'README.md'),
-      '# Memoflow Knowledge Repository\n\nThis private repository is synchronized from an Obsidian Vault.\n',
+      '# MemoFlow Knowledge Repository\n\nThis private repository is synchronized from an Obsidian Vault.\n',
     );
     const gitignorePath = path.join(root, '.gitignore');
     const gitignore =
@@ -989,7 +989,7 @@ export class DesktopKnowledgeRepositoryGitRuntime
       if (!isMissing(error)) throw error;
       await fs.promises.mkdir(hooksDirectory, { mode: 0o700 });
     }
-    await this.git.run(['config', '--local', 'user.name', 'Memoflow'], { cwd: root });
+    await this.git.run(['config', '--local', 'user.name', 'MemoFlow'], { cwd: root });
     await this.git.run(['config', '--local', 'user.email', 'git@memoflow.local'], { cwd: root });
     await this.git.run(['config', '--local', 'push.default', 'simple'], { cwd: root });
     await this.git.run(['config', '--local', 'core.hooksPath', '.git/memoflow-hooks'], {
@@ -1156,7 +1156,7 @@ export class DesktopKnowledgeRepositoryGitRuntime
     if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
       return new KnowledgeRepositoryGitRuntimeError(
         'SERVICE_UNAVAILABLE',
-        'Git is not installed or is unavailable to Memoflow',
+        'Git is not installed or is unavailable to MemoFlow',
       );
     }
     const detail =

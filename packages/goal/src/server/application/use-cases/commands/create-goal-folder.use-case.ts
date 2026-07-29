@@ -7,11 +7,11 @@
 
 import type { IGoalFolderRepository } from '../../../domain';
 import { GoalFolder } from '../../../domain';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 import type { GoalFolderId } from '../../../domain';
-import type { CreateGoalFolderReq, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { CreateGoalFolderReq, GoalFolderClientDTO } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 /**
  * Create Goal Folder Use Case

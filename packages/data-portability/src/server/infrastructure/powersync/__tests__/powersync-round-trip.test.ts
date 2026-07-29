@@ -2,9 +2,9 @@ import type {
   IElectronDatabase,
   IElectronDatabaseQueryResult,
   IElectronDatabaseTransaction,
-} from '@dailyuse/contracts/electron';
-import { DataPortabilityEventTopics } from '@dailyuse/contracts/data-portability';
-import { eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/electron';
+import { DataPortabilityEventTopics } from '@memoflow/contracts/data-portability';
+import { eventBus } from '@memoflow/utils/domain';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExportUserDataUseCase } from '../../../application/use-cases/export-user-data.use-case';

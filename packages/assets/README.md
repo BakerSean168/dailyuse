@@ -1,6 +1,6 @@
-# @dailyuse/assets
+# @memoflow/assets
 
-共享静态资源库，包含知行（Memoflow）的图片、音频、字体等资源文件。
+共享静态资源库，包含知行（MemoFlow）的图片、音频、字体等资源文件。
 
 ## 📦 特性
 
@@ -29,18 +29,18 @@ src/
 ### 导入图片
 
 ```typescript
-import { logo, logo128 } from '@dailyuse/assets/images';
+import { logo, logo128 } from '@memoflow/assets/images';
 
 // 在 Vue 组件中
 <template>
-  <img :src="logo" alt="知行 Memoflow Logo" />
+  <img :src="logo" alt="知行 MemoFlow Logo" />
 </template>
 ```
 
 ### 导入音频
 
 ```typescript
-import { notificationSound } from '@dailyuse/assets/audio';
+import { notificationSound } from '@memoflow/assets/audio';
 
 const audio = new Audio(notificationSound);
 audio.play();
@@ -49,7 +49,7 @@ audio.play();
 ### 初始化应用图标
 
 ```typescript
-import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
+import { applyDocumentIcons, logo128, logoIco } from '@memoflow/assets';
 
 applyDocumentIcons({
   faviconHref: logoIco,
@@ -69,7 +69,7 @@ applyDocumentIcons({
 pnpm nx run assets:generate-icons
 ```
 
-这个目标会基于 `src/images/logos/Memoflow-Icon.png` 生成共享 `svg/png/ico/icns`，并同步写入 Web 与 Electron 的入口图标文件。
+这个目标会基于 `src/images/logos/MemoFlow-Icon.png` 生成共享 `svg/png/ico/icns`，并同步写入 Web 与 Electron 的入口图标文件。
 
 不要把共享资源放进工作区根 `public/`。该目录已经废弃，不再作为应用运行时资源来源。
 

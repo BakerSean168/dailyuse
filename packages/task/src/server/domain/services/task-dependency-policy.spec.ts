@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskDependencyPolicy } from './task-dependency-policy';
-import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskDependencyServerDTO } from '@memoflow/contracts/task';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 

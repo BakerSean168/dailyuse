@@ -19,7 +19,7 @@ import {
   ScheduleTaskStatus,
   SourceModule,
   Timezone,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 // ===== Test Helpers =====
 

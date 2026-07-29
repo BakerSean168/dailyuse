@@ -1,8 +1,8 @@
-import type { LogoutReq } from '@dailyuse/contracts/authentication';
+import type { LogoutReq } from '@memoflow/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
-import type { Context } from '@dailyuse/contracts/shared';
-import type { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { Context } from '@memoflow/contracts/shared';
+import type { IdentityId } from '@memoflow/domain-shared/shared';
 // Business exceptions
 export class UserNotFoundForLogoutError extends Error {
   constructor(userId: string) {

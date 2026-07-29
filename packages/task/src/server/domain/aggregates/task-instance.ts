@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * TaskInstance Aggregate Root (Server)
  *
@@ -14,13 +14,13 @@ import type {
   TaskInstanceServerDTO,
   TaskEventMap,
   TaskGoalBindingDTO,
-} from '@dailyuse/contracts/task';
-import { TaskInstanceStatus, TaskTimeType as TimeType } from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
+import { TaskInstanceStatus, TaskTimeType as TimeType } from '@memoflow/contracts/task';
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import { TaskInstanceId } from '../../domain/value-objects/task-instance-id';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 
 /**

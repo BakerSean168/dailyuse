@@ -16,18 +16,18 @@ import type {
   ResponseMetricsDTO,
   ITriggerConfig,
   TriggerConfigDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import {
   ReminderStatus,
   ReminderType,
   TriggerResult,
-} from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/reminder';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 import { ReminderTemplateId } from '../value-objects/reminder-template-id';
-import { IdentityId } from '@dailyuse/domain-shared';
-import type {ReminderGroupId, Instant} from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared';
+import type {ReminderGroupId, Instant} from '@memoflow/contracts/primitives';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import {
   NotificationConfig,
   TriggerConfig,

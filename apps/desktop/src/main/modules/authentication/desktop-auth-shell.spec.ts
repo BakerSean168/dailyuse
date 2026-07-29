@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthMode } from '@dailyuse/contracts/authentication';
-import { AuthChannels } from '@dailyuse/contracts/electron';
+import { AuthMode } from '@memoflow/contracts/authentication';
+import { AuthChannels } from '@memoflow/contracts/electron';
 
 const mocks = vi.hoisted(() => ({
   ipcHandle: vi.fn(),

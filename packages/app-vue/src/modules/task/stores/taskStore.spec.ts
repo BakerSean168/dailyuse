@@ -3,10 +3,10 @@ import type {
   TaskGraphDependencyDTO,
   TaskInstanceClientDTO,
   TaskTemplateClientDTO,
-} from '@dailyuse/contracts/task';
-import { DependencyType } from '@dailyuse/contracts/task';
-import type { TaskTemplateId, TaskInstanceId, TaskDependencyId } from '@dailyuse/contracts/primitives';
-import { createTestPinia } from '@dailyuse/test-utils';
+} from '@memoflow/contracts/task';
+import { DependencyType } from '@memoflow/contracts/task';
+import type { TaskTemplateId, TaskInstanceId, TaskDependencyId } from '@memoflow/contracts/primitives';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useTaskStore } from './task-store';
 
 function createTemplate(

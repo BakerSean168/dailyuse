@@ -278,7 +278,7 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Component } from 'vue';
-import type { GoalTemplate } from '@dailyuse/goal/client';
+import type { GoalTemplate } from '@memoflow/goal/client';
 
 const { t } = useI18n();
 import templateRecommendationService from '../../utils/template-recommendation';
@@ -307,7 +307,7 @@ import {
   AlertDescription,
   Separator,
   ScrollArea,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 
 import {
   Lightbulb,

@@ -3,7 +3,7 @@
  * Provides helper functions for performance testing of sorting/filtering
  */
 
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 /**
  * Mock task type for benchmark testing

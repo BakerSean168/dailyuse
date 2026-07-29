@@ -6,17 +6,17 @@
  * 
  * 注意：此值对象在 server/domain 中定义，因为相关类型接口
  * (NotificationTemplateConfigServer, TemplateContent, ChannelConfig 等)
- * 尚未在 @dailyuse/contracts/notification 中定义。
+ * 尚未在 @memoflow/contracts/notification 中定义。
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   TemplateContent,
   EmailTemplateContent,
   PushTemplateContent,
   ChannelConfig,
   NotificationTemplateConfigServerDTO,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 /**
  * NotificationTemplateConfig Server Interface

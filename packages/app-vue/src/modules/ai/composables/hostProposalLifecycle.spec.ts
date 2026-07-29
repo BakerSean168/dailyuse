@@ -44,8 +44,8 @@ import {
   isHostPanelKnowledgeSessionProductOwned,
   resolveDefaultHostWorkbenchFocusProposalId,
 } from './hostProposalLifecycle';
-import type { AgentAction } from '@dailyuse/contracts/ai';
-import type { AgentRunResult } from '@dailyuse/contracts/ai';
+import type { AgentAction } from '@memoflow/contracts/ai';
+import type { AgentRunResult } from '@memoflow/contracts/ai';
 
 function goalWaitingRun(status: AgentRunResult['run']['status'] = 'waiting_approval'): AgentRunResult {
   return {
@@ -1686,7 +1686,7 @@ describe('Host workbench focus from session restore (residual 443)', () => {
         artifacts: [{ kind: 'task_draft', id: 'td', data: { goalId: 'g-1' }, updatedAt: 1 }],
         interrupts: [],
       },
-    } as import('@dailyuse/contracts/ai').AgentRunResult;
+    } as import('@memoflow/contracts/ai').AgentRunResult;
     const staleWaiting = {
       ...completed,
       run: { ...completed.run, status: 'waiting_approval' as const, updatedAt: 1 },
@@ -1703,7 +1703,7 @@ describe('Host workbench focus from session restore (residual 443)', () => {
         ],
         executedActions: [],
       },
-    } as import('@dailyuse/contracts/ai').AgentRunResult;
+    } as import('@memoflow/contracts/ai').AgentRunResult;
 
     // Stale dual-mirror waiting while goal session already completed → receipt, not proposal.
     const focus = resolveHostWorkbenchFocusFromSessionRuns({
@@ -1742,7 +1742,7 @@ describe('Host workbench focus from session restore (residual 443)', () => {
         artifacts: [],
         interrupts: [],
       },
-    } as import('@dailyuse/contracts/ai').AgentRunResult;
+    } as import('@memoflow/contracts/ai').AgentRunResult;
     const localFocus = resolveHostWorkbenchFocusFromSessionRuns({
       taskAgentRun: local,
       goalAgentRun: completed,
@@ -3321,7 +3321,7 @@ describe('Host panel knowledge classifier + session focus (residual 603)', () =>
           artifacts: [],
           interrupts: [],
         },
-      } as import('@dailyuse/contracts/ai').AgentRunResult,
+      } as import('@memoflow/contracts/ai').AgentRunResult,
     };
     expect(isHostPanelKnowledgeSessionProductOwned(knowledge)).toBe(true);
     expect(

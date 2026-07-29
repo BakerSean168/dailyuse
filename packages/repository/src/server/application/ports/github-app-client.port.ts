@@ -1,4 +1,4 @@
-import type { GitHubInstallationRepositoryDTO } from '@dailyuse/contracts/repository';
+import type { GitHubInstallationRepositoryDTO } from '@memoflow/contracts/repository';
 
 export class GitHubAppClientError extends Error {
   constructor(

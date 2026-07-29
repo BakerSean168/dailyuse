@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { APP_NAME } from '../constants/app';
 import { AnimatedIcon } from '../components/AnimatedIcon';
 
-import { MaxContentWidth, Spacing, ThemedText, ThemedView } from '@dailyuse/ui-react-native';
+import { MaxContentWidth, Spacing, ThemedText, ThemedView } from '@memoflow/ui-react-native';
 
 export function BootScreen() {
   return (

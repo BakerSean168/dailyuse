@@ -1,10 +1,10 @@
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   AccountProfileDTO,
   AccountProfile as IAccountProfile,
-} from '@dailyuse/contracts/account';
-import type { Instant, Ymd } from '@dailyuse/contracts/primitives';
-import { createTimeFacade } from '@dailyuse/time';
+} from '@memoflow/contracts/account';
+import type { Instant, Ymd } from '@memoflow/contracts/primitives';
+import { createTimeFacade } from '@memoflow/time';
 import { GenderType } from './gender-type';
 
 const time = createTimeFacade();

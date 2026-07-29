@@ -75,7 +75,7 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { AlertTriangle } from '@lucide/vue';
 import { calendarEventSourceLabel, type CalendarEventItem } from '../composables/useCalendarView';
 // Residual 1291: sourceLabel dual retired onto calendarEventSourceLabel sole.

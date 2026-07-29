@@ -13,9 +13,9 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
-} from '@dailyuse/contracts/authentication';
-import type { Result, ResultError, ResultMeta } from '@dailyuse/contracts/result';
-import { classifyNetworkErrorMessage, statusToResultError } from '@dailyuse/http-client';
+} from '@memoflow/contracts/authentication';
+import type { Result, ResultError, ResultMeta } from '@memoflow/contracts/result';
+import { classifyNetworkErrorMessage, statusToResultError } from '@memoflow/http-client';
 
 const AUTH_BASE_URL = '/api/v1/auth';
 

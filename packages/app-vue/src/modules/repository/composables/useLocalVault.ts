@@ -4,14 +4,14 @@ import type {
   LocalVaultNoteDTO,
   LocalVaultNoteSummaryDTO,
   SearchLocalVaultRes,
-} from '@dailyuse/contracts/repository';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/repository';
+import type { Result } from '@memoflow/contracts/result';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 // Residual 999: sole errorMessage (local dual retired).
-import { errorMessage } from '@dailyuse/utils/shared';
+import { errorMessage } from '@memoflow/utils/shared';
 
-// Residual 999: errorMessage elevated to @dailyuse/utils/shared.
+// Residual 999: errorMessage elevated to @memoflow/utils/shared.
 
 export function useLocalVault() {
   const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');

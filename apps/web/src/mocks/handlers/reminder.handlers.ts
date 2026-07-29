@@ -11,11 +11,11 @@ import {
   createMockReminderTemplateList,
   createMockReminderGroup,
   createMockReminderGroupList,
-} from '@dailyuse/contracts/mocks';
+} from '@memoflow/contracts/mocks';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const TEMPLATES = `${API_BASE}/reminders/templates`;

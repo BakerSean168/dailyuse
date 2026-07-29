@@ -10,14 +10,14 @@
  * 3. Returns a Result<T> (transport-agnostic)
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, isOk, ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, isOk, ok } from '@memoflow/contracts/result';
 import {
   CreateTaskTemplateSchema,
   UpdateTaskTemplateSchema,
   GenerateInstancesSchema,
   TaskGoalBindingSchema,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 import type {
   TaskTemplateClientDTO,
   CreateTaskTemplateRes,
@@ -27,11 +27,11 @@ import type {
   TaskTemplateInstancesQuery,
   QueryTaskTemplateGraphRes,
   QueryTaskTemplatesInternal,
-} from '@dailyuse/contracts/task';
-import type { Context } from '@dailyuse/contracts/shared';
-import type { TaskFolderId, GoalId } from '@dailyuse/contracts/primitives';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/task';
+import type { Context } from '@memoflow/contracts/shared';
+import type { TaskFolderId, GoalId } from '@memoflow/contracts/primitives';
+import { IdentityId } from '@memoflow/domain-shared';
+import { formatZodErrors } from '@memoflow/utils/result';
 import type { CreateTaskTemplateUseCase } from '../application/use-cases/commands/create-task-template.use-case';
 import type { GetTaskTemplateUseCase } from '../application/use-cases/queries/get-task-template.use-case';
 import type { ListTaskTemplatesUseCase } from '../application/use-cases/queries/list-task-templates.use-case';

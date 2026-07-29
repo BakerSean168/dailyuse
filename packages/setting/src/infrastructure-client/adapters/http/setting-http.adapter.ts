@@ -2,9 +2,9 @@
  * Setting HTTP Adapter — Aligned with PATCH /:category API
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type { IResultHttpClient, ISettingApiClient } from '../types';
-import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO, PreferenceCategory } from '@memoflow/contracts/setting';
 
 export class SettingHttpAdapter implements ISettingApiClient {
   private readonly baseUrl = '/settings';

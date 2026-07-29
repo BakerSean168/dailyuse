@@ -4,10 +4,10 @@
  * Maps between GoalRecord domain aggregate and Prisma model.
  */
 
-import type { GoalRecord as PrismaGoalRecord } from '@dailyuse/database';
+import type { GoalRecord as PrismaGoalRecord } from '@memoflow/database';
 import { GoalRecord } from '../../../../domain';
 import { GoalRecordId, KeyResultId } from '../../../../domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
 function requiredInstant(value: Date | string | number | null | undefined): number {

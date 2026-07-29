@@ -924,7 +924,7 @@ import type {
   AgentRunResult,
   GoalClarificationDTO,
   GoalWorkflowDraftResultDTO,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { formatLangGraphVendorDiagnosticEventLabel } from '../composables/hostLangGraphUiBoundary';
@@ -937,7 +937,7 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import AIGoalDraftEditor from './AIGoalDraftEditor.vue';
 import type {
   EditableGoal,

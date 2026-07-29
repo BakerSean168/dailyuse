@@ -8,7 +8,7 @@
  */
 
 import type { ReminderResponse } from '../entities/reminder-response';
-import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import type { ReminderResponseAction } from '@memoflow/contracts/reminder';
 
 /**
  * IReminderResponseRepository 仓储接口

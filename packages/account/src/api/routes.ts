@@ -19,7 +19,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   UpdateAccountSchema,
   UpdateAccountSettingsSchema,
@@ -27,7 +27,7 @@ import {
   CloseAccountSchema,
   AccountResponseSchema,
   AvailabilityResponseSchema,
-} from '@dailyuse/contracts/account';
+} from '@memoflow/contracts/account';
 import { AccountController } from '../server/transport';
 import type { AccountApplicationPort } from '../server/application';
 

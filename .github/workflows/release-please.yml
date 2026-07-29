@@ -15,10 +15,9 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          # this assumes that you have created a personal access token
-          # (PAT) and configured it as a GitHub action secret named
-          # `DAILYUSE_WORKFLOW` (this secret name is not important).
-          token: ${{ secrets.DAILYUSE_WORKFLOW }}
+          # Prefer a PAT so release-created pull requests can trigger follow-up
+          # workflows; fall back to the job token when no PAT is configured.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
           # use manifest mode for a single product release and keep the
           # desktop package version aligned with the root release version
           config-file: release-please-config.json

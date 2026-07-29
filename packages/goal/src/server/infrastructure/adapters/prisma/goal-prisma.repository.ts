@@ -11,14 +11,14 @@
  * - GoalReview maps reviewType→type, content→summary, lessonsLearned→improvements
  */
 
-import type { PrismaClient, Prisma } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@memoflow/database';
 import type { IGoalRepository } from '../../../domain';
 import { Goal } from '../../../domain';
 import type {
   KeyResultServerDTO,
-} from '@dailyuse/contracts/goal';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/goal';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import { PrismaGoalMapper, type PrismaGoalWithRelations } from './mappers/prisma-goal-mapper';
 import { rawDataToGoalState, type RawKeyResultData } from './mappers/goal-state-mapper';
 

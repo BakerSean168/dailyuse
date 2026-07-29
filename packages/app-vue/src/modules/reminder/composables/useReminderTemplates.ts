@@ -5,7 +5,7 @@ import type {
   GetReminderTodayScheduleRes,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import type { ReminderContext } from './useReminderContext';
 
 export function useReminderTemplates(ctx: ReminderContext) {

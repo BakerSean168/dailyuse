@@ -1,5 +1,5 @@
-import { fail, type Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { fail, type Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   ExpandKnowledgeSchema,
   type ExpandKnowledgeReq,
@@ -10,8 +10,8 @@ import {
   type QueryKnowledgeRes,
   type ReindexKnowledgeReq,
   type ReindexKnowledgeRes,
-} from '@dailyuse/contracts/ai';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/ai';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 interface AIKnowledgeQueryControllerService {
   expandKnowledge(request: ExpandKnowledgeReq, cx: ExecutionContext): Promise<Result<ExpandKnowledgeRes>>;

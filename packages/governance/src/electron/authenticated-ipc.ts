@@ -8,7 +8,7 @@
  * 使下游处理器保持传输层无关。
  */
 
-import { createAuthenticatedIpcWrapper } from '@dailyuse/contracts/electron';
+import { createAuthenticatedIpcWrapper } from '@memoflow/contracts/electron';
 
 export const withAuthenticatedValue = createAuthenticatedIpcWrapper({
   unexpectedErrorCode: 'INTERNAL_ERROR',

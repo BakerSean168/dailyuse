@@ -7,9 +7,9 @@ import { RecurrenceRule } from '../../../domain/value-objects/recurrence-rule';
 import { TaskTimeConfig } from '../../../domain/value-objects/task-time-config';
 import { TaskReminderConfig } from '../../../domain/value-objects/task-reminder-config';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
-import type { UpdateTaskTemplateReq, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { UpdateTaskTemplateReq, TaskTemplateClientDTO } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 export class UpdateTaskTemplateUseCase {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}

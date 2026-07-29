@@ -1,4 +1,4 @@
-import { MessageRole as MessageRoleContract, type MessageRole as IMessageRole } from '@dailyuse/contracts/ai';
+import { MessageRole as MessageRoleContract, type MessageRole as IMessageRole } from '@memoflow/contracts/ai';
 
 /**
  * MessageRole 枚举类型
@@ -10,7 +10,7 @@ import { MessageRole as MessageRoleContract, type MessageRole as IMessageRole } 
 export type MessageRole = IMessageRole & { readonly __brand: unique symbol };
 
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IMessageRole[] = Object.values(MessageRoleContract);
 
 export const MessageRole = {

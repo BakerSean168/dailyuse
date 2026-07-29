@@ -1,1 +1,1 @@
-export { ReminderEditorScreen as default } from '@dailyuse/app-react';
+export { ReminderEditorScreen as default } from '@memoflow/app-react';

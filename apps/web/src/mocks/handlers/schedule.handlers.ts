@@ -10,8 +10,8 @@ import { http, HttpResponse } from 'msw';
 import {
   createMockScheduleTask,
   createMockScheduleTaskList,
-} from '@dailyuse/contracts/mocks';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/mocks';
+import type { ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
 import { faker } from '@faker-js/faker';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';

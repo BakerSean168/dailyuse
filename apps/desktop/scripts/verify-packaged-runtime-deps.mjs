@@ -33,7 +33,7 @@ function readJson(filePath) {
 }
 
 function resolveWorkspacePackageJson(packageName) {
-  if (!packageName.startsWith('@dailyuse/')) {
+  if (!packageName.startsWith('@memoflow/')) {
     return null;
   }
 

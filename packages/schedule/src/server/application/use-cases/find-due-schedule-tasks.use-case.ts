@@ -1,4 +1,4 @@
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { ScheduleTask } from '../../domain/aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../../domain/repositories/i-schedule-task-repository';
 

@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * Goal Aggregate Root - Domain Client
  * 目标聚合根 - 领域客户端
@@ -10,12 +10,12 @@ import type { Instant } from '@dailyuse/contracts/primitives';
  * - Instance toDTO(): GoalClientDTO
  */
 
-import type { GoalClientDTO, GoalReminderConfig } from '@dailyuse/contracts/goal';
-import { GoalStatus } from '@dailyuse/contracts/goal';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import type { GoalClientDTO, GoalReminderConfig } from '@memoflow/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { GoalId, GoalFolderId } from '../../server/domain';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { KeyResult, GoalReview } from '../entities';
 
 export interface GoalState {

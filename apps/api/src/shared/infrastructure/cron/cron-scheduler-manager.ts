@@ -5,7 +5,7 @@
  */
 
 import * as cron from 'node-cron';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('CronSchedulerManager');
 

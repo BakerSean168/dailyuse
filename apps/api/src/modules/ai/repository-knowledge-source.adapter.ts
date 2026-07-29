@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { IKnowledgeSourcePort, KnowledgeSourceNote } from '@dailyuse/ai/ports';
-import type { PrismaClient } from '@dailyuse/database';
+import type { IKnowledgeSourcePort, KnowledgeSourceNote } from '@memoflow/ai/ports';
+import type { PrismaClient } from '@memoflow/database';
 
 /**
  * Residual 1153 keep-boundary: GitHub knowledge-projection search tokenize.

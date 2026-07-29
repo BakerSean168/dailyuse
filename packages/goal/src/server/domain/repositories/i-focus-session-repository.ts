@@ -9,7 +9,7 @@
  */
 
 import type { FocusSession } from '../aggregates/focus-session';
-import type { FocusSessionStatus } from '@dailyuse/contracts/goal';
+import type { FocusSessionStatus } from '@memoflow/contracts/goal';
 
 /**
  * IFocusSessionRepository 仓储接口

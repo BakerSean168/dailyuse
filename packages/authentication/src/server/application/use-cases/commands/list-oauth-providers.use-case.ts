@@ -3,9 +3,9 @@
  * 列出 OAuth 提供者可用性，供 UI 门控（不签发 state/PKCE）。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { OAuthProvidersRes } from '@dailyuse/contracts/authentication';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import type { OAuthProvidersRes } from '@memoflow/contracts/authentication';
 import type { GithubOAuthAuthorizeConfig } from './get-oauth-url.use-case';
 
 export class ListOAuthProvidersUseCase {

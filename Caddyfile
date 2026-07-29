@@ -1,5 +1,5 @@
 # =============================================================================
-# Memoflow Caddy 反向代理配置
+# MemoFlow Caddy 反向代理配置
 # =============================================================================
 # Caddy 自动申请和续期 Let's Encrypt HTTPS 证书。
 # 主站域名通过 HTTPS 进入 Caddy，再转发到内部 Nginx (web:80)。
@@ -30,7 +30,7 @@
 	}
 }
 
-{$LEGACY_DOMAIN:dailyuse.bakersean.top} {
+{$LEGACY_DOMAIN:memoflow.bakersean.top} {
 	reverse_proxy web:80
 
 	header {

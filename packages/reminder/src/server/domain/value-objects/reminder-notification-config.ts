@@ -5,7 +5,7 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   INotificationConfig,
   NotificationConfigDTO,
@@ -13,7 +13,7 @@ import type {
   SoundConfig,
   VibrationConfig,
   NotificationActionConfig,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 /**
  * ReminderNotificationConfig 值对象实现

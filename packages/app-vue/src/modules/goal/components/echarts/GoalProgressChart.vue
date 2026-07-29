@@ -19,7 +19,7 @@ use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer])
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
 import { getGoalOverallProgress } from '../../utils/progress';
 
 const { t } = useI18n();

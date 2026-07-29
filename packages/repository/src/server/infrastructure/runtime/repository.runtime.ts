@@ -1,4 +1,4 @@
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { RepositoryModuleRuntimeContribution } from '../repository.module';
 
 const logger = createLogger('RepositoryRuntime');

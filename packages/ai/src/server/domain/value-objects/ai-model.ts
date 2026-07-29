@@ -1,4 +1,4 @@
-import { AIModel as AIModelContract, type AIModel as IAIModel } from '@dailyuse/contracts/ai';
+import { AIModel as AIModelContract, type AIModel as IAIModel } from '@memoflow/contracts/ai';
 
 /**
  * AIModel 枚举类型
@@ -9,7 +9,7 @@ import { AIModel as AIModelContract, type AIModel as IAIModel } from '@dailyuse/
 export type AIModel = IAIModel & { readonly __brand: unique symbol };
 
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IAIModel[] = Object.values(AIModelContract);
 
 export const AIModel = {

@@ -12,7 +12,7 @@ updated: 2026-07-22T00:00:00
 
 ## 1. 功能定位
 
-认证模块管理账密账号、GitHub 身份、访客 profile 和 Daily Use 会话。GitHub 登录只解决“用户是谁”，authorize URL 仅请求 identity-only scopes（`read:user` / `user:email`），永不申请 repo Contents，也不签发知识仓库 GitHub App installation/token。GitHub 知识仓库连接属于 Repository 的独立同步授权，不能混成一个权限动作。
+认证模块管理账密账号、GitHub 身份、访客 profile 和 MemoFlow 会话。GitHub 登录只解决“用户是谁”，authorize URL 仅请求 identity-only scopes（`read:user` / `user:email`），永不申请 repo Contents，也不签发知识仓库 GitHub App installation/token。GitHub 知识仓库连接属于 Repository 的独立同步授权，不能混成一个权限动作。
 
 ## 2. 当前实现
 
@@ -30,7 +30,7 @@ updated: 2026-07-22T00:00:00
   - Web 登录按钮条件渲染；callback 回 `/auth` 后凭 `code`+`state` 完成会话签发
   - 账户页可 bind/unbind GitHub identity binding（与知识仓库 GitHub App 授权分离）
   - Desktop 远程 gateway/IPC 已暴露 OAuth 调用；登录首屏仍不提供 GitHub 入口
-- OAuthBinding 与 Daily Use session 分离；GitHub user access token 不写入业务 session。
+- OAuthBinding 与 MemoFlow session 分离；GitHub user access token 不写入业务 session。
 - 手机/SMS 登录注册运行时入口已删除（API 路由、client port/adapters、Desktop IPC channel、MSW）；无真实 SMS provider 前不再保留 stub。`PhoneIdentifier` 领域类型仍保留用于既有标识符模型。
 - E2E：账密注册/登录流与 mock GitHub OAuth 流已覆盖；真实 GitHub fixture 仍依赖外部凭据。
 
@@ -43,7 +43,7 @@ updated: 2026-07-22T00:00:00
 | 访客          | Desktop 本地 profile；不能使用 Web 笔记或 GitHub 同步 |
 
 - GitHub 登录使用稳定 numeric user ID 作为外部 subject。
-- 登录成功后仍由 Daily Use 签发自己的 session，不用 GitHub token 直接访问业务 API。
+- 登录成功后仍由 MemoFlow 签发自己的 session，不用 GitHub token 直接访问业务 API。
 - GitHub 登录只请求 identity-only scopes（`read:user` / `user:email`），不自动创建仓库、不申请 repo Contents，也不获得知识仓库 GitHub App installation/token。
 - 账密用户可以绑定 GitHub 仓库，不要求切换主登录方式。
 - 访客启用同步时先升级账号，原 Vault 和本地内容保持不变。
@@ -51,7 +51,7 @@ updated: 2026-07-22T00:00:00
 ## 4. 目标用户路径
 
 - 账密：注册/登录 → 进入应用 → 可本地选择 Vault → 可选连接 GitHub。
-- GitHub：选择 GitHub 登录 → 系统浏览器授权 → Daily Use callback/session → 可选连接知识仓库。
+- GitHub：选择 GitHub 登录 → 系统浏览器授权 → MemoFlow callback/session → 可选连接知识仓库。
 - 访客：直接进入 Desktop → 本地使用 → 启用同步时升级为在线账号。
 - GitHub 绑定：已登录账号在账户页添加/移除 GitHub OAuth binding。
 - 仓库授权：在知识仓库页单独安装 GitHub App 到指定 repository。
@@ -62,7 +62,7 @@ updated: 2026-07-22T00:00:00
 - GitHub 登录 binding 与 KnowledgeRepositoryConnection 是不同模型、scope 和撤销流程。
 - GitHub-only 账号移除最后一个 OAuth binding 前，需要增加账密凭据或明确处置账号。
 - 访客 profile 不上传业务和 Vault 数据。
-- Desktop 离线时允许已建立 profile 继续本地使用；GitHub/Daily Use 故障不得锁住 Vault。
+- Desktop 离线时允许已建立 profile 继续本地使用；GitHub/MemoFlow 故障不得锁住 Vault。
 - 完整 OAuth 流程必须校验 state，并在 provider 支持时使用 PKCE；Desktop 只接收一次性 code，不在 deep link 暴露 provider token。服务端 authorize URL 与 state/PKCE 存储校验已接入；Desktop 仅接收一次性 code。
 
 ## 6. 可插拔认证架构（已落地）
@@ -73,8 +73,8 @@ updated: 2026-07-22T00:00:00
 - `AuthenticationProviderRegistry`：按方式 id 分发，组合期重复注册即快速失败。
 - `PasswordAuthenticationProvider`：包装既有 `LoginService`，账密行为不变。
 - `GithubAuthenticationProvider`：经 `IGithubOAuthClient` 端口用授权码换取稳定 numeric subject，find-or-create 身份；仅身份认证（login scopes：`read:user` / `user:email`），不申请仓库 Contents 权限。
-- `AuthenticateUseCase`：统一编排 provider 校验 + Daily Use 会话签发。
-- `GithubOAuthClient`：用授权码临时换取 user access token，再读取 `/user` 的 numeric ID；client secret 仅存服务端，user token 不写入 Daily Use session。
+- `AuthenticateUseCase`：统一编排 provider 校验 + MemoFlow 会话签发。
+- `GithubOAuthClient`：用授权码临时换取 user access token，再读取 `/user` 的 numeric ID；client secret 仅存服务端，user token 不写入 MemoFlow session。
 - 路由面：`/oauth/providers`、`/oauth/url`（state/PKCE）、`/oauth/callback`、`/oauth/bind`、`/oauth/unbind`。
 - Web 产品流：`WebAuthView` 条件显示 GitHub 按钮 → 跳转 authorize URL → AuthApp callback 场景完成 session。
 - Desktop：gateway/IPC 已支持 OAuth API；首屏登录仍是账密 + 访客。知识仓库同步使用独立 GitHub App installation/token 授权，不复用登录 OAuth token。

@@ -3,7 +3,7 @@
  * 权重快照应用层错误
  */
 
-import { DomainError } from '@dailyuse/utils/errors';
+import { DomainError } from '@memoflow/utils/errors';
 
 /**
  * Goal 未找到错误

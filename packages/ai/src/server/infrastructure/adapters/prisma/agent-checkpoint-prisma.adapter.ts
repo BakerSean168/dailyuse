@@ -1,14 +1,14 @@
 /**
  * Residual 979: toPrismaJson sole import (./to-prisma-json.ts).
  */
-import type { PrismaClient } from '@dailyuse/database';
-import type { AgentRun, AgentRunResult } from '@dailyuse/contracts/ai';
-import { AgentRunSchema, AgentRunResultSchema, AgentStateSchema } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { PrismaClient } from '@memoflow/database';
+import type { AgentRun, AgentRunResult } from '@memoflow/contracts/ai';
+import { AgentRunSchema, AgentRunResultSchema, AgentStateSchema } from '@memoflow/contracts/ai';
+import { createLogger } from '@memoflow/utils/logger';
 import { randomUUID } from 'node:crypto';
-import { Prisma } from '@dailyuse/database/prisma';
+import { Prisma } from '@memoflow/database/prisma';
 import { toPrismaJson } from './to-prisma-json';
-import { ResultErrorException, toResultErrorException } from '@dailyuse/contracts/result';
+import { ResultErrorException, toResultErrorException } from '@memoflow/contracts/result';
 import type {
   AgentCheckpointDeleteInput,
   AgentCheckpointGetInput,

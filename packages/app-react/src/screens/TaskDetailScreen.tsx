@@ -19,7 +19,7 @@ import {
   StatusPill,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 function formatTimeConfig(input: {
   timeType: string;

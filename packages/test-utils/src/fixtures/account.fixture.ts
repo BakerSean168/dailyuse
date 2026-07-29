@@ -6,12 +6,12 @@
  *
  * NOTE: Full Account aggregate fixtures (anAccount, aLoadedAccount, etc.)
  * are intentionally NOT placed here to avoid a circular dependency
- * between test-utils and @dailyuse/account. Instead, each test file in the
+ * between test-utils and @memoflow/account. Instead, each test file in the
  * account module creates its own local helpers following the pattern
  * established in the task module tests.
  */
 
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 /**
  * Residual 1033: sole anIdentityId fixture helper (task testing re-exports).

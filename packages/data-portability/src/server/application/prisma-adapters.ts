@@ -5,7 +5,7 @@
  * These implement the dependency interfaces used by the export use case.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import type {
   FocusSessionRepoPort,
   FocusModeRepoPort,

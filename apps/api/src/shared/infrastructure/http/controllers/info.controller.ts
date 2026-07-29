@@ -41,9 +41,9 @@ function loadApiPackageInfo(): { name: string; version: string; description?: st
   }
 
   return {
-    name: '@dailyuse/api',
+    name: '@memoflow/api',
     version: '0.0.0',
-    description: 'Memoflow API Server',
+    description: 'MemoFlow API Server',
   };
 }
 
@@ -113,7 +113,7 @@ export const infoController = {
     const payload: AppInfoPayload = {
       name: packageInfo.name,
       version: packageInfo.version,
-      description: packageInfo.description || 'Memoflow API Server',
+      description: packageInfo.description || 'MemoFlow API Server',
       environment: env.NODE_ENV,
       nodeVersion: process.version,
       uptime: {

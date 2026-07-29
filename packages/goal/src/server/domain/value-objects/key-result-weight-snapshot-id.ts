@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { KeyResultWeightSnapshotId as IKeyResultWeightSnapshotId } from '@dailyuse/contracts/primitives';
+import type { KeyResultWeightSnapshotId as IKeyResultWeightSnapshotId } from '@memoflow/contracts/primitives';
 
 /**
  * KeyResultWeightSnapshotId 值对象

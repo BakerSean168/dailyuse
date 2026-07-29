@@ -2,7 +2,7 @@
 agent: agent
 ---
 
-# DailyUse Development Prompt
+# MemoFlow Development Prompt
 
 开发相关规范以这些入口为准：
 

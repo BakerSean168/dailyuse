@@ -1,8 +1,8 @@
-import type { PrismaClient, GoalFolder as PrismaGoalFolder } from '@dailyuse/database';
+import type { PrismaClient, GoalFolder as PrismaGoalFolder } from '@memoflow/database';
 import type { IGoalFolderRepository } from '../../../domain';
 import { GoalFolder } from '../../../domain';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import { PrismaGoalFolderMapper } from './mappers/prisma-goal-folder-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

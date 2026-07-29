@@ -2,7 +2,7 @@ import {
   installCommonBrowserMocks,
   installVuePiniaTestHarness,
   registerFastTestHooks,
-} from '@dailyuse/test-utils';
+} from '@memoflow/test-utils';
 
 installVuePiniaTestHarness();
 registerFastTestHooks({

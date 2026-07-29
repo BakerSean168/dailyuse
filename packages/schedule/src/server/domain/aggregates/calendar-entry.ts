@@ -1,5 +1,5 @@
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared';
 import type {
   CalendarEntryClientDTO,
   CalendarEntryServerDTO,
@@ -7,8 +7,8 @@ import type {
   ConflictDetectionResult,
   ConflictSuggestion,
   ScheduleEventMap,
-} from '@dailyuse/contracts/schedule';
-import { ConflictSeverity } from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
+import { ConflictSeverity } from '@memoflow/contracts/schedule';
 import { ScheduleId } from '../value-objects/schedule-id';
 
 /** Domain state interface for the CalendarEntry aggregate */

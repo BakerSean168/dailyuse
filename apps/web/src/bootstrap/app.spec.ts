@@ -55,28 +55,28 @@ vi.mock('pinia-plugin-persistedstate', () => ({
   default: 'persisted-plugin',
 }));
 
-vi.mock('@dailyuse/assets', () => ({
-  APP_TITLE_NAME: 'Dailyuse',
+vi.mock('@memoflow/assets', () => ({
+  APP_TITLE_NAME: 'MemoFlow',
 }));
 
-vi.mock('@dailyuse/app-vue/web-bootstrap', () => ({
+vi.mock('@memoflow/app-vue/web-bootstrap', () => ({
   createAppRouter: mocks.createAppRouter,
   useAuthenticationStore: mocks.useAuthenticationStore,
   applyThemeMode: mocks.applyThemeMode,
   usePresentationPreferenceStore: mocks.usePresentationPreferenceStore,
 }));
 
-vi.mock('@dailyuse/app-vue', () => ({
+vi.mock('@memoflow/app-vue', () => ({
   createNotificationStartupHook: mocks.createNotificationStartupHook,
 }));
 
-vi.mock('@dailyuse/app-vue/web-i18n', () => ({
+vi.mock('@memoflow/app-vue/web-i18n', () => ({
   createI18nPlugin: mocks.createI18nPlugin,
   loadLocaleMessages: mocks.loadLocaleMessages,
   translateMessageKey: mocks.translateMessageKey,
 }));
 
-vi.mock('@dailyuse/ui-vue-shadcn/composables/useProgressBar', () => ({
+vi.mock('@memoflow/ui-vue-shadcn/composables/useProgressBar', () => ({
   progressStart: mocks.progressStart,
   progressDone: mocks.progressDone,
 }));
@@ -139,12 +139,12 @@ describe('bootstrapMainApp', () => {
     const afterEachHandler = mocks.router.afterEach.mock.calls[0]?.[0];
     expect(afterEachHandler).toBeTypeOf('function');
     afterEachHandler({ meta: { title: 'dashboard.title' } });
-    expect(document.title).toBe('仪表盘 - Dailyuse');
+    expect(document.title).toBe('仪表盘 - MemoFlow');
 
     afterEachHandler({ meta: { title: 'Inbox' } });
 
     expect(mocks.progressDone).toHaveBeenCalledTimes(2);
-    expect(document.title).toBe('Inbox - Dailyuse');
+    expect(document.title).toBe('Inbox - MemoFlow');
   });
 });
 

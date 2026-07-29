@@ -1,4 +1,4 @@
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 
 // 1. Standard structure for token payloads
 // The domain layer defines what information a token must contain (e.g. userId, role)

@@ -1,5 +1,5 @@
-import type { DependencyType, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
-import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@dailyuse/contracts/primitives';
+import type { DependencyType, TaskDependencyServerDTO } from '@memoflow/contracts/task';
+import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@memoflow/contracts/primitives';
 import { TaskDependency } from '../../../../domain/aggregates/task-dependency';
 
 export type PowerSyncTaskDependencyRow = {

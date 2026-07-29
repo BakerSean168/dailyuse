@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { KnowledgeRepositoryConnectionClientDTO } from '@dailyuse/contracts/repository';
-import { fail, ok } from '@dailyuse/contracts/result';
+import type { KnowledgeRepositoryConnectionClientDTO } from '@memoflow/contracts/repository';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   KnowledgeRepositoryGitRuntimeError,
   type KnowledgeRepositorySyncGitRuntimePort,

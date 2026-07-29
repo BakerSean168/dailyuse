@@ -1,9 +1,9 @@
-import { KeyResultValueType as KeyResultValueTypeContract, type KeyResultValueType as IKeyResultValueType } from '@dailyuse/contracts/goal';
+import { KeyResultValueType as KeyResultValueTypeContract, type KeyResultValueType as IKeyResultValueType } from '@memoflow/contracts/goal';
 
 export type KeyResultValueType = IKeyResultValueType & { readonly __brand: unique symbol };
 
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IKeyResultValueType[] = Object.values(KeyResultValueTypeContract);
 
 export const KeyResultValueType = {

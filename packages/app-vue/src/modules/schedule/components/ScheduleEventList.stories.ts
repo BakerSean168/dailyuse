@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ScheduleEventList from './ScheduleEventList.vue';
-import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEntryClientDTO } from '@memoflow/contracts/schedule';
 import { createScheduleStoryEvent } from './story-fixtures';
 
 const now = Date.now();

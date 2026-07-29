@@ -2,16 +2,16 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHistory } from 'vue-router';
-import { APP_TITLE_NAME } from '@dailyuse/assets';
+import { APP_TITLE_NAME } from '@memoflow/assets';
 import {
   createAppRouter,
   useAuthenticationStore,
   applyThemeMode,
   usePresentationPreferenceStore,
-} from '@dailyuse/app-vue/web-bootstrap';
-import { createNotificationStartupHook } from '@dailyuse/app-vue';
-import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@dailyuse/app-vue/web-i18n';
-import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
+} from '@memoflow/app-vue/web-bootstrap';
+import { createNotificationStartupHook } from '@memoflow/app-vue';
+import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@memoflow/app-vue/web-i18n';
+import { progressStart, progressDone } from '@memoflow/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
 import { installAppServices } from '../platform/di-app';

@@ -5,7 +5,7 @@
 
     "paths": {
       "@/*": ["./src/*"],
-      "@dailyuse/patterns": ["../patterns/src/index.ts"]
+      "@memoflow/patterns": ["../patterns/src/index.ts"]
     }
   },
   "include": ["src"],

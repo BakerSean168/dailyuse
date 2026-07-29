@@ -134,7 +134,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Loader2, CheckCircle, Clock } from '@lucide/vue';
 
 const props = defineProps<{

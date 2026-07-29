@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { describe, expect, it } from 'vitest';
-import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalRecordClientDTO } from '@memoflow/contracts/goal';
 import GoalRecordCard from './GoalRecordCard.vue';
 import { formatProductDateTime } from '../../../../shared/utils/product-time';
 

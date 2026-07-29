@@ -5,21 +5,21 @@ import {
   type DashboardTaskTemplateRecord,
   type DashboardScheduleRecord,
   type DashboardReminderRecord,
-} from '@dailyuse/dashboard';
-import type { DashboardData } from '@dailyuse/contracts/dashboard';
-import { createLogger } from '@dailyuse/utils/logger';
-import { getGoalRepository } from '@dailyuse/goal/electron';
+} from '@memoflow/dashboard';
+import type { DashboardData } from '@memoflow/contracts/dashboard';
+import { createLogger } from '@memoflow/utils/logger';
+import { getGoalRepository } from '@memoflow/goal/electron';
 import {
   getTaskInstanceRepository,
   getTaskTemplateRepository,
-} from '@dailyuse/task/electron';
-import { getScheduleRepository } from '@dailyuse/schedule/electron';
-import { getReminderTemplateRepository } from '@dailyuse/reminder/electron';
-import { getNotificationRepository } from '@dailyuse/notification/electron';
+} from '@memoflow/task/electron';
+import { getScheduleRepository } from '@memoflow/schedule/electron';
+import { getReminderTemplateRepository } from '@memoflow/reminder/electron';
+import { getNotificationRepository } from '@memoflow/notification/electron';
 
 const logger = createLogger('DashboardReadService');
 
-/** Soft residual 1156: dual toDashboardTaskInstanceRecord retired onto @dailyuse/dashboard sole. */
+/** Soft residual 1156: dual toDashboardTaskInstanceRecord retired onto @memoflow/dashboard sole. */
 
 function toGoalRecord(goal: {
   id: { toString(): string } | string;

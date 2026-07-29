@@ -16,12 +16,12 @@ import type {
   DeviceInfo,
   DeviceType as IDeviceType,
   AuthSessionId,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { AuthSession } from '../../../../domain';
 import type { AuthSessionState } from '../../../../domain';
 import type { PrismaAuthSessionRow } from '../../../types';
 import { SessionStatus, DeviceInfo as DeviceInfoVO } from '../../../../domain';
-import type { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { IdentityId } from '@memoflow/domain-shared/shared';
 
 // ============ Write Data Type ============
 

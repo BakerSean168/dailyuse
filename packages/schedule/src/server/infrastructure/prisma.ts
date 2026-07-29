@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import { createScheduleModule, type ScheduleModuleInstance } from './schedule.module';
 import {
   ScheduleExecutionPrismaRepository,

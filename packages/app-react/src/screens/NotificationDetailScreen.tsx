@@ -3,7 +3,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 import { useAppSession } from '../hooks/useAppSession';
 import { useNotificationService } from '../hooks/useNotificationService';
@@ -15,7 +15,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 // Residual 1264: formatDate dual retired onto shared formatDateUnknown sole (datetime + English 'Unknown').
 import { formatDateUnknown as formatDate } from '../utils/format-date-unknown';

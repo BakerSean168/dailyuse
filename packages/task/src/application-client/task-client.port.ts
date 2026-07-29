@@ -1,4 +1,4 @@
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   CreateTaskTemplateReq,
   UpdateTaskTemplateReq,
@@ -13,7 +13,7 @@ import type {
   TaskDependencyClientDTO,
   TaskGraphDependencyDTO,
   DependencyChainClientDTO,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 import type { TaskTemplateListParams } from './ports/task-template-api-client.port';
 import type { TaskTemplate } from '../domain-client/aggregates/task-template';
 import type { TaskInstance } from '../domain-client/aggregates/task-instance';

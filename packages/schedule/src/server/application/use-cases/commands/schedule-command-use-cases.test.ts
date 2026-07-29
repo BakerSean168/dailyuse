@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { eventBus } from '@dailyuse/utils/domain';
+import { eventBus } from '@memoflow/utils/domain';
 import { BatchDeleteScheduleTasksUseCase } from './batch-delete-schedule-tasks.use-case';
 import { BatchOperateScheduleTasksUseCase } from './batch-operate-schedule-tasks.use-case';
 import { CancelScheduleTaskUseCase } from './cancel-schedule-task.use-case';

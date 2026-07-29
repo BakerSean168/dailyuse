@@ -23,7 +23,7 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"],
       "cache": true,
-      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
+      "syncGenerators": ["@memoflow/nx-test-system:sync-test-targets"]
     },
     "serve": {
       "dependsOn": ["^build"],
@@ -32,16 +32,16 @@
     "test": {
       "inputs": ["default", "^production"],
       "cache": true,
-      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
+      "syncGenerators": ["@memoflow/nx-test-system:sync-test-targets"]
     },
     "test:watch": {
       "cache": false,
-      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
+      "syncGenerators": ["@memoflow/nx-test-system:sync-test-targets"]
     },
     "test:coverage": {
       "inputs": ["default", "^production"],
       "cache": true,
-      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
+      "syncGenerators": ["@memoflow/nx-test-system:sync-test-targets"]
     },
     "test:integration": {
       "inputs": ["default", "^production"],
@@ -63,7 +63,7 @@
     "lint": {
       "inputs": ["default", "{workspaceRoot}/eslint.config.ts"],
       "cache": true,
-      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
+      "syncGenerators": ["@memoflow/nx-test-system:sync-test-targets"]
     },
     "@nx/js:tsc": {
       "cache": true,
@@ -74,12 +74,12 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"],
       "cache": true,
-      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
+      "syncGenerators": ["@memoflow/nx-test-system:sync-test-targets"]
     }
   },
   "sync": {
     "applyChanges": true,
-    "globalGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
+    "globalGenerators": ["@memoflow/nx-test-system:sync-test-targets"]
   },
   "plugins": [
     {

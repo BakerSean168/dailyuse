@@ -19,7 +19,7 @@ describe('repository handlers contracts', () => {
   });
 
   it('does not expose retired database Repository/Resource client methods', async () => {
-    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/client');
+    const { RepositoryHttpAdapter } = await import('@memoflow/repository/client');
     const httpClient = createHttpClientSpy();
     const adapter = new RepositoryHttpAdapter(httpClient) as Record<string, unknown>;
 
@@ -43,7 +43,7 @@ describe('repository handlers contracts', () => {
   });
 
   it('uses knowledge connection and projection routes for the live surface', async () => {
-    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/client');
+    const { RepositoryHttpAdapter } = await import('@memoflow/repository/client');
     const httpClient = createHttpClientSpy();
     const adapter = new RepositoryHttpAdapter(httpClient);
 

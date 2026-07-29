@@ -1,5 +1,5 @@
-import type { Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   BatchGroupTemplatesReq,
   BatchGroupTemplatesRes,
@@ -19,7 +19,7 @@ import type {
   UpdateReminderPreferencesReq,
   UpdateReminderTemplateReq,
   UserReminderPreferencesClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 export interface ReminderApplicationPort {
   createTemplate(

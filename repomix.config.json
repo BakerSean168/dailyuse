@@ -4,7 +4,7 @@
     "maxFileSize": 2000000
   },
   "output": {
-    "filePath": "tmp/repomix/dailyuse-context.xml",
+    "filePath": "tmp/repomix/memoflow-context.xml",
     "style": "xml",
     "parsableStyle": false,
     "compress": true,

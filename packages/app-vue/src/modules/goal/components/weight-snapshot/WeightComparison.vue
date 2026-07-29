@@ -152,7 +152,7 @@ import {
   Badge,
   Input,
   Label,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Plus, BarChart3, X, Loader2, Info } from '@lucide/vue';
 
 /** Minimal tooltip formatter params for ECharts axis-triggered tooltip */

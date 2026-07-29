@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
+import { createHttpResponseBuilder } from '@memoflow/contracts/result';
 
 const responseBuilder = createHttpResponseBuilder();
 type RequestWithOptionalRoles = Request & {

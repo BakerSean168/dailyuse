@@ -24,7 +24,7 @@ export default {
     "codePlaceholder": "6 位验证码"
   },
   "desktop": {
-    "title": "知行 Memoflow",
+    "title": "知行 MemoFlow",
     "description": "账号由你选择，自动登录只会在你主动开启后生效。",
     "tabs": {
       "login": "登录",

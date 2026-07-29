@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import { notificationSound, reminderSound } from '@dailyuse/assets/audio';
-import { NotificationChannels } from '@dailyuse/contracts/electron';
-// Residual 911: local ElectronBridge dual retired — sole body from @dailyuse/ipc-client.
+import { notificationSound, reminderSound } from '@memoflow/assets/audio';
+import { NotificationChannels } from '@memoflow/contracts/electron';
+// Residual 911: local ElectronBridge dual retired — sole body from @memoflow/ipc-client.
 // Residual 941: local getElectronBridge dual retired — sole host helper in platform/electron-bridge.
 import { getElectronBridge } from './platform/electron-bridge';
 

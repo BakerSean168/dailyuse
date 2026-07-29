@@ -18,7 +18,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   ResetUserSettingPublicSchema,
   ExportSettingsSchema,
@@ -26,7 +26,7 @@ import {
   UserSettingResponseSchema,
   ExportSettingsResponseSchema,
   ImportSettingsResponseSchema,
-} from '@dailyuse/contracts/setting';
+} from '@memoflow/contracts/setting';
 import { SettingController } from '../server/transport';
 import type { SettingApplicationPort } from '../server/application';
 

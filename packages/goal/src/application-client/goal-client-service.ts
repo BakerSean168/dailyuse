@@ -8,8 +8,8 @@
  * @module application-client/goal-client-service
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { map as mapResult } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { map as mapResult } from '@memoflow/contracts/result';
 import type {
   CreateGoalReq,
   UpdateGoalReq,
@@ -34,7 +34,7 @@ import type {
   ProgressBreakdown,
   FocusModeDTO,
   ActivateFocusModeRequest,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import type { IGoalApiClient } from './ports/goal-api-client.port';
 import type { IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
 import type { IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
@@ -50,7 +50,7 @@ import {
   GoalReviewId,
   GoalRecordId,
 } from '../domain-client';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 
 // ===== DTO-to-State Mappers =====
 

@@ -2,7 +2,7 @@
  * Repository Prisma composition helpers.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import { FsStorageAdapter } from './adapters/fs/fs-storage.adapter';
 import {
   createRepositoryModule,

@@ -1,5 +1,5 @@
-import { ok, type Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import { ok, type Result } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type { z } from 'zod';
 import { expect, vi } from 'vitest';
 

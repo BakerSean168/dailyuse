@@ -8,11 +8,11 @@
  * - 事务协调
  */
 
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
 
 const scheduleEvents = createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(
   eventBus,

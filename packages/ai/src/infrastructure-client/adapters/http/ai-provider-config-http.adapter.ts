@@ -7,8 +7,8 @@ import type {
   TestAIProviderReq,
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
-} from '@dailyuse/contracts/ai';
-import { map, type Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { map, type Result } from '@memoflow/contracts/result';
 
 /**
  * HTTP adapter for AI provider-config ports.

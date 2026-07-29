@@ -35,17 +35,17 @@
  * @see {@link RuleStatus} 状态转换规则
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { RuleId } from '../value-objects/rule-id';
 import { RuleTag } from '../value-objects/rule-tag';
 import { CodeSnippet } from '../value-objects/code-snippet';
 import { RuleStatus } from '../value-objects/rule-status';
 import { RuleSeverity } from '../value-objects/rule-severity';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { RuleClientDTO } from '@dailyuse/contracts/governance';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import type { GovernanceEventMap } from '@dailyuse/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { RuleClientDTO } from '@memoflow/contracts/governance';
+import type { IdentityId } from '@memoflow/contracts/primitives';
+import type { GovernanceEventMap } from '@memoflow/contracts/governance';
 import type { Language } from '../value-objects/language';
 
 // ================= Props Objects（参数对象模式） =================

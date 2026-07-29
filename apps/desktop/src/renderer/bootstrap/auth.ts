@@ -1,8 +1,8 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { createRouter, createWebHashHistory } from 'vue-router';
-import { APP_TITLE_NAME } from '@dailyuse/assets';
-import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue/plugins/i18n';
+import { APP_TITLE_NAME } from '@memoflow/assets';
+import { createI18nPlugin, loadLocaleMessages } from '@memoflow/app-vue/plugins/i18n';
 
 import DesktopAuthApp from '../DesktopAuthApp.vue';
 import { installDesktopAuthServices } from '../platform/di-auth';

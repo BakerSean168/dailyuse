@@ -16,7 +16,7 @@ import type {
   AgentProposal,
   IModelGatewayPort,
   IProposalKernelPort,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { IAIChatExecutionPort } from '../../../application/ports';
 import type { IAIConversationRepository } from '../../../domain/repositories/i-ai-conversation-repository';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
@@ -453,10 +453,10 @@ describe('ADR-035 production multi-engine Host journey (residual 375)', () => {
     const { facade, chat, gateway, conversationId } = createProductionHost();
     const spike = new PiReadonlyProcessAdapter({
       env: {
-        DAILYUSE_PI_SPIKE_ENABLED: '1',
-        DAILYUSE_PI_BINARY: '/opt/pi/bin/pi',
+        MEMOFLOW_PI_SPIKE_ENABLED: '1',
+        MEMOFLOW_PI_BINARY: '/opt/pi/bin/pi',
         OPENAI_API_KEY: 'sk-should-scrub',
-        DAILYUSE_VAULT_PATH: '/vault/path',
+        MEMOFLOW_VAULT_PATH: '/vault/path',
       },
       isExecutable: () => true,
       processCwd: () => '/safe/host/cwd',
@@ -479,7 +479,7 @@ describe('ADR-035 production multi-engine Host journey (residual 375)', () => {
     expect(plan.cwd).not.toBe('/vault/path');
     expect(plan.vaultAsCwd).toBe(false);
     expect(plan.env).not.toHaveProperty('OPENAI_API_KEY');
-    expect(plan.env).not.toHaveProperty('DAILYUSE_VAULT_PATH');
+    expect(plan.env).not.toHaveProperty('MEMOFLOW_VAULT_PATH');
     expect(plan.argv[0]).toBe('/opt/pi/bin/pi');
     expect(plan.argv).toContain('--readonly');
     expect(plan.argv).toContain('--no-write');

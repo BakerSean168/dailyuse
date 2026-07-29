@@ -705,7 +705,7 @@ RuleCard 列表（code + title + RuleStatusBadge + severity）
 
 **2) 最重要的动作**：主操作 = 提交登录/注册；次操作 = 登录/注册模式切换。
 
-**3) 新布局结构**：居中单卡 `max-w-sm`（AuthLayout 保留），品牌名取 `@dailyuse/assets`。
+**3) 新布局结构**：居中单卡 `max-w-sm`（AuthLayout 保留），品牌名取 `@memoflow/assets`。
 
 **4) 首屏**：表单即全部。 **5) 次要信息**：无。
 

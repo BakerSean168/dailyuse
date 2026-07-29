@@ -44,7 +44,7 @@ import type {
   AgentRunListParams,
   AgentStartRunClientRequest,
   AssistantClientCommand,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 /**
  * Thin facade over AI API client ports for UI consumption.

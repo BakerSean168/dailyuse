@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-export { createTestPinia, mountWithPinia } from '@dailyuse/test-utils';
+export { createTestPinia, mountWithPinia } from '@memoflow/test-utils';
 
 /**
  * 创建 mock 应用服务
