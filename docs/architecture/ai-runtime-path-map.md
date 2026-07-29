@@ -109,5 +109,5 @@ sendMessage / streamMessage
 ## 相关
 
 - [ADR-035](./adr/ADR-035-unified-assistant-agent-host.md)
-- [elegance foundation plan](../plan/active/2026-07-26-codebase-elegance-foundation.md)
+- [elegance foundation plan](../plan/archive/2026-07-26-codebase-elegance-foundation.md)
 - [nightly hygiene](../plan/active/2026-07-25-nightly-hygiene-and-agent-host.md)

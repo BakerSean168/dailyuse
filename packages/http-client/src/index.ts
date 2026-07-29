@@ -38,6 +38,22 @@ export { DEFAULT_HTTP_CLIENT_CONFIG } from './types';
 // ── Clients ──
 export { ResultHttpClient } from './result-http-client';
 
+// ── Email verification session fuse ──
+export {
+  EMAIL_VERIFICATION_DOMAIN_CODE,
+  EMAIL_VERIFICATION_MESSAGE_KEY,
+  DEFAULT_EMAIL_VERIFICATION_HIT_BUDGET,
+  canAttemptEmailVerificationSensitiveRequest,
+  recordEmailVerificationRequired,
+  buildEmailVerificationBlockedError,
+  isEmailVerificationRequiredError,
+  isEmailVerificationCircuitTripped,
+  getEmailVerificationHitCount,
+  resetEmailVerificationCircuit,
+  getEmailVerificationCircuitSnapshot,
+  resourceKeyFromUrl,
+} from './email-verification-circuit';
+
 // ── Result error helpers ──
 export {
   classifyNetworkErrorMessage,

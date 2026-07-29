@@ -145,11 +145,46 @@ export const envSchema = z.object({
     .describe('AI Provider 配置加密密钥（至少 32 字符；启用 AI 模块时必填）'),
 
   // ========== 邮件服务配置 ==========
-  SMTP_HOST: z.string().optional(),
+  // EMAIL_PROVIDER: console (default) | smtp | resend. Never infer from NODE_ENV alone
+  // (local-docker uses NODE_ENV=production with console capture).
+  EMAIL_PROVIDER: z
+    .preprocess(emptyStringToUndefined, z.enum(['console', 'smtp', 'resend']).optional())
+    .describe('Transactional email delivery: console (default), smtp, or resend'),
+  SMTP_HOST: z.preprocess(emptyStringToUndefined, z.string().optional()),
   SMTP_PORT: z.coerce.number().default(587),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-  SMTP_FROM: z.string().email().optional(),
+  SMTP_SECURE: z.preprocess(
+    emptyStringToUndefined,
+    z
+      .enum(['true', 'false'])
+      .optional()
+      .transform((v) => (v === undefined ? undefined : v === 'true')),
+  ),
+  SMTP_USER: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  SMTP_PASS: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  // Accept bare email or "Display Name <email@domain>" (Brevo-style From).
+  SMTP_FROM: z.preprocess(emptyStringToUndefined, z.string().min(3).optional()),
+  SMTP_REPLY_TO: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  SMTP_LOCALE: z.preprocess(emptyStringToUndefined, z.enum(['zh', 'en']).optional()),
+  EMAIL_LOCALE: z.preprocess(emptyStringToUndefined, z.enum(['zh', 'en']).optional()),
+  RESEND_API_KEY: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  RESEND_FROM: z.preprocess(emptyStringToUndefined, z.string().min(3).optional()),
+  // Optional secondary SMTP (failover after primary smtp/resend failure).
+  SMTP_SECONDARY_HOST: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  SMTP_SECONDARY_PORT: z.coerce.number().optional(),
+  SMTP_SECONDARY_SECURE: z.preprocess(
+    emptyStringToUndefined,
+    z
+      .enum(['true', 'false'])
+      .optional()
+      .transform((v) => (v === undefined ? undefined : v === 'true')),
+  ),
+  SMTP_SECONDARY_USER: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  SMTP_SECONDARY_PASS: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  SMTP_SECONDARY_FROM: z.preprocess(emptyStringToUndefined, z.string().min(3).optional()),
+  // memory (default) | redis — multi-instance verification challenges.
+  AUTH_CHALLENGE_STORE: z
+    .preprocess(emptyStringToUndefined, z.enum(['memory', 'redis']).optional())
+    .describe('Verification challenge backend: memory (default) or redis'),
 
   // ========== 文件上传配置 ==========
   UPLOAD_MAX_SIZE: z.coerce

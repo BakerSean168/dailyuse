@@ -30,30 +30,47 @@ const PROJECT_ROOT = resolve(__dirname, '../../../../../../');
  * 加载 .env 文件
  * @param filePath 文件路径
  * @param override 是否覆盖已有环境变量
+ *
+ * Preserves intentionally empty process.env values (e.g. vi.stubEnv(key, '') for
+ * residual 1338 id-without-secret): some dotenv versions still fill empty keys
+ * from files even with override:false.
  */
 function loadEnvFile(filePath: string, override = true): void {
-  if (existsSync(filePath)) {
-    expand(config({ path: filePath, override }));
+  if (!existsSync(filePath)) {
+    return;
+  }
+
+  const lockedEmptyKeys = Object.entries(process.env)
+    .filter(([, value]) => value === '')
+    .map(([key]) => key);
+
+  expand(config({ path: filePath, override }));
+
+  for (const key of lockedEmptyKeys) {
+    process.env[key] = '';
   }
 }
 
 /**
  * 按优先级加载所有 .env 文件
+ *
+ * Highest-priority file first with override:false so:
+ * - process.env already set (Docker inject, vi.stubEnv, shell) always wins
+ * - among files, the first (highest) value for each key sticks
+ * This keeps residual 1338 host-dev "id without secret" tests honest when
+ * gitignored .env.*.local would otherwise re-fill an empty stub.
  */
 function loadAllEnvFiles(): void {
   const nodeEnv = process.env.NODE_ENV || 'development';
 
-  // Load order (low to high priority)
   const envFiles = [
-    // Workspace root (centralized env files)
-    resolve(PROJECT_ROOT, '.env'),
-    resolve(PROJECT_ROOT, `.env.${nodeEnv}`),
-    resolve(PROJECT_ROOT, '.env.local'),
     resolve(PROJECT_ROOT, `.env.${nodeEnv}.local`),
+    resolve(PROJECT_ROOT, '.env.local'),
+    resolve(PROJECT_ROOT, `.env.${nodeEnv}`),
+    resolve(PROJECT_ROOT, '.env'),
   ];
 
-  // 按顺序加载，后面的覆盖前面的
-  envFiles.forEach((file) => loadEnvFile(file, true));
+  envFiles.forEach((file) => loadEnvFile(file, false));
 }
 
 /**
@@ -185,23 +202,35 @@ export function getJwtConfig() {
  * Knowledge-repo App credentials stay on `getGithubAppConfig()` (separate).
  */
 export function getGithubOAuthConfig(): { clientId: string; clientSecret: string } | null {
+  // Prefer live process.env so test stubs (vi.stubEnv) and container inject win
+  // over the frozen env singleton when modules are re-imported.
+  const runtimeLane = process.env.RUNTIME_LANE ?? env.RUNTIME_LANE;
+  const nodeEnv = process.env.NODE_ENV ?? env.NODE_ENV;
+  const clientId = (process.env.GITHUB_OAUTH_CLIENT_ID ?? env.GITHUB_OAUTH_CLIENT_ID ?? '').trim();
+  const clientSecret = (
+    process.env.GITHUB_OAUTH_CLIENT_SECRET ??
+    env.GITHUB_OAUTH_CLIENT_SECRET ??
+    ''
+  ).trim();
+
   // E2E lane: mock identity OAuth only (no interactive GitHub authorize).
-  if (env.RUNTIME_LANE === 'e2e') {
+  if (runtimeLane === 'e2e') {
     return {
       clientId: 'e2e-mock',
       clientSecret: 'e2e-mock-secret',
     };
   }
 
-  if (env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET) {
+  // Residual 1338: both id and secret required; id-only must not enable OAuth.
+  if (clientId && clientSecret) {
     return {
-      clientId: env.GITHUB_OAUTH_CLIENT_ID,
-      clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
+      clientId,
+      clientSecret,
     };
   }
 
   // Unit/integration test without explicit credentials: same mock provider.
-  if (env.NODE_ENV === 'test') {
+  if (nodeEnv === 'test') {
     return {
       clientId: 'e2e-mock',
       clientSecret: 'e2e-mock-secret',

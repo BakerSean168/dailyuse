@@ -371,7 +371,7 @@ format 类 keep-boundary 迁移期双写，长期以 Time Registry + canonical A
 **禁止：** 为减 dual 文件数删除仍保护真旁路的断言。
 
 第二阶段刀序与 DoD 的**可执行详设**以  
-[`../plan/active/2026-07-26-product-time-system.md`](../plan/active/2026-07-26-product-time-system.md) **§10** 为准（P1 Empty Catalog → … → P10 dual 降维；P11 TZ 远期）。
+[`../plan/archive/2026-07-26-product-time-system.md`](../plan/archive/2026-07-26-product-time-system.md) **§10** 为准（P1 Empty Catalog → … → P10 dual 降维；P11 TZ 远期）。
 ---
 
 ## 10. 调用拓扑（目标态）
@@ -434,4 +434,4 @@ Prisma DateTime → codec.fromJsDate → Instant → 领域
 - [ADR-037](./adr/ADR-037-product-time-system.md)  
 - [Dual Registry](../governance/dual-registry.md)  
 - [AI runtime path map](./ai-runtime-path-map.md)（编排边界，非时间）  
-- 优雅化 plan：`docs/plan/active/2026-07-26-codebase-elegance-foundation.md`  
+- 优雅化 plan：`docs/plan/archive/2026-07-26-codebase-elegance-foundation.md`  

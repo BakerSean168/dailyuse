@@ -1,15 +1,18 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - web
   - product-review
   - ux
 description: Web 登录后工作区第二轮产品逻辑与交互设计审查
 created: 2026-07-16T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-29T00:00:00
+status: done
 ---
 
+> **归档结果（2026-07-29）**：第二轮产品/设计复审历史材料。  
+> 后续产品能力以 [`../active/2026-07-17-unified-assistant-agent-host.md`](../active/2026-07-17-unified-assistant-agent-host.md) 为准。
 # Web 登录后工作区产品与设计复审
 
 ## 1. 审查结论

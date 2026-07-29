@@ -3,6 +3,7 @@ import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { productionLocaleMessages } from '../../../locales/production-messages';
 import AIFooterComposer from './AIFooterComposer.vue';
 
 vi.mock('@dailyuse/ui-vue-shadcn', async () => {
@@ -46,41 +47,7 @@ vi.mock('@dailyuse/ui-vue-shadcn', async () => {
 const i18n = createI18n({
   legacy: false,
   locale: 'en-US',
-  messages: {
-    'en-US': {
-      aiAssistant: {
-        dialogs: {
-          chat: {
-            messagePlaceholder: 'Type a message',
-            sendMessage: 'Send',
-            stopGenerating: 'Stop',
-          },
-        },
-        chatPage: {
-          emptyModels: 'No models',
-          hostProfile: {
-            label: 'Host engine',
-            directTurn: 'Chat engine',
-            piReadonly: 'Readonly analysis',
-          },
-          workflow: {
-            tools: {
-              chat: 'Chat',
-              goalCreate: 'Goal',
-              knowledgeQa: 'QA',
-              knowledgeGenerate: 'Generate',
-            },
-          },
-        },
-        actions: {
-          automateGoalSetup: 'Automate',
-          expandDraft: 'Expand',
-          askAnalytics: 'Analytics',
-          viewQualityReports: 'Reports',
-        },
-      },
-    },
-  },
+  messages: productionLocaleMessages,
 });
 
 function mountComposer(
@@ -201,6 +168,29 @@ describe('AIFooterComposer (Global Composer input)', () => {
     await nextTick();
     // height is clamped by COMPOSER_TEXTAREA_MAX_PX (168)
     expect(el.style.height).toBe('168px');
+    wrapper.unmount();
+  });
+
+  it('disables quick-entry tools and shows configure cue when no models are available', () => {
+    const wrapper = mountComposer({
+      modelGroups: [],
+      canSend: false,
+      selectedModelKey: '',
+    });
+
+    const toolTrigger = wrapper.find('[data-testid="ai-chat-tool-menu-trigger"]');
+    expect(toolTrigger.exists()).toBe(true);
+    expect(toolTrigger.attributes('disabled')).toBeDefined();
+
+    expect(wrapper.find('[data-testid="ai-chat-empty-models"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ai-chat-empty-models-hint"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ai-chat-empty-models-cue"]').exists()).toBe(true);
+
+    // Configure cue must not be bare i18n key
+    const cueText = wrapper.find('[data-testid="ai-chat-empty-models"]').text();
+    expect(cueText).not.toMatch(/aiAssistant\.chatPage/);
+    expect(cueText.length).toBeGreaterThan(0);
+
     wrapper.unmount();
   });
 });

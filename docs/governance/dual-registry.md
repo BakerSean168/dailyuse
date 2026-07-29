@@ -11,7 +11,7 @@ updated: 2026-07-26T00:00:00
 
 机器可读账本：[`tools/governance/dual-registry.json`](../../tools/governance/dual-registry.json)。
 
-本文件是人读摘要；**分类以 JSON 为准**。优雅化 plan：[`../plan/active/2026-07-26-codebase-elegance-foundation.md`](../plan/active/2026-07-26-codebase-elegance-foundation.md)。
+本文件是人读摘要；**分类以 JSON 为准**。优雅化 plan：[`../plan/archive/2026-07-26-codebase-elegance-foundation.md`](../plan/archive/2026-07-26-codebase-elegance-foundation.md)。
 
 ## 度量（E2 / E3）
 

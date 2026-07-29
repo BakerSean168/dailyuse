@@ -212,8 +212,27 @@
             </span>
           </button>
           <div
-            v-if="!recentKnowledgeNotes.length"
+            v-if="recentKnowledgeNotesEmailVerificationRequired"
+            class="space-y-1 rounded-lg px-3 py-2 text-sm"
+            data-testid="ai-sidebar-email-verification"
+            role="status"
+          >
+            <p class="font-medium text-amber-950 dark:text-amber-100">
+              {{
+                t(
+                  recentKnowledgeNotesErrorMessageKey ||
+                    'errors.EMAIL_VERIFICATION_REQUIRED',
+                )
+              }}
+            </p>
+            <p class="text-xs text-muted-foreground">
+              {{ t('common.emailVerificationRequiredHint') }}
+            </p>
+          </div>
+          <div
+            v-else-if="!recentKnowledgeNotes.length"
             class="rounded-lg px-3 py-2 text-sm text-muted-foreground"
+            data-testid="ai-sidebar-no-recent-notes"
           >
             {{ t('aiAssistant.chatPage.sidebar.noRecentKnowledgeNotes') }}
           </div>
@@ -261,6 +280,10 @@ const props = withDefaults(defineProps<{
   agentRuns: AgentRun[];
   recentGoals: AIWorkspaceRecentGoal[];
   recentKnowledgeNotes: AIWorkspaceRecentKnowledgeNote[];
+  /** When true, show verification-required degrade instead of empty notes. */
+  recentKnowledgeNotesEmailVerificationRequired?: boolean;
+  /** i18n key for the degrade message (defaults to errors.EMAIL_VERIFICATION_REQUIRED). */
+  recentKnowledgeNotesErrorMessageKey?: string | null;
   activeConversationId: string;
   loading: boolean;
   agentRunsLoading: boolean;
@@ -269,6 +292,8 @@ const props = withDefaults(defineProps<{
 }>(), {
   variant: 'desktop',
   showClose: false,
+  recentKnowledgeNotesEmailVerificationRequired: false,
+  recentKnowledgeNotesErrorMessageKey: null,
 });
 
 defineEmits<{

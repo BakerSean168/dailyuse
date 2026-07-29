@@ -100,7 +100,7 @@ Memoflow 已在 monorepo 中自建：
 - 生产发信与 challenge 强化属于 authentication 安全闭环的一部分，与邮箱验证共享基础设施。
 - 前端「忘记密码」入口仅在链路可测、可配置完成后开放（含本地 mail 捕获或 console 策略下的 e2e）。
 
-旧独立计划 `docs/plan/active/2026-07-16-password-recovery.md` **作废**，内容归档至 `docs/plan/archive/2026-07-16-password-recovery.md`，实施并入 `docs/plan/active/2026-07-17-auth-account-security-closure.md`。
+旧独立计划 `docs/plan/active/2026-07-16-password-recovery.md` **作废**，内容归档至 `docs/plan/archive/2026-07-16-password-recovery.md`，实施并入 `docs/plan/archive/2026-07-17-auth-account-security-closure.md`。
 
 ### 6. 注销级联
 
@@ -174,7 +174,7 @@ Memoflow 已在 monorepo 中自建：
 
 ## Migration & Enforcement
 
-1. **计划**：以 `docs/plan/active/2026-07-17-auth-account-security-closure.md` 为唯一实施真源；密码找回旧计划已归档。  
+1. **计划**：以 `docs/plan/archive/2026-07-17-auth-account-security-closure.md` 为唯一实施真源；密码找回旧计划已归档。  
 2. **代码顺序**：通用 challenge + 邮件端口 → 加固 forgot/reset + 邮箱验证 → 注销级联 → OAuth 完整流 → 访客升级。  
 3. **契约**：优先扩展现有 `/api/v1/auth/*`，新增 email send/verify；重置保持 `password/forgot|reset`。  
 4. **测试**：challenge 单测；验证/重置重放与枚举防护；注销后 login/refresh 失败；关键 e2e。  
@@ -189,6 +189,6 @@ Memoflow 已在 monorepo 中自建：
 - ADR-034 GitHub 登录与仓库授权分离  
 - `docs/product/modules/authentication.md`  
 - `docs/product/modules/account.md`  
-- `docs/plan/active/2026-07-17-auth-account-security-closure.md`  
+- `docs/plan/archive/2026-07-17-auth-account-security-closure.md`  
 - `docs/plan/archive/2026-07-16-password-recovery.md`（已废）  
 - 现网：`ForgotPasswordUseCase`、`ResetPasswordUseCase`、`IEmailSender`、`IPasswordResetCodeStore`

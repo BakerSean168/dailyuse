@@ -5,7 +5,7 @@ tags:
   - index
 description: 开发指南目录索引
 created: 2025-01-22T00:00:00
-updated: 2026-07-14T00:00:00
+updated: 2026-07-29T00:00:00
 ---
 
 # 开发指南
@@ -21,6 +21,7 @@ updated: 2026-07-14T00:00:00
 | [coding-standards.md](./coding-standards.md) | 代码风格、分层和通用实现约束 |
 | [git-workflow.md](./git-workflow.md) | 分支、提交和协作流程 |
 | [local.docker.md](./local.docker.md) | 使用 `docker-compose.local.yml` 做 prod-like 本地容器验证的入口 |
+| [transactional-email-smtp.md](./transactional-email-smtp.md) | 事务邮件 console / SMTP / Resend、域名 DNS、Redis challenge |
 | [runtime-lanes.md](./runtime-lanes.md) | 本机 host-dev / e2e / local-docker 端口契约与互斥规则 |
 | [powersync-profile-snapshot-rollout.md](./powersync-profile-snapshot-rollout.md) | PowerSync per-profile snapshot 的部署、验收、观测与手动回补说明 |
 | [release-workflow.md](./release-workflow.md) | 从本地 Docker 验证到 `release-please` 与 `docker-deploy` 的标准发布链路 |

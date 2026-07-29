@@ -22,6 +22,10 @@ import { initializeLogger, getStartupInfo } from './shared/infrastructure/config
 import { createLogger } from '@dailyuse/utils/logger';
 import { ApiBootstrapper } from './bootstrap';
 import { ensurePowerSyncPublication } from './shared/infrastructure/database/ensure-powersync-publication.js';
+import {
+  createApiRedisClient,
+  shouldUseRedisChallengeStore,
+} from './shared/infrastructure/redis/create-redis-client.js';
 
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
@@ -153,10 +157,16 @@ async function bootstrap(): Promise<void> {
   // GitHub login is optional and pluggable: only registered when configured.
   // GitHub 登录可选且可插拔：仅在配置齐全时注册。
   const githubOAuthConfig = getGithubOAuthConfig();
+  // Multi-instance challenge store: only wire Redis when AUTH_CHALLENGE_STORE=redis.
+  // Default remains in-memory (local-docker / single API replica).
+  const authRedis = shouldUseRedisChallengeStore(process.env)
+    ? createApiRedisClient()
+    : undefined;
   const authenticationApiModule = createAuthenticationApiModule({
     jwtSecret: jwtConfig.secret,
     refreshSecret: jwtConfig.refreshSecret,
     github: githubOAuthConfig ?? undefined,
+    redis: authRedis,
   });
 
   const app = await bootstrapper

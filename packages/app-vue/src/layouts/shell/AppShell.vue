@@ -456,17 +456,17 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     <div
       v-if="needsEmailVerification"
       data-testid="unverified-email-banner"
-      class="flex items-center justify-between gap-3 border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-100"
+      class="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-100 px-4 py-2 text-sm text-amber-950 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-100"
       role="status"
     >
-      <span>{{ t('shell.auth.unverifiedBanner', 'Verify your email to unlock all features.') }}</span>
+      <span>{{ t('shell.auth.unverifiedBanner') }}</span>
       <button
         type="button"
-        class="rounded-md bg-amber-400/20 px-3 py-1 text-xs font-medium text-amber-50 hover:bg-amber-400/30"
+        class="rounded-md bg-amber-900/10 px-3 py-1 text-xs font-medium text-amber-950 hover:bg-amber-900/15 dark:bg-amber-400/20 dark:text-amber-50 dark:hover:bg-amber-400/30"
         data-testid="unverified-email-banner-action"
         @click="goVerifyEmail"
       >
-        {{ t('shell.auth.unverifiedAction', 'Verify now') }}
+        {{ t('shell.auth.unverifiedAction') }}
       </button>
     </div>
 

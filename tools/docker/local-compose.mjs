@@ -1,13 +1,25 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import {
   getRuntimeProfile,
   resolveLocalDockerHostPorts,
 } from '../runtime/load-profiles.mjs';
+import { detectHostEnvShadowing } from './env-shadow.mjs';
 
-const command = process.argv[2] ?? 'up';
+export { detectHostEnvShadowing } from './env-shadow.mjs';
+
 const envFile = '.env.production.local';
-const composeArgs = ['compose', '-f', 'docker-compose.local.yml', '--env-file', envFile];
+/** Compose argv shared by CLI and validate-local-deploy evidence collection. */
+export const localComposeArgs = [
+  'compose',
+  '-f',
+  'docker-compose.local.yml',
+  '--env-file',
+  envFile,
+];
+const composeArgs = localComposeArgs;
 
 function readEnvFileMap(path) {
   if (!existsSync(path)) {
@@ -85,7 +97,7 @@ function readGitRevision() {
  * Force local-docker host ports from SSOT so local stack never steals host-dev/e2e ports.
  * Secrets and service env still come from .env.production.local.
  */
-function applyLocalDockerHostPortIsolation(env, envFileMap) {
+function applyLocalDockerHostPortIsolation(env, envFileMap, { quiet = false } = {}) {
   /** @type {Record<string, string>} */
   const fromFile = {};
   const profile = getRuntimeProfile('local-docker');
@@ -99,7 +111,9 @@ function applyLocalDockerHostPortIsolation(env, envFileMap) {
 
   const resolved = resolveLocalDockerHostPorts(fromFile);
   for (const warning of resolved.warnings) {
-    console.warn(`[docker:local] ${warning}`);
+    if (!quiet) {
+      console.warn(`[docker:local] ${warning}`);
+    }
   }
   for (const error of resolved.errors) {
     console.error(`[docker:local] ${error}`);
@@ -122,19 +136,33 @@ function applyLocalDockerHostPortIsolation(env, envFileMap) {
     /localhost:8081\b/u.test(currentPowerSyncUrl)
   ) {
     env.POWERSYNC_URL = isolatedPowerSyncUrl;
-    if (currentPowerSyncUrl && currentPowerSyncUrl !== isolatedPowerSyncUrl) {
+    if (currentPowerSyncUrl && currentPowerSyncUrl !== isolatedPowerSyncUrl && !quiet) {
       console.warn(
         `[docker:local] POWERSYNC_URL=${currentPowerSyncUrl} looks like host-dev; using ${isolatedPowerSyncUrl}`,
       );
     }
   }
 
-  console.log(
-    `[docker:local] host ports: API=${env.API_HOST_PORT} WEB=${env.WEB_HOST_PORT} AI=${env.AI_SERVICE_HOST_PORT} PS=${env.POWERSYNC_HOST_PORT} PG=${env.POSTGRES_HOST_PORT} REDIS=${env.REDIS_HOST_PORT}`,
-  );
+  if (!quiet) {
+    console.log(
+      `[docker:local] host ports: API=${env.API_HOST_PORT} WEB=${env.WEB_HOST_PORT} AI=${env.AI_SERVICE_HOST_PORT} PS=${env.POWERSYNC_HOST_PORT} PG=${env.POSTGRES_HOST_PORT} REDIS=${env.REDIS_HOST_PORT}`,
+    );
+  }
 }
 
-function createRuntimeEnv() {
+/**
+ * Build process env for local-docker compose (secrets + PowerSync fallbacks + port isolation).
+ * Exported so validate-local-deploy can run `compose ps/logs` with the same interpolation
+ * as `pnpm docker:local:*` (bare `--env-file .env.production.local` lacks POWERSYNC_* keys).
+ *
+ * @param {{ quiet?: boolean, cwd?: string }} [options]
+ * @returns {NodeJS.ProcessEnv}
+ */
+export function createLocalComposeRuntimeEnv(options = {}) {
+  const quiet = options.quiet === true;
+  const log = quiet ? () => {} : console.log.bind(console);
+  const warn = quiet ? () => {} : console.warn.bind(console);
+
   const env = {
     ...process.env,
     NX_DAEMON: 'false',
@@ -143,16 +171,22 @@ function createRuntimeEnv() {
   env.VCS_REF ||= readGitRevision();
   env.BUILD_DATE ||= new Date().toISOString();
 
-  console.log(`[docker:local] image revision: ${env.VCS_REF}`);
-  console.log(`[docker:local] image build date: ${env.BUILD_DATE}`);
+  log(`[docker:local] image revision: ${env.VCS_REF}`);
+  log(`[docker:local] image build date: ${env.BUILD_DATE}`);
 
   const envFileMap = readEnvFileMap(envFile);
   const envKeys = readEnvFileKeys(envFile);
   const developmentEnv = readEnvFileMap('.env.development');
 
+  for (const warning of detectHostEnvShadowing(process.env, envFileMap)) {
+    warn(warning);
+  }
+
   if (!env.SERVICE_SECRET && !envKeys.has('SERVICE_SECRET')) {
     env.SERVICE_SECRET = 'local-dev-secret';
-    console.log('[docker:local] SERVICE_SECRET is not set in .env.production.local, using a local default for Docker validation.');
+    log(
+      '[docker:local] SERVICE_SECRET is not set in .env.production.local, using a local default for Docker validation.',
+    );
   }
 
   // Local-only secret defaults so prod-like compose can start without copying
@@ -166,7 +200,7 @@ function createRuntimeEnv() {
   for (const [key, fallback] of Object.entries(localSecretFallbacks)) {
     if (!env[key] && !envKeys.has(key)) {
       env[key] = fallback;
-      console.log(
+      log(
         `[docker:local] ${key} is not set in .env.production.local, using a local default for Docker validation.`,
       );
     }
@@ -183,13 +217,17 @@ function createRuntimeEnv() {
   for (const [key, fallback] of Object.entries(powerSyncFallbacks)) {
     if (!env[key] && !envKeys.has(key) && fallback) {
       env[key] = fallback;
-      console.log(`[docker:local] ${key} is not set in .env.production.local, using a local default.`);
+      log(`[docker:local] ${key} is not set in .env.production.local, using a local default.`);
     }
   }
 
-  applyLocalDockerHostPortIsolation(env, envFileMap);
+  applyLocalDockerHostPortIsolation(env, envFileMap, { quiet });
 
   return env;
+}
+
+function createRuntimeEnv() {
+  return createLocalComposeRuntimeEnv();
 }
 
 function resolvePnpmInvocation() {
@@ -233,34 +271,49 @@ function runDockerCompose(extraArgs, env) {
   run('docker', [...composeArgs, ...extraArgs], env);
 }
 
-const env = createRuntimeEnv();
+function isExecutedAsCli() {
+  const entry = process.argv[1];
+  if (!entry) {
+    return false;
+  }
+  try {
+    return existsSync(entry) && import.meta.url === pathToFileURL(resolve(entry)).href;
+  } catch {
+    return /local-compose\.mjs$/u.test(entry.replace(/\\/gu, '/'));
+  }
+}
 
-switch (command) {
-  case 'build-prep':
-    runBuildPrep(env);
-    break;
-  case 'build-prep:rebuild':
-    runBuildPrep(env, { skipNxCache: true });
-    break;
-  case 'up':
-    runBuildPrep(env);
-    runDockerCompose(['up', '--build', '-d'], env);
-    break;
-  case 'rebuild':
-    runBuildPrep(env, { skipNxCache: true });
-    runDockerCompose(['build', '--no-cache'], env);
-    runDockerCompose(['up', '-d'], env);
-    break;
-  case 'down':
-    runDockerCompose(['down'], env);
-    break;
-  case 'logs':
-    runDockerCompose(['logs', '-f'], env);
-    break;
-  case 'ps':
-    runDockerCompose(['ps'], env);
-    break;
-  default:
-    console.error(`Unsupported command: ${command}`);
-    process.exit(1);
+if (isExecutedAsCli()) {
+  const command = process.argv[2] ?? 'up';
+  const env = createRuntimeEnv();
+
+  switch (command) {
+    case 'build-prep':
+      runBuildPrep(env);
+      break;
+    case 'build-prep:rebuild':
+      runBuildPrep(env, { skipNxCache: true });
+      break;
+    case 'up':
+      runBuildPrep(env);
+      runDockerCompose(['up', '--build', '-d'], env);
+      break;
+    case 'rebuild':
+      runBuildPrep(env, { skipNxCache: true });
+      runDockerCompose(['build', '--no-cache'], env);
+      runDockerCompose(['up', '-d'], env);
+      break;
+    case 'down':
+      runDockerCompose(['down'], env);
+      break;
+    case 'logs':
+      runDockerCompose(['logs', '-f'], env);
+      break;
+    case 'ps':
+      runDockerCompose(['ps'], env);
+      break;
+    default:
+      console.error(`Unsupported command: ${command}`);
+      process.exit(1);
+  }
 }

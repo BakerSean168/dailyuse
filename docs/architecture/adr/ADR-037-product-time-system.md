@@ -235,7 +235,7 @@ L1 Platform             → Date / Intl / 可注入 Clock
 - 详设：[`../product-time-system.md`](../product-time-system.md)  
 - AI 路径地图（展示无关，边界参考）：[`../ai-runtime-path-map.md`](../ai-runtime-path-map.md)  
 - Dual Registry：[`../../governance/dual-registry.md`](../../governance/dual-registry.md)  
-- 优雅化 plan：[`../../plan/active/2026-07-26-codebase-elegance-foundation.md`](../../plan/active/2026-07-26-codebase-elegance-foundation.md)  
+- 优雅化 plan：[`../../plan/archive/2026-07-26-codebase-elegance-foundation.md`](../../plan/archive/2026-07-26-codebase-elegance-foundation.md)  
 - primitives：`packages/contracts/src/primitives/{instant,transfer-date,ymd,hm}.ts`  
 - VO 模式：`packages/goal/src/server/domain/value-objects/goal-time-range.ts`  
 - 历史：PersistenceDate 移除 plan archive；residual 859 Instant/TransferDate dual keep-boundary  

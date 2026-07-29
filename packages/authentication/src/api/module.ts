@@ -67,6 +67,15 @@ export interface CreateAuthenticationApiModuleOptions {
     readonly clientId: string;
     readonly clientSecret: string;
   };
+  /**
+   * Optional Redis client for multi-instance verification challenges
+   * (AUTH_CHALLENGE_STORE=redis). Injected by apps/api composition root.
+   * 可选 Redis，用于多实例验证码 challenge。
+   */
+  readonly redis?: import('../server/infrastructure/services/redis-verification-challenge-store').RedisChallengeClient;
+  /** Optional email / challenge overrides for tests. */
+  readonly emailSender?: import('../server/domain').IEmailSender;
+  readonly challengeStore?: import('../server/domain').IVerificationChallengeStore;
 }
 
 const DEFAULT_ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
@@ -103,6 +112,9 @@ export function createAuthenticationApiModule(
       const authenticationModule = createAuthenticationPrismaModule(db, {
         tokenProvider,
         github: options.github,
+        redis: options.redis,
+        emailSender: options.emailSender,
+        challengeStore: options.challengeStore,
       });
       activeAuthenticationModule = authenticationModule;
       authenticationModule.start();

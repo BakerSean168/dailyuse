@@ -1,13 +1,13 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - time
   - architecture
   - contracts
 description: 产品时间体系实施计划（ADR-037）——@dailyuse/time、Transfer≡Instant、DomainDate 退役
 created: 2026-07-26T00:00:00
-updated: 2026-07-26T20:00:00---
+updated: 2026-07-29T00:00:00
 
 # 产品时间体系实施计划
 
@@ -97,7 +97,7 @@ updated: 2026-07-26T20:00:00---
 - **简易：** 同文件 § 简易提示词 A/B/C  
 
 ```text
-按 docs/plan/active/2026-07-26-product-time-system-goal-prompt.md 实施 ADR-037；从 W0 起写代码。
+按 docs/plan/archive/2026-07-26-product-time-system-goal-prompt.md 实施 ADR-037；从 W0 起写代码。
 ```
 
 ## 9. 优化后冗余清理与精简度量（T11 · 2026-07-26）
@@ -244,8 +244,11 @@ P7 ── P8   │
          P9 ── P10 ··· P11
 ```
 
+status: done
 ---
 
+> **归档结果（2026-07-29）**：ADR-037 已采纳；W0–W8 + T10 与第二阶段 P1–P11 已实施（PR #191/#192）。  
+> 宪法仍为 ADR-037 + `docs/architecture/product-time-system.md`；本文件为实施历史。
 ### 10.4 下一刀详设 — **P1：Empty Catalog + 组件 format 命名归零**
 
 #### 问题

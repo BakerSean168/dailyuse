@@ -35,6 +35,13 @@ import {
   classifyNetworkErrorMessage,
   statusToResultError,
 } from './result-error';
+import {
+  buildEmailVerificationBlockedError,
+  canAttemptEmailVerificationSensitiveRequest,
+  isEmailVerificationRequiredError,
+  recordEmailVerificationRequired,
+  resourceKeyFromUrl,
+} from './email-verification-circuit';
 
 // ============================================================================
 // ResultHttpClient
@@ -103,7 +110,7 @@ export class ResultHttpClient implements IResultHttpClient {
    * 通用请求 — 返回 Result<T>
    */
   async request<T = unknown>(config: AxiosRequestConfig): Promise<Result<T>> {
-    return this.execute<T>(() => this.axios.request(config));
+    return this.execute<T>(() => this.axios.request(config), config.url);
   }
 
   /**
@@ -112,35 +119,35 @@ export class ResultHttpClient implements IResultHttpClient {
    * @param config - 可选的 Axios 配置（params、headers 等）
    */
   async get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<Result<T>> {
-    return this.execute<T>(() => this.axios.get(url, config));
+    return this.execute<T>(() => this.axios.get(url, config), url);
   }
 
   /**
    * POST 请求
    */
   async post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<Result<T>> {
-    return this.execute<T>(() => this.axios.post(url, data, config));
+    return this.execute<T>(() => this.axios.post(url, data, config), url);
   }
 
   /**
    * PUT 请求
    */
   async put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<Result<T>> {
-    return this.execute<T>(() => this.axios.put(url, data, config));
+    return this.execute<T>(() => this.axios.put(url, data, config), url);
   }
 
   /**
    * PATCH 请求
    */
   async patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<Result<T>> {
-    return this.execute<T>(() => this.axios.patch(url, data, config));
+    return this.execute<T>(() => this.axios.patch(url, data, config), url);
   }
 
   /**
    * DELETE 请求
    */
   async delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<Result<T>> {
-    return this.execute<T>(() => this.axios.delete(url, config));
+    return this.execute<T>(() => this.axios.delete(url, config), url);
   }
 
   async stream(
@@ -293,8 +300,32 @@ export class ResultHttpClient implements IResultHttpClient {
    * 2. 成功 → 解析响应 → ok(data)
    * 3. 失败 → 分类错误 → fail(error)
    * 4. **永远 resolve**，不 reject
+   * 5. EMAIL_VERIFICATION_REQUIRED → session fuse（同资源 ≤2 次真实请求）
    */
-  private async execute<T>(requestFn: () => Promise<AxiosResponse>): Promise<Result<T>> {
+  private async execute<T>(
+    requestFn: () => Promise<AxiosResponse>,
+    resourceHint?: string,
+  ): Promise<Result<T>> {
+    const resource = resourceKeyFromUrl(resourceHint);
+
+    // Session fuse: skip transport once this resource exhausted EMAIL_VERIFICATION budget.
+    // Only short-circuit resources that already recorded a verification failure
+    // (hitCounts > 0 or blocked). Unseen resources always attempt once.
+    if (!canAttemptEmailVerificationSensitiveRequest(resource)) {
+      const blocked = buildEmailVerificationBlockedError(resource);
+      // Keep extras in context so ResultError stays schema-compatible.
+      return fail({
+        code: blocked.code,
+        message: blocked.message,
+        context: {
+          domainCode: blocked.domainCode,
+          messageKey: blocked.messageKey,
+          shortCircuited: true,
+          resource: blocked.resource,
+        },
+      });
+    }
+
     try {
       const response = await requestFn();
 
@@ -304,7 +335,7 @@ export class ResultHttpClient implements IResultHttpClient {
 
       return this.handleSuccess<T>(response);
     } catch (error: any) {
-      return this.handleError<T>(error);
+      return this.handleError<T>(error, resource);
     }
   }
 
@@ -332,8 +363,11 @@ export class ResultHttpClient implements IResultHttpClient {
    *
    * 🌟 核心：返回 Result.fail 而非 throw/reject
    */
-  private handleError<T>(error: any): Result<T> {
-    const { response, message } = error;
+  private handleError<T>(error: any, resourceHint?: string): Result<T> {
+    const { response, message, config } = error;
+    const resource = resourceKeyFromUrl(
+      resourceHint ?? config?.url ?? response?.config?.url,
+    );
 
     // ── A. 有 HTTP 响应 (4xx / 5xx) ──
     if (response) {
@@ -341,7 +375,29 @@ export class ResultHttpClient implements IResultHttpClient {
 
       // A1. 后端返回了标准 HttpResponse 信封
       if (this.isHttpResponseEnvelope(errorData)) {
-        return fromHttpResponse<T>(errorData as HttpResponse<T>);
+        const result = fromHttpResponse<T>(errorData as HttpResponse<T>);
+        if (!result.ok && isEmailVerificationRequiredError(result.error)) {
+          recordEmailVerificationRequired(resource);
+          const err = result.error;
+          const domain =
+            typeof err.context?.domainCode === 'string'
+              ? err.context.domainCode
+              : undefined;
+          if (
+            domain === 'EMAIL_VERIFICATION_REQUIRED' &&
+            err.context?.messageKey !== 'errors.EMAIL_VERIFICATION_REQUIRED'
+          ) {
+            return fail({
+              ...err,
+              context: {
+                ...err.context,
+                domainCode: domain,
+                messageKey: 'errors.EMAIL_VERIFICATION_REQUIRED',
+              },
+            });
+          }
+        }
+        return result;
       }
 
       // A2. 非标准格式 → 根据 HTTP 状态码构造

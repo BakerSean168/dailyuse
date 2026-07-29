@@ -43,6 +43,15 @@ export interface CreateAuthenticationPrismaModuleOptions {
   readonly runtimeContributions?:
     | AuthenticationModuleRuntimeContribution
     | readonly AuthenticationModuleRuntimeContribution[];
+  /** Optional email sender override (tests / custom composition). */
+  readonly emailSender?: import('../domain').IEmailSender;
+  /** Optional challenge store override (tests). */
+  readonly challengeStore?: import('../domain').IVerificationChallengeStore;
+  /**
+   * Optional Redis client for AUTH_CHALLENGE_STORE=redis multi-instance challenges.
+   * 可选 Redis；AUTH_CHALLENGE_STORE=redis 时用于多实例 challenge。
+   */
+  readonly redis?: import('./services/redis-verification-challenge-store').RedisChallengeClient;
 }
 
 export function createAuthenticationPrismaModule(
@@ -93,5 +102,8 @@ export function createAuthenticationPrismaModule(
       : undefined,
     githubOAuthClient,
     runtimeContributions: [cascadeRuntime, ...extraRuntime],
+    emailSender: options.emailSender,
+    challengeStore: options.challengeStore,
+    redis: options.redis,
   });
 }

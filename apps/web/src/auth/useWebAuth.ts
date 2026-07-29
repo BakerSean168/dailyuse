@@ -10,7 +10,10 @@ import type {
   VerifyEmailCodeReq,
 } from '@dailyuse/contracts/authentication';
 import type { ResultError } from '@dailyuse/contracts/result';
-import { classifyNetworkErrorMessage } from '@dailyuse/http-client';
+import {
+  classifyNetworkErrorMessage,
+  resetEmailVerificationCircuit,
+} from '@dailyuse/http-client';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -262,6 +265,9 @@ export function useWebAuth() {
             // Ignore local state repair failures; verification already succeeded.
           }
         }
+        // Verification succeeded — drop the session fuse so knowledge/API loads work
+        // without requiring a full browser reload of the SPA shell.
+        resetEmailVerificationCircuit();
         pendingVerificationEmail.value = null;
         successMessage.value = t('auth.verify.success');
         redirectToApp();

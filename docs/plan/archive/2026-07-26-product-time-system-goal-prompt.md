@@ -1,16 +1,19 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - time
   - agent-prompt
   - goal
   - adr-037
 description: 完整实施 ADR-037 产品时间体系的 Goal / Agent 提示词（新会话整段粘贴）
 created: 2026-07-26T00:00:00
-updated: 2026-07-26T00:00:00
+updated: 2026-07-29T00:00:00
+status: done
 ---
 
+> **归档结果（2026-07-29）**：配套 Goal 提示词；实施波次已完成，随 product-time plan 一并归档。  
+> 新时间工作以 ADR-037 / architecture 详设为准，勿再从 W0 空跑。
 # ADR-037 产品时间体系 — Goal 实施提示词
 
 > **用法**：新会话把 **§ 完整 Goal 提示词** 整段交给 agent。  
@@ -26,7 +29,7 @@ updated: 2026-07-26T00:00:00
 | 0 | [`AGENT.md`](../../../AGENT.md) | 协作与验证习惯 |
 | 1 | [`docs/architecture/adr/ADR-037-product-time-system.md`](../../architecture/adr/ADR-037-product-time-system.md) | **宪法（已采纳）** |
 | 2 | [`docs/architecture/product-time-system.md`](../../architecture/product-time-system.md) | **详设**（类型、API、Style、治理、波次） |
-| 3 | [`docs/plan/active/2026-07-26-product-time-system.md`](./2026-07-26-product-time-system.md) | 波次状态 / residual |
+| 3 | [`docs/plan/archive/2026-07-26-product-time-system.md`](./2026-07-26-product-time-system.md) | 波次状态 / residual |
 | 4 | 本文件 | Goal 提示词 |
 
 真值顺序：代码/配置/测试 > ADR-037 > 详设 > plan。
@@ -42,7 +45,7 @@ updated: 2026-07-26T00:00:00
 1. AGENT.md
 2. docs/architecture/adr/ADR-037-product-time-system.md（宪法，已采纳 — 决策不可削弱）
 3. docs/architecture/product-time-system.md（详设：类型谱、门面 API、Style、Codec、治理、W0–W8）
-4. docs/plan/active/2026-07-26-product-time-system.md（波次完成定义与 residual）
+4. docs/plan/archive/2026-07-26-product-time-system.md（波次完成定义与 residual）
 5. 需要时：packages/contracts/src/primitives/{domain-date,transfer-date}.ts；packages/utils/src/shared/date.ts；app-vue shared/utils/format-*
 
 ## 硬决策（实施中禁止弱化）
@@ -120,19 +123,19 @@ updated: 2026-07-26T00:00:00
 ### A. 总入口（推荐）
 
 ```text
-按 docs/plan/active/2026-07-26-product-time-system-goal-prompt.md 的「完整 Goal 提示词」实施 ADR-037。先读该文件与 ADR-037 / product-time-system 详设 / product-time-system plan，从 plan residual 显示的下一波开始（默认 W0），写代码不写空文档。
+按 docs/plan/archive/2026-07-26-product-time-system-goal-prompt.md 的「完整 Goal 提示词」实施 ADR-037。先读该文件与 ADR-037 / product-time-system 详设 / product-time-system plan，从 plan residual 显示的下一波开始（默认 W0），写代码不写空文档。
 ```
 
 ### B. 指定波次
 
 ```text
-读 docs/plan/active/2026-07-26-product-time-system-goal-prompt.md 与 docs/architecture/adr/ADR-037-product-time-system.md、docs/architecture/product-time-system.md、docs/plan/active/2026-07-26-product-time-system.md。只实施波次 W{N}（完成定义见 plan §4），验证最近 nx target，更新 residual，commit/push。禁止削弱 DomainDate 退役与 date-fns 断供决策。
+读 docs/plan/archive/2026-07-26-product-time-system-goal-prompt.md 与 docs/architecture/adr/ADR-037-product-time-system.md、docs/architecture/product-time-system.md、docs/plan/archive/2026-07-26-product-time-system.md。只实施波次 W{N}（完成定义见 plan §4），验证最近 nx target，更新 residual，commit/push。禁止削弱 DomainDate 退役与 date-fns 断供决策。
 ```
 
 ### C. 极简
 
 ```text
-查看并执行：docs/plan/active/2026-07-26-product-time-system-goal-prompt.md（完整 Goal）。基线 ADR-037 已合 main。从 W0 起落地 @dailyuse/time。
+查看并执行：docs/plan/archive/2026-07-26-product-time-system-goal-prompt.md（完整 Goal）。基线 ADR-037 已合 main。从 W0 起落地 @dailyuse/time。
 ```
 
 ---

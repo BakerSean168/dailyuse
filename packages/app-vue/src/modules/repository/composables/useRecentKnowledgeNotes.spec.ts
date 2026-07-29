@@ -130,4 +130,31 @@ describe('useRecentKnowledgeNotes', () => {
     expect(recent.error.value).toBeNull();
     expect(recent.notes.value).toEqual([]);
   });
+
+  it('degrades explicitly on EMAIL_VERIFICATION_REQUIRED instead of throwing', async () => {
+    const list = vi.fn(async () =>
+      fail({
+        code: 'FORBIDDEN',
+        domainCode: 'EMAIL_VERIFICATION_REQUIRED',
+        message: 'Email verification required',
+        messageKey: 'errors.EMAIL_VERIFICATION_REQUIRED',
+      } as never),
+    );
+    provideMap.set(REPOSITORY_SERVICE_KEY, {
+      listKnowledgeNoteProjections: list,
+      scanLocalVault: vi.fn(),
+    });
+
+    const recent = useRecentKnowledgeNotes();
+    await recent.load(5);
+    await recent.load(5);
+
+    expect(recent.notes.value).toEqual([]);
+    expect(recent.emailVerificationRequired.value).toBe(true);
+    expect(recent.errorMessageKey.value).toBe('errors.EMAIL_VERIFICATION_REQUIRED');
+    expect(recent.error.value).toBeTruthy();
+    // Service may still be called; transport fuse lives in http-client.
+    // UI must not throw / leave silent empty without the degrade flag.
+    expect(list).toHaveBeenCalled();
+  });
 });

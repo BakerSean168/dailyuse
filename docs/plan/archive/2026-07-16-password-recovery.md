@@ -24,7 +24,7 @@ updated: 2026-07-17T00:00:00
 
 **承接文档：**
 
-- 实施真源：[Auth + Account 收敛与安全闭环](../active/2026-07-17-auth-account-security-closure.md)
+- 实施真源：[Auth + Account 收敛与安全闭环](./2026-07-17-auth-account-security-closure.md)
 - 架构决策：[ADR-036](../../architecture/adr/ADR-036-auth-account-boundary-and-verification.md)
 
 以下保留原文供历史对照，**不得再按本文开工**。
