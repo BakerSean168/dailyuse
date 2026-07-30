@@ -236,12 +236,34 @@ describe('TaskTemplateDialog draft lifecycle', () => {
     const wrapper = mountDialog({ mode: 'create' });
     wrapper.findComponent(TaskTemplateFormStub).vm.$emit('update:validation', { isValid: true });
     await flushPromises();
-    expect(wrapper.get('[data-testid="task-dialog-save-button"]').attributes('disabled')).toBeUndefined();
+    expect(
+      wrapper.get('[data-testid="task-dialog-save-button"]').attributes('disabled'),
+    ).toBeUndefined();
 
     await wrapper.setProps({ modelValue: false });
     await wrapper.setProps({ modelValue: true });
 
-    expect(wrapper.get('[data-testid="task-dialog-save-button"]').attributes('disabled')).toBeDefined();
+    expect(
+      wrapper.get('[data-testid="task-dialog-save-button"]').attributes('disabled'),
+    ).toBeDefined();
+  });
+
+  it('reports dirty only when the task-plan draft differs from its opening baseline', async () => {
+    const wrapper = mountDialog({ mode: 'create' });
+    await flushPromises();
+    expect(wrapper.emitted('dirty-change')?.at(-1)).toEqual([false]);
+
+    const baseline = formModel(wrapper);
+    wrapper.findComponent(TaskTemplateFormStub).vm.$emit('update:modelValue', {
+      ...baseline,
+      title: 'Unsaved title',
+    });
+    await flushPromises();
+    expect(wrapper.emitted('dirty-change')?.at(-1)).toEqual([true]);
+
+    wrapper.findComponent(TaskTemplateFormStub).vm.$emit('update:modelValue', baseline);
+    await flushPromises();
+    expect(wrapper.emitted('dirty-change')?.at(-1)).toEqual([false]);
   });
 
   it('explains how many future pending tasks an edit will update', () => {

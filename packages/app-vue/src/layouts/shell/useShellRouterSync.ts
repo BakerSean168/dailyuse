@@ -5,8 +5,8 @@
  * - URL → 面板：路由变化按 §2.3 打开规则落 Tab（精确路由已开 → 激活；
  *   活动 Tab 同模块 → 视为 Tab 内导航回写路由；否则新开 Tab 不抢占）。
  * - 面板 → URL：切 Tab = router.replace 到该 Tab 路由（不污染 history）；
- *   关最后一个 Tab / 面板 ✕ = router.push('/')。
- * - `/` = 无面板（STATE A）→ 清空 Tab 集合。
+ *   关最后一个 Tab = router.push('/')，右侧面板回 Home；面板 Toggle 不改 URL/Tab。
+ * - `/` = 右侧面板 Home surface；既有后台 Tab 可继续保活。
  * - `/settings` / `/account` = STATE D 独立设置场景：不创建 BusinessTab，
  *   不修改 layout；后台 tabs 保留，返回时恢复。
  * - 会话恢复：挂载时若 URL 为 `/` 且 store 里有持久化 Tab，则 replace 回
@@ -20,11 +20,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type { RouteLocationNormalizedGeneric } from 'vue-router';
-import {
-  useAppShellStore,
-  type ShellLayoutReason,
-  type ShellModule,
-} from './useAppShellStore'
+import { useAppShellStore, type ShellLayoutReason, type ShellModule } from './useAppShellStore';
 import { computePanelGeometry } from './panel-geometry';
 
 /** 分栏放不下的窗口宽度阈值：新开面板自动升专注态（V2 §1.1 / §7）。 */
@@ -55,7 +51,12 @@ export const MODULE_TITLE_KEYS: Record<ShellModule, string> = {
 /** Settings / Account 独立场景：不落 BusinessTab。 */
 export function isStandaloneSettingsPath(path: string): boolean {
   const bare = path.split('?')[0] ?? path;
-  return bare === '/settings' || bare.startsWith('/settings/') || bare === '/account' || bare.startsWith('/account/');
+  return (
+    bare === '/settings' ||
+    bare.startsWith('/settings/') ||
+    bare === '/account' ||
+    bare.startsWith('/account/')
+  );
 }
 
 /** 判定一条路由路径归属哪个业务模块；壳外/未知路径返回 null。 */
@@ -118,16 +119,29 @@ export function useShellRouterSync() {
     if (next) store.setLayout(next.layout, next.reason);
   }
 
+  function canLeaveSurface(): boolean {
+    if (store.panelSurface !== 'business') return true;
+    if (store.surfaceStatus === 'busy') {
+      toast.info(t('shell.panel.busyTransitionHint'));
+      return false;
+    }
+    if (store.surfaceStatus !== 'dirty') return true;
+    if (typeof window === 'undefined') return false;
+    return window.confirm(t('shell.panel.dirtyTransitionConfirm'));
+  }
+
   /** URL → 面板状态（V2 §4）。 */
-  function syncRouteToStore(to: Pick<RouteLocationNormalizedGeneric, 'path' | 'fullPath' | 'meta'>): void {
+  function syncRouteToStore(
+    to: Pick<RouteLocationNormalizedGeneric, 'path' | 'fullPath' | 'meta'>,
+  ): void {
     // STATE D：独立设置场景不创建/激活 BusinessTab，也不改 layout。
     if (isStandaloneSettingsPath(to.path) || to.meta?.shellScene === 'settings') {
       return;
     }
 
     if (to.path === '/') {
-      // `/` = 无面板（STATE A）。
-      if (store.tabs.length > 0) store.closeAllTabs();
+      store.showHome();
+      maybeAutoFocus();
       return;
     }
 
@@ -168,6 +182,7 @@ export function useShellRouterSync() {
   async function activateTab(tabId: string): Promise<void> {
     const tab = store.tabs.find((item) => item.id === tabId);
     if (!tab) return;
+    if (store.activeTabId !== tabId && !canLeaveSurface()) return;
     store.activateTab(tabId);
     if (route.fullPath !== tab.route) {
       await router.replace(tab.route).catch(() => {});
@@ -187,6 +202,8 @@ export function useShellRouterSync() {
       return;
     }
 
+    if (!canLeaveSurface()) return;
+
     const neighbor = store.tabs[index + 1] ?? store.tabs[index - 1];
     if (neighbor) {
       const failure = await router.replace(neighbor.route).catch(() => true);
@@ -195,17 +212,25 @@ export function useShellRouterSync() {
       return;
     }
 
-    // 最后一个 Tab → 回 STATE A（afterEach 对 `/` 会清空集合）。
+    // 最后一个 Tab → `/` 对应右侧 Home；afterEach 不删除其它后台 Tab。
     const failure = await router.push('/').catch(() => true);
     if (failure) return;
     store.closeTab(tabId);
+    maybeAutoFocus();
   }
 
-  /** 面板头 ✕：关整个面板回 STATE A。 */
+  /** 面板头 ✕ / 顶栏 Toggle：隐藏面板但保留 Tab、路由和草稿。 */
   async function closePanel(): Promise<void> {
-    const failure = await router.push('/').catch(() => true);
-    if (failure) return;
-    store.closeAllTabs();
+    if (!canLeaveSurface()) return;
+    store.closeRightPanel();
+  }
+
+  async function togglePanel(): Promise<void> {
+    if (store.rightPanelOpen) {
+      await closePanel();
+      return;
+    }
+    store.toggleRightPanel();
   }
 
   /**
@@ -223,7 +248,10 @@ export function useShellRouterSync() {
 
   /** 打开独立设置场景：只改路由，不碰 tabs / layout。 */
   async function openSettings(path = '/settings'): Promise<void> {
-    if (route.fullPath === path || (path === '/settings' && route.path === '/settings' && !route.query.tab)) {
+    if (
+      route.fullPath === path ||
+      (path === '/settings' && route.path === '/settings' && !route.query.tab)
+    ) {
       return;
     }
     await router.push(path).catch(() => {});
@@ -244,10 +272,12 @@ export function useShellRouterSync() {
 
   /** 回 STATE A（新对话 / 关面板后的地面态）。 */
   async function goHome(): Promise<void> {
+    if (!canLeaveSurface()) return;
     if (route.path !== '/') {
       await router.push('/').catch(() => {});
-    } else if (store.tabs.length > 0) {
-      store.closeAllTabs();
+    } else {
+      store.showHome();
+      maybeAutoFocus();
     }
   }
 
@@ -256,6 +286,7 @@ export function useShellRouterSync() {
   let removeAfterEach: (() => void) | null = null;
 
   onMounted(() => {
+    const panelWasHidden = !store.rightPanelOpen;
     store.sanitizeLegacyTabs();
 
     // 持久化状态自愈：activeTabId 必须指向存在的 Tab。
@@ -276,8 +307,18 @@ export function useShellRouterSync() {
       return;
     }
 
+    // A persisted hidden panel is a user preference. On startup, the browser URL
+    // still points at the preserved Home/business surface; restoring that same
+    // URL must not masquerade as an explicit deep link and reopen the panel.
+    if (
+      panelWasHidden &&
+      (route.path === '/' || store.tabs.some((tab) => tab.route === route.fullPath))
+    ) {
+      return;
+    }
+
     // 会话恢复：URL 在 `/` 且有持久化 Tab → 回到活动 Tab 的路由。
-    if (route.path === '/' && store.activeTab) {
+    if (route.path === '/' && store.panelSurface === 'business' && store.activeTab) {
       void router.replace(store.activeTab.route).catch(() => {});
       return;
     }
@@ -294,6 +335,7 @@ export function useShellRouterSync() {
     activateTab,
     closeTab,
     closePanel,
+    togglePanel,
     openModule,
     openSettings,
     returnFromSettings,

@@ -462,10 +462,6 @@ export async function navigateToReminder(page: Page) {
     const capsule = page.getByTestId('capsule-nav-reminder');
     if (await capsule.count()) {
       await capsule.click();
-      const enter = page.getByTestId('capsule-preview-enter-reminder');
-      if (await enter.count()) {
-        await enter.click();
-      }
     } else {
       await page.click('a[href="/reminder"], a:has-text("Reminder"), a:has-text("提醒")');
     }
@@ -672,10 +668,6 @@ export async function openModuleViaCapsule(
 ) {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.getByTestId(`capsule-nav-${module}`).click();
-  const enter = page.getByTestId(`capsule-preview-enter-${module}`);
-  if (await enter.count()) {
-    await enter.click();
-  }
   await page.getByTestId('business-panel').waitFor({
     state: 'visible',
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -698,10 +690,6 @@ export async function navigateToTasks(page: Page) {
     const capsule = page.getByTestId('capsule-nav-task');
     if (await capsule.count()) {
       await capsule.click();
-      const enter = page.getByTestId('capsule-preview-enter-task');
-      if (await enter.count()) {
-        await enter.click();
-      }
     } else {
       await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
     }

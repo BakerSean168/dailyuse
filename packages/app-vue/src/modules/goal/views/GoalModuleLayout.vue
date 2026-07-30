@@ -31,6 +31,7 @@
         :mode="goalDialogMode"
         :goal="editingGoal"
         :default-folder-id="defaultGoalFolderId"
+        @dirty-change="goalDialogDirty = $event"
         @created="handleGoalCreated"
         @updated="handleGoalUpdated"
       />
@@ -60,6 +61,7 @@ import type {
 } from '@memoflow/contracts/goal';
 import { GoalDialog, GoalFolderDialog, ActivateFocusModeDialog } from '../components';
 import GoalPageToolbar from '../components/GoalPageToolbar.vue';
+import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceStatus';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -86,6 +88,7 @@ const {
   fetchFolders,
   getCurrentFocusMode,
   activateFocusMode,
+  isSaving,
 } = useGoal();
 
 const goalDialogOpen = ref(false);
@@ -95,6 +98,12 @@ const defaultGoalFolderId = ref<string | null>(null);
 const folderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
 const focusDialogOpen = ref(false);
 const searchQuery = ref('');
+const goalDialogDirty = ref(false);
+const panelSurfaceStatus = computed<'clean' | 'dirty' | 'busy'>(() => {
+  if (isSaving.value) return 'busy';
+  return goalDialogDirty.value ? 'dirty' : 'clean';
+});
+usePanelSurfaceStatus(panelSurfaceStatus);
 
 const isListRoute = computed(() => route.name === 'goal-list');
 

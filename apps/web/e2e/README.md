@@ -56,9 +56,9 @@ pnpm nx run web:e2e:report
 ## V2 shell anchors (UI redesign)
 
 - 顶部模块胶囊：`capsule-nav-{goal|task|note|reminder|notification}`
-- 胶囊预览进入：`capsule-preview-enter-{module}`
+- 胶囊独立预览：`capsule-preview-toggle-{module}` / `capsule-preview-{module}`
+- 右侧面板开关：`shell-right-panel-toggle`
 - 业务面板：`business-panel` / `business-panel-close`
 - 面板错误兜底：`panel-error-boundary` / `panel-error-fallback` / `panel-error-retry`
 - 任务库路由：`/tasks`（无 `/tasks/one-time`）
 - AI 常驻层：`ai-chat-view`（不经业务路由卸载）
-

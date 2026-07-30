@@ -116,7 +116,11 @@
                       :class="{ 'text-muted-foreground': !form.startDate }"
                     >
                       <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{ form.startDate ? formatProductDateTime(form.startDate) : t('goal.dialog.startDate') }}
+                      {{
+                        form.startDate
+                          ? formatProductDateTime(form.startDate)
+                          : t('goal.dialog.startDate')
+                      }}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent class="w-auto p-0" align="start">
@@ -138,7 +142,9 @@
                     >
                       <CalendarIcon class="mr-2 h-4 w-4" />
                       {{
-                        form.targetDate ? formatProductDateTime(form.targetDate) : t('goal.dialog.targetDate')
+                        form.targetDate
+                          ? formatProductDateTime(form.targetDate)
+                          : t('goal.dialog.targetDate')
                       }}
                     </Button>
                   </PopoverTrigger>
@@ -506,6 +512,7 @@ const open = defineModel<boolean>('open', { default: false });
 const emit = defineEmits<{
   created: [];
   updated: [];
+  'dirty-change': [dirty: boolean];
 }>();
 
 // ── Composable ─────────────────────────────────────────────────────────
@@ -713,6 +720,21 @@ const reminderTriggers = ref<
 const showMotivation = ref(false);
 const showReminder = ref(false);
 const showOrganization = ref(false);
+const draftBaseline = ref<string | null>(null);
+
+function serializeDraft(): string {
+  return JSON.stringify({
+    form,
+    reminderEnabled: reminderEnabled.value,
+    reminderTriggers: reminderTriggers.value,
+    keyResults: krList.value.map(({ _localId, ...keyResult }) => keyResult),
+  });
+}
+
+function captureDraftBaseline(): void {
+  draftBaseline.value = serializeDraft();
+  emit('dirty-change', false);
+}
 
 // ── Computed ───────────────────────────────────────────────────────────
 
@@ -866,19 +888,36 @@ watch(reminderEnabled, (enabled) => {
   }
 });
 
-watch(open, async (isOpen) => {
-  if (isOpen) {
-    activeTab.value = 'basic';
-    if (isEditMode.value && props.goal) {
-      prefillFromGoal(props.goal);
-      // Fetch KRs for this goal
-      await fetchKeyResults(props.goal.id);
-      populateKrList();
-    } else if (!isEditMode.value) {
-      resetForm();
+watch(
+  open,
+  async (isOpen) => {
+    if (isOpen) {
+      activeTab.value = 'basic';
+      if (isEditMode.value && props.goal) {
+        prefillFromGoal(props.goal);
+        // Fetch KRs for this goal
+        await fetchKeyResults(props.goal.id);
+        populateKrList();
+      } else if (!isEditMode.value) {
+        resetForm();
+      }
+      captureDraftBaseline();
+    } else {
+      draftBaseline.value = null;
+      emit('dirty-change', false);
     }
-  }
-});
+  },
+  { immediate: true },
+);
+
+watch(
+  () => [form, reminderEnabled.value, reminderTriggers.value, krList.value],
+  () => {
+    if (!open.value || draftBaseline.value === null) return;
+    emit('dirty-change', serializeDraft() !== draftBaseline.value);
+  },
+  { deep: true },
+);
 
 // ── KR Save Logic ──────────────────────────────────────────────────────
 
@@ -925,11 +964,7 @@ function validateReminder(): string | null {
       if (!Number.isFinite(trigger.value) || trigger.value <= 0 || trigger.value > 100) {
         return t('goal.dialog.reminderTimeProgressInvalid');
       }
-      if (
-        !form.startDate ||
-        !form.targetDate ||
-        form.targetDate <= form.startDate
-      ) {
+      if (!form.startDate || !form.targetDate || form.targetDate <= form.startDate) {
         return t('goal.dialog.reminderTimeProgressRequiresRange');
       }
     }

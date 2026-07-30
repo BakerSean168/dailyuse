@@ -112,6 +112,7 @@
     <QuickTaskDialog
       v-model="showQuickTaskDialog"
       :saving="isSaving"
+      @dirty-change="quickTaskDirty = $event"
       @save="handleSaveQuickTask"
       @cancel="showQuickTaskDialog = false"
     />
@@ -122,6 +123,7 @@
       :saving="isSaving"
       :available-templates="viewModels"
       :graph-tasks="graphData.nodes"
+      @dirty-change="createTaskDirty = $event"
       @save="handleSaveCreate"
       @cancel="showCreateDialog = false"
     />
@@ -134,6 +136,7 @@
       :saving="isSaving"
       :available-templates="viewModels"
       :graph-tasks="graphData.nodes"
+      @dirty-change="copyTaskDirty = $event"
       @save="handleSaveCopy"
       @cancel="handleCancelCopy"
     />
@@ -150,6 +153,7 @@
       :dependencies="dependencies"
       :on-create-dependency="handleCreateDependencyFromDialog"
       :on-delete-dependency="handleDeleteDependency"
+      @dirty-change="editTaskDirty = $event"
       @save="handleSaveEdit"
       @cancel="showEditDialog = false"
     />
@@ -203,8 +207,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { AlertCircle, MoreHorizontal, Plus, Trash2, Zap } from '@lucide/vue';
@@ -249,8 +253,10 @@ import type { RecurrenceRuleDTO } from '@memoflow/contracts/task';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { buildTaskGraphData, type TaskForDAG } from '../types/task-dag.types';
 import { startOfDayMs } from '../../../shared/utils/product-time';
+import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceStatus';
 
 const router = useRouter();
+const route = useRoute();
 const { t } = useI18n();
 const {
   templates,
@@ -285,6 +291,34 @@ const showCopyDialog = ref(false);
 const copyViewModel = ref<TaskTemplateViewModel | null>(null);
 const showDeleteAllDialog = ref(false);
 const deleteConfirmText = ref('');
+const quickTaskDirty = ref(false);
+const createTaskDirty = ref(false);
+const copyTaskDirty = ref(false);
+const editTaskDirty = ref(false);
+
+const panelSurfaceStatus = computed<'clean' | 'dirty' | 'busy'>(() => {
+  if (isSaving.value) return 'busy';
+  if (quickTaskDirty.value || createTaskDirty.value || copyTaskDirty.value || editTaskDirty.value) {
+    return 'dirty';
+  }
+  return 'clean';
+});
+usePanelSurfaceStatus(panelSurfaceStatus);
+
+watch(
+  () => route.query.dialog,
+  (dialog) => {
+    if (dialog === 'quick-task') showQuickTaskDialog.value = true;
+  },
+  { immediate: true },
+);
+
+watch(showQuickTaskDialog, (open) => {
+  if (open || route.query.dialog !== 'quick-task') return;
+  const query = { ...route.query };
+  delete query.dialog;
+  void router.replace({ path: route.path, query }).catch(() => {});
+});
 
 const viewModels = computed(() => {
   const baseViewModels = templates.value.map((dto) => {

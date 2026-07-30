@@ -56,8 +56,7 @@ export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandle
 // ── Desktop Platform Keys ──
 // Residual 915: DESKTOP_AUTH_API_KEY dual retired — InjectionKey<DesktopAuthApi>
 // (no ElectronBridge Pick dual of the sole invoke-api body).
-export const DESKTOP_AUTH_API_KEY: InjectionKey<DesktopAuthApi> =
-  Symbol('DesktopAuthApi');
+export const DESKTOP_AUTH_API_KEY: InjectionKey<DesktopAuthApi> = Symbol('DesktopAuthApi');
 
 /** Desktop preload bridge — canonical type from @memoflow/ipc-client. */
 // Residual 929: ElectronBridge keep-boundary for window controls (invoke+on+off).
@@ -73,4 +72,6 @@ export const SHELL_COMPOSER_MOUNT_KEY: InjectionKey<ShallowRef<HTMLElement | nul
 export const SHELL_COMPOSER_DENSITY_KEY: InjectionKey<Ref<'comfortable' | 'compact' | 'icon'>> =
   Symbol('ShellComposerDensity');
 
-
+/** Shell-owned workflow surface teleport mount. */
+export const SHELL_WORKFLOW_MOUNT_KEY: InjectionKey<ShallowRef<HTMLElement | null>> =
+  Symbol('ShellWorkflowMount');

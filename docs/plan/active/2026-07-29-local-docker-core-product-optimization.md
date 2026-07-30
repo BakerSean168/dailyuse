@@ -1107,13 +1107,67 @@ Docker 与产品旅程证据：
 
 ### Phase C 出口
 
-- [ ] 顶栏可独立开关右侧面板。
-- [ ] 业务 focus 不改变左侧栏状态。
-- [ ] 今日概览只存在于右侧面板起始页。
-- [ ] Web/Desktop 的无模型 Composer 一致且整齐。
-- [ ] 无模型用户可以顺畅使用基础产品。
-- [ ] 进入目标/任务只需一次主点击。
-- [ ] 模块导航在键盘和读屏下可区分。
+- [x] 顶栏可独立开关右侧面板。
+- [x] 业务 focus 不改变左侧栏状态。
+- [x] 今日概览只存在于右侧面板起始页。
+- [x] Web/Desktop 的无模型 Composer 一致且整齐。
+- [x] 无模型用户可以顺畅使用基础产品。
+- [x] 进入目标/任务只需一次主点击。
+- [x] 模块导航在键盘和读屏下可区分。
+
+### Phase C 实施证据（2026-07-30）
+
+实现：
+
+- 壳层 store 独立持有 `sidebarCollapsed`、`rightPanelOpen`、`panelSurface`、
+  `layout` 和 `surfaceStatus`；右侧面板首次默认打开，用户显式关闭偏好跨重启保存，
+  关闭最后一个业务 Tab 回到 Home，模块主点击和深链会重新打开面板。
+- Focus 只隐藏中央 AI 列，左侧栏继续响应自己的 Toggle，AI 与 Composer 实例通过
+  `v-show`/Teleport 保活；工作流复用唯一右侧容器，自动切换只发生在已打开且 clean
+  的 surface，隐藏、dirty 或 busy 时保留上下文并显示提醒。
+- 今日待办、提醒和目标进度迁入右侧 Home，AI 欢迎页删除重复概览；无模型欢迎页提供
+  “配置 AI / 创建第一个目标 / 添加今日任务”，Composer 只保留固定高度的紧凑入口。
+- 模块胶囊把导航和预览拆成两个独立命中区域，主点击直接进入模块；数量进入稳定的
+  `aria-label`，预览按钮提供 `aria-expanded`/`aria-controls`。
+- 目标、快速任务和任务计划弹窗显式发布 clean/dirty/busy 契约。真实深链复测发现
+  `GoalDialog` 初始即为 open 时没有捕获草稿基线；watcher 改为 immediate，并增加
+  组件回归测试，首次挂载输入现在也会发布 dirty，隐藏/重开面板后草稿仍在。
+
+代码事实差异：
+
+- 目标和任务表单仍是全局 modal；遮罩按可访问模态语义阻止后台指针输入。Phase C
+  Docker 用例直接向壳层关闭/Toggle 控件派发事件来验证跨 surface 的 dirty 确认和
+  DOM 保活，不把后台按钮伪装为可点击 UI。普通用户的弹窗关闭、焦点进入/返回和
+  键盘旅程在 Phase D 通过前台控件与 axe 单独验证。
+- 无图形会话的 Linux 宿主首次启动 Electron 报 `Missing X server or $DISPLAY`；确认
+  系统已有 Xvfb 后使用 `xvfb-run -a` 重跑，Desktop 应用真实启动并通过完整矩阵，
+  该失败归类为宿主环境而非产品代码。
+
+自动验证：
+
+- `pnpm nx run app-vue:test`：153 个文件、934 项通过，包含新增的深链初始打开
+  `GoalDialog` 草稿基线回归。
+- `pnpm nx run web:test`：16 个文件、70 项通过；`pnpm nx run desktop:test`：
+  67 个文件、361 项通过。
+- `pnpm nx run app-vue:typecheck`、`web:typecheck`、`desktop:typecheck`：通过。
+- `pnpm nx run app-vue:build`、`web:build`、`desktop:build`：退出码 0；Web/Desktop
+  仅保留既有 chunk-size warning，Vite checker 还会输出已由独立 typecheck 排除的
+  workspace `rootDir` 诊断，Phase E 将在最终报告中按工具噪声分类。
+- `pnpm nx run app-vue:lint`、`web:lint`、`desktop:lint`：0 error，仅既有 warning；
+  `pnpm nx run memoflow:governance-check` 与 `git diff --check` 通过。
+- `pnpm nx run web:e2e:local-docker -- --grep "Local Docker core product Phase C"`：
+  1 项通过（10.6 秒），覆盖 Home、持久化、无模型、导航、dirty 草稿、Focus 和深链。
+- `xvfb-run -a pnpm nx run web:e2e:shell`：8 项 Electron 矩阵全部通过（45.9 秒）。
+
+Docker 与产品旅程证据：
+
+- `pnpm docker:local:up` 重新构建并部署；Web、API、AI、PowerSync、PostgreSQL、Redis
+  六个服务均 healthy，端口来自运行时 SSOT：`58080`/`53080`/`58100`/`58081`/
+  `55432`/`56379`，`.env.local` 不存在且未硬编码测试端口。
+- Web/API 探针分别返回 200；Nginx 日志记录宿主 `curl` 和 Playwright 页面请求，三个
+  新镜像 revision 均为 `8f1b356545a6c4b62057525dc52584a511934a51-dirty`。
+- Electron 截图矩阵覆盖 900×600、1024×768、1200×800 和 1440×900；检查确认
+  split/focus、侧栏、右面板、Composer、工具栏无重叠、横向溢出或异常空白。
 
 ## 8.4 Phase D：统一表单设计与无障碍（P2）
 
@@ -1218,17 +1272,17 @@ Docker 与产品旅程证据：
 
 ### 首页与导航
 
-- [ ] 顶栏存在 Toggle Side Panel，动态名称和状态正确。
-- [ ] 无业务 Tab 时右侧面板显示今日概览起始页。
-- [ ] AI 对话欢迎页不再显示今日概览卡片。
-- [ ] 关闭再打开右侧面板不会清空业务 Tab 或草稿。
-- [ ] 业务面板 focus 不强制隐藏左侧栏。
-- [ ] 左侧栏、右侧面板和 focus 可以独立组合并恢复。
-- [ ] 未配置模型时基础目标和任务能力仍可发现、可操作。
-- [ ] Web/Desktop 均不显示冗长的未配置模型常驻提示。
-- [ ] 无模型 Composer 高度、控件和发送按钮保持对齐。
-- [ ] 进入目标或任务只需一次主点击。
-- [ ] 数量徽标不会覆盖模块可访问名称。
+- [x] 顶栏存在 Toggle Side Panel，动态名称和状态正确。
+- [x] 无业务 Tab 时右侧面板显示今日概览起始页。
+- [x] AI 对话欢迎页不再显示今日概览卡片。
+- [x] 关闭再打开右侧面板不会清空业务 Tab 或草稿。
+- [x] 业务面板 focus 不强制隐藏左侧栏。
+- [x] 左侧栏、右侧面板和 focus 可以独立组合并恢复。
+- [x] 未配置模型时基础目标和任务能力仍可发现、可操作。
+- [x] Web/Desktop 均不显示冗长的未配置模型常驻提示。
+- [x] 无模型 Composer 高度、控件和发送按钮保持对齐。
+- [x] 进入目标或任务只需一次主点击。
+- [x] 数量徽标不会覆盖模块可访问名称。
 
 ### UI 与无障碍
 

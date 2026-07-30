@@ -32,7 +32,9 @@
               {{ item.content || typingPlaceholder(item) }}
             </p>
             <p
-              v-if="item.role === 'assistant' && (item.status === 'aborted' || item.status === 'error')"
+              v-if="
+                item.role === 'assistant' && (item.status === 'aborted' || item.status === 'error')
+              "
               class="mt-2 text-xs"
               :class="item.status === 'error' ? 'text-destructive' : 'text-muted-foreground'"
             >
@@ -85,8 +87,50 @@
             </p>
           </div>
 
+          <div
+            v-if="toolMode === 'chat' && !hasModels"
+            class="border-t border-border pt-4"
+            data-testid="ai-welcome-no-model"
+          >
+            <h3 class="text-sm font-medium text-foreground">
+              {{ t('aiAssistant.chatPage.noModel.title') }}
+            </h3>
+            <p class="mt-1 text-xs leading-5 text-muted-foreground">
+              {{ t('aiAssistant.chatPage.noModel.description') }}
+            </p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                class="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+                data-testid="ai-welcome-configure-ai"
+                @click="$emit('configure-ai')"
+              >
+                <Settings2 class="h-3.5 w-3.5" />
+                {{ t('aiAssistant.chatPage.noModel.configure') }}
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium text-foreground hover:bg-muted"
+                data-testid="ai-welcome-create-goal"
+                @click="$emit('create-goal')"
+              >
+                <Target class="h-3.5 w-3.5" />
+                {{ t('aiAssistant.chatPage.noModel.createGoal') }}
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium text-foreground hover:bg-muted"
+                data-testid="ai-welcome-quick-task"
+                @click="$emit('quick-task')"
+              >
+                <Plus class="h-3.5 w-3.5" />
+                {{ t('aiAssistant.chatPage.noModel.quickTask') }}
+              </button>
+            </div>
+          </div>
+
           <!-- Shortcut cards: prefill composer + set tool mode (V2 §6.0; residual 429 task-create) -->
-          <div v-if="toolMode === 'chat'" class="grid gap-2 sm:grid-cols-2">
+          <div v-else-if="toolMode === 'chat'" class="grid gap-2 sm:grid-cols-2">
             <button
               v-for="entry in shortcutEntries"
               :key="entry.mode"
@@ -126,18 +170,6 @@
           </div>
         </div>
 
-        <!-- Today overview under welcome (Dashboard successor, V2 §6.0) -->
-        <div
-          v-if="showTodayOverview"
-          class="w-full max-w-2xl space-y-3"
-          data-testid="ai-today-overview"
-        >
-          <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            {{ t('aiAssistant.chatPage.context.todayOverview') }}
-          </p>
-          <slot name="today-overview" />
-        </div>
-
         <!-- Workflow surface also available before first message (tool mode) -->
         <div
           v-if="showWorkflowSurface"
@@ -153,7 +185,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Bot, ClipboardCheck, MessageSquare, NotebookPen, Search, Sparkles } from '@lucide/vue';
+import {
+  Bot,
+  ClipboardCheck,
+  MessageSquare,
+  NotebookPen,
+  Plus,
+  Search,
+  Settings2,
+  Sparkles,
+  Target,
+} from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { getToolLocaleKey, type ChatItem, type WorkflowMode } from '../composables/types';
 import { useAIFormatters } from '../composables/useAIFormatters';
@@ -162,13 +204,13 @@ withDefaults(
   defineProps<{
     timeline: ChatItem[];
     toolMode: WorkflowMode;
-    /** Show Dashboard-successor widgets under the welcome cards. */
-    showTodayOverview?: boolean;
+    /** Whether AI shortcuts can proceed without redirecting to configuration. */
+    hasModels?: boolean;
     /** Show workflow decision/actions + artifact surface near the timeline. */
     showWorkflowSurface?: boolean;
   }>(),
   {
-    showTodayOverview: false,
+    hasModels: true,
     showWorkflowSurface: false,
   },
 );
@@ -176,6 +218,9 @@ withDefaults(
 defineEmits<{
   'select-tool': [mode: WorkflowMode];
   'select-shortcut': [mode: WorkflowMode];
+  'configure-ai': [];
+  'create-goal': [];
+  'quick-task': [];
 }>();
 
 const shortcutEntries = [
@@ -188,7 +233,11 @@ const shortcutEntries = [
 
 const workflowEntries = [
   { mode: 'goal-create' as const, localeKey: getToolLocaleKey('goal-create'), icon: Sparkles },
-  { mode: 'task-create' as const, localeKey: getToolLocaleKey('task-create'), icon: ClipboardCheck },
+  {
+    mode: 'task-create' as const,
+    localeKey: getToolLocaleKey('task-create'),
+    icon: ClipboardCheck,
+  },
   {
     mode: 'knowledge-generate' as const,
     localeKey: getToolLocaleKey('knowledge-generate'),

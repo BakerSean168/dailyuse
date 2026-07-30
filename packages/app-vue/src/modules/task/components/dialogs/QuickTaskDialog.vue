@@ -70,16 +70,28 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean];
   save: [value: { title: string }];
   cancel: [];
+  'dirty-change': [dirty: boolean];
 }>();
 
 const { t } = useI18n();
 const title = ref('');
 
 watch(
+  title,
+  (value) => {
+    emit('dirty-change', props.modelValue && value.length > 0);
+  },
+  { immediate: true },
+);
+
+watch(
   () => props.modelValue,
   (open, wasOpen) => {
     if (open && !wasOpen) {
       title.value = '';
+      emit('dirty-change', false);
+    } else if (!open) {
+      emit('dirty-change', false);
     }
   },
   { immediate: true },
@@ -93,6 +105,7 @@ function setVisible(value: boolean): void {
 
 function handleCancel(): void {
   title.value = '';
+  emit('dirty-change', false);
   emit('cancel');
   emit('update:modelValue', false);
 }

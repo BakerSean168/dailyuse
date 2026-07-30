@@ -2,12 +2,12 @@
 /**
  * AppShell（UI 重构 V2 壳容器）
  *
- * ChatGPT 桌面式壳的三态布局根组件（docs/UI_REDESIGN_V2_PLAN.md §1.1 / §2），
+ * ChatGPT 桌面式壳的共享布局根组件（docs/UI_REDESIGN_V2_PLAN.md §1.1 / §2），
  * S1 起取代 MainLayout 成为主路由树的父组件：
  *
- *   STATE A 纯 AI 态   = 无业务 Tab（store.isChatOnly）
- *   STATE B 分栏并行态 = 有 Tab 且 layout === 'split'
- *   STATE C 业务专注态 = 有 Tab 且 layout === 'focus'（侧栏隐藏、面板满屏）
+ *   chat  = 用户隐藏右侧面板
+ *   split = AI 与右侧 Home/业务/工作流 surface 并列
+ *   focus = 仅隐藏中央 AI，左侧栏保持自己的独立偏好
  *
  * 接线：
  * - <router-view>（业务子路由）在 BusinessPanel 内渲染，KeepAlive 按 Tab 保活；
@@ -30,7 +30,10 @@ import { useDesktopWindowControls } from '../../shared/composables/useDesktopWin
 import { hasDesktopAuthApi } from '../../shared/utils/desktop-auth-recovery';
 import { useNotification } from '../../modules/notification/composables/useNotification';
 import { useDashboard } from '../../modules/dashboard/composables/useDashboard';
-import { formatScheduleCapsuleLabel, useCalendarView } from '../../modules/schedule/composables/useCalendarView';
+import {
+  formatScheduleCapsuleLabel,
+  useCalendarView,
+} from '../../modules/schedule/composables/useCalendarView';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
 import { useAuth } from '../../modules/authentication/composables/useAuth';
 import AIChatView from '../../modules/ai/views/AIChatView.vue';
@@ -38,6 +41,7 @@ import type { ConversationSummary } from '../../modules/ai/composables/types';
 import WindowHeader from './WindowHeader.vue';
 import ConversationSidebar from './ConversationSidebar.vue';
 import BusinessPanel from './BusinessPanel.vue';
+import TodayOverviewPanel from './TodayOverviewPanel.vue';
 import PanelErrorBoundary from './PanelErrorBoundary.vue';
 import GlobalComposer from './GlobalComposer.vue';
 import StandaloneSettingsLayout from './StandaloneSettingsLayout.vue';
@@ -48,28 +52,46 @@ import {
   resolveComposerDensity,
   type ComposerDensity,
 } from './panel-geometry';
-import { SHELL_COMPOSER_DENSITY_KEY, SHELL_COMPOSER_MOUNT_KEY } from '../../di/keys';
+import {
+  SHELL_COMPOSER_DENSITY_KEY,
+  SHELL_COMPOSER_MOUNT_KEY,
+  SHELL_WORKFLOW_MOUNT_KEY,
+} from '../../di/keys';
 
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const store = useAppShellStore();
-const { tabs, activeTabId, activeTab, isChatOnly, layout, sidebarCollapsed, sidebarWidth, panelWidth } =
-  storeToRefs(store);
+const {
+  tabs,
+  activeTabId,
+  activeTab,
+  layout,
+  sidebarCollapsed,
+  sidebarWidth,
+  panelWidth,
+  rightPanelOpen,
+  panelSurface,
+  workflowAvailable,
+  workflowAttentionCount,
+} = storeToRefs(store);
 
 const sync = useShellRouterSync();
 
 // ── 宿主环境（沿 isDesktopEnvironment 分支模式，V2 决策 #6） ──
 // Residual 913: detect via hasDesktopAuthApi (no electronAPI unknown cast dual).
-const isDesktop =
-  typeof window !== 'undefined' && hasDesktopAuthApi(window);
-const isMac =
-  typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+const isDesktop = typeof window !== 'undefined' && hasDesktopAuthApi(window);
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
 const capsules = inject(MODULE_CAPSULES_KEY, defaultModuleCapsules) ?? defaultModuleCapsules;
 
 const shellScene = computed<'workspace' | 'settings'>(() => {
-  if (route.meta.shellScene === 'settings' || route.path === '/settings' || route.path.startsWith('/settings/') || route.path.startsWith('/account')) {
+  if (
+    route.meta.shellScene === 'settings' ||
+    route.path === '/settings' ||
+    route.path.startsWith('/settings/') ||
+    route.path.startsWith('/account')
+  ) {
     return 'settings';
   }
   return 'workspace';
@@ -77,25 +99,29 @@ const shellScene = computed<'workspace' | 'settings'>(() => {
 
 const isSettingsScene = computed(() => shellScene.value === 'settings');
 
-
 /** STATE A/B/C 派生（§1.1）。 */
 const shellState = computed<'chat' | 'split' | 'focus'>(() => {
-  if (isChatOnly.value) return 'chat';
+  if (!rightPanelOpen.value) return 'chat';
   return layout.value === 'focus' ? 'focus' : 'split';
 });
 
-/** 侧栏在专注态隐藏（C 态），或用户手动折叠。 */
-const showSidebar = computed(() => shellState.value !== 'focus' && !sidebarCollapsed.value);
-/** 业务面板仅在有 Tab（B/C 态）时渲染。 */
-const showPanel = computed(() => shellState.value !== 'chat');
+/** 左侧栏只响应自己的 Toggle；业务 Focus 不再改动它。 */
+const showSidebar = computed(() => !sidebarCollapsed.value);
+/** 右侧面板显隐由独立持久化偏好控制。 */
+const showPanel = computed(() => rightPanelOpen.value);
 /** 当前激活模块 id（胶囊高亮）。 */
-const activeModule = computed<string | null>(() => (isSettingsScene.value ? null : activeTab.value?.module ?? null));
+const activeModule = computed<string | null>(() =>
+  isSettingsScene.value || panelSurface.value !== 'business'
+    ? null
+    : (activeTab.value?.module ?? null),
+);
 
 // ── AI 常驻层（单实例；会话侧栏数据经 defineExpose 上浮） ──
 const aiRef = ref<InstanceType<typeof AIChatView> | null>(null);
 
 // ── Global Composer host (§8)：壳拥有布局，AIChatView Teleport 真实输入 ──
 const shellComposerMount = shallowRef<HTMLElement | null>(null);
+const shellWorkflowMount = shallowRef<HTMLElement | null>(null);
 const shellComposerDensity = ref<ComposerDensity>('comfortable');
 const composerHeight = ref(0);
 const workspaceMainRef = ref<HTMLElement | null>(null);
@@ -104,6 +130,7 @@ const workspaceMainWidth = ref(0);
 const aiColumnWidth = ref(0);
 provide(SHELL_COMPOSER_MOUNT_KEY, shellComposerMount);
 provide(SHELL_COMPOSER_DENSITY_KEY, shellComposerDensity);
+provide(SHELL_WORKFLOW_MOUNT_KEY, shellWorkflowMount);
 
 const composerMode = computed(() => (shellState.value === 'focus' ? 'floating' : 'inline'));
 const composerHostWidth = computed(() =>
@@ -242,7 +269,6 @@ const scheduleLabel = computed(() =>
   formatScheduleCapsuleLabel(calendarView.getScheduleCapsuleSnapshot(scheduleNowMs.value), t),
 );
 
-
 // ── 桌面窗控（既有 IPC 通道，V2 §9；Web 分支不渲染按钮） ──
 const windowControls = useDesktopWindowControls();
 
@@ -325,8 +351,8 @@ function startPanelResize(e: PointerEvent) {
   e.preventDefault();
   const captureTarget =
     e.target instanceof Element
-      ? (e.target.closest('[data-testid="business-panel-resizer"]') as HTMLElement | null) ??
-        (e.target as HTMLElement)
+      ? ((e.target.closest('[data-testid="business-panel-resizer"]') as HTMLElement | null) ??
+        (e.target as HTMLElement))
       : null;
   try {
     captureTarget?.setPointerCapture?.(e.pointerId);
@@ -410,6 +436,9 @@ function openSchedule() {
   void sync.openModule('schedule', '/schedule/calendar');
 }
 
+function openPanelRoute(_module: 'goal' | 'task' | 'reminder', path: string) {
+  void router.push(path).catch(() => {});
+}
 
 function openSettings(path = '/settings') {
   void sync.openSettings(path);
@@ -474,14 +503,17 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     <WindowHeader
       :mode="isSettingsScene ? 'settings' : 'workspace'"
       :sidebar-collapsed="sidebarCollapsed"
+      :right-panel-open="rightPanelOpen"
       :active-module="activeModule"
       :unread-count="notification.unreadCount.value"
       :badge-counts="badgeCounts"
       :schedule-label="scheduleLabel"
+      :workflow-attention-count="workflowAttentionCount"
       :is-desktop="isDesktop"
       :is-mac="isMac"
       :window-controls="windowControls.windowControlsState"
       @toggle-sidebar="store.toggleSidebar()"
+      @toggle-right-panel="() => void sync.togglePanel()"
       @go-back="router.back()"
       @go-forward="router.forward()"
       @enter-module="enterModule"
@@ -503,7 +535,7 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
 
     <!-- 主工作区（STATE A/B/C） -->
     <div v-else class="relative flex min-h-0 flex-1 overflow-hidden">
-      <!-- 会话侧栏（A/B 态显示，C 态隐藏） -->
+      <!-- 会话侧栏只响应自己的 Toggle，和右栏/Focus 独立。 -->
       <ConversationSidebar
         v-if="showSidebar"
         class="shrink-0"
@@ -540,11 +572,7 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
           data-testid="shell-ai-column"
           class="order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
         >
-          <AIChatView
-            ref="aiRef"
-            class="min-h-0 w-full flex-1"
-            hide-conversation-sidebar
-          />
+          <AIChatView ref="aiRef" class="min-h-0 w-full flex-1" hide-conversation-sidebar />
           <GlobalComposer
             v-if="shellState !== 'focus'"
             mode="inline"
@@ -553,9 +581,9 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
           />
         </div>
 
-        <!-- 业务面板（B 态右侧固定宽；C 态满屏 + Composer 底部安全区） -->
+        <!-- 右侧面板 DOM 常驻；Toggle 只显隐，Tab、草稿和工作流上下文继续保活。 -->
         <div
-          v-if="showPanel"
+          v-show="showPanel"
           :class="
             shellState === 'focus'
               ? 'order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'
@@ -570,13 +598,26 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
             :tabs="tabs"
             :active-tab-id="activeTabId"
             :layout="layout"
+            :panel-surface="panelSurface"
+            :workflow-available="workflowAvailable"
+            :workflow-attention-count="workflowAttentionCount"
             @activate-tab="(id: string) => void sync.activateTab(id)"
             @close-tab="(id: string) => void sync.closeTab(id)"
             @close-panel="() => void sync.closePanel()"
+            @show-home="() => void sync.goHome()"
+            @show-workflow="store.requestWorkflowSurface('explicit')"
+            @close-workflow="store.closeWorkflowSurface()"
             @toggle-focus="store.toggleFocus()"
             @start-resize="startPanelResize"
             @reset-width="resetPanelWidth"
           >
+            <template #home>
+              <TodayOverviewPanel
+                :active="showPanel && panelSurface === 'home'"
+                @open-route="openPanelRoute"
+              />
+            </template>
+
             <PanelErrorBoundary :reset-key="activeTabId">
               <router-view v-slot="{ Component }">
                 <KeepAlive :max="MAX_BUSINESS_TABS">
@@ -588,6 +629,14 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
                 </KeepAlive>
               </router-view>
             </PanelErrorBoundary>
+
+            <template #workflow>
+              <div
+                ref="shellWorkflowMount"
+                class="h-full min-h-0"
+                data-testid="shell-workflow-surface"
+              />
+            </template>
           </BusinessPanel>
         </div>
 
@@ -602,5 +651,3 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     </div>
   </div>
 </template>
-
-

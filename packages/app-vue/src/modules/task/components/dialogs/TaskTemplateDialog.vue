@@ -109,7 +109,11 @@ import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import DependencyManager from '../dependency/DependencyManager.vue';
 import type { TaskTemplateViewModel } from '../types';
 import type { TaskForDAG } from '../../types/task-dag.types';
-import { TaskType, type DependencyType, type TaskGraphDependencyDTO } from '@memoflow/contracts/task';
+import {
+  TaskType,
+  type DependencyType,
+  type TaskGraphDependencyDTO,
+} from '@memoflow/contracts/task';
 import { defaultNamedColor } from '../../../../shared/constants/color-palette';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
 
@@ -227,10 +231,12 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
   (e: 'save', value: TaskTemplateViewModel): void;
   (e: 'cancel'): void;
+  (e: 'dirty-change', dirty: boolean): void;
 }>();
 
 const formRef = ref<InstanceType<typeof TaskTemplateForm> | null>(null);
 const localTemplate = ref<TaskTemplateViewModel | null>(null);
+const draftBaseline = ref<string | null>(null);
 const isValid = ref(false);
 const visible = computed(() => props.modelValue);
 const mode = computed(() => props.mode);
@@ -307,12 +313,25 @@ function initializeDraft(): void {
 
   isValid.value = false;
   clearGoalBindingErrors();
+  draftBaseline.value = JSON.stringify(localTemplate.value);
+  emit('dirty-change', false);
 }
+
+watch(
+  localTemplate,
+  (draft) => {
+    if (!visible.value || draftBaseline.value === null) return;
+    emit('dirty-change', JSON.stringify(draft) !== draftBaseline.value);
+  },
+  { deep: true },
+);
 
 watch(
   visible,
   async (open, wasOpen) => {
     if (!open) {
+      draftBaseline.value = null;
+      emit('dirty-change', false);
       return;
     }
 
@@ -327,10 +346,7 @@ watch(
 watch(
   [() => props.mode, () => props.template?.id],
   ([nextMode, nextTemplateId], [previousMode, previousTemplateId]) => {
-    if (
-      visible.value &&
-      (nextMode !== previousMode || nextTemplateId !== previousTemplateId)
-    ) {
+    if (visible.value && (nextMode !== previousMode || nextTemplateId !== previousTemplateId)) {
       initializeDraft();
     }
   },
@@ -350,8 +366,10 @@ const handleValidationUpdate = (validation: { isValid: boolean }) => {
 
 const handleCancel = () => {
   localTemplate.value = null;
+  draftBaseline.value = null;
   isValid.value = false;
   clearGoalBindingErrors();
+  emit('dirty-change', false);
   emit('cancel');
   emit('update:modelValue', false);
 };

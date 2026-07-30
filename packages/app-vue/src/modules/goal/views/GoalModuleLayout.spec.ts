@@ -1,10 +1,12 @@
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
+import { createPinia, setActivePinia } from 'pinia';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { defineComponent, h, nextTick, onMounted, type Ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { providePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import GoalModuleLayout from './GoalModuleLayout.vue';
+import { useAppShellStore } from '../../../layouts/shell/useAppShellStore';
 
 const goalMocks = vi.hoisted(() => ({
   setSelectedFolderId: vi.fn(),
@@ -25,6 +27,7 @@ vi.mock('../composables/useGoal', async () => {
     currentFocusMode: vueRef(null),
     selectedFolderId: vueRef(null),
     systemView: vueRef('active'),
+    isSaving: vueRef(false),
     ...goalMocks,
   };
   return { useGoal: () => state };
@@ -84,8 +87,18 @@ const ToolbarStub = defineComponent({
   },
 });
 
+const GoalDialogStub = defineComponent({
+  name: 'GoalDialog',
+  props: ['open', 'mode', 'goal', 'defaultFolderId'],
+  emits: ['update:open', 'created', 'updated', 'dirty-change'],
+  setup() {
+    return () => h('div', { 'data-testid': 'goal-dialog-stub' });
+  },
+});
+
 describe('GoalModuleLayout', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     routeMountCount = 0;
     vi.clearAllMocks();
   });
@@ -114,7 +127,7 @@ describe('GoalModuleLayout', () => {
         plugins: [router, i18n],
         stubs: {
           GoalPageToolbar: ToolbarStub,
-          GoalDialog: true,
+          GoalDialog: GoalDialogStub,
           GoalFolderDialog: true,
           ActivateFocusModeDialog: true,
         },
@@ -164,5 +177,39 @@ describe('GoalModuleLayout', () => {
     );
     await nextTick();
     expect(goalMocks.fetchGoals).not.toHaveBeenCalled();
+  });
+
+  it('publishes the goal dialog draft status to the shell', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/goals', name: 'goal-list', component: RouteContentProbe }],
+    });
+    await router.push('/goals');
+    await router.isReady();
+
+    const wrapper = mount(GoalModuleLayout, {
+      global: {
+        plugins: [router, i18n, createPinia()],
+        stubs: {
+          GoalPageToolbar: ToolbarStub,
+          GoalDialog: GoalDialogStub,
+          GoalFolderDialog: true,
+          ActivateFocusModeDialog: true,
+        },
+      },
+    });
+    const shell = useAppShellStore();
+
+    await wrapper.get('[data-testid="create-goal-entry"]').trigger('click');
+    await nextTick();
+    expect(shell.surfaceStatus).toBe('clean');
+
+    wrapper.findComponent(GoalDialogStub).vm.$emit('dirty-change', true);
+    await nextTick();
+    expect(shell.surfaceStatus).toBe('dirty');
+
+    wrapper.findComponent(GoalDialogStub).vm.$emit('dirty-change', false);
+    await nextTick();
+    expect(shell.surfaceStatus).toBe('clean');
   });
 });

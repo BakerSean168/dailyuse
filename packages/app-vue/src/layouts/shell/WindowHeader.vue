@@ -4,8 +4,8 @@
  *
  * 桌面式壳的顶栏（h-48px）。三段式：
  * - 左：侧栏折叠按钮 · 返回/前进
- * - 中：模块胶囊 ×5（图标 + 计数角标；点击出预览浮层，浮层内「进入」开面板）
- * - 右：日程"当前时段"胶囊 · [桌面端] 最小化/最大化/关闭
+ * - 中：模块胶囊 ×5（主按钮直接导航，独立箭头打开预览）
+ * - 右：日程胶囊 · 右侧面板 Toggle · [桌面端] 窗口控制
  *
  * 胶囊渲染 + 点击出预览浮层；goal/task/note/reminder/notification 均挂专用 Preview（§10）；
  * 桌面窗控复用既有 useDesktopWindowControls（apps/desktop 已落地 IPC）。
@@ -21,10 +21,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Calendar,
+  ChevronDown,
   Copy,
   Minus,
   PanelLeft,
   PanelLeftClose,
+  PanelRight,
+  PanelRightClose,
   Square,
   X,
 } from '@lucide/vue';
@@ -49,6 +52,8 @@ const props = defineProps<{
   mode?: 'workspace' | 'settings';
   /** 侧栏是否已折叠（控制折叠按钮图标）。 */
   sidebarCollapsed: boolean;
+  /** 右侧面板是否打开（独立于业务 Tab 和左侧栏）。 */
+  rightPanelOpen: boolean;
   /** 当前激活的模块 id（胶囊高亮）。 */
   activeModule: string | null;
   /** 未读通知数（notification 胶囊角标）。S1 由 AppShell 注入。 */
@@ -57,6 +62,8 @@ const props = defineProps<{
   badgeCounts?: Partial<Record<string, number>>;
   /** 日程"当前时段"文案；空则显示空态。S1 由 AppShell 注入。 */
   scheduleLabel?: string | null;
+  /** 工作流等待用户查看时显示在右侧面板 Toggle 上。 */
+  workflowAttentionCount?: number;
   /** 是否桌面环境（渲染窗控 + 拖拽区）。 */
   isDesktop?: boolean;
   /** macOS：原生交通灯占左上角——左侧留位、不渲染自绘窗控。 */
@@ -67,6 +74,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'toggle-sidebar'): void;
+  (e: 'toggle-right-panel'): void;
   (e: 'go-back'): void;
   (e: 'go-forward'): void;
   (e: 'enter-module', id: string): void;
@@ -194,36 +202,55 @@ onBeforeUnmount(() => {
     <!-- 中：模块胶囊 ×5（设置场景隐藏） -->
     <nav
       v-if="props.mode !== 'settings'"
-      class="flex items-center gap-1.5 no-drag" :aria-label="t('shell.moduleNav')">
+      class="flex items-center gap-1.5 no-drag"
+      :aria-label="t('shell.moduleNav')"
+    >
       <div v-for="capsule in capsules" :key="capsule.id" class="relative">
-        <button
-          type="button"
-          :data-testid="capsuleTestId(capsule.id)"
-          class="flex items-center gap-1.5 rounded-full border px-2 py-1.5 font-medium transition-all"
+        <div
+          class="flex items-stretch overflow-hidden rounded-full border transition-all"
           :class="
             activeModule === capsule.id || previewOpenId === capsule.id
               ? 'border-border bg-accent text-foreground shadow-sm'
               : 'border-transparent text-muted-foreground hover:bg-accent hover:text-foreground'
           "
-          :title="t(capsule.title)"
-          :aria-label="capsuleAccessibleLabel(capsule)"
-          @click="togglePreview(capsule.id)"
         >
-          <component :is="capsule.icon" class="h-3.5 w-3.5" />
-          <span
-            v-if="badgeFor(capsule) > 0"
-            class="rounded-full bg-primary/15 px-1.5 text-[9px] font-bold text-primary"
-            :data-testid="`capsule-badge-${capsule.id}`"
+          <button
+            type="button"
+            :data-testid="capsuleTestId(capsule.id)"
+            class="flex items-center gap-1.5 px-2 py-1.5 font-medium"
+            :title="t(capsule.title)"
+            :aria-label="capsuleAccessibleLabel(capsule)"
+            @click="enterModule(capsule.id)"
           >
-            {{ badgeFor(capsule) }}
-          </span>
-        </button>
+            <component :is="capsule.icon" class="h-3.5 w-3.5" />
+            <span
+              v-if="badgeFor(capsule) > 0"
+              class="rounded-full bg-primary/15 px-1.5 text-[9px] font-bold text-primary"
+              :data-testid="`capsule-badge-${capsule.id}`"
+            >
+              {{ badgeFor(capsule) }}
+            </span>
+          </button>
+          <button
+            type="button"
+            class="flex w-6 items-center justify-center border-l border-border/40 hover:bg-muted"
+            :data-testid="`capsule-preview-toggle-${capsule.id}`"
+            :title="t('shell.previewModule', { name: t(capsule.title) })"
+            :aria-label="t('shell.previewModule', { name: t(capsule.title) })"
+            :aria-expanded="previewOpenId === capsule.id"
+            :aria-controls="`capsule-preview-${capsule.id}`"
+            @click="togglePreview(capsule.id)"
+          >
+            <ChevronDown class="h-3 w-3" />
+          </button>
+        </div>
 
         <!-- 预览浮层：各模块 Preview 懒挂载；Escape / 外部点击关闭 -->
         <div
           v-if="previewOpenId === capsule.id"
           class="absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 rounded-xl border border-border bg-popover p-3.5 text-popover-foreground shadow-2xl"
           role="dialog"
+          :id="`capsule-preview-${capsule.id}`"
           :aria-label="t(capsule.title)"
           :data-testid="`capsule-preview-${capsule.id}`"
         >
@@ -283,6 +310,27 @@ onBeforeUnmount(() => {
       >
         <Calendar class="h-3 w-3" />
         <span>{{ scheduleLabel || t('shell.schedule.empty') }}</span>
+      </button>
+
+      <button
+        v-if="props.mode !== 'settings'"
+        type="button"
+        class="relative rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        data-testid="shell-right-panel-toggle"
+        :title="rightPanelOpen ? t('shell.hideSidePanel') : t('shell.showSidePanel')"
+        :aria-label="rightPanelOpen ? t('shell.hideSidePanel') : t('shell.showSidePanel')"
+        :aria-pressed="rightPanelOpen"
+        @click="emit('toggle-right-panel')"
+      >
+        <PanelRightClose v-if="rightPanelOpen" class="h-4 w-4" />
+        <PanelRight v-else class="h-4 w-4" />
+        <span
+          v-if="(workflowAttentionCount ?? 0) > 0"
+          class="absolute -right-1 -top-1 min-w-4 rounded-full bg-primary px-1 text-center text-[9px] font-semibold leading-4 text-primary-foreground"
+          data-testid="shell-workflow-attention-badge"
+        >
+          {{ workflowAttentionCount }}
+        </span>
       </button>
 
       <div v-if="isDesktop && !isMac" class="flex items-center gap-1">

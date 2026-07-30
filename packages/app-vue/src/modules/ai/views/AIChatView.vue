@@ -124,27 +124,14 @@
         ref="messagePanelRef"
         :timeline="chatTimeline"
         :tool-mode="toolMode"
-        :show-today-overview="todayOverviewVisible"
+        :has-models="modelGroups.length > 0"
         :show-workflow-surface="hasWorkflowContext"
         @select-tool="startNewConversation"
         @select-shortcut="handleWelcomeShortcut"
+        @configure-ai="openAISettings"
+        @create-goal="openGoalWithoutAI"
+        @quick-task="openQuickTaskWithoutAI"
       >
-        <template #today-overview>
-          <div class="grid gap-3">
-            <DailyTodoWidget
-              @view-all="router.push('/tasks')"
-              @completed="refreshDashboardAfterTaskCompletion"
-            />
-            <UpcomingRemindersWidget :refresh-key="0" @view-all="router.push('/reminders')" />
-            <GoalProgressWidget
-              :goals="goalProgress"
-              :loading="dashboardLoading"
-              @view-all="router.push('/goals')"
-              @select="(id) => router.push(`/goals/${id}`)"
-            />
-          </div>
-        </template>
-
         <template #workflow-surface>
           <p
             v-if="workflowStatusText"
@@ -237,7 +224,7 @@
           @start-conversation="startNewConversation"
           @select-model="selectModel"
           @select-execution-profile="selectExecutionProfile"
-          @open-settings="openSettings"
+          @open-settings="openAISettings"
         />
       </Teleport>
       <AIFooterComposer
@@ -256,7 +243,7 @@
         @start-conversation="startNewConversation"
         @select-model="selectModel"
         @select-execution-profile="selectExecutionProfile"
-        @open-settings="openSettings"
+        @open-settings="openAISettings"
       />
     </section>
 
@@ -270,89 +257,97 @@
       Actions near composer remain lifecycle shortcuts; Host revise/approve/reject
       and receipt presentation live here.
     -->
-    <AIContextPanel
-      v-show="!composerOnly"
-      :has-workflow-context="hasWorkflowContext"
-      :open="contextPanelOpen"
-      :tool-label="currentToolLabel"
-      :host-proposal-count="hostProposalItems.length"
-      :host-execution-receipt-count="hostExecutionReceiptItems.length"
-      @close="closeContextPanel"
-    >
-      <AIHostProposalPanel
-        ref="hostProposalPanelRef"
-        :items="hostProposalItems"
-        :busy="goalAgentResuming || noteCreating || hostProposalBusy"
-        :focused-proposal-id="focusedHostProposalId"
-        @approve="handleHostProposalApprove"
-        @reject="handleHostProposalReject"
-        @revise="handleHostProposalRevise"
-      />
-      <AIHostExecutionReceiptPanel
-        :items="hostExecutionReceiptItems"
-        :focused-proposal-id="focusedHostProposalId"
-        @open-entity="openHostReceiptEntity"
-      />
-      <AIGoalWorkflowPanel
-        :tool-mode="toolMode"
-        :goal-clarification="goalClarification"
-        :goal-draft="goalDraft"
-        :goal-automation-result="goalAutomationResult"
-        :goal-agent-run="goalAgentRun"
-        :goal-agent-pending-actions="goalAgentPendingActions"
-        :goal-agent-executed-actions="goalAgentExecutedActions"
-        :clarification-answers="clarificationAnswers"
-        :editable-goal="editableGoal"
-        :editable-key-results="editableKeyResults"
-        :editable-task-templates="editableTaskTemplates"
-        :editable-reminders="editableReminders"
-        :show-goal-draft-editor="showGoalDraftEditor"
-        :creating-goal="creatingGoal"
-        :goal-executed-actions="goalExecutedActions"
-        :goal-execution-summary="goalExecutionSummary"
-        :goal-execution-recovery="goalExecutionRecovery"
-        :knowledge-answer="knowledgeAnswer"
-        :knowledge-qa-agent-run="knowledgeQaAgentRun"
-        :note-agent-run="noteAgentRun"
-        :note-summary="noteSummary"
-        :note-preview="notePreview"
-        :format-automation-tool="formatAutomationTool"
-        :format-agent-tool="formatAgentTool"
-        :format-action-status="formatActionStatus"
-        :format-execution-outcome="formatExecutionOutcome"
-        @update:clarification-answers="handleClarificationAnswersUpdate"
-        @confirm="handleCreateGoalFromDraft"
-        @add-key-result="addKeyResultDraft"
-        @remove-key-result="removeKeyResultDraft"
-        @update-goal="handleUpdateGoalDraft"
-        @update-key-result="updateKeyResultDraft"
-        @add-task-template="addTaskTemplateDraft"
-        @remove-task-template="removeTaskTemplateDraft"
-        @update-task-template="updateTaskTemplateDraft"
-        @add-reminder="addReminderDraft"
-        @remove-reminder="removeReminderDraft"
-        @update-reminder="updateReminderDraft"
-        @open-knowledge-citation="openKnowledgeCitation"
-        @open-created-note="openCreatedNote"
-        @start-new-conversation="startNewConversation"
-      />
-      <div
-        v-if="!hasWorkflowArtifact && hostProposalItems.length === 0 && hostExecutionReceiptItems.length === 0"
-        class="rounded-lg border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground"
-        data-testid="ai-context-empty-state"
+    <Teleport :to="shellWorkflowMount ?? 'body'" :disabled="!shellWorkflowMount">
+      <AIContextPanel
+        v-show="!composerOnly"
+        :has-workflow-context="hasWorkflowContext"
+        :open="contextPanelOpen"
+        :embedded="Boolean(shellWorkflowMount)"
+        :tool-label="currentToolLabel"
+        :host-proposal-count="hostProposalItems.length"
+        :host-execution-receipt-count="hostExecutionReceiptItems.length"
+        @close="closeContextPanel"
       >
-        {{ workflowStatusText }}
-      </div>
-    </AIContextPanel>
+        <AIHostProposalPanel
+          ref="hostProposalPanelRef"
+          :items="hostProposalItems"
+          :busy="goalAgentResuming || noteCreating || hostProposalBusy"
+          :focused-proposal-id="focusedHostProposalId"
+          @approve="handleHostProposalApprove"
+          @reject="handleHostProposalReject"
+          @revise="handleHostProposalRevise"
+        />
+        <AIHostExecutionReceiptPanel
+          :items="hostExecutionReceiptItems"
+          :focused-proposal-id="focusedHostProposalId"
+          @open-entity="openHostReceiptEntity"
+        />
+        <AIGoalWorkflowPanel
+          :tool-mode="toolMode"
+          :goal-clarification="goalClarification"
+          :goal-draft="goalDraft"
+          :goal-automation-result="goalAutomationResult"
+          :goal-agent-run="goalAgentRun"
+          :goal-agent-pending-actions="goalAgentPendingActions"
+          :goal-agent-executed-actions="goalAgentExecutedActions"
+          :clarification-answers="clarificationAnswers"
+          :editable-goal="editableGoal"
+          :editable-key-results="editableKeyResults"
+          :editable-task-templates="editableTaskTemplates"
+          :editable-reminders="editableReminders"
+          :show-goal-draft-editor="showGoalDraftEditor"
+          :creating-goal="creatingGoal"
+          :goal-executed-actions="goalExecutedActions"
+          :goal-execution-summary="goalExecutionSummary"
+          :goal-execution-recovery="goalExecutionRecovery"
+          :knowledge-answer="knowledgeAnswer"
+          :knowledge-qa-agent-run="knowledgeQaAgentRun"
+          :note-agent-run="noteAgentRun"
+          :note-summary="noteSummary"
+          :note-preview="notePreview"
+          :format-automation-tool="formatAutomationTool"
+          :format-agent-tool="formatAgentTool"
+          :format-action-status="formatActionStatus"
+          :format-execution-outcome="formatExecutionOutcome"
+          @update:clarification-answers="handleClarificationAnswersUpdate"
+          @confirm="handleCreateGoalFromDraft"
+          @add-key-result="addKeyResultDraft"
+          @remove-key-result="removeKeyResultDraft"
+          @update-goal="handleUpdateGoalDraft"
+          @update-key-result="updateKeyResultDraft"
+          @add-task-template="addTaskTemplateDraft"
+          @remove-task-template="removeTaskTemplateDraft"
+          @update-task-template="updateTaskTemplateDraft"
+          @add-reminder="addReminderDraft"
+          @remove-reminder="removeReminderDraft"
+          @update-reminder="updateReminderDraft"
+          @open-knowledge-citation="openKnowledgeCitation"
+          @open-created-note="openCreatedNote"
+          @start-new-conversation="startNewConversation"
+        />
+        <div
+          v-if="
+            !hasWorkflowArtifact &&
+            hostProposalItems.length === 0 &&
+            hostExecutionReceiptItems.length === 0
+          "
+          class="rounded-lg border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground"
+          data-testid="ai-context-empty-state"
+        >
+          {{ workflowStatusText }}
+        </div>
+      </AIContextPanel>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, inject } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Menu, PanelRightOpen, Plus } from '@lucide/vue';
 import { Button } from '@memoflow/ui-vue-shadcn';
+import { toast } from 'vue-sonner';
 import type { AgentRun } from '@memoflow/contracts/ai';
 import AIConversationSidebar from '../components/AIConversationSidebar.vue';
 import AIMessagePanel from '../components/AIMessagePanel.vue';
@@ -363,12 +358,12 @@ import AIContextPanel from '../components/AIContextPanel.vue';
 import AIHostProposalPanel from '../components/AIHostProposalPanel.vue';
 import AIHostExecutionReceiptPanel from '../components/AIHostExecutionReceiptPanel.vue';
 import AIHostTimelineArtifactStrip from '../components/AIHostTimelineArtifactStrip.vue';
-import DailyTodoWidget from '../../task/components/widgets/DailyTodoWidget.vue';
-import UpcomingRemindersWidget from '../../reminder/components/widgets/UpcomingRemindersWidget.vue';
-import GoalProgressWidget from '../../goal/components/widgets/GoalProgressWidget.vue';
-import { useDashboard } from '../../dashboard/composables/useDashboard';
 import { useAppShellStore } from '../../../layouts/shell/useAppShellStore';
-import { SHELL_COMPOSER_DENSITY_KEY, SHELL_COMPOSER_MOUNT_KEY } from '../../../di/keys';
+import {
+  SHELL_COMPOSER_DENSITY_KEY,
+  SHELL_COMPOSER_MOUNT_KEY,
+  SHELL_WORKFLOW_MOUNT_KEY,
+} from '../../../di/keys';
 import type { ComposerDensity } from '../../../layouts/shell/panel-geometry';
 import { useAIChatView } from '../composables/useAIChatView';
 import {
@@ -441,7 +436,10 @@ withDefaults(
 /** Shell teleport host for GlobalComposer; null in standalone/unit mounts. */
 const shellComposerMountRef = inject(SHELL_COMPOSER_MOUNT_KEY, null);
 const shellComposerDensityRef = inject(SHELL_COMPOSER_DENSITY_KEY, null);
+const shellWorkflowMountRef = inject(SHELL_WORKFLOW_MOUNT_KEY, null);
 const shellComposerMount = computed(() => shellComposerMountRef?.value ?? null);
+const shellWorkflowMount = computed(() => shellWorkflowMountRef?.value ?? null);
+const shellStore = shellWorkflowMountRef ? useAppShellStore() : null;
 const composerDensity = computed<ComposerDensity>(
   () => shellComposerDensityRef?.value ?? 'comfortable',
 );
@@ -578,13 +576,8 @@ const {
   reviseTaskAgentRun,
 } = taskWorkflow;
 
-
-const {
-  formatAutomationTool,
-  formatAgentTool,
-  formatActionStatus,
-  formatExecutionOutcome,
-} = formatters;
+const { formatAutomationTool, formatAgentTool, formatActionStatus, formatExecutionOutcome } =
+  formatters;
 
 const {
   toolMode,
@@ -607,18 +600,15 @@ const hasWorkflowArtifact = computed(() => {
   if (toolMode.value === 'goal-create') {
     return Boolean(
       goalClarification.value ||
-        goalDraft.value ||
-        goalAutomationResult.value ||
-        goalAgentRun.value,
+      goalDraft.value ||
+      goalAutomationResult.value ||
+      goalAgentRun.value,
     );
   }
 
   if (toolMode.value === 'knowledge-qa') {
     return Boolean(
-      knowledgeAnswer.value ||
-        knowledgeQaAgentRun.value ||
-        noteAgentRun.value ||
-        noteSummary.value,
+      knowledgeAnswer.value || knowledgeQaAgentRun.value || noteAgentRun.value || noteSummary.value,
     );
   }
 
@@ -690,7 +680,7 @@ function openHostWorkbenchFromTimeline(item?: HostTimelineArtifactItem) {
     focusedHostProposalId.value = null;
     return;
   }
-  contextPanelOpen.value = true;
+  requestContextPanel('explicit');
   const focus = resolveHostWorkbenchFocusFromTimeline(item);
   focusedHostProposalId.value = focus?.proposalId ?? null;
 }
@@ -747,6 +737,30 @@ const hasWorkflowContext = computed(
     openChatHostTurns.value.length > 0,
 );
 
+const workflowSurfaceItemCount = computed(() =>
+  Math.max(
+    1,
+    (hasWorkflowArtifact.value ? 1 : 0) +
+      hostProposalItems.value.length +
+      hostExecutionReceiptItems.value.length,
+  ),
+);
+
+const workflowDeferredNotificationShown = ref(false);
+
+function requestContextPanel(intent: 'automatic' | 'explicit') {
+  contextPanelOpen.value = true;
+  if (!shellStore) return;
+
+  const result = shellStore.requestWorkflowSurface(intent);
+  if (result === 'deferred' && !workflowDeferredNotificationShown.value) {
+    workflowDeferredNotificationShown.value = true;
+    toast.info(t('shell.panel.workflowReady'));
+  } else if (result === 'opened') {
+    workflowDeferredNotificationShown.value = false;
+  }
+}
+
 const hostProposalBusy = ref(false);
 const hostProposalPanelRef = ref<{
   applyRevised: (
@@ -796,10 +810,7 @@ async function handleHostProposalRevise(payload: {
         })
       : null;
   // goal/knowledge must own a session run; task orphan Host-only revise stays ungated.
-  if (
-    (payload.item.source === 'goal' || payload.item.source === 'knowledge') &&
-    !owned
-  ) {
+  if ((payload.item.source === 'goal' || payload.item.source === 'knowledge') && !owned) {
     return;
   }
   // Residual 573: sole product draftAction + waiting_approval (approve symmetry).
@@ -852,10 +863,7 @@ async function handleHostProposalRevise(payload: {
     }
     // Residual 605: knowledge session process-local edit via shared classifier
     // (task residual 439 + knowledge classifier residual 603 symmetry).
-    if (
-      payload.item.source === 'knowledge' &&
-      isHostPanelKnowledgeSessionProductOwned(owned)
-    ) {
+    if (payload.item.source === 'knowledge' && isHostPanelKnowledgeSessionProductOwned(owned)) {
       await reviseKnowledgeNoteAgentRun({
         targetPath: payload.patch.targetPath ?? payload.item.targetPath,
         contentMarkdown: payload.patch.contentMarkdown ?? payload.item.contentMarkdown,
@@ -899,10 +907,7 @@ async function handleHostProposalApprove(payload: {
           taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
         })
       : null;
-  if (
-    (payload.item.source === 'goal' || payload.item.source === 'knowledge') &&
-    !owned
-  ) {
+  if ((payload.item.source === 'goal' || payload.item.source === 'knowledge') && !owned) {
     return;
   }
   if (
@@ -984,10 +989,7 @@ async function handleHostProposalApprove(payload: {
       return;
     }
     // Residual 603: knowledge settle via shared ownership classifier (581 symmetry).
-    if (
-      payload.item.source === 'knowledge' &&
-      isHostPanelKnowledgeSessionProductOwned(owned)
-    ) {
+    if (payload.item.source === 'knowledge' && isHostPanelKnowledgeSessionProductOwned(owned)) {
       await createKnowledgeNoteFromConversation({
         skipHostLifecycle: true,
         revision,
@@ -1096,10 +1098,7 @@ async function handleHostProposalReject(payload: {
           taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
         })
       : null;
-  if (
-    (payload.item.source === 'goal' || payload.item.source === 'knowledge') &&
-    !owned
-  ) {
+  if ((payload.item.source === 'goal' || payload.item.source === 'knowledge') && !owned) {
     return;
   }
   if (owned && !canHostRejectProductAgentRun({ run: owned.run })) return;
@@ -1120,10 +1119,7 @@ async function handleHostProposalReject(payload: {
       return;
     }
     // Residual 603: knowledge cancel via shared ownership classifier (581 symmetry).
-    if (
-      payload.item.source === 'knowledge' &&
-      isHostPanelKnowledgeSessionProductOwned(owned)
-    ) {
+    if (payload.item.source === 'knowledge' && isHostPanelKnowledgeSessionProductOwned(owned)) {
       await cancelKnowledgeNoteAgentRun({
         skipHostLifecycle: true,
         revision: payload.revision,
@@ -1164,13 +1160,6 @@ async function handleHostProposalReject(payload: {
   }
 }
 
-// ── Welcome / idle: Today overview under shortcut cards (V2 §6.0) ──
-const { goalProgress, isLoading: dashboardLoading, fetchDashboard } = useDashboard();
-const todayOverviewVisible = computed(
-  () => chatTimeline.value.length === 0 && !hasWorkflowContext.value,
-);
-
-
 // Residual 371/379/443/611: auto-open right workbench for Host proposals or execution receipts.
 // Residual 443: default-focus when nothing is focused yet (conversation restore + task.create start).
 // Residual 611: exclusive session focus (task > goal > knowledge; dual-mirror + ghost rules)
@@ -1181,7 +1170,7 @@ watch(
   [hasPendingHostProposals, hasHostExecutionReceipts, hostProposalItems, hostExecutionReceiptItems],
   ([pending, receipts]) => {
     if (pending || receipts) {
-      contextPanelOpen.value = true;
+      requestContextPanel('automatic');
       if (!focusedHostProposalId.value) {
         focusedHostProposalId.value = resolveDefaultHostWorkbenchFocusProposalId({
           taskAgentRun: taskAgentRun.value,
@@ -1197,23 +1186,19 @@ watch(
 );
 
 watch(
-  todayOverviewVisible,
-  (visible) => {
-    if (visible) {
-      void fetchDashboard();
+  [hasWorkflowContext, workflowSurfaceItemCount],
+  ([available, itemCount], [wasAvailable]) => {
+    if (!shellStore) return;
+    shellStore.setWorkflowAvailable(available, itemCount);
+    if (available && !wasAvailable) {
+      requestContextPanel('automatic');
+    }
+    if (!available) {
+      workflowDeferredNotificationShown.value = false;
     }
   },
   { immediate: true },
 );
-
-async function refreshDashboardAfterTaskCompletion() {
-  // Task persistence completes before the HTTP response, while the linked Goal
-  // projection is updated by an asynchronous domain-event listener. Refresh
-  // once for task statistics and once more to reconcile that dependent view.
-  await fetchDashboard();
-  await new Promise((resolve) => setTimeout(resolve, 150));
-  await fetchDashboard();
-}
 
 /**
  * Prefill composer + set tool mode from welcome shortcut cards (V2 §6.0).
@@ -1245,6 +1230,11 @@ function openArtifactBusinessTab(
   artifactKey: string,
 ) {
   if (lastOpenedArtifactKey.value === artifactKey) return;
+
+  if (shellStore && (!shellStore.rightPanelOpen || shellStore.surfaceStatus !== 'clean')) {
+    requestContextPanel('automatic');
+    return;
+  }
   lastOpenedArtifactKey.value = artifactKey;
 
   try {
@@ -1267,69 +1257,78 @@ function openArtifactBusinessTab(
 // Open panel Tabs for ready products only (V2 §6.0 / §2.3 deeplink, no steal).
 // Intermediate restored drafts without a live agent run do not auto-navigate
 // (avoids clobbering the AI workspace on session restore).
-watch(
-  [goalDraft, goalAgentRun, automatedGoalId, noteSummary, toolMode],
-  () => {
-    if (toolMode.value === 'goal-create') {
-      if (automatedGoalId.value) {
-        openArtifactBusinessTab(
-          'goal',
-          `/goals/${automatedGoalId.value}`,
-          t('nav.capsule.goal'),
-          `goal-created:${automatedGoalId.value}`,
-        );
-        return;
-      }
-      // Draft ready during/after agent flow → open Goal panel Tab for the draft.
-      if (goalDraft.value && goalAgentRun.value) {
-        const draft = goalDraft.value as {
-          goal?: { title?: string; description?: string };
-          title?: string;
-          name?: string;
-          description?: string;
-        };
-        const draftName =
-          draft.goal?.title ||
-          draft.title ||
-          draft.name ||
-          t('aiAssistant.chatPage.workflow.goalDraftTitle');
-        const draftDesc = draft.goal?.description || draft.description || '';
-        const runId = String(
-          (goalAgentRun.value as { runId?: string; id?: string }).runId ||
-            (goalAgentRun.value as { runId?: string; id?: string }).id ||
-            'run',
-        );
-        openArtifactBusinessTab(
-          'goal',
-          '/goals',
-          draftName,
-          `goal-draft:${runId}:${draftName}:${draftDesc}`,
-        );
-      }
+watch([goalDraft, goalAgentRun, automatedGoalId, noteSummary, toolMode], () => {
+  if (toolMode.value === 'goal-create') {
+    if (automatedGoalId.value) {
+      openArtifactBusinessTab(
+        'goal',
+        `/goals/${automatedGoalId.value}`,
+        t('nav.capsule.goal'),
+        `goal-created:${automatedGoalId.value}`,
+      );
       return;
     }
-
-    if (
-      (toolMode.value === 'knowledge-generate' || toolMode.value === 'knowledge-qa') &&
-      noteSummary.value
-    ) {
-      const summary = noteSummary.value as { resolvedPath?: string; path?: string };
-      const path = summary.resolvedPath || summary.path || 'note';
+    // Draft ready during/after agent flow → open Goal panel Tab for the draft.
+    if (goalDraft.value && goalAgentRun.value) {
+      const draft = goalDraft.value as {
+        goal?: { title?: string; description?: string };
+        title?: string;
+        name?: string;
+        description?: string;
+      };
+      const draftName =
+        draft.goal?.title ||
+        draft.title ||
+        draft.name ||
+        t('aiAssistant.chatPage.workflow.goalDraftTitle');
+      const draftDesc = draft.goal?.description || draft.description || '';
+      const runId = String(
+        (goalAgentRun.value as { runId?: string; id?: string }).runId ||
+          (goalAgentRun.value as { runId?: string; id?: string }).id ||
+          'run',
+      );
       openArtifactBusinessTab(
-        'note',
-        '/repository',
-        t('aiAssistant.chatPage.workflow.openCreatedNote'),
-        `note-created:${path}`,
+        'goal',
+        '/goals',
+        draftName,
+        `goal-draft:${runId}:${draftName}:${draftDesc}`,
       );
     }
-  },
-);
+    return;
+  }
+
+  if (
+    (toolMode.value === 'knowledge-generate' || toolMode.value === 'knowledge-qa') &&
+    noteSummary.value
+  ) {
+    const summary = noteSummary.value as { resolvedPath?: string; path?: string };
+    const path = summary.resolvedPath || summary.path || 'note';
+    openArtifactBusinessTab(
+      'note',
+      '/repository',
+      t('aiAssistant.chatPage.workflow.openCreatedNote'),
+      `note-created:${path}`,
+    );
+  }
+});
 
 function toggleContextPanel() {
+  if (shellStore) {
+    if (shellStore.panelSurface === 'workflow' && shellStore.rightPanelOpen) {
+      shellStore.closeWorkflowSurface();
+    } else {
+      requestContextPanel('explicit');
+    }
+    return;
+  }
   contextPanelOpen.value = !contextPanelOpen.value;
 }
 
 function closeContextPanel() {
+  if (shellStore) {
+    shellStore.closeWorkflowSurface();
+    return;
+  }
   contextPanelOpen.value = false;
 }
 
@@ -1377,12 +1376,8 @@ async function selectConversation(item: ConversationSummary) {
     goalAgentRun: goalAgentRun.value,
     noteAgentRun: noteAgentRun.value,
   });
-  if (
-    focus ||
-    hasPendingHostProposals.value ||
-    hasHostExecutionReceipts.value
-  ) {
-    contextPanelOpen.value = true;
+  if (focus || hasPendingHostProposals.value || hasHostExecutionReceipts.value) {
+    requestContextPanel('explicit');
     focusedHostProposalId.value = focus?.proposalId ?? null;
   } else {
     focusedHostProposalId.value = null;
@@ -1402,7 +1397,7 @@ async function selectAgentRun(run: AgentRun) {
     hasPendingHostProposals.value ||
     hasHostExecutionReceipts.value
   ) {
-    contextPanelOpen.value = true;
+    requestContextPanel('explicit');
     const focus =
       resolveHostWorkbenchFocusFromSessionRuns({
         taskAgentRun: taskAgentRun.value,
@@ -1435,6 +1430,18 @@ function openSettingsFromMobile() {
   openSettings();
 }
 
+function openAISettings() {
+  void router.push('/settings?tab=ai');
+}
+
+function openGoalWithoutAI() {
+  void router.push('/goals?dialog=goal');
+}
+
+function openQuickTaskWithoutAI() {
+  void router.push('/tasks?dialog=quick-task');
+}
+
 function handleClarificationAnswersUpdate(answers: string[]) {
   clarificationAnswers.value = answers;
 }
@@ -1444,6 +1451,10 @@ onMounted(() => {
   if (viewport) {
     messagesViewport.value = viewport;
   }
+});
+
+onBeforeUnmount(() => {
+  shellStore?.setWorkflowAvailable(false);
 });
 
 /**

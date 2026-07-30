@@ -2,13 +2,8 @@
 /**
  * AIContextPanel — AI 工作区侧栏（V2 §6.0 精修）
  *
- * V1 右栏三态：
- *   ① 空闲今日概览 → 已迁到欢迎态主列（消息区下方）
- *   ②/③ 工作流产物 → 主列消息时间线内嵌 + Composer 上方操作条
- *
- * 本组件仍保留作为工作流产物的可选窄侧栏容器（桌面 md+ / 移动浮层），
- * 以维持 `ai-context-panel` / `ai-context-panel-close` testid 契约
- * 与 AIChatView.spec 状态机断言。空闲态右栏不再渲染。
+ * 壳层存在时，本组件通过 Teleport 渲染到唯一的右侧 workflow surface；
+ * 独立挂载时保留响应式浮层行为。今日概览由壳层 Home surface 独立拥有。
  *
  * Residual 371: when hostProposalCount > 0, header marks the rail as Host
  * Proposal workbench (structured approval surface).
@@ -32,6 +27,8 @@ const props = defineProps<{
   hostProposalCount?: number;
   /** Residual 379: Host execution receipt count for workbench header. */
   hostExecutionReceiptCount?: number;
+  /** Render inside the canonical AppShell panel instead of creating a second rail. */
+  embedded?: boolean;
 }>();
 
 defineEmits<{ close: [] }>();
@@ -58,8 +55,15 @@ const hostWorkbenchActive = computed(
 <template>
   <aside
     v-if="hasWorkflowContext"
-    class="fixed inset-x-0 bottom-0 z-40 max-h-[72vh] min-h-0 flex-col border-t bg-background shadow-xl md:static md:z-auto md:max-h-none md:w-96 md:shrink-0 md:border-l md:border-t-0 md:shadow-none"
-    :class="open ? 'flex' : 'hidden md:flex'"
+    class="min-h-0 flex-col bg-background"
+    :class="
+      embedded
+        ? 'flex h-full w-full'
+        : [
+            'fixed inset-x-0 bottom-0 z-40 max-h-[72vh] border-t shadow-xl md:static md:z-auto md:max-h-none md:w-96 md:shrink-0 md:border-l md:border-t-0 md:shadow-none',
+            open ? 'flex' : 'hidden md:flex',
+          ]
+    "
     data-testid="ai-context-panel"
   >
     <div class="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4">
@@ -101,7 +105,7 @@ const hostWorkbenchActive = computed(
         variant="ghost"
         size="icon"
         :aria-label="t('aiAssistant.chatPage.context.hide')"
-        class="h-8 w-8 md:hidden"
+        :class="embedded ? 'h-8 w-8' : 'h-8 w-8 md:hidden'"
         :title="t('aiAssistant.chatPage.context.hide')"
         data-testid="ai-context-panel-close"
         @click="$emit('close')"

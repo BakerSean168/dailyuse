@@ -81,8 +81,19 @@ describe('QuickTaskDialog', () => {
     await wrapper.setProps({ modelValue: false });
     await wrapper.setProps({ modelValue: true });
 
-    expect((wrapper.get('[data-testid="quick-task-title-input"]').element as HTMLInputElement).value).toBe(
-      '',
-    );
+    expect(
+      (wrapper.get('[data-testid="quick-task-title-input"]').element as HTMLInputElement).value,
+    ).toBe('');
+  });
+
+  it('reports dirty only while the title differs from its opening baseline', async () => {
+    const wrapper = mountDialog();
+    expect(wrapper.emitted('dirty-change')?.at(-1)).toEqual([false]);
+
+    await wrapper.get('[data-testid="quick-task-title-input"]').setValue('Unsaved');
+    expect(wrapper.emitted('dirty-change')?.at(-1)).toEqual([true]);
+
+    await wrapper.get('[data-testid="quick-task-title-input"]').setValue('');
+    expect(wrapper.emitted('dirty-change')?.at(-1)).toEqual([false]);
   });
 });

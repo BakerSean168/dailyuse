@@ -1,12 +1,14 @@
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h, reactive, ref } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
+import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskType } from '@memoflow/contracts/task';
 import type { TaskTemplateViewModel } from '../components/types';
 import { startOfDayMs } from '../../../shared/utils/product-time';
 import TaskManagementView from './TaskManagementView.vue';
+import { useAppShellStore } from '../../../layouts/shell/useAppShellStore';
 
 const templates = ref<Record<string, unknown>[]>([]);
 const dependencies = ref([]);
@@ -14,6 +16,8 @@ const createTemplate = vi.fn();
 const fetchTaskGraph = vi.fn().mockResolvedValue(undefined);
 const loadGoalBindings = vi.fn().mockResolvedValue(undefined);
 const routerPush = vi.fn();
+const routerReplace = vi.fn().mockResolvedValue(undefined);
+const route = reactive({ path: '/tasks', query: {} as Record<string, string> });
 
 const mappedTemplate: TaskTemplateViewModel = {
   id: 'template-1',
@@ -54,7 +58,8 @@ vi.mock('../utils/task-template-presentation', () => ({
 }));
 
 vi.mock('vue-router', () => ({
-  useRouter: () => ({ push: routerPush }),
+  useRoute: () => route,
+  useRouter: () => ({ push: routerPush, replace: routerReplace }),
 }));
 
 const passThrough = (name: string, tag = 'div') =>
@@ -83,6 +88,7 @@ const componentStub = (name: string, props: string[] = []) =>
       'clear-filters',
       'ai-generate',
       'update:modelValue',
+      'dirty-change',
     ],
     setup(_props, { slots }) {
       return () => h('div', slots.default?.());
@@ -128,7 +134,7 @@ const i18n = createI18n({
 function mountView() {
   return mount(TaskManagementView, {
     global: {
-      plugins: [i18n],
+      plugins: [i18n, createPinia()],
       stubs: {
         Button: passThrough('Button', 'button'),
         TaskFilterBar: componentStub('TaskFilterBar'),
@@ -166,11 +172,14 @@ function mountView() {
 
 describe('TaskManagementView task creation semantics', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     templates.value = [];
     createTemplate.mockReset().mockResolvedValue({ template: mappedTemplate });
     fetchTaskGraph.mockClear();
     loadGoalBindings.mockClear();
     routerPush.mockClear();
+    routerReplace.mockClear();
+    route.query = {};
     vi.useRealTimers();
   });
 
@@ -183,6 +192,30 @@ describe('TaskManagementView task creation semantics', () => {
     expect(
       wrapper.get('[data-testid="create-task-template-button"]').attributes('aria-label'),
     ).toBe('新建任务计划');
+  });
+
+  it('opens the quick-task dialog from the shell Home deep link', async () => {
+    route.query = { dialog: 'quick-task' };
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.findComponent({ name: 'QuickTaskDialog' }).props('modelValue')).toBe(true);
+  });
+
+  it('publishes real dialog dirty state to the shell instead of treating open as dirty', async () => {
+    const wrapper = mountView();
+    const shell = useAppShellStore();
+
+    await wrapper.get('[data-testid="create-task-template-button"]').trigger('click');
+    expect(shell.surfaceStatus).toBe('clean');
+
+    wrapper.findComponent({ name: 'TaskTemplateDialog' }).vm.$emit('dirty-change', true);
+    await flushPromises();
+    expect(shell.surfaceStatus).toBe('dirty');
+
+    wrapper.findComponent({ name: 'TaskTemplateDialog' }).vm.$emit('dirty-change', false);
+    await flushPromises();
+    expect(shell.surfaceStatus).toBe('clean');
   });
 
   it('creates a quick task as a one-time all-day pending task for today', async () => {
@@ -225,7 +258,9 @@ describe('TaskManagementView task creation semantics', () => {
     const wrapper = mountView();
     await flushPromises();
 
-    wrapper.findComponent({ name: 'TaskTemplateGrid' }).vm.$emit('copy-template', mappedTemplate.id);
+    wrapper
+      .findComponent({ name: 'TaskTemplateGrid' })
+      .vm.$emit('copy-template', mappedTemplate.id);
     await flushPromises();
 
     const copyDialog = wrapper

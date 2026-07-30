@@ -57,11 +57,14 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     }
   });
 
-  test('[P1] should open a business panel from a capsule preview', async ({ page }) => {
+  test('[P1] should show panel Home by default and open a module with one capsule click', async ({
+    page,
+  }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    await expect(page.getByTestId('business-panel')).toBeVisible();
+    await expect(page.getByTestId('today-overview-panel')).toBeVisible();
     await page.getByTestId('capsule-nav-goal').click();
-    await page.getByTestId('goal-capsule-view-all').click();
 
     await page.waitForURL('**/goals', { timeout: TIMEOUT_CONFIG.NAVIGATION });
     await expect(page.getByTestId('business-panel')).toBeVisible();
@@ -79,13 +82,31 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     await expect(page.getByTestId('settings-scene-rail')).toBeVisible();
   });
 
-  test('[P2] should return to STATE A when the panel is closed', async ({ page }) => {
+  test('[P2] should preserve a business tab and hidden-panel preference across reload', async ({
+    page,
+  }) => {
     await page.goto('/goals', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('business-panel')).toBeVisible();
 
     await page.getByTestId('business-panel-close').click();
-    await page.waitForURL(/\/$/, { timeout: TIMEOUT_CONFIG.NAVIGATION });
-    await expect(page.getByTestId('business-panel')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/goals$/);
+    await expect(page.getByTestId('business-panel')).toBeHidden();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('business-panel')).toBeHidden();
+
+    await page.getByTestId('shell-right-panel-toggle').click();
+    await expect(page.getByTestId('business-panel')).toBeVisible();
     await expect(page.getByTestId('ai-chat-view')).toBeVisible();
+  });
+
+  test('[P2] should return to panel Home after closing the final business tab', async ({
+    page,
+  }) => {
+    await page.goto('/goals', { waitUntil: 'domcontentloaded' });
+    await page.getByTestId('business-panel-tab-close').click();
+
+    await page.waitForURL(/\/$/, { timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await expect(page.getByTestId('business-panel')).toBeVisible();
+    await expect(page.getByTestId('today-overview-panel')).toBeVisible();
   });
 });
