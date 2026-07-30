@@ -34,6 +34,14 @@ const importanceLabelKeys: Record<string, string> = {
   [ImportanceLevel.Trivial]: 'task.metadata.importanceMinimal',
 };
 
+const instanceStatusLabelKeys: Record<string, string> = {
+  Pending: 'task.templateCard.instanceStatusPending',
+  InProgress: 'task.templateCard.instanceStatusInProgress',
+  Completed: 'task.templateCard.instanceStatusCompleted',
+  Skipped: 'task.templateCard.instanceStatusSkipped',
+  Expired: 'task.templateCard.instanceStatusExpired',
+};
+
 /** Residual 1297: HH:mm pad dual retired onto formatHHmmParts; null/clamp stay local. */
 function formatMinuteOfDay(minutes?: number | null): string {
   if (minutes == null || !Number.isFinite(minutes)) return '-';
@@ -65,6 +73,14 @@ export function getTaskTimeTypeLabel(t: Translate, type?: string | null): string
     default:
       return t('common.none');
   }
+}
+
+export function getTaskInstanceStatusLabel(
+  t: Translate,
+  status?: TaskTemplateViewModel['singleInstanceStatus'],
+): string {
+  const statusKey = status ? instanceStatusLabelKeys[status] : undefined;
+  return t(statusKey ?? 'task.templateCard.instanceStatusNotGenerated');
 }
 
 export function getTaskTimeValueDisplay(
@@ -177,6 +193,11 @@ export function mapTaskTemplateDtoToViewModel(
     instanceCount: dto.instanceCount ?? 0,
     completedInstanceCount: dto.completedInstanceCount ?? 0,
     pendingInstanceCount: dto.pendingInstanceCount ?? 0,
+    dueInstanceCount: dto.dueInstanceCount ?? 0,
+    completedDueInstanceCount: dto.completedDueInstanceCount ?? 0,
+    completionWindowDays: dto.completionWindowDays ?? 30,
+    futurePendingInstanceCount: dto.futurePendingInstanceCount ?? 0,
+    singleInstanceStatus: dto.singleInstanceStatus ?? null,
     completionRate: dto.completionRate ?? 0,
     formattedCreatedAt: dto.createdAt ? formatProductDate(dto.createdAt) : undefined,
     taskType: dto.recurrenceRule ? 'Recurring' : 'OneTime',

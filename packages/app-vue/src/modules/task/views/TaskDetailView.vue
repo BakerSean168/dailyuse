@@ -259,20 +259,50 @@
           <CardHeader>
             <CardTitle>{{ t('task.detail.executionStats') }}</CardTitle>
           </CardHeader>
-          <CardContent class="grid gap-4 @2xl/panel:grid-cols-3">
-            <div class="rounded-lg border p-4 text-center">
-              <p class="text-2xl font-bold">{{ detailViewModel.instanceCount ?? 0 }}</p>
-              <p class="text-xs text-muted-foreground">{{ t('task.detail.totalInstances') }}</p>
+          <CardContent v-if="isRecurringPlan">
+            <div
+              v-if="(detailViewModel.dueInstanceCount ?? 0) > 0"
+              class="grid gap-4 @2xl/panel:grid-cols-3"
+              data-testid="task-detail-rolling-completion"
+            >
+              <div class="rounded-lg border p-4 text-center">
+                <p class="text-2xl font-bold">{{ detailViewModel.dueInstanceCount ?? 0 }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{
+                    t('task.detail.dueInWindow', {
+                      days: detailViewModel.completionWindowDays ?? 30,
+                    })
+                  }}
+                </p>
+              </div>
+              <div class="rounded-lg border p-4 text-center">
+                <p class="text-2xl font-bold">
+                  {{ detailViewModel.completedDueInstanceCount ?? 0 }}
+                </p>
+                <p class="text-xs text-muted-foreground">{{ t('task.detail.completedInWindow') }}</p>
+              </div>
+              <div class="rounded-lg border p-4 text-center">
+                <p class="text-2xl font-bold">
+                  {{ Math.round(detailViewModel.completionRate ?? 0) }}%
+                </p>
+                <p class="text-xs text-muted-foreground">{{ t('task.detail.completionRate') }}</p>
+              </div>
             </div>
-            <div class="rounded-lg border p-4 text-center">
-              <p class="text-2xl font-bold">{{ detailViewModel.completedInstanceCount ?? 0 }}</p>
-              <p class="text-xs text-muted-foreground">{{ t('task.detail.completed') }}</p>
-            </div>
-            <div class="rounded-lg border p-4 text-center">
-              <p class="text-2xl font-bold">
-                {{ Math.round(detailViewModel.completionRate ?? 0) }}%
-              </p>
-              <p class="text-xs text-muted-foreground">{{ t('task.detail.completionRate') }}</p>
+            <p
+              v-else
+              class="rounded-lg border p-4 text-sm text-muted-foreground"
+              data-testid="task-detail-no-execution-records"
+            >
+              {{ t('task.detail.noExecutionRecords') }}
+            </p>
+          </CardContent>
+          <CardContent v-else>
+            <div
+              class="flex items-center justify-between rounded-lg border p-4"
+              data-testid="task-detail-one-time-status"
+            >
+              <p class="text-sm text-muted-foreground">{{ t('task.detail.oneTimeStatus') }}</p>
+              <p class="text-base font-semibold text-primary">{{ oneTimeStatusText }}</p>
             </div>
           </CardContent>
         </Card>
@@ -318,6 +348,7 @@ import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import type { TaskGraphDependencyDTO } from '@memoflow/contracts/task';
 import {
+  getTaskInstanceStatusLabel,
   getTaskTimeTypeLabel,
   getTaskTimeValueDisplay,
   mapTaskTemplateDtoToViewModel,
@@ -401,6 +432,11 @@ const statusVariant = computed(() => {
       return 'destructive' as const;
   }
 });
+
+const isRecurringPlan = computed(() => !!detailViewModel.value?.recurrenceRule);
+const oneTimeStatusText = computed(() =>
+  getTaskInstanceStatusLabel(t, detailViewModel.value?.singleInstanceStatus),
+);
 
 /** 将 store 中的 DTO 转换为 Dialog 所需的 ViewModel */
 const editViewModel = computed<TaskTemplateViewModel | null>(() => {

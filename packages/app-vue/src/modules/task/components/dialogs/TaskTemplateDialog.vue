@@ -6,7 +6,7 @@
     >
       <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4 shrink-0">
         <component
-          :is="mode === 'edit' ? Pencil : PlusCircle"
+          :is="mode === 'edit' ? Pencil : mode === 'copy' ? Copy : PlusCircle"
           :class="mode === 'edit' ? 'text-primary' : 'text-success'"
           class="h-6 w-6 shrink-0"
         />
@@ -14,17 +14,34 @@
           <DialogTitle class="text-lg">{{
             mode === 'edit'
               ? t('task.templateDialog.editTitle')
-              : t('task.templateDialog.createTitle')
+              : mode === 'copy'
+                ? t('task.templateDialog.copyTitle')
+                : t('task.templateDialog.createTitle')
           }}</DialogTitle>
           <DialogDescription class="mt-0 text-sm text-muted-foreground">
             {{
               mode === 'edit'
                 ? t('task.templateDialog.editSubtitle')
-                : t('task.templateDialog.createSubtitle')
+                : mode === 'copy'
+                  ? t('task.templateDialog.copySubtitle')
+                  : t('task.templateDialog.createSubtitle')
             }}
           </DialogDescription>
         </div>
       </DialogHeader>
+
+      <p
+        v-if="mode === 'edit' && (localTemplate?.futurePendingInstanceCount ?? 0) > 0"
+        class="mx-6 mb-3 rounded-md border border-info/30 bg-info/10 px-3 py-2 text-sm text-foreground"
+        role="status"
+        data-testid="task-plan-update-impact"
+      >
+        {{
+          t('task.templateDialog.updateImpact', {
+            count: localTemplate?.futurePendingInstanceCount ?? 0,
+          })
+        }}
+      </p>
 
       <div class="flex-1 min-h-0 overflow-y-auto px-6 pb-4">
         <TaskTemplateForm
@@ -76,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, toRaw, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   Dialog,
@@ -87,7 +104,7 @@ import {
   DialogFooter,
   Button,
 } from '@memoflow/ui-vue-shadcn';
-import { Pencil, PlusCircle } from '@lucide/vue';
+import { Copy, Pencil, PlusCircle } from '@lucide/vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import DependencyManager from '../dependency/DependencyManager.vue';
 import type { TaskTemplateViewModel } from '../types';
@@ -105,6 +122,7 @@ const {
   keyResultErrorsByGoal,
   loadGoals: loadGoalOptions,
   loadKeyResults: loadGoalKeyResults,
+  clearErrors: clearGoalBindingErrors,
 } = useTaskGoalBindingOptions();
 
 function createBlankTemplate(): TaskTemplateViewModel {
@@ -136,11 +154,54 @@ function createBlankTemplate(): TaskTemplateViewModel {
   };
 }
 
+function cloneTemplate(template: TaskTemplateViewModel): TaskTemplateViewModel {
+  return structuredClone(toCloneableData(template));
+}
+
+function toCloneableData<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => toCloneableData(item)) as T;
+  }
+
+  if (value !== null && typeof value === 'object') {
+    const rawValue = toRaw(value);
+    return Object.fromEntries(
+      Object.entries(rawValue).map(([key, item]) => [key, toCloneableData(item)]),
+    ) as T;
+  }
+
+  return value;
+}
+
+function createEditDraft(template: TaskTemplateViewModel | null): TaskTemplateViewModel | null {
+  return template ? cloneTemplate(template) : null;
+}
+
+function createCopyDraft(template: TaskTemplateViewModel | null): TaskTemplateViewModel | null {
+  if (!template) {
+    return null;
+  }
+
+  return {
+    ...cloneTemplate(template),
+    id: '',
+    status: 'ACTIVE',
+    isActive: true,
+    isPaused: false,
+    isArchived: false,
+    instanceCount: 0,
+    completedInstanceCount: 0,
+    pendingInstanceCount: 0,
+    completionRate: 0,
+    formattedCreatedAt: undefined,
+  };
+}
+
 const props = withDefaults(
   defineProps<{
     modelValue: boolean;
     template?: TaskTemplateViewModel | null;
-    mode?: 'create' | 'edit';
+    mode?: 'create' | 'edit' | 'copy';
     saving?: boolean;
     availableTemplates?: TaskTemplateViewModel[];
     graphTasks?: TaskForDAG[];
@@ -169,9 +230,7 @@ const emit = defineEmits<{
 }>();
 
 const formRef = ref<InstanceType<typeof TaskTemplateForm> | null>(null);
-const localTemplate = ref<TaskTemplateViewModel | null>(
-  props.template ? { ...props.template } : props.mode === 'create' ? createBlankTemplate() : null,
-);
+const localTemplate = ref<TaskTemplateViewModel | null>(null);
 const isValid = ref(false);
 const visible = computed(() => props.modelValue);
 const mode = computed(() => props.mode);
@@ -237,28 +296,44 @@ async function requestKeyResults(goalId: string, force = false) {
   return loadGoalKeyResults(goalId, force);
 }
 
-watch(
-  () => props.template,
-  (template) => {
-    localTemplate.value = template
-      ? { ...template }
-      : props.mode === 'create'
-        ? createBlankTemplate()
-        : null;
-  },
-  { immediate: true, deep: true },
-);
+function initializeDraft(): void {
+  if (props.mode === 'create') {
+    localTemplate.value = createBlankTemplate();
+  } else if (props.mode === 'copy') {
+    localTemplate.value = createCopyDraft(props.template ?? null);
+  } else {
+    localTemplate.value = createEditDraft(props.template ?? null);
+  }
+
+  isValid.value = false;
+  clearGoalBindingErrors();
+}
 
 watch(
   visible,
-  async (open) => {
+  async (open, wasOpen) => {
     if (!open) {
       return;
     }
 
+    if (!wasOpen) {
+      initializeDraft();
+    }
     await loadGoals();
   },
   { immediate: true },
+);
+
+watch(
+  [() => props.mode, () => props.template?.id],
+  ([nextMode, nextTemplateId], [previousMode, previousTemplateId]) => {
+    if (
+      visible.value &&
+      (nextMode !== previousMode || nextTemplateId !== previousTemplateId)
+    ) {
+      initializeDraft();
+    }
+  },
 );
 
 const setVisible = (value: boolean) => {
@@ -274,6 +349,9 @@ const handleValidationUpdate = (validation: { isValid: boolean }) => {
 };
 
 const handleCancel = () => {
+  localTemplate.value = null;
+  isValid.value = false;
+  clearGoalBindingErrors();
   emit('cancel');
   emit('update:modelValue', false);
 };

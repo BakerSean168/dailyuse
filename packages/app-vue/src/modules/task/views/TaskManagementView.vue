@@ -10,10 +10,21 @@
         </p>
         <div class="flex shrink-0 items-center gap-1">
           <Button
+            data-testid="quick-task-button"
+            data-primary-action="quick-task"
+            :aria-label="t('task.templateMgmt.quickCreate')"
+            size="sm"
+            class="h-8 px-2 @xl/panel:px-3"
+            @click="showQuickTaskDialog = true"
+          >
+            <Zap class="h-4 w-4 @xl/panel:mr-1.5" />
+            <span class="hidden @xl/panel:inline">{{ t('task.templateMgmt.quickCreate') }}</span>
+          </Button>
+          <Button
             data-testid="create-task-template-button"
-            data-primary-action="create-task-template"
             :aria-label="t('task.templateMgmt.createNew')"
             size="sm"
+            variant="outline"
             class="h-8 px-2 @xl/panel:px-3"
             @click="handleCreate"
           >
@@ -73,6 +84,7 @@
           @clear-filters="clearFilters"
           @click-template="handleClickTemplate"
           @edit-template="handleEdit"
+          @copy-template="handleCopy"
           @delete-template="handleDelete"
           @pause-template="handlePause"
           @resume-template="handleResume"
@@ -97,6 +109,13 @@
     </div>
 
     <!-- 创建模板对话框 -->
+    <QuickTaskDialog
+      v-model="showQuickTaskDialog"
+      :saving="isSaving"
+      @save="handleSaveQuickTask"
+      @cancel="showQuickTaskDialog = false"
+    />
+
     <TaskTemplateDialog
       v-model="showCreateDialog"
       mode="create"
@@ -105,6 +124,18 @@
       :graph-tasks="graphData.nodes"
       @save="handleSaveCreate"
       @cancel="showCreateDialog = false"
+    />
+
+    <TaskTemplateDialog
+      v-if="copyViewModel"
+      v-model="showCopyDialog"
+      mode="copy"
+      :template="copyViewModel"
+      :saving="isSaving"
+      :available-templates="viewModels"
+      :graph-tasks="graphData.nodes"
+      @save="handleSaveCopy"
+      @cancel="handleCancelCopy"
     />
 
     <!-- 编辑模板对话框 -->
@@ -176,7 +207,7 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import { AlertCircle, MoreHorizontal, Plus, Trash2 } from '@lucide/vue';
+import { AlertCircle, MoreHorizontal, Plus, Trash2, Zap } from '@lucide/vue';
 import {
   Alert,
   AlertDescription,
@@ -198,6 +229,7 @@ import TaskFilterBar from '../components/TaskFilterBar.vue';
 import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
 import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
+import QuickTaskDialog from '../components/dialogs/QuickTaskDialog.vue';
 import { useTask } from '../composables/useTask';
 import { useTaskGoalBindingOptions } from '../composables/useTaskGoalBindingOptions';
 import type {
@@ -216,6 +248,7 @@ import type { GoalId, KeyResultId, TaskTemplateId } from '@memoflow/contracts/pr
 import type { RecurrenceRuleDTO } from '@memoflow/contracts/task';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { buildTaskGraphData, type TaskForDAG } from '../types/task-dag.types';
+import { startOfDayMs } from '../../../shared/utils/product-time';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -245,8 +278,11 @@ const highlightedTemplateId = ref<string | null>(null);
 const graphFocusTaskId = ref<string | null>(null);
 
 const showCreateDialog = ref(false);
+const showQuickTaskDialog = ref(false);
 const showEditDialog = ref(false);
 const editViewModel = ref<TaskTemplateViewModel | null>(null);
+const showCopyDialog = ref(false);
+const copyViewModel = ref<TaskTemplateViewModel | null>(null);
 const showDeleteAllDialog = ref(false);
 const deleteConfirmText = ref('');
 
@@ -429,6 +465,37 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
   if (result) {
     showCreateDialog.value = false;
     await refreshTaskManagement();
+    return true;
+  }
+  return false;
+}
+
+async function handleSaveQuickTask(value: { title: string }) {
+  const result = await createTemplate(
+    {
+      name: value.title,
+      description: null,
+      taskType: TaskType.OneTime,
+      timeConfig: {
+        timeType: 'AllDay',
+        startDate: startOfDayMs(Date.now()),
+        timePoint: null,
+        timeRange: null,
+      },
+      recurrenceRule: null,
+      reminderConfig: null,
+      importance: ImportanceLevel.Moderate,
+      parentTaskId: null,
+      folderId: null,
+      tags: [],
+      color: null,
+      goalBinding: null,
+    },
+    'quick',
+  );
+  if (result) {
+    showQuickTaskDialog.value = false;
+    await refreshTaskManagement();
   }
 }
 
@@ -441,6 +508,25 @@ function handleEdit(templateId: string) {
   if (vm) {
     editViewModel.value = { ...vm };
     showEditDialog.value = true;
+  }
+}
+
+function handleCopy(templateId: string) {
+  const vm = viewModels.value.find((value) => value.id === templateId);
+  if (vm) {
+    copyViewModel.value = vm;
+    showCopyDialog.value = true;
+  }
+}
+
+function handleCancelCopy() {
+  showCopyDialog.value = false;
+  copyViewModel.value = null;
+}
+
+async function handleSaveCopy(template: TaskTemplateViewModel) {
+  if (await handleSaveCreate(template)) {
+    handleCancelCopy();
   }
 }
 

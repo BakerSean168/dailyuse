@@ -278,7 +278,7 @@ describe('TaskInstancePrismaRepository integration', () => {
 
     await instanceRepository.save(instance);
 
-    await instanceRepository.delete(instance.id);
+    await instanceRepository.delete(String(identityId), instance.id);
 
     const saved = await instanceRepository.findByIdForIdentity(identityId, instance.id);
 
@@ -324,5 +324,64 @@ describe('TaskInstancePrismaRepository integration', () => {
     expect(loaded?.identityId).toBe(original.identityId);
     expect(loaded?.importance).toBe(original.importance);
     expect(loaded?.status).toBe(original.status);
+  });
+
+  it('calculates completion from due instances in the rolling 30-day window', async () => {
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+
+    const prisma = await getPrisma();
+    const templateRepository = new TaskTemplatePrismaRepository(prisma);
+    const instanceRepository = new TaskInstancePrismaRepository(prisma);
+    const asOf = Date.UTC(2026, 6, 30, 12);
+    const day = 24 * 60 * 60 * 1000;
+    const template = TaskTemplate.createOneTimeTask({
+      identityId,
+      title: 'Thirty day statistics',
+      importance: 'Moderate',
+      dueDate: new Date(asOf + day),
+    });
+    await templateRepository.save(template);
+
+    const createInstance = (date: number) =>
+      TaskInstance.create({
+        templateId: template.id,
+        identityId,
+        instanceDate: date,
+        timeConfig: makeAllDayTimeConfig(new Date(date)),
+        importance: 'Moderate',
+      });
+
+    const outsideWindowCompleted = createInstance(asOf - 31 * day);
+    outsideWindowCompleted.complete();
+    const dueCompleted = createInstance(asOf - 20 * day);
+    dueCompleted.complete();
+    const duePending = createInstance(asOf - 10 * day);
+    const futurePending = createInstance(asOf + day);
+    await instanceRepository.saveMany([
+      outsideWindowCompleted,
+      dueCompleted,
+      duePending,
+      futurePending,
+    ]);
+
+    const stats = (await instanceRepository.getTemplateStats(
+      [template.id],
+      String(identityId),
+      asOf,
+    ))[template.id];
+
+    expect(stats).toEqual({
+      templateId: template.id,
+      instanceCount: 4,
+      completedInstanceCount: 2,
+      pendingInstanceCount: 2,
+      dueInstanceCount: 2,
+      completedDueInstanceCount: 1,
+      completionWindowDays: 30,
+      futurePendingInstanceCount: 1,
+      singleInstanceStatus: null,
+      completionRate: 50,
+    });
   });
 });

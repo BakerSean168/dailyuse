@@ -43,6 +43,9 @@ const i18n = createI18n({
             "Task template created and today's instance generated ({count})",
           createTemplateWithoutTodayInstanceSuccess:
             "Task template created without today's instance ({count})",
+          createQuickTaskWithTodayInstanceSuccess: "Quick task created for today ({count})",
+          createQuickTaskWithoutTodayInstanceSuccess:
+            "Quick task created, but today's pending task was not generated ({count})",
           updateFailed: 'Could not update task template',
           updateSuccess: 'Task template updated',
           deleteFailed: 'Could not delete task template',
@@ -66,6 +69,9 @@ const i18n = createI18n({
             "Task template created and today's instance generated ({count})",
           createTemplateWithoutTodayInstanceSuccess:
             "Task template created without today's instance ({count})",
+          createQuickTaskWithTodayInstanceSuccess: "Quick task created for today ({count})",
+          createQuickTaskWithoutTodayInstanceSuccess:
+            "Quick task created, but today's pending task was not generated ({count})",
           updateFailed: 'Could not update task template',
           updateSuccess: 'Task template updated',
           deleteFailed: 'Could not delete task template',
@@ -313,6 +319,26 @@ describe('useTaskTemplates', () => {
     expect(toast.success).toHaveBeenCalledWith(
       "Task template created without today's instance (3)",
     );
+  });
+
+  it('uses task-specific feedback when quick creation generates today\'s pending task', async () => {
+    const template = createTemplate();
+    const { composable } = mountComposable({
+      createTemplate: vi.fn().mockResolvedValue(
+        ok({
+          template: createTemplateEntity(template),
+          instanceCount: 1,
+          todayInstanceCreated: true,
+        }),
+      ),
+    });
+
+    await composable.createTemplate(
+      { name: template.name } as CreateTaskTemplateReq,
+      'quick',
+    );
+
+    expect(toast.success).toHaveBeenCalledWith('Quick task created for today (1)');
   });
 
   it('stores translated errors and leaves previous templates untouched on failure', async () => {

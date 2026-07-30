@@ -794,6 +794,9 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   public toClientDTO(includeChildren: boolean = false): TaskTemplateClientDTO {
+    const asOf = Date.now();
+    const completionWindowDays = 30 as const;
+    const completionWindowStart = asOf - completionWindowDays * 24 * 60 * 60 * 1000;
     const completedCount = this._instances.filter(
       (instance) => instance.status === TaskInstanceStatus.Completed,
     ).length;
@@ -801,7 +804,17 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       (instance) => instance.status === TaskInstanceStatus.Pending,
     ).length;
     const totalCount = this._instances.length;
-    const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+    const dueInstances = this._instances.filter(
+      (instance) =>
+        instance.instanceDate >= completionWindowStart && instance.instanceDate <= asOf,
+    );
+    const completedDueInstanceCount = dueInstances.filter(
+      (instance) => instance.status === TaskInstanceStatus.Completed,
+    ).length;
+    const completionRate =
+      dueInstances.length > 0
+        ? Math.round((completedDueInstanceCount / dueInstances.length) * 100)
+        : 0;
     const priority = this._props.taskType === TaskType.OneTime ? this.getPriority() : undefined;
 
     return {
@@ -845,6 +858,14 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       instanceCount: totalCount,
       completedInstanceCount: completedCount,
       pendingInstanceCount: pendingCount,
+      dueInstanceCount: dueInstances.length,
+      completedDueInstanceCount,
+      completionWindowDays,
+      futurePendingInstanceCount: this._instances.filter(
+        (instance) =>
+          instance.status === TaskInstanceStatus.Pending && instance.instanceDate > asOf,
+      ).length,
+      singleInstanceStatus: this._instances.length === 1 ? this._instances[0].status : null,
       completionRate,
     };
   }

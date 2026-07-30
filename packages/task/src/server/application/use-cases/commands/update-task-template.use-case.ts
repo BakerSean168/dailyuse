@@ -3,130 +3,255 @@
  */
 
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import { RecurrenceRule } from '../../../domain/value-objects/recurrence-rule';
 import { TaskTimeConfig } from '../../../domain/value-objects/task-time-config';
 import { TaskReminderConfig } from '../../../domain/value-objects/task-reminder-config';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
 import {
   TaskGoalBindingTrigger,
-  type UpdateTaskTemplateReq,
+  TaskInstanceStatus,
+  TaskTemplateStatus,
+  TaskType,
+  type RecurrenceRuleDTO,
   type TaskTemplateClientDTO,
+  type TaskTimeConfigDTO,
+  type UpdateTaskTemplateReq,
 } from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
-import { ok, error } from '@memoflow/contracts/result';
+import { error, fail, ok } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import { isFiniteTaskPlan } from '../../../domain/aggregates/task-template-goal.policy';
+import {
+  createInlineTaskWriteTransactionRunner,
+  mapTaskWriteErrorToResultError,
+  type TaskWriteTransactionRunner,
+} from './task-write-support';
+
+function sameTimeConfig(
+  left: TaskTimeConfigDTO | null,
+  right: TaskTimeConfigDTO | null,
+): boolean {
+  return (
+    left?.timeType === right?.timeType &&
+    left?.startDate === right?.startDate &&
+    left?.timePoint === right?.timePoint &&
+    left?.timeRange?.start === right?.timeRange?.start &&
+    left?.timeRange?.end === right?.timeRange?.end
+  );
+}
+
+function sameRecurrenceRule(
+  left: RecurrenceRuleDTO | null,
+  right: RecurrenceRuleDTO | null,
+): boolean {
+  if (!left || !right) {
+    return left === right;
+  }
+
+  return (
+    left.frequency === right.frequency &&
+    left.interval === right.interval &&
+    left.endDate === right.endDate &&
+    left.occurrences === right.occurrences &&
+    [...left.daysOfWeek].sort().join(',') === [...right.daysOfWeek].sort().join(',')
+  );
+}
 
 export class UpdateTaskTemplateUseCase {
-  constructor(private readonly templateRepository: ITaskTemplateRepository) {}
+  private readonly logger = createLogger('UpdateTaskTemplateUseCase');
+  private readonly transactionRunner: TaskWriteTransactionRunner;
+
+  constructor(
+    private readonly templateRepository: ITaskTemplateRepository,
+    private readonly instanceRepository: ITaskInstanceRepository,
+    transactionRunner?: TaskWriteTransactionRunner,
+    private readonly now: () => number = Date.now,
+  ) {
+    this.transactionRunner =
+      transactionRunner ??
+      createInlineTaskWriteTransactionRunner({
+        templateRepository,
+        instanceRepository,
+      });
+  }
 
   async execute(
     id: string,
     identityId: string,
     request: Partial<UpdateTaskTemplateReq>,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    const template = await this.templateRepository.findByIdForIdentity(identityId, id);
-    if (!template) {
-      return error('NOT_FOUND', `TaskTemplate ${id} not found`);
-    }
-
-    const nextRecurrenceRule =
-      request.recurrenceRule === undefined
-        ? template.recurrenceRule
-        : request.recurrenceRule === null
-          ? null
-          : RecurrenceRule.fromDTO(request.recurrenceRule);
-    const nextProgressTrigger =
-      request.goalBinding === undefined
-        ? template.goalBinding?.progressTrigger
-        : request.goalBinding?.progressTrigger;
-
-    if (
-      nextProgressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted &&
-      !isFiniteTaskPlan(template.taskType, nextRecurrenceRule)
-    ) {
-      return error(
-        'BAD_REQUEST',
-        'Whole-plan goal progress requires an end date or maximum occurrence count',
-      );
-    }
-
-    if (request.parentTaskId !== undefined) {
-      const parentValidation = await this.validateParentTask(
-        id,
-        identityId,
-        request.parentTaskId ?? null,
-      );
-      if (!parentValidation.ok) {
-        return parentValidation;
-      }
-    }
-
-    if (request.name !== undefined) {
-      template.updateTitle(request.name);
-    }
-
-    if (request.description !== undefined) {
-      template.updateDescription(request.description ?? null);
-    }
-
-    if (request.timeConfig !== undefined) {
-      const nextTimeConfig = request.timeConfig ? TaskTimeConfig.fromDTO(request.timeConfig) : null;
-      template.updateTimeConfig(nextTimeConfig);
-    }
-
-    if (request.importance !== undefined) {
-      template.updatePriority(request.importance);
-    }
-
-    if (request.parentTaskId !== undefined) {
-      template.updateParentTaskId(
-        request.parentTaskId ? TaskTemplateId.of(request.parentTaskId) : null,
-      );
-    }
-
-    if (request.tags !== undefined) {
-      template.updateTags(request.tags);
-    }
-
-    if (request.color !== undefined) {
-      template.updateColor(request.color ?? null);
-    }
-
-    if (request.recurrenceRule !== undefined && request.recurrenceRule !== null) {
-      template.updateRecurrenceRule(RecurrenceRule.fromDTO(request.recurrenceRule));
-    }
-
-    if (request.reminderConfig !== undefined) {
-      const nextReminderConfig = request.reminderConfig
-        ? TaskReminderConfig.fromDTO(request.reminderConfig)
-        : null;
-      template.updateReminderConfig(nextReminderConfig);
-    }
-
-    if (request.goalBinding !== undefined) {
-      if (request.goalBinding === null) {
-        if (template.goalBinding) {
-          template.unbindFromGoal();
+    try {
+      return await this.transactionRunner.run(async ({
+        templateRepository,
+        instanceRepository,
+      }) => {
+        const template = await templateRepository.findByIdForIdentity(identityId, id);
+        if (!template) {
+          return error('NOT_FOUND', `TaskTemplate ${id} not found`);
         }
-      } else {
-        if (template.goalBinding) {
-          template.unbindFromGoal();
+
+        if (request.timeConfig === null) {
+          return error('BAD_REQUEST', 'A task plan must keep a time configuration');
         }
-        template.bindToGoal(
-          request.goalBinding.goalId,
-          request.goalBinding.keyResultId,
-          request.goalBinding.goalRecordValue,
-          request.goalBinding.progressTrigger,
+        if (template.taskType === TaskType.Recurring && request.recurrenceRule === null) {
+          return error('BAD_REQUEST', 'A recurring task plan must keep a recurrence rule');
+        }
+
+        const currentTimeConfig = template.timeConfig?.toDTO() ?? null;
+        const currentRecurrenceRule = template.recurrenceRule?.toDTO() ?? null;
+        const nextTimeConfig =
+          request.timeConfig === undefined
+            ? template.timeConfig
+            : TaskTimeConfig.fromDTO(request.timeConfig);
+        const nextRecurrenceRule =
+          request.recurrenceRule === undefined
+            ? template.recurrenceRule
+            : request.recurrenceRule === null
+              ? null
+              : RecurrenceRule.fromDTO(request.recurrenceRule);
+        const timeChanged =
+          request.timeConfig !== undefined &&
+          !sameTimeConfig(currentTimeConfig, nextTimeConfig?.toDTO() ?? null);
+        const recurrenceChanged =
+          request.recurrenceRule !== undefined &&
+          !sameRecurrenceRule(currentRecurrenceRule, nextRecurrenceRule?.toDTO() ?? null);
+        const scheduleChanged = timeChanged || recurrenceChanged;
+        const importanceChanged =
+          request.importance !== undefined && request.importance !== template.importance;
+        const nextProgressTrigger =
+          request.goalBinding === undefined
+            ? template.goalBinding?.progressTrigger
+            : request.goalBinding?.progressTrigger;
+
+        if (
+          nextProgressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted &&
+          !isFiniteTaskPlan(template.taskType, nextRecurrenceRule)
+        ) {
+          return error(
+            'BAD_REQUEST',
+            'Whole-plan goal progress requires an end date or maximum occurrence count',
+          );
+        }
+
+        if (request.parentTaskId !== undefined) {
+          const parentValidation = await this.validateParentTask(
+            templateRepository,
+            id,
+            identityId,
+            request.parentTaskId ?? null,
+          );
+          if (!parentValidation.ok) {
+            return parentValidation;
+          }
+        }
+
+        const effectiveFrom = this.now();
+        const instances =
+          scheduleChanged || importanceChanged
+            ? await instanceRepository.findByTemplateId(id, identityId)
+            : [];
+        const affectedPendingInstances = instances.filter(
+          (instance) =>
+            instance.status === TaskInstanceStatus.Pending &&
+            instance.instanceDate > effectiveFrom,
         );
-      }
+        const originalGenerationHorizon = template.lastGeneratedDate;
+
+        if (request.name !== undefined) {
+          template.updateTitle(request.name);
+        }
+        if (request.description !== undefined) {
+          template.updateDescription(request.description ?? null);
+        }
+        if (timeChanged) {
+          template.updateTimeConfig(nextTimeConfig);
+        }
+        if (importanceChanged && request.importance !== undefined) {
+          template.updatePriority(request.importance);
+        }
+        if (request.parentTaskId !== undefined) {
+          template.updateParentTaskId(
+            request.parentTaskId ? TaskTemplateId.of(request.parentTaskId) : null,
+          );
+        }
+        if (request.tags !== undefined) {
+          template.updateTags(request.tags);
+        }
+        if (request.color !== undefined) {
+          template.updateColor(request.color ?? null);
+        }
+        if (recurrenceChanged && nextRecurrenceRule) {
+          template.updateRecurrenceRule(nextRecurrenceRule);
+        }
+        if (request.reminderConfig !== undefined) {
+          const nextReminderConfig = request.reminderConfig
+            ? TaskReminderConfig.fromDTO(request.reminderConfig)
+            : null;
+          template.updateReminderConfig(nextReminderConfig);
+        }
+        if (request.goalBinding !== undefined) {
+          if (template.goalBinding) {
+            template.unbindFromGoal();
+          }
+          if (request.goalBinding) {
+            template.bindToGoal(
+              request.goalBinding.goalId,
+              request.goalBinding.keyResultId,
+              request.goalBinding.goalRecordValue,
+              request.goalBinding.progressTrigger,
+            );
+          }
+        }
+
+        if (scheduleChanged) {
+          const affectedIds = affectedPendingInstances.map((instance) => String(instance.id));
+          if (affectedIds.length > 0) {
+            await instanceRepository.deleteMany(identityId, affectedIds);
+          }
+
+          const affectedIdSet = new Set(affectedIds);
+          instances
+            .filter((instance) => !affectedIdSet.has(String(instance.id)))
+            .forEach((instance) => template.addInstance(instance));
+
+          const generationHorizon = Math.max(
+            originalGenerationHorizon ?? 0,
+            ...affectedPendingInstances.map((instance) => instance.instanceDate),
+          );
+          if (
+            template.status === TaskTemplateStatus.Active &&
+            nextTimeConfig &&
+            generationHorizon > effectiveFrom
+          ) {
+            const regenerated = template.generateInstances(effectiveFrom, generationHorizon);
+            if (regenerated.length > 0) {
+              await instanceRepository.saveMany(regenerated);
+            }
+          }
+        } else if (importanceChanged && request.importance !== undefined) {
+          const changedInstances = affectedPendingInstances.filter((instance) =>
+            instance.applyPlanProjection({
+              effectiveFrom,
+              importance: request.importance,
+            }),
+          );
+          if (changedInstances.length > 0) {
+            await instanceRepository.saveMany(changedInstances);
+          }
+        }
+
+        await templateRepository.save(template);
+        return ok(template.toClientDTO());
+      });
+    } catch (caughtError) {
+      this.logger.error('Failed to update task template', { error: caughtError });
+      return fail(mapTaskWriteErrorToResultError(caughtError, 'Failed to update task template'));
     }
-
-    await this.templateRepository.save(template);
-
-    return ok(template.toClientDTO());
   }
 
   private async validateParentTask(
+    templateRepository: ITaskTemplateRepository,
     templateId: string,
     identityId: string,
     parentTaskId: string | null,
@@ -146,21 +271,18 @@ export class UpdateTaskTemplateUseCase {
       if (currentParentId === templateId) {
         return error('BAD_REQUEST', 'Parent task would create a hierarchy cycle');
       }
-
       if (visited.has(currentParentId)) {
         return error('BAD_REQUEST', 'Detected an existing hierarchy cycle in parent tasks');
       }
 
       visited.add(currentParentId);
-
-      const parentTemplate = await this.templateRepository.findByIdForIdentity(
+      const parentTemplate = await templateRepository.findByIdForIdentity(
         identityId,
         currentParentId,
       );
       if (!parentTemplate) {
         return error('BAD_REQUEST', `Parent task template ${currentParentId} not found`);
       }
-
       currentParentId = parentTemplate.parentTaskId ? String(parentTemplate.parentTaskId) : null;
     }
 

@@ -269,6 +269,34 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
   }
 
+  /** Applies template-owned fields only while this is an unstarted future instance. */
+  public applyPlanProjection(params: {
+    effectiveFrom: number;
+    timeConfig?: TaskTimeConfig;
+    importance?: ImportanceLevel;
+  }): boolean {
+    if (
+      this._props.status !== TaskInstanceStatus.Pending ||
+      this._props.instanceDate <= params.effectiveFrom
+    ) {
+      return false;
+    }
+
+    let changed = false;
+    if (params.timeConfig !== undefined) {
+      this._props.timeConfig = params.timeConfig;
+      changed = true;
+    }
+    if (params.importance !== undefined && params.importance !== this._props.importance) {
+      this._props.importance = params.importance;
+      changed = true;
+    }
+    if (changed) {
+      this._props.updatedAt = Date.now();
+    }
+    return changed;
+  }
+
   /** Business state check methods. */
   public canStart(): boolean {
     return this._props.status === TaskInstanceStatus.Pending;

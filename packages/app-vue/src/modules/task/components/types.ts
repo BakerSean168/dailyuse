@@ -96,6 +96,11 @@ export interface TaskTemplateViewModel {
   instanceCount?: number;
   completedInstanceCount?: number;
   pendingInstanceCount?: number;
+  dueInstanceCount?: number;
+  completedDueInstanceCount?: number;
+  completionWindowDays?: 30;
+  futurePendingInstanceCount?: number;
+  singleInstanceStatus?: 'Pending' | 'InProgress' | 'Completed' | 'Skipped' | 'Expired' | null;
   completionRate?: number;
   formattedCreatedAt?: string;
   /** TaskType enum value mapped for CreateTaskTemplateReq.taskType */

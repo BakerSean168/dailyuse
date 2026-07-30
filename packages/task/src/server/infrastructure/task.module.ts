@@ -213,7 +213,11 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
       taskInstanceRepository,
       taskWriteTransactionRunner,
     ),
-    updateTaskTemplate: new UpdateTaskTemplateUseCase(taskTemplateRepository),
+    updateTaskTemplate: new UpdateTaskTemplateUseCase(
+      taskTemplateRepository,
+      taskInstanceRepository,
+      taskWriteTransactionRunner,
+    ),
     activateTaskTemplate: new ActivateTaskTemplateUseCase(
       taskTemplateRepository,
       taskInstanceRepository,
@@ -389,7 +393,6 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     },
   };
 }
-
 
 
 

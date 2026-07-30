@@ -280,6 +280,11 @@ export function useTaskGoalBindingOptions() {
     await Promise.all(uniqueGoalIds.map((goalId) => loadGoalBinding(goalId)));
   }
 
+  function clearErrors(): void {
+    loadError.value = null;
+    keyResultErrorsByGoal.value = {};
+  }
+
   function resolveGoalBinding(
     binding: TaskGoalBindingViewModel | null | undefined,
   ): TaskGoalBindingViewModel | null | undefined {
@@ -311,6 +316,7 @@ export function useTaskGoalBindingOptions() {
     loadKeyResults,
     loadGoalBinding,
     loadGoalBindings,
+    clearErrors,
     resolveGoalBinding,
   };
 }

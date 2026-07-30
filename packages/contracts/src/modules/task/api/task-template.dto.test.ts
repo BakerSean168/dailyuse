@@ -76,6 +76,11 @@ function validTemplateResponse() {
     instanceCount: 0,
     completedInstanceCount: 0,
     pendingInstanceCount: 0,
+    dueInstanceCount: 0,
+    completedDueInstanceCount: 0,
+    completionWindowDays: 30,
+    futurePendingInstanceCount: 0,
+    singleInstanceStatus: null,
     completionRate: 0,
   };
 }

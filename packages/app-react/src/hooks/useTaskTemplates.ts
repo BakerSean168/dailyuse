@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
-import type { TaskTemplateStatus, TaskTimeConfigDTO } from '@memoflow/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskTemplateStatus,
+  TaskTimeConfigDTO,
+} from '@memoflow/contracts/task';
 import type { TaskTemplate } from '@memoflow/task/client';
 
 import { useAppSession } from './useAppSession';
@@ -18,6 +22,11 @@ export type TaskTemplateSummary = {
   completedInstanceCount: number;
   pendingInstanceCount: number;
   completionRate: number;
+  dueInstanceCount: number;
+  completedDueInstanceCount: number;
+  completionWindowDays: 30;
+  futurePendingInstanceCount: number;
+  singleInstanceStatus: TaskTemplateClientDTO['singleInstanceStatus'];
   isBlocked: boolean;
   blockingReason: string | null;
   tags: string[];
@@ -49,6 +58,11 @@ function mapTemplate(template: TaskTemplate): TaskTemplateSummary {
     completedInstanceCount: template.completedInstanceCount,
     pendingInstanceCount: template.pendingInstanceCount,
     completionRate: template.completionRate,
+    dueInstanceCount: template.dueInstanceCount,
+    completedDueInstanceCount: template.completedDueInstanceCount,
+    completionWindowDays: template.completionWindowDays,
+    futurePendingInstanceCount: template.futurePendingInstanceCount,
+    singleInstanceStatus: template.singleInstanceStatus,
     isBlocked: template.isBlocked ?? false,
     blockingReason: template.blockingReason,
     tags: template.tags,

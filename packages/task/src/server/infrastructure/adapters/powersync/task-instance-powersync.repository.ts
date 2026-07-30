@@ -204,24 +204,40 @@ export class PowerSyncTaskInstanceRepository
   async getTemplateStats(
     templateIds: string[],
     identityId: string,
+    asOf: number = Date.now(),
   ): Promise<Record<string, TaskTemplateInstanceStats>> {
     if (templateIds.length === 0) {
       return {};
     }
 
     const placeholders = templateIds.map(() => '?').join(', ');
+    const completionWindowDays = 30 as const;
+    const windowStart = new Date(asOf - completionWindowDays * 24 * 60 * 60 * 1000).toISOString();
+    const windowEnd = new Date(asOf).toISOString();
     const rows = await this.db.getAll<{
       templateId: string;
-      status: string;
-      count: number;
+      instanceCount: number;
+      completedInstanceCount: number;
+      pendingInstanceCount: number;
+      dueInstanceCount: number;
+      completedDueInstanceCount: number;
+      futurePendingInstanceCount: number;
+      singleInstanceStatus: TaskInstanceStatus | null;
     }>(
-      `SELECT template_id as templateId, status, COUNT(*) as count
+      `SELECT template_id as templateId,
+              COUNT(*) as instanceCount,
+              SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completedInstanceCount,
+              SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pendingInstanceCount,
+              SUM(CASE WHEN instance_date >= ? AND instance_date <= ? THEN 1 ELSE 0 END) as dueInstanceCount,
+              SUM(CASE WHEN status = 'Completed' AND instance_date >= ? AND instance_date <= ? THEN 1 ELSE 0 END) as completedDueInstanceCount,
+              SUM(CASE WHEN status = 'Pending' AND instance_date > ? THEN 1 ELSE 0 END) as futurePendingInstanceCount,
+              CASE WHEN COUNT(*) = 1 THEN MAX(status) ELSE NULL END as singleInstanceStatus
          FROM task_instances
         WHERE template_id IN (${placeholders})
           AND identity_id = ?
           AND deleted_at IS NULL
-        GROUP BY template_id, status`,
-      [...templateIds, identityId],
+        GROUP BY template_id`,
+      [windowStart, windowEnd, windowStart, windowEnd, windowEnd, ...templateIds, identityId],
     );
 
     const stats: Record<string, TaskTemplateInstanceStats> = {};
@@ -232,6 +248,11 @@ export class PowerSyncTaskInstanceRepository
         instanceCount: 0,
         completedInstanceCount: 0,
         pendingInstanceCount: 0,
+        dueInstanceCount: 0,
+        completedDueInstanceCount: 0,
+        completionWindowDays,
+        futurePendingInstanceCount: 0,
+        singleInstanceStatus: null,
         completionRate: 0,
       };
     }
@@ -242,22 +263,16 @@ export class PowerSyncTaskInstanceRepository
         continue;
       }
 
-      const count = Number(row.count ?? 0);
-      stat.instanceCount += count;
-
-      if (row.status === 'Completed') {
-        stat.completedInstanceCount += count;
-      }
-
-      if (row.status === 'Pending') {
-        stat.pendingInstanceCount += count;
-      }
-    }
-
-    for (const stat of Object.values(stats)) {
+      stat.instanceCount = Number(row.instanceCount ?? 0);
+      stat.completedInstanceCount = Number(row.completedInstanceCount ?? 0);
+      stat.pendingInstanceCount = Number(row.pendingInstanceCount ?? 0);
+      stat.dueInstanceCount = Number(row.dueInstanceCount ?? 0);
+      stat.completedDueInstanceCount = Number(row.completedDueInstanceCount ?? 0);
+      stat.futurePendingInstanceCount = Number(row.futurePendingInstanceCount ?? 0);
+      stat.singleInstanceStatus = row.singleInstanceStatus ?? null;
       stat.completionRate =
-        stat.instanceCount > 0
-          ? Math.round((stat.completedInstanceCount / stat.instanceCount) * 100)
+        stat.dueInstanceCount > 0
+          ? Math.round((stat.completedDueInstanceCount / stat.dueInstanceCount) * 100)
           : 0;
     }
 
@@ -296,5 +311,3 @@ export class PowerSyncTaskInstanceRepository
     return rows.map((row) => PowerSyncTaskInstanceMapper.toDomain(row));
   }
 }
-
-
