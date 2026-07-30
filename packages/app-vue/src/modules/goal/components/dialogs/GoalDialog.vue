@@ -15,8 +15,12 @@
 
       <Tabs v-model="activeTab" class="flex flex-col flex-1 min-h-0">
         <TabsList class="mx-6 mb-0 w-auto justify-start shrink-0">
-          <TabsTrigger value="basic">{{ t('goal.dialog.tabBasicInfo') }}</TabsTrigger>
-          <TabsTrigger value="keyresults">{{ t('goal.dialog.tabKeyResults') }}</TabsTrigger>
+          <TabsTrigger value="basic" data-testid="goal-dialog-basic-tab">{{
+            t('goal.dialog.tabBasicInfo')
+          }}</TabsTrigger>
+          <TabsTrigger value="keyresults" data-testid="goal-dialog-key-results-tab">{{
+            t('goal.dialog.tabKeyResults')
+          }}</TabsTrigger>
         </TabsList>
 
         <!-- ========== Tab 1: Basic Info ========== -->
@@ -393,7 +397,12 @@
             </div>
 
             <!-- Add KR button -->
-            <Button variant="outline" class="w-full" @click="addKr">
+            <Button
+              variant="outline"
+              class="w-full"
+              data-testid="goal-dialog-add-key-result"
+              @click="addKr"
+            >
               <Plus class="mr-2 h-4 w-4" />
               {{ t('goal.dialog.addKeyResult') }}
             </Button>

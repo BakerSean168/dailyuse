@@ -138,6 +138,17 @@
         "cwd": "apps/web"
       }
     },
+    "e2e:local-docker": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "outputs": [
+        "{workspaceRoot}/apps/web/test-results/local-docker",
+        "{workspaceRoot}/apps/web/playwright-local-docker-report"
+      ],
+      "options": {
+        "command": "node ./apps/web/e2e/helpers/run-local-docker-playwright.mjs"
+      }
+    },
 
     "e2e:ai-workspace": {
       "executor": "nx:run-commands",

@@ -7,9 +7,14 @@ import { RecurrenceRule } from '../../../domain/value-objects/recurrence-rule';
 import { TaskTimeConfig } from '../../../domain/value-objects/task-time-config';
 import { TaskReminderConfig } from '../../../domain/value-objects/task-reminder-config';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
-import type { UpdateTaskTemplateReq, TaskTemplateClientDTO } from '@memoflow/contracts/task';
+import {
+  TaskGoalBindingTrigger,
+  type UpdateTaskTemplateReq,
+  type TaskTemplateClientDTO,
+} from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
+import { isFiniteTaskPlan } from '../../../domain/aggregates/task-template-goal.policy';
 
 export class UpdateTaskTemplateUseCase {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
@@ -22,6 +27,27 @@ export class UpdateTaskTemplateUseCase {
     const template = await this.templateRepository.findByIdForIdentity(identityId, id);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${id} not found`);
+    }
+
+    const nextRecurrenceRule =
+      request.recurrenceRule === undefined
+        ? template.recurrenceRule
+        : request.recurrenceRule === null
+          ? null
+          : RecurrenceRule.fromDTO(request.recurrenceRule);
+    const nextProgressTrigger =
+      request.goalBinding === undefined
+        ? template.goalBinding?.progressTrigger
+        : request.goalBinding?.progressTrigger;
+
+    if (
+      nextProgressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted &&
+      !isFiniteTaskPlan(template.taskType, nextRecurrenceRule)
+    ) {
+      return error(
+        'BAD_REQUEST',
+        'Whole-plan goal progress requires an end date or maximum occurrence count',
+      );
     }
 
     if (request.parentTaskId !== undefined) {
@@ -83,6 +109,9 @@ export class UpdateTaskTemplateUseCase {
           template.unbindFromGoal();
         }
       } else {
+        if (template.goalBinding) {
+          template.unbindFromGoal();
+        }
         template.bindToGoal(
           request.goalBinding.goalId,
           request.goalBinding.keyResultId,

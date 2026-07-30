@@ -86,4 +86,20 @@ describe('GoalRecord aggregate', () => {
     expect(loaded.version).toBe(7);
     expect(loaded.toClientDTO('GoalId_2').valueAfter).toBe(99);
   });
+
+  it('preserves the task contribution source used for idempotency', () => {
+    const record = GoalRecord.create({
+      keyResultId: 'KeyResultId_1' as never,
+      identityId: 'IdentityId_1' as never,
+      value: 3,
+      source: { type: 'TASK_INSTANCE', id: 'task-instance-1' },
+    });
+
+    expect(record.sourceType).toBe('TASK_INSTANCE');
+    expect(record.sourceId).toBe('task-instance-1');
+    expect(record.toServerDTO()).toMatchObject({
+      sourceType: 'TASK_INSTANCE',
+      sourceId: 'task-instance-1',
+    });
+  });
 });

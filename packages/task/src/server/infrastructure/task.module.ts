@@ -29,6 +29,7 @@ import { PauseTaskTemplateUseCase } from '../application/use-cases/commands/paus
 import { ArchiveTaskTemplateUseCase } from '../application/use-cases/commands/archive-task-template.use-case';
 import { DeleteTaskTemplateUseCase } from '../application/use-cases/commands/delete-task-template.use-case';
 import { CompleteTaskInstanceUseCase } from '../application/use-cases/commands/complete-task-instance.use-case';
+import { UncompleteTaskInstanceUseCase } from '../application/use-cases/commands/uncomplete-task-instance.use-case';
 import { SkipTaskInstanceUseCase } from '../application/use-cases/commands/skip-task-instance.use-case';
 import { GetTaskInstancesByDateRangeUseCase } from '../application/use-cases/queries/get-task-instances-by-date-range.use-case';
 import { GetTaskInstanceUseCase } from '../application/use-cases/queries/get-task-instance.use-case';
@@ -123,6 +124,7 @@ export interface TaskModuleUseCases {
 
   // Instance commands
   readonly completeTaskInstance: CompleteTaskInstanceUseCase;
+  readonly uncompleteTaskInstance: UncompleteTaskInstanceUseCase;
   readonly skipTaskInstance: SkipTaskInstanceUseCase;
   readonly startTaskInstance: StartTaskInstanceUseCase;
   readonly deleteTaskInstance: DeleteTaskInstanceUseCase;
@@ -247,6 +249,7 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
       taskInstanceRepository,
       taskTemplateRepository,
     ),
+    uncompleteTaskInstance: new UncompleteTaskInstanceUseCase(taskInstanceRepository),
     skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository),
     startTaskInstance: new StartTaskInstanceUseCase(taskInstanceRepository),
     deleteTaskInstance: new DeleteTaskInstanceUseCase(taskInstanceRepository),
@@ -324,6 +327,8 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
       useCases.listTaskTemplatesByPriority.execute(identityId, limit),
     completeTaskInstance: (id, identityId, input) =>
       useCases.completeTaskInstance.execute(id, identityId, input),
+    uncompleteTaskInstance: (id, identityId) =>
+      useCases.uncompleteTaskInstance.execute(id, identityId),
     skipTaskInstance: (id, identityId, input) =>
       useCases.skipTaskInstance.execute(id, identityId, input),
     startTaskInstance: (id, identityId) => useCases.startTaskInstance.execute(id, identityId),
@@ -384,7 +389,6 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     },
   };
 }
-
 
 
 

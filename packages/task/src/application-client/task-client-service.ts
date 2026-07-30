@@ -321,6 +321,11 @@ export class TaskClientService implements TaskClientPort {
     return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
 
+  async uncompleteInstance(id: string): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.uncompleteTaskInstance(id);
+    return mapResult(result, (dto) => taskInstanceFromDTO(dto));
+  }
+
   async skipInstance(id: string, request?: SkipTaskInstanceReq): Promise<Result<TaskInstance>> {
     const result = await this.instanceApi.skipTaskInstance(id, request);
     return mapResult(result, (dto) => taskInstanceFromDTO(dto));

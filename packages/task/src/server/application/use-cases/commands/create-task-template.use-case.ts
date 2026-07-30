@@ -21,6 +21,8 @@ import {
   mapTaskWriteErrorToResultError,
   type TaskWriteTransactionRunner,
 } from './task-write-support';
+import { isFiniteTaskPlan } from '../../../domain/aggregates/task-template-goal.policy';
+import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 
 /**
  * Create Task Template Service
@@ -66,6 +68,17 @@ export class CreateTaskTemplateUseCase {
         const reminderConfig = request.reminderConfig
           ? TaskReminderConfig.fromDTO(request.reminderConfig)
           : undefined;
+
+        if (
+          request.goalBinding?.progressTrigger ===
+            TaskGoalBindingTrigger.AllInstancesCompleted &&
+          !isFiniteTaskPlan(request.taskType, recurrenceRule)
+        ) {
+          return error(
+            'BAD_REQUEST',
+            'Whole-plan goal progress requires an end date or maximum occurrence count',
+          );
+        }
 
         const template = TaskTemplate.create({
           identityId: request.identityId,

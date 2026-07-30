@@ -483,6 +483,10 @@ const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined
   if (props.resolveGoalBindingName) {
     return props.resolveGoalBindingName(binding, props.template);
   }
+  const names = [binding.goalTitle, binding.keyResultTitle].filter(Boolean);
+  if (names.length > 0) {
+    return names.join(' · ');
+  }
   return t('task.templateCard.linkedGoal');
 };
 

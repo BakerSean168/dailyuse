@@ -31,6 +31,7 @@ export interface ITaskInstanceApiClient {
     id: string,
     request?: CompleteTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>>;
+  uncompleteTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>>;
   skipTaskInstance(
     id: string,
     request?: SkipTaskInstanceReq,

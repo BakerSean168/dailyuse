@@ -108,11 +108,11 @@ describe('Task Template API Smoke Tests', () => {
       expect(res.status).toBe(201);
       expect(res.body.ok).toBe(true);
       expect(res.body.data).toBeDefined();
-      expect(res.body.data.name).toBe('Smoke Task');
+      expect(res.body.data.template.name).toBe('Smoke Task');
       // toClientDTO() does not include taskType — verify key fields only
-      expect(res.body.data.status).toBe('Active');
-      expect(res.body.data.id).toBeDefined();
-      expect(res.body.data.identityId).toBe(TEST_IDENTITY_ID);
+      expect(res.body.data.template.status).toBe('Active');
+      expect(res.body.data.template.id).toBeDefined();
+      expect(res.body.data.template.identityId).toBe(TEST_IDENTITY_ID);
     });
 
     it('should return 422 with invalid body (missing name)', async () => {
@@ -210,7 +210,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 200 with template when found', async () => {
       const template = makeFakeTemplate();
-      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .get(`/api/v1/task-templates/${template.id}`)
@@ -221,6 +221,10 @@ describe('Task Template API Smoke Tests', () => {
       expect(res.body.data).toBeDefined();
       expect(res.body.data.name).toBe('Smoke Test Task');
       expect(res.body.data.importance).toBe('Moderate');
+      expect(ctx.templateRepo.findByIdForIdentity).toHaveBeenCalledWith(
+        TEST_IDENTITY_ID,
+        template.id,
+      );
     });
   });
 
@@ -250,7 +254,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 200 when template updated', async () => {
       const template = makeFakeTemplate();
-      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .put(`/api/v1/task-templates/${template.id}`)
@@ -265,7 +269,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 404 with empty body (no fields to update, template not found)', async () => {
       // UpdateTaskTemplateSchema allows empty partial — all fields optional.
-      // The use case proceeds with findById, which returns null → NOT_FOUND.
+      // The use case proceeds with the identity-scoped lookup, which returns null → NOT_FOUND.
       const res = await request(ctx.app)
         .put('/api/v1/task-templates/some-id')
         .set('Authorization', `Bearer ${ctx.token}`)
@@ -299,14 +303,14 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 200 when template deleted', async () => {
       const template = makeFakeTemplate();
-      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .delete(`/api/v1/task-templates/${template.id}`)
         .set('Authorization', `Bearer ${ctx.token}`);
 
       expect(res.status).toBe(200);
-      expect(ctx.templateRepo.delete).toHaveBeenCalledWith(template.id);
+      expect(ctx.templateRepo.delete).toHaveBeenCalledWith(TEST_IDENTITY_ID, template.id);
     });
   });
 
@@ -334,7 +338,7 @@ describe('Task Template API Smoke Tests', () => {
       const template = makeFakeTemplate();
       template.pause(); // put it in Paused state first
       template.clearDomainEvents();
-      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-templates/${template.id}/activate`)
@@ -368,7 +372,7 @@ describe('Task Template API Smoke Tests', () => {
     it('should return 200 and pause template', async () => {
       const template = makeFakeTemplate();
       template.clearDomainEvents();
-      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-templates/${template.id}/pause`)
@@ -402,7 +406,7 @@ describe('Task Template API Smoke Tests', () => {
     it('should return 200 and archive template', async () => {
       const template = makeFakeTemplate();
       template.clearDomainEvents();
-      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-templates/${template.id}/archive`)

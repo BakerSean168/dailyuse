@@ -25,6 +25,8 @@ export default {
     "startFailed": "开始任务失败",
     "completeFailed": "完成任务失败",
     "completeSuccess": "任务已完成",
+    "uncompleteFailed": "撤销任务完成失败",
+    "uncompleteSuccess": "任务已恢复为待完成",
     "skipFailed": "跳过任务失败",
     "skipSuccess": "任务已跳过"
   },
@@ -55,6 +57,9 @@ export default {
     "timeValue": "时间值",
     "description": "描述",
     "tags": "标签",
+    "goalBinding": "目标贡献",
+    "linkedGoal": "关联目标",
+    "keyResult": "关键结果",
     "relations": "任务关系",
     "parentTask": "父任务",
     "noParentTask": "无父任务",
@@ -233,6 +238,10 @@ export default {
     "selectGoalPlaceholder": "请选择要关联的目标",
     "selectKR": "选择关键结果",
     "selectGoalFirst": "请先选择目标",
+    "loadingKeyResults": "正在加载关键结果",
+    "loadError": "关键结果加载失败",
+    "retry": "重试",
+    "emptyKeyResults": "该目标还没有关键结果",
     "progressValue": "完成后增加的进度值",
     "progressPlaceholder": "输入进度增量（正数）",
     "points": "点",
@@ -244,7 +253,8 @@ export default {
       "perInstance": "每完成一个实例记一次",
       "perInstanceDesc": "适合日常重复动作，每完成一个实例就增加一次关键结果进度",
       "allInstancesCompleted": "全部实例完成后记一次",
-      "allInstancesCompletedDesc": "只有当前模板的全部实例都完成后，才增加一次关键结果进度"
+      "allInstancesCompletedDesc": "仅在整个有限任务计划完成后增加一次关键结果进度",
+      "finitePlanOnly": "仅限设置了结束日期或执行次数的有限任务计划。"
     },
     "configPreview": "关联配置预览",
     "previewText": {

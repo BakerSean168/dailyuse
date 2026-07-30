@@ -1,6 +1,9 @@
 <template>
   <Dialog :open="visible" @update:open="(val) => (visible = val)">
-    <DialogContent class="sm:max-w-[700px] max-h-[90vh] overflow-y-auto gap-0">
+    <DialogContent
+      class="sm:max-w-[700px] max-h-[90vh] overflow-y-auto gap-0"
+      data-testid="key-result-dialog"
+    >
       <!-- 对话框头部 -->
       <DialogHeader class="pb-4">
         <DialogTitle class="flex items-center gap-3 text-xl">
@@ -28,6 +31,7 @@
                 id="kr-title"
                 v-model="keyResultTitle"
                 :placeholder="t('goal.krDialog.namePlaceholder')"
+                data-testid="key-result-title-input"
               />
             </div>
 
@@ -53,21 +57,36 @@
             <!-- 起始值 -->
             <div class="col-span-4 grid gap-2">
               <Label for="kr-start">{{ t('goal.krDialog.startValue') }}</Label>
-              <Input id="kr-start" v-model.number="keyResultStartValue" type="number" />
+              <Input
+                id="kr-start"
+                v-model.number="keyResultStartValue"
+                type="number"
+                data-testid="key-result-start-input"
+              />
               <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.startValueHint') }}</p>
             </div>
 
             <!-- 目标值 -->
             <div class="col-span-4 grid gap-2">
               <Label for="kr-target">{{ t('goal.krDialog.targetValue') }}</Label>
-              <Input id="kr-target" v-model.number="keyResultTargetValue" type="number" />
+              <Input
+                id="kr-target"
+                v-model.number="keyResultTargetValue"
+                type="number"
+                data-testid="key-result-target-input"
+              />
               <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.targetValueHint') }}</p>
             </div>
 
             <!-- 当前值 -->
             <div class="col-span-4 grid gap-2">
               <Label for="kr-current">{{ t('goal.krDialog.currentValue') }}</Label>
-              <Input id="kr-current" v-model.number="keyResultCurrentValue" type="number" />
+              <Input
+                id="kr-current"
+                v-model.number="keyResultCurrentValue"
+                type="number"
+                data-testid="key-result-current-input"
+              />
               <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.currentValueHint') }}</p>
             </div>
           </div>
@@ -170,8 +189,14 @@
 
       <DialogFooter class="pt-4 gap-2 sm:gap-0">
         <div class="flex-1" />
-        <Button variant="outline" @click="handleCancel"> {{ t('goal.krDialog.cancel') }} </Button>
-        <Button :disabled="!isFormValid || loading" @click="handleSave">
+        <Button variant="outline" data-testid="cancel-key-result-button" @click="handleCancel">
+          {{ t('goal.krDialog.cancel') }}
+        </Button>
+        <Button
+          data-testid="save-key-result-button"
+          :disabled="!isFormValid || loading"
+          @click="handleSave"
+        >
           <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
           {{ isEditing ? t('goal.krDialog.update') : t('goal.krDialog.create') }}
         </Button>
@@ -439,4 +464,3 @@ defineExpose({
   openForUpdateKeyResult,
 });
 </script>
-

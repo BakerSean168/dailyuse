@@ -14,10 +14,15 @@ import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
 import { createLogger } from '@memoflow/utils/logger';
 import type { IGoalRepository, IGoalRecordRepository } from '../../domain';
 import { CreateGoalRecordUseCase } from '../use-cases/commands/create-goal-record.use-case';
+import { GoalRecordSourceType } from '@memoflow/contracts/goal';
+import { RemoveTaskGoalContributionUseCase } from '../use-cases/commands/remove-task-goal-contribution.use-case';
 
 const logger = createLogger('GoalEventListeners');
 
-type GoalReactionEventMap = Pick<TaskEventMap, 'task:instance-completed'>;
+type GoalReactionEventMap = Pick<
+  TaskEventMap,
+  'task:instance-completed' | 'task:instance-uncompleted'
+>;
 
 const taskSubscriber = createTypedEventSubscriber<GoalReactionEventMap>(eventBus);
 
@@ -32,6 +37,10 @@ export function registerGoalEventListeners(
   goalRecordRepository: IGoalRecordRepository,
 ): { start(): void; stop(): void } {
   const createGoalRecord = new CreateGoalRecordUseCase(goalRepository, goalRecordRepository);
+  const removeTaskContribution = new RemoveTaskGoalContributionUseCase(
+    goalRepository,
+    goalRecordRepository,
+  );
 
   const onTaskInstanceCompleted = async (
     payload: GoalReactionEventMap['task:instance-completed'],
@@ -57,11 +66,15 @@ export function registerGoalEventListeners(
         goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
           ? `模板实例全部完成: ${taskTitle}`
           : `任务实例完成: ${taskTitle}`;
+      const source =
+        goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
+          ? { type: GoalRecordSourceType.TaskTemplate, id: String(payload.taskTemplateId) }
+          : { type: GoalRecordSourceType.TaskInstance, id: String(payload.taskInstanceId) };
 
       const result = await createGoalRecord.execute(
         String(goalBinding.goalId),
         String(goalBinding.keyResultId),
-        { value: goalBinding.goalRecordValue, note },
+        { value: goalBinding.goalRecordValue, note, source },
         String(identityId),
       );
 
@@ -86,6 +99,36 @@ export function registerGoalEventListeners(
     }
   };
 
+  const onTaskInstanceUncompleted = async (
+    payload: GoalReactionEventMap['task:instance-uncompleted'],
+  ): Promise<void> => {
+    const sources = [
+      { type: GoalRecordSourceType.TaskInstance, id: String(payload.taskInstanceId) },
+      { type: GoalRecordSourceType.TaskTemplate, id: String(payload.taskTemplateId) },
+    ] as const;
+
+    for (const source of sources) {
+      try {
+        const result = await removeTaskContribution.execute(
+          String(payload.identityId),
+          source.type,
+          source.id,
+        );
+        if (!result.ok) {
+          logger.error('[GoalEventListeners] Failed to remove task goal contribution', {
+            source,
+            error: result.error,
+          });
+        }
+      } catch (error) {
+        logger.error('[GoalEventListeners] Error handling task:instance-uncompleted', {
+          source,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+  };
+
   let started = false;
 
   return {
@@ -94,6 +137,7 @@ export function registerGoalEventListeners(
         return;
       }
       taskSubscriber.on('task:instance-completed', onTaskInstanceCompleted);
+      taskSubscriber.on('task:instance-uncompleted', onTaskInstanceUncompleted);
       started = true;
       logger.info('[GoalEventListeners] Goal event listeners registered');
     },
@@ -102,6 +146,7 @@ export function registerGoalEventListeners(
         return;
       }
       taskSubscriber.off('task:instance-completed', onTaskInstanceCompleted);
+      taskSubscriber.off('task:instance-uncompleted', onTaskInstanceUncompleted);
       started = false;
       logger.info('[GoalEventListeners] Goal event listeners unregistered');
     },

@@ -49,7 +49,11 @@
         :model-value="taskTemplateBeingEdited!"
         :goals="goals"
         :key-results-by-goal="keyResultsByGoal"
+        :loading-goals="props.loadingGoals"
+        :loading-key-results="props.loadingKeyResults"
+        :key-result-errors-by-goal="props.keyResultErrorsByGoal"
         :on-request-key-results="props.onRequestKeyResults"
+        @update:validation="updateGoalBindingValidation"
         @update:model-value="handleTemplateUpdate"
       />
 
@@ -97,6 +101,7 @@ const {
   updateTimeValidation,
   updateRecurrenceValidation,
   updateReminderValidation,
+  updateGoalBindingValidation,
   updateMetadataValidation,
 } = useTaskTemplateForm();
 

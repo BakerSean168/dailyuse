@@ -25,6 +25,8 @@ export default {
     "startFailed": "Failed to start task",
     "completeFailed": "Failed to complete task",
     "completeSuccess": "Task completed",
+    "uncompleteFailed": "Failed to undo task completion",
+    "uncompleteSuccess": "Task marked as pending",
     "skipFailed": "Failed to skip task",
     "skipSuccess": "Task skipped"
   },
@@ -55,6 +57,9 @@ export default {
     "timeValue": "Time Value",
     "description": "Description",
     "tags": "Tags",
+    "goalBinding": "Goal contribution",
+    "linkedGoal": "Linked goal",
+    "keyResult": "Key result",
     "relations": "Task Relations",
     "parentTask": "Parent Task",
     "noParentTask": "No parent task",
@@ -233,6 +238,10 @@ export default {
     "selectGoalPlaceholder": "Select a goal to link",
     "selectKR": "Select Key Result",
     "selectGoalFirst": "Please select a goal first",
+    "loadingKeyResults": "Loading key results",
+    "loadError": "Could not load key results",
+    "retry": "Retry",
+    "emptyKeyResults": "This goal has no key results yet",
     "progressValue": "Progress increment on completion",
     "progressPlaceholder": "Enter progress increment (positive)",
     "points": "pts",
@@ -244,7 +253,8 @@ export default {
       "perInstance": "Once per instance",
       "perInstanceDesc": "Best for repeatable work, each completed instance adds progress once",
       "allInstancesCompleted": "After all instances complete",
-      "allInstancesCompletedDesc": "Only add progress once all current instances of this template are completed"
+      "allInstancesCompletedDesc": "Add progress once when the entire finite task plan is completed",
+      "finitePlanOnly": "Available only for plans with an end date or occurrence limit."
     },
     "configPreview": "Link Configuration Preview",
     "previewText": {

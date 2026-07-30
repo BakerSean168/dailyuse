@@ -8,4 +8,11 @@
  * - aggregateId 已由 addDomainEvent 自动生成，无需重复定义
  * - occurredAt 已由 addDomainEvent 自动生成，无需重复定义
  */
-export interface TaskUncompletedEvent {}
+import type { IdentityId, TaskInstanceId, TaskTemplateId } from '../../../../primitives';
+
+export interface TaskUncompletedEvent {
+  identityId: IdentityId;
+  taskInstanceId: TaskInstanceId;
+  taskTemplateId: TaskTemplateId;
+  uncompletedAt: number;
+}

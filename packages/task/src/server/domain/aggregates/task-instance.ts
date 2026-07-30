@@ -205,6 +205,29 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     });
   }
 
+  /** Returns a completed instance to Pending and identifies the contribution to reverse. */
+  public uncomplete(): void {
+    if (this._props.status !== TaskInstanceStatus.Completed) {
+      throw new Error('Only a completed task can be uncompleted');
+    }
+
+    const now = Date.now();
+    this._props.status = TaskInstanceStatus.Pending;
+    this._props.completionRecord = null;
+    this._props.actualEndTime = null;
+    this._props.updatedAt = now;
+
+    this.addDomainEvent<TaskEventMap['task:instance-uncompleted']>(
+      'task:instance-uncompleted',
+      {
+        identityId: this._props.identityId,
+        taskInstanceId: this.id,
+        taskTemplateId: this._props.templateId,
+        uncompletedAt: now,
+      },
+    );
+  }
+
   /** Skips the task. */
   public skip(reason?: string): void {
     if (!this.canSkip()) {

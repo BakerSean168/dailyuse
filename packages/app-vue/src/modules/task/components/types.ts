@@ -112,7 +112,13 @@ export interface TaskTemplateFormProps {
   availableParentTasks?: Array<Pick<TaskTemplateViewModel, 'id' | 'title'>>;
   goals?: GoalBindingOption[];
   keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
-  onRequestKeyResults?: (goalId: string) => Promise<KeyResultBindingOption[] | void> | void;
+  loadingGoals?: boolean;
+  loadingKeyResults?: Record<string, boolean>;
+  keyResultErrorsByGoal?: Record<string, string | null>;
+  onRequestKeyResults?: (
+    goalId: string,
+    force?: boolean,
+  ) => Promise<KeyResultBindingOption[] | void> | void;
 }
 
 export interface TaskTemplateFormValidationState {

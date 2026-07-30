@@ -109,6 +109,20 @@ export function useTaskInstances() {
     return null;
   }
 
+  async function uncompleteInstance(id: string) {
+    const result = await executeTaskOperation(
+      () => service.uncompleteInstance(id),
+      'task.error.uncompleteFailed',
+    );
+    if (result.ok) {
+      const dto = result.data.toDTO();
+      store.updateInstance(dto);
+      toast.success(t('task.error.uncompleteSuccess'));
+      return dto;
+    }
+    return null;
+  }
+
   async function skipInstance(id: string) {
     const result = await executeTaskOperation(() => service.skipInstance(id), 'task.error.skipFailed');
     if (result.ok) {
@@ -125,6 +139,7 @@ export function useTaskInstances() {
     fetchInstancesByDateRange,
     startInstance,
     completeInstance,
+    uncompleteInstance,
     skipInstance,
   };
 }

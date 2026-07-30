@@ -44,6 +44,7 @@ describe('CreateGoalRecordUseCase', () => {
       countByKeyResultId: vi.fn().mockResolvedValue(0),
       delete: vi.fn().mockResolvedValue(undefined),
       deleteMany: vi.fn().mockResolvedValue(undefined),
+      findBySource: vi.fn().mockResolvedValue(null),
     });
     useCase = new CreateGoalRecordUseCase(goalRepository, goalRecordRepository);
   });
@@ -111,5 +112,39 @@ describe('CreateGoalRecordUseCase', () => {
     if (result.ok) {
       expect(result.data.valueAfter).toBe(44);
     }
+  });
+
+  it('applies the same task-instance contribution only once', async () => {
+    const goal = createTestGoal();
+    const keyResult = goal.createAndAddKeyResult({
+      title: 'Completed tasks',
+      valueType: 'Incremental',
+      aggregationMethod: 'Sum',
+      startValue: 0,
+      currentValue: 0,
+      targetValue: 10,
+      weight: 1,
+      unit: 'tasks',
+    });
+    let savedRecord: GoalRecord | null = null;
+    vi.mocked(goalRepository.findByIdForIdentity).mockResolvedValue(goal);
+    vi.mocked(goalRecordRepository.findBySource).mockImplementation(async () => savedRecord);
+    vi.mocked(goalRecordRepository.save).mockImplementation(async (record) => {
+      savedRecord = record;
+    });
+
+    const params = {
+      value: 2,
+      note: 'Task completed',
+      source: { type: 'TASK_INSTANCE' as const, id: 'task-instance-1' },
+    };
+    const first = await useCase.execute(goal.id, keyResult.id, params, 'identity-1');
+    const duplicate = await useCase.execute(goal.id, keyResult.id, params, 'identity-1');
+
+    expect(first).toBeOk();
+    expect(duplicate).toBeOk();
+    expect(goalRecordRepository.save).toHaveBeenCalledTimes(1);
+    expect(goalRepository.save).toHaveBeenCalledTimes(1);
+    expect(goal.getKeyResult(keyResult.id)?.progress.currentValue).toBe(2);
   });
 });

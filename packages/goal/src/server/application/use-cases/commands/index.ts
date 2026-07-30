@@ -8,6 +8,7 @@ export * from './complete-goal.use-case';
 export * from './create-goal.use-case';
 export * from './create-goal-folder.use-case';
 export * from './create-goal-record.use-case';
+export * from './remove-task-goal-contribution.use-case';
 export * from './delete-goal.use-case';
 export * from './delete-goal-folder.use-case';
 export * from './deactivate-focus-mode.use-case';

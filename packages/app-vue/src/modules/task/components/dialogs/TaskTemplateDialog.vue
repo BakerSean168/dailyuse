@@ -36,6 +36,9 @@
           :available-parent-tasks="availableParentTasks"
           :goals="goalOptions"
           :key-results-by-goal="keyResultsByGoal"
+          :loading-goals="loadingGoals"
+          :loading-key-results="loadingKeyResults"
+          :key-result-errors-by-goal="keyResultErrorsByGoal"
           :on-request-key-results="requestKeyResults"
           @update:model-value="handleTemplateUpdate"
           @update:validation="handleValidationUpdate"
@@ -97,6 +100,9 @@ const { t } = useI18n();
 const {
   goals: goalOptions,
   keyResultsByGoal,
+  loadingGoals,
+  loadingKeyResults,
+  keyResultErrorsByGoal,
   loadGoals: loadGoalOptions,
   loadKeyResults: loadGoalKeyResults,
 } = useTaskGoalBindingOptions();
@@ -227,17 +233,8 @@ async function loadGoals() {
   await loadGoalOptions();
 }
 
-async function requestKeyResults(goalId: string) {
-  return loadGoalKeyResults(goalId);
-}
-
-async function ensureBindingKeyResults(template: TaskTemplateViewModel | null) {
-  const goalId = template?.goalBinding?.goalId;
-  if (!goalId) {
-    return;
-  }
-
-  await requestKeyResults(goalId);
+async function requestKeyResults(goalId: string, force = false) {
+  return loadGoalKeyResults(goalId, force);
 }
 
 watch(
@@ -260,20 +257,8 @@ watch(
     }
 
     await loadGoals();
-    await ensureBindingKeyResults(localTemplate.value);
   },
   { immediate: true },
-);
-
-watch(
-  () => localTemplate.value?.goalBinding?.goalId,
-  async (goalId) => {
-    if (!goalId) {
-      return;
-    }
-
-    await requestKeyResults(goalId);
-  },
 );
 
 const setVisible = (value: boolean) => {

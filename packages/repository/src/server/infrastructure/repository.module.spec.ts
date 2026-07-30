@@ -41,6 +41,17 @@ function createModule() {
 }
 
 describe('repository module GitHub credential boundary', () => {
+  it('returns an empty knowledge-note list when the optional GitHub App is not configured', async () => {
+    const module = createRepositoryModule({});
+
+    await expect(
+      module.api.listKnowledgeNoteProjections(
+        { identityId: 'identity-without-github-app' },
+        { limit: 20 },
+      ),
+    ).resolves.toEqual(ok({ notes: [] }));
+  });
+
   it('rejects installation token issuance for browser contexts', async () => {
     const { module, issueInstallationToken } = createModule();
 

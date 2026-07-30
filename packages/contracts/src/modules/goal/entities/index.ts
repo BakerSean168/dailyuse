@@ -5,8 +5,11 @@
  * Client record DTO lives under aggregates only.
  */
 
+export { GoalRecordSourceType } from './goal-record-server';
 export type {
   GoalRecordServerDTO,
+  GoalRecordSource,
+  GoalRecordSourceType as GoalRecordSourceTypeValue,
 } from './goal-record-server';
 
 export type {

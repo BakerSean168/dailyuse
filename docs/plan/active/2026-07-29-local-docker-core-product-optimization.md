@@ -11,8 +11,8 @@ tags:
   - docker
 description: 2026-07-29 本机 Docker 产品经理旅程审查记录，以及目标、任务、交互和视觉体验的分阶段优化方案
 created: 2026-07-29T00:00:00
-updated: 2026-07-29T00:00:00
-status: proposed
+updated: 2026-07-30T00:00:00
+status: active
 ---
 
 # 本机 Docker 核心产品审查与优化方案
@@ -935,9 +935,57 @@ packages/app-vue/src/locales/zh-CN/aiAssistant.ts
 
 ### Phase A 出口
 
-- [ ] P0 崩溃不可复现。
-- [ ] 绑定任务可保存、可执行、可回写。
-- [ ] 错误和空态不会导致表单数据丢失。
+- [x] P0 崩溃不可复现。
+- [x] 绑定任务可保存、可执行、可回写。
+- [x] 错误和空态不会导致表单数据丢失。
+
+### Phase A 实施证据（2026-07-30）
+
+实现：
+
+- `useTaskGoalBindingOptions` 成为目标/KR 选项的唯一异步加载所有者；通过请求代次
+  保护丢弃过期结果，并将 loading/error/empty 状态限定在关联 section 内。
+- `KeyResultLinksSection` 保持 Select trigger 生命周期稳定；目标有 KR、无 KR、请求
+  失败、快速切换和连续 20 次关闭/开启关联均有组件或 Docker E2E 回归。
+- 任务卡片和详情通过共享组合式函数解析并展示真实目标与 KR 名称。
+- GoalRecord 保存任务来源 correlation；Prisma、PowerSync 与领域仓储共同实施唯一性，
+  `PER_INSTANCE` 重复完成不重复贡献，有限任务计划整体完成只贡献一次。
+- 完成、撤销、再次完成已贯通共享 application client、HTTP、Electron IPC 和领域事件；
+  重复完成按幂等成功处理，不保存实例、不读取模板、不重发事件，非法状态转换仍拒绝。
+- 未配置 GitHub App 时，知识笔记只读列表返回正常空态 `200 { notes: [] }`；写入和连接
+  能力仍保持不可用。这样正常空态不再给 Phase A 浏览器旅程制造无关的 `503` 错误。
+
+代码事实差异：
+
+- 原计划只要求“完成实例并回写”。实际产品允许重复 HTTP/IPC 提交，因此补充了幂等
+  完成、精确撤销和再次完成链路，避免网络重试导致 KR 重复累计。
+- Docker 旅程发现未配置 GitHub App 的知识笔记空列表会产生常驻 `503`。该请求与
+  目标任务闭环无关，但属于正常首页空态，已在只读边界返回空列表；没有伪造写能力。
+
+自动验证：
+
+- `pnpm nx run-many -t lint,typecheck --projects=task,goal,repository,api,powersync-schema,contracts,database,app-vue,web --parallel=1 --outputStyle=static`：
+  47 个目标通过；Web 保留 2 条既有非阻断 lint warning。
+- `pnpm nx run-many -t test --projects=task,goal,repository,api,powersync-schema,contracts,database,app-vue,web --parallel=1 --outputStyle=static`：
+  9 个项目通过；已打印项目合计 2,896 项测试通过。
+- `pnpm nx run api:test:smoke --outputStyle=static`：2 个文件、61 项通过。
+- `pnpm nx run-many -t build --projects=task,goal,repository,api,powersync-schema,contracts,database,app-vue,web --parallel=1 --outputStyle=static`：
+  9 个项目及其 21 个依赖目标通过。
+- `pnpm nx run web:e2e:local-docker`：1 项完整产品旅程通过（41.9 秒）。
+
+Docker 与产品旅程证据：
+
+- 本机六个服务均为 healthy；Web/API/AI/PowerSync/PostgreSQL/Redis 端口分别为
+  `58080`/`53080`/`58100`/`58081`/`55432`/`56379`。
+- Nginx 日志确认注册、创建目标/KR/绑定任务、读取详情、完成、撤销和再次完成请求
+  进入当前本机 Docker，而非 SSH 转发实例。
+- E2E 创建两个目标与 KR 后连续 20 次切换关联，标题和描述不丢失且无 `null.focus`；
+  卡片与详情显示真实名称。
+- 同一实例的 KR/GoalRecord 断言依次为 `1/1`、重复完成后 `1/1`、撤销后 `0/0`、
+  再次完成后 `1/1`；全程无 page error 或 console error。
+- 本次证据对象：Goal `IGoalId_2b55a5a2-64e5-4ddd-b25b-1d4735f29c87`，
+  TaskTemplate `ITaskTemplateId_27bfa91d-82ad-47e3-8d38-39b691fc9a50`，
+  TaskInstance `ITaskInstanceId_c8d6548e-a0a5-4235-a846-1f8d45e28474`。
 
 ## 8.2 Phase B：修复任务创建状态和产品模型（P1）
 

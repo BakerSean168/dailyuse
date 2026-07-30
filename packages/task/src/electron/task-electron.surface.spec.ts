@@ -18,6 +18,7 @@ describe('TaskElectronModule channel surface', () => {
     expect(source).toContain('Object.values(TaskChannels)');
     expect(source).toContain('TaskChannels.TEMPLATE_LIST');
     expect(source).toContain('TaskChannels.INSTANCE_LIST');
+    expect(source).toContain('TaskChannels.INSTANCE_UNCOMPLETE');
     expect(source).toContain('TaskChannels.DEPENDENCY_CREATE');
   });
 

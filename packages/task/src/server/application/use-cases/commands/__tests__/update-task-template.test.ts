@@ -5,6 +5,8 @@ import { aOneTimeTask, aLoadedTaskTemplate } from '../../../../../testing';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import { UpdateTaskTemplateUseCase } from '../update-task-template.use-case';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
+import { RecurrenceRule } from '../../../../domain/value-objects/recurrence-rule';
 
 describe('UpdateTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
@@ -173,5 +175,26 @@ describe('UpdateTaskTemplateUseCase', () => {
     expect(result).toBeOk();
     expect(template.goalBinding).toBeNull();
     expect(templateRepo.save).toHaveBeenCalledWith(template);
+  });
+
+  it('rejects whole-plan progress when updating an unlimited recurring task', async () => {
+    const template = aLoadedTaskTemplate({
+      taskType: TaskType.Recurring,
+      recurrenceRule: RecurrenceRule.createDaily(),
+    });
+    template.bindToGoal('goal-1', 'kr-1', 1, TaskGoalBindingTrigger.PerInstance);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      goalBinding: {
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+        goalRecordValue: 1,
+        progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
+      },
+    });
+
+    expect(result).toBeErrorWithCode('BAD_REQUEST');
+    expect(templateRepo.save).not.toHaveBeenCalled();
   });
 });

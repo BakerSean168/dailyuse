@@ -11,6 +11,7 @@ const updateBasicValidation = vi.fn();
 const updateTimeValidation = vi.fn();
 const updateRecurrenceValidation = vi.fn();
 const updateReminderValidation = vi.fn();
+const updateGoalBindingValidation = vi.fn();
 const updateMetadataValidation = vi.fn();
 
 vi.mock('../../composables/useTaskTemplateForm', () => ({
@@ -21,6 +22,7 @@ vi.mock('../../composables/useTaskTemplateForm', () => ({
     updateTimeValidation,
     updateRecurrenceValidation,
     updateReminderValidation,
+    updateGoalBindingValidation,
     updateMetadataValidation,
   }),
 }));
@@ -133,6 +135,7 @@ describe('TaskTemplateForm', () => {
     updateTimeValidation.mockClear();
     updateRecurrenceValidation.mockClear();
     updateReminderValidation.mockClear();
+    updateGoalBindingValidation.mockClear();
     updateMetadataValidation.mockClear();
   });
 
@@ -158,6 +161,14 @@ describe('TaskTemplateForm', () => {
       id: 'template-1',
       title: 'Updated title',
     });
+  });
+
+  it('includes key-result binding validity in the whole form state', async () => {
+    const wrapper = mountForm();
+
+    await wrapper.get('[data-stub="KeyResultLinksSection"]').trigger('click');
+
+    expect(updateGoalBindingValidation).toHaveBeenCalledWith({ isValid: true });
   });
 
   it('exposes the composable validate method to parent callers', async () => {

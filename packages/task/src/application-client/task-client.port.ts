@@ -44,6 +44,7 @@ export interface TaskClientPort {
   deleteInstance(id: string): Promise<Result<void>>;
   startInstance(id: string): Promise<Result<TaskInstance>>;
   completeInstance(id: string, request?: CompleteTaskInstanceReq): Promise<Result<TaskInstance>>;
+  uncompleteInstance(id: string): Promise<Result<TaskInstance>>;
   skipInstance(id: string, request?: SkipTaskInstanceReq): Promise<Result<TaskInstance>>;
   checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstance[] }>>;
 

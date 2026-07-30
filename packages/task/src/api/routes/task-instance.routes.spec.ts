@@ -29,6 +29,7 @@ function createControllerStub(): TaskInstanceController {
     listInstances: vi.fn(),
     getInstancesByDateRange: vi.fn(),
     completeInstance: vi.fn(),
+    uncompleteInstance: vi.fn(),
     skipInstance: vi.fn(),
     startInstance: vi.fn(),
     deleteInstance: vi.fn(),
@@ -219,6 +220,17 @@ describe('task-instance route contracts', () => {
     );
   });
 
+  it('POST /{id}/uncomplete restores a completed task instance', () => {
+    const registry = new TestOpenApiRegistry();
+    registerAll(registry);
+
+    const route = getRegisteredRoute(registry, 'post', `${BASE}/{id}/uncomplete`);
+    const responseSchema = getResponseSchema(route, 200);
+
+    expect(responseSchema).toBeDefined();
+    expect(getParamsSchema(route).safeParse({ id: 'bare-string' }).success).toBe(false);
+  });
+
   it('POST /{id}/skip body uses SkipTaskInstanceSchema', () => {
     const registry = new TestOpenApiRegistry();
     registerAll(registry);
@@ -268,6 +280,7 @@ describe('task-instance route contracts', () => {
     const idRoutes = [
       [`${BASE}/{id}`, 'get'],
       [`${BASE}/{id}/complete`, 'post'],
+      [`${BASE}/{id}/uncomplete`, 'post'],
       [`${BASE}/{id}/skip`, 'post'],
       [`${BASE}/{id}/start`, 'post'],
       [`${BASE}/{id}`, 'delete'],

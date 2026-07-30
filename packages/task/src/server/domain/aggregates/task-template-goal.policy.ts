@@ -11,7 +11,7 @@ import type {
 import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import { TaskType } from '../value-objects';
-import { TaskGoalBinding } from '../value-objects';
+import { TaskGoalBinding, type RecurrenceRule } from '../value-objects';
 import {
   InvalidTaskTemplateStateError,
   TaskTemplateArchivedError,
@@ -25,6 +25,14 @@ export interface GoalOperationContext {
   props: TaskTemplateProps;
   readonly id: string;
   addHistory(action: string, changes?: unknown): void;
+}
+
+/** Whole-plan progress is meaningful only when the task has a closed execution scope. */
+export function isFiniteTaskPlan(
+  taskType: TaskType,
+  recurrenceRule: RecurrenceRule | null | undefined,
+): boolean {
+  return taskType === TaskType.OneTime || Boolean(recurrenceRule?.hasEndCondition);
 }
 
 /** Binds the template to a goal. */
@@ -43,6 +51,14 @@ export function bindToGoal(
   }
   if (ctx.props.goalId || ctx.props.goalBinding) {
     throw new InvalidGoalBindingError('Template is already bound to a goal');
+  }
+  if (
+    progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted &&
+    !isFiniteTaskPlan(ctx.props.taskType, ctx.props.recurrenceRule)
+  ) {
+    throw new InvalidGoalBindingError(
+      'Whole-plan goal progress requires a finite task plan',
+    );
   }
 
   ctx.props.goalId = goalId as GoalId;

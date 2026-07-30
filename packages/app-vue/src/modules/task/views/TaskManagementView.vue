@@ -199,6 +199,7 @@ import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
 import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
+import { useTaskGoalBindingOptions } from '../composables/useTaskGoalBindingOptions';
 import type {
   TaskRelationFilter,
   TaskStatusFilter,
@@ -233,6 +234,7 @@ const {
   createDependency,
   deleteDependency,
 } = useTask();
+const { loadGoalBindings, resolveGoalBinding } = useTaskGoalBindingOptions();
 
 // ── 过滤 / 视图状态（从 TaskTemplateManagement 上移） ──
 const currentStatus = ref<TaskStatusFilter>('ACTIVE');
@@ -249,7 +251,13 @@ const showDeleteAllDialog = ref(false);
 const deleteConfirmText = ref('');
 
 const viewModels = computed(() => {
-  const baseViewModels = templates.value.map((dto) => mapTaskTemplateDtoToViewModel(dto, t));
+  const baseViewModels = templates.value.map((dto) => {
+    const viewModel = mapTaskTemplateDtoToViewModel(dto, t);
+    return {
+      ...viewModel,
+      goalBinding: resolveGoalBinding(viewModel.goalBinding),
+    };
+  });
   const templateById = new Map(baseViewModels.map((template) => [template.id, template]));
   const predecessorCounts = new Map<string, number>();
   const successorCounts = new Map<string, number>();
@@ -385,6 +393,7 @@ function clearFilters() {
 
 async function refreshTaskManagement() {
   await fetchTaskGraph({ page: 1, limit: 1000 });
+  await loadGoalBindings(templates.value.map((template) => template.goalBinding?.goalId));
 }
 
 function toGoalBindingPayload(template: TaskTemplateViewModel) {

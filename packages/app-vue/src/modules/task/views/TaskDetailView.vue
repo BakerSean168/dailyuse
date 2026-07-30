@@ -113,6 +113,36 @@
           </CardContent>
         </Card>
 
+        <Card
+          v-if="detailViewModel.goalBinding"
+          data-testid="task-goal-binding"
+        >
+          <CardHeader>
+            <CardTitle>{{ t('task.detail.goalBinding') }}</CardTitle>
+          </CardHeader>
+          <CardContent class="grid gap-4 @2xl/panel:grid-cols-2">
+            <div>
+              <p class="text-sm font-medium text-muted-foreground">
+                {{ t('task.detail.linkedGoal') }}
+              </p>
+              <p class="text-sm" data-testid="task-linked-goal-name">
+                {{ detailViewModel.goalBinding.goalTitle ?? detailViewModel.goalBinding.goalId }}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-muted-foreground">
+                {{ t('task.detail.keyResult') }}
+              </p>
+              <p class="text-sm" data-testid="task-linked-key-result-name">
+                {{
+                  detailViewModel.goalBinding.keyResultTitle ??
+                  detailViewModel.goalBinding.keyResultId
+                }}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>{{ t('task.detail.relations') }}</CardTitle>
@@ -282,6 +312,7 @@ import {
   CardContent,
 } from '@memoflow/ui-vue-shadcn';
 import { useTask } from '../composables/useTask';
+import { useTaskGoalBindingOptions } from '../composables/useTaskGoalBindingOptions';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger } from '@memoflow/contracts/task';
@@ -313,6 +344,7 @@ const {
   createDependency,
   deleteDependency,
 } = useTask();
+const { loadGoalBinding, resolveGoalBinding } = useTaskGoalBindingOptions();
 
 const showEditDialog = ref(false);
 const templateViewModels = computed(() =>
@@ -322,7 +354,11 @@ const graphData = computed(() => buildTaskGraphData(templates.value, dependencie
 
 const detailViewModel = computed<TaskTemplateViewModel | null>(() => {
   if (!currentTemplate.value) return null;
-  return mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
+  const viewModel = mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
+  return {
+    ...viewModel,
+    goalBinding: resolveGoalBinding(viewModel.goalBinding),
+  };
 });
 
 const parentTemplate = computed(() => {
@@ -510,6 +546,11 @@ async function loadDetailPage(id: string) {
   }
 
   await Promise.all([fetchTemplate(id), fetchTaskGraph({ page: 1, limit: 1000 })]);
+
+  const goalId = currentTemplate.value?.goalBinding?.goalId;
+  if (goalId) {
+    await loadGoalBinding(goalId);
+  }
 }
 
 watch(

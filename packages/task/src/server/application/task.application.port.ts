@@ -3,6 +3,7 @@ import type { ArchiveTaskTemplateUseCase } from './use-cases/commands/archive-ta
 import type { BindTaskToGoalUseCase } from './use-cases/commands/bind-task-to-goal.use-case';
 import type { CheckExpiredInstancesUseCase } from './use-cases/commands/check-expired-instances.use-case';
 import type { CompleteTaskInstanceUseCase } from './use-cases/commands/complete-task-instance.use-case';
+import type { UncompleteTaskInstanceUseCase } from './use-cases/commands/uncomplete-task-instance.use-case';
 import type { CreateTaskDependencyUseCase } from './use-cases/commands/create-task-dependency.use-case';
 import type { CreateTaskTemplateUseCase } from './use-cases/commands/create-task-template.use-case';
 import type { DeleteTaskDependencyUseCase } from './use-cases/commands/delete-task-dependency.use-case';
@@ -53,6 +54,7 @@ export interface TaskApplicationPort {
 
   // Instance commands
   completeTaskInstance: TaskPortFn<CompleteTaskInstanceUseCase['execute']>;
+  uncompleteTaskInstance: TaskPortFn<UncompleteTaskInstanceUseCase['execute']>;
   skipTaskInstance: TaskPortFn<SkipTaskInstanceUseCase['execute']>;
   startTaskInstance: TaskPortFn<StartTaskInstanceUseCase['execute']>;
   deleteTaskInstance: TaskPortFn<DeleteTaskInstanceUseCase['execute']>;

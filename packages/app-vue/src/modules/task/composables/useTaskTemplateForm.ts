@@ -10,6 +10,7 @@ export function useTaskTemplateForm() {
   const timeValid = ref(true);
   const recurrenceValid = ref(true);
   const reminderValid = ref(true);
+  const goalBindingValid = ref(true);
   const metadataValid = ref(true);
 
   const isFormValid = computed(
@@ -18,6 +19,7 @@ export function useTaskTemplateForm() {
       timeValid.value &&
       recurrenceValid.value &&
       reminderValid.value &&
+      goalBindingValid.value &&
       metadataValid.value,
   );
 
@@ -33,6 +35,9 @@ export function useTaskTemplateForm() {
   const updateReminderValidation = (valid: boolean) => {
     reminderValid.value = valid;
   };
+  const updateGoalBindingValidation = (valid: boolean) => {
+    goalBindingValid.value = valid;
+  };
   const updateMetadataValidation = (valid: boolean) => {
     metadataValid.value = valid;
   };
@@ -46,6 +51,7 @@ export function useTaskTemplateForm() {
     updateTimeValidation,
     updateRecurrenceValidation,
     updateReminderValidation,
+    updateGoalBindingValidation,
     updateMetadataValidation,
   };
 }
