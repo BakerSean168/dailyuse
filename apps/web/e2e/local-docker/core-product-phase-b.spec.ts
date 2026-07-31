@@ -117,6 +117,7 @@ test.describe('Local Docker core product Phase B', () => {
     );
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
     const quickTodo = todayTodo(page, quickTaskName);
     await expect(quickTodo).toHaveAttribute('data-task-status', 'Pending');
     await quickTodo.locator('button[title]').click();
@@ -126,6 +127,7 @@ test.describe('Local Docker core product Phase B', () => {
       '已完成',
     );
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
     await todayTodo(page, quickTaskName).locator('button[title]').click();
     await expect(todayTodo(page, quickTaskName)).toHaveAttribute('data-task-status', 'Pending');
     await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
@@ -221,6 +223,7 @@ test.describe('Local Docker core product Phase B', () => {
       });
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
     const recurringTodo = todayTodo(page, recurringPlanName);
     await expect(recurringTodo).toHaveAttribute('data-task-status', 'Pending');
     await recurringTodo.locator('button[title]').click();
@@ -235,6 +238,7 @@ test.describe('Local Docker core product Phase B', () => {
     });
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
     await todayTodo(page, recurringPlanName).locator('button[title]').click();
     await expect(todayTodo(page, recurringPlanName)).toHaveAttribute('data-task-status', 'Pending');
     await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
@@ -258,6 +262,13 @@ function todayTodo(page: Page, title: string): Locator {
   return page
     .getByTestId('daily-todo-item')
     .filter({ has: page.getByText(title, { exact: true }) });
+}
+
+async function showTodayOverview(page: Page): Promise<void> {
+  await page.getByTestId('business-panel-home').click();
+  await expect(page.getByTestId('today-overview-panel')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
 }
 
 async function openTaskCardMenu(page: Page, title: string, taskId: string): Promise<void> {

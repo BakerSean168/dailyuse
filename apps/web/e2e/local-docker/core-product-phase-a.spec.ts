@@ -116,6 +116,7 @@ test.describe('Local Docker core product Phase A', () => {
     );
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
     const taskItem = page
       .getByTestId('daily-todo-item')
       .filter({ has: page.getByText(taskName, { exact: true }) });
@@ -210,6 +211,13 @@ async function selectBinding(page: Page, fixture: GoalFixture): Promise<void> {
   await keyResultTrigger.click();
   await page.getByRole('option').filter({ hasText: fixture.keyResultName }).click();
   await expect(keyResultTrigger).toContainText(fixture.keyResultName);
+}
+
+async function showTodayOverview(page: Page): Promise<void> {
+  await page.getByTestId('business-panel-home').click();
+  await expect(page.getByTestId('today-overview-panel')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
 }
 
 async function expectGoalContribution(
