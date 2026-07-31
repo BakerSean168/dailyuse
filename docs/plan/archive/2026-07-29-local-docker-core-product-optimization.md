@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - web
   - product-review
   - goal
@@ -11,17 +11,22 @@ tags:
   - docker
 description: 2026-07-29 本机 Docker 产品经理旅程审查记录，以及目标、任务、交互和视觉体验的分阶段优化方案
 created: 2026-07-29T00:00:00
-updated: 2026-07-30T00:00:00
-status: active
+updated: 2026-07-31T00:00:00
+status: completed
 ---
 
 # 本机 Docker 核心产品审查与优化方案
+
+> **归档结果（2026-07-31）**：Phase A–E、本文全部验收项、Web/Desktop 共享壳验证和
+> 本机 Docker prod-like PM journey 已通过。最终验证使用运行时 profile 的真实端口，
+> 镜像 revision、容器健康、HTTP 探针和浏览器 Nginx 命中证据均由仓库验证报告记录；
+> 自动化 `pm-phase-*` 数据已清理至 `0 rows`。
 
 ## 1. 文档地位
 
 本文记录 2026-07-29 在本机 Docker prod-like 环境中完成的产品经理视角审查，并将发现转化为可执行的产品与工程优化计划。
 
-本文件是本轮优化工作的 active plan，覆盖：
+本文件是本轮优化工作的已完成实施与验收记录，覆盖：
 
 1. 创建目标及关键结果的流程与逻辑。
 2. 创建任务模板、生成任务实例和完成任务的流程与逻辑。
@@ -32,10 +37,10 @@ status: active
 
 本文不替代以下历史材料，而是在当前本机环境上补充新的基线和问题：
 
-- [`../archive/2026-07-15-web-core-product-review.md`](../archive/2026-07-15-web-core-product-review.md)：早期 Web 核心功能审查。
-- [`../archive/2026-07-16-web-product-design-review.md`](../archive/2026-07-16-web-product-design-review.md)：历史设计复审。
-- [`../archive/2026-07-27-docker-web-pm-journey-findings.md`](../archive/2026-07-27-docker-web-pm-journey-findings.md)：Docker Web 旅程、i18n、邮箱验证和本地部署问题。
-- [`2026-07-17-unified-assistant-agent-host.md`](./2026-07-17-unified-assistant-agent-host.md)：统一助手与 Agent Host 主产品能力线。
+- [`2026-07-15-web-core-product-review.md`](./2026-07-15-web-core-product-review.md)：早期 Web 核心功能审查。
+- [`2026-07-16-web-product-design-review.md`](./2026-07-16-web-product-design-review.md)：历史设计复审。
+- [`2026-07-27-docker-web-pm-journey-findings.md`](./2026-07-27-docker-web-pm-journey-findings.md)：Docker Web 旅程、i18n、邮箱验证和本地部署问题。
+- [`2026-07-17-unified-assistant-agent-host.md`](../active/2026-07-17-unified-assistant-agent-host.md)：统一助手与 Agent Host 主产品能力线。
 
 真值顺序遵循 `AGENT.md`：当前代码、配置和测试优先于本文。
 
@@ -69,16 +74,17 @@ status: active
 
 | 项目 | 本轮状态 |
 | --- | --- |
-| 工作区 | `D:\home\projects\memoflow` |
+| 工作区 | `/home/ubuntu/backups/memoflow-legacy-feature-repository` |
 | Web | `http://localhost:58080` |
 | API | `http://localhost:53080` |
 | PowerSync | `http://localhost:58081` |
 | AI Service | `http://localhost:58100` |
 | Postgres | `127.0.0.1:55432` |
 | Redis | `127.0.0.1:56379` |
-| Node | `v24.12.0`，Scoop/NVM 默认版本 |
-| Docker | Docker Desktop + WSL2，六个 MemoFlow 服务均 healthy |
-| 浏览器 | Codex 应用内 Chromium，1280 × 720 主审查视口 |
+| Node | `v24.18.0`；pnpm `11.12.0` |
+| Docker | Docker Engine `29.6.2`；六个 MemoFlow 服务均 healthy |
+| 浏览器 | Playwright Chromium；1280 × 720、1440 × 900、390 × 844 |
+| Desktop | Electron + Xvfb；900 × 600、1024 × 768、1200 × 800、1440 × 900 |
 
 ### 3.2 本地端口纠偏
 
@@ -107,20 +113,28 @@ status: active
 
 | 检查项 | 结果 | 备注 |
 | --- | --- | --- |
-| affected lint | 通过 | 有非阻断警告 |
-| Docker local rebuild | 通过 | 六个服务均 healthy |
+| affected lint/typecheck/test/build | 通过 | 37 个项目、137 个目标；lint 仅有既有非阻断 warning |
+| Task integration / API smoke | 通过 | `22 passed` / `61 passed` |
+| Docker local rebuild | 通过 | 六个服务 healthy；Web/API/AI 镜像 revision 精确匹配验证 HEAD |
+| Web PM journey | 通过 | A–E 共 `7 passed`，覆盖 1280、1440 与移动断点 |
+| Desktop shell / serve | 通过 | Electron 壳层 `8 passed`；`desktop:serve-safe` 真实启动并正常清理 |
 | AI Service typecheck | 通过 | `0 errors, 0 warnings` |
 | AI Service test | 通过 | `182 passed` |
-| 工作区状态 | 干净 | 审查结束时 `git status --short` 为空 |
+| validation report | 通过 | `verdict: pass`、`readyForPr: true`，无 host-tool/code/docker failure |
+| 测试数据 | 已清理 | `pm-phase-*` preview → apply → preview，最终 `0 rows` |
+| 工作区状态 | 干净 | 报告、Playwright 产物、日志、缓存与本机 env 均未进入 Git |
 
-初次验证报告中的 AI 检查失败来自旧 `.venv` 内 `pyright.exe`、`pytest.exe` 的 uv trampoline 入口损坏。重装虚拟环境中的两个包后，仓库定义的 Nx 目标均通过。该问题不是业务代码失败。
+初次验证报告中的 AI 检查失败来自复制工作区后 `.venv` 的 `pytest`、`pyright`
+shebang 仍指向旧路径。执行 `uv sync --locked --reinstall` 重建锁定环境后，仓库定义的
+Nx 目标均通过。该问题由最终报告分类为宿主工具环境问题，不是业务代码失败。
 
 验证报告：
 
 - `reports/local-deploy-validation/latest.md`
 - `reports/local-deploy-validation/latest.json`
 
-现有 `latest` 报告保留修复前的 uv 失败记录；后续执行本计划前应重新运行完整验证脚本，生成无历史环境噪声的新基线。
+最终 `latest` 报告已由仓库 `validate-local-deploy` 工作流重新生成，不再包含旧 uv
+失败；机器可读报告同时记录镜像 freshness、容器状态、端口映射和浏览器请求证据。
 
 ## 4. 审查摘要
 
@@ -274,10 +288,10 @@ MemoFlow 已具备目标和任务的基础数据能力：
 
 ### 验收标准
 
-- [ ] 连续 20 次启用/关闭关联、切换目标，不出现 console error 或 ErrorBoundary。
-- [ ] 请求失败、空结果和快速切换均不丢失任务标题、描述、时间、重复和提醒设置。
-- [ ] 绑定任务保存后，目标名和 KR 名在任务详情中正确显示。
-- [ ] 完成绑定任务实例后，KR 进度按照 `progressTrigger` 和 `incrementValue` 更新。
+- [x] 连续 20 次启用/关闭关联、切换目标，不出现 console error 或 ErrorBoundary。
+- [x] 请求失败、空结果和快速切换均不丢失任务标题、描述、时间、重复和提醒设置。
+- [x] 绑定任务保存后，目标名和 KR 名在任务详情中正确显示。
+- [x] 完成绑定任务实例后，KR 进度按照 `progressTrigger` 和 `incrementValue` 更新。
 
 ## 6.2 P1：新建任务弹窗保留上次提交内容
 
@@ -333,9 +347,9 @@ props.template 变化
 
 ### 验收标准
 
-- [ ] “新建”永远不会静默继承上一条任务。
-- [ ] 只有显式“复制”操作会预填旧任务内容。
-- [ ] 表单测试覆盖 create/edit/copy 三种初始化语义。
+- [x] “新建”永远不会静默继承上一条任务。
+- [x] 只有显式“复制”操作会预填旧任务内容。
+- [x] 表单测试覆盖 create/edit/copy 三种初始化语义。
 
 ## 6.3 P1：任务模板与任务实例的概念不清
 
@@ -396,9 +410,9 @@ props.template 变化
 
 ### 验收标准
 
-- [ ] 首次用户无需理解数据库模型即可创建一个今天要做的待办。
-- [ ] 模板卡片和今日任务卡片的名称、状态与操作明显不同。
-- [ ] 创建、编辑、停用和删除均说明影响范围。
+- [x] 首次用户无需理解数据库模型即可创建一个今天要做的待办。
+- [x] 模板卡片和今日任务卡片的名称、状态与操作明显不同。
+- [x] 创建、编辑、停用和删除均说明影响范围。
 
 ## 6.4 P1：完成状态与完成率反馈不一致
 
@@ -443,9 +457,9 @@ props.template 变化
 
 ### 验收标准
 
-- [ ] 同一时刻不存在互相矛盾的“已完成”和“完成率 0%”。
-- [ ] 模板启用状态与实例完成状态使用不同词汇和视觉标识。
-- [ ] 完成率旁明确显示统计范围。
+- [x] 同一时刻不存在互相矛盾的“已完成”和“完成率 0%”。
+- [x] 模板启用状态与实例完成状态使用不同词汇和视觉标识。
+- [x] 完成率旁明确显示统计范围。
 
 ## 6.5 P1：未配置模型时，AI 首屏成为阻塞性空态
 
@@ -478,9 +492,9 @@ MemoFlow 的首屏承诺是 AI 工作区，但本地部署和新账号默认没�
 
 ### 验收标准
 
-- [ ] 未配置模型的新用户在 30 秒内可以创建目标或今日任务。
-- [ ] 所有禁用 AI 操作都能说明原因和下一步。
-- [ ] 配置模型是增强路径，不阻断基础目标与任务管理。
+- [x] 未配置模型的新用户在 30 秒内可以创建目标或今日任务。
+- [x] 所有禁用 AI 操作都能说明原因和下一步。
+- [x] 配置模型是增强路径，不阻断基础目标与任务管理。
 
 ## 6.6 P2：模块胶囊需要二次点击“进入”
 
@@ -512,9 +526,9 @@ MemoFlow 的首屏承诺是 AI 工作区，但本地部署和新账号默认没�
 
 ### 验收标准
 
-- [ ] 从首页进入目标或任务完整面板只需一次主点击。
-- [ ] 预览与导航具有不同的视觉和无障碍语义。
-- [ ] 有数量徽标时按钮名称仍包含模块名。
+- [x] 从首页进入目标或任务完整面板只需一次主点击。
+- [x] 预览与导航具有不同的视觉和无障碍语义。
+- [x] 有数量徽标时按钮名称仍包含模块名。
 
 ## 6.7 P2：目标创建流程的术语与信息层级
 
@@ -697,10 +711,10 @@ DOM 审查中，任务表单至少三个 switch 没有可访问名称；目标�
 
 ### 验收标准
 
-- [ ] 顶栏存在稳定、可键盘操作的 Toggle Side Panel。
-- [ ] 无业务 Tab 时右侧面板有可用起始页，而不是空白。
-- [ ] 面板隐藏不会销毁业务 Tab、表单草稿或工作流上下文。
-- [ ] 左侧栏、中央 AI 和右侧面板可以独立组合。
+- [x] 顶栏存在稳定、可键盘操作的 Toggle Side Panel。
+- [x] 无业务 Tab 时右侧面板有可用起始页，而不是空白。
+- [x] 面板隐藏不会销毁业务 Tab、表单草稿或工作流上下文。
+- [x] 左侧栏、中央 AI 和右侧面板可以独立组合。
 
 ## 6.11 P1：今日概览错误占据 AI 对话初始页
 
@@ -737,10 +751,10 @@ DOM 审查中，任务表单至少三个 switch 没有可访问名称；目标�
 
 ### 验收标准
 
-- [ ] AI 对话初始页不再渲染今日待办、提醒和目标进度卡片。
-- [ ] 今日概览完整迁移到右侧面板起始页。
-- [ ] 开始对话后今日概览不会消失。
-- [ ] 1280 × 720 下欢迎页与 Composer 保持紧凑、对齐。
+- [x] AI 对话初始页不再渲染今日待办、提醒和目标进度卡片。
+- [x] 今日概览完整迁移到右侧面板起始页。
+- [x] 开始对话后今日概览不会消失。
+- [x] 1280 × 720 下欢迎页与 Composer 保持紧凑、对齐。
 
 ## 6.12 P1：业务面板专注模式强制覆盖左侧栏
 
@@ -796,9 +810,9 @@ showSidebar = shellState !== 'focus' && !sidebarCollapsed
 
 ### 验收标准
 
-- [ ] 点击业务面板全屏/专注不会改变左侧栏显示状态。
-- [ ] 左右面板 Toggle 互不覆盖、互不清空状态。
-- [ ] 业务面板在剩余工作区内正确铺满，无横向溢出。
+- [x] 点击业务面板全屏/专注不会改变左侧栏显示状态。
+- [x] 左右面板 Toggle 互不覆盖、互不清空状态。
+- [x] 业务面板在剩余工作区内正确铺满，无横向溢出。
 
 ## 6.13 P1：未配置模型提示仍残留在 Web/Desktop 共享 Composer
 
@@ -838,10 +852,10 @@ packages/app-vue/src/locales/zh-CN/aiAssistant.ts
 
 ### 验收标准
 
-- [ ] Web/Desktop 均不再显示“尚未配置可用模型。请先在设置中接入 AI 服务商。”
-- [ ] 无模型 Composer 不增加额外高度，不破坏按钮、选择器和发送按钮对齐。
-- [ ] 用户仍能发现配置 AI 的入口。
-- [ ] Web/Desktop 对相同模型状态渲染一致。
+- [x] Web/Desktop 均不再显示“尚未配置可用模型。请先在设置中接入 AI 服务商。”
+- [x] 无模型 Composer 不增加额外高度，不破坏按钮、选择器和发送按钮对齐。
+- [x] 用户仍能发现配置 AI 的入口。
+- [x] Web/Desktop 对相同模型状态渲染一致。
 
 ## 7. 已确认的目标体验设计
 
@@ -1257,9 +1271,65 @@ Docker 与产品旅程证据：
 
 ### Phase E 出口
 
-- [ ] 同一脚本能证明浏览器请求来自当前本机容器。
-- [ ] PM journey 覆盖目标、KR、绑定任务、完成和进度回写。
-- [ ] 验证报告不会把宿主工具损坏误判为业务代码失败。
+- [x] 同一脚本能证明浏览器请求来自当前本机容器。
+- [x] PM journey 覆盖目标、KR、绑定任务、完成和进度回写。
+- [x] 验证报告不会把宿主工具损坏误判为业务代码失败。
+
+### Phase E 实施证据（2026-07-31）
+
+实现：
+
+- `local-docker-evidence.mjs` 统一验证当前 Git revision、容器状态、health、宿主监听者、
+  Compose host/target 端口映射和 Web/API/AI 镜像 revision；`VCS_REF` 不再允许用外部值
+  掩盖真实 HEAD。
+- local-docker Playwright runner 在每次旅程前生成唯一浏览器 token，请求 Web 根页面并
+  要求 token 出现在当前 Web Nginx 日志；机器可读 evidence 同时保存 HEAD、runtime
+  比对、日志命中行和 Playwright exit code。
+- validation workflow 将失败分类为 `host-tool`、`code` 或 `docker-deploy`；损坏的 Python
+  虚拟环境不会再被描述为产品代码失败，任何必需门禁失败仍会阻断 `readyForPr`。
+- A–D 旅程整合为同一 local-docker target；Phase E 增加已配置模型审批工作流、脏表单
+  延迟切换、用户主动关闭面板和移动断点验证，覆盖 1280 × 720、1440 × 900、390 × 844。
+- 测试身份统一使用 `pm-phase-*`，清理工具从身份根开始处理级联依赖，支持 preview、
+  显式 `--apply` 和清理后复核；数据库凭据只在 Postgres 容器内解析，不复制到宿主参数。
+- Desktop 通过共享 renderer 运行同一壳层实现；`desktop:serve-safe` 在 Xvfb 中真实启动
+  Electron，shell matrix 覆盖 split、focus、设置、主题、语言和 900–1440 宽度。
+
+代码事实差异：
+
+- 业务 Tab 采用 KeepAlive。Phase A/B 旅程完成后不能假定 Home 自动成为活动 surface，
+  测试改为显式关闭/切换业务 Tab 再检查今日概览，保持“关闭最后 Tab 回 Home”的产品
+  决策，而不是为测试引入第二套可见性状态。
+- Phase D 把复杂配置收进默认折叠的“高级设置”。E2E 在编辑完整任务计划前先按用户
+  操作展开该 section，不把渐进披露误判为字段缺失。
+- 初次 affected 验证的 `ai-service:test/typecheck` 失败来自复制的 `.venv` entrypoint
+  shebang 指向旧工作区。执行锁定重装后 `182 passed`、Pyright `0 errors`；最终报告中
+  `host-tool/code/docker-deploy` failure 均为 0。
+
+自动验证：
+
+- `pnpm nx affected -t lint,typecheck,test,build --base=main --parallel=3 --outputStyle=static`：
+  37 个项目、137 个目标全部通过；133 个目标命中缓存，实际重跑目标也全部成功。
+- `pnpm nx run task:test:integration`：4 个文件、22 项通过；
+  `pnpm nx run api:test:smoke`：2 个文件、61 项通过。
+- `pnpm nx run ai-service:test`：182 项通过；`pnpm nx run ai-service:typecheck`：
+  `0 errors, 0 warnings`。
+- `pnpm nx run memoflow:governance-check`、`git diff --check`：通过。
+- `pnpm nx run web:e2e:local-docker`：A–E 共 7 项真实浏览器旅程通过（2.1 分钟）。
+- `xvfb-run -a pnpm nx run web:e2e:shell`：Electron 壳层矩阵 8 项通过；
+  `xvfb-run -a pnpm nx run desktop:serve-safe` 真实显示登录窗口并在人工停止后完成清理。
+
+Docker、报告与数据证据：
+
+- `pnpm runtime:preflight:local-docker` 从 profile 解析 Web/API/AI/PowerSync/Postgres/Redis
+  端口 `58080`/`53080`/`58100`/`58081`/`55432`/`56379`，六个监听者均为 Docker
+  published port；仓库没有 `.env.local`，测试没有硬编码本机端口。
+- `pnpm docker:local:up` 与最终 validation rebuild 均成功，六服务 healthy；Web/API/AI
+  镜像 revision 与验证 HEAD 精确相等，HTTP 探针全部返回 200。
+- `reports/local-deploy-validation/local-docker-playwright-evidence.json` 为 `ok: true`，
+  唯一浏览器 token 命中当前 Web Nginx 日志；`latest.json` 为 `verdict: pass`、
+  `readyForPr: true`，无 blocking issue、warning 或失败分类。
+- 清理工具按 preview → apply → preview 执行；最终 `pm-phase-*` identity 及级联产品数据
+  为 `0 rows`。归档提交后按相同流程对最终 revision 再次重建、重跑旅程和生成报告。
 
 ## 9. 建议切片与验证目标
 
@@ -1290,11 +1360,13 @@ Docker 与产品旅程证据：
 
 ### 环境与部署
 
-- [ ] `pnpm docker:local:up` 成功。
-- [ ] 六个服务均 healthy。
-- [ ] `localhost:58080` 的请求能在当前 `memoflow-web-1` 日志中确认。
-- [ ] 运行中镜像 revision 与当前验证 revision 一致。
-- [ ] validation report 无宿主 uv/Node 工具噪声。
+- [x] `pnpm docker:local:up` 成功。
+- [x] 六个服务均 healthy。
+- [x] `localhost:58080` 的请求能在当前 `memoflow-web-1` 日志中确认。
+- [x] 运行中镜像 revision 与当前验证 revision 一致。
+- [x] validation report 无宿主 uv/Node 工具噪声。
+- [x] Web/API/AI/PowerSync HTTP 探针均返回 200，端口映射来自 runtime profile。
+- [x] 自动化测试身份和级联数据已通过固定前缀清理至 `0 rows`。
 
 ### 目标
 
@@ -1333,6 +1405,9 @@ Docker 与产品旅程证据：
 - [x] 无模型 Composer 高度、控件和发送按钮保持对齐。
 - [x] 进入目标或任务只需一次主点击。
 - [x] 数量徽标不会覆盖模块可访问名称。
+- [x] 已配置模型时，clean Home/业务 surface 可按上下文自动切换到审批工作流。
+- [x] 脏表单、busy surface 或用户主动关闭面板时只提示，不擅自打开或切换。
+- [x] 390 × 844 移动断点下显式 Toggle 与工作流注意徽标可操作。
 
 ### UI 与无障碍
 
@@ -1343,6 +1418,13 @@ Docker 与产品旅程证据：
 - [x] 仅键盘可完成目标、KR 和任务创建。
 - [x] axe 无 serious/critical 问题。
 - [x] 中文界面无裸英文枚举和混排。
+
+### Desktop 与共享实现
+
+- [x] Desktop 开发环境可真实启动，Electron renderer/main/zygote/GPU 进程正常。
+- [x] Web/Desktop 复用同一 `app-vue` 壳层、表单和 Composer 实现，没有平台分叉。
+- [x] Electron 900 × 600、1024 × 768、1200 × 800、1440 × 900 壳层矩阵通过。
+- [x] Desktop split/focus、侧栏、右面板、设置、主题和语言行为与 Web 契约一致。
 
 ## 11. 风险与决策点
 
@@ -1488,11 +1570,12 @@ busy
 - 新增第三方 AI Provider。
 - 大规模重写目标或任务领域模型。
 - 为历史兼容保留两套任务创建流程。
-- 清理本轮本地测试账号和数据；清理应由显式测试数据工具完成。
+- 删除不属于固定 PM 测试前缀的任意本地或生产数据；自动化 fixture 只由显式清理
+  工具按 `pm-phase-*` 身份根处理。
 
 ## 13. 本轮测试数据
 
-本地数据库保留以下测试数据，用于复现：
+初次人工审查曾使用以下历史 fixture：
 
 - 测试账号：`pm-review-live-1785322038450@example.com`
 - 目标：`完成 MemoFlow 产品测试闭环`
@@ -1500,7 +1583,9 @@ busy
 - 任务模板：`整理产品审查问题并分级`
 - 今日任务实例：已完成
 
-测试账号密码不写入文档。上述数据仅存在于本地开发环境，不应迁移到生产环境。
+最终自动化旅程不再依赖上述固定账号，而是每次创建唯一 `pm-phase-*` 身份。归档前已
+执行显式清理工具；`pm-phase-*` preview 为 `0 rows`，历史 `pm-review-live-*` 查询也为
+`0 rows`。测试账号密码从未写入文档，任何本地 fixture 都不得迁移到生产环境。
 
 ## 14. 完成与归档
 
@@ -1515,3 +1600,6 @@ busy
 6. 最终 validation report 为通过，且浏览器请求来源可证明。
 
 若只完成部分切片，应在本文追加 residual 状态，不得以“基础创建可用”替代核心目标—任务闭环的完成定义。
+
+归档结论：以上 6 项条件与第 10 节清单均已满足，无 residual 或未完成切片。本文件随
+最终交付从 `docs/plan/active` 移入 `docs/plan/archive`。
