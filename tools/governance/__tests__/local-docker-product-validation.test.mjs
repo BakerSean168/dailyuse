@@ -1,4 +1,10 @@
 import { describe, expect, it } from 'vitest';
+/*
+ * This integration test intentionally exercises standalone workspace tooling
+ * that is not modeled as an Nx project. Keep the exception local to this test;
+ * production and project-to-project imports remain boundary-enforced.
+ */
+/* eslint-disable @nx/enforce-module-boundaries */
 import {
   evaluateLocalDockerRuntimeEvidence,
   hasBrowserProbeEvidence,
