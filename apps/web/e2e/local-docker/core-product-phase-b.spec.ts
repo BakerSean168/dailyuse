@@ -195,6 +195,11 @@ test.describe('Local Docker core product Phase B', () => {
     await expect(page.getByTestId('task-plan-update-impact')).toContainText(
       /将更新 \d+ 个尚未开始的待办任务/,
     );
+    await page.getByTestId('task-form-advanced-toggle').click();
+    await expect(page.getByTestId('task-form-advanced-toggle')).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
     await page.locator('#importance-select').click();
     await page.getByRole('option', { name: '高', exact: true }).click();
     const updatePromise = waitForTemplateWrite(page, 'PATCH');
