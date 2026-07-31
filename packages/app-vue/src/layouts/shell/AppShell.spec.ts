@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createI18n } from 'vue-i18n';
 import { createMemoryHistory, createRouter } from 'vue-router';
-import { computed, defineComponent, h, inject, nextTick, Teleport } from 'vue';
+import { computed, defineComponent, h, inject, nextTick, onMounted, Teleport } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SHELL_WORKFLOW_MOUNT_KEY } from '../../di/keys';
 import AppShell from './AppShell.vue';
@@ -107,6 +107,17 @@ const TodayOverviewPanelStub = defineComponent({
   },
 });
 
+let goalRouteMountCount = 0;
+const GoalRouteProbe = defineComponent({
+  name: 'GoalRouteProbe',
+  setup() {
+    onMounted(() => {
+      goalRouteMountCount += 1;
+    });
+    return () => h('div', { 'data-testid': 'goal-draft-probe' });
+  },
+});
+
 const i18n = createI18n({
   legacy: false,
   locale: 'en-US',
@@ -139,17 +150,17 @@ const i18n = createI18n({
   },
 });
 
-async function mountShell() {
+async function mountShell(initialPath = '/') {
   const pinia = createPinia();
   setActivePinia(pinia);
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
       { path: '/', component: { template: '<div />' } },
-      { path: '/goals', component: { template: '<input data-testid="goal-draft-probe" />' } },
+      { path: '/goals', component: GoalRouteProbe },
     ],
   });
-  await router.push('/');
+  await router.push(initialPath);
   await router.isReady();
 
   const wrapper = mount(AppShell, {
@@ -174,6 +185,7 @@ async function mountShell() {
 describe('AppShell right-panel integration', () => {
   beforeEach(() => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    goalRouteMountCount = 0;
   });
 
   it('mounts Home by default and teleports AI workflow content into the canonical panel', async () => {
@@ -201,6 +213,15 @@ describe('AppShell right-panel integration', () => {
     await nextTick();
     expect(wrapper.get('[data-testid="conversation-sidebar"]').exists()).toBe(true);
     expect(wrapper.get('[data-testid="app-shell"]').attributes('data-shell-state')).toBe('focus');
+    wrapper.unmount();
+  });
+
+  it('mounts a cold business deep link once after creating its shell tab', async () => {
+    const { wrapper, store } = await mountShell('/goals');
+    await nextTick();
+
+    expect(store.activeTab?.route).toBe('/goals');
+    expect(goalRouteMountCount).toBe(1);
     wrapper.unmount();
   });
 });

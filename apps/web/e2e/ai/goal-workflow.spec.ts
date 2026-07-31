@@ -18,6 +18,7 @@ type GoalWorkflowSessionOptions = {
   workflowEntry?: Record<string, unknown> | null;
   seedConversation?: boolean;
   landingPath?: string;
+  expectAiVisible?: boolean;
 };
 
 /**
@@ -173,7 +174,7 @@ async function bootstrapGoalWorkflowSession(
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
   await page.getByTestId('ai-chat-view').waitFor({
-    state: 'visible',
+    state: options.expectAiVisible === false ? 'attached' : 'visible',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
 
@@ -195,7 +196,17 @@ test.describe('AI Goal Workflow', () => {
 
   test('[P0] keeps the AI Agent Workspace usable on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await bootstrapGoalWorkflowSession(page);
+    await bootstrapGoalWorkflowSession(page, { expectAiVisible: false });
+
+    const shell = page.getByTestId('app-shell');
+    const panelToggle = page.getByTestId('shell-right-panel-toggle');
+    await expect(shell).toHaveAttribute('data-shell-state', 'focus');
+    await expect(page.getByTestId('business-panel')).toBeVisible();
+    await expect(page.getByTestId('ai-chat-view')).toBeHidden();
+
+    await panelToggle.click();
+    await expect(shell).toHaveAttribute('data-shell-state', 'chat');
+    await expect(page.getByTestId('business-panel')).toBeHidden();
 
     await expect(page.getByTestId('ai-chat-view')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -365,6 +376,7 @@ test.describe('AI Goal Workflow', () => {
     await expect(noteAgentPanel).toContainText(/Grounded Knowledge Answers/i);
 
     await page.getByTestId('knowledge-qa-save-draft').click();
+    await openCreatedKnowledgeNoteWorkflow(page);
     const noteSummaryPanel = page.getByTestId('knowledge-note-summary-panel');
     await expect(noteSummaryPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -404,6 +416,7 @@ test.describe('AI Goal Workflow', () => {
     await expect(noteAgentPanel).toContainText(/ordinary workspace conversation/i);
 
     await page.getByTestId('knowledge-note-save-draft').click();
+    await openCreatedKnowledgeNoteWorkflow(page);
     const noteSummaryPanel = page.getByTestId('knowledge-note-summary-panel');
     await expect(noteSummaryPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -494,6 +507,17 @@ test.describe('AI Goal Workflow', () => {
     expect(telemetry.goalAgentApprovalResumeCount).toBe(0);
   });
 });
+
+async function openCreatedKnowledgeNoteWorkflow(page: Page): Promise<void> {
+  await expect(page).toHaveURL(/\/repository$/i, {
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  const workflowTab = page.getByTestId('business-panel-workflow');
+  await expect(workflowTab).toBeVisible();
+  await workflowTab.click();
+  await expect(workflowTab).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByTestId('shell-workflow-surface')).toBeVisible();
+}
 
 type GoalWorkflowMockOptions = {
   seedConversation?: boolean;

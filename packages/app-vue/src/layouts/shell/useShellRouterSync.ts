@@ -281,11 +281,11 @@ export function useShellRouterSync() {
     }
   }
 
-  // ── 生命周期：afterEach 订阅 + 挂载恢复 ──
+  // ── 生命周期：首次渲染前恢复 + afterEach 订阅 ──
 
   let removeAfterEach: (() => void) | null = null;
 
-  onMounted(() => {
+  function restoreStartupRoute(): void {
     const panelWasHidden = !store.rightPanelOpen;
     store.sanitizeLegacyTabs();
 
@@ -296,11 +296,6 @@ export function useShellRouterSync() {
     if (store.tabs.length > 0 && !store.activeTabId) {
       store.activeTabId = store.tabs[store.tabs.length - 1]!.id;
     }
-
-    removeAfterEach = router.afterEach((to, _from, failure) => {
-      if (failure) return;
-      syncRouteToStore(to);
-    });
 
     // 独立设置深链：保留后台 tabs，不覆盖到业务 Tab。
     if (isStandaloneSettingsPath(route.path) || route.meta.shellScene === 'settings') {
@@ -324,6 +319,17 @@ export function useShellRouterSync() {
     }
     // 深链启动：当前路由落 Tab。
     syncRouteToStore(route);
+  }
+
+  // router-view 的 KeepAlive key 依赖 Tab id。必须在首次渲染前创建深链 Tab，
+  // 否则首帧使用 fallback key、挂载后切到 Tab key，会留下两套业务组件和 Teleport DOM。
+  restoreStartupRoute();
+
+  onMounted(() => {
+    removeAfterEach = router.afterEach((to, _from, failure) => {
+      if (failure) return;
+      syncRouteToStore(to);
+    });
   });
 
   onUnmounted(() => {

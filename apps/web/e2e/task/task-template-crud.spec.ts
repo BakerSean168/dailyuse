@@ -6,7 +6,7 @@ const generateTestEmail = () =>
   `e2e-task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
 const testPassword = 'Test123456!';
 
-test.describe('Task Template CRUD Operations', () => {
+test.describe('Task Plan CRUD Operations', () => {
   let testEmail: string;
 
   test.beforeEach(async ({ page }) => {
@@ -37,8 +37,8 @@ test.describe('Task Template CRUD Operations', () => {
     await expect(
       page.getByText(
         creation.todayInstanceCreated
-          ? /已生成今日任务实例|today's task instance generated/i
-          : /今日没有生成任务实例|no task instance was generated for today/i,
+          ? /任务计划已创建，并生成今日待办任务|Task plan created and today's to-do generated/i
+          : /任务计划已创建，今天不会生成待办任务|Task plan created with no to-do due today/i,
       ),
     ).toBeVisible();
   });
@@ -110,7 +110,7 @@ test.describe('Task Template CRUD Operations', () => {
 
     const toolbar = page.getByTestId('task-page-toolbar');
     const searchInput = page.getByTestId('task-search-input');
-    const primaryCreate = page.locator('[data-primary-action="create-task-template"]:visible');
+    const primaryCreate = page.locator('[data-primary-action="quick-task"]:visible');
     const scrollHost = page.locator('#task-template-management');
 
     await expect(toolbar).toBeVisible();
