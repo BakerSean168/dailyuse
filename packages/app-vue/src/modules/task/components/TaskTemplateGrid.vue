@@ -45,6 +45,7 @@ defineEmits<{
   'clear-filters': [];
   'click-template': [templateId: string];
   'edit-template': [templateId: string];
+  'copy-template': [templateId: string];
   'delete-template': [template: TaskTemplateViewModel];
   'pause-template': [template: TaskTemplateViewModel];
   'resume-template': [template: TaskTemplateViewModel];
@@ -107,6 +108,7 @@ const { t } = useI18n();
       :on-create-dependency="onCreateDependency"
       @click="(id) => $emit('click-template', id)"
       @edit="(id) => $emit('edit-template', id)"
+      @copy="(id) => $emit('copy-template', id)"
       @delete="(tpl) => $emit('delete-template', tpl)"
       @pause="(tpl) => $emit('pause-template', tpl)"
       @resume="(tpl) => $emit('resume-template', tpl)"

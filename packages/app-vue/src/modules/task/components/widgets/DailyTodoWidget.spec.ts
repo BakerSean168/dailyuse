@@ -42,6 +42,12 @@ describe('DailyTodoWidget', () => {
       );
       return instances.value.find((instance) => instance.id === id) ?? null;
     });
+    const uncompleteInstance = vi.fn(async (id: string) => {
+      instances.value = instances.value.map((instance) =>
+        instance.id === id ? { ...instance, status: 'Pending' } : instance,
+      );
+      return instances.value.find((instance) => instance.id === id) ?? null;
+    });
 
     vi.mocked(useTask).mockReturnValue({
       instances,
@@ -50,6 +56,7 @@ describe('DailyTodoWidget', () => {
       fetchInstancesByDateRange: vi.fn().mockResolvedValue(undefined),
       fetchTemplates: vi.fn().mockResolvedValue(undefined),
       completeInstance,
+      uncompleteInstance,
     } as unknown as ReturnType<typeof useTask>);
 
     const wrapper = mount(DailyTodoWidget, {
@@ -88,6 +95,16 @@ describe('DailyTodoWidget', () => {
     expect(wrapper.get('.h-full.rounded-full.bg-emerald-500').attributes('style')).toContain(
       'width: 100%',
     );
-    expect(wrapper.get('button[title="已完成"]').attributes('disabled')).toBeDefined();
+    const undoButton = wrapper.get('button[title="撤销完成"]');
+    expect(undoButton.attributes('disabled')).toBeUndefined();
+
+    await undoButton.trigger('click');
+    await flushPromises();
+
+    expect(uncompleteInstance).toHaveBeenCalledWith('TaskInstanceId_today');
+    expect(wrapper.text()).toContain('0/1');
+    expect(wrapper.get('.h-full.rounded-full.bg-emerald-500').attributes('style')).toContain(
+      'width: 0%',
+    );
   });
 });

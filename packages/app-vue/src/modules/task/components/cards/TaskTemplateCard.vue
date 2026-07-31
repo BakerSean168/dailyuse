@@ -197,9 +197,9 @@
         </p>
 
         <!-- 统计信息 -->
-        <div class="mt-3 rounded-lg bg-muted/30 p-3">
+        <div class="mt-3 rounded-lg bg-muted/30 p-3" data-testid="task-plan-statistics">
           <Separator class="mb-2" />
-          <div class="flex justify-between gap-4 flex-wrap">
+          <div v-if="isRecurringPlan" class="flex justify-between gap-4 flex-wrap">
             <div class="flex flex-col items-center min-w-[60px]">
               <span class="text-xs text-muted-foreground mb-1">{{
                 t('task.templateCard.totalCount')
@@ -208,14 +208,37 @@
                 template.instanceCount ?? 0
               }}</span>
             </div>
-            <div class="flex flex-col items-center min-w-[60px]">
-              <span class="text-xs text-muted-foreground mb-1">{{
-                t('task.templateCard.completionRate')
-              }}</span>
-              <span class="text-sm font-semibold text-primary"
-                >{{ Math.round(template.completionRate ?? 0) }}%</span
+            <div class="flex min-w-[180px] flex-1 flex-col items-end justify-center">
+              <span
+                v-if="(template.dueInstanceCount ?? 0) > 0"
+                class="text-sm font-semibold text-primary"
+                data-testid="task-plan-rolling-completion"
               >
+                {{
+                  t('task.templateCard.rollingCompletion', {
+                    days: template.completionWindowDays ?? 30,
+                    completed: template.completedDueInstanceCount ?? 0,
+                    due: template.dueInstanceCount ?? 0,
+                    rate: Math.round(template.completionRate ?? 0),
+                  })
+                }}
+              </span>
+              <span
+                v-else
+                class="text-sm text-muted-foreground"
+                data-testid="task-plan-no-execution-records"
+              >
+                {{ t('task.templateCard.noExecutionRecords') }}
+              </span>
             </div>
+          </div>
+          <div v-else class="flex items-center justify-between gap-3">
+            <span class="text-xs text-muted-foreground">{{
+              t('task.templateCard.oneTimeStatus')
+            }}</span>
+            <span class="text-sm font-semibold text-primary" data-testid="one-time-task-status">
+              {{ oneTimeStatusText }}
+            </span>
           </div>
         </div>
       </CardContent>
@@ -287,7 +310,10 @@ import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
 import { useI18n } from 'vue-i18n';
-import { getTaskTimeValueDisplay } from '../../utils/task-template-presentation';
+import {
+  getTaskInstanceStatusLabel,
+  getTaskTimeValueDisplay,
+} from '../../utils/task-template-presentation';
 import { formatProductPattern } from '../../../../shared/utils/product-time';
 
 const { t } = useI18n();
@@ -303,6 +329,7 @@ import {
 } from '@memoflow/ui-vue-shadcn';
 import {
   Pencil,
+  Copy,
   Trash2,
   Flag,
   Flame,
@@ -356,6 +383,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   click: [templateId: string];
   edit: [templateId: string];
+  copy: [templateId: string];
   delete: [template: TaskTemplateViewModel];
   pause: [template: TaskTemplateViewModel];
   resume: [template: TaskTemplateViewModel];
@@ -373,6 +401,13 @@ const menuActions = computed<MenuAction[]>(() => [
     label: menuLabel('edit'),
     icon: Pencil,
     handler: handleEdit,
+  },
+  {
+    key: 'copy',
+    testId: `task-card-copy-action-${props.template.id}`,
+    label: menuLabel('duplicate'),
+    icon: Copy,
+    handler: handleCopy,
   },
   {
     key: 'delete',
@@ -483,6 +518,10 @@ const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined
   if (props.resolveGoalBindingName) {
     return props.resolveGoalBindingName(binding, props.template);
   }
+  const names = [binding.goalTitle, binding.keyResultTitle].filter(Boolean);
+  if (names.length > 0) {
+    return names.join(' · ');
+  }
   return t('task.templateCard.linkedGoal');
 };
 
@@ -496,6 +535,12 @@ const timeLabel = computed(() => {
   return getTaskTimeValueDisplay(t, props.template.timeConfig);
 });
 
+const isRecurringPlan = computed(() => !!props.template.recurrenceRule);
+
+const oneTimeStatusText = computed(() => {
+  return getTaskInstanceStatusLabel(t, props.template.singleInstanceStatus);
+});
+
 // 事件处理方法
 const handleCardClick = () => {
   emit('click', props.template.id);
@@ -503,6 +548,10 @@ const handleCardClick = () => {
 
 const handleEdit = () => {
   emit('edit', props.template.id);
+};
+
+const handleCopy = () => {
+  emit('copy', props.template.id);
 };
 
 const handleDelete = async () => {

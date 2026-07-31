@@ -31,20 +31,19 @@ describe('AI knowledge note terminology surface', () => {
   const types = readFileSync(resolve(__dirname, 'types.ts'), 'utf8');
 
   it('locales present knowledge notes wording instead of repository resources', () => {
-    // Modular modules use JSON-style keys inside export default { ... }
-    expect(enAi).toContain('"fetchResource": "Fetch Note"');
-    expect(enAi).toContain(
-      '"matchedResources": "{count} note(s) matched in {ms} ms."',
+    expect(enAi).toMatch(/["']?fetchResource["']?\s*:\s*["']Fetch Note["']/);
+    expect(enAi).toMatch(
+      /["']?matchedResources["']?\s*:\s*["']\{count\} note\(s\) matched in \{ms\} ms\.["']/,
     );
     expect(enAi).toContain('indexed knowledge notes with citations');
-    expect(enAi).not.toContain('"fetchResource": "Fetch Resource"');
+    expect(enAi).not.toMatch(/["']?fetchResource["']?\s*:\s*["']Fetch Resource["']/);
     expect(enAi).not.toContain('resource(s) matched');
     expect(enAi).not.toContain('indexed repository resources with citations');
 
-    expect(zhAi).toContain('"fetchResource": "读取笔记"');
+    expect(zhAi).toMatch(/["']?fetchResource["']?\s*:\s*["']读取笔记["']/);
     expect(zhAi).toContain('匹配到 {count} 篇笔记');
     expect(zhAi).toContain('已索引的知识笔记');
-    expect(zhAi).not.toContain('"fetchResource": "读取资源"');
+    expect(zhAi).not.toMatch(/["']?fetchResource["']?\s*:\s*["']读取资源["']/);
     expect(zhAi).not.toContain('匹配到 {count} 个资源');
   });
 

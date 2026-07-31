@@ -10,7 +10,7 @@
 import type { IGoalRepository, IGoalRecordRepository } from '../../../domain';
 import { GoalRecord } from '../../../domain';
 import { KeyResultProgress } from '../../../domain';
-import type { GoalRecordClientDTO } from '@memoflow/contracts/goal';
+import type { GoalRecordClientDTO, GoalRecordSource } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { IdentityId, KeyResultId } from '@memoflow/contracts/primitives';
@@ -27,6 +27,7 @@ export class CreateGoalRecordUseCase {
     params: {
       value: number;
       note?: string;
+      source?: GoalRecordSource;
     },
     identityId: string,
   ): Promise<Result<GoalRecordClientDTO>> {
@@ -44,6 +45,20 @@ export class CreateGoalRecordUseCase {
       return error('NOT_FOUND', `KeyResult not found: ${keyResultId} in goal ${goalId}`);
     }
 
+    if (params.source) {
+      const existing = await this.goalRecordRepository.findBySource(
+        identityId,
+        params.source.type,
+        params.source.id,
+      );
+      if (existing) {
+        if (String(existing.keyResultId) !== keyResultId || existing.value !== params.value) {
+          return error('VALIDATION_ERROR', 'Goal contribution source is already bound to another value');
+        }
+        return ok(existing.toClientDTO(goalId, keyResult.progress.currentValue));
+      }
+    }
+
     const historyBefore = await this.goalRecordRepository.findByKeyResultId(identityId, keyResultId, {
       orderBy: 'asc',
     });
@@ -54,10 +69,25 @@ export class CreateGoalRecordUseCase {
       identityId: identityId as IdentityId,
       value: params.value,
       note: params.note,
+      source: params.source,
     });
 
     // 4. 持久化
-    await this.goalRecordRepository.save(record);
+    try {
+      await this.goalRecordRepository.save(record);
+    } catch (caughtError) {
+      if (params.source) {
+        const concurrentRecord = await this.goalRecordRepository.findBySource(
+          identityId,
+          params.source.type,
+          params.source.id,
+        );
+        if (concurrentRecord) {
+          return ok(concurrentRecord.toClientDTO(goalId, keyResult.progress.currentValue));
+        }
+      }
+      throw caughtError;
+    }
 
     // 5. 追加 record 时，基于当前值和既有历史保持隐式基线一致。
     // 这可以避免「手工 currentValue 已有进度，但尚未生成历史 record」时

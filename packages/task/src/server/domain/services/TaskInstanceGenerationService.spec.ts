@@ -89,21 +89,22 @@ describe('TaskInstanceGenerationService', () => {
 
     it('should use forceGenerate to start from today even if lastGeneratedDate exists', () => {
       const yesterday = new Date(Date.now() - DAY_MS);
-      const template = aLoadedTaskTemplate({
-        taskType: TaskType.Recurring,
-        timeConfig: anAllDayTimeConfig(),
-        recurrenceRule: aDailyRecurrenceRule(),
-        lastGeneratedDate: yesterday,
-        status: TaskTemplateStatus.Active,
-      });
+      const createTemplate = () =>
+        aLoadedTaskTemplate({
+          taskType: TaskType.Recurring,
+          timeConfig: anAllDayTimeConfig(),
+          recurrenceRule: aDailyRecurrenceRule(),
+          lastGeneratedDate: yesterday,
+          status: TaskTemplateStatus.Active,
+        });
 
       // Without forceGenerate — starts from lastGeneratedDate + 1 day = today
-      const normal = service.generateInstances(template, { forceGenerate: false });
+      const normal = service.generateInstances(createTemplate(), { forceGenerate: false });
 
       // With forceGenerate — starts from today regardless
-      const forced = service.generateInstances(template, { forceGenerate: true });
+      const forced = service.generateInstances(createTemplate(), { forceGenerate: true });
 
-      // Both should produce instances; forced may overlap with existing
+      // Use isolated aggregates because a generation mutates the template's instance collection.
       expect(normal.length).toBeGreaterThan(0);
       expect(forced.length).toBeGreaterThan(0);
     });

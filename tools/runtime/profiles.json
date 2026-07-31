@@ -14,10 +14,10 @@
   "profiles": {
     "host-dev": {
       "title": "Host development (hot reload)",
-      "description": "pnpm dev for API+Web; docker:dev:up for infra only.",
+      "description": "Nx run-many for API+Web; docker:dev:up for infra only.",
       "commands": {
         "infra": "pnpm docker:dev:up",
-        "app": "pnpm dev"
+        "app": "pnpm nx run-many -t serve --projects=api,web --parallel=2"
       },
       "ports": {
         "api": 3000,

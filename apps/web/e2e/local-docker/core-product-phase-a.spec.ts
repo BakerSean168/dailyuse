@@ -1,0 +1,262 @@
+import { expect, test, type APIResponse, type Page } from '@playwright/test';
+import { API_CONFIG, TIMEOUT_CONFIG } from '../config';
+import { registerAndLogin } from '../helpers/testHelpers';
+
+const password = 'Test123456!';
+
+type GoalFixture = {
+  id: string;
+  name: string;
+  keyResultId: string;
+  keyResultName: string;
+};
+
+type KeyResultProjection = {
+  id: string;
+  title: string;
+  progress: { currentValue: number; targetValue: number };
+};
+
+test.describe('Local Docker core product Phase A', () => {
+  test('[P0] closes the goal to task contribution loop without crashes or duplicate progress', async ({
+    page,
+  }) => {
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const taskName = `[PM-A] Ship product loop ${suffix}`;
+    const taskDescription = 'Preserve every task plan field while switching goal bindings.';
+    const consoleErrors: string[] = [];
+    const pageErrors: string[] = [];
+
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    await registerAndLogin(page, {
+      email: `pm-phase-a-${suffix}@test.com`,
+      password,
+      landingPath: '/goals',
+    });
+
+    const token = await page.evaluate(() => localStorage.getItem('access_token'));
+    expect(token, 'Registration should persist an access token').toBeTruthy();
+    const headers = { Authorization: `Bearer ${token}` };
+
+    const primary = await createGoalWithKeyResult(page, headers, {
+      name: `[PM-A] Launch MemoFlow ${suffix}`,
+      keyResultName: `[PM-A] Complete journey ${suffix}`,
+    });
+    const alternate = await createGoalWithKeyResult(page, headers, {
+      name: `[PM-A] Reliability guard ${suffix}`,
+      keyResultName: `[PM-A] Exercise binding ${suffix}`,
+    });
+
+    await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('task-management-view')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
+    });
+    await page.getByTestId('create-task-template-button').click();
+    await expect(page.getByTestId('task-template-dialog')).toBeVisible();
+    await page.getByTestId('task-template-title-input').fill(taskName);
+    await page.getByTestId('task-template-description-input').fill(taskDescription);
+
+    const toggle = page.getByTestId('task-goal-binding-toggle');
+    const fixtures = [primary, alternate];
+    for (let index = 0; index < 20; index += 1) {
+      if ((await toggle.getAttribute('data-state')) === 'checked') {
+        await toggle.click();
+        await expect(toggle).toHaveAttribute('data-state', 'unchecked');
+      }
+
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('data-state', 'checked');
+      await selectBinding(page, fixtures[index % fixtures.length]);
+
+      await expect(page.getByTestId('task-template-title-input')).toHaveValue(taskName);
+      await expect(page.getByTestId('task-template-description-input')).toHaveValue(
+        taskDescription,
+      );
+      await expect(page.getByText(/Cannot read properties of null/i)).toHaveCount(0);
+    }
+
+    if ((await toggle.getAttribute('data-state')) === 'checked') {
+      await toggle.click();
+    }
+    await toggle.click();
+    await selectBinding(page, primary);
+    await page.getByTestId('task-goal-increment-input').fill('1');
+
+    const createResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        new URL(response.url()).pathname.endsWith('/api/v1/task-templates'),
+    );
+    await page.getByTestId('task-dialog-save-button').click();
+    const creation = await expectApiData<{
+      template: { id: string };
+      todayInstanceCreated: boolean;
+    }>(await createResponsePromise);
+    expect(creation.todayInstanceCreated).toBe(true);
+
+    const taskCard = page
+      .getByTestId('draggable-task-card')
+      .filter({ has: page.getByText(taskName, { exact: true }) })
+      .first();
+    await expect(taskCard).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await expect(taskCard).toContainText(primary.name);
+    await expect(taskCard).toContainText(primary.keyResultName);
+    await taskCard.getByText(taskName, { exact: true }).click();
+
+    await page.waitForURL(new RegExp(`/tasks/${creation.template.id}$`), {
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
+    });
+    await expect(page.getByTestId('task-linked-goal-name')).toHaveText(primary.name);
+    await expect(page.getByTestId('task-linked-key-result-name')).toHaveText(
+      primary.keyResultName,
+    );
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
+    const taskItem = page
+      .getByTestId('daily-todo-item')
+      .filter({ has: page.getByText(taskName, { exact: true }) });
+    await expect(taskItem).toBeVisible({ timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await expect(taskItem).toHaveAttribute('data-task-status', 'Pending');
+    const instanceId = await taskItem.getAttribute('data-task-instance-id');
+    expect(instanceId).toBeTruthy();
+    const completeButton = page.getByTestId(`complete-today-task-${instanceId}`);
+
+    await completeButton.click();
+    await expect(taskItem).toHaveAttribute('data-task-status', 'Completed');
+    await expectGoalContribution(page, headers, primary, { currentValue: 1, recordCount: 1 });
+
+    const repeatedCompletion = await page.request.post(
+      `${API_CONFIG.FULL_URL}/task-instances/${instanceId}/complete`,
+      { headers },
+    );
+    expect(repeatedCompletion.ok(), await repeatedCompletion.text()).toBe(true);
+    await expectGoalContribution(page, headers, primary, { currentValue: 1, recordCount: 1 });
+
+    await completeButton.click();
+    await expect(taskItem).toHaveAttribute('data-task-status', 'Pending');
+    await expectGoalContribution(page, headers, primary, { currentValue: 0, recordCount: 0 });
+
+    await completeButton.click();
+    await expect(taskItem).toHaveAttribute('data-task-status', 'Completed');
+    await expectGoalContribution(page, headers, primary, { currentValue: 1, recordCount: 1 });
+
+    expect(pageErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
+async function createGoalWithKeyResult(
+  page: Page,
+  headers: Record<string, string>,
+  input: { name: string; keyResultName: string },
+): Promise<GoalFixture> {
+  await page.goto('/goals', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByTestId('goal-list-view')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+  await page.getByTestId('create-goal-entry').click();
+  await page.getByTestId('goal-name-input').fill(input.name);
+  await page
+    .getByTestId('goal-description-input')
+    .fill('Created through the real local Docker product surface.');
+  await page.getByTestId('goal-dialog-key-results-tab').click();
+  await page.getByTestId('goal-dialog-add-key-result').click();
+  await expect(page.getByTestId('key-result-dialog')).toBeVisible();
+  await page.getByTestId('key-result-title-input').fill(input.keyResultName);
+  await page.getByTestId('key-result-start-input').fill('0');
+  await page.getByTestId('key-result-current-input').fill('0');
+  await page.getByTestId('key-result-target-input').fill('10');
+  await page.getByTestId('save-key-result-button').click();
+  await expect(page.getByTestId('key-result-dialog')).toBeHidden();
+  await expect(page.getByTestId('goal-dialog')).toContainText(input.keyResultName);
+  await page.getByTestId('save-goal-button').click();
+  await expect(page.getByTestId('goal-dialog')).toBeHidden({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+
+  const card = page
+    .getByTestId('goal-card')
+    .filter({ has: page.getByText(input.name, { exact: true }) })
+    .first();
+  await expect(card).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  const id = await card.getAttribute('data-goal-id');
+  expect(id).toBeTruthy();
+
+  const keyResults = await expectApiData<{ data: KeyResultProjection[]; total: number }>(
+    await page.request.get(`${API_CONFIG.FULL_URL}/goals/${id}/key-results`, { headers }),
+  );
+  const keyResult = keyResults.data.find((item) => item.title === input.keyResultName);
+  expect(keyResult).toBeDefined();
+
+  return {
+    id: id!,
+    name: input.name,
+    keyResultId: keyResult!.id,
+    keyResultName: input.keyResultName,
+  };
+}
+
+async function selectBinding(page: Page, fixture: GoalFixture): Promise<void> {
+  await page.getByTestId('task-goal-select-trigger').click();
+  await page.getByRole('option').filter({ hasText: fixture.name }).click();
+  await expect(page.getByTestId('task-goal-select-trigger')).toContainText(fixture.name);
+
+  const keyResultTrigger = page.getByTestId('task-key-result-select-trigger');
+  await expect(keyResultTrigger).toBeEnabled();
+  await keyResultTrigger.click();
+  await page.getByRole('option').filter({ hasText: fixture.keyResultName }).click();
+  await expect(keyResultTrigger).toContainText(fixture.keyResultName);
+}
+
+async function showTodayOverview(page: Page): Promise<void> {
+  await page.getByTestId('business-panel-home').click();
+  await expect(page.getByTestId('today-overview-panel')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+}
+
+async function expectGoalContribution(
+  page: Page,
+  headers: Record<string, string>,
+  fixture: GoalFixture,
+  expected: { currentValue: number; recordCount: number },
+): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const keyResults = await expectApiData<{ data: KeyResultProjection[]; total: number }>(
+          await page.request.get(
+            `${API_CONFIG.FULL_URL}/goals/${fixture.id}/key-results`,
+            { headers },
+          ),
+        );
+        const records = await expectApiData<{ data: unknown[]; total: number }>(
+          await page.request.get(
+            `${API_CONFIG.FULL_URL}/goals/${fixture.id}/key-results/${fixture.keyResultId}/records`,
+            { headers },
+          ),
+        );
+        return {
+          currentValue:
+            keyResults.data.find((item) => item.id === fixture.keyResultId)?.progress.currentValue ??
+            null,
+          recordCount: records.total,
+        };
+      },
+      { timeout: TIMEOUT_CONFIG.NAVIGATION },
+    )
+    .toEqual(expected);
+}
+
+async function expectApiData<T>(response: APIResponse): Promise<T> {
+  const body = (await response.json()) as { ok?: boolean; data?: T; error?: unknown };
+  expect(response.ok(), JSON.stringify(body.error ?? body)).toBe(true);
+  expect(body.ok, JSON.stringify(body)).not.toBe(false);
+  expect(body.data, JSON.stringify(body)).toBeDefined();
+  return body.data as T;
+}

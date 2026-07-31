@@ -115,7 +115,6 @@
               </DropdownMenuContent>
             </DropdownMenu>
 
-
             <!-- Residual 369: Host engine profile (DirectTurn vs ReadonlyAnalysis) -->
             <div class="shrink-0" data-testid="ai-chat-execution-profile">
               <Select
@@ -136,16 +135,10 @@
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem
-                    value="direct_turn"
-                    data-testid="ai-chat-execution-profile-direct"
-                  >
+                  <SelectItem value="direct_turn" data-testid="ai-chat-execution-profile-direct">
                     {{ t('aiAssistant.chatPage.hostProfile.directTurn') }}
                   </SelectItem>
-                  <SelectItem
-                    value="pi_readonly"
-                    data-testid="ai-chat-execution-profile-readonly"
-                  >
+                  <SelectItem value="pi_readonly" data-testid="ai-chat-execution-profile-readonly">
                     {{ t('aiAssistant.chatPage.hostProfile.piReadonly') }}
                   </SelectItem>
                 </SelectContent>
@@ -153,7 +146,11 @@
             </div>
 
             <!-- Model selector / empty warning (no permanent full-row empty card) -->
-            <div v-if="modelGroups.length" class="min-w-0" :class="density === 'icon' ? 'flex-1' : 'flex-1'">
+            <div
+              v-if="modelGroups.length"
+              class="min-w-0"
+              :class="density === 'icon' ? 'flex-1' : 'flex-1'"
+            >
               <Select
                 :model-value="selectedModelKey"
                 @update:model-value="$emit('select-model', String($event))"
@@ -167,11 +164,7 @@
                 <SelectContent>
                   <SelectGroup v-for="group in modelGroups" :key="group.providerId">
                     <SelectLabel>{{ group.providerName }}</SelectLabel>
-                    <SelectItem
-                      v-for="model in group.models"
-                      :key="model.key"
-                      :value="model.key"
-                    >
+                    <SelectItem v-for="model in group.models" :key="model.key" :value="model.key">
                       {{ model.modelName }}
                     </SelectItem>
                   </SelectGroup>
@@ -180,7 +173,7 @@
             </div>
             <div
               v-else
-              class="flex min-w-0 flex-1 flex-col gap-1"
+              class="flex min-w-0 flex-1 items-center"
               data-testid="ai-chat-empty-models-cue"
             >
               <Button
@@ -196,13 +189,6 @@
                   {{ t('aiAssistant.chatPage.emptyModelsConfigure') }}
                 </span>
               </Button>
-              <p
-                v-if="density !== 'icon'"
-                class="truncate px-1 text-[11px] text-amber-900/80 dark:text-amber-200/80"
-                data-testid="ai-chat-empty-models-hint"
-              >
-                {{ t('aiAssistant.chatPage.emptyModelsHint') }}
-              </p>
             </div>
           </div>
 

@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 
-import { existsSync, lstatSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { checkLocalImageFreshness } from './image-freshness.mjs';
+import { collectLocalDockerRuntimeEvidence } from './local-docker-evidence.mjs';
+import {
+  classifyValidationFailure,
+  summarizeFailureClasses,
+} from './validation-classification.mjs';
 import {
   createLocalComposeRuntimeEnv,
   localComposeArgs,
@@ -11,6 +16,8 @@ import {
 
 const DEFAULT_BASE_REF = 'main';
 const DEFAULT_REPORT_DIR = 'reports/local-deploy-validation';
+const LOCAL_DOCKER_PLAYWRIGHT_EVIDENCE =
+  'reports/local-deploy-validation/local-docker-playwright-evidence.json';
 const REQUIRED_DOCKER_SERVICES = ['api', 'web', 'ai-service', 'powersync'];
 const MAX_OUTPUT_CHARS = 4000;
 const DOCKER_HEALTH_WAIT_TIMEOUT_MS = 90_000;
@@ -205,6 +212,7 @@ function statusToCommandResult(label, execution, cwd, statusOverride = null) {
     durationMs: execution.durationMs,
     outputTail: execution.outputTail,
     error: execution.error,
+    failureClass: null,
   };
 }
 
@@ -564,6 +572,59 @@ function collectDockerEvidence(workspace, maxLogLines) {
   return { dockerServices: services, warnings };
 }
 
+function requiresLocalDockerBrowserProof(changedFiles) {
+  return changedFiles.some(
+    (file) =>
+      file.startsWith('apps/web/e2e/local-docker/') ||
+      file === 'apps/web/e2e/helpers/run-local-docker-playwright.mjs' ||
+      file === 'apps/web/playwright.local-docker.config.ts',
+  );
+}
+
+function readLocalDockerBrowserEvidence(workspace, expectedRevision, required) {
+  const evidencePath = path.join(workspace, LOCAL_DOCKER_PLAYWRIGHT_EVIDENCE);
+  if (!existsSync(evidencePath)) {
+    return {
+      required,
+      ok: !required,
+      path: LOCAL_DOCKER_PLAYWRIGHT_EVIDENCE,
+      headRevision: null,
+      browserRequest: null,
+      error: required ? 'Local Docker Playwright evidence is missing.' : null,
+    };
+  }
+
+  try {
+    const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
+    const revisionMatches = evidence.headRevision === expectedRevision;
+    const evidenceValid =
+      evidence.ok === true && evidence.browserRequest?.ok === true && revisionMatches;
+    const ok = !required || evidenceValid;
+    return {
+      required,
+      ok,
+      path: LOCAL_DOCKER_PLAYWRIGHT_EVIDENCE,
+      headRevision: evidence.headRevision ?? null,
+      browserRequest: evidence.browserRequest ?? null,
+      playwrightExitCode: evidence.playwrightExitCode ?? null,
+      error: evidenceValid || !required
+        ? null
+        : revisionMatches
+          ? 'Local Docker Playwright evidence did not include a successful browser request proof.'
+          : `Local Docker Playwright evidence revision ${evidence.headRevision ?? 'missing'} does not match ${expectedRevision}.`,
+    };
+  } catch (error) {
+    return {
+      required,
+      ok: false,
+      path: LOCAL_DOCKER_PLAYWRIGHT_EVIDENCE,
+      headRevision: null,
+      browserRequest: null,
+      error: `Local Docker Playwright evidence could not be read: ${String(error.message ?? error)}`,
+    };
+  }
+}
+
 function buildResults(commands) {
   const counts = {
     pass: 0,
@@ -675,6 +736,9 @@ function renderMarkdown(report) {
     for (const command of report.commands) {
       lines.push(`- ${command.label}: ${command.status} (exit ${command.exitCode})`);
       lines.push(`  command: \`${command.command}\``);
+      if (command.failureClass) {
+        lines.push(`  failure class: ${command.failureClass}`);
+      }
       if (command.outputTail) {
         lines.push('```text');
         lines.push(command.outputTail);
@@ -698,6 +762,55 @@ function renderMarkdown(report) {
         lines.push('```');
       }
     }
+  }
+
+  lines.push('');
+  lines.push('## Local Docker Runtime Evidence');
+  lines.push('');
+  if (!report.localDockerRuntime) {
+    lines.push('- not collected');
+  } else {
+    lines.push(`- result: ${report.localDockerRuntime.ok ? 'pass' : 'fail'}`);
+    lines.push(`- expected revision: ${report.localDockerRuntime.expectedRevision || 'unknown'}`);
+    for (const [serviceName, service] of Object.entries(
+      report.localDockerRuntime.services ?? {},
+    )) {
+      lines.push(
+        `- ${serviceName}: listener=${service.listenerOpen ? 'open' : 'closed'} ${service.hostPort}->${service.targetPort}, mapping=${service.mappingMatches ? 'match' : 'mismatch'}, revision=${service.revisionMatches ? 'match' : 'mismatch'}`,
+      );
+      if (service.listenerOwner) {
+        lines.push(`  listener owner: ${service.listenerOwner}`);
+      }
+    }
+    for (const error of report.localDockerRuntime.errors ?? []) {
+      lines.push(`- error: ${error}`);
+    }
+  }
+
+  lines.push('');
+  lines.push('## Browser Request Proof');
+  lines.push('');
+  if (!report.localDockerBrowserEvidence) {
+    lines.push('- not required');
+  } else {
+    lines.push(`- required: ${report.localDockerBrowserEvidence.required}`);
+    lines.push(`- result: ${report.localDockerBrowserEvidence.ok ? 'pass' : 'fail'}`);
+    lines.push(`- evidence: ${report.localDockerBrowserEvidence.path}`);
+    if (report.localDockerBrowserEvidence.browserRequest?.matchingLine) {
+      lines.push(
+        `- web log: ${report.localDockerBrowserEvidence.browserRequest.matchingLine}`,
+      );
+    }
+    if (report.localDockerBrowserEvidence.error) {
+      lines.push(`- error: ${report.localDockerBrowserEvidence.error}`);
+    }
+  }
+
+  lines.push('');
+  lines.push('## Failure Classification');
+  lines.push('');
+  for (const [failureClass, count] of Object.entries(report.failureClasses)) {
+    lines.push(`- ${failureClass}: ${count}`);
   }
 
   lines.push('');
@@ -751,7 +864,7 @@ function writeReport(report, reportDir, historyEnabled) {
   }
 }
 
-function main() {
+async function main() {
   const options = parseArgs(process.argv.slice(2));
   const reportDirAbsolute = path.resolve(options.workspace, options.reportDir);
   const reportDirRelative = normalizePath(path.relative(options.workspace, reportDirAbsolute) || options.reportDir);
@@ -764,18 +877,6 @@ function main() {
     reportDirRelative,
   );
 
-  // Advisory: running local images vs workspace HEAD (does not fail the verdict alone).
-  const imageFreshness = checkLocalImageFreshness(options.workspace, {
-    runCommand: (command, args, opts) => {
-      const execution = runCommand(command, args, opts);
-      return {
-        exitCode: execution.exitCode,
-        stdout: execution.stdout,
-        stderr: execution.stderr,
-      };
-    },
-  });
-
   const categories = {
     docsGovernanceOnly: changedFiles.length > 0 && changedFiles.every(isDocsOrGovernanceFile),
     codeOrConfig: changedFiles.some((file) => !isDocsOrGovernanceFile(file)),
@@ -783,10 +884,14 @@ function main() {
     dockerRebuildRequired: changedFiles.some(isDockerRebuildFile),
   };
 
-  const warnings = [...repoWarnings, ...diffWarnings, ...imageFreshness.warnings];
+  const warnings = [...repoWarnings, ...diffWarnings];
   const blockingIssues = [];
   const commandResults = [];
+  const extraFailureClasses = [];
   let dockerServices = {};
+  let imageFreshness = null;
+  let localDockerRuntime = null;
+  let localDockerBrowserEvidence = null;
   let hasHardFailure = false;
   let hasInconclusiveBlocker = false;
 
@@ -810,6 +915,7 @@ function main() {
         durationMs: 0,
         outputTail: '',
         error: null,
+        failureClass: null,
       });
     }
   } else if (plan.length > 0) {
@@ -838,6 +944,7 @@ function main() {
           durationMs: 0,
           outputTail: 'Skipped because Docker prerequisites are missing.',
           error: null,
+          failureClass: null,
         });
         continue;
       }
@@ -864,6 +971,10 @@ function main() {
           execution.outputTail,
           execution.error,
         );
+        result.failureClass = classifyValidationFailure({
+          label: item.label,
+          environmentIssue: dockerInfraIssue || commandEnvironmentIssue,
+        });
 
         if (dockerInfraIssue) {
           hasInconclusiveBlocker = true;
@@ -906,8 +1017,47 @@ function main() {
 
         if (String(service.health).toLowerCase() !== 'healthy') {
           hasHardFailure = true;
+          extraFailureClasses.push('docker-deploy');
           blockingIssues.push(`${serviceName} is not healthy after local Docker validation.`);
         }
+      }
+
+      const runtimeContext = getLocalComposeEvidenceContext(options.workspace);
+      localDockerRuntime = await collectLocalDockerRuntimeEvidence({
+        workspace: options.workspace,
+        env: runtimeContext.env,
+        composeArgs: runtimeContext.composeArgs,
+      });
+      if (!localDockerRuntime.ok) {
+        hasHardFailure = true;
+        extraFailureClasses.push('docker-deploy');
+        for (const error of localDockerRuntime.errors) {
+          blockingIssues.push(`local-docker-runtime: ${error}`);
+        }
+      }
+
+      imageFreshness = checkLocalImageFreshness(options.workspace, {
+        runCommand: (command, args, opts) => {
+          const execution = runCommand(command, args, opts);
+          return {
+            exitCode: execution.exitCode,
+            stdout: execution.stdout,
+            stderr: execution.stderr,
+          };
+        },
+      });
+      warnings.push(...imageFreshness.warnings);
+
+      const browserProofRequired = requiresLocalDockerBrowserProof(changedFiles);
+      localDockerBrowserEvidence = readLocalDockerBrowserEvidence(
+        options.workspace,
+        localDockerRuntime.expectedRevision,
+        browserProofRequired,
+      );
+      if (browserProofRequired && !localDockerBrowserEvidence.ok) {
+        hasHardFailure = true;
+        extraFailureClasses.push('docker-deploy');
+        blockingIssues.push(localDockerBrowserEvidence.error);
       }
     }
   }
@@ -916,6 +1066,7 @@ function main() {
 
   const readyForPr = verdict === 'pass' && blockingIssues.length === 0;
   const results = buildResults(commandResults);
+  const failureClasses = summarizeFailureClasses(commandResults, extraFailureClasses);
   const report = {
     generatedAt: new Date().toISOString(),
     workspace: options.workspace,
@@ -927,6 +1078,10 @@ function main() {
     commands: commandResults,
     results,
     dockerServices,
+    imageFreshness,
+    localDockerRuntime,
+    localDockerBrowserEvidence,
+    failureClasses,
     verdict,
     readyForPr,
     blockingIssues: [...new Set(blockingIssues)],
@@ -950,9 +1105,7 @@ function main() {
   process.exit(report.readyForPr ? 0 : 1);
 }
 
-try {
-  main();
-} catch (error) {
+main().catch((error) => {
   console.error(String(error.message ?? error));
   process.exit(1);
-}
+});

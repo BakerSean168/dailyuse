@@ -205,6 +205,29 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     });
   }
 
+  /** Returns a completed instance to Pending and identifies the contribution to reverse. */
+  public uncomplete(): void {
+    if (this._props.status !== TaskInstanceStatus.Completed) {
+      throw new Error('Only a completed task can be uncompleted');
+    }
+
+    const now = Date.now();
+    this._props.status = TaskInstanceStatus.Pending;
+    this._props.completionRecord = null;
+    this._props.actualEndTime = null;
+    this._props.updatedAt = now;
+
+    this.addDomainEvent<TaskEventMap['task:instance-uncompleted']>(
+      'task:instance-uncompleted',
+      {
+        identityId: this._props.identityId,
+        taskInstanceId: this.id,
+        taskTemplateId: this._props.templateId,
+        uncompletedAt: now,
+      },
+    );
+  }
+
   /** Skips the task. */
   public skip(reason?: string): void {
     if (!this.canSkip()) {
@@ -244,6 +267,34 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       this._props.status = TaskInstanceStatus.Expired;
       this._props.updatedAt = Date.now();
     }
+  }
+
+  /** Applies template-owned fields only while this is an unstarted future instance. */
+  public applyPlanProjection(params: {
+    effectiveFrom: number;
+    timeConfig?: TaskTimeConfig;
+    importance?: ImportanceLevel;
+  }): boolean {
+    if (
+      this._props.status !== TaskInstanceStatus.Pending ||
+      this._props.instanceDate <= params.effectiveFrom
+    ) {
+      return false;
+    }
+
+    let changed = false;
+    if (params.timeConfig !== undefined) {
+      this._props.timeConfig = params.timeConfig;
+      changed = true;
+    }
+    if (params.importance !== undefined && params.importance !== this._props.importance) {
+      this._props.importance = params.importance;
+      changed = true;
+    }
+    if (changed) {
+      this._props.updatedAt = Date.now();
+    }
+    return changed;
   }
 
   /** Business state check methods. */

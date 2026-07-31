@@ -18,6 +18,13 @@ const i18n = createI18n({
         chatPage: {
           welcomeTitle: 'What do you want to move forward today?',
           welcomeDescription: 'Pick a shortcut card.',
+          noModel: {
+            title: 'Start without AI',
+            description: 'Create a goal or task now, or configure AI.',
+            configure: 'Configure AI',
+            createGoal: 'Create goal',
+            quickTask: 'Quick task',
+          },
           emptyTitle: 'Start',
           emptyDescription: 'Describe',
           context: { todayOverview: 'Today' },
@@ -29,8 +36,16 @@ const i18n = createI18n({
           },
           shortcuts: {
             chat: { title: 'Just chat', description: 'Chat desc', prefill: 'chat prefill' },
-            goalCreate: { title: 'Plan a goal', description: 'Goal shortcut', prefill: 'goal prefill' },
-            taskCreate: { title: 'Create a task', description: 'Task shortcut', prefill: 'task prefill' },
+            goalCreate: {
+              title: 'Plan a goal',
+              description: 'Goal shortcut',
+              prefill: 'goal prefill',
+            },
+            taskCreate: {
+              title: 'Create a task',
+              description: 'Task shortcut',
+              prefill: 'task prefill',
+            },
             knowledgeGenerate: {
               title: 'Write a note',
               description: 'Note shortcut',
@@ -45,15 +60,11 @@ const i18n = createI18n({
 });
 
 describe('AIMessagePanel (V2 §6.0 welcome)', () => {
-  it('renders shortcut cards and today overview when idle in chat mode', () => {
+  it('renders shortcut cards without owning the shell today overview', () => {
     const wrapper = mount(AIMessagePanel, {
       props: {
         timeline: [],
         toolMode: 'chat',
-        showTodayOverview: true,
-      },
-      slots: {
-        'today-overview': '<div data-testid="today-slot">today widgets</div>',
       },
       global: { plugins: [i18n] },
     });
@@ -65,8 +76,7 @@ describe('AIMessagePanel (V2 §6.0 welcome)', () => {
     expect(wrapper.find('[data-testid="ai-welcome-entry-task-create"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="ai-welcome-entry-knowledge-generate"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="ai-welcome-entry-knowledge-qa"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="ai-today-overview"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="today-slot"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ai-today-overview"]').exists()).toBe(false);
   });
 
   it('hides today overview once messages exist and emits select-shortcut', async () => {
@@ -74,7 +84,6 @@ describe('AIMessagePanel (V2 §6.0 welcome)', () => {
       props: {
         timeline: [{ id: 'm1', role: 'user', content: 'hello' }],
         toolMode: 'chat',
-        showTodayOverview: true,
         showWorkflowSurface: false,
       },
       global: { plugins: [i18n] },
@@ -96,6 +105,26 @@ describe('AIMessagePanel (V2 §6.0 welcome)', () => {
 
     await wrapper.get('[data-testid="ai-welcome-entry-goal-create"]').trigger('click');
     expect(wrapper.emitted('select-shortcut')?.[0]).toEqual(['goal-create']);
+  });
+
+  it('offers configure AI and direct product actions when no model is available', async () => {
+    const wrapper = mount(AIMessagePanel, {
+      props: {
+        timeline: [],
+        toolMode: 'chat',
+        hasModels: false,
+      },
+      global: { plugins: [i18n] },
+    });
+
+    expect(wrapper.find('[data-testid="ai-welcome-entry-chat"]').exists()).toBe(false);
+    await wrapper.get('[data-testid="ai-welcome-configure-ai"]').trigger('click');
+    await wrapper.get('[data-testid="ai-welcome-create-goal"]').trigger('click');
+    await wrapper.get('[data-testid="ai-welcome-quick-task"]').trigger('click');
+
+    expect(wrapper.emitted('configure-ai')).toHaveLength(1);
+    expect(wrapper.emitted('create-goal')).toHaveLength(1);
+    expect(wrapper.emitted('quick-task')).toHaveLength(1);
   });
 
   it('shows workflow surface slot when requested', () => {

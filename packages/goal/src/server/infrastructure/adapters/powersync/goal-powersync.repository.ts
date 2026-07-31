@@ -99,6 +99,17 @@ export class GoalPowerSyncRepository
     return Promise.all(rows.map((row) => this.toGoal(row, includeChildren)));
   }
 
+  async findByKeyResultIdForIdentity(
+    identityId: string,
+    keyResultId: string,
+  ): Promise<Goal | null> {
+    const row = await this.db.getOptional<{ goal_id: string }>(
+      `SELECT goal_id FROM key_results WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
+      [keyResultId],
+    );
+    return row ? this.findByIdForIdentity(identityId, row.goal_id, { includeChildren: true }) : null;
+  }
+
   async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *

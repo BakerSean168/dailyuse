@@ -1,13 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@memoflow/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
-import { aOneTimeTask, aLoadedTaskTemplate } from '../../../../../testing';
+import {
+  aOneTimeTask,
+  aLoadedTaskTemplate,
+  aTaskInstance,
+  aTimePointConfig,
+} from '../../../../../testing';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { UpdateTaskTemplateUseCase } from '../update-task-template.use-case';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
+import { RecurrenceRule } from '../../../../domain/value-objects/recurrence-rule';
+import type { TaskWriteTransactionRunner } from '../task-write-support';
 
 describe('UpdateTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
+  let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
   let useCase: UpdateTaskTemplateUseCase;
 
   beforeEach(() => {
@@ -15,7 +25,12 @@ describe('UpdateTaskTemplateUseCase', () => {
       findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new UpdateTaskTemplateUseCase(templateRepo);
+    instanceRepo = createMockRepo<ITaskInstanceRepository>({
+      findByTemplateId: vi.fn().mockResolvedValue([]),
+      saveMany: vi.fn().mockResolvedValue(undefined),
+      deleteMany: vi.fn().mockResolvedValue(undefined),
+    });
+    useCase = new UpdateTaskTemplateUseCase(templateRepo, instanceRepo);
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {
@@ -173,5 +188,207 @@ describe('UpdateTaskTemplateUseCase', () => {
     expect(result).toBeOk();
     expect(template.goalBinding).toBeNull();
     expect(templateRepo.save).toHaveBeenCalledWith(template);
+  });
+
+  it('rejects whole-plan progress when updating an unlimited recurring task', async () => {
+    const template = aLoadedTaskTemplate({
+      taskType: TaskType.Recurring,
+      recurrenceRule: RecurrenceRule.createDaily(),
+    });
+    template.bindToGoal('goal-1', 'kr-1', 1, TaskGoalBindingTrigger.PerInstance);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      goalBinding: {
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+        goalRecordValue: 1,
+        progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
+      },
+    });
+
+    expect(result).toBeErrorWithCode('BAD_REQUEST');
+    expect(templateRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('propagates importance only to Pending instances strictly after the effective time', async () => {
+    const effectiveFrom = Date.UTC(2026, 6, 30, 12);
+    const template = aOneTimeTask({ importance: ImportanceLevel.Moderate });
+    const pastPending = await aTaskInstance({
+      templateId: template.id,
+      identityId: template.identityId,
+      instanceDate: effectiveFrom - 1,
+      importance: ImportanceLevel.Moderate,
+    });
+    const futurePending = await aTaskInstance({
+      templateId: template.id,
+      identityId: template.identityId,
+      instanceDate: effectiveFrom + 1,
+      importance: ImportanceLevel.Moderate,
+    });
+    const boundaryPending = await aTaskInstance({
+      templateId: template.id,
+      identityId: template.identityId,
+      instanceDate: effectiveFrom,
+      importance: ImportanceLevel.Moderate,
+    });
+    const futureInProgress = await aTaskInstance({
+      templateId: template.id,
+      identityId: template.identityId,
+      instanceDate: effectiveFrom + 2,
+      importance: ImportanceLevel.Moderate,
+    });
+    futureInProgress.start();
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([
+      pastPending,
+      boundaryPending,
+      futurePending,
+      futureInProgress,
+    ]);
+    useCase = new UpdateTaskTemplateUseCase(
+      templateRepo,
+      instanceRepo,
+      undefined,
+      () => effectiveFrom,
+    );
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      importance: ImportanceLevel.Vital,
+    });
+
+    expect(result).toBeOk();
+    expect(pastPending.importance).toBe(ImportanceLevel.Moderate);
+    expect(boundaryPending.importance).toBe(ImportanceLevel.Moderate);
+    expect(futurePending.importance).toBe(ImportanceLevel.Vital);
+    expect(futureInProgress.importance).toBe(ImportanceLevel.Moderate);
+    expect(instanceRepo.saveMany).toHaveBeenCalledWith([futurePending]);
+    expect(instanceRepo.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('does not rebuild Pending instances when a full form sends unchanged schedule values', async () => {
+    const effectiveFrom = Date.UTC(2026, 6, 30, 12);
+    const timeConfig = aTimePointConfig(540, new Date(effectiveFrom - 86400000));
+    const recurrenceRule = RecurrenceRule.createDaily();
+    const template = aLoadedTaskTemplate({
+      taskType: TaskType.Recurring,
+      timeConfig,
+      recurrenceRule,
+      lastGeneratedDate: effectiveFrom + 3 * 86400000,
+    });
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+    useCase = new UpdateTaskTemplateUseCase(
+      templateRepo,
+      instanceRepo,
+      undefined,
+      () => effectiveFrom,
+    );
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      name: 'Only the title changed',
+      timeConfig: timeConfig.toDTO(),
+      recurrenceRule: recurrenceRule.toDTO(),
+      importance: template.importance,
+    });
+
+    expect(result).toBeOk();
+    expect(instanceRepo.deleteMany).not.toHaveBeenCalled();
+    expect(instanceRepo.saveMany).not.toHaveBeenCalled();
+  });
+
+  it('rebuilds future Pending instances for schedule changes without replacing InProgress dates', async () => {
+    const day = 86400000;
+    const effectiveFrom = Date.UTC(2026, 6, 30, 12);
+    const oldTimeConfig = aTimePointConfig(540, new Date(effectiveFrom - day));
+    const template = aLoadedTaskTemplate({
+      taskType: TaskType.Recurring,
+      timeConfig: oldTimeConfig,
+      recurrenceRule: RecurrenceRule.createDaily(),
+      lastGeneratedDate: effectiveFrom + 3 * day,
+      importance: ImportanceLevel.Moderate,
+    });
+    const futurePending = await aTaskInstance({
+      templateId: template.id,
+      identityId: template.identityId,
+      instanceDate: effectiveFrom + day,
+      timeConfig: oldTimeConfig,
+    });
+    const futureInProgress = await aTaskInstance({
+      templateId: template.id,
+      identityId: template.identityId,
+      instanceDate: effectiveFrom + 2 * day,
+      timeConfig: oldTimeConfig,
+    });
+    futureInProgress.start();
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([
+      futurePending,
+      futureInProgress,
+    ]);
+    useCase = new UpdateTaskTemplateUseCase(
+      templateRepo,
+      instanceRepo,
+      undefined,
+      () => effectiveFrom,
+    );
+    const newTimeConfig = aTimePointConfig(600, new Date(effectiveFrom - day));
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      timeConfig: newTimeConfig.toDTO(),
+    });
+
+    expect(result).toBeOk();
+    expect(instanceRepo.deleteMany).toHaveBeenCalledWith(template.identityId, [futurePending.id]);
+    const generated = vi.mocked(instanceRepo.saveMany).mock.calls[0]?.[0] ?? [];
+    expect(generated.length).toBeGreaterThan(0);
+    expect(generated.every((instance) => instance.status === 'Pending')).toBe(true);
+    expect(generated.every((instance) => instance.timeConfig.timePoint === 600)).toBe(true);
+    expect(generated.some((instance) => instance.instanceDate === futureInProgress.instanceDate)).toBe(
+      false,
+    );
+    expect(futureInProgress.timeConfig.timePoint).toBe(540);
+  });
+
+  it('does not expand the generation horizon when no future Pending instance exists', async () => {
+    const day = 86400000;
+    const effectiveFrom = Date.UTC(2026, 6, 30, 12);
+    const oldTimeConfig = aTimePointConfig(540, new Date(effectiveFrom - day));
+    const template = aLoadedTaskTemplate({
+      taskType: TaskType.Recurring,
+      timeConfig: oldTimeConfig,
+      recurrenceRule: RecurrenceRule.createDaily(),
+      lastGeneratedDate: effectiveFrom - 1,
+    });
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([]);
+    useCase = new UpdateTaskTemplateUseCase(
+      templateRepo,
+      instanceRepo,
+      undefined,
+      () => effectiveFrom,
+    );
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      timeConfig: aTimePointConfig(600, new Date(effectiveFrom - day)).toDTO(),
+    });
+
+    expect(result).toBeOk();
+    expect(instanceRepo.deleteMany).not.toHaveBeenCalled();
+    expect(instanceRepo.saveMany).not.toHaveBeenCalled();
+    expect(template.timeConfig?.timePoint).toBe(600);
+  });
+
+  it('runs template and instance writes through the provided transaction boundary', async () => {
+    const template = aOneTimeTask();
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+    const transactionRunner: TaskWriteTransactionRunner = {
+      run: vi.fn((work) => work({ templateRepository: templateRepo, instanceRepository: instanceRepo })),
+    };
+    useCase = new UpdateTaskTemplateUseCase(templateRepo, instanceRepo, transactionRunner);
+
+    const result = await useCase.execute(template.id, template.identityId, { name: 'Transactional' });
+
+    expect(result).toBeOk();
+    expect(transactionRunner.run).toHaveBeenCalledTimes(1);
   });
 });

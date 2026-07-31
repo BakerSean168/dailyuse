@@ -20,6 +20,7 @@
 
 import type { GoalRecordQueryOptionsDTO } from '@memoflow/contracts/goal';
 import type { GoalRecord } from '../aggregates/goal-record';
+import type { GoalRecordSourceTypeValue } from '@memoflow/contracts/goal';
 
 /**
  * GoalRecord 查询选项（领域层扩展）
@@ -136,6 +137,13 @@ export interface IGoalRecordRepository {
    * @returns 记录数量
    */
   countByKeyResultId(identityId: string, keyResultId: string): Promise<number>;
+
+  /** Finds the active contribution produced by one external domain source. */
+  findBySource(
+    identityId: string,
+    sourceType: GoalRecordSourceTypeValue,
+    sourceId: string,
+  ): Promise<GoalRecord | null>;
 
   /**
    * 保存单条记录

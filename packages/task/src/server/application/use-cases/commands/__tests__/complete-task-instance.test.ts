@@ -40,16 +40,32 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(instanceRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should return VALIDATION_ERROR when instance cannot be completed', async () => {
-    // Create a completed instance
+  it('should return VALIDATION_ERROR when a skipped instance cannot be completed', async () => {
     const instance = await aTaskInstance();
-    instance.start();
-    instance.complete();
+    instance.skip();
     vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
     const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeErrorWithCode('VALIDATION_ERROR');
+    expect(instanceRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('treats an already completed instance as an idempotent success', async () => {
+    const instance = await aTaskInstance();
+    instance.complete();
+    const completeSpy = vi.spyOn(instance, 'complete');
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
+
+    const result = await useCase.execute(instance.id, instance.identityId);
+
+    expect(result).toBeOk();
+    if (result.ok) {
+      expect(result.data.instance.id).toBe(instance.id);
+      expect(result.data.instance.status).toBe('Completed');
+    }
+    expect(completeSpy).not.toHaveBeenCalled();
+    expect(templateRepo.findByIdForIdentity).not.toHaveBeenCalled();
     expect(instanceRepo.save).not.toHaveBeenCalled();
   });
 
@@ -127,6 +143,34 @@ describe('CompleteTaskInstanceUseCase', () => {
       taskTitle: 'Finish recurring work',
       goalBinding: template.goalBinding?.toDTO(),
       allInstancesCompleted: true,
+    });
+  });
+
+  it('does not mark a finite plan complete while a future sibling is still pending', async () => {
+    const template = aLoadedTaskTemplate({ title: 'Finish the complete plan' });
+    template.bindToGoal('goal-1', 'kr-1', 3, TaskGoalBindingTrigger.AllInstancesCompleted);
+    const instance = await aTaskInstance({ templateId: template.id, instanceDate: 200 });
+    const completedSibling = await aTaskInstance({ templateId: template.id, instanceDate: 100 });
+    const futurePendingSibling = await aTaskInstance({
+      templateId: template.id,
+      instanceDate: 300,
+    });
+    completedSibling.complete();
+    const completeSpy = vi.spyOn(instance, 'complete');
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([
+      completedSibling,
+      instance,
+      futurePendingSibling,
+    ]);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+
+    await useCase.execute(instance.id, instance.identityId);
+
+    expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
+      taskTitle: 'Finish the complete plan',
+      goalBinding: template.goalBinding?.toDTO(),
+      allInstancesCompleted: false,
     });
   });
 

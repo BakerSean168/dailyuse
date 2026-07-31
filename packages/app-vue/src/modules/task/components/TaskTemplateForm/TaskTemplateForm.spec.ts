@@ -11,6 +11,7 @@ const updateBasicValidation = vi.fn();
 const updateTimeValidation = vi.fn();
 const updateRecurrenceValidation = vi.fn();
 const updateReminderValidation = vi.fn();
+const updateGoalBindingValidation = vi.fn();
 const updateMetadataValidation = vi.fn();
 
 vi.mock('../../composables/useTaskTemplateForm', () => ({
@@ -21,6 +22,7 @@ vi.mock('../../composables/useTaskTemplateForm', () => ({
     updateTimeValidation,
     updateRecurrenceValidation,
     updateReminderValidation,
+    updateGoalBindingValidation,
     updateMetadataValidation,
   }),
 }));
@@ -35,6 +37,8 @@ const i18n = createI18n({
           loadError: 'Template not available',
           notFoundMessage: 'The selected template no longer exists.',
           close: 'Close',
+          advancedSettings: 'Advanced settings',
+          advancedSettingsDescription: 'Reminders, organization, and dependencies',
         },
       },
     },
@@ -133,6 +137,7 @@ describe('TaskTemplateForm', () => {
     updateTimeValidation.mockClear();
     updateRecurrenceValidation.mockClear();
     updateReminderValidation.mockClear();
+    updateGoalBindingValidation.mockClear();
     updateMetadataValidation.mockClear();
   });
 
@@ -158,6 +163,26 @@ describe('TaskTemplateForm', () => {
       id: 'template-1',
       title: 'Updated title',
     });
+  });
+
+  it('includes key-result binding validity in the whole form state', async () => {
+    const wrapper = mountForm();
+
+    await wrapper.get('[data-stub="KeyResultLinksSection"]').trigger('click');
+
+    expect(updateGoalBindingValidation).toHaveBeenCalledWith({ isValid: true });
+  });
+
+  it('keeps advanced reminder and metadata sections collapsed until requested', async () => {
+    const wrapper = mountForm();
+
+    expect(wrapper.find('[data-stub="ReminderSection"]').exists()).toBe(false);
+    expect(wrapper.find('[data-stub="MetadataSection"]').exists()).toBe(false);
+
+    await wrapper.get('[data-testid="task-form-advanced-toggle"]').trigger('click');
+
+    expect(wrapper.find('[data-stub="ReminderSection"]').exists()).toBe(true);
+    expect(wrapper.find('[data-stub="MetadataSection"]').exists()).toBe(true);
   });
 
   it('exposes the composable validate method to parent callers', async () => {

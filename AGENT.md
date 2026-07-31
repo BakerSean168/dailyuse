@@ -18,7 +18,13 @@
 - 涉及 Nx workspace、project、target、affected 或任务依赖时使用 nx-mcp。
 - 写简历、README、项目介绍或面试材料时，优先用 Repomix 生成阶段性项目快照；不要把 Repomix 当作日常开发的主探索方式。
 - 优先使用 `pnpm` 而非 `npm`
-- 所有 Nx 命令统一使用 `pnpm nx ...`。
+- 开发服务统一直接调用 Nx target：
+  `pnpm nx run <project>:<target>`；多个项目使用 `pnpm nx run-many ...`。
+  不要为开发启动新增根级 `dev:*` 包装脚本，也不要在维护中文档中混用
+  `pnpm nx <target> <project>` 或 `pnpm nx dev <project>` 等简写/推断格式。
+- Desktop 开发的安全默认入口是 `pnpm nx run desktop:serve-safe`；只有确认
+  依赖构建和 Electron 原生模块 ABI 已准备好时才使用
+  `pnpm nx run desktop:serve`。
 - 需要 build、lint、test、e2e 时，优先运行离改动最近的 Nx target。
 - 涉及 Docker、运行时、env 注入、部署链路或生产镜像的改动，默认先用 `docker-compose.local.yml` 做本地 prod-like 验证，再进入 PR。
 - 复杂任务先写计划，再实施。计划统一放在 [`docs/plan/active/README.md`](docs/plan/active/README.md) 说明的目录下。
@@ -76,5 +82,3 @@
 
 桌面端在 Windows 开发模式下的日志目录：
 `C:\Users\xx\AppData\Roaming\MemoFlow-Dev\logs`
-
-

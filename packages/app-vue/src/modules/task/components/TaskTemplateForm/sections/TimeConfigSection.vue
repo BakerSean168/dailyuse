@@ -1,17 +1,19 @@
 <template>
-  <Card class="mb-4">
-    <CardHeader>
-      <CardTitle>⏰ {{ t('task.timeConfig.title') }}</CardTitle>
-    </CardHeader>
-    <CardContent>
+  <section class="space-y-4" aria-labelledby="task-time-config-heading">
+    <h3 id="task-time-config-heading" class="flex items-center text-sm font-semibold">
+      <Clock3 class="mr-2 h-5 w-5" />
+      {{ t('task.timeConfig.title') }}
+    </h3>
+    <div>
       <!-- 时间类型选择 -->
       <div class="mb-4">
         <Label class="mb-2 block">{{ t('task.timeConfig.timeType') }}</Label>
         <RadioGroup
+          :aria-label="t('task.timeConfig.timeType')"
           :model-value="timeType"
           @update:model-value="
-            (v: string) => {
-              if (isEditMode) return;
+            (v) => {
+              if (isEditMode || typeof v !== 'string') return;
               timeType = v as TaskTimeType;
               handleTimeTypeChange();
             }
@@ -46,9 +48,13 @@
       <!-- 日期范围 -->
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12 md:col-span-6">
-          <Label class="mb-1.5 block">{{ t('task.timeConfig.startDate') }}</Label>
+          <Label for="task-start-date" class="mb-1.5 block">{{
+            t('task.timeConfig.startDate')
+          }}</Label>
           <Button
             v-if="isEditMode"
+            id="task-start-date"
+            :aria-label="t('task.timeConfig.startDate')"
             variant="outline"
             class="w-full justify-start text-left font-normal"
             :class="{ 'text-muted-foreground': !startDate }"
@@ -60,12 +66,16 @@
           <Popover v-else>
             <PopoverTrigger as-child>
               <Button
+                id="task-start-date"
+                :aria-label="t('task.timeConfig.startDate')"
                 variant="outline"
                 class="w-full justify-start text-left font-normal"
                 :class="{ 'text-muted-foreground': !startDate }"
               >
                 <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ startDate ? formatDisplayDate(startDate, locale) : t('task.timeConfig.startDate') }}
+                {{
+                  startDate ? formatDisplayDate(startDate, locale) : t('task.timeConfig.startDate')
+                }}
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0" align="start">
@@ -91,7 +101,9 @@
       <!-- 时间点输入 (仅当选择 TimePoint 时显示) -->
       <div v-if="timeType === TaskTimeType.TimePoint" class="grid grid-cols-12 gap-4 mt-4">
         <div class="col-span-12 md:col-span-6">
-          <Label class="mb-1.5 block">{{ t('task.timeConfig.specificTime') }}</Label>
+          <Label id="task-specific-time-label" class="mb-1.5 block">{{
+            t('task.timeConfig.specificTime')
+          }}</Label>
           <div class="flex gap-2 items-center">
             <Select
               :model-value="timePointHour"
@@ -102,7 +114,11 @@
                 }
               "
             >
-              <SelectTrigger class="w-[80px]"><SelectValue placeholder="HH" /></SelectTrigger>
+              <SelectTrigger
+                class="w-[80px]"
+                :aria-label="`${t('task.timeConfig.specificTime')} - HH`"
+                ><SelectValue placeholder="HH"
+              /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{ h }}</SelectItem>
               </SelectContent>
@@ -117,7 +133,11 @@
                 }
               "
             >
-              <SelectTrigger class="w-[80px]"><SelectValue placeholder="MM" /></SelectTrigger>
+              <SelectTrigger
+                class="w-[80px]"
+                :aria-label="`${t('task.timeConfig.specificTime')} - MM`"
+                ><SelectValue placeholder="MM"
+              /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{ m }}</SelectItem>
               </SelectContent>
@@ -141,7 +161,9 @@
                 }
               "
             >
-              <SelectTrigger class="w-[80px]"><SelectValue placeholder="HH" /></SelectTrigger>
+              <SelectTrigger class="w-[80px]" :aria-label="`${t('task.timeConfig.startTime')} - HH`"
+                ><SelectValue placeholder="HH"
+              /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{ h }}</SelectItem>
               </SelectContent>
@@ -156,7 +178,9 @@
                 }
               "
             >
-              <SelectTrigger class="w-[80px]"><SelectValue placeholder="MM" /></SelectTrigger>
+              <SelectTrigger class="w-[80px]" :aria-label="`${t('task.timeConfig.startTime')} - MM`"
+                ><SelectValue placeholder="MM"
+              /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{ m }}</SelectItem>
               </SelectContent>
@@ -175,7 +199,9 @@
                 }
               "
             >
-              <SelectTrigger class="w-[80px]"><SelectValue placeholder="HH" /></SelectTrigger>
+              <SelectTrigger class="w-[80px]" :aria-label="`${t('task.timeConfig.endTime')} - HH`"
+                ><SelectValue placeholder="HH"
+              /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{ h }}</SelectItem>
               </SelectContent>
@@ -190,7 +216,9 @@
                 }
               "
             >
-              <SelectTrigger class="w-[80px]"><SelectValue placeholder="MM" /></SelectTrigger>
+              <SelectTrigger class="w-[80px]" :aria-label="`${t('task.timeConfig.endTime')} - MM`"
+                ><SelectValue placeholder="MM"
+              /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{ m }}</SelectItem>
               </SelectContent>
@@ -206,8 +234,8 @@
       <Alert v-if="validationError" variant="destructive" class="mt-2">
         <AlertDescription>{{ validationError }}</AlertDescription>
       </Alert>
-    </CardContent>
-  </Card>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -217,10 +245,6 @@ import { TaskTimeType } from '@memoflow/contracts/task';
 import type { TaskTimeConfigDTO } from '@memoflow/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
   Button,
   Label,
   RadioGroup,
@@ -237,7 +261,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@memoflow/ui-vue-shadcn';
-import { Calendar as CalendarIcon } from '@lucide/vue';
+import { Calendar as CalendarIcon, Clock3 } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
 import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { getProductTime } from '../../../../../shared/utils/product-time';
@@ -276,15 +300,12 @@ const minuteOptions = Array.from({ length: 60 }, (_, i) => padTwoDigits(i));
 const timeType = ref<TaskTimeType>(TaskTimeType.AllDay);
 const startDate = ref<string>(''); // YYYY-MM-DD
 type ValidationErrorState =
-  | { kind: 'translation'; key: string }
-  | { kind: 'result'; cause: unknown };
+  { kind: 'translation'; key: string } | { kind: 'result'; cause: unknown };
 const validationErrorState = shallowRef<ValidationErrorState | null>(null);
 const validationError = computed(() => {
   const state = validationErrorState.value;
   if (!state) return '';
-  return state.kind === 'translation'
-    ? t(state.key)
-    : getTimeConfigErrorMessage(state.cause);
+  return state.kind === 'translation' ? t(state.key) : getTimeConfigErrorMessage(state.cause);
 });
 
 // TimePoint: split into hour + minute

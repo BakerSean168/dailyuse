@@ -15,6 +15,8 @@ import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute
 
 type TaskInstanceDTO = ReturnType<typeof useTaskStore>['instances'][number];
 type TaskInstanceEntityLike = { toDTO(): TaskInstanceDTO };
+type TaskTemplateDTO = ReturnType<typeof useTaskStore>['templates'][number];
+type TaskTemplateEntityLike = { toDTO(): TaskTemplateDTO };
 
 export function useTaskInstances() {
   const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');
@@ -44,6 +46,23 @@ export function useTaskInstances() {
         handleError(error, fallbackKey);
       },
     });
+  }
+
+  async function refreshTemplateProjection(templateId: string): Promise<void> {
+    const result = await executeTaskOperation(
+      () => service.getTemplate(templateId),
+      'task.error.loadTemplatesFailed',
+    );
+    if (result.ok) {
+      store.updateTemplate((result.data as TaskTemplateEntityLike).toDTO());
+    }
+  }
+
+  async function updateInstanceProjection(entity: TaskInstanceEntityLike): Promise<TaskInstanceDTO> {
+    const dto = entity.toDTO();
+    store.updateInstance(dto);
+    await refreshTemplateProjection(String(dto.templateId));
+    return dto;
   }
 
   async function fetchInstances(query?: Record<string, unknown>) {
@@ -88,9 +107,7 @@ export function useTaskInstances() {
   async function startInstance(id: string) {
     const result = await executeTaskOperation(() => service.startInstance(id), 'task.error.startFailed');
     if (result.ok) {
-      const dto = result.data.toDTO();
-      store.updateInstance(dto);
-      return dto;
+      return updateInstanceProjection(result.data);
     }
     return null;
   }
@@ -101,9 +118,21 @@ export function useTaskInstances() {
       'task.error.completeFailed',
     );
     if (result.ok) {
-      const dto = result.data.toDTO();
-      store.updateInstance(dto);
+      const dto = await updateInstanceProjection(result.data);
       toast.success(t('task.error.completeSuccess'));
+      return dto;
+    }
+    return null;
+  }
+
+  async function uncompleteInstance(id: string) {
+    const result = await executeTaskOperation(
+      () => service.uncompleteInstance(id),
+      'task.error.uncompleteFailed',
+    );
+    if (result.ok) {
+      const dto = await updateInstanceProjection(result.data);
+      toast.success(t('task.error.uncompleteSuccess'));
       return dto;
     }
     return null;
@@ -112,8 +141,7 @@ export function useTaskInstances() {
   async function skipInstance(id: string) {
     const result = await executeTaskOperation(() => service.skipInstance(id), 'task.error.skipFailed');
     if (result.ok) {
-      const dto = result.data.toDTO();
-      store.updateInstance(dto);
+      const dto = await updateInstanceProjection(result.data);
       toast.success(t('task.error.skipSuccess'));
       return dto;
     }
@@ -125,6 +153,7 @@ export function useTaskInstances() {
     fetchInstancesByDateRange,
     startInstance,
     completeInstance,
+    uncompleteInstance,
     skipInstance,
   };
 }

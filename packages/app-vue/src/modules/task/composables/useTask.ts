@@ -49,6 +49,7 @@ export function useTask() {
     fetchInstancesByDateRange: instanceOps.fetchInstancesByDateRange,
     startInstance: instanceOps.startInstance,
     completeInstance: instanceOps.completeInstance,
+    uncompleteInstance: instanceOps.uncompleteInstance,
     skipInstance: instanceOps.skipInstance,
     // Dependency operations
     createDependency: dependencyOps.createDependency,

@@ -113,6 +113,36 @@
           </CardContent>
         </Card>
 
+        <Card
+          v-if="detailViewModel.goalBinding"
+          data-testid="task-goal-binding"
+        >
+          <CardHeader>
+            <CardTitle>{{ t('task.detail.goalBinding') }}</CardTitle>
+          </CardHeader>
+          <CardContent class="grid gap-4 @2xl/panel:grid-cols-2">
+            <div>
+              <p class="text-sm font-medium text-muted-foreground">
+                {{ t('task.detail.linkedGoal') }}
+              </p>
+              <p class="text-sm" data-testid="task-linked-goal-name">
+                {{ detailViewModel.goalBinding.goalTitle ?? detailViewModel.goalBinding.goalId }}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-muted-foreground">
+                {{ t('task.detail.keyResult') }}
+              </p>
+              <p class="text-sm" data-testid="task-linked-key-result-name">
+                {{
+                  detailViewModel.goalBinding.keyResultTitle ??
+                  detailViewModel.goalBinding.keyResultId
+                }}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>{{ t('task.detail.relations') }}</CardTitle>
@@ -229,20 +259,50 @@
           <CardHeader>
             <CardTitle>{{ t('task.detail.executionStats') }}</CardTitle>
           </CardHeader>
-          <CardContent class="grid gap-4 @2xl/panel:grid-cols-3">
-            <div class="rounded-lg border p-4 text-center">
-              <p class="text-2xl font-bold">{{ detailViewModel.instanceCount ?? 0 }}</p>
-              <p class="text-xs text-muted-foreground">{{ t('task.detail.totalInstances') }}</p>
+          <CardContent v-if="isRecurringPlan">
+            <div
+              v-if="(detailViewModel.dueInstanceCount ?? 0) > 0"
+              class="grid gap-4 @2xl/panel:grid-cols-3"
+              data-testid="task-detail-rolling-completion"
+            >
+              <div class="rounded-lg border p-4 text-center">
+                <p class="text-2xl font-bold">{{ detailViewModel.dueInstanceCount ?? 0 }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{
+                    t('task.detail.dueInWindow', {
+                      days: detailViewModel.completionWindowDays ?? 30,
+                    })
+                  }}
+                </p>
+              </div>
+              <div class="rounded-lg border p-4 text-center">
+                <p class="text-2xl font-bold">
+                  {{ detailViewModel.completedDueInstanceCount ?? 0 }}
+                </p>
+                <p class="text-xs text-muted-foreground">{{ t('task.detail.completedInWindow') }}</p>
+              </div>
+              <div class="rounded-lg border p-4 text-center">
+                <p class="text-2xl font-bold">
+                  {{ Math.round(detailViewModel.completionRate ?? 0) }}%
+                </p>
+                <p class="text-xs text-muted-foreground">{{ t('task.detail.completionRate') }}</p>
+              </div>
             </div>
-            <div class="rounded-lg border p-4 text-center">
-              <p class="text-2xl font-bold">{{ detailViewModel.completedInstanceCount ?? 0 }}</p>
-              <p class="text-xs text-muted-foreground">{{ t('task.detail.completed') }}</p>
-            </div>
-            <div class="rounded-lg border p-4 text-center">
-              <p class="text-2xl font-bold">
-                {{ Math.round(detailViewModel.completionRate ?? 0) }}%
-              </p>
-              <p class="text-xs text-muted-foreground">{{ t('task.detail.completionRate') }}</p>
+            <p
+              v-else
+              class="rounded-lg border p-4 text-sm text-muted-foreground"
+              data-testid="task-detail-no-execution-records"
+            >
+              {{ t('task.detail.noExecutionRecords') }}
+            </p>
+          </CardContent>
+          <CardContent v-else>
+            <div
+              class="flex items-center justify-between rounded-lg border p-4"
+              data-testid="task-detail-one-time-status"
+            >
+              <p class="text-sm text-muted-foreground">{{ t('task.detail.oneTimeStatus') }}</p>
+              <p class="text-base font-semibold text-primary">{{ oneTimeStatusText }}</p>
             </div>
           </CardContent>
         </Card>
@@ -282,11 +342,13 @@ import {
   CardContent,
 } from '@memoflow/ui-vue-shadcn';
 import { useTask } from '../composables/useTask';
+import { useTaskGoalBindingOptions } from '../composables/useTaskGoalBindingOptions';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import type { TaskGraphDependencyDTO } from '@memoflow/contracts/task';
 import {
+  getTaskInstanceStatusLabel,
   getTaskTimeTypeLabel,
   getTaskTimeValueDisplay,
   mapTaskTemplateDtoToViewModel,
@@ -313,6 +375,7 @@ const {
   createDependency,
   deleteDependency,
 } = useTask();
+const { loadGoalBinding, resolveGoalBinding } = useTaskGoalBindingOptions();
 
 const showEditDialog = ref(false);
 const templateViewModels = computed(() =>
@@ -322,7 +385,11 @@ const graphData = computed(() => buildTaskGraphData(templates.value, dependencie
 
 const detailViewModel = computed<TaskTemplateViewModel | null>(() => {
   if (!currentTemplate.value) return null;
-  return mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
+  const viewModel = mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
+  return {
+    ...viewModel,
+    goalBinding: resolveGoalBinding(viewModel.goalBinding),
+  };
 });
 
 const parentTemplate = computed(() => {
@@ -365,6 +432,11 @@ const statusVariant = computed(() => {
       return 'destructive' as const;
   }
 });
+
+const isRecurringPlan = computed(() => !!detailViewModel.value?.recurrenceRule);
+const oneTimeStatusText = computed(() =>
+  getTaskInstanceStatusLabel(t, detailViewModel.value?.singleInstanceStatus),
+);
 
 /** 将 store 中的 DTO 转换为 Dialog 所需的 ViewModel */
 const editViewModel = computed<TaskTemplateViewModel | null>(() => {
@@ -510,6 +582,11 @@ async function loadDetailPage(id: string) {
   }
 
   await Promise.all([fetchTemplate(id), fetchTaskGraph({ page: 1, limit: 1000 })]);
+
+  const goalId = currentTemplate.value?.goalBinding?.goalId;
+  if (goalId) {
+    await loadGoalBinding(goalId);
+  }
 }
 
 watch(

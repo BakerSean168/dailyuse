@@ -7,17 +7,51 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     setActivePinia(createPinia());
   });
 
-  it('starts in STATE A (chat only, no tabs)', () => {
+  it('starts with an open right-panel Home surface and no business tabs', () => {
     const store = useAppShellStore();
     expect(store.tabs).toHaveLength(0);
-    expect(store.isChatOnly).toBe(true);
+    expect(store.rightPanelOpen).toBe(true);
+    expect(store.panelSurface).toBe('home');
     expect(store.activeTab).toBeUndefined();
     expect(store.layoutReason).toBe('default');
   });
 
+  it('keeps right-panel visibility, tabs, and focus independent', () => {
+    const store = useAppShellStore();
+    const tab = store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'capsule',
+    });
+
+    expect(store.rightPanelOpen).toBe(true);
+    expect(store.panelSurface).toBe('business');
+
+    store.toggleRightPanel();
+    expect(store.rightPanelOpen).toBe(false);
+    expect(store.tabs).toHaveLength(1);
+    expect(store.activeTabId).toBe(tab.tabId);
+    expect(store.panelSurface).toBe('business');
+
+    store.toggleFocus();
+    expect(store.layout).toBe('focus');
+    expect(store.sidebarCollapsed).toBe(false);
+
+    store.toggleRightPanel();
+    expect(store.rightPanelOpen).toBe(true);
+    expect(store.activeTabId).toBe(tab.tabId);
+    expect(store.panelSurface).toBe('business');
+  });
+
   it('capsule intent reuses the existing module tab and updates its route', () => {
     const store = useAppShellStore();
-    const first = store.openTab({ module: 'goal', route: '/goals', title: 'Goals', intent: 'capsule' });
+    const first = store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'capsule',
+    });
     const second = store.openTab({
       module: 'goal',
       route: '/goals/g-1',
@@ -32,14 +66,29 @@ describe('useAppShellStore (V2 shell tabs)', () => {
 
   it('deeplink intent opens a new tab per route without preempting others', () => {
     const store = useAppShellStore();
-    store.openTab({ module: 'note', route: '/repository?note=a', title: 'Notes', intent: 'deeplink' });
-    store.openTab({ module: 'note', route: '/repository?note=b', title: 'Notes', intent: 'deeplink' });
+    store.openTab({
+      module: 'note',
+      route: '/repository?note=a',
+      title: 'Notes',
+      intent: 'deeplink',
+    });
+    store.openTab({
+      module: 'note',
+      route: '/repository?note=b',
+      title: 'Notes',
+      intent: 'deeplink',
+    });
 
     expect(store.tabs).toHaveLength(2);
     expect(store.activeTab?.route).toBe('/repository?note=b');
 
     // Same-route deeplink activates the existing tab instead of duplicating it.
-    const again = store.openTab({ module: 'note', route: '/repository?note=a', title: 'Notes', intent: 'deeplink' });
+    const again = store.openTab({
+      module: 'note',
+      route: '/repository?note=a',
+      title: 'Notes',
+      intent: 'deeplink',
+    });
     expect(store.tabs).toHaveLength(2);
     expect(store.activeTabId).toBe(again.tabId);
     expect(store.activeTab?.route).toBe('/repository?note=a');
@@ -69,7 +118,7 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(overflow.evictionCandidateId).toBe(firstId);
   });
 
-  it('closing the active tab activates a neighbor; closing the last returns to STATE A', () => {
+  it('closing the active tab activates a neighbor; closing the last returns to panel Home', () => {
     const store = useAppShellStore();
     const a = store.openTab({ module: 'goal', route: '/goals', title: 'G', intent: 'deeplink' });
     const b = store.openTab({ module: 'task', route: '/tasks', title: 'T', intent: 'deeplink' });
@@ -79,9 +128,71 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.activeTabId).toBe(a.tabId);
 
     expect(store.closeTab(a.tabId)).toBeNull();
-    expect(store.isChatOnly).toBe(true);
+    expect(store.tabs).toHaveLength(0);
+    expect(store.activeTabId).toBeNull();
+    expect(store.panelSurface).toBe('home');
+    expect(store.rightPanelOpen).toBe(true);
     expect(store.layout).toBe('split');
     expect(store.layoutReason).toBe('default');
+  });
+
+  it('explicit module navigation reopens a user-hidden panel', () => {
+    const store = useAppShellStore();
+    store.closeRightPanel();
+
+    store.openTab({
+      module: 'task',
+      route: '/tasks',
+      title: 'Tasks',
+      intent: 'capsule',
+    });
+
+    expect(store.rightPanelOpen).toBe(true);
+    expect(store.panelSurface).toBe('business');
+  });
+
+  it('auto-opens workflow only from an open clean surface and preserves the return surface', () => {
+    const store = useAppShellStore();
+    const tab = store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'capsule',
+    });
+    store.setWorkflowAvailable(true, 2);
+
+    store.setSurfaceStatus('dirty');
+    expect(store.requestWorkflowSurface('automatic')).toBe('deferred');
+    expect(store.panelSurface).toBe('business');
+    expect(store.workflowAttentionCount).toBe(2);
+
+    store.setSurfaceStatus('busy');
+    expect(store.requestWorkflowSurface('automatic')).toBe('deferred');
+    expect(store.panelSurface).toBe('business');
+
+    store.setSurfaceStatus('clean');
+    expect(store.requestWorkflowSurface('automatic')).toBe('opened');
+    expect(store.panelSurface).toBe('workflow');
+    expect(store.activeTabId).toBe(tab.tabId);
+    expect(store.workflowAttentionCount).toBe(0);
+
+    store.closeWorkflowSurface();
+    expect(store.panelSurface).toBe('business');
+    expect(store.activeTabId).toBe(tab.tabId);
+  });
+
+  it('defers workflow while user-hidden and lets an explicit workflow action reopen it', () => {
+    const store = useAppShellStore();
+    store.setWorkflowAvailable(true, 1);
+    store.closeRightPanel();
+
+    expect(store.requestWorkflowSurface('automatic')).toBe('deferred');
+    expect(store.rightPanelOpen).toBe(false);
+    expect(store.workflowAttentionCount).toBe(1);
+
+    expect(store.requestWorkflowSurface('explicit')).toBe('opened');
+    expect(store.rightPanelOpen).toBe(true);
+    expect(store.panelSurface).toBe('workflow');
   });
 
   it('toggleFocus records user layout reason', () => {
@@ -164,5 +275,4 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(effective).toBeLessThanOrEqual(520);
     expect(store.panelWidth).toBe(760);
   });
-
 });

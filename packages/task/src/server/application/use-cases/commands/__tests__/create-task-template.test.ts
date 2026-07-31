@@ -139,6 +139,30 @@ describe('CreateTaskTemplateUseCase', () => {
     expect(result).toBeOk();
   });
 
+  it('rejects whole-plan progress for an unlimited recurring task', async () => {
+    const request = aCreateRequest({
+      taskType: TaskType.Recurring,
+      recurrenceRule: {
+        frequency: 'Daily',
+        interval: 1,
+        daysOfWeek: [],
+        endDate: null,
+        occurrences: null,
+      },
+      goalBinding: {
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+        goalRecordValue: 2,
+        progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
+      },
+    });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeErrorWithCode('BAD_REQUEST');
+    expect(templateRepo.save).not.toHaveBeenCalled();
+  });
+
   it('should use provided description', async () => {
     const request = aCreateRequest({
       name: 'Task with desc',

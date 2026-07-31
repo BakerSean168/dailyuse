@@ -80,6 +80,11 @@ export class ListTaskTemplatesUseCase {
           instanceCount: stats.instanceCount,
           completedInstanceCount: stats.completedInstanceCount,
           pendingInstanceCount: stats.pendingInstanceCount,
+          dueInstanceCount: stats.dueInstanceCount,
+          completedDueInstanceCount: stats.completedDueInstanceCount,
+          completionWindowDays: stats.completionWindowDays,
+          futurePendingInstanceCount: stats.futurePendingInstanceCount,
+          singleInstanceStatus: stats.singleInstanceStatus,
           completionRate: stats.completionRate,
         };
       }),

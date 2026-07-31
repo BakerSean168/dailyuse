@@ -122,11 +122,21 @@ describe('AIFooterComposer (Global Composer input)', () => {
     const textarea = wrapper.get('[data-testid="ai-chat-composer"]');
 
     await textarea.trigger('compositionstart');
-    await textarea.trigger('keydown', { key: 'Enter', shiftKey: false, isComposing: true, keyCode: 229 });
+    await textarea.trigger('keydown', {
+      key: 'Enter',
+      shiftKey: false,
+      isComposing: true,
+      keyCode: 229,
+    });
     expect(wrapper.emitted('send')).toBeUndefined();
 
     await textarea.trigger('compositionend');
-    await textarea.trigger('keydown', { key: 'Enter', shiftKey: false, isComposing: false, keyCode: 13 });
+    await textarea.trigger('keydown', {
+      key: 'Enter',
+      shiftKey: false,
+      isComposing: false,
+      keyCode: 13,
+    });
     expect(wrapper.emitted('send')).toHaveLength(1);
     wrapper.unmount();
   });
@@ -146,11 +156,15 @@ describe('AIFooterComposer (Global Composer input)', () => {
 
   it('disables send when empty or canSend is false', () => {
     const empty = mountComposer({ modelValue: '   ' });
-    expect((empty.get('[data-testid="ai-chat-send-message"]').element as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (empty.get('[data-testid="ai-chat-send-message"]').element as HTMLButtonElement).disabled,
+    ).toBe(true);
     empty.unmount();
 
     const blocked = mountComposer({ modelValue: 'hi', canSend: false });
-    expect((blocked.get('[data-testid="ai-chat-send-message"]').element as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (blocked.get('[data-testid="ai-chat-send-message"]').element as HTMLButtonElement).disabled,
+    ).toBe(true);
     blocked.unmount();
   });
 
@@ -171,7 +185,7 @@ describe('AIFooterComposer (Global Composer input)', () => {
     wrapper.unmount();
   });
 
-  it('disables quick-entry tools and shows configure cue when no models are available', () => {
+  it('disables quick-entry tools and keeps only a compact configure control when no models are available', () => {
     const wrapper = mountComposer({
       modelGroups: [],
       canSend: false,
@@ -183,7 +197,7 @@ describe('AIFooterComposer (Global Composer input)', () => {
     expect(toolTrigger.attributes('disabled')).toBeDefined();
 
     expect(wrapper.find('[data-testid="ai-chat-empty-models"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="ai-chat-empty-models-hint"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ai-chat-empty-models-hint"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="ai-chat-empty-models-cue"]').exists()).toBe(true);
 
     // Configure cue must not be bare i18n key

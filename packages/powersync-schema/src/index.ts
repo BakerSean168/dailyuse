@@ -191,6 +191,8 @@ const goal_records = new Table({
   key_result_id: column.text, // FK
   value: column.real,
   note: column.text,
+  source_type: column.text,
+  source_id: column.text,
   recorded_at: column.text, // DateTime
   version: column.integer,
   created_at: column.text,

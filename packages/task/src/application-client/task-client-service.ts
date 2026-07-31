@@ -81,6 +81,11 @@ function taskTemplateFromDTO(dto: TaskTemplateClientDTO): TaskTemplate {
     instanceCount: dto.instanceCount,
     completedInstanceCount: dto.completedInstanceCount,
     pendingInstanceCount: dto.pendingInstanceCount,
+    dueInstanceCount: dto.dueInstanceCount,
+    completedDueInstanceCount: dto.completedDueInstanceCount,
+    completionWindowDays: dto.completionWindowDays,
+    futurePendingInstanceCount: dto.futurePendingInstanceCount,
+    singleInstanceStatus: dto.singleInstanceStatus,
     completionRate: dto.completionRate,
     history: dto.history,
     instances: dto.instances,
@@ -318,6 +323,11 @@ export class TaskClientService implements TaskClientPort {
     request?: CompleteTaskInstanceReq,
   ): Promise<Result<TaskInstance>> {
     const result = await this.instanceApi.completeTaskInstance(id, request);
+    return mapResult(result, (dto) => taskInstanceFromDTO(dto));
+  }
+
+  async uncompleteInstance(id: string): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.uncompleteTaskInstance(id);
     return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
 

@@ -81,6 +81,11 @@ export function createMockTaskTemplate(
     completedInstanceCount: faker.number.int({ min: 0, max: 5 }),
     pendingInstanceCount: faker.number.int({ min: 0, max: 5 }),
     completionRate: faker.number.float({ min: 0, max: 1, fractionDigits: 2 }),
+    dueInstanceCount: 0,
+    completedDueInstanceCount: 0,
+    completionWindowDays: 30,
+    futurePendingInstanceCount: 0,
+    singleInstanceStatus: null,
     ...overrides,
   } as TaskTemplateClientDTO;
 }

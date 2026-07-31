@@ -9,24 +9,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
-import {
-  boxOf,
-  containsBox,
-  DesktopGuestShellController,
-} from './helpers/desktop-guest';
+import { boxOf, containsBox, DesktopGuestShellController } from './helpers/desktop-guest';
 
 const CHAT_MIN = 420;
 const PANEL_MIN = 360;
 const COMPOSER_MAX = 740;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MATRIX_SHOT_DIR = path.resolve(
-  __dirname,
-  '..',
-  '..',
-  'test-results',
-  'shell-matrix',
-);
+const MATRIX_SHOT_DIR = path.resolve(__dirname, '..', '..', 'test-results', 'shell-matrix');
 
 const MODULE_ROUTES: Record<string, string> = {
   goal: '/goals',
@@ -38,34 +28,9 @@ const MODULE_ROUTES: Record<string, string> = {
 
 async function openModuleFromCapsule(page: Page, moduleId: string): Promise<void> {
   await page.getByTestId(`capsule-nav-${moduleId}`).click();
-
-  // Dedicated previews expose `{module}-capsule-view-all`; placeholder modules keep
-  // the generic `capsule-preview-enter-{id}` button.
-  const enterCandidates = [
-    page.getByTestId(`${moduleId}-capsule-view-all`),
-    page.getByTestId(`capsule-preview-enter-${moduleId}`),
-  ];
-
-  let opened = false;
-  for (const enter of enterCandidates) {
-    try {
-      await enter.waitFor({ state: 'visible', timeout: 4_000 });
-      await enter.click();
-      opened = true;
-      break;
-    } catch {
-      // try next candidate
-    }
-  }
-
-  if (!opened) {
-    const route = MODULE_ROUTES[moduleId];
-    if (!route) throw new Error(`No route fallback for module "${moduleId}"`);
-    await page.evaluate((hashRoute) => {
-      window.location.hash = `#${hashRoute}`;
-    }, route);
-  }
-
+  const route = MODULE_ROUTES[moduleId];
+  if (!route) throw new Error(`No route for module "${moduleId}"`);
+  await page.waitForURL((url) => url.hash.includes(route), { timeout: 15_000 });
   await expect(page.getByTestId('business-panel')).toBeVisible({ timeout: 15_000 });
 }
 
@@ -207,7 +172,7 @@ test.describe('Electron shell geometry matrix', () => {
 
     await openModuleFromCapsule(page, 'task');
     await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'focus');
-    await expect(page.getByTestId('conversation-sidebar')).toHaveCount(0);
+    await expect(page.getByTestId('conversation-sidebar')).toBeVisible();
 
     // AI column hidden in focus, but floating GlobalComposer is present.
     const composer = page.getByTestId('global-composer');

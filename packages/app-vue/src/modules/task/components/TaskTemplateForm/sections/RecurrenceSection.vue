@@ -4,12 +4,14 @@
   使用 RecurrenceRule 值对象
 -->
 <template>
-  <Card class="mb-4">
-    <CardHeader class="flex flex-row items-center gap-2 pb-2">
+  <section class="space-y-4" aria-labelledby="task-recurrence-heading">
+    <header class="flex items-center gap-2">
       <Repeat class="h-5 w-5 text-primary" />
-      <CardTitle class="text-primary font-semibold">{{ t('task.recurrence.title') }}</CardTitle>
-    </CardHeader>
-    <CardContent>
+      <h3 id="task-recurrence-heading" class="text-sm font-semibold">
+        {{ t('task.recurrence.title') }}
+      </h3>
+    </header>
+    <div>
       <!-- 显示验证错误 -->
       <Alert v-if="validationErrors.length > 0" variant="destructive" class="mb-4">
         <AlertDescription>
@@ -31,20 +33,29 @@
         <!-- 是否启用重复 -->
         <div class="col-span-12">
           <div class="flex items-center gap-2">
-            <Switch :checked="recurrenceEnabled" @update:checked="recurrenceEnabled = $event" />
-            <Label>{{ t('task.recurrence.enable') }}</Label>
+            <Switch
+              id="task-recurrence-enabled"
+              :checked="recurrenceEnabled"
+              @update:checked="recurrenceEnabled = $event"
+            />
+            <Label for="task-recurrence-enabled">{{ t('task.recurrence.enable') }}</Label>
           </div>
         </div>
 
         <template v-if="recurrenceEnabled">
           <!-- 重复频率 -->
           <div class="col-span-12 md:col-span-6">
-            <Label class="mb-2 block">{{ t('task.recurrence.frequency') }}</Label>
+            <Label for="task-recurrence-frequency" class="mb-2 block">{{
+              t('task.recurrence.frequency')
+            }}</Label>
             <Select
               :model-value="frequency"
               @update:model-value="frequency = $event as RecurrenceFrequency"
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id="task-recurrence-frequency"
+                :aria-label="t('task.recurrence.frequency')"
+              >
                 <SelectValue :placeholder="t('task.recurrence.selectFrequency')" />
               </SelectTrigger>
               <SelectContent>
@@ -57,8 +68,11 @@
 
           <!-- 重复间隔 -->
           <div class="col-span-12 md:col-span-6">
-            <Label class="mb-2 block">{{ t('task.recurrence.interval') }}</Label>
+            <Label for="task-recurrence-interval" class="mb-2 block">{{
+              t('task.recurrence.interval')
+            }}</Label>
             <Input
+              id="task-recurrence-interval"
               :model-value="interval"
               type="number"
               min="1"
@@ -72,15 +86,22 @@
           <div class="col-span-12" v-if="frequency === RecurrenceFrequency.Weekly">
             <div class="text-sm font-medium mb-2">{{ t('task.recurrence.selectDay') }}</div>
             <div class="flex flex-wrap gap-2">
-              <Badge
+              <button
                 v-for="day in dayOptions"
                 :key="day.value"
-                :variant="selectedDays.includes(day.value) ? 'default' : 'outline'"
-                class="cursor-pointer select-none"
+                type="button"
+                role="checkbox"
+                :aria-checked="selectedDays.includes(day.value)"
+                class="h-8 rounded-md border px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                :class="
+                  selectedDays.includes(day.value)
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-input bg-background hover:bg-accent'
+                "
                 @click="toggleDay(day.value)"
               >
                 {{ day.title }}
-              </Badge>
+              </button>
             </div>
           </div>
 
@@ -92,6 +113,7 @@
 
           <div class="col-span-12 md:col-span-4">
             <RadioGroup
+              :aria-label="t('task.recurrence.endCondition')"
               :model-value="endConditionType"
               @update:model-value="endConditionType = $event as 'never' | 'date' | 'count'"
             >
@@ -113,17 +135,23 @@
           <div class="col-span-12 md:col-span-8">
             <!-- 结束日期 -->
             <div v-if="endConditionType === 'date'">
-              <Label class="mb-2 block">{{ t('task.recurrence.endDate') }}</Label>
+              <Label for="task-recurrence-end-date" class="mb-2 block">{{
+                t('task.recurrence.endDate')
+              }}</Label>
               <Popover>
                 <PopoverTrigger as-child>
                   <Button
+                    id="task-recurrence-end-date"
+                    :aria-label="t('task.recurrence.endDate')"
                     variant="outline"
                     class="w-full justify-start text-left font-normal"
                     :class="{ 'text-muted-foreground': !endDate }"
                   >
                     <CalendarIcon class="mr-2 h-4 w-4" />
                     {{
-                      endDate ? formatDisplayDate(endDate, locale) : t('task.recurrence.selectEndDate')
+                      endDate
+                        ? formatDisplayDate(endDate, locale)
+                        : t('task.recurrence.selectEndDate')
                     }}
                   </Button>
                 </PopoverTrigger>
@@ -139,8 +167,11 @@
 
             <!-- 次数限制 -->
             <div v-if="endConditionType === 'count'">
-              <Label class="mb-2 block">{{ t('task.recurrence.count') }}</Label>
+              <Label for="task-recurrence-count" class="mb-2 block">{{
+                t('task.recurrence.count')
+              }}</Label>
               <Input
+                id="task-recurrence-count"
                 :model-value="occurrences"
                 type="number"
                 min="1"
@@ -151,8 +182,8 @@
           </div>
         </template>
       </div>
-    </CardContent>
-  </Card>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -167,10 +198,6 @@ import {
 import type { RecurrenceRuleDTO } from '@memoflow/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
   Alert,
   AlertDescription,
   Switch,
@@ -182,7 +209,6 @@ import {
   SelectItem,
   Input,
   Button,
-  Badge,
   Separator,
   RadioGroup,
   RadioGroupItem,
@@ -236,9 +262,7 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
   const updatedTemplate: TaskTemplateViewModel = {
     ...props.modelValue,
     timeConfig: { ...(props.modelValue.timeConfig || {}) },
-    recurrenceRule: currentRule
-      ? { ...currentRule }
-      : null,
+    recurrenceRule: currentRule ? { ...currentRule } : null,
   } as TaskTemplateViewModel;
   updater(updatedTemplate);
   emit('update:modelValue', updatedTemplate);
@@ -312,7 +336,8 @@ const frequency = computed({
 
 // 间隔
 const interval = computed({
-  get: () => (props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null)?.interval ?? 1,
+  get: () =>
+    (props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null)?.interval ?? 1,
   set: (value: number) => {
     updateRecurrenceRule({ interval: value });
   },
@@ -320,7 +345,8 @@ const interval = computed({
 
 // 选中的星期
 const selectedDays = computed({
-  get: () => (props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null)?.daysOfWeek ?? [],
+  get: () =>
+    (props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null)?.daysOfWeek ?? [],
   set: (value: DayOfWeek[]) => {
     updateRecurrenceRule({ daysOfWeek: value });
   },

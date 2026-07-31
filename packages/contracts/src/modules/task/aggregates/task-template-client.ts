@@ -10,6 +10,7 @@ import type {
 } from '../../../primitives';
 
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
+import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
   TaskTimeConfigDTO,
@@ -58,5 +59,10 @@ export interface TaskTemplateClientDTO {
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;
+  dueInstanceCount: number;
+  completedDueInstanceCount: number;
+  completionWindowDays: 30;
+  futurePendingInstanceCount: number;
+  singleInstanceStatus: TaskInstanceStatus | null;
   completionRate: number;
 }

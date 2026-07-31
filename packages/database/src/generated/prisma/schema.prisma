@@ -767,6 +767,8 @@ model GoalRecord {
   // ============ 记录数据 ============
   value      Float /// 记录的数值
   note       String? /// 备注说明
+  sourceType String?  @map("source_type") /// 自动贡献来源类型；手工记录为空
+  sourceId   String?  @map("source_id") /// 自动贡献来源实体 ID；手工记录为空
   recordedAt DateTime @map("recorded_at") /// 记录时间（业务时间，非创建时间）
 
   // ============ 版本与审计 ============
@@ -779,6 +781,7 @@ model GoalRecord {
   identity  Account   @relation("AccountGoalRecords", fields: [identityId], references: [id])
   keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
 
+  @@unique([identityId, sourceType, sourceId])
   // ============ 索引优化 ============
   @@index([identityId])
   @@index([keyResultId, recordedAt]) /// 按KR查询时间序列数据（常用）

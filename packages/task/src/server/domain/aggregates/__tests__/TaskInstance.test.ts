@@ -348,6 +348,33 @@ describe('TaskInstance Aggregate', () => {
       });
     });
 
+    describe('uncomplete()', () => {
+      it('returns a completed task to Pending and emits its exact source identifiers', () => {
+        instance.complete(10, 'done', 5);
+        instance.pullDomainEvents();
+
+        instance.uncomplete();
+
+        expect(instance.status).toBe(TaskInstanceStatus.Pending);
+        expect(instance.completionRecord).toBeNull();
+        expect(instance.actualEndTime).toBeNull();
+        expect(instance.domainEvents).toEqual([
+          expect.objectContaining({
+            eventType: 'task:instance-uncompleted',
+            payload: expect.objectContaining({
+              identityId: instance.identityId,
+              taskInstanceId: instance.id,
+              taskTemplateId: instance.templateId,
+            }),
+          }),
+        ]);
+      });
+
+      it('rejects uncomplete for a task that is not completed', () => {
+        expect(() => instance.uncomplete()).toThrow('Only a completed task can be uncompleted');
+      });
+    });
+
     describe('skip()', () => {
       it('should skip a Pending task with reason', () => {
         expect(instance.status).toBe(TaskInstanceStatus.Pending);

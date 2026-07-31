@@ -59,6 +59,7 @@ export function createTaskTransportHandlers(api: TaskApplicationPort): TaskTrans
       listByStatus: api.listTaskInstancesByStatus,
       getByDateRange: api.getTaskInstancesByDateRange,
       complete: api.completeTaskInstance,
+      uncomplete: api.uncompleteTaskInstance,
       skip: api.skipTaskInstance,
       start: api.startTaskInstance,
       deleteInstance: api.deleteTaskInstance,

@@ -35,7 +35,7 @@ export type TaskEventMap = {
   'task:template-resumed': TaskTemplateResumedEvent;
   'task:template-schedule-time-changed': TaskTemplateScheduleTimeChangedEvent;
   'task:template-recurrence-changed': TaskTemplateRecurrenceChangedEvent;
-  'task:uncompleted': TaskUncompletedEvent;
+  'task:instance-uncompleted': TaskUncompletedEvent;
   'task:rescheduled': TaskRescheduledEvent;
 
   'task:dependency-created': TaskDependencyCreatedEvent;

@@ -192,6 +192,13 @@ export function shouldGenerateInstance(
   }
 
   const candidateDay = startOfLocalDay(date);
+  const alreadyGenerated = ctx.existingInstances.some(
+    (instance) =>
+      !instance.deletedAt && startOfLocalDay(instance.instanceDate) === candidateDay,
+  );
+  if (alreadyGenerated) {
+    return false;
+  }
 
   if (ctx.timeConfig?.startDate) {
     const templateStartDay = startOfLocalDay(ctx.timeConfig.startDate);

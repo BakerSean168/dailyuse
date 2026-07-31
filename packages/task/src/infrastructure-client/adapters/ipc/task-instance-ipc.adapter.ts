@@ -53,6 +53,10 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     return this.ipcClient.invoke(TaskChannels.INSTANCE_COMPLETE, { id, request });
   }
 
+  async uncompleteTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_UNCOMPLETE, { id });
+  }
+
   async skipTaskInstance(
     id: string,
     request?: SkipTaskInstanceReq,

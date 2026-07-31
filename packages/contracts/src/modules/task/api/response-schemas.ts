@@ -55,6 +55,11 @@ export const TaskTemplateResponseSchema = z.object({
   instanceCount: z.number(),
   completedInstanceCount: z.number(),
   pendingInstanceCount: z.number(),
+  dueInstanceCount: z.number(),
+  completedDueInstanceCount: z.number(),
+  completionWindowDays: z.literal(30),
+  futurePendingInstanceCount: z.number(),
+  singleInstanceStatus: z.enum(TaskInstanceStatus).nullable(),
   completionRate: z.number(),
 });
 

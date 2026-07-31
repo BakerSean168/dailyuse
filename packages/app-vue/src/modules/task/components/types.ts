@@ -96,6 +96,11 @@ export interface TaskTemplateViewModel {
   instanceCount?: number;
   completedInstanceCount?: number;
   pendingInstanceCount?: number;
+  dueInstanceCount?: number;
+  completedDueInstanceCount?: number;
+  completionWindowDays?: 30;
+  futurePendingInstanceCount?: number;
+  singleInstanceStatus?: 'Pending' | 'InProgress' | 'Completed' | 'Skipped' | 'Expired' | null;
   completionRate?: number;
   formattedCreatedAt?: string;
   /** TaskType enum value mapped for CreateTaskTemplateReq.taskType */
@@ -112,7 +117,13 @@ export interface TaskTemplateFormProps {
   availableParentTasks?: Array<Pick<TaskTemplateViewModel, 'id' | 'title'>>;
   goals?: GoalBindingOption[];
   keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
-  onRequestKeyResults?: (goalId: string) => Promise<KeyResultBindingOption[] | void> | void;
+  loadingGoals?: boolean;
+  loadingKeyResults?: Record<string, boolean>;
+  keyResultErrorsByGoal?: Record<string, string | null>;
+  onRequestKeyResults?: (
+    goalId: string,
+    force?: boolean,
+  ) => Promise<KeyResultBindingOption[] | void> | void;
 }
 
 export interface TaskTemplateFormValidationState {

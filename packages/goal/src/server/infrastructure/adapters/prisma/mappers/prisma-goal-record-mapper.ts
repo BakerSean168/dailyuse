@@ -35,6 +35,8 @@ export class PrismaGoalRecordMapper {
       identityId: IdentityId.of(data.identityId),
       value: data.value,
       note: data.note ?? null,
+      sourceType: data.sourceType as GoalRecord['sourceType'],
+      sourceId: data.sourceId,
       recordedAt: requiredInstant(data.recordedAt),
       version: data.version ?? 1,
       createdAt: requiredInstant(data.createdAt),

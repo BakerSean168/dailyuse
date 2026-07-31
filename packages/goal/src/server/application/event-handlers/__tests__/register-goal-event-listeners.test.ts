@@ -69,7 +69,11 @@ describe('registerGoalEventListeners', () => {
     expect(executeSpy).toHaveBeenCalledWith(
       'goal-1',
       'kr-1',
-      { value: 1, note: '任务实例完成: Write ADR' },
+      {
+        value: 1,
+        note: '任务实例完成: Write ADR',
+        source: { type: 'TASK_INSTANCE', id: 'ti-1' },
+      },
       'identity-1',
     );
   });
@@ -112,7 +116,11 @@ describe('registerGoalEventListeners', () => {
     expect(executeSpy).toHaveBeenCalledWith(
       'goal-1',
       'kr-1',
-      { value: 1, note: '模板实例全部完成: Write ADR' },
+      {
+        value: 1,
+        note: '模板实例全部完成: Write ADR',
+        source: { type: 'TASK_TEMPLATE', id: 'tt-1' },
+      },
       'identity-1',
     );
   });

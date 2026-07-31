@@ -1,4 +1,11 @@
-import { describe, expect, it } from 'vitest';
+/** @vitest-environment happy-dom */
+
+import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import { createI18n } from 'vue-i18n';
+import { createMemoryHistory, createRouter } from 'vue-router';
+import { defineComponent, h } from 'vue';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   moduleForPath,
   MODULE_TITLE_KEYS,
@@ -6,6 +13,17 @@ import {
   resolveEntryLayout,
   AUTO_FOCUS_VIEWPORT,
 } from './useShellRouterSync';
+import { useShellRouterSync } from './useShellRouterSync';
+import { useAppShellStore } from './useAppShellStore';
+
+const originalInnerWidth = window.innerWidth;
+
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', {
+    configurable: true,
+    value: originalInnerWidth,
+  });
+});
 
 describe('moduleForPath (V2 §3 module matrix + settings scene D)', () => {
   it('maps every business route family to its shell module', () => {
@@ -88,3 +106,120 @@ describe('resolveEntryLayout (schedule/settings no longer force focus)', () => {
   });
 });
 
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en-US',
+  messages: {
+    'en-US': {
+      nav: { capsule: { goal: 'Goals' } },
+      shell: {
+        panel: {
+          dirtyTransitionConfirm: 'Continue with unsaved changes?',
+          busyTransitionHint: 'Please wait',
+        },
+      },
+    },
+  },
+});
+
+async function mountRouterSync(initialPath: string) {
+  const pinia = createPinia();
+  setActivePinia(pinia);
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: '/', component: { template: '<div />' } },
+      { path: '/goals', component: { template: '<div />' } },
+    ],
+  });
+  await router.push(initialPath);
+  await router.isReady();
+
+  let actions: ReturnType<typeof useShellRouterSync> | null = null;
+  const Host = defineComponent({
+    setup() {
+      actions = useShellRouterSync();
+      return () => h('div');
+    },
+  });
+
+  return {
+    pinia,
+    router,
+    store: useAppShellStore(),
+    actions: () => actions!,
+    mount: () => mount(Host, { global: { plugins: [pinia, router, i18n] } }),
+  };
+}
+
+describe('useShellRouterSync startup restoration', () => {
+  it('preserves a user-hidden Home panel across startup and reopens it on explicit navigation', async () => {
+    const fixture = await mountRouterSync('/');
+    fixture.store.closeRightPanel();
+
+    const wrapper = fixture.mount();
+    expect(fixture.store.rightPanelOpen).toBe(false);
+
+    await fixture.router.push('/goals');
+    expect(fixture.store.rightPanelOpen).toBe(true);
+    expect(fixture.store.panelSurface).toBe('business');
+    wrapper.unmount();
+  });
+
+  it('preserves a hidden persisted business tab when startup restores its existing URL', async () => {
+    const fixture = await mountRouterSync('/goals');
+    fixture.store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'deeplink',
+    });
+    fixture.store.closeRightPanel();
+
+    const wrapper = fixture.mount();
+
+    expect(fixture.store.rightPanelOpen).toBe(false);
+    expect(fixture.store.activeTab?.route).toBe('/goals');
+    wrapper.unmount();
+  });
+
+  it('keeps the Home surface visible by using viewport focus when a narrow layout cannot split', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 900 });
+    const fixture = await mountRouterSync('/goals');
+    fixture.store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'deeplink',
+    });
+    const wrapper = fixture.mount();
+
+    await fixture.router.push('/');
+
+    expect(fixture.store.panelSurface).toBe('home');
+    expect(fixture.store.layout).toBe('focus');
+    expect(fixture.store.layoutReason).toBe('viewport');
+    wrapper.unmount();
+  });
+
+  it('preserves the form-owned dirty status after the user confirms hiding the panel', async () => {
+    const fixture = await mountRouterSync('/goals');
+    fixture.store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'deeplink',
+    });
+    const wrapper = fixture.mount();
+    fixture.store.setSurfaceStatus('dirty');
+    const confirm = vi.fn(() => true);
+    Object.defineProperty(window, 'confirm', { configurable: true, value: confirm });
+
+    await fixture.actions().closePanel();
+
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(fixture.store.rightPanelOpen).toBe(false);
+    expect(fixture.store.surfaceStatus).toBe('dirty');
+    wrapper.unmount();
+  });
+});

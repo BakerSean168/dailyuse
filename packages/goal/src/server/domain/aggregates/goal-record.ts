@@ -28,7 +28,12 @@
 
 import { AggregateRoot } from '@memoflow/utils/domain';
 import { GoalRecordId, KeyResultId } from '../../domain';
-import type { GoalRecordServerDTO, GoalEventMap } from '@memoflow/contracts/goal';
+import type {
+  GoalRecordServerDTO,
+  GoalEventMap,
+  GoalRecordSource,
+  GoalRecordSourceTypeValue,
+} from '@memoflow/contracts/goal';
 import type {IdentityId, Instant} from '@memoflow/contracts/primitives';
 
 // 内部状态接口
@@ -38,6 +43,8 @@ export interface GoalRecordState {
   identityId: IdentityId;
   value: number;
   note: string | null;
+  sourceType?: GoalRecordSourceTypeValue | null;
+  sourceId?: string | null;
   recordedAt: Instant;
   version: number;
   createdAt: Instant;
@@ -61,6 +68,8 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       identityId: state.identityId,
       value: state.value,
       note: state.note ?? null,
+      sourceType: state.sourceType ?? null,
+      sourceId: state.sourceId ?? null,
       recordedAt: state.recordedAt,
       version: state.version ?? 1,
       createdAt: state.createdAt,
@@ -84,6 +93,14 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
 
   get note(): string | null {
     return this._props.note;
+  }
+
+  get sourceType(): GoalRecordSourceTypeValue | null {
+    return this._props.sourceType ?? null;
+  }
+
+  get sourceId(): string | null {
+    return this._props.sourceId ?? null;
   }
 
   get recordedAt(): Instant {
@@ -123,6 +140,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     identityId: IdentityId;
     value: number;
     note?: string;
+    source?: GoalRecordSource;
     recordedAt?: Instant;
   }): GoalRecord {
     // 验证
@@ -131,6 +149,9 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     }
     if (typeof params.value !== 'number' || isNaN(params.value)) {
       throw new Error('Value must be a valid number');
+    }
+    if (params.source && (!params.source.type || !params.source.id.trim())) {
+      throw new Error('Goal record source type and ID are required together');
     }
 
     const now = Date.now();
@@ -142,6 +163,8 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       identityId: params.identityId,
       value: params.value,
       note: params.note?.trim() || null,
+      sourceType: params.source?.type ?? null,
+      sourceId: params.source?.id.trim() ?? null,
       recordedAt: params.recordedAt != null ? Number(params.recordedAt) : now,
       version: 1,
       createdAt: now,
@@ -214,6 +237,8 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       identityId: this._props.identityId,
       value: this._props.value,
       note: this._props.note,
+      sourceType: this._props.sourceType ?? null,
+      sourceId: this._props.sourceId ?? null,
       recordedAt: this._props.recordedAt,
       version: this._props.version,
       createdAt: this._props.createdAt,

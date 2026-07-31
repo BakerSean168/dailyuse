@@ -1,0 +1,343 @@
+import { expect, test, type APIResponse, type Locator, type Page } from '@playwright/test';
+import { API_CONFIG, TIMEOUT_CONFIG } from '../config';
+import { registerAndLogin } from '../helpers/testHelpers';
+
+const password = 'Test123456!';
+
+type TaskTemplateCreation = {
+  template: { id: string };
+  instanceCount: number;
+  todayInstanceCreated: boolean;
+};
+
+type TaskInstanceProjection = {
+  id: string;
+  instanceDate: number;
+  status: 'Pending' | 'InProgress' | 'Completed' | 'Skipped' | 'Expired';
+  importance: 'Vital' | 'Important' | 'Moderate' | 'Minor' | 'Trivial';
+};
+
+test.describe('Local Docker core product Phase B', () => {
+  test('[P1] keeps task drafts, product semantics, projections, and update propagation consistent', async ({
+    page,
+  }, testInfo) => {
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const planName = `[PM-B] Weekly product review ${suffix}`;
+    const copiedPlanName = `[PM-B] Copied review ${suffix}`;
+    const quickTaskName = `[PM-B] Quick follow-up ${suffix}`;
+    const recurringPlanName = `[PM-B] Recurring delivery ${suffix}`;
+    const consoleErrors: string[] = [];
+    const pageErrors: string[] = [];
+
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    await registerAndLogin(page, {
+      email: `pm-phase-b-${suffix}@test.com`,
+      password,
+      landingPath: '/tasks',
+    });
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'presentation-preference',
+        JSON.stringify({ locale: 'zh-CN', theme: 'auto' }),
+      );
+    });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
+    await expect(page.getByTestId('task-management-view')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
+    });
+
+    const token = await page.evaluate(() => localStorage.getItem('access_token'));
+    expect(token, 'Registration should persist an access token').toBeTruthy();
+    const headers = { Authorization: `Bearer ${token}` };
+
+    await expect(page.getByTestId('quick-task-button')).toHaveAttribute('aria-label', '快速任务');
+    await expect(page.getByTestId('create-task-template-button')).toHaveAttribute(
+      'aria-label',
+      '新建任务计划',
+    );
+    await expectElementToFit(page.getByTestId('task-page-toolbar'));
+
+    await page.getByTestId('create-task-template-button').click();
+    await page.getByTestId('task-template-title-input').fill('不应保留的草稿');
+    await page.getByTestId('task-template-description-input').fill('取消后必须丢弃');
+    await page
+      .getByTestId('task-template-dialog')
+      .getByRole('button', { name: '取消', exact: true })
+      .click();
+    await page.getByTestId('create-task-template-button').click();
+    await expect(page.getByTestId('task-template-title-input')).toHaveValue('');
+    await expect(page.getByTestId('task-template-description-input')).toHaveValue('');
+
+    const planCreationPromise = waitForTemplateWrite(page, 'POST');
+    await page.getByTestId('task-template-title-input').fill(planName);
+    await page.getByTestId('task-template-description-input').fill('完整任务计划');
+    await page.getByTestId('task-dialog-save-button').click();
+    const planCreation = await expectApiData<TaskTemplateCreation>(await planCreationPromise);
+    await expect(page.getByText(/任务计划已创建/).first()).toBeVisible();
+    await expect(taskCard(page, planName)).toBeVisible();
+
+    await page.getByTestId('create-task-template-button').click();
+    await expect(page.getByTestId('task-template-title-input')).toHaveValue('');
+    await page
+      .getByTestId('task-template-dialog')
+      .getByRole('button', { name: '取消', exact: true })
+      .click();
+
+    await openTaskCardMenu(page, planName, planCreation.template.id);
+    await page.getByTestId(`task-card-copy-action-${planCreation.template.id}`).click();
+    await expect(page.getByTestId('task-template-title-input')).toHaveValue(planName);
+    await page.getByTestId('task-template-title-input').fill(copiedPlanName);
+    const copyCreationPromise = waitForTemplateWrite(page, 'POST');
+    await page.getByTestId('task-dialog-save-button').click();
+    await expectApiData<TaskTemplateCreation>(await copyCreationPromise);
+    await expect(taskCard(page, copiedPlanName)).toBeVisible();
+    await expect(taskCard(page, planName)).toBeVisible();
+
+    await page.getByTestId('quick-task-button').click();
+    const quickDialog = page.getByTestId('quick-task-dialog');
+    await expect(quickDialog).toBeVisible();
+    await expectElementToFit(quickDialog);
+    await testInfo.attach('phase-b-quick-task-1280x720', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
+    await page.getByTestId('quick-task-title-input').fill(quickTaskName);
+    const quickCreationPromise = waitForTemplateWrite(page, 'POST');
+    await page.getByTestId('quick-task-save-button').click();
+    const quickCreation = await expectApiData<TaskTemplateCreation>(await quickCreationPromise);
+    expect(quickCreation.todayInstanceCreated).toBe(true);
+    await expect(page.getByText('已创建快速任务，并加入今天的待办。')).toBeVisible();
+    await expect(taskCard(page, quickTaskName).getByTestId('one-time-task-status')).toHaveText(
+      '待完成',
+    );
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
+    const quickTodo = todayTodo(page, quickTaskName);
+    await expect(quickTodo).toHaveAttribute('data-task-status', 'Pending');
+    await quickTodo.locator('button[title]').click();
+    await expect(quickTodo).toHaveAttribute('data-task-status', 'Completed');
+    await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
+    await expect(taskCard(page, quickTaskName).getByTestId('one-time-task-status')).toHaveText(
+      '已完成',
+    );
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
+    await todayTodo(page, quickTaskName).locator('button[title]').click();
+    await expect(todayTodo(page, quickTaskName)).toHaveAttribute('data-task-status', 'Pending');
+    await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
+    await expect(taskCard(page, quickTaskName).getByTestId('one-time-task-status')).toHaveText(
+      '待完成',
+    );
+
+    const recurringCreation = await expectApiData<TaskTemplateCreation>(
+      await page.request.post(`${API_CONFIG.FULL_URL}/task-templates`, {
+        headers,
+        data: {
+          name: recurringPlanName,
+          description: 'Verifies future Pending propagation.',
+          taskType: 'Recurring',
+          timeConfig: {
+            timeType: 'AllDay',
+            startDate: Date.now(),
+            timePoint: null,
+            timeRange: null,
+          },
+          recurrenceRule: {
+            frequency: 'Daily',
+            interval: 1,
+            daysOfWeek: [],
+            endDate: null,
+            occurrences: 5,
+          },
+          reminderConfig: null,
+          importance: 'Moderate',
+          tags: [],
+          goalBinding: null,
+        },
+      }),
+    );
+    const initialInstances = await listInstances(
+      page,
+      headers,
+      recurringCreation.template.id,
+    );
+    const editBoundary = Date.now();
+    const todayPending = initialInstances.find(
+      (instance) => instance.status === 'Pending' && instance.instanceDate <= editBoundary,
+    );
+    const futurePending = initialInstances.find(
+      (instance) => instance.status === 'Pending' && instance.instanceDate > editBoundary,
+    );
+    const futureToStart = initialInstances.find(
+      (instance) =>
+        instance.status === 'Pending' &&
+        instance.instanceDate > editBoundary &&
+        instance.id !== futurePending?.id,
+    );
+    expect(todayPending).toBeDefined();
+    expect(futurePending).toBeDefined();
+    expect(futureToStart).toBeDefined();
+    await expectApiData<TaskInstanceProjection>(
+      await page.request.post(`${API_CONFIG.FULL_URL}/task-instances/${futureToStart!.id}/start`, {
+        headers,
+      }),
+    );
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await openTaskCardMenu(page, recurringPlanName, recurringCreation.template.id);
+    await page.getByTestId(`task-card-edit-action-${recurringCreation.template.id}`).click();
+    await expect(page.getByTestId('task-plan-update-impact')).toContainText(
+      /将更新 \d+ 个尚未开始的待办任务/,
+    );
+    await page.getByTestId('task-form-advanced-toggle').click();
+    await expect(page.getByTestId('task-form-advanced-toggle')).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await page.locator('#importance-select').click();
+    await page.getByRole('option', { name: '高', exact: true }).click();
+    const updatePromise = waitForTemplateWrite(page, 'PATCH');
+    await page.getByTestId('task-dialog-save-button').click();
+    await expectApiData<unknown>(await updatePromise);
+
+    await expect
+      .poll(
+        async () => {
+          const instances = await listInstances(page, headers, recurringCreation.template.id);
+          const byId = new Map(instances.map((instance) => [instance.id, instance]));
+          return {
+            today: byId.get(todayPending!.id)?.importance,
+            futurePending: byId.get(futurePending!.id)?.importance,
+            futureStarted: byId.get(futureToStart!.id)?.importance,
+            futureStartedStatus: byId.get(futureToStart!.id)?.status,
+          };
+        },
+        { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },
+      )
+      .toEqual({
+        today: 'Moderate',
+        futurePending: 'Important',
+        futureStarted: 'Moderate',
+        futureStartedStatus: 'InProgress',
+      });
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
+    const recurringTodo = todayTodo(page, recurringPlanName);
+    await expect(recurringTodo).toHaveAttribute('data-task-status', 'Pending');
+    await recurringTodo.locator('button[title]').click();
+    await expect(recurringTodo).toHaveAttribute('data-task-status', 'Completed');
+    await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
+    await expect(
+      taskCard(page, recurringPlanName).getByTestId('task-plan-rolling-completion'),
+    ).toHaveText('最近 30 天 1/1 · 100%');
+    await testInfo.attach('phase-b-task-projections-1280x720', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showTodayOverview(page);
+    await todayTodo(page, recurringPlanName).locator('button[title]').click();
+    await expect(todayTodo(page, recurringPlanName)).toHaveAttribute('data-task-status', 'Pending');
+    await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
+    await expect(
+      taskCard(page, recurringPlanName).getByTestId('task-plan-rolling-completion'),
+    ).toHaveText('最近 30 天 0/1 · 0%');
+
+    expect(pageErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
+function taskCard(page: Page, title: string): Locator {
+  return page
+    .getByTestId('draggable-task-card')
+    .filter({ has: page.getByText(title, { exact: true }) })
+    .first();
+}
+
+function todayTodo(page: Page, title: string): Locator {
+  return page
+    .getByTestId('daily-todo-item')
+    .filter({ has: page.getByText(title, { exact: true }) });
+}
+
+async function showTodayOverview(page: Page): Promise<void> {
+  await page.getByTestId('business-panel-home').click();
+  await expect(page.getByTestId('today-overview-panel')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+}
+
+async function openTaskCardMenu(page: Page, title: string, taskId: string): Promise<void> {
+  const card = taskCard(page, title);
+  await expect(card).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await card.hover();
+  await page.getByTestId(`task-card-menu-trigger-${taskId}`).click();
+}
+
+function waitForTemplateWrite(page: Page, method: 'POST' | 'PATCH') {
+  return page.waitForResponse(
+    (response) => {
+      if (response.request().method() !== method) {
+        return false;
+      }
+      const path = new URL(response.url()).pathname;
+      return method === 'POST'
+        ? path.endsWith('/api/v1/task-templates')
+        : /\/api\/v1\/task-templates\/[^/]+$/.test(path);
+    },
+    { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },
+  );
+}
+
+async function listInstances(
+  page: Page,
+  headers: Record<string, string>,
+  templateId: string,
+): Promise<TaskInstanceProjection[]> {
+  return expectApiData<TaskInstanceProjection[]>(
+    await page.request.get(`${API_CONFIG.FULL_URL}/task-instances?templateId=${templateId}`, {
+      headers,
+    }),
+  );
+}
+
+async function expectElementToFit(locator: Locator): Promise<void> {
+  const geometry = await locator.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      left: rect.left,
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      clientHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    };
+  });
+  expect(geometry.left).toBeGreaterThanOrEqual(0);
+  expect(geometry.top).toBeGreaterThanOrEqual(0);
+  expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth);
+  expect(geometry.bottom).toBeLessThanOrEqual(geometry.viewportHeight);
+  expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth + 1);
+  expect(geometry.scrollHeight).toBeLessThanOrEqual(geometry.clientHeight + 1);
+}
+
+async function expectApiData<T>(response: APIResponse): Promise<T> {
+  const body = (await response.json()) as { ok?: boolean; data?: T; error?: unknown };
+  expect(response.ok(), JSON.stringify(body.error ?? body)).toBe(true);
+  expect(body.ok, JSON.stringify(body)).not.toBe(false);
+  expect(body.data, JSON.stringify(body)).toBeDefined();
+  return body.data as T;
+}

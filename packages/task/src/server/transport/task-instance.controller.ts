@@ -22,6 +22,7 @@ import type {
 } from '@memoflow/contracts/task';
 import { formatZodErrors } from '@memoflow/utils/result';
 import type { CompleteTaskInstanceUseCase } from '../application/use-cases/commands/complete-task-instance.use-case';
+import type { UncompleteTaskInstanceUseCase } from '../application/use-cases/commands/uncomplete-task-instance.use-case';
 import type { DeleteTaskInstanceUseCase } from '../application/use-cases/commands/delete-task-instance.use-case';
 import type { GetTaskInstanceUseCase } from '../application/use-cases/queries/get-task-instance.use-case';
 import type { GetTaskInstancesByDateRangeUseCase } from '../application/use-cases/queries/get-task-instances-by-date-range.use-case';
@@ -43,6 +44,7 @@ export interface TaskInstanceUseCases {
   listByStatus: TaskControllerFn<ListTaskInstancesByStatusUseCase['execute']>;
   getByDateRange: TaskControllerFn<GetTaskInstancesByDateRangeUseCase['execute']>;
   complete: TaskControllerFn<CompleteTaskInstanceUseCase['execute']>;
+  uncomplete: TaskControllerFn<UncompleteTaskInstanceUseCase['execute']>;
   skip: TaskControllerFn<SkipTaskInstanceUseCase['execute']>;
   start: TaskControllerFn<StartTaskInstanceUseCase['execute']>;
   deleteInstance: TaskControllerFn<DeleteTaskInstanceUseCase['execute']>;
@@ -122,6 +124,15 @@ export class TaskInstanceController {
     }
 
     const result = await this.useCases.complete(id, ctx.identityId, parsed.data);
+    if (!isOk(result)) {
+      return result as Result<TaskInstanceClientDTO>;
+    }
+
+    return ok(result.data.instance);
+  }
+
+  async uncompleteInstance(id: string, ctx: Context): Promise<Result<TaskInstanceClientDTO>> {
+    const result = await this.useCases.uncomplete(id, ctx.identityId);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }

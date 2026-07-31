@@ -5,8 +5,11 @@ export default {
   "guest": "Guest",
   "back": "Back",
   "forward": "Forward",
+  "showSidePanel": "Show side panel",
+  "hideSidePanel": "Hide side panel",
   "moduleNav": "Module navigation",
   "moduleWithCount": "{name}, {count} items",
+  "previewModule": "Preview {name}",
   "enterModule": "Enter",
   "previewPlaceholder": "Preview coming soon.",
   "preview": {
@@ -31,9 +34,21 @@ export default {
     "last7Days": "Last 7 days",
     "earlier": "Earlier"
   },
+  "home": {
+    "title": "Today",
+    "directActions": "Start directly",
+    "newGoal": "New goal",
+    "quickTask": "Quick task"
+  },
   "panel": {
+    "home": "Today",
+    "workflow": "Workflow",
+    "closeWorkflow": "Close workflow",
+    "workflowReady": "The workflow is ready in the side panel.",
     "closeTab": "Close tab",
     "closePanel": "Close panel",
+    "dirtyTransitionConfirm": "This form has unsaved changes. Switch anyway? The draft remains available while the dialog stays open.",
+    "busyTransitionHint": "This operation is still in progress. Try again when it finishes.",
     "enterFocus": "Focus mode",
     "exitFocus": "Exit focus",
     "tabLimitHint": "Tab limit reached — consider closing \"{title}\" (least recently used).",

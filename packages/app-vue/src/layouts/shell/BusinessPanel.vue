@@ -18,26 +18,34 @@ import {
   Bell,
   Calendar,
   FileText,
+  House,
   ListTodo,
   Maximize2,
   Minimize2,
   Target,
+  Workflow,
   X,
 } from '@lucide/vue';
 import type { Component } from 'vue';
-import type { BusinessTab, ShellLayout, ShellModule } from './useAppShellStore';
+import type { BusinessTab, PanelSurface, ShellLayout, ShellModule } from './useAppShellStore';
 import { providePanelWidth } from './usePanelWidth';
 
 const props = defineProps<{
   tabs: BusinessTab[];
   activeTabId: string | null;
   layout: ShellLayout;
+  panelSurface: PanelSurface;
+  workflowAvailable?: boolean;
+  workflowAttentionCount?: number;
 }>();
 
 const emit = defineEmits<{
   (e: 'activate-tab', id: string): void;
   (e: 'close-tab', id: string): void;
   (e: 'close-panel'): void;
+  (e: 'show-home'): void;
+  (e: 'show-workflow'): void;
+  (e: 'close-workflow'): void;
   (e: 'toggle-focus'): void;
   (e: 'start-resize', event: PointerEvent): void;
   (e: 'reset-width'): void;
@@ -84,37 +92,91 @@ const isFocused = computed(() => props.layout === 'focus');
   >
     <!-- Tab 条 -->
     <div class="flex h-[40px] shrink-0 items-center border-b border-border pr-1">
+      <button
+        type="button"
+        class="flex w-10 shrink-0 items-center justify-center border-r border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        :class="panelSurface === 'home' ? 'bg-accent text-foreground' : ''"
+        data-testid="business-panel-home"
+        :title="t('shell.panel.home')"
+        :aria-label="t('shell.panel.home')"
+        @click="emit('show-home')"
+      >
+        <House class="h-3.5 w-3.5" />
+      </button>
+
       <div class="flex flex-1 items-stretch overflow-x-auto">
-        <button
+        <div
           v-for="tab in tabs"
           :key="tab.id"
-          type="button"
-          class="group flex max-w-[200px] items-center gap-1.5 border-r border-border px-3 text-xs transition-colors"
+          class="group flex max-w-[200px] items-stretch border-r border-border text-xs transition-colors"
           :class="
-            activeTabId === tab.id
+            panelSurface === 'business' && activeTabId === tab.id
               ? 'bg-accent text-foreground'
               : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
           "
-          @click="emit('activate-tab', tab.id)"
         >
-          <component :is="moduleIcons[tab.module]" class="h-3.5 w-3.5 shrink-0" />
-          <span class="truncate">{{ tab.title }}</span>
-          <span
-            role="button"
-            tabindex="0"
-            class="ml-1 shrink-0 rounded p-0.5 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+          <button
+            type="button"
+            class="flex min-w-0 flex-1 items-center gap-1.5 px-3"
+            :aria-current="
+              panelSurface === 'business' && activeTabId === tab.id ? 'page' : undefined
+            "
+            @click="emit('activate-tab', tab.id)"
+          >
+            <component :is="moduleIcons[tab.module]" class="h-3.5 w-3.5 shrink-0" />
+            <span class="truncate">{{ tab.title }}</span>
+          </button>
+          <button
+            type="button"
+            class="shrink-0 px-1.5 opacity-0 transition-opacity hover:bg-muted focus:opacity-100 group-hover:opacity-100"
+            data-testid="business-panel-tab-close"
             :aria-label="t('shell.panel.closeTab')"
             @click.stop="emit('close-tab', tab.id)"
-            @keydown.enter.stop="emit('close-tab', tab.id)"
           >
             <X class="h-3 w-3" />
-          </span>
-        </button>
+          </button>
+        </div>
+
+        <div
+          v-if="workflowAvailable"
+          class="group flex max-w-[200px] items-stretch border-r border-border text-xs transition-colors"
+          :class="
+            panelSurface === 'workflow'
+              ? 'bg-accent text-foreground'
+              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+          "
+        >
+          <button
+            type="button"
+            class="flex min-w-0 flex-1 items-center gap-1.5 px-3"
+            data-testid="business-panel-workflow"
+            :aria-current="panelSurface === 'workflow' ? 'page' : undefined"
+            @click="emit('show-workflow')"
+          >
+            <Workflow class="h-3.5 w-3.5 shrink-0" />
+            <span class="truncate">{{ t('shell.panel.workflow') }}</span>
+            <span
+              v-if="(workflowAttentionCount ?? 0) > 0"
+              class="rounded-full bg-primary/15 px-1.5 text-[9px] font-semibold text-primary"
+            >
+              {{ workflowAttentionCount }}
+            </span>
+          </button>
+          <button
+            type="button"
+            class="shrink-0 px-1.5 opacity-0 transition-opacity hover:bg-muted focus:opacity-100 group-hover:opacity-100"
+            :aria-label="t('shell.panel.closeWorkflow')"
+            @click.stop="emit('close-workflow')"
+          >
+            <X class="h-3 w-3" />
+          </button>
+        </div>
       </div>
 
       <!-- 面板级控制 -->
       <div class="flex shrink-0 items-center gap-0.5 pl-1">
         <button
+          v-if="panelSurface !== 'home'"
           type="button"
           data-testid="business-panel-focus-toggle"
           class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -129,6 +191,7 @@ const isFocused = computed(() => props.layout === 'focus');
           data-testid="business-panel-close"
           class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           :title="t('shell.panel.closePanel')"
+          :aria-label="t('shell.panel.closePanel')"
           @click="emit('close-panel')"
         >
           <X class="h-4 w-4" />
@@ -137,8 +200,16 @@ const isFocused = computed(() => props.layout === 'focus');
     </div>
 
     <!-- 内容区（router-view 由 AppShell slot 注入；命名容器供 CSS 容器查询） -->
-    <div ref="contentEl" class="@container/panel min-h-0 flex-1 overflow-auto">
-      <slot />
+    <div ref="contentEl" class="@container/panel min-h-0 flex-1 overflow-hidden">
+      <div v-show="panelSurface === 'home'" class="h-full overflow-auto">
+        <slot name="home" />
+      </div>
+      <div v-show="panelSurface === 'business'" class="h-full overflow-auto">
+        <slot />
+      </div>
+      <div v-show="panelSurface === 'workflow'" class="h-full overflow-auto">
+        <slot name="workflow" />
+      </div>
     </div>
 
     <!-- 拖宽把手（split 态左边缘；focus 态满屏不需要） -->

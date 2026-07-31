@@ -3,6 +3,7 @@ export * from './archive-task-template.use-case';
 export * from './bind-task-to-goal.use-case';
 export * from './check-expired-instances.use-case';
 export * from './complete-task-instance.use-case';
+export * from './uncomplete-task-instance.use-case';
 export * from './create-task-dependency.use-case';
 export * from './create-task-template.use-case';
 export * from './delete-task-dependency.use-case';
@@ -15,4 +16,3 @@ export * from './start-task-instance.use-case';
 export * from './unbind-task-from-goal.use-case';
 export * from './update-task-dependency.use-case';
 export * from './update-task-template.use-case';
-

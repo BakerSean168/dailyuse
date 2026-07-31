@@ -5,8 +5,11 @@ export default {
   "guest": "未登录",
   "back": "后退",
   "forward": "前进",
+  "showSidePanel": "显示右侧面板",
+  "hideSidePanel": "隐藏右侧面板",
   "moduleNav": "模块导航",
   "moduleWithCount": "{name}，{count} 项",
+  "previewModule": "预览{name}",
   "enterModule": "进入",
   "previewPlaceholder": "预览内容即将到来。",
   "preview": {
@@ -31,9 +34,21 @@ export default {
     "last7Days": "近 7 天",
     "earlier": "更早"
   },
+  "home": {
+    "title": "今日概览",
+    "directActions": "直接开始",
+    "newGoal": "新建目标",
+    "quickTask": "快速任务"
+  },
   "panel": {
+    "home": "今日概览",
+    "workflow": "工作流",
+    "closeWorkflow": "关闭工作流",
+    "workflowReady": "工作流已就绪，可从右侧面板查看。",
     "closeTab": "关闭标签",
     "closePanel": "关闭面板",
+    "dirtyTransitionConfirm": "当前表单还有未保存内容，仍要切换吗？草稿会在当前弹窗生命周期内保留。",
+    "busyTransitionHint": "当前操作正在处理中，完成后即可切换。",
     "enterFocus": "专注模式",
     "exitFocus": "退出专注",
     "tabLimitHint": "标签数已达上限——建议关闭最久未用的「{title}」。",

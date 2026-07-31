@@ -52,6 +52,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
       :highlighted="highlighted"
       @click="handleClick"
       @edit="handleEdit"
+      @copy="handleCopy"
       @delete="handleDelete"
       @pause="handlePause"
       @resume="handleResume"
@@ -92,6 +93,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   click: [templateId: string];
   edit: [templateId: string]; // Changed: TaskTemplateCard emits id string, not full DTO
+  copy: [templateId: string];
   delete: [template: TaskTemplateViewModel];
   pause: [template: TaskTemplateViewModel];
   resume: [template: TaskTemplateViewModel];
@@ -109,6 +111,10 @@ const handleClick = (templateId: string) => {
 const handleEdit = (templateId: string) => {
   // Changed: accepts string, not DTO
   emit('edit', templateId);
+};
+
+const handleCopy = (templateId: string) => {
+  emit('copy', templateId);
 };
 
 const handleDelete = (template: TaskTemplateViewModel) => {

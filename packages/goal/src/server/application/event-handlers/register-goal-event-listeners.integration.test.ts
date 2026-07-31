@@ -23,9 +23,9 @@ import {
   seedAccount,
 } from '../../../__tests__/integration-helpers';
 
-const taskPublisher = createTypedEventPublisher<Pick<TaskEventMap, 'task:instance-completed'>>(
-  eventBus,
-);
+const taskPublisher = createTypedEventPublisher<
+  Pick<TaskEventMap, 'task:instance-completed' | 'task:instance-uncompleted'>
+>(eventBus);
 
 async function waitFor<T>(probe: () => Promise<T | null | undefined>, timeoutMs = 5000): Promise<T> {
   const deadline = Date.now() + timeoutMs;
@@ -100,7 +100,17 @@ describe('registerGoalEventListeners integration', () => {
       progressTrigger: TaskGoalBindingTrigger.PerInstance,
     };
 
-    taskPublisher.send('task:instance-completed', {
+    const readProgress = async (): Promise<number | undefined> => {
+      const goalNow = await goalRepository.findByIdForIdentity(
+        String(goal.identityId),
+        goal.id,
+        { includeChildren: true },
+      );
+      return goalNow?.getKeyResult(String(keyResult.id))?.progress.currentValue;
+    };
+    const waitForProgress = (expected: number) =>
+      waitFor(async () => ((await readProgress()) === expected ? expected : null));
+    const completedEvent: TaskEventMap['task:instance-completed'] = {
       identityId: identityId as never,
       taskInstanceId: 'ti-int-1' as never,
       taskTemplateId: 'tt-int-1' as never,
@@ -108,7 +118,32 @@ describe('registerGoalEventListeners integration', () => {
       taskTitle: 'Finish integration test',
       goalBinding,
       allInstancesCompleted: false,
-    });
+    };
+    const uncompletedEvent: TaskEventMap['task:instance-uncompleted'] = {
+      identityId: identityId as never,
+      taskInstanceId: 'ti-int-1' as never,
+      taskTemplateId: 'tt-int-1' as never,
+      uncompletedAt: Date.now(),
+    };
+
+    expect(await readProgress()).toBe(0);
+
+    taskPublisher.send('task:instance-completed', completedEvent);
+    expect(await waitForProgress(3)).toBe(3);
+
+    taskPublisher.send('task:instance-completed', completedEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(await readProgress()).toBe(3);
+
+    taskPublisher.send('task:instance-uncompleted', uncompletedEvent);
+    expect(await waitForProgress(0)).toBe(0);
+
+    taskPublisher.send('task:instance-uncompleted', uncompletedEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(await readProgress()).toBe(0);
+
+    taskPublisher.send('task:instance-completed', completedEvent);
+    expect(await waitForProgress(3)).toBe(3);
 
     // The listener reacts asynchronously and writes the record before advancing KR
     // progress, so poll on the KR progress to ensure the whole use-case has committed.
@@ -123,5 +158,7 @@ describe('registerGoalEventListeners integration', () => {
     const records = await goalRecordRepository.findByKeyResultId(String(goal.identityId), String(keyResult.id));
     expect(records).toHaveLength(1);
     expect(records[0].value).toBe(3);
+    expect(records[0].sourceType).toBe('TASK_INSTANCE');
+    expect(records[0].sourceId).toBe('ti-int-1');
   });
 });

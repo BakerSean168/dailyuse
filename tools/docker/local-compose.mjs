@@ -11,6 +11,7 @@ import { detectHostEnvShadowing } from './env-shadow.mjs';
 export { detectHostEnvShadowing } from './env-shadow.mjs';
 
 const envFile = '.env.production.local';
+const machineEnvFile = '.env.local';
 /** Compose argv shared by CLI and validate-local-deploy evidence collection. */
 export const localComposeArgs = [
   'compose',
@@ -97,19 +98,29 @@ function readGitRevision() {
  * Force local-docker host ports from SSOT so local stack never steals host-dev/e2e ports.
  * Secrets and service env still come from .env.production.local.
  */
-function applyLocalDockerHostPortIsolation(env, envFileMap, { quiet = false } = {}) {
+function applyLocalDockerHostPortIsolation(
+  env,
+  envFileMap,
+  machineEnvFileMap,
+  { quiet = false } = {},
+) {
   /** @type {Record<string, string>} */
   const fromFile = {};
   const profile = getRuntimeProfile('local-docker');
+  const allowMachineOverride =
+    machineEnvFileMap.get('LOCAL_DOCKER_MACHINE_PORTS')?.toLowerCase() === 'true';
+
   for (const key of Object.keys(profile.hostPortEnv ?? {})) {
-    if (envFileMap.has(key)) {
+    if (allowMachineOverride && machineEnvFileMap.has(key)) {
+      fromFile[key] = machineEnvFileMap.get(key) ?? '';
+    } else if (envFileMap.has(key)) {
       fromFile[key] = envFileMap.get(key) ?? '';
     } else if (env[key]) {
       fromFile[key] = String(env[key]);
     }
   }
 
-  const resolved = resolveLocalDockerHostPorts(fromFile);
+  const resolved = resolveLocalDockerHostPorts(fromFile, { allowMachineOverride });
   for (const warning of resolved.warnings) {
     if (!quiet) {
       console.warn(`[docker:local] ${warning}`);
@@ -129,8 +140,13 @@ function applyLocalDockerHostPortIsolation(env, envFileMap, { quiet = false } = 
   // Keep public PowerSync URL aligned with isolated host port when unset or still pointing at classic ports.
   const powersyncHostPort = resolved.forced.POWERSYNC_HOST_PORT ?? '58081';
   const isolatedPowerSyncUrl = `http://localhost:${powersyncHostPort}`;
-  const currentPowerSyncUrl = env.POWERSYNC_URL || envFileMap.get('POWERSYNC_URL') || '';
+  const currentPowerSyncUrl =
+    (allowMachineOverride ? machineEnvFileMap.get('POWERSYNC_URL') : '') ||
+    env.POWERSYNC_URL ||
+    envFileMap.get('POWERSYNC_URL') ||
+    '';
   if (
+    allowMachineOverride ||
     !currentPowerSyncUrl ||
     /localhost:8080\b/u.test(currentPowerSyncUrl) ||
     /localhost:8081\b/u.test(currentPowerSyncUrl)
@@ -176,7 +192,19 @@ export function createLocalComposeRuntimeEnv(options = {}) {
 
   const envFileMap = readEnvFileMap(envFile);
   const envKeys = readEnvFileKeys(envFile);
+  const machineEnvFileMap = readEnvFileMap(machineEnvFile);
   const developmentEnv = readEnvFileMap('.env.development');
+  const shareDevelopmentSecrets =
+    machineEnvFileMap.get('LOCAL_DOCKER_SHARE_DEV_SECRETS')?.toLowerCase() === 'true';
+
+  if (shareDevelopmentSecrets) {
+    for (const key of ['SERVICE_SECRET', 'JWT_SECRET', 'REFRESH_TOKEN_SECRET']) {
+      const value = developmentEnv.get(key);
+      if (value) {
+        env[key] = value;
+      }
+    }
+  }
 
   for (const warning of detectHostEnvShadowing(process.env, envFileMap)) {
     warn(warning);
@@ -221,7 +249,7 @@ export function createLocalComposeRuntimeEnv(options = {}) {
     }
   }
 
-  applyLocalDockerHostPortIsolation(env, envFileMap, { quiet });
+  applyLocalDockerHostPortIsolation(env, envFileMap, machineEnvFileMap, { quiet });
 
   return env;
 }

@@ -1,7 +1,11 @@
 <template>
   <Popover>
     <PopoverTrigger as-child>
-      <Button :variant="buttonVariant" :class="buttonClass">
+      <Button
+        :variant="buttonVariant"
+        :class="buttonClass"
+        :aria-label="ariaLabel || selectedColorLabel"
+      >
         <div class="h-4 w-4 rounded-full border" :style="{ backgroundColor: selectedColorValue }" />
         <span class="truncate">{{ selectedColorLabel }}</span>
       </Button>
@@ -61,6 +65,7 @@ const props = withDefaults(
     clearLabel?: string;
     defaultValue?: string;
     allowClear?: boolean;
+    ariaLabel?: string;
   }>(),
   {
     modelValue: null,
@@ -71,6 +76,7 @@ const props = withDefaults(
     clearLabel: '',
     defaultValue: defaultNamedColor,
     allowClear: true,
+    ariaLabel: '',
   },
 );
 

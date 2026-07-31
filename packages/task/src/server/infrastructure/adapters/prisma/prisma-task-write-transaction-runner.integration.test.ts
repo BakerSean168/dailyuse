@@ -5,6 +5,7 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskType } from '@memoflow/contracts/task';
 import { eventBus } from '@memoflow/utils/domain';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
+import { TaskInstance } from '../../../domain/aggregates/task-instance';
 import { RecurrenceRule, TaskTimeConfig } from '../../../domain/value-objects';
 import { createTaskPrismaModule } from '../../prisma';
 import {
@@ -15,6 +16,56 @@ import {
 } from '../../../../__tests__/integration-helpers';
 import { PrismaTaskWriteTransactionRunner } from './prisma-task-write-transaction-runner';
 import { TaskInstancePrismaRepository } from './task-instance-prisma.repository';
+import { TaskTemplatePrismaRepository } from './task-template-prisma.repository';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+async function seedPlanWithPropagationStates() {
+  const identityId = IdentityId.generate();
+  await seedAccount({ id: identityId });
+
+  const prisma = await getPrisma();
+  const module = createTaskPrismaModule(prisma);
+  const now = Date.now();
+  const template = TaskTemplate.create({
+    identityId,
+    title: 'Propagation plan',
+    taskType: TaskType.Recurring,
+    timeConfig: TaskTimeConfig.createAllDay(new Date(now - 2 * DAY_MS)),
+    recurrenceRule: RecurrenceRule.createDaily(1),
+    importance: ImportanceLevel.Moderate,
+    tags: [],
+  });
+  await module.taskTemplateRepository.save(template);
+
+  const createInstance = (instanceDate: number) =>
+    TaskInstance.create({
+      templateId: template.id,
+      identityId,
+      instanceDate,
+      timeConfig: TaskTimeConfig.createAllDay(new Date(instanceDate)),
+      importance: ImportanceLevel.Moderate,
+    });
+  const pastPending = createInstance(now - DAY_MS);
+  const futurePending = createInstance(now + DAY_MS);
+  const futureInProgress = createInstance(now + 2 * DAY_MS);
+  futureInProgress.start();
+  await module.taskInstanceRepository.saveMany([
+    pastPending,
+    futurePending,
+    futureInProgress,
+  ]);
+
+  return {
+    identityId,
+    prisma,
+    module,
+    template,
+    pastPending,
+    futurePending,
+    futureInProgress,
+  };
+}
 
 describe('PrismaTaskWriteTransactionRunner integration', () => {
   afterAll(async () => {
@@ -101,6 +152,77 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
     expect(await prisma.taskTemplate.count()).toBe(0);
     expect(await prisma.taskInstance.count()).toBe(0);
     expect(sendSpy).not.toHaveBeenCalled();
+
+    module.dispose();
+  });
+
+  it('propagates plan updates only to future pending instances through the production module', async () => {
+    vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const {
+      identityId,
+      prisma,
+      module,
+      template,
+      pastPending,
+      futurePending,
+      futureInProgress,
+    } = await seedPlanWithPropagationStates();
+
+    const result = await module.api.updateTaskTemplate(String(template.id), String(identityId), {
+      name: 'Updated propagation plan',
+      importance: ImportanceLevel.Important,
+    });
+
+    expect(result.ok).toBe(true);
+    const savedTemplate = await prisma.taskTemplate.findUniqueOrThrow({
+      where: { id: String(template.id) },
+    });
+    const savedInstances = await module.taskInstanceRepository.findByTemplateId(
+      String(template.id),
+      String(identityId),
+    );
+    const savedById = new Map(savedInstances.map((instance) => [String(instance.id), instance]));
+
+    expect(savedTemplate).toMatchObject({
+      name: 'Updated propagation plan',
+      importance: ImportanceLevel.Important,
+    });
+    expect(savedById.get(String(futurePending.id))?.importance).toBe(ImportanceLevel.Important);
+    expect(savedById.get(String(pastPending.id))?.importance).toBe(ImportanceLevel.Moderate);
+    expect(savedById.get(String(futureInProgress.id))).toMatchObject({
+      importance: ImportanceLevel.Moderate,
+      status: 'InProgress',
+    });
+
+    module.dispose();
+  });
+
+  it('rolls back future pending propagation when the template write fails', async () => {
+    vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const { identityId, module, template, futurePending } =
+      await seedPlanWithPropagationStates();
+    vi.spyOn(
+      TaskTemplatePrismaRepository.prototype as unknown as { persist: () => Promise<void> },
+      'persist',
+    ).mockRejectedValueOnce(new Error('template persistence failed'));
+
+    const result = await module.api.updateTaskTemplate(String(template.id), String(identityId), {
+      name: 'Must roll back',
+      importance: ImportanceLevel.Important,
+    });
+
+    expect(result).toBeErrorWithCode('INTERNAL_ERROR');
+    const savedTemplate = await module.taskTemplateRepository.findByIdForIdentity(
+      String(identityId),
+      String(template.id),
+    );
+    const savedFuture = await module.taskInstanceRepository.findByIdForIdentity(
+      String(identityId),
+      String(futurePending.id),
+    );
+    expect(savedTemplate?.title).toBe('Propagation plan');
+    expect(savedTemplate?.importance).toBe(ImportanceLevel.Moderate);
+    expect(savedFuture?.importance).toBe(ImportanceLevel.Moderate);
 
     module.dispose();
   });

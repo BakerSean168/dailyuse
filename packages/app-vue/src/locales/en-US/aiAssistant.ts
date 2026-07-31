@@ -12,6 +12,13 @@ export default {
     "subtitle": "Keep conversations, model selection, and the composer in one dedicated workspace, similar to Gemini or GPT.",
     "welcomeTitle": "What do you want to move forward today?",
     "welcomeDescription": "Pick a shortcut card to start, or type below. Once messages exist, this becomes the conversation timeline.",
+    "noModel": {
+      "title": "Start with goals and tasks",
+      "description": "Core planning works without a model. Connect AI when you want conversational planning.",
+      "configure": "Configure AI",
+      "createGoal": "Create first goal",
+      "quickTask": "Add today's task"
+    },
     "emptyTitle": "Start with a prompt",
     "emptyDescription": "Pick a provider and model, then continue the conversation here. Saved chats stay in the sidebar so you can jump back in.",
     "chatUnavailable": "The current AI runtime mode does not support chat. Check the AI service configuration first.",

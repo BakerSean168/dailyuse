@@ -40,4 +40,18 @@ describe('TaskInstanceHttpAdapter', () => {
       },
     });
   });
+
+  it('uses the uncomplete endpoint when restoring a completed instance', async () => {
+    const httpClient = {
+      post: vi.fn().mockResolvedValue(ok({ status: 'Pending' })),
+    } as any;
+
+    const adapter = new TaskInstanceHttpAdapter(httpClient);
+
+    await adapter.uncompleteTaskInstance('TaskInstanceId_123');
+
+    expect(httpClient.post).toHaveBeenCalledWith(
+      '/task-instances/TaskInstanceId_123/uncomplete',
+    );
+  });
 });

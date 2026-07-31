@@ -161,6 +161,22 @@ export function registerTaskInstanceRoutes(
   r.route(
     {
       method: 'post',
+      path: '/:id/uncomplete',
+      summary: '撤销完成任务实例',
+      request: { params: z.object({ id: brandedId<TaskInstanceId>() }) },
+      responses: {
+        200: successResponse(TaskInstanceResponseSchema, '撤销完成成功'),
+        404: errorResponse('实例不存在'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.uncompleteInstance(req.params!.id, ctx),
+  );
+
+  // POST /:id/skip — Skip instance
+  r.route(
+    {
+      method: 'post',
       path: '/:id/skip',
       summary: '跳过任务实例',
       request: {

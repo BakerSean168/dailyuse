@@ -40,6 +40,9 @@ export class GetTaskTemplateUseCase {
 
       if (!stats) {
         const instances = (await this.instanceRepository.findByTemplateId(id, identityId)) ?? [];
+        const asOf = Date.now();
+        const completionWindowDays = 30 as const;
+        const windowStart = asOf - completionWindowDays * 24 * 60 * 60 * 1000;
         const completedInstanceCount = instances.filter(
           (instance) => instance.status === TaskInstanceStatus.Completed,
         ).length;
@@ -47,20 +50,41 @@ export class GetTaskTemplateUseCase {
           (instance) => instance.status === TaskInstanceStatus.Pending,
         ).length;
         const instanceCount = instances.length;
+        const dueInstances = instances.filter(
+          (instance) => instance.instanceDate >= windowStart && instance.instanceDate <= asOf,
+        );
+        const completedDueInstanceCount = dueInstances.filter(
+          (instance) => instance.status === TaskInstanceStatus.Completed,
+        ).length;
 
         stats = {
           templateId: id,
           instanceCount,
           completedInstanceCount,
           pendingInstanceCount,
+          dueInstanceCount: dueInstances.length,
+          completedDueInstanceCount,
+          completionWindowDays,
+          futurePendingInstanceCount: instances.filter(
+            (instance) =>
+              instance.status === TaskInstanceStatus.Pending && instance.instanceDate > asOf,
+          ).length,
+          singleInstanceStatus: instances.length === 1 ? instances[0].status : null,
           completionRate:
-            instanceCount > 0 ? Math.round((completedInstanceCount / instanceCount) * 100) : 0,
+            dueInstances.length > 0
+              ? Math.round((completedDueInstanceCount / dueInstances.length) * 100)
+              : 0,
         };
       }
 
       dto.instanceCount = stats?.instanceCount ?? 0;
       dto.completedInstanceCount = stats?.completedInstanceCount ?? 0;
       dto.pendingInstanceCount = stats?.pendingInstanceCount ?? 0;
+      dto.dueInstanceCount = stats?.dueInstanceCount ?? 0;
+      dto.completedDueInstanceCount = stats?.completedDueInstanceCount ?? 0;
+      dto.completionWindowDays = stats?.completionWindowDays ?? 30;
+      dto.futurePendingInstanceCount = stats?.futurePendingInstanceCount ?? 0;
+      dto.singleInstanceStatus = stats?.singleInstanceStatus ?? null;
       dto.completionRate = stats?.completionRate ?? 0;
     }
 

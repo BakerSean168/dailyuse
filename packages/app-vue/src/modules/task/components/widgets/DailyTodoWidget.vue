@@ -70,9 +70,9 @@
                 class="shrink-0 flex items-center justify-center w-4 h-4 rounded-full border-2 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 :class="completeBtnClass(inst.status)"
                 :disabled="
-                  inst.status === 'Completed' || inst.status === 'Skipped' || completing === inst.id
+                  inst.status === 'Skipped' || inst.status === 'Expired' || completing === inst.id
                 "
-                :title="inst.status === 'Completed' ? '已完成' : '标记完成'"
+                :title="inst.status === 'Completed' ? '撤销完成' : '标记完成'"
                 :data-testid="`complete-today-task-${inst.id}`"
                 @click.stop="handleComplete(inst)"
               >
@@ -237,12 +237,16 @@ function completeBtnClass(status: string): string {
 
 // ── Complete handler ──
 async function handleComplete(inst: TaskInstanceClientDTO) {
-  if (completing.value || inst.status === 'Completed' || inst.status === 'Skipped') return;
+  if (completing.value || inst.status === 'Skipped' || inst.status === 'Expired') return;
   completing.value = inst.id;
   try {
-    const completed = await task.completeInstance(inst.id);
-    if (completed) {
-      emit('completed', completed);
+    if (inst.status === 'Completed') {
+      await task.uncompleteInstance(inst.id);
+    } else {
+      const completed = await task.completeInstance(inst.id);
+      if (completed) {
+        emit('completed', completed);
+      }
     }
   } finally {
     completing.value = null;

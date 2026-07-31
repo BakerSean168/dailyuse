@@ -16,57 +16,96 @@
     </div>
 
     <!-- 正常表单内容 -->
-    <form v-else ref="formRef" class="task-template-form" @submit.prevent>
-      <!-- 统一使用 @update:model-value 事件 -->
-      <BasicInfoSection
-        :model-value="taskTemplateBeingEdited!"
-        @update:validation="updateBasicValidation"
-        @update:model-value="handleTemplateUpdate"
-      />
+    <form v-else ref="formRef" class="task-template-form space-y-5" @submit.prevent>
+      <div class="grid items-start gap-5 lg:grid-cols-2">
+        <BasicInfoSection
+          :model-value="taskTemplateBeingEdited!"
+          @update:validation="updateBasicValidation"
+          @update:model-value="handleTemplateUpdate"
+        />
 
-      <TimeConfigSection
-        :model-value="taskTemplateBeingEdited!"
-        :is-edit-mode="isEditMode"
-        @update:validation="updateTimeValidation"
-        @update:model-value="handleTemplateUpdate"
-      />
+        <TimeConfigSection
+          :model-value="taskTemplateBeingEdited!"
+          :is-edit-mode="isEditMode"
+          @update:validation="updateTimeValidation"
+          @update:model-value="handleTemplateUpdate"
+        />
+      </div>
 
-      <RecurrenceSection
-        :model-value="taskTemplateBeingEdited!"
-        @update:validation="updateRecurrenceValidation"
-        @update:model-value="handleTemplateUpdate"
-      />
+      <div class="grid items-start gap-5 border-t pt-5 lg:grid-cols-2">
+        <RecurrenceSection
+          :model-value="taskTemplateBeingEdited!"
+          @update:validation="updateRecurrenceValidation"
+          @update:model-value="handleTemplateUpdate"
+        />
 
-      <ReminderSection
-        :model-value="taskTemplateBeingEdited!"
-        @update:validation="updateReminderValidation"
-        @update:model-value="handleTemplateUpdate"
-      />
+        <KeyResultLinksSection
+          :model-value="taskTemplateBeingEdited!"
+          :goals="goals"
+          :key-results-by-goal="keyResultsByGoal"
+          :loading-goals="props.loadingGoals"
+          :loading-key-results="props.loadingKeyResults"
+          :key-result-errors-by-goal="props.keyResultErrorsByGoal"
+          :on-request-key-results="props.onRequestKeyResults"
+          @update:validation="updateGoalBindingValidation"
+          @update:model-value="handleTemplateUpdate"
+        />
+      </div>
 
-      <!-- 移除 SchedulingPolicySection，调度配置已经在其他模块中处理 -->
+      <Collapsible v-model:open="advancedOpen" class="border-t pt-2">
+        <CollapsibleTrigger as-child>
+          <Button
+            type="button"
+            variant="ghost"
+            class="h-auto w-full justify-between px-0 py-3 text-left"
+            data-testid="task-form-advanced-toggle"
+            :aria-expanded="advancedOpen"
+          >
+            <span class="flex min-w-0 items-center gap-3">
+              <Settings2 class="h-4 w-4 shrink-0" />
+              <span class="min-w-0">
+                <span class="block text-sm font-medium">{{
+                  t('task.templateForm.advancedSettings')
+                }}</span>
+                <span class="block text-xs font-normal text-muted-foreground">{{
+                  t('task.templateForm.advancedSettingsDescription')
+                }}</span>
+              </span>
+            </span>
+            <ChevronDown
+              class="h-4 w-4 shrink-0 transition-transform"
+              :class="{ 'rotate-180': advancedOpen }"
+            />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent class="grid items-start gap-5 pb-1 pt-3 lg:grid-cols-2">
+          <ReminderSection
+            :model-value="taskTemplateBeingEdited!"
+            @update:validation="updateReminderValidation"
+            @update:model-value="handleTemplateUpdate"
+          />
 
-      <KeyResultLinksSection
-        :model-value="taskTemplateBeingEdited!"
-        :goals="goals"
-        :key-results-by-goal="keyResultsByGoal"
-        :on-request-key-results="props.onRequestKeyResults"
-        @update:model-value="handleTemplateUpdate"
-      />
-
-      <MetadataSection
-        :model-value="taskTemplateBeingEdited!"
-        :available-parent-tasks="props.availableParentTasks"
-        @update:validation="updateMetadataValidation"
-        @update:model-value="handleTemplateUpdate"
-      />
+          <MetadataSection
+            :model-value="taskTemplateBeingEdited!"
+            :available-parent-tasks="props.availableParentTasks"
+            @update:validation="updateMetadataValidation"
+            @update:model-value="handleTemplateUpdate"
+          />
+        </CollapsibleContent>
+      </Collapsible>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { AlertCircle } from '@lucide/vue';
-import { Button } from '@memoflow/ui-vue-shadcn';
+import { AlertCircle, ChevronDown, Settings2 } from '@lucide/vue';
+import {
+  Button,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@memoflow/ui-vue-shadcn';
 import { useI18n } from 'vue-i18n';
 import BasicInfoSection from './sections/BasicInfoSection.vue';
 import TimeConfigSection from './sections/TimeConfigSection.vue';
@@ -89,6 +128,7 @@ const emit = defineEmits<TaskTemplateFormEmits>();
 
 // ===== 响应式数据 =====
 const formRef = ref();
+const advancedOpen = ref(false);
 
 const {
   isFormValid,
@@ -97,6 +137,7 @@ const {
   updateTimeValidation,
   updateRecurrenceValidation,
   updateReminderValidation,
+  updateGoalBindingValidation,
   updateMetadataValidation,
 } = useTaskTemplateForm();
 

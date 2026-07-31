@@ -6,7 +6,7 @@ tags:
   - local
 description: 使用 docker-compose.local.yml 做 prod-like 本地验证的统一入口
 created: 2026-05-19T00:00:00
-updated: 2026-07-29T00:00:00
+updated: 2026-07-31T00:00:00
 ---
 
 # Local Docker 验证
@@ -52,7 +52,7 @@ docker image inspect memoflow-api:local --format '{{ index .Config.Labels "org.o
 VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
 ```
 
-> 若直接调用底层 compose 且 `.env.production.local` 把 `API_HOST_PORT` 设成 `3000`，会与 `pnpm dev` / Playwright 抢口。  
+> 若直接调用底层 compose 且 `.env.production.local` 把 `API_HOST_PORT` 设成 `3000`，会与宿主 Nx dev target / Playwright 抢口。
 > `pnpm docker:local:*` 会按 SSOT 纠正冲突端口（见 [runtime-lanes.md](./runtime-lanes.md)）。
 
 默认本地访问端口：
@@ -89,7 +89,7 @@ pnpm docker:local:down
 | 车道 | API | Web | PG | 说明 |
 | --- | --- | --- | --- | --- |
 | local-docker | 53080 | 58080 | 55432 | 本文件 |
-| host-dev | 3000 | 5173 | 5432 | `pnpm dev` |
+| host-dev | 3000 | 5173 | 5432 | `pnpm nx run-many -t serve --projects=api,web --parallel=2` |
 | e2e | 3000 | 5173 | 5433 | Playwright |
 
 完整互斥规则与排障见 [runtime-lanes.md](./runtime-lanes.md)。
@@ -116,6 +116,38 @@ pnpm docker:local:down
 - `POWERSYNC_SNAPSHOT_DIR` 已挂到本地 volume
 - `SNAPSHOT_REBUILD_ENABLED` / `SNAPSHOT_REBUILD_SCHEDULE` 注入到了 `api`
 - 本地容器里对应脚本、路由或日志路径能工作
+
+## 发布级产品旅程证据
+
+核心产品旅程使用当前 local-docker profile 的实际端口运行：
+
+```bash
+pnpm nx run web:e2e:local-docker
+```
+
+该 target 在 Playwright 前后同时收集证据：
+
+- Web、API、AI Service 的 host TCP listener 已打开。
+- Compose 的 host → container 端口映射与运行时 profile 一致。
+- 三个产品容器均 healthy，且 OCI revision 与本次验证 revision 完全一致。
+- Chromium 发出的唯一 query token 出现在当前 Web 容器的 Nginx 日志中。
+
+机器可读证据写入（已被 Git 忽略）：
+
+```text
+reports/local-deploy-validation/local-docker-playwright-evidence.json
+```
+
+PM journey 账号统一使用 `pm-phase-*@test.com` 固定前缀。清理前必须先预览，
+再显式应用；清理在单个数据库事务内按 `identity_id` 依赖顺序执行：
+
+```bash
+node tools/testing/cleanup-local-docker-pm-data.mjs
+node tools/testing/cleanup-local-docker-pm-data.mjs --apply
+node tools/testing/cleanup-local-docker-pm-data.mjs
+```
+
+最后一条预览应返回 `0 rows`。不要扩大前缀去清理普通开发账号。
 
 ## 与发布链路的关系
 

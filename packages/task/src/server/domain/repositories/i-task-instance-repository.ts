@@ -16,6 +16,11 @@ export interface TaskTemplateInstanceStats {
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;
+  dueInstanceCount: number;
+  completedDueInstanceCount: number;
+  completionWindowDays: 30;
+  futurePendingInstanceCount: number;
+  singleInstanceStatus: TaskInstanceStatus | null;
   completionRate: number;
 }
 
@@ -105,6 +110,7 @@ export interface ITaskInstanceRepository {
   getTemplateStats(
     templateIds: string[],
     identityId: string,
+    asOf?: number,
   ): Promise<Record<string, TaskTemplateInstanceStats>>;
 
   /**

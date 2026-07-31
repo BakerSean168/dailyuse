@@ -1,59 +1,81 @@
 <template>
   <Dialog :open="visible" @update:open="setVisible">
-    <DialogContent
-      data-testid="task-template-dialog"
-      class="max-w-[900px] max-h-[85vh] rounded-xl p-0 flex min-h-0 flex-col overflow-hidden"
+    <ProductDialogShell
+      :open="visible"
+      test-id="task-template-dialog"
+      size="lg"
+      initial-focus-selector="[data-testid='task-template-title-input']"
     >
-      <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4 shrink-0">
+      <template #icon>
         <component
-          :is="mode === 'edit' ? Pencil : PlusCircle"
+          :is="mode === 'edit' ? Pencil : mode === 'copy' ? Copy : PlusCircle"
           :class="mode === 'edit' ? 'text-primary' : 'text-success'"
-          class="h-6 w-6 shrink-0"
+          class="mt-0.5 h-5 w-5 shrink-0"
         />
-        <div>
-          <DialogTitle class="text-lg">{{
-            mode === 'edit'
-              ? t('task.templateDialog.editTitle')
+      </template>
+      <template #title>
+        {{
+          mode === 'edit'
+            ? t('task.templateDialog.editTitle')
+            : mode === 'copy'
+              ? t('task.templateDialog.copyTitle')
               : t('task.templateDialog.createTitle')
-          }}</DialogTitle>
-          <DialogDescription class="mt-0 text-sm text-muted-foreground">
-            {{
-              mode === 'edit'
-                ? t('task.templateDialog.editSubtitle')
-                : t('task.templateDialog.createSubtitle')
-            }}
-          </DialogDescription>
-        </div>
-      </DialogHeader>
+        }}
+      </template>
+      <template #description>
+        {{
+          mode === 'edit'
+            ? t('task.templateDialog.editSubtitle')
+            : mode === 'copy'
+              ? t('task.templateDialog.copySubtitle')
+              : t('task.templateDialog.createSubtitle')
+        }}
+      </template>
 
-      <div class="flex-1 min-h-0 overflow-y-auto px-6 pb-4">
-        <TaskTemplateForm
-          v-if="localTemplate"
-          ref="formRef"
-          :model-value="localTemplate"
-          :is-edit-mode="mode === 'edit'"
-          :readonly="saving"
-          :available-parent-tasks="availableParentTasks"
-          :goals="goalOptions"
-          :key-results-by-goal="keyResultsByGoal"
-          :on-request-key-results="requestKeyResults"
-          @update:model-value="handleTemplateUpdate"
-          @update:validation="handleValidationUpdate"
-          @close="handleCancel"
-        />
+      <template #status>
+        <p
+          v-if="mode === 'edit' && (localTemplate?.futurePendingInstanceCount ?? 0) > 0"
+          class="mx-6 mt-4 rounded-md border border-info/30 bg-info/10 px-3 py-2 text-sm text-foreground"
+          role="status"
+          data-testid="task-plan-update-impact"
+        >
+          {{
+            t('task.templateDialog.updateImpact', {
+              count: localTemplate?.futurePendingInstanceCount ?? 0,
+            })
+          }}
+        </p>
+      </template>
 
-        <DependencyManager
-          v-if="showDependencyManager"
-          class="mt-4"
-          :current-task-id="localTemplate?.id"
-          :all-tasks="graphTasks"
-          :dependencies="dependencies"
-          @dependency-added="handleDependencyAdded"
-          @dependency-deleted="handleDependencyDeleted"
-        />
-      </div>
+      <TaskTemplateForm
+        v-if="localTemplate"
+        ref="formRef"
+        :model-value="localTemplate"
+        :is-edit-mode="mode === 'edit'"
+        :readonly="saving"
+        :available-parent-tasks="availableParentTasks"
+        :goals="goalOptions"
+        :key-results-by-goal="keyResultsByGoal"
+        :loading-goals="loadingGoals"
+        :loading-key-results="loadingKeyResults"
+        :key-result-errors-by-goal="keyResultErrorsByGoal"
+        :on-request-key-results="requestKeyResults"
+        @update:model-value="handleTemplateUpdate"
+        @update:validation="handleValidationUpdate"
+        @close="handleCancel"
+      />
 
-      <DialogFooter class="p-6 pt-4 shrink-0 border-t">
+      <DependencyManager
+        v-if="showDependencyManager"
+        class="mt-5 border-t pt-5"
+        :current-task-id="localTemplate?.id"
+        :all-tasks="graphTasks"
+        :dependencies="dependencies"
+        @dependency-added="handleDependencyAdded"
+        @dependency-deleted="handleDependencyDeleted"
+      />
+
+      <template #footer>
         <Button variant="ghost" :disabled="saving" @click="handleCancel">{{
           t('task.templateDialog.cancel')
         }}</Button>
@@ -67,38 +89,39 @@
             mode === 'edit' ? t('task.templateDialog.saveChanges') : t('task.templateDialog.create')
           }}
         </Button>
-      </DialogFooter>
-    </DialogContent>
+      </template>
+    </ProductDialogShell>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, toRaw, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  Button,
-} from '@memoflow/ui-vue-shadcn';
-import { Pencil, PlusCircle } from '@lucide/vue';
+import { Dialog, Button } from '@memoflow/ui-vue-shadcn';
+import { Copy, Pencil, PlusCircle } from '@lucide/vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import DependencyManager from '../dependency/DependencyManager.vue';
 import type { TaskTemplateViewModel } from '../types';
 import type { TaskForDAG } from '../../types/task-dag.types';
-import { TaskType, type DependencyType, type TaskGraphDependencyDTO } from '@memoflow/contracts/task';
+import {
+  TaskType,
+  type DependencyType,
+  type TaskGraphDependencyDTO,
+} from '@memoflow/contracts/task';
 import { defaultNamedColor } from '../../../../shared/constants/color-palette';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
+import { ProductDialogShell } from '../../../../shared/components';
 
 const { t } = useI18n();
 const {
   goals: goalOptions,
   keyResultsByGoal,
+  loadingGoals,
+  loadingKeyResults,
+  keyResultErrorsByGoal,
   loadGoals: loadGoalOptions,
   loadKeyResults: loadGoalKeyResults,
+  clearErrors: clearGoalBindingErrors,
 } = useTaskGoalBindingOptions();
 
 function createBlankTemplate(): TaskTemplateViewModel {
@@ -130,11 +153,54 @@ function createBlankTemplate(): TaskTemplateViewModel {
   };
 }
 
+function cloneTemplate(template: TaskTemplateViewModel): TaskTemplateViewModel {
+  return structuredClone(toCloneableData(template));
+}
+
+function toCloneableData<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => toCloneableData(item)) as T;
+  }
+
+  if (value !== null && typeof value === 'object') {
+    const rawValue = toRaw(value);
+    return Object.fromEntries(
+      Object.entries(rawValue).map(([key, item]) => [key, toCloneableData(item)]),
+    ) as T;
+  }
+
+  return value;
+}
+
+function createEditDraft(template: TaskTemplateViewModel | null): TaskTemplateViewModel | null {
+  return template ? cloneTemplate(template) : null;
+}
+
+function createCopyDraft(template: TaskTemplateViewModel | null): TaskTemplateViewModel | null {
+  if (!template) {
+    return null;
+  }
+
+  return {
+    ...cloneTemplate(template),
+    id: '',
+    status: 'ACTIVE',
+    isActive: true,
+    isPaused: false,
+    isArchived: false,
+    instanceCount: 0,
+    completedInstanceCount: 0,
+    pendingInstanceCount: 0,
+    completionRate: 0,
+    formattedCreatedAt: undefined,
+  };
+}
+
 const props = withDefaults(
   defineProps<{
     modelValue: boolean;
     template?: TaskTemplateViewModel | null;
-    mode?: 'create' | 'edit';
+    mode?: 'create' | 'edit' | 'copy';
     saving?: boolean;
     availableTemplates?: TaskTemplateViewModel[];
     graphTasks?: TaskForDAG[];
@@ -160,12 +226,12 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
   (e: 'save', value: TaskTemplateViewModel): void;
   (e: 'cancel'): void;
+  (e: 'dirty-change', dirty: boolean): void;
 }>();
 
 const formRef = ref<InstanceType<typeof TaskTemplateForm> | null>(null);
-const localTemplate = ref<TaskTemplateViewModel | null>(
-  props.template ? { ...props.template } : props.mode === 'create' ? createBlankTemplate() : null,
-);
+const localTemplate = ref<TaskTemplateViewModel | null>(null);
+const draftBaseline = ref<string | null>(null);
 const isValid = ref(false);
 const visible = computed(() => props.modelValue);
 const mode = computed(() => props.mode);
@@ -227,52 +293,57 @@ async function loadGoals() {
   await loadGoalOptions();
 }
 
-async function requestKeyResults(goalId: string) {
-  return loadGoalKeyResults(goalId);
+async function requestKeyResults(goalId: string, force = false) {
+  return loadGoalKeyResults(goalId, force);
 }
 
-async function ensureBindingKeyResults(template: TaskTemplateViewModel | null) {
-  const goalId = template?.goalBinding?.goalId;
-  if (!goalId) {
-    return;
+function initializeDraft(): void {
+  if (props.mode === 'create') {
+    localTemplate.value = createBlankTemplate();
+  } else if (props.mode === 'copy') {
+    localTemplate.value = createCopyDraft(props.template ?? null);
+  } else {
+    localTemplate.value = createEditDraft(props.template ?? null);
   }
 
-  await requestKeyResults(goalId);
+  isValid.value = false;
+  clearGoalBindingErrors();
+  draftBaseline.value = JSON.stringify(localTemplate.value);
+  emit('dirty-change', false);
 }
 
 watch(
-  () => props.template,
-  (template) => {
-    localTemplate.value = template
-      ? { ...template }
-      : props.mode === 'create'
-        ? createBlankTemplate()
-        : null;
+  localTemplate,
+  (draft) => {
+    if (!visible.value || draftBaseline.value === null) return;
+    emit('dirty-change', JSON.stringify(draft) !== draftBaseline.value);
   },
-  { immediate: true, deep: true },
+  { deep: true },
 );
 
 watch(
   visible,
-  async (open) => {
+  async (open, wasOpen) => {
     if (!open) {
+      draftBaseline.value = null;
+      emit('dirty-change', false);
       return;
     }
 
+    if (!wasOpen) {
+      initializeDraft();
+    }
     await loadGoals();
-    await ensureBindingKeyResults(localTemplate.value);
   },
   { immediate: true },
 );
 
 watch(
-  () => localTemplate.value?.goalBinding?.goalId,
-  async (goalId) => {
-    if (!goalId) {
-      return;
+  [() => props.mode, () => props.template?.id],
+  ([nextMode, nextTemplateId], [previousMode, previousTemplateId]) => {
+    if (visible.value && (nextMode !== previousMode || nextTemplateId !== previousTemplateId)) {
+      initializeDraft();
     }
-
-    await requestKeyResults(goalId);
   },
 );
 
@@ -289,6 +360,11 @@ const handleValidationUpdate = (validation: { isValid: boolean }) => {
 };
 
 const handleCancel = () => {
+  localTemplate.value = null;
+  draftBaseline.value = null;
+  isValid.value = false;
+  clearGoalBindingErrors();
+  emit('dirty-change', false);
   emit('cancel');
   emit('update:modelValue', false);
 };

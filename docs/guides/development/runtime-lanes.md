@@ -22,12 +22,14 @@ updated: 2026-07-14T00:00:00
 
 - `pnpm runtime:preflight` / `pnpm runtime:preflight:e2e` / `:host-dev` / `:local-docker`
 - `pnpm docker:local:*`（强制使用 local-docker 隔离 host 端口）
+- 完整的本机开发、单服务替换和命令入口见
+  [`local-development.md`](./local-development.md)。
 
 ## 车道一览
 
 | Profile        | 用途                | 主机端口（SSOT）                                 | 入口命令                           |
 | -------------- | ------------------- | ------------------------------------------------ | ---------------------------------- |
-| `host-dev`     | API+Web 热更新      | API `3000`，Web `5173`，PG `5432`                | `pnpm docker:dev:up` + `pnpm dev`  |
+| `host-dev`     | API+Web 热更新      | API `3000`，Web `5173`，PG `5432`                | Docker dev infra + Nx `run-many`   |
 | `e2e`          | Playwright 核心 e2e | API `3000`，Web `5173`，PG **`5433`**            | `pnpm docker:test:up` + `pnpm e2e` |
 | `local-docker` | 近生产全栈容器      | API **`53080`**，Web **`58080`**，PG **`55432`** | `pnpm docker:local:up`             |
 | `dev-infra`    | 仅开发依赖          | PG `5432`，Redis `6384`，PowerSync `8080`        | `pnpm docker:dev:up`               |
@@ -54,7 +56,7 @@ pnpm e2e
 # 本机开发
 pnpm docker:dev:up
 pnpm runtime:preflight:host-dev
-pnpm dev
+pnpm nx run-many -t serve --projects=api,web --parallel=2
 
 # 近生产容器验证（host 端口由工具强制隔离）
 pnpm runtime:preflight:local-docker
@@ -74,6 +76,30 @@ pnpm docker:local:up
 - 密钥与镜像 tag 仍可放在 `.env.production.local`。
 - **Host 端口以 SSOT 为准**：`pnpm docker:local:up` 会覆盖与 host-dev/e2e 冲突的 `*_HOST_PORT`（例如把 `API_HOST_PORT=3000` 强制回 `53080`）。
 - 推荐把本机 env 中的 host 端口改成与 SSOT 一致，避免下次手工 `docker compose ...` 时再次踩坑。
+
+### 可选的机器级端口覆盖
+
+需要避开本机其他项目时，可在 gitignored `.env.local` 中显式启用机器级覆盖：
+
+```dotenv
+LOCAL_DOCKER_MACHINE_PORTS=true
+LOCAL_DOCKER_SHARE_DEV_SECRETS=true
+API_HOST_PORT=12136
+WEB_HOST_PORT=12137
+AI_SERVICE_HOST_PORT=12138
+POWERSYNC_HOST_PORT=12139
+POSTGRES_HOST_PORT=12140
+REDIS_HOST_PORT=12141
+```
+
+`pnpm docker:local:*` 会校验覆盖端口有效、互不重复且不占用其他 runtime lane
+的保留端口。未设置 `LOCAL_DOCKER_MACHINE_PORTS=true` 时仍严格使用共享 SSOT，
+因此个人端口不会影响其他开发者。
+
+需要在 Docker 服务与宿主 dev 服务之间逐个切换时，可同时设置
+`LOCAL_DOCKER_SHARE_DEV_SECRETS=true`。本地 Docker 的 API 与 AI Service 将采用
+`.env.development` 中的服务签名/JWT 开发密钥，使宿主 API 与剩余 Docker 服务
+保持相同的本地信任边界。该开关只适用于本机开发，不能用于生产部署。
 
 ## 排障
 

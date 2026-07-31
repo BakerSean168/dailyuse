@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-07-29T00:00:00
+updated: 2026-07-31T00:00:00
 ---
 
 # Active Plans
@@ -18,10 +18,11 @@ updated: 2026-07-29T00:00:00
 | [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md) | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称 |
 | [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式 |
 
-## 本轮已归档（2026-07-29）
+## 本轮已归档（2026-07-31）
 
 | 计划 | 结果 |
 | ---- | ---- |
+| [本机 Docker 核心产品审查与优化](../archive/2026-07-29-local-docker-core-product-optimization.md) | Phase A–E 与第 10 节全通过；Docker PM journey 7/7、Electron 壳层 8/8、最终 validation pass |
 | [MemoFlow 产品身份迁移](../archive/2026-07-29-memoflow-identity-migration.md) | 仓库、源码、部署与文档标识统一；identity audit 已纳入治理门禁 |
 | [事务邮件通用 SMTP](../archive/2026-07-28-transactional-email-smtp.md) | Phase A–D 实施完成；默认 console；指南见 `docs/guides/development/transactional-email-smtp.md` |
 | [Docker Web PM 旅程 findings](../archive/2026-07-27-docker-web-pm-journey-findings.md) | 旅程记录；i18n/熔断/取码/SMTP 修复已入代码 |

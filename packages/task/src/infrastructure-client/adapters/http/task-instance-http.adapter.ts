@@ -66,6 +66,10 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     return this.httpClient.post(`${this.baseUrl}/${id}/complete`, request);
   }
 
+  async uncompleteTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/uncomplete`);
+  }
+
   async skipTaskInstance(
     id: string,
     request?: SkipTaskInstanceReq,

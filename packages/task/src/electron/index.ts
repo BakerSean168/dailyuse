@@ -267,6 +267,11 @@ export function createTaskElectronModule(
           ),
         ),
       );
+      ipcMain.handle(TaskChannels.INSTANCE_UNCOMPLETE, (_, payload) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          instanceController.uncompleteInstance(payload?.id ?? payload, requestContext),
+        ),
+      );
       ipcMain.handle(TaskChannels.INSTANCE_SKIP, (_, payload) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           instanceController.skipInstance(
@@ -359,5 +364,4 @@ export {
   createTaskPowerSyncScheduleExecutionSource,
   createTaskPowerSyncScheduleProjectionSource,
 } from '../server/infrastructure';
-
 

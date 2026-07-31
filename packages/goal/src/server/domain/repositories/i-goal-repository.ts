@@ -63,6 +63,9 @@ export interface IGoalRepository {
     },
   ): Promise<Goal[]>;
 
+  /** Loads the owning goal aggregate for a key result within one identity. */
+  findByKeyResultIdForIdentity(identityId: string, keyResultId: string): Promise<Goal | null>;
+
   /**
    * 通过文件夹 ID 查找目标
    *

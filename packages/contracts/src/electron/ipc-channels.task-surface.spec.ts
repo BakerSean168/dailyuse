@@ -14,6 +14,7 @@ describe('TaskChannels surface', () => {
   it('keeps live template/instance/dependency channels used by Task IPC adapters', () => {
     expect(TaskChannels.TEMPLATE_LIST).toBe('task:template:list');
     expect(TaskChannels.INSTANCE_LIST).toBe('task:instance:list');
+    expect(TaskChannels.INSTANCE_UNCOMPLETE).toBe('task:instance:uncomplete');
     expect(TaskChannels.DEPENDENCY_CREATE).toBe('task:dependency:create');
   });
 });

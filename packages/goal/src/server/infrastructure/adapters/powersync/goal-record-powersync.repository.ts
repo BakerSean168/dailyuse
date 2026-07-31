@@ -5,6 +5,7 @@ import { eventBus } from '@memoflow/utils/domain';
 import type { GoalPowerSyncDatabase } from './shared';
 import { toDbDateTime } from './shared';
 import { PowerSyncGoalRecordMapper } from './mappers/powersync-goal-record.mapper';
+import type { GoalRecordSourceTypeValue } from '@memoflow/contracts/goal';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -143,6 +144,20 @@ export class GoalRecordPowerSyncRepository
     return Number(row?.count ?? 0);
   }
 
+  async findBySource(
+    identityId: string,
+    sourceType: GoalRecordSourceTypeValue,
+    sourceId: string,
+  ): Promise<GoalRecord | null> {
+    const row = await this.db.getOptional<Record<string, unknown>>(
+      `SELECT * FROM goal_records
+       WHERE identity_id = ? AND source_type = ? AND source_id = ? AND deleted_at IS NULL
+       LIMIT 1`,
+      [identityId, sourceType, sourceId],
+    );
+    return row ? PowerSyncGoalRecordMapper.toDomain(row) : null;
+  }
+
   protected async persist(record: GoalRecord): Promise<void> {
     const dto = record.toServerDTO();
 
@@ -158,6 +173,8 @@ export class GoalRecordPowerSyncRepository
              identity_id = ?,
              value = ?,
              note = ?,
+             source_type = ?,
+             source_id = ?,
              recorded_at = ?,
              version = ?,
              updated_at = ?,
@@ -168,6 +185,8 @@ export class GoalRecordPowerSyncRepository
           dto.identityId,
           dto.value,
           dto.note,
+          dto.sourceType,
+          dto.sourceId,
           toDbDateTime(dto.recordedAt),
           dto.version,
           toDbDateTime(dto.updatedAt),
@@ -178,15 +197,17 @@ export class GoalRecordPowerSyncRepository
     } else {
       await this.db.execute(
         `INSERT INTO goal_records (
-           id, key_result_id, identity_id, value, note, recorded_at,
+           id, key_result_id, identity_id, value, note, source_type, source_id, recorded_at,
            version, created_at, updated_at, deleted_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           dto.id,
           dto.keyResultId,
           dto.identityId,
           dto.value,
           dto.note,
+          dto.sourceType,
+          dto.sourceId,
           toDbDateTime(dto.recordedAt),
           dto.version,
           toDbDateTime(dto.createdAt),

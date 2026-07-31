@@ -1,14 +1,15 @@
 /**
  * App Shell UI Store (UI 重构 V2)
  *
- * 承载 ChatGPT 桌面式壳的视图状态：业务面板多 Tab 集合、布局态
- * （split / focus）、侧栏与面板宽度。localStorage 持久化实现"会话恢复"
+ * 承载 ChatGPT 桌面式壳的视图状态：右侧面板 surface、业务多 Tab 集合、
+ * 布局态（split / focus）、侧栏与面板宽度。localStorage 持久化实现"会话恢复"
  * （重启后还原上次打开的 Tabs + 各自路由 + 布局偏好，V2 §11 拍板）。
  *
  * 契约（docs/UI_REDESIGN_V2_PLAN.md + 2026-07-14 壳层诊断修订）：
  * - §2.3 多 Tab：胶囊/深链落 Tab（同 module 已开则激活，否则新开）；
  *   上限 8，超限时最久未激活的 Tab 作为候选返回给 UI 提示（不自动关，避免丢状态）。
- * - §1.1 三态：A 纯 AI（无 Tab）/ B 分栏（split）/ C 专注（focus）。
+ * - 右侧面板显隐、活动 surface、左侧栏与 focus 互相独立；
+ * - Home 是右侧面板无活动业务 Tab 时的 surface，不是 BusinessTab；
  * - STATE D 独立 Settings 不属于 BusinessTab / ShellModule。
  * - KeepAlive :include 由 tabs 派生，Tab 保活编辑器脏状态。
  *
@@ -31,6 +32,9 @@ const SIDEBAR_DEFAULT = 260;
 const PANEL_PREFERRED_DEFAULT = 450;
 
 export type ShellLayout = 'split' | 'focus';
+export type PanelSurface = 'home' | 'business' | 'workflow';
+export type PanelSurfaceStatus = 'clean' | 'dirty' | 'busy';
+export type WorkflowSurfaceRequest = 'opened' | 'deferred' | 'unavailable';
 
 /**
  * 布局来源（诊断修订 §4.2）：
@@ -41,13 +45,7 @@ export type ShellLayout = 'split' | 'focus';
 export type ShellLayoutReason = 'default' | 'user' | 'viewport';
 
 /** 胶囊/深链可落地的业务模块标识。Settings 已升为独立场景，不在此列。 */
-export type ShellModule =
-  | 'goal'
-  | 'task'
-  | 'note'
-  | 'reminder'
-  | 'notification'
-  | 'schedule';
+export type ShellModule = 'goal' | 'task' | 'note' | 'reminder' | 'notification' | 'schedule';
 
 export interface BusinessTab {
   id: string;
@@ -72,6 +70,13 @@ export interface OpenTabResult {
 interface AppShellState {
   tabs: BusinessTab[];
   activeTabId: string | null;
+  rightPanelOpen: boolean;
+  panelSurface: PanelSurface;
+  returnPanelSurface: Exclude<PanelSurface, 'workflow'> | null;
+  surfaceStatus: PanelSurfaceStatus;
+  workflowAvailable: boolean;
+  workflowItemCount: number;
+  workflowAttentionCount: number;
   layout: ShellLayout;
   layoutReason: ShellLayoutReason;
   sidebarCollapsed: boolean;
@@ -109,6 +114,13 @@ export const useAppShellStore = defineStore('app-shell', {
   state: (): AppShellState => ({
     tabs: [],
     activeTabId: null,
+    rightPanelOpen: true,
+    panelSurface: 'home',
+    returnPanelSurface: null,
+    surfaceStatus: 'clean',
+    workflowAvailable: false,
+    workflowItemCount: 0,
+    workflowAttentionCount: 0,
     layout: 'split',
     layoutReason: 'default',
     sidebarCollapsed: false,
@@ -121,9 +133,9 @@ export const useAppShellStore = defineStore('app-shell', {
     activeTab(state): BusinessTab | undefined {
       return state.tabs.find((t) => t.id === state.activeTabId);
     },
-    /** 是否处于纯 AI 态（STATE A：无任何业务 Tab）。 */
+    /** 是否处于纯 AI 态：右侧面板由用户关闭，和 Tab 集合无关。 */
     isChatOnly(state): boolean {
-      return state.tabs.length === 0;
+      return !state.rightPanelOpen;
     },
     /** <KeepAlive :include> 的名单（= 全部 Tab id，LRU 已在 openTab 控量）。 */
     keepAliveInclude(state): string[] {
@@ -151,6 +163,9 @@ export const useAppShellStore = defineStore('app-shell', {
         existing.title = input.title;
         existing.lastActiveAt = now;
         this.activeTabId = existing.id;
+        this.rightPanelOpen = true;
+        this.panelSurface = 'business';
+        this.returnPanelSurface = null;
         return { tabId: existing.id, evictionCandidateId: null };
       }
 
@@ -163,6 +178,9 @@ export const useAppShellStore = defineStore('app-shell', {
       };
       this.tabs.push(tab);
       this.activeTabId = tab.id;
+      this.rightPanelOpen = true;
+      this.panelSurface = 'business';
+      this.returnPanelSurface = null;
 
       let evictionCandidateId: string | null = null;
       if (this.tabs.length > MAX_BUSINESS_TABS) {
@@ -184,6 +202,9 @@ export const useAppShellStore = defineStore('app-shell', {
       if (!tab) return;
       tab.lastActiveAt = Date.now();
       this.activeTabId = tabId;
+      this.rightPanelOpen = true;
+      this.panelSurface = 'business';
+      this.returnPanelSurface = null;
     },
 
     /**
@@ -200,6 +221,10 @@ export const useAppShellStore = defineStore('app-shell', {
 
       if (this.tabs.length === 0) {
         this.activeTabId = null;
+        this.panelSurface = 'home';
+        this.returnPanelSurface = null;
+        this.rightPanelOpen = true;
+        this.surfaceStatus = 'clean';
         this.layout = 'split';
         this.layoutReason = 'default';
         return null;
@@ -210,18 +235,87 @@ export const useAppShellStore = defineStore('app-shell', {
         if (neighbor) {
           neighbor.lastActiveAt = Date.now();
           this.activeTabId = neighbor.id;
+          this.panelSurface = 'business';
+          this.returnPanelSurface = null;
           return neighbor.route;
         }
       }
       return this.activeTab?.route ?? null;
     },
 
-    /** 关闭整个面板（面板头 ✕）：清空所有 Tab，回 STATE A。 */
+    /** 清空业务 Tab 并回到 Home；右侧面板显隐保持独立。 */
     closeAllTabs(): void {
       this.tabs = [];
       this.activeTabId = null;
+      this.panelSurface = 'home';
+      this.returnPanelSurface = null;
+      this.surfaceStatus = 'clean';
       this.layout = 'split';
       this.layoutReason = 'default';
+    },
+
+    /** 用户显式隐藏右侧面板；保留 Tab、surface、草稿和 focus 偏好。 */
+    closeRightPanel(): void {
+      this.rightPanelOpen = false;
+    },
+
+    toggleRightPanel(): void {
+      this.rightPanelOpen = !this.rightPanelOpen;
+    },
+
+    /** 显式回到右侧 Home。业务 Tab 继续保活，可稍后恢复。 */
+    showHome(): void {
+      this.rightPanelOpen = true;
+      this.panelSurface = 'home';
+      this.returnPanelSurface = null;
+      this.surfaceStatus = 'clean';
+      this.layout = 'split';
+      this.layoutReason = 'default';
+    },
+
+    setSurfaceStatus(status: PanelSurfaceStatus): void {
+      this.surfaceStatus = status;
+    },
+
+    setWorkflowAvailable(available: boolean, itemCount = 0): void {
+      this.workflowAvailable = available;
+      this.workflowItemCount = available ? Math.max(0, Math.floor(itemCount)) : 0;
+      if (available) return;
+
+      this.workflowAttentionCount = 0;
+      if (this.panelSurface === 'workflow') {
+        this.closeWorkflowSurface();
+      }
+    },
+
+    /**
+     * 工作流自动切换只允许发生在已打开且 clean 的右侧面板。
+     * 用户点击通知/工作流入口属于 explicit，可重新打开面板；业务 view 仍保活。
+     */
+    requestWorkflowSurface(intent: 'automatic' | 'explicit'): WorkflowSurfaceRequest {
+      if (!this.workflowAvailable) return 'unavailable';
+
+      if (intent === 'automatic' && (!this.rightPanelOpen || this.surfaceStatus !== 'clean')) {
+        this.workflowAttentionCount = Math.max(1, this.workflowItemCount);
+        return 'deferred';
+      }
+
+      if (this.panelSurface !== 'workflow') {
+        this.returnPanelSurface = this.panelSurface;
+      }
+      this.rightPanelOpen = true;
+      this.panelSurface = 'workflow';
+      this.workflowAttentionCount = 0;
+      return 'opened';
+    },
+
+    closeWorkflowSurface(): void {
+      const fallback = this.activeTabId ? 'business' : 'home';
+      this.panelSurface = this.returnPanelSurface ?? fallback;
+      if (this.panelSurface === 'business' && !this.activeTabId) {
+        this.panelSurface = 'home';
+      }
+      this.returnPanelSurface = null;
     },
 
     /**
@@ -234,23 +328,40 @@ export const useAppShellStore = defineStore('app-shell', {
           isBusinessModule(tab.module) &&
           // Residual 539: retired existing-note editor routes (/note/:id) no longer exist
           // Residual 885: portable boundary re-lock — strip /note tabs from persisted shell state.
-          !(tab.route === '/note' || tab.route.startsWith('/note/') || tab.route.startsWith('/note?')),
+          !(
+            tab.route === '/note' ||
+            tab.route.startsWith('/note/') ||
+            tab.route.startsWith('/note?')
+          ),
       );
-      if (next.length === this.tabs.length) return;
-      this.tabs = next;
-      if (this.activeTabId && !next.some((tab) => tab.id === this.activeTabId)) {
-        this.activeTabId = next.length > 0 ? next[next.length - 1]!.id : null;
+      if (next.length !== this.tabs.length) {
+        this.tabs = next;
+        if (this.activeTabId && !next.some((tab) => tab.id === this.activeTabId)) {
+          this.activeTabId = next.length > 0 ? next[next.length - 1]!.id : null;
+        }
+        if (next.length === 0) {
+          this.panelSurface = 'home';
+          this.layout = 'split';
+          this.layoutReason = 'default';
+        }
       }
-      if (next.length === 0) {
-        this.layout = 'split';
-        this.layoutReason = 'default';
+
+      // 工作流内容由 AI 会话恢复后重新声明，不能盲信历史 surface。
+      if (this.panelSurface === 'workflow') {
+        this.panelSurface = this.activeTabId ? 'business' : 'home';
+        this.returnPanelSurface = null;
       }
     },
 
     /** 更新某 Tab 的当前路由（Tab 内导航时由 AppShell 回写）。 */
     setTabRoute(tabId: string, route: string): void {
       const tab = this.tabs.find((t) => t.id === tabId);
-      if (tab) tab.route = route;
+      if (tab) {
+        tab.route = route;
+        this.rightPanelOpen = true;
+        this.panelSurface = 'business';
+        this.returnPanelSurface = null;
+      }
     },
 
     setLayout(layout: ShellLayout, reason: ShellLayoutReason = 'default'): void {
@@ -296,15 +407,17 @@ export const useAppShellStore = defineStore('app-shell', {
         preferredPanelWidth: this.panelWidth,
       }).panelWidth;
     },
-
   },
 
   persist: {
     pick: [
       'tabs',
       'activeTabId',
+      'rightPanelOpen',
+      'panelSurface',
       'layout',
       'layoutReason',
+      'sidebarCollapsed',
       'sidebarWidth',
       'panelWidth',
     ] as string[],

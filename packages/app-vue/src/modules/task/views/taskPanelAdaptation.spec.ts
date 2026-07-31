@@ -13,7 +13,8 @@ const gridSource = readFileSync(
 
 describe('Task single-page architecture', () => {
   it('keeps one primary action and does not branch business capabilities by panel tier', () => {
-    expect(managementSource).toContain('data-primary-action="create-task-template"');
+    expect(managementSource).toContain('data-primary-action="quick-task"');
+    expect(managementSource).not.toContain('data-primary-action="create-task-template"');
     expect(managementSource).not.toContain('usePanelWidth');
     expect(managementSource).not.toContain('isNarrow');
     expect(managementSource).not.toContain('task-graph-narrow-hint');

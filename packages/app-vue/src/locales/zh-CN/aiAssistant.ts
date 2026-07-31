@@ -12,6 +12,13 @@ export default {
     "subtitle": "像 Gemini 或 GPT 一样，把会话、模型选择和输入区固定在同一工作区里。",
     "welcomeTitle": "今天想推进哪件事？",
     "welcomeDescription": "选一张快捷指令卡开始，或直接在下方输入。有会话消息时这里会切换为消息时间线。",
+    "noModel": {
+      "title": "先从目标和任务开始",
+      "description": "无需配置模型也能使用基础功能；需要对话式规划时再接入 AI。",
+      "configure": "配置 AI",
+      "createGoal": "创建第一个目标",
+      "quickTask": "添加今日任务"
+    },
     "emptyTitle": "从一个问题开始",
     "emptyDescription": "选择提供商和模型，然后直接在这里持续对话。历史会话会保留在左侧，方便随时继续。",
     "chatUnavailable": "当前 AI 运行模式不支持聊天能力，请先检查 AI 服务配置。",

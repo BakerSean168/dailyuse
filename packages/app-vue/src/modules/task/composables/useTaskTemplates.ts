@@ -136,7 +136,10 @@ export function useTaskTemplates() {
     }
   }
 
-  async function createTemplate(req: CreateTaskTemplateReq) {
+  async function createTemplate(
+    req: CreateTaskTemplateReq,
+    feedbackIntent: 'plan' | 'quick' = 'plan',
+  ) {
     savingId.value = 'new';
     store.setError(null);
     try {
@@ -147,13 +150,16 @@ export function useTaskTemplates() {
       if (result.ok) {
         const dto = result.data.template.toDTO();
         store.addTemplate(dto);
-        toast.success(
-          t(
-            result.data.todayInstanceCreated
+        const feedbackKey =
+          feedbackIntent === 'quick'
+            ? result.data.todayInstanceCreated
+              ? 'task.error.createQuickTaskWithTodayInstanceSuccess'
+              : 'task.error.createQuickTaskWithoutTodayInstanceSuccess'
+            : result.data.todayInstanceCreated
               ? 'task.error.createTemplateWithTodayInstanceSuccess'
-              : 'task.error.createTemplateWithoutTodayInstanceSuccess',
-            { count: result.data.instanceCount },
-          ),
+              : 'task.error.createTemplateWithoutTodayInstanceSuccess';
+        toast.success(
+          t(feedbackKey, { count: result.data.instanceCount }),
         );
         return {
           template: dto,

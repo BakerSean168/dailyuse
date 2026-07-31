@@ -11,6 +11,7 @@ import { GoalRecord } from '../../../domain';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import { PrismaGoalRecordMapper } from './mappers/prisma-goal-record-mapper';
+import type { GoalRecordSourceTypeValue } from '@memoflow/contracts/goal';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -137,6 +138,17 @@ export class GoalRecordPrismaRepository
     });
   }
 
+  async findBySource(
+    identityId: string,
+    sourceType: GoalRecordSourceTypeValue,
+    sourceId: string,
+  ): Promise<GoalRecord | null> {
+    const row = await this.prisma.goalRecord.findFirst({
+      where: { identityId, sourceType, sourceId, deletedAt: null },
+    });
+    return row ? this.mapToEntity(row) : null;
+  }
+
   /**
    * Protected persistence method - called by base class before event publishing
    */
@@ -151,6 +163,8 @@ export class GoalRecordPrismaRepository
         identityId: dto.identityId as string,
         value: dto.value,
         note: dto.note,
+        sourceType: dto.sourceType,
+        sourceId: dto.sourceId,
         recordedAt: new Date(dto.recordedAt),
         version: dto.version,
         createdAt: new Date(dto.createdAt),
@@ -160,6 +174,8 @@ export class GoalRecordPrismaRepository
       update: {
         value: dto.value,
         note: dto.note,
+        sourceType: dto.sourceType,
+        sourceId: dto.sourceId,
         recordedAt: new Date(dto.recordedAt),
         version: dto.version,
         updatedAt: new Date(dto.updatedAt),

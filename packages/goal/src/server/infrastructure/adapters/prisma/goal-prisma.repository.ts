@@ -160,6 +160,21 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     });
   }
 
+  async findByKeyResultIdForIdentity(
+    identityId: string,
+    keyResultId: string,
+  ): Promise<Goal | null> {
+    const row = await this.prisma.goal.findFirst({
+      where: {
+        identityId,
+        keyResults: { some: { id: keyResultId, deletedAt: null } },
+      },
+      include: GOAL_INCLUDE_ALL,
+    });
+    if (!row) return null;
+    return Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row)));
+  }
+
   async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
     const rows = await this.prisma.goal.findMany({
       where: { identityId, folderId, deletedAt: null, archivedAt: null },

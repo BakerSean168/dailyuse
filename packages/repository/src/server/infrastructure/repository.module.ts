@@ -6,7 +6,7 @@
  * Folder / Resource / Bookmark CRUD is no longer assembled here.
  */
 
-import { fail, type Result } from '@memoflow/contracts/result';
+import { fail, ok, type Result } from '@memoflow/contracts/result';
 import type { RepositoryApplicationPort } from '../application';
 import { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
 import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
@@ -117,7 +117,7 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
     listKnowledgeNoteProjections: async (ctx, request) =>
       projectionService
         ? projectionService.listNotes(ctx.identityId, request)
-        : unavailable(),
+        : Promise.resolve(ok({ notes: [] })),
     getKnowledgeNoteProjection: async (ctx, projectionId) =>
       projectionService
         ? projectionService.getNote(ctx.identityId, projectionId)

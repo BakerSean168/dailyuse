@@ -61,6 +61,11 @@ export interface TaskTemplateState {
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;
+  dueInstanceCount: number;
+  completedDueInstanceCount: number;
+  completionWindowDays: 30;
+  futurePendingInstanceCount: number;
+  singleInstanceStatus: TaskTemplateClientDTO['singleInstanceStatus'];
   completionRate: number;
   history?: unknown[];
   instances?: unknown[];
@@ -217,6 +222,26 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.pendingInstanceCount;
   }
 
+  get dueInstanceCount(): number {
+    return this._props.dueInstanceCount;
+  }
+
+  get completedDueInstanceCount(): number {
+    return this._props.completedDueInstanceCount;
+  }
+
+  get completionWindowDays(): 30 {
+    return this._props.completionWindowDays;
+  }
+
+  get futurePendingInstanceCount(): number {
+    return this._props.futurePendingInstanceCount;
+  }
+
+  get singleInstanceStatus(): TaskTemplateClientDTO['singleInstanceStatus'] {
+    return this._props.singleInstanceStatus;
+  }
+
   get completionRate(): number {
     return this._props.completionRate;
   }
@@ -288,6 +313,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       instanceCount: this._props.instanceCount,
       completedInstanceCount: this._props.completedInstanceCount,
       pendingInstanceCount: this._props.pendingInstanceCount,
+      dueInstanceCount: this._props.dueInstanceCount,
+      completedDueInstanceCount: this._props.completedDueInstanceCount,
+      completionWindowDays: this._props.completionWindowDays,
+      futurePendingInstanceCount: this._props.futurePendingInstanceCount,
+      singleInstanceStatus: this._props.singleInstanceStatus,
       completionRate: this._props.completionRate,
       history: this._props.history ? [...this._props.history] : undefined,
       instances: this._props.instances ? [...this._props.instances] : undefined,

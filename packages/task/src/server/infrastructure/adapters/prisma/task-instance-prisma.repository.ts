@@ -207,16 +207,45 @@ export class TaskInstancePrismaRepository
   async getTemplateStats(
     templateIds: string[],
     identityId: string,
+    asOf: number = Date.now(),
   ): Promise<Record<string, TaskTemplateInstanceStats>> {
     if (templateIds.length === 0) {
       return {};
     }
 
+    const completionWindowDays = 30 as const;
+    const windowStart = new Date(asOf - completionWindowDays * 24 * 60 * 60 * 1000);
+    const windowEnd = new Date(asOf);
     const grouped = await this.db.taskInstance.groupBy({
       by: ['templateId', 'status'],
       where: {
         templateId: { in: templateIds },
         identityId,
+        deletedAt: null,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+    const dueGrouped = await this.db.taskInstance.groupBy({
+      by: ['templateId', 'status'],
+      where: {
+        templateId: { in: templateIds },
+        identityId,
+        instanceDate: { gte: windowStart, lte: windowEnd },
+        deletedAt: null,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+    const futurePendingGrouped = await this.db.taskInstance.groupBy({
+      by: ['templateId'],
+      where: {
+        templateId: { in: templateIds },
+        identityId,
+        status: 'Pending',
+        instanceDate: { gt: windowEnd },
         deletedAt: null,
       },
       _count: {
@@ -232,6 +261,11 @@ export class TaskInstancePrismaRepository
         instanceCount: 0,
         completedInstanceCount: 0,
         pendingInstanceCount: 0,
+        dueInstanceCount: 0,
+        completedDueInstanceCount: 0,
+        completionWindowDays,
+        futurePendingInstanceCount: 0,
+        singleInstanceStatus: null,
         completionRate: 0,
       };
     }
@@ -254,10 +288,36 @@ export class TaskInstancePrismaRepository
       }
     }
 
+    for (const row of dueGrouped) {
+      const stat = stats[row.templateId];
+      if (!stat) {
+        continue;
+      }
+
+      const count = row._count._all;
+      stat.dueInstanceCount += count;
+      if (row.status === 'Completed') {
+        stat.completedDueInstanceCount += count;
+      }
+    }
+
+    for (const row of futurePendingGrouped) {
+      const stat = stats[row.templateId];
+      if (stat) {
+        stat.futurePendingInstanceCount = row._count._all;
+      }
+    }
+
     for (const stat of Object.values(stats)) {
+      if (stat.instanceCount === 1) {
+        stat.singleInstanceStatus =
+          (grouped.find(
+            (row) => row.templateId === stat.templateId && row._count._all === 1,
+          )?.status as TaskInstanceStatus | undefined) ?? null;
+      }
       stat.completionRate =
-        stat.instanceCount > 0
-          ? Math.round((stat.completedInstanceCount / stat.instanceCount) * 100)
+        stat.dueInstanceCount > 0
+          ? Math.round((stat.completedDueInstanceCount / stat.dueInstanceCount) * 100)
           : 0;
     }
 
