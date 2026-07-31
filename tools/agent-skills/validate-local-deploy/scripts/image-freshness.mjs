@@ -5,7 +5,11 @@
 
 import { spawnSync } from 'node:child_process';
 
-const DEFAULT_IMAGES = ['memoflow-api:local', 'memoflow-web:local'];
+const DEFAULT_IMAGES = [
+  'memoflow-api:local',
+  'memoflow-web:local',
+  'memoflow-ai-service:local',
+];
 
 /**
  * @param {string} workspace
