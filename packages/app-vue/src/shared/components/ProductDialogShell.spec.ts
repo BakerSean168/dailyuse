@@ -1,0 +1,80 @@
+import { defineComponent, ref } from 'vue';
+import { flushPromises, mount } from '@vue/test-utils';
+import { describe, expect, it } from 'vitest';
+import { Dialog as AppDialog } from '@memoflow/ui-vue-shadcn';
+import ProductDialogShell from './ProductDialogShell.vue';
+
+describe('ProductDialogShell', () => {
+  it('moves initial focus to the declared form control', async () => {
+    const Host = defineComponent({
+      components: { AppDialog, ProductDialogShell },
+      template: `
+        <AppDialog :open="true">
+          <ProductDialogShell
+            :open="true"
+            test-id="focus-test-dialog"
+            initial-focus-selector="[data-testid='initial-field']"
+          >
+            <template #title>Test form</template>
+            <template #description>Focus contract</template>
+            <button type="button">Focusable before the field</button>
+            <input data-testid="initial-field" />
+            <template #footer><button type="button">Save</button></template>
+          </ProductDialogShell>
+        </AppDialog>
+      `,
+    });
+
+    const wrapper = mount(Host, { attachTo: document.body });
+    await flushPromises();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    expect(document.activeElement).toBe(
+      document.querySelector<HTMLElement>('[data-testid="initial-field"]'),
+    );
+
+    wrapper.unmount();
+  });
+
+  it('focuses the declared control when the dialog opens even without an auto-focus event', async () => {
+    const Host = defineComponent({
+      components: { AppDialog, ProductDialogShell },
+      setup() {
+        return { shellOpen: ref(false) };
+      },
+      template: `
+        <AppDialog :open="true">
+          <ProductDialogShell
+            :open="shellOpen"
+            test-id="open-state-focus-test-dialog"
+            initial-focus-selector="[data-testid='open-state-initial-field']"
+          >
+            <template #title>Test form</template>
+            <template #description>Open state focus contract</template>
+            <button data-testid="focus-away" type="button">Focus away</button>
+            <input data-testid="open-state-initial-field" />
+            <template #footer><button type="button">Save</button></template>
+          </ProductDialogShell>
+        </AppDialog>
+      `,
+    });
+
+    const wrapper = mount(Host, { attachTo: document.body });
+    await flushPromises();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const focusAway = document.querySelector<HTMLElement>('[data-testid="focus-away"]')!;
+    focusAway.focus();
+    expect(document.activeElement).toBe(focusAway);
+
+    wrapper.vm.shellOpen = true;
+    await flushPromises();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    expect(document.activeElement).toBe(
+      document.querySelector<HTMLElement>('[data-testid="open-state-initial-field"]'),
+    );
+
+    wrapper.unmount();
+  });
+});

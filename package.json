@@ -131,6 +131,7 @@
     "@memoflow/time": "workspace:*"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@electron/rebuild": "4.2.0",
     "@nx/eslint": "23.0.2",
     "@nx/eslint-plugin": "23.0.2",

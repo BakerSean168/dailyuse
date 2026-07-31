@@ -1,20 +1,21 @@
 <template>
   <Dialog v-model:open="open">
-    <DialogContent
-      class="sm:max-w-[680px] max-h-[90vh] flex flex-col gap-0 p-0"
-      data-testid="goal-dialog"
+    <ProductDialogShell
+      :open="open"
+      test-id="goal-dialog"
+      size="md"
+      body-class="flex overflow-hidden p-0"
+      initial-focus-selector="[data-testid='goal-name-input']"
     >
-      <DialogHeader class="px-6 pt-6 pb-4">
-        <DialogTitle class="text-xl font-semibold tracking-tight">
-          {{ isEditMode ? t('goal.dialog.titleEdit') : t('goal.dialog.titleCreate') }}
-        </DialogTitle>
-        <DialogDescription class="text-sm text-muted-foreground">
-          {{ isEditMode ? t('goal.dialog.descEdit') : t('goal.dialog.descCreate') }}
-        </DialogDescription>
-      </DialogHeader>
+      <template #title>
+        {{ isEditMode ? t('goal.dialog.titleEdit') : t('goal.dialog.titleCreate') }}
+      </template>
+      <template #description>
+        {{ isEditMode ? t('goal.dialog.descEdit') : t('goal.dialog.descCreate') }}
+      </template>
 
       <Tabs v-model="activeTab" class="flex flex-col flex-1 min-h-0">
-        <TabsList class="mx-6 mb-0 w-auto justify-start shrink-0">
+        <TabsList class="mx-6 mb-0 w-auto shrink-0 justify-start text-foreground/75">
           <TabsTrigger value="basic" data-testid="goal-dialog-basic-tab">{{
             t('goal.dialog.tabBasicInfo')
           }}</TabsTrigger>
@@ -58,9 +59,11 @@
 
             <div class="grid grid-cols-2 gap-4">
               <div class="grid gap-2">
-                <Label class="font-medium">{{ t('goal.dialog.category') }}</Label>
+                <Label for="goal-category" class="font-medium">{{
+                  t('goal.dialog.category')
+                }}</Label>
                 <Select v-model="form.category">
-                  <SelectTrigger>
+                  <SelectTrigger id="goal-category" :aria-label="t('goal.dialog.category')">
                     <SelectValue :placeholder="t('goal.dialog.categoryPlaceholder')" />
                   </SelectTrigger>
                   <SelectContent>
@@ -84,9 +87,11 @@
               </div>
 
               <div class="grid gap-2">
-                <Label class="font-medium">{{ t('goal.dialog.importance') }}</Label>
+                <Label for="goal-importance" class="font-medium">{{
+                  t('goal.dialog.importance')
+                }}</Label>
                 <Select v-model="form.importance">
-                  <SelectTrigger>
+                  <SelectTrigger id="goal-importance" :aria-label="t('goal.dialog.importance')">
                     <SelectValue :placeholder="t('goal.dialog.importancePlaceholder')" />
                   </SelectTrigger>
                   <SelectContent>
@@ -105,57 +110,68 @@
             <!-- ========== TIMELINE ========== -->
 
             <div class="grid gap-2">
-              <Label class="font-medium">{{ t('goal.dialog.timeline') }}</Label>
               <div class="grid grid-cols-2 gap-4">
                 <!-- Start Date -->
-                <Popover>
-                  <PopoverTrigger as-child>
-                    <Button
-                      variant="outline"
-                      class="h-10 w-full justify-start text-left font-normal"
-                      :class="{ 'text-muted-foreground': !form.startDate }"
-                    >
-                      <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{
-                        form.startDate
-                          ? formatProductDateTime(form.startDate)
-                          : t('goal.dialog.startDate')
-                      }}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      :selected="startDateValue"
-                      @update:model-value="handleStartDateSelect"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div class="grid gap-2">
+                  <Label for="goal-start-date">{{ t('goal.dialog.startDate') }}</Label>
+                  <Popover>
+                    <PopoverTrigger as-child>
+                      <Button
+                        id="goal-start-date"
+                        data-testid="goal-start-date"
+                        :aria-label="t('goal.dialog.startDate')"
+                        variant="outline"
+                        class="h-10 w-full justify-start text-left font-normal"
+                        :class="{ 'text-muted-foreground': !form.startDate }"
+                      >
+                        <CalendarIcon class="mr-2 h-4 w-4" />
+                        {{
+                          form.startDate
+                            ? formatProductDateTime(form.startDate)
+                            : t('goal.dialog.startDate')
+                        }}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        :selected="startDateValue"
+                        @update:model-value="handleStartDateSelect"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
                 <!-- Target Date -->
-                <Popover>
-                  <PopoverTrigger as-child>
-                    <Button
-                      variant="outline"
-                      class="h-10 w-full justify-start text-left font-normal"
-                      :class="{ 'text-muted-foreground': !form.targetDate }"
-                    >
-                      <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{
-                        form.targetDate
-                          ? formatProductDateTime(form.targetDate)
-                          : t('goal.dialog.targetDate')
-                      }}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      :selected="targetDateValue"
-                      @update:model-value="handleTargetDateSelect"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div class="grid gap-2">
+                  <Label for="goal-target-date">{{ t('goal.dialog.targetDate') }}</Label>
+                  <Popover>
+                    <PopoverTrigger as-child>
+                      <Button
+                        id="goal-target-date"
+                        data-testid="goal-target-date"
+                        :aria-label="t('goal.dialog.targetDate')"
+                        variant="outline"
+                        class="h-10 w-full justify-start text-left font-normal"
+                        :class="{ 'text-muted-foreground': !form.targetDate }"
+                      >
+                        <CalendarIcon class="mr-2 h-4 w-4" />
+                        {{
+                          form.targetDate
+                            ? formatProductDateTime(form.targetDate)
+                            : t('goal.dialog.targetDate')
+                        }}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        :selected="targetDateValue"
+                        @update:model-value="handleTargetDateSelect"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
 
@@ -174,8 +190,10 @@
               </CollapsibleTrigger>
               <CollapsibleContent class="mt-3 space-y-4">
                 <div class="flex items-center gap-2">
-                  <Switch v-model:checked="reminderEnabled" />
-                  <Label class="text-sm font-medium">{{ t('goal.dialog.enableReminder') }}</Label>
+                  <Switch id="goal-reminder-enabled" v-model:checked="reminderEnabled" />
+                  <Label for="goal-reminder-enabled" class="text-sm font-medium">{{
+                    t('goal.dialog.enableReminder')
+                  }}</Label>
                 </div>
 
                 <div v-if="reminderEnabled" class="space-y-3">
@@ -185,11 +203,14 @@
                     class="grid grid-cols-[1fr_120px_40px] gap-3 items-end rounded-lg border p-3"
                   >
                     <div class="grid gap-2">
-                      <Label class="text-sm font-medium">
+                      <Label :for="`goal-reminder-type-${index}`" class="text-sm font-medium">
                         {{ t('goal.dialog.reminderType') }}
                       </Label>
                       <Select v-model="trigger.type">
-                        <SelectTrigger>
+                        <SelectTrigger
+                          :id="`goal-reminder-type-${index}`"
+                          :aria-label="t('goal.dialog.reminderType')"
+                        >
                           <SelectValue :placeholder="t('goal.dialog.selectReminderType')" />
                         </SelectTrigger>
                         <SelectContent>
@@ -204,14 +225,19 @@
                     </div>
 
                     <div class="grid gap-2">
-                      <Label class="text-sm font-medium">
+                      <Label :for="`goal-reminder-value-${index}`" class="text-sm font-medium">
                         {{
                           trigger.type === ReminderTriggerType.RemainingDays
                             ? t('goal.dialog.triggerValueDays')
                             : t('goal.dialog.triggerValuePercent')
                         }}
                       </Label>
-                      <Input v-model.number="trigger.value" type="number" min="0" />
+                      <Input
+                        :id="`goal-reminder-value-${index}`"
+                        v-model.number="trigger.value"
+                        type="number"
+                        min="0"
+                      />
                     </div>
 
                     <Button
@@ -313,9 +339,11 @@
 
                 <!-- Folder -->
                 <div class="grid gap-2">
-                  <Label class="text-sm font-medium">{{ t('goal.dialog.folder') }}</Label>
+                  <Label for="goal-folder" class="text-sm font-medium">{{
+                    t('goal.dialog.folder')
+                  }}</Label>
                   <Select v-model="form.folderId">
-                    <SelectTrigger>
+                    <SelectTrigger id="goal-folder" :aria-label="t('goal.dialog.folder')">
                       <SelectValue :placeholder="t('goal.dialog.folderPlaceholder')" />
                     </SelectTrigger>
                     <SelectContent>
@@ -329,9 +357,11 @@
 
                 <!-- Parent Goal -->
                 <div class="grid gap-2">
-                  <Label class="text-sm font-medium">{{ t('goal.dialog.parentGoal') }}</Label>
+                  <Label for="goal-parent" class="text-sm font-medium">{{
+                    t('goal.dialog.parentGoal')
+                  }}</Label>
                   <Select v-model="form.parentGoalId">
-                    <SelectTrigger>
+                    <SelectTrigger id="goal-parent" :aria-label="t('goal.dialog.parentGoal')">
                       <SelectValue :placeholder="t('goal.dialog.parentGoalPlaceholder')" />
                     </SelectTrigger>
                     <SelectContent>
@@ -366,8 +396,8 @@
                       {{ kr.title || t('goal.dialog.krTitle') }}
                     </p>
                     <p class="text-xs text-muted-foreground mt-1">
-                      {{ kr.valueType }} · {{ kr.currentValue }} / {{ kr.targetValue }} ·
-                      {{ t('goal.dialog.krWeight') }} {{ kr.weight }}
+                      {{ keyResultValueTypeLabel(kr.valueType) }} · {{ kr.currentValue }} /
+                      {{ kr.targetValue }} · {{ keyResultImpactLabel(kr.weight) }}
                     </p>
                   </div>
                   <Button
@@ -392,15 +422,84 @@
               </div>
             </div>
 
-            <!-- Empty state -->
-            <div
+            <section
               v-else
-              class="flex flex-col items-center justify-center rounded-lg border border-dashed py-10 text-center text-muted-foreground"
+              class="grid gap-4 rounded-md border border-dashed p-4"
+              data-testid="inline-kr-form"
             >
-              <Target class="mb-2 h-8 w-8 opacity-40" />
-              <p class="text-sm font-medium">{{ t('goal.dialog.krEmptyTitle') }}</p>
-              <p class="text-xs mt-1">{{ t('goal.dialog.krEmptyDesc') }}</p>
-            </div>
+              <div>
+                <h3 class="text-sm font-semibold">{{ t('goal.dialog.inlineKrTitle') }}</h3>
+                <p class="mt-1 text-xs text-muted-foreground">
+                  {{ t('goal.dialog.inlineKrDescription') }}
+                </p>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-2 sm:col-span-2">
+                  <Label for="inline-kr-title">{{ t('goal.dialog.krTitle') }}</Label>
+                  <Input
+                    id="inline-kr-title"
+                    v-model="inlineKr.title"
+                    data-testid="inline-kr-title"
+                    :placeholder="t('goal.dialog.inlineKrPlaceholder')"
+                    @keydown.enter.prevent="addInlineKr"
+                  />
+                </div>
+                <div class="grid gap-2">
+                  <Label for="inline-kr-type">{{ t('goal.dialog.krValueType') }}</Label>
+                  <Select v-model="inlineKr.valueType">
+                    <SelectTrigger id="inline-kr-type" :aria-label="t('goal.dialog.krValueType')">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem
+                        v-for="option in keyResultValueTypeOptions"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div class="grid gap-2">
+                  <Label for="inline-kr-target">{{ t('goal.dialog.krTargetValue') }}</Label>
+                  <Input
+                    id="inline-kr-target"
+                    v-model.number="inlineKr.targetValue"
+                    type="number"
+                    min="1"
+                  />
+                </div>
+              </div>
+              <fieldset class="grid gap-2">
+                <legend class="text-sm font-medium">{{ t('goal.krDialog.impactLabel') }}</legend>
+                <div
+                  class="grid grid-cols-3 gap-2"
+                  role="group"
+                  :aria-label="t('goal.krDialog.impactLabel')"
+                >
+                  <Button
+                    v-for="preset in keyResultImpactPresets"
+                    :key="preset.value"
+                    type="button"
+                    :variant="inlineKr.weight === preset.value ? 'default' : 'outline'"
+                    :aria-pressed="inlineKr.weight === preset.value"
+                    @click="inlineKr.weight = preset.value"
+                  >
+                    {{ preset.label }}
+                  </Button>
+                </div>
+              </fieldset>
+              <Button
+                type="button"
+                data-testid="inline-kr-add"
+                :disabled="!inlineKr.title.trim() || inlineKr.targetValue <= 0"
+                @click="addInlineKr"
+              >
+                <Plus class="mr-2 h-4 w-4" />
+                {{ t('goal.dialog.addBasicKeyResult') }}
+              </Button>
+            </section>
 
             <!-- Add KR button -->
             <Button
@@ -416,15 +515,15 @@
         </TabsContent>
       </Tabs>
 
-      <DialogFooter class="px-6 py-4 border-t gap-2 sm:gap-0">
+      <template #footer>
         <Button variant="outline" data-testid="cancel-goal-button" @click="open = false">{{
           t('goal.dialog.cancel')
         }}</Button>
         <Button data-testid="save-goal-button" @click="handleSave" :disabled="isSaving">
           {{ isEditMode ? t('goal.dialog.saveChanges') : t('goal.dialog.createGoal') }}
         </Button>
-      </DialogFooter>
-    </DialogContent>
+      </template>
+    </ProductDialogShell>
   </Dialog>
 
   <KeyResultDialog ref="keyResultDialogRef" @save="handleSaveKr" />
@@ -436,11 +535,6 @@ import { useI18n } from 'vue-i18n';
 import { formatProductDateTime } from '../../../../shared/utils/product-time';
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
   Button,
   Switch,
   TagInput,
@@ -464,7 +558,7 @@ import {
   TabsTrigger,
   TabsContent,
 } from '@memoflow/ui-vue-shadcn';
-import { ColorPickerField } from '../../../../shared/components';
+import { ColorPickerField, ProductDialogShell } from '../../../../shared/components';
 import {
   Calendar as CalendarIcon,
   ChevronDown,
@@ -474,7 +568,6 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Target,
 } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 import { useGoal } from '../../composables/useGoal';
@@ -489,7 +582,11 @@ import type {
   UpdateKeyResultReq,
   ReminderTriggerType as GoalReminderTriggerType,
 } from '@memoflow/contracts/goal';
-import { ReminderTriggerType } from '@memoflow/contracts/goal';
+import {
+  KeyResultCalculationMethod,
+  KeyResultValueType,
+  ReminderTriggerType,
+} from '@memoflow/contracts/goal';
 import type { GoalFolderId, GoalId } from '@memoflow/contracts/primitives';
 
 // ── Props & Emits ──────────────────────────────────────────────────────
@@ -542,6 +639,31 @@ const importanceLevelOptions = computed(() => [
   { value: 'Trivial', label: t('goal.dialog.importanceTrivial') },
 ]);
 
+const keyResultValueTypeOptions = computed(() => [
+  { value: KeyResultValueType.Incremental, label: t('goal.krDialog.valueTypeIncremental') },
+  { value: KeyResultValueType.Percentage, label: t('goal.krDialog.valueTypePercentage') },
+  { value: KeyResultValueType.Binary, label: t('goal.krDialog.valueTypeBinary') },
+  { value: KeyResultValueType.Absolute, label: t('goal.krDialog.valueTypeAbsolute') },
+]);
+
+const keyResultImpactPresets = computed(() => [
+  { value: 1, label: t('goal.krDialog.impactLow') },
+  { value: 3, label: t('goal.krDialog.impactMedium') },
+  { value: 5, label: t('goal.krDialog.impactHigh') },
+]);
+
+function keyResultValueTypeLabel(valueType: string): string {
+  return (
+    keyResultValueTypeOptions.value.find((option) => option.value === valueType)?.label ?? valueType
+  );
+}
+
+function keyResultImpactLabel(weight: number): string {
+  if (weight <= 2) return t('goal.krDialog.impactLow');
+  if (weight >= 4) return t('goal.krDialog.impactHigh');
+  return t('goal.krDialog.impactMedium');
+}
+
 // ── Tab State ──────────────────────────────────────────────────────────
 
 const activeTab = ref<'basic' | 'keyresults'>('basic');
@@ -570,6 +692,38 @@ interface LocalKr {
 let _localIdCounter = 0;
 
 const krList = ref<LocalKr[]>([]);
+
+const createInlineKr = () => ({
+  title: '',
+  valueType: KeyResultValueType.Incremental as string,
+  weight: 3,
+  targetValue: 100,
+});
+
+const inlineKr = reactive(createInlineKr());
+
+function resetInlineKr(): void {
+  Object.assign(inlineKr, createInlineKr());
+}
+
+function addInlineKr(): void {
+  if (!inlineKr.title.trim() || inlineKr.targetValue <= 0) return;
+
+  krList.value.push({
+    _existingId: undefined,
+    _localId: _localIdCounter++,
+    _markedForDelete: false,
+    title: inlineKr.title.trim(),
+    valueType: inlineKr.valueType,
+    calculationMethod: KeyResultCalculationMethod.Sum,
+    weight: inlineKr.weight,
+    initialValue: 0,
+    targetValue: inlineKr.valueType === KeyResultValueType.Binary ? 1 : inlineKr.targetValue,
+    currentValue: 0,
+    unit: '',
+  });
+  resetInlineKr();
+}
 
 function krFromDTO(dto: KeyResultClientDTO): LocalKr {
   return {
@@ -728,6 +882,7 @@ function serializeDraft(): string {
     reminderEnabled: reminderEnabled.value,
     reminderTriggers: reminderTriggers.value,
     keyResults: krList.value.map(({ _localId, ...keyResult }) => keyResult),
+    inlineKeyResult: inlineKr,
   });
 }
 
@@ -820,6 +975,7 @@ function resetForm() {
   showOrganization.value = false;
   activeTab.value = 'basic';
   krList.value = [];
+  resetInlineKr();
 }
 
 function prefillFromGoal(goal: GoalClientDTO) {
@@ -911,7 +1067,7 @@ watch(
 );
 
 watch(
-  () => [form, reminderEnabled.value, reminderTriggers.value, krList.value],
+  () => [form, reminderEnabled.value, reminderTriggers.value, krList.value, inlineKr],
   () => {
     if (!open.value || draftBaseline.value === null) return;
     emit('dirty-change', serializeDraft() !== draftBaseline.value);

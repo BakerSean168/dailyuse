@@ -1,16 +1,17 @@
 <template>
   <Dialog :open="modelValue" @update:open="setVisible">
-    <DialogContent class="max-w-[420px] p-0" data-testid="quick-task-dialog">
-      <form @submit.prevent="handleSave">
-        <DialogHeader class="p-5 pb-3">
-          <DialogTitle class="flex items-center gap-2 text-base">
-            <Zap class="h-5 w-5 text-warning" />
-            {{ t('task.quickTask.title') }}
-          </DialogTitle>
-          <DialogDescription>{{ t('task.quickTask.subtitle') }}</DialogDescription>
-        </DialogHeader>
+    <ProductDialogShell
+      :open="modelValue"
+      test-id="quick-task-dialog"
+      size="sm"
+      initial-focus-selector="[data-testid='quick-task-title-input']"
+    >
+      <template #icon><Zap class="mt-0.5 h-5 w-5 text-warning" /></template>
+      <template #title>{{ t('task.quickTask.title') }}</template>
+      <template #description>{{ t('task.quickTask.subtitle') }}</template>
 
-        <div class="space-y-2 px-5 py-3">
+      <form id="quick-task-form" @submit.prevent="handleSave">
+        <div class="space-y-2">
           <Label for="quick-task-title">{{ t('task.quickTask.name') }}</Label>
           <Input
             id="quick-task-title"
@@ -19,26 +20,26 @@
             :placeholder="t('task.quickTask.placeholder')"
             :disabled="saving"
             maxlength="200"
-            autofocus
           />
           <p class="text-xs text-muted-foreground">{{ t('task.quickTask.todayAllDay') }}</p>
         </div>
-
-        <DialogFooter class="border-t p-5 pt-4">
-          <Button type="button" variant="ghost" :disabled="saving" @click="handleCancel">
-            {{ t('common.cancel') }}
-          </Button>
-          <Button
-            type="submit"
-            :disabled="title.trim().length === 0 || saving"
-            :loading="saving"
-            data-testid="quick-task-save-button"
-          >
-            {{ t('task.quickTask.create') }}
-          </Button>
-        </DialogFooter>
       </form>
-    </DialogContent>
+
+      <template #footer>
+        <Button type="button" variant="ghost" :disabled="saving" @click="handleCancel">
+          {{ t('common.cancel') }}
+        </Button>
+        <Button
+          type="submit"
+          form="quick-task-form"
+          :disabled="title.trim().length === 0 || saving"
+          :loading="saving"
+          data-testid="quick-task-save-button"
+        >
+          {{ t('task.quickTask.create') }}
+        </Button>
+      </template>
+    </ProductDialogShell>
   </Dialog>
 </template>
 
@@ -46,17 +47,8 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Zap } from '@lucide/vue';
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Label,
-} from '@memoflow/ui-vue-shadcn';
+import { Button, Dialog, Input, Label } from '@memoflow/ui-vue-shadcn';
+import { ProductDialogShell } from '../../../../shared/components';
 
 const props = withDefaults(
   defineProps<{

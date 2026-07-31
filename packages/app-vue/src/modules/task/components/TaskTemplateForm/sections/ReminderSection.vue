@@ -4,17 +4,17 @@
   使用 TaskReminderConfig.triggers 数组结构
 -->
 <template>
-  <Card class="mb-4">
-    <CardHeader class="flex flex-row items-center gap-2 pb-2">
+  <section class="space-y-4" aria-labelledby="task-reminder-heading">
+    <header class="flex items-center gap-2">
       <Bell class="h-5 w-5 text-primary" />
-      <CardTitle class="text-primary font-semibold">{{
-        t('task.reminderSection.title')
-      }}</CardTitle>
+      <h3 id="task-reminder-heading" class="text-sm font-semibold">
+        {{ t('task.reminderSection.title') }}
+      </h3>
       <!-- 验证状态指示器 -->
       <AlertTriangle v-if="!isValid" class="h-5 w-5 ml-2 text-destructive" />
       <CheckCircle v-else class="h-5 w-5 ml-2 text-success" />
-    </CardHeader>
-    <CardContent>
+    </header>
+    <div>
       <!-- 显示验证错误 -->
       <Alert v-if="errors.length > 0" variant="destructive" class="mb-4">
         <AlertDescription>
@@ -27,8 +27,12 @@
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12">
           <div class="flex items-center gap-2">
-            <Switch :checked="reminderEnabled" @update:checked="reminderEnabled = $event as boolean" />
-            <Label>{{ t('task.reminderSection.enable') }}</Label>
+            <Switch
+              id="task-reminder-enabled"
+              :checked="reminderEnabled"
+              @update:checked="reminderEnabled = $event as boolean"
+            />
+            <Label for="task-reminder-enabled">{{ t('task.reminderSection.enable') }}</Label>
           </div>
         </div>
 
@@ -40,7 +44,9 @@
               <CardContent class="pt-4">
                 <div class="grid grid-cols-12 gap-4">
                   <div class="col-span-12 md:col-span-4">
-                    <Label class="mb-2 block">{{ t('task.reminderSection.type') }}</Label>
+                    <Label :for="`task-reminder-type-${index}`" class="mb-2 block">{{
+                      t('task.reminderSection.type')
+                    }}</Label>
                     <Select
                       :model-value="trigger.type"
                       @update:model-value="
@@ -50,7 +56,10 @@
                         }
                       "
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        :id="`task-reminder-type-${index}`"
+                        :aria-label="t('task.reminderSection.type')"
+                      >
                         <SelectValue :placeholder="t('task.reminderSection.selectType')" />
                       </SelectTrigger>
                       <SelectContent>
@@ -68,8 +77,11 @@
                   <!-- 相对时间提醒 -->
                   <template v-if="trigger.type === ReminderType.Relative">
                     <div class="col-span-12 md:col-span-3">
-                      <Label class="mb-2 block">{{ t('task.reminderSection.advanceTime') }}</Label>
+                      <Label :for="`task-reminder-advance-${index}`" class="mb-2 block">{{
+                        t('task.reminderSection.advanceTime')
+                      }}</Label>
                       <Input
+                        :id="`task-reminder-advance-${index}`"
                         :model-value="trigger.relativeValue ?? undefined"
                         type="number"
                         min="1"
@@ -82,7 +94,9 @@
                       />
                     </div>
                     <div class="col-span-12 md:col-span-3">
-                      <Label class="mb-2 block">{{ t('task.reminderSection.timeUnit') }}</Label>
+                      <Label :for="`task-reminder-unit-${index}`" class="mb-2 block">{{
+                        t('task.reminderSection.timeUnit')
+                      }}</Label>
                       <Select
                         :model-value="trigger.relativeUnit ?? undefined"
                         @update:model-value="
@@ -92,7 +106,10 @@
                           }
                         "
                       >
-                        <SelectTrigger>
+                        <SelectTrigger
+                          :id="`task-reminder-unit-${index}`"
+                          :aria-label="t('task.reminderSection.timeUnit')"
+                        >
                           <SelectValue :placeholder="t('task.reminderSection.selectUnit')" />
                         </SelectTrigger>
                         <SelectContent>
@@ -111,11 +128,15 @@
                   <!-- 绝对时间提醒 -->
                   <template v-if="trigger.type === ReminderType.Absolute">
                     <div class="col-span-12 md:col-span-6">
-                      <Label class="mb-2 block">{{ t('task.reminderSection.reminderTime') }}</Label>
+                      <Label :for="`task-reminder-date-${index}`" class="mb-2 block">{{
+                        t('task.reminderSection.reminderTime')
+                      }}</Label>
                       <div class="flex flex-col gap-2">
                         <Popover>
                           <PopoverTrigger as-child>
                             <Button
+                              :id="`task-reminder-date-${index}`"
+                              :aria-label="t('task.reminderSection.reminderTime')"
                               variant="outline"
                               class="w-full justify-start text-left font-normal"
                               :class="{
@@ -125,7 +146,10 @@
                               <CalendarIcon class="mr-2 h-4 w-4" />
                               {{
                                 getAbsoluteDatePart(trigger.absoluteTime)
-                                  ? formatDisplayDate(getAbsoluteDatePart(trigger.absoluteTime)!, locale)
+                                  ? formatDisplayDate(
+                                      getAbsoluteDatePart(trigger.absoluteTime)!,
+                                      locale,
+                                    )
                                   : t('task.reminderSection.reminderTime')
                               }}
                             </Button>
@@ -147,7 +171,9 @@
                               (v) => updateAbsoluteTimePart(index, 'hour', String(v))
                             "
                           >
-                            <SelectTrigger class="w-[80px]"
+                            <SelectTrigger
+                              class="w-[80px]"
+                              :aria-label="`${t('task.reminderSection.reminderTime')} - HH`"
                               ><SelectValue placeholder="HH"
                             /></SelectTrigger>
                             <SelectContent>
@@ -163,7 +189,9 @@
                               (v) => updateAbsoluteTimePart(index, 'minute', String(v))
                             "
                           >
-                            <SelectTrigger class="w-[80px]"
+                            <SelectTrigger
+                              class="w-[80px]"
+                              :aria-label="`${t('task.reminderSection.reminderTime')} - MM`"
                               ><SelectValue placeholder="MM"
                             /></SelectTrigger>
                             <SelectContent>
@@ -198,8 +226,8 @@
           </div>
         </template>
       </div>
-    </CardContent>
-  </Card>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -210,8 +238,6 @@ import type { TaskReminderConfigDTO } from '@memoflow/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   Alert,
   AlertDescription,
@@ -324,9 +350,7 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
   const currentConfig = props.modelValue.reminderConfig as unknown as TaskReminderConfigDTO | null;
   const updatedTemplate: TaskTemplateViewModel = {
     ...props.modelValue,
-    reminderConfig: currentConfig
-      ? { ...currentConfig }
-      : null,
+    reminderConfig: currentConfig ? { ...currentConfig } : null,
   } as TaskTemplateViewModel;
   updater(updatedTemplate);
   emit('update:modelValue', updatedTemplate);
@@ -347,7 +371,8 @@ const timeUnitOptions = computed(() => [
 
 // 提醒启用状态
 const reminderEnabled = computed({
-  get: () => (props.modelValue.reminderConfig as unknown as TaskReminderConfigDTO | null)?.enabled ?? false,
+  get: () =>
+    (props.modelValue.reminderConfig as unknown as TaskReminderConfigDTO | null)?.enabled ?? false,
   set: (value: boolean) => {
     updateTemplate((template) => {
       const currentConfig = template.reminderConfig as unknown as TaskReminderConfigDTO | null;
@@ -372,7 +397,8 @@ const triggers = ref<
 
 // 初始化触发器
 const initializeTriggers = () => {
-  const config = props.modelValue.reminderConfig as unknown as TaskReminderConfigDTO | null | undefined;
+  const config = props.modelValue.reminderConfig as unknown as
+    TaskReminderConfigDTO | null | undefined;
   if (config?.triggers && config.triggers.length > 0) {
     triggers.value = config.triggers.map((t) => ({ ...t }));
   } else if (reminderEnabled.value && triggers.value.length === 0) {
@@ -402,7 +428,6 @@ const removeTrigger = (index: number) => {
   triggers.value.splice(index, 1);
   updateTriggers();
 };
-
 
 // 更新触发器到模板
 const updateTriggers = () => {

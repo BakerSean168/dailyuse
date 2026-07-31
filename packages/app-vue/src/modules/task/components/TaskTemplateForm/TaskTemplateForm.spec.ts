@@ -37,6 +37,8 @@ const i18n = createI18n({
           loadError: 'Template not available',
           notFoundMessage: 'The selected template no longer exists.',
           close: 'Close',
+          advancedSettings: 'Advanced settings',
+          advancedSettingsDescription: 'Reminders, organization, and dependencies',
         },
       },
     },
@@ -169,6 +171,18 @@ describe('TaskTemplateForm', () => {
     await wrapper.get('[data-stub="KeyResultLinksSection"]').trigger('click');
 
     expect(updateGoalBindingValidation).toHaveBeenCalledWith({ isValid: true });
+  });
+
+  it('keeps advanced reminder and metadata sections collapsed until requested', async () => {
+    const wrapper = mountForm();
+
+    expect(wrapper.find('[data-stub="ReminderSection"]').exists()).toBe(false);
+    expect(wrapper.find('[data-stub="MetadataSection"]').exists()).toBe(false);
+
+    await wrapper.get('[data-testid="task-form-advanced-toggle"]').trigger('click');
+
+    expect(wrapper.find('[data-stub="ReminderSection"]').exists()).toBe(true);
+    expect(wrapper.find('[data-stub="MetadataSection"]').exists()).toBe(true);
   });
 
   it('exposes the composable validate method to parent callers', async () => {

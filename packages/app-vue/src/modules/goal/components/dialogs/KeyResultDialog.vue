@@ -1,23 +1,22 @@
 <template>
   <Dialog :open="visible" @update:open="(val) => (visible = val)">
-    <DialogContent
-      class="sm:max-w-[700px] max-h-[90vh] overflow-y-auto gap-0"
-      data-testid="key-result-dialog"
+    <ProductDialogShell
+      :open="visible"
+      test-id="key-result-dialog"
+      size="md"
+      initial-focus-selector="[data-testid='key-result-title-input']"
     >
-      <!-- 对话框头部 -->
-      <DialogHeader class="pb-4">
-        <DialogTitle class="flex items-center gap-3 text-xl">
-          <Target class="h-5 w-5 text-primary" />
-          {{ isEditing ? t('goal.krDialog.updateTitle') : t('goal.krDialog.createTitle') }}
-        </DialogTitle>
-        <DialogDescription class="sr-only">
-          {{ t('goal.krDialog.descriptionText') }}
-        </DialogDescription>
-      </DialogHeader>
+      <template #icon>
+        <Target class="mt-0.5 h-5 w-5 text-primary" />
+      </template>
+      <template #title>
+        {{ isEditing ? t('goal.krDialog.updateTitle') : t('goal.krDialog.createTitle') }}
+      </template>
+      <template #description>
+        {{ t('goal.krDialog.descriptionText') }}
+      </template>
 
-      <Separator />
-
-      <form class="space-y-6 py-6" @submit.prevent>
+      <form class="space-y-6" @submit.prevent>
         <!-- 基本信息 -->
         <div>
           <h3 class="text-base font-semibold mb-4 text-primary border-b-2 border-primary/10 pb-2">
@@ -100,17 +99,13 @@
           <div class="grid grid-cols-12 gap-4">
             <!-- 值类型 -->
             <div class="col-span-6 grid gap-2">
-              <Label>{{ t('goal.krDialog.valueType') }}</Label>
+              <Label for="kr-value-type">{{ t('goal.krDialog.valueType') }}</Label>
               <Select v-model="localKeyResult.progress.valueType">
-                <SelectTrigger>
+                <SelectTrigger id="kr-value-type" :aria-label="t('goal.krDialog.valueType')">
                   <SelectValue :placeholder="t('goal.krDialog.selectValueType')" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem
-                    v-for="type in valueTypes"
-                    :key="type.value"
-                    :value="type.value"
-                  >
+                  <SelectItem v-for="type in valueTypes" :key="type.value" :value="type.value">
                     {{ type.title }}
                   </SelectItem>
                 </SelectContent>
@@ -120,9 +115,12 @@
 
             <!-- 计算方法 -->
             <div class="col-span-6 grid gap-2">
-              <Label>{{ t('goal.krDialog.calcMethod') }}</Label>
+              <Label for="kr-calculation-method">{{ t('goal.krDialog.calcMethod') }}</Label>
               <Select v-model="keyResultCalculationMethod">
-                <SelectTrigger>
+                <SelectTrigger
+                  id="kr-calculation-method"
+                  :aria-label="t('goal.krDialog.calcMethod')"
+                >
                   <SelectValue :placeholder="t('goal.krDialog.selectCalcMethod')" />
                 </SelectTrigger>
                 <SelectContent>
@@ -138,18 +136,50 @@
               <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.calcMethodHint') }}</p>
             </div>
 
-            <!-- 权重 -->
-            <div class="col-span-6 grid gap-2">
-              <Label for="kr-weight">{{ t('goal.krDialog.weight') }}</Label>
-              <Input
-                id="kr-weight"
-                v-model.number="keyResultWeight"
-                type="number"
-                min="1"
-                max="5"
-                step="1"
-              />
-              <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.weightHint') }}</p>
+            <div class="col-span-12 grid gap-3">
+              <Label id="kr-impact-label">{{ t('goal.krDialog.impactLabel') }}</Label>
+              <div class="grid grid-cols-3 gap-2" role="group" :aria-labelledby="'kr-impact-label'">
+                <Button
+                  v-for="preset in impactPresets"
+                  :key="preset.value"
+                  type="button"
+                  :variant="impactPreset === preset.value ? 'default' : 'outline'"
+                  :aria-pressed="impactPreset === preset.value"
+                  @click="keyResultWeight = preset.value"
+                >
+                  {{ preset.label }}
+                </Button>
+              </div>
+
+              <Collapsible v-model:open="numericImpactOpen">
+                <CollapsibleTrigger as-child>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    class="w-full justify-between px-0"
+                    :aria-expanded="numericImpactOpen"
+                  >
+                    {{ t('goal.krDialog.numericImpact') }}
+                    <ChevronDown
+                      class="h-4 w-4 transition-transform"
+                      :class="{ 'rotate-180': numericImpactOpen }"
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent class="grid gap-2 pt-2">
+                  <Label for="kr-weight">{{ t('goal.krDialog.weight') }}</Label>
+                  <Input
+                    id="kr-weight"
+                    v-model.number="keyResultWeight"
+                    type="number"
+                    min="1"
+                    max="5"
+                    step="1"
+                  />
+                  <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.weightHint') }}</p>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           </div>
         </div>
@@ -185,10 +215,7 @@
         </div>
       </form>
 
-      <Separator />
-
-      <DialogFooter class="pt-4 gap-2 sm:gap-0">
-        <div class="flex-1" />
+      <template #footer>
         <Button variant="outline" data-testid="cancel-key-result-button" @click="handleCancel">
           {{ t('goal.krDialog.cancel') }}
         </Button>
@@ -200,8 +227,8 @@
           <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
           {{ isEditing ? t('goal.krDialog.update') : t('goal.krDialog.create') }}
         </Button>
-      </DialogFooter>
-    </DialogContent>
+      </template>
+    </ProductDialogShell>
   </Dialog>
 </template>
 
@@ -210,14 +237,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
 import { KeyResultValueType, KeyResultCalculationMethod } from '@memoflow/contracts/goal';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@memoflow/ui-vue-shadcn';
+import { Dialog } from '@memoflow/ui-vue-shadcn';
 import { Button } from '@memoflow/ui-vue-shadcn';
 import { Input } from '@memoflow/ui-vue-shadcn';
 import { Label } from '@memoflow/ui-vue-shadcn';
@@ -229,10 +249,11 @@ import {
   SelectContent,
   SelectItem,
 } from '@memoflow/ui-vue-shadcn';
-import { Separator } from '@memoflow/ui-vue-shadcn';
 import { Progress } from '@memoflow/ui-vue-shadcn';
-import { Target, Loader2 } from '@lucide/vue';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@memoflow/ui-vue-shadcn';
+import { ChevronDown, Target, Loader2 } from '@lucide/vue';
 import { getKeyResultProgressPercentage } from '../../utils/progress';
+import { ProductDialogShell } from '../../../../shared/components';
 
 const { t } = useI18n();
 
@@ -283,6 +304,7 @@ const isInGoalEditing = computed(() => !!propGoal.value);
 
 const localKeyResult = ref<EditableKeyResult>(createDraftKeyResult());
 const loading = ref(false);
+const numericImpactOpen = ref(false);
 const isEditing = computed(() => !!propKeyResult.value);
 const isFormValid = computed(() => {
   const title = keyResultTitle.value.trim();
@@ -341,6 +363,18 @@ const keyResultWeight = computed({
     localKeyResult.value.weight = val;
   },
 });
+
+const impactPreset = computed(() => {
+  if (keyResultWeight.value <= 2) return 1;
+  if (keyResultWeight.value >= 4) return 5;
+  return 3;
+});
+
+const impactPresets = computed(() => [
+  { value: 1, label: t('goal.krDialog.impactLow') },
+  { value: 3, label: t('goal.krDialog.impactMedium') },
+  { value: 5, label: t('goal.krDialog.impactHigh') },
+]);
 
 const calculationMethods = computed(() => [
   { title: t('goal.krDialog.calcCumulative'), value: AggregationMethod.Sum },

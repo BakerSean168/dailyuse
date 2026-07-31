@@ -395,7 +395,9 @@ export default {
   "templateForm": {
     "loadError": "无法加载任务计划",
     "notFoundMessage": "没有找到正在编辑的任务计划，请重新选择或创建任务计划。",
-    "close": "关闭"
+    "close": "关闭",
+    "advancedSettings": "高级设置",
+    "advancedSettingsDescription": "提醒、组织归属和依赖关系"
   },
   "templateCard": {
     "noDescription": "暂无描述",

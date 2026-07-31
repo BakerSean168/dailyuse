@@ -1,13 +1,13 @@
 <!-- widgets/BasicInfoSection.vue -->
 <template>
-  <Card class="mb-4">
-    <CardHeader class="pb-2">
-      <CardTitle class="flex items-center text-primary font-semibold">
+  <section class="space-y-4" aria-labelledby="task-basic-info-heading">
+    <header>
+      <h3 id="task-basic-info-heading" class="flex items-center text-sm font-semibold">
         <Info class="mr-2 h-5 w-5" />
         {{ t('task.basicInfo.title') }}
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
+      </h3>
+    </header>
+    <div>
       <Alert v-if="showValidationErrors" variant="destructive" class="mb-4">
         <AlertDescription>
           <ul class="mb-0 list-disc pl-4">
@@ -42,24 +42,14 @@
           />
         </div>
       </div>
-    </CardContent>
-  </Card>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  Alert,
-  AlertDescription,
-  Input,
-  Textarea,
-  Label,
-} from '@memoflow/ui-vue-shadcn';
+import { Alert, AlertDescription, Input, Textarea, Label } from '@memoflow/ui-vue-shadcn';
 import { Info } from '@lucide/vue';
 import { useBasicInfoValidation } from '../../../composables/useBasicInfoValidation';
 import type { TaskTemplateViewModel } from '../../types';

@@ -540,10 +540,10 @@ MemoFlow 的首屏承诺是 AI 工作区，但本地部署和新账号默认没�
 
 ### 验收标准
 
-- [ ] 中文界面不出现裸枚举值。
-- [ ] 所有日期字段有永久可见标签。
-- [ ] 状态文本与可点击动作在视觉上可区分。
-- [ ] 用户可以不离开目标主弹窗完成一个基础 KR。
+- [x] 中文界面不出现裸枚举值。
+- [x] 所有日期字段有永久可见标签。
+- [x] 状态文本与可点击动作在视觉上可区分。
+- [x] 用户可以不离开目标主弹窗完成一个基础 KR。
 
 ## 6.8 P2：任务表单信息密度过高且视觉语言不一致
 
@@ -583,10 +583,10 @@ MemoFlow 的首屏承诺是 AI 工作区，但本地部署和新账号默认没�
 
 ### 验收标准
 
-- [ ] 1280 × 720 下无需滚动即可完成快速任务创建。
-- [ ] 高级设置默认收起，但能明确发现。
-- [ ] 保存按钮始终可见。
-- [ ] 目标与任务弹窗使用统一的布局和视觉 token。
+- [x] 1280 × 720 下无需滚动即可完成快速任务创建。
+- [x] 高级设置默认收起，但能明确发现。
+- [x] 保存按钮始终可见。
+- [x] 目标与任务弹窗使用统一的布局和视觉 token。
 
 ## 6.9 P2：表单控件无障碍名称不完整
 
@@ -611,10 +611,10 @@ DOM 审查中，任务表单至少三个 switch 没有可访问名称；目标�
 
 ### 验收标准
 
-- [ ] 关键表单在 axe 自动扫描中无 serious/critical 问题。
-- [ ] 仅使用键盘可以完成目标和任务创建。
-- [ ] 所有 switch、combobox、日期和数值输入都有稳定名称。
-- [ ] 弹窗关闭后焦点回到“新建”按钮。
+- [x] 关键表单在 axe 自动扫描中无 serious/critical 问题。
+- [x] 仅使用键盘可以完成目标和任务创建。
+- [x] 所有 switch、combobox、日期和数值输入都有稳定名称。
+- [x] 弹窗关闭后焦点回到“新建”按钮。
 
 ## 6.10 P1：缺少 Toggle Side Panel 与右侧面板空闲起始页
 
@@ -1192,9 +1192,59 @@ Docker 与产品旅程证据：
 
 ### Phase D 出口
 
-- [ ] 1280 × 720 下快速创建无需滚动。
-- [ ] 目标和任务弹窗视觉语言一致。
-- [ ] 核心创建旅程无 serious/critical 无障碍问题。
+- [x] 1280 × 720 下快速创建无需滚动。
+- [x] 目标和任务弹窗视觉语言一致。
+- [x] 核心创建旅程无 serious/critical 无障碍问题。
+
+### Phase D 实施证据（2026-07-31）
+
+实现：
+
+- 新增共享 `ProductDialogShell`，目标、关键结果、快速任务和任务计划弹窗统一标题、
+  描述、宽度、内容滚动区、sticky footer、错误呈现、间距和焦点契约；Web/Desktop
+  继续复用同一套 `app-vue` 实现，没有平台分叉。
+- 任务计划把提醒、组织信息和依赖收进默认折叠的高级设置；快速任务保留标题与日期的
+  低配置路径。目标弹窗可在关键结果页内联创建第一个基础 KR，无需叠加第二个 modal。
+- 日期字段使用永久可见的“开始日期 / 目标日期”标签；KR 类型、目标影响、目标类别、
+  对话标题和成功动作均使用中英文 i18n 产品语言，不再直接显示裸枚举。
+- 所有本轮触及的 switch、combobox、日期和数字字段补齐稳定 label/aria 关联；弹窗打开
+  后聚焦声明的首个字段，关闭后返回原触发按钮。Radix FocusScope 在 tabbed form 中会先
+  聚焦容器，因此 shell 同时监听既有 open 状态，在 DOM 刷新后的 animation frame 执行
+  初始聚焦，并保留 `openAutoFocus` 作为标准路径。
+- axe 4.12 发现旧 `radix-vue` RadioGroup 会在表单内把隐藏原生 radio 嵌进
+  `button[role=radio]`。共享 RadioGroup 改用仓库已安装的后继 `reka-ui` 实现，消除双重
+  交互语义；新增组件回归锁定无嵌套控件且选择行为不变。
+
+代码事实差异：
+
+- 方案只要求“快速任务”在 1280 × 720 无需滚动；完整任务计划包含渐进披露后的基础
+  时间配置，允许内容区受控滚动。E2E 因此对快速任务断言 `scrollHeight <= clientHeight`，
+  对任务计划断言整个 dialog 与 sticky footer 始终留在视口内。
+- Vite declaration checker 仍会打印仓库既有的 workspace `rootDir`/portable type 诊断，
+  但独立 Nx typecheck 和所有 build target 均以退出码 0 通过；这些输出在 Phase E 最终
+  报告中按工具噪声分类，不作为产品失败。
+
+自动验证：
+
+- `pnpm nx run app-vue:test`：155 个文件、942 项通过；新增共享 dialog focus、内联 KR、
+  渐进披露、i18n 和 RadioGroup 无嵌套控件回归。
+- `pnpm nx run web:test`：16 个文件、70 项通过；`pnpm nx run desktop:test`：67 个文件、
+  361 项通过。
+- `ui-vue-shadcn`、`app-vue`、`web`、`desktop` 的 lint、typecheck 和 build 通过；lint
+  仅保留仓库既有 warning，Web/Desktop build 仅保留既有 chunk-size/tooling 输出。
+- `pnpm nx run web:e2e:local-docker -- --grep "Local Docker core product Phase D"`：1 项
+  真实键盘与无障碍旅程通过（22.0 秒），全程无 page error 或 console error。
+
+Docker 与产品旅程证据：
+
+- `pnpm docker:local:up` 重新构建并部署 Web/API/AI；六个服务均 healthy，端口来自
+  local-docker 运行时 SSOT。三个本地镜像 revision 均为
+  `2c0a1168693f5bc9d27bc12223c14e656e969597-dirty`。
+- 1280 × 720 Chromium 中仅用键盘完成目标、首个内联 KR 和任务计划创建；快速任务弹窗
+  无内部滚动，所有弹窗 footer 可见，焦点进入首字段并在保存/Escape 后返回触发按钮。
+- 同一旅程对目标、快速任务和任务计划 dialog 执行 axe 扫描，无 serious/critical 问题；
+  Nginx 日志记录目标、任务计划及关联查询请求来自 `http://127.0.0.1:58080`，证明浏览器
+  使用当前本机 Docker Web/API，而不是 SSH 转发或其他实例。
 
 ## 8.5 Phase E：发布级 PM journey 与工程加固
 
@@ -1248,10 +1298,10 @@ Docker 与产品旅程证据：
 
 ### 目标
 
-- [ ] 可以创建包含一个 KR 的目标。
-- [ ] 日期字段标签清晰。
-- [ ] KR 类型和权重全部使用当前语言。
-- [ ] 目标卡片状态与动作语义明确。
+- [x] 可以创建包含一个 KR 的目标。
+- [x] 日期字段标签清晰。
+- [x] KR 类型和权重全部使用当前语言。
+- [x] 目标卡片状态与动作语义明确。
 
 ### 任务
 
@@ -1286,13 +1336,13 @@ Docker 与产品旅程证据：
 
 ### UI 与无障碍
 
-- [ ] 1280 × 720 下快速任务表单无需滚动。
-- [ ] 保存和取消始终可见。
-- [ ] 目标和任务弹窗视觉语言一致。
-- [ ] 所有 switch、combobox、日期和数字字段有可访问名称。
-- [ ] 仅键盘可完成目标、KR 和任务创建。
-- [ ] axe 无 serious/critical 问题。
-- [ ] 中文界面无裸英文枚举和混排。
+- [x] 1280 × 720 下快速任务表单无需滚动。
+- [x] 保存和取消始终可见。
+- [x] 目标和任务弹窗视觉语言一致。
+- [x] 所有 switch、combobox、日期和数字字段有可访问名称。
+- [x] 仅键盘可完成目标、KR 和任务创建。
+- [x] axe 无 serious/critical 问题。
+- [x] 中文界面无裸英文枚举和混排。
 
 ## 11. 风险与决策点
 

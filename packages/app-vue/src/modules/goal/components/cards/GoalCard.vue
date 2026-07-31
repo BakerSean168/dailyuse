@@ -35,7 +35,7 @@
               v-if="goal.category"
               class="text-xs text-muted-foreground font-medium flex items-center gap-1"
             >
-              <Users class="h-3 w-3" /> {{ goal.category }}
+              <Users class="h-3 w-3" /> {{ getCategoryLabel(goal.category) }}
             </span>
           </div>
         </div>
@@ -195,6 +195,19 @@ const getStatusLabel = (status: string): string => {
   return map[status] ?? status;
 };
 
+const getCategoryLabel = (category: string): string => {
+  const map: Record<string, string> = {
+    product: t('goal.dialog.categoryProduct'),
+    engineering: t('goal.dialog.categoryEngineering'),
+    marketing: t('goal.dialog.categoryMarketing'),
+    personal: t('goal.dialog.categoryPersonal'),
+    health: t('goal.dialog.categoryHealth'),
+    finance: t('goal.dialog.categoryFinance'),
+    learning: t('goal.dialog.categoryLearning'),
+  };
+  return map[category] ?? category;
+};
+
 const getDaysRemainingClass = (days: number) => {
   if (days < 0) return 'text-destructive font-medium';
   if (days < 7) return 'text-warning font-medium';
@@ -213,5 +226,4 @@ const getStatusColorClass = (status: string) => {
       return 'text-primary border-primary/20 bg-primary/5';
   }
 };
-
 </script>

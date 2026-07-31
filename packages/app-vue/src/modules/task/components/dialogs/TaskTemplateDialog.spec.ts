@@ -132,6 +132,14 @@ describe('TaskTemplateDialog draft lifecycle', () => {
     clearErrors.mockClear();
   });
 
+  it('renders the localized title and description for the active intent', () => {
+    const wrapper = mountDialog({ mode: 'create' });
+
+    expect(wrapper.text()).toContain('Create task plan');
+    expect(wrapper.text()).toContain('Create');
+    expect(wrapper.text()).not.toContain("mode === 'edit'");
+  });
+
   it('starts with a fresh create draft every time the dialog opens', async () => {
     const wrapper = mountDialog({ mode: 'create' });
     wrapper.findComponent(TaskTemplateFormStub).vm.$emit('update:modelValue', {

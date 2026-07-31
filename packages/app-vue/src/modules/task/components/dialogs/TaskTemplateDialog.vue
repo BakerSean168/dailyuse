@@ -1,79 +1,81 @@
 <template>
   <Dialog :open="visible" @update:open="setVisible">
-    <DialogContent
-      data-testid="task-template-dialog"
-      class="max-w-[900px] max-h-[85vh] rounded-xl p-0 flex min-h-0 flex-col overflow-hidden"
+    <ProductDialogShell
+      :open="visible"
+      test-id="task-template-dialog"
+      size="lg"
+      initial-focus-selector="[data-testid='task-template-title-input']"
     >
-      <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4 shrink-0">
+      <template #icon>
         <component
           :is="mode === 'edit' ? Pencil : mode === 'copy' ? Copy : PlusCircle"
           :class="mode === 'edit' ? 'text-primary' : 'text-success'"
-          class="h-6 w-6 shrink-0"
+          class="mt-0.5 h-5 w-5 shrink-0"
         />
-        <div>
-          <DialogTitle class="text-lg">{{
-            mode === 'edit'
-              ? t('task.templateDialog.editTitle')
-              : mode === 'copy'
-                ? t('task.templateDialog.copyTitle')
-                : t('task.templateDialog.createTitle')
-          }}</DialogTitle>
-          <DialogDescription class="mt-0 text-sm text-muted-foreground">
-            {{
-              mode === 'edit'
-                ? t('task.templateDialog.editSubtitle')
-                : mode === 'copy'
-                  ? t('task.templateDialog.copySubtitle')
-                  : t('task.templateDialog.createSubtitle')
-            }}
-          </DialogDescription>
-        </div>
-      </DialogHeader>
-
-      <p
-        v-if="mode === 'edit' && (localTemplate?.futurePendingInstanceCount ?? 0) > 0"
-        class="mx-6 mb-3 rounded-md border border-info/30 bg-info/10 px-3 py-2 text-sm text-foreground"
-        role="status"
-        data-testid="task-plan-update-impact"
-      >
+      </template>
+      <template #title>
         {{
-          t('task.templateDialog.updateImpact', {
-            count: localTemplate?.futurePendingInstanceCount ?? 0,
-          })
+          mode === 'edit'
+            ? t('task.templateDialog.editTitle')
+            : mode === 'copy'
+              ? t('task.templateDialog.copyTitle')
+              : t('task.templateDialog.createTitle')
         }}
-      </p>
+      </template>
+      <template #description>
+        {{
+          mode === 'edit'
+            ? t('task.templateDialog.editSubtitle')
+            : mode === 'copy'
+              ? t('task.templateDialog.copySubtitle')
+              : t('task.templateDialog.createSubtitle')
+        }}
+      </template>
 
-      <div class="flex-1 min-h-0 overflow-y-auto px-6 pb-4">
-        <TaskTemplateForm
-          v-if="localTemplate"
-          ref="formRef"
-          :model-value="localTemplate"
-          :is-edit-mode="mode === 'edit'"
-          :readonly="saving"
-          :available-parent-tasks="availableParentTasks"
-          :goals="goalOptions"
-          :key-results-by-goal="keyResultsByGoal"
-          :loading-goals="loadingGoals"
-          :loading-key-results="loadingKeyResults"
-          :key-result-errors-by-goal="keyResultErrorsByGoal"
-          :on-request-key-results="requestKeyResults"
-          @update:model-value="handleTemplateUpdate"
-          @update:validation="handleValidationUpdate"
-          @close="handleCancel"
-        />
+      <template #status>
+        <p
+          v-if="mode === 'edit' && (localTemplate?.futurePendingInstanceCount ?? 0) > 0"
+          class="mx-6 mt-4 rounded-md border border-info/30 bg-info/10 px-3 py-2 text-sm text-foreground"
+          role="status"
+          data-testid="task-plan-update-impact"
+        >
+          {{
+            t('task.templateDialog.updateImpact', {
+              count: localTemplate?.futurePendingInstanceCount ?? 0,
+            })
+          }}
+        </p>
+      </template>
 
-        <DependencyManager
-          v-if="showDependencyManager"
-          class="mt-4"
-          :current-task-id="localTemplate?.id"
-          :all-tasks="graphTasks"
-          :dependencies="dependencies"
-          @dependency-added="handleDependencyAdded"
-          @dependency-deleted="handleDependencyDeleted"
-        />
-      </div>
+      <TaskTemplateForm
+        v-if="localTemplate"
+        ref="formRef"
+        :model-value="localTemplate"
+        :is-edit-mode="mode === 'edit'"
+        :readonly="saving"
+        :available-parent-tasks="availableParentTasks"
+        :goals="goalOptions"
+        :key-results-by-goal="keyResultsByGoal"
+        :loading-goals="loadingGoals"
+        :loading-key-results="loadingKeyResults"
+        :key-result-errors-by-goal="keyResultErrorsByGoal"
+        :on-request-key-results="requestKeyResults"
+        @update:model-value="handleTemplateUpdate"
+        @update:validation="handleValidationUpdate"
+        @close="handleCancel"
+      />
 
-      <DialogFooter class="p-6 pt-4 shrink-0 border-t">
+      <DependencyManager
+        v-if="showDependencyManager"
+        class="mt-5 border-t pt-5"
+        :current-task-id="localTemplate?.id"
+        :all-tasks="graphTasks"
+        :dependencies="dependencies"
+        @dependency-added="handleDependencyAdded"
+        @dependency-deleted="handleDependencyDeleted"
+      />
+
+      <template #footer>
         <Button variant="ghost" :disabled="saving" @click="handleCancel">{{
           t('task.templateDialog.cancel')
         }}</Button>
@@ -87,23 +89,15 @@
             mode === 'edit' ? t('task.templateDialog.saveChanges') : t('task.templateDialog.create')
           }}
         </Button>
-      </DialogFooter>
-    </DialogContent>
+      </template>
+    </ProductDialogShell>
   </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, toRaw, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  Button,
-} from '@memoflow/ui-vue-shadcn';
+import { Dialog, Button } from '@memoflow/ui-vue-shadcn';
 import { Copy, Pencil, PlusCircle } from '@lucide/vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import DependencyManager from '../dependency/DependencyManager.vue';
@@ -116,6 +110,7 @@ import {
 } from '@memoflow/contracts/task';
 import { defaultNamedColor } from '../../../../shared/constants/color-palette';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
+import { ProductDialogShell } from '../../../../shared/components';
 
 const { t } = useI18n();
 const {

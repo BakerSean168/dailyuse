@@ -1,17 +1,19 @@
 <template>
-  <Card class="mb-4">
-    <CardHeader class="flex flex-row items-center justify-between">
+  <section class="space-y-4" aria-labelledby="task-kr-link-heading">
+    <header class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <Target class="h-5 w-5" />
-        <CardTitle>{{ t('task.krLinks.title') }}</CardTitle>
+        <h3 id="task-kr-link-heading" class="text-sm font-semibold">
+          {{ t('task.krLinks.title') }}
+        </h3>
       </div>
       <Badge v-if="hasGoalBinding" variant="default" class="bg-success">
         <CheckCircle class="h-3 w-3 mr-1" />
         {{ t('task.krLinks.linkedCount') }}
       </Badge>
-    </CardHeader>
+    </header>
 
-    <CardContent>
+    <div>
       <!-- 提示信息 -->
       <Alert v-if="!hasGoalBinding" class="mb-4">
         <Info class="h-4 w-4" />
@@ -35,13 +37,19 @@
       <div v-if="linkEnabled">
         <!-- 目标选择 -->
         <div class="mb-3">
-          <Label class="mb-2 block">{{ t('task.krLinks.selectGoal') }}</Label>
+          <Label for="task-goal-select" class="mb-2 block">{{
+            t('task.krLinks.selectGoal')
+          }}</Label>
           <Select
             :model-value="selectedGoalId ?? undefined"
             :disabled="props.loadingGoals"
             @update:model-value="handleGoalChange"
           >
-            <SelectTrigger data-testid="task-goal-select-trigger">
+            <SelectTrigger
+              id="task-goal-select"
+              data-testid="task-goal-select-trigger"
+              :aria-label="t('task.krLinks.selectGoal')"
+            >
               <div class="flex items-center gap-2">
                 <Flag class="h-4 w-4" />
                 <SelectValue :placeholder="t('task.krLinks.selectGoalPlaceholder')" />
@@ -65,13 +73,19 @@
 
         <!-- 关键结果选择 -->
         <div class="mb-3">
-          <Label class="mb-2 block">{{ t('task.krLinks.selectKR') }}</Label>
+          <Label for="task-key-result-select" class="mb-2 block">{{
+            t('task.krLinks.selectKR')
+          }}</Label>
           <Select
             :model-value="selectedKeyResultId ?? undefined"
             :disabled="!selectedGoalId || selectedKeyResultsLoading"
             @update:model-value="handleKeyResultChange"
           >
-            <SelectTrigger data-testid="task-key-result-select-trigger">
+            <SelectTrigger
+              id="task-key-result-select"
+              data-testid="task-key-result-select-trigger"
+              :aria-label="t('task.krLinks.selectKR')"
+            >
               <div class="flex items-center gap-2">
                 <Target class="h-4 w-4" />
                 <SelectValue :placeholder="t('task.krLinks.selectGoalFirst')" />
@@ -132,11 +146,14 @@
 
         <!-- 增量值设置 -->
         <div class="mb-3">
-          <Label class="mb-2 block">{{ t('task.krLinks.progressValue') }}</Label>
+          <Label for="task-goal-increment" class="mb-2 block">{{
+            t('task.krLinks.progressValue')
+          }}</Label>
           <div class="flex items-center gap-2">
             <PlusCircle class="h-4 w-4 text-muted-foreground" />
             <Input
               :model-value="incrementValue"
+              id="task-goal-increment"
               data-testid="task-goal-increment-input"
               type="number"
               :placeholder="t('task.krLinks.progressPlaceholder')"
@@ -155,13 +172,15 @@
         </div>
 
         <div class="mb-3">
-          <Label class="mb-2 block">{{ t('task.krLinks.trigger.label') }}</Label>
+          <Label for="task-goal-trigger" class="mb-2 block">{{
+            t('task.krLinks.trigger.label')
+          }}</Label>
           <Select
             :model-value="progressTrigger ?? undefined"
             :disabled="!selectedGoalId || !selectedKeyResultId"
             @update:model-value="handleTriggerChange"
           >
-            <SelectTrigger>
+            <SelectTrigger id="task-goal-trigger" :aria-label="t('task.krLinks.trigger.label')">
               <div class="flex items-center gap-2">
                 <Link2 class="h-4 w-4" />
                 <SelectValue :placeholder="t('task.krLinks.trigger.placeholder')" />
@@ -202,8 +221,8 @@
           </CardContent>
         </Card>
       </div>
-    </CardContent>
-  </Card>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -216,8 +235,6 @@ import {
 import type { TaskTemplateViewModel, GoalBindingOption, KeyResultBindingOption } from '../../types';
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   Alert,
   AlertDescription,
@@ -271,9 +288,7 @@ const incrementValue = ref<number>(1);
 const progressTrigger = ref<TaskGoalBindingTriggerValue>(TaskGoalBindingTrigger.PerInstance);
 // ===== 计算属性 =====
 const hasGoalBinding = computed(() => {
-  return Boolean(
-    props.modelValue.goalBinding?.goalId && props.modelValue.goalBinding?.keyResultId,
-  );
+  return Boolean(props.modelValue.goalBinding?.goalId && props.modelValue.goalBinding?.keyResultId);
 });
 
 const hasCompleteBinding = computed(() => {
@@ -301,10 +316,7 @@ const keyResults = computed(() => {
 
 const selectedGoalKeyResultsLoaded = computed(() => {
   if (!selectedGoalId.value) return false;
-  return Object.prototype.hasOwnProperty.call(
-    props.keyResultsByGoal ?? {},
-    selectedGoalId.value,
-  );
+  return Object.prototype.hasOwnProperty.call(props.keyResultsByGoal ?? {}, selectedGoalId.value);
 });
 
 const selectedKeyResultsLoading = computed(() =>
@@ -312,7 +324,7 @@ const selectedKeyResultsLoading = computed(() =>
 );
 
 const selectedKeyResultError = computed(() =>
-  selectedGoalId.value ? props.keyResultErrorsByGoal?.[selectedGoalId.value] ?? null : null,
+  selectedGoalId.value ? (props.keyResultErrorsByGoal?.[selectedGoalId.value] ?? null) : null,
 );
 
 const keyResultItems = computed(() => {
@@ -341,11 +353,7 @@ const selectedKeyResultTitle = computed(() => {
 
 const wholePlanTriggerAllowed = computed(() => {
   const recurrenceRule = props.modelValue.recurrenceRule as RecurrenceRuleDTO | null | undefined;
-  return (
-    !recurrenceRule ||
-    recurrenceRule.endDate !== null ||
-    recurrenceRule.occurrences !== null
-  );
+  return !recurrenceRule || recurrenceRule.endDate !== null || recurrenceRule.occurrences !== null;
 });
 
 const triggerItems = computed(() => [
@@ -433,10 +441,7 @@ const handleIncrementChange = () => {
 };
 
 const handleTriggerChange = (value: string | null) => {
-  if (
-    value === TaskGoalBindingTrigger.AllInstancesCompleted &&
-    !wholePlanTriggerAllowed.value
-  ) {
+  if (value === TaskGoalBindingTrigger.AllInstancesCompleted && !wholePlanTriggerAllowed.value) {
     return;
   }
   progressTrigger.value =

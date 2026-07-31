@@ -1,12 +1,12 @@
 <template>
-  <Card class="mb-4">
-    <CardHeader class="pb-2">
-      <CardTitle class="flex items-center text-primary font-semibold">
+  <section class="space-y-4" aria-labelledby="task-metadata-heading">
+    <header>
+      <h3 id="task-metadata-heading" class="flex items-center text-sm font-semibold">
         <Info class="mr-2 h-5 w-5" />
         {{ t('task.metadata.title') }}
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
+      </h3>
+    </header>
+    <div>
       <div class="grid grid-cols-12 gap-4">
         <!-- 重要性 -->
         <div class="col-span-12 md:col-span-6">
@@ -29,9 +29,10 @@
 
         <!-- 颜色 -->
         <div class="col-span-12 md:col-span-6">
-          <Label>{{ t('task.metadata.colorMark') }}</Label>
+          <Label id="task-color-label">{{ t('task.metadata.colorMark') }}</Label>
           <ColorPickerField
             class="mt-1"
+            :aria-label="t('task.metadata.colorMark')"
             :model-value="color"
             :empty-label="t('task.metadata.selectColor')"
             :clear-label="t('task.metadata.clearColor')"
@@ -49,11 +50,7 @@
               <SelectItem :value="NO_PARENT_VALUE">
                 {{ t('task.metadata.noParentTask') }}
               </SelectItem>
-              <SelectItem
-                v-for="task in availableParentTasks"
-                :key="task.id"
-                :value="task.id"
-              >
+              <SelectItem v-for="task in availableParentTasks" :key="task.id" :value="task.id">
                 {{ task.title }}
               </SelectItem>
             </SelectContent>
@@ -66,7 +63,12 @@
           <div class="mt-1 flex flex-wrap items-center gap-2">
             <Badge v-for="tag in tags" :key="tag" variant="secondary" class="gap-1">
               {{ tag }}
-              <button class="ml-1 hover:text-destructive" @click="removeTag(tag)">
+              <button
+                type="button"
+                class="ml-1 hover:text-destructive"
+                :aria-label="`${t('common.delete')} ${tag}`"
+                @click="removeTag(tag)"
+              >
                 <X class="h-3 w-3" />
               </button>
             </Badge>
@@ -91,17 +93,13 @@
           </div>
         </div>
       </div>
-    </CardContent>
-  </Card>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
   Label,
   Select,
   SelectTrigger,

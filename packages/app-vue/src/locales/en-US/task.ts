@@ -395,7 +395,9 @@ export default {
   "templateForm": {
     "loadError": "Failed to load task plan",
     "notFoundMessage": "The task plan being edited was not found. Please select or create a task plan.",
-    "close": "Close"
+    "close": "Close",
+    "advancedSettings": "Advanced settings",
+    "advancedSettingsDescription": "Reminders, organization, and dependencies"
   },
   "templateCard": {
     "noDescription": "No description",

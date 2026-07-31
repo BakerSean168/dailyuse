@@ -1242,7 +1242,9 @@ import { parseToDate } from './parse-to-date';
       }
       expect(schedule).toContain('formatDisplayDate(formData.startDate, locale)');
       expect(timeConfig).toContain('formatDisplayDate(startDate, locale)');
-      expect(reminder).toContain('formatDisplayDate(getAbsoluteDatePart(trigger.absoluteTime)!, locale)');
+      expect(reminder).toMatch(
+        /formatDisplayDate\(\s*getAbsoluteDatePart\(trigger\.absoluteTime\)!\s*,\s*locale\s*,?\s*\)/,
+      );
       expect(recurrence).toContain('formatDisplayDate(endDate, locale)');
     });
 
