@@ -1,36 +1,109 @@
-FROM node:24-bookworm-slim AS builder
+FROM node:24-bookworm-slim AS node-base
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+FROM node-base AS builder
 
 ARG PNPM_VERSION=11.12.0
+ARG PNPM_REGISTRY=https://registry.npmjs.org
 
 ENV CI=true
 ENV PNPM_HOME=/pnpm
 ENV PATH=/pnpm:$PATH
 
 RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json tsconfig.workspace-src.json tsconfig.workspace-dist.json tsconfig.json ./
-COPY apps ./apps
-COPY packages ./packages
-# Root postinstall runs tools/mcp/ensure-nx-src-link.mjs (nx-mcp symlink helper).
-# Package tsup builds resolve tools/build/tsup.base.config.ts from package roots.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.base.json tsconfig.workspace-src.json tsconfig.workspace-dist.json tsconfig.json nx.json vitest.shared.ts vite.workspace-aliases.ts ./
+
+# Copy only the package manifests in the API/migrator build closure so source
+# edits do not invalidate dependency installation. `pnpm fetch` is deliberately
+# avoided because it cannot filter a workspace lockfile and fetched all 3225
+# packages even though this build links only roughly 1925.
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/migrator/package.json ./apps/migrator/package.json
+COPY packages/account/package.json ./packages/account/package.json
+COPY packages/ai/package.json ./packages/ai/package.json
+COPY packages/authentication/package.json ./packages/authentication/package.json
+COPY packages/contracts/package.json ./packages/contracts/package.json
+COPY packages/dashboard/package.json ./packages/dashboard/package.json
+COPY packages/data-portability/package.json ./packages/data-portability/package.json
+COPY packages/database/package.json ./packages/database/package.json
+COPY packages/database/prisma ./packages/database/prisma
+COPY packages/domain-shared/package.json ./packages/domain-shared/package.json
+COPY packages/goal/package.json ./packages/goal/package.json
+COPY packages/governance/package.json ./packages/governance/package.json
+COPY packages/http-client/package.json ./packages/http-client/package.json
+COPY packages/ipc-client/package.json ./packages/ipc-client/package.json
+COPY packages/notification/package.json ./packages/notification/package.json
+COPY packages/patterns/package.json ./packages/patterns/package.json
+COPY packages/powersync-schema/package.json ./packages/powersync-schema/package.json
+COPY packages/reminder/package.json ./packages/reminder/package.json
+COPY packages/repository/package.json ./packages/repository/package.json
+COPY packages/schedule/package.json ./packages/schedule/package.json
+COPY packages/schedule-orchestration/package.json ./packages/schedule-orchestration/package.json
+COPY packages/setting/package.json ./packages/setting/package.json
+COPY packages/task/package.json ./packages/task/package.json
+COPY packages/test-utils/package.json ./packages/test-utils/package.json
+COPY packages/time/package.json ./packages/time/package.json
+COPY packages/utils/package.json ./packages/utils/package.json
+COPY tools/mcp/ensure-nx-src-link.mjs ./tools/mcp/ensure-nx-src-link.mjs
+
+# Isolated linking makes each workspace package consume only its declared
+# dependencies. The root is selected explicitly because Nx and shared build
+# adapters intentionally live at the workspace seam.
+RUN --mount=type=cache,id=memoflow-api-pnpm-store,target=/pnpm/store \
+  pnpm --config.node-linker=isolated \
+  --filter . --filter @memoflow/api... --filter @memoflow/migrator... install \
+  --frozen-lockfile --network-concurrency=4 --registry=${PNPM_REGISTRY}
+
+COPY apps/api ./apps/api
+COPY apps/migrator ./apps/migrator
+COPY packages/account ./packages/account
+COPY packages/ai ./packages/ai
+COPY packages/authentication ./packages/authentication
+COPY packages/contracts ./packages/contracts
+COPY packages/dashboard ./packages/dashboard
+COPY packages/data-portability ./packages/data-portability
+COPY packages/database ./packages/database
+COPY packages/domain-shared ./packages/domain-shared
+COPY packages/goal ./packages/goal
+COPY packages/governance ./packages/governance
+COPY packages/http-client ./packages/http-client
+COPY packages/ipc-client ./packages/ipc-client
+COPY packages/notification ./packages/notification
+COPY packages/patterns ./packages/patterns
+COPY packages/powersync-schema ./packages/powersync-schema
+COPY packages/reminder ./packages/reminder
+COPY packages/repository ./packages/repository
+COPY packages/schedule ./packages/schedule
+COPY packages/schedule-orchestration ./packages/schedule-orchestration
+COPY packages/setting ./packages/setting
+COPY packages/task ./packages/task
+COPY packages/test-utils ./packages/test-utils
+COPY packages/time ./packages/time
+COPY packages/utils ./packages/utils
 COPY tools/mcp ./tools/mcp
 COPY tools/build ./tools/build
+COPY tools/nx-test-system ./tools/nx-test-system
 
-RUN pnpm install --frozen-lockfile
+# Build the package surfaces consumed by production and the one-shot migrator.
+# Cache Nx data independently from pnpm's content-addressed store.
+RUN --mount=type=cache,id=memoflow-api-nx-cache,target=/app/.nx/cache \
+  ./node_modules/.bin/nx run api:build \
+  && ./node_modules/.bin/nx run migrator:build \
+  && ./node_modules/.bin/nx run database:runtime-scripts:build
 
-# Residual 1335: package `dist/` is gitignored and may be missing or stale in the
-# docker context. Migration scripts import workspace exports such as
-# `@memoflow/contracts/reminder` through utils. Always rebuild contracts dist
-# in-image (same as packages/contracts:build). Host-built package dists for
-# other packages are still copied via `COPY packages` when present.
-RUN cd packages/contracts \
-  && node ../../node_modules/tsup/dist/cli-default.js \
-  && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json
+RUN --mount=type=cache,id=memoflow-api-pnpm-store,target=/pnpm/store \
+  pnpm --config.inject-workspace-packages=true \
+  --filter @memoflow/api deploy --prod --ignore-scripts /prod/api \
+  && pnpm --config.inject-workspace-packages=true \
+  --filter @memoflow/migrator deploy --prod --ignore-scripts /prod/migrator
 
-FROM node:24-bookworm-slim AS runtime
+FROM node-base AS migrator-runtime
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -38,8 +111,31 @@ ARG VERSION=dev
 
 ENV NODE_ENV=production
 ENV CI=true
-ENV PNPM_HOME=/pnpm
-ENV PATH=/pnpm:$PATH
+
+LABEL org.opencontainers.image.title="memoflow-migrator"
+LABEL org.opencontainers.image.description="MemoFlow one-shot database initialization module"
+LABEL org.opencontainers.image.created=$BUILD_DATE
+LABEL org.opencontainers.image.revision=$VCS_REF
+LABEL org.opencontainers.image.version=$VERSION
+
+WORKDIR /app
+
+COPY --from=builder /prod/migrator/node_modules ./node_modules
+COPY --from=builder /prod/migrator/package.json ./apps/migrator/package.json
+COPY --from=builder /prod/migrator/dist ./apps/migrator/dist
+
+WORKDIR /app/apps/migrator
+
+CMD ["node", "dist/main.js"]
+
+FROM node-base AS api-runtime
+
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION=dev
+
+ENV NODE_ENV=production
+ENV CI=true
 
 LABEL org.opencontainers.image.title="memoflow-api"
 LABEL org.opencontainers.image.description="MemoFlow production API service"
@@ -47,21 +143,11 @@ LABEL org.opencontainers.image.created=$BUILD_DATE
 LABEL org.opencontainers.image.revision=$VCS_REF
 LABEL org.opencontainers.image.version=$VERSION
 
-RUN corepack enable && corepack prepare pnpm@11.12.0 --activate
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=builder /app/tsconfig.base.json ./tsconfig.base.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/apps/api ./apps/api
-COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
-
-RUN chmod +x /app/apps/api/scripts/*.sh
+COPY --from=builder /prod/api/node_modules ./node_modules
+COPY --from=builder /prod/api/package.json ./apps/api/package.json
+COPY --from=builder /prod/api/dist ./apps/api/dist
 
 WORKDIR /app/apps/api
 
@@ -70,4 +156,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('node:http').get('http://127.0.0.1:3000/healthz', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
-CMD ["sh", "-c", "sh ./scripts/run-migrations.sh && node --import tsx dist/main.js"]
+CMD ["node", "dist/main.js"]

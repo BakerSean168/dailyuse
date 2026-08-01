@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "数据可迁移性模块 - 用户数据导入导出",
   "type": "module",
+  "files": ["dist"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

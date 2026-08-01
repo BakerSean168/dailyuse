@@ -3,6 +3,7 @@ packages:
   - apps/*
 
 nodeLinker: hoisted
+autoInstallPeers: false
 
 minimumReleaseAge: 0
 
@@ -26,6 +27,7 @@ overrides:
 
 allowBuilds:
   '@journeyapps/wa-sqlite': false
+  '@memoflow/database@file:packages/database': false
   '@nestjs/core': false
   '@parcel/watcher': false
   '@prisma/client': false
@@ -45,4 +47,3 @@ allowBuilds:
   prisma: false
   unrs-resolver: false
   vue-demi: false
-

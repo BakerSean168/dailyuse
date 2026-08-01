@@ -62,10 +62,16 @@ function Invoke-DockerBuild {
   param(
     [string]$Dockerfile,
     [string]$Image,
-    [hashtable]$BuildArgs
+    [hashtable]$BuildArgs,
+    [string]$Target
   )
 
   $arguments = @("build", "-f", $Dockerfile, "-t", $Image)
+
+  if ($Target) {
+    $arguments += "--target"
+    $arguments += $Target
+  }
 
   foreach ($entry in $BuildArgs.GetEnumerator()) {
     $arguments += "--build-arg"
@@ -169,6 +175,14 @@ $images = @(
     BuildArgs  = @{}
   },
   @{
+    Name       = "migrator"
+    Dockerfile = "Dockerfile.api"
+    Repository = "$registry/$namespace/memoflow-migrator"
+    TagKey     = "MIGRATOR_TAG"
+    Target     = "migrator-runtime"
+    BuildArgs  = @{}
+  },
+  @{
     Name       = "web"
     Dockerfile = "Dockerfile.web"
     Repository = "$registry/$namespace/memoflow-web"
@@ -197,7 +211,7 @@ foreach ($image in $images) {
   }
 
   $fullImage = "$($image.Repository):$Tag"
-  Invoke-DockerBuild -Dockerfile $image.Dockerfile -Image $fullImage -BuildArgs $buildArgs
+  Invoke-DockerBuild -Dockerfile $image.Dockerfile -Image $fullImage -BuildArgs $buildArgs -Target $image.Target
 
   if (-not $SkipEnvUpdate) {
     Set-EnvValue -Path $EnvFile -Key $image.TagKey -Value $Tag
