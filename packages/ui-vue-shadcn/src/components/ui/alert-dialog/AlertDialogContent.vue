@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AlertDialogContentEmits, AlertDialogContentProps } from 'radix-vue'
+import type { AlertDialogContentEmits, AlertDialogContentProps } from 'reka-ui'
 import type { Component, HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import {
@@ -8,7 +8,7 @@ import {
   AlertDialogOverlay,
   AlertDialogPortal,
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { computed, useAttrs } from 'vue'
 
 defineOptions({

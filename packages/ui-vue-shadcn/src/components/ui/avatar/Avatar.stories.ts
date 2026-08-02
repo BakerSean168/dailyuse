@@ -21,8 +21,8 @@ export const Default: Story = {
     setup() { return { args }; },
     template: `
       <Avatar v-bind="args">
-        <AvatarImage src="https://github.com/radix-vue.png" alt="@radix-vue" />
-        <AvatarFallback>RV</AvatarFallback>
+        <AvatarImage src="https://github.com/unovue.png" alt="UnoVue" />
+        <AvatarFallback>UV</AvatarFallback>
       </Avatar>
     `,
   }),

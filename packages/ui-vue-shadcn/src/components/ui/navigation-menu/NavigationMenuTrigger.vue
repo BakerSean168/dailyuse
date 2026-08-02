@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NavigationMenuTriggerProps } from 'radix-vue'
+import type { NavigationMenuTriggerProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import { ChevronDownIcon } from '@radix-icons/vue'
@@ -7,7 +7,7 @@ import {
   NavigationMenuTrigger,
 
   useForwardProps,
-} from 'radix-vue'
+} from 'reka-ui'
 import { computed } from 'vue'
 import { navigationMenuTriggerStyle } from '.'
 

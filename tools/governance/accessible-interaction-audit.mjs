@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+/**
+ * W9 accessibility boundary: application click targets must use semantic controls.
+ * Interactive visual containers and Badge components are intentionally forbidden;
+ * use button/link or a shared primitive so keyboard behavior is inherited.
+ */
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
+import { parse } from '@vue/compiler-sfc';
+import { NodeTypes } from '@vue/compiler-core';
+
+const root = resolve(import.meta.dirname, '../..');
+const moduleRoot = join(root, 'packages/app-vue/src/modules');
+const forbiddenTags = new Set(['div', 'span', 'Badge']);
+const booleanControlTags = new Set(['Switch', 'Checkbox']);
+const violations = [];
+
+for (const file of walk(moduleRoot)) {
+  const source = readFileSync(file, 'utf8');
+  const { descriptor } = parse(source, { filename: file });
+  if (!descriptor.template?.ast) continue;
+  visit(descriptor.template.ast, file);
+}
+
+if (violations.length > 0) {
+  console.error('[accessible-interaction-audit] FAIL: non-semantic click target(s) found:');
+  for (const violation of violations) console.error(`  - ${violation}`);
+  process.exit(1);
+}
+
+console.log('[accessible-interaction-audit] OK: module click targets use semantic controls.');
+
+function visit(node, file) {
+  if (node.type === NodeTypes.ELEMENT) {
+    const click = node.props.find(
+      (prop) =>
+        prop.type === NodeTypes.DIRECTIVE && prop.name === 'on' && prop.arg?.content === 'click',
+    );
+    if (click && forbiddenTags.has(node.tag)) {
+      const line = node.loc.start.line;
+      violations.push(`${relative(root, file).replace(/\\/g, '/')}:${line} <${node.tag}> @click`);
+    }
+
+    if (
+      booleanControlTags.has(node.tag) &&
+      !node.props.some((prop) => {
+        if (prop.type === NodeTypes.ATTRIBUTE) {
+          return ['id', 'aria-label', 'aria-labelledby'].includes(prop.name);
+        }
+        return (
+          prop.type === NodeTypes.DIRECTIVE &&
+          prop.name === 'bind' &&
+          ['id', 'aria-label', 'aria-labelledby'].includes(prop.arg?.content)
+        );
+      })
+    ) {
+      const line = node.loc.start.line;
+      violations.push(
+        `${relative(root, file).replace(/\\/g, '/')}:${line} <${node.tag}> missing accessible name`,
+      );
+    }
+  }
+
+  if ('children' in node && Array.isArray(node.children)) {
+    for (const child of node.children) visit(child, file);
+  }
+  if (node.type === NodeTypes.IF) {
+    for (const branch of node.branches) visit(branch, file);
+  }
+  if (node.type === NodeTypes.FOR && node.children) {
+    for (const child of node.children) visit(child, file);
+  }
+}
+
+function walk(directory, output = []) {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const fullPath = join(directory, entry.name);
+    if (entry.isDirectory()) walk(fullPath, output);
+    else if (entry.name.endsWith('.vue')) output.push(fullPath);
+  }
+  return output;
+}

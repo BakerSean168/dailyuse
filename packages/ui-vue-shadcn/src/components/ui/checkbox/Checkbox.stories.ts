@@ -8,7 +8,7 @@ const meta = {
   tags: ['autodocs'],
   argTypes: {
     disabled: { control: 'boolean' },
-    checked: { control: 'boolean' },
+    modelValue: { control: 'boolean' },
   },
 } satisfies Meta<typeof Checkbox>;
 

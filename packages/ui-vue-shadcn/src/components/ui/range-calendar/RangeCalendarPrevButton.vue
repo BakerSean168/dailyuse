@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import type { RangeCalendarPrevProps } from 'radix-vue'
+import type { RangeCalendarPrevProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { buttonVariants } from '../button'
 import { cn } from '../../../lib/utils'
 import { ChevronLeftIcon } from '@radix-icons/vue'
-import { RangeCalendarPrev, useForwardProps } from 'radix-vue'
+import { RangeCalendarPrev, useForwardProps } from 'reka-ui'
 import { computed } from 'vue'
 
 const props = defineProps<RangeCalendarPrevProps & { class?: HTMLAttributes['class'] }>()

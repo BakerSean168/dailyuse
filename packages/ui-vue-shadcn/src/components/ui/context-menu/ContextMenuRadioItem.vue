@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ContextMenuRadioItemEmits, ContextMenuRadioItemProps } from 'radix-vue'
+import type { ContextMenuRadioItemEmits, ContextMenuRadioItemProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import { DotFilledIcon } from '@radix-icons/vue'
@@ -8,7 +8,7 @@ import {
   ContextMenuRadioItem,
 
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { computed } from 'vue'
 
 const props = defineProps<ContextMenuRadioItemProps & { class?: HTMLAttributes['class'] }>()

@@ -30,11 +30,11 @@ export const Default: Story = {
           </CollapsibleTrigger>
         </div>
         <div class="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
-          @radix-vue/primitives
+          reka-ui
         </div>
         <CollapsibleContent class="space-y-2">
           <div class="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
-            @radix-vue/colors
+            @unovue/colors
           </div>
           <div class="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
             @stitches/core

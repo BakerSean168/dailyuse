@@ -1019,7 +1019,7 @@ import { parseToDate } from './parse-to-date';
    * Residual 1252: formatDateToYMD dual retired onto app-vue shared sole.
    * Residual 1318: sole body padStart dual retired onto padTwoDigits composition.
    * - sole: packages/app-vue/src/shared/utils/format-date-to-ymd.ts
-   * - consumers: CreateScheduleDialog, TimeConfigSection, ReminderSection; Recurrence via handleCalendarSelect (Residual 1267)
+   * - direct consumer: handleCalendarSelect; form modules consume that deeper interface
    * Soft residual 1252/1255: parseToDate dual retired onto shared sole in residual 1255.
    * Soft residual 1249: formatDisplayDate dual-retired sole remains separate.
    * Soft residual 1240: formatDate keep-boundary remains separate (timestamp display).
@@ -1029,6 +1029,7 @@ import { parseToDate } from './parse-to-date';
   describe('formatDateToYMD dual retired (residual 1252)', () => {
     const dir = __dirname;
     const sole = readFileSync(resolve(dir, 'format-date-to-ymd.ts'), 'utf8');
+    const calendarSelection = readFileSync(resolve(dir, 'handle-calendar-select.ts'), 'utf8');
     const schedule = readFileSync(
       resolve(dir, '../../modules/schedule/components/CreateScheduleDialog.vue'),
       'utf8',
@@ -1058,15 +1059,27 @@ import { parseToDate } from './parse-to-date';
       expect(timeSole).toContain('dateToYmd');
     });
 
-    it('retires schedule/task dual bodies onto shared sole', () => {
+    it('keeps date formatting local to the calendar-selection module', () => {
+      expect(calendarSelection).toContain("from './format-date-to-ymd'");
+      expect(calendarSelection).toContain('formatDateToYMD');
       for (const [label, source] of [
         ['schedule', schedule],
         ['timeConfig', timeConfig],
         ['reminder', reminder],
       ] as const) {
         expect(source, label).toContain('Residual 1252');
-        expect(source, label).toContain('format-date-to-ymd');
-        expect(source, label).toContain('formatDateToYMD');
+        expect(source, label).toContain('handle-calendar-select');
+        expect(source, label).toContain('handleCalendarSelect');
+        if (label === 'reminder') {
+          expect(source, label).toContain(
+            "from '../../../../../shared/utils/format-date-to-ymd'",
+          );
+        } else {
+          expect(source, label).not.toContain("from '../../../shared/utils/format-date-to-ymd'");
+          expect(source, label).not.toContain(
+            "from '../../../../../shared/utils/format-date-to-ymd'",
+          );
+        }
         expect(source, label).not.toMatch(/function formatDateToYMD\b/);
         expect(source, label).not.toMatch(
           /function formatDateToYMD\b[\s\S]*?getFullYear/,
