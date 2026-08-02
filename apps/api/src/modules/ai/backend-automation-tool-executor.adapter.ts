@@ -9,10 +9,7 @@ import type { PrismaClient } from '@memoflow/database';
 import { createGoalPrismaModule } from '@memoflow/goal';
 import { createReminderPrismaModule } from '@memoflow/reminder';
 import { createTaskPrismaModule } from '@memoflow/task';
-import {
-  TaskGoalBindingTrigger,
-  TaskType,
-} from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
 import { unwrapOrThrowError } from '@memoflow/contracts/result';
 import { createLogger } from '@memoflow/utils/logger';
 // Residual 1007: sole reminder time helpers (local dual retired).
@@ -41,10 +38,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
   private readonly knowledgeSource;
   private readonly analyticsRead;
 
-  constructor(
-    db: PrismaClient,
-    storageBaseDir: string,
-  ) {
+  constructor(db: PrismaClient, storageBaseDir: string) {
     this.goalModule = createGoalPrismaModule(db);
     this.taskModule = createTaskPrismaModule(db);
     this.reminderModule = createReminderPrismaModule(db);
@@ -109,14 +103,27 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
               tags: input.plan.goal.tags,
               startDate: input.plan.goal.suggestedStartDate,
               targetDate: input.plan.goal.suggestedEndDate,
+              initialKeyResults: input.plan.keyResults?.map((keyResult) => ({
+                title: keyResult.title,
+                valueType: keyResult.valueType,
+                calculationMethod: keyResult.calculationMethod,
+                startValue: keyResult.startValue,
+                currentValue: keyResult.currentValue,
+                targetValue: keyResult.targetValue,
+                unit: keyResult.unit,
+                weight: keyResult.weight,
+              })),
             },
             {
               identityId: input.identityId as IdentityId,
             },
           );
 
-          const goal = unwrapOrThrowError(result);
+          const goal = unwrapOrThrowError(result).readModel;
           createdGoalId = goal.id as GoalId;
+          goal.keyResults.forEach((keyResult, index) => {
+            createdKeyResultIds.set(index, keyResult.id as KeyResultId);
+          });
           actions.push({
             tool: action.tool,
             status: 'executed',
@@ -145,35 +152,22 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             throw new Error(`Missing key result draft for index ${action.index ?? -1}`);
           }
 
-          const result = await this.goalModule.api.addKeyResult(
-            createdGoalId,
-            input.identityId,
-            {
-              title: keyResult.title,
-              valueType: keyResult.valueType,
-              aggregationMethod: keyResult.calculationMethod,
-              startValue: keyResult.startValue,
-              currentValue: keyResult.currentValue,
-              targetValue: keyResult.targetValue,
-              unit: keyResult.unit,
-              weight: keyResult.weight,
-            },
-          );
-
-          const createdKeyResult = unwrapOrThrowError(result);
-          createdKeyResultIds.set(action.index ?? 0, createdKeyResult.id as KeyResultId);
+          const createdKeyResultId = createdKeyResultIds.get(action.index ?? 0);
+          if (!createdKeyResultId) {
+            throw new Error(`Created key result is missing for index ${action.index ?? -1}`);
+          }
           actions.push({
             tool: action.tool,
             status: 'executed',
-            entityId: createdKeyResult.id,
-            message: `Created key result "${createdKeyResult.title}"`,
+            entityId: createdKeyResultId,
+            message: `Created key result "${keyResult.title}"`,
           });
           logger.info('Goal automation executor action succeeded', {
             identityId: input.identityId,
             tool: action.tool,
             index: action.index ?? null,
-            entityId: createdKeyResult.id,
-            message: `Created key result "${createdKeyResult.title}"`,
+            entityId: createdKeyResultId,
+            message: `Created key result "${keyResult.title}"`,
           });
           continue;
         }
@@ -183,14 +177,8 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             skipAction(action, 'Skipped because goal creation failed.');
             continue;
           }
-          if (
-            typeof action.index === 'number' &&
-            failedKeyResultIndexes.has(action.index)
-          ) {
-            skipAction(
-              action,
-              `Skipped because key result ${action.index} creation failed.`,
-            );
+          if (typeof action.index === 'number' && failedKeyResultIndexes.has(action.index)) {
+            skipAction(action, `Skipped because key result ${action.index} creation failed.`);
             continue;
           }
           const taskTemplate = input.plan.taskTemplates?.[action.index ?? -1];
@@ -202,8 +190,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             identityId: input.identityId as IdentityId,
             name: taskTemplate.name,
             description: taskTemplate.description ?? null,
-            taskType:
-              taskTemplate.cadence === 'once' ? TaskType.OneTime : TaskType.Recurring,
+            taskType: taskTemplate.cadence === 'once' ? TaskType.OneTime : TaskType.Recurring,
             timeConfig: {
               timeType: 'AllDay',
               startDate: Date.now(),
@@ -300,7 +287,10 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
         }
 
         if (action.tool === 'fetch_stats') {
-          const context = await this.analyticsRead.buildContext(input.identityId, input.request.idea);
+          const context = await this.analyticsRead.buildContext(
+            input.identityId,
+            input.request.idea,
+          );
           const activeGoals = readNestedNumber(context.dashboard, ['stats', 'activeGoals']);
           const overdue = readNestedNumber(context.taskDashboard, ['summary', 'overdue']);
           actions.push({
@@ -357,5 +347,4 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
 
     return actions;
   }
-
 }

@@ -22,28 +22,26 @@ export class UpdateAIProviderUseCase {
       return error('NOT_FOUND', 'Provider not found');
     }
 
-    if (request.isDefault) {
-      await this.providerConfigRepository.clearDefaultForIdentity(String(current.identityId));
-    }
-
+    const nextIsActive = request.isActive ?? current.isActive;
     const updated: AIProviderConfigServerDTO = {
       ...current,
       name: request.name?.trim() ?? current.name,
       baseUrl: request.baseUrl?.replace(/\/+$/, '') ?? current.baseUrl,
       apiKey: request.apiKey ?? current.apiKey,
-      defaultModel: request.model != null
-        ? normalizeOpenAICompatibleModelId(request.model)
-        : current.defaultModel,
-      isDefault: request.isDefault ?? current.isDefault,
-      isActive: request.isActive ?? current.isActive,
+      defaultModel:
+        request.model != null
+          ? normalizeOpenAICompatibleModelId(request.model)
+          : current.defaultModel,
+      isDefault: nextIsActive && (request.isDefault ?? current.isDefault),
+      isActive: nextIsActive,
       updatedAt: Date.now(),
       version: current.version + 1,
     };
 
-    await this.providerConfigRepository.save(updated);
+    const outcome = await this.providerConfigRepository.save(updated);
+    if (outcome === 'CONFLICT') {
+      return error('CONFLICT', 'Another provider became default; refresh and try again');
+    }
     return ok(toClientDTO(updated));
   }
 }
-
-
-

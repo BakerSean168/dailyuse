@@ -3,9 +3,22 @@
  */
 
 import type { ExportContext } from '../../portable-runtime';
-import type { PortableTaskFolder, PortableTaskTemplate, PortableTaskInstance, PortableTaskDependency } from '@memoflow/contracts/data-portability';
+import type {
+  PortableTaskFolder,
+  PortableTaskTemplate,
+  PortableTaskInstance,
+  PortableTaskDependency,
+} from '@memoflow/contracts/data-portability';
+import type { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 // Residual 1003: sole resolveExportRef/OrThrow (local dual retired).
-import { parseJsonField, toDateString, toRecord, toStringArray, toTimestamp, resolveExportRef, resolveExportRefOrThrow } from './projection-helpers';
+import {
+  parseJsonField,
+  toDateString,
+  toStringArray,
+  toTimestamp,
+  resolveExportRef,
+  resolveExportRefOrThrow,
+} from './projection-helpers';
 
 function buildTimeConfig(entity: Record<string, unknown>): unknown {
   const existing = parseJsonField(entity.timeConfig);
@@ -80,26 +93,25 @@ export function projectTaskFolders(folders: unknown[], ctx: ExportContext): Port
   });
 }
 
-export function projectTaskTemplates(templates: unknown[], ctx: ExportContext): PortableTaskTemplate[] {
+export function projectTaskTemplates(
+  templates: unknown[],
+  ctx: ExportContext,
+): PortableTaskTemplate[] {
   return templates.map((t) => {
     const entity = t as Record<string, unknown>;
     const ref = ctx.refAllocator.allocate('taskTemplate');
     ctx.refToIdMap.set(entity.id as string, ref);
-    const goalBinding = toRecord(entity.goalBinding);
-    const goalId =
-      (entity.goalId as string | undefined) ??
-      (typeof goalBinding?.goalId === 'string' ? goalBinding.goalId : undefined);
-    const keyResultId =
-      (entity.keyResultId as string | undefined) ??
-      (typeof goalBinding?.keyResultId === 'string' ? goalBinding.keyResultId : undefined);
+    const goalId = entity.goalId as string | undefined;
+    const keyResultId = entity.keyResultId as string | undefined;
     const recurrenceRule = buildRecurrenceRule(entity);
     return {
       _ref: ref,
-      title: ((entity.title as string | undefined) ?? (entity.name as string | undefined)) ?? '',
+      title: (entity.title as string | undefined) ?? (entity.name as string | undefined) ?? '',
       description: entity.description as string | null | undefined,
       taskType:
-        ((entity.taskType as string | undefined) ??
-          (recurrenceRule ? 'Recurring' : undefined)) ?? 'OneTime',
+        (entity.taskType as string | undefined) ??
+        (recurrenceRule ? 'Recurring' : undefined) ??
+        'OneTime',
       importance: entity.importance as string,
       tags: toStringArray(entity.tags),
       color: entity.color as string | null | undefined,
@@ -107,7 +119,8 @@ export function projectTaskTemplates(templates: unknown[], ctx: ExportContext): 
       folderRef: resolveExportRef(entity.folderId as string | null, ctx, 'task'),
       goalRef: resolveExportRef(goalId, ctx, 'task'),
       keyResultRef: resolveExportRef(keyResultId, ctx, 'task'),
-      goalBinding,
+      goalRecordValue: entity.goalRecordValue as number | null | undefined,
+      goalProgressTrigger: entity.goalProgressTrigger as TaskGoalBindingTrigger | null | undefined,
       checklist: (parseJsonField(entity.checklist, []) as unknown[]) ?? [],
       parentTaskRef: resolveExportRef(entity.parentTaskId as string | null, ctx, 'task'),
       timeConfig: buildTimeConfig(entity),
@@ -118,14 +131,18 @@ export function projectTaskTemplates(templates: unknown[], ctx: ExportContext): 
       completedAt: toDateString(entity.completedAt),
       estimatedMinutes: entity.estimatedMinutes as number | null | undefined,
       actualMinutes: entity.actualMinutes as number | null | undefined,
-      note: ((entity.note as string | null | undefined) ?? (entity.comment as string | null | undefined)),
+      note:
+        (entity.note as string | null | undefined) ?? (entity.comment as string | null | undefined),
       createdAt: toDateString(entity.createdAt),
       updatedAt: toDateString(entity.updatedAt),
     };
   });
 }
 
-export function projectTaskInstances(instances: unknown[], ctx: ExportContext): PortableTaskInstance[] {
+export function projectTaskInstances(
+  instances: unknown[],
+  ctx: ExportContext,
+): PortableTaskInstance[] {
   return instances.map((i) => {
     const entity = i as Record<string, unknown>;
     const ref = ctx.refAllocator.allocate('taskInstance');
@@ -142,14 +159,18 @@ export function projectTaskInstances(instances: unknown[], ctx: ExportContext): 
       skipRecord: parseJsonField(entity.skipRecord),
       actualStartTime: toTimestamp(entity.actualStartTime),
       actualEndTime: toTimestamp(entity.actualEndTime),
-      note: ((entity.note as string | null | undefined) ?? (entity.comment as string | null | undefined)),
+      note:
+        (entity.note as string | null | undefined) ?? (entity.comment as string | null | undefined),
       createdAt: toDateString(entity.createdAt),
       updatedAt: toDateString(entity.updatedAt),
     };
   });
 }
 
-export function projectTaskDependencies(deps: unknown[], ctx: ExportContext): PortableTaskDependency[] {
+export function projectTaskDependencies(
+  deps: unknown[],
+  ctx: ExportContext,
+): PortableTaskDependency[] {
   return deps.map((d) => {
     const entity = d as Record<string, unknown>;
     const ref = ctx.refAllocator.allocate('taskDependency');

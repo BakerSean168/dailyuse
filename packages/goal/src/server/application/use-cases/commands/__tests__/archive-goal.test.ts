@@ -43,6 +43,7 @@ describe('ArchiveGoalUseCase', () => {
     goalRepo = createMockRepo<IGoalRepository>({
       findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
+      saveRootWithExpectedVersion: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new ArchiveGoalUseCase(goalRepo, new GoalPolicy());
   });
@@ -50,7 +51,7 @@ describe('ArchiveGoalUseCase', () => {
   it('should return NOT_FOUND when goal does not exist', async () => {
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent', 'identity-1');
+    const result = await useCase.execute('non-existent', 'identity-1', 1);
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -60,18 +61,22 @@ describe('ArchiveGoalUseCase', () => {
     const goal = createCompletedGoal();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id, 'identity-1')).rejects.toThrow();
+    await expect(useCase.execute(goal.id, 'identity-1', goal.version)).rejects.toThrow();
   });
 
   it('should archive an active goal', async () => {
     const goal = createTestGoal();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result).toBeOk();
     expect(goal.archivedAt).not.toBeNull();
     expect(goal.completedAt).toBeNull();
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', goal.id, {
+      includeChildren: true,
+    });
+    expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
   });
 
   it('should throw when goal is already archived', async () => {
@@ -79,20 +84,31 @@ describe('ArchiveGoalUseCase', () => {
     goal.archive();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id, 'identity-1')).rejects.toThrow();
+    await expect(useCase.execute(goal.id, 'identity-1', goal.version)).rejects.toThrow();
   });
 
   it('should return the goal DTO on success', async () => {
     const goal = createTestGoal('Archive Me');
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result).toBeOk();
     if (result.ok) {
-      expect(result.data.name).toBe('Archive Me');
-      expect(result.data.id).toBe(goal.id);
-      expect(result.data.archivedAt).not.toBeNull();
+      expect(result.data.readModel.name).toBe('Archive Me');
+      expect(result.data.readModel.id).toBe(goal.id);
+      expect(result.data.readModel.archivedAt).not.toBeNull();
     }
+  });
+
+  it('rejects a stale version before archiving', async () => {
+    const goal = createTestGoal();
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
+
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version + 1);
+
+    expect(result).toBeErrorWithCode('CONFLICT');
+    expect(goal.archivedAt).toBeNull();
+    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
   });
 });

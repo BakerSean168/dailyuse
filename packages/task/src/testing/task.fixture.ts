@@ -105,8 +105,6 @@ export function aTaskTemplateState(overrides: Partial<TaskTemplateState> = {}): 
     color: overrides.color ?? null,
     status: overrides.status ?? TaskTemplateStatus.Active,
     folderId: overrides.folderId ?? null,
-    goalId: overrides.goalId ?? null,
-    keyResultId: overrides.keyResultId ?? null,
     goalBinding: overrides.goalBinding ?? null,
     checklist: overrides.checklist ?? [],
     parentTaskId: overrides.parentTaskId ?? null,

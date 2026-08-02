@@ -31,6 +31,8 @@ export async function importTasks(
     const rr = t.recurrenceRule as Record<string, unknown> | undefined;
     const rc = t.reminderConfig as Record<string, unknown> | undefined;
     const reminderTrigger = Array.isArray(rc?.triggers) ? (rc.triggers[0] as Record<string, unknown> | undefined) : undefined;
+    const goalId = optRef(t.goalRef as string | null, ctx);
+    const keyResultId = optRef(t.keyResultRef as string | null, ctx);
     await tx.createTaskTemplate({
       id, identityId: ctx.identityId,
       name: t.title as string,
@@ -59,7 +61,10 @@ export async function importTasks(
       reminderConfigTimeOffsetMinutes: (rc?.timeOffsetMinutes as number | null | undefined) ?? (reminderTrigger?.relativeValue as number | null | undefined) ?? null,
       reminderConfigUnit: (rc?.unit as string | null | undefined) ?? (reminderTrigger?.relativeUnit as string | null | undefined) ?? null,
       reminderConfigChannel: (rc?.channel as string | null | undefined) ?? (reminderTrigger?.channel as string | null | undefined) ?? null,
-      goalBinding: t.goalBinding ? jsonStringify(t.goalBinding) : null,
+      goalId,
+      keyResultId,
+      goalRecordValue: t.goalRecordValue as number | null ?? null,
+      goalProgressTrigger: t.goalProgressTrigger as string | null ?? null,
       checklist: t.checklist ? jsonStringify(t.checklist) : null,
       dependencyStatus: 'NONE', isBlocked: false,
       ...timestamps(t),

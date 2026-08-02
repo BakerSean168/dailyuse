@@ -8,20 +8,11 @@
 import type { PrismaClient, GoalRecord as PrismaGoalRecord, Prisma } from '@memoflow/database';
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '../../../domain';
 import { GoalRecord } from '../../../domain';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
-import { eventBus } from '@memoflow/utils/domain';
 import { PrismaGoalRecordMapper } from './mappers/prisma-goal-record-mapper';
 import type { GoalRecordSourceTypeValue } from '@memoflow/contracts/goal';
 
-const eventBusAdapter = createEventBusAdapter(eventBus);
-
-export class GoalRecordPrismaRepository
-  extends AggregateRepositoryBase<GoalRecord>
-  implements IGoalRecordRepository
-{
-  constructor(private readonly prisma: PrismaClient) {
-    super(eventBusAdapter);
-  }
+export class GoalRecordPrismaRepository implements IGoalRecordRepository {
+  constructor(private readonly prisma: PrismaClient | Prisma.TransactionClient) {}
 
   /**
    * Map Prisma row to domain aggregate
@@ -63,7 +54,7 @@ export class GoalRecordPrismaRepository
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
     const data = await this.prisma.goalRecord.findMany({
-      where: { identityId, keyResultId, deletedAt: null, ...where },
+      where: { identityId, keyResultId, ...where },
       orderBy,
       ...(take ? { take } : {}),
     });
@@ -85,7 +76,6 @@ export class GoalRecordPrismaRepository
       where: {
         identityId,
         keyResult: { goalId },
-        deletedAt: null,
         ...where,
       },
       orderBy,
@@ -109,7 +99,6 @@ export class GoalRecordPrismaRepository
       where: {
         identityId,
         keyResultId: { in: keyResultIds },
-        deletedAt: null,
         ...where,
       },
       orderBy,
@@ -134,7 +123,7 @@ export class GoalRecordPrismaRepository
    */
   async countByKeyResultId(identityId: string, keyResultId: string): Promise<number> {
     return this.prisma.goalRecord.count({
-      where: { identityId, keyResultId, deletedAt: null },
+      where: { identityId, keyResultId },
     });
   }
 
@@ -144,7 +133,7 @@ export class GoalRecordPrismaRepository
     sourceId: string,
   ): Promise<GoalRecord | null> {
     const row = await this.prisma.goalRecord.findFirst({
-      where: { identityId, sourceType, sourceId, deletedAt: null },
+      where: { identityId, sourceType, sourceId },
     });
     return row ? this.mapToEntity(row) : null;
   }
@@ -152,7 +141,7 @@ export class GoalRecordPrismaRepository
   /**
    * Protected persistence method - called by base class before event publishing
    */
-  protected async persist(record: GoalRecord): Promise<void> {
+  async save(record: GoalRecord): Promise<void> {
     const dto = record.toServerDTO();
 
     await this.prisma.goalRecord.upsert({
@@ -166,10 +155,8 @@ export class GoalRecordPrismaRepository
         sourceType: dto.sourceType,
         sourceId: dto.sourceId,
         recordedAt: new Date(dto.recordedAt),
-        version: dto.version,
         createdAt: new Date(dto.createdAt),
         updatedAt: new Date(dto.updatedAt),
-        deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       },
       update: {
         value: dto.value,
@@ -177,9 +164,7 @@ export class GoalRecordPrismaRepository
         sourceType: dto.sourceType,
         sourceId: dto.sourceId,
         recordedAt: new Date(dto.recordedAt),
-        version: dto.version,
         updatedAt: new Date(dto.updatedAt),
-        deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       },
     });
   }

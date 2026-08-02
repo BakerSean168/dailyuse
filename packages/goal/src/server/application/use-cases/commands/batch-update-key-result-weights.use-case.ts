@@ -1,16 +1,17 @@
 /**
  * Batch Update Key Result Weights Use Case
  *
- * Sequentially updates key result weights with short-circuit on failure.
- * Returns the updated goal aggregate on success.
- * Replaces the inline workflow previously in GoalController.batchUpdateKeyResultWeights().
+ * Updates a complete set of key result weights as one aggregate write.
+ * Each changed weight gets an audit snapshot in the same transaction.
  */
 
-import type { IGoalRepository } from '../../../domain';
-import type { GetGoalRes } from '@memoflow/contracts/goal';
+import { Goal, GoalPolicy, GoalVersionConflictError } from '../../../domain';
+import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
+import type { KeyResultId } from '@memoflow/contracts/primitives';
 import type { Result } from '@memoflow/contracts/result';
-import { ok } from '@memoflow/contracts/result';
-import type { UpdateGoalKeyResultUseCase } from './update-goal-key-result.use-case';
+import { ok, error } from '@memoflow/contracts/result';
+import type { GoalWriteTransactionRunner } from './goal-write-support';
+import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 export interface KeyResultWeightUpdate {
   keyResultId: string;
@@ -19,27 +20,86 @@ export interface KeyResultWeightUpdate {
 
 export class BatchUpdateKeyResultWeightsUseCase {
   constructor(
-    private readonly goalRepository: IGoalRepository,
-    private readonly updateKeyResult: UpdateGoalKeyResultUseCase,
+    private readonly transactionRunner: GoalWriteTransactionRunner,
+    private readonly goalPolicy: GoalPolicy,
   ) {}
 
   async execute(
     goalId: string,
     identityId: string,
+    expectedVersion: number,
     updates: KeyResultWeightUpdate[],
-  ): Promise<Result<GetGoalRes>> {
-    for (const { keyResultId, weight } of updates) {
-      const result = await this.updateKeyResult.execute(goalId, identityId, keyResultId, { weight });
-      if (!result.ok) return result;
-    }
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.transactionRunner.run(async ({ goalRepository }) => {
+      const goal = await goalRepository.findByIdForIdentity(identityId, goalId, {
+        includeChildren: true,
+      });
+      if (!goal) {
+        return error('NOT_FOUND', `Goal not found: ${goalId}`);
+      }
+      if (expectedVersion !== goal.version) {
+        return error('CONFLICT', 'Goal has been modified by another client');
+      }
 
-    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
-      includeChildren: true,
+      this.goalPolicy.ensureGoalCanBeModified(goal);
+      const validationError = this.validateUpdates(goal, updates);
+      if (validationError) return validationError;
+
+      let hasChanges = false;
+      const changedKeyResultIds: KeyResultId[] = [];
+      for (const { keyResultId, weight } of updates) {
+        const keyResult = goal.getKeyResult(keyResultId)!;
+        const oldWeight = keyResult.weight;
+        if (oldWeight === weight) continue;
+
+        goal.updateKeyResult(keyResultId, { weight });
+        goal.recordWeightSnapshot(
+          keyResultId,
+          oldWeight,
+          weight,
+          'Manual',
+          identityId,
+          'Batch update key result weights',
+        );
+        changedKeyResultIds.push(keyResult.id);
+        hasChanges = true;
+      }
+
+      if (hasChanges) {
+        goal.advanceVersion();
+        try {
+          await goalRepository.saveRootWithExpectedVersion(goal, expectedVersion);
+        } catch (cause) {
+          if (cause instanceof GoalVersionConflictError) {
+            return error('CONFLICT', cause.message);
+          }
+          throw cause;
+        }
+      }
+
+      return ok(createGoalMutationReceipt(goal, { keyResultIds: changedKeyResultIds }));
     });
-    if (!goal) {
-      return { ok: false, error: { code: 'NOT_FOUND', message: `Goal not found: ${goalId}` } };
-    }
+  }
 
-    return ok(goal.toClientDTO(true));
+  private validateUpdates(
+    goal: Goal,
+    updates: KeyResultWeightUpdate[],
+  ): Extract<Result<GoalMutationReceipt>, { ok: false }> | null {
+    const keyResultIds = new Set<string>();
+    for (const { keyResultId, weight } of updates) {
+      if (keyResultIds.has(keyResultId)) {
+        return error(
+          'VALIDATION_ERROR',
+          `KeyResult weight is specified more than once: ${keyResultId}`,
+        );
+      }
+      keyResultIds.add(keyResultId);
+
+      if (!goal.getKeyResult(keyResultId)) {
+        return error('NOT_FOUND', `KeyResult not found: ${keyResultId}`);
+      }
+      Goal.validateKeyResultWeight(weight);
+    }
+    return null;
   }
 }

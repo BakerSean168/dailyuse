@@ -34,6 +34,8 @@ describe('migrator interface', () => {
       'prepare goal-record source correlation',
       'prepare editor-workspace natural key',
       'reconcile Prisma schema',
+      'prepare AI provider default invariant',
+      'ensure Task goal-binding constraint',
       'bootstrap AI knowledge index',
       'verify AI knowledge index',
     ]);

@@ -26,8 +26,6 @@ export interface GoalFolderState {
   sortOrder: number;
   isSystemFolder: boolean;
   folderType: FolderType | null;
-  goalCount: number;
-  completedGoalCount: number;
   version: number;
   createdAt: Instant;
   updatedAt: Instant;
@@ -81,14 +79,6 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     return this._props.folderType;
   }
 
-  get goalCount(): number {
-    return this._props.goalCount;
-  }
-
-  get completedGoalCount(): number {
-    return this._props.completedGoalCount;
-  }
-
   get version(): number {
     return this._props.version;
   }
@@ -118,17 +108,8 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     return this._props.icon ?? '📁';
   }
 
-  get completionRate(): number {
-    if (this._props.goalCount === 0) return 0;
-    return Math.round((this._props.completedGoalCount / this._props.goalCount) * 100);
-  }
-
   get isDeleted(): boolean {
     return this._props.deletedAt !== null;
-  }
-
-  get activeGoalCount(): number {
-    return this._props.goalCount - this._props.completedGoalCount;
   }
 
   // ================= 4. Factory Methods =================
@@ -151,16 +132,12 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
       sortOrder: this._props.sortOrder,
       isSystemFolder: this._props.isSystemFolder,
       folderType: this._props.folderType,
-      goalCount: this._props.goalCount,
-      completedGoalCount: this._props.completedGoalCount,
       version: this._props.version,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
       deletedAt: this._props.deletedAt ?? null,
       displayName: this.displayName,
       displayIcon: this.displayIcon,
-      completionRate: this.completionRate,
-      activeGoalCount: this.activeGoalCount,
     };
   }
 }

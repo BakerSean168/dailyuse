@@ -33,6 +33,7 @@ import { GovernanceApiModule } from '@memoflow/governance/api';
 import { AccountApiModule } from '@memoflow/account/api';
 import { createAuthenticationApiModule } from '@memoflow/authentication/api';
 import { GoalApiModule } from '@memoflow/goal/api';
+import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
 import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { NotificationApiModule } from '@memoflow/notification/api';
@@ -119,6 +120,7 @@ async function bootstrap(): Promise<void> {
   });
   const taskApiModule = createTaskApiModule({
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
+    goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
   });
   const scheduleApiModule = createScheduleApiModule({
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,

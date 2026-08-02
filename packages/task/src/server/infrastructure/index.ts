@@ -22,6 +22,7 @@ export { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependenc
 /** @internal Concrete Prisma implementation — use ITaskFolderRepository interface instead. Prisma 具体实现 — 请使用 ITaskFolderRepository 接口。 */
 export { TaskFolderPrismaRepository } from './adapters/prisma/task-folder-prisma.repository';
 export { PrismaTaskWriteTransactionRunner } from './adapters/prisma/prisma-task-write-transaction-runner';
+export { PrismaTaskGoalOutboxDispatchStore } from './adapters/prisma/prisma-task-goal-outbox-dispatch-store';
 
 // ============ Adapters - PowerSync ============
 /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
@@ -31,6 +32,7 @@ export {
   PowerSyncTaskDependencyRepository,
   PowerSyncTaskFolderRepository,
   PowerSyncTaskWriteTransactionRunner,
+  PowerSyncTaskGoalOutboxDispatchStore,
 } from './adapters/powersync';
 
 // ============ Composition Root ============
@@ -56,9 +58,11 @@ export {
   createTaskPrismaScheduleProjectionSource,
   type CreateTaskPrismaModuleOptions,
 } from './prisma';
+export { createTaskRuntimeContribution } from './runtime';
 export {
-  createTaskRuntimeContribution,
-} from './runtime';
+  createTaskGoalOutboxRuntime,
+  type TaskGoalOutboxRuntimeOptions,
+} from './task-goal-outbox-runtime';
 export {
   createTaskScheduleExecutionSource,
   type CreateTaskScheduleExecutionSourceDeps,

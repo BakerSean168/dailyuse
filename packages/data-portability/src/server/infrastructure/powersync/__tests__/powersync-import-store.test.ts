@@ -56,7 +56,9 @@ describe('PowerSyncDataPortabilityImportStore', () => {
       }),
     );
 
-    const insert = statements.find((statement) => statement.sql.includes('INSERT INTO repositories'));
+    const insert = statements.find((statement) =>
+      statement.sql.includes('INSERT INTO repositories'),
+    );
     expect(insert?.sql).toContain('identity_id');
     expect(insert?.sql).toContain('created_at');
     expect(insert?.sql).not.toContain('identityId');
@@ -99,20 +101,33 @@ describe('PowerSyncDataPortabilityImportStore', () => {
         reminderConfigTimeOffsetMinutes: 15,
         reminderConfigUnit: 'Minute',
         reminderConfigChannel: 'system',
-        goalBinding: JSON.stringify({ goalId: 'goal-1' }),
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+        goalRecordValue: 2.5,
+        goalProgressTrigger: 'PER_INSTANCE',
         checklist: JSON.stringify([{ title: 'cover IPC', order: 0 }]),
         dependencyStatus: 'NONE',
         isBlocked: true,
       }),
     );
 
-    const insert = statements.find((statement) => statement.sql.includes('INSERT INTO task_templates'));
+    const insert = statements.find((statement) =>
+      statement.sql.includes('INSERT INTO task_templates'),
+    );
     expect(insert?.sql).toContain('time_config_type');
     expect(insert?.sql).toContain('reminder_config_enabled');
+    expect(insert?.sql).toContain('goal_id');
+    expect(insert?.sql).toContain('key_result_id');
+    expect(insert?.sql).toContain('goal_record_value');
+    expect(insert?.sql).toContain('goal_progress_trigger');
+    expect(insert?.sql).not.toContain('goal_binding');
     expect(insert?.sql).toContain('is_blocked');
     expect(insert?.sql).not.toContain('timeConfigType');
     expect(insert?.parameters).toContain(JSON.stringify(['qa']));
-    expect(insert?.parameters).toContain(JSON.stringify({ goalId: 'goal-1' }));
+    expect(insert?.parameters).toContain('goal-1');
+    expect(insert?.parameters).toContain('kr-1');
+    expect(insert?.parameters).toContain(2.5);
+    expect(insert?.parameters).toContain('PER_INSTANCE');
     expect(insert?.parameters).toContain(1);
   });
 
@@ -171,7 +186,9 @@ describe('PowerSyncDataPortabilityImportStore', () => {
       }),
     );
 
-    const insert = statements.find((statement) => statement.sql.includes('INSERT INTO schedule_tasks'));
+    const insert = statements.find((statement) =>
+      statement.sql.includes('INSERT INTO schedule_tasks'),
+    );
     expect(insert?.sql).toContain('cron_expression');
     expect(insert?.sql).toContain('retryable_statuses');
     expect(insert?.sql).toContain('timeout');
@@ -197,7 +214,9 @@ describe('PowerSyncDataPortabilityImportStore', () => {
       }),
     );
 
-    const insert = statements.find((statement) => statement.sql.includes('INSERT INTO reminder_responses'));
+    const insert = statements.find((statement) =>
+      statement.sql.includes('INSERT INTO reminder_responses'),
+    );
     expect(insert?.parameters?.[0]).toBe('response-1');
   });
 
@@ -206,8 +225,10 @@ describe('PowerSyncDataPortabilityImportStore', () => {
     const store = new PowerSyncDataPortabilityImportStore(db);
     const error = new Error('boom');
 
-    await expect(store.transaction(async () => {
-      throw error;
-    })).rejects.toBe(error);
+    await expect(
+      store.transaction(async () => {
+        throw error;
+      }),
+    ).rejects.toBe(error);
   });
 });

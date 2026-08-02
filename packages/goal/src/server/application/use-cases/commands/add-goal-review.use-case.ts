@@ -2,11 +2,11 @@
  * Add Goal Review Use Case
  */
 
-import type { IGoalRepository } from '../../../domain';
-import { GoalPolicy } from '../../../domain';
-import type { GoalReviewClientDTO } from '@memoflow/contracts/goal';
+import { GoalPolicy, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
+import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 export class AddGoalReviewUseCase {
   constructor(
@@ -19,6 +19,7 @@ export class AddGoalReviewUseCase {
     identityId: string,
     params: {
       title: string;
+      expectedVersion: number;
       content: string;
       reviewType: string;
       rating?: number;
@@ -26,18 +27,28 @@ export class AddGoalReviewUseCase {
       challenges?: string;
       nextActions?: string;
     },
-  ): Promise<Result<GoalReviewClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
       includeChildren: true,
     });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
+    if (params.expectedVersion !== goal.version) {
+      return error('CONFLICT', 'Goal has been modified by another client');
+    }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);
-    const review = goal.createAndAddReview(params);
-    await this.goalRepository.save(goal);
+    const { expectedVersion, ...reviewInput } = params;
+    const review = goal.createAndAddReview(reviewInput);
+    goal.advanceVersion();
+    try {
+      await this.goalRepository.saveRootWithExpectedVersion(goal, expectedVersion);
+    } catch (cause) {
+      if (cause instanceof GoalVersionConflictError) return error('CONFLICT', cause.message);
+      throw cause;
+    }
 
-    return ok(review.toClientDTO());
+    return ok(createGoalMutationReceipt(goal, { reviewIds: [review.id] }));
   }
 }

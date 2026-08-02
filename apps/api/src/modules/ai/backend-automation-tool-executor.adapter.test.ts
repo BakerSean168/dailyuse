@@ -6,7 +6,6 @@ import { BackendAutomationToolExecutorAdapter } from './backend-automation-tool-
 
 const mocks = vi.hoisted(() => ({
   createGoal: vi.fn(),
-  addKeyResult: vi.fn(),
   createTaskTemplate: vi.fn(),
   createReminderTemplate: vi.fn(),
   listRelevantNotes: vi.fn(),
@@ -17,7 +16,6 @@ vi.mock('@memoflow/goal', () => ({
   createGoalPrismaModule: vi.fn(() => ({
     api: {
       createGoal: mocks.createGoal,
-      addKeyResult: mocks.addKeyResult,
     },
   })),
 }));
@@ -113,9 +111,17 @@ function createExecutionInput(): GoalAutomationExecutionInput {
 describe('BackendAutomationToolExecutorAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.createGoal.mockResolvedValue(ok({ id: 'goal-1', name: 'Ship Agent workflow' }));
-    mocks.addKeyResult.mockResolvedValue(
-      ok({ id: 'key-result-1', title: 'Complete verified executor path' }),
+    mocks.createGoal.mockResolvedValue(
+      ok({
+        goalId: 'goal-1',
+        goalVersion: 1,
+        affectedIds: ['goal-1', 'key-result-1'],
+        readModel: {
+          id: 'goal-1',
+          name: 'Ship Agent workflow',
+          keyResults: [{ id: 'key-result-1', title: 'Complete verified executor path' }],
+        },
+      }),
     );
     mocks.createTaskTemplate.mockResolvedValue(
       ok({
@@ -158,19 +164,22 @@ describe('BackendAutomationToolExecutorAdapter', () => {
         'create_reminder',
       ]);
       expect(result.every((action) => action.status === 'executed')).toBe(true);
-      expect(mocks.addKeyResult).toHaveBeenCalledWith(
-        'goal-1',
-        'identity-1',
-        {
-          title: 'Complete verified executor path',
-          valueType: 'Absolute',
-          aggregationMethod: 'Max',
-          startValue: 2,
-          currentValue: 4,
-          targetValue: 10,
-          unit: 'checks',
-          weight: 5,
-        },
+      expect(mocks.createGoal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initialKeyResults: [
+            {
+              title: 'Complete verified executor path',
+              valueType: 'Absolute',
+              calculationMethod: 'Max',
+              startValue: 2,
+              currentValue: 4,
+              targetValue: 10,
+              unit: 'checks',
+              weight: 5,
+            },
+          ],
+        }),
+        { identityId: 'identity-1' },
       );
       expect(mocks.createTaskTemplate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -245,7 +254,6 @@ describe('BackendAutomationToolExecutorAdapter', () => {
         message: 'Skipped because goal creation failed.',
       },
     ]);
-    expect(mocks.addKeyResult).not.toHaveBeenCalled();
     expect(mocks.createTaskTemplate).not.toHaveBeenCalled();
     expect(mocks.createReminderTemplate).not.toHaveBeenCalled();
   });

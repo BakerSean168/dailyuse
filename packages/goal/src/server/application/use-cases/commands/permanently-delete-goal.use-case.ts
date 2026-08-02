@@ -7,7 +7,7 @@
  */
 
 import type { IGoalRepository } from '../../../domain';
-import { GoalPolicy } from '../../../domain';
+import { GoalPolicy, GoalVersionConflictError } from '../../../domain';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 
@@ -32,19 +32,31 @@ export class PermanentlyDeleteGoalUseCase {
    * @param id - 目标 ID
    * @returns 成功返回被删除的目标 ID
    */
-  async execute(id: string, identityId: string): Promise<Result<{ id: string }>> {
+  async execute(
+    id: string,
+    identityId: string,
+    expectedVersion: number,
+  ): Promise<Result<{ id: string }>> {
     const goal = await this.goalRepository.findByIdForIdentity(identityId, id, {
       includeChildren: true,
     });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }
+    if (goal.version !== expectedVersion) {
+      return error('CONFLICT', 'Goal has been modified by another client');
+    }
 
     // 业务规则：只有已归档的目标才能被永久删除
     this.goalPolicy.ensureGoalCanBePermanentlyDeleted(goal);
 
     // 执行物理删除（级联删除所有子实体）
-    await this.goalRepository.delete(identityId, id);
+    try {
+      await this.goalRepository.deleteWithExpectedVersion(identityId, id, expectedVersion);
+    } catch (cause) {
+      if (cause instanceof GoalVersionConflictError) return error('CONFLICT', cause.message);
+      throw cause;
+    }
 
     return ok({ id });
   }

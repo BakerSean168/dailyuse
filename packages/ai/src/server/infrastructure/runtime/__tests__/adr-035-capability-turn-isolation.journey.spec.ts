@@ -79,7 +79,7 @@ function createProviderConfigRepository(): IAIProviderConfigRepository {
     }),
     findByIdentityId: vi.fn(),
     delete: vi.fn(),
-    clearDefaultForIdentity: vi.fn(),
+    setDefaultForIdentity: vi.fn(async () => 'NOT_FOUND' as const),
   } as unknown as IAIProviderConfigRepository;
 }
 

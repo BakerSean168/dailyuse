@@ -3,7 +3,11 @@ import type { IdentityId } from '@memoflow/contracts';
 import type { AiProviderConfigId } from '@memoflow/contracts/primitives';
 
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../server/domain';
-import { createAIModule, type AIModuleDependencies, type AIModuleInstance } from '../server/infrastructure';
+import {
+  createAIModule,
+  type AIModuleDependencies,
+  type AIModuleInstance,
+} from '../server/infrastructure';
 
 export function createAIConversationRepositoryStub(
   overrides: Partial<IAIConversationRepository> = {},
@@ -21,12 +25,12 @@ export function createAIProviderConfigRepositoryStub(
   overrides: Partial<IAIProviderConfigRepository> = {},
 ): IAIProviderConfigRepository {
   return {
-    save: async () => {},
+    save: async () => 'SAVED',
     findByIdForIdentity: async () => null,
     findByIdentityId: async () => [],
     findDefaultByIdentityId: async () => null,
     delete: async () => {},
-    clearDefaultForIdentity: async () => {},
+    setDefaultForIdentity: async () => 'NOT_FOUND',
     ...overrides,
   };
 }

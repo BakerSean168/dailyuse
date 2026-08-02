@@ -14,11 +14,13 @@ import {
   GoalFolderPrismaRepository,
   GoalPrismaRepository,
   GoalRecordPrismaRepository,
+  PrismaGoalWriteTransactionRunner,
 } from './adapters/prisma';
 import { createGoalScheduleExecutionSource } from './schedule-execution-source';
 import { createGoalScheduleProjectionSource } from './schedule-projection-source';
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
 import type { GoalScheduleProjectionSource } from '../../schedule-projection';
+import { createGoalTaskProgressHandler } from '../application/event-handlers';
 
 export function createGoalPrismaModule(
   db: PrismaClient,
@@ -31,6 +33,7 @@ export function createGoalPrismaModule(
     goalFolderRepository: new GoalFolderPrismaRepository(db),
     goalRecordRepository: new GoalRecordPrismaRepository(db),
     focusModeRepository: new FocusModePrismaRepository(db),
+    goalWriteTransactionRunner: new PrismaGoalWriteTransactionRunner(db),
     runtimeContributions: options?.runtimeContributions,
   });
 }
@@ -46,6 +49,16 @@ export function createGoalPrismaRepositories(db: PrismaClient) {
     goalRecordRepository: new GoalRecordPrismaRepository(db),
     focusModeRepository: new FocusModePrismaRepository(db),
   };
+}
+
+/** Host-level Task -> Goal integration handler backed by one Goal transaction. */
+export function createGoalTaskProgressPrismaHandler(db: PrismaClient) {
+  const repositories = createGoalPrismaRepositories(db);
+  return createGoalTaskProgressHandler(
+    repositories.goalRepository,
+    repositories.goalRecordRepository,
+    new PrismaGoalWriteTransactionRunner(db),
+  );
 }
 
 export function createGoalPrismaScheduleProjectionSource(

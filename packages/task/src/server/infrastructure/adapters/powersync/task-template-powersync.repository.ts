@@ -70,7 +70,10 @@ export class PowerSyncTaskTemplateRepository
              reminder_config_channel = ?,
              last_generated_date = ?,
              generate_ahead_days = ?,
-             goal_binding = ?,
+             goal_id = ?,
+             key_result_id = ?,
+             goal_record_value = ?,
+             goal_progress_trigger = ?,
              checklist = ?,
              blocking_reason = ?,
              dependency_status = ?,
@@ -110,7 +113,10 @@ export class PowerSyncTaskTemplateRepository
           data.reminderConfigChannel,
           data.lastGeneratedDate,
           data.generateAheadDays,
-          data.goalBinding,
+          data.goalId,
+          data.keyResultId,
+          data.goalRecordValue,
+          data.goalProgressTrigger,
           data.checklist,
           data.blockingReason,
           data.dependencyStatus,
@@ -131,9 +137,10 @@ export class PowerSyncTaskTemplateRepository
           recurrence_rule_days_of_week, recurrence_rule_day_of_month, recurrence_rule_month_of_year,
           recurrence_rule_end_date, recurrence_rule_count, reminder_config_enabled,
           reminder_config_time_offset_minutes, reminder_config_unit, reminder_config_channel,
-          last_generated_date, generate_ahead_days, goal_binding, checklist, blocking_reason,
+          last_generated_date, generate_ahead_days, goal_id, key_result_id, goal_record_value,
+          goal_progress_trigger, checklist, blocking_reason,
           dependency_status, is_blocked, version, created_at, updated_at, deleted_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.id,
           data.identityId,
@@ -166,7 +173,10 @@ export class PowerSyncTaskTemplateRepository
           data.reminderConfigChannel,
           data.lastGeneratedDate,
           data.generateAheadDays,
-          data.goalBinding,
+          data.goalId,
+          data.keyResultId,
+          data.goalRecordValue,
+          data.goalProgressTrigger,
           data.checklist,
           data.blockingReason,
           data.dependencyStatus,
@@ -228,11 +238,10 @@ export class PowerSyncTaskTemplateRepository
   }
 
   async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
-    const rows = await this.queryTemplates(
-      'SELECT * FROM task_templates WHERE identity_id = ? AND goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
-      [identityId],
+    return this.queryTemplates(
+      'SELECT * FROM task_templates WHERE identity_id = ? AND goal_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
+      [identityId, goalId],
     );
-    return rows.filter((template) => template.toServerDTO().goalBinding?.goalId === goalId);
   }
 
   async findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]> {
@@ -301,12 +310,9 @@ export class PowerSyncTaskTemplateRepository
   }
 
   async findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]> {
-    const rows = await this.queryTemplates(
-      'SELECT * FROM task_templates WHERE identity_id = ? AND goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
-      [identityId],
-    );
-    return rows.filter(
-      (template) => template.toServerDTO().goalBinding?.keyResultId === keyResultId,
+    return this.queryTemplates(
+      'SELECT * FROM task_templates WHERE identity_id = ? AND key_result_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
+      [identityId, keyResultId],
     );
   }
 
@@ -419,5 +425,4 @@ export class PowerSyncTaskTemplateRepository
     return rows.map((row) => PowerSyncTaskTemplateMapper.toDomain(row));
   }
 }
-
 

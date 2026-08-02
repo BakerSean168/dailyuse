@@ -1,7 +1,12 @@
-import type { IGoalRepository } from '../../../domain';
+import { GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { Goal } from '../../../domain';
 import type { KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import {
+  AggregateRepositoryBase,
+  createEventBusAdapter,
+  publishAggregateEvents,
+  type IEventBus,
+} from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import type { GoalPowerSyncDatabase, PowerSyncLockContext } from './shared';
 import { toDbDateTime } from './shared';
@@ -14,11 +19,15 @@ export class GoalPowerSyncRepository
   extends AggregateRepositoryBase<Goal>
   implements IGoalRepository
 {
-  constructor(private readonly db: GoalPowerSyncDatabase) {
-    super(eventBusAdapter);
+  constructor(
+    private readonly db: GoalPowerSyncDatabase | PowerSyncLockContext,
+    eventBus: IEventBus = eventBusAdapter,
+    private readonly transactionBound = false,
+  ) {
+    super(eventBus);
   }
 
-    async findByIdForIdentity(
+  async findByIdForIdentity(
     identityId: string,
     id: string,
     options?: { includeChildren?: boolean },
@@ -75,28 +84,15 @@ export class GoalPowerSyncRepository
     }
 
     const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT
-         g.*,
-         (
-           SELECT COUNT(*)
-           FROM key_results kr
-           WHERE kr.goal_id = g.id AND kr.deleted_at IS NULL
-         ) AS total_key_results,
-         (
-           SELECT COUNT(*)
-           FROM key_results kr
-           WHERE kr.goal_id = g.id
-             AND kr.deleted_at IS NULL
-             AND COALESCE(kr.current_value, 0) >= COALESCE(kr.target_value, 0)
-         ) AS completed_key_results
+      `SELECT g.*
        FROM goals g
        WHERE ${filters.join(' AND ')}
        ORDER BY g.sort_order ASC, g.created_at DESC`,
       params,
     );
 
-    const includeChildren = options?.includeChildren ?? false;
-    return Promise.all(rows.map((row) => this.toGoal(row, includeChildren)));
+    // Keep aggregate-derived counts/progress authoritative on both adapters.
+    return Promise.all(rows.map((row) => this.toGoal(row, true)));
   }
 
   async findByKeyResultIdForIdentity(
@@ -104,10 +100,12 @@ export class GoalPowerSyncRepository
     keyResultId: string,
   ): Promise<Goal | null> {
     const row = await this.db.getOptional<{ goal_id: string }>(
-      `SELECT goal_id FROM key_results WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
+      `SELECT goal_id FROM key_results WHERE id = ? LIMIT 1`,
       [keyResultId],
     );
-    return row ? this.findByIdForIdentity(identityId, row.goal_id, { includeChildren: true }) : null;
+    return row
+      ? this.findByIdForIdentity(identityId, row.goal_id, { includeChildren: true })
+      : null;
   }
 
   async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
@@ -128,7 +126,7 @@ export class GoalPowerSyncRepository
   protected async persist(goal: Goal): Promise<void> {
     const dto = goal.toServerDTO(true);
 
-    await this.db.writeTransaction(async (tx) => {
+    const persistInTransaction = async (tx: PowerSyncLockContext) => {
       const existingGoal = await tx.getOptional<{ id: string }>(
         `SELECT id FROM goals WHERE id = ? LIMIT 1`,
         [dto.id],
@@ -242,7 +240,62 @@ export class GoalPowerSyncRepository
         dto.identityId as string,
         dto.weightSnapshots ?? [],
       );
-    });
+    };
+
+    if (this.transactionBound) {
+      await persistInTransaction(this.db as PowerSyncLockContext);
+      return;
+    }
+
+    await (this.db as GoalPowerSyncDatabase).writeTransaction(persistInTransaction);
+  }
+
+  async saveRootWithExpectedVersion(goal: Goal, expectedVersion: number): Promise<void> {
+    if (!this.transactionBound) {
+      await (this.db as GoalPowerSyncDatabase).writeTransaction(async (tx) => {
+        const repository = new GoalPowerSyncRepository(tx, this.eventBus, true);
+        await repository.persistWithExpectedVersion(goal, expectedVersion);
+      });
+      await publishAggregateEvents(goal, this.eventBus);
+      return;
+    }
+
+    await this.persistWithExpectedVersion(goal, expectedVersion);
+    await publishAggregateEvents(goal, this.eventBus);
+  }
+
+  private async persistWithExpectedVersion(goal: Goal, expectedVersion: number): Promise<void> {
+    const dto = goal.toServerDTO(false);
+    const result = await this.db.execute(
+      `UPDATE goals SET name = ?, description = ?, color = ?, feasibility_analysis = ?, motivation = ?,
+       status = ?, importance = ?, priority = ?, category = ?, tags = ?, start_date = ?, target_date = ?,
+       folder_id = ?, parent_goal_id = ?, reminder_config = ?, version = ?, updated_at = ?
+       WHERE id = ? AND identity_id = ? AND version = ?`,
+      [
+        dto.name,
+        dto.description,
+        dto.color,
+        dto.feasibilityAnalysis,
+        dto.motivation,
+        dto.status,
+        dto.importance,
+        dto.priority ?? 0,
+        dto.category,
+        JSON.stringify(dto.tags ?? []),
+        toDbDateTime(dto.startDate),
+        toDbDateTime(dto.targetDate),
+        dto.folderId,
+        dto.parentGoalId,
+        dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
+        dto.version,
+        toDbDateTime(dto.updatedAt),
+        dto.id,
+        dto.identityId,
+        expectedVersion,
+      ],
+    );
+    if (result.rowsAffected !== 1) throw new GoalVersionConflictError();
+    await this.persist(goal);
   }
 
   async delete(identityId: string, id: string): Promise<void> {
@@ -250,7 +303,7 @@ export class GoalPowerSyncRepository
     if (!existing) {
       throw new Error('Goal not found for the current identity.');
     }
-    await this.db.writeTransaction(async (tx) => {
+    await (this.db as GoalPowerSyncDatabase).writeTransaction(async (tx) => {
       await tx.execute(`DELETE FROM goal_reviews WHERE goal_id = ?`, [id]);
       await tx.execute(
         `DELETE FROM goal_records
@@ -260,6 +313,28 @@ export class GoalPowerSyncRepository
       await tx.execute(`DELETE FROM key_results WHERE goal_id = ?`, [id]);
       await tx.execute(`DELETE FROM key_result_weight_snapshots WHERE goal_id = ?`, [id]);
       await tx.execute(`DELETE FROM goals WHERE id = ? AND identity_id = ?`, [id, identityId]);
+    });
+  }
+
+  async deleteWithExpectedVersion(
+    identityId: string,
+    id: string,
+    expectedVersion: number,
+  ): Promise<void> {
+    await (this.db as GoalPowerSyncDatabase).writeTransaction(async (tx) => {
+      await tx.execute(`DELETE FROM goal_reviews WHERE goal_id = ?`, [id]);
+      await tx.execute(
+        `DELETE FROM goal_records
+         WHERE key_result_id IN (SELECT id FROM key_results WHERE goal_id = ?)`,
+        [id],
+      );
+      await tx.execute(`DELETE FROM key_results WHERE goal_id = ?`, [id]);
+      await tx.execute(`DELETE FROM key_result_weight_snapshots WHERE goal_id = ?`, [id]);
+      const deleted = await tx.execute(
+        `DELETE FROM goals WHERE id = ? AND identity_id = ? AND version = ?`,
+        [id, identityId, expectedVersion],
+      );
+      if (deleted.rowsAffected !== 1) throw new GoalVersionConflictError();
     });
   }
 
@@ -276,7 +351,11 @@ export class GoalPowerSyncRepository
     );
   }
 
-  async batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void> {
+  async batchMoveToFolder(
+    identityId: string,
+    ids: string[],
+    folderId: string | null,
+  ): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
     await this.db.execute(
@@ -339,7 +418,6 @@ export class GoalPowerSyncRepository
       `SELECT *
        FROM key_results
        WHERE goal_id = ?
-         AND deleted_at IS NULL
        ORDER BY "order" ASC`,
       [goalId],
     );
@@ -352,7 +430,6 @@ export class GoalPowerSyncRepository
       `SELECT *
        FROM goal_reviews
        WHERE goal_id = ?
-         AND deleted_at IS NULL
        ORDER BY created_at DESC`,
       [goalId],
     );
@@ -427,9 +504,7 @@ export class GoalPowerSyncRepository
                unit = ?,
                weight = ?,
                "order" = ?,
-               version = ?,
-               updated_at = ?,
-               deleted_at = ?
+               updated_at = ?
            WHERE id = ?`,
           [
             identityId,
@@ -444,9 +519,7 @@ export class GoalPowerSyncRepository
             progress.unit ?? null,
             keyResult.weight,
             keyResult.sortOrder,
-            keyResult.version,
             toDbDateTime(keyResult.updatedAt),
-            toDbDateTime(keyResult.deletedAt),
             keyResult.id,
           ],
         );
@@ -455,8 +528,8 @@ export class GoalPowerSyncRepository
           `INSERT INTO key_results (
              id, identity_id, goal_id, title, description,
              value_type, aggregation_method, initial_value, target_value, current_value,
-             unit, weight, "order", version, created_at, updated_at, deleted_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             unit, weight, "order", created_at, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             keyResult.id,
             identityId,
@@ -471,10 +544,8 @@ export class GoalPowerSyncRepository
             progress.unit ?? null,
             keyResult.weight,
             keyResult.sortOrder,
-            keyResult.version,
             toDbDateTime(keyResult.createdAt),
             toDbDateTime(keyResult.updatedAt),
-            toDbDateTime(keyResult.deletedAt),
           ],
         );
       }
@@ -517,9 +588,7 @@ export class GoalPowerSyncRepository
                lessons_learned = ?,
                next_steps = ?,
                rating = ?,
-               version = ?,
-               updated_at = ?,
-               deleted_at = ?
+               updated_at = ?
            WHERE id = ?`,
           [
             identityId,
@@ -531,9 +600,7 @@ export class GoalPowerSyncRepository
             review.improvements,
             null,
             review.rating,
-            review.version,
             toDbDateTime(review.updatedAt),
-            toDbDateTime(review.deletedAt),
             review.id,
           ],
         );
@@ -541,9 +608,9 @@ export class GoalPowerSyncRepository
         await tx.execute(
           `INSERT INTO goal_reviews (
              id, identity_id, goal_id, review_type, content, achievements,
-             challenges, lessons_learned, next_steps, rating, version,
-             created_at, updated_at, deleted_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             challenges, lessons_learned, next_steps, rating,
+             created_at, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             review.id,
             identityId,
@@ -555,10 +622,8 @@ export class GoalPowerSyncRepository
             review.improvements,
             null,
             review.rating,
-            review.version,
             toDbDateTime(review.createdAt),
             toDbDateTime(review.updatedAt),
-            toDbDateTime(review.deletedAt),
           ],
         );
       }

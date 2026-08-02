@@ -1,13 +1,9 @@
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '../../../domain';
 import { GoalRecord } from '../../../domain';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
-import { eventBus } from '@memoflow/utils/domain';
-import type { GoalPowerSyncDatabase } from './shared';
+import type { GoalPowerSyncDatabase, PowerSyncLockContext } from './shared';
 import { toDbDateTime } from './shared';
 import { PowerSyncGoalRecordMapper } from './mappers/powersync-goal-record.mapper';
 import type { GoalRecordSourceTypeValue } from '@memoflow/contracts/goal';
-
-const eventBusAdapter = createEventBusAdapter(eventBus);
 
 function buildTimeFilters(options?: GoalRecordQueryOptions): {
   clauses: string[];
@@ -29,13 +25,8 @@ function buildTimeFilters(options?: GoalRecordQueryOptions): {
   return { clauses, params };
 }
 
-export class GoalRecordPowerSyncRepository
-  extends AggregateRepositoryBase<GoalRecord>
-  implements IGoalRecordRepository
-{
-  constructor(private readonly db: GoalPowerSyncDatabase) {
-    super(eventBusAdapter);
-  }
+export class GoalRecordPowerSyncRepository implements IGoalRecordRepository {
+  constructor(private readonly db: GoalPowerSyncDatabase | PowerSyncLockContext) {}
 
   async findByKeyResultId(
     identityId: string,
@@ -51,7 +42,6 @@ export class GoalRecordPowerSyncRepository
        FROM goal_records
        WHERE identity_id = ?
          AND key_result_id = ?
-         AND deleted_at IS NULL
          ${clauses.length > 0 ? `AND ${clauses.join(' AND ')}` : ''}
        ORDER BY recorded_at ${orderDir}${limitClause}`,
       options?.limit
@@ -77,8 +67,6 @@ export class GoalRecordPowerSyncRepository
        INNER JOIN key_results kr ON kr.id = gr.key_result_id
        WHERE gr.identity_id = ?
          AND kr.goal_id = ?
-         AND kr.deleted_at IS NULL
-         AND gr.deleted_at IS NULL
          ${clauses.length > 0 ? `AND ${clauses.join(' AND ')}` : ''}
        ORDER BY gr.recorded_at ${orderDir}${limitClause}`,
       options?.limit
@@ -113,7 +101,6 @@ export class GoalRecordPowerSyncRepository
        FROM goal_records
        WHERE identity_id = ?
          AND key_result_id IN (${placeholders})
-         AND deleted_at IS NULL
          ${clauses.length > 0 ? `AND ${clauses.join(' AND ')}` : ''}
        ORDER BY recorded_at ${orderDir}${limitClause}`,
       options?.limit
@@ -136,8 +123,7 @@ export class GoalRecordPowerSyncRepository
       `SELECT COUNT(*) as count
        FROM goal_records
        WHERE identity_id = ?
-         AND key_result_id = ?
-         AND deleted_at IS NULL`,
+         AND key_result_id = ?`,
       [identityId, keyResultId],
     );
 
@@ -151,14 +137,14 @@ export class GoalRecordPowerSyncRepository
   ): Promise<GoalRecord | null> {
     const row = await this.db.getOptional<Record<string, unknown>>(
       `SELECT * FROM goal_records
-       WHERE identity_id = ? AND source_type = ? AND source_id = ? AND deleted_at IS NULL
+       WHERE identity_id = ? AND source_type = ? AND source_id = ?
        LIMIT 1`,
       [identityId, sourceType, sourceId],
     );
     return row ? PowerSyncGoalRecordMapper.toDomain(row) : null;
   }
 
-  protected async persist(record: GoalRecord): Promise<void> {
+  async save(record: GoalRecord): Promise<void> {
     const dto = record.toServerDTO();
 
     const existing = await this.db.getOptional<{ id: string }>(
@@ -176,9 +162,7 @@ export class GoalRecordPowerSyncRepository
              source_type = ?,
              source_id = ?,
              recorded_at = ?,
-             version = ?,
-             updated_at = ?,
-             deleted_at = ?
+             updated_at = ?
          WHERE id = ?`,
         [
           dto.keyResultId,
@@ -188,9 +172,7 @@ export class GoalRecordPowerSyncRepository
           dto.sourceType,
           dto.sourceId,
           toDbDateTime(dto.recordedAt),
-          dto.version,
           toDbDateTime(dto.updatedAt),
-          toDbDateTime(dto.deletedAt),
           dto.id,
         ],
       );
@@ -198,8 +180,8 @@ export class GoalRecordPowerSyncRepository
       await this.db.execute(
         `INSERT INTO goal_records (
            id, key_result_id, identity_id, value, note, source_type, source_id, recorded_at,
-           version, created_at, updated_at, deleted_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           created_at, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           dto.id,
           dto.keyResultId,
@@ -209,10 +191,8 @@ export class GoalRecordPowerSyncRepository
           dto.sourceType,
           dto.sourceId,
           toDbDateTime(dto.recordedAt),
-          dto.version,
           toDbDateTime(dto.createdAt),
           toDbDateTime(dto.updatedAt),
-          toDbDateTime(dto.deletedAt),
         ],
       );
     }

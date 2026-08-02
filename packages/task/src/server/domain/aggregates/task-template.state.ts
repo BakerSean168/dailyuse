@@ -1,5 +1,5 @@
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
-import type { GoalId, Instant, KeyResultId } from '@memoflow/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 import type { IdentityId } from '@memoflow/domain-shared';
 import type { DependencyStatus, TaskType } from '../value-objects';
 import type { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
@@ -24,8 +24,6 @@ export interface TaskTemplateState {
   color: string | null;
   status: TaskTemplateStatus;
   folderId: TaskFolderId | null;
-  goalId: GoalId | null;
-  keyResultId: KeyResultId | null;
   goalBinding: TaskGoalBinding | null;
   checklist: ChecklistItemDefinition[];
   parentTaskId: TaskTemplateId | null;

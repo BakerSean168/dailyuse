@@ -258,38 +258,11 @@ describe('Goal lifecycle guards', () => {
 });
 
 describe('Goal summary fields', () => {
-  it('should preserve key result summary counts when loaded without children', () => {
-    const goal = Goal.load({
-      id: 'goal-1' as any,
-      identityId: 'identity-1' as any,
-      name: 'Loaded Goal',
-      description: null,
-      color: '#3B82F6',
-      feasibilityAnalysis: null,
-      motivation: null,
-      status: 'Active' as any,
-      importance: 'Moderate' as any,
-      priority: 0,
-      category: null,
-      tags: [],
-      startDate: null,
-      targetDate: null,
-      completedAt: null,
-      archivedAt: null,
-      folderId: null,
-      parentGoalId: null,
-      sortOrder: 0,
-      reminderConfig: null,
-      keyResults: [],
-      goalReviews: [],
-      weightSnapshots: [],
-      totalKeyResults: 3,
-      completedKeyResults: 1,
-      version: 1,
-      createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
-      deletedAt: null,
-    });
+  it('derives summary counts from the hydrated aggregate even when children are omitted in DTO', () => {
+    const goal = createTestGoal();
+    addKeyResult(goal, { title: 'Done', targetValue: 10, currentValue: 10, weight: 1 });
+    addKeyResult(goal, { title: 'Open 1', targetValue: 10, currentValue: 2, weight: 1 });
+    addKeyResult(goal, { title: 'Open 2', targetValue: 10, currentValue: 0, weight: 1 });
 
     const dto = goal.toClientDTO(false);
 

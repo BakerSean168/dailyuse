@@ -18,10 +18,7 @@ import type { Instant } from '@memoflow/contracts/primitives';
  * - 进度追踪（当前值、目标值、初始值）
  * - 权重管理（用于综合评分）
  *
- * 【同步支持】
- * - deletedAt: 软删除时间戳
- * - version: 乐观锁版本号
- * - updatedAt: 最后更新时间（增量同步）
+ * 并发和删除由 Goal 聚合根统一管理；子实体仅保留审计时间。
  *
  * 【不变量（Invariants）】
  * 这些条件必须始终保持真：
@@ -41,10 +38,8 @@ export interface KeyResultState {
   progress: KeyResultServerDTO['progress'];
   weight: number;
   sortOrder: number;
-  version: number;
   createdAt: Instant;
   updatedAt: Instant;
-  deletedAt: Instant | null;
 }
 
 /**
@@ -81,10 +76,6 @@ export class KeyResult extends Entity<KeyResultId> {
     return this._props.sortOrder;
   }
 
-  get version(): number {
-    return this._props.version;
-  }
-
   get createdAt(): Instant {
     const v = this._props.createdAt;
     return v as Instant;
@@ -92,12 +83,6 @@ export class KeyResult extends Entity<KeyResultId> {
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return v as Instant;
-  }
-
-  get deletedAt(): Instant | null {
-    const v = this._props.deletedAt;
-    if (v == null) return null;
     return v as Instant;
   }
 
@@ -138,10 +123,8 @@ export class KeyResult extends Entity<KeyResultId> {
       progress: params.progress,
       weight: params.weight ?? 1,
       sortOrder: params.sortOrder ?? 0,
-      version: 1,
       createdAt: now,
       updatedAt: now,
-      deletedAt: null,
     });
   }
 
@@ -220,6 +203,19 @@ export class KeyResult extends Entity<KeyResultId> {
     this._props.updatedAt = Date.now();
   }
 
+  /** Update the measurement semantics while preserving the entity identity and history. */
+  public updateMeasurement(params: {
+    valueType: KeyResultServerDTO['progress']['valueType'];
+    aggregationMethod: KeyResultServerDTO['progress']['aggregationMethod'];
+  }): void {
+    this._props.progress = {
+      ...this._props.progress,
+      valueType: params.valueType,
+      aggregationMethod: params.aggregationMethod,
+    };
+    this._props.updatedAt = Date.now();
+  }
+
   /**
    * ✅ 添加进度记录并重新计算进度
    */
@@ -277,17 +273,6 @@ export class KeyResult extends Entity<KeyResultId> {
   }
 
   /**
-   * 🗑️ 软删除
-   */
-  public softDelete(): void {
-    if (this._props.deletedAt) {
-      return; // 已经删除
-    }
-    this._props.deletedAt = Date.now();
-    this._props.updatedAt = Date.now();
-  }
-
-  /**
    * 📊 获取所有记录的值
    */
   public getRecordValues(): number[] {
@@ -307,10 +292,8 @@ export class KeyResult extends Entity<KeyResultId> {
       progress: this._props.progress,
       weight: this._props.weight,
       sortOrder: this._props.sortOrder,
-      version: this._props.version,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ? this._props.deletedAt : null,
     };
   }
 
@@ -325,10 +308,8 @@ export class KeyResult extends Entity<KeyResultId> {
       progress: this._props.progress,
       weight: this._props.weight,
       order: this._props.sortOrder,
-      version: this._props.version,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

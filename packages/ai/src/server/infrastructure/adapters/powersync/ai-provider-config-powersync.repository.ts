@@ -23,16 +23,28 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
     return (this.cipher ??= AISecretCipher.fromEnv());
   }
 
-  async save(config: AIProviderConfigServerDTO): Promise<void> {
+  async save(config: AIProviderConfigServerDTO) {
     const d = PowerSyncAIProviderConfigMapper.toPersistence(config, this.secretCipher);
-    const existing = await this.db.getOptional<{ id: string }>(
-      `SELECT id FROM ai_provider_configs WHERE id = ? LIMIT 1`,
-      [d.id],
-    );
+    return this.db.writeTransaction(async (tx) => {
+      const existing = await tx.getOptional<{ id: string; identity_id: string }>(
+        `SELECT id, identity_id FROM ai_provider_configs WHERE id = ? LIMIT 1`,
+        [d.id],
+      );
+      if (existing && existing.identity_id !== d.identity_id) {
+        throw new Error('Provider config not found for the current identity.');
+      }
 
-    if (existing) {
-      await this.db.execute(
-        `UPDATE ai_provider_configs
+      if (d.is_default) {
+        await tx.execute(
+          `UPDATE ai_provider_configs SET is_default = 0
+           WHERE identity_id = ? AND id <> ? AND deleted_at IS NULL`,
+          [d.identity_id, d.id],
+        );
+      }
+
+      if (existing) {
+        await tx.execute(
+          `UPDATE ai_provider_configs
          SET identity_id = ?,
              name = ?,
              provider_type = ?,
@@ -47,49 +59,51 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
              updated_at = ?,
              deleted_at = ?
          WHERE id = ?`,
-        [
-          d.identity_id,
-          d.name,
-          d.provider_type,
-          d.base_url,
-          d.api_key_encrypted,
-          d.default_model,
-          d.available_models,
-          d.is_active,
-          d.is_default,
-          d.priority,
-          d.version,
-          d.updated_at,
-          d.deleted_at,
-          d.id,
-        ],
-      );
-    } else {
-      await this.db.execute(
-        `INSERT INTO ai_provider_configs (
+          [
+            d.identity_id,
+            d.name,
+            d.provider_type,
+            d.base_url,
+            d.api_key_encrypted,
+            d.default_model,
+            d.available_models,
+            d.is_active,
+            d.is_default,
+            d.priority,
+            d.version,
+            d.updated_at,
+            d.deleted_at,
+            d.id,
+          ],
+        );
+      } else {
+        await tx.execute(
+          `INSERT INTO ai_provider_configs (
            id, identity_id, name, provider_type, base_url, api_key_encrypted,
            default_model, available_models, is_active, is_default, priority,
            version, created_at, updated_at, deleted_at
          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          d.id,
-          d.identity_id,
-          d.name,
-          d.provider_type,
-          d.base_url,
-          d.api_key_encrypted,
-          d.default_model,
-          d.available_models,
-          d.is_active,
-          d.is_default,
-          d.priority,
-          d.version,
-          d.created_at,
-          d.updated_at,
-          d.deleted_at,
-        ],
-      );
-    }
+          [
+            d.id,
+            d.identity_id,
+            d.name,
+            d.provider_type,
+            d.base_url,
+            d.api_key_encrypted,
+            d.default_model,
+            d.available_models,
+            d.is_active,
+            d.is_default,
+            d.priority,
+            d.version,
+            d.created_at,
+            d.updated_at,
+            d.deleted_at,
+          ],
+        );
+      }
+      return 'SAVED' as const;
+    });
   }
 
   async findByIdForIdentity(
@@ -123,7 +137,7 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
     return row ? PowerSyncAIProviderConfigMapper.toDTO(row, this.secretCipher) : null;
   }
 
-    async delete(identityId: string, id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
     const existing = await this.findByIdForIdentity(identityId, id);
     if (!existing) {
       throw new Error('Provider config not found for the current identity.');
@@ -135,11 +149,31 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
     );
   }
 
-  async clearDefaultForIdentity(identityId: string): Promise<void> {
-    await this.db.execute(
-      `UPDATE ai_provider_configs SET is_default = 0, updated_at = ?
-       WHERE identity_id = ? AND deleted_at IS NULL`,
-      [new Date().toISOString(), identityId],
-    );
+  async setDefaultForIdentity(identityId: string, id: string) {
+    return this.db.writeTransaction(async (tx) => {
+      const provider = await tx.getOptional<{ id: string }>(
+        `SELECT id FROM ai_provider_configs
+         WHERE id = ? AND identity_id = ? AND is_active = 1 AND deleted_at IS NULL
+         LIMIT 1`,
+        [id, identityId],
+      );
+      if (!provider) {
+        return 'NOT_FOUND' as const;
+      }
+
+      const now = new Date().toISOString();
+      await tx.execute(
+        `UPDATE ai_provider_configs SET is_default = 0, updated_at = ?
+         WHERE identity_id = ? AND id <> ? AND deleted_at IS NULL`,
+        [now, identityId, id],
+      );
+      const updated = await tx.execute(
+        `UPDATE ai_provider_configs
+         SET is_default = 1, version = version + 1, updated_at = ?
+         WHERE id = ? AND identity_id = ? AND is_active = 1 AND deleted_at IS NULL`,
+        [now, id, identityId],
+      );
+      return updated.rowsAffected === 1 ? ('SET' as const) : ('CONFLICT' as const);
+    });
   }
 }

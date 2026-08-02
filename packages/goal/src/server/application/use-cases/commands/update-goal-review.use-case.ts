@@ -4,11 +4,11 @@
  * 更新目标复盘记录
  */
 
-import type { IGoalRepository } from '../../../domain';
-import { GoalPolicy } from '../../../domain';
-import type { GoalReviewClientDTO } from '@memoflow/contracts/goal';
+import { GoalPolicy, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
+import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 export class UpdateGoalReviewUseCase {
   constructor(
@@ -21,6 +21,7 @@ export class UpdateGoalReviewUseCase {
     identityId: string,
     reviewId: string,
     params: {
+      expectedVersion: number;
       title?: string;
       content?: string;
       rating?: number | null;
@@ -28,12 +29,15 @@ export class UpdateGoalReviewUseCase {
       challenges?: string | null;
       nextActions?: string | null;
     },
-  ): Promise<Result<GoalReviewClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
       includeChildren: true,
     });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
+    }
+    if (params.expectedVersion !== goal.version) {
+      return error('CONFLICT', 'Goal has been modified by another client');
     }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);
@@ -46,11 +50,17 @@ export class UpdateGoalReviewUseCase {
       improvements: params.nextActions ?? undefined,
     });
 
-    await this.goalRepository.save(goal);
     const review = goal.goalReviews.find((item) => item.id === reviewId);
     if (!review) {
       return error('NOT_FOUND', `Goal review not found: ${reviewId}`);
     }
-    return ok(review.toClientDTO());
+    goal.advanceVersion();
+    try {
+      await this.goalRepository.saveRootWithExpectedVersion(goal, params.expectedVersion);
+    } catch (cause) {
+      if (cause instanceof GoalVersionConflictError) return error('CONFLICT', cause.message);
+      throw cause;
+    }
+    return ok(createGoalMutationReceipt(goal, { reviewIds: [review.id] }));
   }
 }

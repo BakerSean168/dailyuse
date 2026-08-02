@@ -18,7 +18,6 @@ export const IDENTITY_ID_TABLES = new Set([
   'user_settings',
   'goals',
   'goal_folders',
-  'goal_statistics',
   'focus_sessions',
   'focus_modes',
   'key_results',
@@ -62,6 +61,7 @@ export const IDENTITY_ID_TABLES = new Set([
   'ai_generation_tasks',
   'ai_usage_quotas',
   'ai_provider_configs',
+  'task_goal_outbox',
   'knowledge_generation_tasks',
   'dashboard_configs',
   'repositories',
@@ -77,7 +77,6 @@ const TABLE_TO_MODEL: Record<string, string> = {
   user_settings: 'userSetting',
   goals: 'goal',
   goal_folders: 'goalFolder',
-  goal_statistics: 'goalStatistic',
   focus_sessions: 'focusSession',
   focus_modes: 'focusMode',
   key_results: 'keyResult',
@@ -119,6 +118,7 @@ const TABLE_TO_MODEL: Record<string, string> = {
   ai_generation_tasks: 'aiGenerationTask',
   ai_usage_quotas: 'aiUsageQuota',
   ai_provider_configs: 'aiProviderConfig',
+  task_goal_outbox: 'taskGoalOutbox',
   dashboard_configs: 'dashboardConfig',
   knowledge_generation_tasks: 'knowledgeGenerationTask',
   repositories: 'repository',
@@ -139,13 +139,8 @@ export interface CrudDelegate {
     create: Record<string, unknown>;
     update: Record<string, unknown>;
   }): Promise<unknown>;
-  update(args: {
-    where: { id: string };
-    data: Record<string, unknown>;
-  }): Promise<unknown>;
-  deleteMany(args: {
-    where: { id: string };
-  }): Promise<unknown>;
+  update(args: { where: { id: string }; data: Record<string, unknown> }): Promise<unknown>;
+  deleteMany(args: { where: { id: string } }): Promise<unknown>;
 }
 
 export interface CrudDelegateContainer {

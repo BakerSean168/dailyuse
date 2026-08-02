@@ -21,10 +21,8 @@ export interface GoalRecordState {
   value: number;
   valueAfter: number;
   comment: string | null;
-  version: number;
   createdAt: Instant;
   updatedAt: Instant;
-  deletedAt: Instant | null;
 }
 
 export class GoalRecord extends Entity<GoalRecordId> {
@@ -58,10 +56,6 @@ export class GoalRecord extends Entity<GoalRecordId> {
     return this._props.comment;
   }
 
-  get version(): number {
-    return this._props.version;
-  }
-
   get createdAt(): Instant {
     const v = this._props.createdAt;
     return v as Instant;
@@ -70,17 +64,6 @@ export class GoalRecord extends Entity<GoalRecordId> {
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
     return v as Instant;
-  }
-
-  get deletedAt(): Instant | null {
-    const v = this._props.deletedAt;
-    if (v == null) return null;
-    return v as Instant;
-  }
-
-  // 计算属性
-  get isDeleted(): boolean {
-    return this._props.deletedAt !== null;
   }
 
   // ================= 4. Factory Methods =================
@@ -97,10 +80,8 @@ export class GoalRecord extends Entity<GoalRecordId> {
       value: this._props.value,
       valueAfter: this._props.valueAfter,
       comment: this._props.comment,
-      version: this._props.version,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

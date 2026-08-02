@@ -19,6 +19,7 @@ import { GoalReviewListResSchema } from './response-schemas';
  * 创建复盘 Schema
  */
 export const CreateGoalReviewSchema = z.object({
+  expectedVersion: z.number().int().min(1),
   goalId: brandedId<GoalId>(),
   title: z.string().min(1, '复盘标题不能为空').max(256),
   content: z.string().min(1, '复盘内容不能为空').max(10000),
@@ -40,6 +41,7 @@ export type CreateGoalReviewReq = z.infer<typeof CreateGoalReviewSchema>;
  * 更新复盘 Schema
  */
 export const UpdateGoalReviewSchema = z.object({
+  expectedVersion: z.number().int().min(1),
   title: z.string().min(1).max(256).optional(),
   content: z.string().min(1).max(10000).optional(),
   rating: z.number().int().min(1).max(5).nullable().optional(),
@@ -62,7 +64,10 @@ export type GetGoalReviewReq = void;
 /**
  * 删除复盘
  */
-export type DeleteGoalReviewReq = void;
+export const DeleteGoalReviewSchema = z.object({
+  expectedVersion: z.number().int().min(1),
+});
+export type DeleteGoalReviewReq = z.infer<typeof DeleteGoalReviewSchema>;
 
 // ============================================================================
 // QUERY Reviews

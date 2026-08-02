@@ -1,7 +1,7 @@
 import {
   getDashboardData,
+  toDashboardGoalRecord,
   toDashboardTaskInstanceRecord,
-  type DashboardGoalRecord,
   type DashboardTaskTemplateRecord,
   type DashboardScheduleRecord,
   type DashboardReminderRecord,
@@ -9,10 +9,7 @@ import {
 import type { DashboardData } from '@memoflow/contracts/dashboard';
 import { createLogger } from '@memoflow/utils/logger';
 import { getGoalRepository } from '@memoflow/goal/electron';
-import {
-  getTaskInstanceRepository,
-  getTaskTemplateRepository,
-} from '@memoflow/task/electron';
+import { getTaskInstanceRepository, getTaskTemplateRepository } from '@memoflow/task/electron';
 import { getScheduleRepository } from '@memoflow/schedule/electron';
 import { getReminderTemplateRepository } from '@memoflow/reminder/electron';
 import { getNotificationRepository } from '@memoflow/notification/electron';
@@ -20,30 +17,6 @@ import { getNotificationRepository } from '@memoflow/notification/electron';
 const logger = createLogger('DashboardReadService');
 
 /** Soft residual 1156: dual toDashboardTaskInstanceRecord retired onto @memoflow/dashboard sole. */
-
-function toGoalRecord(goal: {
-  id: { toString(): string } | string;
-  name: string;
-  status: string;
-  deletedAt: number | null;
-  priority: number;
-  updatedAt: number;
-  progress: number;
-  targetDate: number | null;
-  keyResults: readonly unknown[];
-}): DashboardGoalRecord {
-  return {
-    id: String(goal.id),
-    name: goal.name,
-    status: goal.status,
-    deletedAt: goal.deletedAt,
-    priority: goal.priority,
-    updatedAt: goal.updatedAt,
-    progress: goal.progress,
-    targetDate: goal.targetDate,
-    keyResults: goal.keyResults,
-  };
-}
 
 function toTaskTemplateRecord(template: {
   id: { toString(): string } | string;
@@ -130,10 +103,12 @@ export async function getDesktopDashboardData(identityId: string): Promise<Dashb
 
   const data = await getDashboardData(identityId, {
     listGoals: async (id) =>
-      (await goalRepository.findByIdentityId(id, {
-        includeChildren: true,
-        systemView: 'active',
-      })).map(toGoalRecord),
+      (
+        await goalRepository.findByIdentityId(id, {
+          includeChildren: true,
+          systemView: 'active',
+        })
+      ).map((goal) => toDashboardGoalRecord(goal.toClientDTO(true))),
     listTaskTemplates: async (id) =>
       (await taskTemplateRepository.findByIdentityId(id)).map(toTaskTemplateRecord),
     listTaskInstances: async (id) =>
@@ -141,7 +116,9 @@ export async function getDesktopDashboardData(identityId: string): Promise<Dashb
     listSchedules: async (id) =>
       (await scheduleRepository.findByIdentityId(id)).map(toScheduleRecord),
     listUpcomingReminders: async (id, beforeTime) =>
-      (await reminderTemplateRepository.findByNextTriggerBefore(beforeTime, id)).map(toReminderRecord),
+      (await reminderTemplateRepository.findByNextTriggerBefore(beforeTime, id)).map(
+        toReminderRecord,
+      ),
     countUnreadNotifications: (id) => notificationRepository.countUnread(id),
   });
 

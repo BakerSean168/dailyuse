@@ -1,7 +1,7 @@
 /**
  * Provider config repository surface (stage-6 residual 169):
  * Host path only uses save/findByIdForIdentity/findByIdentityId/
- * findDefaultByIdentityId/delete/clearDefaultForIdentity — no bare findById.
+ * findDefaultByIdentityId/delete/setDefaultForIdentity — no bare findById.
  */
 import { describe, expect, it } from 'vitest';
 import { AIProviderConfigMemoryRepository } from '../memory/ai-provider-config-memory.repository';
@@ -15,7 +15,7 @@ describe('AIProviderConfigRepository surface', () => {
     expect(typeof repo.findByIdentityId).toBe('function');
     expect(typeof repo.findDefaultByIdentityId).toBe('function');
     expect(typeof repo.delete).toBe('function');
-    expect(typeof repo.clearDefaultForIdentity).toBe('function');
+    expect(typeof repo.setDefaultForIdentity).toBe('function');
     expect((repo as { findById?: unknown }).findById).toBeUndefined();
     expect((repo as { findByIdentityIdAndName?: unknown }).findByIdentityIdAndName).toBeUndefined();
     expect((repo as { exists?: unknown }).exists).toBeUndefined();

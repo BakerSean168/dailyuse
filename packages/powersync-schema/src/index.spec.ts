@@ -17,8 +17,12 @@ describe('PowerSyncAppSchema', () => {
     expect(PowerSyncAppSchema.tables).toHaveLength(Object.keys(PowerSyncAppSchema.props).length);
   });
 
-  it('preserves critical task and schedule column types', () => {
-    expect(getColumnType('task_templates', 'goal_binding')).toBe('TEXT');
+  it('preserves critical task relation and schedule column types', () => {
+    expect(getColumnType('task_templates', 'goal_id')).toBe('TEXT');
+    expect(getColumnType('task_templates', 'key_result_id')).toBe('TEXT');
+    expect(getColumnType('task_templates', 'goal_record_value')).toBe('REAL');
+    expect(getColumnType('task_templates', 'goal_progress_trigger')).toBe('TEXT');
+    expect(getColumnType('task_templates', 'goal_binding')).toBeUndefined();
     expect(getColumnType('task_templates', 'reminder_config_enabled')).toBe('INTEGER');
     expect(getColumnType('schedule_tasks', 'payload')).toBe('TEXT');
     expect(getColumnType('schedule_tasks', 'enabled')).toBe('INTEGER');

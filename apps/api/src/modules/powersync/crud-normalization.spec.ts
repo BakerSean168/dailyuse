@@ -19,6 +19,22 @@ describe('normalizeCrudData', () => {
     });
   });
 
+  it('maps expanded task-goal relation columns without reviving the JSON binding', () => {
+    expect(
+      normalizeCrudData('task_templates', {
+        goal_id: 'goal-1',
+        key_result_id: 'kr-1',
+        goal_record_value: 2.5,
+        goal_progress_trigger: 'PER_INSTANCE',
+      }),
+    ).toEqual({
+      goalId: 'goal-1',
+      keyResultId: 'kr-1',
+      goalRecordValue: 2.5,
+      goalProgressTrigger: 'PER_INSTANCE',
+    });
+  });
+
   it('keeps malformed JSON unchanged instead of corrupting an upload batch', () => {
     expect(normalizeCrudData('goals', { tags: '[invalid]' })).toEqual({
       tags: '[invalid]',

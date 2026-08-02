@@ -128,21 +128,12 @@ export class TaskTemplatePrismaRepository
     const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
-        goalBinding: { not: null },
+        goalId,
         deletedAt: null,
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data
-      .filter((record: PrismaTaskTemplate) => {
-        try {
-          const binding = JSON.parse(record.goalBinding || '{}');
-          return binding.goalId === goalId;
-        } catch {
-          return false;
-        }
-      })
-      .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]> {
@@ -252,20 +243,11 @@ export class TaskTemplatePrismaRepository
     const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
-        goalBinding: { not: null },
+        keyResultId,
         deletedAt: null,
       },
     });
-    return data
-      .filter((record: PrismaTaskTemplate) => {
-        try {
-          const binding = JSON.parse(record.goalBinding || '{}');
-          return binding.keyResultId === keyResultId;
-        } catch {
-          return false;
-        }
-      })
-      .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]> {
@@ -344,4 +326,3 @@ export class TaskTemplatePrismaRepository
     });
   }
 }
-

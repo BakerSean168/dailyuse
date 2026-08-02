@@ -90,7 +90,7 @@ function createProviderConfigRepositoryWithProvider(): IAIProviderConfigReposito
     findDefaultByIdentityId: vi.fn(),
     findByIdentityId: vi.fn(),
     delete: vi.fn(),
-    clearDefaultForIdentity: vi.fn(),
+    setDefaultForIdentity: vi.fn(async () => 'NOT_FOUND' as const),
   } as unknown as IAIProviderConfigRepository;
 }
 
@@ -1861,7 +1861,7 @@ describe('createRemoteAIServiceRuntime', () => {
       findDefaultByIdentityId: vi.fn(),
       findByIdentityId: vi.fn(),
         delete: vi.fn(),
-      clearDefaultForIdentity: vi.fn(),
+      setDefaultForIdentity: vi.fn(async () => 'NOT_FOUND' as const),
     } as unknown as IAIProviderConfigRepository;
     vi.mocked(agentRuntimePort.startRun).mockResolvedValueOnce(
       createAgentRunResult('waiting_approval'),

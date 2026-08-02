@@ -2,7 +2,7 @@
  * Prisma TaskTemplate Mapper
  *
  * Maps between TaskTemplate domain aggregate and Prisma model.
- * Handles JSON parsing for goalBinding field and flattened field reconstruction.
+ * Reconstructs value objects from normalized persistence columns.
  */
 
 import type { TaskTemplate as PrismaTaskTemplate } from '@memoflow/database';
@@ -86,12 +86,19 @@ export class PrismaTaskTemplateMapper {
       });
     }
 
-    let goalBinding = null;
-    if (data.goalBinding) {
-      goalBinding = TaskGoalBinding.fromDTO(
-        typeof data.goalBinding === 'string' ? JSON.parse(data.goalBinding) : data.goalBinding,
-      );
-    }
+    const hasGoalBinding =
+      data.goalId != null ||
+      data.keyResultId != null ||
+      data.goalRecordValue != null ||
+      data.goalProgressTrigger != null;
+    const goalBinding = hasGoalBinding
+      ? TaskGoalBinding.fromDTO({
+          goalId: data.goalId,
+          keyResultId: data.keyResultId,
+          goalRecordValue: data.goalRecordValue,
+          progressTrigger: data.goalProgressTrigger,
+        } as Parameters<typeof TaskGoalBinding.fromDTO>[0])
+      : null;
 
     const tags = data.tags ? JSON.parse(data.tags) : [];
 
@@ -112,8 +119,6 @@ export class PrismaTaskTemplateMapper {
       reminderConfig,
       importance: data.importance as ImportanceLevel,
       goalBinding,
-      goalId: null,
-      keyResultId: null,
       checklist,
       folderId: data.folderId ? TaskFolderId.of(data.folderId) : null,
       tags,
@@ -202,7 +207,10 @@ export class PrismaTaskTemplateMapper {
       reminderConfigChannel,
       lastGeneratedDate: toDateOrNull(dto.lastGeneratedDate),
       generateAheadDays: dto.generateAheadDays,
-      goalBinding: dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
+      goalId: dto.goalBinding?.goalId ?? null,
+      keyResultId: dto.goalBinding?.keyResultId ?? null,
+      goalRecordValue: dto.goalBinding?.goalRecordValue ?? null,
+      goalProgressTrigger: dto.goalBinding?.progressTrigger ?? null,
       checklist: dto.checklist?.length ? JSON.stringify(dto.checklist) : null,
       dependencyStatus: dto.dependencyStatus ?? 'NONE',
       isBlocked: dto.isBlocked ?? false,

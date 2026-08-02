@@ -222,7 +222,10 @@ export interface CreateTaskTemplateInput extends TimestampedImportInput {
   reminderConfigTimeOffsetMinutes: number | null;
   reminderConfigUnit: string | null;
   reminderConfigChannel: string | null;
-  goalBinding: string | null;
+  goalId: string | null;
+  keyResultId: string | null;
+  goalRecordValue: number | null;
+  goalProgressTrigger: string | null;
   checklist: string | null;
   dependencyStatus: string;
   isBlocked: boolean;

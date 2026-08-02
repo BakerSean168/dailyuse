@@ -15,7 +15,9 @@ export {
   createGoalModule,
   createGoalPrismaModule,
   createGoalPrismaRepositories,
+  createGoalTaskProgressPrismaHandler,
   createGoalPowerSyncModule,
+  createGoalTaskProgressPowerSyncHandler,
   createGoalRuntimeContribution,
   createGoalUseCases,
   type GoalApplicationPort,
@@ -25,3 +27,9 @@ export {
   type GoalModuleUseCases,
   type GoalRuntimeContributionsInput,
 } from './server';
+
+export {
+  GoalTaskProgressHandler,
+  createGoalTaskProgressHandler,
+  type TaskGoalProgressHandler,
+} from './server/application';

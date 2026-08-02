@@ -4,7 +4,9 @@ export default defineConfig({
   entry: [
     'scripts/prepare-ai-knowledge-index-pgvector.ts',
     'scripts/prepare-goal-record-source-correlation.ts',
+    'scripts/prepare-ai-provider-default-invariant.ts',
     'scripts/prepare-editor-workspace-natural-key.ts',
+    'scripts/ensure-task-goal-binding-constraint.ts',
     'scripts/bootstrap-ai-knowledge-index.ts',
     'scripts/verify-ai-knowledge-index.ts',
   ],

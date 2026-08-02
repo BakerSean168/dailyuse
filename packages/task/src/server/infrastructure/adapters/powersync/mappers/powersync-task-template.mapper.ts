@@ -47,7 +47,10 @@ export type PowerSyncTaskTemplateRow = {
   reminder_config_channel: string | null;
   last_generated_date: string | null;
   generate_ahead_days: number | null;
-  goal_binding: string | null;
+  goal_id: string | null;
+  key_result_id: string | null;
+  goal_record_value: number | null;
+  goal_progress_trigger: string | null;
   checklist: string | null;
   blocking_reason: string | null;
   dependency_status: string | null;
@@ -125,11 +128,18 @@ export class PowerSyncTaskTemplateMapper {
       color: data.color ?? null,
       status: (data.status as TaskTemplateStatus) ?? TaskTemplateStatus.Active,
       folderId: data.folder_id ? TaskFolderId.of(data.folder_id) : null,
-      goalId: null,
-      keyResultId: null,
-      goalBinding: data.goal_binding
-        ? TaskGoalBinding.fromDTO(JSON.parse(data.goal_binding))
-        : null,
+      goalBinding:
+        data.goal_id != null ||
+        data.key_result_id != null ||
+        data.goal_record_value != null ||
+        data.goal_progress_trigger != null
+          ? TaskGoalBinding.fromDTO({
+              goalId: data.goal_id,
+              keyResultId: data.key_result_id,
+              goalRecordValue: data.goal_record_value,
+              progressTrigger: data.goal_progress_trigger,
+            } as Parameters<typeof TaskGoalBinding.fromDTO>[0])
+          : null,
       checklist: data.checklist
         ? (JSON.parse(data.checklist) as Array<{ title: string; order: number }>).map((item) =>
             ChecklistItemDefinition.fromDTO(item),
@@ -202,7 +212,10 @@ export class PowerSyncTaskTemplateMapper {
       lastGeneratedDate:
         dto.lastGeneratedDate != null ? new Date(dto.lastGeneratedDate).toISOString() : null,
       generateAheadDays: dto.generateAheadDays ?? null,
-      goalBinding: dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
+      goalId: dto.goalBinding?.goalId ?? null,
+      keyResultId: dto.goalBinding?.keyResultId ?? null,
+      goalRecordValue: dto.goalBinding?.goalRecordValue ?? null,
+      goalProgressTrigger: dto.goalBinding?.progressTrigger ?? null,
       checklist: dto.checklist?.length ? JSON.stringify(dto.checklist) : null,
       blockingReason: dto.blockingReason ?? null,
       dependencyStatus: dto.dependencyStatus ?? 'NONE',

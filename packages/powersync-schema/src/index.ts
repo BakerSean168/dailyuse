@@ -159,8 +159,6 @@ const goal_folders = new Table({
   is_system_folder: column.integer, // boolean
   parent_folder_id: column.text, // FK (self)
   sort_order: column.integer,
-  goal_count: column.integer,
-  completed_goal_count: column.integer,
   version: column.integer,
   created_at: column.text,
   updated_at: column.text,
@@ -180,10 +178,8 @@ const key_results = new Table({
   unit: column.text,
   weight: column.real,
   order: column.integer,
-  version: column.integer,
   created_at: column.text,
   updated_at: column.text,
-  deleted_at: column.text,
 });
 
 const goal_records = new Table({
@@ -194,10 +190,8 @@ const goal_records = new Table({
   source_type: column.text,
   source_id: column.text,
   recorded_at: column.text, // DateTime
-  version: column.integer,
   created_at: column.text,
   updated_at: column.text,
-  deleted_at: column.text,
 });
 
 const goal_reviews = new Table({
@@ -210,10 +204,8 @@ const goal_reviews = new Table({
   lessons_learned: column.text,
   next_steps: column.text,
   rating: column.integer,
-  version: column.integer,
   created_at: column.text,
   updated_at: column.text,
-  deleted_at: column.text,
 });
 
 const key_result_weight_snapshots = new Table({
@@ -264,23 +256,6 @@ const focus_modes = new Table({
   deleted_at: column.text,
 });
 
-const goal_statistics = new Table({
-  identity_id: column.text,
-  total_goals: column.integer,
-  active_goals: column.integer,
-  completed_goals: column.integer,
-  archived_goals: column.integer,
-  total_key_results: column.integer,
-  completed_key_results: column.integer,
-  total_focus_sessions: column.integer,
-  total_focus_minutes: column.integer,
-  total_reviews: column.integer,
-  average_rating: column.real,
-  calculated_at: column.text, // DateTime
-  created_at: column.text,
-  updated_at: column.text,
-});
-
 // ──────────────────────────────────────────────
 // Task
 // ──────────────────────────────────────────────
@@ -328,7 +303,10 @@ const task_templates = new Table({
   reminder_config_channel: column.text,
   last_generated_date: column.text,
   generate_ahead_days: column.integer,
-  goal_binding: column.text, // JSON
+  goal_id: column.text, // FK via key_result_id relation
+  key_result_id: column.text, // FK
+  goal_record_value: column.real,
+  goal_progress_trigger: column.text,
   checklist: column.text, // JSON
   blocking_reason: column.text,
   dependency_status: column.text,
@@ -882,6 +860,22 @@ const ai_provider_configs = new Table({
   deleted_at: column.text,
 });
 
+const task_goal_outbox = new Table({
+  identity_id: column.text,
+  task_instance_id: column.text,
+  task_template_id: column.text,
+  goal_id: column.text,
+  key_result_id: column.text,
+  payload: column.text,
+  status: column.text,
+  attempts: column.integer,
+  available_at: column.text,
+  last_error: column.text,
+  dispatched_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
 const dashboard_configs = new Table({
   identity_id: column.text,
   widget_config: column.text, // JSON
@@ -1054,7 +1048,6 @@ export const PowerSyncAppSchema = new Schema({
   key_result_weight_snapshots,
   focus_sessions,
   focus_modes,
-  goal_statistics,
   // Task
   task_folders,
   task_templates,
@@ -1097,6 +1090,7 @@ export const PowerSyncAppSchema = new Schema({
   ai_generation_tasks,
   ai_usage_quotas,
   ai_provider_configs,
+  task_goal_outbox,
   dashboard_configs,
   // Repository
   repositories,

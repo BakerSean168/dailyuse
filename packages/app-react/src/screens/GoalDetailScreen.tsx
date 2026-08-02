@@ -22,17 +22,18 @@ import { formatDateNotSet as formatDate } from '../utils/format-date-not-set';
 export function GoalDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
-  const goalId = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
+  const goalId =
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
   const service = useGoalService();
   const { error, goal, isLoading, refresh } = useGoalDetail(goalId);
   const [isMutating, setIsMutating] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   async function handleActivate() {
-    if (!goalId) return;
+    if (!goalId || !goal) return;
     setIsMutating(true);
     setActionError(null);
-    const result = await service.activateGoal(goalId);
+    const result = await service.activateGoal(goalId, goal.version);
     setIsMutating(false);
     if (!result.ok) {
       setActionError(result.error.message);
@@ -42,10 +43,10 @@ export function GoalDetailScreen() {
   }
 
   async function handleComplete() {
-    if (!goalId) return;
+    if (!goalId || !goal) return;
     setIsMutating(true);
     setActionError(null);
-    const result = await service.completeGoal(goalId);
+    const result = await service.completeGoal(goalId, goal.version);
     setIsMutating(false);
     if (!result.ok) {
       setActionError(result.error.message);
@@ -55,10 +56,10 @@ export function GoalDetailScreen() {
   }
 
   async function handleArchive() {
-    if (!goalId) return;
+    if (!goalId || !goal) return;
     setIsMutating(true);
     setActionError(null);
-    const result = await service.archiveGoal(goalId);
+    const result = await service.archiveGoal(goalId, goal.version);
     setIsMutating(false);
     if (!result.ok) {
       setActionError(result.error.message);
@@ -102,17 +103,27 @@ export function GoalDetailScreen() {
       eyebrow="Goals"
       title={goal ? goal.name : 'Goal detail'}
       subtitle="移动端详情页先聚焦目标概览、关键结果、review 和状态动作，不照搬桌面多区域布局。"
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+    >
       {error ? (
         <SectionCard title="Goal detail failed" description="详情请求失败时直接展示错误。">
-          <ThemedText type="small" themeColor="warning">{error}</ThemedText>
+          <ThemedText type="small" themeColor="warning">
+            {error}
+          </ThemedText>
           <PrimaryButton label="Retry" onPress={refresh} variant="secondary" />
         </SectionCard>
       ) : null}
 
       {!isLoading && !error && !goal ? (
-        <SectionCard title="Goal not found" description="这个目标不存在，或者当前账号没有访问权限。">
-          <PrimaryButton label="Back to goals" onPress={() => router.replace('../')} variant="secondary" />
+        <SectionCard
+          title="Goal not found"
+          description="这个目标不存在，或者当前账号没有访问权限。"
+        >
+          <PrimaryButton
+            label="Back to goals"
+            onPress={() => router.replace('../')}
+            variant="secondary"
+          />
         </SectionCard>
       ) : null}
 
@@ -120,20 +131,59 @@ export function GoalDetailScreen() {
         <>
           <SectionCard title="Status" description={goal.description ?? 'No description yet.'}>
             <View style={styles.pillRow}>
-              <StatusPill label={goal.status} tone={goal.status === 'Active' ? 'success' : goal.status === 'Completed' ? 'tint' : 'textSecondary'} />
+              <StatusPill
+                label={goal.status}
+                tone={
+                  goal.status === 'Active'
+                    ? 'success'
+                    : goal.status === 'Completed'
+                      ? 'tint'
+                      : 'textSecondary'
+                }
+              />
               <StatusPill label={goal.importance} tone="tint" />
-              <StatusPill label={`${goal.completedKeyResults}/${goal.totalKeyResults} KR`} tone="textSecondary" />
+              <StatusPill
+                label={`${goal.completedKeyResults}/${goal.totalKeyResults} KR`}
+                tone="textSecondary"
+              />
             </View>
             <ThemedView type="backgroundSelected" style={styles.progressBlock}>
-              <ThemedText type="small" themeColor="textSecondary">Overall progress</ThemedText>
-              <ThemedText type="title" style={styles.progressText}>{Math.round(goal.overallProgress)}%</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                Overall progress
+              </ThemedText>
+              <ThemedText type="title" style={styles.progressText}>
+                {Math.round(goal.overallProgress)}%
+              </ThemedText>
             </ThemedView>
             <View style={styles.actionRow}>
-              {goal.status !== 'Active' ? <PrimaryButton label={isMutating ? 'Activating…' : 'Activate'} onPress={handleActivate} disabled={isMutating} /> : null}
-              {goal.status === 'Active' ? <PrimaryButton label={isMutating ? 'Completing…' : 'Complete'} onPress={handleComplete} disabled={isMutating} /> : null}
-              {goal.status !== 'Archived' ? <PrimaryButton label={isMutating ? 'Archiving…' : 'Archive'} onPress={handleArchive} disabled={isMutating} variant="ghost" /> : null}
+              {goal.status !== 'Active' ? (
+                <PrimaryButton
+                  label={isMutating ? 'Activating…' : 'Activate'}
+                  onPress={handleActivate}
+                  disabled={isMutating}
+                />
+              ) : null}
+              {goal.status === 'Active' ? (
+                <PrimaryButton
+                  label={isMutating ? 'Completing…' : 'Complete'}
+                  onPress={handleComplete}
+                  disabled={isMutating}
+                />
+              ) : null}
+              {goal.status !== 'Archived' ? (
+                <PrimaryButton
+                  label={isMutating ? 'Archiving…' : 'Archive'}
+                  onPress={handleArchive}
+                  disabled={isMutating}
+                  variant="ghost"
+                />
+              ) : null}
             </View>
-            {actionError ? <ThemedText type="small" themeColor="warning">{actionError}</ThemedText> : null}
+            {actionError ? (
+              <ThemedText type="small" themeColor="warning">
+                {actionError}
+              </ThemedText>
+            ) : null}
           </SectionCard>
 
           <SectionCard title="Goal timeline" description="日期和分类先收敛成移动端摘要。">
@@ -143,36 +193,57 @@ export function GoalDetailScreen() {
             <MetaRow label="Motivation" value={goal.motivation ?? 'Not set'} />
           </SectionCard>
 
-          <SectionCard title="Key results" description="关键结果现在支持继续下钻到 detail/edit/record 流。">
+          <SectionCard
+            title="Key results"
+            description="关键结果现在支持继续下钻到 detail/edit/record 流。"
+          >
             <View style={styles.listColumn}>
               {goal.keyResults.length > 0 ? (
                 goal.keyResults.map((keyResult) => (
                   <ThemedView key={keyResult.id} type="backgroundSelected" style={styles.krCard}>
                     <ThemedText type="smallBold">{keyResult.title}</ThemedText>
-                    <ThemedText type="small" themeColor="textSecondary">{keyResult.description ?? 'No description yet.'}</ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {keyResult.description ?? 'No description yet.'}
+                    </ThemedText>
                     <View style={styles.krMetaRow}>
-                      <StatusPill label={`${keyResult.currentValue}/${keyResult.targetValue}${keyResult.unit ? ` ${keyResult.unit}` : ''}`} tone="textSecondary" />
+                      <StatusPill
+                        label={`${keyResult.currentValue}/${keyResult.targetValue}${keyResult.unit ? ` ${keyResult.unit}` : ''}`}
+                        tone="textSecondary"
+                      />
                       <StatusPill label={`${keyResult.progress}%`} tone="tint" />
                     </View>
                     {goalId ? (
                       <PrimaryButton
                         label="Open key result"
-                        onPress={() => router.push(`./key-result?id=${goalId}&keyResultId=${keyResult.id}`)}
+                        onPress={() =>
+                          router.push(`./key-result?id=${goalId}&keyResultId=${keyResult.id}`)
+                        }
                         variant="ghost"
                       />
                     ) : null}
                   </ThemedView>
                 ))
               ) : (
-                <ThemedText type="small" themeColor="textSecondary">No key results yet.</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  No key results yet.
+                </ThemedText>
               )}
             </View>
           </SectionCard>
 
-          <SectionCard title="Reviews" description="review 已经接入移动端，详情页先展示摘要并提供入口。">
+          <SectionCard
+            title="Reviews"
+            description="review 已经接入移动端，详情页先展示摘要并提供入口。"
+          >
             <View style={styles.actionRow}>
               <StatusPill label={`${goal.reviewsCount} reviews`} tone="textSecondary" />
-              {goalId ? <PrimaryButton label="Open reviews" onPress={() => router.push(`./review?id=${goalId}`)} variant="secondary" /> : null}
+              {goalId ? (
+                <PrimaryButton
+                  label="Open reviews"
+                  onPress={() => router.push(`./review?id=${goalId}`)}
+                  variant="secondary"
+                />
+              ) : null}
             </View>
           </SectionCard>
         </>
@@ -184,7 +255,9 @@ export function GoalDetailScreen() {
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.metaRow}>
-      <ThemedText type="small" themeColor="textSecondary">{label}</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        {label}
+      </ThemedText>
       <ThemedText type="smallBold">{value}</ThemedText>
     </View>
   );

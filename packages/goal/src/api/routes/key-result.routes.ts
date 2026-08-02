@@ -14,9 +14,10 @@ import {
 } from '@memoflow/utils/result';
 import {
   AddKeyResultSchema,
+  DeleteKeyResultSchema,
   UpdateKeyResultSchema,
   UpdateKeyResultProgressSchema,
-  KeyResultClientDTOSchema,
+  GoalMutationReceiptSchema,
   KeyResultListResSchema,
 } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
@@ -77,7 +78,7 @@ export function registerKeyResultRoutes(
         body: { content: { 'application/json': { schema: AddKeyResultSchema } } },
       },
       responses: {
-        201: successResponse(KeyResultClientDTOSchema, '添加成功'),
+        201: successResponse(GoalMutationReceiptSchema, '添加成功'),
         404: errorResponse('目标不存在'),
       },
     },
@@ -97,7 +98,7 @@ export function registerKeyResultRoutes(
         body: { content: { 'application/json': { schema: UpdateKeyResultSchema } } },
       },
       responses: {
-        200: successResponse(KeyResultClientDTOSchema, '更新成功'),
+        200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标或关键结果不存在'),
       },
     },
@@ -116,7 +117,7 @@ export function registerKeyResultRoutes(
         body: { content: { 'application/json': { schema: UpdateKeyResultProgressSchema } } },
       },
       responses: {
-        200: successResponse(KeyResultClientDTOSchema, '更新成功'),
+        200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标或关键结果不存在'),
       },
     },
@@ -133,14 +134,15 @@ export function registerKeyResultRoutes(
       summary: '删除关键结果',
       request: {
         params: z.object({ id: brandedId<GoalId>(), krId: brandedId<KeyResultId>() }),
+        query: DeleteKeyResultSchema,
       },
       responses: {
-        200: successResponse(z.null(), '删除成功'),
+        200: successResponse(GoalMutationReceiptSchema, '删除成功'),
         404: errorResponse('目标或关键结果不存在'),
       },
     },
     [auth],
-    (req, ctx) => controller.deleteKeyResult(req.params!.id, req.params!.krId, ctx),
+    (req, ctx) => controller.deleteKeyResult(req.params!.id, req.params!.krId, req.query, ctx),
   );
 
   return router;

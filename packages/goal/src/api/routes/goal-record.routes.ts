@@ -19,7 +19,9 @@ import {
   errorResponse,
 } from '@memoflow/utils/result';
 import {
-  GoalRecordClientDTOSchema,
+  CreateGoalRecordSchema,
+  DeleteGoalRecordSchema,
+  GoalMutationReceiptSchema,
   GoalRecordListResSchema,
 } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
@@ -63,22 +65,18 @@ export function registerRecordRoutes(
         body: {
           content: {
             'application/json': {
-              schema: z.object({
-                value: z.number().min(0),
-                note: z.string().max(500).optional(),
-              }),
+              schema: CreateGoalRecordSchema.omit({ keyResultId: true }),
             },
           },
         },
       },
       responses: {
-        201: successResponse(GoalRecordClientDTOSchema, '创建成功'),
+        201: successResponse(GoalMutationReceiptSchema, '创建成功'),
         404: errorResponse('目标或关键结果不存在'),
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.createRecord(req.params!.id, req.params!.krId, req.body, ctx),
+    (req, ctx) => controller.createRecord(req.params!.id, req.params!.krId, req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -150,14 +148,22 @@ export function registerRecordRoutes(
           krId: brandedId<KeyResultId>(),
           recordId: brandedId<GoalRecordId>(),
         }),
+        query: DeleteGoalRecordSchema,
       },
       responses: {
-        200: successResponse(z.null(), '删除成功'),
+        200: successResponse(GoalMutationReceiptSchema, '删除成功'),
         404: errorResponse('记录不存在'),
       },
     },
     [auth],
-    (req, ctx) => controller.deleteRecord(req.params!.recordId, ctx),
+    (req, ctx) =>
+      controller.deleteRecord(
+        req.params!.id,
+        req.params!.krId,
+        req.params!.recordId,
+        req.query,
+        ctx,
+      ),
   );
 
   return router;

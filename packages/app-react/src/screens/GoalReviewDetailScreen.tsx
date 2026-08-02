@@ -20,11 +20,18 @@ import {
 export function GoalReviewDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string | string[]; reviewId?: string | string[] }>();
-  const goalId = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
-  const reviewId = typeof params.reviewId === 'string' ? params.reviewId : Array.isArray(params.reviewId) ? params.reviewId[0] : null;
+  const goalId =
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
+  const reviewId =
+    typeof params.reviewId === 'string'
+      ? params.reviewId
+      : Array.isArray(params.reviewId)
+        ? params.reviewId[0]
+        : null;
   const service = useGoalService();
 
   const [review, setReview] = useState<GoalReviewSummary | null>(null);
+  const [goalVersion, setGoalVersion] = useState<number | null>(null);
   const [summary, setSummary] = useState('');
   const [rating, setRating] = useState('');
   const [achievements, setAchievements] = useState('');
@@ -37,6 +44,7 @@ export function GoalReviewDetailScreen() {
   async function load() {
     if (!goalId || !reviewId) {
       setReview(null);
+      setGoalVersion(null);
       setError(null);
       setIsLoading(false);
       return;
@@ -44,20 +52,20 @@ export function GoalReviewDetailScreen() {
 
     setIsLoading(true);
     setError(null);
-    const result = await service.getGoalReviews(goalId);
+    const result = await service.getGoalAggregateView(goalId);
     if (!result.ok) {
       setReview(null);
+      setGoalVersion(null);
       setError(result.error.message);
       setIsLoading(false);
       return;
     }
 
-    const found = result.data.reviews
-      .map((item) => item.toDTO())
-      .find((item) => String(item.id) === reviewId);
+    const found = result.data.reviews.find((item) => String(item.id) === reviewId);
 
     if (!found) {
       setReview(null);
+      setGoalVersion(result.data.goal.version);
       setIsLoading(false);
       return;
     }
@@ -76,6 +84,7 @@ export function GoalReviewDetailScreen() {
     };
 
     setReview(nextReview);
+    setGoalVersion(result.data.goal.version);
     setSummary(nextReview.summary);
     setRating(String(nextReview.rating));
     setAchievements(nextReview.achievements ?? '');
@@ -89,7 +98,7 @@ export function GoalReviewDetailScreen() {
   }, [goalId, reviewId]);
 
   async function handleSave() {
-    if (!goalId || !reviewId) {
+    if (!goalId || !reviewId || goalVersion === null) {
       return;
     }
 
@@ -101,24 +110,43 @@ export function GoalReviewDetailScreen() {
       achievements: achievements.trim() || null,
       challenges: challenges.trim() || null,
       nextActions: improvements.trim() || null,
-    } as never);
+      expectedVersion: goalVersion,
+    });
     setIsMutating(false);
     if (!result.ok) {
       setError(result.error.message);
       return;
     }
 
-    await load();
+    const updated = result.data.readModel.reviews.find((item) => String(item.id) === reviewId);
+    if (updated) {
+      const nextReview: GoalReviewSummary = {
+        id: String(updated.id),
+        goalId: String(updated.goalId),
+        type: updated.type,
+        rating: updated.rating,
+        summary: updated.summary,
+        achievements: updated.achievements,
+        challenges: updated.challenges,
+        improvements: updated.improvements,
+        reviewedAt: updated.reviewedAt,
+        createdAt: updated.createdAt,
+      };
+      setReview(nextReview);
+    }
+    setGoalVersion(result.data.goalVersion);
   }
 
   async function handleDelete() {
-    if (!goalId || !reviewId) {
+    if (!goalId || !reviewId || goalVersion === null) {
       return;
     }
 
     setIsMutating(true);
     setError(null);
-    const result = await service.deleteGoalReview(goalId, reviewId);
+    const result = await service.deleteGoalReview(goalId, reviewId, {
+      expectedVersion: goalVersion,
+    });
     setIsMutating(false);
     if (!result.ok) {
       setError(result.error.message);
@@ -133,14 +161,17 @@ export function GoalReviewDetailScreen() {
       eyebrow="Goals"
       title={review ? `${review.type} review` : 'Review detail'}
       subtitle="review 详情页承接编辑和删除，不再只停留在列表摘要。"
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} />}>
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} />}
+    >
       <SectionCard title="Navigation" description="review 详情从 review 列表继续下钻。">
         <PrimaryButton label="Back to reviews" onPress={() => router.back()} variant="secondary" />
       </SectionCard>
 
       {error ? (
         <SectionCard title="Review request failed" description="当前先直接展示错误。">
-          <ThemedText type="small" themeColor="warning">{error}</ThemedText>
+          <ThemedText type="small" themeColor="warning">
+            {error}
+          </ThemedText>
         </SectionCard>
       ) : null}
 
@@ -157,7 +188,9 @@ export function GoalReviewDetailScreen() {
               <StatusPill label={review.type} tone="tint" />
               <StatusPill label={`${review.rating}/5`} tone="success" />
             </View>
-            <ThemedText type="small" themeColor="textSecondary">Reviewed at {formatProductDate(review.reviewedAt, emptyKind('dash'))}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Reviewed at {formatProductDate(review.reviewedAt, emptyKind('dash'))}
+            </ThemedText>
           </SectionCard>
 
           <SectionCard title="Edit review" description="review 详情页现在可以直接修改核心字段。">
@@ -170,13 +203,35 @@ export function GoalReviewDetailScreen() {
               textAlignVertical="top"
               style={styles.multilineField}
             />
-            <PrimaryTextField label="Rating" value={rating} onChangeText={setRating} keyboardType="numeric" />
-            <PrimaryTextField label="Achievements" value={achievements} onChangeText={setAchievements} />
+            <PrimaryTextField
+              label="Rating"
+              value={rating}
+              onChangeText={setRating}
+              keyboardType="numeric"
+            />
+            <PrimaryTextField
+              label="Achievements"
+              value={achievements}
+              onChangeText={setAchievements}
+            />
             <PrimaryTextField label="Challenges" value={challenges} onChangeText={setChallenges} />
-            <PrimaryTextField label="Next actions" value={improvements} onChangeText={setImprovements} />
+            <PrimaryTextField
+              label="Next actions"
+              value={improvements}
+              onChangeText={setImprovements}
+            />
             <View style={styles.actionRow}>
-              <PrimaryButton label={isMutating ? 'Saving…' : 'Save review'} onPress={handleSave} disabled={isMutating} />
-              <PrimaryButton label={isMutating ? 'Deleting…' : 'Delete review'} onPress={handleDelete} disabled={isMutating} variant="ghost" />
+              <PrimaryButton
+                label={isMutating ? 'Saving…' : 'Save review'}
+                onPress={handleSave}
+                disabled={isMutating}
+              />
+              <PrimaryButton
+                label={isMutating ? 'Deleting…' : 'Delete review'}
+                onPress={handleDelete}
+                disabled={isMutating}
+                variant="ghost"
+              />
             </View>
           </SectionCard>
         </>

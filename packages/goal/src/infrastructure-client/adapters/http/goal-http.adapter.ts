@@ -9,21 +9,24 @@ import type { IGoalApiClient, IResultHttpClient } from '../types';
 import type { GoalId } from '@memoflow/contracts/primitives';
 import type {
   GoalClientDTO,
+  GoalMutationReceipt,
   GoalSystemView,
-  KeyResultClientDTO,
-  GoalReviewClientDTO,
-  GoalRecordClientDTO,
   ProgressBreakdown,
   CreateGoalReq,
   UpdateGoalReq,
+  DeleteGoalReq,
   CloneGoalReq,
   QueryGoalsRes,
   AddKeyResultReq,
   UpdateKeyResultReq,
+  DeleteKeyResultReq,
   GetKeyResultsRes,
   CreateGoalReviewReq,
+  UpdateGoalReviewReq,
+  DeleteGoalReviewReq,
   GetGoalReviewsRes,
   CreateGoalRecordReq,
+  DeleteGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
 } from '@memoflow/contracts/goal';
@@ -35,7 +38,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
 
   // ===== Goal CRUD =====
 
-  async createGoal(request: CreateGoalReq): Promise<Result<GoalClientDTO>> {
+  async createGoal(request: CreateGoalReq): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
@@ -61,12 +64,12 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.get(`${this.baseUrl}/${id}?includeChildren=${includeChildren}`);
   }
 
-  async updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalClientDTO>> {
+  async updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.patch(`${this.baseUrl}/${id}`, request);
   }
 
-  async deleteGoal(id: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${id}`);
+  async deleteGoal(id: string, request: DeleteGoalReq): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`, { params: request });
   }
 
   async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
@@ -75,16 +78,16 @@ export class GoalHttpAdapter implements IGoalApiClient {
 
   // ===== Goal Status =====
 
-  async activateGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/activate`);
+  async activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/activate`, { expectedVersion });
   }
 
-  async completeGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/complete`);
+  async completeGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/complete`, { expectedVersion });
   }
 
-  async archiveGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/archive`);
+  async archiveGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/archive`, { expectedVersion });
   }
 
   // ===== Search =====
@@ -105,7 +108,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
   async addKeyResultForGoal(
     goalId: string,
     request: Omit<AddKeyResultReq, 'goalId'>,
-  ): Promise<Result<KeyResultClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     const backendRequest: AddKeyResultReq = { goalId: goalId as GoalId, ...request };
     return this.httpClient.post(`${this.baseUrl}/${goalId}/key-results`, backendRequest);
   }
@@ -118,18 +121,27 @@ export class GoalHttpAdapter implements IGoalApiClient {
     goalId: string,
     keyResultId: string,
     request: UpdateKeyResultReq,
-  ): Promise<Result<KeyResultClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.put(`${this.baseUrl}/${goalId}/key-results/${keyResultId}`, request);
   }
 
-  async deleteKeyResultForGoal(goalId: string, keyResultId: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${goalId}/key-results/${keyResultId}`);
+  async deleteKeyResultForGoal(
+    goalId: string,
+    keyResultId: string,
+    request: DeleteKeyResultReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.delete(`${this.baseUrl}/${goalId}/key-results/${keyResultId}`, {
+      params: request,
+    });
   }
 
   async batchUpdateKeyResultWeights(
     goalId: string,
-    request: { updates: Array<{ keyResultId: string; weight: number }> },
-  ): Promise<Result<GetKeyResultsRes>> {
+    request: {
+      expectedVersion: number;
+      updates: Array<{ keyResultId: string; weight: number }>;
+    },
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.put(`${this.baseUrl}/${goalId}/key-results/batch-weight`, request);
   }
 
@@ -142,7 +154,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
   async createGoalReview(
     goalId: string,
     request: CreateGoalReviewReq,
-  ): Promise<Result<GoalReviewClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.post(`${this.baseUrl}/${goalId}/reviews`, request);
   }
 
@@ -153,13 +165,19 @@ export class GoalHttpAdapter implements IGoalApiClient {
   async updateGoalReview(
     goalId: string,
     reviewId: string,
-    request: Partial<GoalReviewClientDTO>,
-  ): Promise<Result<GoalReviewClientDTO>> {
+    request: UpdateGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.put(`${this.baseUrl}/${goalId}/reviews/${reviewId}`, request);
   }
 
-  async deleteGoalReview(goalId: string, reviewId: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${goalId}/reviews/${reviewId}`);
+  async deleteGoalReview(
+    goalId: string,
+    reviewId: string,
+    request: DeleteGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.delete(`${this.baseUrl}/${goalId}/reviews/${reviewId}`, {
+      params: request,
+    });
   }
 
   // ===== GoalRecord Management =====
@@ -167,8 +185,8 @@ export class GoalHttpAdapter implements IGoalApiClient {
   async createGoalRecord(
     goalId: string,
     keyResultId: string,
-    request: Pick<CreateGoalRecordReq, 'value' | 'note'>,
-  ): Promise<Result<GoalRecordClientDTO>> {
+    request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.post(
       `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records`,
       request,
@@ -198,9 +216,11 @@ export class GoalHttpAdapter implements IGoalApiClient {
     goalId: string,
     keyResultId: string,
     recordId: string,
-  ): Promise<Result<void>> {
+    request: DeleteGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.delete(
       `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records/${recordId}`,
+      { params: request },
     );
   }
 
@@ -210,7 +230,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.get(`${this.baseUrl}/${goalId}/aggregate`);
   }
 
-  async cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalClientDTO>> {
+  async cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.post(`${this.baseUrl}/${goalId}/clone`, request);
   }
 

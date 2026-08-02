@@ -34,24 +34,6 @@ export function createMockGoalRepository(): MockGoalRepository {
   };
 }
 
-// ===== Goal Statistics Repository Mock =====
-
-export interface MockGoalStatisticsRepository {
-  save: ReturnType<typeof vi.fn>;
-  findByAccountId: ReturnType<typeof vi.fn>;
-  findById: ReturnType<typeof vi.fn>;
-  delete: ReturnType<typeof vi.fn>;
-}
-
-export function createMockGoalStatisticsRepository(): MockGoalStatisticsRepository {
-  return {
-    save: vi.fn().mockResolvedValue(undefined),
-    findByAccountId: vi.fn().mockResolvedValue(null),
-    findById: vi.fn().mockResolvedValue(null),
-    delete: vi.fn().mockResolvedValue(undefined),
-  };
-}
-
 // ===== Goal Folder Repository Mock =====
 
 export interface MockGoalFolderRepository {
@@ -204,6 +186,9 @@ export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
     reminderConfig: null,
     keyResults: [],
     reviews: [],
+    totalKeyResults: 0,
+    completedKeyResults: 0,
+    overallProgress: 0,
     version: dto.version,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,

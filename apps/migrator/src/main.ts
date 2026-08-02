@@ -99,6 +99,18 @@ export function createMigrationCommands(workspaceRoot: string): Command[] {
   commands.push(
     {
       executable: process.execPath,
+      args: [resolve(runtimeScripts, 'prepare-ai-provider-default-invariant.js')],
+      cwd: databaseRoot,
+      label: 'prepare AI provider default invariant',
+    },
+    {
+      executable: process.execPath,
+      args: [resolve(runtimeScripts, 'ensure-task-goal-binding-constraint.js')],
+      cwd: databaseRoot,
+      label: 'ensure Task goal-binding constraint',
+    },
+    {
+      executable: process.execPath,
       args: [resolve(runtimeScripts, 'bootstrap-ai-knowledge-index.js')],
       cwd: databaseRoot,
       label: 'bootstrap AI knowledge index',

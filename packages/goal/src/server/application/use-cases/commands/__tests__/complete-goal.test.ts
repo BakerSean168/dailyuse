@@ -36,6 +36,7 @@ describe('CompleteGoalUseCase', () => {
     goalRepo = createMockRepo<IGoalRepository>({
       findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
+      saveRootWithExpectedVersion: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new CompleteGoalUseCase(goalRepo, new GoalPolicy());
   });
@@ -43,7 +44,7 @@ describe('CompleteGoalUseCase', () => {
   it('should return error when goal does not exist', async () => {
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent', 'identity-1');
+    const result = await useCase.execute('non-existent', 'identity-1', 1);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -56,16 +57,19 @@ describe('CompleteGoalUseCase', () => {
     const goal = createTestGoal();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result.ok).toBe(true);
     expect(goal.status).toBe('Archived');
     expect(goal.completedAt).not.toBeNull();
     expect(goal.archivedAt).not.toBeNull();
-    expect(goalRepo.save).toHaveBeenCalledWith(goal);
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', goal.id, {
+      includeChildren: true,
+    });
+    expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
     if (result.ok) {
-      expect(result.data.goal).toBeDefined();
-      expect(result.data.goal.name).toBe('Test Goal');
+      expect(result.data.readModel).toBeDefined();
+      expect(result.data.readModel.name).toBe('Test Goal');
     }
   });
 
@@ -74,12 +78,12 @@ describe('CompleteGoalUseCase', () => {
     goal.markAsCompleted();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result.ok).toBe(true);
     expect(goal.status).toBe('Archived');
     if (result.ok) {
-      expect(result.data.goal).toBeDefined();
+      expect(result.data.readModel).toBeDefined();
     }
   });
 
@@ -89,15 +93,15 @@ describe('CompleteGoalUseCase', () => {
     goal.archive();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.goal.status).toBe('Archived');
+      expect(result.data.readModel.status).toBe('Archived');
     }
   });
 
-  it('should return the server DTO with includeChildren', async () => {
+  it('should return the client read model with children', async () => {
     const goal = createTestGoal('Complete Me');
     goal.createAndAddKeyResult({
       title: 'KR1',
@@ -107,12 +111,12 @@ describe('CompleteGoalUseCase', () => {
     });
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.goal.name).toBe('Complete Me');
-      expect(result.data.goal.status).toBe('Archived');
+      expect(result.data.readModel.name).toBe('Complete Me');
+      expect(result.data.readModel.status).toBe('Archived');
     }
   });
 });

@@ -1,8 +1,8 @@
 import type { PrismaClient } from '@memoflow/database';
 import {
   getDashboardData,
+  toDashboardGoalRecord,
   toDashboardTaskInstanceRecord,
-  type DashboardGoalRecord,
   type DashboardTaskTemplateRecord,
   type DashboardScheduleRecord,
   type DashboardReminderRecord,
@@ -15,30 +15,6 @@ import { createReminderPrismaRepositories } from '@memoflow/reminder';
 import { createNotificationPrismaRepositories } from '@memoflow/notification';
 
 /** Soft residual 1156: dual toDashboardTaskInstanceRecord retired onto @memoflow/dashboard sole. */
-
-function toGoalRecord(goal: {
-  id: { toString(): string } | string;
-  name: string;
-  status: string;
-  deletedAt: number | null;
-  priority: number;
-  updatedAt: number;
-  progress: number;
-  targetDate: number | null;
-  keyResults: readonly unknown[];
-}): DashboardGoalRecord {
-  return {
-    id: String(goal.id),
-    name: goal.name,
-    status: goal.status,
-    deletedAt: goal.deletedAt,
-    priority: goal.priority,
-    updatedAt: goal.updatedAt,
-    progress: goal.progress,
-    targetDate: goal.targetDate,
-    keyResults: goal.keyResults,
-  };
-}
 
 function toTaskTemplateRecord(template: {
   id: { toString(): string } | string;
@@ -127,10 +103,12 @@ export async function getApiDashboardData(
 
   return getDashboardData(identityId, {
     listGoals: async (id) =>
-      (await goalRepos.goalRepository.findByIdentityId(id, {
-        includeChildren: true,
-        systemView: 'active',
-      })).map(toGoalRecord),
+      (
+        await goalRepos.goalRepository.findByIdentityId(id, {
+          includeChildren: true,
+          systemView: 'active',
+        })
+      ).map((goal) => toDashboardGoalRecord(goal.toClientDTO(true))),
     listTaskTemplates: async (id) =>
       (await taskRepos.taskTemplateRepository.findByIdentityId(id)).map(toTaskTemplateRecord),
     listTaskInstances: async (id) =>
@@ -143,7 +121,6 @@ export async function getApiDashboardData(
       (await reminderRepos.reminderTemplateRepository.findByNextTriggerBefore(beforeTime, id)).map(
         toReminderRecord,
       ),
-    countUnreadNotifications: (id) =>
-      notificationRepos.notificationRepository.countUnread(id),
+    countUnreadNotifications: (id) => notificationRepos.notificationRepository.countUnread(id),
   });
 }

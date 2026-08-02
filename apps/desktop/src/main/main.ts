@@ -23,6 +23,7 @@ import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { GoalElectronModule } from '@memoflow/goal/electron';
+import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
 import { createTaskElectronModule } from '@memoflow/task/electron';
 import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
@@ -113,6 +114,7 @@ async function registerBusinessModules(
   });
   const taskElectronModule = createTaskElectronModule({
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
+    goalProgressHandler: createGoalTaskProgressPowerSyncHandler(db),
   });
 
   const AIElectronModule = createAIElectronModule({
@@ -280,4 +282,3 @@ async function initializeShellRuntime(): Promise<void> {
 // ═══════════════════════════════════════════════════════════════════════
 
 registerAppLifecycleHandlers(initializeShellRuntime, () => mainRuntime, windowManager);
-

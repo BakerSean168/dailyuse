@@ -171,15 +171,6 @@ describe('GoalFolder domain events', () => {
       },
     });
 
-    folder.incrementGoalCount();
-    [event] = folder.pullDomainEvents();
-    expect(event.eventType).toBe('goal:folder-stats-updated');
-    expect(event.payload).toMatchObject({
-      goalCount: 1,
-      completedGoalCount: 0,
-      completionRate: 0,
-    });
-
     folder.softDelete();
     [event] = folder.pullDomainEvents();
     expect(event.eventType).toBe('goal:folder-deleted');

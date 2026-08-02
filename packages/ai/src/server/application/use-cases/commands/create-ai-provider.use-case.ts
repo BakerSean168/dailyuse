@@ -1,5 +1,5 @@
 import type { Result } from '@memoflow/contracts/result';
-import { ok } from '@memoflow/contracts/result';
+import { error, ok } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   AIProviderType,
@@ -22,10 +22,6 @@ export class CreateAIProviderUseCase {
     request: CreateAIProviderConfigReq,
     cx: ExecutionContext,
   ): Promise<Result<AIProviderConfigClientDTO>> {
-    if (request.isDefault) {
-      await this.providerConfigRepository.clearDefaultForIdentity(cx.identityId);
-    }
-
     const now = Date.now();
     const provider: AIProviderConfigServerDTO = {
       id: AiProviderConfigId.generate(),
@@ -45,11 +41,12 @@ export class CreateAIProviderUseCase {
       deletedAt: null,
     };
 
-    await this.providerConfigRepository.save(provider);
+    const outcome = await this.providerConfigRepository.save(provider);
+    if (outcome === 'CONFLICT') {
+      return error('CONFLICT', 'Another provider became default; refresh and try again');
+    }
     logger.info('AI provider created', { identityId: cx.identityId, providerId: provider.id });
     return ok(toClientDTO(provider));
   }
 }
-
-
 

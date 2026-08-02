@@ -10,11 +10,9 @@ import type { KeyResultAddedEvent } from '../domain/events/key-result-added.even
 import type { KeyResultUpdatedEvent } from '../domain/events/key-result-updated.event';
 import type { KeyResultDeletedEvent } from '../domain/events/key-result-deleted.event';
 import type { ReviewAddedEvent } from '../domain/events/review-added.event';
-import type { GoalRecordCreatedEvent } from '../domain/events/goal-record-created.event';
 import type { GoalFolderCreatedEvent } from '../domain/events/goal-folder-created.event';
 import type { GoalFolderUpdatedEvent } from '../domain/events/goal-folder-updated.event';
 import type { GoalFolderDeletedEvent } from '../domain/events/goal-folder-deleted.event';
-import type { GoalFolderStatsUpdatedEvent } from '../domain/events/goal-folder-stats-updated.event';
 import type { FocusSessionStartedEvent } from '../domain/events/focus-session-started.event';
 import type { FocusSessionPausedEvent } from '../domain/events/focus-session-paused.event';
 import type { FocusSessionResumedEvent } from '../domain/events/focus-session-resumed.event';
@@ -46,14 +44,10 @@ export type GoalEventMap = {
   // ============ GoalReview Events ============
   'goal:review-added': ReviewAddedEvent;
 
-  // ============ GoalRecord Events ============
-  'goal-record:created': GoalRecordCreatedEvent;
-
   // ============ GoalFolder Events ============
   'goal:folder-created': GoalFolderCreatedEvent;
   'goal:folder-updated': GoalFolderUpdatedEvent;
   'goal:folder-deleted': GoalFolderDeletedEvent;
-  'goal:folder-stats-updated': GoalFolderStatsUpdatedEvent;
 
   // ============ FocusSession Events ============
   'goal:focus-session-started': FocusSessionStartedEvent;

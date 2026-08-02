@@ -22,9 +22,15 @@ import {
 import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
 import {
   createTaskPowerSyncModule,
+  createTaskGoalOutboxRuntime,
+  PowerSyncTaskGoalOutboxDispatchStore,
   type TaskModuleInstance,
   type TaskModuleRuntimeContribution,
 } from '../server/infrastructure';
+import {
+  TaskGoalOutboxDispatcher,
+  type TaskGoalProgressHandler,
+} from '../server/application/outbox';
 import { createTaskTransportHandlers } from '../server/transport';
 import { createTaskRuntimeContribution } from '../server/infrastructure/runtime';
 import { TaskTemplateController } from '../server/transport/task-template.controller';
@@ -49,6 +55,7 @@ export interface CreateTaskElectronModuleOptions {
   readonly runtimeContributions?:
     | TaskModuleRuntimeContribution
     | readonly TaskModuleRuntimeContribution[];
+  readonly goalProgressHandler?: TaskGoalProgressHandler;
 }
 
 export function getTaskTemplateRepository(): ITaskTemplateRepository {
@@ -91,6 +98,16 @@ export function createTaskElectronModule(
 
       const taskModule = createTaskPowerSyncModule(db, [
         createTaskRuntimeContribution(),
+        ...(options.goalProgressHandler
+          ? [
+              createTaskGoalOutboxRuntime(
+                new TaskGoalOutboxDispatcher(
+                  new PowerSyncTaskGoalOutboxDispatchStore(db),
+                  options.goalProgressHandler,
+                ),
+              ),
+            ]
+          : []),
         ...normalizeRuntimeContributions(options.runtimeContributions),
       ]);
       activeTaskModule = taskModule;
@@ -364,4 +381,3 @@ export {
   createTaskPowerSyncScheduleExecutionSource,
   createTaskPowerSyncScheduleProjectionSource,
 } from '../server/infrastructure';
-

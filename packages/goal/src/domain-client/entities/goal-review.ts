@@ -23,12 +23,10 @@ export interface GoalReviewState {
   challenges: string | null;
   improvements: string | null;
   keyResultSnapshots: KeyResultSnapshot[];
-  version: number;
   /** ADR-037 Instant epoch ms */
   reviewedAt: number;
   createdAt: number;
   updatedAt: number;
-  deletedAt: number | null;
 }
 
 export class GoalReview extends Entity<GoalReviewId> {
@@ -74,10 +72,6 @@ export class GoalReview extends Entity<GoalReviewId> {
     return [...this._props.keyResultSnapshots];
   }
 
-  get version(): number {
-    return this._props.version;
-  }
-
   get reviewedAt(): number {
     return this._props.reviewedAt;
   }
@@ -88,15 +82,6 @@ export class GoalReview extends Entity<GoalReviewId> {
 
   get updatedAt(): number {
     return this._props.updatedAt;
-  }
-
-  get deletedAt(): number | null {
-    return this._props.deletedAt;
-  }
-
-  // 计算属性
-  get isDeleted(): boolean {
-    return this._props.deletedAt !== null;
   }
 
   // ================= 4. Factory Methods =================
@@ -116,11 +101,9 @@ export class GoalReview extends Entity<GoalReviewId> {
       challenges: this._props.challenges,
       improvements: this._props.improvements,
       keyResultSnapshots: [...this._props.keyResultSnapshots],
-      version: this._props.version,
       reviewedAt: this._props.reviewedAt,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

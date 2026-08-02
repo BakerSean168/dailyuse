@@ -18,7 +18,11 @@ import type { GoalFolderClientDTO } from '../modules/goal/aggregates/goal-folder
 import type { KeyResultClientDTO } from '../modules/goal/entities/key-result-client';
 import type { GoalRecordClientDTO } from '../modules/goal/aggregates/goal-record-client';
 import type { GoalReviewClientDTO } from '../modules/goal/entities/goal-review-client';
-import type { QueryGoalsRes } from '../modules/goal/api/response-schemas';
+import type {
+  GoalAggregateReadModel,
+  GoalMutationReceipt,
+  QueryGoalsRes,
+} from '../modules/goal/api/response-schemas';
 import { ReviewType } from '../modules/goal/value-objects/review-type';
 import type { KeyResultId } from '../primitives';
 
@@ -71,6 +75,9 @@ export function createMockGoal(overrides: Partial<GoalClientDTO> = {}): GoalClie
     version: 1,
     keyResults: null,
     reviews: null,
+    totalKeyResults: 0,
+    completedKeyResults: 0,
+    overallProgress: 0,
     ...overrides,
   };
 }
@@ -83,6 +90,37 @@ export function createMockGoalList(
   overrides: Partial<GoalClientDTO> = {},
 ): GoalClientDTO[] {
   return Array.from({ length: count }, () => createMockGoal(overrides));
+}
+
+/**
+ * Creates the canonical command response used by every Goal mutation.
+ * Keeping this in contracts prevents MSW, adapter, and application tests from
+ * drifting back to the retired convention of returning a bare Goal snapshot.
+ */
+export function createMockGoalMutationReceipt(
+  goalOverrides: Partial<GoalClientDTO> = {},
+  receiptOverrides: Partial<GoalMutationReceipt> = {},
+): GoalMutationReceipt {
+  const keyResults = goalOverrides.keyResults ?? [];
+  const reviews = goalOverrides.reviews ?? [];
+  const readModel: GoalAggregateReadModel = {
+    ...createMockGoal(goalOverrides),
+    keyResults,
+    reviews,
+  };
+
+  return {
+    goalId: readModel.id,
+    goalVersion: readModel.version,
+    affectedEntityIds: {
+      goalIds: [readModel.id],
+      keyResultIds: [],
+      recordIds: [],
+      reviewIds: [],
+    },
+    readModel,
+    ...receiptOverrides,
+  };
 }
 
 /**
@@ -120,13 +158,16 @@ export function createMockGoalFolder(
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     color: faker.color.rgb({ format: 'hex', casing: 'upper' }),
     icon: null,
-    parentId: null,
+    parentFolderId: null,
     sortOrder: faker.number.int({ min: 0, max: 100 }),
-    goalCount: faker.number.int({ min: 0, max: 20 }),
+    isSystemFolder: false,
+    folderType: 'User',
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
     updatedAt: now,
     deletedAt: null,
     version: 1,
+    displayName: overrides.name ?? 'Folder',
+    displayIcon: 'default-folder-icon',
     ...overrides,
   } as GoalFolderClientDTO;
 }
@@ -154,10 +195,8 @@ export function createMockKeyResult(
     },
     weight: faker.number.int({ min: 1, max: 5 }),
     order: faker.number.int({ min: 0, max: 100 }),
-    version: 1,
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
     updatedAt: now,
-    deletedAt: null,
     ...overrides,
   };
 }
@@ -183,10 +222,8 @@ export function createMockGoalRecord(
     value,
     valueAfter: faker.number.int({ min: value, max: 200 }),
     comment: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    version: 1,
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
     updatedAt: now,
-    deletedAt: null,
     ...overrides,
   };
 }
@@ -230,11 +267,9 @@ export function createMockGoalReview(
       currentValue: faker.number.int({ min: 0, max: 100 }),
       progressPercentage: faker.number.int({ min: 0, max: 100 }),
     })),
-    version: 1,
     reviewedAt: now - faker.number.int({ min: 0, max: 14 * 24 * 60 * 60 * 1000 }),
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
     updatedAt: now,
-    deletedAt: null,
     ...overrides,
   };
 }

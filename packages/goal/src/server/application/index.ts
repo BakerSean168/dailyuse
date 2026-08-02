@@ -63,7 +63,12 @@ export { GoalMapper } from './mappers';
 // ============================================================
 // Event Handlers
 // ============================================================
-export { registerGoalEventListeners } from './event-handlers';
+export {
+  GoalTaskProgressHandler,
+  createGoalTaskProgressHandler,
+  registerGoalEventListeners,
+  type TaskGoalProgressHandler,
+} from './event-handlers';
 
 // ============================================================
 // Errors

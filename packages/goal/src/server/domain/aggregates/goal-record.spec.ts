@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GoalRecord } from './goal-record';
 
-describe('GoalRecord aggregate', () => {
+describe('GoalRecord owned entity', () => {
   it('creates records and validates required fields', () => {
     const recordedAt = new Date('2026-04-26T09:00:00.000Z').getTime();
     const record = GoalRecord.create({
@@ -16,7 +16,6 @@ describe('GoalRecord aggregate', () => {
     expect(record.value).toBe(12);
     expect(record.note).toBe('progress');
     expect(record.recordedAt).toBe(recordedAt);
-    expect(record.version).toBe(1);
     expect(record.toServerDTO()).toMatchObject({
       keyResultId: 'KeyResultId_1',
       value: 12,
@@ -45,7 +44,7 @@ describe('GoalRecord aggregate', () => {
     ).toThrow('Value must be a valid number');
   });
 
-  it('updates notes, soft deletes, restores, and loads state', () => {
+  it('updates notes and loads state without a child concurrency lifecycle', () => {
     const record = GoalRecord.create({
       keyResultId: 'KeyResultId_1' as never,
       identityId: 'IdentityId_1' as never,
@@ -54,21 +53,6 @@ describe('GoalRecord aggregate', () => {
 
     record.updateNote('  revised  ');
     expect(record.note).toBe('revised');
-    expect(record.version).toBe(2);
-
-    record.softDelete();
-    expect(record.deletedAt).not.toBeNull();
-    expect(record.version).toBe(3);
-    const deletedAt = record.deletedAt;
-    record.softDelete();
-    expect(record.deletedAt).toBe(deletedAt);
-    expect(record.version).toBe(3);
-
-    record.restore();
-    expect(record.deletedAt).toBeNull();
-    expect(record.version).toBe(4);
-    record.restore();
-    expect(record.version).toBe(4);
 
     const loaded = GoalRecord.load({
       id: 'GoalRecordId_2' as never,
@@ -77,13 +61,10 @@ describe('GoalRecord aggregate', () => {
       value: 99,
       note: null,
       recordedAt: new Date('2026-04-26T10:00:00.000Z').getTime(),
-      version: 7,
       createdAt: new Date('2026-04-26T10:00:00.000Z'),
       updatedAt: new Date('2026-04-26T10:05:00.000Z'),
-      deletedAt: null,
     });
     expect(loaded.value).toBe(99);
-    expect(loaded.version).toBe(7);
     expect(loaded.toClientDTO('GoalId_2').valueAfter).toBe(99);
   });
 

@@ -130,7 +130,7 @@ function createGoalUseCasesStub(): Parameters<typeof registerGoalRoutes>[0] {
 }
 
 describe('goal route contracts', () => {
-  it('registers name-only create, update, and clone body schemas', () => {
+  it('registers canonical create, versioned update, and clone body schemas', () => {
     const registry = new TestOpenApiRegistry();
 
     registerGoalCrudRoutes(
@@ -154,7 +154,10 @@ describe('goal route contracts', () => {
       false,
     );
 
-    expect(updateSchema.safeParse({ name: 'Ship architecture fixes v2' }).success).toBe(true);
+    expect(
+      updateSchema.safeParse({ name: 'Ship architecture fixes v2', expectedVersion: 1 }).success,
+    ).toBe(true);
+    expect(updateSchema.safeParse({ name: 'Missing version' }).success).toBe(false);
     expect(updateSchema.safeParse({ title: 'Legacy title' }).success).toBe(false);
     expect(cloneSchema.safeParse({ name: 'Ship architecture fixes (copy)' }).success).toBe(true);
     expect(cloneSchema.safeParse({ title: 'Legacy clone title' }).success).toBe(false);
@@ -241,7 +244,7 @@ describe('goal route contracts', () => {
     );
   });
 
-  it('documents review delete with z.null() void success (no DeleteSuccess dual-track)', () => {
+  it('documents review delete with a Goal mutation receipt', () => {
     const registry = new TestOpenApiRegistry();
 
     registerGoalRoutes(
@@ -253,6 +256,57 @@ describe('goal route contracts', () => {
     const route = getRegisteredRoute(registry, 'delete', '/api/v1/goals/{id}/reviews/{reviewId}');
     const responseSchema = getResponseSchema(route, 200);
 
+    const receiptResult = responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: {
+          goalId: 'IGoalId_00000000-0000-4000-8000-000000000001',
+          goalVersion: 2,
+          affectedEntityIds: {
+            goalIds: ['IGoalId_00000000-0000-4000-8000-000000000001'],
+            keyResultIds: [],
+            recordIds: [],
+            reviewIds: ['IGoalReviewId_00000000-0000-4000-8000-000000000002'],
+          },
+          readModel: {
+            id: 'IGoalId_00000000-0000-4000-8000-000000000001',
+            identityId: 'IdentityId_00000000-0000-4000-8000-000000000003',
+            name: 'Goal',
+            description: null,
+            color: null,
+            feasibilityAnalysis: null,
+            motivation: null,
+            status: 'Active',
+            importance: 'Moderate',
+            priority: 0,
+            category: null,
+            tags: [],
+            startDate: null,
+            targetDate: null,
+            completedAt: null,
+            archivedAt: null,
+            folderId: null,
+            parentGoalId: null,
+            sortOrder: 0,
+            reminderConfig: null,
+            createdAt: 1,
+            updatedAt: 2,
+            deletedAt: null,
+            version: 2,
+            keyResults: [],
+            reviews: [],
+            totalKeyResults: 0,
+            completedKeyResults: 0,
+            overallProgress: 0,
+          },
+        },
+        timestamp: Date.now(),
+      });
+    expect(
+      receiptResult.success,
+      'error' in receiptResult ? JSON.stringify(receiptResult.error) : undefined,
+    ).toBe(true);
     expect(
       responseSchema.safeParse({
         ok: true,
@@ -261,7 +315,7 @@ describe('goal route contracts', () => {
         data: null,
         timestamp: Date.now(),
       }).success,
-    ).toBe(true);
+    ).toBe(false);
     expect(
       responseSchema.safeParse({
         ok: true,

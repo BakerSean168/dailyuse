@@ -14,9 +14,9 @@ export interface DashboardGoalRecord {
   deletedAt: number | null;
   priority: number;
   updatedAt: number;
-  progress: number;
+  overallProgress: number;
   targetDate: number | null;
-  keyResults: readonly unknown[];
+  totalKeyResults: number;
 }
 
 export interface DashboardTaskTemplateRecord {

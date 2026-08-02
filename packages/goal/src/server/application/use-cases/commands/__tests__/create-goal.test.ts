@@ -41,9 +41,32 @@ describe('CreateGoalUseCase', () => {
     expect(result).toBeOk();
     expect(goalRepo.save).toHaveBeenCalledTimes(1);
     if (result.ok) {
-      expect(result.data.name).toBe('Learn TypeScript');
-      expect(result.data.id).toBeDefined();
+      expect(result.data.readModel.name).toBe('Learn TypeScript');
+      expect(result.data.readModel.id).toBeDefined();
     }
+  });
+
+  it('creates the goal and every initial key result with one aggregate save', async () => {
+    const result = await useCase.execute(
+      aCreateInput({
+        initialKeyResults: [
+          {
+            title: 'Ship the reliable journey',
+            valueType: 'Incremental',
+            calculationMethod: 'Sum',
+            startValue: 0,
+            currentValue: 0,
+            targetValue: 100,
+            weight: 5,
+          },
+        ],
+      }),
+      aContext(),
+    );
+
+    expect(result).toBeOk();
+    expect(goalRepo.save).toHaveBeenCalledTimes(1);
+    expect(result.ok && result.data.readModel.keyResults).toHaveLength(1);
   });
 
   it('should return VALIDATION_ERROR when name is empty', async () => {
@@ -111,7 +134,7 @@ describe('CreateGoalUseCase', () => {
 
     expect(result).toBeOk();
     if (result.ok) {
-      expect(result.data.tags).toEqual(['fitness', 'health']);
+      expect(result.data.readModel.tags).toEqual(['fitness', 'health']);
     }
   });
 });

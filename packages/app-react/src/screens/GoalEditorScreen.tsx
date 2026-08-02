@@ -4,7 +4,10 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import type { CreateGoalReq, UpdateGoalReq } from '@memoflow/contracts/goal';
-import { ImportanceLevel, type ImportanceLevel as ImportanceLevelType } from '@memoflow/contracts/shared';
+import {
+  ImportanceLevel,
+  type ImportanceLevel as ImportanceLevelType,
+} from '@memoflow/contracts/shared';
 
 import { useGoalDetail } from '../hooks/useGoalDetail';
 import { useGoalService } from '../hooks/useGoalService';
@@ -58,7 +61,8 @@ function parseDateInput(value: string) {
 export function GoalEditorScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
-  const goalId = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
+  const goalId =
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
   const service = useGoalService();
   const { goal, isLoading } = useGoalDetail(goalId);
 
@@ -98,6 +102,7 @@ export function GoalEditorScreen() {
     const result = goalId
       ? await service.updateGoal(goalId, {
           name: name.trim(),
+          expectedVersion: goal?.version ?? 1,
           description: description.trim().length > 0 ? description.trim() : null,
           motivation: motivation.trim().length > 0 ? motivation.trim() : null,
           category: category.trim().length > 0 ? category.trim() : null,
@@ -120,18 +125,24 @@ export function GoalEditorScreen() {
       return;
     }
 
-    router.replace(`../${String(result.data.id)}`);
+    const savedGoal = 'readModel' in result.data ? result.data.readModel : result.data;
+    router.replace(`../${String(savedGoal.id)}`);
   }
 
   return (
     <PageShell
       eyebrow="Goals"
       title={goalId ? 'Edit goal' : 'Create goal'}
-      subtitle="先把目标创建和基础编辑打通，复杂字段和 key result 编辑后续再继续补。">
+      subtitle="先把目标创建和基础编辑打通，复杂字段和 key result 编辑后续再继续补。"
+    >
       <SectionCard title="Navigation" description="目标编辑页先独立成单页表单。">
         <View style={styles.actionRow}>
           <PrimaryButton label="Back" onPress={() => router.back()} variant="secondary" />
-          <PrimaryButton label={isSubmitting ? 'Saving…' : goalId ? 'Save changes' : 'Create goal'} onPress={handleSubmit} disabled={isSubmitting || isLoading} />
+          <PrimaryButton
+            label={isSubmitting ? 'Saving…' : goalId ? 'Save changes' : 'Create goal'}
+            onPress={handleSubmit}
+            disabled={isSubmitting || isLoading}
+          />
         </View>
       </SectionCard>
 
@@ -145,7 +156,12 @@ export function GoalEditorScreen() {
 
       <ScrollView contentContainerStyle={styles.formColumn}>
         <SectionCard title="Basics" description="目标的基础字段先集中在一页。">
-          <PrimaryTextField label="Name" value={name} onChangeText={setName} placeholder="Ship mobile migration" />
+          <PrimaryTextField
+            label="Name"
+            value={name}
+            onChangeText={setName}
+            placeholder="Ship mobile migration"
+          />
           <PrimaryTextField
             label="Description"
             value={description}
@@ -156,9 +172,25 @@ export function GoalEditorScreen() {
             textAlignVertical="top"
             style={styles.multilineField}
           />
-          <PrimaryTextField label="Motivation" value={motivation} onChangeText={setMotivation} placeholder="Why this goal matters" />
-          <PrimaryTextField label="Category" value={category} onChangeText={setCategory} placeholder="Work / Health / Learning" />
-          <PrimaryTextField label="Target date" value={targetDate} onChangeText={setTargetDate} placeholder="2026-04-30" hint="Use YYYY-MM-DD." />
+          <PrimaryTextField
+            label="Motivation"
+            value={motivation}
+            onChangeText={setMotivation}
+            placeholder="Why this goal matters"
+          />
+          <PrimaryTextField
+            label="Category"
+            value={category}
+            onChangeText={setCategory}
+            placeholder="Work / Health / Learning"
+          />
+          <PrimaryTextField
+            label="Target date"
+            value={targetDate}
+            onChangeText={setTargetDate}
+            placeholder="2026-04-30"
+            hint="Use YYYY-MM-DD."
+          />
         </SectionCard>
 
         <SectionCard title="Importance" description="移动端先用轻量级优先级切换。">

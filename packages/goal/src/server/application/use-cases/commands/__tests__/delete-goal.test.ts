@@ -43,6 +43,7 @@ describe('DeleteGoalUseCase', () => {
     goalRepo = createMockRepo<IGoalRepository>({
       findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
+      saveRootWithExpectedVersion: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new DeleteGoalUseCase(goalRepo, new GoalPolicy());
   });
@@ -51,7 +52,7 @@ describe('DeleteGoalUseCase', () => {
     it('should return NOT_FOUND when goal does not exist', async () => {
       vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-      const result = await useCase.execute('non-existent', 'identity-1');
+      const result = await useCase.execute('non-existent', 'identity-1', 1);
 
       expect(result).toBeErrorWithCode('NOT_FOUND');
       expect(goalRepo.save).not.toHaveBeenCalled();
@@ -61,18 +62,18 @@ describe('DeleteGoalUseCase', () => {
       const goal = createCompletedGoal();
       vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-      const result = await useCase.execute(goal.id, 'identity-1');
+      const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
       expect(result).toBeOk();
       expect(goal.deletedAt).not.toBeNull();
-      expect(goalRepo.save).toHaveBeenCalledWith(goal);
+      expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
     });
 
     it('should soft delete an active goal', async () => {
       const goal = createTestGoal();
       vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-      const result = await useCase.execute(goal.id, 'identity-1');
+      const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
       expect(result).toBeOk();
       expect(goal.deletedAt).not.toBeNull();
@@ -82,13 +83,24 @@ describe('DeleteGoalUseCase', () => {
       const goal = createCompletedGoal('My Goal');
       vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-      const result = await useCase.execute(goal.id, 'identity-1');
+      const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
       expect(result).toBeOk();
       if (result.ok) {
-        expect(result.data.name).toBe('My Goal');
-        expect(result.data.deletedAt).not.toBeNull();
+        expect(result.data.readModel.name).toBe('My Goal');
+        expect(result.data.readModel.deletedAt).not.toBeNull();
       }
+    });
+
+    it('rejects a stale version without deleting', async () => {
+      const goal = createTestGoal();
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
+
+      const result = await useCase.execute(goal.id, 'identity-1', goal.version + 1);
+
+      expect(result).toBeErrorWithCode('CONFLICT');
+      expect(goal.deletedAt).toBeNull();
+      expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
     });
   });
 

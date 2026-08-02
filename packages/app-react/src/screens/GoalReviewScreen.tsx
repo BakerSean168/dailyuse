@@ -26,7 +26,8 @@ const REVIEW_TYPES = Object.values(ReviewType);
 export function GoalReviewScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
-  const goalId = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
+  const goalId =
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
   const service = useGoalService();
   const { goal } = useGoalDetail(goalId);
   const { error, isLoading, refresh, reviews } = useGoalReviews(goalId);
@@ -41,7 +42,7 @@ export function GoalReviewScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleCreateReview() {
-    if (!goalId) {
+    if (!goalId || !goal) {
       setSubmitError('Missing goal id.');
       return;
     }
@@ -57,6 +58,7 @@ export function GoalReviewScreen() {
     const numericRating = Number.parseInt(rating, 10);
     const result = await service.createGoalReview(goalId, {
       goalId: goalId as CreateGoalReviewReq['goalId'],
+      expectedVersion: goal.version,
       title: title.trim(),
       content: content.trim(),
       reviewType,
@@ -88,7 +90,8 @@ export function GoalReviewScreen() {
       eyebrow="Goals"
       title={goal ? `${goal.name} reviews` : 'Goal reviews'}
       subtitle="目标 review 已经接进移动端，列表、创建和详情编辑链路都已接通。"
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+    >
       <SectionCard title="Navigation" description="review 作为目标详情页的次级 screen。">
         <View style={styles.actionRow}>
           <PrimaryButton label="Back to goal" onPress={() => router.back()} variant="secondary" />
@@ -97,18 +100,27 @@ export function GoalReviewScreen() {
 
       {error ? (
         <SectionCard title="Review load failed" description="当前先直接展示错误。">
-          <ThemedText type="small" themeColor="warning">{error}</ThemedText>
+          <ThemedText type="small" themeColor="warning">
+            {error}
+          </ThemedText>
         </SectionCard>
       ) : null}
 
       {submitError ? (
         <SectionCard title="Review save failed" description="当前先直接展示错误。">
-          <ThemedText type="small" themeColor="warning">{submitError}</ThemedText>
+          <ThemedText type="small" themeColor="warning">
+            {submitError}
+          </ThemedText>
         </SectionCard>
       ) : null}
 
       <SectionCard title="New review" description="移动端先用单页表单创建 review。">
-        <PrimaryTextField label="Title" value={title} onChangeText={setTitle} placeholder="Weekly review" />
+        <PrimaryTextField
+          label="Title"
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Weekly review"
+        />
         <PrimaryTextField
           label="Summary"
           value={content}
@@ -119,16 +131,46 @@ export function GoalReviewScreen() {
           textAlignVertical="top"
           style={styles.multilineField}
         />
-        <PrimaryTextField label="Achievements" value={achievements} onChangeText={setAchievements} placeholder="What went well" />
-        <PrimaryTextField label="Challenges" value={challenges} onChangeText={setChallenges} placeholder="What blocked progress" />
-        <PrimaryTextField label="Next actions" value={nextActions} onChangeText={setNextActions} placeholder="What to do next" />
-        <PrimaryTextField label="Rating" value={rating} onChangeText={setRating} placeholder="1-5" keyboardType="numeric" />
+        <PrimaryTextField
+          label="Achievements"
+          value={achievements}
+          onChangeText={setAchievements}
+          placeholder="What went well"
+        />
+        <PrimaryTextField
+          label="Challenges"
+          value={challenges}
+          onChangeText={setChallenges}
+          placeholder="What blocked progress"
+        />
+        <PrimaryTextField
+          label="Next actions"
+          value={nextActions}
+          onChangeText={setNextActions}
+          placeholder="What to do next"
+        />
+        <PrimaryTextField
+          label="Rating"
+          value={rating}
+          onChangeText={setRating}
+          placeholder="1-5"
+          keyboardType="numeric"
+        />
         <View style={styles.optionRow}>
           {REVIEW_TYPES.map((item) => (
-            <PrimaryButton key={item} label={item} onPress={() => setReviewType(item)} variant={reviewType === item ? 'solid' : 'ghost'} />
+            <PrimaryButton
+              key={item}
+              label={item}
+              onPress={() => setReviewType(item)}
+              variant={reviewType === item ? 'solid' : 'ghost'}
+            />
           ))}
         </View>
-        <PrimaryButton label={isSubmitting ? 'Saving…' : 'Create review'} onPress={handleCreateReview} disabled={isSubmitting} />
+        <PrimaryButton
+          label={isSubmitting ? 'Saving…' : 'Create review'}
+          onPress={handleCreateReview}
+          disabled={isSubmitting}
+        />
       </SectionCard>
 
       <SectionCard title="Review history" description="review 现在可以继续下钻到详情页编辑。">
@@ -141,21 +183,33 @@ export function GoalReviewScreen() {
                   <StatusPill label={`${review.rating}/5`} tone="tint" />
                 </View>
                 <ThemedText type="small">{review.summary}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">Reviewed on {formatProductDate(review.reviewedAt, emptyKind('dash'))}</ThemedText>
-                {review.achievements ? <ThemedText type="small">Achievements: {review.achievements}</ThemedText> : null}
-                {review.challenges ? <ThemedText type="small">Challenges: {review.challenges}</ThemedText> : null}
-                {review.improvements ? <ThemedText type="small">Next: {review.improvements}</ThemedText> : null}
+                <ThemedText type="small" themeColor="textSecondary">
+                  Reviewed on {formatProductDate(review.reviewedAt, emptyKind('dash'))}
+                </ThemedText>
+                {review.achievements ? (
+                  <ThemedText type="small">Achievements: {review.achievements}</ThemedText>
+                ) : null}
+                {review.challenges ? (
+                  <ThemedText type="small">Challenges: {review.challenges}</ThemedText>
+                ) : null}
+                {review.improvements ? (
+                  <ThemedText type="small">Next: {review.improvements}</ThemedText>
+                ) : null}
                 {goalId ? (
                   <PrimaryButton
                     label="Open review detail"
-                    onPress={() => router.push(`./review-detail?id=${goalId}&reviewId=${review.id}`)}
+                    onPress={() =>
+                      router.push(`./review-detail?id=${goalId}&reviewId=${review.id}`)
+                    }
                     variant="ghost"
                   />
                 ) : null}
               </ThemedView>
             ))
           ) : (
-            <ThemedText type="small" themeColor="textSecondary">当前还没有 review。</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              当前还没有 review。
+            </ThemedText>
           )}
         </View>
       </SectionCard>

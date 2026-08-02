@@ -12,6 +12,8 @@ describe('PrismaTaskTemplateMapper', () => {
   const IDENTITY_ID_2 = aPrefixedUuid('IdentityId', 'task-template-owner-2');
   const IDENTITY_ID_3 = aPrefixedUuid('IdentityId', 'task-template-owner-3');
   const FOLDER_ID_1 = aPrefixedUuid('ITaskFolderId', 'task-folder-1');
+  const GOAL_ID_1 = aPrefixedUuid('GoalId', 'goal-1');
+  const KEY_RESULT_ID_1 = aPrefixedUuid('KeyResultId', 'key-result-1');
 
   const createMinimalRow = (): PrismaTaskTemplate => ({
     id: TEMPLATE_ID_1,
@@ -50,7 +52,10 @@ describe('PrismaTaskTemplateMapper', () => {
     reminderConfigUnit: null,
     reminderConfigChannel: null,
     // Other fields
-    goalBinding: null,
+    goalId: null,
+    keyResultId: null,
+    goalRecordValue: null,
+    goalProgressTrigger: null,
     checklist: null,
     lastGeneratedDate: null,
     generateAheadDays: null,
@@ -96,7 +101,10 @@ describe('PrismaTaskTemplateMapper', () => {
     reminderConfigUnit: 'minutes',
     reminderConfigChannel: 'PUSH',
     // Other fields
-    goalBinding: JSON.stringify({ type: 'KeyResult', id: 'kr-1' }),
+    goalId: GOAL_ID_1,
+    keyResultId: KEY_RESULT_ID_1,
+    goalRecordValue: 2,
+    goalProgressTrigger: 'PER_INSTANCE',
     checklist: JSON.stringify([
       { title: 'Step 1', order: 1 },
       { title: 'Step 2', order: 2 },
@@ -211,11 +219,17 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(domain.reminderConfig).toBeNull();
     });
 
-    it('parses goalBinding JSON correctly', () => {
+    it('reconstructs goal binding from relation columns', () => {
       const row = createFullRow();
       const domain = PrismaTaskTemplateMapper.toDomain(row);
 
       expect(domain.goalBinding).toBeDefined();
+      expect(domain.goalBinding?.toDTO()).toEqual({
+        goalId: GOAL_ID_1,
+        keyResultId: KEY_RESULT_ID_1,
+        goalRecordValue: 2,
+        progressTrigger: 'PER_INSTANCE',
+      });
     });
 
     it('parses checklist from JSON', () => {
@@ -262,7 +276,10 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(persistence.timeConfigType).toBeNull();
       expect(persistence.recurrenceRuleType).toBeNull();
       expect(persistence.reminderConfigEnabled).toBeNull();
-      expect(persistence.goalBinding).toBeNull();
+      expect(persistence.goalId).toBeNull();
+      expect(persistence.keyResultId).toBeNull();
+      expect(persistence.goalRecordValue).toBeNull();
+      expect(persistence.goalProgressTrigger).toBeNull();
       expect(persistence.checklist).toBeNull();
     });
 
@@ -287,14 +304,17 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(persistence.blockingReason).toBe('Waiting for approval');
     });
 
-    it('stringifies complex objects (tags, goalBinding, checklist)', () => {
+    it('serializes JSON collections and expands the goal binding', () => {
       const aggregate = createTestAggregate(createFullRow());
 
       const persistence = PrismaTaskTemplateMapper.toPersistence(aggregate);
 
       expect(typeof persistence.tags).toBe('string');
       expect(JSON.parse(persistence.tags!)).toEqual(['urgent', 'work']);
-      expect(typeof persistence.goalBinding).toBe('string');
+      expect(persistence.goalId).toBe(GOAL_ID_1);
+      expect(persistence.keyResultId).toBe(KEY_RESULT_ID_1);
+      expect(persistence.goalRecordValue).toBe(2);
+      expect(persistence.goalProgressTrigger).toBe('PER_INSTANCE');
       expect(typeof persistence.checklist).toBe('string');
     });
 
@@ -328,7 +348,7 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(persistence.color).toBeNull();
       expect(persistence.folderId).toBeNull();
       expect(persistence.timeConfigType).toBeNull();
-      expect(persistence.goalBinding).toBeNull();
+      expect(persistence.goalId).toBeNull();
     });
   });
 

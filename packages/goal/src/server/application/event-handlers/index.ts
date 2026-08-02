@@ -16,6 +16,13 @@ import type { IGoalRepository, IGoalRecordRepository } from '../../domain';
 import { CreateGoalRecordUseCase } from '../use-cases/commands/create-goal-record.use-case';
 import { GoalRecordSourceType } from '@memoflow/contracts/goal';
 import { RemoveTaskGoalContributionUseCase } from '../use-cases/commands/remove-task-goal-contribution.use-case';
+import type { GoalWriteTransactionRunner } from '../use-cases/commands/goal-write-support';
+
+export {
+  GoalTaskProgressHandler,
+  createGoalTaskProgressHandler,
+  type TaskGoalProgressHandler,
+} from './task-goal-progress.handler';
 
 const logger = createLogger('GoalEventListeners');
 
@@ -35,11 +42,17 @@ const taskSubscriber = createTypedEventSubscriber<GoalReactionEventMap>(eventBus
 export function registerGoalEventListeners(
   goalRepository: IGoalRepository,
   goalRecordRepository: IGoalRecordRepository,
+  goalWriteTransactionRunner?: GoalWriteTransactionRunner,
 ): { start(): void; stop(): void } {
-  const createGoalRecord = new CreateGoalRecordUseCase(goalRepository, goalRecordRepository);
+  const createGoalRecord = new CreateGoalRecordUseCase(
+    goalRepository,
+    goalRecordRepository,
+    goalWriteTransactionRunner,
+  );
   const removeTaskContribution = new RemoveTaskGoalContributionUseCase(
     goalRepository,
     goalRecordRepository,
+    goalWriteTransactionRunner,
   );
 
   const onTaskInstanceCompleted = async (

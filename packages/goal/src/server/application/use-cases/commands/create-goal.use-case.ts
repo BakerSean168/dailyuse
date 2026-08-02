@@ -8,12 +8,13 @@
 import type { IGoalRepository } from '../../../domain';
 import { Goal, GoalPolicy, GoalReminderConfig } from '../../../domain';
 import { IdentityId } from '@memoflow/domain-shared';
-import type { CreateGoalReq, CreateGoalRes } from '@memoflow/contracts/goal';
+import type { CreateGoalReq, GoalMutationReceipt } from '@memoflow/contracts/goal';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { GoalId, GoalFolderId } from '../../../domain';
+import { createGoalMutationReceipt } from './goal-mutation-receipt';
 /**
  * Create Goal Use Case
  */
@@ -23,7 +24,7 @@ export class CreateGoalUseCase {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(input: CreateGoalReq, cx: ExecutionContext): Promise<Result<CreateGoalRes>> {
+  async execute(input: CreateGoalReq, cx: ExecutionContext): Promise<Result<GoalMutationReceipt>> {
     // 1. 验证输入
     if (!input.name?.trim()) {
       return error('VALIDATION_ERROR', 'Name is required');
@@ -69,10 +70,19 @@ export class CreateGoalUseCase {
       parentGoal,
     );
 
+    for (const keyResult of input.initialKeyResults ?? []) {
+      goal.createAndAddKeyResult({
+        ...keyResult,
+        aggregationMethod: keyResult.calculationMethod,
+      });
+    }
+
     // 5. 持久化
     await this.goalRepository.save(goal);
 
     // 6. 返回 Result
-    return ok(goal.toClientDTO(true));
+    return ok(createGoalMutationReceipt(goal, {
+      keyResultIds: goal.keyResults.map((keyResult) => keyResult.id),
+    }));
   }
 }

@@ -20,9 +20,15 @@ import type { ServerModuleContext } from '@memoflow/contracts/shared';
 import {
   createTaskPrismaModule,
   createTaskRuntimeContribution,
+  createTaskGoalOutboxRuntime,
+  PrismaTaskGoalOutboxDispatchStore,
   type TaskModuleInstance,
   type TaskModuleRuntimeContribution,
 } from '../server/infrastructure';
+import {
+  TaskGoalOutboxDispatcher,
+  type TaskGoalProgressHandler,
+} from '../server/application/outbox';
 import { TaskTemplateController } from '../server/transport/task-template.controller';
 import { TaskInstanceController } from '../server/transport/task-instance.controller';
 import { TaskDependencyController } from '../server/transport/task-dependency.controller';
@@ -43,6 +49,7 @@ export interface TaskApiModuleOptions {
   readonly runtimeContributions?:
     | TaskModuleRuntimeContribution
     | readonly TaskModuleRuntimeContribution[];
+  readonly goalProgressHandler?: TaskGoalProgressHandler;
 }
 
 export interface TaskApiModuleDef {
@@ -65,6 +72,16 @@ export function createTaskApiModule(
       const taskModule = createTaskPrismaModule(db, {
         runtimeContributions: [
           createTaskRuntimeContribution(),
+          ...(options.goalProgressHandler
+            ? [
+                createTaskGoalOutboxRuntime(
+                  new TaskGoalOutboxDispatcher(
+                    new PrismaTaskGoalOutboxDispatchStore(db),
+                    options.goalProgressHandler,
+                  ),
+                ),
+              ]
+            : []),
           ...normalizeRuntimeContributions(options.runtimeContributions),
         ],
       });

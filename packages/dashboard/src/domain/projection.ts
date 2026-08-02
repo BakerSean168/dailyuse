@@ -17,7 +17,11 @@ import { GoalStatus } from '@memoflow/contracts/goal';
 import type { GoalId, ScheduleTaskId } from '@memoflow/contracts/primitives';
 import { ReminderStatus } from '@memoflow/contracts/reminder';
 import { TaskInstanceStatus, TaskTemplateStatus } from '@memoflow/contracts/task';
-import type { DashboardReadSource, DashboardTaskInstanceRecord, DashboardTaskTemplateRecord } from './types';
+import type {
+  DashboardReadSource,
+  DashboardTaskInstanceRecord,
+  DashboardTaskTemplateRecord,
+} from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TREND_DAY_COUNT = 7;
@@ -108,18 +112,20 @@ export async function getDashboardData(
     .map((goal) => ({
       id: goal.id as GoalId,
       name: goal.name,
-      progress: normalizePercentage(goal.progress),
+      progress: normalizePercentage(goal.overallProgress),
       status: goal.status as GoalStatus,
       dueDate: goal.targetDate ?? 0,
-      keyResultCount: goal.keyResults.length,
+      keyResultCount: goal.totalKeyResults,
     }));
 
   const taskBoard: TaskBoardSummary = {
-    todo: todayTaskInstances.filter((instance) => instance.status === TaskInstanceStatus.Pending).length,
+    todo: todayTaskInstances.filter((instance) => instance.status === TaskInstanceStatus.Pending)
+      .length,
     inProgress: todayTaskInstances.filter(
       (instance) => instance.status === TaskInstanceStatus.InProgress,
     ).length,
-    done: todayTaskInstances.filter((instance) => instance.status === TaskInstanceStatus.Completed).length,
+    done: todayTaskInstances.filter((instance) => instance.status === TaskInstanceStatus.Completed)
+      .length,
     overdue: overdueTaskCount,
   };
 
@@ -261,9 +267,7 @@ function buildActivityTimeline(input: {
     });
   }
 
-  return items
-    .sort((left, right) => right.timestamp - left.timestamp)
-    .slice(0, ACTIVITY_LIMIT);
+  return items.sort((left, right) => right.timestamp - left.timestamp).slice(0, ACTIVITY_LIMIT);
 }
 
 function getTaskCompletionTimestamp(instance: DashboardTaskInstanceRecord): number | null {

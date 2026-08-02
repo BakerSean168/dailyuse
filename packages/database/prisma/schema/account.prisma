@@ -38,7 +38,6 @@ model Account {
   focusModes                      FocusMode[]
   goals                           Goal[]
   goalFolders                     GoalFolder[]
-  goalStatistics                  GoalStatistic?
   reminderGroups                  ReminderGroup[]
   reminderTemplates               ReminderTemplate[]
   reminderInstances               ReminderInstance[]
@@ -68,10 +67,6 @@ model Account {
   langGraphCheckpointWrites       LangGraphCheckpointWrite[]
 
   // PowerSync: denormalized identity relations
-  keyResults                     KeyResult[]                     @relation("AccountKeyResults")
-  goalRecords                    GoalRecord[]                    @relation("AccountGoalRecords")
-  goalReviews                    GoalReview[]                    @relation("AccountGoalReviews")
-  keyResultWeightSnapshots       KeyResultWeightSnapshot[]       @relation("AccountKeyResultWeightSnapshots")
   taskDependencies               TaskDependency[]                @relation("AccountTaskDependencies")
   taskTemplateHistory            TaskTemplateHistory[]           @relation("AccountTaskTemplateHistory")
   scheduleExecutions             ScheduleExecution[]             @relation("AccountScheduleExecutions")

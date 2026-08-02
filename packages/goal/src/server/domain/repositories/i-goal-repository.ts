@@ -10,6 +10,13 @@
 
 import type { Goal } from '../aggregates/goal';
 
+export class GoalVersionConflictError extends Error {
+  readonly code = 'CONFLICT' as const;
+  constructor() {
+    super('Goal has been modified by another client');
+  }
+}
+
 /**
  * IGoalRepository 仓储接口
  *
@@ -29,6 +36,7 @@ export interface IGoalRepository {
    * - WeightSnapshot 只做插入（不可变审计记录）
    */
   save(goal: Goal): Promise<void>;
+  saveRootWithExpectedVersion(goal: Goal, expectedVersion: number): Promise<void>;
 
   /**
    * 通过 identity + ID 查找聚合根（身份隔离读路径）
@@ -86,6 +94,7 @@ export interface IGoalRepository {
    * @param id - 目标 ID
    */
   delete(identityId: string, id: string): Promise<void>;
+  deleteWithExpectedVersion(identityId: string, id: string, expectedVersion: number): Promise<void>;
 
   /**
    * 检查目标是否存在

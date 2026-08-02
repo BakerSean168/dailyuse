@@ -111,8 +111,6 @@ export interface GoalState {
   keyResults: KeyResult[];
   goalReviews: GoalReview[];
   weightSnapshots: KeyResultWeightSnapshot[];
-  totalKeyResults?: number;
-  completedKeyResults?: number;
 
   // === Versioning ===
   version: number;
@@ -169,8 +167,6 @@ export class Goal extends AggregateRoot<GoalId> {
       keyResults: params.keyResults ?? [],
       goalReviews: params.goalReviews ?? [],
       weightSnapshots: params.weightSnapshots ?? [],
-      totalKeyResults: params.totalKeyResults,
-      completedKeyResults: params.completedKeyResults,
     };
   }
 
@@ -303,6 +299,10 @@ export class Goal extends AggregateRoot<GoalId> {
 
   get version(): number {
     return this._props.version;
+  }
+
+  public advanceVersion(): void {
+    this._props.version += 1;
   }
 
   get createdAt(): Instant {
@@ -541,26 +541,23 @@ export class Goal extends AggregateRoot<GoalId> {
   /**
    * ✅ 更新时间范围
    */
-  public updateTimeRange(params: { startDate?: Instant | null; targetDate?: Instant | null }): void {
+  public updateTimeRange(params: {
+    startDate?: Instant | null;
+    targetDate?: Instant | null;
+  }): void {
     let hasChanges = false;
     let targetDateChanged = false;
     let startDateChanged = false;
     let nextStartDate = this._props.startDate;
     let nextTargetDate = this._props.targetDate;
 
-    if (
-      params.startDate !== undefined &&
-      params.startDate !== this._props.startDate
-    ) {
+    if (params.startDate !== undefined && params.startDate !== this._props.startDate) {
       nextStartDate = params.startDate;
       hasChanges = true;
       startDateChanged = true;
     }
 
-    if (
-      params.targetDate !== undefined &&
-      params.targetDate !== this._props.targetDate
-    ) {
+    if (params.targetDate !== undefined && params.targetDate !== this._props.targetDate) {
       nextTargetDate = params.targetDate;
       hasChanges = true;
       targetDateChanged = true;
@@ -588,14 +585,11 @@ export class Goal extends AggregateRoot<GoalId> {
 
     this.emitGoalUpdated(changeKeys);
 
-    this.addDomainEvent<GoalEventMap['goal:schedule-time-changed']>(
-      'goal:schedule-time-changed',
-      {
-        identityId: this._props.identityId,
-        goal: this.toServerDTO(true),
-        changes: changeKeys,
-      },
-    );
+    this.addDomainEvent<GoalEventMap['goal:schedule-time-changed']>('goal:schedule-time-changed', {
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
+      changes: changeKeys,
+    });
   }
 
   /**
@@ -782,6 +776,14 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.updatedAt = Date.now();
   }
 
+  /** Change hierarchy only after the application layer has verified ownership and cycles. */
+  public moveToParent(parentGoalId: GoalId | null): void {
+    this.ensureModifiable();
+    if (parentGoalId === this.id) throw new Error('A goal cannot be its own parent');
+    this._props.parentGoalId = parentGoalId;
+    this._props.updatedAt = Date.now();
+  }
+
   /**
    * ✅ 更新排序
    */
@@ -919,7 +921,8 @@ export class Goal extends AggregateRoot<GoalId> {
         currentValue: params.currentValue ?? 0,
         targetValue: params.targetValue,
         valueType: params.valueType as KeyResultServerDTO['progress']['valueType'],
-        aggregationMethod: (params.aggregationMethod || 'Last') as KeyResultServerDTO['progress']['aggregationMethod'],
+        aggregationMethod: (params.aggregationMethod ||
+          'Last') as KeyResultServerDTO['progress']['aggregationMethod'],
         unit: params.unit ?? null,
       },
       weight: params.weight,
@@ -954,6 +957,8 @@ export class Goal extends AggregateRoot<GoalId> {
       currentValue?: number;
       targetValue?: number;
       unit?: string | null;
+      valueType?: KeyResultServerDTO['progress']['valueType'];
+      aggregationMethod?: KeyResultServerDTO['progress']['aggregationMethod'];
     },
   ): void {
     this.ensureModifiable();
@@ -963,7 +968,8 @@ export class Goal extends AggregateRoot<GoalId> {
       throw new GoalKeyResultNotFoundError(keyResultId);
     }
 
-    const previousValue = updates.currentValue === undefined ? null : keyResult.progress.currentValue;
+    const previousValue =
+      updates.currentValue === undefined ? null : keyResult.progress.currentValue;
     const changeKeys = Object.keys(updates);
 
     if (updates.title) keyResult.updateTitle(updates.title);
@@ -985,6 +991,12 @@ export class Goal extends AggregateRoot<GoalId> {
     }
     if (updates.unit !== undefined) {
       keyResult.updateUnit(updates.unit);
+    }
+    if (updates.valueType !== undefined || updates.aggregationMethod !== undefined) {
+      keyResult.updateMeasurement({
+        valueType: updates.valueType ?? keyResult.progress.valueType,
+        aggregationMethod: updates.aggregationMethod ?? keyResult.progress.aggregationMethod,
+      });
     }
 
     this._props.updatedAt = Date.now();
@@ -1189,7 +1201,9 @@ export class Goal extends AggregateRoot<GoalId> {
     const now = Date.now();
     // 创建快照
     const snapshot = KeyResultWeightSnapshot.create({
-      id: KeyResultWeightSnapshotId.of(KeyResultWeightSnapshotId.generate()) as unknown as KeyResultWeightSnapshotId,
+      id: KeyResultWeightSnapshotId.of(
+        KeyResultWeightSnapshotId.generate(),
+      ) as unknown as KeyResultWeightSnapshotId,
       goalId: this.id as unknown as GoalId,
       keyResultId: krId as unknown as KeyResultId,
       identityId: this.identityId as unknown as IdentityId,
@@ -1411,7 +1425,7 @@ export class Goal extends AggregateRoot<GoalId> {
         includeChildren && this._props.goalReviews.length > 0
           ? this._props.goalReviews.map((r) => r.toServerDTO())
           : null,
-      version: 1, // Default version for optimistic locking
+      version: this._props.version,
     };
   }
 
@@ -1419,12 +1433,15 @@ export class Goal extends AggregateRoot<GoalId> {
    * 转换为 Client DTO
    */
   public toClientDTO(
+    includeChildren: true,
+  ): import('@memoflow/contracts/goal').GoalAggregateReadModel;
+  public toClientDTO(includeChildren?: false): import('@memoflow/contracts/goal').GoalClientDTO;
+  public toClientDTO(includeChildren: boolean): import('@memoflow/contracts/goal').GoalClientDTO;
+  public toClientDTO(
     includeChildren: boolean = false,
   ): import('@memoflow/contracts/goal').GoalClientDTO {
-    const computedTotal = this._props.keyResults.length;
-    const computedCompleted = this._props.keyResults.filter((kr) => kr.isCompleted()).length;
-    const totalKeyResults = this._props.totalKeyResults ?? computedTotal;
-    const completedKeyResults = this._props.completedKeyResults ?? computedCompleted;
+    const totalKeyResults = this._props.keyResults.length;
+    const completedKeyResults = this._props.keyResults.filter((kr) => kr.isCompleted()).length;
 
     return {
       id: this.id,
@@ -1447,18 +1464,12 @@ export class Goal extends AggregateRoot<GoalId> {
       parentGoalId: this._props.parentGoalId,
       sortOrder: this._props.sortOrder,
       reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
-      version: 1,
+      version: this._props.version,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
       deletedAt: this._props.deletedAt ?? null,
-      keyResults:
-        includeChildren && this._props.keyResults.length > 0
-          ? this._props.keyResults.map((kr) => kr.toClientDTO())
-          : null,
-      reviews:
-        includeChildren && this._props.goalReviews.length > 0
-          ? this._props.goalReviews.map((r) => r.toClientDTO())
-          : null,
+      keyResults: includeChildren ? this._props.keyResults.map((kr) => kr.toClientDTO()) : null,
+      reviews: includeChildren ? this._props.goalReviews.map((r) => r.toClientDTO()) : null,
       totalKeyResults,
       completedKeyResults,
       overallProgress: this.calculateProgress(),
@@ -1553,11 +1564,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
   private resolveTimeRange(): { start: number | null; end: number | null } {
     const start = this._props.startDate ?? this._props.createdAt ?? null;
-    let end =
-      this._props.targetDate ??
-      this._props.completedAt ??
-      this._props.updatedAt ??
-      null;
+    let end = this._props.targetDate ?? this._props.completedAt ?? this._props.updatedAt ?? null;
 
     if (start && (!end || end <= start)) {
       end = start + DEFAULT_DURATION;
