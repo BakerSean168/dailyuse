@@ -2,10 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import {
-  getRuntimeProfile,
-  resolveLocalDockerHostPorts,
-} from '../runtime/load-profiles.mjs';
+import { getRuntimeProfile, resolveLocalDockerHostPorts } from '../runtime/load-profiles.mjs';
 import { detectHostEnvShadowing } from './env-shadow.mjs';
 
 export { detectHostEnvShadowing } from './env-shadow.mjs';
@@ -56,8 +53,7 @@ function readEnvFileKeys(path) {
 }
 
 function run(bin, args, env) {
-  const shouldUseCmdShim =
-    process.platform === 'win32' && /\.(cmd|bat)$/iu.test(bin);
+  const shouldUseCmdShim = process.platform === 'win32' && /\.(cmd|bat)$/iu.test(bin);
   const spawnCommand = shouldUseCmdShim ? 'cmd.exe' : bin;
   const spawnArgs = shouldUseCmdShim ? ['/d', '/s', '/c', bin, ...args] : args;
 
@@ -89,9 +85,24 @@ function readGitRevision() {
     encoding: 'utf8',
   });
 
-  return statusResult.status === 0 && statusResult.stdout.trim()
-    ? `${revision}-dirty`
-    : revision;
+  return statusResult.status === 0 && statusResult.stdout.trim() ? `${revision}-dirty` : revision;
+}
+
+export function mergeLocalDockerWebOrigins(webHostPort, ...configuredValues) {
+  const values = [
+    ...configuredValues,
+    `http://localhost:${webHostPort}`,
+    `http://127.0.0.1:${webHostPort}`,
+  ];
+
+  return [
+    ...new Set(
+      values
+        .flatMap((value) => String(value ?? '').split(','))
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  ].join(',');
 }
 
 /**
@@ -251,6 +262,21 @@ export function createLocalComposeRuntimeEnv(options = {}) {
 
   applyLocalDockerHostPortIsolation(env, envFileMap, machineEnvFileMap, { quiet });
 
+  // Compose defaults use the shared local-docker ports. When a machine opts
+  // into isolated overrides, keep browser-facing CORS allowlists aligned with
+  // the resolved Web origin or an otherwise healthy stack rejects every API
+  // request from the page.
+  env.LOCAL_DOCKER_CORS_ORIGIN = mergeLocalDockerWebOrigins(
+    env.WEB_HOST_PORT,
+    env.LOCAL_DOCKER_CORS_ORIGIN,
+    envFileMap.get('LOCAL_DOCKER_CORS_ORIGIN'),
+  );
+  env.ALLOWED_ORIGINS = mergeLocalDockerWebOrigins(
+    env.WEB_HOST_PORT,
+    env.ALLOWED_ORIGINS,
+    envFileMap.get('ALLOWED_ORIGINS'),
+  );
+
   return env;
 }
 
@@ -283,14 +309,7 @@ function runBuildPrep(env, { skipNxCache = false } = {}) {
   run(bin, [...prefixArgs, 'nx', 'build', 'api', ...nxCacheArgs], env);
   run(
     bin,
-    [
-      ...prefixArgs,
-      'nx',
-      'build',
-      'web',
-      '--configuration=production',
-      ...nxCacheArgs,
-    ],
+    [...prefixArgs, 'nx', 'build', 'web', '--configuration=production', ...nxCacheArgs],
     env,
   );
 }

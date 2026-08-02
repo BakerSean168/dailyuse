@@ -54,6 +54,13 @@
         "command": "node ./node_modules/vitest/vitest.mjs run --config apps/api/vitest.smoke.config.ts"
       }
     },
+    "test:integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./node_modules/vitest/vitest.mjs run --config apps/api/vitest.integration.config.ts"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],

@@ -4,7 +4,11 @@
 /coverage
 /.nx/cache
 /.nx/workspace-data
+/.workbuddy
 /node_modules
+**/.pytest-temp
+**/.pytest_cache
+/apps/ai-service/.pytest-temp
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
