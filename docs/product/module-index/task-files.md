@@ -40,7 +40,6 @@ updated: 2026-07-22T00:00:00
 | [`packages/app-vue/src/modules/task/components/dependency/DependencyManager.vue`](../../../packages/app-vue/src/modules/task/components/dependency/DependencyManager.vue) | 依赖管理 UI |
 | [`packages/app-vue/src/modules/task/components/dependency/DependencyValidationDialog.vue`](../../../packages/app-vue/src/modules/task/components/dependency/DependencyValidationDialog.vue) | 依赖验证弹窗（循环检测） |
 | [`packages/app-vue/src/modules/task/components/dialogs/TaskTemplateDialog.vue`](../../../packages/app-vue/src/modules/task/components/dialogs/TaskTemplateDialog.vue) | 模板创建/编辑弹窗 |
-| [`packages/app-vue/src/modules/task/components/dialogs/TaskCompleteDialog.vue`](../../../packages/app-vue/src/modules/task/components/dialogs/TaskCompleteDialog.vue) | 任务完成弹窗（时长、备注、评分） |
 | [`packages/app-vue/src/modules/task/components/widgets/TodayTasksWidget.vue`](../../../packages/app-vue/src/modules/task/components/widgets/TodayTasksWidget.vue) | Dashboard 今日任务小组件 |
 | [`packages/app-vue/src/modules/task/components/widgets/DailyTodoWidget.vue`](../../../packages/app-vue/src/modules/task/components/widgets/DailyTodoWidget.vue) | Dashboard 每日待办小组件 |
 

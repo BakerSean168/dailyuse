@@ -4,7 +4,7 @@ tags:
   - index
 description: 业务功能资产文档入口
 created: 2026-06-02T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-08-01T00:00:00+08:00
 ---
 
 # 业务功能资产
@@ -30,6 +30,7 @@ updated: 2026-07-16T00:00:00
 - [Dashboard 模块文件索引](./module-index/dashboard-files.md)：Dashboard 模块相关页面、接口、领域代码、数据结构和测试入口。
 - [AI 模块说明](./modules/ai.md)：AI 模块当前功能、用户路径、业务规则和风险点。
 - [AI 模块文件索引](./module-index/ai-files.md)：AI 模块相关页面、接口、领域代码、数据结构和测试入口。
+- [桌面工作区与 UI 说明](./workspace-ui.md)：单导航、分栏几何、窄态、缩放与 UI primitive 规则。
 - [资源库模块说明](./modules/repository.md)：资源库模块当前实现、本地 Vault、可选 GitHub 同步和 Web 快捷创建边界。
 - [资源库模块文件索引](./module-index/repository-files.md)：资源库模块相关页面、接口、领域代码、数据结构和测试入口。
 - [编辑器模块说明](./modules/editor.md)：编辑器模块当前实现，以及安全预览、新笔记确认和 Obsidian 外部编辑后的职责收缩。

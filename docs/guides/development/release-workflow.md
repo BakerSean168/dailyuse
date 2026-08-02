@@ -63,6 +63,7 @@ release PR 合并后，release-please 会：
 `.github/workflows/docker-deploy.yml` 监听 `v*` tag，负责：
 
 - 构建 `memoflow-api`
+- 构建 `memoflow-migrator`
 - 构建 `memoflow-web`
 - 构建 `memoflow-ai-service`
 - 推送不可变 tag
@@ -70,13 +71,15 @@ release PR 合并后，release-please 会：
 
 因此，**生产镜像的标准来源不是本地手工 build**，而是 release PR 合并后触发的工作流。
 
+API 与数据库初始化现在是一个显式发布单元：生产 Compose 先运行与 API 同版本的 `memoflow-migrator`，只有 migrator 成功退出后才启动 API。为避免 Watchtower 单独替换 API 而绕过这道门禁，`api` 与 `migrator` 的 Watchtower 标签均关闭；Web 与 AI Service 仍可自动更新。生产 API 发布必须执行完整的 `docker compose pull && docker compose up -d`。
+
 ## 明确禁止的默认路径
 
 以下动作不是默认开发流程：
 
 - 跳过本地 Docker 验证，直接试生产镜像
 - 手工推任意临时 tag 作为日常发布方式
-- 手工修改生产 `API_TAG` / `WEB_TAG` / `AI_SERVICE_TAG` 作为常规上线手段
+- 手工修改生产 `API_TAG` / `MIGRATOR_TAG` / `WEB_TAG` / `AI_SERVICE_TAG` 作为常规上线手段
 - 把生产机临时验证动作当成替代 CI / release 流程
 
 这些动作只允许用于：

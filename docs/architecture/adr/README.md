@@ -52,10 +52,10 @@ updated: 2026-07-26T00:00:00
 | [ADR-035](./ADR-035-unified-assistant-agent-host.md)                | 统一助手与可插拔 Agent Host                              | 已采纳 | 2026-07-17 |
 | [ADR-036](./ADR-036-auth-account-boundary-and-verification.md)                | Auth / Account 边界与验证安全模型                          | 已采纳 | 2026-07-17 |
 | [ADR-037](./ADR-037-product-time-system.md)                       | 产品时间体系（Instant/Ymd、TransferDate、门面与风格） | 已采纳 | 2026-07-26 |
+| [ADR-038](./ADR-038-goal-consistency-and-reliable-task-contributions.md) | Goal 一致性与可靠 Task 贡献链路 | 已采纳 | 2026-08-01 |
 
 ## 维护规则
 
 - 规则类 ADR 与实施类 ADR 统一收录在这里，不再使用 `003b`、`007b` 这类旁支编号。
 - 历史文档允许保留原始正文结构，但文件名、标题编号和索引状态必须保持一致。
 - 文档与代码冲突时，以当前代码、配置和测试为准；ADR 负责保留决策背景，不替代实现事实。
-

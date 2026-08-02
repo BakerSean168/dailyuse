@@ -95,6 +95,7 @@ watchtower
 | `postgres` | `pgvector/pgvector:pg16` | 主数据库 | 本地离线预加载 |
 | `redis` | `redis:7-alpine` | 缓存 / 队列 | 本地离线预加载 |
 | `ai-service` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-ai-service` | AI 服务 | 阿里云 ACR |
+| `migrator` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator` | 一次性数据库初始化 | 阿里云 ACR |
 | `api` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api` | 后端 API | 阿里云 ACR |
 | `powersync` | `journeyapps/powersync-service:latest` | Desktop / Web 实时同步服务 | 本地离线预加载 |
 | `web` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-web` | 前端站点 | 阿里云 ACR |
@@ -599,11 +600,11 @@ git push origin main
 
 正式 tag 创建后，`docker-deploy.yml` 才会继续执行：
 
-1. 构建 `api`、`web`、`ai-service`
+1. 构建 `api`、`migrator`、`web`、`ai-service`
 2. 推送不可变镜像 tag
 3. 同时更新 `prod-latest`
 
-如果 Watchtower 已开启，服务器会在轮询周期内自动拉取并滚动更新。
+Watchtower 仍可自动更新 `web` 与 `ai-service`。`api` 和 `migrator` 明确禁用 Watchtower：数据库初始化必须使用与 API 匹配的镜像先成功完成，不能让 Watchtower 单独替换 API。
 
 结论：
 
@@ -618,6 +619,7 @@ git push origin main
 1. 新版本推到 ACR
 2. 手工在服务器执行 `docker compose pull`
 3. 再手工执行 `docker compose up -d`
+4. 确认 `migrator` 为 `Exited (0)`、`api` 为 healthy
 
 这比“完全自动更新”更容易控制生产变更窗口。
 
@@ -667,7 +669,7 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 1. 保持现有 `docker-compose.prod.yml + Caddyfile` 架构，不新增 Nginx Proxy Manager。
 2. 基础设施镜像统一走“本地拉取 + 打包 + 上传 + 服务器导入”。
 3. 业务镜像优先走阿里云 ACR。
-4. 首次上线时先不启动 Watchtower，待站点验证通过后再启用。
+4. 首次上线时先不启动 Watchtower，待站点验证通过后再启用；Watchtower 只管理 Web 与 AI Service，API 必须走显式 Compose 发布。
 5. 如果后续确认 ACR 也不稳定，就把业务镜像也纳入离线导入流程。
 6. 生产回滚依赖不可变 tag，不依赖 `prod-latest`。
 
