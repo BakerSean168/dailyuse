@@ -1,16 +1,18 @@
 <template>
   <ActionableWrapper :actions="menuActions" :show-more-button="false">
-    <div
+    <button
+      type="button"
       data-testid="notification-item"
       :data-notification-id="notification.id"
       :data-read-state="notification.isRead ? 'read' : 'unread'"
       :data-notification-type="notification.type"
       :class="[
-        'flex gap-3 border-b border-l-4 p-4 cursor-pointer transition-all last:border-b-0',
+        'flex w-full gap-3 border-b border-l-4 p-4 text-left cursor-pointer transition-all last:border-b-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
         notification.isRead
           ? 'border-l-transparent bg-background/70 opacity-75 hover:bg-muted/40 hover:opacity-100'
           : 'border-l-info bg-info/12 shadow-sm hover:bg-info/16',
       ]"
+      :aria-label="notification.title"
       @click="$emit('click', notification)"
     >
       <!-- Icon -->
@@ -70,7 +72,7 @@
           {{ timeDisplay }}
         </p>
       </div>
-    </div>
+    </button>
   </ActionableWrapper>
 </template>
 
@@ -101,7 +103,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const { t } = useI18n();
-
 
 const emit = defineEmits<{
   click: [notification: NotificationClientDTO];
@@ -150,7 +151,9 @@ const typeColorClassMap: Record<string, string> = {
 };
 
 const typeIcon = computed(() => typeIconMap[props.notification.type] || Bell);
-const typeColorClass = computed(() => typeColorClassMap[props.notification.type] || 'bg-muted-foreground');
+const typeColorClass = computed(
+  () => typeColorClassMap[props.notification.type] || 'bg-muted-foreground',
+);
 
 const priorityVariant = computed(() => {
   switch (props.notification.importance) {

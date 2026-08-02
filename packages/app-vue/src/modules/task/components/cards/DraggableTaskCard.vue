@@ -50,6 +50,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
     <TaskTemplateCard
       :template="template"
       :highlighted="highlighted"
+      :resolve-goal-binding-name="resolveGoalBindingName"
       @click="handleClick"
       @edit="handleEdit"
       @copy="handleCopy"
@@ -67,7 +68,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 import { ref } from 'vue';
 import { GripVertical, PlusCircle, XCircle } from '@lucide/vue';
 import TaskTemplateCard from './TaskTemplateCard.vue';
-import type { TaskTemplateViewModel } from '../types';
+import type { TaskGoalBindingViewModel, TaskTemplateViewModel } from '../types';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -83,6 +84,10 @@ const props = withDefaults(
       source: TaskTemplateViewModel,
       target: TaskTemplateViewModel,
     ) => Promise<boolean> | boolean;
+    resolveGoalBindingName?: (
+      binding: TaskGoalBindingViewModel,
+      template: TaskTemplateViewModel,
+    ) => string;
   }>(),
   {
     enableDrag: true,

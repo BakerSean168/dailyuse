@@ -125,15 +125,13 @@ defineExpose({
           </summary>
           <pre
             class="mt-2 max-h-40 overflow-auto rounded-md bg-muted p-3 text-xs text-muted-foreground"
-            >{{ error.stack }}</pre
-          >
+            >{{ error.stack }}</pre>
         </details>
       </div>
     </div>
 
     <div
-      v-if="!error"
-      :key="`panel-error-content-${contentKey}`"
+      v-show="!error"
       class="flex h-full min-h-0 flex-1 flex-col"
       data-testid="panel-error-content"
     >

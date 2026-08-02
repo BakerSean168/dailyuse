@@ -79,6 +79,35 @@ describe('TaskTemplateCard completion projection', () => {
     );
   });
 
+  it('renders relation filters as keyboard-native buttons', async () => {
+    const wrapper = mountCard(
+      template({
+        parentTaskId: 'parent-a',
+        parentTaskTitle: 'Parent plan',
+        childCount: 2,
+        predecessorCount: 1,
+        successorCount: 1,
+        isBlocked: true,
+      }),
+    );
+
+    const controls = [
+      'task-card-parent-relation',
+      'task-card-children-relation',
+      'task-card-predecessors-relation',
+      'task-card-successors-relation',
+      'task-card-blocked-relation',
+    ].map((testId) => wrapper.get(`[data-testid="${testId}"]`));
+
+    for (const control of controls) {
+      expect(control.element.tagName).toBe('BUTTON');
+      expect(control.attributes('type')).toBe('button');
+    }
+
+    await wrapper.get('[data-testid="task-card-children-relation"]').trigger('click');
+    expect(wrapper.emitted('relationFilterClick')).toContainEqual(['children']);
+  });
+
   it('shows an empty execution state instead of a misleading zero percent', () => {
     const wrapper = mountCard(
       template({ dueInstanceCount: 0, completedDueInstanceCount: 0, completionRate: 0 }),

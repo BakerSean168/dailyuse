@@ -49,6 +49,7 @@ const emit = defineEmits<{
   (e: 'toggle-focus'): void;
   (e: 'start-resize', event: PointerEvent): void;
   (e: 'reset-width'): void;
+  (e: 'resize-by', delta: number): void;
 }>();
 
 const { t } = useI18n();
@@ -94,7 +95,7 @@ const isFocused = computed(() => props.layout === 'focus');
     <div class="flex h-[40px] shrink-0 items-center border-b border-border pr-1">
       <button
         type="button"
-        class="flex w-10 shrink-0 items-center justify-center border-r border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        class="flex h-9 w-10 shrink-0 items-center justify-center border-r border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         :class="panelSurface === 'home' ? 'bg-accent text-foreground' : ''"
         data-testid="business-panel-home"
         :title="t('shell.panel.home')"
@@ -117,7 +118,7 @@ const isFocused = computed(() => props.layout === 'focus');
         >
           <button
             type="button"
-            class="flex min-w-0 flex-1 items-center gap-1.5 px-3"
+            class="flex min-h-9 min-w-0 flex-1 items-center gap-1.5 px-3"
             :aria-current="
               panelSurface === 'business' && activeTabId === tab.id ? 'page' : undefined
             "
@@ -128,7 +129,7 @@ const isFocused = computed(() => props.layout === 'focus');
           </button>
           <button
             type="button"
-            class="shrink-0 px-1.5 opacity-0 transition-opacity hover:bg-muted focus:opacity-100 group-hover:opacity-100"
+            class="flex h-8 w-8 shrink-0 items-center justify-center opacity-0 transition-opacity hover:bg-muted focus:opacity-100 group-hover:opacity-100"
             data-testid="business-panel-tab-close"
             :aria-label="t('shell.panel.closeTab')"
             @click.stop="emit('close-tab', tab.id)"
@@ -148,7 +149,7 @@ const isFocused = computed(() => props.layout === 'focus');
         >
           <button
             type="button"
-            class="flex min-w-0 flex-1 items-center gap-1.5 px-3"
+            class="flex min-h-9 min-w-0 flex-1 items-center gap-1.5 px-3"
             data-testid="business-panel-workflow"
             :aria-current="panelSurface === 'workflow' ? 'page' : undefined"
             @click="emit('show-workflow')"
@@ -164,7 +165,7 @@ const isFocused = computed(() => props.layout === 'focus');
           </button>
           <button
             type="button"
-            class="shrink-0 px-1.5 opacity-0 transition-opacity hover:bg-muted focus:opacity-100 group-hover:opacity-100"
+            class="flex h-8 w-8 shrink-0 items-center justify-center opacity-0 transition-opacity hover:bg-muted focus:opacity-100 group-hover:opacity-100"
             :aria-label="t('shell.panel.closeWorkflow')"
             @click.stop="emit('close-workflow')"
           >
@@ -179,7 +180,7 @@ const isFocused = computed(() => props.layout === 'focus');
           v-if="panelSurface !== 'home'"
           type="button"
           data-testid="business-panel-focus-toggle"
-          class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          class="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           :title="isFocused ? t('shell.panel.exitFocus') : t('shell.panel.enterFocus')"
           :aria-label="isFocused ? t('shell.panel.exitFocus') : t('shell.panel.enterFocus')"
           @click="emit('toggle-focus')"
@@ -189,7 +190,7 @@ const isFocused = computed(() => props.layout === 'focus');
         <button
           type="button"
           data-testid="business-panel-close"
-          class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          class="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           :title="t('shell.panel.closePanel')"
           :aria-label="t('shell.panel.closePanel')"
           @click="emit('close-panel')"
@@ -216,10 +217,19 @@ const isFocused = computed(() => props.layout === 'focus');
     <div
       v-if="!isFocused"
       data-testid="business-panel-resizer"
-      class="absolute left-0 top-0 h-full w-2 -translate-x-1/2 cursor-col-resize bg-transparent transition-colors hover:bg-primary/40"
-      title="Drag to resize · double-click to reset"
+      role="separator"
+      tabindex="0"
+      aria-orientation="vertical"
+      :aria-label="t('shell.panel.resize')"
+      aria-valuemin="520"
+      aria-valuemax="960"
+      :aria-valuenow="Math.round(panelContentWidth ?? 720)"
+      class="absolute left-0 top-0 h-full w-2 -translate-x-1/2 cursor-col-resize bg-transparent transition-colors hover:bg-primary/40 focus-visible:bg-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      :title="t('shell.panel.resize')"
       @pointerdown="emit('start-resize', $event)"
       @dblclick.stop="emit('reset-width')"
+      @keydown.left.prevent="emit('resize-by', 24)"
+      @keydown.right.prevent="emit('resize-by', -24)"
     />
   </section>
 </template>

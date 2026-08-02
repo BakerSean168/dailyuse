@@ -107,18 +107,18 @@ const InputStub = defineComponent({
 
 const CheckboxStub = defineComponent({
   name: 'CheckboxStub',
-  props: ['checked', 'disabled', 'id'],
-  emits: ['update:checked'],
+  props: ['modelValue', 'disabled', 'id'],
+  emits: ['update:modelValue'],
   setup(props, { attrs, emit }) {
     return () =>
       h('input', {
         ...attrs,
         id: props.id,
         type: 'checkbox',
-        checked: props.checked,
+        checked: props.modelValue,
         disabled: props.disabled,
         onChange: (event: Event) =>
-          emit('update:checked', (event.target as HTMLInputElement).checked),
+          emit('update:modelValue', (event.target as HTMLInputElement).checked),
       });
   },
 });

@@ -600,7 +600,7 @@ onMounted(() => {
 
               <div class="mt-3 flex items-center gap-2 text-[13px] text-white/[0.64]">
                 <Checkbox
-                  v-model:checked="autoLogin"
+                  v-model="autoLogin"
                   id="quick-auto-login"
                   class="h-4 w-4 rounded-[4px] border-white/30 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                   :disabled="isLoading"
@@ -750,7 +750,8 @@ onMounted(() => {
               <div class="mt-4 flex w-full items-center justify-between px-1 text-[12.5px] text-white/[0.62]">
                 <label class="flex cursor-pointer items-center gap-2">
                   <Checkbox
-                    v-model:checked="rememberPassword"
+                    v-model="rememberPassword"
+                    aria-label="记住密码"
                     class="h-4 w-4 rounded-[4px] border-white/30 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                     :disabled="isLoading"
                   />
@@ -758,7 +759,8 @@ onMounted(() => {
                 </label>
                 <label class="flex cursor-pointer items-center gap-2">
                   <Checkbox
-                    v-model:checked="autoLogin"
+                    v-model="autoLogin"
+                    aria-label="自动登录"
                     class="h-4 w-4 rounded-[4px] border-white/30 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                     :disabled="isLoading"
                   />

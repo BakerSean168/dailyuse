@@ -1,11 +1,13 @@
 import { inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Result } from '@memoflow/contracts/result';
+import type { GetGoalAggregateRes, KeyResultClientDTO } from '@memoflow/contracts/goal';
 import { GOAL_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
   GoalBindingOption,
   KeyResultBindingOption,
+  TaskGoalBindingDisplay,
   TaskGoalBindingViewModel,
 } from '../components/types';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
@@ -18,24 +20,7 @@ type GoalOptionDTO = {
   status?: string;
 };
 
-type KeyResultProgressDTO = {
-  currentValue?: number;
-  current?: number;
-  targetValue?: number;
-  target?: number;
-  progressPercentage?: number;
-  percentage?: number;
-};
-
-type KeyResultOptionDTO = {
-  id: string;
-  title?: string;
-  weight?: number;
-  progress?: KeyResultProgressDTO;
-};
-
 type GoalLike = { toDTO?: () => GoalOptionDTO } | GoalOptionDTO;
-type KeyResultLike = { toDTO?: () => KeyResultOptionDTO } | KeyResultOptionDTO;
 
 function toPlainObject<T extends object>(value: T | { toDTO?: () => T }): T {
   if (value && typeof (value as { toDTO?: () => T }).toDTO === 'function') {
@@ -56,20 +41,24 @@ function mapGoalOption(goal: GoalLike): GoalBindingOption {
   };
 }
 
-function mapKeyResultOption(keyResult: KeyResultLike): KeyResultBindingOption {
-  const dto = toPlainObject(keyResult);
-  const progress = dto.progress ?? {};
-  const current = Number(progress.currentValue ?? progress.current ?? 0);
-  const target = Number(progress.targetValue ?? progress.target ?? 0);
+function mapKeyResultOption(dto: KeyResultClientDTO): KeyResultBindingOption {
+  const { initialValue, currentValue: current, targetValue: target } = dto.progress;
+  const range = target - initialValue;
+  const percentage =
+    range === 0
+      ? current >= target
+        ? 100
+        : 0
+      : Math.min(100, Math.max(0, Math.round(((current - initialValue) / range) * 100)));
 
   return {
     id: String(dto.id),
-    title: String(dto.title ?? ''),
-    weight: Number(dto.weight ?? 0),
+    title: dto.title,
+    weight: dto.weight,
     progress: {
       current,
       target,
-      percentage: Number(progress.progressPercentage ?? progress.percentage ?? 0),
+      percentage,
     },
   };
 }
@@ -87,8 +76,10 @@ export function useTaskGoalBindingOptions() {
   const loadingKeyResults = ref<Record<string, boolean>>({});
   const keyResultErrorsByGoal = ref<Record<string, string | null>>({});
   const loadError = ref<string | null>(null);
-  const inFlightGoals = new Map<string, Promise<GoalBindingOption | undefined>>();
-  const inFlightKeyResults = new Map<string, Promise<KeyResultBindingOption[]>>();
+  const inFlightAggregates = new Map<
+    string,
+    Promise<{ goal: GoalBindingOption; keyResults: KeyResultBindingOption[] } | undefined>
+  >();
 
   async function executeGoalBindingOperation<T>(
     operation: () => Promise<Result<T>>,
@@ -136,7 +127,7 @@ export function useTaskGoalBindingOptions() {
           return [];
         }
 
-        collectedGoals.push(...(result.data.goals ?? []).map((goal: GoalLike) => mapGoalOption(goal)));
+        collectedGoals.push(...result.data.goals.map((goal: GoalLike) => mapGoalOption(goal)));
 
         const pagination = result.data.pagination;
         hasMore = Boolean(pagination?.hasMore);
@@ -150,45 +141,9 @@ export function useTaskGoalBindingOptions() {
     }
   }
 
-  function loadGoal(goalId: string, force = false): Promise<GoalBindingOption | undefined> {
-    if (!goalId) {
-      return Promise.resolve(undefined);
-    }
-
-    const cached = goals.value.find((goal) => goal.id === goalId);
-    if (!force && cached) {
-      return Promise.resolve(cached);
-    }
-
-    const pending = inFlightGoals.get(goalId);
-    if (pending) {
-      return pending;
-    }
-
-    const request = executeGoalBindingOperation(
-      () => goalService.getGoal(goalId),
-      'goal.error.loadFailed',
-    )
-      .then((result) => {
-        if (!result.ok) {
-          return undefined;
-        }
-
-        const mapped = mapGoalOption(result.data as GoalLike);
-        goals.value = [...goals.value.filter((goal) => goal.id !== goalId), mapped];
-        return mapped;
-      })
-      .finally(() => {
-        if (inFlightGoals.get(goalId) === request) {
-          inFlightGoals.delete(goalId);
-        }
-      });
-
-    inFlightGoals.set(goalId, request);
-    return request;
-  }
-
-  async function requestKeyResults(goalId: string): Promise<KeyResultBindingOption[]> {
+  async function requestGoalAggregate(
+    goalId: string,
+  ): Promise<{ goal: GoalBindingOption; keyResults: KeyResultBindingOption[] } | undefined> {
     keyResultErrorsByGoal.value = {
       ...keyResultErrorsByGoal.value,
       [goalId]: null,
@@ -201,8 +156,8 @@ export function useTaskGoalBindingOptions() {
 
     try {
       const result = await executeGoalBindingOperation(
-        () => goalService.getKeyResults(goalId),
-        'goal.error.loadKRFailed',
+        () => goalService.getGoalAggregateView(goalId),
+        'goal.error.loadFailed',
       );
 
       if (!result.ok) {
@@ -214,19 +169,20 @@ export function useTaskGoalBindingOptions() {
           ...keyResultErrorsByGoal.value,
           [goalId]: loadError.value ?? t('goal.error.loadKRFailed'),
         };
-        return [];
+        return undefined;
       }
 
-      const mapped = (result.data.keyResults ?? []).map((keyResult: KeyResultLike) =>
-        mapKeyResultOption(keyResult),
-      );
+      const aggregate = result.data as GetGoalAggregateRes;
+      const goal = mapGoalOption(aggregate.goal);
+      const mapped = aggregate.keyResults.map(mapKeyResultOption);
 
+      goals.value = [...goals.value.filter((option) => option.id !== goalId), goal];
       keyResultsByGoal.value = {
         ...keyResultsByGoal.value,
         [goalId]: mapped,
       };
 
-      return mapped;
+      return { goal, keyResults: mapped };
     } catch (error) {
       const message = t('goal.error.loadKRFailed');
       loadError.value = message;
@@ -239,7 +195,7 @@ export function useTaskGoalBindingOptions() {
         [goalId]: message,
       };
       console.error('[TaskGoalBindingOptions] failed to load key results', error);
-      return [];
+      return undefined;
     } finally {
       loadingKeyResults.value = {
         ...loadingKeyResults.value,
@@ -248,31 +204,50 @@ export function useTaskGoalBindingOptions() {
     }
   }
 
+  function loadGoalAggregate(
+    goalId: string,
+    force = false,
+  ): Promise<{ goal: GoalBindingOption; keyResults: KeyResultBindingOption[] } | undefined> {
+    if (!goalId) return Promise.resolve(undefined);
+
+    const cachedGoal = goals.value.find((goal) => goal.id === goalId);
+    const hasCachedKeyResults = Object.prototype.hasOwnProperty.call(
+      keyResultsByGoal.value,
+      goalId,
+    );
+    if (!force && cachedGoal && hasCachedKeyResults) {
+      return Promise.resolve({
+        goal: cachedGoal,
+        keyResults: keyResultsByGoal.value[goalId] ?? [],
+      });
+    }
+
+    const pending = inFlightAggregates.get(goalId);
+    if (pending) return pending;
+
+    const request = requestGoalAggregate(goalId).finally(() => {
+      if (inFlightAggregates.get(goalId) === request) {
+        inFlightAggregates.delete(goalId);
+      }
+    });
+    inFlightAggregates.set(goalId, request);
+    return request;
+  }
+
+  async function loadGoal(goalId: string, force = false): Promise<GoalBindingOption | undefined> {
+    return (await loadGoalAggregate(goalId, force))?.goal;
+  }
+
   function loadKeyResults(goalId: string, force = false): Promise<KeyResultBindingOption[]> {
     if (!goalId) {
       return Promise.resolve([]);
     }
 
-    if (!force && keyResultsByGoal.value[goalId]) {
-      return Promise.resolve(keyResultsByGoal.value[goalId]);
-    }
-
-    const pending = inFlightKeyResults.get(goalId);
-    if (pending) {
-      return pending;
-    }
-
-    const request = requestKeyResults(goalId).finally(() => {
-      if (inFlightKeyResults.get(goalId) === request) {
-        inFlightKeyResults.delete(goalId);
-      }
-    });
-    inFlightKeyResults.set(goalId, request);
-    return request;
+    return loadGoalAggregate(goalId, force).then((loaded) => loaded?.keyResults ?? []);
   }
 
   async function loadGoalBinding(goalId: string): Promise<void> {
-    await Promise.all([loadGoal(goalId), loadKeyResults(goalId)]);
+    await loadGoalAggregate(goalId);
   }
 
   async function loadGoalBindings(goalIds: Array<string | null | undefined>): Promise<void> {
@@ -287,20 +262,19 @@ export function useTaskGoalBindingOptions() {
 
   function resolveGoalBinding(
     binding: TaskGoalBindingViewModel | null | undefined,
-  ): TaskGoalBindingViewModel | null | undefined {
-    if (!binding?.goalId) {
-      return binding;
+  ): TaskGoalBindingDisplay | null {
+    if (!binding) {
+      return null;
     }
 
     const goal = goals.value.find((option) => option.id === binding.goalId);
-    const keyResult = keyResultsByGoal.value[binding.goalId]?.find(
-      (option) => option.id === binding.keyResultId,
-    );
+    const keyResult = binding.goalId
+      ? keyResultsByGoal.value[binding.goalId]?.find((option) => option.id === binding.keyResultId)
+      : undefined;
 
     return {
-      ...binding,
-      goalTitle: goal?.title ?? binding.goalTitle,
-      keyResultTitle: keyResult?.title ?? binding.keyResultTitle,
+      goalName: goal?.title ?? t('common.unavailable'),
+      keyResultName: keyResult?.title ?? t('common.unavailable'),
     };
   }
 

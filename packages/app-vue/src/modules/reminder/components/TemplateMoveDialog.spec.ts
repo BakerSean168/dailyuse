@@ -16,8 +16,8 @@ vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const passthrough = (name: string) =>
     vue.defineComponent({
       name,
-      props: ['open', 'disabled', 'variant', 'checked'],
-      emits: ['update:open', 'click', 'update:checked'],
+      props: ['open', 'disabled', 'variant', 'modelValue'],
+      emits: ['update:open', 'click', 'update:modelValue'],
       setup(props, { slots, attrs, emit }) {
         return () =>
           vue.h(
@@ -35,17 +35,17 @@ vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const Checkbox = vue.defineComponent({
     name: 'CheckboxStub',
     props: {
-      checked: Boolean,
+      modelValue: Boolean,
     },
-    emits: ['update:checked'],
+    emits: ['update:modelValue'],
     setup(props, { emit, attrs }) {
       return () =>
         vue.h('button', {
           type: 'button',
           'data-stub': 'Checkbox',
-          'data-checked': String(props.checked),
+          'data-checked': String(props.modelValue),
           ...attrs,
-          onClick: () => emit('update:checked', !props.checked),
+          onClick: () => emit('update:modelValue', !props.modelValue),
         });
     },
   });
@@ -276,6 +276,7 @@ function mountDialog(props?: {
   template?: ReminderTemplateClientDTO | null;
   groups?: ReminderGroupClientDTO[];
   templates?: ReminderTemplateClientDTO[];
+  onMove?: (templateId: string, groupId: string | null) => Promise<boolean>;
 }) {
   return mount(TemplateMoveDialog, {
     props: {
@@ -297,6 +298,7 @@ function mountDialog(props?: {
           groupId: 'group-2' as ReminderTemplateClientDTO['groupId'],
         }),
       ],
+      onMove: props?.onMove,
     },
     global: {
       plugins: [i18n],
@@ -316,7 +318,8 @@ function mountDialog(props?: {
 
 describe('TemplateMoveDialog', () => {
   it('emits move-to-root and shows the root lifecycle preview', async () => {
-    const wrapper = mountDialog();
+    const onMove = vi.fn().mockResolvedValue(true);
+    const wrapper = mountDialog({ onMove });
     (wrapper.vm as unknown as { open: () => void }).open();
     await nextTick();
 
@@ -334,11 +337,13 @@ describe('TemplateMoveDialog', () => {
 
     await moveButton!.trigger('click');
 
-    expect(wrapper.emitted('moved')?.[0]).toEqual(['template-1', null]);
+    expect(onMove).toHaveBeenCalledWith('template-1', null);
+    expect(wrapper.emitted('closed')).toHaveLength(1);
   });
 
   it('emits move-to-group and shows the selected group policy', async () => {
-    const wrapper = mountDialog();
+    const onMove = vi.fn().mockResolvedValue(true);
+    const wrapper = mountDialog({ onMove });
     (wrapper.vm as unknown as { open: () => void }).open();
     await nextTick();
 
@@ -357,7 +362,8 @@ describe('TemplateMoveDialog', () => {
 
     await moveButton!.trigger('click');
 
-    expect(wrapper.emitted('moved')?.[0]).toEqual(['template-1', 'group-2']);
+    expect(onMove).toHaveBeenCalledWith('template-1', 'group-2');
+    expect(wrapper.emitted('closed')).toHaveLength(1);
   });
 
   it('shows paused preview when moving into a paused group-controlled group', async () => {

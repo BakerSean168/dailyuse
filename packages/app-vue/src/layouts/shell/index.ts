@@ -35,7 +35,10 @@ export {
 export {
   computePanelGeometry,
   panelWidthFromPointer,
-  PANEL_MIN,
-  PANEL_MAX_CAP,
-  CHAT_MIN,
+  shouldAutoCollapseSidebar,
+  AI_HARD_MIN,
+  BUSINESS_HARD_MIN,
+  BUSINESS_MAX,
+  BUSINESS_PREFERRED_RATIO,
+  SIDEBAR_AUTO_COLLAPSE_VIEWPORT,
 } from './panel-geometry';

@@ -1,9 +1,12 @@
 import { defineComponent, h, onMounted, reactive } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TaskTemplateViewModel } from '../types';
 import TaskTemplateDialog from './TaskTemplateDialog.vue';
+import { clearDialogDrafts } from '../../../../layouts/shell/dialog-draft-store';
+
+afterEach(() => clearDialogDrafts());
 
 const loadGoals = vi.fn().mockResolvedValue([]);
 const loadKeyResults = vi.fn().mockResolvedValue([]);
@@ -165,6 +168,21 @@ describe('TaskTemplateDialog draft lifecycle', () => {
     await wrapper.setProps({ modelValue: true });
 
     expect(formModel(wrapper).title).toBe('');
+  });
+
+  it('restores a dirty draft when the routed panel subtree is rebuilt', async () => {
+    const first = mountDialog({ mode: 'create' });
+    first.findComponent(TaskTemplateFormStub).vm.$emit('update:modelValue', {
+      ...formModel(first),
+      title: 'Recovered task plan',
+    });
+    await flushPromises();
+    first.unmount();
+
+    const rebuilt = mountDialog({ mode: 'create' });
+    await flushPromises();
+
+    expect(formModel(rebuilt).title).toBe('Recovered task plan');
   });
 
   it('uses the latest edit source each time it opens', async () => {

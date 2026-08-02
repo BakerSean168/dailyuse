@@ -136,15 +136,15 @@ const ButtonStub = defineComponent({
 });
 
 const CheckboxStub = defineComponent({
-  props: { checked: { type: Boolean, default: false } },
-  emits: ['update:checked'],
+  props: { modelValue: { type: Boolean, default: false } },
+  emits: ['update:modelValue'],
   setup(props, { attrs, emit }) {
     return () =>
       h('button', {
         ...attrs,
         type: 'button',
-        'aria-pressed': props.checked,
-        onClick: () => emit('update:checked', !props.checked),
+        'aria-pressed': props.modelValue,
+        onClick: () => emit('update:modelValue', !props.modelValue),
       });
   },
 });

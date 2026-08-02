@@ -13,7 +13,7 @@ const goalMocks = vi.hoisted(() => ({
   setSystemView: vi.fn(),
   search: vi.fn(),
   fetchGoals: vi.fn(async () => undefined),
-  fetchGoal: vi.fn(async () => null),
+  getGoalAggregateView: vi.fn(async () => null),
   fetchFolders: vi.fn(async () => undefined),
   getCurrentFocusMode: vi.fn(async () => undefined),
   activateFocusMode: vi.fn(),

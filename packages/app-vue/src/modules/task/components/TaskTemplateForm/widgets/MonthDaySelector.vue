@@ -3,46 +3,52 @@
   <div class="w-full">
     <Label class="mb-2 block">{{ t('task.monthDay.title') }}</Label>
     <div class="flex flex-wrap gap-1">
-      <Badge
+      <Button
         v-for="day in monthDayOptions"
         :key="day"
+        type="button"
+        size="sm"
         :variant="localSelected.includes(day) ? 'default' : 'outline'"
-        class="cursor-pointer select-none"
+        :aria-pressed="localSelected.includes(day)"
+        :data-testid="`month-day-option-${day}`"
+        class="rounded-full select-none"
         @click="toggleDay(day)"
       >
         {{ day }}
-      </Badge>
+      </Button>
     </div>
 
     <div class="mt-2 flex flex-wrap gap-1">
-      <Button size="sm" variant="ghost" @click="selectFirstHalf">
+      <Button type="button" size="sm" variant="ghost" @click="selectFirstHalf">
         {{ t('task.monthDay.firstHalf') }}
       </Button>
 
-      <Button size="sm" variant="ghost" @click="selectSecondHalf">
+      <Button type="button" size="sm" variant="ghost" @click="selectSecondHalf">
         {{ t('task.monthDay.secondHalf') }}
       </Button>
 
-      <Button size="sm" variant="ghost" @click="selectOddDays">
+      <Button type="button" size="sm" variant="ghost" @click="selectOddDays">
         {{ t('task.monthDay.oddDays') }}
       </Button>
 
-      <Button size="sm" variant="ghost" @click="selectEvenDays">
+      <Button type="button" size="sm" variant="ghost" @click="selectEvenDays">
         {{ t('task.monthDay.evenDays') }}
       </Button>
 
-      <Button size="sm" variant="ghost" @click="selectAll">
+      <Button type="button" size="sm" variant="ghost" @click="selectAll">
         {{ t('task.monthDay.selectAll') }}
       </Button>
 
-      <Button size="sm" variant="ghost" @click="clearAll"> {{ t('task.monthDay.clear') }} </Button>
+      <Button type="button" size="sm" variant="ghost" @click="clearAll">
+        {{ t('task.monthDay.clear') }}
+      </Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Badge, Button, Label } from '@memoflow/ui-vue-shadcn';
+import { Button, Label } from '@memoflow/ui-vue-shadcn';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

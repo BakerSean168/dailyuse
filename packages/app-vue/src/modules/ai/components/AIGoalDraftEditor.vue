@@ -18,7 +18,7 @@
         />
       </div>
 
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="grid gap-3 @sm/ai:grid-cols-2">
         <div class="rounded-xl border border-border/50 bg-background/70 p-3">
           <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             {{ t('goal.dialog.category') }}
@@ -48,7 +48,9 @@
           </p>
           <Select
             :model-value="goal.importance"
-            @update:model-value="updateGoalField('importance', $event as GoalDraftState['importance'])"
+            @update:model-value="
+              updateGoalField('importance', $event as GoalDraftState['importance'])
+            "
           >
             <SelectTrigger class="mt-2">
               <SelectValue :placeholder="t('goal.dialog.importancePlaceholder')" />
@@ -66,7 +68,7 @@
         </div>
       </div>
 
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="grid gap-3 @sm/ai:grid-cols-2">
         <div class="rounded-xl border border-border/50 bg-background/70 p-3">
           <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             {{ t('goal.dialog.startDate') }}
@@ -92,7 +94,7 @@
         </div>
       </div>
 
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="grid gap-3 @sm/ai:grid-cols-2">
         <div class="rounded-xl border border-border/50 bg-background/70 p-3">
           <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             {{ t('goal.dialog.motivation') }}
@@ -141,21 +143,17 @@
             <Input
               :model-value="item.title"
               :placeholder="t('goal.krDialog.namePlaceholder')"
-              @update:model-value="
-                updateKeyResult(index, { title: String($event ?? '') })
-              "
+              @update:model-value="updateKeyResult(index, { title: String($event ?? '') })"
             />
             <Textarea
               :model-value="item.description"
               :placeholder="t('goal.krDialog.descPlaceholder')"
               class="min-h-20"
-              @update:model-value="
-                updateKeyResult(index, { description: String($event ?? '') })
-              "
+              @update:model-value="updateKeyResult(index, { description: String($event ?? '') })"
             />
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2">
+          <div class="grid gap-3 @sm/ai:grid-cols-2">
             <div class="grid gap-2">
               <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                 {{ t('goal.krDialog.valueType') }}
@@ -211,7 +209,7 @@
             </div>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div class="grid gap-3 @sm/ai:grid-cols-2 @lg/ai:grid-cols-5">
             <div class="grid gap-2">
               <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                 {{ t('goal.krDialog.startValue') }}
@@ -425,10 +423,7 @@ function updateGoalField<K extends keyof GoalDraftState>(key: K, value: GoalDraf
   });
 }
 
-function updateKeyResult(
-  index: number,
-  patch: Partial<KeyResultDraftState>,
-) {
+function updateKeyResult(index: number, patch: Partial<KeyResultDraftState>) {
   emit('update-key-result', {
     index,
     value: {

@@ -37,7 +37,7 @@ export const Default: Story = {
 
 export const WithConflicts: Story = {
   args: {
-    conflicts: mockConflicts,
+    conflictResult: mockConflicts,
   },
 };
 

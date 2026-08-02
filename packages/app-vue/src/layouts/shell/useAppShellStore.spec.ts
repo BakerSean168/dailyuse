@@ -270,9 +270,34 @@ describe('useAppShellStore (V2 shell tabs)', () => {
   it('resolvePanelWidth clamps for render without mutating preferred width', () => {
     const store = useAppShellStore();
     store.setPanelWidth(760);
-    // 1200 viewport, 260 sidebar => max = min(760, 940-420)=520
+    // 1200 viewport, 260 sidebar => max = min(760, 940-320)=620
     const effective = store.resolvePanelWidth(1200, 260);
-    expect(effective).toBeLessThanOrEqual(520);
+    expect(effective).toBe(620);
     expect(store.panelWidth).toBe(760);
+  });
+
+  it('uses responsive business-dominant geometry until the user sets a width preference', () => {
+    const store = useAppShellStore();
+
+    expect(store.panelWidth).toBeNull();
+    expect(store.resolvePanelWidth(1280, 240)).toBe(666);
+    expect(store.panelWidth).toBeNull();
+  });
+
+  it('ignores a legacy persisted pixel seed until the user explicitly resizes', () => {
+    const store = useAppShellStore();
+    store.panelWidth = 520;
+
+    expect(store.panelWidthSource).toBe('responsive');
+    expect(store.resolvePanelWidth(1280, 260)).toBe(653);
+
+    store.setPanelWidth(600);
+    expect(store.panelWidthSource).toBe('user');
+    expect(store.resolvePanelWidth(1280, 260)).toBe(600);
+
+    store.resetPanelWidthPreference();
+    expect(store.panelWidth).toBeNull();
+    expect(store.panelWidthSource).toBe('responsive');
+    expect(store.resolvePanelWidth(1280, 260)).toBe(653);
   });
 });

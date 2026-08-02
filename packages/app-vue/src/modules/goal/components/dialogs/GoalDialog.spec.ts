@@ -4,18 +4,25 @@ import { nextTick } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import enUS from '../../../../locales/en-US';
 import GoalDialog from './GoalDialog.vue';
+import { clearDialogDrafts } from '../../../../layouts/shell/dialog-draft-store';
+
+const goalActions = vi.hoisted(() => ({
+  createGoal: vi.fn(),
+  updateGoal: vi.fn(),
+  addKeyResult: vi.fn(),
+}));
 
 vi.mock('../../composables/useGoal', async () => {
   const { ref } = await import('vue');
   return {
     useGoal: () => ({
-      createGoal: vi.fn(),
-      updateGoal: vi.fn(),
+      createGoal: goalActions.createGoal,
+      updateGoal: goalActions.updateGoal,
       goals: ref([]),
       goalFolders: ref([]),
       isSaving: ref(false),
       fetchKeyResults: vi.fn(),
-      addKeyResult: vi.fn(),
+      addKeyResult: goalActions.addKeyResult,
       updateKeyResult: vi.fn(),
       deleteKeyResult: vi.fn(),
       keyResults: ref([]),
@@ -40,6 +47,10 @@ const i18n = createI18n({
 
 describe('GoalDialog draft lifecycle', () => {
   afterEach(() => {
+    goalActions.createGoal.mockReset();
+    goalActions.updateGoal.mockReset();
+    goalActions.addKeyResult.mockReset();
+    clearDialogDrafts();
     document.body.innerHTML = '';
   });
 
@@ -59,6 +70,58 @@ describe('GoalDialog draft lifecycle', () => {
     await nextTick();
 
     expect(wrapper.emitted('dirty-change')?.at(-1)).toEqual([true]);
+    wrapper.unmount();
+  });
+
+  it('restores a dirty draft after the routed panel subtree is rebuilt', async () => {
+    const first = mount(GoalDialog, {
+      props: { open: true },
+      attachTo: document.body,
+      global: { plugins: [i18n] },
+    });
+    await nextTick();
+
+    await new DOMWrapper(
+      document.querySelector<HTMLInputElement>('[data-testid="goal-name-input"]')!,
+    ).setValue('Survives boundary retry');
+    await nextTick();
+    first.unmount();
+
+    const rebuilt = mount(GoalDialog, {
+      props: { open: true },
+      attachTo: document.body,
+      global: { plugins: [i18n] },
+    });
+    await nextTick();
+
+    expect(document.querySelector<HTMLInputElement>('[data-testid="goal-name-input"]')?.value).toBe(
+      'Survives boundary retry',
+    );
+    rebuilt.unmount();
+  });
+
+  it('keeps the dialog and all entered fields when the aggregate command fails', async () => {
+    goalActions.createGoal.mockResolvedValue(null);
+    const wrapper = mount(GoalDialog, {
+      props: { open: true },
+      attachTo: document.body,
+      global: { plugins: [i18n] },
+    });
+    await nextTick();
+
+    const name = new DOMWrapper(
+      document.querySelector<HTMLInputElement>('[data-testid="goal-name-input"]')!,
+    );
+    await name.setValue('Retry without losing me');
+    await new DOMWrapper(
+      document.querySelector<HTMLElement>('[data-testid="save-goal-button"]')!,
+    ).trigger('click');
+    await nextTick();
+
+    expect(wrapper.emitted('update:open')).toBeUndefined();
+    expect(document.querySelector<HTMLInputElement>('[data-testid="goal-name-input"]')?.value).toBe(
+      'Retry without losing me',
+    );
     wrapper.unmount();
   });
 
@@ -109,6 +172,113 @@ describe('GoalDialog draft lifecycle', () => {
     expect(dialogText).toContain('Medium impact');
     expect(dialogText).not.toContain('Incremental');
 
+    wrapper.unmount();
+  });
+
+  it('persists a filled inline key result when the user creates the goal without adding it separately', async () => {
+    goalActions.createGoal.mockResolvedValue({ id: 'goal-1' });
+    goalActions.addKeyResult.mockResolvedValue({ id: 'kr-1' });
+
+    const wrapper = mount(GoalDialog, {
+      props: { open: true },
+      attachTo: document.body,
+      global: { plugins: [i18n] },
+    });
+    await nextTick();
+
+    await new DOMWrapper(
+      document.querySelector<HTMLInputElement>('[data-testid="goal-name-input"]')!,
+    ).setValue('Launch community');
+
+    const keyResultsTab = new DOMWrapper(
+      document.querySelector<HTMLElement>('[data-testid="goal-dialog-key-results-tab"]')!,
+    );
+    await keyResultsTab.trigger('keydown', { key: 'Enter', code: 'Enter' });
+    await keyResultsTab.trigger('keyup', { key: 'Enter', code: 'Enter' });
+    await nextTick();
+
+    await new DOMWrapper(
+      document.querySelector<HTMLInputElement>('[data-testid="inline-kr-title"]')!,
+    ).setValue('Reach 50 active teams');
+
+    await new DOMWrapper(
+      document.querySelector<HTMLElement>('[data-testid="save-goal-button"]')!,
+    ).trigger('click');
+    await nextTick();
+
+    expect(goalActions.createGoal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Launch community',
+        initialKeyResults: [expect.objectContaining({ title: 'Reach 50 active teams' })],
+      }),
+    );
+    expect(goalActions.addKeyResult).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+  });
+
+  it('submits an edited goal and its complete KR state through one aggregate command', async () => {
+    goalActions.updateGoal.mockResolvedValue({ id: 'goal-1' });
+    const now = Date.now();
+    const goal = {
+      id: 'goal-1',
+      name: 'Existing goal',
+      description: null,
+      category: null,
+      importance: 'Moderate',
+      color: null,
+      feasibilityAnalysis: null,
+      motivation: null,
+      tags: [],
+      startDate: null,
+      targetDate: null,
+      folderId: null,
+      parentGoalId: null,
+      reminderConfig: null,
+      version: 4,
+      keyResults: [
+        {
+          id: 'kr-1',
+          title: 'Existing KR',
+          description: null,
+          progress: {
+            valueType: 'Incremental',
+            aggregationMethod: 'Sum',
+            initialValue: 0,
+            currentValue: 2,
+            targetValue: 10,
+            unit: null,
+          },
+          weight: 3,
+          order: 0,
+          version: 1,
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null,
+        },
+      ],
+    };
+    const wrapper = mount(GoalDialog, {
+      props: { open: true, mode: 'edit', goal: goal as never },
+      attachTo: document.body,
+      global: { plugins: [i18n] },
+    });
+    await nextTick();
+
+    await new DOMWrapper(
+      document.querySelector<HTMLElement>('[data-testid="save-goal-button"]')!,
+    ).trigger('click');
+    await nextTick();
+
+    expect(goalActions.updateGoal).toHaveBeenCalledTimes(1);
+    expect(goalActions.updateGoal).toHaveBeenCalledWith(
+      'goal-1',
+      expect.objectContaining({
+        expectedVersion: 4,
+        keyResults: [expect.objectContaining({ id: 'kr-1', title: 'Existing KR' })],
+      }),
+    );
+    expect(goalActions.addKeyResult).not.toHaveBeenCalled();
     wrapper.unmount();
   });
 });

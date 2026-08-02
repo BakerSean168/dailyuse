@@ -28,7 +28,12 @@
               class="flex items-center gap-1"
             >
               {{ tag }}
-              <button class="ml-1 hover:text-destructive" @click="removeTag(index)">
+              <button
+                type="button"
+                class="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                :aria-label="`${t('common.remove')} ${tag}`"
+                @click="removeTag(index)"
+              >
                 <X class="h-3 w-3" />
               </button>
             </Badge>

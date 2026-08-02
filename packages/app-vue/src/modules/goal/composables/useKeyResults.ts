@@ -8,9 +8,7 @@ import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { AddKeyResultReq, UpdateKeyResultReq } from '@memoflow/contracts/goal';
-import { executeGoalOperation, executeGoalAction, createGoalErrorHandler } from './goalOperations';
-
-type KeyResultEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['keyResults'][number] };
+import { executeGoalOperation, createGoalErrorHandler } from './goalOperations';
 
 export function useKeyResults() {
   const store = useGoalStore();
@@ -23,55 +21,68 @@ export function useKeyResults() {
     onError: createGoalErrorHandler(t, (msg) => store.setError(msg)),
   };
 
-  async function fetchKeyResults(goalId: string) {
-    const data = await executeGoalOperation(
-      () => service.getKeyResults(goalId),
-      { ...opOpts, fallbackKey: 'goal.error.loadKRFailed', scope: 'fetchKeyResults' },
-    );
-    if (data) {
-      store.setKeyResults(
-        (data.keyResults ?? []).map((kr: KeyResultEntityLike) => kr.toDTO()),
-      );
+  function getExpectedVersion(goalId: string): number | null {
+    const version = store.getGoalById(goalId)?.version;
+    if (version === undefined) {
+      store.setError(t('goal.error.loadFailed'));
+      return null;
     }
+    return version;
   }
 
-  async function addKeyResult(goalId: string, req: AddKeyResultReq) {
+  async function addKeyResult(goalId: string, req: Omit<AddKeyResultReq, 'expectedVersion'>) {
+    const expectedVersion = getExpectedVersion(goalId);
+    if (expectedVersion === null) return null;
     const data = await executeGoalOperation(
-      () => service.createKeyResult(goalId, sanitizeForIpc(req)),
+      () => service.createKeyResult(goalId, sanitizeForIpc({ ...req, expectedVersion })),
       { ...opOpts, fallbackKey: 'goal.error.addKRFailed', scope: 'addKeyResult' },
     );
     if (data) {
-      const dto = data.toDTO();
-      store.addKeyResult(dto);
-      return dto;
+      store.applyGoalMutationReceipt(data);
+      return data.readModel.keyResults.find(
+        (keyResult) => String(keyResult.id) === String(data.affectedEntityIds.keyResultIds[0]),
+      );
     }
     return null;
   }
 
-  async function updateKeyResult(goalId: string, krId: string, req: UpdateKeyResultReq) {
+  async function updateKeyResult(
+    goalId: string,
+    krId: string,
+    req: Omit<UpdateKeyResultReq, 'expectedVersion'>,
+  ) {
+    const expectedVersion = getExpectedVersion(goalId);
+    if (expectedVersion === null) return null;
     const data = await executeGoalOperation(
-      () => service.updateKeyResult(goalId, krId, sanitizeForIpc(req)),
+      () => service.updateKeyResult(goalId, krId, sanitizeForIpc({ ...req, expectedVersion })),
       { ...opOpts, fallbackKey: 'goal.error.updateKRFailed', scope: 'updateKeyResult' },
     );
     if (data) {
-      const dto = data.toDTO();
-      store.updateKeyResult(dto);
-      return dto;
+      store.applyGoalMutationReceipt(data);
+      return data.readModel.keyResults.find((keyResult) => String(keyResult.id) === krId);
     }
     return null;
   }
 
   async function deleteKeyResult(goalId: string, krId: string) {
-    const ok = await executeGoalAction(
-      () => service.deleteKeyResult(goalId, krId),
-      { ...opOpts, fallbackKey: 'goal.error.deleteKRFailed', scope: 'deleteKeyResult' },
+    const expectedVersion = getExpectedVersion(goalId);
+    if (expectedVersion === null) return false;
+    const receipt = await executeGoalOperation(
+      () => service.deleteKeyResult(goalId, krId, { expectedVersion }),
+      {
+        ...opOpts,
+        fallbackKey: 'goal.error.deleteKRFailed',
+        scope: 'deleteKeyResult',
+      },
     );
-    if (ok) store.removeKeyResult(krId);
-    return ok;
+    if (receipt) {
+      store.applyGoalMutationReceipt(receipt);
+      return true;
+    }
+    return false;
   }
 
   return {
-    fetchKeyResults,
     addKeyResult,
     updateKeyResult,
     deleteKeyResult,

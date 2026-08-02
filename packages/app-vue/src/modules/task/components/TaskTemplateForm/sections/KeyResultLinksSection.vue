@@ -27,8 +27,8 @@
         <Switch
           id="task-key-result-link-enabled"
           data-testid="task-goal-binding-toggle"
-          :checked="linkEnabled"
-          @update:checked="handleLinkToggle"
+          :model-value="linkEnabled"
+          @update:model-value="handleLinkToggle"
         />
         <Label for="task-key-result-link-enabled">{{ t('task.krLinks.enable') }}</Label>
       </div>
@@ -260,6 +260,7 @@ import {
   RotateCw,
 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import { normalizeSelectString } from '../../../../../shared/utils/normalize-select-string';
 
 const { t } = useI18n();
 
@@ -339,18 +340,6 @@ const keyResultItems = computed(() => {
   }));
 });
 
-const selectedGoalTitle = computed(() => {
-  if (!selectedGoalId.value) return '';
-  const goal = (props.goals || []).find((g) => g.id === selectedGoalId.value);
-  return goal?.title || '';
-});
-
-const selectedKeyResultTitle = computed(() => {
-  if (!selectedKeyResultId.value) return '';
-  const kr = keyResults.value.find((k) => k.id === selectedKeyResultId.value);
-  return kr?.title || '';
-});
-
 const wholePlanTriggerAllowed = computed(() => {
   const recurrenceRule = props.modelValue.recurrenceRule as RecurrenceRuleDTO | null | undefined;
   return !recurrenceRule || recurrenceRule.endDate !== null || recurrenceRule.occurrences !== null;
@@ -418,7 +407,8 @@ const handleLinkToggle = (enabled: boolean | null) => {
   validateAndEmit();
 };
 
-const handleGoalChange = async (goalId: string | null) => {
+const handleGoalChange = async (value: unknown) => {
+  const goalId = normalizeSelectString(value);
   selectedGoalId.value = goalId ?? null;
   selectedKeyResultId.value = null;
   updateBinding();
@@ -429,8 +419,8 @@ const handleGoalChange = async (goalId: string | null) => {
   }
 };
 
-const handleKeyResultChange = (val: string | null) => {
-  selectedKeyResultId.value = val ?? null;
+const handleKeyResultChange = (value: unknown) => {
+  selectedKeyResultId.value = normalizeSelectString(value);
   updateBinding();
   validateAndEmit();
 };
@@ -440,7 +430,8 @@ const handleIncrementChange = () => {
   validateAndEmit();
 };
 
-const handleTriggerChange = (value: string | null) => {
+const handleTriggerChange = (rawValue: unknown) => {
+  const value = normalizeSelectString(rawValue);
   if (value === TaskGoalBindingTrigger.AllInstancesCompleted && !wholePlanTriggerAllowed.value) {
     return;
   }
@@ -459,8 +450,6 @@ const updateBinding = () => {
           keyResultId: selectedKeyResultId.value ?? undefined,
           incrementValue: incrementValue.value,
           progressTrigger: progressTrigger.value,
-          goalTitle: selectedGoalTitle.value,
-          keyResultTitle: selectedKeyResultTitle.value,
         }
       : null,
   };

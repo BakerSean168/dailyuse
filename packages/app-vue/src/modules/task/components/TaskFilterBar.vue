@@ -44,7 +44,7 @@ const activeRelationLabel = computed(
           <Button
             variant="outline"
             size="sm"
-            class="h-7 max-w-44 gap-1.5 text-xs"
+            class="h-8 max-w-44 gap-1.5 text-xs"
             data-testid="task-status-menu"
           >
             <span class="truncate">{{ activeStatus?.label }}</span>
@@ -81,8 +81,9 @@ const activeRelationLabel = computed(
           <Button
             variant="outline"
             size="sm"
-            class="h-7 gap-1.5 text-xs"
+            class="h-8 gap-1.5 text-xs"
             data-testid="task-relation-filter-trigger"
+            :aria-label="t('task.templateMgmt.relationFilterLabel')"
           >
             <Filter class="h-3.5 w-3.5" />
             <span class="hidden max-w-28 truncate @xl/panel:inline">
@@ -117,7 +118,7 @@ const activeRelationLabel = computed(
 
     <template #search>
       <div
-        class="group/search relative h-7 w-7 transition-[width] focus-within:w-40 @xl/panel:w-40 @3xl/panel:w-56"
+        class="group/search relative h-8 w-8 transition-[width] focus-within:w-40 @xl/panel:w-40 @3xl/panel:w-56"
         data-testid="task-toolbar-search"
       >
         <Search
@@ -127,14 +128,14 @@ const activeRelationLabel = computed(
           v-model="search"
           :aria-label="t('task.management.searchPlaceholder')"
           :placeholder="t('task.management.searchPlaceholder')"
-          class="h-7 w-full cursor-pointer border-transparent bg-secondary/50 pl-7 pr-7 text-xs text-transparent placeholder:text-transparent focus:cursor-text focus:text-foreground focus:placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-background @xl/panel:cursor-text @xl/panel:text-foreground @xl/panel:placeholder:text-muted-foreground"
+          class="h-8 w-full cursor-pointer border-transparent bg-secondary/50 pl-7 pr-8 text-xs text-transparent placeholder:text-transparent focus:cursor-text focus:text-foreground focus:placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-background @xl/panel:cursor-text @xl/panel:text-foreground @xl/panel:placeholder:text-muted-foreground"
           data-testid="task-search-input"
         />
         <Button
           v-if="search"
           variant="ghost"
           size="icon"
-          class="absolute right-0 top-0 h-7 w-7"
+          class="absolute right-0 top-0 h-8 w-8"
           :aria-label="t('task.templateMgmt.clearFilter')"
           data-testid="task-search-clear"
           @click="search = ''"
@@ -149,10 +150,12 @@ const activeRelationLabel = computed(
         <Button
           variant="ghost"
           size="sm"
-          class="h-6 gap-1 px-2 text-xs text-muted-foreground"
+          class="h-8 gap-1 px-2 text-xs text-muted-foreground"
           :class="viewMode === 'card' ? 'bg-secondary text-foreground' : ''"
           data-testid="task-view-card-button"
           :title="t('task.templateMgmt.viewCard')"
+          :aria-label="t('task.templateMgmt.viewCard')"
+          :aria-pressed="viewMode === 'card'"
           @click="viewMode = 'card'"
         >
           <LayoutGrid class="h-3.5 w-3.5" />
@@ -161,10 +164,12 @@ const activeRelationLabel = computed(
         <Button
           variant="ghost"
           size="sm"
-          class="h-6 gap-1 px-2 text-xs text-muted-foreground"
+          class="h-8 gap-1 px-2 text-xs text-muted-foreground"
           :class="viewMode === 'graph' ? 'bg-secondary text-foreground' : ''"
           data-testid="view-dependency-graph-button"
           :title="t('task.templateMgmt.viewGraph')"
+          :aria-label="t('task.templateMgmt.viewGraph')"
+          :aria-pressed="viewMode === 'graph'"
           @click="viewMode = 'graph'"
         >
           <Share2 class="h-3.5 w-3.5" />

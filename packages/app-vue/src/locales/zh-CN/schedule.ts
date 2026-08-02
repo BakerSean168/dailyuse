@@ -122,7 +122,8 @@ export default {
     "fieldLocationPlaceholder": "输入地点",
     "fieldAttendees": "参与者",
     "fieldAttendeePlaceholder": "输入邮箱或用户名",
-    "addAttendee": "添加"
+    "addAttendee": "添加",
+    "submitFailed": "日程保存失败，你填写的内容仍保留在此处。"
   },
   "calendar": {
     "today": "今天",
@@ -137,7 +138,9 @@ export default {
     "dayWed": "周三",
     "dayThu": "周四",
     "dayFri": "周五",
-    "daySat": "周六"
+    "daySat": "周六",
+    "openDay": "打开 {date}",
+    "openEvent": "打开{title}"
   },
   "conflictAlert": {
     "detecting": "检测冲突中...",

@@ -1,10 +1,15 @@
 <template>
   <div
     ref="viewport"
-    class="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6"
+    class="min-h-0 flex-1 overflow-y-auto px-4 py-4 @md/ai:px-6"
     data-testid="ai-message-panel"
   >
-    <div class="mx-auto flex w-full max-w-4xl flex-col gap-4">
+    <div
+      class="mx-auto flex w-full max-w-4xl flex-col gap-4"
+      role="log"
+      aria-live="polite"
+      aria-relevant="additions text"
+    >
       <!-- Message timeline -->
       <template v-if="timeline.length">
         <article
@@ -14,7 +19,7 @@
           :class="item.role === 'user' ? 'justify-end' : 'justify-start'"
         >
           <div
-            class="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-7 sm:max-w-[78%]"
+            class="max-w-[88%] rounded-2xl px-3 py-3 text-sm leading-7 @md/ai:max-w-[82%] @md/ai:px-4 @xl/ai:max-w-[78%]"
             :class="
               item.role === 'user'
                 ? 'bg-primary text-primary-foreground'
@@ -37,6 +42,7 @@
               "
               class="mt-2 text-xs"
               :class="item.status === 'error' ? 'text-destructive' : 'text-muted-foreground'"
+              :role="item.status === 'error' ? 'alert' : 'status'"
             >
               {{ getMessageStatusLabel(item) }}
             </p>
@@ -130,7 +136,7 @@
           </div>
 
           <!-- Shortcut cards: prefill composer + set tool mode (V2 §6.0; residual 429 task-create) -->
-          <div v-else-if="toolMode === 'chat'" class="grid gap-2 sm:grid-cols-2">
+          <div v-else-if="toolMode === 'chat'" class="grid gap-2 @xl/ai:grid-cols-2">
             <button
               v-for="entry in shortcutEntries"
               :key="entry.mode"
@@ -150,7 +156,7 @@
           </div>
 
           <!-- Tool-mode empty: keep workflow entry cards -->
-          <div v-else class="grid gap-2 sm:grid-cols-2">
+          <div v-else class="grid gap-2 @xl/ai:grid-cols-2">
             <button
               v-for="entry in workflowEntries"
               :key="entry.mode"

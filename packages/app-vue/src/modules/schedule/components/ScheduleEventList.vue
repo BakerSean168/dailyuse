@@ -40,8 +40,9 @@
           :actions="getScheduleActions(schedule)"
           more-button-position="top-right"
         >
-          <div
-            class="flex items-start gap-4 p-4 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
+          <button
+            type="button"
+            class="flex w-full items-start gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             @click="emit('schedule-click', schedule)"
           >
             <div class="flex-shrink-0">
@@ -88,7 +89,7 @@
                 {{ schedule.description }}
               </p>
             </div>
-          </div>
+          </button>
         </ActionableWrapper>
       </div>
     </CardContent>

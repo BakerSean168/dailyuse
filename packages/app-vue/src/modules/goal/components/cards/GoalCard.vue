@@ -145,9 +145,7 @@ const menuActions = computed<MenuAction[]>(() => [
 ]);
 
 // ========== Derived fields from GoalClientDTO ==========
-const krs = computed(() => props.goal.keyResults ?? []);
-
-const totalKRCount = computed(() => props.goal.totalKeyResults ?? krs.value.length);
+const totalKRCount = computed(() => props.goal.totalKeyResults);
 
 const completedKRCount = computed(() => {
   return getCompletedKeyResultCount(props.goal);

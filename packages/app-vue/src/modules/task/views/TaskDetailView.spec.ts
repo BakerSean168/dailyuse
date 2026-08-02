@@ -81,8 +81,8 @@ vi.mock('../composables/useTaskGoalBindingOptions', () => ({
             keyResultId: binding.keyResultId,
             incrementValue: binding.goalRecordValue,
             progressTrigger: binding.progressTrigger,
-            goalTitle: 'Launch MemoFlow',
-            keyResultTitle: 'Complete the product journey',
+            goalName: 'Launch MemoFlow',
+            keyResultName: 'Complete the product journey',
           }
         : null,
   }),

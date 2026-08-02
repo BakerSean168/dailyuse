@@ -11,6 +11,7 @@
           :min="0"
           :max="maxIndex"
           :step="1"
+          :aria-label="t('goal.timeline.controls.position')"
           @input="handleSliderChange"
         />
       </div>
@@ -35,8 +36,12 @@
       <!-- 播放控制 -->
       <div class="play-controls">
         <button
+          type="button"
           class="control-btn"
           :title="isPlaying ? t('goal.timeline.controls.pause') : t('goal.timeline.controls.play')"
+          :aria-label="
+            isPlaying ? t('goal.timeline.controls.pause') : t('goal.timeline.controls.play')
+          "
           @click="togglePlay"
         >
           <svg v-if="!isPlaying" viewBox="0 0 24 24" class="icon">
@@ -48,8 +53,10 @@
         </button>
 
         <button
+          type="button"
           class="control-btn"
           :title="t('goal.timeline.controls.prev')"
+          :aria-label="t('goal.timeline.controls.prev')"
           :disabled="currentIndex === 0"
           @click="previousSnapshot"
         >
@@ -59,8 +66,10 @@
         </button>
 
         <button
+          type="button"
           class="control-btn"
           :title="t('goal.timeline.controls.next')"
+          :aria-label="t('goal.timeline.controls.next')"
           :disabled="currentIndex === maxIndex"
           @click="nextSnapshot"
         >
@@ -70,9 +79,12 @@
         </button>
 
         <button
+          type="button"
           class="control-btn"
           :class="{ active: loop }"
           :title="t('goal.timeline.controls.loop')"
+          :aria-label="t('goal.timeline.controls.loop')"
+          :aria-pressed="loop"
           @click="toggleLoop"
         >
           <svg viewBox="0 0 24 24" class="icon">
@@ -90,8 +102,10 @@
         <button
           v-for="speedOption in speedOptions"
           :key="speedOption"
+          type="button"
           class="speed-btn"
           :class="{ active: speed === speedOption }"
+          :aria-pressed="speed === speedOption"
           @click="setSpeed(speedOption)"
         >
           {{ speedOption }}x
@@ -232,7 +246,6 @@ function toggleLoop() {
 function setSpeed(newSpeed: 0.5 | 1 | 2) {
   emit('update:speed', newSpeed);
 }
-
 
 // ==================== Watchers ====================
 

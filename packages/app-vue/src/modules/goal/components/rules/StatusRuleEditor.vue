@@ -21,21 +21,27 @@
       <!-- 全局配置 -->
       <div class="mb-4 space-y-2">
         <div class="flex items-center gap-2">
-          <Switch :checked="config.enabled" @update:checked="config.enabled = $event" />
+          <Switch
+            :model-value="config.enabled"
+            :aria-label="t('goal.statusRule.enableAutoRules')"
+            @update:model-value="config.enabled = $event"
+          />
           <Label>{{ t('goal.statusRule.enableAutoRules') }}</Label>
         </div>
         <div class="flex items-center gap-2">
           <Switch
-            :checked="config.allowManualOverride"
-            @update:checked="config.allowManualOverride = $event"
+            :model-value="config.allowManualOverride"
+            :aria-label="t('goal.statusRule.allowManualOverride')"
+            @update:model-value="config.allowManualOverride = $event"
           />
           <Label>{{ t('goal.statusRule.allowManualOverride') }}</Label>
           <span class="text-sm text-muted-foreground">{{ t('goal.statusRule.disableNote') }}</span>
         </div>
         <div class="flex items-center gap-2">
           <Switch
-            :checked="config.notifyOnChange"
-            @update:checked="config.notifyOnChange = $event"
+            :model-value="config.notifyOnChange"
+            :aria-label="t('goal.statusRule.notifyOnChange')"
+            @update:model-value="config.notifyOnChange = $event"
           />
           <Label>{{ t('goal.statusRule.notifyOnChange') }}</Label>
         </div>
@@ -60,8 +66,9 @@
           :class="{ 'opacity-60': !rule.enabled }"
         >
           <Switch
-            :checked="rule.enabled"
-            @update:checked="
+            :model-value="rule.enabled"
+            :aria-label="rule.name"
+            @update:model-value="
               (val: boolean) => {
                 rule.enabled = val;
                 handleRuleToggle(rule);
@@ -285,7 +292,11 @@
             </div>
 
             <div class="flex items-center gap-2 mb-4">
-              <Switch :checked="form.action.notify" @update:checked="form.action.notify = $event" />
+              <Switch
+                :model-value="form.action.notify"
+                :aria-label="t('goal.statusRule.sendNotification')"
+                @update:model-value="form.action.notify = $event"
+              />
               <Label>{{ t('goal.statusRule.sendNotification') }}</Label>
             </div>
 

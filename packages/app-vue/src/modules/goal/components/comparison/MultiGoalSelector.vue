@@ -21,7 +21,12 @@
         >
           <Target class="h-3 w-3" />
           {{ goal.name }}
-          <button type="button" class="ml-1 rounded-sm hover:bg-muted" @click="removeGoal(goal.id)">
+          <button
+            type="button"
+            class="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            :aria-label="`${t('common.remove')} ${goal.name}`"
+            @click="removeGoal(goal.id)"
+          >
             <X class="h-3 w-3" />
           </button>
         </Badge>

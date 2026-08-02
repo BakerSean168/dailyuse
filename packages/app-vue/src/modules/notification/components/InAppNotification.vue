@@ -10,27 +10,33 @@
         :key="notification.id"
         :class="[
           'flex items-start gap-3 min-w-[320px] max-w-[400px] p-4 mb-3',
-          'bg-background rounded-lg shadow-lg pointer-events-auto cursor-pointer',
+          'bg-background rounded-lg shadow-lg pointer-events-auto',
           'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl',
           priorityBorderClass(notification.priority),
           notification.priority === 'URGENT' && 'animate-pulse-shadow',
         ]"
-        @click="$emit('notification-click', notification)"
       >
-        <!-- Icon -->
-        <div class="shrink-0 w-6 h-6 text-2xl leading-none">
-          {{ getIcon(notification.type) }}
-        </div>
+        <button
+          type="button"
+          class="flex min-w-0 flex-1 items-start gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          :aria-label="notification.title"
+          @click="$emit('notification-click', notification)"
+        >
+          <!-- Icon -->
+          <div class="shrink-0 w-6 h-6 text-2xl leading-none" aria-hidden="true">
+            {{ getIcon(notification.type) }}
+          </div>
 
-        <!-- Content -->
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-semibold text-foreground mb-1 truncate">
-            {{ notification.title }}
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-foreground mb-1 truncate">
+              {{ notification.title }}
+            </div>
+            <div class="text-sm text-muted-foreground leading-relaxed break-words">
+              {{ notification.message }}
+            </div>
           </div>
-          <div class="text-sm text-muted-foreground leading-relaxed break-words">
-            {{ notification.message }}
-          </div>
-        </div>
+        </button>
 
         <!-- Close Button -->
         <Button

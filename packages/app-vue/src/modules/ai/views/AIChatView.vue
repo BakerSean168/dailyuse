@@ -67,8 +67,8 @@
       </div>
     </div>
 
-    <section class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <header v-show="!composerOnly" class="border-b bg-background px-4 py-3 sm:px-6">
+    <section class="@container/ai flex min-w-0 flex-1 flex-col overflow-hidden">
+      <header v-show="!composerOnly" class="border-b bg-background px-4 py-3 @md/ai:px-6">
         <div class="flex items-center justify-between gap-3">
           <h1 class="truncate text-lg font-medium text-foreground">
             {{ currentConversationLabel }}
@@ -153,7 +153,7 @@
         (composer-top strip). Kept outside AIFooterComposer so unit specs that stub
         the composer still mount the real action bar (goal-agent-* contracts).
       -->
-      <div v-show="!composerOnly" class="px-4 sm:px-6">
+      <div v-show="!composerOnly" class="px-4 @md/ai:px-6">
         <div class="mx-auto w-full max-w-4xl">
           <AIWorkflowActionBar
             :tool-mode="toolMode"

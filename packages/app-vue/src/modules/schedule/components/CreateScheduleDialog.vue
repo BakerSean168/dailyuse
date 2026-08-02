@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="modelValue" @update:open="$emit('update:modelValue', $event)">
+  <Dialog :open="modelValue" @update:open="handleVisibleChange">
     <DialogContent
       class="flex max-h-[calc(100vh-2rem)] max-w-2xl flex-col overflow-hidden"
       data-testid="schedule-dialog"
@@ -66,7 +66,7 @@
                     mode="single"
                     :selected="parseToDate(formData.startDate)"
                     @update:model-value="
-                      (d: Date | undefined) =>
+                      (d: unknown) =>
                         handleCalendarSelect(d, (v) => {
                           formData.startDate = v;
                         })
@@ -135,7 +135,7 @@
                     mode="single"
                     :selected="parseToDate(formData.endDate)"
                     @update:model-value="
-                      (d: Date | undefined) =>
+                      (d: unknown) =>
                         handleCalendarSelect(d, (v) => {
                           formData.endDate = v;
                         })
@@ -219,8 +219,8 @@
             </div>
             <Switch
               id="auto-detect-conflicts"
-              :checked="formData.autoDetectConflicts"
-              @update:checked="formData.autoDetectConflicts = $event"
+              :model-value="formData.autoDetectConflicts"
+              @update:model-value="formData.autoDetectConflicts = $event"
             />
           </div>
 
@@ -274,21 +274,24 @@
         </div>
 
         <DialogFooter class="shrink-0">
-          <Button type="button" variant="outline" @click="handleClose">
+          <Button type="button" variant="outline" :disabled="busy" @click="handleClose">
             {{ t('common.cancel') }}
           </Button>
-          <Button type="submit" :disabled="loading" data-testid="schedule-save-button">
-            <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
+          <Button type="submit" :disabled="busy" data-testid="schedule-save-button">
+            <Loader2 v-if="busy" class="mr-2 h-4 w-4 animate-spin" />
             {{ isEditing ? t('common.save') : t('common.create') }}
           </Button>
         </DialogFooter>
+        <p v-if="submitError" role="alert" class="text-sm text-destructive">
+          {{ submitError }}
+        </p>
       </form>
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { computed, ref, reactive, watch } from 'vue';
 import {
   Dialog,
   DialogContent,
@@ -314,7 +317,6 @@ import {
 } from '@memoflow/ui-vue-shadcn';
 import { MapPin, X, Loader2, Calendar as CalendarIcon } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { formatDateToYMD } from '../../../shared/utils/format-date-to-ymd';
 import { parseToDate } from '../../../shared/utils/parse-to-date';
 import { handleCalendarSelect } from '../../../shared/utils/handle-calendar-select';
 import { formatDisplayDate } from '../../../shared/utils/format-display-date';
@@ -325,11 +327,11 @@ interface Props {
   modelValue: boolean;
   schedule?: CalendarEntryClientDTO | null;
   loading?: boolean;
+  onSubmit: (data: CreateScheduleRequest) => Promise<boolean>;
 }
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'submit', data: CreateScheduleRequest): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -340,6 +342,9 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 const { t, locale } = useI18n();
+const submitting = ref(false);
+const submitError = ref('');
+const busy = computed(() => props.loading || submitting.value);
 
 // Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252); parseToDate dual retired onto shared sole (Residual 1255); handleCalendarSelect dual retired onto shared sole (Residual 1258).
 
@@ -427,8 +432,14 @@ function resetForm() {
 }
 
 function handleClose() {
+  if (busy.value) return;
   emit('update:modelValue', false);
   resetForm();
+  submitError.value = '';
+}
+
+function handleVisibleChange(value: boolean) {
+  if (!value) handleClose();
 }
 
 function addAttendee() {
@@ -442,7 +453,8 @@ function removeAttendee(index: number) {
   formData.attendees.splice(index, 1);
 }
 
-function handleSubmit() {
+async function handleSubmit() {
+  if (busy.value) return;
   const startTimestamp = new Date(`${formData.startDate}T${formData.startTime}`).getTime();
   const endTimestamp = new Date(`${formData.endDate}T${formData.endTime}`).getTime();
 
@@ -451,17 +463,31 @@ function handleSubmit() {
     return;
   }
 
-  emit('submit', {
-    name: formData.title,
-    description: formData.description || undefined,
-    startTime: startTimestamp,
-    endTime: endTimestamp,
-    duration: endTimestamp - startTimestamp,
-    priority: formData.priority ? Number(formData.priority) : undefined,
-    location: formData.location || undefined,
-    attendees: formData.attendees.length > 0 ? formData.attendees : undefined,
-    autoDetectConflicts: formData.autoDetectConflicts,
-  });
+  submitError.value = '';
+  submitting.value = true;
+  try {
+    const saved = await props.onSubmit({
+      name: formData.title,
+      description: formData.description || undefined,
+      startTime: startTimestamp,
+      endTime: endTimestamp,
+      duration: endTimestamp - startTimestamp,
+      priority: formData.priority ? Number(formData.priority) : undefined,
+      location: formData.location || undefined,
+      attendees: formData.attendees.length > 0 ? formData.attendees : undefined,
+      autoDetectConflicts: formData.autoDetectConflicts,
+    });
+    if (saved) {
+      emit('update:modelValue', false);
+      resetForm();
+      return;
+    }
+    submitError.value = t('schedule.createDialog.submitFailed');
+  } catch {
+    submitError.value = t('schedule.createDialog.submitFailed');
+  } finally {
+    submitting.value = false;
+  }
 }
 
 watch(

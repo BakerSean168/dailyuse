@@ -16,6 +16,7 @@
 
 import type { Result, ResultError } from '@memoflow/contracts/result';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { toast } from 'vue-sonner';
 
 type TranslateFn = (key: string) => string;
 type ErrorHandler = (error: unknown, fallbackKey: string, scope?: string) => void;
@@ -82,6 +83,7 @@ export function createGoalErrorHandler(
   return (error: unknown, fallbackKey: string, scope?: string) => {
     const message = translateResultError(error, t, { fallbackKey });
     setError(message);
+    toast.error(message);
 
     if (!error || typeof error !== 'object') {
       console.error(message);

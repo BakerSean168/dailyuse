@@ -9,11 +9,19 @@
         </Button>
         <div class="flex items-center">
           <PlusCircle class="mr-2 h-5 w-5 text-primary" />
-          <span class="text-lg font-bold">{{
+          <DialogTitle class="text-lg font-bold">{{
             isEditing ? t('goal.recordDialog.editTitle') : t('goal.recordDialog.addTitle')
-          }}</span>
+          }}</DialogTitle>
+          <DialogDescription class="sr-only">
+            {{ t('goal.recordDialog.description') }}
+          </DialogDescription>
         </div>
-        <Button size="sm" :disabled="!isValid" @click="handleSave">
+        <Button
+          data-testid="save-goal-record"
+          size="sm"
+          :disabled="!isValid || isSubmitting"
+          @click="handleSave"
+        >
           <Check class="mr-1 h-4 w-4" />
           {{ t('goal.recordDialog.save') }}
         </Button>
@@ -41,6 +49,9 @@
             </Badge>
           </div>
           <p v-if="validationError" class="text-xs text-destructive">{{ validationError }}</p>
+          <p v-if="submitError" role="alert" class="text-xs text-destructive">
+            {{ submitError }}
+          </p>
         </div>
 
         <!-- 备注输入 -->
@@ -65,15 +76,19 @@
             {{ t('goal.recordDialog.quickSelect') }}
           </div>
           <div class="flex flex-wrap gap-2">
-            <Badge
+            <Button
               v-for="quickValue in quickValues"
               :key="quickValue"
+              type="button"
+              size="sm"
               :variant="localRecord.changeAmount === quickValue ? 'default' : 'outline'"
-              class="cursor-pointer select-none px-3 py-1 text-sm transition-shadow hover:shadow-md"
+              :data-testid="`quick-goal-record-${quickValue}`"
+              :aria-label="`${t('goal.recordDialog.quickSelect')} ${quickValue}`"
+              class="select-none px-3 text-sm transition-shadow hover:shadow-md"
               @click="localRecord.changeAmount = quickValue"
             >
               {{ quickValue }}
-            </Badge>
+            </Button>
           </div>
         </div>
       </form>
@@ -84,8 +99,8 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalRecordClientDTO, GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
-import { Dialog, DialogContent } from '@memoflow/ui-vue-shadcn';
+import type { GoalRecordClientDTO } from '@memoflow/contracts/goal';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@memoflow/ui-vue-shadcn';
 import { Button } from '@memoflow/ui-vue-shadcn';
 import { Input } from '@memoflow/ui-vue-shadcn';
 import { Label } from '@memoflow/ui-vue-shadcn';
@@ -96,7 +111,7 @@ import { X, PlusCircle, Check, Plus, FileText, Zap } from '@lucide/vue';
 // composables
 import { useGoal } from '../../composables/useGoal';
 
-const { createGoalRecord, goals } = useGoal();
+const { createGoalRecord, getKeyResultById } = useGoal();
 
 const { t } = useI18n();
 
@@ -104,6 +119,8 @@ const visible = ref(false);
 const propKeyResultId = ref<string>('');
 const propGoalId = ref<string>('');
 const propRecord = ref<GoalRecordClientDTO | null>(null);
+const isSubmitting = ref(false);
+const submitError = ref('');
 
 const quickValues = [1, 2, 5, 10];
 
@@ -116,8 +133,7 @@ const localRecord = ref({
 const isEditing = computed(() => !!propRecord.value);
 
 const currentKeyResultUnit = computed(() => {
-  const currentGoal = goals.value.find((g: GoalClientDTO) => g.id === propGoalId.value);
-  const currentKeyResult = currentGoal?.keyResults?.find((kr: KeyResultClientDTO) => kr.id === propKeyResultId.value);
+  const currentKeyResult = getKeyResultById(propKeyResultId.value);
   return currentKeyResult?.progress?.unit ?? '';
 });
 
@@ -138,40 +154,49 @@ const validationError = computed(() => {
 
 const isValid = computed(() => !validationError.value && localRecord.value.changeAmount > 0);
 
-const handleCreateKeyResult = async () => {
-  // 获取当前 KeyResult
-  const currentGoal = goals.value.find((g: GoalClientDTO) => g.id === propGoalId.value);
-  if (!currentGoal) {
-    console.error(t('goal.recordDialog.goalNotFound'));
-    return;
+const handleCreateKeyResult = async (): Promise<boolean> => {
+  if (!propGoalId.value) {
+    submitError.value = t('goal.recordDialog.goalNotFound');
+    return false;
   }
 
-  const currentKeyResult = currentGoal.keyResults?.find(
-    (kr: KeyResultClientDTO) => kr.id === propKeyResultId.value,
-  );
+  const currentKeyResult = getKeyResultById(propKeyResultId.value);
   if (!currentKeyResult) {
-    console.error(t('goal.recordDialog.krNotFound'));
-    return;
+    submitError.value = t('goal.recordDialog.krNotFound');
+    return false;
   }
 
   // ✅ 新的数据模型：value 就是本次记录的独立值
   // 不需要再加上 previousValue
-  await createGoalRecord(propGoalId.value, propKeyResultId.value, {
+  const createdRecord = await createGoalRecord(propGoalId.value, propKeyResultId.value, {
     value: localRecord.value.changeAmount, // ✅ 直接传递用户输入的值
     note: localRecord.value.note,
     recordedAt: Date.now(),
   });
+  if (!createdRecord) {
+    submitError.value = t('goal.error.createRecordFailed');
+    return false;
+  }
+  return true;
 };
 
-const handleSave = () => {
-  if (!isValid.value) return;
+const handleSave = async () => {
+  if (!isValid.value || isSubmitting.value) return;
 
   if (isEditing.value) {
-    console.warn(t('goal.recordDialog.editNotAllowed'));
-  } else {
-    handleCreateKeyResult();
+    submitError.value = t('goal.recordDialog.editNotAllowed');
+    return;
   }
-  closeDialog();
+
+  submitError.value = '';
+  isSubmitting.value = true;
+  try {
+    if (await handleCreateKeyResult()) {
+      closeDialog();
+    }
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 
 const handleCancel = () => {
@@ -182,6 +207,7 @@ const openDialog = (goalId: string, keyResultId: string, record?: GoalRecordClie
   propGoalId.value = goalId;
   propKeyResultId.value = keyResultId;
   propRecord.value = record || null;
+  submitError.value = '';
   visible.value = true;
 };
 

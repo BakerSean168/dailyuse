@@ -2,6 +2,7 @@
   <ActionableWrapper
     :actions="menuActions"
     :more-button-test-id="`task-card-menu-trigger-${template.id}`"
+    :more-button-label="t('common.more')"
   >
     <Card
       class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
@@ -140,53 +141,60 @@
           "
           class="mt-3 flex flex-wrap gap-1"
         >
-          <Badge
+          <button
             v-if="template.parentTaskTitle"
-            variant="outline"
-            class="max-w-full cursor-pointer text-xs border-info/40 text-info hover:bg-info/10"
+            type="button"
+            data-testid="task-card-parent-relation"
+            class="inline-flex h-8 max-w-full items-center rounded-full border border-info/40 px-2.5 text-xs font-semibold text-info transition-colors hover:bg-info/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             @click.stop="handleParentTaskClick"
           >
             <GitBranch class="mr-1 h-3 w-3 shrink-0" />
             <span class="truncate">
               {{ t('task.templateCard.parentTask') }} {{ template.parentTaskTitle }}
             </span>
-          </Badge>
-          <Badge
+          </button>
+          <button
             v-if="(template.childCount ?? 0) > 0"
-            variant="outline"
-            class="cursor-pointer text-xs border-primary/40 text-primary hover:bg-primary/10"
+            type="button"
+            data-testid="task-card-children-relation"
+            class="inline-flex h-8 items-center rounded-full border border-primary/40 px-2.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             @click.stop="handleRelationFilterClick('children')"
           >
             <GitBranch class="mr-1 h-3 w-3" />
             {{ t('task.templateCard.subtasksCount', { count: template.childCount ?? 0 }) }}
-          </Badge>
-          <Badge
+          </button>
+          <button
             v-if="(template.predecessorCount ?? 0) > 0"
-            variant="outline"
-            class="cursor-pointer text-xs border-warning/40 text-warning hover:bg-warning/10"
+            type="button"
+            data-testid="task-card-predecessors-relation"
+            class="inline-flex h-8 items-center rounded-full border border-warning/40 px-2.5 text-xs font-semibold text-warning transition-colors hover:bg-warning/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             @click.stop="handleRelationFilterClick('dependencies')"
           >
             <Link2 class="mr-1 h-3 w-3" />
-            {{ t('task.templateCard.predecessorsCount', { count: template.predecessorCount ?? 0 }) }}
-          </Badge>
-          <Badge
+            {{
+              t('task.templateCard.predecessorsCount', { count: template.predecessorCount ?? 0 })
+            }}
+          </button>
+          <button
             v-if="(template.successorCount ?? 0) > 0"
-            variant="outline"
-            class="cursor-pointer text-xs border-success/40 text-success hover:bg-success/10"
+            type="button"
+            data-testid="task-card-successors-relation"
+            class="inline-flex h-8 items-center rounded-full border border-success/40 px-2.5 text-xs font-semibold text-success transition-colors hover:bg-success/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             @click.stop="handleRelationFilterClick('dependencies')"
           >
             <Link2 class="mr-1 h-3 w-3" />
             {{ t('task.templateCard.successorsCount', { count: template.successorCount ?? 0 }) }}
-          </Badge>
-          <Badge
+          </button>
+          <button
             v-if="template.isBlocked"
-            variant="destructive"
-            class="cursor-pointer text-xs"
+            type="button"
+            data-testid="task-card-blocked-relation"
+            class="inline-flex h-8 items-center rounded-full bg-destructive px-2.5 text-xs font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             @click.stop="handleRelationFilterClick('blocked')"
           >
             <AlertTriangle class="mr-1 h-3 w-3" />
             {{ t('task.templateCard.blockedState') }}
-          </Badge>
+          </button>
         </div>
 
         <p
@@ -518,11 +526,7 @@ const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined
   if (props.resolveGoalBindingName) {
     return props.resolveGoalBindingName(binding, props.template);
   }
-  const names = [binding.goalTitle, binding.keyResultTitle].filter(Boolean);
-  if (names.length > 0) {
-    return names.join(' · ');
-  }
-  return t('task.templateCard.linkedGoal');
+  return t('common.unavailable');
 };
 
 /**

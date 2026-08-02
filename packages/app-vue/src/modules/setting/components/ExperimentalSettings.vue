@@ -27,9 +27,10 @@
             </p>
           </div>
           <Switch
-            :checked="modelValue.enabled"
+            :model-value="modelValue.enabled"
+            :aria-label="t('setting.experimental.enableExperimental')"
             :disabled="disabled"
-            @update:checked="
+            @update:model-value="
               (value) =>
                 emit('update:modelValue', {
                   ...modelValue,
@@ -74,9 +75,10 @@
                   <p class="text-sm text-muted-foreground">{{ feature.description }}</p>
                 </div>
                 <Switch
-                  :checked="isFeatureEnabled(feature.key)"
+                  :model-value="isFeatureEnabled(feature.key)"
+                  :aria-label="feature.name"
                   :disabled="disabled"
-                  @update:checked="() => toggleFeature(feature.key)"
+                  @update:model-value="() => toggleFeature(feature.key)"
                 />
               </div>
             </div>

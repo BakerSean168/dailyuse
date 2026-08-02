@@ -36,6 +36,9 @@
             <button
               v-for="event in getAllDayEventsForDay(day.date)"
               :key="event.id"
+              type="button"
+              :data-testid="`schedule-event-${event.id}`"
+              :aria-label="t('schedule.calendar.openEvent', { title: event.title })"
               class="block w-full rounded px-2 py-1 text-left text-[11px] text-white"
               :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
@@ -69,10 +72,13 @@
             <div v-for="hour in hours" :key="hour" class="time-slot-bg h-15 border-b"></div>
 
             <!-- Events for this day -->
-            <div
+            <button
               v-for="event in getTimedEventsForDay(day.date)"
               :key="event.id"
-              class="event-card absolute left-0.5 right-0.5 rounded px-2 py-1 cursor-pointer transition-transform hover:scale-105 z-20 text-white"
+              type="button"
+              :data-testid="`schedule-event-${event.id}`"
+              :aria-label="t('schedule.calendar.openEvent', { title: event.title })"
+              class="event-card absolute left-0.5 right-0.5 rounded px-2 py-1 text-left transition-transform hover:scale-105 z-20 text-white"
               :style="getEventStyle(event)"
               :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
@@ -80,7 +86,7 @@
               <div class="text-[10px] opacity-90">{{ formatEventTime(event) }}</div>
               <div class="text-xs font-medium truncate">{{ event.title }}</div>
               <AlertCircle v-if="event.hasConflict" class="absolute top-0.5 right-0.5 h-3 w-3" />
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -93,7 +99,12 @@ import { computed } from 'vue';
 import { Card, CardContent } from '@memoflow/ui-vue-shadcn';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { calendarEventBgClass, getWeekStart, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
+import {
+  calendarEventBgClass,
+  getWeekStart,
+  toLocalDateKey,
+  type CalendarEventItem,
+} from '../composables/useCalendarView';
 import { formatHour } from '../../../shared/utils/format-hour';
 import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 
@@ -202,7 +213,6 @@ function getEventStyle(event: CalendarEventItem) {
     height: `${height}%`,
   };
 }
-
 </script>
 
 <style scoped>

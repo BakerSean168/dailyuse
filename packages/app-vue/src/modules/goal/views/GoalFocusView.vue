@@ -1,12 +1,12 @@
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden">
-    <header class="flex items-center gap-3 border-b px-6 py-4">
-      <div>
+    <header class="flex flex-wrap items-center gap-3 border-b px-4 py-4 @lg/panel:px-6">
+      <div class="min-w-0 flex-1">
         <h1 class="text-lg font-semibold">{{ t('goal.focusMode.routeTitle') }}</h1>
         <p class="text-sm text-muted-foreground">{{ t('goal.focusMode.routeSubtitle') }}</p>
       </div>
 
-      <div class="ml-auto flex gap-2">
+      <div class="ml-auto flex flex-wrap gap-2">
         <Button variant="outline" @click="refresh">{{ t('common.refresh') }}</Button>
         <Button variant="destructive" @click="handleDeactivate" :disabled="!currentFocusMode">
           {{ t('goal.focusMode.routeExit') }}
@@ -21,7 +21,7 @@
             <CardTitle>{{ t('goal.focusMode.routeCurrentTitle') }}</CardTitle>
             <CardDescription>{{ t('goal.focusMode.routeCurrentDescription') }}</CardDescription>
           </CardHeader>
-          <CardContent class="grid gap-4 md:grid-cols-4">
+          <CardContent class="grid gap-4 @lg/panel:grid-cols-2 @3xl/panel:grid-cols-4">
             <div>
               <div class="text-xs text-muted-foreground">
                 {{ t('goal.focusMode.panel.remainingDays') }}
@@ -64,7 +64,10 @@
             <CardDescription>{{ t('goal.focusMode.routeGoalsDescription') }}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div v-if="focusGoalCards.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div
+              v-if="focusGoalCards.length"
+              class="grid gap-4 @2xl/panel:grid-cols-2 @5xl/panel:grid-cols-3"
+            >
               <GoalCard
                 v-for="goal in focusGoalCards"
                 :key="goal.id"
@@ -86,12 +89,10 @@
 
 <script setup lang="ts">
 /** Soft residual 1237: absolute product dateTime (not dashboard relative). */
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import type { FocusModeDTO, GoalClientDTO } from '@memoflow/contracts/goal';
-import { GOAL_SERVICE_KEY } from '../../../di/keys';
-import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import type { FocusModeDTO } from '@memoflow/contracts/goal';
 import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Button,
@@ -108,9 +109,11 @@ import { useGoal } from '../composables/useGoal';
 
 const { t } = useI18n();
 const router = useRouter();
-const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
-const { currentFocusMode, getCurrentFocusMode, deactivateFocusMode } = useGoal();
-const focusGoalCards = ref<GoalClientDTO[]>([]);
+const { goals, currentFocusMode, fetchGoals, getCurrentFocusMode, deactivateFocusMode } = useGoal();
+const focusGoalCards = computed(() => {
+  const focusedIds = new Set(currentFocusMode.value?.focusedGoalIds ?? []);
+  return goals.value.filter((goal) => focusedIds.has(goal.id));
+});
 
 const progressValue = computed(() => {
   const mode = currentFocusMode.value;
@@ -139,25 +142,8 @@ function goToGoal(id: string) {
   router.push({ name: 'goal-detail', params: { id } });
 }
 
-async function loadFocusGoals() {
-  const ids = currentFocusMode.value?.focusedGoalIds ?? [];
-
-  if (!ids.length) {
-    focusGoalCards.value = [];
-    return;
-  }
-
-  const results = await Promise.all(ids.map((id) => goalService.getGoal(id)));
-  focusGoalCards.value = results.flatMap((result) => {
-    if (!result.ok) return [];
-
-    return [result.data.toDTO()];
-  });
-}
-
 async function refresh() {
-  await getCurrentFocusMode();
-  await loadFocusGoals();
+  await Promise.all([getCurrentFocusMode(), fetchGoals()]);
 }
 
 async function handleDeactivate() {

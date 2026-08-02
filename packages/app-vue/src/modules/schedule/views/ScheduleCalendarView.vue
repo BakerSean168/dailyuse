@@ -127,7 +127,7 @@
     />
 
     <EventDetailSheet v-model:open="eventDetailOpen" :event="selectedDetailEvent" />
-    <CreateScheduleDialog v-model="showCreateDialog" @submit="handleCreateSchedule" />
+    <CreateScheduleDialog v-model="showCreateDialog" :on-submit="handleCreateSchedule" />
     <DevScheduleDebugPanel :tasks="scheduleTasks" />
   </div>
 </template>
@@ -281,10 +281,11 @@ function switchToDayView(date: Date | null) {
 async function handleCreateSchedule(data: CreateScheduleRequest) {
   const result = await createCalendarEntry(data);
   if (result) {
-    showCreateDialog.value = false;
     await refreshCalendar();
     toast.success(t('schedule.toast.scheduleCreated'));
+    return true;
   }
+  return false;
 }
 
 watch([activeView, calendarDate], () => void refreshCalendar(), { immediate: true });

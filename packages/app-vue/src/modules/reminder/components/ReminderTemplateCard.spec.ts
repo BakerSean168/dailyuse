@@ -118,18 +118,18 @@ vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const Switch = vue.defineComponent({
     name: 'SwitchStub',
     props: {
-      checked: Boolean,
+      modelValue: Boolean,
       disabled: Boolean,
     },
-    emits: ['update:checked'],
+    emits: ['update:modelValue'],
     setup(props, { emit }) {
       return () =>
         vue.h('button', {
           type: 'button',
           'data-stub': 'Switch',
-          'data-checked': String(props.checked),
+          'data-checked': String(props.modelValue),
           disabled: props.disabled,
-          onClick: () => emit('update:checked', !props.checked),
+          onClick: () => emit('update:modelValue', !props.modelValue),
         });
     },
   });

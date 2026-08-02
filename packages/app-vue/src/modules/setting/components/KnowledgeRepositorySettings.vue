@@ -400,7 +400,7 @@
           <div class="flex items-start gap-3">
             <Checkbox
               id="purge-knowledge-repository-cloud-data"
-              v-model:checked="purgeCloudData"
+              v-model="purgeCloudData"
               class="mt-0.5"
               data-testid="knowledge-repository-purge-cloud-data"
             />

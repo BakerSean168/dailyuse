@@ -34,7 +34,7 @@
           <Badge variant="secondary">{{ keyResults.length }}</Badge>
         </div>
 
-        <div class="grid gap-2 md:grid-cols-2">
+        <div class="grid gap-2 @md/panel:grid-cols-2">
           <KeyResultCard
             v-for="keyResult in keyResults"
             :key="String(keyResult.id)"

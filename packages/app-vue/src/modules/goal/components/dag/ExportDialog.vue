@@ -64,7 +64,7 @@
         </div>
 
         <div v-if="format === 'pdf'" class="flex items-center space-x-2">
-          <Checkbox id="include-metadata" v-model:checked="includeMetadata" />
+          <Checkbox id="include-metadata" v-model="includeMetadata" />
           <Label for="include-metadata" class="text-sm font-normal cursor-pointer">
             {{ t('goal.exportDialog.includeMetadata') }}
           </Label>

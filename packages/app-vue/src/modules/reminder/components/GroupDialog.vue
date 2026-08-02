@@ -38,9 +38,11 @@
                 <p class="text-xs text-muted-foreground mt-1">{{ formData.name.length }}/50</p>
               </div>
               <div class="flex flex-col items-center justify-start pt-6">
-                <div
-                  class="w-10 h-10 rounded-full cursor-pointer border-2 transition-colors hover:border-primary"
+                <button
+                  type="button"
+                  class="h-10 w-10 rounded-full border-2 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   :style="{ backgroundColor: formData.color }"
+                  :aria-label="t('reminder.groupDialog.btnPick')"
                   @click="showColorPicker = !showColorPicker"
                 />
                 <Popover v-model:open="showColorPicker">
@@ -51,15 +53,18 @@
                   </PopoverTrigger>
                   <PopoverContent class="w-auto p-3">
                     <div class="grid grid-cols-4 gap-2">
-                      <div
+                      <button
                         v-for="color in colorOptions"
                         :key="color"
-                        class="w-8 h-8 rounded-full cursor-pointer border-2 transition-all hover:scale-110"
+                        type="button"
+                        class="h-8 w-8 rounded-full border-2 transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         :class="{
                           'border-primary': formData.color === color,
                           'border-transparent': formData.color !== color,
                         }"
                         :style="{ backgroundColor: color }"
+                        :aria-label="`${t('reminder.groupDialog.btnPick')} ${color}`"
+                        :aria-pressed="formData.color === color"
                         @click="
                           formData.color = color;
                           showColorPicker = false;
@@ -103,6 +108,7 @@
               <Popover>
                 <PopoverTrigger as-child>
                   <Button variant="outline" size="lg" class="h-16 w-16">
+                    <span class="sr-only">{{ t('reminder.groupDialog.selectIcon') }}</span>
                     <component :is="getIcon(formData.icon)" class="h-8 w-8" />
                   </Button>
                 </PopoverTrigger>
@@ -117,7 +123,8 @@
                         :key="icon.value"
                         variant="ghost"
                         size="icon"
-                        :aria-label="t('reminder.groupDialog.selectIcon')"
+                        :aria-label="`${t('reminder.groupDialog.selectIcon')}: ${icon.value}`"
+                        :aria-pressed="formData.icon === icon.value"
                         @click="formData.icon = icon.value"
                       >
                         <component :is="getIcon(icon.value)" class="h-5 w-5" />

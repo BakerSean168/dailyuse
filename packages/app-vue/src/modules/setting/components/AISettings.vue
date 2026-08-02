@@ -1,5 +1,5 @@
 <template>
-  <Card>
+  <Card data-testid="ai-settings-panel">
     <CardHeader>
       <CardTitle>{{ t('setting.ai.title') }}</CardTitle>
       <CardDescription>{{ t('setting.ai.description') }}</CardDescription>
@@ -89,6 +89,7 @@
             </div>
 
             <div
+              v-if="getPresetProvider(template.id)"
               class="mt-3 flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
             >
               <div>
@@ -102,11 +103,12 @@
                 </p>
               </div>
               <Switch
-                :checked="shouldUsePresetAsDefault(template.id)"
+                :model-value="shouldUsePresetAsDefault(template.id)"
+                :aria-label="`${template.name}: ${t('setting.ai.markAsDefault')}`"
                 :disabled="
                   isPresetDefaultLocked(template.id) || isQuickProviderSubmitting(template.id)
                 "
-                @update:checked="updatePresetDefaultSelection(template.id, $event)"
+                @update:model-value="updatePresetDefaultSelection(template.id, $event)"
               />
             </div>
 
@@ -262,8 +264,9 @@
                 </p>
               </div>
               <Switch
-                :checked="providerForm.isDefault"
-                @update:checked="providerForm.isDefault = $event"
+                :model-value="providerForm.isDefault"
+                :aria-label="t('setting.ai.markAsDefault')"
+                @update:model-value="providerForm.isDefault = $event"
               />
             </div>
           </div>
@@ -331,6 +334,7 @@ import {
 } from '@memoflow/contracts/ai';
 import { useAI } from '../../ai/composables/useAI';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { shouldUsePresetAsDefault as resolvePresetDefault } from './ai-provider-default-policy';
 
 interface ProviderFormState {
   name: string;
@@ -522,15 +526,10 @@ function getPresetActionLabel(template: AIProviderTemplate): string {
 
 function shouldUsePresetAsDefault(templateId: string): boolean {
   const provider = getPresetProvider(templateId);
-  if (provider?.isDefault) {
-    return true;
-  }
-
-  if (presetDefaultSelections[templateId]) {
-    return true;
-  }
-
-  return providerItems.value.length === 0;
+  return resolvePresetDefault({
+    configuredProvider: provider,
+    selectedForInitialDefault: presetDefaultSelections[templateId],
+  });
 }
 
 function updatePresetDefaultSelection(templateId: string, value: boolean) {

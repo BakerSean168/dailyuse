@@ -61,8 +61,8 @@
           <div class="flex items-center space-x-2">
             <Checkbox
               id="move-to-root"
-              v-model:checked="moveToRoot"
-              @update:checked="handleMoveToRootChange"
+              v-model="moveToRoot"
+              @update:model-value="handleMoveToRootChange"
             />
             <Label
               for="move-to-root"
@@ -192,6 +192,7 @@ const props = withDefaults(
     template?: ReminderTemplateClientDTO | null;
     groups?: ReminderGroupClientDTO[];
     templates?: ReminderTemplateClientDTO[];
+    onMove?: (templateId: string, groupId: string | null) => Promise<boolean>;
   }>(),
   {
     template: null,
@@ -201,7 +202,6 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  moved: [templateId: string, targetGroupId: string | null];
   closed: [];
 }>();
 
@@ -282,8 +282,8 @@ const previewText = computed(() => {
   return t('reminder.templateMove.previewIndividual');
 });
 
-const handleMoveToRootChange = (value: boolean) => {
-  if (value) {
+const handleMoveToRootChange = (value: boolean | 'indeterminate') => {
+  if (value === true) {
     selectedGroupId.value = undefined;
   }
 };
@@ -318,8 +318,8 @@ const handleMove = async () => {
   isMoving.value = true;
   try {
     const targetGroupId = moveToRoot.value ? null : (selectedGroupId.value ?? null);
-    emit('moved', props.template.id, targetGroupId);
-    close();
+    const moved = await props.onMove?.(props.template.id, targetGroupId);
+    if (moved) close();
   } finally {
     isMoving.value = false;
   }

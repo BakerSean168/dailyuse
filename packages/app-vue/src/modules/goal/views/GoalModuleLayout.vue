@@ -36,7 +36,7 @@
         @updated="handleGoalUpdated"
       />
 
-      <GoalFolderDialog ref="folderDialogRef" @save="handleFolderSaved" />
+      <GoalFolderDialog ref="folderDialogRef" />
 
       <ActivateFocusModeDialog
         v-model="focusDialogOpen"
@@ -84,7 +84,7 @@ const {
   setSystemView,
   search,
   fetchGoals,
-  fetchGoal,
+  getGoalAggregateView,
   fetchFolders,
   getCurrentFocusMode,
   activateFocusMode,
@@ -211,13 +211,17 @@ async function syncGoalDialogFromRoute() {
     return;
   }
 
-  const fetchedGoal = await fetchGoal(goalId);
-  if (!fetchedGoal) {
+  const aggregate = await getGoalAggregateView(goalId);
+  if (!aggregate) {
     await clearGoalDialogQuery();
     return;
   }
 
-  editingGoal.value = fetchedGoal;
+  editingGoal.value = {
+    ...aggregate.goal,
+    keyResults: aggregate.keyResults,
+    reviews: aggregate.reviews,
+  };
   goalDialogOpen.value = true;
 }
 
@@ -262,17 +266,11 @@ function handleSearch(query: string) {
 function handleGoalCreated() {
   goalDialogOpen.value = false;
   defaultGoalFolderId.value = null;
-  fetchGoals();
 }
 
 function handleGoalUpdated() {
   goalDialogOpen.value = false;
   defaultGoalFolderId.value = null;
-  fetchGoals();
-}
-
-function handleFolderSaved() {
-  fetchFolders();
 }
 
 async function handleActivateFocusMode(request: ActivateFocusModeRequest) {

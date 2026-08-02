@@ -3,7 +3,7 @@
     <div class="modal-container">
       <div class="modal-header">
         <h2>{{ t('task.infoCard.title') }}</h2>
-        <button class="btn btn-secondary" @click="handleClose">
+        <button type="button" class="btn btn-secondary" @click="handleClose">
           {{ t('task.infoCard.close') }}
         </button>
       </div>

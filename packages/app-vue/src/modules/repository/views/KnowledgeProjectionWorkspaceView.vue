@@ -279,7 +279,7 @@
         </DialogHeader>
 
         <div v-if="stage === 'draft'" class="space-y-4">
-          <div class="grid gap-2 sm:grid-cols-2">
+          <div class="grid gap-2 @sm/panel:grid-cols-2">
             <div class="space-y-2">
               <Label for="projection-note-title">{{ t('repository.projection.noteTitle') }}</Label>
               <Input
@@ -321,7 +321,7 @@
         </div>
 
         <div v-else class="space-y-4">
-          <div class="grid gap-3 rounded-md border bg-muted/20 p-3 text-sm sm:grid-cols-2">
+          <div class="grid gap-3 rounded-md border bg-muted/20 p-3 text-sm @sm/panel:grid-cols-2">
             <div>
               <span class="text-muted-foreground">{{ t('repository.projection.noteTitle') }}</span>
               <p class="font-medium">{{ draft.title }}</p>

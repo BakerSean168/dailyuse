@@ -39,8 +39,11 @@ export function loadE2EEnv(): void {
 
   const envFiles = [
     resolve(WORKSPACE_ROOT, '.env'),
-    resolve(WORKSPACE_ROOT, '.env.test'),
     resolve(WORKSPACE_ROOT, '.env.local'),
+    // Mode-specific files must win over generic local development values.
+    // Otherwise a developer's Docker ports or blank DATABASE_URL can leak
+    // into the isolated Playwright lane.
+    resolve(WORKSPACE_ROOT, '.env.test'),
     resolve(WORKSPACE_ROOT, '.env.test.local'),
   ];
 

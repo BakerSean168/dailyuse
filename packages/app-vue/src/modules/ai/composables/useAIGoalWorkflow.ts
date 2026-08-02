@@ -73,7 +73,6 @@ import {
   createKeyResultDraft,
   createDraftStateProxy,
   buildCreateGoalRequest,
-  buildAddKeyResultRequest,
 } from './goalDraftHelpers';
 
 const GOAL_CATEGORIES = [
@@ -123,7 +122,13 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     goalWorkflowStage,
     automationLoading,
     automationExecuting,
-    buildCurrentDraftContext: () => buildDraftContext(editableGoal.value, editableKeyResults.value, goalDraft.value, options.conversationTitle.value),
+    buildCurrentDraftContext: () =>
+      buildDraftContext(
+        editableGoal.value,
+        editableKeyResults.value,
+        goalDraft.value,
+        options.conversationTitle.value,
+      ),
     scrollMessagesToBottom: options.scrollMessagesToBottom,
     toastSuccess: (msg: string) => toast.success(msg),
     toastError: (msg: string) => toast.error(msg),
@@ -132,9 +137,16 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   };
 
   const draftState = createDraftStateProxy({
-    goalWorkflowStage, goalDraft, goalClarification, goalAutomationResult,
-    clarificationAnswers, showGoalDraftEditor, editableGoal, editableKeyResults,
-    editableTaskTemplates, editableReminders,
+    goalWorkflowStage,
+    goalDraft,
+    goalClarification,
+    goalAutomationResult,
+    clarificationAnswers,
+    showGoalDraftEditor,
+    editableGoal,
+    editableKeyResults,
+    editableTaskTemplates,
+    editableReminders,
   });
 
   const canSubmitGoalClarification = computed(() => {
@@ -146,8 +158,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
 
   const canRunGoalWorkflow = computed(() =>
     goalClarification.value
-      ? Boolean(options.selectedModel.value) && !options.chatLoading.value && canSubmitGoalClarification.value
-      : Boolean(options.selectedModel.value) && !options.chatLoading.value && options.hasWorkflowUserMessages.value,
+      ? Boolean(options.selectedModel.value) &&
+        !options.chatLoading.value &&
+        canSubmitGoalClarification.value
+      : Boolean(options.selectedModel.value) &&
+        !options.chatLoading.value &&
+        options.hasWorkflowUserMessages.value,
   );
 
   const canPlanGoalAutomation = computed(
@@ -166,10 +182,14 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   );
 
   const goalExecutedActions = computed(() =>
-    goalAutomationResult.value?.state === 'result' ? goalAutomationResult.value.executedActions : [],
+    goalAutomationResult.value?.state === 'result'
+      ? goalAutomationResult.value.executedActions
+      : [],
   );
   const goalExecutionSummary = computed(() =>
-    goalAutomationResult.value?.state === 'result' ? goalAutomationResult.value.executionSummary : null,
+    goalAutomationResult.value?.state === 'result'
+      ? goalAutomationResult.value.executionSummary
+      : null,
   );
   const goalExecutionRecovery = computed(() =>
     goalAutomationResult.value?.state === 'result' ? goalAutomationResult.value.recovery : null,
@@ -201,23 +221,16 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       !goalAgentResuming.value &&
       canSubmitGoalClarification.value,
   );
-  const canContinueGoalAgentExecution = computed(
-    () => {
-      const run = goalAgentRun.value;
-      return Boolean(
-        run &&
-          goalAgentWaitingForExecution.value &&
-          !goalAgentResuming.value,
-      );
-    },
-  );
+  const canContinueGoalAgentExecution = computed(() => {
+    const run = goalAgentRun.value;
+    return Boolean(run && goalAgentWaitingForExecution.value && !goalAgentResuming.value);
+  });
   const canRetryGoalAgentExecution = computed(() => {
     const run = goalAgentRun.value;
     if (!run || run.run.status !== 'completed' || goalAgentResuming.value) return false;
     const recovery = getGoalAgentExecutionRecovery(run);
     return recovery?.canRetry === true;
   });
-
 
   function syncGoalAgentStage(result: AgentRunResult) {
     if (result.run.status === 'waiting_clarification') {
@@ -232,7 +245,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       goalWorkflowStage.value = 'execute';
       return;
     }
-    if (result.run.status === 'completed' || result.run.status === 'cancelled' || result.run.status === 'failed') {
+    if (
+      result.run.status === 'completed' ||
+      result.run.status === 'cancelled' ||
+      result.run.status === 'failed'
+    ) {
       goalWorkflowStage.value = 'result';
       return;
     }
@@ -289,7 +306,6 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     syncGoalAgentStage(result);
   }
 
-
   function getNumber(data: Record<string, unknown>, key: string, fallback: number): number {
     const value = data[key];
     return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -305,19 +321,19 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
 
   function normalizeGoalCategory(value: string): GeneratedGoalDraft['category'] {
     return (GOAL_CATEGORIES as readonly string[]).includes(value)
-      ? value as GeneratedGoalDraft['category']
-      : 'other' as GeneratedGoalDraft['category'];
+      ? (value as GeneratedGoalDraft['category'])
+      : ('other' as GeneratedGoalDraft['category']);
   }
 
   function normalizeImportance(value: string): GeneratedGoalDraft['importance'] {
     return (IMPORTANCE_LEVELS as readonly string[]).includes(value)
-      ? value as GeneratedGoalDraft['importance']
-      : 'Moderate' as GeneratedGoalDraft['importance'];
+      ? (value as GeneratedGoalDraft['importance'])
+      : ('Moderate' as GeneratedGoalDraft['importance']);
   }
 
   function normalizeCadence(value: string): EditableGoalTaskTemplate['cadence'] {
     return (GOAL_CADENCES as readonly string[]).includes(value)
-      ? value as EditableGoalTaskTemplate['cadence']
+      ? (value as EditableGoalTaskTemplate['cadence'])
       : 'weekly';
   }
 
@@ -331,7 +347,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         title: getRecordString(item, 'title'),
         description: getRecordString(item, 'description') || undefined,
         valueType: getRecordString(item, 'valueType') as KeyResultPreview['valueType'],
-        calculationMethod: getRecordString(item, 'calculationMethod') as KeyResultPreview['calculationMethod'],
+        calculationMethod: getRecordString(
+          item,
+          'calculationMethod',
+        ) as KeyResultPreview['calculationMethod'],
         startValue: getNumber(item, 'startValue', 0),
         currentValue: getNumber(item, 'currentValue', getNumber(item, 'startValue', 0)),
         targetValue: getNumber(item, 'targetValue', 1),
@@ -392,17 +411,14 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   function isEditableGoalEmpty() {
     return Boolean(
       !editableGoal.value.name.trim() &&
-        !editableGoal.value.description.trim() &&
-        !editableKeyResults.value.length &&
-        !editableTaskTemplates.value.length &&
-        !editableReminders.value.length,
+      !editableGoal.value.description.trim() &&
+      !editableKeyResults.value.length &&
+      !editableTaskTemplates.value.length &&
+      !editableReminders.value.length,
     );
   }
 
-  function syncEditableDraftFromGoalAgentRun(
-    result: AgentRunResult,
-    options: { force: boolean },
-  ) {
+  function syncEditableDraftFromGoalAgentRun(result: AgentRunResult, options: { force: boolean }) {
     if (
       !options.force ||
       (result.run.status !== 'waiting_approval' && result.run.status !== 'waiting_execution')
@@ -443,7 +459,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   function buildEditedGoalDraftData(run: AgentRunResult): Record<string, unknown> {
     const goalData = findGoalAgentArtifactData(run, 'goal_draft');
     const now = Date.now();
-    const startDate = editableGoal.value.startDate ?? getNumber(goalData, 'suggestedStartDate', now);
+    const startDate =
+      editableGoal.value.startDate ?? getNumber(goalData, 'suggestedStartDate', now);
     const targetDate =
       editableGoal.value.targetDate ?? getNumber(goalData, 'suggestedEndDate', startDate);
 
@@ -553,8 +570,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
           tool: 'create_key_result' as const,
           payload: isRecord(payload) ? payload : {},
           rationale:
-            originalAction?.rationale ??
-            'Attach a measurable key result to the approved goal.',
+            originalAction?.rationale ?? 'Attach a measurable key result to the approved goal.',
           index,
           dependsOn: originalAction?.dependsOn ?? [0],
         };
@@ -581,8 +597,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
           tool: 'create_reminder' as const,
           payload: isRecord(payload) ? payload : {},
           rationale:
-            originalAction?.rationale ??
-            'Create a reminder for reviewing the approved goal.',
+            originalAction?.rationale ?? 'Create a reminder for reviewing the approved goal.',
           index,
           dependsOn: [0],
         };
@@ -626,7 +641,9 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     const now = Date.now();
     const draftData = buildEditedGoalDraftData(run);
     // Residual 365: prefer create_goal payload (may include Host-revised title/description).
-    const createGoalPayload = approvedActions.find((action) => action.tool === 'create_goal')?.payload;
+    const createGoalPayload = approvedActions.find(
+      (action) => action.tool === 'create_goal',
+    )?.payload;
     const createGoalData = isRecord(createGoalPayload) ? createGoalPayload : {};
     const mergedDraftData: Record<string, unknown> = {
       ...draftData,
@@ -921,7 +938,9 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         description: hostOptions?.description,
         goalId: hostOptions?.goalId,
       });
-      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload));
+      const result = unwrap(
+        await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload),
+      );
       syncGoalAgentRun(result);
       toast.success(
         userDecision === 'cancel'
@@ -940,10 +959,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!goalAgentRun.value || !canResumeGoalAgentClarification.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
-        userDecision: 'clarify',
-        clarificationAnswers: clarificationAnswers.value.map((item) => item.trim()),
-      }));
+      const result = unwrap(
+        await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+          userDecision: 'clarify',
+          clarificationAnswers: clarificationAnswers.value.map((item) => item.trim()),
+        }),
+      );
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();
@@ -958,9 +979,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!canContinueGoalAgentExecution.value || !goalAgentRun.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
-        userDecision: 'confirm',
-      }));
+      const result = unwrap(
+        await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+          userDecision: 'confirm',
+        }),
+      );
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();
@@ -975,9 +998,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!canRetryGoalAgentExecution.value || !goalAgentRun.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
-        userDecision: 'confirm',
-      }));
+      const result = unwrap(
+        await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+          userDecision: 'confirm',
+        }),
+      );
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();
@@ -997,13 +1022,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!goalDraft.value) return;
     creatingGoal.value = true;
     try {
-      const created = await options.createGoal(buildCreateGoalRequest(editableGoal.value));
+      const created = await options.createGoal(
+        buildCreateGoalRequest(editableGoal.value, editableKeyResults.value),
+      );
       if (!created) {
         toast.error(t('aiAssistant.dialogs.generateGoal.createFailed'));
         return;
-      }
-      for (const item of editableKeyResults.value) {
-        await options.addKeyResult(created.id, buildAddKeyResultRequest(created.id, item));
       }
       toast.success(t('aiAssistant.dialogs.generateGoal.created'));
       await router.push(`/goals/${created.id}`);
@@ -1026,10 +1050,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableKeyResults.value.splice(index, 1);
   }
 
-  function updateKeyResultDraft(payload: {
-    index: number;
-    value: EditableKeyResult;
-  }) {
+  function updateKeyResultDraft(payload: { index: number; value: EditableKeyResult }) {
     clearGoalEditingResult();
     editableKeyResults.value.splice(payload.index, 1, payload.value);
   }
@@ -1049,10 +1070,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableTaskTemplates.value.splice(index, 1);
   }
 
-  function updateTaskTemplateDraft(payload: {
-    index: number;
-    value: EditableGoalTaskTemplate;
-  }) {
+  function updateTaskTemplateDraft(payload: { index: number; value: EditableGoalTaskTemplate }) {
     clearGoalEditingResult();
     editableTaskTemplates.value.splice(payload.index, 1, payload.value);
   }
@@ -1067,10 +1085,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableReminders.value.splice(index, 1);
   }
 
-  function updateReminderDraft(payload: {
-    index: number;
-    value: EditableGoalReminder;
-  }) {
+  function updateReminderDraft(payload: { index: number; value: EditableGoalReminder }) {
     clearGoalEditingResult();
     editableReminders.value.splice(payload.index, 1, payload.value);
   }
@@ -1121,8 +1136,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     canResumeGoalAgentClarification,
     canContinueGoalAgentExecution,
     canRetryGoalAgentExecution,
-    applyGoalDraft: (nextDraft: GoalWorkflowDraftResultDTO) => applyGoalDraftHelper(draftState, nextDraft),
-    applyGoalClarification: (next: GoalClarificationDTO) => applyGoalClarificationHelper(draftState, next),
+    applyGoalDraft: (nextDraft: GoalWorkflowDraftResultDTO) =>
+      applyGoalDraftHelper(draftState, nextDraft),
+    applyGoalClarification: (next: GoalClarificationDTO) =>
+      applyGoalClarificationHelper(draftState, next),
     clearGoalAutomationResult: () => clearHelper(draftState),
     resetGoalArtifacts: () => {
       resetHelper(draftState);

@@ -60,8 +60,8 @@ vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const passthrough = (name: string) =>
     vue.defineComponent({
       name,
-      props: ['checked', 'modelValue', 'title', 'variant', 'size', 'disabled'],
-      emits: ['update:checked', 'click'],
+      props: ['modelValue', 'title', 'variant', 'size', 'disabled'],
+      emits: ['update:modelValue', 'click'],
       setup(props, { emit, slots, attrs }) {
         return () =>
           vue.h(
@@ -79,18 +79,18 @@ vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const Switch = vue.defineComponent({
     name: 'SwitchStub',
     props: {
-      checked: Boolean,
+      modelValue: Boolean,
       disabled: Boolean,
     },
-    emits: ['update:checked'],
+    emits: ['update:modelValue'],
     setup(props, { emit }) {
       return () =>
         vue.h('button', {
           type: 'button',
           'data-stub': 'Switch',
-          'data-checked': String(props.checked),
+          'data-checked': String(props.modelValue),
           disabled: props.disabled,
-          onClick: () => emit('update:checked', !props.checked),
+          onClick: () => emit('update:modelValue', !props.modelValue),
         });
     },
   });
@@ -415,14 +415,13 @@ describe('ReminderLinearView', () => {
 
     const TemplateMoveDialogInteractiveStub = defineComponent({
       name: 'TemplateMoveDialogInteractiveStub',
-      props: ['template'],
-      emits: ['moved'],
-      setup(props, { emit }) {
+      props: ['template', 'onMove'],
+      setup(props) {
         return () =>
           h('button', {
             type: 'button',
             'data-stub': 'trigger-root-move',
-            onClick: () => emit('moved', props.template.id, null),
+            onClick: () => props.onMove(props.template.id, null),
           });
       },
     });

@@ -94,6 +94,9 @@ export const NoBorder: Story = {
 };
 
 export const TaskList: Story = {
+  args: {
+    task: createMockTask(),
+  },
   render: () => ({
     components: { TaskInstanceCard },
     setup() {
@@ -107,13 +110,13 @@ export const TaskList: Story = {
         createMockTask({
           id: '2',
           statusText: 'PENDING',
-          timeConfig: { timeType: 'TIME_POINT', startDate: now, timePoint: 600, timeRange: null },
+          timeConfig: { timeType: 'TimePoint', startDate: now, timePoint: 600, timeRange: null },
         }),
         createMockTask({
           id: '3',
           statusText: 'PENDING',
           timeConfig: {
-            timeType: 'TIME_RANGE',
+            timeType: 'TimeRange',
             startDate: now,
             timePoint: null,
             timeRange: { start: 780, end: 840 },

@@ -635,6 +635,7 @@ export default {
     "cancel": "取消",
     "editTitle": "编辑记录",
     "addTitle": "添加记录",
+    "description": "记录该关键结果的进度",
     "save": "保存",
     "incrementValue": "增加值",
     "unit": "单位",
@@ -858,6 +859,7 @@ export default {
     "untitledGoal": "未命名目标",
     "weightSeriesName": "权重",
     "controls": {
+      "position": "时间线位置",
       "pause": "暂停",
       "play": "播放",
       "prev": "上一个",

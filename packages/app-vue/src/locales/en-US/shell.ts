@@ -8,6 +8,7 @@ export default {
   "showSidePanel": "Show side panel",
   "hideSidePanel": "Hide side panel",
   "moduleNav": "Module navigation",
+  "openWorkspace": "Open workspace",
   "moduleWithCount": "{name}, {count} items",
   "previewModule": "Preview {name}",
   "enterModule": "Enter",
@@ -32,7 +33,8 @@ export default {
   "conversation": {
     "today": "Today",
     "last7Days": "Last 7 days",
-    "earlier": "Earlier"
+    "earlier": "Earlier",
+    "resize": "Resize conversation sidebar"
   },
   "home": {
     "title": "Today",
@@ -47,6 +49,7 @@ export default {
     "workflowReady": "The workflow is ready in the side panel.",
     "closeTab": "Close tab",
     "closePanel": "Close panel",
+    "resize": "Resize business panel",
     "dirtyTransitionConfirm": "This form has unsaved changes. Switch anyway? The draft remains available while the dialog stays open.",
     "busyTransitionHint": "This operation is still in progress. Try again when it finishes.",
     "enterFocus": "Focus mode",

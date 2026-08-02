@@ -19,7 +19,7 @@
       <CardContent>
         <!-- 筛选器 -->
         <div class="mb-4 grid grid-cols-12 gap-4">
-          <div class="col-span-12 md:col-span-4">
+          <div class="col-span-12 @md/panel:col-span-4">
             <Select v-model="selectedKRId">
               <SelectTrigger>
                 <SelectValue :placeholder="t('goal.weightSnapshotList.filterKR')" />
@@ -35,17 +35,19 @@
               </SelectContent>
             </Select>
           </div>
-          <div class="col-span-12 md:col-span-4">
+          <div class="col-span-12 @md/panel:col-span-4">
             <div class="flex flex-wrap gap-1.5">
-              <Badge
+              <Button
                 v-for="option in triggerOptions"
                 :key="option.value"
                 :variant="selectedTriggers.includes(option.value) ? 'default' : 'outline'"
-                class="cursor-pointer select-none"
+                size="sm"
+                class="h-8 rounded-full"
+                :aria-pressed="selectedTriggers.includes(option.value)"
                 @click="toggleTriggerFilter(option.value)"
               >
                 {{ option.title }}
-              </Badge>
+              </Button>
             </div>
           </div>
         </div>
@@ -67,8 +69,10 @@
             :key="snapshot.id"
             class="border-b border-border/50 transition-colors hover:bg-muted/50"
           >
-            <div
-              class="flex items-center gap-3 px-2 py-3 cursor-pointer"
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 px-2 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              :aria-expanded="expandedItems.has(snapshot.id)"
               @click="toggleDetail(snapshot.id)"
             >
               <!-- Avatar -->
@@ -117,11 +121,11 @@
               </div>
 
               <!-- Expand toggle -->
-              <Button variant="ghost" size="icon-sm">
+              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center">
                 <ChevronUp v-if="expandedItems.has(snapshot.id)" class="h-4 w-4" />
                 <ChevronDown v-else class="h-4 w-4" />
-              </Button>
-            </div>
+              </span>
+            </button>
 
             <!-- 展开详情 -->
             <div
@@ -189,7 +193,6 @@ import { useI18n } from 'vue-i18n';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
 import type { GoalSnapshotItem } from '../../composables/useWeightSnapshot';
 import { useGoal } from '../../composables/useGoal';
-import type { GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
 import { formatProductPattern } from '../../../../shared/utils/product-time';
 import {
   Card,
@@ -223,7 +226,7 @@ const props = defineProps<{
 
 const { goalSnapshots, pagination, isLoading, hasGoalSnapshots, fetchGoalSnapshots } =
   useWeightSnapshot();
-const { goals } = useGoal();
+const { keyResults } = useGoal();
 const { t } = useI18n();
 
 // 筛选状态
@@ -251,12 +254,9 @@ const triggerOptions = computed(() => [
 
 // KeyResult 选项
 const krOptions = computed(() => {
-  const goal = goals.value.find((g: GoalClientDTO) => g.id === props.goalId);
-  if (!goal || !goal.keyResults) return [{ text: t('goal.weightSnapshotList.allKR'), value: null }];
-
   return [
     { text: t('goal.weightSnapshotList.allKR'), value: null },
-    ...goal.keyResults.map((kr: KeyResultClientDTO) => ({
+    ...keyResults.value.map((kr) => ({
       text: kr.title,
       value: kr.id,
     })),
@@ -290,8 +290,7 @@ const filteredSnapshots = computed(() => {
 
 // 获取 KR 标题
 const getKRTitle = (krId: string) => {
-  const goal = goals.value.find((g: GoalClientDTO) => g.id === props.goalId);
-  const kr = goal?.keyResults?.find((k: KeyResultClientDTO) => k.id === krId);
+  const kr = keyResults.value.find((keyResult) => keyResult.id === krId);
   return kr?.title || t('goal.weightSnapshotList.unknownKeyResult');
 };
 

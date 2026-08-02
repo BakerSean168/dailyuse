@@ -8,6 +8,7 @@ export default {
   "showSidePanel": "显示右侧面板",
   "hideSidePanel": "隐藏右侧面板",
   "moduleNav": "模块导航",
+  "openWorkspace": "打开工作区",
   "moduleWithCount": "{name}，{count} 项",
   "previewModule": "预览{name}",
   "enterModule": "进入",
@@ -32,7 +33,8 @@ export default {
   "conversation": {
     "today": "今天",
     "last7Days": "近 7 天",
-    "earlier": "更早"
+    "earlier": "更早",
+    "resize": "调整会话侧栏宽度"
   },
   "home": {
     "title": "今日概览",
@@ -47,6 +49,7 @@ export default {
     "workflowReady": "工作流已就绪，可从右侧面板查看。",
     "closeTab": "关闭标签",
     "closePanel": "关闭面板",
+    "resize": "调整业务面板宽度",
     "dirtyTransitionConfirm": "当前表单还有未保存内容，仍要切换吗？草稿会在当前弹窗生命周期内保留。",
     "busyTransitionHint": "当前操作正在处理中，完成后即可切换。",
     "enterFocus": "专注模式",

@@ -14,6 +14,9 @@
             <button
               v-for="event in allDayEvents"
               :key="event.id"
+              type="button"
+              :data-testid="`schedule-event-${event.id}`"
+              :aria-label="t('schedule.calendar.openEvent', { title: event.title })"
               class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white"
               :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
@@ -48,10 +51,13 @@
 
         <!-- Events overlay -->
         <div class="absolute top-0 left-16 right-0 bottom-0">
-          <div
+          <button
             v-for="event in dayEvents"
             :key="event.id"
-            class="absolute left-1 right-1 rounded-md px-2 py-1 cursor-pointer transition-all hover:shadow-md z-20 text-white text-xs"
+            type="button"
+            :data-testid="`schedule-event-${event.id}`"
+            :aria-label="t('schedule.calendar.openEvent', { title: event.title })"
+            class="absolute left-1 right-1 rounded-md px-2 py-1 text-left transition-all hover:shadow-md z-20 text-white text-xs"
             :style="getEventStyle(event)"
             :class="calendarEventBgClass(event)"
             @click="emit('event-click', event)"
@@ -59,7 +65,7 @@
             <div class="font-medium truncate">{{ event.title }}</div>
             <div class="opacity-80">{{ formatEventTime(event) }}</div>
             <AlertCircle v-if="event.hasConflict" class="absolute top-1 right-1 h-3 w-3" />
-          </div>
+          </button>
         </div>
       </div>
     </div>
@@ -70,7 +76,11 @@
 import { computed } from 'vue';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { calendarEventBgClass, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
+import {
+  calendarEventBgClass,
+  toLocalDateKey,
+  type CalendarEventItem,
+} from '../composables/useCalendarView';
 import { formatHour } from '../../../shared/utils/format-hour';
 import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 
@@ -151,5 +161,4 @@ function getEventStyle(event: CalendarEventItem) {
     height: `${height}px`,
   };
 }
-
 </script>

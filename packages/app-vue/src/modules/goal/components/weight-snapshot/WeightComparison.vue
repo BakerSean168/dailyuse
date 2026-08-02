@@ -13,7 +13,7 @@
             <AlertDescription>{{ t('goal.weightComparison.maxPoints') }}</AlertDescription>
           </Alert>
 
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="grid grid-cols-1 gap-4 @md/panel:grid-cols-2">
             <div
               v-for="(timePoint, index) in selectedTimePoints"
               :key="index"
@@ -186,7 +186,6 @@ const {
 
 const { t } = useI18n();
 
-
 // 时间点选择
 interface TimePoint {
   label: string;
@@ -207,9 +206,7 @@ const canCompare = computed(() => {
 // 时间点标签
 const timePointLabels = computed(() => {
   if (!comparisonData.value) return [];
-  return comparisonData.value.timePoints.map((tp) =>
-    formatProductPattern(tp, 'MM-dd HH:mm'),
-  );
+  return comparisonData.value.timePoints.map((tp) => formatProductPattern(tp, 'MM-dd HH:mm'));
 });
 
 // 添加时间点
@@ -311,9 +308,7 @@ const barChartOption = computed(() => {
       },
     },
     legend: {
-      data: timePoints.map((tp) =>
-        formatProductPattern(tp, 'MM-dd HH:mm'),
-      ),
+      data: timePoints.map((tp) => formatProductPattern(tp, 'MM-dd HH:mm')),
       bottom: 10,
     },
     xAxis: {
@@ -369,9 +364,7 @@ const radarChartOption = computed(() => {
       trigger: 'item',
     },
     legend: {
-      data: timePoints.map((tp) =>
-        formatProductPattern(tp, 'MM-dd HH:mm'),
-      ),
+      data: timePoints.map((tp) => formatProductPattern(tp, 'MM-dd HH:mm')),
       bottom: 10,
     },
     radar: {

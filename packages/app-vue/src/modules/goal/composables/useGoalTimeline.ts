@@ -2,6 +2,7 @@ import { computed, ref, watch, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TimelineData, TimelineSnapshot } from '../utils/goal-timeline';
 import type { GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
+import { getKeyResultProgressPercentage } from '../utils/progress';
 
 export const useGoalTimeline = (goalRef: Ref<GoalClientDTO | null>) => {
   const { t } = useI18n();
@@ -14,31 +15,18 @@ export const useGoalTimeline = (goalRef: Ref<GoalClientDTO | null>) => {
   const timelineData = computed<TimelineData | null>(() => {
     const goal = goalRef.value;
     const keyResults = goal?.keyResults ?? [];
-    if (!keyResults.length) return null;
+    if (!goal || !keyResults.length) return null;
 
     const snapshot: TimelineSnapshot = {
       timestamp: Date.now(),
       data: {
         totalWeight: keyResults.reduce((sum: number, kr: KeyResultClientDTO) => sum + (kr.weight ?? 0), 0),
-        totalProgress:
-          keyResults.length === 0
-            ? 0
-            : keyResults.reduce(
-                (sum: number, kr: KeyResultClientDTO) =>
-                  sum +
-                  ((kr.progress?.targetValue ?? 0) > 0
-                    ? ((kr.progress?.currentValue ?? 0) / (kr.progress?.targetValue ?? 1)) * 100
-                    : 0),
-                0,
-              ) / keyResults.length,
+        totalProgress: goal.overallProgress,
         keyResults: keyResults.map((kr: KeyResultClientDTO) => ({
           id: String(kr.id ?? ''),
           title: kr.title ?? t('goal.keyResultFallback'),
           weight: kr.weight ?? 0,
-          progress:
-            (kr.progress?.targetValue ?? 0) > 0
-              ? ((kr.progress?.currentValue ?? 0) / (kr.progress?.targetValue ?? 1)) * 100
-              : 0,
+          progress: getKeyResultProgressPercentage(kr.progress),
         })),
       },
     };

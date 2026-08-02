@@ -1,12 +1,16 @@
 <template>
   <div class="max-w-[960px] mx-auto p-6">
     <!-- Loading -->
-    <div v-if="isLoading" class="flex justify-center py-8">
+    <div v-if="isLoading" class="flex justify-center py-8" role="status" aria-live="polite">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>
 
     <!-- Error -->
-    <div v-if="error" class="p-4 rounded-md bg-destructive/10 text-destructive text-sm mb-4">
+    <div
+      v-if="error"
+      class="p-4 rounded-md bg-destructive/10 text-destructive text-sm mb-4"
+      role="alert"
+    >
       {{ error }}
     </div>
 
@@ -40,6 +44,7 @@
             {{ t('governance.detail.edit') }}
           </router-link>
           <button
+            type="button"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-destructive/30 rounded-md text-sm text-destructive hover:bg-destructive/10 transition-colors"
             @click="confirmDelete"
           >
@@ -172,7 +177,9 @@
       <!-- Revision History -->
       <div class="border rounded-lg mb-6">
         <button
+          type="button"
           class="w-full px-4 py-3 flex items-center justify-between bg-muted/30 hover:bg-muted/50 transition-colors"
+          :aria-expanded="showRevisions"
           @click="showRevisions = !showRevisions"
         >
           <span class="text-sm font-medium flex items-center gap-1.5">
@@ -224,30 +231,24 @@
     </template>
 
     <!-- Delete Confirmation Dialog -->
-    <div v-if="showDeleteDialog" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="fixed inset-0 bg-black/50" @click="showDeleteDialog = false"></div>
-      <div class="relative bg-background rounded-lg shadow-lg w-full max-w-[400px] p-6 z-10">
-        <h3 class="text-lg font-semibold mb-2">{{ t('governance.detail.confirmDeleteTitle') }}</h3>
-        <p class="text-sm text-muted-foreground mb-6">
-          {{ t('governance.detail.confirmDeleteMsg', { title: displayRule?.title }) }}
-        </p>
-        <div class="flex justify-end gap-2">
-          <button
-            class="px-4 py-2 rounded-md border text-sm hover:bg-muted transition-colors"
-            @click="showDeleteDialog = false"
-          >
+    <AlertDialog v-model:open="showDeleteDialog">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{{ t('governance.detail.confirmDeleteTitle') }}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {{ t('governance.detail.confirmDeleteMsg', { title: displayRule?.title }) }}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <Button variant="outline" :disabled="isSaving" @click="showDeleteDialog = false">
             {{ t('governance.detail.cancel') }}
-          </button>
-          <button
-            class="px-4 py-2 rounded-md bg-destructive text-destructive-foreground text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
-            :disabled="isSaving"
-            @click="handleDelete"
-          >
+          </Button>
+          <Button variant="destructive" :disabled="isSaving" @click="handleDelete">
             {{ isSaving ? t('governance.detail.deleting') : t('governance.detail.delete') }}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
 
@@ -269,6 +270,15 @@ import {
 import { useGovernance } from '../composables/useGovernance';
 import { usePerformanceMonitor } from '../composables/usePerformanceMonitor';
 import { RuleStatusBadge, CodeSnippetView } from '../components';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+} from '@memoflow/ui-vue-shadcn';
 
 const props = defineProps<{
   id: string;
@@ -276,8 +286,16 @@ const props = defineProps<{
 
 const router = useRouter();
 const { t } = useI18n();
-const { currentRuleView, revisions, isLoading, isSaving, error, fetchRule, fetchRevisions, deleteRule } =
-  useGovernance();
+const {
+  currentRuleView,
+  revisions,
+  isLoading,
+  isSaving,
+  error,
+  fetchRule,
+  fetchRevisions,
+  deleteRule,
+} = useGovernance();
 const { trackDetail } = usePerformanceMonitor();
 
 const showDeleteDialog = ref(false);

@@ -23,8 +23,11 @@
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <button
+                type="button"
                 :data-testid="moreButtonTestId"
-                class="inline-flex items-center justify-center rounded-md h-6 w-6 text-muted-foreground bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm opacity-0 group-hover/actionable:opacity-100 transition-opacity duration-150 hover:bg-accent hover:text-accent-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/50 bg-background/80 text-muted-foreground opacity-0 shadow-sm backdrop-blur-sm transition-opacity duration-150 hover:bg-accent hover:text-accent-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/actionable:opacity-100"
+                :aria-label="moreButtonLabel"
+                :title="moreButtonLabel"
                 @click.stop
               >
                 <MoreHorizontal class="h-3.5 w-3.5" />
@@ -114,6 +117,8 @@ interface Props {
   menuWidth?: string;
   /** Optional stable selector for the hover "..." trigger */
   moreButtonTestId?: string;
+  /** Accessible label for the icon-only menu trigger. */
+  moreButtonLabel?: string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -125,6 +130,7 @@ withDefaults(defineProps<Props>(), {
   dropdownSide: 'bottom',
   menuWidth: 'w-48',
   moreButtonTestId: undefined,
+  moreButtonLabel: 'More actions',
 });
 
 const positionClasses = {

@@ -192,7 +192,7 @@
 
       <!-- 图表视图 -->
       <div v-else class="min-h-[300px] space-y-6">
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div class="grid grid-cols-1 gap-6 @md/panel:grid-cols-2">
           <!-- 关键结果数量对比 -->
           <div
             class="rounded-xl border bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
@@ -293,7 +293,7 @@
           <span class="text-lg font-bold">{{ t('goal.comparison.insights') }}</span>
         </div>
 
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="grid grid-cols-1 gap-6 @md/panel:grid-cols-3">
           <!-- 进度最快 -->
           <Card
             class="overflow-hidden border-success/40 bg-success/10/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-green-900 dark:bg-green-950/30"
@@ -429,21 +429,11 @@ const viewMode = ref<'table' | 'chart'>('table');
 
 // Helper Methods
 const getKRCount = (goal: GoalClientDTO): number => {
-  return goal?.keyResults?.length || 0;
+  return goal.totalKeyResults;
 };
 
 const getProgress = (goal: GoalClientDTO): number => {
-  const krs = goal?.keyResults;
-  if (!krs || krs.length === 0) return 0;
-  const totalWeight = krs.reduce((sum: number, kr: KeyResultClientDTO) => sum + (kr.weight ?? 1), 0);
-  if (totalWeight === 0) return 0;
-  const weightedProgress = krs.reduce((sum: number, kr: KeyResultClientDTO) => {
-    const p = kr.progress;
-    if (!p || !p.targetValue) return sum;
-    const pct = Math.min(1, p.currentValue / p.targetValue);
-    return sum + pct * (kr.weight ?? 1);
-  }, 0);
-  return Math.round((weightedProgress / totalWeight) * 100);
+  return goal.overallProgress;
 };
 
 const getTotalWeight = (goal: GoalClientDTO): number => {
@@ -474,7 +464,9 @@ const getActiveDays = (goal: GoalClientDTO): number => {
   return Math.floor((now - created) / (1000 * 60 * 60 * 24));
 };
 
-const getStatusBadgeVariant = (goal: GoalClientDTO): 'default' | 'secondary' | 'destructive' | 'outline' => {
+const getStatusBadgeVariant = (
+  goal: GoalClientDTO,
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
   const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
     Draft: 'outline',
     Active: 'default',

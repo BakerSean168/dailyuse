@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="flex max-h-80 flex-col"
-    data-testid="notification-capsule-preview"
-  >
+  <div class="flex max-h-80 flex-col" data-testid="notification-capsule-preview">
     <div class="mb-2 flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
       <p class="text-xs font-bold">{{ t('notification.drawer.title') }}</p>
       <Button
@@ -34,16 +31,24 @@
       {{ t('notification.empty') }}
     </div>
 
-    <ul v-else class="min-h-0 flex-1 space-y-1 overflow-y-auto pr-0.5" data-testid="notification-capsule-list">
+    <ul
+      v-else
+      class="min-h-0 flex-1 space-y-1 overflow-y-auto pr-0.5"
+      data-testid="notification-capsule-list"
+    >
       <li
         v-for="item in recentItems"
         :key="item.id"
-        class="cursor-pointer rounded-lg px-2 py-1.5 transition-colors hover:bg-accent"
+        class="rounded-lg"
         :data-testid="`notification-capsule-item-${item.id}`"
         :data-read-state="item.isRead ? 'read' : 'unread'"
-        @click="handleItemClick(item)"
       >
-        <div class="flex items-start gap-1.5">
+        <button
+          type="button"
+          class="flex w-full items-start gap-1.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          :aria-label="item.title"
+          @click="handleItemClick(item)"
+        >
           <span
             v-if="!item.isRead"
             class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
@@ -60,7 +65,7 @@
               {{ item.content }}
             </p>
           </div>
-        </div>
+        </button>
       </li>
     </ul>
 
@@ -138,9 +143,6 @@ async function handleItemClick(item: NotificationClientDTO) {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    fetchNotifications({ page: 1, limit: RECENT_LIMIT * 2 }),
-    refreshStats(),
-  ]);
+  await Promise.all([fetchNotifications({ page: 1, limit: RECENT_LIMIT * 2 }), refreshStats()]);
 });
 </script>

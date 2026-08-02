@@ -29,8 +29,11 @@ export interface TaskGoalBindingViewModel {
   keyResultId?: string;
   incrementValue?: number;
   progressTrigger?: TaskGoalBindingTriggerValue;
-  goalTitle?: string;
-  keyResultTitle?: string;
+}
+
+export interface TaskGoalBindingDisplay {
+  goalName: string;
+  keyResultName: string;
 }
 
 export interface TaskDependencyValidationError {

@@ -16,15 +16,15 @@ const SelectStub = defineComponent({
 
 const SwitchStub = defineComponent({
   name: 'TestSwitch',
-  props: ['checked'],
-  emits: ['update:checked'],
+  props: ['modelValue'],
+  emits: ['update:modelValue'],
   setup(props, { emit }) {
     return () =>
       h('button', {
         type: 'button',
         role: 'switch',
-        'aria-checked': String(Boolean(props.checked)),
-        onClick: () => emit('update:checked', !props.checked),
+        'aria-checked': String(Boolean(props.modelValue)),
+        onClick: () => emit('update:modelValue', !props.modelValue),
       });
   },
 });
@@ -168,6 +168,46 @@ function mountSection(options: {
   });
 }
 
+function mountSectionWithRealSelect(options: {
+  request: (goalId: string, force?: boolean) => Promise<KeyResultBindingOption[]>;
+  template?: TaskTemplateViewModel;
+  keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
+}) {
+  return mount(KeyResultLinksSection, {
+    attachTo: document.body,
+    props: {
+      modelValue: options.template ?? makeTemplate(),
+      goals: [{ id: 'goal-a', title: 'Goal A', description: 'A current goal' }],
+      keyResultsByGoal: options.keyResultsByGoal ?? {},
+      onRequestKeyResults: options.request,
+    },
+    global: {
+      plugins: [i18n],
+      stubs: {
+        Switch: SwitchStub,
+        Card: passThrough('Card'),
+        CardHeader: passThrough('CardHeader'),
+        CardTitle: passThrough('CardTitle'),
+        CardContent: passThrough('CardContent'),
+        Alert: passThrough('Alert'),
+        AlertDescription: passThrough('AlertDescription'),
+        Label: passThrough('Label', 'label'),
+        Input: true,
+        Badge: passThrough('Badge'),
+        Button: passThrough('Button', 'button'),
+        Target: true,
+        CheckCircle: true,
+        Info: true,
+        Flag: true,
+        PlusCircle: true,
+        Link2: true,
+        LoaderCircle: true,
+        RotateCw: true,
+      },
+    },
+  });
+}
+
 async function enableLink(wrapper: ReturnType<typeof mountSection>) {
   await wrapper.get('[role="switch"]').trigger('click');
   await nextTick();
@@ -175,6 +215,7 @@ async function enableLink(wrapper: ReturnType<typeof mountSection>) {
 
 describe('KeyResultLinksSection', () => {
   afterEach(() => {
+    document.body.replaceChildren();
     vi.restoreAllMocks();
   });
 
@@ -199,6 +240,44 @@ describe('KeyResultLinksSection', () => {
     expect(wrapper.text()).toContain(
       'Available only for plans with an end date or occurrence limit.',
     );
+  });
+
+  it('selects a key result added after its goal without a Select focus crash', async () => {
+    const wrapper = mountSectionWithRealSelect({
+      request: vi.fn(),
+      keyResultsByGoal: {
+        'goal-a': [makeKeyResult('kr-new', 'Newly added key result')],
+      },
+    });
+    await enableLink(wrapper);
+
+    await wrapper
+      .get('[data-testid="task-goal-select-trigger"]')
+      .trigger('pointerdown', { button: 0, ctrlKey: false });
+    await flushPromises();
+    const goalOption = document.body.querySelector<HTMLElement>('[role="option"]');
+    expect(goalOption?.textContent).toContain('Goal A');
+    goalOption?.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, button: 0 }));
+    await flushPromises();
+
+    await wrapper
+      .get('[data-testid="task-key-result-select-trigger"]')
+      .trigger('pointerdown', { button: 0, ctrlKey: false });
+    await flushPromises();
+    const keyResultOption = [
+      ...document.body.querySelectorAll<HTMLElement>('[role="option"]'),
+    ].find((option) => option.textContent?.includes('Newly added key result'));
+    expect(keyResultOption).toBeTruthy();
+    keyResultOption?.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, button: 0 }));
+    await flushPromises();
+
+    const emitted = wrapper.emitted('update:modelValue')?.at(-1)?.[0];
+    expect(emitted).toMatchObject({
+      title: 'Keep this title',
+      goalBinding: { goalId: 'goal-a', keyResultId: 'kr-new' },
+    });
+    expect(emitted.goalBinding).not.toHaveProperty('goalTitle');
+    expect(emitted.goalBinding).not.toHaveProperty('keyResultTitle');
   });
 
   it('ignores a stale A response after the user switches to goal B', async () => {

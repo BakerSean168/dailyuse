@@ -25,7 +25,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["^build"],
       "options": {
-        "command": "node ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
+        "command": "node ../../node_modules/vue-tsc/bin/vue-tsc.js --noEmit --declaration false --declarationMap false -p tsconfig.json",
         "cwd": "packages/app-vue"
       }
     },

@@ -78,7 +78,6 @@ const TABLE_TO_MODULE: Record<string, string> = {
   key_result_weight_snapshots: 'goal',
   focus_sessions: 'goal',
   focus_modes: 'goal',
-  goal_statistics: 'goal',
   // Task
   task_templates: 'task',
   task_instances: 'task',

@@ -11,7 +11,7 @@ import { Button, Skeleton } from '@memoflow/ui-vue-shadcn';
 import { ListChecks } from '@lucide/vue';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
-import type { TaskTemplateViewModel } from './types';
+import type { TaskGoalBindingViewModel, TaskTemplateViewModel } from './types';
 
 withDefaults(
   defineProps<{
@@ -30,6 +30,10 @@ withDefaults(
       source: TaskTemplateViewModel,
       target: TaskTemplateViewModel,
     ) => Promise<boolean> | boolean;
+    resolveGoalBindingName?: (
+      binding: TaskGoalBindingViewModel,
+      template: TaskTemplateViewModel,
+    ) => string;
   }>(),
   {
     loading: false,
@@ -106,6 +110,7 @@ const { t } = useI18n();
       :highlighted="highlightedTemplateId === template.id"
       :enable-drag="enableDrag"
       :on-create-dependency="onCreateDependency"
+      :resolve-goal-binding-name="resolveGoalBindingName"
       @click="(id) => $emit('click-template', id)"
       @edit="(id) => $emit('edit-template', id)"
       @copy="(id) => $emit('copy-template', id)"

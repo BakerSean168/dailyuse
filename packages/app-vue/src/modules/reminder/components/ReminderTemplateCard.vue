@@ -39,7 +39,7 @@
               {{ t('reminder.schedule.trigger') }}
             </h3>
             <Separator />
-            <div class="grid gap-3 sm:grid-cols-3">
+            <div class="grid gap-3 @sm/panel:grid-cols-3">
               <Card class="p-3">
                 <p class="text-xs text-muted-foreground">{{ t('reminder.schedule.trigger') }}</p>
                 <p class="mt-1 font-semibold">{{ triggerLabel }}</p>
@@ -83,7 +83,6 @@
                   <p class="text-sm text-muted-foreground">{{ template.description }}</p>
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -178,9 +177,10 @@
               </div>
             </div>
             <Switch
-              :checked="template.selfEnabled"
+              :model-value="template.selfEnabled"
+              :aria-label="`${template.name}: ${t('reminder.templateDetail.selfSwitchTitle')}`"
               :disabled="isTogglingStatus"
-              @update:checked="handleToggleStatus"
+              @update:model-value="handleToggleStatus"
             />
           </div>
 
@@ -423,8 +423,6 @@ const handleViewInstances = () => {
 const getTemplateIcon = () => {
   return Bell;
 };
-
-
 
 defineExpose({
   open,

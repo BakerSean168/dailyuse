@@ -37,7 +37,11 @@
 
         <!-- 关键路径切换 -->
         <div class="flex items-center gap-2">
-          <Switch :checked="showCriticalPath" @update:checked="showCriticalPath = $event" />
+          <Switch
+            :model-value="showCriticalPath"
+            :aria-label="t('task.dependencyGraph.criticalPath')"
+            @update:model-value="showCriticalPath = $event"
+          />
           <Label class="text-sm">{{ t('task.dependencyGraph.criticalPath') }}</Label>
         </div>
 
@@ -141,10 +145,7 @@ import { useI18n } from 'vue-i18n';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
 import { TaskGraphEdgeKind } from '@memoflow/task/client';
-import type {
-  TaskForDAG,
-  TaskGraphData,
-} from '../types/task-dag.types';
+import type { TaskForDAG, TaskGraphData } from '../types/task-dag.types';
 import {
   Card,
   CardHeader,
@@ -360,7 +361,8 @@ function updateChart() {
           width: edge.kind === TaskGraphEdgeKind.Hierarchy ? 1.25 : isCriticalDependency ? 3 : 1.5,
           type: edge.kind === TaskGraphEdgeKind.Hierarchy ? 'dashed' : 'solid',
         },
-        edgeSymbol: edge.kind === TaskGraphEdgeKind.Hierarchy ? ['none', 'none'] : ['none', 'arrow'],
+        edgeSymbol:
+          edge.kind === TaskGraphEdgeKind.Hierarchy ? ['none', 'none'] : ['none', 'arrow'],
         edgeSymbolSize: edge.kind === TaskGraphEdgeKind.Hierarchy ? [0, 0] : [0, 10],
       };
     });
@@ -368,7 +370,8 @@ function updateChart() {
     const option: EChartsOption = {
       tooltip: {
         trigger: 'item',
-        formatter: (params: Record<string, unknown>) => {
+        formatter: (params) => {
+          if (Array.isArray(params)) return '';
           if (params.dataType === 'node') {
             const data = params.data as Record<string, unknown>;
             const task = data.task as TaskForDAG | undefined;
@@ -386,7 +389,11 @@ function updateChart() {
           type: 'graph',
           layout: layoutType.value,
           data: nodes,
-          links: edges as unknown as EChartsOption['series'] extends Array<infer S> ? S extends { links?: infer L } ? NonNullable<L> : never : never,
+          links: edges as unknown as EChartsOption['series'] extends Array<infer S>
+            ? S extends { links?: infer L }
+              ? NonNullable<L>
+              : never
+            : never,
           roam: true,
           label: { show: true, position: 'right' },
           lineStyle: { curveness: 0.3 },
@@ -427,9 +434,13 @@ function formatDuration(minutes: number): string {
 }
 
 // Watchers
-watch(() => props.graphData, () => {
-  if (chartInstance.value) updateChart();
-}, { deep: true });
+watch(
+  () => props.graphData,
+  () => {
+    if (chartInstance.value) updateChart();
+  },
+  { deep: true },
+);
 
 watch(layoutType, updateChart);
 watch(showCriticalPath, updateChart);

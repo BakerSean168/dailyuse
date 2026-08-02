@@ -62,27 +62,28 @@
       <div
         v-for="item in conversations"
         :key="item.id"
-        role="button"
-        tabindex="0"
-        class="group mb-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
+        class="group mb-1 flex items-center gap-1 rounded-lg pr-1 text-sm transition-colors"
         :class="
           activeConversationId === item.id
             ? 'bg-accent text-accent-foreground'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'
         "
-        @click="$emit('select', item)"
-        @keydown.enter.prevent="$emit('select', item)"
-        @keydown.space.prevent="$emit('select', item)"
       >
-        <MessageSquare class="h-4 w-4 shrink-0" />
-        <span class="min-w-0 flex-1 truncate">
-          {{ item.name || t('common.untitled') }}
-        </span>
+        <button
+          type="button"
+          class="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          @click="$emit('select', item)"
+        >
+          <MessageSquare class="h-4 w-4 shrink-0" />
+          <span class="min-w-0 flex-1 truncate">
+            {{ item.name || t('common.untitled') }}
+          </span>
+        </button>
         <Button
           variant="ghost"
           size="icon"
           :aria-label="t('common.delete')"
-          class="h-7 w-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+          class="h-8 w-8 shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
           @click.stop="$emit('delete', item.id)"
         >
           <Trash2 class="h-4 w-4" />
@@ -127,10 +128,7 @@
               </span>
             </span>
           </button>
-          <div
-            v-if="agentRunsLoading"
-            class="rounded-lg px-3 py-2 text-sm text-muted-foreground"
-          >
+          <div v-if="agentRunsLoading" class="rounded-lg px-3 py-2 text-sm text-muted-foreground">
             {{ t('aiAssistant.dialogs.agent.loadingRuns') }}
           </div>
           <div
@@ -218,12 +216,7 @@
             role="status"
           >
             <p class="font-medium text-amber-950 dark:text-amber-100">
-              {{
-                t(
-                  recentKnowledgeNotesErrorMessageKey ||
-                    'errors.EMAIL_VERIFICATION_REQUIRED',
-                )
-              }}
+              {{ t(recentKnowledgeNotesErrorMessageKey || 'errors.EMAIL_VERIFICATION_REQUIRED') }}
             </p>
             <p class="text-xs text-muted-foreground">
               {{ t('common.emailVerificationRequiredHint') }}
@@ -275,26 +268,29 @@ import type {
   ConversationSummary,
 } from '../composables/types';
 
-const props = withDefaults(defineProps<{
-  conversations: ConversationSummary[];
-  agentRuns: AgentRun[];
-  recentGoals: AIWorkspaceRecentGoal[];
-  recentKnowledgeNotes: AIWorkspaceRecentKnowledgeNote[];
-  /** When true, show verification-required degrade instead of empty notes. */
-  recentKnowledgeNotesEmailVerificationRequired?: boolean;
-  /** i18n key for the degrade message (defaults to errors.EMAIL_VERIFICATION_REQUIRED). */
-  recentKnowledgeNotesErrorMessageKey?: string | null;
-  activeConversationId: string;
-  loading: boolean;
-  agentRunsLoading: boolean;
-  variant?: 'desktop' | 'mobile';
-  showClose?: boolean;
-}>(), {
-  variant: 'desktop',
-  showClose: false,
-  recentKnowledgeNotesEmailVerificationRequired: false,
-  recentKnowledgeNotesErrorMessageKey: null,
-});
+const props = withDefaults(
+  defineProps<{
+    conversations: ConversationSummary[];
+    agentRuns: AgentRun[];
+    recentGoals: AIWorkspaceRecentGoal[];
+    recentKnowledgeNotes: AIWorkspaceRecentKnowledgeNote[];
+    /** When true, show verification-required degrade instead of empty notes. */
+    recentKnowledgeNotesEmailVerificationRequired?: boolean;
+    /** i18n key for the degrade message (defaults to errors.EMAIL_VERIFICATION_REQUIRED). */
+    recentKnowledgeNotesErrorMessageKey?: string | null;
+    activeConversationId: string;
+    loading: boolean;
+    agentRunsLoading: boolean;
+    variant?: 'desktop' | 'mobile';
+    showClose?: boolean;
+  }>(),
+  {
+    variant: 'desktop',
+    showClose: false,
+    recentKnowledgeNotesEmailVerificationRequired: false,
+    recentKnowledgeNotesErrorMessageKey: null,
+  },
+);
 
 defineEmits<{
   'new-conversation': [];
@@ -347,9 +343,11 @@ function formatRunStatus(status: AgentRun['status']) {
 function formatGoalMeta(goal: AIWorkspaceRecentGoal): string {
   const parts = [goal.status];
   if (typeof goal.progress === 'number') {
-    parts.push(t('aiAssistant.chatPage.sidebar.goalProgress', {
-      progress: Math.round(goal.progress),
-    }));
+    parts.push(
+      t('aiAssistant.chatPage.sidebar.goalProgress', {
+        progress: Math.round(goal.progress),
+      }),
+    );
   }
   return parts.filter(Boolean).join(' · ');
 }

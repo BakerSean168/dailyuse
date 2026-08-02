@@ -40,6 +40,8 @@ const props = defineProps<{
   loading?: boolean;
   /** 桌面端顶部留出拖拽/窗控空间的高度补偿。 */
   isDesktop?: boolean;
+  /** Current persisted width for the accessible resize separator. */
+  width?: number;
 }>();
 
 const emit = defineEmits<{
@@ -53,6 +55,7 @@ const emit = defineEmits<{
   (e: 'logout'): void;
   (e: 'open-help'): void;
   (e: 'start-resize', event: MouseEvent): void;
+  (e: 'resize-by', delta: number): void;
 }>();
 
 const { t } = useI18n();
@@ -93,10 +96,7 @@ const displayName = () => props.userName || t('shell.guest');
 
     <!-- 会话列表（按时间分组） -->
     <nav class="flex-1 overflow-y-auto px-2 pb-4">
-      <p
-        v-if="loading && groups.length === 0"
-        class="px-3 py-2 text-xs text-muted-foreground/60"
-      >
+      <p v-if="loading && groups.length === 0" class="px-3 py-2 text-xs text-muted-foreground/60">
         {{ t('common.loading') }}
       </p>
       <div v-for="group in groups" :key="group.labelKey" class="mb-3">
@@ -158,9 +158,7 @@ const displayName = () => props.userName || t('shell.guest');
           <div class="px-2 py-1.5">
             <p class="truncate text-sm font-medium">{{ displayName() }}</p>
             <p class="text-[11px] text-muted-foreground">
-              {{
-                isAuthenticated ? t('shell.account.signedIn') : t('shell.account.guestIdentity')
-              }}
+              {{ isAuthenticated ? t('shell.account.signedIn') : t('shell.account.guestIdentity') }}
             </p>
           </div>
           <DropdownMenuSeparator />
@@ -179,11 +177,7 @@ const displayName = () => props.userName || t('shell.guest');
           >
             {{ t('shell.account.logout') }}
           </DropdownMenuItem>
-          <DropdownMenuItem
-            v-else
-            data-testid="shell-open-login"
-            @click="emit('open-login')"
-          >
+          <DropdownMenuItem v-else data-testid="shell-open-login" @click="emit('open-login')">
             {{ t('shell.account.loginOrRegister') }}
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -203,20 +197,28 @@ const displayName = () => props.userName || t('shell.guest');
         <DropdownMenuContent align="end" side="top" class="w-52">
           <DropdownMenuItem disabled data-testid="shell-help-shortcuts">
             {{ t('shell.helpMenu.shortcuts') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+            <span class="ml-auto text-[10px] text-muted-foreground">{{
+              t('shell.helpMenu.soon')
+            }}</span>
           </DropdownMenuItem>
           <DropdownMenuItem disabled data-testid="shell-help-guide">
             {{ t('shell.helpMenu.guide') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+            <span class="ml-auto text-[10px] text-muted-foreground">{{
+              t('shell.helpMenu.soon')
+            }}</span>
           </DropdownMenuItem>
           <DropdownMenuItem disabled data-testid="shell-help-feedback">
             {{ t('shell.helpMenu.feedback') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+            <span class="ml-auto text-[10px] text-muted-foreground">{{
+              t('shell.helpMenu.soon')
+            }}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem disabled data-testid="shell-help-about">
             {{ t('shell.helpMenu.about') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+            <span class="ml-auto text-[10px] text-muted-foreground">{{
+              t('shell.helpMenu.soon')
+            }}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -224,8 +226,17 @@ const displayName = () => props.userName || t('shell.guest');
 
     <!-- 拖宽把手 -->
     <div
+      role="separator"
+      tabindex="0"
+      aria-orientation="vertical"
+      :aria-label="t('shell.conversation.resize')"
+      aria-valuemin="200"
+      aria-valuemax="400"
+      :aria-valuenow="width ?? 260"
       class="absolute right-0 top-0 h-full w-[3px] cursor-col-resize bg-transparent transition-colors hover:bg-primary/40"
       @mousedown="emit('start-resize', $event)"
+      @keydown.left.prevent="emit('resize-by', -24)"
+      @keydown.right.prevent="emit('resize-by', 24)"
     />
   </aside>
 </template>

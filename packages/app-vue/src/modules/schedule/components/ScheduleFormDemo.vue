@@ -86,7 +86,7 @@
       </div>
 
       <!-- Conflict Alert Component Slot -->
-      <slot name="conflicts" :conflicts="conflicts" :loading="detectingConflicts" />
+      <slot name="conflicts" :result="conflictResult" :loading="detectingConflicts" />
 
       <!-- Actions -->
       <div class="flex justify-between pt-4">
@@ -132,7 +132,7 @@ import { formatScheduleDurationMinutes } from '../../../shared/utils/format-sche
 interface Props {
   loading?: boolean;
   detectingConflicts?: boolean;
-  conflicts?: ConflictDetectionResult | null;
+  conflictResult?: ConflictDetectionResult | null;
 }
 
 interface Emits {
@@ -144,7 +144,7 @@ interface Emits {
 withDefaults(defineProps<Props>(), {
   loading: false,
   detectingConflicts: false,
-  conflicts: null,
+  conflictResult: null,
 });
 
 const emit = defineEmits<Emits>();

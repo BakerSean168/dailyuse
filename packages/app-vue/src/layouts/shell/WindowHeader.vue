@@ -4,24 +4,20 @@
  *
  * 桌面式壳的顶栏（h-48px）。三段式：
  * - 左：侧栏折叠按钮 · 返回/前进
- * - 中：模块胶囊 ×5（主按钮直接导航，独立箭头打开预览）
- * - 右：日程胶囊 · 右侧面板 Toggle · [桌面端] 窗口控制
+ * - 中：单一业务工作区 launcher
+ * - 右：右侧面板 Toggle · [桌面端] 窗口控制
  *
- * 胶囊渲染 + 点击出预览浮层；goal/task/note/reminder/notification 均挂专用 Preview（§10）；
+ * 业务上下文只由 BusinessPanel Tab 表达；顶栏不再保留第二套模块导航。
  * 桌面窗控复用既有 useDesktopWindowControls（apps/desktop 已落地 IPC）。
  * 交互逻辑不接业务数据，只 emit 给 AppShell。
  *
- * 契约：胶囊按钮 data-testid = `capsule-nav-{id}`（延续 main-nav-* 生成风格，
- * Playwright 锚定，V2 §8-1）。
+ * 契约：workspace launcher 的 data-testid = `shell-workspace-launcher`。
  */
-import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 import {
   ArrowLeft,
   ArrowRight,
-  Calendar,
-  ChevronDown,
   Copy,
   Minus,
   PanelLeft,
@@ -29,16 +25,9 @@ import {
   PanelRight,
   PanelRightClose,
   Square,
+  PanelsTopLeft,
   X,
 } from '@lucide/vue';
-import { MODULE_CAPSULES_KEY } from '../../di/keys';
-import { defaultModuleCapsules } from '../../di/navigation';
-import type { ModuleCapsule } from '../../di/types';
-import NotificationCapsulePreview from '../../modules/notification/components/NotificationCapsulePreview.vue';
-import GoalCapsulePreview from './previews/GoalCapsulePreview.vue';
-import TaskCapsulePreview from './previews/TaskCapsulePreview.vue';
-import NoteCapsulePreview from './previews/NoteCapsulePreview.vue';
-import ReminderCapsulePreview from './previews/ReminderCapsulePreview.vue';
 
 interface WindowControlsState {
   isMaximized: boolean;
@@ -48,20 +37,12 @@ interface WindowControlsState {
 }
 
 const props = defineProps<{
-  /** workspace = 业务壳顶栏；settings = 独立设置场景（隐藏胶囊/日程）。 */
+  /** workspace = 业务壳顶栏；settings = 独立设置场景（隐藏工作区入口）。 */
   mode?: 'workspace' | 'settings';
   /** 侧栏是否已折叠（控制折叠按钮图标）。 */
   sidebarCollapsed: boolean;
   /** 右侧面板是否打开（独立于业务 Tab 和左侧栏）。 */
   rightPanelOpen: boolean;
-  /** 当前激活的模块 id（胶囊高亮）。 */
-  activeModule: string | null;
-  /** 未读通知数（notification 胶囊角标）。S1 由 AppShell 注入。 */
-  unreadCount?: number;
-  /** 其它模块角标（goal/task/note/reminder），由 AppShell 可选注入。 */
-  badgeCounts?: Partial<Record<string, number>>;
-  /** 日程"当前时段"文案；空则显示空态。S1 由 AppShell 注入。 */
-  scheduleLabel?: string | null;
   /** 工作流等待用户查看时显示在右侧面板 Toggle 上。 */
   workflowAttentionCount?: number;
   /** 是否桌面环境（渲染窗控 + 拖拽区）。 */
@@ -77,90 +58,17 @@ const emit = defineEmits<{
   (e: 'toggle-right-panel'): void;
   (e: 'go-back'): void;
   (e: 'go-forward'): void;
-  (e: 'enter-module', id: string): void;
-  (e: 'open-schedule'): void;
+  (e: 'open-workspace'): void;
   (e: 'window-minimize'): void;
   (e: 'window-toggle-maximize'): void;
   (e: 'window-close'): void;
 }>();
 
 const { t } = useI18n();
-const router = useRouter();
-
-const capsules = computed<ModuleCapsule[]>(
-  () => inject(MODULE_CAPSULES_KEY, defaultModuleCapsules) ?? defaultModuleCapsules,
-);
-
-/** 当前展开预览浮层的胶囊 id。 */
-const previewOpenId = ref<string | null>(null);
-const headerRootEl = ref<HTMLElement | null>(null);
-
-function capsuleTestId(id: string): string {
-  return `capsule-nav-${id}`;
-}
-
-function togglePreview(id: string): void {
-  previewOpenId.value = previewOpenId.value === id ? null : id;
-}
-
-function enterModule(id: string): void {
-  previewOpenId.value = null;
-  emit('enter-module', id);
-}
-
-function enterNote(noteId?: string): void {
-  previewOpenId.value = null;
-  if (noteId) {
-    void router.push({ path: '/repository', query: { note: noteId } }).catch(() => {});
-    return;
-  }
-  emit('enter-module', 'note');
-}
-
-function closePreview(): void {
-  previewOpenId.value = null;
-}
-
-function badgeFor(capsule: ModuleCapsule): number {
-  if (capsule.badgeSource === 'notification.unread') return props.unreadCount ?? 0;
-  if (capsule.badgeSource && props.badgeCounts && capsule.badgeSource in props.badgeCounts) {
-    return props.badgeCounts[capsule.badgeSource] ?? 0;
-  }
-  // fallback: module id key
-  return props.badgeCounts?.[capsule.id] ?? 0;
-}
-
-function capsuleAccessibleLabel(capsule: ModuleCapsule): string {
-  const name = t(capsule.title);
-  const count = badgeFor(capsule);
-  return count > 0 ? t('shell.moduleWithCount', { name, count }) : name;
-}
-
-function onDocumentPointerDown(event: MouseEvent): void {
-  if (!previewOpenId.value) return;
-  const target = event.target as Node | null;
-  if (target && headerRootEl.value?.contains(target)) return;
-  closePreview();
-}
-
-function onDocumentKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape') closePreview();
-}
-
-onMounted(() => {
-  document.addEventListener('pointerdown', onDocumentPointerDown, true);
-  document.addEventListener('keydown', onDocumentKeydown);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('pointerdown', onDocumentPointerDown, true);
-  document.removeEventListener('keydown', onDocumentKeydown);
-});
 </script>
 
 <template>
   <header
-    ref="headerRootEl"
     class="window-header flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 text-xs"
     :class="[isDesktop ? 'window-header--drag' : '', isMac ? 'pl-20' : '']"
   >
@@ -199,119 +107,21 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- 中：模块胶囊 ×5（设置场景隐藏） -->
-    <nav
-      v-if="props.mode !== 'settings'"
-      class="flex items-center gap-1.5 no-drag"
-      :aria-label="t('shell.moduleNav')"
-    >
-      <div v-for="capsule in capsules" :key="capsule.id" class="relative">
-        <div
-          class="flex items-stretch overflow-hidden rounded-full border transition-all"
-          :class="
-            activeModule === capsule.id || previewOpenId === capsule.id
-              ? 'border-border bg-accent text-foreground shadow-sm'
-              : 'border-transparent text-muted-foreground hover:bg-accent hover:text-foreground'
-          "
-        >
-          <button
-            type="button"
-            :data-testid="capsuleTestId(capsule.id)"
-            class="flex items-center gap-1.5 px-2 py-1.5 font-medium"
-            :title="t(capsule.title)"
-            :aria-label="capsuleAccessibleLabel(capsule)"
-            @click="enterModule(capsule.id)"
-          >
-            <component :is="capsule.icon" class="h-3.5 w-3.5" />
-            <span
-              v-if="badgeFor(capsule) > 0"
-              class="rounded-full bg-primary/15 px-1.5 text-[9px] font-bold text-primary"
-              :data-testid="`capsule-badge-${capsule.id}`"
-            >
-              {{ badgeFor(capsule) }}
-            </span>
-          </button>
-          <button
-            type="button"
-            class="flex w-6 items-center justify-center border-l border-border/40 hover:bg-muted"
-            :data-testid="`capsule-preview-toggle-${capsule.id}`"
-            :title="t('shell.previewModule', { name: t(capsule.title) })"
-            :aria-label="t('shell.previewModule', { name: t(capsule.title) })"
-            :aria-expanded="previewOpenId === capsule.id"
-            :aria-controls="`capsule-preview-${capsule.id}`"
-            @click="togglePreview(capsule.id)"
-          >
-            <ChevronDown class="h-3 w-3" />
-          </button>
-        </div>
-
-        <!-- 预览浮层：各模块 Preview 懒挂载；Escape / 外部点击关闭 -->
-        <div
-          v-if="previewOpenId === capsule.id"
-          class="absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 rounded-xl border border-border bg-popover p-3.5 text-popover-foreground shadow-2xl"
-          role="dialog"
-          :id="`capsule-preview-${capsule.id}`"
-          :aria-label="t(capsule.title)"
-          :data-testid="`capsule-preview-${capsule.id}`"
-        >
-          <NotificationCapsulePreview
-            v-if="capsule.id === 'notification'"
-            @view-all="enterModule(capsule.id)"
-          />
-          <GoalCapsulePreview
-            v-else-if="capsule.id === 'goal'"
-            @view-all="enterModule(capsule.id)"
-            @select="enterModule(capsule.id)"
-          />
-          <TaskCapsulePreview
-            v-else-if="capsule.id === 'task'"
-            @view-all="enterModule(capsule.id)"
-            @select="enterModule(capsule.id)"
-          />
-          <NoteCapsulePreview
-            v-else-if="capsule.id === 'note'"
-            @view-all="enterModule(capsule.id)"
-            @select="enterNote"
-          />
-          <ReminderCapsulePreview
-            v-else-if="capsule.id === 'reminder'"
-            @view-all="enterModule(capsule.id)"
-            @select="enterModule(capsule.id)"
-          />
-          <template v-else>
-            <p class="mb-2 border-b border-border/40 pb-1 text-xs font-bold">
-              {{ t(capsule.title) }}
-            </p>
-            <p class="py-2 text-[11px] text-muted-foreground">
-              {{ t('shell.previewPlaceholder') }}
-            </p>
-            <button
-              type="button"
-              class="mt-2 block w-full rounded-lg border border-border/60 bg-accent py-1.5 text-center text-xs font-medium transition-colors hover:bg-accent/80"
-              :data-testid="`capsule-preview-enter-${capsule.id}`"
-              @click="enterModule(capsule.id)"
-            >
-              {{ t('shell.enterModule') }}
-            </button>
-          </template>
-        </div>
-      </div>
-    </nav>
-
-    <!-- 右：日程胶囊 + 桌面窗控 -->
-    <div class="flex shrink-0 items-center gap-3 no-drag">
+    <div v-if="props.mode !== 'settings'" class="no-drag">
       <button
-        v-if="props.mode !== 'settings'"
         type="button"
-        class="flex items-center gap-1.5 rounded-full border border-border/40 bg-muted/40 px-2.5 py-1 font-mono text-[10px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
-        :title="t('shell.openSchedule')"
-        :aria-label="t('shell.openSchedule')"
-        @click="emit('open-schedule')"
+        data-testid="shell-workspace-launcher"
+        class="flex min-h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        :aria-label="t('shell.openWorkspace')"
+        @click="emit('open-workspace')"
       >
-        <Calendar class="h-3 w-3" />
-        <span>{{ scheduleLabel || t('shell.schedule.empty') }}</span>
+        <PanelsTopLeft class="h-4 w-4" />
+        <span>{{ t('shell.openWorkspace') }}</span>
       </button>
+    </div>
 
+    <!-- 右：面板与桌面窗控。业务模块只从 workspace launcher / panel tabs 进入。 -->
+    <div class="flex shrink-0 items-center gap-3 no-drag">
       <button
         v-if="props.mode !== 'settings'"
         type="button"

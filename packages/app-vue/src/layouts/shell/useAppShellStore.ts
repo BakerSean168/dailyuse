@@ -18,7 +18,7 @@
  * 不在此处直连 router。
  */
 import { defineStore } from 'pinia';
-import { PANEL_MIN, computePanelGeometry } from './panel-geometry';
+import { BUSINESS_HARD_MIN, computePanelGeometry } from './panel-geometry';
 // Residual 1001: sole clamp (local dual retired).
 import { clamp } from './clamp';
 
@@ -29,7 +29,6 @@ const SIDEBAR_MIN = 200;
 const SIDEBAR_MAX = 400;
 const SIDEBAR_DEFAULT = 260;
 // 面板绝对像素上下限由 panel-geometry 动态计算；此处仅保留偏好默认值种子。
-const PANEL_PREFERRED_DEFAULT = 450;
 
 export type ShellLayout = 'split' | 'focus';
 export type PanelSurface = 'home' | 'business' | 'workflow';
@@ -43,6 +42,7 @@ export type WorkflowSurfaceRequest = 'opened' | 'deferred' | 'unavailable';
  * - viewport：空间不足自动触发，可在空间恢复后回到 split。
  */
 export type ShellLayoutReason = 'default' | 'user' | 'viewport';
+export type PanelWidthSource = 'responsive' | 'user';
 
 /** 胶囊/深链可落地的业务模块标识。Settings 已升为独立场景，不在此列。 */
 export type ShellModule = 'goal' | 'task' | 'note' | 'reminder' | 'notification' | 'schedule';
@@ -86,7 +86,14 @@ interface AppShellState {
    * 渲染时用 computePanelGeometry clamp；窗口缩放不回写此值，
    * 避免把临时约束永久固化（侧栏折叠后应能回到更宽偏好）。
    */
-  panelWidth: number;
+  /** null means no user override; geometry derives the responsive 64% default. */
+  panelWidth: number | null;
+  /**
+   * Distinguishes an intentional drag from legacy persisted pixel defaults.
+   * Older persisted states do not contain this field and therefore hydrate as
+   * `responsive`, so their stale 520px seed cannot override the new ratio.
+   */
+  panelWidthSource: PanelWidthSource;
 }
 
 const BUSINESS_MODULES = new Set<ShellModule>([
@@ -125,7 +132,8 @@ export const useAppShellStore = defineStore('app-shell', {
     layoutReason: 'default',
     sidebarCollapsed: false,
     sidebarWidth: SIDEBAR_DEFAULT,
-    panelWidth: PANEL_PREFERRED_DEFAULT,
+    panelWidth: null,
+    panelWidthSource: 'responsive',
   }),
 
   getters: {
@@ -393,7 +401,14 @@ export const useAppShellStore = defineStore('app-shell', {
      */
     setPanelWidth(width: number): void {
       if (!Number.isFinite(width)) return;
-      this.panelWidth = Math.max(PANEL_MIN, Math.round(width));
+      this.panelWidth = Math.max(BUSINESS_HARD_MIN, Math.round(width));
+      this.panelWidthSource = 'user';
+    },
+
+    /** Return to the responsive business-dominant ratio at every viewport. */
+    resetPanelWidthPreference(): void {
+      this.panelWidth = null;
+      this.panelWidthSource = 'responsive';
     },
 
     /**
@@ -404,7 +419,8 @@ export const useAppShellStore = defineStore('app-shell', {
       return computePanelGeometry({
         viewportWidth,
         sidebarOccupiedWidth,
-        preferredPanelWidth: this.panelWidth,
+        preferredPanelWidth:
+          this.panelWidthSource === 'user' ? (this.panelWidth ?? undefined) : undefined,
       }).panelWidth;
     },
   },
@@ -420,6 +436,7 @@ export const useAppShellStore = defineStore('app-shell', {
       'sidebarCollapsed',
       'sidebarWidth',
       'panelWidth',
+      'panelWidthSource',
     ] as string[],
   },
 });

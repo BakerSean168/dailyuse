@@ -33,35 +33,10 @@ export function isKeyResultCompleted(progress: KeyResultProgress | null | undefi
 
 export function getGoalOverallProgress(goal: GoalClientDTO | null | undefined): number {
   if (!goal) return 0;
-  if (typeof goal.overallProgress === 'number') {
-    return clampPercentage(Math.round(goal.overallProgress));
-  }
-
-  const keyResults = goal.keyResults ?? [];
-  if (keyResults.length === 0) return 0;
-
-  const totalWeight = keyResults.reduce((sum, keyResult) => sum + (keyResult.weight ?? 1), 0);
-  if (totalWeight <= 0) {
-    const average =
-      keyResults.reduce((sum, keyResult) => sum + getKeyResultProgressPercentage(keyResult.progress), 0) /
-      keyResults.length;
-    return clampPercentage(Math.round(average));
-  }
-
-  const weighted =
-    keyResults.reduce(
-      (sum, keyResult) =>
-        sum + getKeyResultProgressPercentage(keyResult.progress) * (keyResult.weight ?? 1),
-      0,
-    ) / totalWeight;
-
-  return clampPercentage(Math.round(weighted));
+  return clampPercentage(Math.round(goal.overallProgress));
 }
 
 export function getCompletedKeyResultCount(goal: GoalClientDTO | null | undefined): number {
   if (!goal) return 0;
-  if (typeof goal.completedKeyResults === 'number') return goal.completedKeyResults;
-  return (goal.keyResults ?? []).filter((keyResult: KeyResultClientDTO) =>
-    isKeyResultCompleted(keyResult.progress),
-  ).length;
+  return goal.completedKeyResults;
 }
