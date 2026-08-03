@@ -4,7 +4,7 @@ tags:
   - feature-map
 description: 当前核心功能地图
 created: 2026-06-02T00:00:00
-updated: 2026-07-22T00:00:00
+updated: 2026-08-03T12:00:00+08:00
 ---
 
 # 功能地图
@@ -25,7 +25,7 @@ updated: 2026-07-22T00:00:00
 | 编辑器模块     | 安全 Markdown 预览、路径确认、AI 引用、Obsidian 外部打开                  | 提供跨端知识呈现和新笔记确认                | 运行时包已退役；职责落在 repository 工作区 | `packages/app-vue/src/modules/repository`、`packages/app-vue/src/shared/utils/safe-markdown.ts`、`packages/repository`   | 见 [编辑器模块说明](./modules/editor.md) 和 [文件索引](./module-index/editor-files.md)                                                                              |
 | AI 模块        | AI Chat、目标生成、目标自动化、知识笔记、模型选择、Agent Host 适配         | 用 AI 辅助用户整理上下文并生成结构化行动    | 已盘点；ADR-035 Host 部分落地 | `packages/ai`、`packages/app-vue/src/modules/ai`、`apps/ai-service`                                                      | 见 [AI 模块说明](./modules/ai.md) 和 [文件索引](./module-index/ai-files.md)；生产 Host：DirectTurn/ReadonlyAnalysis/LangGraph/ProposalKernel/CapabilityResolver/CustomModelGateway/AssistantFacade                                                                 |
 | 账户模块       | 账户中心、用户资料、账户管理、Profile 编辑                                | 管理用户业务资料                            | 已盘点                    | `packages/account`、`packages/app-vue/src/modules/account`                                                               | 见 [账户模块说明](./modules/account.md) 和 [文件索引](./module-index/account-files.md)                                                                              |
-| 认证模块       | 账密、GitHub 登录、访客、会话、离线 profile                               | 管理用户身份认证，并与 GitHub 仓库授权解耦  | 三入口主路径已贯通；真实 fixture 跨端 E2E 外部阻塞 | `packages/authentication`、`packages/app-vue/src/modules/authentication`、`apps/desktop/src/main/modules/authentication`、`apps/web/src/auth` | 见 [认证模块说明](./modules/authentication.md) 和 [文件索引](./module-index/authentication-files.md)；登录 OAuth identity-only（`read:user`/`user:email`）与知识仓库 App 分离                                                                |
+| 云端认证与本地 Profile | Better Auth 账密/GitHub、Desktop guest/Profile unlock、云端连接与离线恢复 | 云端身份与本地数据访问彻底分离；云端失效只暂停同步 | 单轨重写与全链路验证已完成 | `packages/cloud-auth`、`apps/desktop/src/main/profile`、`packages/app-vue/src/modules/authentication`、`apps/web/src/auth` | 见 [认证模块说明](./modules/authentication.md) 和 [文件索引](./module-index/authentication-files.md)；GitHub 登录与知识仓库 App 授权保持分离 |
 | 设置模块       | 外观、语言、AI、隐私、快捷键、通知、实验功能                              | 管理用户偏好配置                            | 已盘点                    | `packages/setting`、`packages/app-vue/src/modules/setting`                                                               | 见 [设置模块说明](./modules/setting.md) 和 [文件索引](./module-index/setting-files.md)                                                                              |
 | 治理模块       | 规则管理、状态流转、修订历史、代码示例、搜索                              | 管理产品内治理规则                          | 已盘点                    | `packages/governance`、`packages/app-vue/src/modules/governance`                                                         | 见 [治理模块说明](./modules/governance.md) 和 [文件索引](./module-index/governance-files.md)                                                                        |
 

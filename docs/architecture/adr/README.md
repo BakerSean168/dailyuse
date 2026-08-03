@@ -53,6 +53,7 @@ updated: 2026-07-26T00:00:00
 | [ADR-036](./ADR-036-auth-account-boundary-and-verification.md)                | Auth / Account 边界与验证安全模型                          | 已采纳 | 2026-07-17 |
 | [ADR-037](./ADR-037-product-time-system.md)                       | 产品时间体系（Instant/Ymd、TransferDate、门面与风格） | 已采纳 | 2026-07-26 |
 | [ADR-038](./ADR-038-goal-consistency-and-reliable-task-contributions.md) | Goal 一致性与可靠 Task 贡献链路 | 已采纳 | 2026-08-01 |
+| [ADR-039](./ADR-039-cloud-auth-and-local-profile-access.md) | Cloud Auth 与 Local Profile Access 分离 | 已采纳 | 2026-08-02 |
 
 ## 维护规则
 

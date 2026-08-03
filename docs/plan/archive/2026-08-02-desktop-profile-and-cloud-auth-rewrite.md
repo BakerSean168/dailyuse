@@ -1,17 +1,19 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - authentication
   - desktop
   - profile
   - local-first
 description: 一次性重写 MemoFlow 云端认证与 Desktop 本地 Profile/Unlock，删除访客伪会话、离线密码登录和旧认证双轨
 created: 2026-08-02T00:00:00+08:00
-updated: 2026-08-02T00:00:00+08:00
+updated: 2026-08-03T12:00:00+08:00
 ---
 
 # Desktop Profile 与云端认证一次性重写
+
+> 完成于 2026-08-03。Better Auth 云端内核与 Desktop Profile Access 已切换为唯一运行时，旧认证包、伪 session、离线密码登录和兼容 DTO 已删除；最终仓库验证通过并可进入 PR。
 
 ## 1. 决策摘要
 
@@ -681,6 +683,20 @@ AuthRuntimeState
 7. 路由准入、同步能力和用户展示不再共享含混的 `isAuthenticated` 布尔值。
 8. 全仓无 legacy fallback、feature flag 或旧认证兼容 DTO。
 9. 相关单测、集成测试、Desktop journey 和本地 Docker prod-like 验证全部通过。
+
+### 完成审计（2026-08-03）
+
+1. **通过**：生产 Electron journey 验证首次离线启动直接创建 guest、资料可编辑、锁定后可重开，重启后昵称与唯一 `profileId` 目录保持不变。
+2. **通过**：`DesktopCloudConnectionManager` 将网络失败映射为 `OFFLINE`、失效凭据映射为 `REAUTH_REQUIRED`；Profile unlock 与本地 capability 不依赖 cloud session。
+3. **通过**：guest 使用持久 Profile identity 与本地 Account 投影，不创建 access/refresh token 或期限 session；renderer mock Account 已删除。
+4. **通过**：`LocalTenantAdoptionService` 在单事务内更新 canonical identity-owned tables；Profile registry 测试和 Electron journey 证明 Profile/Vault 路径不移动。
+5. **通过**：云端认证唯一内核为固定版本 Better Auth `1.6.25`；`packages/authentication` 与 Desktop legacy auth runtime 已删除。
+6. **通过**：Better Auth `CloudAuthUser.id` 直接作为 MemoFlow `Account.id`、API execution context 和 PowerSync `identityId`。
+7. **通过**：Desktop 路由以 `profile + unlockState` 准入；同步/云能力使用独立 `cloudState` 与 capabilities；身份展示基于 Profile kind。
+8. **通过**：治理与 legacy symbol 搜索不再命中旧伪 token、offline/remembered runtime 或 `@memoflow/authentication`。
+9. **通过**：Desktop `193/193`、App Vue `819/819`、Cloud Auth `9/9`、Account `164/164`、API `79/79`、Web `55/55`、Desktop E2E `1/1`；最终 `affected-lint`、`affected-typecheck`、`affected-test`、Docker rebuild 全部退出 `0`。
+
+最终报告：[`reports/local-deploy-validation/latest.md`](../../../reports/local-deploy-validation/latest.md)（`verdict: pass`、`readyForPr: true`）。Docker 中 API、Web、AI、PowerSync、Postgres、Redis 全部 healthy，镜像 revision 与当前工作树一致，浏览器请求证据通过。
 
 ## 16. 参考资料
 

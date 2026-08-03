@@ -12,7 +12,7 @@ updated: 2026-07-17T23:59:00
 
 # ADR-036: Auth / Account 边界与验证安全模型
 
-**Status:** Accepted  
+**Status:** Superseded by [ADR-039](./ADR-039-cloud-auth-and-local-profile-access.md)
 **Date:** 2026-07-17  
 **Context:** 自建认证与账户双模块、多端 session、邮箱验证与密码找回、OAuth 与访客路径并存。
 

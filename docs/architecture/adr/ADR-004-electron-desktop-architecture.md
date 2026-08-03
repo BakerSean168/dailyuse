@@ -22,8 +22,8 @@ updated: 2025-12-03
 > 当前实现请优先查看：
 > - `apps/desktop/src/main/profile/`
 > - `apps/desktop/src/main/paths/`
-> - `apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts`
-> - [桌面端多账号本地存储架构实现状态](../../plan/active/2026-05-17-desktop-multi-account-local-storage-architecture.md)
+> - [ADR-039: Cloud Auth 与 Local Profile Access 分离](./ADR-039-cloud-auth-and-local-profile-access.md)
+> - [云端认证与本地 Profile Access](../../product/modules/authentication.md)
 >
 > 本文下方关于 Prisma-for-desktop、单 SQLite、本地 DB 初始化等描述仅作为历史记录保留。
 

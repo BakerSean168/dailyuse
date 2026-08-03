@@ -48,7 +48,6 @@ const EXCEPTIONS = new Set([
 const AUDITED_PACKAGES = new Set([
   'account',
   'ai',
-  'authentication',
   'data-portability',
   'goal',
   'governance',
