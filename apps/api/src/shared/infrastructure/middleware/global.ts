@@ -21,7 +21,11 @@ import { getCorsOrigins, isAllCorsOriginsAllowed } from '../config/env.js';
  *
  * 包含：Helmet、JSON 解析、Cookie 解析、CORS、Compression、性能监控
  */
-export function applyGlobalMiddleware(app: Express, metricsStore: MetricsStore): void {
+export function applyGlobalMiddleware(
+  app: Express,
+  metricsStore: MetricsStore,
+  options: { readonly beforeBodyParsing?: (app: Express) => void } = {},
+): void {
   const allowedOrigins = getCorsOrigins();
   const allowAllOrigins = isAllCorsOriginsAllowed();
 
@@ -46,6 +50,8 @@ export function applyGlobalMiddleware(app: Express, metricsStore: MetricsStore):
       maxAge: 86400,
     }),
   );
+
+  options.beforeBodyParsing?.(app);
 
   // JSON body parsing (must be after CORS for preflight)
   app.use(

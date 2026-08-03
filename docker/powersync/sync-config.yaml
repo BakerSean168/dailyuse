@@ -8,7 +8,6 @@ streams:
     auto_subscribe: true
     priority: 1
     queries:
-      - SELECT * FROM accounts WHERE id = auth.user_id()
       - SELECT * FROM user_settings WHERE identity_id = auth.user_id()
       - SELECT * FROM goals WHERE identity_id = auth.user_id()
       - SELECT * FROM goal_folders WHERE identity_id = auth.user_id()

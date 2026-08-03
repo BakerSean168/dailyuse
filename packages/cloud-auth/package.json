@@ -1,0 +1,41 @@
+{
+  "name": "@memoflow/cloud-auth",
+  "version": "0.0.1",
+  "description": "MemoFlow cloud authentication backed by Better Auth",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js"
+    }
+  },
+  "dependencies": {
+    "@better-auth/prisma-adapter": "1.6.25",
+    "@memoflow/database": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/domain-shared": "workspace:*",
+    "@memoflow/http-client": "workspace:*",
+    "@memoflow/ipc-client": "workspace:*",
+    "better-auth": "1.6.25",
+    "express": "^5.2.1",
+    "nodemailer": "^9.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/nodemailer": "^8.0.1"
+  }
+}

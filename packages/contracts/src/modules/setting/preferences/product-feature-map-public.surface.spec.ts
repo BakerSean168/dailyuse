@@ -11,13 +11,14 @@ describe('product feature-map + web public debug surface', () => {
   const featureMap = readFileSync(resolve(repoRoot, 'docs/product/feature-map.md'), 'utf8');
   const publicDir = resolve(repoRoot, 'apps/web/public');
 
-  it('feature-map auth row is not the retired OAuth skeleton claim', () => {
+  it('feature-map auth row describes the Better Auth and local Profile split', () => {
     expect(featureMap).not.toContain('GitHub 服务端骨架已落地');
     expect(featureMap).not.toContain('只完成服务端 callback 骨架');
-    expect(featureMap).toContain('三入口主路径已贯通');
-    expect(featureMap).toContain('identity-only');
-    expect(featureMap).toContain('read:user');
-    expect(featureMap).toContain('user:email');
+    expect(featureMap).toContain('Better Auth 账密/GitHub');
+    expect(featureMap).toContain('Desktop guest/Profile unlock');
+    expect(featureMap).toContain('云端失效只暂停同步');
+    expect(featureMap).toContain('packages/cloud-auth');
+    expect(featureMap).toContain('apps/desktop/src/main/profile');
     expect(featureMap).toContain('apps/web/src/auth');
   });
 

@@ -82,6 +82,7 @@ export class ResultHttpClient implements IResultHttpClient {
   private readonly onTokenRefresh?: TokenRefreshHandler;
   private readonly onUnauthorized?: () => void;
   private readonly tokenProvider?: TokenProvider;
+  private readonly withCredentials: boolean;
 
   /** 是否正在刷新 Token（防止并发刷新） */
   private isRefreshing = false;
@@ -97,6 +98,7 @@ export class ResultHttpClient implements IResultHttpClient {
     this.onTokenRefresh = config.onTokenRefresh;
     this.onUnauthorized = config.onUnauthorized;
     this.tokenProvider = config.tokenProvider;
+    this.withCredentials = config.axiosConfig?.withCredentials === true;
     
     // 设置 401 响应拦截器
     this.setupResponseInterceptor();
@@ -177,6 +179,7 @@ export class ResultHttpClient implements IResultHttpClient {
       headers,
       body: config?.body === undefined ? undefined : JSON.stringify(config.body),
       signal: config?.signal,
+      credentials: this.withCredentials ? 'include' : 'same-origin',
     };
 
     let response = await fetch(this.axios.getUri({ url }), requestInit);

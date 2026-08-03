@@ -25,7 +25,6 @@ export default createTsupConfig({
     'src/modules/reminder/index.ts',
     'src/modules/repository/index.ts',
     'src/modules/account/index.ts',
-    'src/modules/authentication/index.ts',
     'src/modules/schedule/index.ts',
     'src/modules/setting/index.ts',
     'src/modules/notification/index.ts',

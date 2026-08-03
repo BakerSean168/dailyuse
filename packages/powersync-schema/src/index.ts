@@ -21,70 +21,6 @@
 import { column, Schema, Table } from '@powersync/common';
 
 // ──────────────────────────────────────────────
-// Authentication
-// ──────────────────────────────────────────────
-
-const auth_identities = new Table({
-  status: column.text,
-  failed_login_attempts: column.integer,
-  last_failed_attempt: column.text,
-  locked_until: column.text,
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
-
-const auth_identifiers = new Table({
-  identity_id: column.text,
-  type: column.text,
-  value: column.text,
-  is_verified: column.integer,
-  created_at: column.text,
-});
-
-const auth_oauth_bindings = new Table({
-  identity_id: column.text,
-  provider: column.text,
-  provider_subject_id: column.text,
-  access_token: column.text,
-  refresh_token: column.text,
-  expires_at: column.text,
-  created_at: column.text,
-  last_used_at: column.text,
-});
-
-const auth_credentials = new Table({
-  identity_id: column.text,
-  type: column.text,
-  status: column.text,
-  password_hash: column.text,
-  password_last_changed_at: column.text,
-  version: column.integer,
-  created_at: column.text,
-  last_used_at: column.text,
-  deleted_at: column.text,
-});
-
-const auth_sessions = new Table({
-  identity_id: column.text,
-  refresh_token_hash: column.text,
-  device_id: column.text,
-  device_fingerprint: column.text,
-  device_type: column.text,
-  device_name: column.text,
-  os: column.text,
-  browser: column.text,
-  ip_address: column.text,
-  location: column.text,
-  version: column.integer,
-  created_at: column.text,
-  expires_at: column.text,
-  last_active_at: column.text,
-  deleted_at: column.text,
-});
-
-// ──────────────────────────────────────────────
 // Account
 // ──────────────────────────────────────────────
 
@@ -106,6 +42,36 @@ const accounts = new Table({
   updated_at: column.text, // DateTime
   deleted_at: column.text, // DateTime
 });
+
+/**
+ * Local-only crash recovery journal for guest-to-cloud ownership adoption.
+ * The identity updates and this marker commit in the same SQLite transaction;
+ * Profile Registry rebind can then be completed safely after a process restart.
+ */
+const profile_adoption_journal = new Table(
+  {
+    from_owner_id: column.text,
+    to_owner_id: column.text,
+    display_name: column.text,
+    identifier: column.text,
+    adopted_at: column.integer,
+  },
+  { localOnly: true },
+);
+
+/**
+ * Coalesced local intent for projecting the registered Profile display data
+ * to the cloud Account API. The Account row remains the local source of truth;
+ * this table only records that the latest projection still needs delivery.
+ */
+const account_profile_sync_outbox = new Table(
+  {
+    owner_id: column.text,
+    revision: column.integer,
+    requested_at: column.integer,
+  },
+  { localOnly: true },
+);
 
 // ──────────────────────────────────────────────
 // Settings
@@ -1030,14 +996,10 @@ const rule_revisions = new Table({
 // ──────────────────────────────────────────────
 
 export const PowerSyncAppSchema = new Schema({
-  // Authentication
-  auth_identities,
-  auth_identifiers,
-  auth_oauth_bindings,
-  auth_credentials,
-  auth_sessions,
   // Account
   accounts,
+  profile_adoption_journal,
+  account_profile_sync_outbox,
   user_settings,
   // Goal
   goals,

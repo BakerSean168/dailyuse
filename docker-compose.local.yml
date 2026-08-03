@@ -200,6 +200,10 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-warn}
       API_PORT: 3000
       API_HOST: 0.0.0.0
+      AUTH_BASE_URL: ${AUTH_BASE_URL:-http://localhost:53080/api/auth}
+      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:-http://localhost:58080}
+      GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID:-}
+      GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET:-}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:?set DB_NAME}

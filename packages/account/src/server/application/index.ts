@@ -11,6 +11,3 @@ export type {
 
 // Use Cases
 export * from './use-cases';
-
-// Event Handlers
-export * from './handlers';

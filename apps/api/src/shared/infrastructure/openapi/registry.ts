@@ -27,8 +27,15 @@ export const registry = new OpenAPIRegistry();
 registry.registerComponent('securitySchemes', 'bearerAuth', {
   type: 'http',
   scheme: 'bearer',
-  bearerFormat: 'JWT',
-  description: '使用 `/auth/login` 获取的 accessToken 进行认证',
+  bearerFormat: 'Better Auth session token',
+  description: 'Desktop 使用 Better Auth bearer session token；token 仅由 Electron main process 持有',
+});
+
+registry.registerComponent('securitySchemes', 'cookieAuth', {
+  type: 'apiKey',
+  in: 'cookie',
+  name: 'better-auth.session_token',
+  description: 'Web 由 Better Auth 管理的 HttpOnly cookie session',
 });
 
 // ============================================================================

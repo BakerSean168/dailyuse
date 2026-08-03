@@ -43,10 +43,6 @@ import { describe, expect, it } from 'vitest';
         resolve(modules, 'task/api/task-schedule.dto.ts'),
         ['ToggleTaskCompletionRes'],
       ],
-      [
-        resolve(modules, 'authentication/api/oauth.dto.ts'),
-        ['OAuthAuthorizeRes'],
-      ],
       [resolve(modules, 'setting/api/sync.dto.ts'), ['SyncSettingsRes']],
       [
         resolve(modules, 'governance/api/rule-revisions.ts'),
@@ -60,14 +56,6 @@ import { describe, expect, it } from 'vitest';
       [
         resolve(modules, 'repository/aggregates/local-vault-binding.ts'),
         ['SelectLocalVaultRes'],
-      ],
-      [
-        resolve(modules, 'authentication/api/oauth.dto.ts'),
-        ['UnbindOAuthRes'],
-      ],
-      [
-        resolve(modules, 'authentication/api/session.dto.ts'),
-        ['LogoutRes'],
       ],
     ];
 

@@ -6,6 +6,10 @@ RUN apt-get update \
 
 FROM node-base AS builder
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
 ARG PNPM_VERSION=11.12.0
 ARG PNPM_REGISTRY=https://registry.npmjs.org
 
@@ -27,7 +31,7 @@ COPY apps/api/package.json ./apps/api/package.json
 COPY apps/migrator/package.json ./apps/migrator/package.json
 COPY packages/account/package.json ./packages/account/package.json
 COPY packages/ai/package.json ./packages/ai/package.json
-COPY packages/authentication/package.json ./packages/authentication/package.json
+COPY packages/cloud-auth/package.json ./packages/cloud-auth/package.json
 COPY packages/contracts/package.json ./packages/contracts/package.json
 COPY packages/dashboard/package.json ./packages/dashboard/package.json
 COPY packages/data-portability/package.json ./packages/data-portability/package.json
@@ -64,7 +68,7 @@ COPY apps/api ./apps/api
 COPY apps/migrator ./apps/migrator
 COPY packages/account ./packages/account
 COPY packages/ai ./packages/ai
-COPY packages/authentication ./packages/authentication
+COPY packages/cloud-auth ./packages/cloud-auth
 COPY packages/contracts ./packages/contracts
 COPY packages/dashboard ./packages/dashboard
 COPY packages/data-portability ./packages/data-portability

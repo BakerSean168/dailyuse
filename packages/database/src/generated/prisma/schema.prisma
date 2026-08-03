@@ -21,7 +21,7 @@ datasource db {
 // ==========================================
 
 model Account {
-  id               String    @id // same as AuthIdentity.id
+  id               String    @id // same as CloudAuthUser.id for cloud accounts
   status           String    @default("ACTIVE") // AccountStatus: ACTIVE | INACTIVE | SUSPENDED | DELETED
   // profile
   profile          Json
@@ -44,7 +44,7 @@ model Account {
   deletedAt        DateTime? @map("deleted_at")
 
   // 关联关系
-  identity AuthIdentity @relation(fields: [id], references: [id], onDelete: Cascade)
+  cloudUser CloudAuthUser @relation(fields: [id], references: [id], onDelete: Cascade)
 
   // 关联的业务模块
   editorWorkspaces                EditorWorkspace[]
@@ -360,148 +360,94 @@ model LangGraphCheckpointWrite {
   @@map("langgraph_checkpoint_writes")
 }
 
-// ==========================================
-// Auth Module
-// 认证聚合根、标识符、绑定、凭证、会话
-// ==========================================
+// Better Auth cloud identity source.
+// Explicit model names avoid confusing provider accounts with MemoFlow Account.
 
-// 1. 取消 Prisma 枚举，统一存储大驼峰字符串
+model CloudAuthUser {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false) @map("email_verified")
+  image         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-// ==========================================
-// 1. 身份聚合根表 (AuthIdentity)
-// ==========================================
-model AuthIdentity {
-  id     String @id @default(uuid())
-  status String @default("Unverified")
+  sessions         CloudAuthSession[]
+  providerAccounts CloudAuthProviderAccount[]
+  deviceCodes      CloudAuthDeviceCode[]
+  account          Account?
 
-  // 安全风控字段 (对应聚合根内部状态)
-  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
-  lastFailedAttempt   DateTime? @map("last_failed_attempt")
-  lockedUntil         DateTime? @map("locked_until")
-
-  // 时间戳
-  version   Int       @default(1)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-
-  // 关联
-  identifiers   AuthIdentifier[]
-  oauthBindings AuthOAuthBinding[]
-  credentials   AuthCredential[]
-  sessions      AuthSession[]
-  accounts      Account[]
-
-  @@map("auth_identities")
+  @@map("cloud_auth_users")
 }
 
-// ==========================================
-// 2. 标识符表 (AuthIdentifier)
-// 存储邮箱/手机号等值对象标识符
-// 解决"如何找到用户"
-// ==========================================
-model AuthIdentifier {
-  id         String   @id @default(uuid())
-  identityId String   @map("identity_id")
-  type       String // 'EMAIL' | 'PHONE'
-  value      String // 邮箱地址或手机号
-  isVerified Boolean  @default(false) @map("is_verified")
-  createdAt  DateTime @default(now()) @map("created_at")
+model CloudAuthSession {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  user CloudAuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([identityId, type, value])
-  @@index([type, value]) // findByEmail / findByPhone 的查询索引
-  @@map("auth_identifiers")
-}
-
-// ==========================================
-// 3. OAuth 绑定表 (AuthOAuthBinding)
-// Entity 形式的标识符，拥有独立 ID 和可变 Token 状态
-// 解决"通过第三方如何找到用户"
-// ==========================================
-model AuthOAuthBinding {
-  id                String    @id @default(uuid())
-  identityId        String    @map("identity_id")
-  provider          String // GOOGLE, GITHUB 等
-  providerSubjectId String    @map("provider_subject_id")
-  accessToken       String?   @map("access_token")
-  refreshToken      String?   @map("refresh_token")
-  expiresAt         DateTime? @map("expires_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  lastUsedAt        DateTime? @map("last_used_at")
-
-  identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerSubjectId])
-  @@index([identityId])
-  @@map("auth_oauth_bindings")
-}
-
-// ==========================================
-// 4. 凭证实体表 (AuthCredential)
-// 仅保留真正的凭证（密码）
-// 解决"如何验证用户"
-// ==========================================
-model AuthCredential {
-  id String @id @default(uuid())
-
-  // 归属的身份
-  identityId String       @map("identity_id")
-  identity   AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  // 核心字段
-  type   String
-  status String @default("Active")
-
-  // [Type: PASSWORD]
-  passwordHash          String?   @map("password_hash") // Argon2 hash
-  passwordLastChangedAt DateTime? @map("password_last_changed_at") // 密码最后修改时间
-
-  // 元数据
-  version    Int       @default(1)
-  createdAt  DateTime  @default(now()) @map("created_at")
-  lastUsedAt DateTime? @map("last_used_at")
-  deletedAt  DateTime? @map("deleted_at")
-
-  @@index([identityId, type])
-  @@map("auth_credentials")
-}
-
-// ==========================================
-// 5. 会话聚合根表 (AuthSession)
-// ==========================================
-model AuthSession {
-  id String @id @default(uuid())
-
-  identityId String       @map("identity_id")
-  identity   AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  // 核心令牌数据
-  refreshTokenHash String? @map("refresh_token_hash") // 支持 Refresh Token 轮换
-
-  // 设备信息 (对应 DeviceInfo Value Object)
-  deviceId          String  @map("device_id")
-  deviceFingerprint String  @map("device_fingerprint")
-  deviceType        String  @map("device_type") // MOBILE, DESKTOP
-  deviceName        String? @map("device_name")
-  os                String?
-  browser           String?
-  ipAddress         String? @map("ip_address")
-
-  // 地理位置 (用 JSON 存比较灵活，因为字段不确定)
-  location Json? // { country, city, timezone }
-
-  // 生命周期
-  version      Int       @default(1)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  expiresAt    DateTime  @map("expires_at")
-  lastActiveAt DateTime  @default(now()) @map("last_active_at")
-  deletedAt    DateTime? @map("deleted_at")
-
-  @@index([identityId])
+  @@index([userId])
   @@index([expiresAt])
-  @@map("auth_sessions")
+  @@map("cloud_auth_sessions")
+}
+
+model CloudAuthProviderAccount {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user CloudAuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("cloud_auth_provider_accounts")
+}
+
+model CloudAuthVerification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("cloud_auth_verifications")
+}
+
+model CloudAuthDeviceCode {
+  id              String    @id @default(uuid())
+  deviceCode      String    @unique @map("device_code")
+  userCode        String    @unique @map("user_code")
+  userId          String?   @map("user_id")
+  expiresAt       DateTime  @map("expires_at")
+  status          String
+  lastPolledAt    DateTime? @map("last_polled_at")
+  pollingInterval Int?      @map("polling_interval")
+  clientId        String?   @map("client_id")
+  scope           String?
+
+  user CloudAuthUser? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId])
+  @@map("cloud_auth_device_codes")
 }
 
 // ==========================================

@@ -4,7 +4,7 @@
 // ==========================================
 
 model Account {
-  id               String    @id // same as AuthIdentity.id
+  id               String    @id // same as CloudAuthUser.id for cloud accounts
   status           String    @default("ACTIVE") // AccountStatus: ACTIVE | INACTIVE | SUSPENDED | DELETED
   // profile
   profile          Json
@@ -27,7 +27,7 @@ model Account {
   deletedAt        DateTime? @map("deleted_at")
 
   // 关联关系
-  identity AuthIdentity @relation(fields: [id], references: [id], onDelete: Cascade)
+  cloudUser CloudAuthUser @relation(fields: [id], references: [id], onDelete: Cascade)
 
   // 关联的业务模块
   editorWorkspaces                EditorWorkspace[]

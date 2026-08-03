@@ -35,10 +35,6 @@
       "types": "./dist/modules/account/index.d.ts",
       "import": "./dist/modules/account/index.js"
     },
-    "./authentication": {
-      "types": "./dist/modules/authentication/index.d.ts",
-      "import": "./dist/modules/authentication/index.js"
-    },
     "./schedule": {
       "types": "./dist/modules/schedule/index.d.ts",
       "import": "./dist/modules/schedule/index.js"

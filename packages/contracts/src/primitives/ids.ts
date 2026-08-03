@@ -12,12 +12,6 @@ export type ExampleId = string & { readonly __brand: 'ExampleId' };
 /** 账户/身份 ID */
 export type IdentityId = string & { readonly __brand: 'IdentityId' };
 
-/** 认证凭证 ID */
-export type AuthCredentialId = string & { readonly __brand: 'AuthCredentialId' };
-
-/** 认证会话 ID */
-export type AuthSessionId = string & { readonly __brand: 'AuthSessionId' };
-
 /** 目标 ID */
 export type GoalId = string & { readonly __brand: 'GoalId' };
 
@@ -193,10 +187,6 @@ export type CodeSnippetId = string & { readonly __brand: 'CodeSnippetId' };
 export const ID_PREFIXES = {
   // === 共享 ===
   IdentityId: 'IdentityId',
-
-  // === Authentication ===
-  AuthCredentialId: 'AuthCredentialId',
-  AuthSessionId: 'AuthSessionId',
 
   // === Goal ===
   GoalId: 'IGoalId',

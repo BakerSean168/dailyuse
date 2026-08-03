@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { detectHostEnvShadowing } from './env-shadow.mjs';
-import { mergeLocalDockerWebOrigins } from './local-compose.mjs';
+import {
+  createLocalDockerAuthBaseUrl,
+  createLocalDockerWebUrl,
+  mergeLocalDockerWebOrigins,
+} from './local-compose.mjs';
 
 describe('detectHostEnvShadowing', () => {
   it('warns when host process env differs from env-file for critical keys', () => {
@@ -38,6 +42,18 @@ describe('mergeLocalDockerWebOrigins', () => {
         ',',
       ),
     ).toEqual(['https://app.example.com', 'http://localhost:12137', 'http://127.0.0.1:12137']);
+  });
+});
+
+describe('createLocalDockerAuthBaseUrl', () => {
+  it('uses the resolved machine API port for Better Auth callbacks', () => {
+    expect(createLocalDockerAuthBaseUrl('12136')).toBe('http://localhost:12136/api/auth');
+  });
+});
+
+describe('createLocalDockerWebUrl', () => {
+  it('uses the resolved machine Web port for device confirmation pages', () => {
+    expect(createLocalDockerWebUrl('12137')).toBe('http://localhost:12137');
   });
 });
 

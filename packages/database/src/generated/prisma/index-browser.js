@@ -308,69 +308,63 @@ exports.Prisma.LangGraphCheckpointWriteScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.AuthIdentityScalarFieldEnum = {
+exports.Prisma.CloudAuthUserScalarFieldEnum = {
   id: 'id',
-  status: 'status',
-  failedLoginAttempts: 'failedLoginAttempts',
-  lastFailedAttempt: 'lastFailedAttempt',
-  lockedUntil: 'lockedUntil',
-  version: 'version',
+  name: 'name',
+  email: 'email',
+  emailVerified: 'emailVerified',
+  image: 'image',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.AuthIdentifierScalarFieldEnum = {
+exports.Prisma.CloudAuthSessionScalarFieldEnum = {
   id: 'id',
-  identityId: 'identityId',
-  type: 'type',
-  value: 'value',
-  isVerified: 'isVerified',
-  createdAt: 'createdAt'
+  userId: 'userId',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.AuthOAuthBindingScalarFieldEnum = {
+exports.Prisma.CloudAuthProviderAccountScalarFieldEnum = {
   id: 'id',
-  identityId: 'identityId',
-  provider: 'provider',
-  providerSubjectId: 'providerSubjectId',
+  userId: 'userId',
+  accountId: 'accountId',
+  providerId: 'providerId',
   accessToken: 'accessToken',
   refreshToken: 'refreshToken',
-  expiresAt: 'expiresAt',
+  idToken: 'idToken',
+  accessTokenExpiresAt: 'accessTokenExpiresAt',
+  refreshTokenExpiresAt: 'refreshTokenExpiresAt',
+  scope: 'scope',
+  password: 'password',
   createdAt: 'createdAt',
-  lastUsedAt: 'lastUsedAt'
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.AuthCredentialScalarFieldEnum = {
+exports.Prisma.CloudAuthVerificationScalarFieldEnum = {
   id: 'id',
-  identityId: 'identityId',
-  type: 'type',
+  identifier: 'identifier',
+  value: 'value',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CloudAuthDeviceCodeScalarFieldEnum = {
+  id: 'id',
+  deviceCode: 'deviceCode',
+  userCode: 'userCode',
+  userId: 'userId',
+  expiresAt: 'expiresAt',
   status: 'status',
-  passwordHash: 'passwordHash',
-  passwordLastChangedAt: 'passwordLastChangedAt',
-  version: 'version',
-  createdAt: 'createdAt',
-  lastUsedAt: 'lastUsedAt',
-  deletedAt: 'deletedAt'
-};
-
-exports.Prisma.AuthSessionScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  refreshTokenHash: 'refreshTokenHash',
-  deviceId: 'deviceId',
-  deviceFingerprint: 'deviceFingerprint',
-  deviceType: 'deviceType',
-  deviceName: 'deviceName',
-  os: 'os',
-  browser: 'browser',
-  ipAddress: 'ipAddress',
-  location: 'location',
-  version: 'version',
-  createdAt: 'createdAt',
-  expiresAt: 'expiresAt',
-  lastActiveAt: 'lastActiveAt',
-  deletedAt: 'deletedAt'
+  lastPolledAt: 'lastPolledAt',
+  pollingInterval: 'pollingInterval',
+  clientId: 'clientId',
+  scope: 'scope'
 };
 
 exports.Prisma.EditorWorkspaceScalarFieldEnum = {
@@ -1340,11 +1334,11 @@ exports.Prisma.ModelName = {
   AgentRunCheckpoint: 'AgentRunCheckpoint',
   LangGraphCheckpoint: 'LangGraphCheckpoint',
   LangGraphCheckpointWrite: 'LangGraphCheckpointWrite',
-  AuthIdentity: 'AuthIdentity',
-  AuthIdentifier: 'AuthIdentifier',
-  AuthOAuthBinding: 'AuthOAuthBinding',
-  AuthCredential: 'AuthCredential',
-  AuthSession: 'AuthSession',
+  CloudAuthUser: 'CloudAuthUser',
+  CloudAuthSession: 'CloudAuthSession',
+  CloudAuthProviderAccount: 'CloudAuthProviderAccount',
+  CloudAuthVerification: 'CloudAuthVerification',
+  CloudAuthDeviceCode: 'CloudAuthDeviceCode',
   EditorWorkspace: 'EditorWorkspace',
   EditorWorkspaceSession: 'EditorWorkspaceSession',
   EditorWorkspaceSessionGroup: 'EditorWorkspaceSessionGroup',

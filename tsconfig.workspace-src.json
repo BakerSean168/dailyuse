@@ -63,11 +63,11 @@
       "@memoflow/account/*": [
         "packages/account/src/*/index.ts"
       ],
-      "@memoflow/authentication": [
-        "packages/authentication/src/index.ts"
+      "@memoflow/cloud-auth": [
+        "packages/cloud-auth/src/index.ts"
       ],
-      "@memoflow/authentication/*": [
-        "packages/authentication/src/*/index.ts"
+      "@memoflow/cloud-auth/*": [
+        "packages/cloud-auth/src/*/index.ts"
       ],
       "@memoflow/goal": [
         "packages/goal/src/index.ts"

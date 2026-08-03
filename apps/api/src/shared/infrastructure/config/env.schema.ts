@@ -35,9 +35,23 @@ export const envSchema = z.object({
     .preprocess(emptyStringToUndefined, z.string().trim().min(1).optional())
     .describe('Named runtime lane used to identify managed local processes (for example e2e)'),
 
+  LOCAL_VALIDATION: z
+    .enum(['0', '1'])
+    .default('0')
+    .transform((value) => value === '1')
+    .describe('Expose local-only validation controls such as captured email links'),
+
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
 
   API_HOST: z.string().default('localhost'),
+
+  AUTH_BASE_URL: z
+    .preprocess(emptyStringToUndefined, z.string().url().optional())
+    .describe('Canonical public Better Auth endpoint, including /api/auth'),
+
+  MEMOFLOW_WEB_URL: z
+    .preprocess(emptyStringToUndefined, z.string().url().optional())
+    .describe('Canonical public MemoFlow Web URL used by browser authentication flows'),
 
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 
@@ -251,6 +265,31 @@ export const envSchema = z.object({
   // ========== 构建信息（CI 注入）==========
   BUILD_TIMESTAMP: z.string().optional(),
   GIT_COMMIT: z.string().optional(),
+}).superRefine((env, context) => {
+  if (env.NODE_ENV !== 'production') return;
+
+  for (const key of ['AUTH_BASE_URL', 'MEMOFLOW_WEB_URL'] as const) {
+    const value = env[key];
+    if (!value) {
+      context.addIssue({
+        code: 'custom',
+        path: [key],
+        message: `${key} is required in production`,
+      });
+      continue;
+    }
+
+    const url = new URL(value);
+    const loopbackHttp = url.protocol === 'http:'
+      && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if (url.protocol !== 'https:' && !(env.LOCAL_VALIDATION && loopbackHttp)) {
+      context.addIssue({
+        code: 'custom',
+        path: [key],
+        message: `${key} must use HTTPS in production`,
+      });
+    }
+  }
 });
 
 /**

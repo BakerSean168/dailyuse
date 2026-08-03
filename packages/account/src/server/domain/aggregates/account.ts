@@ -140,8 +140,8 @@ export class Account extends AggregateRoot<IdentityId> {
   }
 
   /**
-   * Project verified login email from Authentication onto ContactEmail.
-   * Auth is the source of truth for login email ownership.
+   * Project verified login email from Cloud Auth onto ContactEmail.
+   * Cloud Auth is the source of truth for login email ownership.
    */
   public syncVerifiedEmail(address: string): void {
     const next = ContactEmail.create({

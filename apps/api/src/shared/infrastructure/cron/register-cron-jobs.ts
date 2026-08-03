@@ -16,7 +16,9 @@ const logger = createLogger('CronJobRegistration');
  * Create a CronSchedulerManager with all cron jobs registered.
  * The returned scheduler is not started — call .start() when ready.
  */
-export function createCronScheduler(): CronSchedulerManager {
+export function createCronScheduler(options?: {
+  cleanupExpiredDeviceCodes: () => Promise<number>;
+}): CronSchedulerManager {
   const scheduler = new CronSchedulerManager();
 
   logger.info('Registering all cron jobs...');
@@ -29,6 +31,18 @@ export function createCronScheduler(): CronSchedulerManager {
       schedule: env.SNAPSHOT_REBUILD_SCHEDULE,
       task: () => rebuildAllProfileSnapshots(snapshotRootDir),
       enabled: env.SNAPSHOT_REBUILD_ENABLED,
+      timezone: env.TZ,
+    });
+  }
+
+  if (options) {
+    scheduler.register({
+      name: 'cloud-auth:expired-device-code-cleanup',
+      schedule: '0 * * * *',
+      task: async () => {
+        const deleted = await options.cleanupExpiredDeviceCodes();
+        logger.info('Expired cloud auth device codes removed', { deleted });
+      },
       timezone: env.TZ,
     });
   }

@@ -74,4 +74,18 @@ describe('createCronScheduler', () => {
 
     expect(mocks.register).not.toHaveBeenCalled();
   });
+
+  it('registers hourly expired device-code cleanup when cloud auth provides it', async () => {
+    const cleanupExpiredDeviceCodes = vi.fn().mockResolvedValue(3);
+    const { createCronScheduler } = await import('./register-cron-jobs.js');
+
+    createCronScheduler({ cleanupExpiredDeviceCodes });
+
+    const cleanupJob = mocks.register.mock.calls
+      .map(([job]) => job as { name: string; schedule: string; task: () => Promise<void> })
+      .find((job) => job.name === 'cloud-auth:expired-device-code-cleanup');
+    expect(cleanupJob).toMatchObject({ schedule: '0 * * * *' });
+    await cleanupJob?.task();
+    expect(cleanupExpiredDeviceCodes).toHaveBeenCalledOnce();
+  });
 });

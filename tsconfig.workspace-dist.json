@@ -53,11 +53,11 @@
       "@memoflow/account/*": [
         "packages/account/dist/*/index.d.ts"
       ],
-      "@memoflow/authentication": [
-        "packages/authentication/dist/index.d.ts"
+      "@memoflow/cloud-auth": [
+        "packages/cloud-auth/dist/index.d.ts"
       ],
-      "@memoflow/authentication/*": [
-        "packages/authentication/dist/*/index.d.ts"
+      "@memoflow/cloud-auth/*": [
+        "packages/cloud-auth/dist/*/index.d.ts"
       ],
       "@memoflow/goal": [
         "packages/goal/dist/index.d.ts"

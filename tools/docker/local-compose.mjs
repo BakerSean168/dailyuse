@@ -105,6 +105,14 @@ export function mergeLocalDockerWebOrigins(webHostPort, ...configuredValues) {
   ].join(',');
 }
 
+export function createLocalDockerAuthBaseUrl(apiHostPort) {
+  return `http://localhost:${apiHostPort}/api/auth`;
+}
+
+export function createLocalDockerWebUrl(webHostPort) {
+  return `http://localhost:${webHostPort}`;
+}
+
 /**
  * Force local-docker host ports from SSOT so local stack never steals host-dev/e2e ports.
  * Secrets and service env still come from .env.production.local.
@@ -261,6 +269,12 @@ export function createLocalComposeRuntimeEnv(options = {}) {
   }
 
   applyLocalDockerHostPortIsolation(env, envFileMap, machineEnvFileMap, { quiet });
+
+  // Better Auth embeds this public origin in verification and reset links.
+  // Keep both API callbacks and browser confirmation pages aligned with the
+  // resolved host ports used by Compose.
+  env.AUTH_BASE_URL = createLocalDockerAuthBaseUrl(env.API_HOST_PORT);
+  env.MEMOFLOW_WEB_URL = createLocalDockerWebUrl(env.WEB_HOST_PORT);
 
   // Compose defaults use the shared local-docker ports. When a machine opts
   // into isolated overrides, keep browser-facing CORS allowlists aligned with

@@ -161,6 +161,8 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-warn}
       API_PORT: 3000
       API_HOST: 0.0.0.0
+      AUTH_BASE_URL: ${AUTH_BASE_URL:?AUTH_BASE_URL is required}
+      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:?MEMOFLOW_WEB_URL is required}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:?set DB_NAME}
