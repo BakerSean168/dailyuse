@@ -1,7 +1,7 @@
 /**
  * Desktop renderer entry dispatcher.
  *
- * Keep startup tiny so `#/auth` can boot without paying for the entire
+ * Keep startup tiny so `#/profile-access` can boot without paying for the entire
  * authenticated renderer shell.
  */
 import { applyDocumentIcons, logo128, logoIco } from '@memoflow/assets';
@@ -48,8 +48,8 @@ function getHashPath(): string {
   return path || '/';
 }
 
-function isAuthHashRoute(path: string): boolean {
-  return path === '/auth' || path.startsWith('/auth/');
+function isProfileAccessHashRoute(path: string): boolean {
+  return path === '/profile-access' || path.startsWith('/profile-access/');
 }
 
 async function startRenderer() {
@@ -68,7 +68,7 @@ async function startRenderer() {
 
   ensureElectronBridgeAvailable();
 
-  if (isAuthHashRoute(getHashPath())) {
+  if (isProfileAccessHashRoute(getHashPath())) {
     const { bootstrapAuthApp } = await import('./bootstrap/auth');
     await bootstrapAuthApp();
     return;

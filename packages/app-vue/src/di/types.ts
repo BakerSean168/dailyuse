@@ -13,7 +13,7 @@
 
 import type { AccountClientPort } from '@memoflow/account/client';
 import type { AIClientPort } from '@memoflow/ai/client';
-import type { AuthenticationClientPort } from '@memoflow/authentication/client';
+import type { CloudAuthClientPort } from '@memoflow/contracts';
 import type { GovernanceClientPort } from '@memoflow/governance/client';
 import type { GoalClientPort } from '@memoflow/goal/client';
 import type { NotificationClientPort } from '@memoflow/notification/client';
@@ -30,7 +30,7 @@ import type { Component } from 'vue';
 // (InjectionKey naming surface; not a second interface body dual to force-merge).
 
 export type IAccountService = AccountClientPort;
-export type IAuthService = AuthenticationClientPort;
+export type IAuthService = CloudAuthClientPort;
 export type IGoalService = GoalClientPort;
 export type ITaskService = TaskClientPort;
 export type IScheduleService = ScheduleClientPort;

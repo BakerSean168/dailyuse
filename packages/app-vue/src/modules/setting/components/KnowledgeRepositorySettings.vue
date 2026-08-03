@@ -502,22 +502,24 @@ import {
 } from '@memoflow/contracts/repository';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
+import { readDesktopAccessSnapshot } from '../../../shared/utils/desktop-profile-access';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');
 const desktopBridge = inject(DESKTOP_BRIDGE_KEY, undefined);
-const authStore = useAuthenticationStore();
-// Desktop AuthMode values are ONLINE_USER/OFFLINE_USER/GUEST; Web may use provider names
-// (password/github). Block only local-only profiles from expanding GitHub cloud authorization.
-const isGuest = computed(() => {
-  const mode = authStore.authMode;
-  return mode === 'GUEST' || mode === 'guest';
-});
-const isOfflineOnly = computed(() => authStore.authMode === 'OFFLINE_USER');
-const canUseCloudKnowledgeRepo = computed(() => !isGuest.value && !isOfflineOnly.value);
+const desktopApi = typeof window !== 'undefined' && 'electronAPI' in window
+  ? (window as Window & { electronAPI: { invoke(channel: string, ...args: unknown[]): Promise<unknown> } }).electronAPI
+  : undefined;
+const desktopAccess = ref<Awaited<ReturnType<typeof readDesktopAccessSnapshot>>>(null);
+const desktopAccessLoaded = ref(desktopApi === undefined);
+const canUseCloudKnowledgeRepo = computed(
+  () => desktopApi === undefined || (
+    desktopAccessLoaded.value && desktopAccess.value?.capabilities.repositoryConnection === true
+  ),
+);
+const isGuest = computed(() => desktopAccess.value?.profile?.profileKind === 'guest');
 
 const connections = ref<KnowledgeRepositoryConnectionClientDTO[]>([]);
 const installationRepositories = ref<GitHubInstallationRepositoryDTO[]>([]);
@@ -920,6 +922,10 @@ function statusLabel(status: KnowledgeRepositoryConnectionStatus): string {
 }
 
 onMounted(async () => {
+  if (desktopApi) {
+    desktopAccess.value = await readDesktopAccessSnapshot(desktopApi);
+    desktopAccessLoaded.value = true;
+  }
   await Promise.all([loadConnections(), loadLocalVault()]);
   await completeInstallationFromQuery();
 });

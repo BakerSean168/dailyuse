@@ -4,7 +4,7 @@ import {
   type RouteRecordRaw,
   type RouterHistory,
 } from 'vue-router';
-import { createAuthGuard } from './guards';
+import { createAppAccessGuard } from './guards';
 
 import AppShell from '../layouts/shell/AppShell.vue';
 import ShellHomeRoute from '../layouts/shell/shell-home-route';
@@ -23,7 +23,7 @@ import { aiRoutes } from '../modules/ai/router';
 
 export function createAppRouter(options?: {
   history?: RouterHistory;
-  isAuthenticated?: () => boolean;
+  canAccessApp?: () => boolean;
   loginRoute?: string;
   authView?: RouteRecordRaw['component'];
   additionalRoutes?: RouteRecordRaw[];
@@ -31,7 +31,7 @@ export function createAppRouter(options?: {
 }) {
   const {
     history = createWebHistory(),
-    isAuthenticated,
+    canAccessApp,
     loginRoute,
     authView,
     additionalRoutes = [],
@@ -91,7 +91,7 @@ export function createAppRouter(options?: {
     routes,
   });
 
-  router.beforeEach(createAuthGuard({ isAuthenticated, loginRoute }));
+  router.beforeEach(createAppAccessGuard({ canAccessApp, accessEntryRoute: loginRoute }));
 
   return router;
 }

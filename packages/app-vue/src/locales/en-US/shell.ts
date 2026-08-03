@@ -75,10 +75,12 @@ export default {
     "menu": "Account menu",
     "signedIn": "Signed in",
     "guestIdentity": "Guest",
+    "localProfile": "Local Profile (sync paused)",
     "accountAndPrivacy": "Account & privacy",
     "settings": "Settings",
     "logout": "Sign out",
-    "loginOrRegister": "Sign in / Register"
+    "loginOrRegister": "Sign in / Register",
+    "connectCloud": "Connect MemoFlow account"
   },
   "helpMenu": {
     "shortcuts": "Keyboard shortcuts",
@@ -90,5 +92,25 @@ export default {
   "auth": {
     "unverifiedBanner": "Verify your email to unlock all features",
     "unverifiedAction": "Verify now"
+  },
+  "cloudConnection": {
+    "title": "Connect MemoFlow account",
+    "description": "Authentication continues in your browser. Your local data stays available.",
+    "ready": "Ready to connect",
+    "localProfile": "Current local Profile",
+    "code": "Authorization code",
+    "continue": "Continue in browser",
+    "reopen": "Reopen browser",
+    "copy": "Copy authorization code",
+    "status": {
+      "requesting_code": "Creating connection request",
+      "awaiting_authorization": "Waiting for browser confirmation",
+      "connecting_profile": "Connecting this Profile",
+      "connected": "Cloud account connected",
+      "denied": "Connection denied",
+      "expired": "Connection request expired",
+      "cancelled": "Connection cancelled",
+      "failed": "Connection failed"
+    }
   }
 } as const;

@@ -23,9 +23,9 @@ function buildLoginRedirectUrl(loginRoute: string, redirectPath: string): string
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
-export function createAuthGuard(options?: {
-  isAuthenticated?: () => boolean;
-  loginRoute?: string;
+export function createAppAccessGuard(options?: {
+  canAccessApp?: () => boolean;
+  accessEntryRoute?: string;
   /**
    * When true, unauthenticated access performs a hard navigation to the login route
    * so the platform AuthApp owns `/auth` (Web). Desktop keeps SPA navigation.
@@ -33,23 +33,23 @@ export function createAuthGuard(options?: {
    */
   useHardLoginRedirect?: boolean;
 }): NavigationGuard {
-  const { isAuthenticated, loginRoute = '/auth', useHardLoginRedirect } = options ?? {};
+  const { canAccessApp, accessEntryRoute = '/auth', useHardLoginRedirect } = options ?? {};
 
   return (to: RouteLocationNormalized) => {
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth !== false);
     if (!requiresAuth) return true;
 
-    if (isAuthenticated?.()) return true;
+    if (canAccessApp?.()) return true;
 
     if (shouldUseHardLoginRedirect(useHardLoginRedirect)) {
       if (typeof window !== 'undefined') {
-        window.location.replace(buildLoginRedirectUrl(loginRoute, to.fullPath));
+        window.location.replace(buildLoginRedirectUrl(accessEntryRoute, to.fullPath));
       }
       return false;
     }
 
     return {
-      path: loginRoute,
+      path: accessEntryRoute,
       query: { redirect: to.fullPath },
     };
   };

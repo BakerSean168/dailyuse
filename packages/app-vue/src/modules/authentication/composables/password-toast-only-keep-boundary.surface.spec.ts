@@ -47,7 +47,8 @@ describe('password/checkAvailability toast-only keep-boundary (residual 1075)', 
     // Inline keep-boundary comment near checkAvailability failure path
     const idx = account.indexOf('async function checkAvailability');
     expect(idx).toBeGreaterThanOrEqual(0);
-    const slice = account.slice(idx, idx + 800);
+    const nextFunction = account.indexOf('async function updateSettings', idx);
+    const slice = account.slice(idx, nextFunction);
     expect(slice).toContain('Residual 1075 keep-boundary');
     expect(slice).not.toContain('setError(');
     expect(slice).toContain('toast.error');

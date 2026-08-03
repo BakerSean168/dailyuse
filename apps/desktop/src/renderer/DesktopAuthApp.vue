@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Toaster } from '@memoflow/ui-vue-shadcn/components/ui/sonner';
 import { GlobalErrorBoundary } from '@memoflow/app-vue';
-import { DesktopAuthView } from '@memoflow/app-vue/desktop';
+import { DesktopProfileAccessView } from '@memoflow/app-vue/desktop';
 </script>
 
 <template>
   <div class="desktop-auth-shell">
     <GlobalErrorBoundary>
-      <DesktopAuthView />
+      <DesktopProfileAccessView />
     </GlobalErrorBoundary>
   </div>
 

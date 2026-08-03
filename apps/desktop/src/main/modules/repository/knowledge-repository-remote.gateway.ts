@@ -14,7 +14,6 @@ import type {
 } from '@memoflow/contracts/repository';
 import { fail, ok, type Result } from '@memoflow/contracts/result';
 import { createApiUrl } from '../../utils/api-config';
-import { toCloudAccessToken } from '../authentication/infrastructure/session-types';
 // Residual 947: isRecord/hasDataKey duals retired — sole desktop http-envelope-guards.
 import { hasDataKey, isRecord } from '../../utils/http-envelope-guards';
 
@@ -35,7 +34,7 @@ interface HttpEnvelope<T> {
 }
 
 export interface KnowledgeRepositoryRemoteGatewayOptions {
-  getAccessToken(): string | null;
+  getAccessToken(): Promise<string | null>;
   fetchImpl?: typeof fetch;
   createApiUrl?: (path: string) => string;
 }
@@ -136,7 +135,7 @@ export class KnowledgeRepositoryRemoteGateway {
     path: string,
     options: { method: 'GET' | 'POST' | 'DELETE'; body?: unknown },
   ): Promise<Result<T>> {
-    const accessToken = toCloudAccessToken(this.options.getAccessToken());
+    const accessToken = await this.options.getAccessToken();
     if (!accessToken) {
       return fail({
         code: 'UNAUTHORIZED',

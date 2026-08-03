@@ -6,7 +6,7 @@ describe('createAppRouter', () => {
   it('mounts the AI Agent Workspace at the root route', () => {
     const router = createAppRouter({
       history: createMemoryHistory(),
-      isAuthenticated: () => true,
+      canAccessApp: () => true,
     });
 
     const route = router.resolve('/');
@@ -18,7 +18,7 @@ describe('createAppRouter', () => {
   it('redirects the legacy /ai/chat entry to the AI workspace root', async () => {
     const router = createAppRouter({
       history: createMemoryHistory(),
-      isAuthenticated: () => true,
+      canAccessApp: () => true,
     });
 
     await router.push('/ai/chat');
@@ -30,7 +30,7 @@ describe('createAppRouter', () => {
   it('defaults the /auth route to the platform AuthApp entry (not in-shell guest AuthView)', async () => {
     const router = createAppRouter({
       history: createMemoryHistory(),
-      isAuthenticated: () => false,
+      canAccessApp: () => false,
     });
 
     const route = router.getRoutes().find((item) => item.path === '/auth');

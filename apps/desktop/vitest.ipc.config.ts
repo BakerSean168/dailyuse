@@ -38,14 +38,6 @@ export default defineConfig({
         replacement: resolve(__dirname, '../../packages/utils/src'),
       },
       {
-        find: '@memoflow/authentication/electron',
-        replacement: resolve(__dirname, '../../packages/authentication/src/electron/index.ts'),
-      },
-      {
-        find: '@memoflow/authentication',
-        replacement: resolve(__dirname, '../../packages/authentication/src/index.ts'),
-      },
-      {
         find: '@memoflow/account/electron',
         replacement: resolve(__dirname, '../../packages/account/src/electron/index.ts'),
       },

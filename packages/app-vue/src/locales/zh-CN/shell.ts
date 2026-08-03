@@ -2,7 +2,7 @@ export default {
   "newChat": "新对话",
   "search": "搜索",
   "help": "帮助",
-  "guest": "未登录",
+  "guest": "本地访客",
   "back": "后退",
   "forward": "前进",
   "showSidePanel": "显示右侧面板",
@@ -75,10 +75,12 @@ export default {
     "menu": "账户菜单",
     "signedIn": "已登录",
     "guestIdentity": "访客身份",
+    "localProfile": "本地 Profile（同步已暂停）",
     "accountAndPrivacy": "账户与隐私",
     "settings": "设置",
     "logout": "退出登录",
-    "loginOrRegister": "登录/注册"
+    "loginOrRegister": "登录/注册",
+    "connectCloud": "连接 MemoFlow 账号"
   },
   "helpMenu": {
     "shortcuts": "快捷键",
@@ -90,5 +92,25 @@ export default {
   "auth": {
     "unverifiedBanner": "验证邮箱后可解锁全部功能",
     "unverifiedAction": "去验证"
+  },
+  "cloudConnection": {
+    "title": "连接 MemoFlow 账号",
+    "description": "账号认证将在系统浏览器中完成，本地数据不会因此锁定。",
+    "ready": "准备连接云端",
+    "localProfile": "当前本地 Profile",
+    "code": "授权码",
+    "continue": "在浏览器中继续",
+    "reopen": "重新打开浏览器",
+    "copy": "复制授权码",
+    "status": {
+      "requesting_code": "正在创建连接请求",
+      "awaiting_authorization": "等待浏览器确认",
+      "connecting_profile": "正在连接当前 Profile",
+      "connected": "已连接云端账号",
+      "denied": "连接已被拒绝",
+      "expired": "连接请求已过期",
+      "cancelled": "连接已取消",
+      "failed": "连接失败"
+    }
   }
 } as const;

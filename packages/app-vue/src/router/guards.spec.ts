@@ -4,7 +4,7 @@ import type {
   RouteLocationNormalizedLoaded,
 } from 'vue-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createAuthGuard } from './guards';
+import { createAppAccessGuard } from './guards';
 
 const createTo = (
   fullPath: string,
@@ -15,13 +15,13 @@ const createTo = (
     matched: [{ meta: { requiresAuth } }],
   }) as unknown as RouteLocationNormalized;
 
-describe('createAuthGuard', () => {
+describe('createAppAccessGuard', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   it('allows route when authentication is not required', () => {
-    const guard = createAuthGuard({ useHardLoginRedirect: false });
+    const guard = createAppAccessGuard({ useHardLoginRedirect: false });
     const result = guard(
       createTo('/auth', false),
       {} as RouteLocationNormalizedLoaded,
@@ -32,9 +32,9 @@ describe('createAuthGuard', () => {
   });
 
   it('redirects to login route with SPA navigation when hard redirect is disabled', () => {
-    const guard = createAuthGuard({
-      isAuthenticated: () => false,
-      loginRoute: '/signin',
+    const guard = createAppAccessGuard({
+      canAccessApp: () => false,
+      accessEntryRoute: '/signin',
       useHardLoginRedirect: false,
     });
     const result = guard(
@@ -54,9 +54,9 @@ describe('createAuthGuard', () => {
       replace,
     });
 
-    const guard = createAuthGuard({
-      isAuthenticated: () => false,
-      loginRoute: '/auth',
+    const guard = createAppAccessGuard({
+      canAccessApp: () => false,
+      accessEntryRoute: '/auth',
       useHardLoginRedirect: true,
     });
     const result = guard(
@@ -70,7 +70,7 @@ describe('createAuthGuard', () => {
   });
 
   it('allows route when auth is required and user is authenticated', () => {
-    const guard = createAuthGuard({ isAuthenticated: () => true, useHardLoginRedirect: false });
+    const guard = createAppAccessGuard({ canAccessApp: () => true, useHardLoginRedirect: false });
     const result = guard(
       createTo('/dashboard', true),
       {} as RouteLocationNormalizedLoaded,

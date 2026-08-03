@@ -22,6 +22,10 @@
       "types": "./dist/desktop.d.ts",
       "import": "./dist/desktop.js"
     },
+    "./shared/utils/desktop-profile-access": {
+      "types": "./dist/shared/utils/desktop-profile-access.d.ts",
+      "import": "./dist/shared/utils/desktop-profile-access.js"
+    },
     "./plugins/i18n": {
       "types": "./dist/plugins/i18n.d.ts",
       "import": "./dist/plugins/i18n.js"
@@ -88,7 +92,7 @@
     "@codemirror/view": "6.39.14",
     "@memoflow/account": "workspace:*",
     "@memoflow/ai": "workspace:*",
-    "@memoflow/authentication": "workspace:*",
+    "@memoflow/cloud-auth": "workspace:*",
     "@memoflow/assets": "workspace:*",
     "@memoflow/contracts": "workspace:*",
     "@memoflow/data-portability": "workspace:*",

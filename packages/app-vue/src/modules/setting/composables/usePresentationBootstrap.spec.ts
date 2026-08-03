@@ -5,7 +5,6 @@ import { ok } from '@memoflow/contracts/result';
 import type { UserSettingClientDTO, UserSettingPreferences } from '@memoflow/contracts/setting';
 import { createTestPinia } from '@memoflow/test-utils';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
-import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import { useUserSettingStore } from '../stores/user-setting-store';
 import { usePresentationBootstrap } from './usePresentationBootstrap';
@@ -79,10 +78,6 @@ describe('usePresentationBootstrap', () => {
     const { composable, service } = mountComposable({
       getUserSettings: vi.fn().mockResolvedValue(ok(setting)),
     });
-
-    const authStore = useAuthenticationStore();
-    authStore.setCurrentIdentity({ id: 'identity-1' } as never);
-    authStore.setAccessToken('token');
 
     await composable.loadUserSettings();
 

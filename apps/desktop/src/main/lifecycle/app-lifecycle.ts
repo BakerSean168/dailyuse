@@ -7,10 +7,10 @@
  * - app.on('window-all-closed') - All windows closed
  * - app.on('before-quit') - Cleanup before exit
  *
- * 登录流程（Steam-like）：
- * 1. 检查是否存在已记住账号
- * 2. 始终先显示登录窗口
- * 3. 登录窗口内部根据 remembered account / auto-login 状态决定交互
+ * Desktop Profile 启动流程：
+ * 1. 读取或创建持久化本地 Profile
+ * 2. 依据本地 PIN policy 决定直接打开或进入解锁窗口
+ * 3. Profile 打开后独立恢复云端连接，不以 cloud session 控制本地准入
  *
  * @module lifecycle/app-lifecycle
  */
@@ -21,17 +21,13 @@ import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { initNotificationService } from '../services';
 import type { DesktopMainRuntime } from '../desktop-main-runtime';
 import type { WindowManager } from './window-manager';
-import { stopScheduleRuntime } from '@memoflow/schedule/electron';
 import { createLogger } from '@memoflow/utils/logger';
 const logger = createLogger('AppLifecycle');
 
 /**
  * Handles the application 'ready' event.
  *
- * 登录流程（Steam-like）：
- * 1. 检查是否存在已记住账号
- * 2. 始终先显示登录窗口
- * 3. 登录窗口内部根据 remembered account / auto-login 状态决定交互
+ * Profile Access is the only Desktop application gate.
  *
  * @param {() => Promise<void>} initializeApp - The application initialization function to be called.
  * @returns {Promise<void>} A promise that resolves when initialization is complete.
@@ -47,25 +43,21 @@ async function handleAppReady(
   const mainRuntime = getMainRuntime();
   const runtimeManager = mainRuntime.profileRuntimeManager;
 
-  // 决定显示哪个窗口
+  // Local Profile is the desktop access gate. Cloud authentication is optional
+  // and must never decide whether local data can be opened.
   windowManager.setRuntimeManager(runtimeManager);
-  const rememberedAccounts = runtimeManager.getRememberedAccountsService();
-  const rememberedAccountList = await rememberedAccounts.list();
-  const quickLoginAccounts = rememberedAccountList.map((account) => ({
-    id: account.identityId,
-    username: account.nickname || account.identifier,
-    email: account.identifier,
-    avatarUrl: account.avatarUrl ?? undefined,
-    lastLoginAt: account.lastLoginAt,
-  }));
-
-  // Defensive: stop any stale schedule runtime from a previous crash recovery
-  stopScheduleRuntime();
-  const win = windowManager.createLoginWindow({
-    hasQuickLoginAccounts: quickLoginAccounts.length > 0,
-    quickLoginAccounts,
-  });
-  console.log('[Lifecycle] Created login window');
+  const startupProfile = await runtimeManager.getStartupProfile();
+  if (await runtimeManager.hasPin(startupProfile.profileId)) {
+    windowManager.createProfileAccessWindow();
+  } else {
+    const startup = await runtimeManager.activateStartupProfile();
+    await windowManager.transitionToMainWindow(
+      startup.descriptor.profileId,
+      startup.profileResolver.mainWindowStatePath,
+    );
+  }
+  const win = windowManager.getMainWindow() ?? windowManager.getProfileAccessWindow();
+  console.log('[Lifecycle] Desktop Profile access initialized');
 
   // Initialize notification service (requires window to be created)
   if (win) {
@@ -91,17 +83,16 @@ async function handleAppReady(
   // macOS: Re-create window when dock icon is clicked
   app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      const accounts = await rememberedAccounts.list();
-      windowManager.createLoginWindow({
-        hasQuickLoginAccounts: accounts.length > 0,
-        quickLoginAccounts: accounts.map((account) => ({
-          id: account.identityId,
-          username: account.nickname || account.identifier,
-          email: account.identifier,
-          avatarUrl: account.avatarUrl ?? undefined,
-          lastLoginAt: account.lastLoginAt,
-        })),
-      });
+      const candidate = await runtimeManager.getStartupProfile();
+      if (await runtimeManager.hasPin(candidate.profileId)) {
+        windowManager.createProfileAccessWindow();
+      } else {
+        const startupProfile = await runtimeManager.activateStartupProfile();
+        await windowManager.transitionToMainWindow(
+          startupProfile.descriptor.profileId,
+          startupProfile.profileResolver.mainWindowStatePath,
+        );
+      }
     }
   });
 }

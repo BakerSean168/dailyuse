@@ -20,9 +20,14 @@ const mocks = vi.hoisted(() => {
     },
   };
   const authStore = {
-    isAuthenticated: true,
+    hydrateCloudSession: vi.fn(),
     reset: vi.fn(),
   };
+  const accountStore = {
+    setCurrentAccount: vi.fn(),
+    reset: vi.fn(),
+  };
+  const bridge = { invoke: vi.fn() };
   const notificationHook = {
     start: vi.fn(),
   };
@@ -32,6 +37,8 @@ const mocks = vi.hoisted(() => {
     pinia,
     router,
     authStore,
+    accountStore,
+    bridge,
     notificationHook,
     createApp: vi.fn(() => app),
     createPinia: vi.fn(() => pinia),
@@ -41,7 +48,16 @@ const mocks = vi.hoisted(() => {
     createI18nPlugin: vi.fn(() => ({ name: 'desktop-i18n-plugin' })),
     loadLocaleMessages: vi.fn(async () => ({ hello: 'desktop' })),
     translateMessageKey: vi.fn((key: string) => (key === 'dashboard.title' ? 'Dashboard' : key)),
-    hydrateDesktopBootstrapAuthState: vi.fn(async () => true),
+    requireElectronBridge: vi.fn(() => bridge),
+    readDesktopAccessSnapshot: vi.fn(async () => ({ unlockState: 'UNLOCKED' })),
+    getCloudSession: vi.fn(async () => ({
+      ok: true,
+      data: { account: { id: 'cloud-1' }, session: { id: 'session-1' } },
+    })),
+    getMyProfile: vi.fn(async () => ({
+      ok: true,
+      data: { toDTO: () => ({ id: 'cloud-1' }) },
+    })),
     createNotificationStartupHook: vi.fn(() => notificationHook),
     initElectronFeatures: vi.fn(),
     shouldRedirectAuthenticatedDesktopEntry: vi.fn(() => true),
@@ -61,7 +77,8 @@ vi.mock('vue', () => ({
   createApp: mocks.createApp,
 }));
 
-vi.mock('pinia', () => ({
+vi.mock('pinia', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('pinia')>()),
   createPinia: mocks.createPinia,
 }));
 
@@ -81,6 +98,10 @@ vi.mock('@memoflow/app-vue/modules/authentication', () => ({
   useAuthenticationStore: mocks.useAuthenticationStore,
 }));
 
+vi.mock('@memoflow/app-vue/modules/account', () => ({
+  useAccountStore: vi.fn(() => mocks.accountStore),
+}));
+
 vi.mock('@memoflow/app-vue/plugins/i18n', () => ({
   createI18nPlugin: mocks.createI18nPlugin,
   loadLocaleMessages: mocks.loadLocaleMessages,
@@ -88,8 +109,19 @@ vi.mock('@memoflow/app-vue/plugins/i18n', () => ({
 }));
 
 vi.mock('@memoflow/app-vue/desktop', () => ({
-  DesktopAuthView: { name: 'DesktopAuthView' },
-  hydrateDesktopBootstrapAuthState: mocks.hydrateDesktopBootstrapAuthState,
+  readDesktopAccessSnapshot: mocks.readDesktopAccessSnapshot,
+}));
+
+vi.mock('@memoflow/cloud-auth', () => ({
+  createCloudAuthIpcClient: vi.fn(() => ({ getSession: mocks.getCloudSession })),
+}));
+
+vi.mock('@memoflow/account/client', () => ({
+  createAccountIpcClient: vi.fn(() => ({ getMyProfile: mocks.getMyProfile })),
+}));
+
+vi.mock('@memoflow/ipc-client', () => ({
+  createResultIpcClient: vi.fn(() => ({})),
 }));
 
 vi.mock('@memoflow/app-vue/modules/notification', () => ({
@@ -121,6 +153,10 @@ vi.mock('../platform/electron', () => ({
   initElectronFeatures: mocks.initElectronFeatures,
 }));
 
+vi.mock('../platform/electron-bridge', () => ({
+  requireElectronBridge: mocks.requireElectronBridge,
+}));
+
 vi.mock('./route-entry', () => ({
   shouldRedirectAuthenticatedDesktopEntry: mocks.shouldRedirectAuthenticatedDesktopEntry,
 }));
@@ -146,7 +182,11 @@ describe('desktop bootstrapMainApp', () => {
       },
     });
     Object.assign(mocks.authStore, {
-      isAuthenticated: true,
+      hydrateCloudSession: vi.fn(),
+      reset: vi.fn(),
+    });
+    Object.assign(mocks.accountStore, {
+      setCurrentAccount: vi.fn(),
       reset: vi.fn(),
     });
     Object.assign(mocks.notificationHook, {
@@ -154,7 +194,6 @@ describe('desktop bootstrapMainApp', () => {
     });
     document.documentElement.lang = '';
     document.title = '';
-    (window as Window & { electronAPI?: object }).electronAPI = { ping: 'pong' };
     Object.defineProperty(window, 'requestIdleCallback', {
       configurable: true,
       value: mocks.requestIdleCallback,
@@ -168,7 +207,9 @@ describe('desktop bootstrapMainApp', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(mocks.hydrateDesktopBootstrapAuthState).toHaveBeenCalledWith(window.electronAPI);
+    expect(mocks.readDesktopAccessSnapshot).toHaveBeenCalledWith(mocks.bridge);
+    expect(mocks.authStore.hydrateCloudSession).toHaveBeenCalledTimes(1);
+    expect(mocks.accountStore.setCurrentAccount).toHaveBeenCalledWith({ id: 'cloud-1' });
     expect(document.documentElement.lang).toBe('en-US');
     expect(mocks.createAppRouter).toHaveBeenCalledTimes(1);
     expect(mocks.initElectronFeatures).toHaveBeenCalledWith(mocks.app);
@@ -187,8 +228,10 @@ describe('desktop bootstrapMainApp', () => {
     expect(document.title).toBe('Desktop Home - MemoFlow');
   });
 
-  it('resets auth state when desktop auth hydration fails', async () => {
-    mocks.hydrateDesktopBootstrapAuthState.mockRejectedValueOnce(new Error('boom'));
+  it('keeps a locked Profile on the auth route when cloud hydration fails', async () => {
+    mocks.readDesktopAccessSnapshot.mockResolvedValueOnce({ unlockState: 'LOCKED' });
+    mocks.getCloudSession.mockResolvedValueOnce({ ok: false });
+    mocks.getMyProfile.mockResolvedValueOnce({ ok: false });
 
     const { bootstrapMainApp } = await import('./app');
 
@@ -197,8 +240,7 @@ describe('desktop bootstrapMainApp', () => {
     await Promise.resolve();
 
     expect(mocks.authStore.reset).toHaveBeenCalledTimes(1);
+    expect(mocks.accountStore.reset).toHaveBeenCalledTimes(1);
     expect(mocks.router.replace).not.toHaveBeenCalled();
   });
 });
-
-

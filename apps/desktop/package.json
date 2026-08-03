@@ -17,7 +17,7 @@
     "@memoflow/ai": "workspace:*",
     "@memoflow/app-vue": "workspace:*",
     "@memoflow/assets": "workspace:*",
-    "@memoflow/authentication": "workspace:*",
+    "@memoflow/cloud-auth": "workspace:*",
     "@memoflow/contracts": "workspace:*",
     "@memoflow/data-portability": "workspace:*",
     "@memoflow/database": "workspace:*",

@@ -17,7 +17,7 @@
  * - 会话侧栏消费 AIChatView defineExpose 的会话状态（单一 chat session）；
  * - 桌面窗控走 useDesktopWindowControls（Web 端不渲染，V2 决策 #6）。
  */
-import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
@@ -26,7 +26,7 @@ import { useShellRouterSync, AUTO_FOCUS_VIEWPORT } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
 import { hasDesktopAuthApi } from '../../shared/utils/desktop-auth-recovery';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
-import { useAuth } from '../../modules/authentication/composables/useAuth';
+import { useAccountStore } from '../../modules/account/stores/account-store';
 import AIChatView from '../../modules/ai/views/AIChatView.vue';
 import type { ConversationSummary } from '../../modules/ai/composables/types';
 import WindowHeader from './WindowHeader.vue';
@@ -37,6 +37,7 @@ import PanelErrorBoundary from './PanelErrorBoundary.vue';
 import { resolvePanelRouteIdentity } from './panel-cache-key';
 import { DialogDraftScopeKey } from './dialog-draft-store';
 import GlobalComposer from './GlobalComposer.vue';
+import CloudConnectionDialog from './CloudConnectionDialog.vue';
 import StandaloneSettingsLayout from './StandaloneSettingsLayout.vue';
 import {
   COMPOSER_BOTTOM_GAP,
@@ -50,6 +51,8 @@ import {
   SHELL_COMPOSER_DENSITY_KEY,
   SHELL_COMPOSER_MOUNT_KEY,
   SHELL_WORKFLOW_MOUNT_KEY,
+  DESKTOP_ACCESS_SNAPSHOT_KEY,
+  LOGOUT_HANDLER_KEY,
 } from '../../di/keys';
 
 const { t } = useI18n();
@@ -224,18 +227,26 @@ async function handleNewConversation() {
 
 // ── 用户 / 账户入口（侧栏底部菜单，§9） ──
 const authStore = useAuthenticationStore();
-const { isAuthenticated, logout } = useAuth();
-const userName = computed<string | undefined>(() => {
-  const identity = authStore.currentIdentity;
-  const identifier =
-    identity && 'identifiers' in identity
-      ? (identity.identifiers[0] as { value?: string } | undefined)
-      : undefined;
-  return identifier?.value || undefined;
+const accountStore = useAccountStore();
+const { isAuthenticated } = storeToRefs(authStore);
+const logout = inject(LOGOUT_HANDLER_KEY, null);
+const desktopAccess = inject(DESKTOP_ACCESS_SNAPSHOT_KEY, ref(null));
+const cloudConnectionOpen = ref(false);
+const userName = computed<string | undefined>(
+  () => accountStore.currentAccount?.profile.nickname
+    ?? authStore.currentIdentity?.name
+    ?? desktopAccess.value?.profile?.displayName,
+);
+const shellIdentityKind = computed<'guest' | 'registered-local' | 'cloud'>(() => {
+  if (isAuthenticated.value) return 'cloud';
+  if (desktopAccess.value?.profile) {
+    return desktopAccess.value.profile.profileKind === 'guest' ? 'guest' : 'registered-local';
+  }
+  return accountStore.currentAccount ? 'registered-local' : 'guest';
 });
 
 const needsEmailVerification = computed(
-  () => isAuthenticated.value && authStore.currentIdentity?.status === 'Unverified',
+  () => isAuthenticated.value && authStore.currentIdentity?.emailVerified === false,
 );
 
 function goVerifyEmail() {
@@ -407,12 +418,16 @@ function openAccount() {
   void sync.openSettings('/settings?tab=account');
 }
 
-function openLogin() {
+function openCloudConnection() {
+  if (isDesktop) {
+    cloudConnectionOpen.value = true;
+    return;
+  }
   void router.push('/auth').catch(() => {});
 }
 
 async function handleLogout() {
-  await logout();
+  await logout?.();
 }
 
 function returnFromSettings() {
@@ -503,7 +518,8 @@ function panelCacheKey(
         :groups="conversationGroups"
         :active-conversation-id="activeConversationId"
         :user-name="userName"
-        :is-authenticated="isAuthenticated"
+        :identity-kind="shellIdentityKind"
+        :cloud-connected="isAuthenticated"
         :loading="Boolean(aiRef?.conversationListLoading)"
         :is-desktop="isDesktop"
         :width="sidebarWidth"
@@ -513,7 +529,7 @@ function panelCacheKey(
         @open-search="handleNewConversation"
         @open-settings="openSettings"
         @open-account="openAccount"
-        @open-login="openLogin"
+        @open-cloud-connection="openCloudConnection"
         @logout="() => void handleLogout()"
         @start-resize="startSidebarResize"
         @resize-by="resizeSidebarBy"
@@ -613,4 +629,9 @@ function panelCacheKey(
       </div>
     </div>
   </div>
+  <CloudConnectionDialog
+    v-if="isDesktop"
+    v-model:open="cloudConnectionOpen"
+    :profile-name="desktopAccess?.profile?.displayName"
+  />
 </template>

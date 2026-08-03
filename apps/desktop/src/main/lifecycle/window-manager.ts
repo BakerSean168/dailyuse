@@ -2,13 +2,14 @@
  * Window Manager - 窗口管理器
  *
  * 管理 Desktop 应用的多窗口系统：
- * - 登录窗口（小窗口）
+ * - Profile Access 窗口（小窗口）
  * - 主窗口（完整应用）
  *
  * 启动流程：
- * 1. 检查是否有有效 Session 且启用了自动登录
- * 2. 是 → 直接创建主窗口
- * 3. 否 → 显示登录窗口，登录成功后切换到主窗口
+ * 1. 读取最近使用的本地 Profile
+ * 2. 无 PIN 时直接打开本地主窗口
+ * 3. 有 PIN 时显示 Profile 解锁窗口
+ * 4. 云端 session 在本地 Profile 打开后独立恢复
  */
 
 import { BrowserWindow, ipcMain, app } from 'electron';
@@ -44,22 +45,7 @@ export interface WindowManagerConfig {
   isDev?: boolean;
 }
 
-export type WindowType = 'login' | 'register' | 'main';
-
-export interface LoginWindowOptions {
-  /** 是否有可快速登录的账号 */
-  hasQuickLoginAccounts?: boolean;
-  /** 快速登录账号列表 */
-  quickLoginAccounts?: QuickLoginAccount[];
-}
-
-export interface QuickLoginAccount {
-  id: string;
-  username: string;
-  email: string;
-  avatarUrl?: string;
-  lastLoginAt?: number;
-}
+export type WindowType = 'profile-access' | 'main';
 
 interface WindowControlsState {
   isMaximized: boolean;
@@ -76,15 +62,13 @@ interface WindowControlsState {
  * 负责创建和管理登录窗口、主窗口，处理窗口间切换
  */
 export class WindowManager {
-  private loginWindow: BrowserWindow | null = null;
-  private registerWindow: BrowserWindow | null = null;
+  private profileAccessWindow: BrowserWindow | null = null;
   private mainWindow: BrowserWindow | null = null;
 
   private readonly config: Required<WindowManagerConfig>;
   private isTransitioning = false;
   private activeMainProfileId: string | null = null;
-  private loginWindowStateManager: WindowStateManager | null = null;
-  private registerWindowStateManager: WindowStateManager | null = null;
+  private profileAccessWindowStateManager: WindowStateManager | null = null;
   private mainWindowStateManager: WindowStateManager | null = null;
   private runtimeManager: DesktopProfileRuntimeManager | null = null;
   private desktopFeaturesRuntime: DesktopFeaturesRuntime | null = null;
@@ -125,30 +109,28 @@ export class WindowManager {
   // ============ Window Creation ============
 
   /**
-   * 创建登录窗口
+   * 创建 Profile Access 窗口
    */
-  createLoginWindow(options: LoginWindowOptions = {}): BrowserWindow {
-    void options;
-
-    if (this.loginWindow && !this.loginWindow.isDestroyed()) {
-      this.loginWindow.focus();
-      return this.loginWindow;
+  createProfileAccessWindow(): BrowserWindow {
+    if (this.profileAccessWindow && !this.profileAccessWindow.isDestroyed()) {
+      this.profileAccessWindow.focus();
+      return this.profileAccessWindow;
     }
 
-    logger.info('Creating login window');
-    this.loginWindowStateManager = new WindowStateManager('login', {
+    logger.info('Creating Profile Access window');
+    this.profileAccessWindowStateManager = new WindowStateManager('profile-access', {
       defaultWidth: 420,
       defaultHeight: 580,
-      stateFilePath: getSharedPathResolver().loginWindowStatePath,
+      stateFilePath: getSharedPathResolver().profileAccessWindowStatePath,
     });
 
-    const loginState = this.loginWindowStateManager;
+    const profileAccessState = this.profileAccessWindowStateManager;
 
-    this.loginWindow = new BrowserWindow({
-      width: loginState.width,
-      height: loginState.height,
-      x: loginState.x,
-      y: loginState.y,
+    this.profileAccessWindow = new BrowserWindow({
+      width: profileAccessState.width,
+      height: profileAccessState.height,
+      x: profileAccessState.x,
+      y: profileAccessState.y,
       resizable: false,
       maximizable: false,
       minimizable: true,
@@ -169,108 +151,37 @@ export class WindowManager {
       show: false,
     });
 
-    this.loginWindow.setMenuBarVisibility(false);
-    this.loginWindow.removeMenu();
+    this.profileAccessWindow.setMenuBarVisibility(false);
+    this.profileAccessWindow.removeMenu();
 
-    this.attachWindowDiagnostics(this.loginWindow, 'login');
-    this.attachWindowControlStateSync(this.loginWindow);
-    this.loginWindowStateManager.manage(this.loginWindow);
+    this.attachWindowDiagnostics(this.profileAccessWindow, 'profile-access');
+    this.attachWindowControlStateSync(this.profileAccessWindow);
+    this.profileAccessWindowStateManager.manage(this.profileAccessWindow);
 
     // 准备好后显示
-    this.loginWindow.once('ready-to-show', () => {
-      this.loginWindow?.show();
-      logger.info('Login window shown');
+    this.profileAccessWindow.once('ready-to-show', () => {
+      this.profileAccessWindow?.show();
+      logger.info('Profile Access window shown');
     });
 
-    // app-vue exposes the authentication shell at /auth, not /login.
-    this.loadWindowContent(this.loginWindow, '/auth');
+    this.loadWindowContent(this.profileAccessWindow, '/profile-access');
 
     if (this.config.isDev) {
-      this.loginWindow.webContents.openDevTools({ mode: 'detach' });
+      this.profileAccessWindow.webContents.openDevTools({ mode: 'detach' });
     }
 
     // 窗口关闭事件
-    this.loginWindow.on('closed', () => {
-      this.loginWindowStateManager?.unmanage();
-      this.loginWindowStateManager = null;
-      this.loginWindow = null;
+    this.profileAccessWindow.on('closed', () => {
+      this.profileAccessWindowStateManager?.unmanage();
+      this.profileAccessWindowStateManager = null;
+      this.profileAccessWindow = null;
       // 如果没有主窗口且不是在切换过程中，退出应用
-      if (!this.mainWindow && !this.registerWindow && !this.isTransitioning) {
+      if (!this.mainWindow && !this.isTransitioning) {
         app.quit();
       }
     });
 
-    return this.loginWindow;
-  }
-
-  createRegisterWindow(): BrowserWindow {
-    if (this.registerWindow && !this.registerWindow.isDestroyed()) {
-      this.registerWindow.focus();
-      return this.registerWindow;
-    }
-
-    logger.info('Creating register window');
-    this.registerWindowStateManager = new WindowStateManager('register', {
-      defaultWidth: 460,
-      defaultHeight: 680,
-      stateFilePath: getSharedPathResolver().registerWindowStatePath,
-    });
-
-    const registerState = this.registerWindowStateManager;
-
-    this.registerWindow = new BrowserWindow({
-      width: registerState.width,
-      height: registerState.height,
-      x: registerState.x,
-      y: registerState.y,
-      resizable: false,
-      maximizable: false,
-      minimizable: true,
-      fullscreenable: false,
-      autoHideMenuBar: true,
-      title: '',
-      frame: false,
-      transparent: true,
-      backgroundColor: '#00000000',
-      webPreferences: {
-        preload: this.config.preloadPath,
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: false,
-        partition: this.getShellPartition(),
-      },
-      icon: resolveWindowIconPath(),
-      show: false,
-    });
-
-    this.registerWindow.setMenuBarVisibility(false);
-    this.registerWindow.removeMenu();
-
-    this.attachWindowDiagnostics(this.registerWindow, 'register');
-    this.attachWindowControlStateSync(this.registerWindow);
-    this.registerWindowStateManager.manage(this.registerWindow);
-
-    this.registerWindow.once('ready-to-show', () => {
-      this.registerWindow?.show();
-      logger.info('Register window shown');
-    });
-
-    this.loadWindowContent(this.registerWindow, '/auth/register');
-
-    if (this.config.isDev) {
-      this.registerWindow.webContents.openDevTools({ mode: 'detach' });
-    }
-
-    this.registerWindow.on('closed', () => {
-      this.registerWindowStateManager?.unmanage();
-      this.registerWindowStateManager = null;
-      this.registerWindow = null;
-      if (!this.mainWindow && !this.loginWindow && !this.isTransitioning) {
-        app.quit();
-      }
-    });
-
-    return this.registerWindow;
+    return this.profileAccessWindow;
   }
 
   /**
@@ -345,7 +256,7 @@ export class WindowManager {
   // ============ Window Transition ============
 
   /**
-   * 登录成功后切换到主窗口
+   * 本地 Profile 打开后切换到主窗口
    */
   async transitionToMainWindow(profileId: string, stateFilePath: string): Promise<void> {
     if (this.isTransitioning) {
@@ -354,7 +265,7 @@ export class WindowManager {
     }
 
     this.isTransitioning = true;
-    logger.info('Transitioning from login to main window');
+    logger.info('Transitioning from Profile Access to main window');
 
     try {
       // 1. 创建主窗口（先不显示）
@@ -374,13 +285,10 @@ export class WindowManager {
       this.desktopFeaturesRuntime?.bindWindow(mainWin);
       await startScheduleRuntime();
 
-      // 4. 关闭登录窗口（稍微延迟，让过渡更平滑）
+      // 4. 关闭 Profile Access 窗口（稍微延迟，让过渡更平滑）
       setTimeout(() => {
-        if (this.loginWindow && !this.loginWindow.isDestroyed()) {
-          this.loginWindow.close();
-        }
-        if (this.registerWindow && !this.registerWindow.isDestroyed()) {
-          this.registerWindow.close();
+        if (this.profileAccessWindow && !this.profileAccessWindow.isDestroyed()) {
+          this.profileAccessWindow.close();
         }
       }, 100);
 
@@ -391,42 +299,38 @@ export class WindowManager {
   }
 
   /**
-   * 登出后切换到登录窗口
+   * 关闭本地 Profile 后切换到 Profile Access 窗口
    */
-  async transitionToLoginWindow(): Promise<void> {
+  async transitionToProfileAccessWindow(): Promise<void> {
     if (this.isTransitioning) {
       logger.warn('Already transitioning');
       return;
     }
 
     this.isTransitioning = true;
-    logger.info('Transitioning from main to login window');
+    logger.info('Transitioning from main to Profile Access window');
 
     try {
       stopScheduleRuntime();
-      // 1. 创建登录窗口
-      const loginWin = this.createLoginWindow();
+      const profileAccessWindow = this.createProfileAccessWindow();
 
-      // 2. 等待登录窗口准备好
+      // 2. 等待 Profile Access 窗口准备好
       await new Promise<void>((resolve) => {
-        if (loginWin.isVisible()) {
+        if (profileAccessWindow.isVisible()) {
           resolve();
         } else {
-          loginWin.once('ready-to-show', () => resolve());
+          profileAccessWindow.once('ready-to-show', () => resolve());
         }
       });
 
-      // 3. 显示登录窗口
-      loginWin.show();
-      this.desktopFeaturesRuntime?.bindWindow(loginWin);
+      // 3. 显示 Profile Access 窗口
+      profileAccessWindow.show();
+      this.desktopFeaturesRuntime?.bindWindow(profileAccessWindow);
 
       // 4. 关闭主窗口
       setTimeout(() => {
         if (this.mainWindow && !this.mainWindow.isDestroyed()) {
           this.mainWindow.close();
-        }
-        if (this.registerWindow && !this.registerWindow.isDestroyed()) {
-          this.registerWindow.close();
         }
       }, 100);
       logger.info('Transition complete');
@@ -438,14 +342,10 @@ export class WindowManager {
   // ============ Window Access ============
 
   /**
-   * 获取登录窗口
+   * 获取 Profile Access 窗口
    */
-  getLoginWindow(): BrowserWindow | null {
-    return this.loginWindow;
-  }
-
-  getRegisterWindow(): BrowserWindow | null {
-    return this.registerWindow;
+  getProfileAccessWindow(): BrowserWindow | null {
+    return this.profileAccessWindow;
   }
 
   /**
@@ -459,20 +359,7 @@ export class WindowManager {
    * 获取当前活动窗口
    */
   getActiveWindow(): BrowserWindow | null {
-    return this.mainWindow || this.registerWindow || this.loginWindow;
-  }
-
-  openOrFocusRegisterWindow(): BrowserWindow {
-    return this.createRegisterWindow();
-  }
-
-  closeRegisterWindow(): boolean {
-    if (!this.registerWindow || this.registerWindow.isDestroyed()) {
-      return false;
-    }
-
-    this.registerWindow.close();
-    return true;
+    return this.mainWindow || this.profileAccessWindow;
   }
 
   focusMainWindow(): boolean {
@@ -618,36 +505,23 @@ export class WindowManager {
       return ok(null);
     });
 
-    // 登出 → 切换到登录窗口
-    ipcMain.handle(WindowChannels.TRANSITION_TO_LOGIN, async () => {
-      logger.info('IPC window:transition-to-login received');
-      await this.transitionToLoginWindow();
+    ipcMain.handle(WindowChannels.TRANSITION_TO_PROFILE_ACCESS, async () => {
+      logger.info('IPC window:transition-to-profile-access received');
+      await this.transitionToProfileAccessWindow();
       return ok(null);
     });
 
     // 获取当前窗口类型
     ipcMain.handle(WindowChannels.GET_TYPE, (event) => {
       const webContents = event.sender;
-      if (this.loginWindow?.webContents === webContents) {
-        return ok('login' as const);
-      }
-      if (this.registerWindow?.webContents === webContents) {
-        return ok('register' as const);
+      if (this.profileAccessWindow?.webContents === webContents) {
+        return ok('profile-access' as const);
       }
       if (this.mainWindow?.webContents === webContents) {
         return ok('main' as const);
       }
       return ok('unknown' as const);
     });
-
-    ipcMain.handle(WindowChannels.OPEN_AUTH_REGISTER, async () => {
-      this.openOrFocusRegisterWindow();
-      return ok(null);
-    });
-
-    ipcMain.handle(WindowChannels.CLOSE_AUTH_REGISTER, async () =>
-      ok(this.closeRegisterWindow()),
-    );
 
     ipcMain.handle(WindowChannels.FOCUS_MAIN_WINDOW, async () => ok(this.focusMainWindow()));
 
@@ -722,21 +596,15 @@ export class WindowManager {
   cleanup(): void {
     logger.info('Cleaning up WindowManager');
 
-    if (this.loginWindow && !this.loginWindow.isDestroyed()) {
-      this.loginWindow.close();
+    if (this.profileAccessWindow && !this.profileAccessWindow.isDestroyed()) {
+      this.profileAccessWindow.close();
     }
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.close();
     }
-    if (this.registerWindow && !this.registerWindow.isDestroyed()) {
-      this.registerWindow.close();
-    }
-
-    this.loginWindow = null;
-    this.registerWindow = null;
+    this.profileAccessWindow = null;
     this.mainWindow = null;
-    this.loginWindowStateManager = null;
-    this.registerWindowStateManager = null;
+    this.profileAccessWindowStateManager = null;
     this.mainWindowStateManager = null;
   }
 

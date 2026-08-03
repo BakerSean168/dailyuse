@@ -11,6 +11,7 @@
       "@electron/*": ["apps/desktop/electron/*"],
       "@common/*": ["apps/desktop/common/*"],
       "@memoflow/app-vue": ["packages/app-vue/src/index.ts"],
+      "@memoflow/app-vue/*": ["packages/app-vue/src/*"],
       "@memoflow/ui-vue-shadcn/composables/*": [
         "packages/ui-vue-shadcn/src/composables/*"
       ],

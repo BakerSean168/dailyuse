@@ -15,7 +15,7 @@ vi.mock('electron', () => ({
   },
 }));
 
-import { getApiBaseUrl } from '../api-config';
+import { getApiBaseUrl, getWebAppUrl } from '../api-config';
 
 describe('getApiBaseUrl', () => {
   const originalEnv = { ...process.env };
@@ -90,5 +90,22 @@ describe('getApiBaseUrl', () => {
     isPackaged = false;
 
     expect(() => getApiBaseUrl()).toThrow(/Desktop API base URL is not configured/);
+  });
+
+  it('uses an explicit Web origin for browser-completed auth journeys', () => {
+    process.env.MEMOFLOW_WEB_URL = 'https://app.example.com/';
+    process.env.MEMOFLOW_API_URL = 'https://api.example.com/api/v1';
+
+    expect(getWebAppUrl()).toBe('https://app.example.com');
+  });
+
+  it('falls back to the configured API origin when Web and CORS origins are absent', () => {
+    delete process.env.MEMOFLOW_WEB_URL;
+    delete process.env.WEB_APP_URL;
+    delete process.env.VITE_WEB_URL;
+    delete process.env.CORS_ORIGIN;
+    process.env.MEMOFLOW_API_URL = 'https://api.example.com/api/v1';
+
+    expect(getWebAppUrl()).toBe('https://api.example.com');
   });
 });

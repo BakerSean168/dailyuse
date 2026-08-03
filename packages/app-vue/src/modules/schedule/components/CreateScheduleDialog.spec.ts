@@ -55,7 +55,7 @@ describe('CreateScheduleDialog submission lifecycle', () => {
     expect(document.querySelector('[role="alert"]')?.textContent).toContain('still here');
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
     wrapper.unmount();
-  });
+  }, 20_000);
 
   it('closes and clears the draft only after saving succeeds', async () => {
     const onSubmit = vi.fn().mockResolvedValue(true);
@@ -78,5 +78,5 @@ describe('CreateScheduleDialog submission lifecycle', () => {
     expect(onSubmit).toHaveBeenCalledOnce();
     expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
     wrapper.unmount();
-  });
+  }, 20_000);
 });

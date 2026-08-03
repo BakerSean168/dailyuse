@@ -7,8 +7,8 @@
  * a full-page navigation so AuthApp/WebAuthView owns password + GitHub login
  * and the legacy in-shell guest surface cannot appear.
  *
- * Desktop injects DesktopAuthView via createAppRouter({ authView }) and never
- * uses this fallback.
+ * Desktop Profile Access uses a separate renderer bootstrap and never uses
+ * this Web identity fallback.
  */
 import { onMounted } from 'vue';
 

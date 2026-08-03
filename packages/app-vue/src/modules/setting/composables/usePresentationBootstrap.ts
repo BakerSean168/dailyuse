@@ -1,6 +1,5 @@
 import { watch } from 'vue';
 import { unwrapOrThrowError } from '@memoflow/contracts/result';
-import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
@@ -10,7 +9,6 @@ import { translateResultError } from '../../../shared/utils/translate-result-err
 import type { UserSettingClientDTO } from '@memoflow/contracts/setting';
 
 export function usePresentationBootstrap() {
-  const authStore = useAuthenticationStore();
   const userSettingStore = useUserSettingStore();
   const presentationStore = usePresentationPreferenceStore();
   const settingService = useStrictInject(SETTING_SERVICE_KEY, 'SettingService');
@@ -60,10 +58,6 @@ export function usePresentationBootstrap() {
   }
 
   async function loadUserSettings(): Promise<void> {
-    if (!authStore.isAuthenticated) {
-      return;
-    }
-
     if (loadingPromise) {
       return loadingPromise;
     }
@@ -97,19 +91,7 @@ export function usePresentationBootstrap() {
     return loadingPromise;
   }
 
-  watch(
-    () => authStore.isAuthenticated,
-    (isAuthenticated) => {
-      if (isAuthenticated) {
-        scheduleLoadUserSettings();
-        return;
-      }
-
-      cancelScheduledLoad();
-      userSettingStore.reset();
-    },
-    { immediate: true },
-  );
+  scheduleLoadUserSettings();
 
   watch(
     () => userSettingStore.userSetting,

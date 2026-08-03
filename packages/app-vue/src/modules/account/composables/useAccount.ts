@@ -23,16 +23,13 @@ import type {
   AccountClientDTO,
 } from '@memoflow/contracts/account';
 import { useAccountStore } from '../stores/account-store';
-import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { ACCOUNT_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { AuthMode } from '@memoflow/contracts/authentication';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export function useAccount() {
   const accountStore = useAccountStore();
-  const authStore = useAuthenticationStore();
   const accountService = useStrictInject(ACCOUNT_SERVICE_KEY, 'AccountService');
   const { t } = useI18n();
 
@@ -43,7 +40,9 @@ export function useAccount() {
   const nickname = computed(() => accountStore.getNickname);
   const avatarUrl = computed(() => accountStore.getAvatarUrl);
   const email = computed(() => accountStore.getEmail);
-  const isGuest = computed(() => authStore.authMode === AuthMode.GUEST);
+  const isGuest = computed(
+    () => accountStore.currentAccount?.email.address.endsWith('@local.memoflow') === true,
+  );
 
   function makeAccountHandleError(toastKey: string) {
     return createComposableHandleError({
@@ -59,29 +58,6 @@ export function useAccount() {
   // ========== 资料管理 ==========
 
   async function loadMyProfile(): Promise<boolean> {
-    if (authStore.authMode === AuthMode.GUEST) {
-      // Create a mock profile for guest
-      accountStore.setCurrentAccount({
-        id: authStore.currentIdentity?.id as string,
-        email: null,
-        profile: {
-          nickname: t('account.guestLabel'),
-          bio: t('auth.page.guestMode'),
-          avatarUrl: null,
-        },
-        settings: {
-          theme: 'system',
-          language: 'zh-CN',
-          timezone: 'Asia/Shanghai',
-          currency: 'CNY',
-        },
-        status: 'Active',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      } as unknown as AccountClientDTO);
-      return true;
-    }
-
     accountStore.setLoading(true);
     accountStore.setError(null);
     const result = await accountService.getMyProfile();
@@ -96,11 +72,6 @@ export function useAccount() {
   }
 
   async function updateMyProfile(req: UpdateAccountReq): Promise<boolean> {
-    if (authStore.authMode === AuthMode.GUEST) {
-      toast.error(t('account.toast.guestProfileUpdateUnavailable'));
-      return false;
-    }
-
     accountStore.setLoading(true);
     accountStore.setError(null);
     const result = await accountService.updateMyProfile(req);
@@ -116,9 +87,6 @@ export function useAccount() {
   }
 
   async function checkAvailability(req: CheckAvailabilityReq): Promise<boolean> {
-    if (authStore.authMode === AuthMode.GUEST) {
-      return false;
-    }
     const result = await accountService.checkAvailability(req);
     if (result.ok) {
       return result.data.available;
@@ -133,10 +101,6 @@ export function useAccount() {
   }
 
   async function updateSettings(req: UpdateAccountSettingsReq): Promise<boolean> {
-    if (authStore.authMode === AuthMode.GUEST) {
-      toast.error(t('account.toast.guestSettingsUpdateUnavailable'));
-      return false;
-    }
     accountStore.setLoading(true);
     accountStore.setError(null);
     const result = await accountService.updateSettings(req);
@@ -158,7 +122,7 @@ export function useAccount() {
   }
 
   async function closeAccount(req: CloseAccountReq): Promise<boolean> {
-    if (authStore.authMode === AuthMode.GUEST) {
+    if (isGuest.value) {
       toast.error(t('account.toast.guestCloseAccountUnavailable'));
       return false;
     }

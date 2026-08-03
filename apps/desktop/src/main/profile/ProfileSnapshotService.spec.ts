@@ -18,11 +18,9 @@ function createSharedResolver(rootDir: string): SharedPathResolver {
     configDir: path.join(rootDir, 'shared', 'config'),
     uiDir: path.join(rootDir, 'shared', 'ui'),
     profilesRegistryDir: path.join(rootDir, 'shared', 'profiles'),
-    rememberedAccountsPath: path.join(rootDir, 'shared', 'auth', 'remembered-accounts.json'),
     deviceIdPath: path.join(rootDir, 'shared', 'auth', 'device-id'),
     runtimeConfigPath: path.join(rootDir, 'shared', 'config', 'desktop-runtime.json'),
-    loginWindowStatePath: path.join(rootDir, 'shared', 'ui', 'login-window-state.json'),
-    registerWindowStatePath: path.join(rootDir, 'shared', 'ui', 'register-window-state.json'),
+    profileAccessWindowStatePath: path.join(rootDir, 'shared', 'ui', 'profile-access-window-state.json'),
     registryPath: path.join(rootDir, 'shared', 'profiles', 'registry.json'),
     cacheDir: path.join(rootDir, 'cache'),
     snapshotStagingDir: path.join(rootDir, 'cache', 'snapshot-staging'),
@@ -75,7 +73,6 @@ describe('ProfileSnapshotService', () => {
     profileResolver = createProfileResolver(rootDir, 'p_test');
     descriptor = {
       profileId: 'p_test',
-      identityId: 'identity-1',
       displayName: 'Test User',
       identifier: 'test@example.com',
       lastActiveAt: Date.now(),

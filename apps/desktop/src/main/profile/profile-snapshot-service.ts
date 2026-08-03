@@ -83,7 +83,7 @@ export class ProfileSnapshotService {
 
       const metadata: LocalProfileSnapshotMetadata = {
         profileId: descriptor.profileId,
-        identityId: descriptor.identityId,
+        identityId: descriptor.localOwnerId,
         version: manifest.version,
         checksumSha256: manifest.checksumSha256,
         generatedAt: manifest.generatedAt,

@@ -13,23 +13,16 @@ describe('desktopAuthRecovery', () => {
     expect(isDesktopAuthRecoverable(undefined)).toBe(false);
   });
 
-  it('initializes desktop auth when runtime is restoring', async () => {
-    const invoke = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        data: { authenticated: false, runtimeState: 'RESTORING' },
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        data: { ok: true, hasValidSession: false },
-      })
-      .mockResolvedValueOnce({ ok: true, data: { authenticated: true } });
+  it('reports readiness from the local Profile access snapshot', async () => {
+    const invoke = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      data: { unlockState: 'UNLOCKED' },
+    });
 
     await expect(
       ensureDesktopAuthReadyWithApi({ invoke }, 'DesktopAuthRecoveryTest'),
     ).resolves.toBe(true);
-    expect(invoke).toHaveBeenCalledTimes(3);
+    expect(invoke).toHaveBeenCalledTimes(1);
   });
 
   it('skips auth recovery for non-auth errors', async () => {

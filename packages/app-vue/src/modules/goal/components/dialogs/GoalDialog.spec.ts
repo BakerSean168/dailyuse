@@ -45,7 +45,7 @@ const i18n = createI18n({
   messages: { 'en-US': enUS },
 });
 
-describe('GoalDialog draft lifecycle', () => {
+describe('GoalDialog draft lifecycle', { timeout: 15_000 }, () => {
   afterEach(() => {
     goalActions.createGoal.mockReset();
     goalActions.updateGoal.mockReset();

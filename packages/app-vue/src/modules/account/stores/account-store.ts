@@ -87,7 +87,4 @@ export const useAccountStore = defineStore('account', {
     },
   },
 
-  persist: {
-    pick: ['currentAccount'] as string[],
-  },
 });

@@ -34,8 +34,10 @@ const props = defineProps<{
   groups: ConversationGroup[];
   activeConversationId: string | null;
   userName?: string;
-  /** 是否已登录（影响账户菜单：退出 vs 登录）。 */
-  isAuthenticated?: boolean;
+  /** 当前壳层展示的是哪一种身份，而不是含混的“是否登录”。 */
+  identityKind?: 'guest' | 'registered-local' | 'cloud';
+  /** 云端会话是否可用；只影响同步账号动作，不影响本地身份。 */
+  cloudConnected?: boolean;
   /** 会话列表加载中。 */
   loading?: boolean;
   /** 桌面端顶部留出拖拽/窗控空间的高度补偿。 */
@@ -51,7 +53,7 @@ const emit = defineEmits<{
   (e: 'open-search'): void;
   (e: 'open-settings'): void;
   (e: 'open-account'): void;
-  (e: 'open-login'): void;
+  (e: 'open-cloud-connection'): void;
   (e: 'logout'): void;
   (e: 'open-help'): void;
   (e: 'start-resize', event: MouseEvent): void;
@@ -61,6 +63,12 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const displayName = () => props.userName || t('shell.guest');
+
+const identityLabel = () => {
+  if (props.identityKind === 'cloud') return t('shell.account.signedIn');
+  if (props.identityKind === 'registered-local') return t('shell.account.localProfile');
+  return t('shell.account.guestIdentity');
+};
 </script>
 
 <template>
@@ -151,14 +159,14 @@ const displayName = () => props.userName || t('shell.guest');
             >
               {{ displayName().slice(0, 1).toUpperCase() }}
             </span>
-            <span class="truncate text-xs font-semibold">{{ displayName() }}</span>
+            <span data-testid="shell-account-name" class="truncate text-xs font-semibold">{{ displayName() }}</span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="top" class="w-52">
           <div class="px-2 py-1.5">
             <p class="truncate text-sm font-medium">{{ displayName() }}</p>
             <p class="text-[11px] text-muted-foreground">
-              {{ isAuthenticated ? t('shell.account.signedIn') : t('shell.account.guestIdentity') }}
+              {{ identityLabel() }}
             </p>
           </div>
           <DropdownMenuSeparator />
@@ -170,15 +178,19 @@ const displayName = () => props.userName || t('shell.guest');
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            v-if="isAuthenticated"
+            v-if="cloudConnected"
             data-testid="shell-logout"
             class="text-destructive focus:text-destructive"
             @click="emit('logout')"
           >
             {{ t('shell.account.logout') }}
           </DropdownMenuItem>
-          <DropdownMenuItem v-else data-testid="shell-open-login" @click="emit('open-login')">
-            {{ t('shell.account.loginOrRegister') }}
+          <DropdownMenuItem
+            v-else
+            data-testid="shell-open-cloud-connection"
+            @click="emit('open-cloud-connection')"
+          >
+            {{ t('shell.account.connectCloud') }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

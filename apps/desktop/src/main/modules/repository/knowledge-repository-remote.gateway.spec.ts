@@ -20,7 +20,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'memoflow-access-token',
+      getAccessToken: async () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -56,7 +56,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'memoflow-access-token',
+      getAccessToken: async () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -74,7 +74,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       .fn<typeof fetch>()
       .mockResolvedValue(response({ ok: true, data: null }));
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'memoflow-access-token',
+      getAccessToken: async () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -102,7 +102,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'memoflow-access-token',
+      getAccessToken: async () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -133,7 +133,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'memoflow-access-token',
+      getAccessToken: async () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
     });
@@ -154,7 +154,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
   it('does not make an online request for guest or signed-out profiles', async () => {
     const fetchImpl = vi.fn<typeof fetch>();
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => null,
+      getAccessToken: async () => null,
       fetchImpl,
       createApiUrl: (path) => path,
     });
@@ -165,27 +165,6 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
     });
     expect(fetchImpl).not.toHaveBeenCalled();
   });
-
-  it.each(['guest-local-token', 'local-token'] as const)(
-    'does not expand authorization with non-cloud desktop token %s',
-    async (token) => {
-      const fetchImpl = vi.fn<typeof fetch>();
-      const gateway = new KnowledgeRepositoryRemoteGateway({
-        getAccessToken: () => token,
-        fetchImpl,
-        createApiUrl: (path) => path,
-      });
-
-      await expect(gateway.startKnowledgeRepositoryInstallation()).resolves.toMatchObject({
-        ok: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: expect.stringMatching(/Guest and offline-only|cloud account/i),
-        },
-      });
-      expect(fetchImpl).not.toHaveBeenCalled();
-    },
-  );
 
   it('preserves structured server authorization failures', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
@@ -201,7 +180,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       ),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'memoflow-access-token',
+      getAccessToken: async () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => path,
     });
@@ -226,7 +205,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       }),
     );
     const gateway = new KnowledgeRepositoryRemoteGateway({
-      getAccessToken: () => 'memoflow-access-token',
+      getAccessToken: async () => 'memoflow-access-token',
       fetchImpl,
       createApiUrl: (path) => path,
     });
