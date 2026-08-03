@@ -17,9 +17,7 @@ test.describe('Reminder notification closed loop', () => {
       landingPath: '/',
     });
 
-    const token = await page.evaluate(() => localStorage.getItem('access_token'));
-    expect(token, 'Registration should persist an access token').toBeTruthy();
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = {};
     const reminderTitles = [
       `E2E notification first ${suffix}`,
       `E2E notification second ${suffix}`,

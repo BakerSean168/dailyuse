@@ -19,7 +19,7 @@ const webDevWorkspaceEntries = [
   ['@memoflow/app-vue/web-bootstrap', 'packages/app-vue/src/web-bootstrap.ts'],
   ['@memoflow/app-vue/web-entry', 'packages/app-vue/src/web-entry.ts'],
   ['@memoflow/app-vue', 'packages/app-vue/src/index.ts'],
-  ['@memoflow/authentication/client', 'packages/authentication/src/client/index.ts'],
+  ['@memoflow/cloud-auth', 'packages/cloud-auth/src/index.ts'],
   ['@memoflow/goal/client', 'packages/goal/src/client/index.ts'],
   ['@memoflow/schedule/client', 'packages/schedule/src/client/index.ts'],
   ['@memoflow/reminder/client', 'packages/reminder/src/client/index.ts'],

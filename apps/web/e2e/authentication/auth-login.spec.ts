@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { ensureLoginScene, ensureRegisterScene } from '../helpers/testHelpers';
-import { completeEmailVerification } from '../helpers/auth-email-code';
+import { completeEmailVerification } from '../helpers/auth-email-link';
 import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
 
 const generateTestEmail = () =>
@@ -27,8 +27,8 @@ test.describe('Authentication - 登录页基础验证', () => {
     await expectAuthenticated(page);
 
     const authState = await readAuthState(page);
-    expect(authState.accessToken).toBe(true);
-    expect(authState.refreshToken).toBe(true);
+    expect(authState.hasSession).toBe(true);
+    expect(authState.hasPersistedBearerCredential).toBe(false);
   });
 
   test('[P0] 错误凭证会显示错误提示', async ({ page }) => {
@@ -104,7 +104,7 @@ async function registerUser(page: Page, email: string, password: string): Promis
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
   await page.getByTestId('register-submit-button').click();
-  await completeEmailVerification(page, email);
+  await completeEmailVerification(page, email, password);
 }
 
 async function expectAuthenticated(page: Page): Promise<void> {
@@ -114,14 +114,18 @@ async function expectAuthenticated(page: Page): Promise<void> {
   await page.waitForLoadState('domcontentloaded');
 }
 
-async function readAuthState(page: Page): Promise<{ accessToken: boolean; refreshToken: boolean }> {
-  return page.evaluate(() => {
-    const rawState =
-      localStorage.getItem('authentication') ?? sessionStorage.getItem('authentication') ?? '';
-
+async function readAuthState(page: Page): Promise<{
+  hasSession: boolean;
+  hasPersistedBearerCredential: boolean;
+}> {
+  return page.evaluate(async () => {
+    const response = await fetch('/api/auth/get-session', { credentials: 'include' });
+    const session = response.ok ? await response.json() : null;
+    const storage = `${JSON.stringify(localStorage)} ${JSON.stringify(sessionStorage)}`;
     return {
-      accessToken: rawState.includes('accessToken') || !!localStorage.getItem('access_token'),
-      refreshToken: rawState.includes('refreshToken') || !!localStorage.getItem('refresh_token'),
+      hasSession: Boolean(session?.session && session?.user),
+      hasPersistedBearerCredential:
+        /accessToken|refreshToken|access_token|refresh_token/.test(storage),
     };
   });
 }

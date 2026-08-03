@@ -1,10 +1,10 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 1198: readJson keep-boundary (fetch Response vs e2e stream vs desktop fs).
- * - auth-web: Response → unknown|null (catch parse → null)
+ * Residual 1198: readJson keep-boundary (e2e stream vs desktop fs).
+ * - retired auth-web Response helper was deleted with the legacy auth client
  * - e2e OpenAI mock: IncomingMessage stream → Record<string, unknown> (throws)
  * - desktop packaged-deps: filesystem path → JSON.parse (sync, throws)
  * Soft residual 1195: scoreIndexedResource dual retired remains separate.
@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
  */
 describe('readJson keep-boundary (residual 1198)', () => {
   const dir = __dirname;
-  const authWeb = readFileSync(resolve(dir, 'auth-web-service.ts'), 'utf8');
+  const retiredAuthWeb = resolve(dir, 'auth-web-service.ts');
   const e2eMock = readFileSync(
     resolve(dir, '../../e2e/helpers/start-openai-compatible-mock.ts'),
     'utf8',
@@ -23,17 +23,8 @@ describe('readJson keep-boundary (residual 1198)', () => {
     'utf8',
   );
 
-  it('owns Residual 1198 keep-boundary markers on auth-web fetch Response readJson', () => {
-    expect(authWeb).toContain('Residual 1198 keep-boundary');
-    expect(authWeb).toMatch(/async function readJson\b/);
-    expect(authWeb).toContain('response: Response');
-    expect(authWeb).toContain('Promise<unknown>');
-    const body = authWeb.match(/async function readJson\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(body).toContain('response.json()');
-    expect(body).toContain('return null');
-    expect(body).not.toContain('IncomingMessage');
-    expect(body).not.toContain('readFileSync');
-    expect(body).not.toContain('Record<string, unknown>');
+  it('keeps the legacy auth-web Response helper retired', () => {
+    expect(existsSync(retiredAuthWeb)).toBe(false);
   });
 
   it('differs from e2e mock stream→Record readJson (no force-merge)', () => {
@@ -66,15 +57,7 @@ describe('readJson keep-boundary (residual 1198)', () => {
     expect(body).not.toContain('return null');
   });
 
-  it('runtime: documents Response|null vs stream Record vs fs parse contracts via body shape', () => {
-    async function authReadJson(ok: boolean): Promise<unknown> {
-      try {
-        if (!ok) throw new Error('bad json');
-        return { ok: true };
-      } catch {
-        return null;
-      }
-    }
+  it('runtime: documents stream Record vs fs parse contracts via body shape', () => {
     async function e2eReadJson(raw: string): Promise<Record<string, unknown>> {
       return JSON.parse(raw) as Record<string, unknown>;
     }
@@ -82,8 +65,6 @@ describe('readJson keep-boundary (residual 1198)', () => {
       return JSON.parse(raw);
     }
     return Promise.all([
-      authReadJson(true).then((v) => expect(v).toEqual({ ok: true })),
-      authReadJson(false).then((v) => expect(v).toBeNull()),
       e2eReadJson('{"model":"x"}').then((v) => expect(v).toEqual({ model: 'x' })),
       Promise.resolve().then(() => expect(desktopReadJson('{"name":"pkg"}')).toEqual({ name: 'pkg' })),
     ]);

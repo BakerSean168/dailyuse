@@ -15,6 +15,7 @@ import { progressStart, progressDone } from '@memoflow/ui-vue-shadcn/composables
 
 import App from '../App.vue';
 import { installAppServices } from '../platform/di-app';
+import { createCloudAuthHttpClient } from '@memoflow/cloud-auth';
 
 export async function bootstrapMainApp() {
   const app = createApp(App);
@@ -22,6 +23,19 @@ export async function bootstrapMainApp() {
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);
   app.use(pinia);
+
+  const authStore = useAuthenticationStore();
+  authStore.setIsInitializing(true);
+  const cloudSession = await createCloudAuthHttpClient(undefined, {
+    baseUrl: window.location.origin,
+  }).getSession();
+  if (cloudSession.ok) {
+    authStore.hydrateCloudSession(cloudSession.data);
+  } else {
+    authStore.reset();
+    window.location.replace('/auth');
+    return;
+  }
 
   const presentationStore = usePresentationPreferenceStore();
   applyThemeMode(presentationStore.theme);
@@ -32,7 +46,7 @@ export async function bootstrapMainApp() {
 
   const router = createAppRouter({
     history: createWebHistory(),
-    isAuthenticated: () => useAuthenticationStore().isAuthenticated,
+    canAccessApp: () => authStore.isAuthenticated,
   });
   router.beforeEach(() => progressStart());
   router.afterEach((to) => {
@@ -59,4 +73,3 @@ export async function bootstrapMainApp() {
     globalThis.setTimeout(runStartupPhase, 0);
   }
 }
-

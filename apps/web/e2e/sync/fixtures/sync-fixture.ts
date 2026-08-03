@@ -6,7 +6,7 @@ import {
   loadSyncCredentials,
   type SyncCredentials,
 } from '../helpers/credentials';
-import { completeEmailVerification } from '../../helpers/auth-email-code';
+import { completeEmailVerification } from '../../helpers/auth-email-link';
 import { deleteGoalIfPresent, openGoalList } from '../helpers/goal';
 
 type CleanupTracker = (goalName: string) => string;
@@ -47,7 +47,7 @@ async function submitWebLogin(page: Page, credentials: SyncCredentials): Promise
     .then(() => 'verify' as const);
   const outcome = await Promise.race([leftAuth, needsVerify]);
   if (outcome === 'verify') {
-    await completeEmailVerification(page, credentials.email);
+    await completeEmailVerification(page, credentials.email, credentials.password);
   }
 }
 

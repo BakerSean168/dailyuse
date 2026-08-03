@@ -38,9 +38,7 @@ test.describe('Local Docker core product Phase A', () => {
       landingPath: '/goals',
     });
 
-    const token = await page.evaluate(() => localStorage.getItem('access_token'));
-    expect(token, 'Registration should persist an access token').toBeTruthy();
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = {};
 
     const primary = await createGoalWithKeyResult(page, headers, {
       name: `[PM-A] Launch MemoFlow ${suffix}`,

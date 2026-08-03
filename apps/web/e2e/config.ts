@@ -27,6 +27,11 @@ export const API_CONFIG = {
   get FULL_URL() {
     return `${this.BASE_URL}${this.API_PREFIX}`;
   },
+
+  /** Better Auth is intentionally mounted outside the versioned business API. */
+  get AUTH_URL() {
+    return `${this.BASE_URL}/api/auth`;
+  },
   
   /**
    * 健康检查端点

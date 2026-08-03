@@ -14,10 +14,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ensureLoginScene } from '../helpers/testHelpers';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
-import {
-  isOAuthAuthenticatedIdentity,
-  readWebAuthSessionIdentity,
-} from '../helpers/read-web-auth-session-identity';
+import { API_CONFIG } from '../config';
 import { hasRealGithubOAuthCredentials } from '../../playwright.server';
 
 async function gotoCleanAuthPage(page: Page): Promise<void> {
@@ -41,7 +38,7 @@ test.describe('Authentication - GitHub OAuth (real provider)', () => {
     );
   });
 
-  test('[P0] GitHub button opens github.com authorize; after consent session hasOAuth', async ({
+  test('[P0] GitHub button opens github.com authorize; after consent Better Auth has a session', async ({
     page,
   }) => {
     await gotoCleanAuthPage(page);
@@ -80,14 +77,21 @@ test.describe('Authentication - GitHub OAuth (real provider)', () => {
       timeout: TIMEOUT_CONFIG.LOGIN,
     });
 
-    const identity = await page.evaluate(() => {
-      try {
-        return localStorage.getItem('authentication');
-      } catch {
-        return null;
-      }
-    });
-    const parsed = readWebAuthSessionIdentity(identity);
-    expect(isOAuthAuthenticatedIdentity(parsed)).toBe(true);
+    const sessionResponse = await page.request.get(`${API_CONFIG.AUTH_URL}/get-session`);
+    expect(sessionResponse.ok()).toBe(true);
+    const session = await sessionResponse.json() as {
+      user?: { id?: string; email?: string };
+      session?: { id?: string };
+    };
+    expect(session.user?.id).toBeTruthy();
+    expect(session.user?.email).toBeTruthy();
+    expect(session.session?.id).toBeTruthy();
+
+    const persistedBearer = await page.evaluate(() =>
+      Object.entries(localStorage).some(([key, value]) =>
+        /token|session/i.test(key) || /bearer\s+/i.test(value),
+      ),
+    );
+    expect(persistedBearer).toBe(false);
   });
 });

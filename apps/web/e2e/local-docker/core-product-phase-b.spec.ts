@@ -51,9 +51,7 @@ test.describe('Local Docker core product Phase B', () => {
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
 
-    const token = await page.evaluate(() => localStorage.getItem('access_token'));
-    expect(token, 'Registration should persist an access token').toBeTruthy();
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = {};
 
     await expect(page.getByTestId('quick-task-button')).toHaveAttribute('aria-label', '快速任务');
     await expect(page.getByTestId('create-task-template-button')).toHaveAttribute(

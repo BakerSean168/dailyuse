@@ -18,9 +18,7 @@ test.describe('Task completion closed loop', () => {
       landingPath: '/',
     });
 
-    const token = await page.evaluate(() => localStorage.getItem('access_token'));
-    expect(token, 'Registration should persist an access token').toBeTruthy();
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = {};
 
     const goal = await expectApiData<{ id: string }>(
       await page.request.post(`${API_CONFIG.FULL_URL}/goals`, {

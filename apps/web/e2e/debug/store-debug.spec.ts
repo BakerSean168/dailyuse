@@ -22,15 +22,13 @@ test('Store 状态调试', async ({ page }) => {
   console.log('\n2. 等待登录完成...');
   await page.waitForTimeout(2000);
 
-  console.log('\n3. 检查 localStorage...');
-  const localStorage = await page.evaluate(() => {
+  console.log('\n3. 检查非敏感本地投影...');
+  const localProjection = await page.evaluate(() => {
     return {
-      accessToken: localStorage.getItem('accessToken') ? '存在' : '不存在',
       currentAccount: localStorage.getItem('currentAccount') ? JSON.parse(localStorage.getItem('currentAccount')!) : null,
     };
   });
-  console.log('localStorage accessToken:', localStorage.accessToken);
-  console.log('localStorage currentAccount:', localStorage.currentAccount);
+  console.log('localStorage currentAccount:', localProjection.currentAccount);
 
   console.log('\n4. 尝试创建目标...');
   await page.goto(WEB_CONFIG.getFullUrl('/goals'), { waitUntil: 'domcontentloaded' });

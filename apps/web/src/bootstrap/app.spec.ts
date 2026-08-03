@@ -15,16 +15,27 @@ const mocks = vi.hoisted(() => {
   const notificationHook = {
     start: vi.fn(),
   };
+  const authStore = {
+    isAuthenticated: true,
+    setIsInitializing: vi.fn(),
+    hydrateCloudSession: vi.fn(),
+    reset: vi.fn(),
+  };
 
   return {
     app,
     pinia,
     router,
     notificationHook,
+    authStore,
     createApp: vi.fn(() => app),
     createPinia: vi.fn(() => pinia),
     createAppRouter: vi.fn(() => router),
-    useAuthenticationStore: vi.fn(() => ({ isAuthenticated: false })),
+    useAuthenticationStore: vi.fn(() => authStore),
+    getSession: vi.fn(async () => ({
+      ok: true,
+      data: { account: { id: 'cloud-1' }, session: { id: 'session-1' } },
+    })),
     usePresentationPreferenceStore: vi.fn(() => ({ theme: 'dark', locale: 'zh-CN' })),
     applyThemeMode: vi.fn(),
     createNotificationStartupHook: vi.fn(() => notificationHook),
@@ -70,6 +81,10 @@ vi.mock('@memoflow/app-vue', () => ({
   createNotificationStartupHook: mocks.createNotificationStartupHook,
 }));
 
+vi.mock('@memoflow/cloud-auth', () => ({
+  createCloudAuthHttpClient: vi.fn(() => ({ getSession: mocks.getSession })),
+}));
+
 vi.mock('@memoflow/app-vue/web-i18n', () => ({
   createI18nPlugin: mocks.createI18nPlugin,
   loadLocaleMessages: mocks.loadLocaleMessages,
@@ -107,6 +122,12 @@ describe('bootstrapMainApp', () => {
     Object.assign(mocks.notificationHook, {
       start: vi.fn(),
     });
+    Object.assign(mocks.authStore, {
+      isAuthenticated: true,
+      setIsInitializing: vi.fn(),
+      hydrateCloudSession: vi.fn(),
+      reset: vi.fn(),
+    });
     document.documentElement.lang = '';
     document.title = '';
     Object.defineProperty(window, 'requestIdleCallback', {
@@ -132,6 +153,8 @@ describe('bootstrapMainApp', () => {
     expect(mocks.loadLocaleMessages).toHaveBeenCalledWith('zh-CN');
     expect(mocks.createI18nPlugin).toHaveBeenCalledWith('zh-CN', { hello: 'world' });
     expect(mocks.createAppRouter).toHaveBeenCalledTimes(1);
+    expect(mocks.authStore.setIsInitializing).toHaveBeenCalledWith(true);
+    expect(mocks.authStore.hydrateCloudSession).toHaveBeenCalledTimes(1);
     expect(mocks.app.mount).toHaveBeenCalledWith('#app');
     expect(mocks.requestIdleCallback).toHaveBeenCalledTimes(1);
     expect(mocks.notificationHook.start).toHaveBeenCalledTimes(1);
@@ -145,7 +168,5 @@ describe('bootstrapMainApp', () => {
 
     expect(mocks.progressDone).toHaveBeenCalledTimes(2);
     expect(document.title).toBe('Inbox - MemoFlow');
-  });
+  }, 15_000);
 });
-
-

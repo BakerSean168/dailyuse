@@ -15,37 +15,29 @@ test.describe('Legacy database note mutation boundary', () => {
       landingPath: '/repository',
     });
 
-    const token = await page.evaluate(() => localStorage.getItem('access_token'));
-    expect(token).toBeTruthy();
     const request = page.request;
-    const headers = { Authorization: `Bearer ${token}` };
 
     await expectNotMounted(
       request.get(`${API_CONFIG.FULL_URL}/repositories/current`, {
-        headers,
       }),
     );
     await expectNotMounted(
       request.post(`${API_CONFIG.FULL_URL}/repositories/legacy-repository/resources`, {
-        headers,
         data: { name: 'legacy.md', type: 'File', content: '# legacy' },
       }),
     );
     await expectNotMounted(
       request.post(`${API_CONFIG.FULL_URL}/repositories/legacy-repository/folders`, {
-        headers,
         data: { name: 'legacy-folder' },
       }),
     );
     await expectNotMounted(
       request.put(`${API_CONFIG.FULL_URL}/resources/legacy-resource`, {
-        headers,
         data: { content: '# overwritten' },
       }),
     );
     await expectNotMounted(
       request.put(`${API_CONFIG.FULL_URL}/editor/content/legacy-resource`, {
-        headers,
         data: { content: '# overwritten' },
       }),
     );
