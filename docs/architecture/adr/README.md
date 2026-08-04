@@ -4,7 +4,7 @@ tags:
   - index
 description: 架构决策记录索引
 created: 2025-11-23T15:00:00
-updated: 2026-07-26T00:00:00
+updated: 2026-08-04T00:00:00+08:00
 ---
 
 # ADR 索引
@@ -13,6 +13,7 @@ updated: 2026-07-26T00:00:00
 
 ## 当前 ADR
 
+<!-- prettier-ignore -->
 | 编号                                                                | 标题                                                     | 状态   | 日期       |
 | ------------------------------------------------------------------- | -------------------------------------------------------- | ------ | ---------- |
 | [ADR-001](./ADR-001-use-nx-monorepo.md)                             | 使用 Nx Monorepo                                         | 已采纳 | 2024-08-15 |
@@ -54,6 +55,7 @@ updated: 2026-07-26T00:00:00
 | [ADR-037](./ADR-037-product-time-system.md)                       | 产品时间体系（Instant/Ymd、TransferDate、门面与风格） | 已采纳 | 2026-07-26 |
 | [ADR-038](./ADR-038-goal-consistency-and-reliable-task-contributions.md) | Goal 一致性与可靠 Task 贡献链路 | 已采纳 | 2026-08-01 |
 | [ADR-039](./ADR-039-cloud-auth-and-local-profile-access.md) | Cloud Auth 与 Local Profile Access 分离 | 已采纳 | 2026-08-02 |
+| [ADR-040](./ADR-040-test-system-v2.md) | Test System V2 单一归属与稳定门禁 | 已采纳 | 2026-08-04 |
 
 ## 维护规则
 

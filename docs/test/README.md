@@ -29,6 +29,7 @@
 
 ## 文档索引
 
+- [test-system-v2.md](./test-system-v2.md)：下一代测试系统的目标架构、唯一归属、Nx 契约、CI Oracle 与验收预算（尚未实施）
 - [architecture.md](./architecture.md)：测试分层、职责边界、何时补哪类测试
 - [running-tests.md](./running-tests.md)：日常开发、回归排查、CI 对应命令
 - [configuration.md](./configuration.md)：测试配置、setup、helper 的入口位置

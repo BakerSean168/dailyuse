@@ -91,7 +91,7 @@ PR #202 首轮成功 run 的细分耗时：
 
 ## 当前限制
 
-- `nx.json` 的全局输入语义会让部分 docs-only 或根配置变更被判定为全量 affected；因此 Web/Boundary affected gate 目前不能保证纯文档提交一定跳过。
+- PR #203 的纯 `docs/test` 变更已确认会跳过 Boundary children 与 Web matrix，两个 Oracle 均成功；根配置、workspace dependency 或共享输入变更仍可能按 Nx 项目图扩大 affected 范围。
 - 每个 Boundary job 都需要独立 checkout 和依赖准备。它缩短失败发现墙钟时间，但可能增加 GitHub runner 总分钟数。
 - Web shards 仍各自初始化数据库、安装 Chromium 并构建 API；尚未共享 API build artifact。
 - Nx remote cache、release-please 调度和 `sharedGlobals` 收敛不属于当前实现。
