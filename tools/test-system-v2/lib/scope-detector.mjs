@@ -4,12 +4,17 @@ import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const exec = promisify(execFile);
+const bootstrap = path.resolve('tools/ci/node-process-bootstrap.cjs');
 export const SCOPE_VERSION = 1;
 
 async function nxProjects(args, cwd) {
   const { stdout } = await exec('pnpm', ['exec', 'nx', 'show', 'projects', ...args], {
     cwd,
     maxBuffer: 4 * 1024 * 1024,
+    env: {
+      ...process.env,
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --require=${bootstrap}`.trim(),
+    },
   });
   return stdout
     .split(/\r?\n/)

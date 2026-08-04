@@ -57,10 +57,6 @@ runs:
       shell: bash
       run: pnpm install --frozen-lockfile --reporter=append-only
 
-    - name: Enable Nx process bootstrap
-      shell: bash
-      run: echo "NODE_OPTIONS=--require=${GITHUB_WORKSPACE}/tools/ci/node-process-bootstrap.cjs" >> "$GITHUB_ENV"
-
     - name: Derive SHAs for affected
       shell: bash
       run: |

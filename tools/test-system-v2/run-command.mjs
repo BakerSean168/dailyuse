@@ -12,12 +12,19 @@ if (separator < 0 || separator === process.argv.length - 1) {
 const [command, ...args] = process.argv.slice(separator + 1);
 const reportName = process.env.TEST_REPORT_NAME ?? 'command';
 const reportsDir = process.env.TEST_REPORTS_DIR ?? 'reports/test-system-v2';
+const bootstrap = path.resolve('tools/ci/node-process-bootstrap.cjs');
 
 async function run(attempt) {
   const startedAt = new Date();
   const chunks = [];
   const result = await new Promise((resolve) => {
-    const child = spawn(command, args, { env: process.env, shell: process.platform === 'win32' });
+    const child = spawn(command, args, {
+      env: {
+        ...process.env,
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --require=${bootstrap}`.trim(),
+      },
+      shell: process.platform === 'win32',
+    });
     child.stdout?.on('data', (chunk) => {
       chunks.push(chunk);
       process.stdout.write(chunk);
