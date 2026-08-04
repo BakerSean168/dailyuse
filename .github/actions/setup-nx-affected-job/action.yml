@@ -41,10 +41,15 @@ runs:
         corepack enable
         pnpm --version
 
+    - name: Resolve pnpm store path
+      id: pnpm-store
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
     - name: Cache pnpm store
       uses: actions/cache@v5
       with:
-        path: ~/.local/share/pnpm/store/v3
+        path: ${{ steps.pnpm-store.outputs.path }}
         key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: pnpm-store-${{ runner.os }}-
 
