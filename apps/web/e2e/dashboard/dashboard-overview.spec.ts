@@ -4,20 +4,12 @@
  * V2 shell contract (docs/UI_REDESIGN_V2_PLAN.md §3):
  * - Dashboard is retired: `/dashboard` redirects to `/` (AI workspace ground)
  * - `/` renders the persistent AI layer inside the AppShell
- * - top-of-window capsule navigation replaces the V1 grouped sidebar
- *   (`capsule-nav-*` testids replace `main-nav-*` / `bottom-nav-*`)
+ * - the window header exposes one workspace launcher; business context lives
+ *   in BusinessPanel tabs instead of a second module-navigation surface
  */
 import { test, expect } from '@playwright/test';
 import { login } from '../helpers/testHelpers';
 import { WEB_CONFIG, TIMEOUT_CONFIG, TEST_USERS } from '../config';
-
-const CAPSULE_TESTIDS = [
-  'capsule-nav-goal',
-  'capsule-nav-task',
-  'capsule-nav-note',
-  'capsule-nav-reminder',
-  'capsule-nav-notification',
-] as const;
 
 test.describe('Dashboard retirement (V2 shell)', () => {
   test.beforeEach(async ({ page }) => {
@@ -49,25 +41,24 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     expect(page.url()).toContain(WEB_CONFIG.LOGIN_PATH);
   });
 
-  test('[P0] should expose the five module capsules in the window header', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    for (const testId of CAPSULE_TESTIDS) {
-      await expect(page.getByTestId(testId)).toBeVisible();
-    }
-  });
-
-  test('[P1] should show panel Home by default and open a module with one capsule click', async ({
+  test('[P0] should expose one workspace launcher without legacy module capsules', async ({
     page,
   }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.getByTestId('business-panel')).toBeVisible();
-    await expect(page.getByTestId('today-overview-panel')).toBeVisible();
-    await page.getByTestId('capsule-nav-goal').click();
+    await expect(page.getByTestId('shell-workspace-launcher')).toBeVisible();
+    await expect(page.locator('[data-testid^="capsule-nav-"]')).toHaveCount(0);
+  });
 
-    await page.waitForURL('**/goals', { timeout: TIMEOUT_CONFIG.NAVIGATION });
+  test('[P1] should show panel Home by default and return there from a business tab', async ({
+    page,
+  }) => {
+    await page.goto('/goals', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('business-panel')).toBeVisible();
+    await expect(page.getByTestId('goal-list-view')).toBeVisible();
+
+    await page.getByTestId('business-panel-home').click();
+    await expect(page.getByTestId('today-overview-panel')).toBeVisible();
   });
 
   test('[P1] should keep legacy deep-link redirects working', async ({ page }) => {

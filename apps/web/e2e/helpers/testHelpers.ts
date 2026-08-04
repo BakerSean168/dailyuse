@@ -223,7 +223,7 @@ export async function ensureUserSettingsRecord(page: Page): Promise<void> {
       credentials: 'include',
     });
     return { ok: result.ok, status: result.status };
-  }, API_CONFIG.FULL_URL);
+  }, API_CONFIG.API_PREFIX);
 
   if (!response.ok) {
     throw new Error(`Failed to prepare user settings (HTTP ${response.status})`);

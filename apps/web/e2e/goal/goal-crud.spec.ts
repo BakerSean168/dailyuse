@@ -124,7 +124,7 @@ test.describe('Goal CRUD', () => {
 
     const scrollViewport = page
       .getByTestId('goal-list-scroll')
-      .locator('[data-radix-scroll-area-viewport]');
+      .locator('[data-reka-scroll-area-viewport]');
     await expect(scrollViewport).toBeVisible();
     await scrollViewport.evaluate((element) => {
       const filler = document.createElement('div');

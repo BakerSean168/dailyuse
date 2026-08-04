@@ -20,8 +20,11 @@ test.describe('Task completion closed loop', () => {
 
     const headers = {};
 
-    const goal = await expectApiData<{ id: string }>(
-      await page.request.post(`${API_CONFIG.FULL_URL}/goals`, {
+    const goalReceipt = await expectApiData<{
+      goalId: string;
+      goalVersion: number;
+    }>(
+      await page.request.post(`${API_CONFIG.API_PREFIX}/goals`, {
         headers,
         data: {
           name: goalName,
@@ -32,11 +35,14 @@ test.describe('Task completion closed loop', () => {
         },
       }),
     );
-    const keyResult = await expectApiData<{ id: string }>(
-      await page.request.post(`${API_CONFIG.FULL_URL}/goals/${goal.id}/key-results`, {
+    const keyResultReceipt = await expectApiData<{
+      affectedEntityIds: { keyResultIds: string[] };
+    }>(
+      await page.request.post(`${API_CONFIG.API_PREFIX}/goals/${goalReceipt.goalId}/key-results`, {
         headers,
         data: {
-          goalId: goal.id,
+          goalId: goalReceipt.goalId,
+          expectedVersion: goalReceipt.goalVersion,
           title: 'Complete linked work',
           valueType: 'Incremental',
           calculationMethod: 'Sum',
@@ -48,11 +54,13 @@ test.describe('Task completion closed loop', () => {
         },
       }),
     );
+    const keyResultId = keyResultReceipt.affectedEntityIds.keyResultIds[0];
+    expect(keyResultId).toBeTruthy();
     const creation = await expectApiData<{
       template: { id: string };
       todayInstanceCreated: boolean;
     }>(
-      await page.request.post(`${API_CONFIG.FULL_URL}/task-templates`, {
+      await page.request.post(`${API_CONFIG.API_PREFIX}/task-templates`, {
         headers,
         data: {
           name: taskName,
@@ -69,8 +77,8 @@ test.describe('Task completion closed loop', () => {
           importance: 'Moderate',
           tags: [],
           goalBinding: {
-            goalId: goal.id,
-            keyResultId: keyResult.id,
+            goalId: goalReceipt.goalId,
+            keyResultId,
             goalRecordValue: 1,
             progressTrigger: 'PER_INSTANCE',
           },
@@ -85,7 +93,7 @@ test.describe('Task completion closed loop', () => {
       .getByTestId('daily-todo-item')
       .filter({ has: page.getByText(taskName, { exact: true }) });
     const goalItem = page.locator(
-      `[data-testid="goal-progress-item"][data-goal-id="${goal.id}"]`,
+      `[data-testid="goal-progress-item"][data-goal-id="${goalReceipt.goalId}"]`,
     );
 
     await expect(todoWidget).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
@@ -96,8 +104,7 @@ test.describe('Task completion closed loop', () => {
 
     const completeRequestPromise = page.waitForRequest(
       (request) =>
-        request.method() === 'POST' &&
-        new URL(request.url()).pathname.endsWith('/complete'),
+        request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/complete'),
     );
     const completeResponsePromise = page.waitForResponse(
       (response) =>
@@ -124,13 +131,12 @@ test.describe('Task completion closed loop', () => {
           const dashboard = await expectApiData<{
             stats: { completedToday: number };
             goalProgress: Array<{ id: string; progress: number }>;
-          }>(
-            await page.request.get(`${API_CONFIG.FULL_URL}/dashboard/stats`, { headers }),
-          );
+          }>(await page.request.get(`${API_CONFIG.API_PREFIX}/dashboard/stats`, { headers }));
           return {
             completedToday: dashboard.stats.completedToday,
             linkedGoalProgress:
-              dashboard.goalProgress.find((item) => item.id === goal.id)?.progress ?? null,
+              dashboard.goalProgress.find((item) => item.id === goalReceipt.goalId)?.progress ??
+              null,
           };
         },
         { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },

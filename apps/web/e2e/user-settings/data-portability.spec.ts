@@ -78,7 +78,7 @@ async function callExportAPI(page: Page, include?: string[]): Promise<ExportResu
       });
       return res.json();
     },
-    { apiBase: API_CONFIG.FULL_URL, include },
+    { apiBase: API_CONFIG.API_PREFIX, include },
   );
 }
 
@@ -95,7 +95,7 @@ async function callImportAPI(page: Page, content: string, dryRun = false): Promi
       });
       return res.json();
     },
-    { apiBase: API_CONFIG.FULL_URL, content, dryRun },
+    { apiBase: API_CONFIG.API_PREFIX, content, dryRun },
   );
 }
 

@@ -131,7 +131,7 @@ async function resetSettings(page: Page) {
       },
       body: JSON.stringify({}),
     });
-  }, API_CONFIG.FULL_URL);
+  }, API_CONFIG.API_PREFIX);
   await resetResponse;
 
   await page.goto('/settings', {
