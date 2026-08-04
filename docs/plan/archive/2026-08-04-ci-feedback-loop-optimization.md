@@ -1,15 +1,25 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - ci
   - testing
 description: 缩短 PR 验证关键路径，同时保留完整 Web E2E 合并门禁
 created: 2026-08-04T14:30:00+08:00
-updated: 2026-08-04T14:30:00+08:00
+updated: 2026-08-04T16:35:00+08:00
 ---
 
 # CI Feedback Loop Optimization
+
+## 实施结果
+
+已完成。PR #199 的四个 Web Flow shard 全部通过，分别耗时 7:32、6:37、8:15 和
+6:15；聚合 `Web Flow Oracle` 耗时 5 秒。`Validate` 与 Web 分片并行，最终 required
+check 墙钟时间约 8 分 20 秒，相比 PR #198 的约 31 分钟下降约 73%。
+
+Boundary Tests 总耗时从约 5:23 降至 0:48，其中 target 检测步骤为 13 秒。四个 shard
+枚举数为 22、16、22、14，合计仍为完整的 74 个测试。Actionlint、Prettier、test-target
+governance、Playwright shard enumeration 和 GitHub Actions 均通过。
 
 ## 1. 背景
 
