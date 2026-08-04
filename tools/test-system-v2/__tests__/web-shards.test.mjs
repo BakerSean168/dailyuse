@@ -1,3 +1,4 @@
+/* eslint-disable @nx/enforce-module-boundaries -- governance test validates the Web-owned manifest */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';

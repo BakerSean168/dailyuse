@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @nx/enforce-module-boundaries -- governance tool validates the Web-owned manifest */
 import { readFile, writeFile } from 'node:fs/promises';
 import { WEB_FLOW_SPECS } from '../../apps/web/web-flow-specs.mjs';
 import { balanceShards } from './lib/shard-balance.mjs';
