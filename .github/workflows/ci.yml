@@ -99,7 +99,7 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'true', setup-uv: 'true' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test --parallel=3 --exclude=memoflow --outputStyle=static
         env: { TEST_REPORT_NAME: unit }
 
@@ -112,7 +112,7 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'true', setup-uv: 'true' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t typecheck --parallel=3 --outputStyle=static
         env: { TEST_REPORT_NAME: typecheck }
 
