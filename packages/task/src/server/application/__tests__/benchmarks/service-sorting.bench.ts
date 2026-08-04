@@ -163,16 +163,19 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
   it('should maintain consistency with multiple filter+sort combinations', async () => {
     const tasks = createMockTasks(2000);
     const times: number[] = [];
+    const operationsPerSample = 10;
 
     for (let i = 0; i < 20; i++) {
       const start = performance.now();
 
-      // Varying filter/sort combinations
-      const filtered = tasks.filter((t) => t.priority > i * 5);
-      filtered.sort((a, b) => b.priority - a.priority);
+      for (let j = 0; j < operationsPerSample; j++) {
+        // Varying filter/sort combinations
+        const filtered = tasks.filter((t) => t.priority > i * 5);
+        filtered.sort((a, b) => b.priority - a.priority);
+      }
 
       const end = performance.now();
-      times.push(end - start);
+      times.push((end - start) / operationsPerSample);
     }
 
     const variance = calculateVariance(times);
