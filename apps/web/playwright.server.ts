@@ -157,7 +157,7 @@ export function createApiServer() {
  * Residual 1339: real interactive GitHub OAuth Playwright path.
  * Loads gitignored `.env.development.local` for GITHUB_OAUTH_* and forces
  * RUNTIME_LANE=host-dev so getGithubOAuthConfig does NOT replace credentials
- * with e2e-mock (residual 1333 keep-boundary).
+ * with placeholder e2e values (residual 1333 keep-boundary).
  */
 function loadGithubOAuthCredentialsFromLocalEnv(): {
   clientId: string;

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ensureLoginScene, ensureRegisterScene } from '../helpers/testHelpers';
 import { waitForCapturedEmailLink } from '../helpers/auth-email-link';
-import { API_CONFIG, TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
+import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 
 const testPassword = 'Test123456!';
 
@@ -49,7 +49,7 @@ test.describe('Authentication - email verification', () => {
       timeout: TIMEOUT_CONFIG.LOGIN,
     });
 
-    const session = await page.request.get(`${API_CONFIG.AUTH_URL}/get-session`);
+    const session = await page.request.get('/api/auth/get-session');
     expect(session.ok()).toBe(true);
     expect((await session.json()).user.emailVerified).toBe(true);
   });

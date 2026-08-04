@@ -141,7 +141,7 @@ export default defineConfig(({ mode, command }) => {
       proxy:
         mode === 'development'
           ? {
-              '/api/v1': apiProxy,
+              '/api': apiProxy,
             }
           : undefined,
     },

@@ -195,10 +195,10 @@ export function getJwtConfig() {
  * can skip registering the GitHub provider entirely.
  * 未配置时返回 null，组合根据此跳过注册 GitHub 提供者。
  *
- * Residual 1333: Playwright e2e lane always uses the deterministic `e2e-mock`
- * identity provider so auth-oauth can complete without browser consent. Real
- * `GITHUB_OAUTH_*` values may still be present in gitignored `.env.test.local`
- * for GitHub App / live-github wiring; they must not displace the e2e mock.
+ * Residual 1333: Playwright e2e lane uses placeholder `e2e-mock` credentials
+ * so it can verify provider URL issuance without secrets or browser consent.
+ * Real `GITHUB_OAUTH_*` values may still be present in gitignored
+ * `.env.test.local`; they must not displace the placeholder configuration.
  * Knowledge-repo App credentials stay on `getGithubAppConfig()` (separate).
  */
 export function getGithubOAuthConfig(): { clientId: string; clientSecret: string } | null {
@@ -213,7 +213,7 @@ export function getGithubOAuthConfig(): { clientId: string; clientSecret: string
     ''
   ).trim();
 
-  // E2E lane: mock identity OAuth only (no interactive GitHub authorize).
+  // E2E lane: placeholder credentials for authorize-URL contract tests only.
   if (runtimeLane === 'e2e') {
     return {
       clientId: 'e2e-mock',

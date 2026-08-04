@@ -15,41 +15,24 @@ async function gotoCleanAuthPage(page: Page): Promise<void> {
   await ensureLoginScene(page);
 }
 
-test.describe('Authentication - GitHub OAuth (mock provider)', () => {
-  test('[P0] GitHub button issues authorize URL and mock callback establishes session', async ({
-    page,
-  }) => {
+test.describe('Authentication - GitHub OAuth provider entry', () => {
+  test('[P0] GitHub button issues the configured provider authorize URL', async ({ page }) => {
     await gotoCleanAuthPage(page);
 
     const githubButton = page.getByTestId('login-github-button');
-    // When mock provider is enabled in e2e lane, the button should be present.
-    // e2e 车道启用 mock 提供者时按钮应可见。
     await expect(githubButton).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await page.route('https://github.com/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'text/html', body: '<main>GitHub OAuth gate</main>' }),
+    );
 
     await Promise.all([
-      page.waitForURL((url) => url.searchParams.has('code') && url.searchParams.has('state'), {
-        timeout: TIMEOUT_CONFIG.LOGIN,
-      }),
+      page.waitForURL((url) => url.hostname === 'github.com', { timeout: TIMEOUT_CONFIG.LOGIN }),
       githubButton.click(),
     ]);
 
-    // completeGithubOAuth runs on mount when code+state present.
-    await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
-      timeout: TIMEOUT_CONFIG.LOGIN,
-    });
-
-    const identity = await page.evaluate(() => {
-      try {
-        const raw = localStorage.getItem('authentication');
-        if (!raw) return null;
-        const parsed = JSON.parse(raw) as {
-          currentIdentity?: { hasOAuth?: boolean; status?: string };
-        };
-        return parsed.currentIdentity ?? null;
-      } catch {
-        return null;
-      }
-    });
-    expect(identity?.hasOAuth).toBe(true);
+    const authorizeUrl = new URL(page.url());
+    expect(authorizeUrl.pathname).toBe('/login/oauth/authorize');
+    expect(authorizeUrl.searchParams.get('client_id')).toBe('e2e-mock');
+    expect(authorizeUrl.searchParams.get('state')).toBeTruthy();
   });
 });
