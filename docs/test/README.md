@@ -14,18 +14,18 @@
 
 ## 测试类型总览
 
-| 类型 | 主要位置 | 常用入口 |
-| --- | --- | --- |
-| 快测试（TDD 默认） | 与源码同目录的 `*.test.ts` / `*.spec.ts`，或 `__tests__/` 子目录 | `pnpm nx run <project>:test`、`pnpm nx run <project>:test:watch` |
-| 覆盖率门禁 | 领域包与 `domain-shared` 的快测试集合 | `pnpm nx run <project>:test:coverage`、`pnpm test:coverage:domain`、`pnpm test:coverage:affected` |
-| 集成测试 | `packages/{task,goal,schedule,reminder}/src/**/*.integration.test.ts` | `pnpm test:integration`、`pnpm nx run <project>:test:integration` |
-| API 冒烟测试 | `apps/api/src/__tests__/smoke/**` | `pnpm nx run api:test:smoke` |
-| Web 契约测试 | `apps/web/src/mocks/handlers/*.spec.ts` | `pnpm nx run web:test` |
-| Web E2E | `apps/web/e2e/**`（默认入口仅核心 flow oracle） | `pnpm nx run web:e2e` |
-| Web 同步回归 E2E | `apps/web/e2e/sync/**` | `pnpm nx run web:e2e:sync` |
-| Desktop 论文截图 E2E | `apps/web/e2e/desktop-screenshots/**` | `pnpm nx run web:e2e:desktop-screenshots` |
-| Desktop 专项测试 | `apps/desktop`、`apps/desktop/src/main/**` | `pnpm nx run desktop:test`、`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main` |
-| 性能 / Bench | `packages/task/**/**/*.bench.ts` | `pnpm nx run task:test:bench` |
+| 类型                 | 主要位置                                                              | 常用入口                                                                                          |
+| -------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 快测试（TDD 默认）   | 与源码同目录的 `*.test.ts` / `*.spec.ts`，或 `__tests__/` 子目录      | `pnpm nx run <project>:test`、`pnpm nx run <project>:test:watch`                                  |
+| 覆盖率门禁           | 领域包与 `domain-shared` 的快测试集合                                 | `pnpm nx run <project>:test:coverage`、`pnpm test:coverage:domain`、`pnpm test:coverage:affected` |
+| 集成测试             | `packages/{task,goal,schedule,reminder}/src/**/*.integration.test.ts` | `pnpm test:integration`、`pnpm nx run <project>:test:integration`                                 |
+| API 冒烟测试         | `apps/api/src/__tests__/smoke/**`                                     | `pnpm nx run api:test:smoke`                                                                      |
+| Web 契约测试         | `apps/web/src/mocks/handlers/*.spec.ts`                               | `pnpm nx run web:test`                                                                            |
+| Web E2E              | `apps/web/e2e/**`（默认入口仅核心 flow oracle）                       | `pnpm nx run web:e2e`                                                                             |
+| Web 同步回归 E2E     | `apps/web/e2e/sync/**`                                                | `pnpm nx run web:e2e:sync`                                                                        |
+| Desktop 论文截图 E2E | `apps/web/e2e/desktop-screenshots/**`                                 | `pnpm nx run web:e2e:desktop-screenshots`                                                         |
+| Desktop 专项测试     | `apps/desktop`、`apps/desktop/src/main/**`                            | `pnpm nx run desktop:test`、`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main`       |
+| 性能 / Bench         | `packages/task/**/**/*.bench.ts`                                      | `pnpm nx run task:test:bench`                                                                     |
 
 ## 文档索引
 
@@ -33,14 +33,15 @@
 - [running-tests.md](./running-tests.md)：日常开发、回归排查、CI 对应命令
 - [configuration.md](./configuration.md)：测试配置、setup、helper 的入口位置
 - [contract-tests.md](./contract-tests.md)：Web mock handler 契约测试约定
+- [ci-validation.md](./ci-validation.md)：PR 测试拓扑、required checks、本地 clean-source 入口与性能快照
 
 ## 覆盖率目标
 
-| 层 | 目标 | 说明 |
-|----|------|------|
-| Domain（核心业务逻辑） | 80% | 必须稳固 |
-| Application（用例编排） | 70% | |
-| 关键路径 | 90% | 登录、支付、数据同步等 |
+| 层                      | 目标 | 说明                   |
+| ----------------------- | ---- | ---------------------- |
+| Domain（核心业务逻辑）  | 80%  | 必须稳固               |
+| Application（用例编排） | 70%  |                        |
+| 关键路径                | 90%  | 登录、支付、数据同步等 |
 
 详见 [ADR-013: Standard Testing Strategy](../architecture/adr/ADR-013-standard-testing-strategy.md)。
 

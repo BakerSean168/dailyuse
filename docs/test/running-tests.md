@@ -107,6 +107,10 @@ docker compose -f docker-compose.yml --profile test up -d postgres-test
 ## CI 对应
 
 - 本地与 CI 使用同一组 Nx target。
-- CI 在 `boundary-tests` job 中预先拉起测试数据库；本地则依赖 Docker 可访问并允许 `integration-global-setup.ts` 自动启动 `postgres-test`。
+- CI 由 `Detect CI Scope` 计算 affected 范围，并行运行 smoke、integration、IPC、main-process Boundary jobs；稳定的 `Boundary Tests` check 只负责聚合结果。
+- CI 仅在 `Boundary Integration` job 中拉起测试数据库；本地则依赖 Docker 可访问并允许 `integration-global-setup.ts` 自动启动 `postgres-test`。
+- Web E2E 在四个独立 runner 中分片执行，并由稳定的 `Web Flow Oracle` check 聚合结果。
 - `CI=true` 只会改变 reporter、重试、bail 等运行时行为，不应引入另一套文档命令。
 - 需要查具体重试、超时、webServer、worker 设置时，直接看对应配置文件。
+
+CI 拓扑、clean-source 本地入口和带 PR/run 证据的耗时数据见 [CI 测试与反馈性能](./ci-validation.md)。
