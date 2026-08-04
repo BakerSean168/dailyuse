@@ -17,7 +17,6 @@ env:
   NODE_VERSION: '24'
   CI: 'true'
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
-  NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
 
 jobs:
   scope-detector:
