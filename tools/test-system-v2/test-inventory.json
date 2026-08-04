@@ -3700,6 +3700,10 @@
     {
       "path": "tools/test-system-v2/__tests__/shard-balance.test.mjs",
       "primarySuite": "unit"
+    },
+    {
+      "path": "tools/test-system-v2/__tests__/web-shards.test.mjs",
+      "primarySuite": "unit"
     }
   ],
   "measurementSuites": {
@@ -4527,7 +4531,8 @@
       "tools/test-system-v2/__tests__/failure-classification.test.mjs",
       "tools/test-system-v2/__tests__/inventory.test.mjs",
       "tools/test-system-v2/__tests__/oracle.test.mjs",
-      "tools/test-system-v2/__tests__/shard-balance.test.mjs"
+      "tools/test-system-v2/__tests__/shard-balance.test.mjs",
+      "tools/test-system-v2/__tests__/web-shards.test.mjs"
     ]
   },
   "measurementOnly": [],
@@ -4535,7 +4540,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 824,
+    "unit": 825,
     "integration": 10,
     "smoke": 2,
     "boundary-ipc": 9,
