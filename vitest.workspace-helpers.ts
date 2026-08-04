@@ -205,6 +205,14 @@ export const domainResolveAliases = [
     replacement: path.resolve(contractsSrc, 'index.ts'),
   },
   {
+    find: /^@memoflow\/time\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/time/src/$1'),
+  },
+  {
+    find: '@memoflow/time',
+    replacement: path.resolve(__dirname, './packages/time/src/index.ts'),
+  },
+  {
     find: /^@memoflow\/task\/(.+)/,
     replacement: path.resolve(__dirname, './packages/task/src/$1/index.ts'),
   },
