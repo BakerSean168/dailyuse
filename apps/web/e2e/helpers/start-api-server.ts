@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ensureTestDatabase } from '@memoflow/test-utils/setup/database';
+import { createApiProcessEnv } from './api-process-env';
 import { buildApiApp } from './build-api';
 import { normalizeOrigin } from './normalize-origin';
 
@@ -89,12 +90,7 @@ async function main(): Promise<void> {
 
   const apiProcess = spawn(process.execPath, ['main.js'], {
     cwd: apiDistDir,
-    env: {
-      ...process.env,
-      RUNTIME_LANE: runtimeLane,
-      NODE_ENV: process.env.NODE_ENV ?? 'test',
-      LOG_DIR: process.env.LOG_DIR || apiLogDir,
-    },
+    env: createApiProcessEnv(process.env, runtimeLane, apiLogDir),
     stdio: 'inherit',
   });
 
