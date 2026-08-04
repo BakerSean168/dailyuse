@@ -177,6 +177,7 @@ describe('Benchmarks: Sort Algorithm Performance', () => {
   it('should maintain consistent performance across multiple runs', async () => {
     const tasks = createMockTasks(2000);
     const times: number[] = [];
+    const sortsPerSample = 10;
 
     // Warm-up runs to allow JIT compilation
     for (let i = 0; i < 5; i++) {
@@ -186,9 +187,11 @@ describe('Benchmarks: Sort Algorithm Performance', () => {
     // Actual measurement runs
     for (let i = 0; i < 20; i++) {
       const start = performance.now();
-      sortByPriority(tasks);
+      for (let j = 0; j < sortsPerSample; j++) {
+        sortByPriority(tasks);
+      }
       const end = performance.now();
-      times.push(end - start);
+      times.push((end - start) / sortsPerSample);
     }
 
     const variance = calculateVariance(times);
