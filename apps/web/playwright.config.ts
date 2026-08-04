@@ -61,7 +61,9 @@ export default defineConfig({
 
   // 主流程用例会共享账号与后端状态，保持串行比追求并发更稳定。
   fullyParallel: false,
-  retries: process.env.CI ? 2 : 0,
+  // PR 中优先快速暴露确定性契约错误；完整覆盖由四个独立 CI shard 汇总。
+  maxFailures: process.env.CI ? 5 : 0,
+  retries: process.env.CI ? 1 : 0,
 
   // 单 worker 可以避免数据污染，也让失败更容易复现。
   workers: 1,
@@ -86,13 +88,12 @@ export default defineConfig({
     baseURL: getE2EWebOrigin(),
 
     // 追踪配置
-    trace: 'on',
+    trace: 'retain-on-failure',
 
     // 截图配置
-    screenshot: 'on',
+    screenshot: 'only-on-failure',
 
-    // 视频录制 - 始终录制
-    video: 'on',
+    video: 'retain-on-failure',
 
     // 浏览器上下文选项
     viewport: { width: 1280, height: 720 },

@@ -27,6 +27,7 @@ updated: 2026-08-03T23:15:00+08:00
 
 | 日期       | 计划                                                                                                      | 结果                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 2026-08-04 | [CI Feedback Loop Optimization](./2026-08-04-ci-feedback-loop-optimization.md)                            | Required checks 约 8:20；Web E2E 完整 74 tests；Boundary 0:48                       |
 | 2026-08-03 | [Desktop Cloud Connection Boundary Refactor](./2026-08-03-desktop-cloud-connection-boundary-refactor.md) | Profile Access、Cloud Connection Dialog 与可选 PIN 解耦；全仓 prod-like validation 通过 |
 | 2026-08-03 | [Desktop GitHub Device Authorization](./2026-08-03-desktop-github-device-authorization.md)                | Device flow 全链路完成；Desktop E2E 2/2、prod-like validation 与安全并发协议通过     |
 
