@@ -248,7 +248,9 @@ jobs:
         run: pnpm exec nx run database:prisma-push
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        # GitHub's Ubuntu image already provides Chromium runtime libraries. Avoid
+        # apt mirror latency from reinstalling optional font packages in every shard.
+        run: pnpm exec playwright install chromium
 
       - name: Build API for E2E
         run: pnpm nx build api
