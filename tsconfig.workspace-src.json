@@ -14,6 +14,10 @@
       "@memoflow/patterns": [
         "packages/patterns/src/index.ts"
       ],
+      "@memoflow/patterns/*": [
+        "packages/patterns/src/*/index.ts",
+        "packages/patterns/src/*.ts"
+      ],
       "@memoflow/time": [
         "packages/time/src/index.ts"
       ],

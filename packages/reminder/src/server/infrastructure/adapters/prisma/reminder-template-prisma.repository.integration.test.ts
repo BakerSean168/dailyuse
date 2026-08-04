@@ -11,7 +11,7 @@ import {
   disconnectPrisma,
   getPrisma,
   seedAccount,
-} from '../../../__tests__/integration-helpers';
+} from '../../../../__tests__/integration-helpers';
 
 function createReminderTemplate(identityId: string, groupId: string) {
   const template = ReminderTemplate.create({
@@ -96,7 +96,9 @@ describe('ReminderTemplatePrismaRepository integration', () => {
       where: { id: String(template.id) },
       include: { history: true },
     });
-    const loaded = await repository.findByIdForIdentity(String(identityId), String(template.id), { includeHistory: true });
+    const loaded = await repository.findByIdForIdentity(String(identityId), String(template.id), {
+      includeHistory: true,
+    });
 
     expect(row).not.toBeNull();
     expect(row?.activeHours).toBeNull();

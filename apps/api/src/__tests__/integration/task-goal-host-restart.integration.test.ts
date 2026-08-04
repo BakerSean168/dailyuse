@@ -89,10 +89,21 @@ describe('API host Task -> Goal restart recovery', () => {
     });
     const fixturePath = path.resolve(__dirname, 'fixtures/complete-task-and-exit.ts');
     const tsxPath = path.resolve(__dirname, '../../../../../node_modules/tsx/dist/cli.mjs');
+    const workspaceTsconfigPath = path.resolve(
+      __dirname,
+      '../../../../../tsconfig.workspace-src.json',
+    );
 
     const child = await execFileAsync(
       process.execPath,
-      [tsxPath, fixturePath, taskInstance.id, String(identityId)],
+      [
+        tsxPath,
+        '--tsconfig',
+        workspaceTsconfigPath,
+        fixturePath,
+        taskInstance.id,
+        String(identityId),
+      ],
       { env: process.env },
     );
     expect(child.stdout).toContain('TASK_COMMITTED');

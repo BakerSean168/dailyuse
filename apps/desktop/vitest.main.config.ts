@@ -68,6 +68,14 @@ export default defineConfig({
         find: '@memoflow/schedule-orchestration',
         replacement: resolve(__dirname, '../../packages/schedule-orchestration/src/index.ts'),
       },
+      {
+        find: '@memoflow/powersync-schema',
+        replacement: resolve(__dirname, '../../packages/powersync-schema/src/index.ts'),
+      },
+      {
+        find: '@memoflow/data-portability/electron',
+        replacement: resolve(__dirname, '../../packages/data-portability/src/electron/index.ts'),
+      },
     ],
   },
 });
