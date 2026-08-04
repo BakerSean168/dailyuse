@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-04T00:00:00+08:00
+updated: 2026-08-04T21:10:00+08:00
 ---
 
 # Active Plans
@@ -13,11 +13,10 @@ updated: 2026-08-04T00:00:00+08:00
 
 ## 当前计划
 
-| 计划                                                                                 | 当前状态                                                                               |
-| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| [CI Feedback Loop Phase Two](./2026-08-04-ci-feedback-loop-phase-two.md)             | **实施中**：动态 pnpm 缓存、Boundary 并行聚合、Web affected gate、本地 clean-room 入口 |
-| [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)          | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称            |
-| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                 |
+| 计划                                                                                 | 当前状态                                                                    |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)          | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称 |
+| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式      |
 
 ## 本轮已归档（2026-08-03）
 

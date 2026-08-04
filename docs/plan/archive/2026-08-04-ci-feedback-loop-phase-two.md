@@ -5,10 +5,16 @@ tags:
   - developer-experience
 description: 缩短 CI 反馈回路并让边界测试一次暴露全部失败
 created: 2026-08-04T00:00:00+08:00
-updated: 2026-08-04T01:10:00+08:00
+updated: 2026-08-04T21:10:00+08:00
 ---
 
 # CI Feedback Loop Phase Two
+
+## 结果
+
+PR #202 的首轮 GitHub Actions 全部通过：`Detect CI Scope`、四类 Boundary jobs、`Boundary Tests`、四个 Web Flow shards、`Web Flow Oracle` 和 `Validate` 均成功。Boundary jobs 已确认并行启动，两个 required Oracle check 名称保持稳定。
+
+本轮实现动态 pnpm store cache、共享 affected detector、并行 Boundary jobs、Web Flow affected gate，以及跨平台 clean-source Boundary runner。Windows `.cmd/.bat` 子进程通过 `cmd.exe /d /s /c` 启动，临时源码和数据库容器均由 runner 清理。
 
 ## 背景
 
@@ -22,7 +28,7 @@ updated: 2026-08-04T01:10:00+08:00
 2. 统一检测 affected 范围，并行执行 smoke、integration、IPC、main-process 四类 Boundary 测试。
 3. 保留 `Boundary Tests` 和 `Web Flow Oracle` 两个稳定的 required check 名称，由 Oracle 聚合跳过、成功、失败和取消状态。
 4. 仅当 `web`、`api` 或 `ai-service` 受影响时执行 Web Flow 分片。
-5. 提供跨平台本地 clean-room Boundary 入口，在临时 Git worktree 中安装和执行，不依赖当前工作区残留的构建产物，并一次汇总全部失败。
+5. 提供跨平台本地 clean-room Boundary 入口，在临时源码快照中安装和执行，不依赖当前工作区残留的构建产物，并一次汇总全部失败。
 
 ## 实施
 
@@ -46,20 +52,16 @@ updated: 2026-08-04T01:10:00+08:00
 
 ## 验收
 
-- [x] Phase A：动态 pnpm store cache 已接入 composite action。
-- [x] Phase B：Boundary jobs 已拆分并行，Web Flow 已接入 affected gate，两个 Oracle 名称保持不变。
-- [x] Phase C：本地 clean-room runner、根脚本和 dry-run 已完成。
-- workflow 和 composite action 可被 YAML 解析，格式检查通过。
-- `pnpm test:targets:check` 与治理检查通过。
-- clean-room runner 的参数检查和 dry-run 通过；完整运行已进入临时快照安装阶段，但本机外层执行器在 Windows 长时子进程上中止，四类测试尚未取得完整结果。
-- `git diff --check` 通过。
-- PR 中两个 required Oracle check 保持原名称；从真实 Actions 结果确认无关变更会跳过 Web Flow，Boundary 失败可在同一轮并行暴露。
-
-本地验证结果：`actionlint`、Prettier、`pnpm test:targets:check`、Node 语法检查、clean-room `--help/--dry-run` 和 `git diff --check` 均通过。完整 clean-room 安装已在独立快照中成功复现；完整四阶段测试以及 CI timing 需要在具备 Docker、网络和不被外层超时中止的环境中运行。
+- [x] 动态 pnpm store cache 已接入 composite action。
+- [x] Boundary jobs 已拆分并行，Web Flow 已接入 affected gate。
+- [x] `Boundary Tests` 与 `Web Flow Oracle` 名称保持不变并在 PR #202 成功。
+- [x] 本地 clean-room runner、根脚本、Windows shim、`--help` 和 `--dry-run` 已完成。
+- [x] `actionlint`、Prettier、`pnpm test:targets:check`、治理检查、Node 语法检查和 `git diff --check` 通过。
+- [x] PR #202 首轮完整 affected CI 全绿。
 
 ## 非目标与后续
 
 - 不在本轮改变 release-please 的触发语义。
 - 不在本轮缩小 Nx 全局输入；需要先建立配置文件到项目的明确影响契约。
 - 不在本轮引入 Nx Cloud 或自建 remote cache；需要先确定凭据、数据保留和缓存污染处理策略。
-- 不在本轮共享 API build artifact；Web Flow 分片的制品边界与下载收益应根据本轮真实 timing 再决定。
+- 不在本轮共享 API build artifact；Web Flow 分片的制品边界与下载收益应根据真实 timing 再决定。
