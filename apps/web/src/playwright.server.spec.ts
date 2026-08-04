@@ -41,6 +41,7 @@ describe('playwright.server', () => {
 
     expect(process.env.NODE_ENV).toBe('test');
     expect(apiServer.env?.NODE_ENV).toBe('test');
+    expect(apiServer.env?.LOCAL_VALIDATION).toBe('1');
     expect(webServer.env?.NODE_ENV).toBe('test');
     expect(apiServer.env?.DATABASE_URL).toBe(
       'postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test',

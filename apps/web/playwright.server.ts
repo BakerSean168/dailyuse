@@ -147,6 +147,7 @@ export function createApiServer() {
       ...process.env,
       NODE_ENV: 'test',
       RUNTIME_LANE: 'e2e',
+      LOCAL_VALIDATION: '1',
       CORS_ORIGIN: getCorsOrigins(),
     },
     ...apiServerOptions,
