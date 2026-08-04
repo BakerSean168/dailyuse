@@ -100,12 +100,20 @@ jobs:
         run: |
           set -euo pipefail
 
-          project_has_target() {
-            local project="$1"
-            local target_name="$2"
+          detect_target() {
+            local target_name="$1"
+            local output_name="$2"
+            local projects=()
 
-            TARGET_NAME="$target_name" pnpm exec nx show project "$project" \
-              | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const p=JSON.parse(s);const target=process.env.TARGET_NAME;process.exit(p.targets && p.targets[target] ? 0 : 1);});"
+            while IFS= read -r project; do
+              [ -n "$project" ] && projects+=("$project")
+            done < <(pnpm exec nx show projects --affected --with-target="$target_name")
+
+            if [ "${#projects[@]}" -gt 0 ]; then
+              printf -v "$output_name" '%s' true
+              has_any=true
+              printf 'Affected projects with %s: %s\n' "$target_name" "${projects[*]}"
+            fi
           }
 
           has_any=false
@@ -114,33 +122,10 @@ jobs:
           has_ipc=false
           has_main=false
 
-          while IFS= read -r project; do
-            [ -z "$project" ] && continue
-
-            if project_has_target "$project" "test:smoke"; then
-              echo "Affected project with test:smoke: $project"
-              has_smoke=true
-              has_any=true
-            fi
-
-            if project_has_target "$project" "test:integration"; then
-              echo "Affected project with test:integration: $project"
-              has_integration=true
-              has_any=true
-            fi
-
-            if project_has_target "$project" "test:ipc"; then
-              echo "Affected project with test:ipc: $project"
-              has_ipc=true
-              has_any=true
-            fi
-
-            if project_has_target "$project" "test:main"; then
-              echo "Affected project with test:main: $project"
-              has_main=true
-              has_any=true
-            fi
-          done < <(pnpm exec nx show projects --affected)
+          detect_target "test:smoke" has_smoke
+          detect_target "test:integration" has_integration
+          detect_target "test:ipc" has_ipc
+          detect_target "test:main" has_main
 
           echo "has_any=$has_any" >> "$GITHUB_OUTPUT"
           echo "has_smoke=$has_smoke" >> "$GITHUB_OUTPUT"
@@ -218,11 +203,15 @@ jobs:
         shell: bash
         run: docker rm -f ci-postgres || true
 
-  web-flow:
-    name: Web Flow Oracle
-    needs: validate
+  web-flow-shard:
+    name: Web Flow Shard (${{ matrix.shard }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/4', '2/4', '3/4', '4/4']
 
     env:
       DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
@@ -265,4 +254,35 @@ jobs:
         run: pnpm nx build api
 
       - name: Run web flow oracle
-        run: pnpm nx run web:e2e
+        run: pnpm nx run web:e2e -- --shard=${{ matrix.shard }}
+
+      - name: Upload failed web flow evidence
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: web-flow-${{ strategy.job-index }}-failure
+          path: |
+            apps/web/test-results
+            apps/web/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
+
+  web-flow:
+    name: Web Flow Oracle
+    if: always()
+    needs: web-flow-shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Verify every web flow shard passed
+        env:
+          WEB_FLOW_SHARDS_RESULT: ${{ needs.web-flow-shard.result }}
+        shell: bash
+        run: |
+          if [ "$WEB_FLOW_SHARDS_RESULT" != "success" ]; then
+            echo "One or more Web Flow shards did not pass: $WEB_FLOW_SHARDS_RESULT"
+            exit 1
+          fi
+
+          echo "All Web Flow shards passed."
