@@ -56,6 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/inventory.mjs --check
@@ -83,6 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t lint --parallel=3 --exclude=memoflow --outputStyle=static
@@ -95,6 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test --parallel=3 --exclude=memoflow --outputStyle=static
@@ -107,6 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t typecheck --parallel=3 --outputStyle=static
@@ -119,6 +123,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client' --outputStyle=static
@@ -154,6 +159,7 @@ jobs:
       TZ: UTC
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
@@ -200,6 +206,7 @@ jobs:
       JWT_SECRET: test-jwt-secret-not-for-production-use
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
@@ -238,6 +245,7 @@ jobs:
         options: --health-cmd "pg_isready -U test_user -d memoflow_test" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
@@ -285,6 +293,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:coverage --parallel=2 --outputStyle=static
@@ -310,6 +319,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:perf --parallel=1 --outputStyle=static
