@@ -40,6 +40,10 @@ export * from './entities';
 export * from './value-objects';
 
 // 仓储接口
+export {
+  GoalVersionConflictError,
+} from './repositories/i-goal-repository';
+
 export type {
   IFocusModeRepository,
   IGoalRepository,

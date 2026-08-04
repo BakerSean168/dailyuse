@@ -15,8 +15,7 @@ import { describe, expect, it } from 'vitest';
    * DomainDate type retired (ADR-037 T10); duals are Instant (domain) vs TransferDate (DTO) names,
    * not Date-vs-number. Exact VO duals (FrequencyAdjustment/ResponseMetrics, residual 857) remain aliases.
    * Residual 861 (soft): ReminderResponse/NotificationChannel subset duals retired via Omit.
-   * Residual 865 (soft): AuthStatusDTO dead simplified dual deleted.
-   * Residual 879 (soft): AuthIdentity/AuthSession/TaskTemplate Client≠Server keep-boundary.
+   * Cloud authentication contracts now live in the dedicated cloud-auth surface.
    * Does not flip §13.2 checkboxes; OAuth / multi-engine Agent / full PR gate remain open.
    */
   describe('instant transfer-date dual keep-boundary (residual 859)', () => {
@@ -24,7 +23,6 @@ import { describe, expect, it } from 'vitest';
     const accountVo = resolve(goalVo, '../../account/value-objects');
     const taskVo = resolve(goalVo, '../../task/value-objects');
     const reminderVo = resolve(goalVo, '../../reminder/value-objects');
-    const authProtocol = resolve(goalVo, '../../authentication/protocol');
     const primitives = resolve(goalVo, '../../../primitives');
 
     it('DomainDate type is gone from contracts primitives (ADR-037 T10)', () => {
@@ -56,12 +54,11 @@ import { describe, expect, it } from 'vitest';
       expect(weight).not.toContain('DomainDate');
     });
 
-    it('keeps account/task Instant duals and AuthStatus shape-mismatch dual separate', () => {
+    it('keeps account/task Instant duals separate', () => {
       const email = readFileSync(resolve(accountVo, 'contact-email.ts'), 'utf8');
       const phone = readFileSync(resolve(accountVo, 'contact-phone.ts'), 'utf8');
       const profile = readFileSync(resolve(accountVo, 'account-profile.ts'), 'utf8');
       const completion = readFileSync(resolve(taskVo, 'completion-record.ts'), 'utf8');
-      const desktopAuth = readFileSync(resolve(authProtocol, 'desktop-auth.types.ts'), 'utf8');
 
       for (const [src, vo, dto] of [
         [email, 'ContactEmail', 'ContactEmailDTO'],
@@ -79,10 +76,6 @@ import { describe, expect, it } from 'vitest';
       expect(phone).not.toContain('DomainDate');
       expect(completion).toContain('Instant');
       expect(completion).not.toContain('DomainDate');
-      expect(desktopAuth).toMatch(/export interface AuthStatus\b/);
-      expect(desktopAuth).toContain('Residual 865');
-      expect(desktopAuth).not.toMatch(/export interface AuthStatusDTO\b/);
-      expect(desktopAuth).not.toContain('export type AuthStatusDTO = AuthStatus');
     });
 
     it('keeps residual 857 exact metrics duals as type aliases; residual 859 marker present', () => {

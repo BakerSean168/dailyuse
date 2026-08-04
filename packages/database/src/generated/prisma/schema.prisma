@@ -21,7 +21,7 @@ datasource db {
 // ==========================================
 
 model Account {
-  id               String    @id // same as AuthIdentity.id
+  id               String    @id // same as CloudAuthUser.id for cloud accounts
   status           String    @default("ACTIVE") // AccountStatus: ACTIVE | INACTIVE | SUSPENDED | DELETED
   // profile
   profile          Json
@@ -44,7 +44,7 @@ model Account {
   deletedAt        DateTime? @map("deleted_at")
 
   // 关联关系
-  identity AuthIdentity @relation(fields: [id], references: [id], onDelete: Cascade)
+  cloudUser CloudAuthUser @relation(fields: [id], references: [id], onDelete: Cascade)
 
   // 关联的业务模块
   editorWorkspaces                EditorWorkspace[]
@@ -55,7 +55,6 @@ model Account {
   focusModes                      FocusMode[]
   goals                           Goal[]
   goalFolders                     GoalFolder[]
-  goalStatistics                  GoalStatistic?
   reminderGroups                  ReminderGroup[]
   reminderTemplates               ReminderTemplate[]
   reminderInstances               ReminderInstance[]
@@ -85,10 +84,6 @@ model Account {
   langGraphCheckpointWrites       LangGraphCheckpointWrite[]
 
   // PowerSync: denormalized identity relations
-  keyResults                     KeyResult[]                     @relation("AccountKeyResults")
-  goalRecords                    GoalRecord[]                    @relation("AccountGoalRecords")
-  goalReviews                    GoalReview[]                    @relation("AccountGoalReviews")
-  keyResultWeightSnapshots       KeyResultWeightSnapshot[]       @relation("AccountKeyResultWeightSnapshots")
   taskDependencies               TaskDependency[]                @relation("AccountTaskDependencies")
   taskTemplateHistory            TaskTemplateHistory[]           @relation("AccountTaskTemplateHistory")
   scheduleExecutions             ScheduleExecution[]             @relation("AccountScheduleExecutions")
@@ -365,148 +360,94 @@ model LangGraphCheckpointWrite {
   @@map("langgraph_checkpoint_writes")
 }
 
-// ==========================================
-// Auth Module
-// 认证聚合根、标识符、绑定、凭证、会话
-// ==========================================
+// Better Auth cloud identity source.
+// Explicit model names avoid confusing provider accounts with MemoFlow Account.
 
-// 1. 取消 Prisma 枚举，统一存储大驼峰字符串
+model CloudAuthUser {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false) @map("email_verified")
+  image         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-// ==========================================
-// 1. 身份聚合根表 (AuthIdentity)
-// ==========================================
-model AuthIdentity {
-  id     String @id @default(uuid())
-  status String @default("Unverified")
+  sessions         CloudAuthSession[]
+  providerAccounts CloudAuthProviderAccount[]
+  deviceCodes      CloudAuthDeviceCode[]
+  account          Account?
 
-  // 安全风控字段 (对应聚合根内部状态)
-  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
-  lastFailedAttempt   DateTime? @map("last_failed_attempt")
-  lockedUntil         DateTime? @map("locked_until")
-
-  // 时间戳
-  version   Int       @default(1)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-
-  // 关联
-  identifiers   AuthIdentifier[]
-  oauthBindings AuthOAuthBinding[]
-  credentials   AuthCredential[]
-  sessions      AuthSession[]
-  accounts      Account[]
-
-  @@map("auth_identities")
+  @@map("cloud_auth_users")
 }
 
-// ==========================================
-// 2. 标识符表 (AuthIdentifier)
-// 存储邮箱/手机号等值对象标识符
-// 解决"如何找到用户"
-// ==========================================
-model AuthIdentifier {
-  id         String   @id @default(uuid())
-  identityId String   @map("identity_id")
-  type       String // 'EMAIL' | 'PHONE'
-  value      String // 邮箱地址或手机号
-  isVerified Boolean  @default(false) @map("is_verified")
-  createdAt  DateTime @default(now()) @map("created_at")
+model CloudAuthSession {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  user CloudAuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([identityId, type, value])
-  @@index([type, value]) // findByEmail / findByPhone 的查询索引
-  @@map("auth_identifiers")
-}
-
-// ==========================================
-// 3. OAuth 绑定表 (AuthOAuthBinding)
-// Entity 形式的标识符，拥有独立 ID 和可变 Token 状态
-// 解决"通过第三方如何找到用户"
-// ==========================================
-model AuthOAuthBinding {
-  id                String    @id @default(uuid())
-  identityId        String    @map("identity_id")
-  provider          String // GOOGLE, GITHUB 等
-  providerSubjectId String    @map("provider_subject_id")
-  accessToken       String?   @map("access_token")
-  refreshToken      String?   @map("refresh_token")
-  expiresAt         DateTime? @map("expires_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  lastUsedAt        DateTime? @map("last_used_at")
-
-  identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerSubjectId])
-  @@index([identityId])
-  @@map("auth_oauth_bindings")
-}
-
-// ==========================================
-// 4. 凭证实体表 (AuthCredential)
-// 仅保留真正的凭证（密码）
-// 解决"如何验证用户"
-// ==========================================
-model AuthCredential {
-  id String @id @default(uuid())
-
-  // 归属的身份
-  identityId String       @map("identity_id")
-  identity   AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  // 核心字段
-  type   String
-  status String @default("Active")
-
-  // [Type: PASSWORD]
-  passwordHash          String?   @map("password_hash") // Argon2 hash
-  passwordLastChangedAt DateTime? @map("password_last_changed_at") // 密码最后修改时间
-
-  // 元数据
-  version    Int       @default(1)
-  createdAt  DateTime  @default(now()) @map("created_at")
-  lastUsedAt DateTime? @map("last_used_at")
-  deletedAt  DateTime? @map("deleted_at")
-
-  @@index([identityId, type])
-  @@map("auth_credentials")
-}
-
-// ==========================================
-// 5. 会话聚合根表 (AuthSession)
-// ==========================================
-model AuthSession {
-  id String @id @default(uuid())
-
-  identityId String       @map("identity_id")
-  identity   AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  // 核心令牌数据
-  refreshTokenHash String? @map("refresh_token_hash") // 支持 Refresh Token 轮换
-
-  // 设备信息 (对应 DeviceInfo Value Object)
-  deviceId          String  @map("device_id")
-  deviceFingerprint String  @map("device_fingerprint")
-  deviceType        String  @map("device_type") // MOBILE, DESKTOP
-  deviceName        String? @map("device_name")
-  os                String?
-  browser           String?
-  ipAddress         String? @map("ip_address")
-
-  // 地理位置 (用 JSON 存比较灵活，因为字段不确定)
-  location Json? // { country, city, timezone }
-
-  // 生命周期
-  version      Int       @default(1)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  expiresAt    DateTime  @map("expires_at")
-  lastActiveAt DateTime  @default(now()) @map("last_active_at")
-  deletedAt    DateTime? @map("deleted_at")
-
-  @@index([identityId])
+  @@index([userId])
   @@index([expiresAt])
-  @@map("auth_sessions")
+  @@map("cloud_auth_sessions")
+}
+
+model CloudAuthProviderAccount {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user CloudAuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("cloud_auth_provider_accounts")
+}
+
+model CloudAuthVerification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("cloud_auth_verifications")
+}
+
+model CloudAuthDeviceCode {
+  id              String    @id @default(uuid())
+  deviceCode      String    @unique @map("device_code")
+  userCode        String    @unique @map("user_code")
+  userId          String?   @map("user_id")
+  expiresAt       DateTime  @map("expires_at")
+  status          String
+  lastPolledAt    DateTime? @map("last_polled_at")
+  pollingInterval Int?      @map("polling_interval")
+  clientId        String?   @map("client_id")
+  scope           String?
+
+  user CloudAuthUser? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId])
+  @@map("cloud_auth_device_codes")
 }
 
 // ==========================================
@@ -655,11 +596,12 @@ model Goal {
   folder                   GoalFolder?               @relation(fields: [folderId], references: [id])
   parentGoal               Goal?                     @relation("GoalHierarchy", fields: [parentGoalId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   childGoals               Goal[]                    @relation("GoalHierarchy")
-  keyResults               KeyResult[] /// 关键结果列表（一对多，级联删除）
+  keyResults               KeyResult[]               @relation("GoalKeyResults") /// 关键结果列表（一对多，级联删除）
   reviews                  GoalReview[] /// 目标评审记录（一对多，级联删除）
   keyResultWeightSnapshots KeyResultWeightSnapshot[] /// KR权重快照（一对多，级联删除）
   focusSessions            FocusSession[] /// 专注会话记录（一对多，级联删除）
 
+  @@unique([id, identityId])
   // ============ 索引优化 ============
   @@index([identityId, status]) /// 按用户+状态查询（常用）
   @@index([identityId, targetDate]) /// 按用户+截止日期查询（日历视图）
@@ -689,10 +631,6 @@ model GoalFolder {
   isSystemFolder Boolean @default(false) @map("is_system_folder") /// 是否为系统文件夹
   parentFolderId String? @map("parent_folder_id") /// 父文件夹ID（支持嵌套）
   sortOrder      Int     @default(0) @map("sort_order") /// 排序顺序
-
-  // ============ 统计信息（冗余字段，提升查询性能） ============
-  goalCount          Int @default(0) @map("goal_count") /// 目标总数
-  completedGoalCount Int @default(0) @map("completed_goal_count") /// 已完成目标数
 
   // ============ 版本与审计 ============
   version   Int       @default(1)
@@ -737,18 +675,19 @@ model KeyResult {
   weight Int @default(1) /// 权重系数（1-5整数，计算目标进度时使用）
   order  Int @default(0) /// 显示顺序
 
-  // ============ 版本与审计 ============
-  version   Int       @default(1)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  // ============ 审计 ============
+  // 并发和删除由 Goal 聚合根统一管理；子实体不维护第二套版本/软删除状态。
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // ============ 关系映射 ============
-  identity                 Account                   @relation("AccountKeyResults", fields: [identityId], references: [id])
-  goal                     Goal                      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goal                     Goal                      @relation("GoalKeyResults", fields: [goalId, identityId], references: [id, identityId], onDelete: Cascade)
+  linkedTaskTemplates      TaskTemplate[]            @relation("KeyResultTaskTemplates")
   records                  GoalRecord[] /// 记录历史数据（一对多，级联删除）
   keyResultWeightSnapshots KeyResultWeightSnapshot[] /// 权重变更快照（一对多，级联删除）
 
+  @@unique([id, identityId])
+  @@unique([id, goalId, identityId])
   // ============ 索引优化 ============
   @@index([identityId])
   @@index([goalId]) /// 按目标查询KR列表
@@ -771,15 +710,12 @@ model GoalRecord {
   sourceId   String?  @map("source_id") /// 自动贡献来源实体 ID；手工记录为空
   recordedAt DateTime @map("recorded_at") /// 记录时间（业务时间，非创建时间）
 
-  // ============ 版本与审计 ============
-  version   Int       @default(1)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  // ============ 审计 ============
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // ============ 关系映射 ============
-  identity  Account   @relation("AccountGoalRecords", fields: [identityId], references: [id])
-  keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
+  keyResult KeyResult @relation(fields: [keyResultId, identityId], references: [id, identityId], onDelete: Cascade)
 
   @@unique([identityId, sourceType, sourceId])
   // ============ 索引优化 ============
@@ -806,15 +742,12 @@ model GoalReview {
   nextSteps      String? @map("next_steps") /// 下一步计划
   rating         Int? /// 评分（1-5星）
 
-  // ============ 版本与审计 ============
-  version   Int       @default(1)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  // ============ 审计 ============
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // ============ 关系映射 ============
-  identity Account @relation("AccountGoalReviews", fields: [identityId], references: [id])
-  goal     Goal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goal Goal @relation(fields: [goalId, identityId], references: [id, identityId], onDelete: Cascade)
 
   // ============ 索引优化 ============
   @@index([identityId])
@@ -847,9 +780,8 @@ model KeyResultWeightSnapshot {
   createdAt DateTime @default(now()) @map("created_at")
 
   // ============ 关系映射 ============
-  identity  Account   @relation("AccountKeyResultWeightSnapshots", fields: [identityId], references: [id])
-  goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
+  goal      Goal      @relation(fields: [goalId, identityId], references: [id, identityId], onDelete: Cascade)
+  keyResult KeyResult @relation(fields: [keyResultId, goalId, identityId], references: [id, goalId, identityId], onDelete: Cascade)
 
   // ============ 索引优化 ============
   @@index([identityId])
@@ -937,44 +869,6 @@ model FocusMode {
   @@index([isActive]) /// 查询全局激活的专注模式
   @@index([endTime]) /// 按结束时间查询（清理过期模式）
   @@map("focus_modes")
-}
-
-/// GoalStatistic 值对象 - 目标统计
-/// 缓存目标模块的统计数据，定期更新
-model GoalStatistic {
-  // ============ 主键与外键 ============
-  id         String @id
-  identityId String @unique @map("identity_id")
-
-  // ============ 目标统计 ============
-  totalGoals     Int @default(0) @map("total_goals")
-  activeGoals    Int @default(0) @map("active_goals")
-  completedGoals Int @default(0) @map("completed_goals")
-  archivedGoals  Int @default(0) @map("archived_goals")
-
-  // ============ KR 统计 ============
-  totalKeyResults     Int @default(0) @map("total_key_results")
-  completedKeyResults Int @default(0) @map("completed_key_results")
-
-  // ============ 专注统计 ============
-  totalFocusSessions Int @default(0) @map("total_focus_sessions")
-  totalFocusMinutes  Int @default(0) @map("total_focus_minutes")
-
-  // ============ 评审统计 ============
-  totalReviews  Int    @default(0) @map("total_reviews")
-  averageRating Float? @map("average_rating")
-
-  // ============ 时间 ============
-  calculatedAt DateTime @map("calculated_at")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  // ============ 关系映射 ============
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  // ============ 索引优化 ============
-  @@index([identityId])
-  @@map("goal_statistics")
 }
 
 // ==========================================
@@ -1943,8 +1837,11 @@ model TaskTemplate {
   lastGeneratedDate DateTime? @map("last_generated_date")
   generateAheadDays Int?      @map("generate_ahead_days")
 
-  // ============ Goal 绑定（JSON值对象） ============
-  goalBinding String? @map("goal_binding") /// JSON: TaskGoalBindingPersistenceDTO
+  // ============ Goal 绑定（展开的关系值对象） ============
+  goalId              String? @map("goal_id")
+  keyResultId         String? @map("key_result_id")
+  goalRecordValue     Float?  @map("goal_record_value")
+  goalProgressTrigger String? @map("goal_progress_trigger")
 
   // ============ 检查列表（JSON值对象） ============
   checklist String? @map("checklist") /// JSON: ChecklistItemDefinition[]
@@ -1961,8 +1858,9 @@ model TaskTemplate {
   deletedAt DateTime? @map("deleted_at")
 
   // ============ 关系映射 ============
-  account Account     @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  folder  TaskFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  account   Account     @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  folder    TaskFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  keyResult KeyResult?  @relation("KeyResultTaskTemplates", fields: [keyResultId, goalId, identityId], references: [id, goalId, identityId], onDelete: Restrict)
 
   // 子任务关系
   parentTask TaskTemplate?  @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
@@ -1982,6 +1880,8 @@ model TaskTemplate {
   @@index([importance])
   @@index([folderId])
   @@index([parentTaskId])
+  @@index([identityId, goalId, deletedAt])
+  @@index([identityId, keyResultId, deletedAt])
   @@index([deletedAt])
   @@map("task_templates")
 }
@@ -2023,6 +1923,30 @@ model TaskInstance {
   @@index([identityId, status])
   @@index([identityId, instanceDate])
   @@map("task_instances")
+}
+
+/// Durable delivery log for completed tasks that contribute Goal progress.
+/// It is intentionally task-specific rather than a generic application outbox.
+model TaskGoalOutbox {
+  eventId        String    @id @map("event_id")
+  identityId     String    @map("identity_id")
+  taskInstanceId String    @map("task_instance_id")
+  taskTemplateId String    @map("task_template_id")
+  goalId         String    @map("goal_id")
+  keyResultId    String    @map("key_result_id")
+  payload        String
+  status         String    @default("PENDING")
+  attempts       Int       @default(0)
+  availableAt    DateTime  @default(now()) @map("available_at")
+  lastError      String?   @map("last_error")
+  dispatchedAt   DateTime? @map("dispatched_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([identityId, status, availableAt])
+  @@index([status, availableAt])
+  @@index([taskInstanceId])
+  @@map("task_goal_outbox")
 }
 
 model TaskDependency {

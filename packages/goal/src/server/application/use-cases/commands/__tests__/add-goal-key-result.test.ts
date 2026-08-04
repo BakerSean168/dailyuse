@@ -35,6 +35,7 @@ function aKeyResultInput(overrides: Record<string, any> = {}) {
     targetValue: 10,
     currentValue: 0,
     weight: 3,
+    expectedVersion: 1,
     ...overrides,
   };
 }
@@ -47,7 +48,7 @@ describe('AddGoalKeyResultUseCase', () => {
     vi.clearAllMocks();
     goalRepo = createMockRepo<IGoalRepository>({
       findByIdForIdentity: vi.fn(),
-      save: vi.fn().mockResolvedValue(undefined),
+      saveRootWithExpectedVersion: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new AddGoalKeyResultUseCase(goalRepo, new GoalPolicy());
   });
@@ -58,7 +59,7 @@ describe('AddGoalKeyResultUseCase', () => {
     const result = await useCase.execute('non-existent', 'identity-1', aKeyResultInput());
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
-    expect(goalRepo.save).not.toHaveBeenCalled();
+    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
   });
 
   it('should add a key result to an active goal', async () => {
@@ -70,7 +71,22 @@ describe('AddGoalKeyResultUseCase', () => {
     expect(result).toBeOk();
     expect(goal.keyResults).toHaveLength(1);
     expect(goal.keyResults[0].title).toBe('Read 10 books');
-    expect(goalRepo.save).toHaveBeenCalledWith(goal);
+    expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
+  });
+
+  it('rejects a stale goal version before mutating the aggregate', async () => {
+    const goal = createTestGoal();
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
+
+    const result = await useCase.execute(
+      goal.id,
+      'identity-1',
+      aKeyResultInput({ expectedVersion: 2 }),
+    );
+
+    expect(result).toBeErrorWithCode('CONFLICT');
+    expect(goal.keyResults).toHaveLength(0);
+    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
   });
 
   it('should throw when goal is archived', async () => {
@@ -96,7 +112,7 @@ describe('AddGoalKeyResultUseCase', () => {
     await expect(useCase.execute(goal.id, 'identity-1', aKeyResultInput({ weight: 6 }))).rejects.toThrow();
   });
 
-  it('should return the newly created key result DTO on success', async () => {
+  it('returns the authoritative Goal mutation receipt on success', async () => {
     const goal = createTestGoal('Goal with KR');
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
@@ -104,7 +120,9 @@ describe('AddGoalKeyResultUseCase', () => {
 
     expect(result).toBeOk();
     if (result.ok) {
-      expect(result.data.title).toBe('My KR');
+      expect(result.data.goalVersion).toBe(2);
+      expect(result.data.readModel.keyResults?.[0]?.title).toBe('My KR');
+      expect(result.data.affectedEntityIds.keyResultIds).toEqual([goal.keyResults[0]?.id]);
     }
   });
 
@@ -113,7 +131,11 @@ describe('AddGoalKeyResultUseCase', () => {
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
     await useCase.execute(goal.id, 'identity-1', aKeyResultInput({ title: 'KR1' }));
-    await useCase.execute(goal.id, 'identity-1', aKeyResultInput({ title: 'KR2' }));
+    await useCase.execute(
+      goal.id,
+      'identity-1',
+      aKeyResultInput({ title: 'KR2', expectedVersion: 2 }),
+    );
 
     expect(goal.keyResults).toHaveLength(2);
   });

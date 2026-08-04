@@ -12,34 +12,29 @@
  * @module desktop-main-runtime
  */
 
-import { DesktopAuthContextProvider } from './auth/desktop-auth-context';
 import type { DesktopProfileRuntimeManager } from './profile';
 import type { WindowManager } from './lifecycle/window-manager';
 import type { NotificationService } from './services';
 import type { DesktopFeaturesRuntime } from './desktop-features';
 import { createLogger } from '@memoflow/utils/logger';
+import type { DeviceAuthCoordinator } from './profile/device-auth-coordinator';
 
 const logger = createLogger('DesktopMainRuntime');
 
 export class DesktopMainRuntime {
   private _notificationService: NotificationService | null = null;
-  private _authContextProvider: DesktopAuthContextProvider | null = null;
   private _desktopFeaturesRuntime: DesktopFeaturesRuntime | null = null;
+  private _deviceAuthCoordinator: DeviceAuthCoordinator | null = null;
 
   constructor(
     readonly windowManager: WindowManager,
     readonly profileRuntimeManager: DesktopProfileRuntimeManager,
   ) {
-    // Wire auth service lifecycle: when the profile manager activates/deactivates
-    // an auth service, keep the context provider in sync.
-    profileRuntimeManager.onAuthServiceChanged = (service) => {
-      this._authContextProvider = service ? new DesktopAuthContextProvider(service) : null;
-    };
   }
 
   /** Get the auth context provider for the active profile (or null). */
-  get authContextProvider(): DesktopAuthContextProvider | null {
-    return this._authContextProvider;
+  get authContextProvider() {
+    return this.profileRuntimeManager.getActiveProfileAccessContext();
   }
 
   /** Store the notification service instance for lifecycle management. */
@@ -49,6 +44,10 @@ export class DesktopMainRuntime {
 
   setDesktopFeaturesRuntime(runtime: DesktopFeaturesRuntime): void {
     this._desktopFeaturesRuntime = runtime;
+  }
+
+  setDeviceAuthCoordinator(coordinator: DeviceAuthCoordinator): void {
+    this._deviceAuthCoordinator = coordinator;
   }
 
   /**
@@ -61,9 +60,12 @@ export class DesktopMainRuntime {
   async dispose(): Promise<void> {
     logger.info('Disposing DesktopMainRuntime...');
 
-    // Deactivate the active profile (shuts down PowerSync, destroys bootstrapper)
+    this._deviceAuthCoordinator?.dispose();
+    this._deviceAuthCoordinator = null;
+
+    // Release profile resources without forgetting which local Profile should reopen next launch.
     try {
-      await this.profileRuntimeManager.deactivateProfile();
+      await this.profileRuntimeManager.deactivateProfile({ preserveSelection: true });
     } catch (err) {
       logger.error('Profile deactivation failed during dispose', err);
     }

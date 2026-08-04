@@ -1,21 +1,33 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import type { SharedPathResolver } from '../paths';
 import { computeProfileId } from '../paths';
+import { IdentityId } from '@memoflow/domain-shared';
 import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('ProfileRegistry');
 
 export interface ProfileDescriptor {
   profileId: string;
-  identityId: string;
+  profileKind: 'guest' | 'registered';
+  localOwnerId: string;
   displayName: string;
+  avatarSeed: string;
+  keyEnvelopeId: string;
   identifier: string | null;
+  cloudBinding: CloudBinding | null;
   lastActiveAt: number;
   createdAt: number;
   hasSnapshot: boolean;
   lastSnapshotVersion: string | null;
   lastSnapshotHydratedAt: number | null;
   status: 'pending' | 'ready' | 'error';
+}
+
+export interface CloudBinding {
+  cloudAccountId: string;
+  boundAt: number;
+  lastValidatedAt: number | null;
 }
 
 interface RegistryFile {
@@ -25,24 +37,34 @@ interface RegistryFile {
 }
 
 const EMPTY_REGISTRY: RegistryFile = {
-  version: 1,
+  version: 2,
   activeProfileId: null,
   profiles: [],
 };
 
-function normalizeProfileDescriptor(profile: Partial<ProfileDescriptor> & Pick<ProfileDescriptor, 'profileId' | 'identityId' | 'displayName' | 'lastActiveAt' | 'createdAt'>): ProfileDescriptor {
-  return {
-    profileId: profile.profileId,
-    identityId: profile.identityId,
-    displayName: profile.displayName,
-    identifier: profile.identifier ?? null,
-    lastActiveAt: profile.lastActiveAt,
-    createdAt: profile.createdAt,
-    hasSnapshot: profile.hasSnapshot ?? false,
-    lastSnapshotVersion: profile.lastSnapshotVersion ?? null,
-    lastSnapshotHydratedAt: profile.lastSnapshotHydratedAt ?? null,
-    status: profile.status ?? 'ready',
-  };
+function assertProfileDescriptor(value: unknown): asserts value is ProfileDescriptor {
+  if (!value || typeof value !== 'object') throw new Error('Invalid Profile descriptor');
+  const profile = value as Record<string, unknown>;
+  const requiredStrings = ['profileId', 'localOwnerId', 'displayName', 'avatarSeed', 'keyEnvelopeId'];
+  if (requiredStrings.some((key) => typeof profile[key] !== 'string' || profile[key] === '')) {
+    throw new Error('Invalid Profile descriptor');
+  }
+  if (profile.profileKind !== 'guest' && profile.profileKind !== 'registered') {
+    throw new Error('Invalid Profile kind');
+  }
+  if (profile.profileKind === 'guest' && profile.cloudBinding !== null) {
+    throw new Error('Guest Profile cannot have a cloud binding');
+  }
+  if (profile.profileKind === 'registered' && (!profile.cloudBinding || typeof profile.cloudBinding !== 'object')) {
+    throw new Error('Registered Profile requires a cloud binding');
+  }
+  if (typeof profile.lastActiveAt !== 'number' || typeof profile.createdAt !== 'number') {
+    throw new Error('Invalid Profile timestamps');
+  }
+  if (typeof profile.hasSnapshot !== 'boolean') throw new Error('Invalid Profile snapshot state');
+  if (profile.status !== 'pending' && profile.status !== 'ready' && profile.status !== 'error') {
+    throw new Error('Invalid Profile status');
+  }
 }
 
 /**
@@ -80,12 +102,15 @@ export class ProfileRegistry {
     try {
       const raw = await fs.promises.readFile(this.registryPath, 'utf-8');
       const parsed = JSON.parse(raw) as RegistryFile;
+      if (parsed.version !== EMPTY_REGISTRY.version) {
+        throw new Error(`Unsupported Profile registry version: ${String(parsed.version)}`);
+      }
+      if (!Array.isArray(parsed.profiles)) throw new Error('Invalid Profile registry');
+      parsed.profiles.forEach(assertProfileDescriptor);
       this.cached = {
-        version: parsed.version ?? EMPTY_REGISTRY.version,
+        version: parsed.version,
         activeProfileId: parsed.activeProfileId ?? null,
-        profiles: Array.isArray(parsed.profiles)
-          ? parsed.profiles.map((profile) => normalizeProfileDescriptor(profile))
-          : [],
+        profiles: parsed.profiles,
       };
     } catch (err: unknown) {
       if (err instanceof SyntaxError) {
@@ -131,17 +156,22 @@ export class ProfileRegistry {
   async list(): Promise<ProfileDescriptor[]> {
     const data = await this.load();
     return [...data.profiles]
-      .map((profile) => normalizeProfileDescriptor(profile))
       .sort((a, b) => b.lastActiveAt - a.lastActiveAt);
   }
 
   /**
    * Find a profile by identityId.
    */
-  async find(identityId: string): Promise<ProfileDescriptor | null> {
+  async findByOwnerId(localOwnerId: string): Promise<ProfileDescriptor | null> {
     const data = await this.load();
-    const profile = data.profiles.find((p) => p.identityId === identityId) ?? null;
-    return profile ? normalizeProfileDescriptor(profile) : null;
+    return data.profiles.find((p) => p.localOwnerId === localOwnerId) ?? null;
+  }
+
+  async findByCloudAccountId(cloudAccountId: string): Promise<ProfileDescriptor | null> {
+    const data = await this.load();
+    return data.profiles.find(
+      (profile) => profile.cloudBinding?.cloudAccountId === cloudAccountId,
+    ) ?? null;
   }
 
   /**
@@ -150,19 +180,19 @@ export class ProfileRegistry {
    * 将既有 profile 目录/注册表项重绑到新的在线 identity；保留 profileId，本地 Vault 不搬家。
    */
   async rebindIdentityOwnership(params: {
-    fromIdentityId: string;
-    toIdentityId: string;
+    fromOwnerId: string;
+    toCloudAccountId: string;
     displayName?: string;
     identifier?: string | null;
   }): Promise<ProfileDescriptor> {
     const data = await this.load();
-    const from = data.profiles.find((p) => p.identityId === params.fromIdentityId);
+    const from = data.profiles.find((p) => p.localOwnerId === params.fromOwnerId);
     if (!from) {
-      throw new Error(`Profile not found for identity: ${params.fromIdentityId}`);
+      throw new Error(`Profile not found for owner: ${params.fromOwnerId}`);
     }
 
     const conflict = data.profiles.find(
-      (p) => p.identityId === params.toIdentityId && p.profileId !== from.profileId,
+      (p) => p.cloudBinding?.cloudAccountId === params.toCloudAccountId && p.profileId !== from.profileId,
     );
     if (conflict) {
       throw new Error(
@@ -170,7 +200,13 @@ export class ProfileRegistry {
       );
     }
 
-    from.identityId = params.toIdentityId;
+    from.localOwnerId = params.toCloudAccountId;
+    from.profileKind = 'registered';
+    from.cloudBinding = {
+      cloudAccountId: params.toCloudAccountId,
+      boundAt: Date.now(),
+      lastValidatedAt: null,
+    };
     if (params.displayName !== undefined) {
       from.displayName = params.displayName;
     }
@@ -182,10 +218,22 @@ export class ProfileRegistry {
 
     logger.info('Profile identity ownership rebound', {
       profileId: from.profileId,
-      fromIdentityId: params.fromIdentityId,
-      toIdentityId: params.toIdentityId,
+      fromOwnerId: params.fromOwnerId,
+      toCloudAccountId: params.toCloudAccountId,
     });
-    return normalizeProfileDescriptor(from);
+    return from;
+  }
+
+  async updateProfileMetadata(
+    profileId: string,
+    patch: Partial<Pick<ProfileDescriptor, 'displayName' | 'avatarSeed' | 'identifier'>>,
+  ): Promise<ProfileDescriptor> {
+    const data = await this.load();
+    const profile = data.profiles.find((entry) => entry.profileId === profileId);
+    if (!profile) throw new Error(`Profile not found: ${profileId}`);
+    Object.assign(profile, patch);
+    await this.save();
+    return profile;
   }
 
   async findByIdentifier(identifier: string): Promise<ProfileDescriptor | null> {
@@ -197,21 +245,21 @@ export class ProfileRegistry {
     const data = await this.load();
     const profile =
       data.profiles.find((p) => p.identifier?.trim().toLowerCase() === normalized) ?? null;
-    return profile ? normalizeProfileDescriptor(profile) : null;
+    return profile;
   }
 
   /**
    * Register a new profile. If one already exists for this identityId, returns it.
    */
   async register(
-    identityId: string,
+    cloudAccountId: string,
     displayName: string,
     identifier?: string | null,
   ): Promise<ProfileDescriptor> {
     const data = await this.load();
     const normalizedIdentifier = identifier?.trim().toLowerCase() || null;
 
-    const existing = data.profiles.find((p) => p.identityId === identityId);
+    const existing = data.profiles.find((p) => p.cloudBinding?.cloudAccountId === cloudAccountId);
     if (existing) {
       if (
         existing.displayName !== displayName ||
@@ -221,15 +269,19 @@ export class ProfileRegistry {
         existing.identifier = normalizedIdentifier;
         await this.save();
       }
-      return normalizeProfileDescriptor(existing);
+      return existing;
     }
 
     const now = Date.now();
     const descriptor: ProfileDescriptor = {
-      profileId: computeProfileId(identityId),
-      identityId,
+      profileId: computeProfileId(cloudAccountId),
+      profileKind: 'registered',
+      localOwnerId: cloudAccountId,
       displayName,
+      avatarSeed: crypto.randomUUID(),
+      keyEnvelopeId: computeProfileId(cloudAccountId),
       identifier: normalizedIdentifier,
+      cloudBinding: { cloudAccountId, boundAt: now, lastValidatedAt: null },
       lastActiveAt: now,
       createdAt: now,
       hasSnapshot: false,
@@ -241,8 +293,38 @@ export class ProfileRegistry {
     data.profiles.push(descriptor);
     await this.save();
 
-    logger.info('Profile registered', { profileId: descriptor.profileId, identityId });
-    return normalizeProfileDescriptor(descriptor);
+    logger.info('Profile registered', { profileId: descriptor.profileId, cloudAccountId });
+    return descriptor;
+  }
+
+  /** Create the persistent local guest profile exactly once. */
+  async ensureGuest(): Promise<ProfileDescriptor> {
+    const data = await this.load();
+    const existing = data.profiles.find((profile) => profile.profileKind === 'guest');
+    if (existing) return existing;
+
+    const now = Date.now();
+    const suffix = String(Math.floor(1000 + Math.random() * 9000));
+    const localOwnerId = IdentityId.generate();
+    const descriptor: ProfileDescriptor = {
+      profileId: `p_${crypto.randomUUID().replace(/-/g, '')}`,
+      profileKind: 'guest',
+      localOwnerId,
+      displayName: `访客 ${suffix}`,
+      avatarSeed: crypto.randomUUID(),
+      keyEnvelopeId: `key_${crypto.randomUUID().replace(/-/g, '')}`,
+      identifier: null,
+      cloudBinding: null,
+      lastActiveAt: now,
+      createdAt: now,
+      hasSnapshot: false,
+      lastSnapshotVersion: null,
+      lastSnapshotHydratedAt: null,
+      status: 'pending',
+    };
+    data.profiles.push(descriptor);
+    await this.save();
+    return descriptor;
   }
 
   /**
@@ -335,7 +417,7 @@ export class ProfileRegistry {
     const data = await this.load();
     if (!data.activeProfileId) return null;
     const profile = data.profiles.find((p) => p.profileId === data.activeProfileId) ?? null;
-    return profile ? normalizeProfileDescriptor(profile) : null;
+    return profile;
   }
 
   private async updateProfile(

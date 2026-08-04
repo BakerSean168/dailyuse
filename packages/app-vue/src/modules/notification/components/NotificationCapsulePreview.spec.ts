@@ -81,9 +81,7 @@ const i18n = createI18n({
   },
 });
 
-function createNotification(
-  overrides: Partial<NotificationClientDTO> = {},
-): NotificationClientDTO {
+function createNotification(overrides: Partial<NotificationClientDTO> = {}): NotificationClientDTO {
   return {
     id: 'n-1',
     identityId: 'u-1',
@@ -146,6 +144,9 @@ describe('NotificationCapsulePreview (V2 §6.5)', () => {
       'View all notifications',
     );
     expect(wrapper.findAll('[data-testid^="notification-capsule-item-"]')).toHaveLength(2);
+    const firstItemAction = wrapper.get('[data-testid="notification-capsule-item-n-1"] button');
+    expect(firstItemAction.attributes('type')).toBe('button');
+    expect(firstItemAction.attributes('aria-label')).toBe('A');
 
     await wrapper.get('[data-testid="notification-capsule-mark-all-read"]').trigger('click');
     await nextTick();
@@ -172,7 +173,7 @@ describe('NotificationCapsulePreview (V2 §6.5)', () => {
     const wrapper = mountPreview();
     await nextTick();
 
-    await wrapper.get('[data-testid="notification-capsule-item-n-9"]').trigger('click');
+    await wrapper.get('[data-testid="notification-capsule-item-n-9"] button').trigger('click');
     await nextTick();
     expect(markAsRead).toHaveBeenCalledWith('n-9');
     wrapper.unmount();

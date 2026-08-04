@@ -55,8 +55,9 @@
           class="animate-slide-in-up"
         >
           <Checkbox
-            :checked="task.isCompleted"
-            @update:checked="toggleTaskComplete(task)"
+            :model-value="task.isCompleted"
+            :aria-label="task.templateTitle ?? t('task.rootInstanceCard.taskFallback')"
+            @update:model-value="toggleTaskComplete(task)"
             class="mr-3"
           />
 
@@ -160,7 +161,8 @@ const toggleTaskComplete = async (task: TaskInstanceViewModel) => {
   await props.onToggleComplete?.(task);
 };
 
-const getTaskTimeLabel = (task: TaskInstanceViewModel) => getTaskTimeValueDisplay(t, task.timeConfig);
+const getTaskTimeLabel = (task: TaskInstanceViewModel) =>
+  getTaskTimeValueDisplay(t, task.timeConfig);
 </script>
 
 <style scoped>

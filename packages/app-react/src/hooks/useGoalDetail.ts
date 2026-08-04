@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import type { KeyResult } from '@memoflow/goal/client';
-
 import { useAppSession } from './useAppSession';
 import { mapGoalDetail, type GoalDetail } from './useGoals';
 import { useGoalService } from './useGoalService';
@@ -29,11 +27,7 @@ export function useGoalDetail(goalId: string | null) {
       setIsLoading(true);
       setError(null);
 
-      const [goalResult, keyResultResult, reviewResult] = await Promise.all([
-        service.getGoal(activeGoalId),
-        service.getKeyResults(activeGoalId),
-        service.getGoalReviews(activeGoalId),
-      ]);
+      const goalResult = await service.getGoalAggregateView(activeGoalId);
 
       if (cancelled) {
         return;
@@ -46,27 +40,7 @@ export function useGoalDetail(goalId: string | null) {
         return;
       }
 
-      if (!keyResultResult.ok) {
-        setGoal(null);
-        setError(keyResultResult.error.message);
-        setIsLoading(false);
-        return;
-      }
-
-      if (!reviewResult.ok) {
-        setGoal(null);
-        setError(reviewResult.error.message);
-        setIsLoading(false);
-        return;
-      }
-
-      setGoal(
-        mapGoalDetail(
-          goalResult.data,
-          keyResultResult.data.keyResults.map((item: KeyResult) => item.toDTO()),
-          reviewResult.data.reviews.length,
-        ),
-      );
+      setGoal(mapGoalDetail(goalResult.data.goal));
       setIsLoading(false);
     }
 
@@ -83,11 +57,7 @@ export function useGoalDetail(goalId: string | null) {
     }
 
     setIsLoading(true);
-    const [goalResult, keyResultResult, reviewResult] = await Promise.all([
-      service.getGoal(goalId),
-      service.getKeyResults(goalId),
-      service.getGoalReviews(goalId),
-    ]);
+    const goalResult = await service.getGoalAggregateView(goalId);
 
     if (!goalResult.ok) {
       setGoal(null);
@@ -96,27 +66,7 @@ export function useGoalDetail(goalId: string | null) {
       return;
     }
 
-    if (!keyResultResult.ok) {
-      setGoal(null);
-      setError(keyResultResult.error.message);
-      setIsLoading(false);
-      return;
-    }
-
-    if (!reviewResult.ok) {
-      setGoal(null);
-      setError(reviewResult.error.message);
-      setIsLoading(false);
-      return;
-    }
-
-    setGoal(
-      mapGoalDetail(
-        goalResult.data,
-        keyResultResult.data.keyResults.map((item: KeyResult) => item.toDTO()),
-        reviewResult.data.reviews.length,
-      ),
-    );
+    setGoal(mapGoalDetail(goalResult.data.goal));
     setError(null);
     setIsLoading(false);
   }

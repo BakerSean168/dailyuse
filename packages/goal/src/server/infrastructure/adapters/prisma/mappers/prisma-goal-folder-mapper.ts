@@ -26,7 +26,6 @@ function optionalInstant(value: Date | string | number | null | undefined): numb
   return Number.isFinite(n) ? n : null;
 }
 
-
 export class PrismaGoalFolderMapper {
   /** Maps a Prisma row to a Domain GoalFolder aggregate. */
   static toDomain(data: PrismaGoalFolder): GoalFolder {
@@ -41,8 +40,6 @@ export class PrismaGoalFolderMapper {
       sortOrder: data.sortOrder ?? 0,
       folderType: (data.folderType as FolderType) ?? null,
       isSystemFolder: false,
-      goalCount: data.goalCount ?? 0,
-      completedGoalCount: data.completedGoalCount ?? 0,
       createdAt: requiredInstant(data.createdAt),
       updatedAt: requiredInstant(data.updatedAt),
       deletedAt: optionalInstant(data.deletedAt),

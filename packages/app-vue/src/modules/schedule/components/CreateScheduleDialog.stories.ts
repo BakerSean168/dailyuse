@@ -29,6 +29,7 @@ const meta = {
   args: {
     modelValue: true,
     loading: false,
+    onSubmit: async () => true,
   },
 } satisfies Meta<typeof CreateScheduleDialog>;
 

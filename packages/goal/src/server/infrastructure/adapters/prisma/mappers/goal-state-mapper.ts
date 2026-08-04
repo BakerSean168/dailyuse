@@ -47,8 +47,6 @@ export interface RawGoalData {
   keyResults: RawKeyResultData[] | null;
   goalReviews: RawGoalReviewData[] | null;
   weightSnapshots: KeyResultWeightSnapshotDTO[] | null;
-  totalKeyResults?: number;
-  completedKeyResults?: number;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;
@@ -70,10 +68,8 @@ export interface RawKeyResultData {
   };
   weight: number;
   sortOrder: number;
-  version: number;
   createdAt: number;
   updatedAt: number;
-  deletedAt: number | null;
 }
 
 export interface RawGoalReviewData {
@@ -87,10 +83,8 @@ export interface RawGoalReviewData {
   improvements: string | null;
   keyResultSnapshots: unknown[];
   reviewedAt: number;
-  version: number;
   createdAt: number;
   updatedAt: number;
-  deletedAt: number | null;
 }
 
 /**
@@ -116,10 +110,8 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       },
       weight: kr.weight,
       sortOrder: kr.sortOrder,
-      version: kr.version ?? 1,
       createdAt: Number(kr.createdAt),
       updatedAt: Number(kr.updatedAt),
-      deletedAt: kr.deletedAt ? Number(kr.deletedAt) : null,
     }),
   );
 
@@ -135,10 +127,8 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       improvements: r.improvements ?? null,
       keyResultSnapshots: r.keyResultSnapshots as KeyResultSnapshotDTO[],
       reviewedAt: Number(r.reviewedAt),
-      version: r.version ?? 1,
       createdAt: Number(r.createdAt),
       updatedAt: Number(r.updatedAt),
-      deletedAt: r.deletedAt != null ? Number(r.deletedAt) : null,
     }),
   );
 
@@ -174,7 +164,5 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
     keyResults,
     goalReviews,
     weightSnapshots,
-    totalKeyResults: raw.totalKeyResults,
-    completedKeyResults: raw.completedKeyResults,
   };
 }

@@ -45,11 +45,9 @@ const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx']);
 // Existing violations to be phased out in Track M.
 const ALLOWLIST_GETTERS = new Set([
   'apps/desktop/src/main/lifecycle/window-manager.ts',
-  'apps/desktop/src/main/auth/desktop-auth-context.ts',
   'apps/desktop/src/main/database/powersync.ts',
   'apps/desktop/src/main/desktop-features/index.ts',
   'apps/desktop/src/main/lifecycle/desktop-chrome.ts',
-  'apps/desktop/src/main/modules/authentication/application/auth-coordinator-helpers.ts',
   'apps/desktop/src/main/modules/auto-update/auto-update-manager.ts',
   'apps/desktop/src/main/runtime-init.ts',
   'apps/desktop/src/main/user-data-path.ts',
@@ -61,7 +59,6 @@ const ALLOWLIST_GETTERS = new Set([
 // Module-level process-global owners (let xxx: T | null = null)
 const ALLOWLIST_MODULE_OWNERS = new Set([
   'apps/desktop/src/main/lifecycle/window-manager.ts',
-  'apps/desktop/src/main/auth/desktop-auth-context.ts',
   'apps/desktop/src/main/main.ts',
   'apps/desktop/src/main/lifecycle/app-lifecycle.ts',
   'apps/desktop/src/main/desktop-features/index.ts',

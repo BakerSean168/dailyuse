@@ -11,8 +11,6 @@ import {
 const desktopTestWorkspaceEntries = [
   ['@memoflow/account/client', 'packages/account/src/client/index.ts'],
   ['@memoflow/account/electron', 'packages/account/src/electron/index.ts'],
-  ['@memoflow/authentication/client', 'packages/authentication/src/client/index.ts'],
-  ['@memoflow/authentication/electron', 'packages/authentication/src/electron/index.ts'],
   ['@memoflow/goal/client', 'packages/goal/src/client/index.ts'],
   ['@memoflow/goal/electron', 'packages/goal/src/electron/index.ts'],
   ['@memoflow/goal/schedule-execution', 'packages/goal/src/schedule-execution/index.ts'],

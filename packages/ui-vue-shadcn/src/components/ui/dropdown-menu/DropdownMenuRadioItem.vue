@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DropdownMenuRadioItemEmits, DropdownMenuRadioItemProps } from 'radix-vue'
+import type { DropdownMenuRadioItemEmits, DropdownMenuRadioItemProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import { DotFilledIcon } from '@radix-icons/vue'
@@ -8,7 +8,7 @@ import {
   DropdownMenuRadioItem,
 
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { computed } from 'vue'
 
 const props = defineProps<DropdownMenuRadioItemProps & { class?: HTMLAttributes['class'] }>()

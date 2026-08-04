@@ -15,7 +15,17 @@ export class BufferedTaskWriteEventBus implements IEventBus {
   }
 
   async flush(target: IEventBus): Promise<void> {
-    for (const event of this.events) {
+    await this.flushEvents(target, this.drain());
+  }
+
+  drain(): IDomainEvent[] {
+    const events = [...this.events];
+    this.events.length = 0;
+    return events;
+  }
+
+  async flushEvents(target: IEventBus, events: IDomainEvent[]): Promise<void> {
+    for (const event of events) {
       try {
         await target.publish(event);
       } catch (error) {
@@ -27,6 +37,5 @@ export class BufferedTaskWriteEventBus implements IEventBus {
       }
     }
 
-    this.events.length = 0;
   }
 }

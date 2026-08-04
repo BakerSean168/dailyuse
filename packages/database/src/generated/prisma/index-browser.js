@@ -308,69 +308,63 @@ exports.Prisma.LangGraphCheckpointWriteScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.AuthIdentityScalarFieldEnum = {
+exports.Prisma.CloudAuthUserScalarFieldEnum = {
   id: 'id',
-  status: 'status',
-  failedLoginAttempts: 'failedLoginAttempts',
-  lastFailedAttempt: 'lastFailedAttempt',
-  lockedUntil: 'lockedUntil',
-  version: 'version',
+  name: 'name',
+  email: 'email',
+  emailVerified: 'emailVerified',
+  image: 'image',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.AuthIdentifierScalarFieldEnum = {
+exports.Prisma.CloudAuthSessionScalarFieldEnum = {
   id: 'id',
-  identityId: 'identityId',
-  type: 'type',
-  value: 'value',
-  isVerified: 'isVerified',
-  createdAt: 'createdAt'
+  userId: 'userId',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.AuthOAuthBindingScalarFieldEnum = {
+exports.Prisma.CloudAuthProviderAccountScalarFieldEnum = {
   id: 'id',
-  identityId: 'identityId',
-  provider: 'provider',
-  providerSubjectId: 'providerSubjectId',
+  userId: 'userId',
+  accountId: 'accountId',
+  providerId: 'providerId',
   accessToken: 'accessToken',
   refreshToken: 'refreshToken',
-  expiresAt: 'expiresAt',
+  idToken: 'idToken',
+  accessTokenExpiresAt: 'accessTokenExpiresAt',
+  refreshTokenExpiresAt: 'refreshTokenExpiresAt',
+  scope: 'scope',
+  password: 'password',
   createdAt: 'createdAt',
-  lastUsedAt: 'lastUsedAt'
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.AuthCredentialScalarFieldEnum = {
+exports.Prisma.CloudAuthVerificationScalarFieldEnum = {
   id: 'id',
-  identityId: 'identityId',
-  type: 'type',
+  identifier: 'identifier',
+  value: 'value',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CloudAuthDeviceCodeScalarFieldEnum = {
+  id: 'id',
+  deviceCode: 'deviceCode',
+  userCode: 'userCode',
+  userId: 'userId',
+  expiresAt: 'expiresAt',
   status: 'status',
-  passwordHash: 'passwordHash',
-  passwordLastChangedAt: 'passwordLastChangedAt',
-  version: 'version',
-  createdAt: 'createdAt',
-  lastUsedAt: 'lastUsedAt',
-  deletedAt: 'deletedAt'
-};
-
-exports.Prisma.AuthSessionScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  refreshTokenHash: 'refreshTokenHash',
-  deviceId: 'deviceId',
-  deviceFingerprint: 'deviceFingerprint',
-  deviceType: 'deviceType',
-  deviceName: 'deviceName',
-  os: 'os',
-  browser: 'browser',
-  ipAddress: 'ipAddress',
-  location: 'location',
-  version: 'version',
-  createdAt: 'createdAt',
-  expiresAt: 'expiresAt',
-  lastActiveAt: 'lastActiveAt',
-  deletedAt: 'deletedAt'
+  lastPolledAt: 'lastPolledAt',
+  pollingInterval: 'pollingInterval',
+  clientId: 'clientId',
+  scope: 'scope'
 };
 
 exports.Prisma.EditorWorkspaceScalarFieldEnum = {
@@ -474,8 +468,6 @@ exports.Prisma.GoalFolderScalarFieldEnum = {
   isSystemFolder: 'isSystemFolder',
   parentFolderId: 'parentFolderId',
   sortOrder: 'sortOrder',
-  goalCount: 'goalCount',
-  completedGoalCount: 'completedGoalCount',
   version: 'version',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -496,10 +488,8 @@ exports.Prisma.KeyResultScalarFieldEnum = {
   unit: 'unit',
   weight: 'weight',
   order: 'order',
-  version: 'version',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.GoalRecordScalarFieldEnum = {
@@ -511,10 +501,8 @@ exports.Prisma.GoalRecordScalarFieldEnum = {
   sourceType: 'sourceType',
   sourceId: 'sourceId',
   recordedAt: 'recordedAt',
-  version: 'version',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.GoalReviewScalarFieldEnum = {
@@ -528,10 +516,8 @@ exports.Prisma.GoalReviewScalarFieldEnum = {
   lessonsLearned: 'lessonsLearned',
   nextSteps: 'nextSteps',
   rating: 'rating',
-  version: 'version',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.KeyResultWeightSnapshotScalarFieldEnum = {
@@ -583,24 +569,6 @@ exports.Prisma.FocusModeScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
-};
-
-exports.Prisma.GoalStatisticScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  totalGoals: 'totalGoals',
-  activeGoals: 'activeGoals',
-  completedGoals: 'completedGoals',
-  archivedGoals: 'archivedGoals',
-  totalKeyResults: 'totalKeyResults',
-  completedKeyResults: 'completedKeyResults',
-  totalFocusSessions: 'totalFocusSessions',
-  totalFocusMinutes: 'totalFocusMinutes',
-  totalReviews: 'totalReviews',
-  averageRating: 'averageRating',
-  calculatedAt: 'calculatedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.RuleScalarFieldEnum = {
@@ -1215,7 +1183,10 @@ exports.Prisma.TaskTemplateScalarFieldEnum = {
   reminderConfigChannel: 'reminderConfigChannel',
   lastGeneratedDate: 'lastGeneratedDate',
   generateAheadDays: 'generateAheadDays',
-  goalBinding: 'goalBinding',
+  goalId: 'goalId',
+  keyResultId: 'keyResultId',
+  goalRecordValue: 'goalRecordValue',
+  goalProgressTrigger: 'goalProgressTrigger',
   checklist: 'checklist',
   blockingReason: 'blockingReason',
   dependencyStatus: 'dependencyStatus',
@@ -1242,6 +1213,23 @@ exports.Prisma.TaskInstanceScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
+};
+
+exports.Prisma.TaskGoalOutboxScalarFieldEnum = {
+  eventId: 'eventId',
+  identityId: 'identityId',
+  taskInstanceId: 'taskInstanceId',
+  taskTemplateId: 'taskTemplateId',
+  goalId: 'goalId',
+  keyResultId: 'keyResultId',
+  payload: 'payload',
+  status: 'status',
+  attempts: 'attempts',
+  availableAt: 'availableAt',
+  lastError: 'lastError',
+  dispatchedAt: 'dispatchedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TaskDependencyScalarFieldEnum = {
@@ -1346,11 +1334,11 @@ exports.Prisma.ModelName = {
   AgentRunCheckpoint: 'AgentRunCheckpoint',
   LangGraphCheckpoint: 'LangGraphCheckpoint',
   LangGraphCheckpointWrite: 'LangGraphCheckpointWrite',
-  AuthIdentity: 'AuthIdentity',
-  AuthIdentifier: 'AuthIdentifier',
-  AuthOAuthBinding: 'AuthOAuthBinding',
-  AuthCredential: 'AuthCredential',
-  AuthSession: 'AuthSession',
+  CloudAuthUser: 'CloudAuthUser',
+  CloudAuthSession: 'CloudAuthSession',
+  CloudAuthProviderAccount: 'CloudAuthProviderAccount',
+  CloudAuthVerification: 'CloudAuthVerification',
+  CloudAuthDeviceCode: 'CloudAuthDeviceCode',
   EditorWorkspace: 'EditorWorkspace',
   EditorWorkspaceSession: 'EditorWorkspaceSession',
   EditorWorkspaceSessionGroup: 'EditorWorkspaceSessionGroup',
@@ -1363,7 +1351,6 @@ exports.Prisma.ModelName = {
   KeyResultWeightSnapshot: 'KeyResultWeightSnapshot',
   FocusSession: 'FocusSession',
   FocusMode: 'FocusMode',
-  GoalStatistic: 'GoalStatistic',
   Rule: 'Rule',
   RuleRevision: 'RuleRevision',
   Notification: 'Notification',
@@ -1402,6 +1389,7 @@ exports.Prisma.ModelName = {
   TaskFolder: 'TaskFolder',
   TaskTemplate: 'TaskTemplate',
   TaskInstance: 'TaskInstance',
+  TaskGoalOutbox: 'TaskGoalOutbox',
   TaskDependency: 'TaskDependency',
   TaskTemplateHistory: 'TaskTemplateHistory',
   TaskStatistic: 'TaskStatistic'

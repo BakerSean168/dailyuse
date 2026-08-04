@@ -27,12 +27,10 @@ describe('result-helpers dead dual removed (residual 1063)', () => {
   });
 
   it('shared utils barrel / nearby files do not reintroduce useResultHandler', () => {
-    const handleErrorSurface = readFileSync(
-      resolve(utilsDir, 'dual-registry.surface.spec.ts'),
-      'utf8',
-    );
-    expect(handleErrorSurface).not.toContain('useResultHandler');
-    expect(handleErrorSurface).not.toContain('result-helpers');
+    const retiredSurface = resolve(utilsDir, 'dual-registry.surface.spec.ts');
+    expect(existsSync(retiredSurface)).toBe(false);
+    expect(sole).not.toContain('useResultHandler');
+    expect(sole).not.toContain("from './result-helpers'");
   });
 
   it('documents residual 1063 lock intent without claiming §13.2 complete', () => {

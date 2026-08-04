@@ -44,32 +44,23 @@ export function useSession() {
     if (!store.isAuthenticated) return false;
 
     store.setLoading(true);
-    const result = await service.listSessions();
+    const result = await service.getSession();
     store.setLoading(false);
 
     if (result.ok) {
-      store.setActiveSessions(result.data.sessions);
+      if (result.data.session) store.setActiveSessions([result.data.session] as never);
       return true;
     }
     handleLoadError(result.error, 'auth.toast.loadSessionsFailed');
     return false;
   }
 
-  async function revokeSession(sessionId: string): Promise<boolean> {
+  async function revokeSession(_sessionId: string): Promise<boolean> {
     if (!store.isAuthenticated) return false;
 
     store.setLoading(true);
-    const result = await service.revokeSession({ sessionId } as Parameters<
-      typeof service.revokeSession
-    >[0]);
     store.setLoading(false);
-
-    if (result.ok) {
-      store.removeActiveSession(sessionId);
-      toast.success(t('auth.toast.sessionRevoked'));
-      return true;
-    }
-    handleOperationError(result.error, 'auth.toast.revokeSessionFailed');
+    toast.info('Better Auth 当前通过当前设备会话管理，暂不提供逐会话撤销。');
     return false;
   }
 

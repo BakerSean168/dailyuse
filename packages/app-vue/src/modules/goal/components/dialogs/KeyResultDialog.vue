@@ -215,6 +215,10 @@
         </div>
       </form>
 
+      <p v-if="submitError" role="alert" class="text-sm text-destructive">
+        {{ submitError }}
+      </p>
+
       <template #footer>
         <Button variant="outline" data-testid="cancel-key-result-button" @click="handleCancel">
           {{ t('goal.krDialog.cancel') }}
@@ -270,15 +274,18 @@ type EditableKeyResult = {
   progress: KeyResultClientDTO['progress'];
 };
 
+type KeyResultSubmitPayload = {
+  goalId: string | null;
+  keyResult: EditableKeyResult;
+  isEditing: boolean;
+  isInGoalEditing: boolean;
+};
+
+const props = defineProps<{
+  onSubmit: (payload: KeyResultSubmitPayload) => boolean | Promise<boolean>;
+}>();
+
 const emit = defineEmits<{
-  save: [
-    payload: {
-      goalId: string | null;
-      keyResult: EditableKeyResult;
-      isEditing: boolean;
-      isInGoalEditing: boolean;
-    },
-  ];
   cancel: [];
 }>();
 const createDraftKeyResult = (): EditableKeyResult => ({
@@ -304,6 +311,7 @@ const isInGoalEditing = computed(() => !!propGoal.value);
 
 const localKeyResult = ref<EditableKeyResult>(createDraftKeyResult());
 const loading = ref(false);
+const submitError = ref('');
 const numericImpactOpen = ref(false);
 const isEditing = computed(() => !!propKeyResult.value);
 const isFormValid = computed(() => {
@@ -411,14 +419,19 @@ const handleSave = async () => {
   if (!isFormValid.value || loading.value) return;
 
   loading.value = true;
+  submitError.value = '';
   try {
-    emit('save', {
+    const succeeded = await props.onSubmit({
       goalId: propGoalId.value,
       keyResult: { ...localKeyResult.value },
       isEditing: isEditing.value,
       isInGoalEditing: isInGoalEditing.value,
     });
-    closeDialog();
+    if (succeeded) {
+      closeDialog();
+    } else {
+      submitError.value = t('goal.error.addKRFailed');
+    }
   } finally {
     loading.value = false;
   }
@@ -443,6 +456,7 @@ const openDialog = ({
   propGoalId.value = goalId || null;
   propKeyResult.value = keyResult || null;
   propGoal.value = goal || null;
+  submitError.value = '';
   visible.value = true;
 };
 

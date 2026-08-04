@@ -4,11 +4,11 @@
  * 删除目标（软删除）的应用服务
  */
 
-import type { IGoalRepository } from '../../../domain';
-import { GoalPolicy } from '../../../domain';
-import type { DeleteGoalRes } from '@memoflow/contracts/goal';
+import { GoalPolicy, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
+import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 /**
  * Delete Goal Use Case
@@ -74,16 +74,29 @@ export class DeleteGoalUseCase {
   /**
    * 执行软删除
    */
-  async execute(id: string, identityId: string): Promise<Result<DeleteGoalRes>> {
+  async execute(
+    id: string,
+    identityId: string,
+    expectedVersion: number,
+  ): Promise<Result<GoalMutationReceipt>> {
     const goal = await this.goalRepository.findByIdForIdentity(identityId, id, {
       includeChildren: true,
     });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }
+    if (expectedVersion !== goal.version) {
+      return error('CONFLICT', 'Goal has been modified by another client');
+    }
 
     goal.softDelete();
-    await this.goalRepository.save(goal);
-    return ok(goal.toClientDTO(true));
+    goal.advanceVersion();
+    try {
+      await this.goalRepository.saveRootWithExpectedVersion(goal, expectedVersion);
+    } catch (cause) {
+      if (cause instanceof GoalVersionConflictError) return error('CONFLICT', cause.message);
+      throw cause;
+    }
+    return ok(createGoalMutationReceipt(goal));
   }
 }

@@ -123,20 +123,15 @@ async function resetSettings(page: Page) {
   );
 
   await page.evaluate(async (apiBaseUrl) => {
-    const accessToken = window.localStorage.getItem('access_token');
-    if (!accessToken) {
-      throw new Error('Missing access_token for settings reset');
-    }
-
     await fetch(`${apiBaseUrl}/settings/reset`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({}),
     });
-  }, API_CONFIG.FULL_URL);
+  }, API_CONFIG.API_PREFIX);
   await resetResponse;
 
   await page.goto('/settings', {

@@ -32,4 +32,5 @@ updated: 2026-04-26T00:00:00
 ## 产品时间
 
 - [ADR-037 产品时间体系](./adr/ADR-037-product-time-system.md)
+- [ADR-038 Goal 聚合一致性与可靠 Task 贡献](./adr/ADR-038-goal-consistency-and-reliable-task-contributions.md)
 - [产品时间体系详设](./product-time-system.md)

@@ -635,6 +635,7 @@ export default {
     "cancel": "Cancel",
     "editTitle": "Edit Record",
     "addTitle": "Add Record",
+    "description": "Record progress toward this key result",
     "save": "Save",
     "incrementValue": "Increment Value",
     "unit": "Unit",
@@ -858,6 +859,7 @@ export default {
     "untitledGoal": "Untitled Goal",
     "weightSeriesName": "Weight",
     "controls": {
+      "position": "Timeline position",
       "pause": "Pause",
       "play": "Play",
       "prev": "Previous",

@@ -34,12 +34,16 @@ const props = defineProps<{
   groups: ConversationGroup[];
   activeConversationId: string | null;
   userName?: string;
-  /** 是否已登录（影响账户菜单：退出 vs 登录）。 */
-  isAuthenticated?: boolean;
+  /** 当前壳层展示的是哪一种身份，而不是含混的“是否登录”。 */
+  identityKind?: 'guest' | 'registered-local' | 'cloud';
+  /** 云端会话是否可用；只影响同步账号动作，不影响本地身份。 */
+  cloudConnected?: boolean;
   /** 会话列表加载中。 */
   loading?: boolean;
   /** 桌面端顶部留出拖拽/窗控空间的高度补偿。 */
   isDesktop?: boolean;
+  /** Current persisted width for the accessible resize separator. */
+  width?: number;
 }>();
 
 const emit = defineEmits<{
@@ -49,15 +53,22 @@ const emit = defineEmits<{
   (e: 'open-search'): void;
   (e: 'open-settings'): void;
   (e: 'open-account'): void;
-  (e: 'open-login'): void;
+  (e: 'open-cloud-connection'): void;
   (e: 'logout'): void;
   (e: 'open-help'): void;
   (e: 'start-resize', event: MouseEvent): void;
+  (e: 'resize-by', delta: number): void;
 }>();
 
 const { t } = useI18n();
 
 const displayName = () => props.userName || t('shell.guest');
+
+const identityLabel = () => {
+  if (props.identityKind === 'cloud') return t('shell.account.signedIn');
+  if (props.identityKind === 'registered-local') return t('shell.account.localProfile');
+  return t('shell.account.guestIdentity');
+};
 </script>
 
 <template>
@@ -93,10 +104,7 @@ const displayName = () => props.userName || t('shell.guest');
 
     <!-- 会话列表（按时间分组） -->
     <nav class="flex-1 overflow-y-auto px-2 pb-4">
-      <p
-        v-if="loading && groups.length === 0"
-        class="px-3 py-2 text-xs text-muted-foreground/60"
-      >
+      <p v-if="loading && groups.length === 0" class="px-3 py-2 text-xs text-muted-foreground/60">
         {{ t('common.loading') }}
       </p>
       <div v-for="group in groups" :key="group.labelKey" class="mb-3">
@@ -151,16 +159,14 @@ const displayName = () => props.userName || t('shell.guest');
             >
               {{ displayName().slice(0, 1).toUpperCase() }}
             </span>
-            <span class="truncate text-xs font-semibold">{{ displayName() }}</span>
+            <span data-testid="shell-account-name" class="truncate text-xs font-semibold">{{ displayName() }}</span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="top" class="w-52">
           <div class="px-2 py-1.5">
             <p class="truncate text-sm font-medium">{{ displayName() }}</p>
             <p class="text-[11px] text-muted-foreground">
-              {{
-                isAuthenticated ? t('shell.account.signedIn') : t('shell.account.guestIdentity')
-              }}
+              {{ identityLabel() }}
             </p>
           </div>
           <DropdownMenuSeparator />
@@ -172,7 +178,7 @@ const displayName = () => props.userName || t('shell.guest');
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            v-if="isAuthenticated"
+            v-if="cloudConnected"
             data-testid="shell-logout"
             class="text-destructive focus:text-destructive"
             @click="emit('logout')"
@@ -181,10 +187,10 @@ const displayName = () => props.userName || t('shell.guest');
           </DropdownMenuItem>
           <DropdownMenuItem
             v-else
-            data-testid="shell-open-login"
-            @click="emit('open-login')"
+            data-testid="shell-open-cloud-connection"
+            @click="emit('open-cloud-connection')"
           >
-            {{ t('shell.account.loginOrRegister') }}
+            {{ t('shell.account.connectCloud') }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -203,20 +209,28 @@ const displayName = () => props.userName || t('shell.guest');
         <DropdownMenuContent align="end" side="top" class="w-52">
           <DropdownMenuItem disabled data-testid="shell-help-shortcuts">
             {{ t('shell.helpMenu.shortcuts') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+            <span class="ml-auto text-[10px] text-muted-foreground">{{
+              t('shell.helpMenu.soon')
+            }}</span>
           </DropdownMenuItem>
           <DropdownMenuItem disabled data-testid="shell-help-guide">
             {{ t('shell.helpMenu.guide') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+            <span class="ml-auto text-[10px] text-muted-foreground">{{
+              t('shell.helpMenu.soon')
+            }}</span>
           </DropdownMenuItem>
           <DropdownMenuItem disabled data-testid="shell-help-feedback">
             {{ t('shell.helpMenu.feedback') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+            <span class="ml-auto text-[10px] text-muted-foreground">{{
+              t('shell.helpMenu.soon')
+            }}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem disabled data-testid="shell-help-about">
             {{ t('shell.helpMenu.about') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+            <span class="ml-auto text-[10px] text-muted-foreground">{{
+              t('shell.helpMenu.soon')
+            }}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -224,8 +238,17 @@ const displayName = () => props.userName || t('shell.guest');
 
     <!-- 拖宽把手 -->
     <div
+      role="separator"
+      tabindex="0"
+      aria-orientation="vertical"
+      :aria-label="t('shell.conversation.resize')"
+      aria-valuemin="200"
+      aria-valuemax="400"
+      :aria-valuenow="width ?? 260"
       class="absolute right-0 top-0 h-full w-[3px] cursor-col-resize bg-transparent transition-colors hover:bg-primary/40"
       @mousedown="emit('start-resize', $event)"
+      @keydown.left.prevent="emit('resize-by', -24)"
+      @keydown.right.prevent="emit('resize-by', 24)"
     />
   </aside>
 </template>

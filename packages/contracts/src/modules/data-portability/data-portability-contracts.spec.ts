@@ -390,6 +390,39 @@ describe('PortableUserDataV1Schema', () => {
     expect(result.success).toBe(false);
   });
 
+  it('uses explicit task-goal references and rejects the opaque goal binding', () => {
+    const task = {
+      _ref: 'taskTemplate:1',
+      title: 'Write tests',
+      taskType: 'once',
+      importance: 'moderate',
+      tags: [],
+      status: 'pending',
+      goalRef: 'goal:1',
+      keyResultRef: 'keyResult:1',
+      goalRecordValue: 2.5,
+      goalProgressTrigger: 'PER_INSTANCE',
+      checklist: [],
+    };
+
+    expect(
+      PortableTaskDataSchema.safeParse({
+        folders: [],
+        templates: [task],
+        instances: [],
+        dependencies: [],
+      }).success,
+    ).toBe(true);
+    expect(
+      PortableTaskDataSchema.safeParse({
+        folders: [],
+        templates: [{ ...task, goalBinding: { goalId: 'goal-1' } }],
+        instances: [],
+        dependencies: [],
+      }).success,
+    ).toBe(false);
+  });
+
   it('accepts valid reminder data', () => {
     const result = PortableUserDataV1Schema.safeParse({
       reminders: {

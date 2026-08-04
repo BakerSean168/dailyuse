@@ -20,9 +20,9 @@
           <Switch
             id="notification-switch"
             data-testid="notification-settings-switch"
-            :checked="useCustomNotification"
+            :model-value="useCustomNotification"
             :disabled="isLoading"
-            @update:checked="updateCustomNotification"
+            @update:model-value="updateCustomNotification"
           />
         </div>
       </CardContent>
@@ -58,9 +58,9 @@
               <Switch
                 :id="`${moduleName}-in-app`"
                 :data-testid="`notification-channel-${moduleName}-inApp`"
-                :checked="hasChannel(moduleName, 'inApp')"
+                :model-value="hasChannel(moduleName, 'inApp')"
                 :disabled="preferenceBusy"
-                @update:checked="(value) => onChannelChange(moduleName, 'inApp', value)"
+                @update:model-value="(value) => onChannelChange(moduleName, 'inApp', value)"
               />
             </div>
             <div class="flex items-center justify-between gap-4 sm:justify-start">
@@ -70,9 +70,9 @@
               <Switch
                 :id="`${moduleName}-push`"
                 :data-testid="`notification-channel-${moduleName}-push`"
-                :checked="hasChannel(moduleName, 'push')"
+                :model-value="hasChannel(moduleName, 'push')"
                 :disabled="preferenceBusy"
-                @update:checked="(value) => onChannelChange(moduleName, 'push', value)"
+                @update:model-value="(value) => onChannelChange(moduleName, 'push', value)"
               />
             </div>
           </div>

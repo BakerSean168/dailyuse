@@ -61,6 +61,8 @@ import {
 } from '../application';
 import type { GoalSystemView } from '@memoflow/contracts/goal';
 import type { GoalApplicationPort } from '../application';
+import type { GoalWriteTransactionRunner } from '../application/use-cases/commands/goal-write-support';
+import { createInlineGoalWriteTransactionRunner } from '../application/use-cases/commands/goal-write-support';
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the goal server runtime needs from the outside.
@@ -73,14 +75,14 @@ import type { GoalApplicationPort } from '../application';
 // ---------------------------------------------------------------------------
 
 export type GoalRuntimeContributionsInput =
-  | GoalModuleRuntimeContribution
-  | readonly GoalModuleRuntimeContribution[];
+  GoalModuleRuntimeContribution | readonly GoalModuleRuntimeContribution[];
 
 export interface GoalModuleDependencies {
   readonly goalRepository: IGoalRepository;
   readonly goalFolderRepository: IGoalFolderRepository;
   readonly goalRecordRepository: IGoalRecordRepository;
   readonly focusModeRepository: IFocusModeRepository;
+  readonly goalWriteTransactionRunner?: GoalWriteTransactionRunner;
   readonly runtimeContributions?: GoalRuntimeContributionsInput;
 }
 
@@ -173,6 +175,7 @@ export interface GoalModuleInstance {
   readonly goalRepository: IGoalRepository;
   readonly goalFolderRepository: IGoalFolderRepository;
   readonly goalRecordRepository: IGoalRecordRepository;
+  readonly goalWriteTransactionRunner: GoalWriteTransactionRunner;
   readonly useCases: GoalModuleUseCases;
   readonly api: GoalApplicationPort;
   start(): void;
@@ -189,6 +192,9 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
 
   const goalPolicy = new GoalPolicy();
   const focusSessionPolicy = new FocusSessionPolicy();
+  const goalWriteTransactionRunner =
+    deps.goalWriteTransactionRunner ??
+    createInlineGoalWriteTransactionRunner({ goalRepository, goalRecordRepository });
 
   return {
     // Goal CRUD / 目标增删改查
@@ -199,7 +205,7 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     deleteGoal: new DeleteGoalUseCase(goalRepository, goalPolicy),
     permanentlyDeleteGoal: new PermanentlyDeleteGoalUseCase(goalRepository, goalPolicy),
     archiveGoal: new ArchiveGoalUseCase(goalRepository, goalPolicy),
-    archiveExpiredGoals: new ArchiveExpiredGoalsUseCase(goalRepository),
+    archiveExpiredGoals: new ArchiveExpiredGoalsUseCase(goalWriteTransactionRunner, goalRepository),
     activateGoal: new ActivateGoalUseCase(goalRepository, goalPolicy),
     completeGoal: new CompleteGoalUseCase(goalRepository, goalPolicy),
     searchGoals: new SearchGoalsUseCase(goalRepository),
@@ -224,9 +230,17 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     deleteReview: new DeleteGoalReviewUseCase(goalRepository, goalPolicy),
 
     // Record / 进度记录
-    createRecord: new CreateGoalRecordUseCase(goalRepository, goalRecordRepository),
+    createRecord: new CreateGoalRecordUseCase(
+      goalRepository,
+      goalRecordRepository,
+      goalWriteTransactionRunner,
+    ),
     listRecords: new ListGoalRecordsUseCase(goalRecordRepository, goalRepository),
-    deleteRecord: new DeleteGoalRecordUseCase(goalRecordRepository),
+    deleteRecord: new DeleteGoalRecordUseCase(
+      goalRepository,
+      goalRecordRepository,
+      goalWriteTransactionRunner,
+    ),
 
     // Focus Mode / 专注模式
     getCurrentFocusMode: new GetCurrentFocusModeUseCase(focusModeRepository),
@@ -247,8 +261,8 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
       new CreateGoalUseCase(goalRepository, goalPolicy),
     ),
     batchUpdateKeyResultWeights: new BatchUpdateKeyResultWeightsUseCase(
-      goalRepository,
-      new UpdateGoalKeyResultUseCase(goalRepository, goalPolicy),
+      goalWriteTransactionRunner,
+      goalPolicy,
     ),
   };
 }
@@ -280,6 +294,9 @@ function normalizeRuntimeContributions(
 
 export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstance {
   const { goalRepository, goalFolderRepository, goalRecordRepository } = deps;
+  const goalWriteTransactionRunner =
+    deps.goalWriteTransactionRunner ??
+    createInlineGoalWriteTransactionRunner({ goalRepository, goalRecordRepository });
   const runtimeContributions = normalizeRuntimeContributions(deps.runtimeContributions);
   const useCases = createGoalUseCases(deps);
   let started = false;
@@ -291,12 +308,17 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
       useCases.getGoal.execute(id, identityId, includeChildren),
     listGoals: (input) => useCases.listGoals.execute(input),
     updateGoal: (id, identityId, input) => useCases.updateGoal.execute(id, identityId, input),
-    deleteGoal: (id, identityId) => useCases.deleteGoal.execute(id, identityId),
-    permanentlyDeleteGoal: (id, identityId) => useCases.permanentlyDeleteGoal.execute(id, identityId),
-    archiveGoal: (id, identityId) => useCases.archiveGoal.execute(id, identityId),
+    deleteGoal: (id, identityId, expectedVersion) =>
+      useCases.deleteGoal.execute(id, identityId, expectedVersion),
+    permanentlyDeleteGoal: (id, identityId, expectedVersion) =>
+      useCases.permanentlyDeleteGoal.execute(id, identityId, expectedVersion),
+    archiveGoal: (id, identityId, expectedVersion) =>
+      useCases.archiveGoal.execute(id, identityId, expectedVersion),
     archiveExpiredGoals: (identityId) => useCases.archiveExpiredGoals.execute(identityId),
-    activateGoal: (id, identityId) => useCases.activateGoal.execute(id, identityId),
-    completeGoal: (id, identityId) => useCases.completeGoal.execute(id, identityId),
+    activateGoal: (id, identityId, expectedVersion) =>
+      useCases.activateGoal.execute(id, identityId, expectedVersion),
+    completeGoal: (id, identityId, expectedVersion) =>
+      useCases.completeGoal.execute(id, identityId, expectedVersion),
     searchGoals: (identityId, query, systemView) =>
       useCases.searchGoals.execute(identityId, query, systemView as GoalSystemView),
 
@@ -313,30 +335,40 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
       useCases.addKeyResult.execute(goalId, identityId, keyResult),
     updateKeyResult: (goalId, identityId, keyResultId, updates) =>
       useCases.updateKeyResult.execute(goalId, identityId, keyResultId, updates),
-    updateKeyResultProgress: (goalId, identityId, keyResultId, currentValue, note) =>
+    updateKeyResultProgress: (
+      goalId,
+      identityId,
+      keyResultId,
+      currentValue,
+      expectedVersion,
+      note,
+    ) =>
       useCases.updateKeyResultProgress.execute(
         goalId,
         identityId,
         keyResultId,
         currentValue,
+        expectedVersion,
         note,
       ),
-    deleteKeyResult: (goalId, identityId, keyResultId) =>
-      useCases.deleteKeyResult.execute(goalId, identityId, keyResultId),
+    deleteKeyResult: (goalId, identityId, keyResultId, expectedVersion) =>
+      useCases.deleteKeyResult.execute(goalId, identityId, keyResultId, expectedVersion),
 
     // Review / 复盘
-    addReview: (goalId, identityId, params) => useCases.addReview.execute(goalId, identityId, params),
+    addReview: (goalId, identityId, params) =>
+      useCases.addReview.execute(goalId, identityId, params),
     listReviews: (goalId, identityId) => useCases.listReviews.execute(goalId, identityId),
     updateReview: (goalId, identityId, reviewId, params) =>
       useCases.updateReview.execute(goalId, identityId, reviewId, params),
-    deleteReview: (goalId, identityId, reviewId) =>
-      useCases.deleteReview.execute(goalId, identityId, reviewId),
+    deleteReview: (goalId, identityId, reviewId, expectedVersion) =>
+      useCases.deleteReview.execute(goalId, identityId, reviewId, expectedVersion),
 
     // Record / 进度记录
     createRecord: (goalId, keyResultId, params, identityId) =>
       useCases.createRecord.execute(goalId, keyResultId, params, identityId),
     listRecords: (params) => useCases.listRecords.execute(params),
-    deleteRecord: (recordId, identityId) => useCases.deleteRecord.execute(recordId, identityId),
+    deleteRecord: (goalId, keyResultId, recordId, identityId, expectedVersion) =>
+      useCases.deleteRecord.execute(goalId, keyResultId, recordId, identityId, expectedVersion),
 
     // Focus Mode / 专注模式
     getCurrentFocusMode: (identityId) => useCases.getCurrentFocusMode.execute(identityId),
@@ -350,14 +382,15 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     getGoalProgressBreakdown: (goalId, identityId) =>
       useCases.getGoalProgressBreakdown.execute(goalId, identityId),
     cloneGoal: (goalId, params, cx) => useCases.cloneGoal.execute(goalId, params, cx),
-    batchUpdateKeyResultWeights: (goalId, identityId, updates) =>
-      useCases.batchUpdateKeyResultWeights.execute(goalId, identityId, updates),
+    batchUpdateKeyResultWeights: (goalId, identityId, expectedVersion, updates) =>
+      useCases.batchUpdateKeyResultWeights.execute(goalId, identityId, expectedVersion, updates),
   };
 
   return {
     goalRepository,
     goalFolderRepository,
     goalRecordRepository,
+    goalWriteTransactionRunner,
     useCases,
     api,
 

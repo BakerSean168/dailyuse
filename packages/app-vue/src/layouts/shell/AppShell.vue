@@ -17,25 +17,16 @@
  * - 会话侧栏消费 AIChatView defineExpose 的会话状态（单一 chat session）；
  * - 桌面窗控走 useDesktopWindowControls（Web 端不渲染，V2 决策 #6）。
  */
-import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
-import { inject } from 'vue';
-import { MODULE_CAPSULES_KEY } from '../../di/keys';
-import { defaultModuleCapsules } from '../../di/navigation';
-import { useAppShellStore, MAX_BUSINESS_TABS, type ShellModule } from './useAppShellStore';
+import { useAppShellStore, MAX_BUSINESS_TABS } from './useAppShellStore';
 import { useShellRouterSync, AUTO_FOCUS_VIEWPORT } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
 import { hasDesktopAuthApi } from '../../shared/utils/desktop-auth-recovery';
-import { useNotification } from '../../modules/notification/composables/useNotification';
-import { useDashboard } from '../../modules/dashboard/composables/useDashboard';
-import {
-  formatScheduleCapsuleLabel,
-  useCalendarView,
-} from '../../modules/schedule/composables/useCalendarView';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
-import { useAuth } from '../../modules/authentication/composables/useAuth';
+import { useAccountStore } from '../../modules/account/stores/account-store';
 import AIChatView from '../../modules/ai/views/AIChatView.vue';
 import type { ConversationSummary } from '../../modules/ai/composables/types';
 import WindowHeader from './WindowHeader.vue';
@@ -43,19 +34,25 @@ import ConversationSidebar from './ConversationSidebar.vue';
 import BusinessPanel from './BusinessPanel.vue';
 import TodayOverviewPanel from './TodayOverviewPanel.vue';
 import PanelErrorBoundary from './PanelErrorBoundary.vue';
+import { resolvePanelRouteIdentity } from './panel-cache-key';
+import { DialogDraftScopeKey } from './dialog-draft-store';
 import GlobalComposer from './GlobalComposer.vue';
+import CloudConnectionDialog from './CloudConnectionDialog.vue';
 import StandaloneSettingsLayout from './StandaloneSettingsLayout.vue';
 import {
   COMPOSER_BOTTOM_GAP,
   computePanelGeometry,
   panelWidthFromPointer,
   resolveComposerDensity,
+  shouldAutoCollapseSidebar,
   type ComposerDensity,
 } from './panel-geometry';
 import {
   SHELL_COMPOSER_DENSITY_KEY,
   SHELL_COMPOSER_MOUNT_KEY,
   SHELL_WORKFLOW_MOUNT_KEY,
+  DESKTOP_ACCESS_SNAPSHOT_KEY,
+  LOGOUT_HANDLER_KEY,
 } from '../../di/keys';
 
 const { t } = useI18n();
@@ -76,14 +73,14 @@ const {
   workflowAttentionCount,
 } = storeToRefs(store);
 
+provide(DialogDraftScopeKey, activeTabId);
+
 const sync = useShellRouterSync();
 
 // ── 宿主环境（沿 isDesktopEnvironment 分支模式，V2 决策 #6） ──
 // Residual 913: detect via hasDesktopAuthApi (no electronAPI unknown cast dual).
 const isDesktop = typeof window !== 'undefined' && hasDesktopAuthApi(window);
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
-
-const capsules = inject(MODULE_CAPSULES_KEY, defaultModuleCapsules) ?? defaultModuleCapsules;
 
 const shellScene = computed<'workspace' | 'settings'>(() => {
   if (
@@ -105,17 +102,13 @@ const shellState = computed<'chat' | 'split' | 'focus'>(() => {
   return layout.value === 'focus' ? 'focus' : 'split';
 });
 
-/** 左侧栏只响应自己的 Toggle；业务 Focus 不再改动它。 */
-const showSidebar = computed(() => !sidebarCollapsed.value);
+const effectiveViewportWidth = ref(typeof window === 'undefined' ? 1280 : window.innerWidth);
+/** 用户 Toggle 是持久化偏好；极窄视口只临时释放侧栏预算。 */
+const showSidebar = computed(
+  () => !sidebarCollapsed.value && !shouldAutoCollapseSidebar(effectiveViewportWidth.value),
+);
 /** 右侧面板显隐由独立持久化偏好控制。 */
 const showPanel = computed(() => rightPanelOpen.value);
-/** 当前激活模块 id（胶囊高亮）。 */
-const activeModule = computed<string | null>(() =>
-  isSettingsScene.value || panelSurface.value !== 'business'
-    ? null
-    : (activeTab.value?.module ?? null),
-);
-
 // ── AI 常驻层（单实例；会话侧栏数据经 defineExpose 上浮） ──
 const aiRef = ref<InstanceType<typeof AIChatView> | null>(null);
 
@@ -234,61 +227,41 @@ async function handleNewConversation() {
 
 // ── 用户 / 账户入口（侧栏底部菜单，§9） ──
 const authStore = useAuthenticationStore();
-const { isAuthenticated, logout } = useAuth();
-const userName = computed<string | undefined>(() => {
-  const identity = authStore.currentIdentity;
-  const identifier =
-    identity && 'identifiers' in identity
-      ? (identity.identifiers[0] as { value?: string } | undefined)
-      : undefined;
-  return identifier?.value || undefined;
+const accountStore = useAccountStore();
+const { isAuthenticated } = storeToRefs(authStore);
+const logout = inject(LOGOUT_HANDLER_KEY, null);
+const desktopAccess = inject(DESKTOP_ACCESS_SNAPSHOT_KEY, ref(null));
+const cloudConnectionOpen = ref(false);
+const userName = computed<string | undefined>(
+  () => accountStore.currentAccount?.profile.nickname
+    ?? authStore.currentIdentity?.name
+    ?? desktopAccess.value?.profile?.displayName,
+);
+const shellIdentityKind = computed<'guest' | 'registered-local' | 'cloud'>(() => {
+  if (isAuthenticated.value) return 'cloud';
+  if (desktopAccess.value?.profile) {
+    return desktopAccess.value.profile.profileKind === 'guest' ? 'guest' : 'registered-local';
+  }
+  return accountStore.currentAccount ? 'registered-local' : 'guest';
 });
 
 const needsEmailVerification = computed(
-  () => isAuthenticated.value && authStore.currentIdentity?.status === 'Unverified',
+  () => isAuthenticated.value && authStore.currentIdentity?.emailVerified === false,
 );
 
 function goVerifyEmail() {
   void router.push({ path: '/auth', query: { scene: 'verify-email' } });
 }
 
-// ── 通知未读角标（SSE 启动钩子推流，胶囊消费；V2 §8-7） ──
-const notification = useNotification();
-const dashboard = useDashboard();
-const badgeCounts = computed<Record<string, number>>(() => ({
-  goal: dashboard.stats.value.activeGoals ?? 0,
-  task: dashboard.stats.value.activeTasks ?? 0,
-  reminder: dashboard.stats.value.upcomingReminders ?? 0,
-}));
-
-// 日程胶囊实时文案（V2 §2 / §6.3）：当前时段或下一事件，每分钟刷新。
-const calendarView = useCalendarView();
-const scheduleNowMs = ref(Date.now());
-let scheduleTickTimer: ReturnType<typeof setInterval> | null = null;
-const scheduleLabel = computed(() =>
-  formatScheduleCapsuleLabel(calendarView.getScheduleCapsuleSnapshot(scheduleNowMs.value), t),
-);
-
 // ── 桌面窗控（既有 IPC 通道，V2 §9；Web 分支不渲染按钮） ──
 const windowControls = useDesktopWindowControls();
 
 onMounted(() => {
-  void notification.refreshStats();
-  void dashboard.fetchDashboard();
   if (isDesktop) windowControls.startListening();
-  void calendarView.ensureTodayLoaded(scheduleNowMs.value);
-  scheduleTickTimer = setInterval(() => {
-    scheduleNowMs.value = Date.now();
-    void calendarView.ensureTodayLoaded(scheduleNowMs.value);
-  }, 60_000);
 });
 
 onBeforeUnmount(() => {
   if (isDesktop) windowControls.stopListening();
-  if (scheduleTickTimer) {
-    clearInterval(scheduleTickTimer);
-    scheduleTickTimer = null;
-  }
 });
 
 // ── 拖拽调宽（侧栏 / 面板），状态回写 store ──
@@ -303,17 +276,21 @@ function startSidebarResize(e: MouseEvent) {
   window.addEventListener('mouseup', up);
 }
 
+function resizeSidebarBy(delta: number): void {
+  store.setSidebarWidth(sidebarWidth.value + delta);
+}
+
 function occupiedSidebarWidth(): number {
   return showSidebar.value ? sidebarWidth.value : 0;
 }
 
 /** 分栏态会占用的侧栏宽度（不受 focus 隐藏影响，避免 canSplit 抖动）。 */
 function prospectiveSidebarOccupied(): number {
-  return sidebarCollapsed.value ? 0 : sidebarWidth.value;
+  return showSidebar.value ? sidebarWidth.value : 0;
 }
 
 function effectivePanelWidth(): number {
-  if (typeof window === 'undefined') return panelWidth.value;
+  if (typeof window === 'undefined') return panelWidth.value ?? 520;
   return store.resolvePanelWidth(window.innerWidth, occupiedSidebarWidth());
 }
 
@@ -324,13 +301,14 @@ function effectivePanelWidth(): number {
  */
 function onViewportGeometryChange(): void {
   if (typeof window === 'undefined') return;
+  effectiveViewportWidth.value = window.innerWidth;
   if (store.isChatOnly) return;
 
   const geo = computePanelGeometry({
     viewportWidth: window.innerWidth,
     sidebarOccupiedWidth: prospectiveSidebarOccupied(),
   });
-  // 窄视口或几何上无法保 CHAT_MIN+PANEL_MIN 时强制 viewport focus（§6.2）。
+  // 窄视口或几何上无法同时保证 AI 与业务硬下限时强制 viewport focus（§6.2）。
   const shouldFocus = window.innerWidth < AUTO_FOCUS_VIEWPORT || !geo.canSplit;
 
   if (shouldFocus) {
@@ -389,12 +367,11 @@ function startPanelResize(e: PointerEvent) {
 }
 
 function resetPanelWidth(): void {
-  if (typeof window === 'undefined') return;
-  const geo = computePanelGeometry({
-    viewportWidth: window.innerWidth,
-    sidebarOccupiedWidth: occupiedSidebarWidth(),
-  });
-  store.setPanelWidth(geo.defaultPanelWidth);
+  store.resetPanelWidthPreference();
+}
+
+function resizePanelBy(delta: number): void {
+  store.setPanelWidth(effectivePanelWidth() + delta);
 }
 
 onMounted(() => {
@@ -424,16 +401,9 @@ watch([showSidebar, sidebarWidth, sidebarCollapsed], () => {
   onViewportGeometryChange();
 });
 
-// ── 胶囊 / 面板动作（导航细节在 useShellRouterSync） ──
-function enterModule(id: string) {
-  const capsule = capsules.find((item) => item.id === id);
-  if (!capsule) return;
-  void sync.openModule(capsule.id as ShellModule, capsule.route);
-}
-
-function openSchedule() {
-  // Schedule 与其它业务模块统一入口规则，不再强制 focus。
-  void sync.openModule('schedule', '/schedule/calendar');
+// ── 业务工作区入口 / 面板动作（导航细节在 useShellRouterSync） ──
+function openWorkspace() {
+  void sync.goHome();
 }
 
 function openPanelRoute(_module: 'goal' | 'task' | 'reminder', path: string) {
@@ -448,12 +418,16 @@ function openAccount() {
   void sync.openSettings('/settings?tab=account');
 }
 
-function openLogin() {
+function openCloudConnection() {
+  if (isDesktop) {
+    cloudConnectionOpen.value = true;
+    return;
+  }
   void router.push('/auth').catch(() => {});
 }
 
 async function handleLogout() {
-  await logout();
+  await logout?.();
 }
 
 function returnFromSettings() {
@@ -461,17 +435,23 @@ function returnFromSettings() {
 }
 
 /**
- * KeepAlive 缓存键 = 拥有该路由的 Tab id + 路由 name。
+ * KeepAlive 缓存键 = 拥有该路由的 Tab id + 壳实际渲染的首个路由身份。
  * - Tab 维度：同模块多 Tab 各自保活（两个 note Tab 互不串状态）；
- * - 路由 name 维度：KeepAlive 对"同 key 不同组件类型"会复用错组件实例
- *   （parentComponent.ctx.deactivate 崩溃），Tab 内导航（列表 → 详情）
- *   组件类型会变，必须把视图身份编进 key。
+ * - 渲染记录维度：有 ModuleLayout 时列表 → 详情复用该布局；没有布局的
+ *   Task 路由则按 leaf component 分键，避免 KeepAlive 以同 key 复用不同组件。
  * 过渡帧里路由还停在旧 Tab 的路由上时，归属仍解析到旧 Tab，避免缓存串键。
  */
-function panelCacheKey(fullPath: string, routeName: unknown): string {
+function panelCacheKey(
+  fullPath: string,
+  matched: readonly {
+    name?: unknown;
+    path?: string;
+    components?: Record<string, unknown> | null;
+  }[],
+): string {
   const owner =
     tabs.value.find((tab) => tab.route === fullPath)?.id ?? activeTabId.value ?? 'panel';
-  return `${owner}:${String(routeName ?? fullPath)}`;
+  return `${owner}:${resolvePanelRouteIdentity(matched, fullPath)}`;
 }
 </script>
 
@@ -499,15 +479,11 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
       </button>
     </div>
 
-    <!-- 顶部窗口栏：胶囊导航 + 日程胶囊 + 窗控 -->
+    <!-- 顶部窗口栏：工作区 launcher + 日程入口 + 窗控 -->
     <WindowHeader
       :mode="isSettingsScene ? 'settings' : 'workspace'"
       :sidebar-collapsed="sidebarCollapsed"
       :right-panel-open="rightPanelOpen"
-      :active-module="activeModule"
-      :unread-count="notification.unreadCount.value"
-      :badge-counts="badgeCounts"
-      :schedule-label="scheduleLabel"
       :workflow-attention-count="workflowAttentionCount"
       :is-desktop="isDesktop"
       :is-mac="isMac"
@@ -516,8 +492,7 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
       @toggle-right-panel="() => void sync.togglePanel()"
       @go-back="router.back()"
       @go-forward="router.forward()"
-      @enter-module="enterModule"
-      @open-schedule="openSchedule"
+      @open-workspace="openWorkspace"
       @window-minimize="windowControls.minimizeWindow()"
       @window-toggle-maximize="windowControls.toggleMaximize()"
       @window-close="windowControls.closeWindow()"
@@ -543,18 +518,21 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
         :groups="conversationGroups"
         :active-conversation-id="activeConversationId"
         :user-name="userName"
-        :is-authenticated="isAuthenticated"
+        :identity-kind="shellIdentityKind"
+        :cloud-connected="isAuthenticated"
         :loading="Boolean(aiRef?.conversationListLoading)"
         :is-desktop="isDesktop"
+        :width="sidebarWidth"
         @new-conversation="handleNewConversation"
         @select-conversation="handleSelectConversation"
         @delete-conversation="handleDeleteConversation"
         @open-search="handleNewConversation"
         @open-settings="openSettings"
         @open-account="openAccount"
-        @open-login="openLogin"
+        @open-cloud-connection="openCloudConnection"
         @logout="() => void handleLogout()"
         @start-resize="startSidebarResize"
+        @resize-by="resizeSidebarBy"
       />
 
       <!-- 中央区：AI 常驻层 + 业务面板 + GlobalComposer 宿主。
@@ -610,6 +588,7 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
             @toggle-focus="store.toggleFocus()"
             @start-resize="startPanelResize"
             @reset-width="resetPanelWidth"
+            @resize-by="resizePanelBy"
           >
             <template #home>
               <TodayOverviewPanel
@@ -624,7 +603,7 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
                   <component
                     :is="Component"
                     v-if="Component"
-                    :key="panelCacheKey($route.fullPath, $route.name)"
+                    :key="panelCacheKey($route.fullPath, $route.matched)"
                   />
                 </KeepAlive>
               </router-view>
@@ -650,4 +629,9 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
       </div>
     </div>
   </div>
+  <CloudConnectionDialog
+    v-if="isDesktop"
+    v-model:open="cloudConnectionOpen"
+    :profile-name="desktopAccess?.profile?.displayName"
+  />
 </template>

@@ -101,7 +101,8 @@ export default {
     "deprecated": "Deprecated"
   },
   "search": {
-    "placeholder": "Search rules (press / to focus)"
+    "placeholder": "Search rules (press / to focus)",
+    "clear": "Clear search"
   },
   "tagFilter": {
     "clear": "Clear"

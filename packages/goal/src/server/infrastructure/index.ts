@@ -17,11 +17,13 @@ export { FocusModePrismaRepository } from './adapters/prisma/focus-mode-prisma.r
 export { FocusSessionPrismaRepository } from './adapters/prisma/focus-session-prisma.repository';
 export { PrismaWeightSnapshotRepository } from './adapters/prisma/weight-snapshot-prisma.repository';
 export { GoalRecordPrismaRepository } from './adapters/prisma/goal-record-prisma.repository';
+export { PrismaGoalWriteTransactionRunner } from './adapters/prisma/prisma-goal-write-transaction-runner';
 
 // ============ Adapters - PowerSync ============
 export { GoalPowerSyncRepository } from './adapters/powersync/goal-powersync.repository';
 export { GoalFolderPowerSyncRepository } from './adapters/powersync/goal-folder-powersync.repository';
 export { GoalRecordPowerSyncRepository } from './adapters/powersync/goal-record-powersync.repository';
+export { PowerSyncGoalWriteTransactionRunner } from './adapters/powersync/powersync-goal-write-transaction-runner';
 
 // ============ Composition Root ============
 export {
@@ -37,6 +39,7 @@ export type { GoalApplicationPort } from '../application';
 export {
   createGoalPrismaModule,
   createGoalPrismaRepositories,
+  createGoalTaskProgressPrismaHandler,
   createGoalPrismaScheduleExecutionSource,
   createGoalPrismaScheduleProjectionSource,
 } from './prisma';
@@ -45,6 +48,7 @@ export {
 } from './runtime';
 export {
   createGoalPowerSyncModule,
+  createGoalTaskProgressPowerSyncHandler,
   createGoalPowerSyncScheduleExecutionSource,
   createGoalPowerSyncScheduleProjectionSource,
 } from './powersync';

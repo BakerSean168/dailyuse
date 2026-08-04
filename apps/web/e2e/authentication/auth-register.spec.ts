@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ensureLoginScene, ensureRegisterScene } from '../helpers/testHelpers';
-import { waitForCapturedEmailCode } from '../helpers/auth-email-code';
+import { waitForCapturedEmailLink } from '../helpers/auth-email-link';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 
 const testPassword = 'Test123456!';
@@ -23,7 +23,7 @@ async function gotoCleanAuthPage(page: Page): Promise<void> {
 }
 
 test.describe('Authentication - email verification', () => {
-  test('[P0] register → send/read code → verify email → Active', async ({ page }) => {
+  test('[P0] register → open verification link → verified cloud session', async ({ page }) => {
     const email = generateTestEmail();
     await gotoCleanAuthPage(page);
 
@@ -38,24 +38,19 @@ test.describe('Authentication - email verification', () => {
       timeout: TIMEOUT_CONFIG.LOGIN,
     });
 
-    const code = await waitForCapturedEmailCode(email, 'email-verify');
-    await page.locator('#verify-code').fill(code);
-    await page.getByTestId('verify-submit-button').click();
+    const link = await waitForCapturedEmailLink(email, 'email-verification');
+    await page.goto(link, { waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
 
+    await ensureLoginScene(page);
+    await page.locator('#email').fill(email);
+    await page.locator('#password').fill(testPassword);
+    await page.getByTestId('login-submit-button').click();
     await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
       timeout: TIMEOUT_CONFIG.LOGIN,
     });
 
-    const identityStatus = await page.evaluate(() => {
-      try {
-        const raw = localStorage.getItem('authentication');
-        if (!raw) return null;
-        const parsed = JSON.parse(raw) as { currentIdentity?: { status?: string } };
-        return parsed.currentIdentity?.status ?? null;
-      } catch {
-        return null;
-      }
-    });
-    expect(identityStatus).toBe('Active');
+    const session = await page.request.get('/api/auth/get-session');
+    expect(session.ok()).toBe(true);
+    expect((await session.json()).user.emailVerified).toBe(true);
   });
 });

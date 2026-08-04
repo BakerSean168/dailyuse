@@ -45,9 +45,9 @@ export interface GoalState {
   deletedAt: Instant | null;
   keyResults: KeyResult[] | null;
   reviews: GoalReview[] | null;
-  totalKeyResults?: number;
-  completedKeyResults?: number;
-  overallProgress?: number;
+  totalKeyResults: number;
+  completedKeyResults: number;
+  overallProgress: number;
 }
 
 export class Goal extends AggregateRoot<GoalId> {
@@ -182,7 +182,10 @@ export class Goal extends AggregateRoot<GoalId> {
 
   // ================= DTO Conversion =================
   public toDTO(): GoalClientDTO {
-    const dto: GoalClientDTO = {
+    const dto: Omit<
+      GoalClientDTO,
+      'totalKeyResults' | 'completedKeyResults' | 'overallProgress'
+    > = {
       id: String(this._props.id) as GoalClientDTO['id'],
       identityId: String(this._props.identityId) as GoalClientDTO['identityId'],
       name: this._props.name,
@@ -217,30 +220,9 @@ export class Goal extends AggregateRoot<GoalId> {
 
     return {
       ...dto,
-      totalKeyResults: this._props.totalKeyResults ?? (this._props.keyResults?.length ?? 0),
-      completedKeyResults:
-        this._props.completedKeyResults ??
-        (this._props.keyResults?.filter((kr) => (kr as KeyResult).progressPercentage >= 100).length ?? 0),
-      overallProgress:
-        this._props.overallProgress ??
-        (() => {
-          const keyResults = this._props.keyResults ?? [];
-          if (keyResults.length === 0) return 0;
-          const totalWeight = keyResults.reduce((sum, kr) => sum + ((kr as KeyResult).weight ?? 1), 0);
-          if (totalWeight <= 0) {
-            const average =
-              keyResults.reduce((sum, kr) => sum + (kr as KeyResult).progressPercentage, 0) /
-              keyResults.length;
-            return Math.round(average * 100) / 100;
-          }
-          const weighted =
-            keyResults.reduce(
-              (sum, kr) =>
-                sum + (kr as KeyResult).progressPercentage * ((kr as KeyResult).weight ?? 1),
-              0,
-            ) / totalWeight;
-          return Math.round(weighted * 100) / 100;
-        })(),
+      totalKeyResults: this._props.totalKeyResults,
+      completedKeyResults: this._props.completedKeyResults,
+      overallProgress: this._props.overallProgress,
     } as GoalClientDTO;
   }
 }

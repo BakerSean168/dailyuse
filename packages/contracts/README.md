@@ -25,30 +25,28 @@ protocol/ → api/ ← dtos/
 
 事件键采用 **namespace:action** 格式：
 
-- **Namespace**: 模块名称（小写）。例如：`auth`, `task`, `goal`, `notification`
+- **Namespace**: 模块名称（小写）。例如：`account`, `task`, `goal`, `notification`
 - **Action**: 动作描述（kebab-case）。例如：`login`, `create-task`, `update-goal-status`
 - **完整示例**：
-  - `auth:login`
+  - `account:update-profile`
   - `task:create`
   - `goal:update-status`
   - `notification:send`
 
-### 模块结构示例（以 authentication 为例）
+### 模块结构示例（以 account 为例）
 
 ```
-src/modules/authentication/
+src/modules/account/
 ├── protocol/
-│   ├── auth-rpc-map.ts          # RPC 事件映射 (从 api/ 导入类型)
-│   ├── auth-event-map.ts        # Domain 事件映射 (从 api/ 和 dtos/ 导入)
+│   ├── account-rpc-map.ts       # RPC 事件映射 (从 api/ 导入类型)
+│   ├── account-event-map.ts     # Domain 事件映射 (从 api/ 和 dtos/ 导入)
 │   └── index.ts                 # 导出 rpc-map 和 event-map
 ├── api/
-│   ├── login.ts                 # 登录相关 schema 和类型
-│   ├── register.ts              # 注册相关 schema 和类型
-│   ├── verify.ts                # 验证相关 schema 和类型
+│   ├── profile.ts               # 资料相关 schema 和类型
+│   ├── preferences.ts           # 偏好相关 schema 和类型
 │   └── index.ts                 # 导出所有 API 类型
 ├── dtos/
-│   ├── auth-response.dto.ts     # 复杂响应类型 (登录成功的聚合响应)
-│   ├── auth-session.dto.ts      # Session 数据传输对象
+│   ├── account.dto.ts           # Account 聚合响应
 │   └── index.ts                 # 导出所有 DTO 类型
 └── index.ts                     # 模块统一导出 (protocol + api + dtos)
 ```
@@ -58,39 +56,36 @@ src/modules/authentication/
 1. **定义 API Schema**：在 `api/` 下用 Zod 定义请求和响应schema
 
    ```typescript
-   // api/login.ts
-   export const LoginByEmailSchema = z.object({
-     email: z.string().email(),
-     password: z.string(),
+   // api/profile.ts
+   export const UpdateProfileSchema = z.object({
+     name: z.string().min(1),
    });
-   export type LoginByEmailReq = z.infer<typeof LoginByEmailSchema>;
-   export type LoginByEmailRes = AuthResponseDTO; // 引用 DTO
+   export type UpdateProfileReq = z.infer<typeof UpdateProfileSchema>;
    ```
 
 2. **定义 DTOs**：在 `dtos/` 下定义复杂/组合类型
 
    ```typescript
-   // dtos/auth-response.dto.ts
-   export interface AuthResponseDTO {
-     accessToken: string;
-     identity: AuthIdentityDTO;
-     session: AuthSessionDTO;
+   // dtos/account.dto.ts
+   export interface AccountDTO {
+     id: string;
+     name: string;
    }
    ```
 
 3. **定义 RPC 映射**：在 `protocol/` 下用 API 类型构建映射
 
    ```typescript
-   // protocol/auth-rpc-map.ts
-   import type { LoginByEmailReq, LoginByEmailRes } from '../api/login';
-   export type AuthRpcMap = {
-     'auth:login': [LoginByEmailReq, LoginByEmailRes];
+   // protocol/account-rpc-map.ts
+   import type { UpdateProfileReq } from '../api/profile';
+   export type AccountRpcMap = {
+     'account:update-profile': [UpdateProfileReq, AccountDTO];
    };
    ```
 
 4. **模块导出**：在 `index.ts` 统一导出
    ```typescript
-   // src/modules/authentication/index.ts
+   // src/modules/account/index.ts
    export * from './protocol';
    export * from './api';
    export * from './dtos';
@@ -118,7 +113,6 @@ import { AccountDTO } from '@memoflow/contracts/account';
 | `@memoflow/contracts/reminder`       | 提醒模块契约   |
 | `@memoflow/contracts/repository`     | 仓库模块契约   |
 | `@memoflow/contracts/account`        | 账户模块契约   |
-| `@memoflow/contracts/authentication` | 认证模块契约   |
 | `@memoflow/contracts/schedule`       | 调度模块契约   |
 | `@memoflow/contracts/setting`        | 设置模块契约   |
 | `@memoflow/contracts/notification`   | 通知模块契约   |

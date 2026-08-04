@@ -31,19 +31,15 @@ import fs from 'fs';
 import { Worker } from 'node:worker_threads';
 
 import { PowerSyncAppSchema } from '@memoflow/powersync-schema';
-import type { TokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
 import { serializeCrudTransaction } from './powersync-crud';
 import { normalizePowerSyncTableName, POWER_SYNC_CHANGE_TABLES } from './powersync-table-changes';
-import { toCloudAccessToken } from '../modules/authentication/infrastructure/session-types';
 
-const NON_SYNCABLE_LOCAL_TABLES = [
-  'accounts',
-  'auth_credentials',
-  'auth_identifiers',
-  'auth_identities',
-  'auth_sessions',
-] as const;
+export interface CloudCredentialProvider {
+  getAccessToken(): Promise<string | null>;
+}
+
+const NON_SYNCABLE_LOCAL_TABLES = ['accounts'] as const;
 
 const PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES = [
   'user_settings',
@@ -234,11 +230,11 @@ async function purgePreHydrationBootstrapCrud(
 
 class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
   private readonly apiBaseUrl: string;
-  private readonly tokenManager: TokenManager;
+  private readonly credentialProvider: CloudCredentialProvider;
 
-  constructor(tokenManager: TokenManager) {
+  constructor(credentialProvider: CloudCredentialProvider) {
     this.apiBaseUrl = getApiBaseUrl();
-    this.tokenManager = tokenManager;
+    this.credentialProvider = credentialProvider;
   }
 
   /**
@@ -246,7 +242,7 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
    * existing HS256 access token stored in safeStorage.
    */
   async fetchCredentials(): Promise<PowerSyncCredentials> {
-    const accessToken = toCloudAccessToken(await this.tokenManager.getAccessToken());
+    const accessToken = await this.credentialProvider.getAccessToken();
 
     if (!accessToken) {
       throw new Error('[PowerSync] No cloud-eligible access token — guest/offline profiles stay local');
@@ -305,7 +301,7 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
    * The API's `/powersync/crud` endpoint applies them inside a Prisma $transaction.
    */
   async uploadData(database: AbstractPowerSyncDatabase): Promise<void> {
-    const accessToken = toCloudAccessToken(await this.tokenManager.getAccessToken());
+    const accessToken = await this.credentialProvider.getAccessToken();
 
     if (!accessToken) {
       throw new Error('[PowerSync] No cloud-eligible access token — cannot upload data');
@@ -369,8 +365,7 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
 /**
  * Opens the PowerSync database in local-only mode (no sync).
  *
- * Used for OFFLINE_USER and GUEST auth modes where no auth token is available
- * or cloud sync is not desired.
+ * Used whenever a Profile is unlocked before cloud connectivity is available.
  *
  * @param dbPath - Required per-profile database path.
  */
@@ -422,7 +417,7 @@ export async function openPowerSyncLocalOnly(dbPath: string): Promise<PowerSyncD
  * `openPowerSyncLocalOnly`). Promotes it by attaching a connector.
  */
 export async function ensurePowerSyncSyncMode(
-  tokenManager: TokenManager,
+  credentialProvider: CloudCredentialProvider,
 ): Promise<PowerSyncDatabase> {
   if (!powerSyncDb) {
     throw new Error('PowerSync sync mode requires an already prepared profile-local database');
@@ -435,11 +430,19 @@ export async function ensurePowerSyncSyncMode(
 
   await purgeNonSyncableLocalCrud(powerSyncDb);
   await purgePreHydrationBootstrapCrud(powerSyncDb);
-  const connector = new DesktopPowerSyncConnector(tokenManager);
+  const connector = new DesktopPowerSyncConnector(credentialProvider);
   await powerSyncDb.connect(connector);
   syncConnected = true;
   console.log('[PowerSync] Promoted to sync mode');
   return powerSyncDb;
+}
+
+/** Disconnect cloud sync while keeping the active Profile database open locally. */
+export async function disablePowerSyncSyncMode(): Promise<void> {
+  if (!powerSyncDb || !syncConnected) return;
+  await powerSyncDb.disconnect();
+  syncConnected = false;
+  console.log('[PowerSync] Cloud sync disconnected; local Profile remains open');
 }
 
 /**

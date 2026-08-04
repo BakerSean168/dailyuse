@@ -10,6 +10,7 @@ const i18n = createI18n({
   locale: 'en-US',
   messages: {
     'en-US': {
+      common: { unavailable: 'Unavailable' },
       goal: {
         error: {
           loadFailed: 'Could not load goal',
@@ -28,10 +29,7 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-function mountComposable(goalService: {
-  getGoal?: ReturnType<typeof vi.fn>;
-  getKeyResults: ReturnType<typeof vi.fn>;
-}) {
+function mountComposable(goalService: { getGoalAggregateView: ReturnType<typeof vi.fn> }) {
   let result!: ReturnType<typeof useTaskGoalBindingOptions>;
   const app = createApp(
     defineComponent({
@@ -57,51 +55,56 @@ describe('useTaskGoalBindingOptions', () => {
   });
 
   it('deduplicates concurrent requests for the same goal', async () => {
-    const pending = deferred<ReturnType<typeof ok<{ keyResults: never[] }>>>();
-    const getKeyResults = vi.fn(() => pending.promise);
-    const { result, unmount } = mountComposable({ getKeyResults });
+    const pending =
+      deferred<ReturnType<typeof ok<{ goal: { id: string }; keyResults: never[] }>>>();
+    const getGoalAggregateView = vi.fn(() => pending.promise);
+    const { result, unmount } = mountComposable({ getGoalAggregateView });
 
     const first = result.loadKeyResults('goal-a');
     const second = result.loadKeyResults('goal-a');
-    pending.resolve(ok({ keyResults: [] }));
+    pending.resolve(ok({ goal: { id: 'goal-a' }, keyResults: [] }));
 
     await expect(Promise.all([first, second])).resolves.toEqual([[], []]);
-    expect(getKeyResults).toHaveBeenCalledTimes(1);
+    expect(getGoalAggregateView).toHaveBeenCalledTimes(1);
     expect(result.keyResultsByGoal.value).toEqual({ 'goal-a': [] });
     unmount();
   });
 
-  it('loads the exact bound goal and resolves persisted IDs to display names', async () => {
-    const getGoal = vi.fn().mockResolvedValue(
+  it('loads the exact bound goal and resolves persisted IDs to display labels', async () => {
+    const getGoalAggregateView = vi.fn().mockResolvedValue(
       ok({
-        toDTO: () => ({ id: 'goal-a', name: 'Launch MemoFlow', description: null }),
-      }),
-    );
-    const getKeyResults = vi.fn().mockResolvedValue(
-      ok({
+        goal: { id: 'goal-a', name: 'Launch MemoFlow', description: null },
         keyResults: [
           {
-            toDTO: () => ({
-              id: 'kr-a',
-              title: 'Complete the product journey',
-              weight: 1,
-              progress: { currentValue: 0, targetValue: 10, progressPercentage: 0 },
-            }),
+            id: 'kr-a',
+            title: 'Complete the product journey',
+            weight: 1,
+            progress: { initialValue: 0, currentValue: 0, targetValue: 10 },
           },
         ],
       }),
     );
-    const { result, unmount } = mountComposable({ getGoal, getKeyResults });
+    const { result, unmount } = mountComposable({ getGoalAggregateView });
 
     await result.loadGoalBinding('goal-a');
 
-    expect(getGoal).toHaveBeenCalledWith('goal-a');
-    expect(getKeyResults).toHaveBeenCalledWith('goal-a');
+    expect(getGoalAggregateView).toHaveBeenCalledWith('goal-a');
+    expect(getGoalAggregateView).toHaveBeenCalledTimes(1);
+    expect(result.resolveGoalBinding({ goalId: 'goal-a', keyResultId: 'kr-a' })).toMatchObject({
+      goalName: 'Launch MemoFlow',
+      keyResultName: 'Complete the product journey',
+    });
+    unmount();
+  });
+
+  it('marks a missing goal or key result as unavailable instead of retaining a title snapshot', () => {
+    const { result, unmount } = mountComposable({ getGoalAggregateView: vi.fn() });
+
     expect(
-      result.resolveGoalBinding({ goalId: 'goal-a', keyResultId: 'kr-a' }),
+      result.resolveGoalBinding({ goalId: 'missing-goal', keyResultId: 'missing-kr' }),
     ).toMatchObject({
-      goalTitle: 'Launch MemoFlow',
-      keyResultTitle: 'Complete the product journey',
+      goalName: 'Unavailable',
+      keyResultName: 'Unavailable',
     });
     unmount();
   });

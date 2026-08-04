@@ -23,7 +23,7 @@ export const domainResolveAtAlias = {
       'governance',
       'reminder',
       'ai',
-      'authentication',
+      'cloud-auth',
       'account',
       'notification',
       'editor',
@@ -221,12 +221,12 @@ export const domainResolveAliases = [
     replacement: path.resolve(__dirname, './packages/schedule-orchestration/src/index.ts'),
   },
   {
-    find: /^@memoflow\/authentication\/(.+)/,
-    replacement: path.resolve(__dirname, './packages/authentication/src/$1/index.ts'),
+    find: /^@memoflow\/cloud-auth\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/cloud-auth/src/$1/index.ts'),
   },
   {
-    find: '@memoflow/authentication',
-    replacement: path.resolve(__dirname, './packages/authentication/src/index.ts'),
+    find: '@memoflow/cloud-auth',
+    replacement: path.resolve(__dirname, './packages/cloud-auth/src/index.ts'),
   },
 ];
 

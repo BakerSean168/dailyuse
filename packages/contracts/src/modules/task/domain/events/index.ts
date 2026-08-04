@@ -8,6 +8,7 @@ export type { TaskCreatedEvent } from './task-created.event';
 export type { TaskUpdatedEvent } from './task-updated.event';
 export type { TaskDeletedEvent } from './task-deleted.event';
 export type { TaskInstanceCompletedEvent } from './task-instance-completed.event';
+export type { TaskGoalProgressOutboxEventV1 } from './task-goal-progress-outbox.event';
 export type { TaskInstanceSkippedEvent } from './task-instance-skipped.event';
 export type { TaskInstanceDeletedEvent } from './task-instance-deleted.event';
 export type { TaskInstancesGeneratedEvent } from './task-instances-generated.event';
@@ -20,4 +21,3 @@ export type { TaskRescheduledEvent } from './task-rescheduled.event';
 export type { TaskDependencyCreatedEvent } from './task-dependency-created.event';
 export type { TaskDependencyUpdatedEvent } from './task-dependency-updated.event';
 export type { TaskDependencyDeletedEvent } from './task-dependency-deleted.event';
-

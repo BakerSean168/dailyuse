@@ -129,14 +129,44 @@ services:
       retries: 3
       start_period: 20s
 
+  migrator:
+    image: memoflow-migrator:local
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      target: migrator-runtime
+      args:
+        VERSION: local
+        PNPM_REGISTRY: ${PNPM_REGISTRY:-https://registry.npmmirror.com}
+      labels:
+        org.opencontainers.image.created: ${BUILD_DATE:-unknown}
+        org.opencontainers.image.revision: ${VCS_REF:-unknown}
+    restart: 'no'
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:?set DB_NAME}
+      DB_USER: ${DB_USER:?set DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    networks:
+      - memoflow-local-network
+
   api:
     image: memoflow-api:local
     pull_policy: never
     build:
       context: .
       dockerfile: Dockerfile.api
+      target: api-runtime
       args:
         VERSION: local
+        PNPM_REGISTRY: ${PNPM_REGISTRY:-https://registry.npmmirror.com}
       labels:
         org.opencontainers.image.created: ${BUILD_DATE:-unknown}
         org.opencontainers.image.revision: ${VCS_REF:-unknown}
@@ -149,6 +179,8 @@ services:
         condition: service_healthy
       ai-service:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: production
       # Local Docker only: open console email-code capture endpoint for register→verify flows
@@ -168,6 +200,10 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-warn}
       API_PORT: 3000
       API_HOST: 0.0.0.0
+      AUTH_BASE_URL: ${AUTH_BASE_URL:-http://localhost:53080/api/auth}
+      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:-http://localhost:58080}
+      GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID:-}
+      GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET:-}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:?set DB_NAME}

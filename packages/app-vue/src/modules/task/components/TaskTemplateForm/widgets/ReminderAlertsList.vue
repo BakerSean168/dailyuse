@@ -62,7 +62,7 @@
           <div v-else-if="alert.timing.type === 'absolute'" class="col-span-12 md:col-span-3">
             <Label class="mb-1.5 block">{{ t('task.reminderAlerts.absoluteTime') }}</Label>
             <Input
-              :model-value="absoluteTimeInput"
+              :model-value="formatAbsoluteTimeInput(alert)"
               type="time"
               @update:model-value="(value: any) => handleAbsoluteTimeChange(value, index)"
             />
@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Card,
@@ -136,8 +136,6 @@ const emit = defineEmits<{
   'update:modelValue': [value: ReminderAlert[]];
   'update:validation': [isValid: boolean];
 }>();
-
-const absoluteTimeInput = ref(new Date());
 
 const localAlerts = computed({
   get: () => props.modelValue,
@@ -183,6 +181,14 @@ const errorMessage = computed(() => {
 });
 
 // 方法
+const formatAbsoluteTimeInput = (alert: ReminderAlert): string => {
+  const value = alert.timing.absoluteTime;
+  if (!value) return '';
+  const hours = String(value.getHours()).padStart(2, '0');
+  const minutes = String(value.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
 const handleAbsoluteTimeChange = (timeValue: string, alertIndex: number) => {
   if (!timeValue || alertIndex < 0 || alertIndex >= localAlerts.value.length) return;
 

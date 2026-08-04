@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -59,7 +59,20 @@ for (const relativePath of repositoryPaths) {
     errors.push(`${relativePath}: filename contains retired product identity.`);
   }
 
-  const content = readFileSync(path.join(ROOT, relativePath));
+  const absolutePath = path.join(ROOT, relativePath);
+  // `git ls-files --cached` includes tracked files staged for deletion. Audits
+  // should evaluate the resulting working tree rather than fail while opening
+  // a path that intentionally no longer exists.
+  if (!existsSync(absolutePath)) {
+    continue;
+  }
+  // Untracked symlinked skill directories can be returned as a single path.
+  // Identity scanning is content-based, so directory entries are not inputs.
+  if (!statSync(absolutePath).isFile()) {
+    continue;
+  }
+
+  const content = readFileSync(absolutePath);
   if (content.includes(0)) {
     continue;
   }

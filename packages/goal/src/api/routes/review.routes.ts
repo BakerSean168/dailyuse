@@ -12,7 +12,13 @@ import {
   successResponse,
   errorResponse,
 } from '@memoflow/utils/result';
-import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema, GoalReviewListResSchema } from '@memoflow/contracts/goal';
+import {
+  CreateGoalReviewSchema,
+  DeleteGoalReviewSchema,
+  UpdateGoalReviewSchema,
+  GoalMutationReceiptSchema,
+  GoalReviewListResSchema,
+} from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
 import type { GoalId, GoalReviewId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
@@ -51,7 +57,7 @@ export function registerReviewRoutes(
         body: { content: { 'application/json': { schema: CreateGoalReviewSchema } } },
       },
       responses: {
-        201: successResponse(GoalReviewClientDTOSchema, '添加成功'),
+        201: successResponse(GoalMutationReceiptSchema, '添加成功'),
         404: errorResponse('目标不存在'),
       },
     },
@@ -92,7 +98,7 @@ export function registerReviewRoutes(
         body: { content: { 'application/json': { schema: UpdateGoalReviewSchema } } },
       },
       responses: {
-        200: successResponse(GoalReviewClientDTOSchema, '更新成功'),
+        200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标或复盘不存在'),
       },
     },
@@ -111,14 +117,15 @@ export function registerReviewRoutes(
           id: brandedId<GoalId>(),
           reviewId: brandedId<GoalReviewId>(),
         }),
+        query: DeleteGoalReviewSchema,
       },
       responses: {
-        200: successResponse(z.null(), '删除成功'),
+        200: successResponse(GoalMutationReceiptSchema, '删除成功'),
         404: errorResponse('目标或复盘不存在'),
       },
     },
     [auth],
-    (req, ctx) => controller.deleteReview(req.params!.id, req.params!.reviewId, ctx),
+    (req, ctx) => controller.deleteReview(req.params!.id, req.params!.reviewId, req.query, ctx),
   );
 
   return router;

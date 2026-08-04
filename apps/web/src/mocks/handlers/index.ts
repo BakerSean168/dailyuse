@@ -12,7 +12,6 @@
 
 import { goalHandlers } from './goal.handlers';
 import { accountHandlers } from './account.handlers';
-import { authHandlers } from './auth.handlers';
 import { taskHandlers } from './task.handlers';
 import { scheduleHandlers } from './schedule.handlers';
 import { reminderHandlers } from './reminder.handlers';
@@ -26,7 +25,6 @@ import { powersyncHandlers } from './powersync.handlers';
 export const handlers = [
   ...goalHandlers,
   ...accountHandlers,
-  ...authHandlers,
   ...taskHandlers,
   ...scheduleHandlers,
   ...reminderHandlers,

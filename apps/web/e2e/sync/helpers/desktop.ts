@@ -170,6 +170,35 @@ export class DesktopAppController {
     return this.ensureAuthenticated(credentials);
   }
 
+  async setWindowSize(width: number, height: number): Promise<{ width: number; height: number }> {
+    if (!this.electronApp) {
+      throw new Error('Electron app has not been launched.');
+    }
+
+    return this.electronApp.evaluate(
+      ({ BrowserWindow }, size) => {
+        const window = BrowserWindow.getAllWindows().find((candidate) => !candidate.isDestroyed());
+        if (!window) throw new Error('Desktop main window is unavailable.');
+        window.setBounds({ width: size.width, height: size.height });
+        const bounds = window.getBounds();
+        return { width: bounds.width, height: bounds.height };
+      },
+      { width, height },
+    );
+  }
+
+  async setZoomFactor(factor: number): Promise<void> {
+    if (!this.electronApp) {
+      throw new Error('Electron app has not been launched.');
+    }
+
+    await this.electronApp.evaluate(({ BrowserWindow }, zoomFactor) => {
+      const window = BrowserWindow.getAllWindows().find((candidate) => !candidate.isDestroyed());
+      if (!window) throw new Error('Desktop main window is unavailable.');
+      window.webContents.setZoomFactor(zoomFactor);
+    }, factor);
+  }
+
   async close(): Promise<void> {
     if (!this.electronApp) {
       return;

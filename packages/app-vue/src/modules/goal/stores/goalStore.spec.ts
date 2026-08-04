@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type {
   FocusModeDTO,
+  GoalAggregateReadModel,
   GoalClientDTO,
   GoalFolderClientDTO,
   GoalRecordClientDTO,
@@ -10,7 +11,7 @@ import type {
 import { createTestPinia } from '@memoflow/test-utils';
 import { useGoalStore } from './goal-store';
 
-function createGoal(overrides: Partial<GoalClientDTO> = {}): GoalClientDTO {
+function createGoal(overrides: Partial<GoalAggregateReadModel> = {}): GoalAggregateReadModel {
   return {
     id: 'goal-1' as GoalClientDTO['id'],
     status: 'Active',
@@ -19,17 +20,20 @@ function createGoal(overrides: Partial<GoalClientDTO> = {}): GoalClientDTO {
     completedAt: null,
     deletedAt: null,
     folderId: null,
+    version: 1,
     keyResults: [],
     reviews: [],
+    totalKeyResults: 0,
+    completedKeyResults: 0,
+    overallProgress: 0,
     ...overrides,
-  } as GoalClientDTO;
+  } as GoalAggregateReadModel;
 }
 
-function createKeyResult(
-  overrides: Partial<KeyResultClientDTO> = {},
-): KeyResultClientDTO {
+function createKeyResult(overrides: Partial<KeyResultClientDTO> = {}): KeyResultClientDTO {
   return {
     id: 'kr-1' as KeyResultClientDTO['id'],
+    goalId: 'goal-1' as KeyResultClientDTO['goalId'],
     title: 'Add store tests',
     ...overrides,
   } as KeyResultClientDTO;
@@ -40,7 +44,7 @@ describe('useGoalStore', () => {
     createTestPinia();
   });
 
-  it('keeps goal list filters, counts, and current goal in sync', () => {
+  it('keeps goal list filters, counts, and selected goal id in sync', () => {
     const store = useGoalStore();
     const active = createGoal();
     const completed = createGoal({
@@ -51,11 +55,18 @@ describe('useGoalStore', () => {
     });
 
     store.setGoals([completed], 21);
-    store.addGoal(active);
-    store.setCurrentGoal(active);
-    store.updateGoal({
-      ...active,
-      name: 'Ship stronger oracle',
+    store.applyGoalMutationReceipt({
+      goalId: active.id,
+      goalVersion: active.version,
+      affectedEntityIds: { goalIds: [active.id], keyResultIds: [], recordIds: [], reviewIds: [] },
+      readModel: active,
+    });
+    store.selectGoal(active.id);
+    store.applyGoalMutationReceipt({
+      goalId: active.id,
+      goalVersion: 2,
+      affectedEntityIds: { goalIds: [active.id], keyResultIds: [], recordIds: [], reviewIds: [] },
+      readModel: { ...active, name: 'Ship stronger oracle', version: 2 },
     });
     store.setSelectedFolderId('folder-1');
     store.setSearchQuery('oracle');
@@ -70,7 +81,7 @@ describe('useGoalStore', () => {
     expect(store.pagination.page).toBe(1);
 
     store.removeGoal(active.id);
-    expect(store.currentGoal).toBeNull();
+    expect(store.selectedGoal).toBeNull();
     expect(store.pagination.total).toBe(21);
   });
 
@@ -98,16 +109,16 @@ describe('useGoalStore', () => {
       isActive: true,
     } as FocusModeDTO;
 
-    store.setCurrentGoal(goal);
-    store.setKeyResults([keyResult]);
-    store.updateKeyResult(updatedKeyResult);
-    store.addGoalReview(review);
+    store.upsertGoal(goal);
+    store.selectGoal(goal.id);
+    store.setKeyResults(goal.id, [keyResult], goal.version);
+    store.setKeyResults(goal.id, [updatedKeyResult], goal.version);
+    store.setGoalReviews([review]);
     store.setGoalFolders([folder]);
     store.addGoalFolder({ id: 'folder-2', name: 'More' } as GoalFolderClientDTO);
     store.updateGoalFolder({ id: 'folder-2', name: 'More tests' } as GoalFolderClientDTO);
     store.removeGoalFolder('folder-1');
-    store.setGoalRecords([record]);
-    store.addGoalRecord({ id: 'record-2' } as GoalRecordClientDTO);
+    store.setGoalRecords([record, { id: 'record-2' } as GoalRecordClientDTO]);
     store.setCurrentFocusMode(focusMode);
     store.setError('failed');
     store.setLoading(true);
@@ -116,9 +127,10 @@ describe('useGoalStore', () => {
     store.setPageSize(50);
 
     expect(store.keyResults[0]?.title).toBe('Expanded coverage');
-    expect(store.currentGoal?.keyResults?.[0]?.title).toBe('Expanded coverage');
+    expect(store.getKeyResultById(keyResult.id)?.title).toBe('Expanded coverage');
+    expect(store.selectedGoal?.keyResults?.[0]?.title).toBe('Expanded coverage');
+    expect(store.goalById[goal.id]?.keyResults).toBeUndefined();
     expect(store.goalReviews).toEqual([review]);
-    expect(store.currentGoal?.reviews).toEqual([review]);
     expect(store.goalFolders.map((item) => item.id)).toEqual(['folder-2']);
     expect(store.goalRecords).toHaveLength(2);
     expect(store.currentFocusMode).toStrictEqual(focusMode);
@@ -127,13 +139,89 @@ describe('useGoalStore', () => {
     expect(store.pagination.pageSize).toBe(50);
     expect(store.pagination.page).toBe(1);
 
-    store.removeKeyResult(keyResult.id);
+    store.setKeyResults(goal.id, [], goal.version);
     expect(store.keyResults).toEqual([]);
 
     store.reset();
     expect(store.goals).toEqual([]);
-    expect(store.currentGoal).toBeNull();
+    expect(store.selectedGoal).toBeNull();
     expect(store.currentFocusMode).toBeNull();
     expect(store.isInitialized).toBe(false);
+  });
+
+  it('uses the Goal root version to reject stale normalized child state', () => {
+    const store = useGoalStore();
+    store.upsertGoal(createGoal({ name: 'Newer', version: 3 }));
+    store.upsertGoal(createGoal({ name: 'Stale', version: 2 }));
+    store.setKeyResults('goal-1', [createKeyResult({ title: 'Newer KR' })], 3);
+    store.setKeyResults('goal-1', [createKeyResult({ title: 'Stale KR' })], 2);
+
+    expect(store.getGoalById('goal-1')?.name).toBe('Newer');
+    expect(store.getKeyResultById('kr-1')?.title).toBe('Newer KR');
+  });
+
+  it('applies a mutation receipt as one version-checked normalized update', () => {
+    const store = useGoalStore();
+    store.setGoals([createGoal({ name: 'Before', version: 1 })]);
+    const keyResult = createKeyResult();
+
+    store.applyGoalMutationReceipt({
+      goalId: createGoal().id,
+      goalVersion: 2,
+      affectedEntityIds: {
+        goalIds: [createGoal().id],
+        keyResultIds: [keyResult.id],
+        recordIds: [],
+        reviewIds: [],
+      },
+      readModel: createGoal({ name: 'After', version: 2, keyResults: [keyResult] }),
+    });
+
+    expect(store.getGoalById('goal-1')?.name).toBe('After');
+    expect(store.getKeyResultById('kr-1')).toEqual(keyResult);
+
+    store.applyGoalMutationReceipt({
+      goalId: createGoal().id,
+      goalVersion: 1,
+      affectedEntityIds: { goalIds: [], keyResultIds: [], recordIds: [], reviewIds: [] },
+      readModel: createGoal({ name: 'Malformed receipt', version: 2 }),
+    });
+    expect(store.getGoalById('goal-1')?.name).toBe('After');
+  });
+
+  it('preserves one authoritative progress projection across list and detail views', () => {
+    const store = useGoalStore();
+    store.setGoals([createGoal()]);
+    store.selectGoal('goal-1');
+
+    store.applyGoalMutationReceipt({
+      goalId: createGoal().id,
+      goalVersion: 2,
+      affectedEntityIds: {
+        goalIds: [createGoal().id],
+        keyResultIds: [],
+        recordIds: [],
+        reviewIds: [],
+      },
+      readModel: createGoal({
+        version: 2,
+        totalKeyResults: 3,
+        completedKeyResults: 2,
+        overallProgress: 73,
+      }),
+    });
+
+    const projections = [store.goals[0], store.selectedGoal, store.getGoalById('goal-1')];
+    expect(
+      projections.map((goal) => ({
+        total: goal?.totalKeyResults,
+        completed: goal?.completedKeyResults,
+        progress: goal?.overallProgress,
+      })),
+    ).toEqual([
+      { total: 3, completed: 2, progress: 73 },
+      { total: 3, completed: 2, progress: 73 },
+      { total: 3, completed: 2, progress: 73 },
+    ]);
   });
 });

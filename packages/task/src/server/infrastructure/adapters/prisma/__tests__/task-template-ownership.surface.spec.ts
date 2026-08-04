@@ -128,7 +128,8 @@ describe('task template ownership surface', () => {
     expect(prisma).toContain('async findByKeyResultId(identityId: string, keyResultId: string)');
     expect(prisma).toContain('async findSubtasks(identityId: string, parentTaskId: string)');
     expect(prisma).toContain('where: { identityId, parentTaskId, deletedAt: null }');
-    expect(prisma).toMatch(/identityId,\s*goalBinding: \{ not: null \}/);
+    expect(prisma).toMatch(/identityId,\s*keyResultId,\s*deletedAt: null/);
+    expect(prisma).not.toContain('JSON.parse(record.goalBinding');
   });
 
 

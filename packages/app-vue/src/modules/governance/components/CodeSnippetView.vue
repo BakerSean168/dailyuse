@@ -17,8 +17,10 @@
           {{ snippet.caption }}
         </span>
         <button
-          class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          type="button"
+          class="inline-flex h-8 w-8 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           title="复制代码"
+          aria-label="复制代码"
           @click="copyToClipboard"
         >
           <Copy :size="14" />

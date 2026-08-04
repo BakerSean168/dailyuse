@@ -5,7 +5,7 @@ tags:
   - goal
 description: 目标模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-08-01T00:00:00+08:00
 ---
 
 # 目标模块说明
@@ -36,6 +36,10 @@ updated: 2026-06-02T00:00:00
 ## 4. 业务规则
 
 - Goal 是目标模块核心聚合，Key Result、Goal Record、Goal Review 与目标关联。
+- Goal 是 Goal/KR/Record/Review 写入的唯一一致性边界。创建 Goal 与初始 KR、记录进度、批量更新权重均通过一个聚合命令在一个事务中提交；调用方不得串联多个写入模拟事务。
+- 修改既有聚合必须携带 Goal root `expectedVersion`；旧版本写入返回显式冲突，不允许静默覆盖。
+- mutation 返回权威 `GoalMutationReceipt`。客户端按 ID 归一化实体并通过 `applyGoalMutationReceipt()` 原子合并；列表、详情、Dashboard 与 Task picker 共用同一摘要投影。
+- Goal 摘要不持久化为第二份真值；进度、KR 数量与完成数从完整 KR 集合投影。客户端只保存 `selectedGoalId`，不保存 `currentGoal` 对象副本。
 - Goal 状态、Goal Folder 类型、Review 类型、KR 值类型、KR 计算方式、Focus Session 状态等值对象集中在 contracts 和 goal 包中维护。
 - 写入真实目标数据时，业务归属仍在 `goal` 模块；AI 模块只产出可审阅的结构化草稿或计划。
 - 客户端通过 HTTP 或 IPC 适配器访问目标能力，服务端通过模块组合根装配用例和仓储实现。
@@ -45,12 +49,13 @@ updated: 2026-06-02T00:00:00
 
 详细文件清单见 [目标模块文件索引](../module-index/goal-files.md)。
 
-## 6. 当前问题
+## 6. 当前边界
 
-- 目标模块能力较多，普通目标管理、专注模式、复盘、记录、对比和 AI 创建目标的边界需要在优化前明确。
+- 普通目标管理、专注模式、复盘、记录、对比和 AI 创建目标共享 Goal 聚合，但各产品入口仍需保持清晰。
 - 目标复盘的产品价值、入口时机和结构化程度需要进一步确认。
-- AI Goal workflow 与传统目标创建共用业务落点，但当前说明分散在开发指南和代码中。
-- 目标、任务、日程、Dashboard 之间的联动较强，改动目标状态或进度计算时影响范围不局限于目标页。
+- AI Goal workflow 与传统目标创建使用同一原子聚合命令；AI 只能提交可审阅草稿或经确认调用 Goal 端口。
+- Task 完成贡献通过 Task outbox 至少一次投递，Goal 侧以来源相关性幂等消费；Task 不直接访问 Goal repository。
+- 目标、任务、日程、Dashboard 之间联动较强；跨模块展示必须消费权威 read model，不能维护标题或摘要快照。
 
 ## 7. 优化机会
 
@@ -81,4 +86,3 @@ updated: 2026-06-02T00:00:00
 - [AI 创建 Goal 当前工作流说明](../../guides/development/ai-goal-creation-current-workflow.md)
 - [Goal workflow v1 文档集](../../guides/ai/goal-workflow-v1/README.md)
 - [目标模块文件索引](../module-index/goal-files.md)
-

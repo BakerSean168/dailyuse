@@ -37,7 +37,7 @@ export function generateOpenApiDocument(): OpenApiDocument {
       description:
         'MemoFlow 个人生产力管理平台 REST API 文档。\n\n' +
         '## 认证\n' +
-        '大部分 API 需要 Bearer Token 认证。请先通过 `/auth/login` 获取 accessToken。\n\n' +
+        '云端认证由 Better Auth 的 `/api/auth/*` 端点提供。Web 使用 HttpOnly cookie session；Desktop 使用 Better Auth bearer session token。Desktop 的本地 Profile 解锁不是 API 认证，也不会签发云端 token。\n\n' +
         '## 响应格式\n' +
         '所有响应遵循统一的 HttpResponse 格式：\n' +
         '- `ok: true` 表示成功，数据在 `data` 字段\n' +
@@ -57,6 +57,6 @@ export function generateOpenApiDocument(): OpenApiDocument {
         description: '开发环境',
       },
     ],
-    security: [{ bearerAuth: [] }],
+    security: [{ cookieAuth: [] }, { bearerAuth: [] }],
   }) as OpenApiDocument;
 }

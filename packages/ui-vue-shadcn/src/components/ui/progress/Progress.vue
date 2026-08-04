@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { ProgressRootProps } from 'radix-vue'
+import type { ProgressRootProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import {
   ProgressIndicator,
   ProgressRoot,
 
-} from 'radix-vue'
+} from 'reka-ui'
 import { computed } from 'vue'
 
 const props = withDefaults(

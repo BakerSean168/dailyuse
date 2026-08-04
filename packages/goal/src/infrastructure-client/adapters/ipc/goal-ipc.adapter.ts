@@ -11,21 +11,24 @@ import { AIChannels, GoalChannels } from '@memoflow/contracts/electron';
 import type { IGoalApiClient, IResultIpcClient } from '../types';
 import type {
   GoalClientDTO,
+  GoalMutationReceipt,
   GoalSystemView,
-  KeyResultClientDTO,
-  GoalReviewClientDTO,
-  GoalRecordClientDTO,
   ProgressBreakdown,
   CreateGoalReq,
   UpdateGoalReq,
+  DeleteGoalReq,
   CloneGoalReq,
   QueryGoalsRes,
   AddKeyResultReq,
   UpdateKeyResultReq,
+  DeleteKeyResultReq,
   GetKeyResultsRes,
   CreateGoalReviewReq,
+  UpdateGoalReviewReq,
+  DeleteGoalReviewReq,
   GetGoalReviewsRes,
   CreateGoalRecordReq,
+  DeleteGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
 } from '@memoflow/contracts/goal';
@@ -35,7 +38,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
 
   // ===== Goal CRUD =====
 
-  async createGoal(request: CreateGoalReq): Promise<Result<GoalClientDTO>> {
+  async createGoal(request: CreateGoalReq): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.CREATE, request);
   }
 
@@ -57,12 +60,12 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(GoalChannels.GET, id, includeChildren);
   }
 
-  async updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalClientDTO>> {
+  async updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.UPDATE, id, request);
   }
 
-  async deleteGoal(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(GoalChannels.DELETE, id);
+  async deleteGoal(id: string, request: DeleteGoalReq): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(GoalChannels.DELETE, id, request);
   }
 
   async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
@@ -71,16 +74,16 @@ export class GoalIpcAdapter implements IGoalApiClient {
 
   // ===== Goal Status =====
 
-  async activateGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(GoalChannels.ACTIVATE, id);
+  async activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(GoalChannels.ACTIVATE, id, { expectedVersion });
   }
 
-  async completeGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(GoalChannels.COMPLETE, id);
+  async completeGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(GoalChannels.COMPLETE, id, { expectedVersion });
   }
 
-  async archiveGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(GoalChannels.ARCHIVE, id);
+  async archiveGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(GoalChannels.ARCHIVE, id, { expectedVersion });
   }
 
   // ===== Search =====
@@ -101,7 +104,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
   async addKeyResultForGoal(
     goalId: string,
     request: Omit<AddKeyResultReq, 'goalId'>,
-  ): Promise<Result<KeyResultClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.KEY_RESULT_ADD, goalId, request);
   }
 
@@ -113,18 +116,25 @@ export class GoalIpcAdapter implements IGoalApiClient {
     goalId: string,
     keyResultId: string,
     request: UpdateKeyResultReq,
-  ): Promise<Result<KeyResultClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.KEY_RESULT_UPDATE, goalId, keyResultId, request);
   }
 
-  async deleteKeyResultForGoal(goalId: string, keyResultId: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(GoalChannels.KEY_RESULT_DELETE, goalId, keyResultId);
+  async deleteKeyResultForGoal(
+    goalId: string,
+    keyResultId: string,
+    request: DeleteKeyResultReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(GoalChannels.KEY_RESULT_DELETE, goalId, keyResultId, request);
   }
 
   async batchUpdateKeyResultWeights(
     goalId: string,
-    request: { updates: Array<{ keyResultId: string; weight: number }> },
-  ): Promise<Result<GetKeyResultsRes>> {
+    request: {
+      expectedVersion: number;
+      updates: Array<{ keyResultId: string; weight: number }>;
+    },
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS, goalId, request);
   }
 
@@ -137,7 +147,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
   async createGoalReview(
     goalId: string,
     request: CreateGoalReviewReq,
-  ): Promise<Result<GoalReviewClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.REVIEW_CREATE, goalId, request);
   }
 
@@ -148,13 +158,17 @@ export class GoalIpcAdapter implements IGoalApiClient {
   async updateGoalReview(
     goalId: string,
     reviewId: string,
-    request: Partial<GoalReviewClientDTO>,
-  ): Promise<Result<GoalReviewClientDTO>> {
+    request: UpdateGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.REVIEW_UPDATE, goalId, reviewId, request);
   }
 
-  async deleteGoalReview(goalId: string, reviewId: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(GoalChannels.REVIEW_DELETE, goalId, reviewId);
+  async deleteGoalReview(
+    goalId: string,
+    reviewId: string,
+    request: DeleteGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(GoalChannels.REVIEW_DELETE, goalId, reviewId, request);
   }
 
   // ===== GoalRecord Management =====
@@ -162,8 +176,8 @@ export class GoalIpcAdapter implements IGoalApiClient {
   async createGoalRecord(
     goalId: string,
     keyResultId: string,
-    request: Pick<CreateGoalRecordReq, 'value' | 'note'>,
-  ): Promise<Result<GoalRecordClientDTO>> {
+    request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
+  ): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.RECORD_CREATE, goalId, keyResultId, request);
   }
 
@@ -191,8 +205,15 @@ export class GoalIpcAdapter implements IGoalApiClient {
     goalId: string,
     keyResultId: string,
     recordId: string,
-  ): Promise<Result<void>> {
-    return this.ipcClient.invoke(GoalChannels.RECORD_DELETE, goalId, keyResultId, recordId);
+    request: DeleteGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(
+      GoalChannels.RECORD_DELETE,
+      goalId,
+      keyResultId,
+      recordId,
+      request,
+    );
   }
 
   // ===== Aggregate View =====
@@ -201,7 +222,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(GoalChannels.AGGREGATE, goalId);
   }
 
-  async cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalClientDTO>> {
+  async cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.CLONE, goalId, request);
   }
 

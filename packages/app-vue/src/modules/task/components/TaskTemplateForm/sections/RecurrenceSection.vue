@@ -35,8 +35,8 @@
           <div class="flex items-center gap-2">
             <Switch
               id="task-recurrence-enabled"
-              :checked="recurrenceEnabled"
-              @update:checked="recurrenceEnabled = $event"
+              :model-value="recurrenceEnabled"
+              @update:model-value="recurrenceEnabled = $event"
             />
             <Label for="task-recurrence-enabled">{{ t('task.recurrence.enable') }}</Label>
           </div>

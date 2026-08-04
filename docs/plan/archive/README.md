@@ -4,7 +4,7 @@ tags:
   - archive
 description: 归档计划目录
 created: 2026-04-26T00:00:00
-updated: 2026-04-26T00:00:00
+updated: 2026-08-03T23:15:00+08:00
 ---
 
 # Archived Plans
@@ -23,16 +23,23 @@ updated: 2026-04-26T00:00:00
 - [2026 Q2（4–6 月）](./2026-Q2.md)
 - [2026 Q3（7–9 月）](./2026-Q3.md)
 
+## 本轮归档
+
+| 日期       | 计划                                                                                                      | 结果                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 2026-08-03 | [Desktop Cloud Connection Boundary Refactor](./2026-08-03-desktop-cloud-connection-boundary-refactor.md) | Profile Access、Cloud Connection Dialog 与可选 PIN 解耦；全仓 prod-like validation 通过 |
+| 2026-08-03 | [Desktop GitHub Device Authorization](./2026-08-03-desktop-github-device-authorization.md)                | Device flow 全链路完成；Desktop E2E 2/2、prod-like validation 与安全并发协议通过     |
+
 ### 未注日期（早期文件，无日期前缀）
 
-| 计划 |
-| --- |
-| [CHECKPOINT-domain-test-system](./CHECKPOINT-domain-test-system.md) |
-| [INDEX-domain-test-documentation](./INDEX-domain-test-documentation.md) |
-| [P0-1-clarification-complete-summary](./P0-1-clarification-complete-summary.md) |
-| [P0-1-文档导航](./P0-1-文档导航.md) |
-| [baseline-report](./baseline-report.md) |
-| [memoflow-ai-goal-feature-backlog](./memoflow-ai-goal-feature-backlog.md) |
-| [p0-1-clarification-implementation-plan](./p0-1-clarification-implementation-plan.md) |
+| 计划                                                                                                |
+| --------------------------------------------------------------------------------------------------- |
+| [CHECKPOINT-domain-test-system](./CHECKPOINT-domain-test-system.md)                                 |
+| [INDEX-domain-test-documentation](./INDEX-domain-test-documentation.md)                             |
+| [P0-1-clarification-complete-summary](./P0-1-clarification-complete-summary.md)                     |
+| [P0-1-文档导航](./P0-1-文档导航.md)                                                                 |
+| [baseline-report](./baseline-report.md)                                                             |
+| [memoflow-ai-goal-feature-backlog](./memoflow-ai-goal-feature-backlog.md)                           |
+| [p0-1-clarification-implementation-plan](./p0-1-clarification-implementation-plan.md)               |
 | [route-2-unified-ai-workflow-orchestrator-plan](./route-2-unified-ai-workflow-orchestrator-plan.md) |
-| [tdd-ai-whimsical-swan](./tdd-ai-whimsical-swan.md) |
+| [tdd-ai-whimsical-swan](./tdd-ai-whimsical-swan.md)                                                 |

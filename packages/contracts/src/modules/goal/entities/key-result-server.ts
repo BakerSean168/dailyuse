@@ -1,10 +1,7 @@
 /**
  * KeyResult Entity - Server Interface
  *
- * 【同步支持】
- * - deletedAt: 软删除时间戳
- * - version: 乐观锁版本号
- * - updatedAt: 最后更新时间（增量同步）
+ * 并发版本和删除生命周期由 Goal 聚合根统一管理。
  */
 
 import type { KeyResultProgressDTO } from '../value-objects';
@@ -17,8 +14,6 @@ export interface KeyResultServerDTO {
   progress: KeyResultProgressDTO;
   weight: number; // 权重 (1-5)
   sortOrder: number; // 排序位置
-  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
 }

@@ -62,9 +62,7 @@ describe('account ownership surface', () => {
     expect(getProfile).toContain(
       'const account = await this.accountRepository.findById(cx.identityId);',
     );
-    expect(updateProfile).toContain(
-      'const account = await this.accountRepository.findById(cx.identityId);',
-    );
+    expect(updateProfile).toMatch(/findById\(cx\.identityId(?:, tx)?\)/);
     expect(closeAccount).toContain(
       'const account = await this.accountRepository.findById(cx.identityId);',
     );

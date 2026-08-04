@@ -44,12 +44,13 @@ describe('first-party HTTP Result envelope surface', () => {
     expect(existsSync(resolve(__dirname, '../axios-http-client.ts'))).toBe(false);
   });
 
-  it('app-react session refresh requires data envelope (no raw AuthResponseDTO)', () => {
+  it('app-react delegates cloud session handling to the Cloud Auth client', () => {
     expect(appSession).toContain('MOBILE_API_BASE_URL');
-    expect(appSession).toContain('/auth/refresh');
-    expect(appSession).toContain("!('data' in json) || !json.data");
-    expect(appSession).toContain('const data = json.data');
-    expect(appSession).not.toContain('(json as AuthResponseDTO)');
-    expect(appSession).not.toContain("'data' in json && json.data ? json.data :");
+    expect(appSession).toContain('createCloudAuthHttpClient');
+    expect(appSession).toContain('CloudAuthClientPort');
+    expect(appSession).toContain('auth.current!.getSession()');
+    expect(appSession).toContain('auth.current!.signIn(req)');
+    expect(appSession).not.toContain('/auth/refresh');
+    expect(appSession).not.toContain('AuthResponseDTO');
   });
 });

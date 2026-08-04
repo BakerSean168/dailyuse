@@ -36,43 +36,14 @@ export default defineConfig({
     options.resolveExtensions = ['.ts', '.js', '.mjs', '.json'];
   },
 
-  // External dependencies (don't bundle these)
+  // Runtime artifact policy: workspace Modules stay behind their package
+  // Interface, while third-party packages are derived from package.json/node_modules
+  // instead of repeated as a second handwritten dependency manifest here.
+  skipNodeModulesBundle: true,
   external: [
-    // ✅ 所有 @memoflow/* workspace 包（运行时从 node_modules 加载）
     /^@memoflow\//,
-
-    // ✅ Prisma Client（必须外部化，包含二进制引擎）
     '@prisma/client',
-
-    // ✅ PowerSync runtime（依赖 undici / Node builtins，不能打进单文件 bundle）
     '@powersync/node',
-
-    // All @nestjs packages
-    /^@nestjs\//,
-
-    // Node.js built-in modules
-    /^node:/,
-
-    // All other dependencies from package.json
-    'express',
-    'cors',
-    'helmet',
-    'compression',
-    'cookie-parser',
-    'bcryptjs',
-    'jsonwebtoken',
-    'swagger-jsdoc',
-    'swagger-ui-express',
-    '@asteasolutions/zod-to-openapi',
-    'node-cron',
-    'zod',
-    'ioredis',
-    'dotenv',
-    'reflect-metadata',
-    'rxjs',
-    'diff-match-patch',
-    'uuid',
-    'bree',
   ],
 
   // Build targets must be one-shot and must not inherit watch mode from ambient NODE_ENV.

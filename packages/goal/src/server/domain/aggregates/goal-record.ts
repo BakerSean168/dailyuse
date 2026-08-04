@@ -1,6 +1,5 @@
 /**
- * GoalRecord 聚合根
- * 目标记录聚合根
+ * GoalRecord 受 Goal 聚合管理的记录实体
  *
  * 【规范说明：聚合根（Aggregate Root）】
  * 聚合根是 DDD 中的核心概念，代表一个业务边界：
@@ -14,10 +13,7 @@
  * - 追踪变更时间和备注原因
  * - 支持进度追踪（结合其他记录计算进度）
  *
- * 【同步支持】
- * - deletedAt: 软删除时间戳
- * - version: 乐观锁版本号
- * - updatedAt: 最后更新时间（增量同步）
+ * 并发和删除由 Goal 聚合根统一管理；记录仅保留审计时间。
  *
  * 【不变量（Invariants）】
  * 这些条件必须始终保持真：
@@ -26,11 +22,10 @@
  * - keyResultId 必须存在
  */
 
-import { AggregateRoot } from '@memoflow/utils/domain';
+import { Entity } from '@memoflow/utils/domain';
 import { GoalRecordId, KeyResultId } from '../../domain';
 import type {
   GoalRecordServerDTO,
-  GoalEventMap,
   GoalRecordSource,
   GoalRecordSourceTypeValue,
 } from '@memoflow/contracts/goal';
@@ -46,16 +41,14 @@ export interface GoalRecordState {
   sourceType?: GoalRecordSourceTypeValue | null;
   sourceId?: string | null;
   recordedAt: Instant;
-  version: number;
   createdAt: Instant;
   updatedAt: Instant;
-  deletedAt: Instant | null;
 }
 
 /**
  * GoalRecord 聚合根
  */
-export class GoalRecord extends AggregateRoot<GoalRecordId> {
+export class GoalRecord extends Entity<GoalRecordId> {
   // ================= 1. 内部状态 (Props) =================
   private _props: GoalRecordState;
 
@@ -71,10 +64,8 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       sourceType: state.sourceType ?? null,
       sourceId: state.sourceId ?? null,
       recordedAt: state.recordedAt,
-      version: state.version ?? 1,
       createdAt: state.createdAt,
       updatedAt: state.updatedAt,
-      deletedAt: state.deletedAt ?? null,
     };
   }
 
@@ -108,10 +99,6 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     return v as Instant;
   }
 
-  get version(): number {
-    return this._props.version;
-  }
-
   get createdAt(): Instant {
     const v = this._props.createdAt;
     return v as Instant;
@@ -119,12 +106,6 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return v as Instant;
-  }
-
-  get deletedAt(): Instant | null {
-    const v = this._props.deletedAt;
-    if (v == null) return null;
     return v as Instant;
   }
 
@@ -157,7 +138,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     const now = Date.now();
     const id = params.id ?? GoalRecordId.generate();
 
-    const record = new GoalRecord({
+    return new GoalRecord({
       id,
       keyResultId: params.keyResultId,
       identityId: params.identityId,
@@ -166,21 +147,9 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       sourceType: params.source?.type ?? null,
       sourceId: params.source?.id.trim() ?? null,
       recordedAt: params.recordedAt != null ? Number(params.recordedAt) : now,
-      version: 1,
       createdAt: now,
       updatedAt: now,
-      deletedAt: null,
     });
-
-    // 🎯 触发领域事件
-    record.addDomainEvent<GoalEventMap['goal-record:created']>('goal-record:created', {
-      identityId: params.identityId,
-      keyResultId: params.keyResultId,
-      value: params.value,
-      note: params.note || null,
-    });
-
-    return record;
   }
 
   /**
@@ -198,31 +167,6 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
   public updateNote(note: string): void {
     this._props.note = note.trim() || null;
     this._props.updatedAt = Date.now();
-    this._props.version++;
-  }
-
-  /**
-   * ✅ 软删除
-   */
-  public softDelete(): void {
-    if (this._props.deletedAt) {
-      return; // 已删除，幂等操作
-    }
-    this._props.deletedAt = Date.now();
-    this._props.updatedAt = Date.now();
-    this._props.version++;
-  }
-
-  /**
-   * ✅ 恢复软删除
-   */
-  public restore(): void {
-    if (!this._props.deletedAt) {
-      return; // 未删除，幂等操作
-    }
-    this._props.deletedAt = null;
-    this._props.updatedAt = Date.now();
-    this._props.version++;
   }
 
   // ================= 6. 序列化 (Serialization) =================
@@ -240,10 +184,8 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       sourceType: this._props.sourceType ?? null,
       sourceId: this._props.sourceId ?? null,
       recordedAt: this._props.recordedAt,
-      version: this._props.version,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ?? null,
     };
   }
 
@@ -261,10 +203,8 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       value: this._props.value,
       valueAfter,
       comment: this._props.note,
-      version: this._props.version,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

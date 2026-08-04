@@ -29,8 +29,8 @@
           <div class="flex items-center gap-2">
             <Switch
               id="task-reminder-enabled"
-              :checked="reminderEnabled"
-              @update:checked="reminderEnabled = $event as boolean"
+              :model-value="reminderEnabled"
+              @update:model-value="reminderEnabled = $event as boolean"
             />
             <Label for="task-reminder-enabled">{{ t('task.reminderSection.enable') }}</Label>
           </div>
@@ -159,7 +159,7 @@
                               mode="single"
                               :selected="getAbsoluteCalendarDate(trigger.absoluteTime)"
                               @update:model-value="
-                                (d: Date | undefined) => handleAbsoluteDateSelect(index, d)
+                                (d: unknown) => handleAbsoluteDateSelect(index, d)
                               "
                             />
                           </PopoverContent>

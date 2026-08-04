@@ -1,101 +1,45 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type {
-  AuthBootstrapSnapshot,
-  AuthIdentityClientDTO,
-  AuthResponseDTO,
-  AuthSessionClientDTO,
-} from '@memoflow/contracts/authentication';
 import { createTestPinia } from '@memoflow/test-utils';
 import { useAuthenticationStore } from './authentication-store';
 
-function createIdentity(
-  overrides: Partial<AuthIdentityClientDTO> = {},
-): AuthIdentityClientDTO {
-  return {
-    id: 'identity-1' as AuthIdentityClientDTO['id'],
-    status: 'Authenticated',
-    ...overrides,
-  } as AuthIdentityClientDTO;
-}
-
-function createSession(
-  overrides: Partial<AuthSessionClientDTO> = {},
-): AuthSessionClientDTO {
-  return {
-    id: 'session-1' as AuthSessionClientDTO['id'],
-    expiresAt: Date.now() + 60_000,
-    ...overrides,
-  } as AuthSessionClientDTO;
-}
-
 describe('useAuthenticationStore', () => {
-  beforeEach(() => {
-    createTestPinia();
-  });
+  beforeEach(() => createTestPinia());
 
-  it('hydrates desktop bootstrap state and prefers runtime snapshot for auth status', () => {
+  it('stores only cloud account and session summaries', () => {
     const store = useAuthenticationStore();
-    const snapshot = {
-      status: {
-        authenticated: true,
-        mode: 'desktop',
+    store.handleCloudAuthResponse({
+      account: {
+        id: 'cloud-user-1',
+        email: 'person@example.com',
+        name: 'Person',
+        emailVerified: true,
       },
-      currentUser: {
-        identity: createIdentity(),
-        session: createSession(),
-      },
-    } as unknown as AuthBootstrapSnapshot;
+      session: { id: 'session-1', expiresAt: '2030-01-01T00:00:00.000Z' },
+      requiresEmailVerification: false,
+    });
 
-    store.hydrateDesktopBootstrapSnapshot(snapshot);
-
-    expect(store.desktopBootstrapSnapshot).toStrictEqual(snapshot);
     expect(store.isAuthenticated).toBe(true);
-    expect(store.getIdentityId).toBe('identity-1');
-    expect(store.currentSession?.id).toBe('session-1');
+    expect(store.getIdentityId).toBe('cloud-user-1');
     expect(store.getActiveSessionCount).toBe(1);
-    expect(store.accessToken).toBeNull();
+    expect('accessToken' in store.$state).toBe(false);
+    expect('refreshToken' in store.$state).toBe(false);
+    expect('authMode' in store.$state).toBe(false);
   });
 
-  it('handles auth response, session mutation, tokens, and reset', () => {
+  it('keeps an unverified registration disconnected until a session exists', () => {
     const store = useAuthenticationStore();
-    const response = {
-      accessToken: 'access-token',
-      refreshToken: 'refresh-token',
-      identity: createIdentity({ id: 'identity-2' as AuthIdentityClientDTO['id'] }),
-      session: createSession({ id: 'session-2' as AuthSessionClientDTO['id'] }),
-      authMode: 'password',
-    } as AuthResponseDTO & { authMode: string };
+    store.handleCloudAuthResponse({
+      account: {
+        id: 'cloud-user-2',
+        email: 'new@example.com',
+        name: 'New User',
+        emailVerified: false,
+      },
+      session: null,
+      requiresEmailVerification: true,
+    });
 
-    store.handleAuthResponse(response);
-    store.setActiveSessions([
-      createSession({ id: 'session-2' as AuthSessionClientDTO['id'] }),
-      createSession({ id: 'session-3' as AuthSessionClientDTO['id'] }),
-    ]);
-    store.removeActiveSession('session-2');
-    store.setLoading(true);
-    store.setError('bad token');
-    store.setIsInitializing(true);
-
-    expect(store.isAuthenticated).toBe(true);
-    expect(store.authMode).toBe('password');
-    expect(store.accessToken).toBe('access-token');
-    expect(store.refreshToken).toBe('refresh-token');
-    expect(store.activeSessions.map((session) => session.id)).toEqual(['session-3']);
-    expect(store.error).toBe('bad token');
-    expect(store.isInitializing).toBe(true);
-
-    store.clearTokens();
-    store.clearActiveSessions();
-    store.clearCurrentIdentity();
-
-    expect(store.accessToken).toBeNull();
-    expect(store.refreshToken).toBeNull();
-    expect(store.currentIdentity).toBeNull();
-    expect(store.currentSession).toBeNull();
-    expect(store.activeSessions).toEqual([]);
-
-    store.reset();
-    expect(store.desktopBootstrapSnapshot).toBeNull();
     expect(store.isAuthenticated).toBe(false);
+    expect(store.currentSession).toBeNull();
   });
 });

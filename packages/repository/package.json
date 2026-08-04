@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "仓库模块 - 文件/文档仓库管理",
   "type": "module",
+  "files": ["dist"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

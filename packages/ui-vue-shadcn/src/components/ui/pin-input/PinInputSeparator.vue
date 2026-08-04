@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { PrimitiveProps } from 'radix-vue'
+import type { PrimitiveProps } from 'reka-ui'
 import { DashIcon } from '@radix-icons/vue'
-import { Primitive, useForwardProps } from 'radix-vue'
+import { Primitive, useForwardProps } from 'reka-ui'
 
 const props = defineProps<PrimitiveProps>()
 const forwardedProps = useForwardProps(props)
@@ -12,5 +12,5 @@ const forwardedProps = useForwardProps(props)
     <slot>
       <DashIcon />
     </slot>
-  </primitive>
+  </Primitive>
 </template>

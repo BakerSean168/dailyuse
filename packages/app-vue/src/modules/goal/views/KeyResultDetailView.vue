@@ -170,6 +170,7 @@ import {
   DialogFooter,
 } from '@memoflow/ui-vue-shadcn';
 import { useGoal } from '../composables/useGoal';
+import { getKeyResultProgressPercentage } from '../utils/progress';
 
 const route = useRoute();
 const { t } = useI18n();
@@ -181,26 +182,18 @@ const {
   goalRecords,
   isLoading,
   isSaving,
-  fetchKeyResults,
-  fetchRecords,
+  getGoalAggregateView,
   createRecord,
 } = useGoal();
 
 const keyResult = computed(() => {
-  const list = keyResults.value ?? [];
-  return list.find((kr) => kr.id === krId) ?? null;
+  return keyResults.value.find((kr) => kr.id === krId) ?? null;
 });
 
 const keyResultUnit = computed(() => keyResult.value?.progress?.unit ?? '');
 
 const progressPercent = computed(() => {
-  if (!keyResult.value?.progress) return 0;
-  const { initialValue = 0, currentValue = 0, targetValue = 0 } = keyResult.value.progress;
-  if (targetValue === initialValue) return 100;
-  return Math.min(
-    100,
-    Math.max(0, Math.round(((currentValue - initialValue) / (targetValue - initialValue)) * 100)),
-  );
+  return getKeyResultProgressPercentage(keyResult.value?.progress);
 });
 
 const sortedRecords = computed(() =>
@@ -232,7 +225,7 @@ async function handleAddRecord() {
 
 onMounted(async () => {
   if (goalId) {
-    await Promise.all([fetchKeyResults(goalId), fetchRecords(goalId)]);
+    await getGoalAggregateView(goalId);
   }
 });
 </script>

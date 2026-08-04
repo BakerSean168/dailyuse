@@ -21,16 +21,22 @@
         <div
           v-for="day in calendarDays"
           :key="day.key"
-          class="border-r border-b last:border-r-0 p-1 overflow-hidden cursor-pointer transition-colors min-h-0"
+          class="relative border-r border-b last:border-r-0 p-1 overflow-hidden transition-colors min-h-0"
           :class="{
             'bg-muted/30': !day.isCurrentMonth,
             'bg-primary/5': day.isToday,
             'hover:bg-accent/50': true,
           }"
-          @click="handleDayClick(day)"
         >
+          <button
+            type="button"
+            :data-testid="`schedule-day-${day.fullDate}`"
+            :aria-label="t('schedule.calendar.openDay', { date: day.fullDate })"
+            class="absolute inset-0 w-full rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+            @click="handleDayClick(day)"
+          />
           <!-- Date Number -->
-          <div class="flex items-center justify-between mb-0.5">
+          <div class="pointer-events-none relative flex items-center justify-between mb-0.5">
             <span
               class="text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full"
               :class="{
@@ -47,16 +53,19 @@
           </div>
 
           <!-- Events (show max 3) -->
-          <div class="space-y-0.5">
-            <div
+          <div class="pointer-events-none relative space-y-0.5">
+            <button
               v-for="event in day.events.slice(0, 3)"
               :key="event.id"
-              class="text-[10px] leading-tight px-1 py-0.5 rounded truncate cursor-pointer"
+              type="button"
+              :data-testid="`schedule-event-${event.id}`"
+              :aria-label="t('schedule.calendar.openEvent', { title: event.title })"
+              class="pointer-events-auto block w-full text-left text-[10px] leading-tight px-1 py-0.5 rounded truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               :class="eventClass(event)"
-              @click.stop="emit('event-click', event)"
+              @click="emit('event-click', event)"
             >
               {{ event.title }}
-            </div>
+            </button>
             <div v-if="day.events.length > 3" class="text-[10px] text-muted-foreground px-1">
               +{{ day.events.length - 3 }}
             </div>
@@ -201,5 +210,4 @@ function handleDayClick(day: CalendarDay) {
   const [y, m, d] = day.fullDate.split('-').map(Number);
   emit('day-click', new Date(y, m - 1, d));
 }
-
 </script>

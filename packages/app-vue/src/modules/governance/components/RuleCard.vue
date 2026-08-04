@@ -1,6 +1,7 @@
 <template>
-  <div
-    class="group border rounded-lg p-4 cursor-pointer transition-colors hover:border-primary/50 hover:shadow-sm"
+  <button
+    type="button"
+    class="group w-full rounded-lg border p-4 text-left transition-colors hover:border-primary/50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     :class="{ 'opacity-60': rule.status === 'Deprecated' }"
     @click="$emit('click', rule)"
   >
@@ -63,7 +64,7 @@
       <AlertTriangle :size="14" class="shrink-0 mt-0.5" />
       {{ rule.deprecationReason }}
     </div>
-  </div>
+  </button>
 </template>
 
 <script setup lang="ts">
@@ -81,12 +82,10 @@ defineEmits<{
   click: [rule: RuleClientDTO];
 }>();
 
-
 const truncatedDescription = computed(() => {
   const desc = props.rule.description;
   return desc.length > 150 ? `${desc.slice(0, 150)}…` : desc;
 });
 
 const severityIcon = computed(() => (props.rule.severity === 'Mandatory' ? AlertCircle : Info));
-
 </script>

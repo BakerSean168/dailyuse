@@ -42,13 +42,12 @@ export type DatabaseClient = PrismaClient;
  * 实现真正的"物理隔离"。
  */
 export interface IApiMiddleware {
-  /** JWT 认证中间件 */
+  /** Cloud session authentication middleware. */
   readonly auth: RequestHandler;
   /** 角色权限检查中间件 */
   requireRole(roles: string[]): RequestHandler;
   /**
-   * Optional gate: after JWT auth, block Unverified identities on sensitive routes.
-   * 可选门禁：JWT 后对未验证邮箱身份拦截敏感路由。
+   * Optional gate after cloud authentication for verified-email capabilities.
    */
   readonly requireEmailVerified?: RequestHandler;
 }

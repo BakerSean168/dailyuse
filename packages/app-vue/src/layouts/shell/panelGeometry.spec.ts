@@ -1,15 +1,16 @@
 /** @vitest-environment node */
 import { describe, expect, it } from 'vitest';
 import {
-  CHAT_MIN,
+  AI_HARD_MIN,
+  BUSINESS_HARD_MIN,
+  BUSINESS_PREFERRED_RATIO,
   COMPOSER_MAX,
   COMPOSER_SIDE_GAP,
-  PANEL_DEFAULT_FLOOR,
-  PANEL_MIN,
   computeComposerLayout,
   computePanelGeometry,
   panelWidthFromPointer,
   resolveComposerDensity,
+  shouldAutoCollapseSidebar,
 } from './panel-geometry';
 
 describe('computePanelGeometry', () => {
@@ -20,14 +21,13 @@ describe('computePanelGeometry', () => {
         sidebarOccupiedWidth: 260,
       });
       expect(geo.canSplit).toBe(true);
-      expect(geo.panelWidth).toBeGreaterThanOrEqual(PANEL_MIN);
-      expect(geo.aiWidth).toBeGreaterThanOrEqual(CHAT_MIN);
-      expect(geo.defaultPanelWidth).toBeGreaterThanOrEqual(PANEL_DEFAULT_FLOOR);
+      expect(geo.panelWidth).toBeGreaterThanOrEqual(BUSINESS_HARD_MIN);
+      expect(geo.aiWidth).toBeGreaterThanOrEqual(AI_HARD_MIN);
     }
   });
 
   it('covers 1024/1200/1440 with sidebar open or collapsed', () => {
-    // 1024 - 260 = 764 workspace; max panel = 764 - 420 = 344 < PANEL_MIN → cannot split
+    // 1024 - 260 = 764 workspace, less than the combined 320 + 520 hard minimums.
     const at1024Open = computePanelGeometry({
       viewportWidth: 1024,
       sidebarOccupiedWidth: 260,
@@ -41,8 +41,8 @@ describe('computePanelGeometry', () => {
       sidebarOccupiedWidth: 0,
     });
     expect(at1024Collapsed.canSplit).toBe(true);
-    expect(at1024Collapsed.aiWidth).toBeGreaterThanOrEqual(CHAT_MIN);
-    expect(at1024Collapsed.panelWidth).toBeGreaterThanOrEqual(PANEL_MIN);
+    expect(at1024Collapsed.aiWidth).toBeGreaterThanOrEqual(AI_HARD_MIN);
+    expect(at1024Collapsed.panelWidth).toBeGreaterThanOrEqual(BUSINESS_HARD_MIN);
 
     for (const viewportWidth of [1200, 1440]) {
       const open = computePanelGeometry({
@@ -50,9 +50,29 @@ describe('computePanelGeometry', () => {
         sidebarOccupiedWidth: 260,
       });
       expect(open.canSplit).toBe(true);
-      expect(open.aiWidth).toBeGreaterThanOrEqual(CHAT_MIN);
+      expect(open.aiWidth).toBeGreaterThanOrEqual(AI_HARD_MIN);
     }
   });
+
+  it.each([
+    { viewportWidth: 1024, sidebarOccupiedWidth: 260, canSplit: false, panel: 520, ai: 244 },
+    { viewportWidth: 1024, sidebarOccupiedWidth: 0, canSplit: true, panel: 655, ai: 369 },
+    { viewportWidth: 1200, sidebarOccupiedWidth: 260, canSplit: true, panel: 602, ai: 338 },
+    { viewportWidth: 1200, sidebarOccupiedWidth: 0, canSplit: true, panel: 768, ai: 432 },
+    { viewportWidth: 1280, sidebarOccupiedWidth: 260, canSplit: true, panel: 653, ai: 367 },
+    { viewportWidth: 1280, sidebarOccupiedWidth: 0, canSplit: true, panel: 819, ai: 461 },
+    { viewportWidth: 1440, sidebarOccupiedWidth: 260, canSplit: true, panel: 755, ai: 425 },
+    { viewportWidth: 1440, sidebarOccupiedWidth: 0, canSplit: true, panel: 922, ai: 518 },
+  ])(
+    'uses the desktop geometry contract at $viewportWidth with sidebar $sidebarOccupiedWidth',
+    ({ viewportWidth, sidebarOccupiedWidth, canSplit, panel, ai }) => {
+      const geometry = computePanelGeometry({ viewportWidth, sidebarOccupiedWidth });
+      expect(geometry.canSplit).toBe(canSplit);
+      expect(geometry.panelWidth).toBe(panel);
+      expect(geometry.aiWidth).toBe(ai);
+      expect(geometry.panelWidth).toBeGreaterThan(geometry.aiWidth);
+    },
+  );
 
   it('treats collapsed sidebar as zero occupied width', () => {
     const open = computePanelGeometry({
@@ -77,7 +97,23 @@ describe('computePanelGeometry', () => {
       preferredPanelWidth: preferred,
     });
     expect(geo.panelWidth).toBeLessThan(preferred);
-    expect(geo.aiWidth).toBeGreaterThanOrEqual(CHAT_MIN);
+    expect(geo.aiWidth).toBeGreaterThanOrEqual(AI_HARD_MIN);
+  });
+
+  it('makes the business workspace dominant at the 1280px desktop reference size', () => {
+    const geo = computePanelGeometry({
+      viewportWidth: 1280,
+      sidebarOccupiedWidth: 240,
+    });
+
+    expect(BUSINESS_HARD_MIN).toBeGreaterThan(AI_HARD_MIN);
+    expect(BUSINESS_PREFERRED_RATIO).toBe(0.64);
+    expect(geo.canSplit).toBe(true);
+    expect(geo.aiWidth).toBeGreaterThanOrEqual(340);
+    expect(geo.aiWidth).toBeLessThanOrEqual(390);
+    expect(geo.panelWidth).toBeGreaterThanOrEqual(650);
+    expect(geo.panelWidth).toBeLessThanOrEqual(700);
+    expect(geo.panelWidth).toBeGreaterThan(geo.aiWidth);
   });
 
   it('marks narrow viewports as unable to split', () => {
@@ -85,8 +121,17 @@ describe('computePanelGeometry', () => {
       viewportWidth: 900,
       sidebarOccupiedWidth: 260,
     });
-    // workspace 640; max panel = 640-420 = 220 < PANEL_MIN
+    // workspace 640 cannot satisfy the combined 840px hard minimum.
     expect(geo.canSplit).toBe(false);
+  });
+});
+
+describe('shouldAutoCollapseSidebar', () => {
+  it('releases sidebar space only for an effectively narrow viewport', () => {
+    expect(shouldAutoCollapseSidebar(853)).toBe(true);
+    expect(shouldAutoCollapseSidebar(959)).toBe(true);
+    expect(shouldAutoCollapseSidebar(960)).toBe(false);
+    expect(shouldAutoCollapseSidebar(1024)).toBe(false);
   });
 });
 

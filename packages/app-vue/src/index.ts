@@ -14,6 +14,7 @@ export {
   DASHBOARD_SERVICE_KEY,
   DESKTOP_AUTH_API_KEY,
   DESKTOP_BRIDGE_KEY,
+  PROFILE_LOCK_HANDLER_KEY,
   type ElectronBridge,
   MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
@@ -29,10 +30,10 @@ export { createI18nPlugin, loadLocaleMessages } from './plugins/i18n';
 // authenticated route tree (S1 switch, UI_REDESIGN_V2_PLAN §10).
 export { default as AuthLayout } from './layouts/AuthLayout.vue';
 export * from './layouts/shell';
-export { default as DesktopAuthView } from './views/DesktopAuthView.vue';
+export { default as DesktopProfileAccessView } from './views/DesktopProfileAccessView.vue';
 
 // ── Shared ──
-export { hydrateDesktopBootstrapAuthState } from './shared/utils/desktop-bootstrap-auth';
+export { readDesktopAccessSnapshot } from './shared/utils/desktop-profile-access';
 export { GlobalErrorBoundary, GlobalProgressBar } from './shared/components';
 export { useDesktopWindowControls } from './shared/composables/useDesktopWindowControls';
 

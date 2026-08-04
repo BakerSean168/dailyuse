@@ -1,7 +1,4 @@
-import type {
-  AddKeyResultReq,
-  CreateGoalReq,
-} from '@memoflow/contracts/goal';
+import type { AddKeyResultReq, CreateGoalReq } from '@memoflow/contracts/goal';
 import type { Ref } from 'vue';
 import type {
   AgentRun,
@@ -21,7 +18,10 @@ import type { IAIService } from '../../../di/types';
 
 /** Options for useAIGoalWorkflow composable. */
 export interface UseAIGoalWorkflowOptions {
-  service: Pick<AIChatService, 'generateGoal' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
+  service: Pick<
+    AIChatService,
+    'generateGoal' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'
+  >;
   selectedModel: Ref<ChatModelOption | null>;
   chatConversationId: Ref<string>;
   chatLoading: Ref<boolean>;
@@ -31,8 +31,9 @@ export interface UseAIGoalWorkflowOptions {
   buildConversationTranscript: () => string;
   scrollMessagesToBottom: () => void;
   maybeRenameCurrentConversation: (name: string) => Promise<void>;
-  createGoal: (req: import('@memoflow/contracts/goal').CreateGoalReq) => Promise<{ id: string } | null>;
-  addKeyResult: (goalId: string, req: import('@memoflow/contracts/goal').AddKeyResultReq) => Promise<unknown>;
+  createGoal: (
+    req: import('@memoflow/contracts/goal').CreateGoalReq,
+  ) => Promise<{ id: string } | null>;
 }
 
 /** Options for useAIKnowledgeQaWorkflow composable. */
@@ -47,7 +48,8 @@ export interface UseAIKnowledgeQaWorkflowOptions {
   requestOpenKnowledgeNote: (id: string) => Promise<unknown>;
 }
 
-export type WorkflowMode = 'chat' | 'goal-create' | 'task-create' | 'knowledge-qa' | 'knowledge-generate';
+export type WorkflowMode =
+  'chat' | 'goal-create' | 'task-create' | 'knowledge-qa' | 'knowledge-generate';
 
 export type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
 
@@ -80,7 +82,6 @@ export type ChatModelOption = {
   modelName: string;
 };
 
-
 export type ConversationMessageSummary = MessageListRes['data'][number];
 
 export type AIChatService = Pick<
@@ -102,7 +103,10 @@ export type AIChatService = Pick<
 >;
 
 export type GoalAutomationResult = Extract<GenerateGoalsRes, { state: 'confirm' | 'result' }>;
-export type GoalExecutedAction = Extract<GenerateGoalsRes, { state: 'result' }>['executedActions'][number];
+export type GoalExecutedAction = Extract<
+  GenerateGoalsRes,
+  { state: 'result' }
+>['executedActions'][number];
 export type AIWorkspaceRecentGoal = {
   id: string;
   title: string;
@@ -130,13 +134,7 @@ export type KnowledgeAnswer = QueryKnowledgeRes & {
   relatedNotes?: KnowledgeRelatedNote[];
 };
 export type GoalWorkflowStage =
-  | 'collect'
-  | 'clarification'
-  | 'draft'
-  | 'plan'
-  | 'confirm'
-  | 'execute'
-  | 'result';
+  'collect' | 'clarification' | 'draft' | 'plan' | 'confirm' | 'execute' | 'result';
 
 export type NoteSummary = {
   resolvedPath: string;
@@ -263,10 +261,10 @@ export function normalizeWorkflowMode(mode: string | null | undefined): Workflow
   // Residual 429: task.create product toolMode id (AgentType uses task.create).
   if (mode === 'task' || mode === 'task.create') return 'task-create';
   if (
-    mode === 'goal-create'
-    || mode === 'task-create'
-    || mode === 'knowledge-qa'
-    || mode === 'knowledge-generate'
+    mode === 'goal-create' ||
+    mode === 'task-create' ||
+    mode === 'knowledge-qa' ||
+    mode === 'knowledge-generate'
   ) {
     return mode;
   }

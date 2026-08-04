@@ -17,6 +17,7 @@ import { GoalRecordListResSchema } from './response-schemas';
  * 创建目标记录 Schema
  */
 export const CreateGoalRecordSchema = z.object({
+  expectedVersion: z.number().int().min(1),
   keyResultId: brandedId<KeyResultId>(),
   value: z.number().min(0, '记录值不能为负数'),
   note: z.string().max(500).optional(),
@@ -47,4 +48,7 @@ export type GetGoalRecordsRes = z.infer<typeof GoalRecordListResSchema>;
 // DELETE Goal Record
 // ============================================================================
 
-export type DeleteGoalRecordReq = void;
+export const DeleteGoalRecordSchema = z.object({
+  expectedVersion: z.number().int().min(1),
+});
+export type DeleteGoalRecordReq = z.infer<typeof DeleteGoalRecordSchema>;

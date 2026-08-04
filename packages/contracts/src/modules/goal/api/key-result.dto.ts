@@ -8,10 +8,9 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
-import { KeyResultValueType } from '../value-objects/key-result-value-type';
-import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 import { GoalIdParamsSchema } from './goal-crud.dto';
 import { KeyResultListResSchema } from './response-schemas';
+import { KeyResultInputSchema } from './key-result-input.schema';
 
 // ============================================================================
 // ADD Key Result
@@ -20,17 +19,9 @@ import { KeyResultListResSchema } from './response-schemas';
 /**
  * 添加关键结果 Schema
  */
-export const AddKeyResultSchema = z.object({
+export const AddKeyResultSchema = KeyResultInputSchema.extend({
   goalId: brandedId<GoalId>(),
-  title: z.string().min(1, '关键结果标题不能为空').max(256),
-  description: z.string().max(2000).optional(),
-  valueType: z.enum(KeyResultValueType),
-  calculationMethod: z.enum(KeyResultCalculationMethod),
-  startValue: z.number().optional(),
-  targetValue: z.number().min(0, '目标值不能为负数'),
-  currentValue: z.number().optional(),
-  unit: z.string().max(50).optional(),
-  weight: z.number().int('权重必须为整数').min(1, '权重最小为 1').max(5, '权重最大为 5'),
+  expectedVersion: z.number().int().min(1),
 });
 
 export type AddKeyResultReq = z.infer<typeof AddKeyResultSchema>;
@@ -44,6 +35,7 @@ export type AddKeyResultRes = KeyResultClientDTO;
  * 更新关键结果 Schema
  */
 export const UpdateKeyResultSchema = z.object({
+  expectedVersion: z.number().int().min(1),
   title: z.string().min(1).max(256).optional(),
   description: z.string().max(2000).nullable().optional(),
   startValue: z.number().optional(),
@@ -77,8 +69,15 @@ export type GetKeyResultsRes = z.infer<typeof KeyResultListResSchema>;
  */
 export const UpdateKeyResultProgressSchema = z.object({
   keyResultId: brandedId<KeyResultId>(),
+  expectedVersion: z.number().int().min(1),
   newValue: z.number().min(0, '新值不能为负数'),
   note: z.string().max(500).optional(),
 });
 
 export type UpdateKeyResultProgressReq = z.infer<typeof UpdateKeyResultProgressSchema>;
+
+export const DeleteKeyResultSchema = z.object({
+  expectedVersion: z.coerce.number().int().min(1),
+});
+
+export type DeleteKeyResultReq = z.infer<typeof DeleteKeyResultSchema>;

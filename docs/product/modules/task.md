@@ -5,7 +5,7 @@ tags:
   - task
 description: 任务模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-08-01T00:00:00+08:00
 ---
 
 # 任务模块说明
@@ -44,6 +44,9 @@ updated: 2026-06-02T00:00:00
 - 任务依赖必须满足无环约束，通过 DFS 算法检测循环。
 - 优先级计算公式：`Priority = Importance × 0.6 + (1 / TimeRemaining) × 0.4`，返回 0-100 分。
 - 目标绑定通过 TaskGoalBinding 值对象维护，包含 goalId、keyResultId、goalRecordValue 和 progressTrigger。
+- Task Goal binding 在数据库中展开为关系字段并受 Goal/KR 外键与归属校验约束；不保存 `goalBinding` JSON、Goal/KR 标题或对象快照。展示名称通过 Goal read port 按 ID 解析，缺失关联显示明确的不可用状态。
+- TaskInstance 完成状态与自包含的 Goal contribution outbox event 在同一 Task 事务提交。dispatcher 至少一次投递；Goal handler 以 event/source correlation 幂等处理，重复投递不会重复增加 KR 进度。
+- Task 与 Goal 保持模块边界：Task 不调用 Goal repository，也不尝试跨模块共享数据库事务。
 - 周期性任务支持 Daily、Weekly、Monthly、Yearly 频率，可配置结束条件。
 - 提醒配置支持绝对时间和相对时间（锚点时间前 N 分钟）两种模式。
 - 客户端通过 HTTP 或 IPC 适配器访问任务能力，服务端通过模块组合根装配用例和仓储实现。
@@ -52,11 +55,11 @@ updated: 2026-06-02T00:00:00
 
 详细文件清单见 [任务模块文件索引](../module-index/task-files.md)。
 
-## 6. 当前问题
+## 6. 当前边界
 
 - 任务模板和任务实例的生命周期边界需要在优化前明确，特别是模板暂停/归档对已生成实例的影响。
 - 任务依赖的 DAG 可视化和关键路径分析目前仅在前端实现，缺少服务端投影支持。
-- 目标绑定逻辑分散在模板策略和独立用例中，绑定状态的变更对目标进度的影响链路较长。
+- 目标绑定由 Task 聚合持有 ID 与贡献参数；Goal 对进度写入拥有最终校验和一致性责任。
 - 任务统计（TaskStatistic）模型字段较多（30+），需要确认哪些维度是用户真正需要的。
 - AI 任务生成入口目前只在前端有对话框，后端 AI 模块的 task workflow 集成尚不完整。
 

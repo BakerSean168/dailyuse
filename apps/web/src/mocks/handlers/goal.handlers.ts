@@ -10,6 +10,7 @@
 import { http, HttpResponse } from 'msw';
 import {
   createMockGoal,
+  createMockGoalMutationReceipt,
   createMockQueryGoalsRes,
   createMockGoalFolder,
   createMockKeyResult,
@@ -18,7 +19,13 @@ import {
   createMockGoalReview,
   createMockGoalReviewList,
 } from '@memoflow/contracts/mocks';
-import type { GoalClientDTO, GoalFolderClientDTO, GoalRecordClientDTO } from '@memoflow/contracts/goal';
+import type {
+  GoalClientDTO,
+  GoalFolderClientDTO,
+  GoalRecordClientDTO,
+  GoalReviewClientDTO,
+  KeyResultClientDTO,
+} from '@memoflow/contracts/goal';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const GOALS = `${API_BASE}/goals`;
@@ -37,6 +44,30 @@ const toFolderId = (p: string | readonly string[] | undefined) =>
 
 const toKeyResultId = (p: string | readonly string[] | undefined) =>
   (Array.isArray(p) ? p[0] : (p ?? '')) as GoalRecordClientDTO['keyResultId'];
+
+const toRecordId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as GoalRecordClientDTO['id'];
+
+const toReviewId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as GoalReviewClientDTO['id'];
+
+function createKeyResultReceipt(
+  goalId: GoalClientDTO['id'],
+  keyResultIds: KeyResultClientDTO['id'][],
+  keyResults: KeyResultClientDTO[] = [],
+) {
+  return createMockGoalMutationReceipt(
+    { id: goalId, keyResults, totalKeyResults: keyResults.length },
+    {
+      affectedEntityIds: {
+        goalIds: [goalId],
+        keyResultIds,
+        recordIds: [],
+        reviewIds: [],
+      },
+    },
+  );
+}
 
 export function createMockGoalAggregateResponse(goalId: GoalClientDTO['id']) {
   const goal = createMockGoal({ id: goalId });
@@ -93,7 +124,7 @@ export const goalHandlers = [
         ok: true,
         code: 200,
         message: 'Created',
-        data: createMockGoal({
+        data: createMockGoalMutationReceipt({
           name: typeof body['name'] === 'string' ? body['name'] : undefined,
         }),
         timestamp: Date.now(),
@@ -107,7 +138,7 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Activated',
-      data: createMockGoal({ id: toGoalId(params['id']), status: 'Active' }),
+      data: createMockGoalMutationReceipt({ id: toGoalId(params['id']), status: 'Active' }),
       timestamp: Date.now(),
     });
   }),
@@ -117,7 +148,7 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Completed',
-      data: createMockGoal({
+      data: createMockGoalMutationReceipt({
         id: toGoalId(params['id']),
         status: 'Completed',
         completedAt: Date.now(),
@@ -131,7 +162,7 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Archived',
-      data: createMockGoal({ id: toGoalId(params['id']), status: 'Archived' }),
+      data: createMockGoalMutationReceipt({ id: toGoalId(params['id']), status: 'Archived' }),
       timestamp: Date.now(),
     });
   }),
@@ -148,47 +179,55 @@ export const goalHandlers = [
     });
   }),
 
-  http.post(`${GOALS}/:goalId/key-results`, async ({ request }) => {
+  http.post(`${GOALS}/:goalId/key-results`, async ({ params, request }) => {
+    const goalId = toGoalId(params['goalId']);
     const body = (await request.json()) as Record<string, unknown>;
+    const keyResult = createMockKeyResult(body);
     return HttpResponse.json(
       {
         ok: true,
         code: 200,
         message: 'Created',
-        data: createMockKeyResult(body),
+        data: createKeyResultReceipt(goalId, [keyResult.id], [keyResult]),
         timestamp: Date.now(),
       },
       { status: 201 },
     );
   }),
 
-  http.put(`${GOALS}/:goalId/key-results/batch-weight`, () => {
+  http.put(`${GOALS}/:goalId/key-results/batch-weight`, ({ params }) => {
+    const goalId = toGoalId(params['goalId']);
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Updated',
-      data: {},
+      data: createKeyResultReceipt(goalId, []),
       timestamp: Date.now(),
     });
   }),
 
-  http.put(`${GOALS}/:goalId/key-results/:keyResultId`, async ({ request }) => {
+  http.put(`${GOALS}/:goalId/key-results/:keyResultId`, async ({ params, request }) => {
+    const goalId = toGoalId(params['goalId']);
+    const keyResultId = toKeyResultId(params['keyResultId']);
     const body = (await request.json()) as Record<string, unknown>;
+    const keyResult = createMockKeyResult({ id: keyResultId, ...body });
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockKeyResult(body),
+      data: createKeyResultReceipt(goalId, [keyResult.id], [keyResult]),
       timestamp: Date.now(),
     });
   }),
 
-  http.delete(`${GOALS}/:goalId/key-results/:keyResultId`, () => {
+  http.delete(`${GOALS}/:goalId/key-results/:keyResultId`, ({ params }) => {
+    const goalId = toGoalId(params['goalId']);
+    const keyResultId = toKeyResultId(params['keyResultId']);
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: {},
+      data: createKeyResultReceipt(goalId, [keyResultId]),
       timestamp: Date.now(),
     });
   }),
@@ -209,12 +248,23 @@ export const goalHandlers = [
   http.post(`${GOALS}/:goalId/reviews`, async ({ params, request }) => {
     const goalId = toGoalId(params['goalId']);
     const body = (await request.json()) as Record<string, unknown>;
+    const review = createMockGoalReview({ goalId, ...(body as object) });
     return HttpResponse.json(
       {
         ok: true,
         code: 200,
         message: 'Created',
-        data: createMockGoalReview({ goalId, ...(body as object) }),
+        data: createMockGoalMutationReceipt(
+          { id: goalId, reviews: [review] },
+          {
+            affectedEntityIds: {
+              goalIds: [goalId],
+              keyResultIds: [],
+              recordIds: [],
+              reviewIds: [review.id],
+            },
+          },
+        ),
         timestamp: Date.now(),
       },
       { status: 201 },
@@ -223,22 +273,46 @@ export const goalHandlers = [
 
   http.put(`${GOALS}/:goalId/reviews/:reviewId`, async ({ params, request }) => {
     const goalId = toGoalId(params['goalId']);
+    const reviewId = toReviewId(params['reviewId']);
     const body = (await request.json()) as Record<string, unknown>;
+    const review = createMockGoalReview({ id: reviewId, goalId, ...(body as object) });
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockGoalReview({ goalId, ...(body as object) }),
+      data: createMockGoalMutationReceipt(
+        { id: goalId, reviews: [review] },
+        {
+          affectedEntityIds: {
+            goalIds: [goalId],
+            keyResultIds: [],
+            recordIds: [],
+            reviewIds: [review.id],
+          },
+        },
+      ),
       timestamp: Date.now(),
     });
   }),
 
-  http.delete(`${GOALS}/:goalId/reviews/:reviewId`, () => {
+  http.delete(`${GOALS}/:goalId/reviews/:reviewId`, ({ params }) => {
+    const goalId = toGoalId(params['goalId']);
+    const reviewId = toReviewId(params['reviewId']);
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: {},
+      data: createMockGoalMutationReceipt(
+        { id: goalId },
+        {
+          affectedEntityIds: {
+            goalIds: [goalId],
+            keyResultIds: [],
+            recordIds: [],
+            reviewIds: [reviewId],
+          },
+        },
+      ),
       timestamp: Date.now(),
     });
   }),
@@ -273,28 +347,54 @@ export const goalHandlers = [
     const goalId = toGoalId(params['goalId']);
     const keyResultId = toKeyResultId(params['keyResultId']);
     const body = (await request.json()) as Record<string, unknown>;
+    const record = createMockGoalRecord({
+      goalId,
+      keyResultId,
+      ...(body as object),
+    });
     return HttpResponse.json(
       {
         ok: true,
         code: 200,
         message: 'Created',
-        data: createMockGoalRecord({
-          goalId,
-          keyResultId,
-          ...(body as object),
-        }),
+        data: createMockGoalMutationReceipt(
+          { id: goalId },
+          {
+            affectedEntityIds: {
+              goalIds: [goalId],
+              keyResultIds: [keyResultId],
+              recordIds: [record.id],
+              reviewIds: [],
+            },
+            recordChanges: { upserted: [record], removedIds: [] },
+          },
+        ),
         timestamp: Date.now(),
       },
       { status: 201 },
     );
   }),
 
-  http.delete(`${GOALS}/:goalId/key-results/:keyResultId/records/:recordId`, () => {
+  http.delete(`${GOALS}/:goalId/key-results/:keyResultId/records/:recordId`, ({ params }) => {
+    const goalId = toGoalId(params['goalId']);
+    const keyResultId = toKeyResultId(params['keyResultId']);
+    const recordId = toRecordId(params['recordId']);
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: {},
+      data: createMockGoalMutationReceipt(
+        { id: goalId },
+        {
+          affectedEntityIds: {
+            goalIds: [goalId],
+            keyResultIds: [keyResultId],
+            recordIds: [recordId],
+            reviewIds: [],
+          },
+          recordChanges: { upserted: [], removedIds: [recordId] },
+        },
+      ),
       timestamp: Date.now(),
     });
   }),
@@ -316,7 +416,7 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockGoal({
+      data: createMockGoalMutationReceipt({
         id: toGoalId(params['id']),
         ...(body as object),
         ...(name ? { name } : {}),
@@ -343,7 +443,7 @@ export const goalHandlers = [
         ok: true,
         code: 200,
         message: 'Created',
-        data: createMockGoal({
+        data: createMockGoalMutationReceipt({
           name:
             (typeof body['name'] === 'string' ? body['name'] : undefined) ??
             `${original.name} (copy)`,
@@ -361,7 +461,7 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: createMockGoal({ id: toGoalId(params['id']) }),
+      data: createMockGoalMutationReceipt({ id: toGoalId(params['id']) }),
       timestamp: Date.now(),
     });
   }),

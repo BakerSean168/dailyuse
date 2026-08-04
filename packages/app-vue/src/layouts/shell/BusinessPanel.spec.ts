@@ -21,6 +21,7 @@ const i18n = createI18n({
           enterFocus: 'Enter focus',
           exitFocus: 'Exit focus',
           closePanel: 'Close side panel',
+          resize: 'Resize business panel',
         },
       },
     },
@@ -98,5 +99,33 @@ describe('BusinessPanel surfaces', () => {
     expect(wrapper.emitted('show-workflow')).toHaveLength(1);
     expect(wrapper.emitted('toggle-focus')).toHaveLength(1);
     expect(wrapper.emitted('close-panel')).toHaveLength(1);
+  });
+
+  it('keeps tab and close hit targets at their keyboard-operable minimum sizes', () => {
+    const wrapper = mountPanel('business');
+
+    expect(wrapper.get('[aria-current="page"]').classes()).toContain('min-h-9');
+    expect(wrapper.get('[data-testid="business-panel-tab-close"]').classes()).toEqual(
+      expect.arrayContaining(['h-8', 'w-8']),
+    );
+    expect(wrapper.get('[data-testid="business-panel-close"]').classes()).toEqual(
+      expect.arrayContaining(['h-9', 'w-9']),
+    );
+  });
+
+  it('exposes the resize handle as a keyboard-operable separator', async () => {
+    const wrapper = mountPanel('business');
+    const separator = wrapper.get('[data-testid="business-panel-resizer"]');
+
+    expect(separator.attributes()).toMatchObject({
+      role: 'separator',
+      tabindex: '0',
+      'aria-orientation': 'vertical',
+      'aria-label': 'Resize business panel',
+    });
+
+    await separator.trigger('keydown', { key: 'ArrowLeft' });
+    await separator.trigger('keydown', { key: 'ArrowRight' });
+    expect(wrapper.emitted('resize-by')).toEqual([[24], [-24]]);
   });
 });

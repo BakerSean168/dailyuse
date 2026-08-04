@@ -20,7 +20,7 @@ describe('DI I*Service ClientPort facade keep-boundary (residual 927)', () => {
 
   const facades: Array<[string, string]> = [
     ['IAccountService', 'AccountClientPort'],
-    ['IAuthService', 'AuthenticationClientPort'],
+    ['IAuthService', 'CloudAuthClientPort'],
     ['IGoalService', 'GoalClientPort'],
     ['ITaskService', 'TaskClientPort'],
     ['IScheduleService', 'ScheduleClientPort'],
@@ -53,7 +53,7 @@ describe('DI I*Service ClientPort facade keep-boundary (residual 927)', () => {
   });
 
   it('imports ClientPort types from package client entrypoints only once each', () => {
-    expect(types).toContain("from '@memoflow/authentication/client'");
+    expect(types).toContain("CloudAuthClientPort } from '@memoflow/contracts'");
     expect(types).toContain("from '@memoflow/goal/client'");
     expect(types).toContain("from '@memoflow/ai/client'");
     expect(types).toContain("from '@memoflow/repository/client'");

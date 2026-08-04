@@ -4,29 +4,23 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHashHistory } from 'vue-router';
 import { APP_TITLE_NAME } from '@memoflow/assets';
 import { createAppRouter } from '@memoflow/app-vue/router';
-import { useAuthenticationStore } from '@memoflow/app-vue/modules/authentication';
 import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@memoflow/app-vue/plugins/i18n';
-import { DesktopAuthView, hydrateDesktopBootstrapAuthState } from '@memoflow/app-vue/desktop';
+import { readDesktopAccessSnapshot } from '@memoflow/app-vue/desktop';
 import { createNotificationStartupHook } from '@memoflow/app-vue/modules/notification';
 import { usePresentationPreferenceStore } from '@memoflow/app-vue/modules/setting';
+import { useAuthenticationStore } from '@memoflow/app-vue/modules/authentication';
+import { useAccountStore } from '@memoflow/app-vue/modules/account';
 import { progressStart, progressDone } from '@memoflow/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
 import { installDesktopAppServices } from '../platform/di-app';
 // Residual 941: host bridge via getElectronBridge sole helper.
-import { getElectronBridge } from '../platform/electron-bridge';
+import { requireElectronBridge } from '../platform/electron-bridge';
 import { initElectronFeatures } from '../platform/electron';
 import { shouldRedirectAuthenticatedDesktopEntry } from './route-entry';
-
-async function hydrateRendererAuthState(): Promise<boolean> {
-  try {
-    return await hydrateDesktopBootstrapAuthState(getElectronBridge());
-  } catch (err) {
-    console.error('[Auth Sync] Failed to hydrate desktop auth snapshot:', err);
-    useAuthenticationStore().reset();
-    return false;
-  }
-}
+import { createCloudAuthIpcClient } from '@memoflow/cloud-auth';
+import { createResultIpcClient } from '@memoflow/ipc-client';
+import { createAccountIpcClient } from '@memoflow/account/client';
 
 export async function bootstrapMainApp() {
   const app = createApp(App);
@@ -41,12 +35,24 @@ export async function bootstrapMainApp() {
   const localeMessages = await loadLocaleMessages(presentationStore.locale);
   app.use(createI18nPlugin(presentationStore.locale, localeMessages));
 
-  const hasDesktopAuthSnapshot = await hydrateRendererAuthState();
+  const bridge = requireElectronBridge('bootstrapMainApp');
+  const desktopAccessSnapshot = await readDesktopAccessSnapshot(bridge);
+  const authStore = useAuthenticationStore();
+  const cloudSession = await createCloudAuthIpcClient(
+    createResultIpcClient({ bridge }),
+  ).getSession();
+  if (cloudSession.ok) authStore.hydrateCloudSession(cloudSession.data);
+  else authStore.reset();
+  const accountStore = useAccountStore();
+  const localAccount = await createAccountIpcClient(
+    createResultIpcClient({ bridge }),
+  ).getMyProfile();
+  if (localAccount.ok) accountStore.setCurrentAccount(localAccount.data.toDTO());
+  else accountStore.reset();
 
   const router = createAppRouter({
     history: createWebHashHistory(),
-    isAuthenticated: () => useAuthenticationStore().isAuthenticated,
-    authView: DesktopAuthView,
+    canAccessApp: () => desktopAccessSnapshot?.unlockState === 'UNLOCKED',
     additionalTopLevelRoutes: [
       {
         path: '/custom-notification',
@@ -89,7 +95,7 @@ export async function bootstrapMainApp() {
   }
 
   void router.isReady().then(() => {
-    if (!hasDesktopAuthSnapshot || !useAuthenticationStore().isAuthenticated) {
+    if (desktopAccessSnapshot?.unlockState !== 'UNLOCKED') {
       return;
     }
 
@@ -100,4 +106,3 @@ export async function bootstrapMainApp() {
     void router.replace('/');
   });
 }
-

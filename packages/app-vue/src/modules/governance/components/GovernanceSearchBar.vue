@@ -7,6 +7,7 @@
       type="text"
       class="w-full h-9 pl-9 pr-8 rounded-md border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
       :placeholder="t('governance.search.placeholder')"
+      :aria-label="t('governance.search.placeholder')"
       @input="onInput"
       @keydown.escape="
         query = '';
@@ -15,7 +16,9 @@
     />
     <button
       v-if="query"
-      class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+      type="button"
+      class="absolute right-1 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      :aria-label="t('governance.search.clear')"
       @click="
         query = '';
         onInput();

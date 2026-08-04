@@ -3,38 +3,44 @@
   <div class="w-full">
     <Label class="mb-2 block">{{ t('task.weekday.title') }}</Label>
     <div class="flex flex-wrap gap-1">
-      <Badge
+      <Button
         v-for="(day, index) in weekdayOptions"
         :key="index"
+        type="button"
+        size="sm"
         :variant="localSelected.includes(index) ? 'default' : 'outline'"
-        class="cursor-pointer select-none"
+        :aria-pressed="localSelected.includes(index)"
+        :data-testid="`weekday-option-${index}`"
+        class="rounded-full select-none"
         @click="toggleDay(index)"
       >
         {{ day }}
-      </Badge>
+      </Button>
     </div>
 
     <div class="mt-2 flex flex-wrap gap-1">
-      <Button size="sm" variant="ghost" @click="selectWorkdays">
+      <Button type="button" size="sm" variant="ghost" @click="selectWorkdays">
         {{ t('task.weekday.workdays') }}
       </Button>
 
-      <Button size="sm" variant="ghost" @click="selectWeekends">
+      <Button type="button" size="sm" variant="ghost" @click="selectWeekends">
         {{ t('task.weekday.weekends') }}
       </Button>
 
-      <Button size="sm" variant="ghost" @click="selectAll">
+      <Button type="button" size="sm" variant="ghost" @click="selectAll">
         {{ t('task.weekday.selectAll') }}
       </Button>
 
-      <Button size="sm" variant="ghost" @click="clearAll"> {{ t('task.weekday.clear') }} </Button>
+      <Button type="button" size="sm" variant="ghost" @click="clearAll">
+        {{ t('task.weekday.clear') }}
+      </Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Badge, Button, Label } from '@memoflow/ui-vue-shadcn';
+import { Button, Label } from '@memoflow/ui-vue-shadcn';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

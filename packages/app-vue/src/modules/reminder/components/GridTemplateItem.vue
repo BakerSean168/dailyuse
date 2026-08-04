@@ -1,14 +1,16 @@
 <template>
   <ActionableWrapper :actions="menuActions" :show-more-button="false" wrapper-class="rounded-xl">
-    <div
+    <button
+      type="button"
       data-testid="reminder-template-card"
       :data-reminder-id="item.id"
-      class="relative cursor-pointer rounded-xl shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      class="relative w-full cursor-pointer rounded-xl text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       :class="[
         'flex min-h-48 flex-col gap-3 p-4',
         isTemplateEnabled ? 'bg-card hover:bg-accent/50' : 'bg-muted/70',
       ]"
       draggable="true"
+      :aria-label="item.name"
       @click="$emit('click', item)"
       @dragstart="onDragStart"
     >
@@ -21,10 +23,7 @@
             ]"
           >
             <Bell
-              :class="[
-                'h-4 w-4',
-                isTemplateEnabled ? 'text-primary' : 'text-muted-foreground',
-              ]"
+              :class="['h-4 w-4', isTemplateEnabled ? 'text-primary' : 'text-muted-foreground']"
             />
           </div>
           <p
@@ -45,7 +44,10 @@
         </span>
       </div>
 
-      <div class="rounded-lg border bg-background/70 px-3 py-2.5" data-testid="reminder-trigger-summary">
+      <div
+        class="rounded-lg border bg-background/70 px-3 py-2.5"
+        data-testid="reminder-trigger-summary"
+      >
         <p class="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           {{ t('reminder.schedule.trigger') }}
         </p>
@@ -56,7 +58,9 @@
         <div class="flex items-start gap-2">
           <CalendarClock class="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <div class="min-w-0">
-            <p class="text-[10px] text-muted-foreground">{{ t('reminder.schedule.nextTrigger') }}</p>
+            <p class="text-[10px] text-muted-foreground">
+              {{ t('reminder.schedule.nextTrigger') }}
+            </p>
             <p class="truncate font-medium" data-testid="reminder-next-trigger">
               {{ nextTriggerLabel }}
             </p>
@@ -78,7 +82,7 @@
       >
         {{ secondaryLifecycleLabel }}
       </p>
-    </div>
+    </button>
   </ActionableWrapper>
 </template>
 
@@ -114,9 +118,7 @@ const { locale, t } = useI18n();
 const isTemplateEnabled = computed(() => props.item.effectiveEnabled);
 const lifecycleLabel = computed(() => getTemplateLifecycleSummary(t, props.item));
 const triggerLabel = computed(() => getTemplateTriggerLabel(t, props.item));
-const nextTriggerLabel = computed(() =>
-  getTemplateNextTriggerLabel(t, props.item, locale.value),
-);
+const nextTriggerLabel = computed(() => getTemplateNextTriggerLabel(t, props.item, locale.value));
 const recurrenceLabel = computed(() => getTemplateRecurrenceLabel(t, props.item));
 const scheduleState = computed(() => getTemplateScheduleState(props.item));
 const scheduleStateLabel = computed(() => getTemplateScheduleStateLabel(t, props.item));

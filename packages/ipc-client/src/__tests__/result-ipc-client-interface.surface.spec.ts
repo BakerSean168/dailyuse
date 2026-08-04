@@ -20,7 +20,6 @@ describe('IResultIpcClient single-track surface', () => {
     'notification',
     'account',
     'reminder',
-    'authentication',
     'setting',
     'ai',
   ] as const;

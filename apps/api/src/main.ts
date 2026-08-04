@@ -22,17 +22,19 @@ import { initializeLogger, getStartupInfo } from './shared/infrastructure/config
 import { createLogger } from '@memoflow/utils/logger';
 import { ApiBootstrapper } from './bootstrap';
 import { ensurePowerSyncPublication } from './shared/infrastructure/database/ensure-powersync-publication.js';
-import {
-  createApiRedisClient,
-  shouldUseRedisChallengeStore,
-} from './shared/infrastructure/redis/create-redis-client.js';
 
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
 import { GovernanceApiModule } from '@memoflow/governance/api';
 import { AccountApiModule } from '@memoflow/account/api';
-import { createAuthenticationApiModule } from '@memoflow/authentication/api';
+import { createCloudAccountProvisioner } from '@memoflow/account';
+import {
+  createCloudAuth,
+  createCloudAuthEmailDelivery,
+  createCloudAuthEmailLinkCapture,
+} from '@memoflow/cloud-auth/server';
 import { GoalApiModule } from '@memoflow/goal/api';
+import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
 import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { NotificationApiModule } from '@memoflow/notification/api';
@@ -94,8 +96,32 @@ async function bootstrap(): Promise<void> {
     await ensurePowerSyncPublication();
   }
 
+  const jwtConfig = getJwtConfig();
+  const githubOAuthConfig = getGithubOAuthConfig();
+  const baseEmailDelivery = createCloudAuthEmailDelivery();
+  const testEmailLinks = env.LOCAL_VALIDATION
+    ? createCloudAuthEmailLinkCapture(baseEmailDelivery)
+    : undefined;
+  const cloudAuth = createCloudAuth({
+    database: prisma,
+    secret: jwtConfig.secret,
+    baseUrl:
+      env.AUTH_BASE_URL ??
+      `http://${env.API_HOST === '0.0.0.0' ? 'localhost' : env.API_HOST}:${env.API_PORT}/api/auth`,
+    deviceVerificationUrl: new URL(
+      '/auth/device',
+      env.MEMOFLOW_WEB_URL ?? 'http://localhost:5173',
+    ).toString(),
+    trustedOrigins: env.CORS_ORIGIN.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+    github: githubOAuthConfig ?? undefined,
+    userProvisioner: createCloudAccountProvisioner(prisma),
+    emailDelivery: testEmailLinks?.delivery ?? baseEmailDelivery,
+  });
+
   // 2. 白名单注册 & 启动
-  bootstrapper = new ApiBootstrapper(prisma);
+  bootstrapper = new ApiBootstrapper(prisma, cloudAuth, testEmailLinks);
   const scheduleTaskRepository = createScheduleTaskPrismaRepository(prisma);
   const scheduleOrchestrationModule = createScheduleOrchestrationModule({
     taskProjection: {
@@ -119,6 +145,7 @@ async function bootstrap(): Promise<void> {
   });
   const taskApiModule = createTaskApiModule({
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
+    goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
   });
   const scheduleApiModule = createScheduleApiModule({
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
@@ -150,30 +177,10 @@ async function bootstrap(): Promise<void> {
     createAutomationToolExecutor: (context: AIApiModuleContext) =>
       new BackendAutomationToolExecutorAdapter(context.db, repositoryStorageBaseDir),
   });
-  // Authentication secrets come from the validated env schema (JWT_SECRET min 32
-  // chars, REFRESH_TOKEN_SECRET defaults to JWT_SECRET), injected here so the
-  // module never reads process.env directly or bypasses schema validation.
-  const jwtConfig = getJwtConfig();
-  // GitHub login is optional and pluggable: only registered when configured.
-  // GitHub 登录可选且可插拔：仅在配置齐全时注册。
-  const githubOAuthConfig = getGithubOAuthConfig();
-  // Multi-instance challenge store: only wire Redis when AUTH_CHALLENGE_STORE=redis.
-  // Default remains in-memory (local-docker / single API replica).
-  const authRedis = shouldUseRedisChallengeStore(process.env)
-    ? createApiRedisClient()
-    : undefined;
-  const authenticationApiModule = createAuthenticationApiModule({
-    jwtSecret: jwtConfig.secret,
-    refreshSecret: jwtConfig.refreshSecret,
-    github: githubOAuthConfig ?? undefined,
-    redis: authRedis,
-  });
-
   const app = await bootstrapper
     // === 核心：白名单注册 ===
     .register(GovernanceApiModule) // ✅ 治理模块
     .register(AccountApiModule) // ✅ 账户模块
-    .register(authenticationApiModule) // ✅ 认证模块
     .register(NotificationApiModule) // ✅ 通知模块
     .register(ReminderApiModule) // ✅ 提醒模块
     .register(repositoryApiModule) // ✅ 仓库模块
@@ -193,7 +200,9 @@ async function bootstrap(): Promise<void> {
   });
 
   // 5. 注册并启动 Cron Jobs
-  scheduler = createCronScheduler();
+  scheduler = createCronScheduler({
+    cleanupExpiredDeviceCodes: () => cloudAuth.cleanupExpiredDeviceCodes(),
+  });
   scheduler.start();
 }
 

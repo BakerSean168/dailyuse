@@ -11,8 +11,14 @@ import type { AccountClientDTO, UpdateAccountReq } from '@memoflow/contracts/acc
 export class UpdateAccountProfileUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}
 
-  async execute(request: UpdateAccountReq, cx: ExecutionContext): Promise<Result<AccountClientDTO>> {
-    const account = await this.accountRepository.findById(cx.identityId);
+  async execute(
+    request: UpdateAccountReq,
+    cx: ExecutionContext,
+    tx?: unknown,
+  ): Promise<Result<AccountClientDTO>> {
+    const account = tx
+      ? await this.accountRepository.findById(cx.identityId, tx)
+      : await this.accountRepository.findById(cx.identityId);
     if (!account) {
       return error('NOT_FOUND', `Account not found: ${cx.identityId}`);
     }
@@ -30,7 +36,11 @@ export class UpdateAccountProfileUseCase {
     }
 
     account.updateProfile(profile);
-    await this.accountRepository.save(account);
+    if (tx) {
+      await this.accountRepository.save(account, tx);
+    } else {
+      await this.accountRepository.save(account);
+    }
 
     return ok(account.toClientDTO());
   }

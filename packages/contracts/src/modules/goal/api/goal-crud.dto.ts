@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { GoalId, IdentityId, GoalFolderId } from '../../../primitives';
+import type { GoalId, IdentityId, GoalFolderId, KeyResultId } from '../../../primitives';
 import type { GoalClientDTO } from '../aggregates/goal-client';
 import { GoalStatus } from '../value-objects/goal-status';
 import { GoalSystemView } from '../value-objects/goal-system-view';
@@ -15,6 +15,7 @@ import {
   GoalReminderConfigDTOSchema,
   ReminderTriggerSchema,
 } from '../value-objects/goal-reminder-config';
+import { KeyResultInputSchema } from './key-result-input.schema';
 
 const GoalNameSchema = z
   .string()
@@ -25,16 +26,13 @@ const GoalNameSchema = z
 // Residual 753: request reminder-config reuses residual 741 VO schemas.
 // Request-only refinements (value.min(0), triggers.max(10)) without dual bodies.
 const GoalReminderConfigRequestSchema = GoalReminderConfigDTOSchema.extend({
-  triggers: z
-    .array(ReminderTriggerSchema.extend({ value: z.number().min(0) }))
-    .max(10),
+  triggers: z.array(ReminderTriggerSchema.extend({ value: z.number().min(0) })).max(10),
 });
 
 /** Residual 677: shared goalId params for goal-scoped list queries. */
 export const GoalIdParamsSchema = z.object({
   goalId: brandedId<GoalId>(),
 });
-
 
 // ============================================================================
 // CREATE Goal
@@ -61,11 +59,12 @@ export const CreateGoalSchema = z
     folderId: brandedId<GoalFolderId>().optional(),
     parentGoalId: brandedId<GoalId>().optional(),
     reminderConfig: GoalReminderConfigRequestSchema.nullable().optional(),
+    initialKeyResults: z.array(KeyResultInputSchema).max(50).optional(),
   })
   .strict();
 
 export type CreateGoalReq = z.infer<typeof CreateGoalSchema>;
-export type CreateGoalRes = GoalClientDTO;
+export type CreateGoalRes = import('./response-schemas').GoalMutationReceipt;
 
 // ============================================================================
 // UPDATE Goal
@@ -76,6 +75,7 @@ export type CreateGoalRes = GoalClientDTO;
  */
 export const UpdateGoalSchema = z
   .object({
+    expectedVersion: z.number().int().min(1),
     name: GoalNameSchema.optional(),
     description: z.string().max(2000).nullable().optional(),
     color: z
@@ -93,11 +93,29 @@ export const UpdateGoalSchema = z
     folderId: brandedId<GoalFolderId>().nullable().optional(),
     parentGoalId: brandedId<GoalId>().nullable().optional(),
     reminderConfig: GoalReminderConfigRequestSchema.nullable().optional(),
+    /**
+     * Complete desired KR state for aggregate editing. Existing rows carry their ID;
+     * rows without an ID are created and existing rows omitted from the list are removed.
+     */
+    keyResults: z
+      .array(
+        KeyResultInputSchema.extend({
+          id: brandedId<KeyResultId>().optional(),
+          description: z.string().max(2000).nullable().optional(),
+        }).strict(),
+      )
+      .max(50)
+      .optional(),
   })
   .strict();
 
 export type UpdateGoalReq = z.infer<typeof UpdateGoalSchema>;
-export type UpdateGoalRes = GoalClientDTO;
+export type UpdateGoalRes = import('./response-schemas').GoalMutationReceipt;
+
+export const GoalVersionCommandSchema = z
+  .object({ expectedVersion: z.coerce.number().int().min(1) })
+  .strict();
+export type GoalVersionCommandReq = z.infer<typeof GoalVersionCommandSchema>;
 
 // ============================================================================
 // GET Goal
@@ -112,8 +130,8 @@ export type GetGoalRes = GoalClientDTO;
 /**
  * 删除目标
  */
-export type DeleteGoalReq = void;
-export type DeleteGoalRes = GoalClientDTO;
+export type DeleteGoalReq = GoalVersionCommandReq;
+export type DeleteGoalRes = import('./response-schemas').GoalMutationReceipt;
 
 // ============================================================================
 // QUERY Goals
@@ -243,10 +261,7 @@ export interface ExportGoalsQuery extends ExportGoalFilters {
 
 // Residual 791: export goals Res dual retired — sole ResSchema + z.infer.
 export const ExportGoalsResSchema = z.object({
-  data: z.union([
-    z.string(),
-    z.custom<Uint8Array>((val) => val instanceof Uint8Array),
-  ]),
+  data: z.union([z.string(), z.custom<Uint8Array>((val) => val instanceof Uint8Array)]),
   filename: z.string(),
   mimeType: z.string(),
 });

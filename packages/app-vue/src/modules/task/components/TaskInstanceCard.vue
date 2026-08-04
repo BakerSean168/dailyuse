@@ -89,7 +89,7 @@ const timeLabel = computed(() => {
     return t('task.templateCard.allDay');
   }
 
-  if (timeConfig?.timeType === 'TimePoint' && timeConfig.timePoint !== null) {
+  if (timeConfig?.timeType === 'TimePoint' && typeof timeConfig.timePoint === 'number') {
     const hours = Math.floor(timeConfig.timePoint / 60);
     const minutes = timeConfig.timePoint % 60;
     return formatHHmmParts(hours, minutes);

@@ -7,10 +7,7 @@
       </CardTitle>
       <div class="flex items-center gap-2">
         <!-- Progress text -->
-        <span
-          class="text-[11px] text-muted-foreground font-mono"
-          data-testid="daily-todo-progress"
-        >
+        <span class="text-[11px] text-muted-foreground font-mono" data-testid="daily-todo-progress">
           {{ completedCount }}/{{ todayInstances.length }}
         </span>
         <Button variant="ghost" size="sm" class="h-7 text-xs" @click="$emit('view-all')">
@@ -67,12 +64,14 @@
             >
               <!-- Complete button (circle dot) -->
               <button
-                class="shrink-0 flex items-center justify-center w-4 h-4 rounded-full border-2 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                type="button"
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 :class="completeBtnClass(inst.status)"
                 :disabled="
                   inst.status === 'Skipped' || inst.status === 'Expired' || completing === inst.id
                 "
                 :title="inst.status === 'Completed' ? '撤销完成' : '标记完成'"
+                :aria-label="inst.status === 'Completed' ? '撤销完成' : '标记完成'"
                 :data-testid="`complete-today-task-${inst.id}`"
                 @click.stop="handleComplete(inst)"
               >

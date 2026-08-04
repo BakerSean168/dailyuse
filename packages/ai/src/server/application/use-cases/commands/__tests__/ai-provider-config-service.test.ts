@@ -46,9 +46,13 @@ class StubProviderConfigRepository {
     return this.provider;
   }
 
-  async save(): Promise<void> {}
+  async save() {
+    return 'SAVED' as const;
+  }
   async delete(): Promise<void> {}
-  async clearDefaultForIdentity(): Promise<void> {}
+  async setDefaultForIdentity() {
+    return 'NOT_FOUND' as const;
+  }
 }
 
 class StubChatExecutionPort implements IAIChatExecutionPort {

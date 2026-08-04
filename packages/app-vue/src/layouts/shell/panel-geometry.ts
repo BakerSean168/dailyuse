@@ -1,18 +1,19 @@
 /**
  * 业务面板几何纯函数（2026-07-14 壳层诊断修订 §6）
  *
- * 动态约束：任意合法 split 下 AI 列 >= CHAT_MIN，业务面板 >= PANEL_MIN。
- * 固定 320–750 已退役；上限由视口、侧栏和 AI 最小宽度共同决定。
+ * 动态约束：任意合法 split 下 AI 列 >= AI_HARD_MIN，
+ * 业务面板 >= BUSINESS_HARD_MIN，且业务硬下限始终更大。
  */
 
 // Residual 1001: sole clamp (local dual retired).
 import { clamp } from './clamp';
 
-export const PANEL_MIN = 360;
-export const PANEL_MAX_CAP = 760;
-export const CHAT_MIN = 420;
-export const PANEL_DEFAULT_RATIO = 0.48;
-export const PANEL_DEFAULT_FLOOR = 420;
+export const AI_HARD_MIN = 320;
+export const BUSINESS_HARD_MIN = 520;
+export const BUSINESS_MAX = 960;
+export const BUSINESS_PREFERRED_RATIO = 0.64;
+/** Below this effective viewport, release the sidebar budget without changing user preference. */
+export const SIDEBAR_AUTO_COLLAPSE_VIEWPORT = 960;
 
 /** Global Composer 宿主几何（§8.4）。 */
 export const COMPOSER_MAX = 740;
@@ -55,6 +56,10 @@ export interface ComposerLayout {
   left: number;
 }
 
+export function shouldAutoCollapseSidebar(viewportWidth: number): boolean {
+  return Math.max(0, Math.floor(viewportWidth)) < SIDEBAR_AUTO_COLLAPSE_VIEWPORT;
+}
+
 // Residual 1001: clamp elevated to ./clamp.
 
 /** 计算当前视口下的业务面板可用宽度区间与默认值。 */
@@ -62,24 +67,26 @@ export function computePanelGeometry(input: PanelGeometryInput): PanelGeometry {
   const viewportWidth = Math.max(0, Math.floor(input.viewportWidth));
   const sidebarOccupiedWidth = Math.max(0, Math.floor(input.sidebarOccupiedWidth));
   const workspaceWidth = Math.max(0, viewportWidth - sidebarOccupiedWidth);
-  const panelMax = Math.max(0, Math.min(PANEL_MAX_CAP, workspaceWidth - CHAT_MIN));
-  const canSplit = panelMax >= PANEL_MIN;
-  const effectiveMax = canSplit ? panelMax : PANEL_MIN;
+  const panelMax = Math.max(0, Math.min(BUSINESS_MAX, workspaceWidth - AI_HARD_MIN));
+  const canSplit = panelMax >= BUSINESS_HARD_MIN;
+  const effectiveMax = canSplit ? panelMax : BUSINESS_HARD_MIN;
   const defaultPanelWidth = canSplit
-    ? clamp(Math.round(workspaceWidth * PANEL_DEFAULT_RATIO), PANEL_DEFAULT_FLOOR, effectiveMax)
-    : PANEL_MIN;
+    ? clamp(Math.round(workspaceWidth * BUSINESS_PREFERRED_RATIO), BUSINESS_HARD_MIN, effectiveMax)
+    : BUSINESS_HARD_MIN;
 
   const preferred =
     typeof input.preferredPanelWidth === 'number' && Number.isFinite(input.preferredPanelWidth)
       ? input.preferredPanelWidth
       : defaultPanelWidth;
 
-  const panelWidth = canSplit ? clamp(Math.round(preferred), PANEL_MIN, effectiveMax) : PANEL_MIN;
+  const panelWidth = canSplit
+    ? clamp(Math.round(preferred), BUSINESS_HARD_MIN, effectiveMax)
+    : BUSINESS_HARD_MIN;
   const aiWidth = Math.max(0, workspaceWidth - panelWidth);
 
   return {
     workspaceWidth,
-    panelMin: PANEL_MIN,
+    panelMin: BUSINESS_HARD_MIN,
     panelMax: effectiveMax,
     panelWidth,
     defaultPanelWidth,

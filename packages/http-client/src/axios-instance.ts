@@ -32,7 +32,7 @@ import { DEFAULT_HTTP_CLIENT_CONFIG, type HttpClientConfig } from './types';
  * const instance = createAxiosInstance({
  *   baseURL: '/api/v1',
  *   timeout: 15000,
- *   tokenProvider: { getAccessToken: () => localStorage.getItem('token') },
+ *   axiosConfig: { withCredentials: true },
  * });
  * ```
  */

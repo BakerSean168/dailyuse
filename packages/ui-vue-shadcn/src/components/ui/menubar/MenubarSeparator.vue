@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { MenubarSeparatorProps } from 'radix-vue'
+import type { MenubarSeparatorProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
-import { MenubarSeparator, useForwardProps } from 'radix-vue'
+import { MenubarSeparator, useForwardProps } from 'reka-ui'
 import { computed } from 'vue'
 
 const props = defineProps<MenubarSeparatorProps & { class?: HTMLAttributes['class'] }>()

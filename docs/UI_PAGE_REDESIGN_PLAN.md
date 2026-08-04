@@ -373,7 +373,7 @@ FilterBar：[全部|进行中|已暂停|已归档](计数Tabs) [关系过滤▾]
 
 **8) 响应式**：卡片 3→2→1 列；<lg 拖拽建依赖禁用（触屏/窄屏误操作率高，依赖管理走编辑对话框内的依赖段）；图谱视图 <md 显示"请在更宽的窗口查看"占位（不为窄屏铺图谱交互）。
 
-**9) 复用组件**：`DraggableTaskCard`、`TaskTemplateCard`、`TaskTemplateDialog`、`TaskDAGVisualization`、`TaskCompleteDialog`、`FilterBar`（新）、`ListPageShell` / `DetailPageShell`（新）。
+**9) 复用组件**：`DraggableTaskCard`、`TaskTemplateCard`、`TaskTemplateDialog`、`TaskDAGVisualization`、`FilterBar`（新）、`ListPageShell` / `DetailPageShell`（新）。
 
 **10) 拆分 / 重命名**
 

@@ -10,7 +10,11 @@
         <Select
           :model-value="modelValue.profileVisibility"
           @update:model-value="
-            (value) => emit('update:modelValue', { ...modelValue, profileVisibility: value })
+            (value) =>
+              emit('update:modelValue', {
+                ...modelValue,
+                profileVisibility: normalizeSelectString(value) ?? undefined,
+              })
           "
         >
           <SelectTrigger id="visibility-select">
@@ -45,8 +49,9 @@
           </p>
         </div>
         <Switch
-          :checked="modelValue.showOnlineStatus"
-          @update:checked="
+          :model-value="modelValue.showOnlineStatus"
+          :aria-label="t('setting.privacy.showOnlineStatus')"
+          @update:model-value="
             (value) => emit('update:modelValue', { ...modelValue, showOnlineStatus: value })
           "
         />
@@ -64,8 +69,9 @@
           <div class="flex items-start justify-between">
             <Label class="text-sm font-normal">{{ t('setting.privacy.allowSearchByEmail') }}</Label>
             <Switch
-              :checked="modelValue.allowSearchByEmail"
-              @update:checked="
+              :model-value="modelValue.allowSearchByEmail"
+              :aria-label="t('setting.privacy.allowSearchByEmail')"
+              @update:model-value="
                 (value) => emit('update:modelValue', { ...modelValue, allowSearchByEmail: value })
               "
             />
@@ -73,8 +79,9 @@
           <div class="flex items-start justify-between">
             <Label class="text-sm font-normal">{{ t('setting.privacy.allowSearchByPhone') }}</Label>
             <Switch
-              :checked="modelValue.allowSearchByPhone"
-              @update:checked="
+              :model-value="modelValue.allowSearchByPhone"
+              :aria-label="t('setting.privacy.allowSearchByPhone')"
+              @update:model-value="
                 (value) => emit('update:modelValue', { ...modelValue, allowSearchByPhone: value })
               "
             />
@@ -101,8 +108,9 @@
             </p>
           </div>
           <Switch
-            :checked="modelValue.shareUsageData"
-            @update:checked="
+            :model-value="modelValue.shareUsageData"
+            :aria-label="t('setting.privacy.shareUsageData')"
+            @update:model-value="
               (value) => emit('update:modelValue', { ...modelValue, shareUsageData: value })
             "
           />
@@ -176,6 +184,7 @@ import {
   UserMinus,
   Info,
 } from '@lucide/vue';
+import { normalizeSelectString } from '../../../shared/utils/normalize-select-string';
 
 const { t } = useI18n();
 

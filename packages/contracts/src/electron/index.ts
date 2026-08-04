@@ -8,6 +8,15 @@
  */
 
 export type { IElectronAuthContext, ElectronAuthResolutionCode } from './auth-context';
+export type {
+  ProfileKind,
+  ProfileUnlockState,
+  ProfileCloudState,
+  ProfileSummary,
+  DesktopAccessSnapshot,
+  SelectProfileRequest,
+  RemoveProfileRequest,
+} from './profile-access';
 export { ElectronAuthResolutionError, isElectronAuthResolutionError } from './auth-context';
 export {
   createAuthenticatedIpcWrapper,

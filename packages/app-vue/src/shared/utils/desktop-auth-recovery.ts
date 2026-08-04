@@ -1,5 +1,4 @@
-import { AuthChannels } from '@memoflow/contracts/electron';
-import type { AuthStatus } from '@memoflow/contracts/authentication';
+import { ProfileAccessChannels, type DesktopAccessSnapshot } from '@memoflow/contracts/electron';
 import { fromIpcResult, isOk, type IpcResult } from '@memoflow/contracts/result';
 
 // Residual 903: sole desktop invoke-api shape DesktopAuthApi.
@@ -40,10 +39,10 @@ export function hasDesktopAuthApi(
   return typeof getDesktopAuthApi(host)?.invoke === 'function';
 }
 
-async function readAuthStatus(
+async function readAccessSnapshot(
   api: DesktopAuthApi,
-): Promise<AuthStatus | null> {
-  const response = (await api.invoke!(AuthChannels.GET_STATUS)) as IpcResult<AuthStatus>;
+): Promise<DesktopAccessSnapshot | null> {
+  const response = (await api.invoke!(ProfileAccessChannels.GET_SNAPSHOT)) as IpcResult<DesktopAccessSnapshot>;
   const result = fromIpcResult(response);
   return isOk(result) ? result.data : null;
 }
@@ -57,17 +56,8 @@ export async function ensureDesktopAuthReadyWithApi(
   }
 
   try {
-    const status = await readAuthStatus(api);
-
-    if (status?.authenticated) {
-      return true;
-    }
-
-    if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
-      await api.invoke(AuthChannels.INITIALIZE);
-      const refreshed = await readAuthStatus(api);
-      return Boolean(refreshed?.authenticated);
-    }
+    const snapshot = await readAccessSnapshot(api);
+    return snapshot?.unlockState === 'UNLOCKED';
   } catch (error) {
     console.warn(`[${logScope}] Failed to ensure desktop auth readiness`, error);
   }

@@ -118,7 +118,7 @@ describe('local Docker PM data cleanup', () => {
     expect(sql).toContain('email_address LIKE');
     expect(sql).toContain('DELETE FROM auth_identities');
     expect(sql).toContain('information_schema.columns');
-    expect(sql).toContain('WHEN foreign_key_violation');
+    expect(sql).toContain('WHEN foreign_key_violation OR restrict_violation');
     expect(sql).toContain('PM cleanup could not resolve dependent identity tables');
   });
 

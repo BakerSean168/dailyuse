@@ -130,32 +130,23 @@ export const AccountChannels = {
   CLOSE: 'account:close',
 } as const;
 
-export const AuthChannels = {
-  LOGIN: 'auth:login',
-  REGISTER: 'auth:register',
-  LOGOUT: 'auth:logout',
-  REFRESH_TOKEN: 'auth:refresh-token',
-  ENTER_GUEST_MODE: 'auth:enter-guest-mode',
-  GET_CURRENT_USER: 'auth:get-current-user',
-  GET_STATUS: 'auth:get-status',
-  GET_BOOTSTRAP_SNAPSHOT: 'auth:get-bootstrap-snapshot',
-  INITIALIZE: 'auth:initialize',
-  AUTO_LOGIN: 'auth:auto-login',
-  REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
-  REMEMBERED_ACCOUNTS_LOGIN: 'auth:remembered-accounts:login',
-  REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
-  SESSION_LIST: 'auth:session:list',
-  SESSION_REVOKE: 'auth:session:revoke',
-  FORGOT_PASSWORD: 'auth:forgot-password',
-  RESET_PASSWORD: 'auth:reset-password',
-  CHANGE_PASSWORD: 'auth:change-password',
-  SEND_EMAIL_CODE: 'auth:send-email-code',
-  VERIFY_EMAIL_CODE: 'auth:verify-email-code',
-  GET_OAUTH_URL: 'auth:get-oauth-url',
-  OAUTH_PROVIDERS: 'auth:oauth-providers',
-  OAUTH_CALLBACK: 'auth:oauth-callback',
-  OAUTH_BIND: 'auth:oauth-bind',
-  OAUTH_UNBIND: 'auth:oauth-unbind',
+export const ProfileAccessChannels = {
+  GET_SNAPSHOT: 'profile-access:get-snapshot',
+  LIST: 'profile-access:list',
+  SELECT: 'profile-access:select',
+  REMOVE: 'profile-access:remove',
+  LOCK: 'profile-access:lock',
+  PIN_SET: 'profile-access:pin-set',
+  PIN_REMOVE: 'profile-access:pin-remove',
+} as const;
+
+export const CloudAuthChannels = {
+  SIGN_OUT: 'cloud-auth:sign-out',
+  SESSION: 'cloud-auth:session',
+  CLOUD_CONNECTION_BEGIN: 'cloud-auth:connection:begin',
+  CLOUD_CONNECTION_CURRENT: 'cloud-auth:connection:current',
+  CLOUD_CONNECTION_STATUS: 'cloud-auth:connection:status',
+  CLOUD_CONNECTION_CANCEL: 'cloud-auth:connection:cancel',
 } as const;
 
 export const AIChannels = {
@@ -316,14 +307,12 @@ export const DataPortabilityChannels = {
 
 export const WindowChannels = {
   TRANSITION_TO_MAIN: 'window:transition-to-main',
-  TRANSITION_TO_LOGIN: 'window:transition-to-login',
+  TRANSITION_TO_PROFILE_ACCESS: 'window:transition-to-profile-access',
   GET_TYPE: 'window:get-type',
   SYNC_CHROME_THEME: 'window:sync-chrome-theme',
   MINIMIZE: 'window:minimize',
   TOGGLE_MAXIMIZE: 'window:toggle-maximize',
   CLOSE: 'window:close',
   GET_CONTROLS_STATE: 'window:get-controls-state',
-  OPEN_AUTH_REGISTER: 'window:open-auth-register',
-  CLOSE_AUTH_REGISTER: 'window:close-auth-register',
   FOCUS_MAIN_WINDOW: 'window:focus-main-window',
 } as const;

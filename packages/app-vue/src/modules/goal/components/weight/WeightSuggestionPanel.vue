@@ -18,7 +18,7 @@
         <Progress v-if="isLoading" :model-value="undefined" class="w-full" />
 
         <!-- 策略卡片 -->
-        <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div v-else class="grid grid-cols-1 gap-4 @md/panel:grid-cols-3">
           <Card
             v-for="strategy in strategies"
             :key="strategy.name"

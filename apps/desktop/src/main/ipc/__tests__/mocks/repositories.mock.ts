@@ -7,7 +7,7 @@
 import { vi } from 'vitest';
 import { Goal } from '@memoflow/goal/client';
 import { GoalStatus, type GoalServerDTO, type GoalId } from '@memoflow/contracts/goal';
-import type { IdentityId } from '@memoflow/contracts/authentication';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 // ===== Goal Repository Mock =====
@@ -31,24 +31,6 @@ export function createMockGoalRepository(): MockGoalRepository {
     findByStatus: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
     exists: vi.fn().mockResolvedValue(false),
-  };
-}
-
-// ===== Goal Statistics Repository Mock =====
-
-export interface MockGoalStatisticsRepository {
-  save: ReturnType<typeof vi.fn>;
-  findByAccountId: ReturnType<typeof vi.fn>;
-  findById: ReturnType<typeof vi.fn>;
-  delete: ReturnType<typeof vi.fn>;
-}
-
-export function createMockGoalStatisticsRepository(): MockGoalStatisticsRepository {
-  return {
-    save: vi.fn().mockResolvedValue(undefined),
-    findByAccountId: vi.fn().mockResolvedValue(null),
-    findById: vi.fn().mockResolvedValue(null),
-    delete: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -204,6 +186,9 @@ export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
     reminderConfig: null,
     keyResults: [],
     reviews: [],
+    totalKeyResults: 0,
+    completedKeyResults: 0,
+    overallProgress: 0,
     version: dto.version,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,

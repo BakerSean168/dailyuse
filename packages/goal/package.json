@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "目标模块 - OKR 目标与关键结果管理",
   "type": "module",
+  "files": ["dist"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

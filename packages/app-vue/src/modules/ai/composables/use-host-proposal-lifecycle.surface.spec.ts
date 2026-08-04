@@ -144,7 +144,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     const chatViewComposable = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
     expect(chatViewComposable).toContain('return result');
     expect(chatViewComposable).toContain('Residual 381');
-    expect(chatViewComposable).toMatch(/selectAgentRun\(run: AgentRun\).*Promise/);
+    expect(chatViewComposable).toMatch(/selectAgentRun\(\s*run: AgentRun,?\s*\): Promise/);
   });
 
   it('mounts Host timeline Artifact cards in message workflow surface (residual 383)', () => {

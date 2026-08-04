@@ -21,6 +21,7 @@
           :style="{ maxHeight: `${textareaMaxPx}px` }"
           :disabled="loading || !canSend"
           :placeholder="t('aiAssistant.dialogs.chat.messagePlaceholder')"
+          :aria-label="t('aiAssistant.dialogs.chat.messagePlaceholder')"
           data-testid="ai-chat-composer"
           @input="handleInput"
           @keydown="handleKeydown"
@@ -131,6 +132,7 @@
                   :class="density === 'icon' ? 'w-10 px-2' : 'w-[7.5rem] px-2.5'"
                   data-testid="ai-chat-execution-profile-trigger"
                   :title="t('aiAssistant.chatPage.hostProfile.label')"
+                  :aria-label="t('aiAssistant.chatPage.hostProfile.label')"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -158,6 +160,7 @@
                 <SelectTrigger
                   class="h-8 w-full rounded-xl"
                   :class="density === 'comfortable' ? 'sm:max-w-xs' : 'max-w-full'"
+                  :aria-label="t('aiAssistant.chatPage.modelSelectorLabel')"
                 >
                   <SelectValue :placeholder="t('aiAssistant.chatPage.emptyModels')" />
                 </SelectTrigger>

@@ -12,11 +12,9 @@ export interface SharedPathResolver {
   readonly configDir: string;
   readonly uiDir: string;
   readonly profilesRegistryDir: string;
-  readonly rememberedAccountsPath: string;
   readonly deviceIdPath: string;
   readonly runtimeConfigPath: string;
-  readonly loginWindowStatePath: string;
-  readonly registerWindowStatePath: string;
+  readonly profileAccessWindowStatePath: string;
   readonly registryPath: string;
   readonly cacheDir: string;
   readonly snapshotStagingDir: string;

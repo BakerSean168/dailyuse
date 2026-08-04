@@ -77,7 +77,7 @@ export function resolveEntryLayout(
   viewportWidth: number,
   currentLayout: 'split' | 'focus',
   currentReason: ShellLayoutReason,
-  /** 几何上是否还能同时保证 CHAT_MIN + PANEL_MIN；默认 true 兼容旧调用。 */
+  /** 几何上是否还能同时保证 AI 与业务硬下限；默认 true。 */
   canSplit = true,
 ): { layout: 'split' | 'focus'; reason: ShellLayoutReason } | null {
   if (viewportWidth < AUTO_FOCUS_VIEWPORT || !canSplit) {

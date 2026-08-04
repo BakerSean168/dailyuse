@@ -17,15 +17,6 @@ function requiredInstant(value: Date | string | number | null | undefined): numb
   return Number.isFinite(n) ? n : Date.now();
 }
 
-/** Prisma Date/DateTime → Instant | null. */
-function optionalInstant(value: Date | string | number | null | undefined): number | null {
-  if (value == null) return null;
-  if (value instanceof Date) return value.getTime();
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-
 export class PrismaGoalRecordMapper {
   /** Maps a Prisma row to a Domain GoalRecord aggregate. */
   static toDomain(data: PrismaGoalRecord): GoalRecord {
@@ -38,10 +29,8 @@ export class PrismaGoalRecordMapper {
       sourceType: data.sourceType as GoalRecord['sourceType'],
       sourceId: data.sourceId,
       recordedAt: requiredInstant(data.recordedAt),
-      version: data.version ?? 1,
       createdAt: requiredInstant(data.createdAt),
       updatedAt: requiredInstant(data.updatedAt),
-      deletedAt: optionalInstant(data.deletedAt),
     });
   }
 

@@ -5,7 +5,7 @@ tags:
   - account
 description: 账户模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-07-22T00:00:00
+updated: 2026-08-03T00:00:00+08:00
 ---
 
 # 账户模块文件索引
@@ -52,10 +52,12 @@ updated: 2026-07-22T00:00:00
 | [`packages/account/src/server/domain/aggregates/account.ts`](../../../packages/account/src/server/domain/aggregates/account.ts) | Account 聚合根 |
 | [`packages/account/src/server/domain/services/account-uniqueness-checker.ts`](../../../packages/account/src/server/domain/services/account-uniqueness-checker.ts) | 邮箱唯一性检查服务 |
 | [`packages/account/src/server/application/use-cases/commands/update-account-profile.use-case.ts`](../../../packages/account/src/server/application/use-cases/commands/update-account-profile.use-case.ts) | 更新资料用例 |
+| [`packages/account/src/server/application/use-cases/commands/close-account.use-case.ts`](../../../packages/account/src/server/application/use-cases/commands/close-account.use-case.ts) | 关闭当前云端 Account；按 context identity 主键加载 |
 | [`packages/account/src/server/application/use-cases/commands/update-account-settings.use-case.ts`](../../../packages/account/src/server/application/use-cases/commands/update-account-settings.use-case.ts) | 更新设置用例 |
 | [`packages/account/src/server/application/use-cases/queries/get-account-profile.use-case.ts`](../../../packages/account/src/server/application/use-cases/queries/get-account-profile.use-case.ts) | 获取资料查询 |
-| [`packages/account/src/server/application/handlers/identity-created.handler.ts`](../../../packages/account/src/server/application/handlers/identity-created.handler.ts) | 身份创建事件处理器 |
 | [`packages/account/src/server/infrastructure/account.module.ts`](../../../packages/account/src/server/infrastructure/account.module.ts) | 服务端账户模块组合根 |
+| [`packages/account/src/server/infrastructure/cloud-account-provisioner.ts`](../../../packages/account/src/server/infrastructure/cloud-account-provisioner.ts) | Better Auth user 到同 ID Account 的幂等投影 |
+| [`packages/account/src/electron/desktop-account-profile-sync.ts`](../../../packages/account/src/electron/desktop-account-profile-sync.ts) | Desktop 本地资料事务、revision outbox 与在线重试 |
 
 ## Contracts 与数据结构
 
@@ -75,7 +77,8 @@ updated: 2026-07-22T00:00:00
 | --- | --- |
 | [`packages/account/src/server/domain/aggregates/__tests__/Account.test.ts`](../../../packages/account/src/server/domain/aggregates/__tests__/Account.test.ts) | Account 聚合测试 |
 | [`packages/account/src/server/application/use-cases/commands/__tests__/update-account-profile.test.ts`](../../../packages/account/src/server/application/use-cases/commands/__tests__/update-account-profile.test.ts) | 更新资料测试 |
-| [`packages/account/src/server/application/handlers/__tests__/identity-created.handler.test.ts`](../../../packages/account/src/server/application/handlers/__tests__/identity-created.handler.test.ts) | 身份创建事件测试 |
+| [`packages/account/src/electron/desktop-account-profile-sync.spec.ts`](../../../packages/account/src/electron/desktop-account-profile-sync.spec.ts) | guest、离线、失败重试和 revision-safe outbox 测试 |
+| [`packages/account/src/server/infrastructure/cloud-account-provisioner.spec.ts`](../../../packages/account/src/server/infrastructure/cloud-account-provisioner.spec.ts) | Better Auth user 到 Account 的幂等 provisioning 测试 |
 | [`packages/account/src/api/routes.spec.ts`](../../../packages/account/src/api/routes.spec.ts) | 账户 routes 测试 |
 | [`packages/app-vue/src/modules/account/stores/accountStore.spec.ts`](../../../packages/app-vue/src/modules/account/stores/accountStore.spec.ts) | 账户 store 测试 |
 

@@ -7,14 +7,10 @@
 import {
   KeyResultCalculationMethod,
   KeyResultValueType,
-  type AddKeyResultReq,
   type CreateGoalReq,
 } from '@memoflow/contracts/goal';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
-import type {
-  GoalClarificationDTO,
-  GoalWorkflowDraftResultDTO,
-} from '@memoflow/contracts/ai';
+import type { GoalClarificationDTO, GoalWorkflowDraftResultDTO } from '@memoflow/contracts/ai';
 import {
   createEmptyGoalDraft,
   type EditableGoal,
@@ -56,26 +52,66 @@ export interface GoalDraftRefs {
 /** Creates a GoalDraftState proxy that bridges Vue refs to a plain mutable object. */
 export function createDraftStateProxy(refs: GoalDraftRefs): GoalDraftState {
   return {
-    get goalWorkflowStage() { return refs.goalWorkflowStage.value; },
-    set goalWorkflowStage(v: GoalWorkflowStage) { refs.goalWorkflowStage.value = v; },
-    get goalDraft() { return refs.goalDraft.value; },
-    set goalDraft(v) { refs.goalDraft.value = v; },
-    get goalClarification() { return refs.goalClarification.value; },
-    set goalClarification(v) { refs.goalClarification.value = v; },
-    get goalAutomationResult() { return refs.goalAutomationResult.value; },
-    set goalAutomationResult(v) { refs.goalAutomationResult.value = v; },
-    get clarificationAnswers() { return refs.clarificationAnswers.value; },
-    set clarificationAnswers(v) { refs.clarificationAnswers.value = v; },
-    get showGoalDraftEditor() { return refs.showGoalDraftEditor.value; },
-    set showGoalDraftEditor(v) { refs.showGoalDraftEditor.value = v; },
-    get editableGoal() { return refs.editableGoal.value; },
-    set editableGoal(v) { refs.editableGoal.value = v; },
-    get editableKeyResults() { return refs.editableKeyResults.value; },
-    set editableKeyResults(v) { refs.editableKeyResults.value = v; },
-    get editableTaskTemplates() { return refs.editableTaskTemplates.value; },
-    set editableTaskTemplates(v) { refs.editableTaskTemplates.value = v; },
-    get editableReminders() { return refs.editableReminders.value; },
-    set editableReminders(v) { refs.editableReminders.value = v; },
+    get goalWorkflowStage() {
+      return refs.goalWorkflowStage.value;
+    },
+    set goalWorkflowStage(v: GoalWorkflowStage) {
+      refs.goalWorkflowStage.value = v;
+    },
+    get goalDraft() {
+      return refs.goalDraft.value;
+    },
+    set goalDraft(v) {
+      refs.goalDraft.value = v;
+    },
+    get goalClarification() {
+      return refs.goalClarification.value;
+    },
+    set goalClarification(v) {
+      refs.goalClarification.value = v;
+    },
+    get goalAutomationResult() {
+      return refs.goalAutomationResult.value;
+    },
+    set goalAutomationResult(v) {
+      refs.goalAutomationResult.value = v;
+    },
+    get clarificationAnswers() {
+      return refs.clarificationAnswers.value;
+    },
+    set clarificationAnswers(v) {
+      refs.clarificationAnswers.value = v;
+    },
+    get showGoalDraftEditor() {
+      return refs.showGoalDraftEditor.value;
+    },
+    set showGoalDraftEditor(v) {
+      refs.showGoalDraftEditor.value = v;
+    },
+    get editableGoal() {
+      return refs.editableGoal.value;
+    },
+    set editableGoal(v) {
+      refs.editableGoal.value = v;
+    },
+    get editableKeyResults() {
+      return refs.editableKeyResults.value;
+    },
+    set editableKeyResults(v) {
+      refs.editableKeyResults.value = v;
+    },
+    get editableTaskTemplates() {
+      return refs.editableTaskTemplates.value;
+    },
+    set editableTaskTemplates(v) {
+      refs.editableTaskTemplates.value = v;
+    },
+    get editableReminders() {
+      return refs.editableReminders.value;
+    },
+    set editableReminders(v) {
+      refs.editableReminders.value = v;
+    },
   };
 }
 
@@ -177,7 +213,10 @@ export function createKeyResultDraft(): EditableKeyResult {
 }
 
 /** Builds a CreateGoalReq from editable state. */
-export function buildCreateGoalRequest(editableGoal: EditableGoal): CreateGoalReq {
+export function buildCreateGoalRequest(
+  editableGoal: EditableGoal,
+  keyResults: EditableKeyResult[] = [],
+): CreateGoalReq {
   return {
     name: editableGoal.name,
     description: editableGoal.description,
@@ -188,24 +227,16 @@ export function buildCreateGoalRequest(editableGoal: EditableGoal): CreateGoalRe
     tags: editableGoal.tags.length ? editableGoal.tags : undefined,
     startDate: editableGoal.startDate ?? undefined,
     targetDate: editableGoal.targetDate ?? undefined,
-  };
-}
-
-/** Builds an AddKeyResultReq from editable state. */
-export function buildAddKeyResultRequest(
-  goalId: string,
-  item: EditableKeyResult,
-): AddKeyResultReq {
-  return {
-    goalId: goalId as never,
-    title: item.title,
-    description: item.description || undefined,
-    valueType: item.valueType,
-    calculationMethod: item.calculationMethod,
-    startValue: item.startValue,
-    targetValue: item.targetValue,
-    currentValue: item.currentValue,
-    unit: item.unit || undefined,
-    weight: item.weight,
+    initialKeyResults: keyResults.map((item) => ({
+      title: item.title,
+      description: item.description || undefined,
+      valueType: item.valueType,
+      calculationMethod: item.calculationMethod,
+      startValue: item.startValue,
+      targetValue: item.targetValue,
+      currentValue: item.currentValue,
+      unit: item.unit || undefined,
+      weight: item.weight,
+    })),
   };
 }

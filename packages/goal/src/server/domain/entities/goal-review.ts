@@ -12,10 +12,7 @@
  * - 记录评分、总结和关键结果快照
  * - 支持回顾内容更新
  * 
- * 【同步支持】
- * - deletedAt: 软删除时间戳
- * - version: 乐观锁版本号
- * - updatedAt: 最后更新时间（增量同步）
+ * 并发和删除由 Goal 聚合根统一管理；子实体仅保留审计时间。
  */
 
 import { Entity } from '@memoflow/utils/domain';
@@ -40,10 +37,8 @@ export interface GoalReviewState {
   keyResultSnapshots: KeyResultSnapshotDTO[];
   /** ADR-037 Instant epoch ms */
   reviewedAt: Instant;
-  version: number;
   createdAt: Instant;
   updatedAt: Instant;
-  deletedAt: Instant | null;
 }
 
 /**
@@ -95,20 +90,12 @@ export class GoalReview extends Entity<IGoalReviewId> {
     return this._props.reviewedAt;
   }
 
-  get version(): number {
-    return this._props.version;
-  }
-
   get createdAt(): Instant {
     return this._props.createdAt;
   }
 
   get updatedAt(): Instant {
     return this._props.updatedAt;
-  }
-
-  get deletedAt(): Instant | null {
-    return this._props.deletedAt;
   }
 
   // ================= Factory Methods =================
@@ -151,10 +138,8 @@ export class GoalReview extends Entity<IGoalReviewId> {
       improvements: params.improvements?.trim() ?? null,
       keyResultSnapshots: params.keyResultSnapshots ?? [],
       reviewedAt: params.reviewedAt ?? now,
-      version: 1,
       createdAt: now,
       updatedAt: now,
-      deletedAt: null,
     });
   }
 
@@ -236,17 +221,6 @@ export class GoalReview extends Entity<IGoalReviewId> {
   }
 
   /**
-   * 🗑️ 软删除
-   */
-  public softDelete(): void {
-    if (this._props.deletedAt) {
-      return; // 已经删除
-    }
-    this._props.deletedAt = Date.now();
-    this._props.updatedAt = Date.now();
-  }
-
-  /**
    * 是否为高质量回顾（评分>=4）
    */
   public isHighQuality(): boolean {
@@ -270,10 +244,8 @@ export class GoalReview extends Entity<IGoalReviewId> {
       improvements: this._props.improvements,
       keyResultSnapshots: this._props.keyResultSnapshots,
       reviewedAt: this._props.reviewedAt as TransferDate,
-      version: this._props.version,
       createdAt: this._props.createdAt as TransferDate,
       updatedAt: this._props.updatedAt as TransferDate,
-      deletedAt: this._props.deletedAt != null ? (this._props.deletedAt as TransferDate) : null,
     };
   }
 
@@ -291,11 +263,9 @@ export class GoalReview extends Entity<IGoalReviewId> {
       challenges: this._props.challenges,
       improvements: this._props.improvements,
       keyResultSnapshots: this._props.keyResultSnapshots,
-      version: this._props.version,
       reviewedAt: this._props.reviewedAt,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

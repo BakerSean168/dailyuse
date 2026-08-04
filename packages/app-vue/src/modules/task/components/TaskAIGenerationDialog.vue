@@ -35,8 +35,9 @@
               class="flex items-start gap-3 p-3 rounded-lg border bg-card"
             >
               <Checkbox
-                :checked="task.selected"
-                @update:checked="task.selected = $event"
+                :model-value="task.selected"
+                :aria-label="task.title"
+                @update:model-value="task.selected = $event === true"
                 class="mt-1"
               />
 

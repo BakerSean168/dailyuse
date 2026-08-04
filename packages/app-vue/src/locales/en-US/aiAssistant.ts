@@ -23,6 +23,7 @@ export default {
     "emptyDescription": "Pick a provider and model, then continue the conversation here. Saved chats stay in the sidebar so you can jump back in.",
     "chatUnavailable": "The current AI runtime mode does not support chat. Check the AI service configuration first.",
     "modelPending": "No model selected",
+    "modelSelectorLabel": "AI model",
     "emptyModels": "No model is available yet. Open Settings to configure an AI provider and sync models.",
     "context": {
       "title": "Context",

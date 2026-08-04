@@ -61,12 +61,14 @@ describe('PanelErrorBoundary (V2 S5 cleanup)', () => {
       'This panel ran into a problem',
     );
     expect(wrapper.get('[data-testid="panel-error-fallback"]').text()).toContain('panel boom');
-    expect(wrapper.find('[data-testid="panel-ok"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="panel-error-content"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="panel-ok"]').exists()).toBe(true);
+    expect(wrapper.get('[data-testid="panel-error-content"]').attributes('style')).toContain(
+      'display: none',
+    );
     wrapper.unmount();
   });
 
-  it('retry clears the error and remounts content via contentKey', async () => {
+  it('retry clears the error without unmounting the routed draft subtree', async () => {
     const wrapper = mount(PanelErrorBoundary, {
       global: { plugins: [i18n] },
       slots: { default: () => h(Healthy) },

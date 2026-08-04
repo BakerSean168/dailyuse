@@ -93,7 +93,8 @@
       <template v-if="goal" #meta>
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           <span>
-            {{ formatProductDate(goal.startDate, emptyNotSet(t)) }} ~ {{ formatProductDate(goal.targetDate, emptyNotSet(t)) }}
+            {{ formatProductDate(goal.startDate, emptyNotSet(t)) }} ~
+            {{ formatProductDate(goal.targetDate, emptyNotSet(t)) }}
           </span>
           <span>·</span>
           <span>{{ goal.category || t('goal.detail.uncategorized') }}</span>
@@ -116,7 +117,14 @@
         <div class="flex items-center gap-4 rounded-lg border bg-muted/20 px-4 py-3">
           <div class="relative hidden h-14 w-14 shrink-0 items-center justify-center md:flex">
             <svg class="h-14 w-14 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
-              <circle cx="60" cy="60" r="48" fill="none" stroke="hsl(var(--muted))" stroke-width="12" />
+              <circle
+                cx="60"
+                cy="60"
+                r="48"
+                fill="none"
+                stroke="hsl(var(--muted))"
+                stroke-width="12"
+              />
               <circle
                 cx="60"
                 cy="60"
@@ -133,7 +141,12 @@
           <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-foreground">
               {{ goalProgress }}% ·
-              {{ t('goal.detail.krCompleted', { done: completedKeyResultCount, total: totalKeyResultCount }) }}
+              {{
+                t('goal.detail.krCompleted', {
+                  done: completedKeyResultCount,
+                  total: totalKeyResultCount,
+                })
+              }}
             </p>
             <p v-if="goal.description" class="mt-0.5 truncate text-xs text-muted-foreground">
               {{ goal.description }}
@@ -146,16 +159,22 @@
           <CardHeader>
             <div class="flex items-center justify-between">
               <CardTitle class="text-base">{{ t('goal.detail.keyResults') }}</CardTitle>
-              <Button v-if="keyResults.length > 0" size="sm" variant="outline" @click="handleOpenAddKR">
+              <Button
+                v-if="keyResults.length > 0"
+                size="sm"
+                variant="outline"
+                @click="handleOpenAddKR"
+              >
                 <Plus class="mr-1 h-4 w-4" /> {{ t('goal.detail.addKR') }}
               </Button>
             </div>
           </CardHeader>
           <CardContent class="space-y-3">
-            <div
+            <button
               v-for="kr in keyResults"
               :key="kr.id"
-              class="cursor-pointer rounded-lg border p-4 hover:bg-accent/50"
+              type="button"
+              class="w-full rounded-lg border p-4 text-left hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               @click="$router.push(`/goals/${goalId}/key-results/${kr.id}`)"
             >
               <div class="mb-2 flex items-center justify-between">
@@ -165,7 +184,7 @@
                 </span>
               </div>
               <Progress :model-value="calculateKRProgress(kr)" class="h-2" />
-            </div>
+            </button>
 
             <!-- 无 KR：区块空态升级为页面主引导（§4-7） -->
             <AppEmptyState
@@ -187,10 +206,12 @@
           </TabsList>
 
           <TabsContent value="records" class="mt-4 space-y-2">
-            <div
+            <button
               v-for="record in goalRecords"
               :key="record.id"
-              class="cursor-pointer rounded-lg border p-3 transition-colors hover:bg-accent/50"
+              type="button"
+              class="w-full rounded-lg border p-3 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              :aria-expanded="expandedRecordId === record.id"
               @click="toggleRecordDetail(record.id)"
             >
               <div class="flex items-center justify-between">
@@ -233,7 +254,7 @@
                   <p class="font-medium">{{ formatProductDateTime(record.createdAt) }}</p>
                 </div>
               </div>
-            </div>
+            </button>
             <p
               v-if="goalRecords.length === 0"
               class="py-4 text-center text-sm text-muted-foreground"
@@ -253,13 +274,12 @@
               <Plus class="mr-1 h-4 w-4" /> {{ t('goal.reviewCreation.create') }}
             </Button>
 
-            <Card
-              v-for="review in goalReviews"
-              :key="review.id"
-              class="cursor-pointer hover:bg-accent/50"
-              @click="$router.push(`/goals/${goalId}/review/${review.id}`)"
-            >
-              <CardContent class="flex items-center justify-between p-4">
+            <Card v-for="review in goalReviews" :key="review.id" class="hover:bg-accent/50">
+              <button
+                type="button"
+                class="flex w-full items-center justify-between rounded-[inherit] p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                @click="$router.push(`/goals/${goalId}/review/${review.id}`)"
+              >
                 <div>
                   <p class="font-medium">{{ review.type }} {{ t('goal.detail.reviewSuffix') }}</p>
                   <p class="text-xs text-muted-foreground">
@@ -269,7 +289,7 @@
                 <span class="text-xs text-muted-foreground">{{
                   formatProductDate(review.reviewedAt)
                 }}</span>
-              </CardContent>
+              </button>
             </Card>
             <p
               v-if="goalReviews.length === 0"
@@ -282,7 +302,7 @@
       </div>
     </DetailPageShell>
 
-    <KeyResultDialog ref="keyResultDialogRef" @save="handleSaveKR" />
+    <KeyResultDialog ref="keyResultDialogRef" :on-submit="handleSaveKR" />
     <GoalRecordDialog ref="recordDialogRef" />
   </div>
 </template>
@@ -291,15 +311,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import {
-  ChevronDown,
-  ChevronUp,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Target,
-  Trash2,
-} from '@lucide/vue';
+import { ChevronDown, ChevronUp, MoreHorizontal, Pencil, Plus, Target, Trash2 } from '@lucide/vue';
 import {
   Badge,
   Button,
@@ -328,9 +340,17 @@ import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGoal } from '../composables/useGoal';
 import KeyResultDialog from '../components/dialogs/KeyResultDialog.vue';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
-import { getCompletedKeyResultCount, getGoalOverallProgress } from '../utils/progress';
+import {
+  getCompletedKeyResultCount,
+  getGoalOverallProgress,
+  getKeyResultProgressPercentage,
+} from '../utils/progress';
 import type { KeyResultClientDTO } from '@memoflow/contracts/goal';
-import { emptyNotSet, formatProductDate, formatProductDateTime } from '../../../shared/utils/product-time';
+import {
+  emptyNotSet,
+  formatProductDate,
+  formatProductDateTime,
+} from '../../../shared/utils/product-time';
 
 const route = useRoute();
 const router = useRouter();
@@ -338,14 +358,11 @@ const { t } = useI18n();
 const goalId = route.params.id as string;
 
 const {
-  currentGoal: goal,
+  selectedGoal: goal,
   keyResults,
   goalRecords,
   goalReviews,
-  fetchGoal,
-  fetchKeyResults,
-  fetchRecords,
-  fetchReviews,
+  getGoalAggregateView,
   addKeyResult,
   deleteGoal,
 } = useGoal();
@@ -358,15 +375,12 @@ const ringRadius = 48;
 const ringCircumference = 2 * Math.PI * ringRadius;
 
 const goalProgress = computed(() => getGoalOverallProgress(goal.value));
-const totalKeyResultCount = computed(
-  () => goal.value?.totalKeyResults ?? goal.value?.keyResults?.length ?? keyResults.value.length,
-);
+const totalKeyResultCount = computed(() => goal.value?.totalKeyResults ?? 0);
 const completedKeyResultCount = computed(() => getCompletedKeyResultCount(goal.value));
 const goalAccentColor = computed(() => goal.value?.color || 'hsl(var(--primary))');
 const ringDashOffset = computed(
   () => ringCircumference * (1 - Math.min(100, Math.max(0, goalProgress.value)) / 100),
 );
-
 
 function openRecordDialog(keyResultId: string) {
   recordDialogRef.value?.openDialog(goalId, keyResultId);
@@ -418,9 +432,9 @@ async function handleSaveKR(payload: {
   isEditing: boolean;
   isInGoalEditing: boolean;
 }) {
-  if (!payload.goalId) return;
+  if (!payload.goalId) return false;
   const kr = payload.keyResult;
-  await addKeyResult(payload.goalId, {
+  const createdKeyResult = await addKeyResult(payload.goalId, {
     goalId: payload.goalId,
     title: kr.title,
     description: kr.description ?? undefined,
@@ -432,7 +446,8 @@ async function handleSaveKR(payload: {
     unit: kr.progress.unit ?? undefined,
     weight: kr.weight,
   } as Parameters<typeof addKeyResult>[1]);
-  await fetchKeyResults(payload.goalId);
+  if (!createdKeyResult) return false;
+  return true;
 }
 
 function toggleRecordDetail(recordId: string) {
@@ -440,17 +455,12 @@ function toggleRecordDetail(recordId: string) {
 }
 
 function getKeyResultTitle(keyResultId: string): string {
-  const krs = keyResults.value ?? [];
-  const kr = krs.find((k) => k.id === keyResultId);
+  const kr = keyResults.value.find((item) => item.id === keyResultId);
   return kr?.title ?? keyResultId;
 }
 
 function calculateKRProgress(kr: KeyResultClientDTO): number {
-  const current = kr.progress?.currentValue || 0;
-  const target = kr.progress?.targetValue || 100;
-  const initial = kr.progress?.initialValue || 0;
-  if (target === initial) return 100;
-  return Math.min(100, Math.round(((current - initial) / (target - initial)) * 100));
+  return getKeyResultProgressPercentage(kr.progress);
 }
 
 /**
@@ -486,8 +496,7 @@ function getImportanceLabel(importance: string): string {
 
 onMounted(async () => {
   try {
-    await fetchGoal(goalId);
-    await Promise.all([fetchKeyResults(goalId), fetchRecords(goalId), fetchReviews(goalId)]);
+    await getGoalAggregateView(goalId);
   } finally {
     isInitialLoading.value = false;
   }

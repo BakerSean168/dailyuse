@@ -5,14 +5,14 @@ import {
 } from '@memoflow/contracts/electron';
 import { extractStructuredResultError, fail, ok } from '@memoflow/contracts/result';
 import { createLogger } from '@memoflow/utils/logger';
-import type { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
+import type { IElectronAuthContext } from '@memoflow/contracts/electron';
 import { getDesktopDashboardData } from '../services/dashboard-read-service';
 
 const CHANNEL = DashboardChannels.GET_STATS;
 const logger = createLogger('DashboardIpc');
 
 export function registerDashboardIpcHandler(
-  getAuthProvider: () => DesktopAuthContextProvider | null,
+  getAuthProvider: () => IElectronAuthContext | null,
 ): void {
   ipcMain.handle(CHANNEL, async () => {
     const auth = getAuthProvider();

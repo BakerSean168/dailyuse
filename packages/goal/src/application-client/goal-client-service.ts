@@ -13,15 +13,21 @@ import { map as mapResult } from '@memoflow/contracts/result';
 import type {
   CreateGoalReq,
   UpdateGoalReq,
+  DeleteGoalReq,
   CloneGoalReq,
   AddKeyResultReq,
   UpdateKeyResultReq,
+  DeleteKeyResultReq,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
   CreateGoalRecordReq,
+  DeleteGoalRecordReq,
   CreateGoalReviewReq,
+  UpdateGoalReviewReq,
+  DeleteGoalReviewReq,
   GoalReviewClientDTO,
   GoalClientDTO,
+  GoalMutationReceipt,
   GoalSystemView,
   GoalFolderClientDTO,
   KeyResultClientDTO,
@@ -55,12 +61,6 @@ import { IdentityId } from '@memoflow/domain-shared/shared';
 // ===== DTO-to-State Mappers =====
 
 function goalFromDTO(dto: GoalClientDTO): Goal {
-  const dtoWithSummary = dto as GoalClientDTO & {
-    totalKeyResults?: number;
-    completedKeyResults?: number;
-    overallProgress?: number;
-  };
-
   return Goal.load({
     id: GoalId.of(dto.id),
     identityId: IdentityId.of(dto.identityId),
@@ -88,9 +88,9 @@ function goalFromDTO(dto: GoalClientDTO): Goal {
     deletedAt: dto.deletedAt ?? null,
     keyResults: dto.keyResults?.map((kr) => keyResultFromDTO(kr)) ?? null,
     reviews: dto.reviews?.map((r) => goalReviewFromDTO(r)) ?? null,
-    totalKeyResults: dtoWithSummary.totalKeyResults,
-    completedKeyResults: dtoWithSummary.completedKeyResults,
-    overallProgress: dtoWithSummary.overallProgress,
+    totalKeyResults: dto.totalKeyResults,
+    completedKeyResults: dto.completedKeyResults,
+    overallProgress: dto.overallProgress,
   });
 }
 
@@ -106,8 +106,6 @@ function goalFolderFromDTO(dto: GoalFolderClientDTO): GoalFolder {
     sortOrder: dto.sortOrder,
     isSystemFolder: dto.isSystemFolder,
     folderType: dto.folderType,
-    goalCount: dto.goalCount,
-    completedGoalCount: dto.completedGoalCount,
     version: dto.version,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
@@ -123,10 +121,8 @@ function keyResultFromDTO(dto: KeyResultClientDTO): KeyResult {
     progress: dto.progress,
     weight: dto.weight,
     order: dto.order,
-    version: dto.version,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
-    deletedAt: dto.deletedAt ?? null,
   });
 }
 
@@ -141,11 +137,9 @@ function goalReviewFromDTO(dto: GoalReviewClientDTO): GoalReview {
     challenges: dto.challenges,
     improvements: dto.improvements,
     keyResultSnapshots: dto.keyResultSnapshots ?? [],
-    version: dto.version,
     reviewedAt: dto.reviewedAt,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
-    deletedAt: dto.deletedAt ?? null,
   });
 }
 
@@ -157,10 +151,8 @@ function goalRecordFromDTO(dto: GoalRecordClientDTO): GoalRecord {
     value: dto.value,
     valueAfter: dto.valueAfter,
     comment: dto.comment,
-    version: dto.version,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
-    deletedAt: dto.deletedAt ?? null,
   });
 }
 
@@ -168,7 +160,7 @@ function goalRecordFromDTO(dto: GoalRecordClientDTO): GoalRecord {
 
 /** High-level client-side operations for the goal module. */
 export interface GoalClientPort {
-  createGoal(request: CreateGoalReq): Promise<Result<Goal>>;
+  createGoal(request: CreateGoalReq): Promise<Result<GoalMutationReceipt>>;
   getGoal(id: string): Promise<Result<Goal>>;
   listGoals(params?: {
     page?: number;
@@ -180,11 +172,11 @@ export interface GoalClientPort {
     startDate?: number;
     endDate?: number;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>>;
-  updateGoal(id: string, request: UpdateGoalReq): Promise<Result<Goal>>;
-  deleteGoal(id: string): Promise<Result<void>>;
-  activateGoal(id: string): Promise<Result<Goal>>;
-  completeGoal(id: string): Promise<Result<Goal>>;
-  archiveGoal(id: string): Promise<Result<Goal>>;
+  updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalMutationReceipt>>;
+  deleteGoal(id: string, request: DeleteGoalReq): Promise<Result<GoalMutationReceipt>>;
+  activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
+  completeGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
+  archiveGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
   searchGoals(params: {
     query: string;
     page?: number;
@@ -195,12 +187,27 @@ export interface GoalClientPort {
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>>;
   archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>>;
   getGoalAggregateView(id: string): Promise<Result<GetGoalAggregateRes>>;
-  cloneGoal(id: string, request?: CloneGoalReq): Promise<Result<Goal>>;
-  createKeyResult(goalId: string, request: Omit<AddKeyResultReq, 'goalId'>): Promise<Result<KeyResult>>;
+  cloneGoal(id: string, request?: CloneGoalReq): Promise<Result<GoalMutationReceipt>>;
+  createKeyResult(
+    goalId: string,
+    request: Omit<AddKeyResultReq, 'goalId'>,
+  ): Promise<Result<GoalMutationReceipt>>;
   getKeyResults(goalId: string): Promise<Result<{ keyResults: KeyResult[] }>>;
-  updateKeyResult(goalId: string, krId: string, request: UpdateKeyResultReq): Promise<Result<KeyResult>>;
-  deleteKeyResult(goalId: string, krId: string): Promise<Result<void>>;
-  batchUpdateKeyResultWeights(goalId: string, updates: Array<{ keyResultId: string; weight: number }>): Promise<Result<{ keyResults: KeyResult[] }>>;
+  updateKeyResult(
+    goalId: string,
+    krId: string,
+    request: UpdateKeyResultReq,
+  ): Promise<Result<GoalMutationReceipt>>;
+  deleteKeyResult(
+    goalId: string,
+    krId: string,
+    request: DeleteKeyResultReq,
+  ): Promise<Result<GoalMutationReceipt>>;
+  batchUpdateKeyResultWeights(
+    goalId: string,
+    expectedVersion: number,
+    updates: Array<{ keyResultId: string; weight: number }>,
+  ): Promise<Result<GoalMutationReceipt>>;
   getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>>;
   generateKeyResults(params: {
     goalTitle: string;
@@ -208,19 +215,53 @@ export interface GoalClientPort {
     startDate: number;
     endDate: number;
     goalContext?: string;
-  }): Promise<Result<{
-    keyResults: Array<{ title: string; description?: string; targetValue?: number; unit?: string }>;
-    tokenUsage: unknown;
-    generatedAt: number;
-  }>>;
-  createGoalRecord(goalId: string, keyResultId: string, request: Pick<CreateGoalRecordReq, 'value' | 'note'>): Promise<Result<GoalRecord>>;
-  getGoalRecordsByKeyResult(goalId: string, krId: string, params?: { limit?: number; offset?: number }): Promise<Result<{ records: GoalRecord[]; total: number }>>;
-  getGoalRecordsByGoal(goalId: string, params?: { limit?: number; offset?: number }): Promise<Result<{ records: GoalRecord[]; total: number }>>;
-  deleteGoalRecord(goalId: string, krId: string, recordId: string): Promise<Result<void>>;
-  createGoalReview(goalId: string, request: CreateGoalReviewReq): Promise<Result<GoalReview>>;
+  }): Promise<
+    Result<{
+      keyResults: Array<{
+        title: string;
+        description?: string;
+        targetValue?: number;
+        unit?: string;
+      }>;
+      tokenUsage: unknown;
+      generatedAt: number;
+    }>
+  >;
+  createGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
+  ): Promise<Result<GoalMutationReceipt>>;
+  getGoalRecordsByKeyResult(
+    goalId: string,
+    krId: string,
+    params?: { limit?: number; offset?: number },
+  ): Promise<Result<{ records: GoalRecord[]; total: number }>>;
+  getGoalRecordsByGoal(
+    goalId: string,
+    params?: { limit?: number; offset?: number },
+  ): Promise<Result<{ records: GoalRecord[]; total: number }>>;
+  deleteGoalRecord(
+    goalId: string,
+    krId: string,
+    recordId: string,
+    request: DeleteGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>>;
+  createGoalReview(
+    goalId: string,
+    request: CreateGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>>;
   getGoalReviews(goalId: string): Promise<Result<{ reviews: GoalReview[] }>>;
-  updateGoalReview(goalId: string, reviewId: string, request: Partial<GoalReviewClientDTO>): Promise<Result<GoalReview>>;
-  deleteGoalReview(goalId: string, reviewId: string): Promise<Result<void>>;
+  updateGoalReview(
+    goalId: string,
+    reviewId: string,
+    request: UpdateGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>>;
+  deleteGoalReview(
+    goalId: string,
+    reviewId: string,
+    request: DeleteGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>>;
   createGoalFolder(request: CreateGoalFolderReq): Promise<Result<GoalFolder>>;
   listGoalFolders(): Promise<Result<GoalFolder[]>>;
   getGoalFolder(id: string): Promise<Result<GoalFolder>>;
@@ -278,9 +319,8 @@ export class GoalClientService implements GoalClientPort {
 
   // ===== Goal Management =====
 
-  async createGoal(request: CreateGoalReq): Promise<Result<Goal>> {
-    const result = await this.goalApi.createGoal(request);
-    return mapResult(result, (dto) => goalFromDTO(dto));
+  async createGoal(request: CreateGoalReq): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.createGoal(request);
   }
 
   async getGoal(id: string): Promise<Result<Goal>> {
@@ -311,28 +351,24 @@ export class GoalClientService implements GoalClientPort {
     }));
   }
 
-  async updateGoal(id: string, request: UpdateGoalReq): Promise<Result<Goal>> {
-    const result = await this.goalApi.updateGoal(id, request);
-    return mapResult(result, (dto) => goalFromDTO(dto));
+  async updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.updateGoal(id, request);
   }
 
-  async deleteGoal(id: string): Promise<Result<void>> {
-    return this.goalApi.deleteGoal(id);
+  async deleteGoal(id: string, request: DeleteGoalReq): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.deleteGoal(id, request);
   }
 
-  async activateGoal(id: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.activateGoal(id);
-    return mapResult(result, (dto) => goalFromDTO(dto));
+  async activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.activateGoal(id, expectedVersion);
   }
 
-  async completeGoal(id: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.completeGoal(id);
-    return mapResult(result, (dto) => goalFromDTO(dto));
+  async completeGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.completeGoal(id, expectedVersion);
   }
 
-  async archiveGoal(id: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.archiveGoal(id);
-    return mapResult(result, (dto) => goalFromDTO(dto));
+  async archiveGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.archiveGoal(id, expectedVersion);
   }
 
   async searchGoals(params: {
@@ -364,9 +400,8 @@ export class GoalClientService implements GoalClientPort {
     return this.goalApi.getGoalAggregateView(id);
   }
 
-  async cloneGoal(id: string, request: CloneGoalReq = {}): Promise<Result<Goal>> {
-    const result = await this.goalApi.cloneGoal(id, request);
-    return mapResult(result, (dto) => goalFromDTO(dto));
+  async cloneGoal(id: string, request: CloneGoalReq = {}): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.cloneGoal(id, request);
   }
 
   // ===== Key Result Use Cases =====
@@ -374,9 +409,8 @@ export class GoalClientService implements GoalClientPort {
   async createKeyResult(
     goalId: string,
     request: Omit<AddKeyResultReq, 'goalId'>,
-  ): Promise<Result<KeyResult>> {
-    const result = await this.goalApi.addKeyResultForGoal(goalId, request);
-    return mapResult(result, (dto) => keyResultFromDTO(dto));
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.addKeyResultForGoal(goalId, request);
   }
 
   async getKeyResults(goalId: string): Promise<Result<{ keyResults: KeyResult[] }>> {
@@ -390,23 +424,27 @@ export class GoalClientService implements GoalClientPort {
     goalId: string,
     krId: string,
     request: UpdateKeyResultReq,
-  ): Promise<Result<KeyResult>> {
-    const result = await this.goalApi.updateKeyResultForGoal(goalId, krId, request);
-    return mapResult(result, (dto) => keyResultFromDTO(dto));
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.updateKeyResultForGoal(goalId, krId, request);
   }
 
-  async deleteKeyResult(goalId: string, krId: string): Promise<Result<void>> {
-    return this.goalApi.deleteKeyResultForGoal(goalId, krId);
+  async deleteKeyResult(
+    goalId: string,
+    krId: string,
+    request: DeleteKeyResultReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.deleteKeyResultForGoal(goalId, krId, request);
   }
 
   async batchUpdateKeyResultWeights(
     goalId: string,
+    expectedVersion: number,
     updates: Array<{ keyResultId: string; weight: number }>,
-  ): Promise<Result<{ keyResults: KeyResult[] }>> {
-    const result = await this.goalApi.batchUpdateKeyResultWeights(goalId, { updates });
-    return mapResult(result, (data: GetKeyResultsRes) => ({
-      keyResults: data.data.map((dto) => keyResultFromDTO(dto)),
-    }));
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.batchUpdateKeyResultWeights(goalId, {
+      expectedVersion,
+      updates,
+    });
   }
 
   async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
@@ -439,10 +477,9 @@ export class GoalClientService implements GoalClientPort {
   async createGoalRecord(
     goalId: string,
     keyResultId: string,
-    request: Pick<CreateGoalRecordReq, 'value' | 'note'>,
-  ): Promise<Result<GoalRecord>> {
-    const result = await this.goalApi.createGoalRecord(goalId, keyResultId, request);
-    return mapResult(result, (dto) => goalRecordFromDTO(dto));
+    request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.createGoalRecord(goalId, keyResultId, request);
   }
 
   async getGoalRecordsByKeyResult(
@@ -468,8 +505,13 @@ export class GoalClientService implements GoalClientPort {
     }));
   }
 
-  async deleteGoalRecord(goalId: string, krId: string, recordId: string): Promise<Result<void>> {
-    return this.goalApi.deleteGoalRecord(goalId, krId, recordId);
+  async deleteGoalRecord(
+    goalId: string,
+    krId: string,
+    recordId: string,
+    request: DeleteGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.deleteGoalRecord(goalId, krId, recordId, request);
   }
 
   // ===== Goal Review Use Cases =====
@@ -477,9 +519,8 @@ export class GoalClientService implements GoalClientPort {
   async createGoalReview(
     goalId: string,
     request: CreateGoalReviewReq,
-  ): Promise<Result<GoalReview>> {
-    const result = await this.goalApi.createGoalReview(goalId, request);
-    return mapResult(result, (dto) => goalReviewFromDTO(dto));
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.createGoalReview(goalId, request);
   }
 
   async getGoalReviews(goalId: string): Promise<Result<{ reviews: GoalReview[] }>> {
@@ -492,14 +533,17 @@ export class GoalClientService implements GoalClientPort {
   async updateGoalReview(
     goalId: string,
     reviewId: string,
-    request: Partial<GoalReviewClientDTO>,
-  ): Promise<Result<GoalReview>> {
-    const result = await this.goalApi.updateGoalReview(goalId, reviewId, request);
-    return mapResult(result, (dto) => goalReviewFromDTO(dto));
+    request: UpdateGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.updateGoalReview(goalId, reviewId, request);
   }
 
-  async deleteGoalReview(goalId: string, reviewId: string): Promise<Result<void>> {
-    return this.goalApi.deleteGoalReview(goalId, reviewId);
+  async deleteGoalReview(
+    goalId: string,
+    reviewId: string,
+    request: DeleteGoalReviewReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.deleteGoalReview(goalId, reviewId, request);
   }
 
   // ===== Goal Folder Use Cases =====

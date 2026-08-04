@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { isRecord as aiIsRecord } from './isRecord';
@@ -21,12 +21,9 @@ describe('isRecord cross-package keep-boundary (residual 1089)', () => {
     resolve(dir, '../../../../../../apps/desktop/src/main/utils/http-envelope-guards.ts'),
     'utf8',
   );
-  const desktopSurface = readFileSync(
-    resolve(
-      dir,
-      '../../../../../../apps/desktop/src/main/utils/http-envelope-guards-dual.surface.spec.ts',
-    ),
-    'utf8',
+  const retiredDesktopSurface = resolve(
+    dir,
+    '../../../../../../apps/desktop/src/main/utils/http-envelope-guards-dual.surface.spec.ts',
   );
   const aiDualSurface = readFileSync(resolve(dir, 'dual-registry.surface.spec.ts'), 'utf8');
 
@@ -50,13 +47,12 @@ describe('isRecord cross-package keep-boundary (residual 1089)', () => {
     expect(aiSole).toContain('!Array.isArray(value)');
   });
 
-  it('runtime: AI rejects arrays while desktop dual surface documents arrays allowed', () => {
+  it('runtime: AI rejects arrays while desktop envelope guard allows objects', () => {
     expect(aiIsRecord([])).toBe(false);
     expect(aiIsRecord({ a: 1 })).toBe(true);
     expect(aiIsRecord(null)).toBe(false);
-    // desktop surface runtime assertion exists for arrays allowed
-    expect(desktopSurface).toContain('expect(isRecord([])).toBe(true)');
-    expect(desktopSurface).toContain('Soft residual 1089');
+    expect(existsSync(retiredDesktopSurface)).toBe(false);
+    expect(desktopSole).toContain('Soft residual 1089');
     expect(aiDualSurface).toContain('Soft residual 1089');
   });
 

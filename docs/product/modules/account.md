@@ -3,79 +3,69 @@ tags:
   - product
   - module
   - account
-description: 账户模块当前功能资产说明
+  - desktop-profile
+description: Account 业务资料、Desktop 本地 Profile 投影与 Cloud Auth 边界
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T23:59:00
+updated: 2026-08-03T00:00:00+08:00
 ---
 
-# 账户模块说明
+# Account 模块
 
 ## 1. 功能定位
 
-账户模块用于管理用户资料和账户状态。它围绕账户中心、用户资料、账户管理和 Profile 展示与编辑形成闭环，是用户身份在业务层的表达。账户数据与认证身份（AuthIdentity）通过事件关联。
+Account 是用户资料和偏好的业务聚合，不负责密码、OAuth、Session 或本地 Profile 解锁。
 
-## 2. 当前功能说明
+| 事实 | 真源 |
+| --- | --- |
+| 登录邮箱、验证状态、云端 Session | Better Auth / `@memoflow/cloud-auth` |
+| 昵称、头像、简介和 Account 设置 | Account |
+| Desktop 当前打开哪个本地容器 | Desktop Profile Access |
+| Profile 是否连接云端 Account | `CloudBinding` |
 
-- 账户资料管理：查看和编辑昵称、头像、简介、性别、生日。
-- 账户设置：更新主题、语言、时区和通知开关。
-- 账户可用性检查：检查邮箱或昵称是否可用。
-- 账户关闭：关闭账户（软删除）。
-- 账户状态管理：支持 Active、Inactive、Suspended、Deleted 四种状态。
-- 联系方式管理：管理邮箱和手机号，支持验证状态跟踪。
-- 身份创建联动：监听认证模块的 `auth:identity-created` 事件，自动创建对应账户。
-- 邮箱投影同步：监听 `auth:email-verified`，将 Account 展示用联系邮箱与 Auth 已验证主邮箱对齐（登录邮箱真源仍在 Authentication）。
+Better Auth user ID 直接作为云端 `Account.id` 和业务 `identityId`，不再保留平行 `AuthIdentity` 映射。
 
-## 3. 用户路径
+## 2. Desktop 语义
 
-- 账户中心路径：用户进入账户中心页面，查看和编辑个人资料（昵称、头像、简介等），修改后保存。
-- 设置路径：用户在设置页面修改主题、语言等偏好，这些变更通过账户设置接口持久化。
-- 账户关闭路径：用户请求关闭账户，系统标记账户为 Deleted 状态。
+Desktop guest Profile 创建真实的本地 Account row，因此访客可以离线查看和修改昵称、头像、简介、语言、主题、时区和通知设置。Profile Registry 的持久化显示名与本地 Account 初始昵称保持一致。
 
-## 4. 业务规则
+guest 连接云端账号时，tenant adoption 会保留 `profileId`、Profile 目录、Vault、key envelope 和本地显示资料，只把业务 owner 原子重绑为云端 `Account.id`。目标云端账号已经绑定其他本机 Profile 时拒绝静默合并。
 
-- Account 是账户模块核心聚合，包含 AccountProfile、AccountSettings、ContactEmail、ContactPhone 等值对象。
-- Account 与 AuthIdentity 通过 IdentityId 一对一关联，AuthIdentity 负责认证，Account 负责业务资料。
-- 账户通过监听 `auth:identity-created` 事件自动创建，不需要用户手动操作。
-- 邮箱唯一性通过 AccountUniquenessChecker 领域服务检查。
-- 账户状态流转：Active ↔ Inactive，Active/Inactive → Suspended，任何状态 → Deleted。
-- 客户端通过 HTTP 或 IPC 适配器访问账户能力，服务端通过模块组合根装配用例和仓储实现。
+本地 Profile 是否可访问只由 Profile unlock 决定。云端 Session 失效不会删除 Account、本地资料或业务数据。
 
-## 5. 相关文件索引
+Desktop 的 Account 资料先事务性写入当前 Profile 数据库。registered Profile 同时在该事务内合并一条 revision outbox；有可用 cloud session 时异步推送，离线或失败时保留待办，且只删除已经成功交付的 revision。Account 不从 PowerSync 下载覆盖本地 Profile 投影。
 
-详细文件清单见 [账户模块文件索引](../module-index/account-files.md)。
+## 3. Cloud 语义
 
-## 6. 当前问题
+Cloud Auth 创建用户后，由 `CloudAccountProvisioner` 幂等创建同 ID 的 Account。Cloud Auth 是登录邮箱和邮箱验证状态的真源，Account 只保存业务使用的联系邮箱投影。
 
-- 账户资料和认证身份的概念容易混淆：AuthIdentity 管理登录凭证，Account 管理业务资料。
-- 多账户或桌面 profile 场景下的数据归属需要确认。
-- 账户设置与 Setting 模块的用户偏好之间的职责边界需要明确。
-- 登录邮箱验证权威在 Authentication；Account 仅投影与展示。换绑/改登录邮箱的完整产品流仍待 Phase C/后续。
+Account HTTP API 提供：
 
-## 7. 优化机会
+- 获取当前云端 Account；
+- 更新资料和设置；
+- 检查昵称或邮箱可用性；
+- 关闭云端 Account。
 
-- 梳理账户和认证的职责边界，减少用户对"账户"和"身份"概念的混淆。
-- 注销级联：关闭账户时需同时禁用 Auth 并撤销 session（见安全闭环计划 Phase C）。
-- 为账户提供更丰富的 Profile 展示能力。
-- 考虑账户数据导入导出能力。
+Web 使用 Better Auth cookie session，Desktop 在线能力使用 main process 持有的 bearer session。业务模块不直接导入 Better Auth 类型。
 
-## 8. 风险点
+## 4. 核心规则
 
-- 账户资料和认证身份混淆：修改 Account 不应影响 AuthIdentity，反之亦然。
-- 多账户或桌面 profile 场景下的数据归属。
-- 邮箱唯一性检查的并发安全。
-- HTTP、IPC、Prisma 和 PowerSync 适配器同时存在，索引和测试需要覆盖多运行时边界。
+- guest 必须拥有可持久化编辑的本地 Account，不使用 renderer mock。
+- 本地 Profile identity、云端 Account identity 和 Better Auth session 是不同概念。
+- 登录邮箱变更必须由 Cloud Auth 流程完成，不能通过 Account 资料更新暗改登录凭据。
+- Cloud sign-out 只暂停在线能力，不等于锁定 Profile、删除 Account 或删除本地数据。
+- Close cloud account 与 Remove local Profile 是两个独立且需要明确确认的操作。
+- Close cloud account 只关闭服务端 Account 并断开当前 cloud connection；本地 Profile、Vault 和业务数据保留。关闭后的 Account 不能继续调用受保护业务 API。
+- HTTP、IPC、Prisma 和 PowerSync adapter 必须遵守同一 Account 聚合规则和 identity 隔离。
 
-## 9. 后续待确认
+## 5. 当前边界
 
-- 账户设置与 Setting 模块的用户偏好是否需要合并。
-- 改登录邮箱是否允许、是否双码确认（EmailChange）的产品策略。
-- 多账户场景下的数据隔离策略。
-- 账户数据导入导出的需求。
+Account 同时服务 Web 云端运行时和 Desktop 本地运行时。Desktop 的 Profile/云端资料协调必须走显式应用服务，不能依赖含混的 `isAuthenticated` 或伪本地 Session。
 
-## 10. 相关资料
+账户设置与独立 Setting 模块的职责仍按现有 contracts 划分；跨模块合并不属于本次认证重写。
 
-- [认证模块说明](./authentication.md)
-- [ADR-036: Auth / Account 边界与验证安全模型](../../architecture/adr/ADR-036-auth-account-boundary-and-verification.md)
-- [Auth + Account 安全闭环计划](../../plan/archive/2026-07-17-auth-account-security-closure.md)
-- [设置模块说明](./setting.md)
+## 6. 相关资料
+
+- [云端认证与本地 Profile Access](./authentication.md)
+- [ADR-039: Cloud Auth 与 Local Profile Access 分离](../../architecture/adr/ADR-039-cloud-auth-and-local-profile-access.md)
 - [账户模块文件索引](../module-index/account-files.md)
+- [设置模块说明](./setting.md)

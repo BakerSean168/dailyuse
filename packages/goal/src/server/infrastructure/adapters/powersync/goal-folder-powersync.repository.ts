@@ -38,8 +38,6 @@ export class GoalFolderPowerSyncRepository
              is_system_folder = ?,
              parent_folder_id = ?,
              sort_order = ?,
-             goal_count = ?,
-             completed_goal_count = ?,
              version = ?,
              updated_at = ?,
              deleted_at = ?
@@ -53,8 +51,6 @@ export class GoalFolderPowerSyncRepository
           folder.isSystemFolder ? 1 : 0,
           dto.parentFolderId,
           dto.sortOrder,
-          dto.goalCount,
-          dto.completedGoalCount,
           dto.version,
           toDbDateTime(dto.updatedAt),
           toDbDateTime(dto.deletedAt),
@@ -67,8 +63,8 @@ export class GoalFolderPowerSyncRepository
         `INSERT INTO goal_folders (
            id, identity_id, name, description, icon, color,
            folder_type, is_system_folder, parent_folder_id, sort_order,
-           goal_count, completed_goal_count, version, created_at, updated_at, deleted_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           version, created_at, updated_at, deleted_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           dto.id,
           dto.identityId,
@@ -80,8 +76,6 @@ export class GoalFolderPowerSyncRepository
           folder.isSystemFolder ? 1 : 0,
           dto.parentFolderId,
           dto.sortOrder,
-          dto.goalCount,
-          dto.completedGoalCount,
           dto.version,
           toDbDateTime(dto.createdAt),
           toDbDateTime(dto.updatedAt),

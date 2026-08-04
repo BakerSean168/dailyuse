@@ -1,5 +1,4 @@
 import type { IAccountRepository } from '../../domain';
-import { createAccountEventListenerRuntime } from '../../application/handlers';
 import type { AccountModuleRuntimeContribution } from '../account.module';
 
 export type AccountRuntimeContributionsInput =
@@ -22,11 +21,8 @@ function normalizeRuntimeContributions(
  * Default account runtime contributions owned by the module instance.
  */
 export function createAccountRuntimeContributions(
-  accountRepository: IAccountRepository,
+  _accountRepository: IAccountRepository,
   runtimeContributions?: AccountRuntimeContributionsInput,
 ): readonly AccountModuleRuntimeContribution[] {
-  return [
-    createAccountEventListenerRuntime(accountRepository),
-    ...normalizeRuntimeContributions(runtimeContributions),
-  ];
+  return normalizeRuntimeContributions(runtimeContributions);
 }

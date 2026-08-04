@@ -43,14 +43,15 @@
                   <div class="text-xs text-muted-foreground">{{ shortcut.description }}</div>
                 </div>
                 <div class="flex items-center space-x-2">
-                  <Badge
+                  <Button
                     v-if="!editingShortcut || editingShortcut.id !== shortcut.id"
                     variant="outline"
-                    class="cursor-pointer hover:bg-accent"
+                    size="sm"
+                    class="h-8 rounded-full font-mono"
                     @click="emit('startEdit', shortcut)"
                   >
                     {{ formatShortcutKey(shortcut.key) }}
-                  </Badge>
+                  </Button>
                   <Input
                     v-else
                     :model-value="editingKey"
@@ -105,7 +106,6 @@ import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@memoflow/ui-vue-shadcn';
 import { Input } from '@memoflow/ui-vue-shadcn';
 import { Button } from '@memoflow/ui-vue-shadcn';
-import { Badge } from '@memoflow/ui-vue-shadcn';
 import {
   Accordion,
   AccordionContent,

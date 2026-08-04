@@ -1,9 +1,5 @@
 /**
- * Residual 1049/1051: sole auth operation failure reporters for login/register/remembered/guest.
- * Exact duals retired from useLogin / useRegister / useRememberedAccounts / useGuestMode
- * enterGuestMode result+catch paths.
- * Soft residual 1077: autoLoginDesktop AutoLoginResult keep-boundary (no force-merge).
- * Soft residual 1079: removeRememberedAccount toast-only keep-boundary (no force-merge).
+ * Shared failure reporting for the active Better Auth login/register operations.
  */
 import { toast } from 'vue-sonner';
 import type { ResultError } from '@memoflow/contracts/result';

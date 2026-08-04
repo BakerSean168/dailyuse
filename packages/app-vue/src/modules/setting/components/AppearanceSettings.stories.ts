@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import AppearanceSettings from './AppearanceSettings.vue';
 
 const defaultSettings = {
-  theme: 'light',
+  theme: 'light' as const,
 };
 
 const meta = {
@@ -44,7 +44,7 @@ export const DarkTheme: Story = {
   }),
   args: {
     modelValue: {
-      theme: 'dark',
+      theme: 'dark' as const,
     },
   },
 };
@@ -60,7 +60,7 @@ export const CompactMode: Story = {
   }),
   args: {
     modelValue: {
-      theme: 'auto',
+      theme: 'auto' as const,
     },
   },
 };

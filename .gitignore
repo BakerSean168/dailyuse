@@ -144,6 +144,9 @@ __pycache__/
 # Claude 本地配置
 .claude/settings.local.json
 
+# WorkBuddy 本地记忆与技能状态
+.workbuddy/
+
 # 测试报告
 **/reports/**/junit.xml
 reports/local-deploy-validation/

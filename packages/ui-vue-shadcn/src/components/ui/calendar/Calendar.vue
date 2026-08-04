@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import type { CalendarRootEmits, CalendarRootProps } from 'radix-vue'
+import type { CalendarRootEmits, CalendarRootProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
-import { CalendarRoot, useForwardPropsEmits } from 'radix-vue'
+import { CalendarRoot, useForwardPropsEmits } from 'reka-ui'
 import { computed } from 'vue'
 import { CalendarCell, CalendarCellTrigger, CalendarGrid, CalendarGridBody, CalendarGridHead, CalendarGridRow, CalendarHeadCell, CalendarHeader, CalendarHeading, CalendarNextButton, CalendarPrevButton } from '.'
 

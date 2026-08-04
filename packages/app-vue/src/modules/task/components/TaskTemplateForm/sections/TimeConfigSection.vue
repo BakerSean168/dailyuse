@@ -83,7 +83,7 @@
                 mode="single"
                 :selected="parseToDate(startDate)"
                 @update:model-value="
-                  (d: Date | undefined) =>
+                  (d: unknown) =>
                     handleCalendarSelect(d, (v) => {
                       startDate = v;
                       handleDateChange();
@@ -263,7 +263,6 @@ import {
 } from '@memoflow/ui-vue-shadcn';
 import { Calendar as CalendarIcon, Clock3 } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
-import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { getProductTime } from '../../../../../shared/utils/product-time';
 import { parseToDate } from '../../../../../shared/utils/parse-to-date';
 import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';

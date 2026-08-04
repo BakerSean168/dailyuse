@@ -81,15 +81,16 @@
             />
           </div>
           <div v-if="tagSuggestions.length" class="mt-2 flex flex-wrap gap-1">
-            <Badge
+            <Button
               v-for="suggestion in filteredSuggestions"
               :key="suggestion"
               variant="outline"
-              class="cursor-pointer"
+              size="sm"
+              class="h-8 rounded-full"
               @click="addSuggestion(suggestion)"
             >
               {{ suggestion }}
-            </Badge>
+            </Button>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ensureLoginScene, ensureRegisterScene, login } from '../helpers/testHelpers';
-import { completeEmailVerification, waitForCapturedEmailCode } from '../helpers/auth-email-code';
+import { completeEmailVerification, waitForCapturedEmailLink } from '../helpers/auth-email-link';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 
 const oldPassword = 'Test123456!';
@@ -29,11 +29,11 @@ async function registerUser(page: Page, email: string, password: string): Promis
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
   await page.getByTestId('register-submit-button').click();
-  await completeEmailVerification(page, email);
+  await completeEmailVerification(page, email, password);
 }
 
 test.describe('Authentication - password recovery', () => {
-  test('[P0] forgot → code → reset → old password fails → new password works → code replay fails', async ({
+  test('[P0] forgot → link → reset → old password fails → new password works → token replay fails', async ({
     page,
   }) => {
     const email = generateTestEmail();
@@ -47,20 +47,12 @@ test.describe('Authentication - password recovery', () => {
     });
     await page.locator('#forgot-email').fill(email);
     await page.getByTestId('forgot-submit-button').click();
-    await expect(page.getByTestId('forgot-next-button')).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-    await page.getByTestId('forgot-next-button').click();
-
-    await expect(page.getByTestId('reset-form')).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-
-    const code = await waitForCapturedEmailCode(email, 'password-reset');
-    await page.locator('#reset-email').fill(email);
-    await page.locator('#reset-code').fill(code);
-    await page.locator('#reset-password').fill(newPassword);
-    await page.locator('#reset-confirm-password').fill(newPassword);
+    const link = await waitForCapturedEmailLink(email, 'password-reset');
+    await page.goto(link, { waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await expect(page.getByTestId('reset-form')).toBeVisible();
+    const resetUrl = page.url();
+    await page.locator('#new-password').fill(newPassword);
+    await page.locator('#confirm-new-password').fill(newPassword);
     await page.getByTestId('reset-submit-button').click();
 
     await expect(page.getByTestId('login-form')).toBeVisible({
@@ -83,18 +75,16 @@ test.describe('Authentication - password recovery', () => {
       timeout: TIMEOUT_CONFIG.LOGIN,
     });
 
-    // Replay consumed code must fail (open reset scene via query).
-    await page.goto(WEB_CONFIG.getFullUrl(`${WEB_CONFIG.LOGIN_PATH}?scene=reset`), {
+    // Replay the consumed token through the same callback URL.
+    await page.goto(resetUrl, {
       waitUntil: 'domcontentloaded',
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
     await expect(page.getByTestId('reset-form')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await page.locator('#reset-email').fill(email);
-    await page.locator('#reset-code').fill(code);
-    await page.locator('#reset-password').fill(`${newPassword}X`);
-    await page.locator('#reset-confirm-password').fill(`${newPassword}X`);
+    await page.locator('#new-password').fill(`${newPassword}X`);
+    await page.locator('#confirm-new-password').fill(`${newPassword}X`);
     await page.getByTestId('reset-submit-button').click();
     await expect(page.getByTestId('auth-error-banner')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,

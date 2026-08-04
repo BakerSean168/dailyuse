@@ -13,9 +13,11 @@ export {
   createAccountPowerSyncModule,
   createAccountPrismaModule,
   createAccountPrismaRepository,
+  createCloudAccountProvisioner,
   type AccountModuleDependencies,
   type AccountModuleInstance,
   type CreateAccountPowerSyncModuleOptions,
   type CreateAccountPrismaModuleOptions,
+  type CloudAccountProvisioningInput,
 } from './server';
 export type { AccountApplicationPort } from './server';

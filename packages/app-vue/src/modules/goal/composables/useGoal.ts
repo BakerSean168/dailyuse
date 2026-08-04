@@ -26,7 +26,7 @@ import type {
   UpdateGoalReq,
   GetGoalAggregateRes,
 } from '@memoflow/contracts/goal';
-import { executeGoalOperation, executeGoalAction, createGoalErrorHandler } from './goalOperations';
+import { executeGoalOperation, createGoalErrorHandler } from './goalOperations';
 import { useFocusMode } from './useFocusMode';
 import { useGoalFilters } from './useGoalFilters';
 import { useGoalFolders } from './useGoalFolders';
@@ -42,7 +42,7 @@ export function useGoal() {
   const savingId = ref<string | null>(null);
 
   const goals = computed(() => store.goals);
-  const currentGoal = computed(() => store.currentGoal);
+  const selectedGoal = computed(() => store.selectedGoal);
   const keyResults = computed(() => store.keyResults);
   const goalFolders = computed(() => store.goalFolders);
   const goalReviews = computed(() => store.goalReviews);
@@ -90,41 +90,18 @@ export function useGoal() {
     }
   }
 
-  async function fetchGoal(id: string): Promise<GoalClientDTO | null> {
-    store.setLoading(true);
-    store.setError(null);
-    store.setKeyResults([]);
-    store.setGoalRecords([]);
-    store.setGoalReviews([]);
-    try {
-      const data = await executeGoalOperation(() => service.getGoal(id), {
-        ...opOpts,
-        fallbackKey: 'goal.error.loadFailed',
-        scope: 'fetchGoal',
-      });
-      if (data) {
-        const dto = data.toDTO();
-        store.setCurrentGoal(dto);
-        return dto;
-      }
-      return null;
-    } finally {
-      store.setLoading(false);
-    }
-  }
-
   async function createGoal(req: CreateGoalReq) {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const data = await executeGoalOperation(
-        () => service.createGoal(sanitizeForIpc(req)),
-        { ...opOpts, fallbackKey: 'goal.error.createFailed', scope: 'createGoal' },
-      );
+      const data = await executeGoalOperation(() => service.createGoal(sanitizeForIpc(req)), {
+        ...opOpts,
+        fallbackKey: 'goal.error.createFailed',
+        scope: 'createGoal',
+      });
       if (data) {
-        const dto = data.toDTO();
-        store.addGoal(dto);
-        return dto;
+        store.applyGoalMutationReceipt(data);
+        return data.readModel;
       }
       return null;
     } finally {
@@ -136,14 +113,14 @@ export function useGoal() {
     savingId.value = id;
     store.setError(null);
     try {
-      const data = await executeGoalOperation(
-        () => service.updateGoal(id, sanitizeForIpc(req)),
-        { ...opOpts, fallbackKey: 'goal.error.updateFailed', scope: 'updateGoal' },
-      );
+      const data = await executeGoalOperation(() => service.updateGoal(id, sanitizeForIpc(req)), {
+        ...opOpts,
+        fallbackKey: 'goal.error.updateFailed',
+        scope: 'updateGoal',
+      });
       if (data) {
-        const dto = data.toDTO();
-        store.updateGoal(dto);
-        return dto;
+        store.applyGoalMutationReceipt(data);
+        return data.readModel;
       }
       return null;
     } finally {
@@ -155,12 +132,22 @@ export function useGoal() {
     savingId.value = id;
     store.setError(null);
     try {
-      const ok = await executeGoalAction(
-        () => service.deleteGoal(id),
-        { ...opOpts, fallbackKey: 'goal.error.deleteFailed', scope: 'deleteGoal' },
+      const expectedVersion = store.getGoalById(id)?.version;
+      if (expectedVersion === undefined) return false;
+      const receipt = await executeGoalOperation(
+        () => service.deleteGoal(id, { expectedVersion }),
+        {
+          ...opOpts,
+          fallbackKey: 'goal.error.deleteFailed',
+          scope: 'deleteGoal',
+        },
       );
-      if (ok) store.removeGoal(id);
-      return ok;
+      if (receipt) {
+        store.applyGoalMutationReceipt(receipt);
+        store.removeGoal(id);
+        return true;
+      }
+      return false;
     } finally {
       savingId.value = null;
     }
@@ -172,15 +159,17 @@ export function useGoal() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const data = await executeGoalOperation(
-        () => service.getGoalAggregateView(goalId),
-        { ...opOpts, fallbackKey: 'goal.error.loadAggregateViewFailed', scope: 'getGoalAggregateView' },
-      );
+      const data = await executeGoalOperation(() => service.getGoalAggregateView(goalId), {
+        ...opOpts,
+        fallbackKey: 'goal.error.loadAggregateViewFailed',
+        scope: 'getGoalAggregateView',
+      });
       if (data) {
-        store.setCurrentGoal(data.goal);
-        store.setKeyResults(data.keyResults ?? data.goal.keyResults ?? []);
-        store.setGoalRecords(data.records ?? []);
-        store.setGoalReviews(data.reviews ?? data.goal.reviews ?? []);
+        store.upsertGoal(data.goal);
+        store.selectGoal(goalId);
+        store.setKeyResults(goalId, data.keyResults, data.goal.version);
+        store.setGoalRecords(data.records);
+        store.setGoalReviews(data.reviews);
         return data;
       }
       return null;
@@ -200,7 +189,8 @@ export function useGoal() {
   return {
     // View state
     goals,
-    currentGoal,
+    selectedGoal,
+    getKeyResultById: store.getKeyResultById,
     keyResults,
     goalFolders,
     goalReviews,
@@ -210,7 +200,6 @@ export function useGoal() {
     error,
     // Goal CRUD
     fetchGoals,
-    fetchGoal,
     createGoal,
     updateGoal,
     deleteGoal,

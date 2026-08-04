@@ -31,10 +31,7 @@ export function setProductTimeStyle(partial: PartialTimeStyle): TimeFacade {
 export type EmptyLabel = string | { display?: string; unknown?: string };
 
 /** Resolve catalog kind → EmptyLabel string (optional i18n via options.translate). */
-export function emptyKind(
-  kind: TimeEmptyKind,
-  options?: ResolveEmptyLabelOptions,
-): string {
+export function emptyKind(kind: TimeEmptyKind, options?: ResolveEmptyLabelOptions): string {
   return resolveEmptyLabel(kind, options);
 }
 
@@ -96,11 +93,15 @@ export function formatProductDate(
   return sessionTime.format.date(ms);
 }
 
-export function formatProductHm(value: number | null | undefined, empty?: EmptyLabel): string {
-  if (value == null || !Number.isFinite(value)) {
+export function formatProductHm(
+  value: number | string | Date | null | undefined,
+  empty?: EmptyLabel,
+): string {
+  const ms = toMs(value);
+  if (ms == null) {
     return emptyLabels(empty).display;
   }
-  return sessionTime.format.hm(value);
+  return sessionTime.format.hm(ms);
 }
 
 export function formatProductPattern(
@@ -126,7 +127,10 @@ export function formatProductDateTimeSeconds(
   return sessionTime.format.dateTimeSeconds(ms);
 }
 
-export function formatProductRelative(value: number | null | undefined, empty?: EmptyLabel): string {
+export function formatProductRelative(
+  value: number | null | undefined,
+  empty?: EmptyLabel,
+): string {
   if (value == null || !Number.isFinite(value)) {
     return emptyLabels(empty).display;
   }

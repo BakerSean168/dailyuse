@@ -12,4 +12,7 @@ export * from './use-cases';
 // ===== Query Services (Advanced Querying) =====
 export * from './services';
 
+// ===== Reliable cross-module delivery =====
+export * from './outbox';
+
 export type { TaskApplicationPort } from './task.application.port';

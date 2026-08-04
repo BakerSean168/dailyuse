@@ -1,162 +1,77 @@
-/**
- * @file authMiddleware.ts
- * @description JWT 认证中间件，负责解析和验证请求中的 Authorization Token。
- * @date 2025-01-22
- */
-
-import type { Request, Response, NextFunction, RequestHandler } from 'express';
-import jwt from 'jsonwebtoken';
-import { getJwtConfig } from '../../config/env.js';
+import type { CloudAuth } from '@memoflow/cloud-auth/server';
+import type { PrismaClient } from '@memoflow/database';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { createApiResponseBuilder } from '../response-builder.js';
 
-/**
- * JWT Token 载荷接口
- */
-interface TokenPayload {
-  identityId: string;
-  sessionId?: string;
-  type?: string;
-  exp?: number;
-}
-
-/**
- * Branded ID 验证正则表达式
- * 支持格式：
- * - 带前缀：IdentityId_7e92ca52-b331-4cbb-9ecc-2b1f1471c370
- * - 纯 UUID：7e92ca52-b331-4cbb-9ecc-2b1f1471c370
- */
-const BRANDED_ID_REGEX = /^([A-Za-z]+_)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function isValidIdentityId(value: unknown): boolean {
-  return typeof value === 'string' && BRANDED_ID_REGEX.test(value);
-}
-
-/**
- * 扩展的请求接口，包含用户认证信息。
- *
- * @remarks
- * 在通过 authMiddleware 后，req 对象将包含 user, identityId 等字段。
- */
 export interface AuthenticatedRequest extends Request {
   user?: {
     identityId: string;
     sessionId?: string;
-    tokenType?: string;
-    exp?: number;
+    email?: string;
+    emailVerified?: boolean;
   };
 }
 
-function sendUnauthorized(
-  req: AuthenticatedRequest,
-  res: Response,
-  message: string,
-): Response {
+function sendUnauthorized(req: AuthenticatedRequest, res: Response, message: string): Response {
   return res.status(401).json(createApiResponseBuilder(req).unauthorized(message));
 }
 
-function sendInternalError(
-  req: AuthenticatedRequest,
-  res: Response,
-  message: string,
-): Response {
+function sendInternalError(req: AuthenticatedRequest, res: Response, message: string): Response {
   return res.status(500).json(createApiResponseBuilder(req).internalError(message));
 }
 
-/**
- * JWT 认证中间件。
- *
- * @remarks
- * 从 Authorization header 中提取 JWT token，验证并解析出 identityId。
- * 将用户信息添加到 req.user 中。
- *
- * @param req - Express 请求对象
- * @param res - Express 响应对象
- * @param next - 下一个中间件函数
- */
-export const authMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
-  const authenticatedReq = req as AuthenticatedRequest;
-  try {
-    // 从 Authorization header 中提取 token
-    const authHeader = authenticatedReq.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return sendUnauthorized(
-        authenticatedReq,
-        res,
-        '缺少认证令牌，请提供有效的Authorization header',
-      );
-    }
-
-    const token = authHeader.substring(7); // 移除 "Bearer " 前缀
-
-    if (!token) {
-      return sendUnauthorized(authenticatedReq, res, '认证令牌不能为空');
-    }
-
-    // 验证 JWT token
-    const { secret } = getJwtConfig();
-
+export function createAuthMiddleware(
+  cloudAuth: CloudAuth,
+  database?: Pick<PrismaClient, 'account'>,
+): RequestHandler {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const authenticatedReq = req as AuthenticatedRequest;
     try {
-      const decoded = jwt.verify(token, secret) as TokenPayload;
-
-      // 验证必要字段
-      if (!decoded.identityId) {
-        return sendUnauthorized(authenticatedReq, res, '无效的认证令牌：缺少用户信息');
+      const principal = await cloudAuth.resolveNodePrincipal(req.headers);
+      if (!principal) {
+        return sendUnauthorized(authenticatedReq, res, '云端认证已失效，请重新认证');
+      }
+      if (database) {
+        const account = await database.account.findUnique({
+          where: { id: principal.identityId },
+          select: { status: true },
+        });
+        if (!account || account.status !== 'Active') {
+          return sendUnauthorized(authenticatedReq, res, '云端账号已关闭或不可用');
+        }
       }
 
-      // 验证 identityId 格式（支持带前缀的品牌化 ID）
-      if (!isValidIdentityId(decoded.identityId)) {
-        return sendUnauthorized(authenticatedReq, res, '无效的认证令牌：身份ID 格式不符合要求');
-      }
-
-      // 检查token是否过期
-      if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-        return sendUnauthorized(authenticatedReq, res, '认证令牌已过期，请重新登录');
-      }
-
-      // 将用户信息添加到请求对象（单一真值：req.user）
       authenticatedReq.user = {
-        identityId: decoded.identityId,
-        sessionId: decoded.sessionId,
-        tokenType: decoded.type,
-        exp: decoded.exp,
+        identityId: principal.identityId,
+        sessionId: principal.sessionId,
+        email: principal.email,
+        emailVerified: principal.emailVerified,
       };
-
       return next();
-    } catch (jwtError) {
-      console.error('JWT验证失败:', jwtError);
-      return sendUnauthorized(authenticatedReq, res, '无效的认证令牌，请重新登录');
+    } catch (error) {
+      console.error('Cloud authentication middleware failed:', error);
+      return sendInternalError(authenticatedReq, res, 'Internal server error');
     }
-  } catch (error) {
-    console.error('认证中间件错误:', error);
-    return sendInternalError(authenticatedReq, res, 'Internal server error');
-  }
-};
+  };
+}
 
-/**
- * 可选的认证中间件。
- *
- * @remarks
- * 如果提供了token则验证，如果没有提供则继续执行但不设置用户信息。
- * 适用于既可以公开访问又可以认证访问的接口。
- *
- * @param req - Express 请求对象
- * @param res - Express 响应对象
- * @param next - 下一个中间件函数
- */
-export const optionalAuthMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const authHeader = req.headers.authorization;
+export function createOptionalAuthMiddleware(
+  cloudAuth: CloudAuth,
+  database?: Pick<PrismaClient, 'account'>,
+): RequestHandler {
+  const required = createAuthMiddleware(cloudAuth, database);
+  return (req, res, next) => {
+    if (!req.headers.authorization && !req.headers.cookie) return next();
+    return required(req, res, next);
+  };
+}
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    // 没有认证信息，继续执行但不设置用户信息
-    return next();
-  }
-
-  // 有认证信息，使用标准认证中间件验证
-  return authMiddleware(req, res, next);
-};
-
+export function createRequireEmailVerifiedMiddleware(): RequestHandler {
+  return (req, res, next) => {
+    const authenticatedReq = req as AuthenticatedRequest;
+    if (authenticatedReq.user?.emailVerified) return next();
+    return res
+      .status(403)
+      .json(createApiResponseBuilder(authenticatedReq).forbidden('请先验证登录邮箱'));
+  };
+}

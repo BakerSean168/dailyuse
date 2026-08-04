@@ -82,8 +82,6 @@ function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateStat
     color: overrides.color ?? null,
     status: overrides.status ?? TaskTemplateStatus.Active,
     folderId: overrides.folderId ?? null,
-    goalId: overrides.goalId ?? null,
-    keyResultId: overrides.keyResultId ?? null,
     goalBinding: overrides.goalBinding ?? null,
     checklist: overrides.checklist ?? [],
     parentTaskId: overrides.parentTaskId ?? null,
@@ -1556,6 +1554,46 @@ describe('TaskTemplate Aggregate', () => {
 
   // ==================== Goal Binding ====================
   describe('Goal Binding', () => {
+    it('keeps a goal association exclusively as a complete goal binding', () => {
+      const template = TaskTemplate.create({
+        identityId: makeIdentityId(),
+        title: 'Goal task',
+        taskType: TaskType.OneTime,
+        timeConfig: makeAllDayTimeConfig(),
+        goalBinding: {
+          goalId: 'goal-123',
+          keyResultId: 'kr-456',
+          goalRecordValue: 10,
+          progressTrigger: TaskGoalBindingTrigger.PerInstance,
+        },
+      });
+
+      expect(template.goalBinding?.toDTO()).toEqual({
+        goalId: 'goal-123',
+        keyResultId: 'kr-456',
+        goalRecordValue: 10,
+        progressTrigger: TaskGoalBindingTrigger.PerInstance,
+      });
+      expect(template).not.toHaveProperty('goalId');
+      expect(template).not.toHaveProperty('keyResultId');
+    });
+
+    it('rejects an incomplete goal binding at the aggregate boundary', () => {
+      expect(() =>
+        TaskTemplate.create({
+          identityId: makeIdentityId(),
+          title: 'Incomplete goal task',
+          taskType: TaskType.OneTime,
+          timeConfig: makeAllDayTimeConfig(),
+          goalBinding: {
+            goalId: 'goal-123',
+            goalRecordValue: 10,
+            progressTrigger: TaskGoalBindingTrigger.PerInstance,
+          } as never,
+        }),
+      ).toThrow('Key Result ID is required');
+    });
+
     describe('bindToGoal()', () => {
       it('should bind to goal with required params', () => {
         const template = TaskTemplate.load(makeState({ status: TaskTemplateStatus.Active }));
@@ -1627,82 +1665,6 @@ describe('TaskTemplate Aggregate', () => {
       });
     });
 
-    describe('linkToGoal() / unlinkFromGoal() (ONE_TIME)', () => {
-      it('should link one-time task to goal', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.linkToGoal('goal-123', 'kr-456');
-        expect(template.goalId).toBe('goal-123');
-        expect(template.keyResultId).toBe('kr-456');
-      });
-
-      it('should link without keyResultId', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.linkToGoal('goal-123');
-        expect(template.goalId).toBe('goal-123');
-        expect(template.keyResultId).toBeNull();
-      });
-
-      it('should throw for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        expect(() => template.linkToGoal('goal-123')).toThrow(InvalidTaskTemplateStateError);
-      });
-
-      it('should throw if already linked', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.linkToGoal('goal-123');
-        expect(() => template.linkToGoal('goal-456')).toThrow(InvalidTaskTemplateStateError);
-      });
-
-      it('should unlink from goal', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.linkToGoal('goal-123');
-        template.unlinkFromGoal();
-        expect(template.goalId).toBeNull();
-        expect(template.keyResultId).toBeNull();
-      });
-
-      it('should throw when unlinking a not-linked task', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        expect(() => template.unlinkFromGoal()).toThrow(InvalidTaskTemplateStateError);
-      });
-
-      it('should throw when unlinking RECURRING task', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        expect(() => template.unlinkFromGoal()).toThrow(InvalidTaskTemplateStateError);
-      });
-    });
   });
 
   // ==================== Subtasks ====================

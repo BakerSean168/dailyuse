@@ -113,10 +113,7 @@
           </CardContent>
         </Card>
 
-        <Card
-          v-if="detailViewModel.goalBinding"
-          data-testid="task-goal-binding"
-        >
+        <Card v-if="detailViewModel.goalBinding" data-testid="task-goal-binding">
           <CardHeader>
             <CardTitle>{{ t('task.detail.goalBinding') }}</CardTitle>
           </CardHeader>
@@ -126,7 +123,7 @@
                 {{ t('task.detail.linkedGoal') }}
               </p>
               <p class="text-sm" data-testid="task-linked-goal-name">
-                {{ detailViewModel.goalBinding.goalTitle ?? detailViewModel.goalBinding.goalId }}
+                {{ goalBindingDisplay?.goalName }}
               </p>
             </div>
             <div>
@@ -134,10 +131,7 @@
                 {{ t('task.detail.keyResult') }}
               </p>
               <p class="text-sm" data-testid="task-linked-key-result-name">
-                {{
-                  detailViewModel.goalBinding.keyResultTitle ??
-                  detailViewModel.goalBinding.keyResultId
-                }}
+                {{ goalBindingDisplay?.keyResultName }}
               </p>
             </div>
           </CardContent>
@@ -154,7 +148,11 @@
                   {{ t('task.detail.parentTask') }}
                 </p>
                 <div v-if="parentTemplate" class="mt-2">
-                  <Button variant="outline" size="sm" @click="handleOpenTaskDetail(parentTemplate.id)">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    @click="handleOpenTaskDetail(parentTemplate.id)"
+                  >
                     {{ parentTemplate.title }}
                   </Button>
                 </div>
@@ -279,7 +277,9 @@
                 <p class="text-2xl font-bold">
                   {{ detailViewModel.completedDueInstanceCount ?? 0 }}
                 </p>
-                <p class="text-xs text-muted-foreground">{{ t('task.detail.completedInWindow') }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ t('task.detail.completedInWindow') }}
+                </p>
               </div>
               <div class="rounded-lg border p-4 text-center">
                 <p class="text-2xl font-bold">
@@ -385,12 +385,10 @@ const graphData = computed(() => buildTaskGraphData(templates.value, dependencie
 
 const detailViewModel = computed<TaskTemplateViewModel | null>(() => {
   if (!currentTemplate.value) return null;
-  const viewModel = mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
-  return {
-    ...viewModel,
-    goalBinding: resolveGoalBinding(viewModel.goalBinding),
-  };
+  return mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
 });
+
+const goalBindingDisplay = computed(() => resolveGoalBinding(detailViewModel.value?.goalBinding));
 
 const parentTemplate = computed(() => {
   const parentTaskId = detailViewModel.value?.parentTaskId;
@@ -528,7 +526,10 @@ function buildDependencyRelations(
       );
       return relatedTask ? { dependency, task: relatedTask } : null;
     })
-    .filter((relation): relation is { dependency: TaskGraphDependencyDTO; task: TaskTemplateViewModel } => !!relation)
+    .filter(
+      (relation): relation is { dependency: TaskGraphDependencyDTO; task: TaskTemplateViewModel } =>
+        !!relation,
+    )
     .sort((a, b) => a.task.title.localeCompare(b.task.title));
 }
 

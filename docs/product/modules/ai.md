@@ -5,7 +5,7 @@ tags:
   - ai
 description: AI 模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-07-22T00:00:00
+updated: 2026-08-01T00:00:00+08:00
 ---
 
 # AI 模块说明
@@ -25,6 +25,7 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - 知识索引：自动同步和索引 repository 中的资源内容。
 - 模型选择：用户可配置多个 AI provider（OpenAI、Anthropic 等），选择默认模型。
 - Provider 管理：创建、更新、删除、测试连接和刷新模型列表。
+- Provider 默认规则：未配置模板只显示“未配置”；一个 identity 最多一个已配置默认 provider。设置默认在一个事务中串行完成，客户端不从模板数量推导默认状态。
 - 分析查询：AI 可查询目标、任务和 Dashboard 的分析数据。
 - 评估报告：离线评估 harness 用于评估 goal workflow 质量。
 - 会话管理：创建、删除、列出对话，支持对话状态管理。
@@ -107,6 +108,9 @@ execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK
 - 运行时模式选择：direct-provider（直连 LLM API）或 remote-ai-service（委托给 Python FastAPI 服务）。
 - ai-service 是独立的 Python/FastAPI 应用，通过 HMAC 签名的 HTTP 请求与主应用通信。
 - 客户端通过 HTTP 或 IPC 适配器访问 AI 能力，服务端通过模块组合根装配用例和仓储实现。
+- 桌面工作区使用单一业务 launcher 与业务 Tab，不维护第二套常驻模块导航。AI 列硬下限 320px、业务区硬下限 520px；默认业务区占可用分栏 64%，高缩放/窄视口按确定性状态机收起侧栏或进入聚焦态。
+- AI 列内部使用 container query 响应自身宽度；欢迎页、消息与 composer 不依赖整窗断点。
+- Provider 默认状态是服务端不变量：只有已配置 provider 可以成为默认；并发设置按 identity 串行，最终始终至多一个默认。
 - 目标态遵循 ADR-035：Agent Host 拥有产品状态、Capability、Context、Tool Policy、Proposal、审批和执行；LangGraph 作为 Workflow Engine，Pi/远程 Agent/本地 CLI 作为候选 Turn Engine，自定义 AI API 作为 Model Gateway。
 - Query/Proposal 工具可以暴露给 Turn Engine；Mutation 工具不进入 Engine，只由确认后的 TypeScript Executor 调用。
 - 一次 AgentRun 固定 ResolvedRunPlan 与 CapabilitySnapshot；切换 Engine 必须新建或 fork Run，不能静默改变数据外传边界。

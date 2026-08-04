@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { PaginationNextProps } from 'radix-vue'
+import type { PaginationNextProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import {
   Button,
 } from '../button'
 import { cn } from '../../../lib/utils'
 import { ChevronRightIcon } from '@radix-icons/vue'
-import { PaginationNext } from 'radix-vue'
+import { PaginationNext } from 'reka-ui'
 import { computed } from 'vue'
 
 const props = withDefaults(defineProps<PaginationNextProps & { class?: HTMLAttributes['class'] }>(), {

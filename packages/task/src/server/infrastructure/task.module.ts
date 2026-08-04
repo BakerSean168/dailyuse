@@ -252,6 +252,7 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     completeTaskInstance: new CompleteTaskInstanceUseCase(
       taskInstanceRepository,
       taskTemplateRepository,
+      taskWriteTransactionRunner,
     ),
     uncompleteTaskInstance: new UncompleteTaskInstanceUseCase(taskInstanceRepository),
     skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository),
@@ -393,7 +394,6 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     },
   };
 }
-
 
 
 

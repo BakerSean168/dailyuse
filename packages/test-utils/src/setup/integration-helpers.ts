@@ -45,18 +45,18 @@ export async function seedAccount(
     overrides.emailAddress ??
     `${overrides.emailPrefix ?? 'int'}-${id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}@example.test`;
 
-  await prisma.authIdentity.upsert({
+  await prisma.cloudAuthUser.upsert({
     where: { id },
     update: {
-      status: 'Unverified',
-      failedLoginAttempts: 0,
-      lastFailedAttempt: null,
-      lockedUntil: null,
-      deletedAt: null,
+      name: emailAddress.split('@')[0] ?? 'Integration Test User',
+      email: emailAddress,
+      emailVerified: true,
     },
     create: {
       id,
-      status: 'Unverified',
+      name: emailAddress.split('@')[0] ?? 'Integration Test User',
+      email: emailAddress,
+      emailVerified: true,
     },
   });
 

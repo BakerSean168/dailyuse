@@ -88,20 +88,20 @@ function mountSettings() {
         }),
         Switch: defineComponent({
           props: {
-            checked: { type: Boolean, default: false },
+            modelValue: { type: Boolean, default: false },
             disabled: { type: Boolean, default: false },
             id: { type: String, default: '' },
           },
-          emits: ['update:checked'],
+          emits: ['update:modelValue'],
           setup(props, { emit, attrs }) {
             return () =>
               h('button', {
                 type: 'button',
                 id: props.id,
                 'data-testid': attrs['data-testid'],
-                'data-checked': String(props.checked),
+                'data-checked': String(props.modelValue),
                 disabled: props.disabled,
-                onClick: () => emit('update:checked', !props.checked),
+                onClick: () => emit('update:modelValue', !props.modelValue),
               });
           },
         }),

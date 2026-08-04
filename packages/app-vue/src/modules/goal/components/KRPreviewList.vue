@@ -36,8 +36,9 @@
           <div class="flex items-start gap-3">
             <!-- Checkbox -->
             <Checkbox
-              :checked="kr.selected"
-              @update:checked="(val) => handleSelectionChange(kr, val)"
+              :model-value="kr.selected"
+              :aria-label="kr.title"
+              @update:model-value="(value) => handleSelectionChange(kr, value === true)"
               data-testid="kr-checkbox"
               class="mt-1"
             />

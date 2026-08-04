@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:open="open">
+  <Dialog :open="open" @update:open="handleDialogOpenChange">
     <ProductDialogShell
       :open="open"
       test-id="goal-dialog"
@@ -190,7 +190,7 @@
               </CollapsibleTrigger>
               <CollapsibleContent class="mt-3 space-y-4">
                 <div class="flex items-center gap-2">
-                  <Switch id="goal-reminder-enabled" v-model:checked="reminderEnabled" />
+                  <Switch id="goal-reminder-enabled" v-model="reminderEnabled" />
                   <Label for="goal-reminder-enabled" class="text-sm font-medium">{{
                     t('goal.dialog.enableReminder')
                   }}</Label>
@@ -516,7 +516,7 @@
       </Tabs>
 
       <template #footer>
-        <Button variant="outline" data-testid="cancel-goal-button" @click="open = false">{{
+        <Button variant="outline" data-testid="cancel-goal-button" @click="discardAndClose">{{
           t('goal.dialog.cancel')
         }}</Button>
         <Button data-testid="save-goal-button" @click="handleSave" :disabled="isSaving">
@@ -526,7 +526,7 @@
     </ProductDialogShell>
   </Dialog>
 
-  <KeyResultDialog ref="keyResultDialogRef" @save="handleSaveKr" />
+  <KeyResultDialog ref="keyResultDialogRef" :on-submit="handleSaveKr" />
 </template>
 
 <script setup lang="ts">
@@ -559,6 +559,7 @@ import {
   TabsContent,
 } from '@memoflow/ui-vue-shadcn';
 import { ColorPickerField, ProductDialogShell } from '../../../../shared/components';
+import { useDialogDraftStore } from '../../../../layouts/shell/dialog-draft-store';
 import {
   Calendar as CalendarIcon,
   ChevronDown,
@@ -579,7 +580,6 @@ import type {
   GoalReminderConfigDTO,
   KeyResultClientDTO,
   AddKeyResultReq,
-  UpdateKeyResultReq,
   ReminderTriggerType as GoalReminderTriggerType,
 } from '@memoflow/contracts/goal';
 import {
@@ -614,20 +614,11 @@ const emit = defineEmits<{
 
 // ── Composable ─────────────────────────────────────────────────────────
 
-const {
-  createGoal,
-  updateGoal,
-  goals,
-  goalFolders,
-  isSaving,
-  fetchKeyResults,
-  addKeyResult,
-  updateKeyResult,
-  deleteKeyResult,
-  keyResults,
-} = useGoal();
+const { createGoal, updateGoal, goals, goalFolders, isSaving } = useGoal();
 
 const { t } = useI18n();
+const dialogDraftStore = useDialogDraftStore();
+const currentDraftKey = ref<string | null>(null);
 
 // ── Constants ──────────────────────────────────────────────────────────
 
@@ -706,9 +697,7 @@ function resetInlineKr(): void {
   Object.assign(inlineKr, createInlineKr());
 }
 
-function addInlineKr(): void {
-  if (!inlineKr.title.trim() || inlineKr.targetValue <= 0) return;
-
+function moveInlineKrToList(): void {
   krList.value.push({
     _existingId: undefined,
     _localId: _localIdCounter++,
@@ -723,6 +712,12 @@ function addInlineKr(): void {
     unit: '',
   });
   resetInlineKr();
+}
+
+function addInlineKr(): void {
+  if (!inlineKr.title.trim() || inlineKr.targetValue <= 0) return;
+
+  moveInlineKrToList();
 }
 
 function krFromDTO(dto: KeyResultClientDTO): LocalKr {
@@ -762,10 +757,8 @@ function buildKrDto(kr: LocalKr): KeyResultClientDTO {
     },
     weight: kr.weight,
     order: 0,
-    version: 1,
     createdAt: now,
     updatedAt: now,
-    deletedAt: null,
   };
 }
 
@@ -825,7 +818,7 @@ function handleSaveKr(payload: {
     existing.currentValue = data.progress.currentValue;
     existing.unit = data.progress.unit ?? '';
     existing._markedForDelete = false;
-    return;
+    return true;
   }
 
   krList.value.push({
@@ -841,6 +834,7 @@ function handleSaveKr(payload: {
     currentValue: data.progress.currentValue,
     unit: data.progress.unit ?? '',
   });
+  return true;
 }
 
 // ── Form State ─────────────────────────────────────────────────────────
@@ -876,14 +870,74 @@ const showReminder = ref(false);
 const showOrganization = ref(false);
 const draftBaseline = ref<string | null>(null);
 
-function serializeDraft(): string {
-  return JSON.stringify({
-    form,
+interface GoalDialogDraft {
+  form: ReturnType<typeof defaultForm>;
+  reminderEnabled: boolean;
+  reminderTriggers: typeof reminderTriggers.value;
+  keyResults: LocalKr[];
+  inlineKeyResult: ReturnType<typeof createInlineKr>;
+  activeTab: typeof activeTab.value;
+  expanded: {
+    motivation: boolean;
+    reminder: boolean;
+    organization: boolean;
+  };
+}
+
+function createDraftSnapshot(): GoalDialogDraft {
+  return {
+    form: { ...form, tags: [...form.tags] },
     reminderEnabled: reminderEnabled.value,
-    reminderTriggers: reminderTriggers.value,
-    keyResults: krList.value.map(({ _localId, ...keyResult }) => keyResult),
-    inlineKeyResult: inlineKr,
-  });
+    reminderTriggers: reminderTriggers.value.map((trigger) => ({ ...trigger })),
+    keyResults: krList.value.map((keyResult) => ({ ...keyResult })),
+    inlineKeyResult: { ...inlineKr },
+    activeTab: activeTab.value,
+    expanded: {
+      motivation: showMotivation.value,
+      reminder: showReminder.value,
+      organization: showOrganization.value,
+    },
+  };
+}
+
+function restoreDraft(draft: GoalDialogDraft): void {
+  Object.assign(form, draft.form);
+  reminderEnabled.value = draft.reminderEnabled;
+  reminderTriggers.value = draft.reminderTriggers.map((trigger) => ({ ...trigger }));
+  krList.value = draft.keyResults.map((keyResult) => ({ ...keyResult }));
+  Object.assign(inlineKr, draft.inlineKeyResult);
+  activeTab.value = draft.activeTab;
+  showMotivation.value = draft.expanded.motivation;
+  showReminder.value = draft.expanded.reminder;
+  showOrganization.value = draft.expanded.organization;
+  _localIdCounter = Math.max(0, ...krList.value.map(({ _localId }) => _localId + 1));
+}
+
+function resolveDraftKey(): string {
+  const scope = dialogDraftStore.scope?.value ?? 'standalone';
+  const subject = props.goal?.id ?? props.defaultFolderId ?? 'new';
+  return `${scope}:goal-dialog:${props.mode}:${subject}`;
+}
+
+function clearDraft(): void {
+  if (currentDraftKey.value) dialogDraftStore.clear(currentDraftKey.value);
+}
+
+function discardAndClose(): void {
+  clearDraft();
+  open.value = false;
+}
+
+function handleDialogOpenChange(nextOpen: boolean): void {
+  if (!nextOpen) {
+    discardAndClose();
+    return;
+  }
+  open.value = true;
+}
+
+function serializeDraft(): string {
+  return JSON.stringify(createDraftSnapshot());
 }
 
 function captureDraftBaseline(): void {
@@ -918,6 +972,7 @@ function handleStartDateSelect(date: unknown) {
   } else {
     form.startDate = null;
   }
+  return true;
 }
 
 function handleTargetDateSelect(date: unknown) {
@@ -998,6 +1053,7 @@ function prefillFromGoal(goal: GoalClientDTO) {
       value: trigger.value,
       enabled: trigger.enabled,
     })) ?? [];
+  krList.value = (goal.keyResults ?? []).map(krFromDTO);
 
   // Auto-expand sections that have content
   if (form.motivation || form.feasibilityAnalysis) {
@@ -1009,11 +1065,6 @@ function prefillFromGoal(goal: GoalClientDTO) {
   if (form.color || form.tags.length > 0 || form.folderId || form.parentGoalId) {
     showOrganization.value = true;
   }
-}
-
-// Populate KR list from store keyResults
-function populateKrList() {
-  krList.value = (keyResults.value ?? []).map(krFromDTO);
 }
 
 // ── Watchers ───────────────────────────────────────────────────────────
@@ -1028,13 +1079,6 @@ watch(
   { immediate: true },
 );
 
-// Sync KR list from store when keyResults change (after fetch)
-watch(keyResults, () => {
-  if (isEditMode.value) {
-    populateKrList();
-  }
-});
-
 watch(reminderEnabled, (enabled) => {
   if (enabled) {
     showReminder.value = true;
@@ -1046,16 +1090,19 @@ watch(reminderEnabled, (enabled) => {
 
 watch(
   open,
-  async (isOpen) => {
+  (isOpen) => {
     if (isOpen) {
-      activeTab.value = 'basic';
-      if (isEditMode.value && props.goal) {
-        prefillFromGoal(props.goal);
-        // Fetch KRs for this goal
-        await fetchKeyResults(props.goal.id);
-        populateKrList();
-      } else if (!isEditMode.value) {
-        resetForm();
+      currentDraftKey.value = resolveDraftKey();
+      const savedDraft = dialogDraftStore.load<GoalDialogDraft>(currentDraftKey.value);
+      if (savedDraft) {
+        restoreDraft(savedDraft);
+      } else {
+        activeTab.value = 'basic';
+        if (isEditMode.value && props.goal) {
+          prefillFromGoal(props.goal);
+        } else if (!isEditMode.value) {
+          resetForm();
+        }
       }
       captureDraftBaseline();
     } else {
@@ -1070,7 +1117,13 @@ watch(
   () => [form, reminderEnabled.value, reminderTriggers.value, krList.value, inlineKr],
   () => {
     if (!open.value || draftBaseline.value === null) return;
-    emit('dirty-change', serializeDraft() !== draftBaseline.value);
+    const serialized = serializeDraft();
+    if (currentDraftKey.value && serialized !== draftBaseline.value) {
+      dialogDraftStore.save(currentDraftKey.value, createDraftSnapshot());
+    } else if (currentDraftKey.value) {
+      dialogDraftStore.clear(currentDraftKey.value);
+    }
+    emit('dirty-change', serialized !== draftBaseline.value);
   },
   { deep: true },
 );
@@ -1129,75 +1182,17 @@ function validateReminder(): string | null {
   return null;
 }
 
-/**
- * Persist KR changes: create new, update existing, delete removed.
- * Called after the goal itself has been saved/created.
- */
-async function saveKrs(goalId: string): Promise<boolean> {
-  for (const kr of krList.value) {
-    if (kr._markedForDelete && kr._existingId) {
-      const ok = await deleteKeyResult(goalId, kr._existingId);
-      if (!ok) return false;
-      continue;
-    }
-
-    if (kr._existingId) {
-      // Update existing KR — only send changed fields
-      const req: UpdateKeyResultReq = {};
-      const original = keyResults.value.find((k) => k.id === kr._existingId);
-
-      if (!original) continue;
-
-      if (kr.title.trim() !== original.title) req.title = kr.title.trim();
-
-      const unit = kr.unit?.trim() || null;
-      if (unit !== original.progress.unit) req.unit = unit;
-
-      if (kr.weight !== original.weight) req.weight = kr.weight;
-
-      if (kr.valueType !== 'Binary' && kr.targetValue !== original.progress.targetValue) {
-        req.targetValue = kr.targetValue;
-      }
-      if (kr.valueType !== 'Binary' && kr.initialValue !== original.progress.initialValue) {
-        req.startValue = kr.initialValue;
-      }
-      if (kr.valueType !== 'Binary' && kr.currentValue !== original.progress.currentValue) {
-        req.currentValue = kr.currentValue;
-      }
-
-      if (Object.keys(req).length > 0) {
-        const result = await updateKeyResult(goalId, kr._existingId, req);
-        if (!result) return false;
-      }
-    } else {
-      // Create new KR
-      const req: AddKeyResultReq = {
-        goalId: goalId as GoalId,
-        title: kr.title.trim(),
-        valueType: kr.valueType as AddKeyResultReq['valueType'],
-        calculationMethod: kr.calculationMethod as AddKeyResultReq['calculationMethod'],
-        startValue: kr.initialValue,
-        targetValue: kr.valueType === 'Binary' ? 1 : kr.targetValue,
-        currentValue: kr.currentValue,
-        weight: kr.weight,
-      };
-
-      if (kr.unit?.trim()) req.unit = kr.unit.trim();
-
-      const result = await addKeyResult(goalId, req);
-      if (!result) return false;
-    }
-  }
-
-  return true;
-}
-
 // ── Save Handler ───────────────────────────────────────────────────────
 
 async function handleSave() {
+  if (isSaving.value) return;
   if (!form.name.trim()) {
     toast.error(t('goal.dialog.titleRequired'));
     return;
+  }
+
+  if (inlineKr.title.trim()) {
+    moveInlineKrToList();
   }
 
   const krError = validateKrs();
@@ -1216,7 +1211,7 @@ async function handleSave() {
 
   if (isEditMode.value && props.goal) {
     // Build partial update request — only include changed fields
-    const req: UpdateGoalReq = {};
+    const req: UpdateGoalReq = { expectedVersion: props.goal.version };
 
     if (form.name.trim() !== props.goal.name) {
       req.name = form.name.trim();
@@ -1277,16 +1272,23 @@ async function handleSave() {
       req.reminderConfig = reminderConfig;
     }
 
-    // Save goal update if there are changes
-    if (Object.keys(req).length > 0) {
-      const result = await updateGoal(props.goal.id, req);
-      if (!result) return;
-    }
+    // Root and children are one desired aggregate state and one CAS write.
+    req.keyResults = activeKrList.value.map((kr) => ({
+      id: kr._existingId as NonNullable<UpdateGoalReq['keyResults']>[number]['id'],
+      title: kr.title.trim(),
+      valueType: kr.valueType as AddKeyResultReq['valueType'],
+      calculationMethod: kr.calculationMethod as AddKeyResultReq['calculationMethod'],
+      startValue: kr.initialValue,
+      targetValue: kr.valueType === 'Binary' ? 1 : kr.targetValue,
+      currentValue: kr.currentValue,
+      unit: kr.unit.trim() || undefined,
+      weight: kr.weight,
+    }));
 
-    // Save KR changes
-    const krOk = await saveKrs(props.goal.id);
-    if (!krOk) return;
+    const result = await updateGoal(props.goal.id, req);
+    if (!result) return;
 
+    clearDraft();
     open.value = false;
     emit('updated');
   } else {
@@ -1306,14 +1308,21 @@ async function handleSave() {
       folderId: form.folderId === 'none' ? undefined : (form.folderId as GoalFolderId) || undefined,
       parentGoalId:
         form.parentGoalId === 'none' ? undefined : (form.parentGoalId as GoalId) || undefined,
+      initialKeyResults: krList.value.map((kr) => ({
+        title: kr.title.trim(),
+        valueType: kr.valueType as AddKeyResultReq['valueType'],
+        calculationMethod: kr.calculationMethod as AddKeyResultReq['calculationMethod'],
+        startValue: kr.initialValue,
+        targetValue: kr.valueType === 'Binary' ? 1 : kr.targetValue,
+        currentValue: kr.currentValue,
+        unit: kr.unit.trim() || undefined,
+        weight: kr.weight,
+      })),
     };
 
     const result = await createGoal(req);
     if (result) {
-      // Save any KRs that were added before the goal existed
-      if (krList.value.length > 0) {
-        await saveKrs(result.id);
-      }
+      clearDraft();
       resetForm();
       open.value = false;
       emit('created');

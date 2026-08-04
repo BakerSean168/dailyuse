@@ -8,6 +8,7 @@
  */
 
 import type { App } from 'vue';
+import { createCloudAuthHttpClient } from '@memoflow/cloud-auth';
 import {
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
@@ -30,9 +31,8 @@ import {
 import { resultHttpClient } from './http';
 import { createLazyService } from './lazy-service';
 
-const authService = createLazyService(async () => {
-  const { createAuthenticationHttpClient } = await import('@memoflow/authentication/client');
-  return createAuthenticationHttpClient(resultHttpClient);
+const authService = createCloudAuthHttpClient(resultHttpClient, {
+  baseUrl: window.location.origin,
 });
 
 const accountService = createLazyService(async () => {
@@ -114,6 +114,7 @@ export function installAppServices(app: App): void {
   app.provide(MODULE_CAPSULES_KEY, defaultModuleCapsules);
   app.provide(LOGOUT_HANDLER_KEY, async () => {
     const authStore = useAuthenticationStore();
+    await authService.signOut();
     authStore.reset();
     window.location.replace('/auth');
   });

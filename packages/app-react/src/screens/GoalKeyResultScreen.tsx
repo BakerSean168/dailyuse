@@ -20,12 +20,22 @@ import {
 
 export function GoalKeyResultScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ id?: string | string[]; keyResultId?: string | string[] }>();
-  const goalId = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
-  const keyResultId = typeof params.keyResultId === 'string' ? params.keyResultId : Array.isArray(params.keyResultId) ? params.keyResultId[0] : null;
+  const params = useLocalSearchParams<{
+    id?: string | string[];
+    keyResultId?: string | string[];
+  }>();
+  const goalId =
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
+  const keyResultId =
+    typeof params.keyResultId === 'string'
+      ? params.keyResultId
+      : Array.isArray(params.keyResultId)
+        ? params.keyResultId[0]
+        : null;
   const service = useGoalService();
 
   const [keyResult, setKeyResult] = useState<KeyResultClientDTO | null>(null);
+  const [goalVersion, setGoalVersion] = useState<number | null>(null);
   const [records, setRecords] = useState<GoalRecordClientDTO[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -42,6 +52,7 @@ export function GoalKeyResultScreen() {
   async function load() {
     if (!goalId || !keyResultId) {
       setKeyResult(null);
+      setGoalVersion(null);
       setRecords([]);
       setError(null);
       setIsLoading(false);
@@ -50,24 +61,18 @@ export function GoalKeyResultScreen() {
 
     setIsLoading(true);
     setError(null);
-    const [keyResultsResult, recordsResult] = await Promise.all([
-      service.getKeyResults(goalId),
-      service.getGoalRecordsByKeyResult(goalId, keyResultId, { limit: 20, offset: 0 }),
-    ]);
+    const result = await service.getGoalAggregateView(goalId);
 
-    if (!keyResultsResult.ok) {
+    if (!result.ok) {
       setKeyResult(null);
+      setGoalVersion(null);
       setRecords([]);
-      setError(keyResultsResult.error.message);
+      setError(result.error.message);
       setIsLoading(false);
       return;
     }
 
-    if (!recordsResult.ok) {
-      setError(recordsResult.error.message);
-    }
-
-    const found = keyResultsResult.data.keyResults.map((item) => item.toDTO()).find((item) => String(item.id) === keyResultId);
+    const found = result.data.keyResults.find((item) => String(item.id) === keyResultId);
     if (!found) {
       setKeyResult(null);
       setRecords([]);
@@ -76,6 +81,7 @@ export function GoalKeyResultScreen() {
     }
 
     setKeyResult(found);
+    setGoalVersion(result.data.goal.version);
     setTitle(found.title);
     setDescription(found.description ?? '');
     setCurrentValue(String(found.progress.currentValue));
@@ -83,7 +89,7 @@ export function GoalKeyResultScreen() {
     setUnit(found.progress.unit ?? '');
     setWeight(String(found.weight));
     setRecordValue(String(found.progress.currentValue));
-    setRecords(recordsResult.ok ? recordsResult.data.records.map((item) => item.toDTO()) : []);
+    setRecords(result.data.records.filter((record) => String(record.keyResultId) === keyResultId));
     setIsLoading(false);
   }
 
@@ -92,13 +98,14 @@ export function GoalKeyResultScreen() {
   }, [goalId, keyResultId]);
 
   async function handleSave() {
-    if (!goalId || !keyResultId) {
+    if (!goalId || !keyResultId || goalVersion === null) {
       return;
     }
 
     setIsMutating(true);
     setError(null);
     const result = await service.updateKeyResult(goalId, keyResultId, {
+      expectedVersion: goalVersion,
       title: title.trim(),
       description: description.trim() || null,
       currentValue: Number.parseFloat(currentValue) || 0,
@@ -113,17 +120,22 @@ export function GoalKeyResultScreen() {
       return;
     }
 
-    await load();
+    const updated = result.data.readModel.keyResults.find(
+      (item) => String(item.id) === keyResultId,
+    );
+    if (updated) setKeyResult(updated);
+    setGoalVersion(result.data.goalVersion);
   }
 
   async function handleAddRecord() {
-    if (!goalId || !keyResultId) {
+    if (!goalId || !keyResultId || goalVersion === null) {
       return;
     }
 
     setIsMutating(true);
     setError(null);
     const result = await service.createGoalRecord(goalId, keyResultId, {
+      expectedVersion: goalVersion,
       value: Number.parseFloat(recordValue) || 0,
       note: recordNote.trim() || undefined,
     });
@@ -135,7 +147,21 @@ export function GoalKeyResultScreen() {
     }
 
     setRecordNote('');
-    await load();
+    const updated = result.data.readModel.keyResults.find(
+      (item) => String(item.id) === keyResultId,
+    );
+    if (updated) setKeyResult(updated);
+    setGoalVersion(result.data.goalVersion);
+    const upserted = (result.data.recordChanges?.upserted ?? []).filter(
+      (record) => String(record.keyResultId) === keyResultId,
+    );
+    if (upserted.length > 0) {
+      const upsertedIds = new Set(upserted.map((record) => String(record.id)));
+      setRecords((current) => [
+        ...upserted,
+        ...current.filter((record) => !upsertedIds.has(String(record.id))),
+      ]);
+    }
   }
 
   return (
@@ -143,14 +169,17 @@ export function GoalKeyResultScreen() {
       eyebrow="Goals"
       title={keyResult?.title ?? 'Key result detail'}
       subtitle="关键结果详情页承接编辑和 progress record 录入。"
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} />}>
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} />}
+    >
       <SectionCard title="Navigation" description="关键结果从目标详情页继续下钻。">
         <PrimaryButton label="Back to goal" onPress={() => router.back()} variant="secondary" />
       </SectionCard>
 
       {error ? (
         <SectionCard title="Key result request failed" description="当前先直接展示错误。">
-          <ThemedText type="small" themeColor="warning">{error}</ThemedText>
+          <ThemedText type="small" themeColor="warning">
+            {error}
+          </ThemedText>
         </SectionCard>
       ) : null}
 
@@ -164,25 +193,66 @@ export function GoalKeyResultScreen() {
         <>
           <SectionCard title="Progress" description="关键结果当前值、目标值和权重摘要。">
             <View style={styles.pillRow}>
-              <StatusPill label={`${keyResult.progress.currentValue}/${keyResult.progress.targetValue}${keyResult.progress.unit ? ` ${keyResult.progress.unit}` : ''}`} tone="tint" />
+              <StatusPill
+                label={`${keyResult.progress.currentValue}/${keyResult.progress.targetValue}${keyResult.progress.unit ? ` ${keyResult.progress.unit}` : ''}`}
+                tone="tint"
+              />
               <StatusPill label={`Weight ${keyResult.weight}`} tone="textSecondary" />
             </View>
           </SectionCard>
 
           <SectionCard title="Edit key result" description="先支持核心字段更新。">
             <PrimaryTextField label="Title" value={title} onChangeText={setTitle} />
-            <PrimaryTextField label="Description" value={description} onChangeText={setDescription} />
-            <PrimaryTextField label="Current value" value={currentValue} onChangeText={setCurrentValue} keyboardType="numeric" />
-            <PrimaryTextField label="Target value" value={targetValue} onChangeText={setTargetValue} keyboardType="numeric" />
+            <PrimaryTextField
+              label="Description"
+              value={description}
+              onChangeText={setDescription}
+            />
+            <PrimaryTextField
+              label="Current value"
+              value={currentValue}
+              onChangeText={setCurrentValue}
+              keyboardType="numeric"
+            />
+            <PrimaryTextField
+              label="Target value"
+              value={targetValue}
+              onChangeText={setTargetValue}
+              keyboardType="numeric"
+            />
             <PrimaryTextField label="Unit" value={unit} onChangeText={setUnit} />
-            <PrimaryTextField label="Weight" value={weight} onChangeText={setWeight} keyboardType="numeric" />
-            <PrimaryButton label={isMutating ? 'Saving…' : 'Save key result'} onPress={handleSave} disabled={isMutating} />
+            <PrimaryTextField
+              label="Weight"
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="numeric"
+            />
+            <PrimaryButton
+              label={isMutating ? 'Saving…' : 'Save key result'}
+              onPress={handleSave}
+              disabled={isMutating}
+            />
           </SectionCard>
 
           <SectionCard title="Add progress record" description="移动端先支持手动记录一次最新进展。">
-            <PrimaryTextField label="Value" value={recordValue} onChangeText={setRecordValue} keyboardType="numeric" />
-            <PrimaryTextField label="Note" value={recordNote} onChangeText={setRecordNote} placeholder="What changed" />
-            <PrimaryButton label={isMutating ? 'Submitting…' : 'Add record'} onPress={handleAddRecord} disabled={isMutating} variant="secondary" />
+            <PrimaryTextField
+              label="Value"
+              value={recordValue}
+              onChangeText={setRecordValue}
+              keyboardType="numeric"
+            />
+            <PrimaryTextField
+              label="Note"
+              value={recordNote}
+              onChangeText={setRecordNote}
+              placeholder="What changed"
+            />
+            <PrimaryButton
+              label={isMutating ? 'Submitting…' : 'Add record'}
+              onPress={handleAddRecord}
+              disabled={isMutating}
+              variant="secondary"
+            />
           </SectionCard>
 
           <SectionCard title="History" description="最近记录先按时间倒序展示。">
@@ -192,13 +262,19 @@ export function GoalKeyResultScreen() {
                   <View key={record.id} style={styles.recordCard}>
                     <View style={styles.recordHeader}>
                       <ThemedText type="smallBold">{record.valueAfter}</ThemedText>
-                      <ThemedText type="small" themeColor="textSecondary">{formatProductDateTime(record.createdAt, emptyKind('emdash'))}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        {formatProductDateTime(record.createdAt, emptyKind('emdash'))}
+                      </ThemedText>
                     </View>
-                    <ThemedText type="small" themeColor="textSecondary">{record.comment ?? 'No note'}</ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {record.comment ?? 'No note'}
+                    </ThemedText>
                   </View>
                 ))
               ) : (
-                <ThemedText type="small" themeColor="textSecondary">当前还没有 progress record。</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  当前还没有 progress record。
+                </ThemedText>
               )}
             </View>
           </SectionCard>

@@ -118,12 +118,33 @@ services:
       retries: 3
       start_period: 20s
 
+  migrator:
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-migrator:${MIGRATOR_TAG:-prod-latest}
+    restart: 'no'
+    init: true
+    labels:
+      com.centurylinklabs.watchtower.enable: 'false'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:?set DB_NAME}
+      DB_USER: ${DB_USER:?set DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    networks:
+      - memoflow-network
+
   api:
     image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-api:${API_TAG:-prod-latest}
     restart: unless-stopped
     init: true
     labels:
-      com.centurylinklabs.watchtower.enable: 'true'
+      # Database initialization must complete before a new API image starts.
+      # API rollout therefore uses the explicit release command, not Watchtower.
+      com.centurylinklabs.watchtower.enable: 'false'
     depends_on:
       postgres:
         condition: service_healthy
@@ -131,6 +152,8 @@ services:
         condition: service_healthy
       ai-service:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: production
       APP_NAME: ${APP_NAME:-MemoFlow}
@@ -138,6 +161,8 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-warn}
       API_PORT: 3000
       API_HOST: 0.0.0.0
+      AUTH_BASE_URL: ${AUTH_BASE_URL:?AUTH_BASE_URL is required}
+      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:?MEMOFLOW_WEB_URL is required}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:?set DB_NAME}

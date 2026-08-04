@@ -100,6 +100,23 @@ jobs:
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
 
+      - name: Build and push Migrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.api
+          target: migrator-runtime
+          push: true
+          tags: |
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-migrator:${{ steps.tag.outputs.tag }}
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-migrator:prod-latest
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ steps.tag.outputs.tag }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
       - name: Build and push Web image
         uses: docker/build-push-action@v6
         with:
@@ -142,8 +159,9 @@ jobs:
             echo "| Image | Tag |"
             echo "|-------|-----|"
             echo "| \`${REGISTRY}/${NS}/memoflow-api\` | \`${TAG}\` + \`prod-latest\` |"
+            echo "| \`${REGISTRY}/${NS}/memoflow-migrator\` | \`${TAG}\` + \`prod-latest\` |"
             echo "| \`${REGISTRY}/${NS}/memoflow-web\` | \`${TAG}\` + \`prod-latest\` |"
             echo "| \`${REGISTRY}/${NS}/memoflow-ai-service\` | \`${TAG}\` + \`prod-latest\` |"
             echo ""
-            echo "Watchtower will auto-detect the \`prod-latest\` update within the configured poll interval."
+            echo "Web and AI Service remain eligible for Watchtower. API rollout must run the matching migrator image first."
           } >> "$GITHUB_STEP_SUMMARY"

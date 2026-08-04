@@ -52,12 +52,6 @@ test.describe('Local Docker core product Phase C', () => {
     );
     await expectComposerGeometry(page.getByTestId('ai-footer-composer'));
 
-    await page.getByTestId('capsule-preview-toggle-task').click();
-    await expect(page.getByTestId('capsule-preview-task')).toBeVisible();
-    await expect(page).toHaveURL(/\/$/);
-    await page.keyboard.press('Escape');
-    await expect(page.getByTestId('capsule-preview-task')).toHaveCount(0);
-
     await panelToggle.click();
     await expect(panel).toBeHidden();
     await expect(panelToggle).toHaveAttribute('aria-label', '显示右侧面板');

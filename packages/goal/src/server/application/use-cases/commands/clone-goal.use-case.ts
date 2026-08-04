@@ -8,7 +8,12 @@
 
 import type { IGoalRepository } from '../../../domain';
 import { CreateGoalSchema } from '@memoflow/contracts/goal';
-import type { CloneGoalReq, CreateGoalReq, GoalClientDTO } from '@memoflow/contracts/goal';
+import type {
+  CloneGoalReq,
+  CreateGoalReq,
+  GoalClientDTO,
+  GoalMutationReceipt,
+} from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { error } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
@@ -24,7 +29,7 @@ export class CloneGoalUseCase {
     goalId: string,
     params: CloneGoalReq,
     cx: ExecutionContext,
-  ): Promise<Result<GoalClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     const goal = await this.goalRepository.findByIdForIdentity(cx.identityId, goalId, {
       includeChildren: true,
     });

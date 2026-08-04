@@ -15,7 +15,7 @@ updated: 2026-07-31T00:00:00
 
 它的定位不是“随便起一下服务”，而是：
 
-- 尽量贴近生产拓扑：`postgres + redis + ai-service + api + powersync + web`
+- 尽量贴近生产拓扑：`postgres + redis + ai-service + migrator + api + powersync + web`
 - 强制本地构建 `api` / `web` / `ai-service` 镜像
 - 在进入 PR 和 release 链路前，先验证本地容器运行结果
 - **host 端口与 host-dev / Playwright e2e 隔离**（SSOT：`tools/runtime/profiles.json`）
@@ -64,6 +64,8 @@ VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.loc
 - PostgreSQL: `127.0.0.1:55432`
 - Redis: `127.0.0.1:56379`
 
+`migrator` 是一次性数据库初始化服务，没有 host 端口。它在 PostgreSQL healthy 后执行 Prisma schema reconciliation 与数据库 bootstrap；成功时以 `Exited (0)` 结束，API 随后才会启动。`Exited (0)` 是预期状态，不是服务故障。
+
 仅重启已有容器：
 
 ```bash
@@ -86,11 +88,11 @@ pnpm docker:local:down
 
 ## 与 host-dev / e2e 的关系
 
-| 车道 | API | Web | PG | 说明 |
-| --- | --- | --- | --- | --- |
-| local-docker | 53080 | 58080 | 55432 | 本文件 |
-| host-dev | 3000 | 5173 | 5432 | `pnpm nx run-many -t serve --projects=api,web --parallel=2` |
-| e2e | 3000 | 5173 | 5433 | Playwright |
+| 车道         | API   | Web   | PG    | 说明                                                        |
+| ------------ | ----- | ----- | ----- | ----------------------------------------------------------- |
+| local-docker | 53080 | 58080 | 55432 | 本文件                                                      |
+| host-dev     | 3000  | 5173  | 5432  | `pnpm nx run-many -t serve --projects=api,web --parallel=2` |
+| e2e          | 3000  | 5173  | 5433  | Playwright                                                  |
 
 完整互斥规则与排障见 [runtime-lanes.md](./runtime-lanes.md)。
 
@@ -105,6 +107,7 @@ pnpm docker:local:down
 进入 PR 前，至少确认：
 
 - `api` healthy
+- `migrator` 为 `Exited (0)`，且日志包含 `Database initialization completed`
 - `web` healthy
 - `ai-service` healthy
 - `powersync` healthy
@@ -164,6 +167,7 @@ node tools/testing/cleanup-local-docker-pm-data.mjs
 
 相关入口：
 
+- Docker 构建架构、优化前后指标与缓存说明见 [docker-image-build-optimization.md](./docker-image-build-optimization.md)
 - 运行时车道说明见 [runtime-lanes.md](./runtime-lanes.md)
 - 发布链路说明见 [release-workflow.md](./release-workflow.md)
 - Git/PR 约定见 [git-workflow.md](./git-workflow.md)

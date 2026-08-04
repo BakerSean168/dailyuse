@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { GoalStatus, KeyResultClientDTO } from '@memoflow/contracts/goal';
+import type {
+  GoalAggregateReadModel,
+  GoalClientDTO,
+  GoalStatus,
+  KeyResultClientDTO,
+} from '@memoflow/contracts/goal';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { Goal } from '@memoflow/goal/client';
 
@@ -9,6 +14,7 @@ import { useGoalService } from './useGoalService';
 
 export type GoalSummary = {
   id: string;
+  version: number;
   name: string;
   description: string | null;
   status: GoalStatus;
@@ -73,37 +79,36 @@ function computeProgress(keyResult: KeyResultClientDTO) {
   );
 }
 
-function mapGoal(goal: Goal): GoalSummary {
-  const dto = goal.toDTO();
-
+function mapGoalDTO(dto: GoalClientDTO): GoalSummary {
   return {
-    id: String(goal.id),
-    name: goal.name,
-    description: goal.description,
-    status: goal.status,
-    importance: goal.importance,
-    priority: goal.priority,
-    tags: goal.tags,
-    startDate: goal.startDate ?? null,
-    targetDate: goal.targetDate ?? null,
-    updatedAt: goal.updatedAt,
-    color: goal.color,
-    totalKeyResults: dto.totalKeyResults ?? 0,
-    completedKeyResults: dto.completedKeyResults ?? 0,
-    overallProgress: dto.overallProgress ?? 0,
+    id: String(dto.id),
+    version: dto.version,
+    name: dto.name,
+    description: dto.description,
+    status: dto.status,
+    importance: dto.importance,
+    priority: dto.priority,
+    tags: dto.tags,
+    startDate: dto.startDate,
+    targetDate: dto.targetDate,
+    updatedAt: dto.updatedAt,
+    color: dto.color,
+    totalKeyResults: dto.totalKeyResults,
+    completedKeyResults: dto.completedKeyResults,
+    overallProgress: dto.overallProgress,
   };
 }
 
-export function mapGoalDetail(
-  goal: Goal,
-  keyResults: KeyResultClientDTO[],
-  reviewsCount: number,
-): GoalDetail {
+function mapGoal(goal: Goal): GoalSummary {
+  return mapGoalDTO(goal.toDTO());
+}
+
+export function mapGoalDetail(goal: GoalAggregateReadModel): GoalDetail {
   return {
-    ...mapGoal(goal),
+    ...mapGoalDTO(goal),
     motivation: goal.motivation,
     category: goal.category,
-    keyResults: keyResults.map((item) => ({
+    keyResults: goal.keyResults.map((item) => ({
       id: item.id,
       title: item.title,
       description: item.description,
@@ -113,7 +118,7 @@ export function mapGoalDetail(
       unit: item.progress.unit,
       progress: computeProgress(item),
     })),
-    reviewsCount,
+    reviewsCount: goal.reviews.length,
   };
 }
 

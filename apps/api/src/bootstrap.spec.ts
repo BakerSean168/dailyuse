@@ -2,6 +2,7 @@ import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import type { IApiModule } from './shared/contracts/api-module';
 import { ApiBootstrapper } from './bootstrap';
+import { createCloudAuthStub } from './test/cloud-auth.stub';
 
 describe('ApiBootstrapper', () => {
   it('registers modules with the shared context and mounts routes on both API prefixes', async () => {
@@ -17,7 +18,7 @@ describe('ApiBootstrapper', () => {
       register,
     };
 
-    const app = await new ApiBootstrapper(db).register(module).init();
+    const app = await new ApiBootstrapper(db, createCloudAuthStub()).register(module).init();
 
     expect(register).toHaveBeenCalledTimes(1);
     const context = register.mock.calls[0][0];
@@ -42,7 +43,7 @@ describe('ApiBootstrapper', () => {
       throw new Error('destroy failed');
     });
 
-    const bootstrapper = new ApiBootstrapper({});
+    const bootstrapper = new ApiBootstrapper({}, createCloudAuthStub());
     bootstrapper.register({
       name: 'BrokenModule',
       register: vi.fn(),
@@ -60,5 +61,26 @@ describe('ApiBootstrapper', () => {
 
     expect(failingDestroy).toHaveBeenCalledTimes(1);
     expect(destroyed).toEqual(['broken', 'healthy']);
+  });
+
+  it('exposes captured Better Auth links only when the test collector is injected', async () => {
+    const capture = {
+      findLatest: vi.fn((email: string, kind: string) => ({
+        email,
+        kind,
+        url: 'https://api.test/api/auth/verify-email?token=secret',
+        capturedAt: '2026-08-02T00:00:00.000Z',
+      })),
+    };
+    const testApp = await new ApiBootstrapper({}, createCloudAuthStub(), capture).init();
+
+    const response = await request(testApp)
+      .get('/api/auth/test/last-email-link')
+      .query({ email: 'alice@example.com', kind: 'email-verification' });
+    expect(response.status).toBe(200);
+    expect(response.body.data.url).toContain('token=secret');
+
+    const normalApp = await new ApiBootstrapper({}, createCloudAuthStub()).init();
+    expect((await request(normalApp).get('/api/auth/test/last-email-link')).status).toBe(404);
   });
 });

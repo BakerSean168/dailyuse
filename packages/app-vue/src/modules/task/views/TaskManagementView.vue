@@ -80,6 +80,7 @@
           :highlighted-template-id="highlightedTemplateId"
           :enable-drag="true"
           :on-create-dependency="handleCardCreateDependency"
+          :resolve-goal-binding-name="resolveTaskGoalBindingName"
           @ai-generate="router.push('/')"
           @clear-filters="clearFilters"
           @click-template="handleClickTemplate"
@@ -239,6 +240,7 @@ import { useTaskGoalBindingOptions } from '../composables/useTaskGoalBindingOpti
 import type {
   TaskRelationFilter,
   TaskStatusFilter,
+  TaskGoalBindingViewModel,
   TaskTemplateViewModel,
   TaskViewMode,
 } from '../components/types';
@@ -274,6 +276,13 @@ const {
   deleteDependency,
 } = useTask();
 const { loadGoalBindings, resolveGoalBinding } = useTaskGoalBindingOptions();
+
+function resolveTaskGoalBindingName(binding: TaskGoalBindingViewModel): string {
+  const display = resolveGoalBinding(binding);
+  return display
+    ? `${display.goalName} · ${display.keyResultName}`
+    : t('common.unavailable');
+}
 
 // ── 过滤 / 视图状态（从 TaskTemplateManagement 上移） ──
 const currentStatus = ref<TaskStatusFilter>('ACTIVE');
@@ -321,13 +330,7 @@ watch(showQuickTaskDialog, (open) => {
 });
 
 const viewModels = computed(() => {
-  const baseViewModels = templates.value.map((dto) => {
-    const viewModel = mapTaskTemplateDtoToViewModel(dto, t);
-    return {
-      ...viewModel,
-      goalBinding: resolveGoalBinding(viewModel.goalBinding),
-    };
-  });
+  const baseViewModels = templates.value.map((dto) => mapTaskTemplateDtoToViewModel(dto, t));
   const templateById = new Map(baseViewModels.map((template) => [template.id, template]));
   const predecessorCounts = new Map<string, number>();
   const successorCounts = new Map<string, number>();

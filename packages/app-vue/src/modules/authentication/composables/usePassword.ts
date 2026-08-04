@@ -14,11 +14,7 @@
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import type {
-  ChangePasswordReq,
-  ForgotPasswordReq,
-  ResetPasswordReq,
-} from '@memoflow/contracts/authentication';
+import type { CloudAuthClientPort } from '@memoflow/contracts';
 import { useAuthenticationStore } from '../stores/authentication-store';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -40,7 +36,7 @@ export function usePassword() {
 
   // ========== 修改密码 ==========
 
-  async function changePassword(req: ChangePasswordReq): Promise<boolean> {
+  async function changePassword(req: Parameters<CloudAuthClientPort['changePassword']>[0]): Promise<boolean> {
     if (!store.isAuthenticated) {
       toast.error(t('auth.toast.pleaseLogin'));
       return false;
@@ -64,9 +60,9 @@ export function usePassword() {
 
   // ========== 忘记密码 ==========
 
-  async function forgotPassword(req: ForgotPasswordReq): Promise<boolean> {
+  async function forgotPassword(req: { email: string }): Promise<boolean> {
     isLoading.value = true;
-    const result = await service.forgotPassword(req);
+    const result = await service.forgotPassword(req.email);
     isLoading.value = false;
 
     if (result.ok) {
@@ -83,7 +79,7 @@ export function usePassword() {
 
   // ========== 重置密码 ==========
 
-  async function resetPassword(req: ResetPasswordReq): Promise<boolean> {
+  async function resetPassword(req: Parameters<CloudAuthClientPort['resetPassword']>[0]): Promise<boolean> {
     isLoading.value = true;
     const result = await service.resetPassword(req);
     isLoading.value = false;

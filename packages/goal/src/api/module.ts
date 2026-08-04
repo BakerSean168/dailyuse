@@ -57,6 +57,7 @@ export const GoalApiModule: GoalApiModuleDef = {
     goalEventListeners = registerGoalEventListeners(
       goalModule.goalRepository,
       goalModule.goalRecordRepository,
+      goalModule.goalWriteTransactionRunner,
     );
     goalEventListeners.start();
 

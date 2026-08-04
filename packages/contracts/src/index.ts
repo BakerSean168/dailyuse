@@ -25,7 +25,6 @@
  * - @memoflow/contracts/reminder   - 提醒模块
  * - @memoflow/contracts/repository - 仓库模块
  * - @memoflow/contracts/account    - 账户模块
- * - @memoflow/contracts/authentication - 认证模块
  * - @memoflow/contracts/schedule   - 调度模块
  * - @memoflow/contracts/setting    - 设置模块
  * - @memoflow/contracts/notification - 通知模块
@@ -104,3 +103,19 @@ export type {
   HttpResponseOptions,
 } from './result';
 
+export type {
+  CloudAccountSummary,
+  CloudSessionSummary,
+  CloudAuthResponse,
+  CloudSessionState,
+  CloudSignInRequest,
+  CloudSignUpRequest,
+  CloudSessionClientPort,
+  CloudAuthClientPort,
+  CloudAuthWebClientPort,
+  CloudAuthDesktopClientPort,
+  DeviceAuthorizationDecisionStatus,
+  DeviceAuthorizationVerification,
+  DesktopCloudConnectionStatus,
+  DesktopCloudConnectionAttempt,
+} from './cloud-auth';

@@ -42,7 +42,28 @@ export default {
   "logoutHandlerUnavailable": "The logout handler is currently unavailable",
   "actions": {
     "logout": "Log out",
+    "lockProfile": "Lock local Profile",
     "saveProfile": "Save Profile"
+  },
+  "lockProfileHint": "Close the current local data runtime and return to Profile unlock. The cloud account binding remains intact.",
+  "localProtection": {
+    "title": "Local Profile protection",
+    "description": "Optional device protection that is independent from your MemoFlow cloud password.",
+    "toggle": "Use a local PIN",
+    "hint": "Off by default. When enabled, this Profile requires the PIN the next time it is opened.",
+    "pin": "Local PIN",
+    "confirmPin": "Confirm local PIN",
+    "pinPlaceholder": "6 to 12 digits",
+    "enable": "Enable PIN",
+    "enabled": "Local PIN enabled",
+    "invalidPin": "PIN must contain 6 to 12 digits",
+    "pinMismatch": "PINs do not match",
+    "enableFailed": "Failed to set local PIN",
+    "removeTitle": "Turn off local PIN?",
+    "removeDescription": "This Profile can be opened directly next time without a local PIN.",
+    "removeConfirm": "Turn off PIN",
+    "removeFailed": "Failed to remove local PIN",
+    "removed": "Local PIN turned off"
   },
   "profile": {
     "editTitle": "Edit Profile",
@@ -86,14 +107,12 @@ export default {
     "accountClosed": "Account closed",
     "closeAccountFailed": "Failed to close account",
     "closeFailed": "Close failed",
-    "guestProfileUpdateUnavailable": "Guest mode cannot update profile data",
-    "guestSettingsUpdateUnavailable": "Guest mode cannot update account settings",
     "guestCloseAccountUnavailable": "Guest mode cannot close the account"
   },
-  "logoutHint": "You can safely sign out here and return to the login page right away.",
+  "logoutHint": "Disconnect the current cloud session and stop sync while keeping this local Profile available.",
   "logoutConfirm": {
     "title": "Log out of your account?",
-    "description": "You will need to sign in again to continue.",
+    "description": "Cloud sync will pause. Local data will remain unlocked and available.",
     "confirmText": "Log out",
     "cancelText": "Cancel"
   }

@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import type { AuthResponseDTO } from '@memoflow/contracts/authentication';
+import type { CloudAuthResponse } from '@memoflow/contracts';
 import type { ResultError } from '@memoflow/contracts/result';
 import type { IAuthService } from '../../../di/types';
 import { useAuthenticationStore } from '../stores/authentication-store';
@@ -17,7 +17,7 @@ export interface AuthContext {
   t: ReturnType<typeof useI18n>['t'];
   lastResultError: ReturnType<typeof ref<ResultError | null>>;
   redirectWithReload: (path: string) => void;
-  handleAuthSuccess: (data: AuthResponseDTO) => void;
+  handleAuthSuccess: (data: CloudAuthResponse) => void;
   getLocalizedAuthError: (errorLike: unknown, fallbackKey: string) => string;
 }
 
@@ -41,8 +41,8 @@ export function createAuthContext(): AuthContext {
    * store.handleAuthResponse + clear error; no localStorage writes here.
    * Soft residual 1201: web useWebAuth handleAuthSuccess is localStorage-only (no force-merge).
    */
-  function handleAuthSuccess(data: AuthResponseDTO) {
-    store.handleAuthResponse(data);
+  function handleAuthSuccess(data: CloudAuthResponse) {
+    store.handleCloudAuthResponse(data);
     store.setError(null);
   }
 

@@ -19,7 +19,7 @@ import { TaskTemplateStatus } from '../../domain/value-objects/task-template-sta
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import { TaskFolderId } from '../../domain/value-objects/task-folder-id';
 import { IdentityId } from '@memoflow/domain-shared';
-import type {GoalId, KeyResultId, Instant} from '@memoflow/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 import { createTimeFacade } from '@memoflow/time';
 
 const taskTime = createTimeFacade();
@@ -63,8 +63,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       description: rest.description ?? null,
       color: rest.color ?? null,
       folderId: rest.folderId ?? null,
-      goalId: rest.goalId ?? null,
-      keyResultId: rest.keyResultId ?? null,
       goalBinding: rest.goalBinding ?? null,
       parentTaskId: rest.parentTaskId ?? null,
       timeConfig: rest.timeConfig ?? null,
@@ -206,16 +204,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   public get checklist(): ChecklistItemDefinition[] {
     return [...this._props.checklist];
-  }
-
-  // ===== Additional Getters =====
-
-  public get goalId(): GoalId | null {
-    return this._props.goalId;
-  }
-
-  public get keyResultId(): KeyResultId | null {
-    return this._props.keyResultId;
   }
 
   public get parentTaskId(): TaskTemplateId | null {
@@ -654,14 +642,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return goalPolicy.isLinkedToGoal(this._props);
   }
 
-  public linkToGoal(goalId: string, keyResultId?: string): void {
-    goalPolicy.linkToGoal(this, goalId, keyResultId);
-  }
-
-  public unlinkFromGoal(): void {
-    goalPolicy.unlinkFromGoal(this);
-  }
-
   // ===== Subtask Methods (delegated to task-template-onetime.policy) =====
 
   public addSubtask(subtaskId: string): void {
@@ -881,8 +861,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     dueDate?: Instant;
     estimatedMinutes?: number;
     note?: string;
-    goalId?: GoalId;
-    keyResultId?: KeyResultId;
     parentTaskId?: TaskTemplateId;
     folderId?: TaskFolderId;
     tags?: string[];
@@ -904,8 +882,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       color: params.color ?? null,
       status: TaskTemplateStatus.Active,
       folderId: params.folderId ?? null,
-      goalId: params.goalId ?? null,
-      keyResultId: params.keyResultId ?? null,
       goalBinding: null,
       checklist: [],
       parentTaskId: params.parentTaskId ?? null,
@@ -961,8 +937,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       color: params.color ?? null,
       status: TaskTemplateStatus.Active,
       folderId: params.folderId ?? null,
-      goalId: null,
-      keyResultId: null,
       goalBinding: null,
       checklist: [],
       parentTaskId: null,
@@ -1042,13 +1016,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       color: params.color ?? null,
       status: TaskTemplateStatus.Active,
       folderId: params.folderId ?? null,
-      goalId: (params.goalBinding?.goalId as GoalId | undefined) ?? null,
-      keyResultId: (params.goalBinding?.keyResultId as KeyResultId | undefined) ?? null,
       goalBinding: params.goalBinding
-        ? TaskGoalBinding.fromDTO({
+        ? TaskGoalBinding.create({
             ...params.goalBinding,
-            goalId: params.goalBinding.goalId as GoalId,
-            keyResultId: params.goalBinding.keyResultId as KeyResultId,
+            goalId: params.goalBinding.goalId as TaskGoalBinding['goalId'],
+            keyResultId: params.goalBinding.keyResultId as TaskGoalBinding['keyResultId'],
           })
         : null,
       checklist: [],

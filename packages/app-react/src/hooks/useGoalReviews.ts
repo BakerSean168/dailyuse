@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import type { GoalReviewClientDTO } from '@memoflow/contracts/goal';
-import type { GoalReview } from '@memoflow/goal/client';
-
 import { useAppSession } from './useAppSession';
 import { useGoalService } from './useGoalService';
 
@@ -52,7 +50,7 @@ export function useGoalReviews(goalId: string | null) {
     setIsLoading(true);
     setError(null);
 
-    const result = await service.getGoalReviews(goalId);
+    const result = await service.getGoalAggregateView(goalId);
     if (!result.ok) {
       setReviews([]);
       setError(result.error.message);
@@ -61,8 +59,10 @@ export function useGoalReviews(goalId: string | null) {
     }
 
     const mapped = result.data.reviews
-      .map((review: GoalReview) => mapReview(review.toDTO()))
-      .sort((left: GoalReviewSummary, right: GoalReviewSummary) => right.reviewedAt - left.reviewedAt);
+      .map(mapReview)
+      .sort(
+        (left: GoalReviewSummary, right: GoalReviewSummary) => right.reviewedAt - left.reviewedAt,
+      );
     setReviews(mapped);
     setIsLoading(false);
   }

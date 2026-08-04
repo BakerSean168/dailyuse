@@ -12,12 +12,15 @@
  */
 
 import type { PrismaClient, Prisma } from '@memoflow/database';
-import type { IGoalRepository } from '../../../domain';
+import { GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { Goal } from '../../../domain';
-import type {
-  KeyResultServerDTO,
-} from '@memoflow/contracts/goal';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import type { KeyResultServerDTO } from '@memoflow/contracts/goal';
+import {
+  AggregateRepositoryBase,
+  createEventBusAdapter,
+  publishAggregateEvents,
+  type IEventBus,
+} from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import { PrismaGoalMapper, type PrismaGoalWithRelations } from './mappers/prisma-goal-mapper';
 import { rawDataToGoalState, type RawKeyResultData } from './mappers/goal-state-mapper';
@@ -46,8 +49,12 @@ const GOAL_INCLUDE_ALL = {
  * Goal Prisma Repository
  */
 export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implements IGoalRepository {
-  constructor(private readonly prisma: PrismaClient) {
-    super(eventBusAdapter);
+  constructor(
+    private readonly prisma: PrismaClient | Prisma.TransactionClient,
+    eventBus: IEventBus = eventBusAdapter,
+    private readonly transactionBound = false,
+  ) {
+    super(eventBus);
   }
 
   // ================= Read Operations =================
@@ -103,61 +110,16 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
         break;
     }
 
-    if (options?.includeChildren) {
-      const rows = await this.prisma.goal.findMany({
-        where,
-        include: GOAL_INCLUDE_ALL,
-        orderBy: { createdAt: 'desc' },
-      });
-
-      return rows.map((row: PrismaGoalWithRelations) =>
-        Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row))),
-      );
-    }
-
+    // List aggregates are always fully hydrated so counts/progress have one
+    // projector (Goal.toClientDTO) instead of persistence-injected overrides.
     const rows = await this.prisma.goal.findMany({
       where,
-      include: {
-        _count: {
-          select: {
-            keyResults: {
-              where: { deletedAt: null },
-            },
-          },
-        },
-      },
+      include: GOAL_INCLUDE_ALL,
       orderBy: { createdAt: 'desc' },
     });
-
-    const goalIds = rows.map((row) => row.id);
-    const completedMap = new Map<string, number>();
-
-    if (goalIds.length > 0) {
-      const keyResultRows = await this.prisma.keyResult.findMany({
-        where: {
-          goalId: { in: goalIds },
-          deletedAt: null,
-        },
-        select: {
-          goalId: true,
-          currentValue: true,
-          targetValue: true,
-        },
-      });
-
-      for (const kr of keyResultRows) {
-        if ((kr.currentValue ?? 0) >= (kr.targetValue ?? 0)) {
-          completedMap.set(kr.goalId, (completedMap.get(kr.goalId) ?? 0) + 1);
-        }
-      }
-    }
-
-    return rows.map((row) => {
-      const dto = PrismaGoalMapper.toDomainDTO(row as unknown as PrismaGoalWithRelations);
-      dto.totalKeyResults = row._count?.keyResults ?? 0;
-      dto.completedKeyResults = completedMap.get(row.id) ?? 0;
-      return Goal.load(rawDataToGoalState(dto));
-    });
+    return rows.map((row: PrismaGoalWithRelations) =>
+      Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+    );
   }
 
   async findByKeyResultIdForIdentity(
@@ -167,7 +129,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     const row = await this.prisma.goal.findFirst({
       where: {
         identityId,
-        keyResults: { some: { id: keyResultId, deletedAt: null } },
+        keyResults: { some: { id: keyResultId } },
       },
       include: GOAL_INCLUDE_ALL,
     });
@@ -194,7 +156,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     const dto = goal.toServerDTO(true);
 
     // Run in a transaction for consistency
-    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const persistInTransaction = async (tx: Prisma.TransactionClient) => {
       // 1. Upsert the Goal root
       await tx.goal.upsert({
         where: { id: dto.id as string },
@@ -278,7 +240,6 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               unit: progress.unit,
               weight: kr.weight,
               order: kr.sortOrder,
-              version: kr.version,
             },
             update: {
               title: kr.title,
@@ -291,7 +252,6 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               unit: progress.unit,
               weight: kr.weight,
               order: kr.sortOrder,
-              version: kr.version,
               updatedAt: new Date(),
             },
           });
@@ -323,7 +283,6 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               lessonsLearned: review.improvements,
               nextSteps: null,
               rating: review.rating,
-              version: review.version,
             },
             update: {
               reviewType: review.type,
@@ -332,7 +291,6 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               challenges: review.challenges,
               lessonsLearned: review.improvements,
               rating: review.rating,
-              version: review.version,
               updatedAt: new Date(),
             },
           });
@@ -365,7 +323,56 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
           }
         }
       }
+    };
+
+    if (this.transactionBound) {
+      await persistInTransaction(this.prisma as Prisma.TransactionClient);
+      return;
+    }
+
+    await (this.prisma as PrismaClient).$transaction(persistInTransaction);
+  }
+
+  async saveRootWithExpectedVersion(goal: Goal, expectedVersion: number): Promise<void> {
+    if (!this.transactionBound) {
+      await (this.prisma as PrismaClient).$transaction(async (tx) => {
+        const repository = new GoalPrismaRepository(tx, this.eventBus, true);
+        await repository.persistWithExpectedVersion(goal, expectedVersion);
+      });
+      await publishAggregateEvents(goal, this.eventBus);
+      return;
+    }
+
+    await this.persistWithExpectedVersion(goal, expectedVersion);
+    await publishAggregateEvents(goal, this.eventBus);
+  }
+
+  private async persistWithExpectedVersion(goal: Goal, expectedVersion: number): Promise<void> {
+    const dto = goal.toServerDTO(false);
+    const result = await this.prisma.goal.updateMany({
+      where: { id: String(dto.id), identityId: String(dto.identityId), version: expectedVersion },
+      data: {
+        name: dto.name,
+        description: dto.description,
+        color: dto.color,
+        feasibilityAnalysis: dto.feasibilityAnalysis,
+        motivation: dto.motivation,
+        status: dto.status,
+        importance: dto.importance,
+        priority: dto.priority ?? 0,
+        category: dto.category,
+        tags: dto.tags,
+        startDate: dto.startDate ? new Date(dto.startDate) : null,
+        targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+        folderId: dto.folderId ? String(dto.folderId) : null,
+        parentGoalId: dto.parentGoalId ? String(dto.parentGoalId) : null,
+        reminderConfig: dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
+        version: dto.version,
+        updatedAt: new Date(),
+      },
     });
+    if (result.count !== 1) throw new GoalVersionConflictError();
+    await this.persist(goal);
   }
 
   // ================= Delete Operations =================
@@ -377,6 +384,17 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     if (deleted.count !== 1) {
       throw new Error('Goal not found for the current identity.');
     }
+  }
+
+  async deleteWithExpectedVersion(
+    identityId: string,
+    id: string,
+    expectedVersion: number,
+  ): Promise<void> {
+    const deleted = await this.prisma.goal.deleteMany({
+      where: { id, identityId, version: expectedVersion },
+    });
+    if (deleted.count !== 1) throw new GoalVersionConflictError();
   }
 
   // ================= Utility Operations =================
@@ -394,7 +412,11 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     });
   }
 
-  async batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void> {
+  async batchMoveToFolder(
+    identityId: string,
+    ids: string[],
+    folderId: string | null,
+  ): Promise<void> {
     if (ids.length === 0) return;
     await this.prisma.goal.updateMany({
       where: { id: { in: ids }, identityId },

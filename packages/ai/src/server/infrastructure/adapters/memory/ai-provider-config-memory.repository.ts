@@ -15,12 +15,17 @@ import type { AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 export class AIProviderConfigMemoryRepository implements IAIProviderConfigRepository {
   private configs = new Map<string, AIProviderConfigServerDTO>();
 
-  async save(config: AIProviderConfigServerDTO): Promise<void> {
+  async save(config: AIProviderConfigServerDTO) {
+    const identityId = String(config.identityId);
     const existing = this.configs.get(String(config.id));
     if (existing && String(existing.identityId) !== String(config.identityId)) {
       throw new Error('Provider config not found for the current identity.');
     }
+    if (config.isDefault) {
+      this.clearIdentityDefault(identityId, String(config.id));
+    }
     this.configs.set(String(config.id), config);
+    return 'SAVED' as const;
   }
 
   async findByIdForIdentity(
@@ -51,9 +56,30 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
     this.configs.delete(id);
   }
 
-  async clearDefaultForIdentity(identityId: string): Promise<void> {
+  async setDefaultForIdentity(identityId: string, id: string) {
+    const target = this.configs.get(id);
+    if (
+      !target ||
+      String(target.identityId) !== identityId ||
+      !target.isActive ||
+      target.deletedAt != null
+    ) {
+      return 'NOT_FOUND' as const;
+    }
+
+    this.clearIdentityDefault(identityId, id);
+    this.configs.set(id, {
+      ...target,
+      isDefault: true,
+      version: target.version + 1,
+      updatedAt: Date.now(),
+    });
+    return 'SET' as const;
+  }
+
+  private clearIdentityDefault(identityId: string, exceptId?: string): void {
     this.configs.forEach((c) => {
-      if (c.identityId === identityId) {
+      if (String(c.identityId) === identityId && String(c.id) !== exceptId) {
         c.isDefault = false;
       }
     });

@@ -1,0 +1,175 @@
+import { describe, expect, it, vi } from 'vitest';
+import { createCloudAuth, type CloudPrincipal } from './cloud-auth.js';
+
+function createFixture() {
+  const createDeviceCode = vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
+    id: 'device-record-1',
+    ...data,
+  }));
+  const deleteDeviceCodes = vi.fn().mockResolvedValue({ count: 2 });
+  const findDeviceCode = vi.fn().mockResolvedValue(null);
+  const updateDeviceCode = vi.fn().mockResolvedValue(null);
+  const deleteDeviceCode = vi.fn().mockResolvedValue(null);
+  const user = {
+    id: 'IdentityId_00000000-0000-4000-8000-000000000001',
+    name: 'Device User',
+    email: 'device@example.com',
+    emailVerified: true,
+    image: null,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  };
+  const session = {
+    id: 'session-1',
+    userId: user.id,
+    token: 'raw-device-session-token',
+    expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+    ipAddress: null,
+    userAgent: null,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    user,
+  };
+  const database = {
+    cloudAuthDeviceCode: {
+      create: createDeviceCode,
+      findFirst: findDeviceCode,
+      update: updateDeviceCode,
+      delete: deleteDeviceCode,
+      deleteMany: deleteDeviceCodes,
+    },
+    cloudAuthSession: { findFirst: vi.fn().mockResolvedValue(session) },
+    cloudAuthUser: { findFirst: vi.fn().mockResolvedValue(user) },
+  };
+  const auth = createCloudAuth({
+    database: database as never,
+    secret: 'test-secret-with-at-least-thirty-two-characters',
+    baseUrl: 'https://api.memo.test/api/auth',
+    deviceVerificationUrl: 'https://app.memo.test/auth/device',
+    trustedOrigins: ['https://app.memo.test'],
+    userProvisioner: { provision: vi.fn() },
+    emailDelivery: { send: vi.fn() },
+  });
+  return {
+    auth,
+    createDeviceCode,
+    findDeviceCode,
+    deleteDeviceCode,
+    deleteDeviceCodes,
+  };
+}
+
+describe('cloud auth contract', () => {
+  it('keeps local profile access out of the cloud principal', () => {
+    const principal: CloudPrincipal = {
+      identityId: 'user-id',
+      sessionId: 'session-id',
+      email: 'user@example.com',
+      emailVerified: true,
+    };
+
+    expect(principal).not.toHaveProperty('profileId');
+    expect(principal).not.toHaveProperty('profileUnlocked');
+    expect(principal).not.toHaveProperty('guest');
+  });
+
+  it('issues a short-lived device authorization for the Desktop public client', async () => {
+    const { auth, createDeviceCode } = createFixture();
+
+    const response = await auth.handler(new Request('https://api.memo.test/api/auth/device/code', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ client_id: 'memoflow-desktop' }),
+    }));
+    const payload = await response.json() as Record<string, unknown>;
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      verification_uri: 'https://app.memo.test/auth/device',
+      expires_in: 600,
+      interval: 5,
+    });
+    expect(payload.verification_uri_complete).toBe(
+      `https://app.memo.test/auth/device?user_code=${payload.user_code}`,
+    );
+    expect(createDeviceCode).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        clientId: 'memoflow-desktop',
+        status: 'pending',
+        pollingInterval: 5_000,
+      }),
+    }));
+  });
+
+  it('rejects unknown device authorization clients before persisting a code', async () => {
+    const { auth, createDeviceCode } = createFixture();
+
+    const response = await auth.handler(new Request('https://api.memo.test/api/auth/device/code', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ client_id: 'unknown-client' }),
+    }));
+    const payload = await response.json() as { error?: string };
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toBe('invalid_client');
+    expect(createDeviceCode).not.toHaveBeenCalled();
+  });
+
+  it('accepts the raw session token issued by the standard device token endpoint', async () => {
+    const { auth } = createFixture();
+
+    const response = await auth.handler(new Request('https://api.memo.test/api/auth/get-session', {
+      headers: { authorization: 'Bearer raw-device-session-token' },
+    }));
+    const payload = await response.json() as { user?: { id?: string }; session?: { id?: string } };
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      user: { id: 'IdentityId_00000000-0000-4000-8000-000000000001' },
+      session: { id: 'session-1' },
+    });
+  });
+
+  it('returns expired_token for a grant whose stored UTC expiry is in the past', async () => {
+    const { auth, findDeviceCode, deleteDeviceCode } = createFixture();
+    findDeviceCode.mockResolvedValueOnce({
+      id: 'expired-device-record',
+      deviceCode: 'expired-device-code',
+      userCode: 'EXPIRED1',
+      userId: null,
+      clientId: 'memoflow-desktop',
+      expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+      status: 'pending',
+      lastPolledAt: null,
+      pollingInterval: 5_000,
+      scope: null,
+    });
+
+    const response = await auth.handler(new Request('https://api.memo.test/api/auth/device/token', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        device_code: 'expired-device-code',
+        client_id: 'memoflow-desktop',
+      }),
+    }));
+
+    await expect(response.json()).resolves.toMatchObject({ error: 'expired_token' });
+    expect(response.status).toBe(400);
+    expect(deleteDeviceCode).toHaveBeenCalledWith({
+      where: { id: 'expired-device-record' },
+    });
+  });
+
+  it('removes expired unconsumed device codes', async () => {
+    const { auth, deleteDeviceCodes } = createFixture();
+    const now = new Date('2030-01-01T00:00:00.000Z');
+
+    await expect(auth.cleanupExpiredDeviceCodes(now)).resolves.toBe(2);
+    expect(deleteDeviceCodes).toHaveBeenCalledWith({
+      where: { expiresAt: { lt: now } },
+    });
+  });
+});

@@ -10,31 +10,31 @@ import {
 } from '../paths';
 import { ProfileRegistry, type ProfileDescriptor } from './profile-registry';
 import { ProfileSnapshotService } from './profile-snapshot-service';
+import { DesktopProfileAccessContext } from './profile-access-context';
 import { ElectronBootstrapper } from '../bootstrap';
-import { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
-import type {
-  TokenManager,
-  RememberedAccountsService,
-  NetworkStateManager,
-} from '../modules/authentication/infrastructure';
-import { createDesktopProfileAuthService } from '../modules/authentication/application/create-desktop-profile-auth-service';
-import type { AuthDesktopApplicationService } from '../modules/authentication/application/auth-desktop-application-service';
+import type { IElectronAuthContext } from '@memoflow/contracts/electron';
 import type { WindowManager } from '../lifecycle/window-manager';
+import { Account, PowerSyncAccountRepository } from '@memoflow/account/electron';
+import type { AccountClientDTO } from '@memoflow/contracts/account';
+import { ElectronProfileKeyStore } from './profile-key-store';
+import { ProfilePinStore } from './profile-pin-store';
+import { CloudSessionStore } from './cloud-session-store';
+import { LocalTenantAdoptionService } from './local-tenant-adoption-service';
 import {
-  openPowerSyncLocalOnly,
+  type CloudCredentialProvider,
   ensurePowerSyncSyncMode,
+  disablePowerSyncSyncMode,
+  openPowerSyncLocalOnly,
   shutdownPowerSync,
 } from '../database/powersync';
 
 const logger = createLogger('DesktopProfileRuntimeManager');
-const GUEST_PROFILE_IDENTITY = '__desktop_guest_profile__';
 
 export interface PreparedProfileRuntime {
   descriptor: ProfileDescriptor;
   profileResolver: ProfilePathResolver;
   db: PowerSyncDatabase;
-  authService: AuthDesktopApplicationService;
-  authContextProvider: DesktopAuthContextProvider;
+  profileAccessContext: IElectronAuthContext;
 }
 
 interface PrepareProfileOptions {
@@ -53,57 +53,43 @@ type ProfileModuleRegistration = (
   profilePaths: ProfilePathResolver,
 ) => Promise<void>;
 
-/**
- * DesktopProfileRuntimeManager — the single owner of desktop profile lifecycle.
- *
- * Shell auth prepares a profile first. Only after successful authentication
- * does the manager activate that prepared runtime into the full business runtime.
- */
-export class DesktopProfileRuntimeManager {
-  private readonly sharedResolver: SharedPathResolver;
-  private readonly profileRegistry: ProfileRegistry;
-  private readonly tokenManager: TokenManager;
-  private readonly rememberedAccountsService: RememberedAccountsService;
-  private readonly networkStateManager: NetworkStateManager;
-  private readonly profileSnapshotService = new ProfileSnapshotService();
+type ProfileActivationHook = (profile: ProfileDescriptor) => Promise<void>;
 
+/** Owns local Profile lifecycle. Cloud authentication is deliberately absent. */
+export class DesktopProfileRuntimeManager {
+  private readonly profileSnapshotService = new ProfileSnapshotService();
   private activeRuntime: ActiveProfileRuntime | null = null;
   private preparedRuntime: PreparedProfileRuntime | null = null;
   private activationLock: Promise<void> | null = null;
   private registerModules: ProfileModuleRegistration | null = null;
-
-  /** Called when the auth service changes (set during open, cleared during teardown). */
-  onAuthServiceChanged: ((service: AuthDesktopApplicationService | null) => void) | null = null;
+  private afterActivation: ProfileActivationHook | null = null;
+  private readonly keyStore: ElectronProfileKeyStore;
+  private readonly pinStore: ProfilePinStore;
+  private readonly cloudSessionStore: CloudSessionStore;
+  private preparedUnlockKey: Buffer | null = null;
+  private preparedUnlockProfileId: string | null = null;
+  private activeProfileKey: Buffer | null = null;
 
   constructor(
-    sharedResolver: SharedPathResolver,
-    profileRegistry: ProfileRegistry,
-    tokenManager: TokenManager,
-    rememberedAccountsService: RememberedAccountsService,
-    networkStateManager: NetworkStateManager,
-    private readonly windowManager: WindowManager,
+    private readonly sharedResolver: SharedPathResolver,
+    private readonly profileRegistry: ProfileRegistry,
+    _windowManager?: WindowManager,
   ) {
-    this.sharedResolver = sharedResolver;
-    this.profileRegistry = profileRegistry;
-    this.tokenManager = tokenManager;
-    this.rememberedAccountsService = rememberedAccountsService;
-    this.networkStateManager = networkStateManager;
+    this.keyStore = new ElectronProfileKeyStore(sharedResolver.rootDir);
+    this.pinStore = new ProfilePinStore(sharedResolver.rootDir);
+    this.cloudSessionStore = new CloudSessionStore(sharedResolver.rootDir);
   }
 
   setModuleRegistration(fn: ProfileModuleRegistration): void {
     this.registerModules = fn;
   }
 
+  setAfterActivation(fn: ProfileActivationHook): void {
+    this.afterActivation = fn;
+  }
+
   getSharedResolver(): SharedPathResolver {
     return this.sharedResolver;
-  }
-
-  getRememberedAccountsService(): RememberedAccountsService {
-    return this.rememberedAccountsService;
-  }
-
-  getNetworkStateManager(): NetworkStateManager {
-    return this.networkStateManager;
   }
 
   getActiveProfileResolver(): ProfilePathResolver | null {
@@ -114,213 +100,220 @@ export class DesktopProfileRuntimeManager {
     return this.activeRuntime?.descriptor.profileId ?? null;
   }
 
-  getPreparedAuthService(): AuthDesktopApplicationService | null {
-    return this.preparedRuntime?.authService ?? null;
-  }
-
-  getActiveAuthService(): AuthDesktopApplicationService | null {
-    return this.activeRuntime?.authService ?? null;
-  }
-
-  getCurrentAuthService(): AuthDesktopApplicationService | null {
-    return this.activeRuntime?.authService ?? this.preparedRuntime?.authService ?? null;
+  getActiveProfileDescriptorSync(): ProfileDescriptor | null {
+    return this.activeRuntime?.descriptor ?? null;
   }
 
   getActiveProfileDescriptor(): Promise<ProfileDescriptor | null> {
     return this.profileRegistry.getActiveProfile();
   }
 
+  getActiveProfileAccessContext(): IElectronAuthContext | null {
+    return this.activeRuntime?.profileAccessContext ?? null;
+  }
+
+  getCurrentIdentityId(): string | null {
+    return this.activeRuntime?.descriptor.localOwnerId ?? this.preparedRuntime?.descriptor.localOwnerId ?? null;
+  }
+
+  async updateProfileDisplayName(profileId: string, displayName: string): Promise<void> {
+    await this.profileRegistry.updateProfileMetadata(profileId, { displayName });
+    if (this.activeRuntime?.descriptor.profileId === profileId) {
+      this.activeRuntime.descriptor = { ...this.activeRuntime.descriptor, displayName };
+    }
+    if (this.preparedRuntime?.descriptor.profileId === profileId) {
+      this.preparedRuntime.descriptor = { ...this.preparedRuntime.descriptor, displayName };
+    }
+  }
+
+  async hasPin(profileId: string): Promise<boolean> {
+    return this.pinStore.hasPin(profileId);
+  }
+
+  async preparePinUnlock(profileId: string, pin: string): Promise<void> {
+    this.preparedUnlockKey?.fill(0);
+    this.preparedUnlockKey = null;
+    this.preparedUnlockProfileId = null;
+    const key = await this.pinStore.unlock(profileId, pin);
+    this.preparedUnlockKey = key;
+    this.preparedUnlockProfileId = profileId;
+  }
+
+  async setCurrentProfilePin(pin: string): Promise<void> {
+    const profileId = this.getActiveProfileId();
+    if (!profileId || !this.activeProfileKey) throw new Error('必须先解锁 Profile');
+    await this.pinStore.setPin(profileId, pin, this.activeProfileKey);
+  }
+
+  async removeCurrentProfilePin(): Promise<void> {
+    const profileId = this.getActiveProfileId();
+    if (!profileId || !this.activeProfileKey) throw new Error('必须先解锁 Profile');
+    await this.pinStore.remove(profileId);
+  }
+
+  async enableCloudSync(credentialProvider: CloudCredentialProvider): Promise<void> {
+    if (!this.activeRuntime) throw new Error('Cloud sync requires an unlocked Profile');
+    await ensurePowerSyncSyncMode(credentialProvider);
+  }
+
+  async disableCloudSync(): Promise<void> {
+    await disablePowerSyncSyncMode().catch((error) => {
+      logger.warn('Failed to disconnect cloud sync; local Profile remains active', { error });
+    });
+  }
+
+  async listProfiles(): Promise<ProfileDescriptor[]> {
+    return this.profileRegistry.list();
+  }
+
+  async getCurrentLocalAccount(): Promise<AccountClientDTO> {
+    const current = this.activeRuntime ?? this.preparedRuntime;
+    if (!current) throw new Error('No active Profile');
+    const account = await new PowerSyncAccountRepository(current.db as never)
+      .findById(current.descriptor.localOwnerId);
+    if (!account) throw new Error('Current Profile Account is missing');
+    return account.toClientDTO();
+  }
+
   async findRegisteredProfileByIdentifier(identifier: string): Promise<ProfileDescriptor | null> {
-    return await this.profileRegistry.findByIdentifier(identifier);
+    return this.profileRegistry.findByIdentifier(identifier);
   }
 
   async prepareProfile(
-    identityId: string,
+    localOwnerId: string,
     options?: PrepareProfileOptions,
   ): Promise<PreparedProfileRuntime> {
-    if (this.activationLock) {
-      await this.activationLock;
-    }
+    if (this.activationLock) await this.activationLock;
 
-    if (this.activeRuntime?.descriptor.identityId === identityId) {
-      return this.activeRuntime;
-    }
+    if (this.activeRuntime?.descriptor.localOwnerId === localOwnerId) return this.activeRuntime;
+    if (this.preparedRuntime?.descriptor.localOwnerId === localOwnerId) return this.preparedRuntime;
 
-    if (this.preparedRuntime?.descriptor.identityId === identityId) {
-      return this.preparedRuntime;
-    }
-
-    if (this.activeRuntime) {
-      await this.deactivateProfile();
-    }
-
+    if (this.activeRuntime) await this.deactivateProfile();
     await this.disposePreparedRuntime();
 
     const descriptor = await this.profileRegistry.register(
-      identityId,
-      options?.displayName ?? options?.identifier ?? identityId,
+      localOwnerId,
+      options?.displayName ?? options?.identifier ?? localOwnerId,
       options?.identifier,
     );
-
-    const profileResolver = createProfilePathResolver(
-      this.sharedResolver.rootDir,
-      descriptor.profileId,
-    );
-    ensureProfileDirs(profileResolver);
-
-    const snapshotResult = await this.hydrateProfileSnapshot(
-      descriptor,
-      profileResolver,
-      options?.snapshotAccessToken,
-    );
-
-    const { db, authService, authContextProvider } =
-      await this.openProfileResources(profileResolver);
-
-    this.preparedRuntime = { descriptor, profileResolver, db, authService, authContextProvider };
-    await this.profileRegistry.markReady(descriptor.profileId);
-
-    logger.info('Profile prepared', {
-      profileId: descriptor.profileId,
-      identityId: descriptor.identityId,
-      snapshotHydrated: snapshotResult.hydrated,
-      snapshotSkippedReason: snapshotResult.skippedReason,
-    });
-
-    return this.preparedRuntime;
+    return this.prepareDescriptor(descriptor, options);
   }
 
   async prepareGuestProfile(): Promise<PreparedProfileRuntime> {
-    return await this.prepareProfile(GUEST_PROFILE_IDENTITY, {
-      displayName: 'Guest',
-      identifier: null,
-    });
+    const guest = await this.profileRegistry.ensureGuest();
+    if (this.activeRuntime?.descriptor.profileId === guest.profileId) return this.activeRuntime;
+    if (this.preparedRuntime?.descriptor.profileId === guest.profileId) return this.preparedRuntime;
+    if (this.activeRuntime) await this.deactivateProfile();
+    await this.disposePreparedRuntime();
+    return this.prepareDescriptor(guest);
   }
 
-  isGuestProfileIdentity(identityId: string | null | undefined): boolean {
-    return identityId === GUEST_PROFILE_IDENTITY;
+  async activateStartupProfile(): Promise<PreparedProfileRuntime> {
+    const active = await this.profileRegistry.getActiveProfile();
+    const descriptor = active ?? (await this.profileRegistry.ensureGuest());
+    const prepared = descriptor.profileKind === 'guest'
+      ? await this.prepareGuestProfile()
+      : await this.prepareProfile(descriptor.localOwnerId, {
+          displayName: descriptor.displayName,
+          identifier: descriptor.identifier,
+        });
+    await this.activatePreparedProfile();
+    return prepared;
   }
 
-  getActiveOrPreparedIdentityId(): string | null {
-    return (
-      this.activeRuntime?.descriptor.identityId ??
-      this.preparedRuntime?.descriptor.identityId ??
-      null
-    );
+  async getStartupProfile(): Promise<ProfileDescriptor> {
+    return (await this.profileRegistry.getActiveProfile()) ?? (await this.profileRegistry.ensureGuest());
   }
 
-  /**
-   * Upgrade the current guest profile to an online identity without moving local data.
-   * 将当前访客 profile 升级为在线 identity，本地数据目录不搬家。
-   *
-   * Failure leaves the guest registry entry untouched when rebind throws before mutation completes.
-   * 失败时若 rebind 抛错，访客注册表项保持不变。
-   */
-  async upgradeGuestProfileToOnlineIdentity(params: {
-    onlineIdentityId: string;
-    displayName?: string;
-    identifier?: string | null;
-    snapshotAccessToken?: string | null;
-  }): Promise<PreparedProfileRuntime> {
-    const guestIdentityId = GUEST_PROFILE_IDENTITY;
-    const guestDescriptor = await this.profileRegistry.find(guestIdentityId);
-    if (!guestDescriptor) {
-      throw new Error('No guest profile exists to upgrade');
+  async bindCurrentProfile(
+    cloudAccountId: string,
+    displayName: string,
+    identifier: string,
+    emailVerified: boolean,
+  ): Promise<void> {
+    const current = this.activeRuntime?.descriptor ?? this.preparedRuntime?.descriptor;
+    if (!current) throw new Error('No active Profile to bind');
+    if (current.profileKind === 'guest') {
+      const existingCloudProfile = await this.profileRegistry.findByCloudAccountId(cloudAccountId);
+      if (existingCloudProfile && existingCloudProfile.profileId !== current.profileId) {
+        throw new Error(
+          `目标云端账号已绑定本机 Profile (${existingCloudProfile.profileId})，拒绝静默合并`,
+        );
+      }
+      const db = this.activeRuntime?.db ?? this.preparedRuntime?.db;
+      if (!db) throw new Error('Profile database is not open');
+      const adoption = new LocalTenantAdoptionService(db);
+      await adoption.adopt({
+        fromOwnerId: current.localOwnerId,
+        toOwnerId: cloudAccountId,
+        displayName: current.displayName,
+        identifier,
+        emailVerified,
+      });
+      const rebound = await this.profileRegistry.rebindIdentityOwnership({
+        fromOwnerId: current.localOwnerId,
+        toCloudAccountId: cloudAccountId,
+        displayName: current.displayName,
+        identifier,
+      });
+      if (this.activeRuntime) this.activeRuntime.descriptor = rebound;
+      if (this.preparedRuntime) this.preparedRuntime.descriptor = rebound;
+      await adoption.clearCompleted().catch((error) => {
+        logger.warn('Profile binding committed but adoption journal cleanup failed', {
+          profileId: rebound.profileId,
+          cloudAccountId,
+          error,
+        });
+      });
+      return;
     }
-
-    // If a prepared/active runtime is currently on guest, discard it first so we can
-    // re-open under the rebound identity without holding stale auth context.
-    // 若当前 prepared/active 是访客，先丢弃，以便用新 identity 重新打开。
-    if (this.preparedRuntime?.descriptor.identityId === guestIdentityId) {
-      await this.discardPreparedProfile();
+    if (current.cloudBinding?.cloudAccountId !== cloudAccountId) {
+      throw new Error('当前 Profile 已绑定其他云端账号');
     }
-    if (this.activeRuntime?.descriptor.identityId === guestIdentityId) {
-      await this.deactivateProfile();
-    }
-
-    await this.profileRegistry.rebindIdentityOwnership({
-      fromIdentityId: guestIdentityId,
-      toIdentityId: params.onlineIdentityId,
-      displayName: params.displayName ?? guestDescriptor.displayName,
-      identifier: params.identifier ?? guestDescriptor.identifier,
-    });
-
-    // prepareProfile will find the rebound registry entry by online identityId and
-    // reuse the same profileId/directory (Vault stays put).
-    return await this.prepareProfile(params.onlineIdentityId, {
-      displayName: params.displayName ?? guestDescriptor.displayName,
-      identifier: params.identifier ?? guestDescriptor.identifier,
-      snapshotAccessToken: params.snapshotAccessToken,
-    });
   }
 
-  async activatePreparedProfile(options: { syncMode: 'online' | 'local' }): Promise<void> {
-    if (!this.preparedRuntime) {
-      throw new Error('No prepared profile is available for activation');
-    }
-
+  async activatePreparedProfile(): Promise<void> {
+    if (!this.preparedRuntime) throw new Error('No prepared profile is available for activation');
     if (this.activationLock) {
       await this.activationLock;
-      if (!this.preparedRuntime) {
-        return;
-      }
+      return;
     }
 
-    // Capture profileId before the IIFE clears preparedRuntime at line ~215,
-    // so the catch block can safely reference it even if registry calls throw.
     const preparedProfileId = this.preparedRuntime.descriptor.profileId;
-
-    const activationPromise = (async () => {
-      if (this.activeRuntime) {
-        await this.deactivateProfile();
-      }
-
+    const activation = (async () => {
       const prepared = this.preparedRuntime!;
-
-      if (options.syncMode === 'online') {
-        await ensurePowerSyncSyncMode(this.tokenManager);
+      await this.keyStore.ensure(prepared.descriptor.profileId);
+      const pinRequired = await this.pinStore.hasPin(prepared.descriptor.profileId);
+      if (pinRequired && this.preparedUnlockProfileId !== prepared.descriptor.profileId) {
+        throw new Error('此 Profile 需要本地 PIN 解锁');
       }
-
+      this.activeProfileKey = this.preparedUnlockKey ?? await this.keyStore.unlock(prepared.descriptor.profileId);
+      this.preparedUnlockKey = null;
+      this.preparedUnlockProfileId = null;
       const bootstrapper = new ElectronBootstrapper(prepared.db);
-      if (this.registerModules) {
-        await this.registerModules(bootstrapper, prepared.db, prepared.profileResolver);
-      }
-      await bootstrapper.init(prepared.authContextProvider);
-
-      this.activeRuntime = {
-        ...prepared,
-        bootstrapper,
-      };
+      if (this.registerModules) await this.registerModules(bootstrapper, prepared.db, prepared.profileResolver);
+      await bootstrapper.init(prepared.profileAccessContext);
+      this.activeRuntime = { ...prepared, bootstrapper };
       this.preparedRuntime = null;
-
-      await this.profileRegistry.setActiveProfile(prepared.descriptor.profileId);
-      await this.profileRegistry.touch(prepared.descriptor.profileId);
-
-      logger.info('Profile activated', {
-        profileId: prepared.descriptor.profileId,
-        identityId: prepared.descriptor.identityId,
-        syncMode: options.syncMode,
+      await this.profileRegistry.setActiveProfile(preparedProfileId);
+      await this.profileRegistry.touch(preparedProfileId);
+      if (this.afterActivation) {
+        await this.afterActivation(this.activeRuntime.descriptor).catch((error) => {
+          logger.warn('Cloud connection restore failed; Profile remains locally available', { error });
+        });
+      }
+      logger.info('Local profile activated', {
+        profileId: preparedProfileId,
+        localOwnerId: prepared.descriptor.localOwnerId,
+        profileKind: prepared.descriptor.profileKind,
       });
     })();
 
-    this.activationLock = activationPromise;
+    this.activationLock = activation;
     try {
-      await activationPromise;
+      await activation;
     } catch (error) {
-      logger.error('Profile activation failed', { error });
-      await this.profileRegistry
-        .markError(preparedProfileId)
-        .catch((registryError) =>
-          logger.error('Failed to mark profile activation error', { error: registryError }),
-        );
-      // activeRuntime may have been assigned before the failure — clean it up too
-      if (this.activeRuntime) {
-        await this.deactivateProfile().catch((deactivateError) =>
-          logger.error('Failed to deactivate partially activated profile', {
-            error: deactivateError,
-          }),
-        );
-      }
+      await this.profileRegistry.markError(preparedProfileId).catch(() => undefined);
       await this.disposePreparedRuntime();
       throw error;
     } finally {
@@ -328,159 +321,129 @@ export class DesktopProfileRuntimeManager {
     }
   }
 
+  async deactivateProfile(options: { preserveSelection?: boolean } = {}): Promise<void> {
+    if (!this.activeRuntime) return;
+    const profileId = this.activeRuntime.descriptor.profileId;
+    try { stopScheduleRuntime(); } catch (error) { logger.warn('Failed to stop schedule runtime', { error }); }
+    await this.activeRuntime.bootstrapper.destroy().catch((error) => logger.error('Failed to destroy profile modules', { error }));
+    await shutdownPowerSync();
+    this.activeRuntime = null;
+    this.activeProfileKey?.fill(0);
+    this.activeProfileKey = null;
+    this.preparedUnlockKey?.fill(0);
+    this.preparedUnlockKey = null;
+    this.preparedUnlockProfileId = null;
+    if (!options.preserveSelection) {
+      await this.profileRegistry.setActiveProfile(null).catch(() => undefined);
+    }
+    logger.info('Local profile deactivated', { profileId });
+  }
+
   async discardPreparedProfile(): Promise<void> {
     await this.disposePreparedRuntime();
   }
 
-  async deactivateProfile(): Promise<void> {
-    if (!this.activeRuntime) {
-      return;
-    }
-
-    const profileId = this.activeRuntime.descriptor.profileId;
-    logger.info('Deactivating profile', { profileId });
-
-    try {
-      stopScheduleRuntime();
-    } catch (error) {
-      logger.warn('Failed to stop schedule runtime', { error });
-    }
-
-    try {
-      await this.activeRuntime.bootstrapper.destroy();
-    } catch (error) {
-      logger.error('Error destroying profile bootstrapper', { error });
-    }
-
-    await this.teardownAuthResources();
-
-    this.activeRuntime = null;
-
-    try {
-      await this.profileRegistry.setActiveProfile(null);
-    } catch (error) {
-      logger.error('Failed to clear active profile in registry', {
-        error,
-        previousProfileId: profileId,
-      });
-    }
-  }
-
-  async removeProfile(identityId: string): Promise<void> {
-    const descriptor = await this.profileRegistry.find(identityId);
-    if (!descriptor) {
-      logger.warn('Profile not found for removal', { identityId });
-      return;
-    }
-
-    if (descriptor.profileId === this.activeRuntime?.descriptor.profileId) {
-      throw new Error('Cannot remove active profile. Deactivate first.');
-    }
-
-    if (descriptor.profileId === this.preparedRuntime?.descriptor.profileId) {
-      await this.disposePreparedRuntime();
-    }
-
-    const profileResolver = createProfilePathResolver(
-      this.sharedResolver.rootDir,
-      descriptor.profileId,
+  async removeProfile(profileId: string): Promise<void> {
+    const descriptor = (await this.profileRegistry.list()).find(
+      (profile) => profile.profileId === profileId,
     );
-
-    try {
-      await fs.promises.rm(profileResolver.profileDir, { recursive: true, force: true });
-      logger.info('Profile directory deleted', { profileDir: profileResolver.profileDir });
-    } catch (error) {
-      logger.error('Failed to delete profile directory', { error });
-      throw new Error(`Failed to delete profile directory: ${profileResolver.profileDir}`);
-    }
-
+    if (!descriptor) return;
+    if (descriptor.profileId === this.activeRuntime?.descriptor.profileId) throw new Error('Cannot remove active profile');
+    if (descriptor.profileId === this.preparedRuntime?.descriptor.profileId) throw new Error('Cannot remove prepared profile');
+    await this.cloudSessionStore.remove(descriptor.profileId);
+    await this.pinStore.remove(descriptor.profileId);
+    await this.keyStore.remove(descriptor.profileId);
+    await fs.promises.rm(createProfilePathResolver(this.sharedResolver.rootDir, descriptor.profileId).profileDir, { recursive: true, force: true });
     await this.profileRegistry.remove(descriptor.profileId);
-    logger.info('Profile removed', { profileId: descriptor.profileId });
   }
 
-  private async disposePreparedRuntime(): Promise<void> {
-    if (!this.preparedRuntime) {
-      return;
+  private async prepareDescriptor(descriptor: ProfileDescriptor, options?: PrepareProfileOptions): Promise<PreparedProfileRuntime> {
+    if (this.preparedUnlockProfileId && this.preparedUnlockProfileId !== descriptor.profileId) {
+      this.preparedUnlockKey?.fill(0);
+      this.preparedUnlockKey = null;
+      this.preparedUnlockProfileId = null;
     }
-
-    logger.info('Discarding prepared profile', {
-      profileId: this.preparedRuntime.descriptor.profileId,
-    });
-
-    await this.teardownAuthResources();
-    this.preparedRuntime = null;
-  }
-
-  private async hydrateProfileSnapshot(
-    descriptor: ProfileDescriptor,
-    profileResolver: ProfilePathResolver,
-    accessToken?: string | null,
-  ) {
-    const result = await this.profileSnapshotService.hydrateIfNeeded({
+    const profileResolver = createProfilePathResolver(this.sharedResolver.rootDir, descriptor.profileId);
+    ensureProfileDirs(profileResolver);
+    const snapshotResult = await this.profileSnapshotService.hydrateIfNeeded({
       sharedResolver: this.sharedResolver,
       profileResolver,
       descriptor,
-      accessToken,
+      accessToken: options?.snapshotAccessToken,
     });
-
-    if (result.metadata) {
-      await this.profileRegistry.recordSnapshotHydration(descriptor.profileId, {
-        version: result.metadata.version,
-        hydratedAt: result.metadata.hydratedAt,
-      });
-    } else if (result.skippedReason === 'snapshot-unavailable') {
-      await this.profileRegistry.clearSnapshotState(descriptor.profileId);
+    if (snapshotResult.metadata) {
+      await this.profileRegistry.recordSnapshotHydration(descriptor.profileId, snapshotResult.metadata);
     }
-
-    return result;
-  }
-
-  private async openProfileResources(profileResolver: ProfilePathResolver) {
-    this.tokenManager.switchToProfile(profileResolver.tokensPath);
-
     const db = await openPowerSyncLocalOnly(profileResolver.dbPath);
-    const authService = createDesktopProfileAuthService(
-      db,
-      this.tokenManager,
-      this.rememberedAccountsService,
-      this.networkStateManager,
-      this.windowManager,
+    const recoveredDescriptor = await this.recoverCompletedAdoption(db, descriptor);
+    await this.ensureLocalAccount(db, recoveredDescriptor);
+    const profileAccessContext = new DesktopProfileAccessContext(
+      () => this.activeRuntime?.descriptor.localOwnerId
+        ?? this.preparedRuntime?.descriptor.localOwnerId
+        ?? recoveredDescriptor.localOwnerId,
     );
-    const authContextProvider = new DesktopAuthContextProvider(authService);
-    this.onAuthServiceChanged?.(authService);
-
-    await authService.configureAndActivateProfile(this.sharedResolver.authDir);
-
-    return { db, authService, authContextProvider };
+    this.preparedRuntime = { descriptor: recoveredDescriptor, profileResolver, db, profileAccessContext };
+    await this.profileRegistry.markReady(recoveredDescriptor.profileId);
+    logger.info('Profile prepared', { profileId: recoveredDescriptor.profileId, snapshotHydrated: snapshotResult.hydrated });
+    return this.preparedRuntime;
   }
 
-  private async teardownAuthResources(): Promise<void> {
-    const authService = this.activeRuntime?.authService ?? this.preparedRuntime?.authService;
+  private async recoverCompletedAdoption(
+    db: PowerSyncDatabase,
+    descriptor: ProfileDescriptor,
+  ): Promise<ProfileDescriptor> {
+    const adoption = new LocalTenantAdoptionService(db);
+    const completed = await adoption.getCompleted();
+    if (!completed) return descriptor;
 
-    try {
-      authService?.cleanupSessionManager();
-    } catch (error) {
-      logger.error('Failed to cleanup session manager', { error });
+    if (descriptor.profileKind === 'registered') {
+      if (descriptor.cloudBinding?.cloudAccountId !== completed.toOwnerId) {
+        throw new Error('Profile adoption journal conflicts with the registered cloud binding');
+      }
+      await adoption.clearCompleted();
+      return descriptor;
     }
 
-    try {
-      authService?.cleanup();
-    } catch (error) {
-      logger.error('Failed to cleanup auth service', { error });
+    if (descriptor.localOwnerId !== completed.fromOwnerId) {
+      throw new Error('Profile adoption journal does not belong to the current Profile');
     }
 
-    try {
+    const rebound = await this.profileRegistry.rebindIdentityOwnership({
+      fromOwnerId: completed.fromOwnerId,
+      toCloudAccountId: completed.toOwnerId,
+      displayName: completed.displayName,
+      identifier: completed.identifier,
+    });
+    await adoption.clearCompleted();
+    logger.warn('Recovered completed tenant adoption after interrupted registry rebind', {
+      profileId: rebound.profileId,
+      cloudAccountId: completed.toOwnerId,
+    });
+    return rebound;
+  }
+
+  private async ensureLocalAccount(
+    db: PowerSyncDatabase,
+    descriptor: ProfileDescriptor,
+  ): Promise<void> {
+    const repository = new PowerSyncAccountRepository(db as never);
+    const existing = await repository.findById(descriptor.localOwnerId);
+    if (existing) return;
+    const account = Account.create({
+      id: descriptor.localOwnerId as Parameters<typeof Account.create>[0]['id'],
+      email: `local-${descriptor.localOwnerId}@local.memoflow`,
+    });
+    account.updateProfile(account.profile.updateNickname(descriptor.displayName));
+    await repository.save(account);
+  }
+
+  private async disposePreparedRuntime(): Promise<void> {
+    if (this.preparedRuntime) {
       await shutdownPowerSync();
-    } catch (error) {
-      logger.error('Failed to shutdown PowerSync', { error });
+      this.preparedRuntime = null;
     }
-
-    try {
-      await this.tokenManager.clearForProfileSwitch();
-    } catch (error) {
-      logger.error('Failed to clear token manager', { error });
-    }
-
-    this.onAuthServiceChanged?.(null);
+    this.preparedUnlockKey?.fill(0);
+    this.preparedUnlockKey = null;
+    this.preparedUnlockProfileId = null;
   }
 }

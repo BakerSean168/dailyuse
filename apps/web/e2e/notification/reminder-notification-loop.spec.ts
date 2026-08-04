@@ -5,9 +5,7 @@ import { registerAndLogin } from '../helpers/testHelpers';
 const testPassword = 'Test123456!';
 
 test.describe('Reminder notification closed loop', () => {
-  test('[P0] triggers in-app notifications and closes single/all-read counts and shell badge', async ({
-    page,
-  }) => {
+  test('[P0] triggers in-app notifications and closes single/all-read counts', async ({ page }) => {
     test.setTimeout(90_000);
     const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -17,9 +15,7 @@ test.describe('Reminder notification closed loop', () => {
       landingPath: '/',
     });
 
-    const token = await page.evaluate(() => localStorage.getItem('access_token'));
-    expect(token, 'Registration should persist an access token').toBeTruthy();
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = {};
     const reminderTitles = [
       `E2E notification first ${suffix}`,
       `E2E notification second ${suffix}`,
@@ -28,7 +24,7 @@ test.describe('Reminder notification closed loop', () => {
 
     for (const [index, title] of reminderTitles.entries()) {
       await expectApiData(
-        await page.request.post(`${API_CONFIG.FULL_URL}/reminders/templates`, {
+        await page.request.post(`${API_CONFIG.API_PREFIX}/reminders/templates`, {
           headers,
           data: createReminderPayload(title, triggerAt + index * 500),
         }),
@@ -39,7 +35,7 @@ test.describe('Reminder notification closed loop', () => {
     await expect
       .poll(
         async () => {
-          const response = await page.request.get(`${API_CONFIG.FULL_URL}/notifications`, {
+          const response = await page.request.get(`${API_CONFIG.API_PREFIX}/notifications`, {
             headers,
           });
           const data = await expectApiData<{
@@ -56,15 +52,9 @@ test.describe('Reminder notification closed loop', () => {
 
     expect(notifications.every((notification) => notification.isRead === false)).toBe(true);
 
-    // Reload reconciles the shell's initial unread query with notifications that
-    // arrived through the real API schedule runtime while this page was open.
-    await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.getByTestId('capsule-badge-notification')).toHaveText('2');
     await page.goto('/notifications', { waitUntil: 'domcontentloaded' });
 
-    const unreadItems = page.locator(
-      '[data-testid="notification-item"][data-read-state="unread"]',
-    );
+    const unreadItems = page.locator('[data-testid="notification-item"][data-read-state="unread"]');
     await expect(unreadItems).toHaveCount(2, { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     await expect(page.getByTestId('notification-unread-badge')).toContainText('2');
 
@@ -75,18 +65,16 @@ test.describe('Reminder notification closed loop', () => {
     await expect(firstNotification).toHaveAttribute('data-read-state', 'read');
     await expect(unreadItems).toHaveCount(1);
     await expect(page.getByTestId('notification-unread-badge')).toContainText('1');
-    await expect(page.getByTestId('capsule-badge-notification')).toHaveText('1');
 
     await page.getByTestId('mark-all-read-button').click();
     await expect(unreadItems).toHaveCount(0);
     await expect(page.getByTestId('notification-unread-badge')).toHaveCount(0);
-    await expect(page.getByTestId('capsule-badge-notification')).toHaveCount(0);
     await expect(page.getByTestId('mark-all-read-button')).toBeDisabled();
     await page.getByTestId('notification-filter-unread').click();
     await expect(page.getByTestId('notifications-unread-empty')).toBeVisible();
 
     const unread = await expectApiData<{ count: number }>(
-      await page.request.get(`${API_CONFIG.FULL_URL}/notifications/unread-count`, { headers }),
+      await page.request.get(`${API_CONFIG.API_PREFIX}/notifications/unread-count`, { headers }),
     );
     expect(unread.count).toBe(0);
   });

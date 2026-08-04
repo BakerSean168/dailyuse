@@ -7,6 +7,8 @@
  */
 
 import type { InjectionKey, Ref, ShallowRef } from 'vue';
+import type { CloudAuthDesktopClientPort } from '@memoflow/contracts';
+import type { DesktopAccessSnapshot } from '@memoflow/contracts/electron';
 import type { ElectronBridge } from '@memoflow/ipc-client';
 import type { DesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 import type {
@@ -29,6 +31,8 @@ import type {
 // ── Domain Service Keys ──
 export const ACCOUNT_SERVICE_KEY: InjectionKey<IAccountService> = Symbol('AccountService');
 export const AUTH_SERVICE_KEY: InjectionKey<IAuthService> = Symbol('AuthService');
+export const DESKTOP_CLOUD_AUTH_SERVICE_KEY: InjectionKey<CloudAuthDesktopClientPort> =
+  Symbol('DesktopCloudAuthService');
 export const GOAL_SERVICE_KEY: InjectionKey<IGoalService> = Symbol('GoalService');
 export const TASK_SERVICE_KEY: InjectionKey<ITaskService> = Symbol('TaskService');
 export const SCHEDULE_SERVICE_KEY: InjectionKey<IScheduleService> = Symbol('ScheduleService');
@@ -52,6 +56,9 @@ export const DASHBOARD_SERVICE_KEY: InjectionKey<IDashboardService> = Symbol('Da
 export const MODULE_CAPSULES_KEY: InjectionKey<ModuleCapsule[]> = Symbol('ModuleCapsules');
 export const USER_NAME_KEY: InjectionKey<string> = Symbol('UserName');
 export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandler');
+export const PROFILE_LOCK_HANDLER_KEY: InjectionKey<() => Promise<void>> = Symbol('ProfileLockHandler');
+export const DESKTOP_ACCESS_SNAPSHOT_KEY: InjectionKey<Ref<DesktopAccessSnapshot | null>> =
+  Symbol('DesktopAccessSnapshot');
 
 // ── Desktop Platform Keys ──
 // Residual 915: DESKTOP_AUTH_API_KEY dual retired — InjectionKey<DesktopAuthApi>

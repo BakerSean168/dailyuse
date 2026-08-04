@@ -2,11 +2,12 @@
  * Add Goal Key Result Use Case
  */
 
-import type { IGoalRepository } from '../../../domain';
+import { GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { GoalPolicy } from '../../../domain';
-import type { KeyResultClientDTO } from '@memoflow/contracts/goal';
+import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
+import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 export class AddGoalKeyResultUseCase {
   constructor(
@@ -26,19 +27,33 @@ export class AddGoalKeyResultUseCase {
       currentValue?: number;
       unit?: string;
       weight: number;
+      expectedVersion: number;
     },
-  ): Promise<Result<KeyResultClientDTO>> {
+  ): Promise<Result<GoalMutationReceipt>> {
     const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
       includeChildren: true,
     });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
+    if (keyResult.expectedVersion !== goal.version) {
+      return error('CONFLICT', 'Goal has been modified by another client');
+    }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);
     const addedKeyResult = goal.createAndAddKeyResult(keyResult);
-    await this.goalRepository.save(goal);
+    goal.advanceVersion();
+    try {
+      await this.goalRepository.saveRootWithExpectedVersion(goal, keyResult.expectedVersion);
+    } catch (cause) {
+      if (cause instanceof GoalVersionConflictError) return error('CONFLICT', cause.message);
+      throw cause;
+    }
 
-    return ok(addedKeyResult.toClientDTO());
+    return ok(
+      createGoalMutationReceipt(goal, {
+        keyResultIds: [addedKeyResult.id],
+      }),
+    );
   }
 }

@@ -1,0 +1,50 @@
+{
+  "name": "cloud-auth",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/cloud-auth/src",
+  "projectType": "library",
+  "tags": ["scope:authentication", "type:lib", "layer:infra"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": ["^build"],
+      "options": {
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && node ../../node_modules/tsup/dist/cli-default.js --clean=false && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json --emitDeclarationOnly",
+        "cwd": "packages/cloud-auth"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.json",
+        "cwd": "packages/cloud-auth"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+        "cwd": "packages/cloud-auth"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/cloud-auth/**/*.{ts,js}"]
+      }
+    },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ../../node_modules/vitest/vitest.mjs --config vitest.config.ts",
+        "cwd": "packages/cloud-auth"
+      }
+    }
+  }
+}

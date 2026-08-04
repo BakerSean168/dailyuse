@@ -23,8 +23,6 @@ export interface GoalFolderServerDTO {
   sortOrder: number;
   isSystemFolder: boolean;
   folderType: FolderType | null;
-  goalCount: number;
-  completedGoalCount: number;
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

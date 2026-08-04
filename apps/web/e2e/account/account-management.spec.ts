@@ -157,13 +157,10 @@ test.describe('Account Management - 账户管理', () => {
       { timeout: TIMEOUT_CONFIG.NAVIGATION }
     );
 
-    // 验证 token 已清除
-    const hasToken = await page.evaluate(() => {
-      return localStorage.getItem('token') !== null;
-    });
-
-    expect(hasToken).toBe(false);
-    console.log('  ✅ Token 已清除');
+    const sessionResponse = await page.request.get('/api/auth/get-session');
+    const session = await sessionResponse.json();
+    expect(session?.session ?? null).toBeNull();
+    console.log('  ✅ Better Auth 会话已清除');
     console.log('✅ 登出测试通过');
   });
 
@@ -173,20 +170,11 @@ test.describe('Account Management - 账户管理', () => {
     // 登出
     await performLogout(page);
 
-    // 验证所有认证相关的 localStorage 都被清除
-    const authData = await page.evaluate(() => {
-      return {
-        token: localStorage.getItem('token'),
-        refreshToken: localStorage.getItem('refreshToken'),
-        userInfo: localStorage.getItem('userInfo'),
-        userId: localStorage.getItem('userId'),
-      };
-    });
-
-    expect(authData.token).toBeNull();
-    expect(authData.refreshToken).toBeNull();
+    const sessionResponse = await page.request.get('/api/auth/get-session');
+    const session = await sessionResponse.json();
+    expect(session?.session ?? null).toBeNull();
     
-    console.log('  ✅ 所有认证信息已清除');
+    console.log('  ✅ HttpOnly Cookie 会话已清除');
     console.log('✅ 认证信息清理测试通过');
   });
 });

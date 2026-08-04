@@ -69,9 +69,10 @@ export function toGoalRecordQueryOptions(dto: GoalRecordQueryOptionsDTO): GoalRe
  * IGoalRecordRepository 仓储接口
  *
  * 【设计说明】
- * GoalRecord 是 KeyResult 的子对象，但为了性能考虑：
- * - 查询操作通过独立的 Repository 接口
- * - 保存操作通过 Goal 聚合根级联完成
+ * GoalRecord 是 Goal 聚合内由 KeyResult 拥有的历史实体：
+ * - 独立端口服务于大体量历史查询和事务内写入
+ * - 所有写入必须与 Goal 根版本 CAS 处于同一事务
+ * - GoalRecord 本身不拥有乐观锁版本或软删除生命周期
  *
  * 【返回类型】
  * 统一返回 GoalRecord 实体对象，而非 DTO

@@ -1,29 +1,96 @@
 /**
  * Delete Goal Record Use Case
  *
- * 删除目标进度记录（身份隔离）
+ * 删除记录与重新计算 KR 进度属于同一个 Goal 写事务。
  */
 
-import type { IGoalRecordRepository } from '../../../domain';
+import {
+  GoalVersionConflictError,
+  KeyResultProgress,
+  type IGoalRecordRepository,
+  type IGoalRepository,
+} from '../../../domain';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
+import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
+import {
+  createInlineGoalWriteTransactionRunner,
+  type GoalWriteTransactionRunner,
+} from './goal-write-support';
+import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 export class DeleteGoalRecordUseCase {
   constructor(
+    private readonly goalRepository: IGoalRepository,
     private readonly goalRecordRepository: IGoalRecordRepository,
+    private readonly transactionRunner: GoalWriteTransactionRunner = createInlineGoalWriteTransactionRunner(
+      { goalRepository, goalRecordRepository },
+    ),
   ) {}
 
-  async execute(recordId: string, identityId: string): Promise<Result<void>> {
-    const record = await this.goalRecordRepository.findByIdForIdentity(identityId, recordId);
-    if (!record) {
-      return error('NOT_FOUND', `Goal record not found: ${recordId}`);
-    }
-
+  async execute(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    identityId: string,
+    expectedVersion: number,
+  ): Promise<Result<GoalMutationReceipt>> {
     try {
-      await this.goalRecordRepository.delete(identityId, recordId);
-      return ok(undefined);
-    } catch (_e) {
-      return error('INTERNAL_ERROR', `Failed to delete record: ${recordId}`);
+      return await this.transactionRunner.run(async ({ goalRepository, goalRecordRepository }) => {
+        const goal = await goalRepository.findByIdForIdentity(identityId, goalId, {
+          includeChildren: true,
+        });
+        if (!goal) return error('NOT_FOUND', `Goal not found: ${goalId}`);
+        if (goal.version !== expectedVersion) {
+          return error('CONFLICT', 'Goal has been modified by another client');
+        }
+
+        const record = await goalRecordRepository.findByIdForIdentity(identityId, recordId);
+        if (!record || String(record.keyResultId) !== keyResultId) {
+          return error('NOT_FOUND', `Goal record not found: ${recordId}`);
+        }
+
+        const keyResult = goal.keyResults.find((item) => item.id === keyResultId);
+        if (!keyResult) {
+          return error('NOT_FOUND', `KeyResult not found: ${keyResultId} in goal ${goalId}`);
+        }
+
+        const historyBefore = await goalRecordRepository.findByKeyResultId(
+          identityId,
+          keyResultId,
+          { orderBy: 'asc' },
+        );
+        const historyAfter = historyBefore.filter((item) => item.id !== recordId);
+        const currentProgress = KeyResultProgress.fromDTO(keyResult.progress);
+        const nextValue =
+          currentProgress.aggregationMethod === 'Sum'
+            ? currentProgress.currentValue - record.value
+            : currentProgress.recalculateFromHistory(historyAfter.map((item) => item.value))
+                .currentValue;
+
+        await goalRecordRepository.delete(identityId, recordId);
+        if (nextValue !== currentProgress.currentValue) {
+          goal.updateKeyResultProgress(keyResultId, nextValue);
+        }
+        goal.advanceVersion();
+        await goalRepository.saveRootWithExpectedVersion(goal, expectedVersion);
+
+        return ok(
+          createGoalMutationReceipt(
+            goal,
+            {
+              keyResultIds: [keyResult.id],
+              recordIds: [record.id],
+            },
+            { upserted: [], removedIds: [record.id] },
+          ),
+        );
+      });
+    } catch (cause) {
+      if (cause instanceof GoalVersionConflictError) {
+        return error('CONFLICT', cause.message);
+      }
+      throw cause;
     }
   }
 }

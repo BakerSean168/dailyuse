@@ -2,10 +2,11 @@
  * Desktop Platform DI — IPC Adapter Injection
  */
 import type { App } from 'vue';
+import { ref } from 'vue';
 import { createResultIpcClient } from '@memoflow/ipc-client';
 import { toast } from 'vue-sonner';
 import { createAccountIpcClient } from '@memoflow/account/client';
-import { createAuthenticationIpcClient } from '@memoflow/authentication/client';
+import { createCloudAuthIpcClient } from '@memoflow/cloud-auth';
 import { createGoalIpcClient } from '@memoflow/goal/client';
 import { createGovernanceIpcClient } from '@memoflow/governance/client';
 import { createTaskIpcClient } from '@memoflow/task/client';
@@ -18,7 +19,7 @@ import { createAIIpcClient } from '@memoflow/ai/client';
 import { createDataPortabilityIpcClient } from '@memoflow/data-portability/client';
 import {
   ACCOUNT_SERVICE_KEY,
-  AUTH_SERVICE_KEY,
+  DESKTOP_CLOUD_AUTH_SERVICE_KEY,
   GOAL_SERVICE_KEY,
   TASK_SERVICE_KEY,
   SCHEDULE_SERVICE_KEY,
@@ -34,12 +35,17 @@ import {
   DESKTOP_BRIDGE_KEY,
   MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
+  PROFILE_LOCK_HANDLER_KEY,
+  DESKTOP_ACCESS_SNAPSHOT_KEY,
   defaultModuleCapsules,
 } from '@memoflow/app-vue/di';
 import { createDashboardIpcAdapter } from '@memoflow/app-vue/modules/dashboard/adapters';
 import { useAuthenticationStore } from '@memoflow/app-vue/modules/authentication';
+import { readDesktopAccessSnapshot } from '@memoflow/app-vue/desktop';
 // Residual 941: host bridge via requireElectronBridge sole helper.
 import { requireElectronBridge } from './electron-bridge';
+import { ProfileAccessChannels, WindowChannels } from '@memoflow/contracts/electron';
+import { fromIpcResult, isOk, type IpcResult } from '@memoflow/contracts/result';
 
 export function installDesktopAppServices(app: App): void {
   const bridge = requireElectronBridge('installDesktopAppServices');
@@ -48,7 +54,8 @@ export function installDesktopAppServices(app: App): void {
 
   app.provide(ACCOUNT_SERVICE_KEY, createAccountIpcClient(resultIpcClient));
 
-  app.provide(AUTH_SERVICE_KEY, createAuthenticationIpcClient(resultIpcClient));
+  const cloudAuth = createCloudAuthIpcClient(resultIpcClient);
+  app.provide(DESKTOP_CLOUD_AUTH_SERVICE_KEY, cloudAuth);
 
   app.provide(GOAL_SERVICE_KEY, createGoalIpcClient(resultIpcClient));
 
@@ -74,21 +81,34 @@ export function installDesktopAppServices(app: App): void {
   // V2 shell capsule navigation (UI_REDESIGN_V2_PLAN §2.2 / Brief §12-4)
   app.provide(MODULE_CAPSULES_KEY, defaultModuleCapsules);
 
-  // Provide desktop auth API for automatic auth recovery in composables
+  // Generic desktop bridge used by business IPC recovery and window controls.
   app.provide(DESKTOP_AUTH_API_KEY, bridge);
   app.provide(DESKTOP_BRIDGE_KEY, bridge);
+  const desktopAccessSnapshot = ref<Awaited<ReturnType<typeof readDesktopAccessSnapshot>>>(null);
+  app.provide(DESKTOP_ACCESS_SNAPSHOT_KEY, desktopAccessSnapshot);
+  void readDesktopAccessSnapshot(bridge).then((snapshot) => {
+    desktopAccessSnapshot.value = snapshot;
+  });
+  app.provide(PROFILE_LOCK_HANDLER_KEY, async () => {
+    const lockResult = fromIpcResult(
+      (await bridge.invoke(ProfileAccessChannels.LOCK)) as IpcResult<null>,
+    );
+    if (!isOk(lockResult)) throw new Error(lockResult.error.message);
+    const transitionResult = fromIpcResult(
+      (await bridge.invoke(WindowChannels.TRANSITION_TO_PROFILE_ACCESS)) as IpcResult<null>,
+    );
+    if (!isOk(transitionResult)) throw new Error(transitionResult.error.message);
+  });
   app.provide(LOGOUT_HANDLER_KEY, async () => {
     console.info('[Desktop Logout] Handler invoked');
     try {
-      console.info('[Desktop Logout] Invoking auth:logout');
-      const logoutResult = await bridge.invoke('auth:logout');
-      console.info('[Desktop Logout] auth:logout result', logoutResult);
+      await bridge.invoke('cloud-auth:sign-out');
 
       const authStore = useAuthenticationStore();
       console.info('[Desktop Logout] Resetting auth store');
       authStore.reset();
     } catch (error) {
-      console.error('[Desktop Logout] Failed to logout/transition', error);
+      console.error('[Desktop Logout] Failed to disconnect cloud account', error);
       toast.error('退出登录失败', {
         description: error instanceof Error ? error.message : String(error),
       });

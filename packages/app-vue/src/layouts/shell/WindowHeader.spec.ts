@@ -38,48 +38,31 @@ const i18n = createI18n({
   },
 });
 
-describe('WindowHeader accessible navigation names', () => {
-  it('keeps the module name when a numeric badge is present', () => {
+describe('WindowHeader workspace launcher', () => {
+  it('uses one workspace launcher instead of persistent module capsules', () => {
     const wrapper = mount(WindowHeader, {
       props: {
         sidebarCollapsed: false,
         rightPanelOpen: true,
-        activeModule: null,
-        unreadCount: 5,
       },
       global: { plugins: [i18n] },
     });
 
-    expect(wrapper.get('[data-testid="capsule-nav-notification"]').attributes('aria-label')).toBe(
-      'Notifications, 5 items',
-    );
-    expect(wrapper.get('[data-testid="capsule-nav-goal"]').attributes('aria-label')).toBe('Goals');
-    expect(wrapper.get('nav').attributes('aria-label')).toBe('Module navigation');
+    expect(wrapper.get('[data-testid="shell-workspace-launcher"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid^="capsule-nav-"]').exists()).toBe(false);
   });
 
-  it('uses the primary capsule click for navigation and a distinct preview control', async () => {
+  it('opens the workspace through its single launcher', async () => {
     const wrapper = mount(WindowHeader, {
       props: {
         sidebarCollapsed: false,
         rightPanelOpen: true,
-        activeModule: null,
       },
-      global: {
-        plugins: [i18n],
-        stubs: {
-          GoalCapsulePreview: { template: '<div data-testid="goal-preview-stub" />' },
-        },
-      },
+      global: { plugins: [i18n] },
     });
 
-    await wrapper.get('[data-testid="capsule-nav-goal"]').trigger('click');
-    expect(wrapper.emitted('enter-module')).toEqual([['goal']]);
-    expect(wrapper.find('[data-testid="capsule-preview-goal"]').exists()).toBe(false);
-
-    const previewToggle = wrapper.get('[data-testid="capsule-preview-toggle-goal"]');
-    expect(previewToggle.attributes('aria-label')).toBe('Preview Goals');
-    await previewToggle.trigger('click');
-    expect(wrapper.get('[data-testid="capsule-preview-goal"]').isVisible()).toBe(true);
+    await wrapper.get('[data-testid="shell-workspace-launcher"]').trigger('click');
+    expect(wrapper.emitted('open-workspace')).toHaveLength(1);
   });
 
   it('exposes a dynamic right-panel toggle without changing sidebar state', async () => {
@@ -87,7 +70,6 @@ describe('WindowHeader accessible navigation names', () => {
       props: {
         sidebarCollapsed: false,
         rightPanelOpen: true,
-        activeModule: null,
       },
       global: { plugins: [i18n] },
     });

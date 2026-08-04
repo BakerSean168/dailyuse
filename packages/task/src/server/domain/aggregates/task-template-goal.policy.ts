@@ -13,11 +13,9 @@ import { TaskTemplateStatus } from '../../domain/value-objects/task-template-sta
 import { TaskType } from '../value-objects';
 import { TaskGoalBinding, type RecurrenceRule } from '../value-objects';
 import {
-  InvalidTaskTemplateStateError,
   TaskTemplateArchivedError,
   InvalidGoalBindingError,
 } from '../value-objects/task-errors';
-import type { GoalId, KeyResultId } from '@memoflow/contracts/primitives';
 import type { TaskTemplateProps } from './task-template.state';
 
 /** Mutable context for goal operations. */
@@ -49,7 +47,7 @@ export function bindToGoal(
   if (ctx.props.status === TaskTemplateStatus.Archived) {
     throw new TaskTemplateArchivedError(ctx.id);
   }
-  if (ctx.props.goalId || ctx.props.goalBinding) {
+  if (ctx.props.goalBinding) {
     throw new InvalidGoalBindingError('Template is already bound to a goal');
   }
   if (
@@ -61,11 +59,9 @@ export function bindToGoal(
     );
   }
 
-  ctx.props.goalId = goalId as GoalId;
-  ctx.props.keyResultId = keyResultId as KeyResultId;
-  ctx.props.goalBinding = TaskGoalBinding.fromDTO({
-    goalId: goalId as GoalId,
-    keyResultId: keyResultId as KeyResultId,
+  ctx.props.goalBinding = TaskGoalBinding.create({
+    goalId: goalId as TaskGoalBinding['goalId'],
+    keyResultId: keyResultId as TaskGoalBinding['keyResultId'],
     goalRecordValue: goalRecordValue ?? 1,
     progressTrigger,
   });
@@ -75,75 +71,20 @@ export function bindToGoal(
 
 /** Unbinds from the current goal. */
 export function unbindFromGoal(ctx: GoalOperationContext): void {
-  if (!ctx.props.goalId && !ctx.props.goalBinding) {
+  if (!ctx.props.goalBinding) {
     throw new InvalidGoalBindingError('Template is not bound to any goal');
   }
   if (ctx.props.status === TaskTemplateStatus.Archived) {
     throw new TaskTemplateArchivedError(ctx.id);
   }
 
-  const oldGoalId = ctx.props.goalId;
-  const oldKeyResultId = ctx.props.keyResultId;
+  const { goalId: oldGoalId, keyResultId: oldKeyResultId } = ctx.props.goalBinding;
   ctx.props.goalBinding = null;
-  ctx.props.goalId = null;
-  ctx.props.keyResultId = null;
   ctx.props.updatedAt = Date.now();
   ctx.addHistory('goal_unbound', { oldGoalId, oldKeyResultId });
 }
 
 /** Checks whether the template is linked to a goal. */
 export function isLinkedToGoal(props: TaskTemplateProps): boolean {
-  return props.goalId !== null || props.goalBinding !== null;
-}
-
-/** Links to a goal (OneTime tasks only). */
-export function linkToGoal(ctx: GoalOperationContext, goalId: string, keyResultId?: string): void {
-  if (ctx.props.taskType !== TaskType.OneTime) {
-    throw new InvalidTaskTemplateStateError('Only OneTime tasks can be linked to goals', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'linkToGoal',
-    });
-  }
-  if (ctx.props.goalId) {
-    throw new InvalidTaskTemplateStateError('Task is already linked to a goal', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'linkToGoal',
-    });
-  }
-  if (ctx.props.status === TaskTemplateStatus.Archived) {
-    throw new TaskTemplateArchivedError(ctx.id);
-  }
-
-  if (keyResultId) {
-    bindToGoal(ctx, goalId, keyResultId);
-  } else {
-    if (!goalId) {
-      throw new InvalidGoalBindingError('Goal ID is required');
-    }
-    ctx.props.goalId = goalId as GoalId;
-    ctx.props.keyResultId = null;
-    ctx.props.updatedAt = Date.now();
-    ctx.addHistory('linked_to_goal', { goalId, keyResultId });
-  }
-}
-
-/** Unlinks from the current goal (OneTime tasks only). */
-export function unlinkFromGoal(ctx: GoalOperationContext): void {
-  if (ctx.props.taskType !== TaskType.OneTime) {
-    throw new InvalidTaskTemplateStateError('Only OneTime tasks can be unlinked from goals', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'unlinkFromGoal',
-    });
-  }
-  if (!ctx.props.goalId) {
-    throw new InvalidTaskTemplateStateError('Task is not linked to any goal', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'unlinkFromGoal',
-    });
-  }
-  unbindFromGoal(ctx);
+  return props.goalBinding !== null;
 }

@@ -3,8 +3,11 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@memoflow/test-utils';
-import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
-import { SystemChannels } from '@memoflow/contracts/electron';
+import {
+  ProfileAccessChannels,
+  SystemChannels,
+  type DesktopAccessSnapshot,
+} from '@memoflow/contracts/electron';
 import { fail, ok } from '@memoflow/contracts/result';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import type { IRepositoryService } from '../../../di/types';
@@ -136,15 +139,15 @@ const ButtonStub = defineComponent({
 });
 
 const CheckboxStub = defineComponent({
-  props: { checked: { type: Boolean, default: false } },
-  emits: ['update:checked'],
+  props: { modelValue: { type: Boolean, default: false } },
+  emits: ['update:modelValue'],
   setup(props, { attrs, emit }) {
     return () =>
       h('button', {
         ...attrs,
         type: 'button',
-        'aria-pressed': props.checked,
-        onClick: () => emit('update:checked', !props.checked),
+        'aria-pressed': props.modelValue,
+        onClick: () => emit('update:modelValue', !props.modelValue),
       });
   },
 });
@@ -170,12 +173,38 @@ function createService(overrides: Partial<IRepositoryService> = {}): IRepository
 function mountSettings(
   service: IRepositoryService,
   desktopBridge?: { invoke: ReturnType<typeof vi.fn> },
-  options?: { authMode?: string | null },
+  options?: { desktopAccess?: DesktopAccessSnapshot | null },
 ) {
-  // Always install a fresh pinia so authMode set in the test is visible to the component.
   const pinia = createTestPinia();
-  const authStore = useAuthenticationStore();
-  authStore.setAuthMode(options?.authMode ?? 'password');
+  const defaultDesktopAccess: DesktopAccessSnapshot = {
+    profile: {
+      profileId: 'registered-profile',
+      profileKind: 'registered',
+      displayName: 'Local Profile',
+      avatarSeed: 'registered-seed',
+      identifierHint: 'user@example.com',
+      cloudAccountId: 'account-1',
+      lastActiveAt: 1,
+      hasPin: false,
+    },
+    unlockState: 'UNLOCKED',
+    cloudState: 'ONLINE',
+    capabilities: { local: true, sync: true, cloudAi: true, repositoryConnection: true },
+  };
+  const desktopAccess = options?.desktopAccess === undefined
+    ? defaultDesktopAccess
+    : options.desktopAccess;
+  Object.defineProperty(window, 'electronAPI', {
+    configurable: true,
+    value: {
+      invoke: vi.fn(async (channel: string) => {
+        if (channel !== ProfileAccessChannels.GET_SNAPSHOT) {
+          throw new Error(`Unexpected IPC channel: ${channel}`);
+        }
+        return { ok: true, data: desktopAccess };
+      }),
+    },
+  });
   return mount(KnowledgeRepositorySettings, {
     global: {
       plugins: [pinia, i18n],
@@ -221,8 +250,6 @@ function mountSettings(
 describe('KnowledgeRepositorySettings', () => {
   beforeEach(() => {
     createTestPinia();
-    const authStore = useAuthenticationStore();
-    authStore.setAuthMode('password');
     routerMocks.query = {};
     routerMocks.replace.mockClear();
     confirmMock.mockClear();
@@ -763,7 +790,23 @@ describe('KnowledgeRepositorySettings', () => {
   });
   it('hides GitHub connect actions and skips cloud listing for guest profiles', async () => {
     const service = createService();
-    const wrapper = mountSettings(service, undefined, { authMode: 'GUEST' });
+    const wrapper = mountSettings(service, undefined, {
+      desktopAccess: {
+        profile: {
+          profileId: 'guest-profile',
+          profileKind: 'guest',
+          displayName: 'Guest 4827',
+          avatarSeed: 'guest-seed',
+          identifierHint: null,
+          cloudAccountId: null,
+          lastActiveAt: 1,
+          hasPin: false,
+        },
+        unlockState: 'UNLOCKED',
+        cloudState: 'UNBOUND',
+        capabilities: { local: true, sync: false, cloudAi: false, repositoryConnection: false },
+      },
+    });
     await flushPromises();
 
     expect(service.listKnowledgeRepositoryConnections).not.toHaveBeenCalled();
@@ -778,7 +821,23 @@ describe('KnowledgeRepositorySettings', () => {
         ok({ installationUrl: 'https://github.com/apps/memoflow/installations/new', expiresAt: 1 }),
       ),
     });
-    const wrapper = mountSettings(service, undefined, { authMode: 'OFFLINE_USER' });
+    const wrapper = mountSettings(service, undefined, {
+      desktopAccess: {
+        profile: {
+          profileId: 'registered-profile',
+          profileKind: 'registered',
+          displayName: 'Local Profile',
+          avatarSeed: 'registered-seed',
+          identifierHint: 'user@example.com',
+          cloudAccountId: 'account-1',
+          lastActiveAt: 1,
+          hasPin: false,
+        },
+        unlockState: 'UNLOCKED',
+        cloudState: 'REAUTH_REQUIRED',
+        capabilities: { local: true, sync: false, cloudAi: false, repositoryConnection: false },
+      },
+    });
     await flushPromises();
 
     expect(wrapper.text()).toContain('Sign in online first.');

@@ -29,11 +29,9 @@ export function createSharedPathResolver(
     uiDir,
     profilesRegistryDir,
 
-    rememberedAccountsPath: path.join(authDir, 'remembered-accounts.json'),
     deviceIdPath: path.join(authDir, 'device-id'),
     runtimeConfigPath: path.join(configDir, 'desktop-runtime.json'),
-    loginWindowStatePath: path.join(uiDir, 'login-window-state.json'),
-    registerWindowStatePath: path.join(uiDir, 'register-window-state.json'),
+    profileAccessWindowStatePath: path.join(uiDir, 'profile-access-window-state.json'),
     registryPath: path.join(profilesRegistryDir, 'registry.json'),
 
     cacheDir,

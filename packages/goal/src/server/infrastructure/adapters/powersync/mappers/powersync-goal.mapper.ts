@@ -53,14 +53,6 @@ export class PowerSyncGoalMapper {
       keyResults: children?.keyResults ?? null,
       goalReviews: children?.goalReviews ?? null,
       weightSnapshots: children?.weightSnapshots ?? null,
-      totalKeyResults:
-        row.total_key_results === undefined || row.total_key_results === null
-          ? undefined
-          : Number(row.total_key_results),
-      completedKeyResults:
-        row.completed_key_results === undefined || row.completed_key_results === null
-          ? undefined
-          : Number(row.completed_key_results),
     };
 
     return Goal.load(rawDataToGoalState(raw));
@@ -82,10 +74,8 @@ export class PowerSyncGoalMapper {
       },
       weight: Number(row.weight ?? 1),
       sortOrder: Number(row.order ?? 0),
-      version: Number(row.version ?? 1),
       createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
       updatedAt: requiredMs(row.updated_at ? String(row.updated_at) : null),
-      deletedAt: optionalMs(row.deleted_at ? String(row.deleted_at) : null),
     };
   }
 
@@ -107,10 +97,8 @@ export class PowerSyncGoalMapper {
             ? String(row.created_at)
             : null,
       ),
-      version: Number(row.version ?? 1),
       createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
       updatedAt: requiredMs(row.updated_at ? String(row.updated_at) : null),
-      deletedAt: optionalMs(row.deleted_at ? String(row.deleted_at) : null),
     };
   }
 

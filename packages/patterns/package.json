@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Reusable design patterns and utilities for MemoFlow applications",
   "type": "module",
+  "files": ["dist"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

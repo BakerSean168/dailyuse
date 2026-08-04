@@ -103,10 +103,8 @@ export class PrismaGoalMapper {
       },
       weight: row.weight ?? 1,
       sortOrder: row.order ?? 0,
-      version: row.version ?? 1,
       createdAt: requiredInstant(row.createdAt),
       updatedAt: requiredInstant(row.updatedAt),
-      deletedAt: optionalInstant(row.deletedAt),
     };
   }
 
@@ -125,10 +123,8 @@ export class PrismaGoalMapper {
       improvements: row.lessonsLearned ?? null,
       keyResultSnapshots: [],
       reviewedAt: requiredInstant(row.createdAt),
-      version: row.version ?? 1,
       createdAt: requiredInstant(row.createdAt),
       updatedAt: requiredInstant(row.updatedAt),
-      deletedAt: optionalInstant(row.deletedAt),
     };
   }
 

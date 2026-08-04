@@ -209,7 +209,7 @@ describe('Task dependency and goal binding use-cases', () => {
 
     it('unbinds template and persists', async () => {
       const template = {
-        unlinkFromGoal: vi.fn(),
+        unbindFromGoal: vi.fn(),
         toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }),
       };
       vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template as any);
@@ -218,7 +218,7 @@ describe('Task dependency and goal binding use-cases', () => {
       const result = await useCase.execute('tpl-1', 'identity-1');
 
       expect(result).toBeOkWith({ id: 'tpl-1' });
-      expect(template.unlinkFromGoal).toHaveBeenCalledTimes(1);
+      expect(template.unbindFromGoal).toHaveBeenCalledTimes(1);
       expect(templateRepo.save).toHaveBeenCalledWith(template);
     });
   });

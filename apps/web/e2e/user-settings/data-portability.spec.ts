@@ -68,36 +68,34 @@ interface ImportResult {
 async function callExportAPI(page: Page, include?: string[]): Promise<ExportResult> {
   return page.evaluate(
     async (args) => {
-      const token = window.localStorage.getItem('access_token');
       const res = await fetch(`${args.apiBase}/data-portability/export`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ include: args.include }),
       });
       return res.json();
     },
-    { apiBase: API_CONFIG.FULL_URL, include },
+    { apiBase: API_CONFIG.API_PREFIX, include },
   );
 }
 
 async function callImportAPI(page: Page, content: string, dryRun = false): Promise<ImportResult> {
   return page.evaluate(
     async (args) => {
-      const token = window.localStorage.getItem('access_token');
       const res = await fetch(`${args.apiBase}/data-portability/import`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ content: args.content, dryRun: args.dryRun }),
       });
       return res.json();
     },
-    { apiBase: API_CONFIG.FULL_URL, content, dryRun },
+    { apiBase: API_CONFIG.API_PREFIX, content, dryRun },
   );
 }
 

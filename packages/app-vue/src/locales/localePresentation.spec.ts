@@ -9,7 +9,6 @@ const localeAwareSurfaces = [
   'src/modules/task/components/TaskTemplateForm/sections/ReminderSection.vue',
   'src/modules/task/components/TaskTemplateForm/sections/RecurrenceSection.vue',
   'src/modules/task/components/TaskTemplateForm/sections/TimeConfigSection.vue',
-  'src/modules/task/components/dialogs/TaskCompleteDialog.vue',
   'src/modules/goal/views/GoalDetailView.vue',
   'src/modules/notification/views/SSEMonitorPage.vue',
 ];

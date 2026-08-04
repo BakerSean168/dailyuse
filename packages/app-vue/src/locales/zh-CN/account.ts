@@ -42,7 +42,28 @@ export default {
   "logoutHandlerUnavailable": "退出登录服务当前不可用",
   "actions": {
     "logout": "退出登录",
+    "lockProfile": "锁定本地 Profile",
     "saveProfile": "保存资料"
+  },
+  "lockProfileHint": "关闭当前本地数据运行时并返回 Profile 解锁页。云端账号绑定不会被移除。",
+  "localProtection": {
+    "title": "本地 Profile 保护",
+    "description": "可选的设备级保护，与 MemoFlow 云端密码相互独立。",
+    "toggle": "使用本地 PIN",
+    "hint": "默认关闭。开启后，下次打开此 Profile 时需要输入 PIN。",
+    "pin": "本地 PIN",
+    "confirmPin": "确认本地 PIN",
+    "pinPlaceholder": "6 至 12 位数字",
+    "enable": "启用 PIN",
+    "enabled": "本地 PIN 已启用",
+    "invalidPin": "PIN 必须是 6 至 12 位数字",
+    "pinMismatch": "两次输入的 PIN 不一致",
+    "enableFailed": "本地 PIN 设置失败",
+    "removeTitle": "关闭本地 PIN？",
+    "removeDescription": "此 Profile 下次可直接打开，不再要求本地 PIN。",
+    "removeConfirm": "关闭 PIN",
+    "removeFailed": "本地 PIN 移除失败",
+    "removed": "本地 PIN 已关闭"
   },
   "profile": {
     "editTitle": "编辑个人资料",
@@ -86,14 +107,12 @@ export default {
     "accountClosed": "账户已注销",
     "closeAccountFailed": "注销账户失败",
     "closeFailed": "注销失败",
-    "guestProfileUpdateUnavailable": "访客模式下无法更新资料",
-    "guestSettingsUpdateUnavailable": "访客模式下无法更新设置",
     "guestCloseAccountUnavailable": "访客模式下无法注销账户"
   },
-  "logoutHint": "你可以在这里安全退出当前账户，会立即返回登录页。",
+  "logoutHint": "断开当前云端会话并停止同步，本地 Profile 和数据仍可继续使用。",
   "logoutConfirm": {
     "title": "确认退出登录？",
-    "description": "退出后需要重新登录才能继续使用。",
+    "description": "退出后云端同步会暂停；本地数据不会被锁定或删除。",
     "confirmText": "退出登录",
     "cancelText": "取消"
   }

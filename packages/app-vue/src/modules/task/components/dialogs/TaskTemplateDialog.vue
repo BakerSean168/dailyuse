@@ -111,8 +111,10 @@ import {
 import { defaultNamedColor } from '../../../../shared/constants/color-palette';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
 import { ProductDialogShell } from '../../../../shared/components';
+import { useDialogDraftStore } from '../../../../layouts/shell/dialog-draft-store';
 
 const { t } = useI18n();
+const dialogDraftStore = useDialogDraftStore();
 const {
   goals: goalOptions,
   keyResultsByGoal,
@@ -232,6 +234,7 @@ const emit = defineEmits<{
 const formRef = ref<InstanceType<typeof TaskTemplateForm> | null>(null);
 const localTemplate = ref<TaskTemplateViewModel | null>(null);
 const draftBaseline = ref<string | null>(null);
+const currentDraftKey = ref<string | null>(null);
 const isValid = ref(false);
 const visible = computed(() => props.modelValue);
 const mode = computed(() => props.mode);
@@ -312,11 +315,29 @@ function initializeDraft(): void {
   emit('dirty-change', false);
 }
 
+function resolveDraftKey(): string {
+  const scope = dialogDraftStore.scope?.value ?? 'standalone';
+  return `${scope}:task-template-dialog:${props.mode}:${props.template?.id ?? 'new'}`;
+}
+
+function clearDraft(): void {
+  if (currentDraftKey.value) dialogDraftStore.clear(currentDraftKey.value);
+}
+
 watch(
   localTemplate,
   (draft) => {
     if (!visible.value || draftBaseline.value === null) return;
-    emit('dirty-change', JSON.stringify(draft) !== draftBaseline.value);
+    const serialized = JSON.stringify(draft);
+    if (draft && currentDraftKey.value && serialized !== draftBaseline.value) {
+      dialogDraftStore.save(currentDraftKey.value, {
+        draft: cloneTemplate(draft),
+        baseline: draftBaseline.value,
+      });
+    } else if (currentDraftKey.value) {
+      dialogDraftStore.clear(currentDraftKey.value);
+    }
+    emit('dirty-change', serialized !== draftBaseline.value);
   },
   { deep: true },
 );
@@ -325,13 +346,24 @@ watch(
   visible,
   async (open, wasOpen) => {
     if (!open) {
+      clearDraft();
       draftBaseline.value = null;
       emit('dirty-change', false);
       return;
     }
 
     if (!wasOpen) {
-      initializeDraft();
+      currentDraftKey.value = resolveDraftKey();
+      const saved = dialogDraftStore.load<{
+        draft: TaskTemplateViewModel;
+        baseline: string;
+      }>(currentDraftKey.value);
+      if (saved) {
+        localTemplate.value = saved.draft;
+        draftBaseline.value = saved.baseline;
+      } else {
+        initializeDraft();
+      }
     }
     await loadGoals();
   },
@@ -348,6 +380,8 @@ watch(
 );
 
 const setVisible = (value: boolean) => {
+  if (!value && saving.value) return;
+  if (!value) clearDraft();
   emit('update:modelValue', value);
 };
 
@@ -360,6 +394,8 @@ const handleValidationUpdate = (validation: { isValid: boolean }) => {
 };
 
 const handleCancel = () => {
+  if (saving.value) return;
+  clearDraft();
   localTemplate.value = null;
   draftBaseline.value = null;
   isValid.value = false;

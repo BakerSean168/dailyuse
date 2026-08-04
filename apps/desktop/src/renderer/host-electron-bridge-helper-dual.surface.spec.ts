@@ -46,7 +46,8 @@ describe('host ElectronBridge helper duals retired (residual 941)', () => {
     expect(electron).not.toContain('window.electronAPI');
 
     expect(bootstrap).toContain('Residual 941');
-    expect(bootstrap).toContain('hydrateDesktopBootstrapAuthState(getElectronBridge())');
+    expect(bootstrap).toContain("requireElectronBridge('bootstrapMainApp')");
+    expect(bootstrap).toContain('readDesktopAccessSnapshot(bridge)');
     expect(bootstrap).not.toContain('window.electronAPI');
 
     expect(main).toContain('Residual 941');

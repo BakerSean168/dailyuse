@@ -18,16 +18,19 @@ import {
   CloneGoalSchema,
   ListGoalFiltersSchema,
   AddKeyResultSchema,
+  DeleteKeyResultSchema,
   UpdateKeyResultSchema,
   UpdateKeyResultProgressSchema,
   CreateGoalReviewSchema,
+  DeleteGoalReviewSchema,
   CreateGoalRecordSchema,
+  DeleteGoalRecordSchema,
   UpdateGoalReviewSchema,
   ActivateFocusModeSchema,
   ExtendFocusModeSchema,
+  GoalVersionCommandSchema,
 } from '@memoflow/contracts/goal';
 import type {
-  GoalClientDTO,
   GoalSystemView,
   GetGoalAggregateRes,
   ProgressBreakdown,
@@ -114,10 +117,6 @@ export class GoalController {
 
   constructor(private readonly useCases: GoalUseCases) {}
 
-  private toGoalClientDTO(data: unknown): GoalClientDTO {
-    return data as GoalClientDTO;
-  }
-
   // ==================== Goal CRUD ====================
 
   async create(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
@@ -175,8 +174,20 @@ export class GoalController {
     return this.useCases.updateGoal(id, cx.identityId, parsed.data);
   }
 
-  async delete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.deleteGoal(id, cx.identityId);
+  async delete(
+    id: string,
+    expectedVersion: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    const parsed = GoalVersionCommandSchema.safeParse({ expectedVersion });
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.deleteGoal(id, cx.identityId, parsed.data.expectedVersion);
   }
 
   async archiveExpired(cx: ExecutionContext): Promise<Result<unknown>> {
@@ -185,29 +196,46 @@ export class GoalController {
 
   // ==================== Goal Status Operations ====================
 
-  async archive(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.archiveGoal(id, cx.identityId);
+  async archive(
+    id: string,
+    expectedVersion: number,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    return this.useCases.archiveGoal(id, cx.identityId, expectedVersion);
   }
 
-  async activate(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.activateGoal(id, cx.identityId);
+  async activate(
+    id: string,
+    expectedVersion: number,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    return this.useCases.activateGoal(id, cx.identityId, expectedVersion);
   }
 
-  async complete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
-    const result = await this.useCases.completeGoal(id, cx.identityId);
-    if (!result.ok) return result;
-    return ok(result.data.goal);
+  async complete(
+    id: string,
+    expectedVersion: number,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    return this.useCases.completeGoal(id, cx.identityId, expectedVersion);
   }
 
   async getAggregate(goalId: string, cx: ExecutionContext): Promise<Result<GetGoalAggregateRes>> {
     return this.useCases.getGoalAggregate(goalId, cx.identityId);
   }
 
-  async getProgressBreakdown(goalId: string, cx: ExecutionContext): Promise<Result<ProgressBreakdown>> {
+  async getProgressBreakdown(
+    goalId: string,
+    cx: ExecutionContext,
+  ): Promise<Result<ProgressBreakdown>> {
     return this.useCases.getGoalProgressBreakdown(goalId, cx.identityId);
   }
 
-  async cloneGoal(goalId: string, params: unknown, cx: ExecutionContext): Promise<Result<GoalClientDTO>> {
+  async cloneGoal(
+    goalId: string,
+    params: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
     const parsedParams = CloneGoalSchema.safeParse(params ?? {});
     if (!parsedParams.success) {
       return fail({
@@ -222,10 +250,18 @@ export class GoalController {
 
   async batchUpdateKeyResultWeights(
     goalId: string,
-    updates: Array<{ keyResultId: string; weight: number }>,
+    request: {
+      expectedVersion: number;
+      updates: Array<{ keyResultId: string; weight: number }>;
+    },
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    return this.useCases.batchUpdateKeyResultWeights(goalId, cx.identityId, updates);
+    return this.useCases.batchUpdateKeyResultWeights(
+      goalId,
+      cx.identityId,
+      request.expectedVersion,
+      request.updates,
+    );
   }
 
   // ==================== Key Results ====================
@@ -241,7 +277,11 @@ export class GoalController {
     });
   }
 
-  async addKeyResult(goalId: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
+  async addKeyResult(
+    goalId: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
     const parsed = AddKeyResultSchema.safeParse({
       ...(input as Record<string, unknown>),
       goalId,
@@ -262,6 +302,7 @@ export class GoalController {
       currentValue: parsed.data.currentValue,
       unit: parsed.data.unit,
       weight: parsed.data.weight,
+      expectedVersion: parsed.data.expectedVersion,
     });
   }
 
@@ -287,6 +328,7 @@ export class GoalController {
       currentValue: parsed.data.currentValue,
       targetValue: parsed.data.targetValue,
       unit: parsed.data.unit ?? undefined,
+      expectedVersion: parsed.data.expectedVersion,
     });
   }
 
@@ -312,15 +354,31 @@ export class GoalController {
       cx.identityId,
       krId,
       parsed.data.newValue,
+      parsed.data.expectedVersion,
       parsed.data.note,
     );
   }
 
-  async deleteKeyResult(goalId: string, krId: string, cx: ExecutionContext): Promise<Result<null>> {
-    const result = await this.useCases.deleteKeyResult(goalId, cx.identityId, krId);
-    if (!result.ok) return result;
-    // Serialize as data:null (no DeleteSuccess {success} / undefined dual-track).
-    return ok(null);
+  async deleteKeyResult(
+    goalId: string,
+    krId: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    const parsed = DeleteKeyResultSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.deleteKeyResult(
+      goalId,
+      cx.identityId,
+      krId,
+      parsed.data.expectedVersion,
+    );
   }
 
   // ==================== Reviews ====================
@@ -345,6 +403,7 @@ export class GoalController {
       achievements: parsed.data.achievements,
       challenges: parsed.data.challenges,
       nextActions: parsed.data.nextActions,
+      expectedVersion: parsed.data.expectedVersion,
     });
   }
 
@@ -375,13 +434,30 @@ export class GoalController {
       achievements: parsed.data.achievements,
       challenges: parsed.data.challenges,
       nextActions: parsed.data.nextActions,
+      expectedVersion: parsed.data.expectedVersion,
     });
   }
 
-  async deleteReview(goalId: string, reviewId: string, cx: ExecutionContext): Promise<Result<null>> {
-    const result = await this.useCases.deleteReview(goalId, cx.identityId, reviewId);
-    if (!result.ok) return result;
-    return ok(null);
+  async deleteReview(
+    goalId: string,
+    reviewId: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    const parsed = DeleteGoalReviewSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.deleteReview(
+      goalId,
+      cx.identityId,
+      reviewId,
+      parsed.data.expectedVersion,
+    );
   }
 
   // ==================== Records ====================
@@ -409,6 +485,7 @@ export class GoalController {
       {
         value: parsed.data.value,
         note: parsed.data.note,
+        expectedVersion: parsed.data.expectedVersion,
       },
       cx.identityId,
     );
@@ -442,10 +519,29 @@ export class GoalController {
     });
   }
 
-  async deleteRecord(recordId: string, cx: ExecutionContext): Promise<Result<null>> {
-    const result = await this.useCases.deleteRecord(recordId, cx.identityId);
-    if (!result.ok) return result;
-    return ok(null);
+  async deleteRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    const parsed = DeleteGoalRecordSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    const result = await this.useCases.deleteRecord(
+      goalId,
+      keyResultId,
+      recordId,
+      cx.identityId,
+      parsed.data.expectedVersion,
+    );
+    return result;
   }
 
   // ==================== Focus Mode ====================

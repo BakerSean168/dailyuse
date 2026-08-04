@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "通知模块 - 多渠道通知管理",
   "type": "module",
+  "files": ["dist"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

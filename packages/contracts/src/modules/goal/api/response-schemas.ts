@@ -44,11 +44,9 @@ import { FocusModeClientDTOSchema } from '../value-objects/focus-mode';
 // (semantic FocusModeDTO is a z.infer alias). Re-export for OpenAPI/route consumers.
 export { FocusModeClientDTOSchema };
 
-
 // ============================================================================
 // Sub-entity Schemas
 // ============================================================================
-
 
 /**
  * KeyResult Client DTO Schema
@@ -62,12 +60,9 @@ export const KeyResultClientDTOSchema = z.object({
   progress: KeyResultProgressDTOSchema,
   weight: z.number().int().min(1).max(5),
   order: z.number(),
-  version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
 });
-
 
 /**
  * GoalReview Client DTO Schema
@@ -84,14 +79,10 @@ export const GoalReviewClientDTOSchema = z.object({
   challenges: z.string().nullable(),
   improvements: z.string().nullable(),
   keyResultSnapshots: z.array(KeyResultSnapshotDTOSchema),
-  version: z.number(),
   reviewedAt: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
 });
-
-
 
 // ============================================================================
 // Aggregate Root Response Schemas
@@ -130,10 +121,18 @@ export const GoalClientDTOSchema = z.object({
   version: z.number(),
   keyResults: z.array(KeyResultClientDTOSchema).nullable(),
   reviews: z.array(GoalReviewClientDTOSchema).nullable(),
-  totalKeyResults: z.number().optional(),
-  completedKeyResults: z.number().optional(),
-  overallProgress: z.number().optional(),
+  totalKeyResults: z.number(),
+  completedKeyResults: z.number(),
+  overallProgress: z.number(),
 });
+
+/** Full Goal aggregate projection returned by commands and aggregate queries. */
+export const GoalAggregateReadModelSchema = GoalClientDTOSchema.extend({
+  keyResults: z.array(KeyResultClientDTOSchema),
+  reviews: z.array(GoalReviewClientDTOSchema),
+});
+
+export type GoalAggregateReadModel = z.infer<typeof GoalAggregateReadModelSchema>;
 
 /**
  * GoalFolder Client DTO Schema
@@ -152,16 +151,12 @@ export const GoalFolderClientDTOSchema = z.object({
   sortOrder: z.number(),
   isSystemFolder: z.boolean(),
   folderType: z.enum(FolderType).nullable(),
-  goalCount: z.number(),
-  completedGoalCount: z.number(),
   version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),
   displayName: z.string(),
   displayIcon: z.string(),
-  completionRate: z.number(),
-  activeGoalCount: z.number(),
 });
 
 /**
@@ -205,11 +200,28 @@ export const GoalRecordClientDTOSchema = z.object({
   value: z.number(),
   valueAfter: z.number(),
   comment: z.string().nullable(),
-  version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
 });
+
+export const GoalMutationReceiptSchema = z.object({
+  goalId: brandedId<GoalId>(),
+  goalVersion: z.number().int().min(1),
+  affectedEntityIds: z.object({
+    goalIds: z.array(brandedId<GoalId>()),
+    keyResultIds: z.array(brandedId<KeyResultId>()),
+    recordIds: z.array(brandedId<GoalRecordId>()),
+    reviewIds: z.array(brandedId<GoalReviewId>()),
+  }),
+  readModel: GoalAggregateReadModelSchema,
+  recordChanges: z
+    .object({
+      upserted: z.array(GoalRecordClientDTOSchema),
+      removedIds: z.array(brandedId<GoalRecordId>()),
+    })
+    .optional(),
+});
+export type GoalMutationReceipt = z.infer<typeof GoalMutationReceiptSchema>;
 
 // ============================================================================
 // Composite Response Schemas
@@ -240,19 +252,17 @@ export type QueryGoalsRes = z.infer<typeof QueryGoalsResSchema>;
  * 目标聚合视图响应 Schema
  */
 export const GetGoalAggregateResSchema = z.object({
-  goal: GoalClientDTOSchema,
-  keyResults: z.array(KeyResultClientDTOSchema).optional(),
-  records: z.array(GoalRecordClientDTOSchema).optional(),
-  reviews: z.array(GoalReviewClientDTOSchema).optional(),
-  statistics: z
-    .object({
-      totalKeyResults: z.number(),
-      completedKeyResults: z.number(),
-      totalRecords: z.number(),
-      totalReviews: z.number(),
-      overallProgress: z.number(),
-    })
-    .optional(),
+  goal: GoalAggregateReadModelSchema,
+  keyResults: z.array(KeyResultClientDTOSchema),
+  records: z.array(GoalRecordClientDTOSchema),
+  reviews: z.array(GoalReviewClientDTOSchema),
+  statistics: z.object({
+    totalKeyResults: z.number(),
+    completedKeyResults: z.number(),
+    totalRecords: z.number(),
+    totalReviews: z.number(),
+    overallProgress: z.number(),
+  }),
 });
 
 export type GetGoalAggregateRes = z.infer<typeof GetGoalAggregateResSchema>;
@@ -291,7 +301,6 @@ export const GoalReviewListResSchema = z.object({
 // Simple Response Schemas
 // ============================================================================
 
-
 /**
  * 归档过期目标响应 Schema
  */
@@ -326,6 +335,7 @@ export const ProgressBreakdownResSchema = z.object({
  * 批量更新关键结果权重请求 Schema
  */
 export const BatchUpdateKeyResultWeightsReqSchema = z.object({
+  expectedVersion: z.number().int().min(1),
   updates: z.array(
     z.object({
       keyResultId: brandedId<KeyResultId>(),
@@ -333,3 +343,4 @@ export const BatchUpdateKeyResultWeightsReqSchema = z.object({
     }),
   ),
 });
+export type BatchUpdateKeyResultWeightsReq = z.infer<typeof BatchUpdateKeyResultWeightsReqSchema>;

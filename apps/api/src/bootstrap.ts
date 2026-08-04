@@ -19,10 +19,20 @@
  */
 
 import express, { type Express, Router } from 'express';
-import type { IApiModule, IApiModuleContext, IApiMiddleware, DatabaseClient } from './shared/contracts/api-module';
+import type { CloudAuth } from '@memoflow/cloud-auth/server';
+import type { CloudAuthEmailKind, CloudAuthEmailLinkCapture } from '@memoflow/cloud-auth/server';
+import type {
+  IApiModule,
+  IApiModuleContext,
+  IApiMiddleware,
+  DatabaseClient,
+} from './shared/contracts/api-module';
 import { applyGlobalMiddleware, applyErrorHandlers } from './shared/infrastructure/middleware';
-import { authMiddleware, requireRole } from './shared/infrastructure/http/middlewares';
-import { createRequireEmailVerifiedMiddleware } from '@memoflow/authentication/api';
+import {
+  createAuthMiddleware,
+  createRequireEmailVerifiedMiddleware,
+  requireRole,
+} from './shared/infrastructure/http/middlewares';
 import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createInfrastructureRouter } from './shared/infrastructure/http/routes/infrastructure-routes';
 import { registry } from './shared/infrastructure/openapi/registry';
@@ -38,7 +48,11 @@ export class ApiBootstrapper {
   private readonly db: DatabaseClient;
   private readonly metricsStore: MetricsStore;
 
-  constructor(db: DatabaseClient) {
+  constructor(
+    db: DatabaseClient,
+    private readonly cloudAuth: CloudAuth,
+    private readonly testEmailLinks?: Pick<CloudAuthEmailLinkCapture, 'findLatest'>,
+  ) {
     this.app = express();
     this.rootRouter = Router();
     this.db = db;
@@ -66,7 +80,28 @@ export class ApiBootstrapper {
    */
   public async init(): Promise<Express> {
     // 1. 全局中间件
-    applyGlobalMiddleware(this.app, this.metricsStore);
+    applyGlobalMiddleware(this.app, this.metricsStore, {
+      beforeBodyParsing: (app) => {
+        const testEmailLinks = this.testEmailLinks;
+        if (testEmailLinks) {
+          app.get('/api/auth/test/last-email-link', (req, res) => {
+            const email = typeof req.query.email === 'string' ? req.query.email.trim() : '';
+            const kind = req.query.kind;
+            if (!email || (kind !== 'email-verification' && kind !== 'password-reset')) {
+              res.status(400).json({ message: 'email and a valid kind are required' });
+              return;
+            }
+            const captured = testEmailLinks.findLatest(email, kind as CloudAuthEmailKind);
+            if (!captured) {
+              res.status(404).json({ data: null });
+              return;
+            }
+            res.json({ data: captured });
+          });
+        }
+        app.all('/api/auth/*splat', this.cloudAuth.expressHandler);
+      },
+    });
 
     // 2. Swagger
     setupSwagger(this.app);
@@ -75,17 +110,10 @@ export class ApiBootstrapper {
     this.app.use('/', createInfrastructureRouter(this.metricsStore));
 
     // 4. 准备模块上下文（含平台中间件 + 邮箱验证门禁）
-    const requireEmailVerified = createRequireEmailVerifiedMiddleware({
-      lookupStatus: async (identityId) => {
-        const row = await this.db.authIdentity.findUnique({
-          where: { id: identityId },
-          select: { status: true },
-        });
-        return row?.status ?? null;
-      },
-    });
+    const auth = createAuthMiddleware(this.cloudAuth, this.db);
+    const requireEmailVerified = createRequireEmailVerifiedMiddleware();
     const platformMiddleware: IApiMiddleware = {
-      auth: authMiddleware,
+      auth,
       requireRole: (roles: string[]) => requireRole(roles),
       requireEmailVerified,
     };

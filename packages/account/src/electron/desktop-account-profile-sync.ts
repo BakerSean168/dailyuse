@@ -1,0 +1,102 @@
+import type { UpdateAccountReq, UpdateAccountRes } from '@memoflow/contracts/account';
+import { UpdateAccountSchema } from '@memoflow/contracts/account';
+import type { Result } from '@memoflow/contracts/result';
+import { fail } from '@memoflow/contracts/result';
+import { formatZodErrors } from '@memoflow/utils/result';
+import type { UpdateAccountProfileUseCase } from '../server/application';
+import type {
+  PowerSyncAccountRepository,
+  Transactional,
+} from '../server/infrastructure';
+
+interface PendingProfileSyncRow {
+  owner_id: string;
+  revision: number;
+}
+
+export interface DesktopAccountProfileSyncOptions {
+  getCloudAccountId(): string | null;
+  getCloudAccessToken(): Promise<string | null>;
+  pushCloudProfile(token: string, request: UpdateAccountReq): Promise<void>;
+  updateLocalProfileMetadata?(request: UpdateAccountReq): Promise<void>;
+  closeCloudAccount?(token: string, request: { reason: string }): Promise<void>;
+  afterCloudAccountClosed?(): Promise<void>;
+}
+
+export class DesktopAccountProfileSync {
+  constructor(
+    private readonly db: Transactional,
+    private readonly repository: PowerSyncAccountRepository,
+    private readonly updateProfileUseCase: UpdateAccountProfileUseCase,
+    private readonly options: DesktopAccountProfileSyncOptions,
+  ) {}
+
+  async update(
+    input: unknown,
+    identityId: string,
+  ): Promise<Result<UpdateAccountRes>> {
+    const parsed = UpdateAccountSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
+    const result = await this.db.writeTransaction(async (tx) => {
+      const updated = await this.updateProfileUseCase.execute(
+        parsed.data,
+        { identityId },
+        tx,
+      );
+      if (!updated.ok || this.options.getCloudAccountId() !== identityId) {
+        return updated;
+      }
+
+      await tx.execute(
+        `INSERT INTO account_profile_sync_outbox (id, owner_id, revision, requested_at)
+         VALUES ('current', ?, 1, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           owner_id = excluded.owner_id,
+           revision = account_profile_sync_outbox.revision + 1,
+           requested_at = excluded.requested_at`,
+        [identityId, Date.now()],
+      );
+      return updated;
+    });
+
+    if (result.ok) {
+      await this.options.updateLocalProfileMetadata?.(parsed.data);
+      void this.flush().catch(() => undefined);
+    }
+    return result;
+  }
+
+  async flush(): Promise<boolean> {
+    const pending = await this.db.getOptional<PendingProfileSyncRow>(
+      `SELECT owner_id, revision
+       FROM account_profile_sync_outbox
+       WHERE id = 'current'
+       LIMIT 1`,
+    );
+    if (!pending || this.options.getCloudAccountId() !== pending.owner_id) return false;
+
+    const token = await this.options.getCloudAccessToken();
+    if (!token) return false;
+
+    const account = await this.repository.findById(pending.owner_id);
+    if (!account) return false;
+    await this.options.pushCloudProfile(token, {
+      nickname: account.profile.nickname,
+      avatar: account.profile.avatarUrl || null,
+      bio: account.profile.bio || null,
+    });
+    await this.db.execute(
+      `DELETE FROM account_profile_sync_outbox
+       WHERE id = 'current' AND revision = ?`,
+      [pending.revision],
+    );
+    return true;
+  }
+}

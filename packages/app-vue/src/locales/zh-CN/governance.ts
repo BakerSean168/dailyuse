@@ -101,7 +101,8 @@ export default {
     "deprecated": "已弃用"
   },
   "search": {
-    "placeholder": "搜索规范(按 / 聚焦)"
+    "placeholder": "搜索规范(按 / 聚焦)",
+    "clear": "清除搜索"
   },
   "tagFilter": {
     "clear": "清除"

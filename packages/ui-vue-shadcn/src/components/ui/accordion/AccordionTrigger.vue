@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AccordionTriggerProps } from 'radix-vue'
+import type { AccordionTriggerProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import { ChevronDownIcon } from '@radix-icons/vue'
@@ -7,7 +7,7 @@ import {
   AccordionHeader,
   AccordionTrigger,
 
-} from 'radix-vue'
+} from 'reka-ui'
 import { computed } from 'vue'
 
 const props = defineProps<AccordionTriggerProps & { class?: HTMLAttributes['class'] }>()

@@ -11,7 +11,11 @@
           <Select
             :model-value="modelValue.language"
             @update:model-value="
-              (value) => emit('update:modelValue', { ...modelValue, language: value })
+              (value) =>
+                emit('update:modelValue', {
+                  ...modelValue,
+                  language: normalizeSelectString(value) ?? undefined,
+                })
             "
           >
             <SelectTrigger id="language-select">
@@ -35,7 +39,11 @@
           <Select
             :model-value="modelValue.timezone"
             @update:model-value="
-              (value) => emit('update:modelValue', { ...modelValue, timezone: value })
+              (value) =>
+                emit('update:modelValue', {
+                  ...modelValue,
+                  timezone: normalizeSelectString(value) ?? undefined,
+                })
             "
           >
             <SelectTrigger id="timezone-select">
@@ -55,7 +63,11 @@
           <Select
             :model-value="modelValue.dateFormat"
             @update:model-value="
-              (value) => emit('update:modelValue', { ...modelValue, dateFormat: value })
+              (value) =>
+                emit('update:modelValue', {
+                  ...modelValue,
+                  dateFormat: normalizeSelectString(value) ?? undefined,
+                })
             "
           >
             <SelectTrigger id="date-format-select">
@@ -79,7 +91,11 @@
           <Select
             :model-value="modelValue.timeFormat"
             @update:model-value="
-              (value) => emit('update:modelValue', { ...modelValue, timeFormat: value })
+              (value) =>
+                emit('update:modelValue', {
+                  ...modelValue,
+                  timeFormat: normalizeSelectString(value) ?? undefined,
+                })
             "
           >
             <SelectTrigger id="time-format-select">
@@ -103,7 +119,13 @@
           <Select
             :model-value="String(modelValue.weekStartsOn)"
             @update:model-value="
-              (value) => emit('update:modelValue', { ...modelValue, weekStartsOn: Number(value) })
+              (value) => {
+                const normalized = normalizeSelectString(value);
+                emit('update:modelValue', {
+                  ...modelValue,
+                  weekStartsOn: normalized === null ? undefined : Number(normalized),
+                });
+              }
             "
           >
             <SelectTrigger id="week-start-select">
@@ -127,7 +149,11 @@
           <Select
             :model-value="modelValue.currency"
             @update:model-value="
-              (value) => emit('update:modelValue', { ...modelValue, currency: value })
+              (value) =>
+                emit('update:modelValue', {
+                  ...modelValue,
+                  currency: normalizeSelectString(value) ?? undefined,
+                })
             "
           >
             <SelectTrigger id="currency-select">
@@ -157,6 +183,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@memoflow/ui-vue-shadcn';
+import { normalizeSelectString } from '../../../shared/utils/normalize-select-string';
 
 const { t } = useI18n();
 

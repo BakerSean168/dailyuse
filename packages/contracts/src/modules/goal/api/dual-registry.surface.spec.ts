@@ -43,10 +43,6 @@ import { describe, expect, it } from 'vitest';
         resolve(modules, 'task/api/task-schedule.dto.ts'),
         ['ToggleTaskCompletionRes'],
       ],
-      [
-        resolve(modules, 'authentication/api/oauth.dto.ts'),
-        ['OAuthAuthorizeRes'],
-      ],
       [resolve(modules, 'setting/api/sync.dto.ts'), ['SyncSettingsRes']],
       [
         resolve(modules, 'governance/api/rule-revisions.ts'),
@@ -60,14 +56,6 @@ import { describe, expect, it } from 'vitest';
       [
         resolve(modules, 'repository/aggregates/local-vault-binding.ts'),
         ['SelectLocalVaultRes'],
-      ],
-      [
-        resolve(modules, 'authentication/api/oauth.dto.ts'),
-        ['UnbindOAuthRes'],
-      ],
-      [
-        resolve(modules, 'authentication/api/session.dto.ts'),
-        ['LogoutRes'],
       ],
     ];
 
@@ -324,12 +312,12 @@ import { describe, expect, it } from 'vitest';
         /export const GoalFolderClientDTOSchema:\s*z\.ZodType<GoalFolderClientDTO>/,
       );
       expect(responseSchemas).toContain('displayName: z.string()');
-      expect(responseSchemas).toContain('activeGoalCount: z.number()');
+      expect(responseSchemas).not.toContain('activeGoalCount: z.number()');
     });
 
     it('list envelopes nest Goal/GoalFolder ClientDTOSchema arrays', () => {
       expect(responseSchemas).toContain('data: z.array(GoalClientDTOSchema)');
-      expect(responseSchemas).toContain('goal: GoalClientDTOSchema');
+      expect(responseSchemas).toContain('goal: GoalAggregateReadModelSchema');
       expect(responseSchemas).toContain('keyResults: z.array(KeyResultClientDTOSchema).nullable()');
       expect(responseSchemas).toContain('reviews: z.array(GoalReviewClientDTOSchema).nullable()');
     });
@@ -514,10 +502,11 @@ import { describe, expect, it } from 'vitest';
       expect(responseSchemas).toContain('goalId: brandedId<GoalId>()');
     });
 
-    it('OpenAPI goal-record routes and list envelopes use GoalRecordClientDTOSchema', () => {
-      expect(routes).toContain('GoalRecordClientDTOSchema');
+    it('OpenAPI record mutations return aggregate receipts and list envelopes own record DTOs', () => {
+      expect(routes).toContain('GoalMutationReceiptSchema');
       expect(responseSchemas).toContain('data: z.array(GoalRecordClientDTOSchema)');
-      expect(responseSchemas).toContain('records: z.array(GoalRecordClientDTOSchema).optional()');
+      expect(responseSchemas).toContain('records: z.array(GoalRecordClientDTOSchema)');
+      expect(responseSchemas).toContain('upserted: z.array(GoalRecordClientDTOSchema)');
     });
   });
 }

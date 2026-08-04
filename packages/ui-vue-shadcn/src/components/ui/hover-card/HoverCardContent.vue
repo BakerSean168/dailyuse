@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HoverCardContentProps } from 'radix-vue'
+import type { HoverCardContentProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import {
@@ -7,7 +7,7 @@ import {
 
   HoverCardPortal,
   useForwardProps,
-} from 'radix-vue'
+} from 'reka-ui'
 import { computed } from 'vue'
 
 const props = withDefaults(

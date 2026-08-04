@@ -13,11 +13,9 @@ function createSharedResolver(rootDir: string): SharedPathResolver {
     configDir: path.join(rootDir, 'shared', 'config'),
     uiDir: path.join(rootDir, 'shared', 'ui'),
     profilesRegistryDir: path.join(rootDir, 'shared', 'profiles'),
-    rememberedAccountsPath: path.join(rootDir, 'shared', 'auth', 'remembered-accounts.json'),
     deviceIdPath: path.join(rootDir, 'shared', 'auth', 'device-id'),
     runtimeConfigPath: path.join(rootDir, 'shared', 'config', 'desktop-runtime.json'),
-    loginWindowStatePath: path.join(rootDir, 'shared', 'ui', 'login-window-state.json'),
-    registerWindowStatePath: path.join(rootDir, 'shared', 'ui', 'register-window-state.json'),
+    profileAccessWindowStatePath: path.join(rootDir, 'shared', 'ui', 'profile-access-window-state.json'),
     registryPath: path.join(rootDir, 'shared', 'profiles', 'registry.json'),
     cacheDir: path.join(rootDir, 'cache'),
     snapshotStagingDir: path.join(rootDir, 'cache', 'snapshot-staging'),
@@ -55,7 +53,7 @@ describe('ProfileRegistry', () => {
     });
     await registry.markReady(descriptor.profileId);
 
-    const reloaded = await registry.find('identity-1');
+    const reloaded = await registry.findByOwnerId('identity-1');
     expect(reloaded).not.toBeNull();
     expect(reloaded?.hasSnapshot).toBe(true);
     expect(reloaded?.lastSnapshotVersion).toBe('2026-05-18T00:00:00Z');
@@ -91,8 +89,8 @@ describe('ProfileRegistry', () => {
 
     const list = await registry.list();
     expect(list.length).toBe(2);
-    expect(list[0]!.identityId).toBe('identity-a');
-    expect(list[1]!.identityId).toBe('identity-b');
+    expect(list[0]!.localOwnerId).toBe('identity-a');
+    expect(list[1]!.localOwnerId).toBe('identity-b');
   });
 
   it('removes a profile from registry and clears activeProfileId if it was active', async () => {
@@ -105,7 +103,7 @@ describe('ProfileRegistry', () => {
     await registry.remove(descriptor.profileId);
 
     expect(await registry.getActiveProfileId()).toBeNull();
-    expect(await registry.find('identity-1')).toBeNull();
+    expect(await registry.findByOwnerId('identity-1')).toBeNull();
   });
 
   it('findByIdentifier performs case-insensitive lookup', async () => {
@@ -115,7 +113,7 @@ describe('ProfileRegistry', () => {
 
     const found = await registry.findByIdentifier('alice@example.com');
     expect(found).not.toBeNull();
-    expect(found?.identityId).toBe('identity-1');
+    expect(found?.localOwnerId).toBe('identity-1');
   });
 
   it('findByIdentifier returns null for empty or whitespace-only input', async () => {
@@ -127,13 +125,21 @@ describe('ProfileRegistry', () => {
     expect(await registry.findByIdentifier('   ')).toBeNull();
   });
 
+  it('finds registered profiles by their cloud account binding', async () => {
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
+    const registered = await registry.register('identity-1', 'Alice', 'alice@example.com');
+
+    expect(await registry.findByCloudAccountId('identity-1')).toEqual(registered);
+    expect(await registry.findByCloudAccountId('missing')).toBeNull();
+  });
+
   it('markError sets profile status to error', async () => {
     const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const descriptor = await registry.register('identity-1', 'Alice');
     await registry.markError(descriptor.profileId);
 
-    const found = await registry.find('identity-1');
+    const found = await registry.findByOwnerId('identity-1');
     expect(found?.status).toBe('error');
   });
 
@@ -146,11 +152,11 @@ describe('ProfileRegistry', () => {
       hydratedAt: Date.now(),
     });
 
-    let found = await registry.find('identity-1');
+    let found = await registry.findByOwnerId('identity-1');
     expect(found?.hasSnapshot).toBe(true);
 
     await registry.clearSnapshotState(descriptor.profileId);
-    found = await registry.find('identity-1');
+    found = await registry.findByOwnerId('identity-1');
     expect(found?.hasSnapshot).toBe(false);
     expect(found?.lastSnapshotVersion).toBeNull();
     expect(found?.lastSnapshotHydratedAt).toBeNull();
@@ -208,33 +214,67 @@ describe('ProfileRegistry', () => {
 
   it('rebinds guest ownership to online identity without changing profileId', async () => {
     const registry = new ProfileRegistry(createSharedResolver(rootDir));
-    const guest = await registry.register('__desktop_guest_profile__', 'Guest', null);
+    const guest = await registry.ensureGuest();
+    const guestOwnerId = guest.localOwnerId;
     const rebound = await registry.rebindIdentityOwnership({
-      fromIdentityId: '__desktop_guest_profile__',
-      toIdentityId: 'IdentityId_online_1',
+      fromOwnerId: guestOwnerId,
+      toCloudAccountId: 'IdentityId_online_1',
       displayName: 'Online User',
       identifier: 'user@example.com',
     });
 
     expect(rebound.profileId).toBe(guest.profileId);
-    expect(rebound.identityId).toBe('IdentityId_online_1');
+    expect(rebound.keyEnvelopeId).toBe(guest.keyEnvelopeId);
+    expect(rebound.localOwnerId).toBe('IdentityId_online_1');
+    expect(rebound.cloudBinding?.cloudAccountId).toBe('IdentityId_online_1');
     expect(rebound.displayName).toBe('Online User');
     expect(rebound.identifier).toBe('user@example.com');
-    expect(await registry.find('__desktop_guest_profile__')).toBeNull();
-    expect((await registry.find('IdentityId_online_1'))?.profileId).toBe(guest.profileId);
+    expect(await registry.findByOwnerId(guestOwnerId)).toBeNull();
+    expect((await registry.findByOwnerId('IdentityId_online_1'))?.profileId).toBe(guest.profileId);
   });
 
   it('refuses rebind when target identity already owns another profile', async () => {
     const registry = new ProfileRegistry(createSharedResolver(rootDir));
-    await registry.register('__desktop_guest_profile__', 'Guest', null);
+    const guest = await registry.ensureGuest();
     await registry.register('IdentityId_online_1', 'Existing', 'user@example.com');
 
     await expect(
       registry.rebindIdentityOwnership({
-        fromIdentityId: '__desktop_guest_profile__',
-        toIdentityId: 'IdentityId_online_1',
+        fromOwnerId: guest.localOwnerId,
+        toCloudAccountId: 'IdentityId_online_1',
       }),
     ).rejects.toThrow(/refusing silent merge/);
+  });
+
+  it('creates one persistent random guest profile and reuses it after reload', async () => {
+    const resolver = createSharedResolver(rootDir);
+    const firstRegistry = new ProfileRegistry(resolver);
+    const first = await firstRegistry.ensureGuest();
+
+    const secondRegistry = new ProfileRegistry(resolver);
+    const second = await secondRegistry.ensureGuest();
+
+    expect(first.profileId).toBe(second.profileId);
+    expect(first.localOwnerId).toBe(second.localOwnerId);
+    expect(first.localOwnerId).toMatch(/^IdentityId_/);
+    expect(first.avatarSeed).toBe(second.avatarSeed);
+    expect(first.profileKind).toBe('guest');
+    expect(first.cloudBinding).toBeNull();
+    expect(first.displayName).toMatch(/^访客 \d{4}$/);
+  });
+
+  it('rejects legacy registry versions instead of silently migrating them', async () => {
+    const resolver = createSharedResolver(rootDir);
+    await fs.promises.mkdir(resolver.profilesRegistryDir, { recursive: true });
+    await fs.promises.writeFile(resolver.registryPath, JSON.stringify({
+      version: 1,
+      activeProfileId: null,
+      profiles: [],
+    }));
+
+    await expect(new ProfileRegistry(resolver).list()).rejects.toThrow(
+      'Unsupported Profile registry version: 1',
+    );
   });
 
 });

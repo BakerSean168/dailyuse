@@ -4,6 +4,7 @@
 
 import { z } from 'zod';
 import { PortableRefSchema, IsoDateString } from './portable-common.dto';
+import { TaskGoalBindingTrigger } from '../../task/value-objects/task-goal-binding-trigger';
 
 export const PortableTaskFolderSchema = z
   .object({
@@ -30,7 +31,8 @@ export const PortableTaskTemplateSchema = z
     folderRef: PortableRefSchema.nullable().optional(),
     goalRef: PortableRefSchema.nullable().optional(),
     keyResultRef: PortableRefSchema.nullable().optional(),
-    goalBinding: z.unknown().optional(),
+    goalRecordValue: z.number().nonnegative().nullable().optional(),
+    goalProgressTrigger: z.enum(TaskGoalBindingTrigger).nullable().optional(),
     checklist: z.array(z.unknown()),
     parentTaskRef: PortableRefSchema.nullable().optional(),
     timeConfig: z.unknown().optional(),
@@ -45,7 +47,33 @@ export const PortableTaskTemplateSchema = z
     createdAt: IsoDateString.optional(),
     updatedAt: IsoDateString.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((task, ctx) => {
+    const hasGoalRef = task.goalRef != null;
+    const hasKeyResultRef = task.keyResultRef != null;
+    const hasContribution = task.goalRecordValue != null && task.goalProgressTrigger != null;
+
+    if (hasGoalRef !== hasKeyResultRef) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Task goal binding requires both goalRef and keyResultRef',
+      });
+    }
+
+    if (hasGoalRef && !hasContribution) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Task goal binding requires contribution fields',
+      });
+    }
+
+    if (!hasGoalRef && (task.goalRecordValue != null || task.goalProgressTrigger != null)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Task contribution fields require a goal binding',
+      });
+    }
+  });
 
 export type PortableTaskTemplate = z.infer<typeof PortableTaskTemplateSchema>;
 

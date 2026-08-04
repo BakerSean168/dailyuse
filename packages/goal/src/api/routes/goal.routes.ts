@@ -16,16 +16,22 @@ import {
 import {
   CreateGoalSchema,
   UpdateGoalSchema,
+  GoalVersionCommandSchema,
   CloneGoalSchema,
   ListGoalFiltersSchema,
   GoalClientDTOSchema,
+  GoalMutationReceiptSchema,
   QueryGoalsResSchema,
   GetGoalAggregateResSchema,
   ArchiveExpiredResSchema,
   ProgressBreakdownResSchema,
   BatchUpdateKeyResultWeightsReqSchema,
 } from '@memoflow/contracts/goal';
-import type { CloneGoalReq, ListGoalFilters } from '@memoflow/contracts/goal';
+import type {
+  CloneGoalReq,
+  GoalVersionCommandReq,
+  ListGoalFilters,
+} from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
 import type { GoalId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
@@ -77,8 +83,7 @@ function normalizeGoalListQuery(query: Record<string, unknown>): ListGoalFilters
     sortOrder: query.sortOrder as ListGoalFilters['sortOrder'],
     page: parseNumber(query.page),
     pageSize: parseNumber(query.pageSize) ?? parseNumber(query.limit),
-    includeKeyResults:
-      parseBoolean(query.includeKeyResults) ?? parseBoolean(query.includeChildren),
+    includeKeyResults: parseBoolean(query.includeKeyResults) ?? parseBoolean(query.includeChildren),
     includeReviews: parseBoolean(query.includeReviews),
   };
 }
@@ -116,7 +121,7 @@ export function registerGoalCrudRoutes(
       summary: '创建目标',
       request: { body: { content: { 'application/json': { schema: CreateGoalSchema } } } },
       responses: {
-        201: successResponse(GoalClientDTOSchema, '创建成功'),
+        201: successResponse(GoalMutationReceiptSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -137,7 +142,8 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.list(normalizeGoalListQuery(req.query as Record<string, unknown>), ctx),
+    (req, ctx) =>
+      controller.list(normalizeGoalListQuery(req.query as Record<string, unknown>), ctx),
   );
 
   // GET /search — 搜索目标
@@ -182,11 +188,7 @@ export function registerGoalCrudRoutes(
     },
     [auth],
     (req, ctx) =>
-      controller.get(
-        req.params!.id,
-        ctx,
-        parseBoolean(req.query?.includeChildren) ?? true,
-      ),
+      controller.get(req.params!.id, ctx, parseBoolean(req.query?.includeChildren) ?? true),
   );
 
   // PUT /:id — 更新目标
@@ -200,7 +202,7 @@ export function registerGoalCrudRoutes(
         body: { content: { 'application/json': { schema: UpdateGoalSchema } } },
       },
       responses: {
-        200: successResponse(GoalClientDTOSchema, '更新成功'),
+        200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标不存在'),
       },
     },
@@ -225,14 +227,18 @@ export function registerGoalCrudRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除目标',
-      request: { params: z.object({ id: brandedId<GoalId>() }) },
+      request: {
+        params: z.object({ id: brandedId<GoalId>() }),
+        query: GoalVersionCommandSchema,
+      },
       responses: {
-        200: successResponse(z.null(), '删除成功'),
+        200: successResponse(GoalMutationReceiptSchema, '删除成功'),
         404: errorResponse('目标不存在'),
       },
     },
     [auth],
-    (req, ctx) => controller.delete(req.params!.id, ctx),
+    (req, ctx) =>
+      controller.delete(req.params!.id, (req.query as GoalVersionCommandReq).expectedVersion, ctx),
   );
 
   // ==================== Goal Status Operations ====================
@@ -256,14 +262,18 @@ export function registerGoalCrudRoutes(
       method: 'post',
       path: '/:id/archive',
       summary: '归档目标',
-      request: { params: z.object({ id: brandedId<GoalId>() }) },
+      request: {
+        params: z.object({ id: brandedId<GoalId>() }),
+        body: { content: { 'application/json': { schema: GoalVersionCommandSchema } } },
+      },
       responses: {
-        200: successResponse(GoalClientDTOSchema, '归档成功'),
+        200: successResponse(GoalMutationReceiptSchema, '归档成功'),
         404: errorResponse('目标不存在'),
       },
     },
     [auth],
-    (req, ctx) => controller.archive(req.params!.id, ctx),
+    (req, ctx) =>
+      controller.archive(req.params!.id, (req.body as GoalVersionCommandReq).expectedVersion, ctx),
   );
 
   // POST /:id/activate — 激活目标
@@ -272,14 +282,18 @@ export function registerGoalCrudRoutes(
       method: 'post',
       path: '/:id/activate',
       summary: '激活目标',
-      request: { params: z.object({ id: brandedId<GoalId>() }) },
+      request: {
+        params: z.object({ id: brandedId<GoalId>() }),
+        body: { content: { 'application/json': { schema: GoalVersionCommandSchema } } },
+      },
       responses: {
-        200: successResponse(GoalClientDTOSchema, '激活成功'),
+        200: successResponse(GoalMutationReceiptSchema, '激活成功'),
         404: errorResponse('目标不存在'),
       },
     },
     [auth],
-    (req, ctx) => controller.activate(req.params!.id, ctx),
+    (req, ctx) =>
+      controller.activate(req.params!.id, (req.body as GoalVersionCommandReq).expectedVersion, ctx),
   );
 
   // POST /:id/complete — 完成目标
@@ -288,14 +302,18 @@ export function registerGoalCrudRoutes(
       method: 'post',
       path: '/:id/complete',
       summary: '完成目标',
-      request: { params: z.object({ id: brandedId<GoalId>() }) },
+      request: {
+        params: z.object({ id: brandedId<GoalId>() }),
+        body: { content: { 'application/json': { schema: GoalVersionCommandSchema } } },
+      },
       responses: {
-        200: successResponse(GoalClientDTOSchema, '完成成功'),
+        200: successResponse(GoalMutationReceiptSchema, '完成成功'),
         404: errorResponse('目标不存在'),
       },
     },
     [auth],
-    (req, ctx) => controller.complete(req.params!.id, ctx),
+    (req, ctx) =>
+      controller.complete(req.params!.id, (req.body as GoalVersionCommandReq).expectedVersion, ctx),
   );
 
   // GET /:id/aggregate — 获取目标聚合视图
@@ -347,7 +365,7 @@ export function registerGoalCrudRoutes(
         },
       },
       responses: {
-        201: successResponse(GoalClientDTOSchema, '克隆成功'),
+        201: successResponse(GoalMutationReceiptSchema, '克隆成功'),
         404: errorResponse('目标不存在'),
       },
     },
@@ -373,7 +391,7 @@ export function registerGoalCrudRoutes(
         },
       },
       responses: {
-        200: successResponse(GoalClientDTOSchema, '更新成功'),
+        200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标不存在'),
       },
     },
@@ -381,8 +399,10 @@ export function registerGoalCrudRoutes(
     (req, ctx) =>
       controller.batchUpdateKeyResultWeights(
         req.params!.id,
-        (req.body as { updates?: Array<{ keyResultId: string; weight: number }> } | undefined)
-          ?.updates ?? [],
+        req.body as {
+          expectedVersion: number;
+          updates: Array<{ keyResultId: string; weight: number }>;
+        },
         ctx,
       ),
   );

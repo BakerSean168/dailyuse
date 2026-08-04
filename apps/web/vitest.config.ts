@@ -17,7 +17,6 @@ const sharedConfig = createSharedConfig({
     '@memoflow/app-vue/web-overlays': '../../packages/app-vue/src/web-overlays.ts',
     '@memoflow/app-vue/web-bootstrap': '../../packages/app-vue/src/web-bootstrap.ts',
     '@memoflow/app-vue/web-i18n': '../../packages/app-vue/src/web-i18n.ts',
-    '@memoflow/authentication/client': '../../packages/authentication/src/client/index.ts',
     '@memoflow/reminder/client': '../../packages/reminder/src/client/index.ts',
     '@memoflow/schedule/client': '../../packages/schedule/src/client/index.ts',
     '@memoflow/notification/client': '../../packages/notification/src/client/index.ts',

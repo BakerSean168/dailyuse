@@ -39,8 +39,11 @@ export function loadE2EEnv(): void {
 
   const envFiles = [
     resolve(WORKSPACE_ROOT, '.env'),
-    resolve(WORKSPACE_ROOT, '.env.test'),
     resolve(WORKSPACE_ROOT, '.env.local'),
+    // Mode-specific files must win over generic local development values.
+    // Otherwise a developer's Docker ports or blank DATABASE_URL can leak
+    // into the isolated Playwright lane.
+    resolve(WORKSPACE_ROOT, '.env.test'),
     resolve(WORKSPACE_ROOT, '.env.test.local'),
   ];
 
@@ -154,7 +157,7 @@ export function createApiServer() {
  * Residual 1339: real interactive GitHub OAuth Playwright path.
  * Loads gitignored `.env.development.local` for GITHUB_OAUTH_* and forces
  * RUNTIME_LANE=host-dev so getGithubOAuthConfig does NOT replace credentials
- * with e2e-mock (residual 1333 keep-boundary).
+ * with placeholder e2e values (residual 1333 keep-boundary).
  */
 function loadGithubOAuthCredentialsFromLocalEnv(): {
   clientId: string;

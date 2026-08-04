@@ -23,6 +23,7 @@ import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { GoalElectronModule } from '@memoflow/goal/electron';
+import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
 import { createTaskElectronModule } from '@memoflow/task/electron';
 import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
@@ -46,21 +47,27 @@ import {
   createRepositoryElectronModule,
   createLocalVaultRuntime,
 } from '@memoflow/repository/electron';
-import { AccountElectronModule } from '@memoflow/account/electron';
+import { createAccountElectronModule } from '@memoflow/account/electron';
 import { DataPortabilityElectronModule } from '@memoflow/data-portability/electron';
-import { registerDesktopAuthShellHandlers } from './modules/authentication/desktop-auth-shell';
 import { GovernanceElectronModule } from '@memoflow/governance/electron';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
 import { configureDesktopShellIdentity } from './utils/app-icon';
+import { getApiBaseUrl } from './utils/api-config';
 import { createLogger } from '@memoflow/utils/logger';
 import { getSharedPathResolver } from './runtime-init';
 import { WindowManager } from './lifecycle/window-manager';
 import type { ProfilePathResolver } from './paths';
 import { ProfileRegistry } from './profile/profile-registry';
 import { DesktopProfileRuntimeManager } from './profile/desktop-profile-runtime-manager';
+import { registerProfileAccessIpc } from './profile/profile-access-ipc';
+import { registerCloudAuthIpc } from './profile/cloud-auth-ipc';
+import { CloudSessionStore } from './profile/cloud-session-store';
+import { DesktopCloudConnectionManager } from './profile/desktop-cloud-connection-manager';
+import { DesktopCloudConnectionService } from './profile/desktop-cloud-connection-service';
+import { DeviceAuthCoordinator } from './profile/device-auth-coordinator';
 import type { PowerSyncDatabase } from '@powersync/node';
 import { KnowledgeRepositoryRemoteGateway } from './modules/repository/knowledge-repository-remote.gateway';
 import { DesktopKnowledgeRepositoryGitRuntime } from './modules/repository/desktop-knowledge-repository-git.runtime';
@@ -83,6 +90,8 @@ async function registerBusinessModules(
   bootstrapper: ElectronBootstrapper,
   db: PowerSyncDatabase,
   profilePaths: ProfilePathResolver,
+  getCloudAccessToken: () => Promise<string | null>,
+  closeCurrentCloudConnection: () => Promise<void>,
 ): Promise<void> {
   const startTime = performance.now();
 
@@ -113,6 +122,7 @@ async function registerBusinessModules(
   });
   const taskElectronModule = createTaskElectronModule({
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
+    goalProgressHandler: createGoalTaskProgressPowerSyncHandler(db),
   });
 
   const AIElectronModule = createAIElectronModule({
@@ -125,8 +135,7 @@ async function registerBusinessModules(
   });
 
   const knowledgeRepositoryRemoteGateway = new KnowledgeRepositoryRemoteGateway({
-    getAccessToken: () =>
-      mainRuntime?.profileRuntimeManager.getCurrentAuthService()?.getAccessToken() ?? null,
+    getAccessToken: getCloudAccessToken,
   });
   const knowledgeRepositoryGitRuntime = new DesktopKnowledgeRepositoryGitRuntime();
   const knowledgeRepositoryReconciliationService =
@@ -140,15 +149,14 @@ async function registerBusinessModules(
     remote: knowledgeRepositoryRemoteGateway,
     gitRuntime: knowledgeRepositoryGitRuntime,
   });
-  const networkStateManager = mainRuntime?.profileRuntimeManager.getNetworkStateManager();
   const knowledgeRepositoryAutoSyncScheduler = new DesktopKnowledgeRepositoryAutoSyncScheduler({
     localVault: localVaultRuntime,
     remote: knowledgeRepositoryRemoteGateway,
     synchronization: knowledgeRepositorySyncService,
     lifecycle: {
       onNetworkOnline(listener) {
-        networkStateManager?.on('online', listener);
-        return () => networkStateManager?.off('online', listener);
+        void listener;
+        return () => undefined;
       },
       onSystemResume(listener) {
         let resumeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -176,16 +184,67 @@ async function registerBusinessModules(
 
   const scheduleElectronModule = createScheduleElectronModule({
     shouldScheduleTask: (task) => {
-      const authService = mainRuntime?.profileRuntimeManager.getCurrentAuthService();
-      const identityId = authService?.getCurrentIdentityId() ?? null;
+      const identityId = mainRuntime?.profileRuntimeManager.getCurrentIdentityId() ?? null;
       return identityId !== null && String(task.identityId) === identityId;
     },
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
   });
+  const accountElectronModule = createAccountElectronModule({
+    getCloudAccountId: () =>
+      mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding?.cloudAccountId
+      ?? null,
+    getCloudAccessToken,
+    async updateLocalProfileMetadata(request) {
+      if (request.nickname === undefined) return;
+      const profileId = mainRuntime?.profileRuntimeManager.getActiveProfileId();
+      if (!profileId) return;
+      await mainRuntime?.profileRuntimeManager.updateProfileDisplayName(
+        profileId,
+        request.nickname,
+      );
+    },
+    async pushCloudProfile(token, request) {
+      const response = await fetch(`${getApiBaseUrl()}/accounts/me`, {
+        method: 'PUT',
+        headers: {
+          authorization: `Bearer ${token}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+      const envelope = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: { message?: string };
+      } | null;
+      if (!response.ok || envelope?.ok !== true) {
+        throw new Error(envelope?.error?.message ?? '云端账户资料同步失败');
+      }
+    },
+    async closeCloudAccount(token, request) {
+      const response = await fetch(`${getApiBaseUrl()}/accounts/me/close`, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${token}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+      const envelope = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: { message?: string };
+      } | null;
+      if (!response.ok || envelope?.ok !== true) {
+        throw new Error(envelope?.error?.message ?? '云端账号关闭失败');
+      }
+    },
+    async afterCloudAccountClosed() {
+      await closeCurrentCloudConnection();
+    },
+  });
 
   await bootstrapper
     // Core services
-    .register(AccountElectronModule)
+    .register(accountElectronModule)
     .register(SettingElectronModule)
     .register(NotificationElectronModule)
     .register(DataPortabilityElectronModule)
@@ -222,45 +281,56 @@ async function initializeShellRuntime(): Promise<void> {
   await profileRegistry.load();
   console.log('[Shell] ProfileRegistry initialized');
 
-  // Initialize shared auth infrastructure
-  const { RememberedAccountsService, NetworkStateManager, TokenManager } =
-    await import('./modules/authentication/infrastructure');
-  const tokenManager = new TokenManager();
-  const rememberedAccountsService = new RememberedAccountsService();
-  rememberedAccountsService.setFilePath(sharedResolver.rememberedAccountsPath);
-  const networkStateManager = new NetworkStateManager({
-    enableHealthCheck: true,
-    checkInterval: 15_000,
-  });
-
-  // Initialize DesktopProfileRuntimeManager with injected dependencies
-  const profileRuntimeManager = new DesktopProfileRuntimeManager(
-    sharedResolver,
-    profileRegistry,
-    tokenManager,
-    rememberedAccountsService,
-    networkStateManager,
-    windowManager,
+  const profileRuntimeManager = new DesktopProfileRuntimeManager(sharedResolver, profileRegistry);
+  const cloudSessionStore = new CloudSessionStore(sharedResolver.rootDir);
+  const cloudConnectionManager = new DesktopCloudConnectionManager(
+    cloudSessionStore,
+    profileRuntimeManager,
+  );
+  const cloudConnectionService = new DesktopCloudConnectionService(
+    profileRuntimeManager,
+    cloudSessionStore,
+  );
+  const deviceAuthCoordinator = new DeviceAuthCoordinator(
+    profileRuntimeManager,
+    cloudConnectionService,
   );
 
   // Assemble the explicit runtime owner
   mainRuntime = new DesktopMainRuntime(windowManager, profileRuntimeManager);
+  mainRuntime.setDeviceAuthCoordinator(deviceAuthCoordinator);
+  registerProfileAccessIpc(
+    profileRegistry,
+    profileRuntimeManager,
+    cloudConnectionManager,
+    deviceAuthCoordinator,
+  );
+  registerCloudAuthIpc(
+    profileRegistry,
+    profileRuntimeManager,
+    cloudSessionStore,
+    deviceAuthCoordinator,
+  );
 
   // Set up module registration — this closure captures the business module
   // creation logic and provides it to the runtime manager for profile activation
   profileRuntimeManager.setModuleRegistration(async (bootstrapper, db, profilePaths) => {
-    await registerBusinessModules(bootstrapper, db, profilePaths);
+    await registerBusinessModules(
+      bootstrapper,
+      db,
+      profilePaths,
+      async () => {
+        const profileId = profileRuntimeManager.getActiveProfileId();
+        return profileId ? cloudSessionStore.getValidToken(profileId) : null;
+      },
+      async () => {
+        const profileId = profileRuntimeManager.getActiveProfileId();
+        if (profileId) await cloudSessionStore.remove(profileId);
+        await profileRuntimeManager.disableCloudSync();
+      },
+    );
   });
-
-  registerDesktopAuthShellHandlers(profileRuntimeManager, {
-    rememberedAccountsService,
-    networkStateManager,
-    windowManager,
-  });
-
-  // SessionManager.sharedAuthDir will be set during profile activation
-  // (DesktopProfileRuntimeManager.prepareProfile + activatePreparedProfile), not during shell init,
-  // because SessionManager is created fresh per profile.
+  profileRuntimeManager.setAfterActivation((profile) => cloudConnectionManager.restore(profile).then(() => undefined));
 
   // Cross-module event listeners (task→goal 联动) 现由各模块 electron-entry 在
   // profile 激活时自行挂载（见 GoalElectronModule.register → registerGoalEventListeners），
@@ -269,7 +339,7 @@ async function initializeShellRuntime(): Promise<void> {
   // Ancillary
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
-  registerDashboardIpcHandler(() => mainRuntime?.authContextProvider ?? null);
+  registerDashboardIpcHandler(() => mainRuntime?.profileRuntimeManager.getActiveProfileAccessContext() ?? null);
 
   const initTime = performance.now() - startTime;
   console.log(`[Shell] Shell runtime initialized in ${initTime.toFixed(2)}ms`);
@@ -280,4 +350,3 @@ async function initializeShellRuntime(): Promise<void> {
 // ═══════════════════════════════════════════════════════════════════════
 
 registerAppLifecycleHandlers(initializeShellRuntime, () => mainRuntime, windowManager);
-

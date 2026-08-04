@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { DialogOverlayProps } from 'radix-vue'
+import type { DialogOverlayProps } from 'reka-ui'
 import type { HtmlHTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import { DrawerOverlay } from 'vaul-vue'

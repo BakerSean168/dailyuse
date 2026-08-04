@@ -18,8 +18,6 @@ describe('PrismaGoalFolderMapper', () => {
       parentFolderId: null,
       sortOrder: undefined,
       folderType: 'User',
-      goalCount: undefined,
-      completedGoalCount: undefined,
       createdAt: new Date(1_000),
       updatedAt: new Date(2_000),
       deletedAt: null,
@@ -32,8 +30,6 @@ describe('PrismaGoalFolderMapper', () => {
     expect(dto.id).toBe(FOLDER_ID_1);
     expect(dto.identityId).toBe(IDENTITY_ID_1);
     expect(dto.sortOrder).toBe(0);
-    expect(dto.goalCount).toBe(0);
-    expect(dto.completedGoalCount).toBe(0);
     expect(dto.isSystemFolder).toBe(false);
     expect(dto.version).toBe(1);
   });
@@ -50,8 +46,6 @@ describe('PrismaGoalFolderMapper', () => {
         parentFolderId: FOLDER_ID_1,
         sortOrder: 2,
         folderType: 'System',
-        goalCount: 3,
-        completedGoalCount: 1,
         createdAt: new Date(1_000),
         updatedAt: new Date(2_000),
         deletedAt: new Date(3_000),

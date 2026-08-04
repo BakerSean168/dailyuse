@@ -39,10 +39,10 @@
             t('reminder.linear.masterSwitch')
           }}</span>
           <Switch
-            :checked="preferences?.globalReminderEnabled ?? true"
+            :model-value="preferences?.globalReminderEnabled ?? true"
             :disabled="isSaving"
             :aria-label="t('reminder.linear.masterSwitch')"
-            @update:checked="handleToggleGlobalReminder"
+            @update:model-value="handleToggleGlobalReminder"
           />
         </div>
         <Button
@@ -255,7 +255,7 @@
       :template="movingTemplate"
       :groups="groups"
       :templates="templates"
-      @moved="handleTemplateMoved"
+      :on-move="handleTemplateMoved"
     />
   </div>
 </template>
@@ -432,6 +432,7 @@ async function handleTemplateMoved(templateId: string, groupId: string | null) {
     );
     movingTemplate.value = null;
   }
+  return Boolean(result);
 }
 
 async function handleToggleGlobalReminder(enabled: boolean) {

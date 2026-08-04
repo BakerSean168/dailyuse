@@ -122,7 +122,8 @@ export default {
     "fieldLocationPlaceholder": "Enter location",
     "fieldAttendees": "Attendees",
     "fieldAttendeePlaceholder": "Enter email or username",
-    "addAttendee": "Add"
+    "addAttendee": "Add",
+    "submitFailed": "Schedule could not be saved. Your changes are still here."
   },
   "calendar": {
     "today": "Today",
@@ -137,7 +138,9 @@ export default {
     "dayWed": "Wed",
     "dayThu": "Thu",
     "dayFri": "Fri",
-    "daySat": "Sat"
+    "daySat": "Sat",
+    "openDay": "Open {date}",
+    "openEvent": "Open {title}"
   },
   "conflictAlert": {
     "detecting": "Detecting conflicts...",

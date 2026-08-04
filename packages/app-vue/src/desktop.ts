@@ -3,5 +3,5 @@
  *
  * @module desktop
  */
-export { default as DesktopAuthView } from './views/DesktopAuthView.vue';
-export { hydrateDesktopBootstrapAuthState } from './shared/utils/desktop-bootstrap-auth';
+export { default as DesktopProfileAccessView } from './views/DesktopProfileAccessView.vue';
+export { readDesktopAccessSnapshot } from './shared/utils/desktop-profile-access';

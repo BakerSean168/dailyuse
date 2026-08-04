@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MenubarCheckboxItemEmits, MenubarCheckboxItemProps } from 'radix-vue'
+import type { MenubarCheckboxItemEmits, MenubarCheckboxItemProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import { CheckIcon } from '@radix-icons/vue'
@@ -8,7 +8,7 @@ import {
 
   MenubarItemIndicator,
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { computed } from 'vue'
 
 const props = defineProps<MenubarCheckboxItemProps & { class?: HTMLAttributes['class'] }>()

@@ -116,6 +116,15 @@ function mountItem(item: ReminderTemplateClientDTO) {
 }
 
 describe('GridTemplateItem schedule hierarchy', () => {
+  it('exposes the card action as a named keyboard-focusable button', () => {
+    const wrapper = mountItem(createTemplate());
+    const card = wrapper.get('[data-testid="reminder-template-card"]');
+
+    expect(card.element.tagName).toBe('BUTTON');
+    expect(card.attributes('type')).toBe('button');
+    expect(card.attributes('aria-label')).toBe('Morning review');
+  });
+
   it('shows trigger, next trigger, recurrence, and state before control-source metadata', () => {
     const wrapper = mountItem(createTemplate());
 

@@ -20,14 +20,16 @@ function makeGoal(overrides: Partial<DashboardGoalRecord> = {}): DashboardGoalRe
     deletedAt: null,
     priority: 1,
     updatedAt: Date.now(),
-    progress: 50,
+    overallProgress: 50,
     targetDate: null,
-    keyResults: [],
+    totalKeyResults: 0,
     ...overrides,
   };
 }
 
-function makeTemplate(overrides: Partial<DashboardTaskTemplateRecord> = {}): DashboardTaskTemplateRecord {
+function makeTemplate(
+  overrides: Partial<DashboardTaskTemplateRecord> = {},
+): DashboardTaskTemplateRecord {
   return {
     id: 't1',
     title: 'Task',
@@ -38,7 +40,9 @@ function makeTemplate(overrides: Partial<DashboardTaskTemplateRecord> = {}): Das
   };
 }
 
-function makeInstance(overrides: Partial<DashboardTaskInstanceRecord> = {}): DashboardTaskInstanceRecord {
+function makeInstance(
+  overrides: Partial<DashboardTaskInstanceRecord> = {},
+): DashboardTaskInstanceRecord {
   return {
     id: 'i1',
     templateId: 't1',
@@ -142,9 +146,7 @@ describe('getDashboardData', () => {
   });
 
   it('limits goalProgress to 5 items', async () => {
-    const goals = Array.from({ length: 8 }, (_, i) =>
-      makeGoal({ id: `g${i}`, priority: i }),
-    );
+    const goals = Array.from({ length: 8 }, (_, i) => makeGoal({ id: `g${i}`, priority: i }));
     const source = makeSource({
       listGoals: async () => goals,
     });
@@ -156,9 +158,9 @@ describe('getDashboardData', () => {
   it('clamps goal progress to 0-100 range', async () => {
     const source = makeSource({
       listGoals: async () => [
-        makeGoal({ id: 'g1', progress: -10 }),
-        makeGoal({ id: 'g2', progress: 150 }),
-        makeGoal({ id: 'g3', progress: NaN }),
+        makeGoal({ id: 'g1', overallProgress: -10 }),
+        makeGoal({ id: 'g2', overallProgress: 150 }),
+        makeGoal({ id: 'g3', overallProgress: NaN }),
       ],
     });
 
@@ -196,10 +198,26 @@ describe('getDashboardData', () => {
 
     const source = makeSource({
       listTaskInstances: async () => [
-        makeInstance({ id: 'i1', status: TaskInstanceStatus.Pending, instanceDate: todayMs + 1000 }),
-        makeInstance({ id: 'i2', status: TaskInstanceStatus.InProgress, instanceDate: todayMs + 2000 }),
-        makeInstance({ id: 'i3', status: TaskInstanceStatus.Completed, instanceDate: todayMs + 3000 }),
-        makeInstance({ id: 'i4', status: TaskInstanceStatus.Pending, instanceDate: todayMs + 4000 }),
+        makeInstance({
+          id: 'i1',
+          status: TaskInstanceStatus.Pending,
+          instanceDate: todayMs + 1000,
+        }),
+        makeInstance({
+          id: 'i2',
+          status: TaskInstanceStatus.InProgress,
+          instanceDate: todayMs + 2000,
+        }),
+        makeInstance({
+          id: 'i3',
+          status: TaskInstanceStatus.Completed,
+          instanceDate: todayMs + 3000,
+        }),
+        makeInstance({
+          id: 'i4',
+          status: TaskInstanceStatus.Pending,
+          instanceDate: todayMs + 4000,
+        }),
       ],
     });
 

@@ -21,10 +21,8 @@ export interface KeyResultState {
   progress: KeyResultProgress;
   weight: number;
   order: number;
-  version: number;
   createdAt: Instant;
   updatedAt: Instant;
-  deletedAt: Instant | null;
 }
 
 export class KeyResult extends Entity<KeyResultId> {
@@ -58,10 +56,6 @@ export class KeyResult extends Entity<KeyResultId> {
     return this._props.order;
   }
 
-  get version(): number {
-    return this._props.version;
-  }
-
   get createdAt(): Instant {
     const v = this._props.createdAt;
     return v as Instant;
@@ -70,17 +64,6 @@ export class KeyResult extends Entity<KeyResultId> {
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
     return v as Instant;
-  }
-
-  get deletedAt(): Instant | null {
-    const v = this._props.deletedAt;
-    if (v == null) return null;
-    return v as Instant;
-  }
-
-  // 计算属性
-  get isDeleted(): boolean {
-    return this._props.deletedAt !== null;
   }
 
   get progressPercentage(): number {
@@ -103,10 +86,8 @@ export class KeyResult extends Entity<KeyResultId> {
       progress: { ...this._props.progress },
       weight: this._props.weight,
       order: this._props.order,
-      version: this._props.version,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

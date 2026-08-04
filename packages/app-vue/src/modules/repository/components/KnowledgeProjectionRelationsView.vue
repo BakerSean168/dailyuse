@@ -133,7 +133,7 @@
             :title="t('repository.projection.relatedNotes')"
             :count="relatedNodes.length"
           />
-          <div class="mt-3 grid gap-1 sm:grid-cols-2">
+          <div class="mt-3 grid gap-1 @sm/panel:grid-cols-2">
             <button
               v-for="node in relatedNodes"
               :key="node.projectionId"

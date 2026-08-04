@@ -18,7 +18,7 @@ export class UnbindTaskFromGoalUseCase {
       return error('NOT_FOUND', `TaskTemplate ${templateId} not found`);
     }
 
-    template.unlinkFromGoal();
+    template.unbindFromGoal();
     await this.templateRepository.save(template);
 
     return ok(template.toClientDTO());

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { MenubarSubTriggerProps } from 'radix-vue'
+import type { MenubarSubTriggerProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '../../../lib/utils'
 import { ChevronRightIcon } from '@radix-icons/vue'
-import { MenubarSubTrigger, useForwardProps } from 'radix-vue'
+import { MenubarSubTrigger, useForwardProps } from 'reka-ui'
 import { computed } from 'vue'
 
 const props = defineProps<MenubarSubTriggerProps & { class?: HTMLAttributes['class'], inset?: boolean }>()

@@ -37,6 +37,7 @@ describe('ActivateGoalUseCase', () => {
     goalRepo = createMockRepo<IGoalRepository>({
       findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
+      saveRootWithExpectedVersion: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new ActivateGoalUseCase(goalRepo, new GoalPolicy());
   });
@@ -44,7 +45,7 @@ describe('ActivateGoalUseCase', () => {
   it('should return NOT_FOUND when goal does not exist', async () => {
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent', 'identity-1');
+    const result = await useCase.execute('non-existent', 'identity-1', 1);
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -55,7 +56,7 @@ describe('ActivateGoalUseCase', () => {
     goal.markAsCompleted();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result).toBeErrorWithCode('INVALID_STATE');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -65,10 +66,14 @@ describe('ActivateGoalUseCase', () => {
     const goal = createTestGoal();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result).toBeOk();
     expect(goal.status).toBe('Active');
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', goal.id, {
+      includeChildren: true,
+    });
+    expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
   });
 
   it('should throw when goal is archived', async () => {
@@ -77,7 +82,7 @@ describe('ActivateGoalUseCase', () => {
     goal.archive();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result).toBeErrorWithCode('INVALID_STATE');
   });
@@ -86,12 +91,13 @@ describe('ActivateGoalUseCase', () => {
     const goal = createTestGoal('Activate Me');
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1');
+    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result).toBeOk();
     if (result.ok) {
-      expect(result.data.name).toBe('Activate Me');
-      expect(result.data.id).toBe(goal.id);
+      expect(result.data.readModel.name).toBe('Activate Me');
+      expect(result.data.readModel.id).toBe(goal.id);
+      expect(result.data.goalVersion).toBe(goal.version);
     }
   });
 });

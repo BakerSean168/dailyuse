@@ -34,6 +34,7 @@ test.describe('Local Docker core product Phase D', () => {
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
+    await expectNoSeriousAxeViolations(page, '[data-testid="business-panel"]');
 
     const createGoal = page.getByTestId('create-goal-entry');
     await tabTo(page, createGoal);
@@ -111,6 +112,12 @@ test.describe('Local Docker core product Phase D', () => {
     await expect(page.getByText(taskPlanName, { exact: true })).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
+    await expectNoSeriousAxeViolations(page, '[data-testid="business-panel"]');
+
+    await page.goto('/settings?tab=ai', { waitUntil: 'domcontentloaded' });
+    const aiSettings = page.getByTestId('ai-settings-panel');
+    await expect(aiSettings).toBeVisible({ timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await expectNoSeriousAxeViolations(page, '[data-testid="ai-settings-panel"]');
 
     await testInfo.attach('phase-d-forms-1280x720', {
       body: await page.screenshot(),
@@ -143,23 +150,27 @@ async function shiftTabTo(page: Page, target: Locator, maxTabs = 20): Promise<vo
 }
 
 async function expectDialogGeometry(dialog: Locator, noBodyScroll = false): Promise<void> {
-  const geometry = await dialog.evaluate((element) => {
-    const rect = element.getBoundingClientRect();
-    const body = element.querySelector<HTMLElement>('[data-testid="product-dialog-body"]');
-    const footer = element.querySelector<HTMLElement>('[data-testid="product-dialog-footer"]');
-    const footerRect = footer?.getBoundingClientRect();
-    return {
-      top: rect.top,
-      bottom: rect.bottom,
-      width: rect.width,
-      viewportHeight: window.innerHeight,
-      viewportWidth: window.innerWidth,
-      bodyClientHeight: body?.clientHeight ?? 0,
-      bodyScrollHeight: body?.scrollHeight ?? 0,
-      footerTop: footerRect?.top ?? 0,
-      footerBottom: footerRect?.bottom ?? 0,
-    };
-  });
+  const readGeometry = () =>
+    dialog.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const body = element.querySelector<HTMLElement>('[data-testid="product-dialog-body"]');
+      const footer = element.querySelector<HTMLElement>('[data-testid="product-dialog-footer"]');
+      const footerRect = footer?.getBoundingClientRect();
+      return {
+        top: rect.top,
+        bottom: rect.bottom,
+        width: rect.width,
+        viewportHeight: window.innerHeight,
+        viewportWidth: window.innerWidth,
+        bodyClientHeight: body?.clientHeight ?? 0,
+        bodyScrollHeight: body?.scrollHeight ?? 0,
+        footerTop: footerRect?.top ?? 0,
+        footerBottom: footerRect?.bottom ?? 0,
+      };
+    });
+
+  await expect.poll(async () => (await readGeometry()).top).toBeGreaterThanOrEqual(0);
+  const geometry = await readGeometry();
 
   expect(geometry.top).toBeGreaterThanOrEqual(0);
   expect(geometry.bottom).toBeLessThanOrEqual(geometry.viewportHeight);

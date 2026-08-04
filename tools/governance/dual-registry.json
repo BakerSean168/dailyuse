@@ -7,19 +7,19 @@
     "note": "elegance plan E0 baseline"
   },
   "post_e3b": {
-    "dual_surface_files": 84,
-    "drop_from_baseline": 153,
-    "drop_pct": 64.6,
-    "registry_suites": 25
+    "dual_surface_files": 71,
+    "drop_from_baseline": 166,
+    "drop_pct": 70,
+    "registry_suites": 123
   },
   "counts": {
-    "total": 150,
+    "total": 123,
     "by_class": {
-      "keep_boundary": 66,
-      "retired": 84
+      "keep_boundary": 52,
+      "retired": 71
     },
-    "dual_surface_files": 84,
-    "keep_boundary_files": 66
+    "dual_surface_files": 71,
+    "keep_boundary_files": 52
   },
   "entries": [
     {
@@ -75,105 +75,6 @@
       "blast": "surface lock (keep_boundary)",
       "next": "none",
       "residual": "1149",
-      "suite_describes": 1
-    },
-    {
-      "id": "r887",
-      "path": "apps/desktop/src/main/modules/authentication/application/auto-login-result-extension-keep-boundary.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "keep_boundary",
-      "sole": "desktop-auth-lifecycle-coordinator.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "887",
-      "suite_describes": 1
-    },
-    {
-      "id": "r917",
-      "path": "apps/desktop/src/main/modules/authentication/application/dual-registry.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "retired",
-      "sole": "auth-flow-types.ts",
-      "blast": "surface lock (retired); suite describes=6",
-      "next": "none",
-      "residual": "917",
-      "suite_describes": 6
-    },
-    {
-      "id": "r895",
-      "path": "apps/desktop/src/main/modules/authentication/application/refresh-result-layered-keep-boundary.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "keep_boundary",
-      "sole": "refresh-desktop-session.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "895",
-      "suite_describes": 1
-    },
-    {
-      "id": "r883",
-      "path": "apps/desktop/src/main/modules/authentication/application/session-restore-result-extension-keep-boundary.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "keep_boundary",
-      "sole": "desktop-auth-lifecycle-coordinator.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "883",
-      "suite_describes": 1
-    },
-    {
-      "id": "r899",
-      "path": "apps/desktop/src/main/modules/authentication/infrastructure/login-request-email-credentials-keep-boundary.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "keep_boundary",
-      "sole": "login-orchestrator.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "899",
-      "suite_describes": 1
-    },
-    {
-      "id": "r937",
-      "path": "apps/desktop/src/main/modules/authentication/infrastructure/session-helper-dual.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "retired",
-      "sole": "session-types.ts",
-      "blast": "surface lock (retired)",
-      "next": "none",
-      "residual": "937",
-      "suite_describes": 1
-    },
-    {
-      "id": "r889",
-      "path": "apps/desktop/src/main/modules/authentication/infrastructure/session-status-extension-keep-boundary.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "keep_boundary",
-      "sole": "session-types.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "889",
-      "suite_describes": 1
-    },
-    {
-      "id": "r897",
-      "path": "apps/desktop/src/main/modules/authentication/infrastructure/token-storage-save-request-keep-boundary.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "keep_boundary",
-      "sole": "token-manager.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "897",
-      "suite_describes": 1
-    },
-    {
-      "id": "r947",
-      "path": "apps/desktop/src/main/utils/http-envelope-guards-dual.surface.spec.ts",
-      "package": "apps/desktop",
-      "class": "retired",
-      "sole": "http-envelope-guards.ts",
-      "blast": "surface lock (retired)",
-      "next": "none",
-      "residual": "947",
       "suite_describes": 1
     },
     {
@@ -441,39 +342,6 @@
       "suite_describes": 1
     },
     {
-      "id": "r1077",
-      "path": "packages/app-vue/src/modules/authentication/composables/auto-login-desktop-keep-boundary.surface.spec.ts",
-      "package": "packages/app-vue",
-      "class": "keep_boundary",
-      "sole": "useGuestMode.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "1077",
-      "suite_describes": 1
-    },
-    {
-      "id": "r1045",
-      "path": "packages/app-vue/src/modules/authentication/composables/completeAuthSuccess-dual.surface.spec.ts",
-      "package": "packages/app-vue",
-      "class": "retired",
-      "sole": "completeAuthSuccess.ts",
-      "blast": "surface lock (retired)",
-      "next": "none",
-      "residual": "1045",
-      "suite_describes": 1
-    },
-    {
-      "id": "r1201",
-      "path": "packages/app-vue/src/modules/authentication/composables/handle-auth-success-keep-boundary.surface.spec.ts",
-      "package": "packages/app-vue",
-      "class": "keep_boundary",
-      "sole": "useAuthContext.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "1201",
-      "suite_describes": 1
-    },
-    {
       "id": "r1075",
       "path": "packages/app-vue/src/modules/authentication/composables/password-toast-only-keep-boundary.surface.spec.ts",
       "package": "packages/app-vue",
@@ -482,28 +350,6 @@
       "blast": "surface lock (keep_boundary)",
       "next": "none",
       "residual": "1075",
-      "suite_describes": 1
-    },
-    {
-      "id": "r1079",
-      "path": "packages/app-vue/src/modules/authentication/composables/remove-remembered-toast-only-keep-boundary.surface.spec.ts",
-      "package": "packages/app-vue",
-      "class": "keep_boundary",
-      "sole": "useRememberedAccounts.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "1079",
-      "suite_describes": 1
-    },
-    {
-      "id": "r1049",
-      "path": "packages/app-vue/src/modules/authentication/composables/reportAuthOperationFailure-dual.surface.spec.ts",
-      "package": "packages/app-vue",
-      "class": "retired",
-      "sole": "reportAuthOperationFailure.ts",
-      "blast": "surface lock (retired)",
-      "next": "none",
-      "residual": "1049",
       "suite_describes": 1
     },
     {
@@ -593,17 +439,6 @@
       "next": "none",
       "residual": "1246",
       "suite_describes": 1
-    },
-    {
-      "id": "r1288",
-      "path": "packages/app-vue/src/shared/utils/dual-registry.surface.spec.ts",
-      "package": "packages/app-vue",
-      "class": "retired",
-      "sole": "../../modules/schedule/composables/useCalendarView.ts",
-      "blast": "surface lock (retired); suite describes=31",
-      "next": "none",
-      "residual": "1288",
-      "suite_describes": 31
     },
     {
       "id": "r1240",
@@ -760,61 +595,6 @@
       "suite_describes": 1
     },
     {
-      "id": "r1174",
-      "path": "packages/authentication/src/api/normalize-path-keep-boundary.surface.spec.ts",
-      "package": "packages/authentication",
-      "class": "keep_boundary",
-      "sole": "require-email-verified.middleware.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "1174",
-      "suite_describes": 1
-    },
-    {
-      "id": "r282",
-      "path": "packages/authentication/src/application-client/auth-client-port-dual.surface.spec.ts",
-      "package": "packages/authentication",
-      "class": "retired",
-      "sole": "services/auth-client-service.ts",
-      "blast": "surface lock (retired)",
-      "next": "none",
-      "residual": "282",
-      "suite_describes": 1
-    },
-    {
-      "id": "r981",
-      "path": "packages/authentication/src/server/infrastructure/adapters/powersync/mappers/to-iso-dual.surface.spec.ts",
-      "package": "packages/authentication",
-      "class": "retired",
-      "sole": "to-iso.ts",
-      "blast": "surface lock (retired)",
-      "next": "none",
-      "residual": "981",
-      "suite_describes": 1
-    },
-    {
-      "id": "r1141",
-      "path": "packages/authentication/src/server/infrastructure/adapters/powersync/mappers/to-millis-keep-boundary.surface.spec.ts",
-      "package": "packages/authentication",
-      "class": "keep_boundary",
-      "sole": "powersync-auth-identity.mapper.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "1141",
-      "suite_describes": 1
-    },
-    {
-      "id": "r949",
-      "path": "packages/authentication/src/server/shared/dual-registry.surface.spec.ts",
-      "package": "packages/authentication",
-      "class": "retired",
-      "sole": "mask-email.ts",
-      "blast": "surface lock (retired); suite describes=4",
-      "next": "none",
-      "residual": "949",
-      "suite_describes": 4
-    },
-    {
       "id": "r825",
       "path": "packages/contracts/src/modules/account/api/dual-registry.surface.spec.ts",
       "package": "packages/contracts",
@@ -868,83 +648,6 @@
       "next": "none",
       "residual": "1186",
       "suite_describes": 1
-    },
-    {
-      "id": "r879",
-      "path": "packages/contracts/src/modules/authentication/aggregates/client-server-shape-mismatch-keep-boundary.surface.spec.ts",
-      "package": "packages/contracts",
-      "class": "keep_boundary",
-      "sole": "../../task/aggregates",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "879",
-      "suite_describes": 1
-    },
-    {
-      "id": "r713",
-      "path": "packages/contracts/src/modules/authentication/api/dual-registry.surface.spec.ts",
-      "package": "packages/contracts",
-      "class": "retired",
-      "sole": "session.dto.ts",
-      "blast": "surface lock (retired); suite describes=5",
-      "next": "none",
-      "residual": "713",
-      "suite_describes": 5
-    },
-    {
-      "id": "r893",
-      "path": "packages/contracts/src/modules/authentication/api/oauth-provider-transport-domain-keep-boundary.surface.spec.ts",
-      "package": "packages/contracts",
-      "class": "keep_boundary",
-      "sole": "../value-objects",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "893",
-      "suite_describes": 1
-    },
-    {
-      "id": "r687",
-      "path": "packages/contracts/src/modules/authentication/entities/dual-registry.surface.spec.ts",
-      "package": "packages/contracts",
-      "class": "retired",
-      "sole": "index.ts",
-      "blast": "surface lock (retired); suite describes=2",
-      "next": "none",
-      "residual": "687",
-      "suite_describes": 2
-    },
-    {
-      "id": "r881",
-      "path": "packages/contracts/src/modules/authentication/protocol/device-info-client-keep-boundary.surface.spec.ts",
-      "package": "packages/contracts",
-      "class": "keep_boundary",
-      "sole": "../value-objects",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "881",
-      "suite_describes": 1
-    },
-    {
-      "id": "r873",
-      "path": "packages/contracts/src/modules/authentication/protocol/offline-login-response-dual.surface.spec.ts",
-      "package": "packages/contracts",
-      "class": "retired",
-      "sole": "desktop-auth.types.ts",
-      "blast": "surface lock (retired)",
-      "next": "none",
-      "residual": "873",
-      "suite_describes": 1
-    },
-    {
-      "id": "r855",
-      "path": "packages/contracts/src/modules/authentication/value-objects/dual-registry.surface.spec.ts",
-      "package": "packages/contracts",
-      "class": "retired",
-      "sole": "hashed-password.ts",
-      "blast": "surface lock (retired); suite describes=2",
-      "next": "none",
-      "residual": "855",
-      "suite_describes": 2
     },
     {
       "id": "r263",

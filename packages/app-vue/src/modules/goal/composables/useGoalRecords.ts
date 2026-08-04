@@ -10,10 +10,6 @@ import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { CreateGoalRecordReq, CreateGoalReviewReq } from '@memoflow/contracts/goal';
 import { executeGoalOperation, createGoalErrorHandler } from './goalOperations';
 
-type GoalRecordEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalRecords'][number] };
-type GoalReviewEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalReviews'][number] };
-type KeyResultEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['keyResults'][number] };
-
 export function useGoalRecords() {
   const store = useGoalStore();
   const service = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
@@ -27,37 +23,21 @@ export function useGoalRecords() {
 
   // ── Records ──────────────────────────────────────────────────────────
 
-  async function fetchRecords(goalId: string) {
-    const data = await executeGoalOperation(
-      () => service.getGoalRecordsByGoal(goalId),
-      { ...opOpts, fallbackKey: 'goal.error.loadRecordsFailed', scope: 'fetchRecords' },
-    );
-    if (data) {
-      store.setGoalRecords(
-        (data.records ?? []).map((r: GoalRecordEntityLike) => r.toDTO()),
-      );
+  async function createRecord(goalId: string, req: Omit<CreateGoalRecordReq, 'expectedVersion'>) {
+    const expectedVersion = store.getGoalById(goalId)?.version;
+    if (expectedVersion === undefined) {
+      store.setError(t('goal.error.loadFailed'));
+      return null;
     }
-  }
-
-  async function createRecord(goalId: string, req: CreateGoalRecordReq) {
     const { keyResultId, ...rest } = req;
     const data = await executeGoalOperation(
-      () => service.createGoalRecord(goalId, keyResultId, sanitizeForIpc(rest)),
+      () =>
+        service.createGoalRecord(goalId, keyResultId, sanitizeForIpc({ ...rest, expectedVersion })),
       { ...opOpts, fallbackKey: 'goal.error.createRecordFailed', scope: 'createRecord' },
     );
     if (data) {
-      const dto = data.toDTO();
-      // Refresh key results and records after creating a record
-      await Promise.all([
-        executeGoalOperation(
-          () => service.getKeyResults(goalId),
-          { ...opOpts, fallbackKey: 'goal.error.loadKRFailed', scope: 'fetchKeyResults' },
-        ).then((kr) => {
-          if (kr) store.setKeyResults((kr.keyResults ?? []).map((r: KeyResultEntityLike) => r.toDTO()));
-        }),
-        fetchRecords(goalId),
-      ]);
-      return dto;
+      store.applyGoalMutationReceipt(data);
+      return data.recordChanges?.upserted[0] ?? null;
     }
     return null;
   }
@@ -67,41 +47,36 @@ export function useGoalRecords() {
     keyResultId: string,
     data: { value: number; note?: string; recordedAt?: number },
   ) {
-    return createRecord(goalId, { keyResultId, ...data } as CreateGoalRecordReq);
+    return createRecord(goalId, {
+      keyResultId: keyResultId as CreateGoalRecordReq['keyResultId'],
+      ...data,
+    });
   }
 
   // ── Reviews ──────────────────────────────────────────────────────────
 
-  async function fetchReviews(goalId: string) {
-    const data = await executeGoalOperation(
-      () => service.getGoalReviews(goalId),
-      { ...opOpts, fallbackKey: 'goal.error.loadReviewsFailed', scope: 'fetchReviews' },
-    );
-    if (data) {
-      store.setGoalReviews(
-        (data.reviews ?? []).map((r: GoalReviewEntityLike) => r.toDTO()),
-      );
+  async function createReview(goalId: string, req: Omit<CreateGoalReviewReq, 'expectedVersion'>) {
+    const expectedVersion = store.getGoalById(goalId)?.version;
+    if (expectedVersion === undefined) {
+      store.setError(t('goal.error.loadFailed'));
+      return null;
     }
-  }
-
-  async function createReview(goalId: string, req: CreateGoalReviewReq) {
     const data = await executeGoalOperation(
-      () => service.createGoalReview(goalId, sanitizeForIpc(req)),
+      () => service.createGoalReview(goalId, sanitizeForIpc({ ...req, expectedVersion })),
       { ...opOpts, fallbackKey: 'goal.error.createReviewFailed', scope: 'createReview' },
     );
     if (data) {
-      const dto = data.toDTO();
-      store.addGoalReview(dto);
-      return dto;
+      store.applyGoalMutationReceipt(data);
+      return data.readModel.reviews.find(
+        (review) => String(review.id) === String(data.affectedEntityIds.reviewIds[0]),
+      );
     }
     return null;
   }
 
   return {
-    fetchRecords,
     createRecord,
     createGoalRecord,
-    fetchReviews,
     createReview,
   };
 }

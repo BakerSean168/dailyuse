@@ -15,13 +15,16 @@ import type {
   GoalFolderClientDTO,
   GoalReviewClientDTO,
   GoalRecordClientDTO,
+  GoalMutationReceipt,
   FocusModeDTO,
 } from '@memoflow/contracts/goal';
 
 export interface GoalState {
-  goals: GoalClientDTO[];
-  currentGoal: GoalClientDTO | null;
-  keyResults: KeyResultClientDTO[];
+  goalById: Record<string, GoalClientDTO>;
+  goalIds: string[];
+  selectedGoalId: string | null;
+  keyResultById: Record<string, KeyResultClientDTO>;
+  keyResultIdsByGoalId: Record<string, string[]>;
   goalFolders: GoalFolderClientDTO[];
   goalReviews: GoalReviewClientDTO[];
   goalRecords: GoalRecordClientDTO[];
@@ -35,11 +38,26 @@ export interface GoalState {
   isInitialized: boolean;
 }
 
+function materializeGoal(state: GoalState, id: string): GoalClientDTO | null {
+  const goal = state.goalById[id];
+  if (!goal) return null;
+  const keyResults = (state.keyResultIdsByGoalId[id] ?? []).flatMap((keyResultId) =>
+    state.keyResultById[keyResultId] ? [state.keyResultById[keyResultId]] : [],
+  );
+  return {
+    ...goal,
+    keyResults,
+    reviews: state.goalReviews.filter((review) => String(review.goalId) === id),
+  };
+}
+
 export const useGoalStore = defineStore('goal', {
   state: (): GoalState => ({
-    goals: [],
-    currentGoal: null,
-    keyResults: [],
+    goalById: {},
+    goalIds: [],
+    selectedGoalId: null,
+    keyResultById: {},
+    keyResultIdsByGoalId: {},
     goalFolders: [],
     goalReviews: [],
     goalRecords: [],
@@ -54,77 +72,111 @@ export const useGoalStore = defineStore('goal', {
   }),
 
   getters: {
-    getGoalById: (state) => (id: string) => state.goals.find((g) => g.id === id),
+    goals: (state): GoalClientDTO[] =>
+      state.goalIds.flatMap((id) => {
+        const goal = materializeGoal(state, id);
+        return goal ? [goal] : [];
+      }),
+    selectedGoal: (state): GoalClientDTO | null =>
+      state.selectedGoalId ? materializeGoal(state, state.selectedGoalId) : null,
+    keyResults: (state): KeyResultClientDTO[] => {
+      if (!state.selectedGoalId) return [];
+      return (state.keyResultIdsByGoalId[state.selectedGoalId] ?? []).flatMap((id) =>
+        state.keyResultById[id] ? [state.keyResultById[id]] : [],
+      );
+    },
+    getGoalById: (state) => (id: string) => state.goalById[id],
+    getKeyResultById: (state) => (id: string) => state.keyResultById[id],
     getGoalsByStatus: (state) => (status: GoalStatus) =>
-      state.goals.filter((g) => g.status === status),
+      state.goalIds
+        .map((id) => state.goalById[id])
+        .filter((goal): goal is GoalClientDTO => !!goal && goal.status === status),
     getGoalsByFolder: (state) => (folderId: string) =>
-      state.goals.filter((g) => g.folderId === folderId),
+      state.goalIds
+        .map((id) => state.goalById[id])
+        .filter((goal): goal is GoalClientDTO => !!goal && goal.folderId === folderId),
     activeGoalCount: (state): number =>
-      state.goals.filter((g) => !g.archivedAt && !g.deletedAt).length,
+      state.goalIds
+        .map((id) => state.goalById[id])
+        .filter((goal) => goal && !goal.archivedAt && !goal.deletedAt).length,
     completedGoalCount: (state): number =>
-      state.goals.filter((g) => !!g.archivedAt && !!g.completedAt && !g.deletedAt).length,
+      state.goalIds
+        .map((id) => state.goalById[id])
+        .filter((goal) => goal && !!goal.archivedAt && !!goal.completedAt && !goal.deletedAt)
+        .length,
     totalPages: (state): number => Math.ceil(state.pagination.total / state.pagination.pageSize),
     hasActiveFilter: (state): boolean => state.searchQuery.length > 0,
   },
 
   actions: {
     setGoals(goals: GoalClientDTO[], total?: number) {
-      this.goals = goals;
+      this.goalIds = goals.map((goal) => String(goal.id));
+      for (const goal of goals) this.upsertGoal(goal);
       if (total !== undefined) this.pagination.total = total;
     },
-    addGoal(goal: GoalClientDTO) {
-      this.goals.unshift(goal);
-      this.pagination.total++;
-    },
-    updateGoal(goal: GoalClientDTO) {
-      const i = this.goals.findIndex((g) => g.id === goal.id);
-      if (i !== -1) this.goals[i] = goal;
-      if (this.currentGoal?.id === goal.id) this.currentGoal = goal;
+    applyGoalMutationReceipt(receipt: GoalMutationReceipt) {
+      const goalId = String(receipt.goalId);
+      if (receipt.readModel.version !== receipt.goalVersion) return;
+      const existing = this.goalById[goalId];
+      if (existing && existing.version > receipt.goalVersion) return;
+      const wasListed = this.goalIds.includes(goalId);
+      this.upsertGoal(receipt.readModel);
+      if (!wasListed) {
+        this.goalIds = [goalId, ...this.goalIds];
+        this.pagination.total++;
+      }
+      this.setKeyResults(goalId, receipt.readModel.keyResults, receipt.goalVersion);
+      this.goalReviews = [
+        ...this.goalReviews.filter((review) => String(review.goalId) !== goalId),
+        ...receipt.readModel.reviews,
+      ];
+      if (receipt.recordChanges) {
+        const removedIds = new Set(receipt.recordChanges.removedIds.map(String));
+        const upsertedIds = new Set(
+          receipt.recordChanges.upserted.map((record) => String(record.id)),
+        );
+        this.goalRecords = [
+          ...this.goalRecords.filter(
+            (record) => !removedIds.has(String(record.id)) && !upsertedIds.has(String(record.id)),
+          ),
+          ...receipt.recordChanges.upserted,
+        ];
+      }
     },
     removeGoal(id: string) {
-      this.goals = this.goals.filter((g) => g.id !== id);
+      delete this.goalById[id];
+      this.goalIds = this.goalIds.filter((goalId) => goalId !== id);
+      for (const keyResultId of this.keyResultIdsByGoalId[id] ?? []) {
+        delete this.keyResultById[keyResultId];
+      }
+      delete this.keyResultIdsByGoalId[id];
       this.pagination.total--;
-      if (this.currentGoal?.id === id) this.currentGoal = null;
+      if (this.selectedGoalId === id) this.selectedGoalId = null;
     },
-    setCurrentGoal(goal: GoalClientDTO | null) {
-      this.currentGoal = goal;
+    upsertGoal(goal: GoalClientDTO) {
+      const { keyResults, reviews, ...root } = goal;
+      void reviews;
+      const id = String(goal.id);
+      const existing = this.goalById[id];
+      if (!existing || existing.version <= goal.version) {
+        this.goalById[id] = root as GoalClientDTO;
+      }
+      void keyResults;
+    },
+    selectGoal(id: string | null) {
+      this.selectedGoalId = id;
     },
 
-    setKeyResults(krs: KeyResultClientDTO[]) {
-      this.keyResults = krs;
-      if (this.currentGoal) {
-        this.currentGoal = { ...this.currentGoal, keyResults: [...krs] };
+    setKeyResults(goalId: string, krs: KeyResultClientDTO[], goalVersion: number) {
+      if (this.goalById[goalId]?.version !== goalVersion) return;
+      const previousIds = this.keyResultIdsByGoalId[goalId] ?? [];
+      const nextIds = krs.map((kr) => String(kr.id));
+      this.keyResultIdsByGoalId[goalId] = nextIds;
+      for (const staleId of previousIds) {
+        if (!nextIds.includes(staleId)) delete this.keyResultById[staleId];
       }
+      for (const kr of krs) this.keyResultById[String(kr.id)] = kr;
     },
-    addKeyResult(kr: KeyResultClientDTO) {
-      this.keyResults.push(kr);
-      if (this.currentGoal) {
-        this.currentGoal = {
-          ...this.currentGoal,
-          keyResults: [...(this.currentGoal.keyResults ?? []), kr],
-        };
-      }
-    },
-    updateKeyResult(kr: KeyResultClientDTO) {
-      const i = this.keyResults.findIndex((k) => k.id === kr.id);
-      if (i !== -1) this.keyResults[i] = kr;
-      if (this.currentGoal?.keyResults) {
-        this.currentGoal = {
-          ...this.currentGoal,
-          keyResults: this.currentGoal.keyResults.map((item) => (item.id === kr.id ? kr : item)),
-        };
-      }
-    },
-    removeKeyResult(id: string) {
-      this.keyResults = this.keyResults.filter((k) => k.id !== id);
-      if (this.currentGoal?.keyResults) {
-        this.currentGoal = {
-          ...this.currentGoal,
-          keyResults: this.currentGoal.keyResults.filter((item) => item.id !== id),
-        };
-      }
-    },
-
     setGoalFolders(folders: GoalFolderClientDTO[]) {
       this.goalFolders = folders;
     },
@@ -141,27 +193,10 @@ export const useGoalStore = defineStore('goal', {
 
     setGoalReviews(r: GoalReviewClientDTO[]) {
       this.goalReviews = r;
-      if (this.currentGoal) {
-        this.currentGoal = { ...this.currentGoal, reviews: [...r] };
-      }
     },
-    addGoalReview(r: GoalReviewClientDTO) {
-      this.goalReviews.push(r);
-      if (this.currentGoal) {
-        this.currentGoal = {
-          ...this.currentGoal,
-          reviews: [...(this.currentGoal.reviews ?? []), r],
-        };
-      }
-    },
-
     setGoalRecords(r: GoalRecordClientDTO[]) {
       this.goalRecords = r;
     },
-    addGoalRecord(r: GoalRecordClientDTO) {
-      this.goalRecords.push(r);
-    },
-
     setSelectedFolderId(id: string | null) {
       this.selectedFolderId = id;
     },

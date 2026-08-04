@@ -1,7 +1,7 @@
 /**
  * useAuth - 认证模块主 composable
  *
- * 薄编排层，组合 useLogin / useRegister / useRememberedAccounts / useGuestMode。
+ * 薄编排层，组合 Better Auth 登录、注册与登出。
  * 所有具体逻辑由子 composable 承载。
  *
  * @module authentication/composables
@@ -11,15 +11,11 @@ import { computed } from 'vue';
 import { createAuthContext } from './useAuthContext';
 import { useLogin } from './useLogin';
 import { useRegister } from './useRegister';
-import { useRememberedAccounts } from './useRememberedAccounts';
-import { useGuestMode } from './useGuestMode';
 
 export function useAuth() {
   const ctx = createAuthContext();
   const loginOps = useLogin(ctx);
   const registerOps = useRegister(ctx);
-  const rememberedOps = useRememberedAccounts(ctx);
-  const guestOps = useGuestMode(ctx);
 
   return {
     // State
@@ -32,14 +28,12 @@ export function useAuth() {
     loginByEmail: loginOps.loginByEmail,
     // Register
     registerByEmail: registerOps.registerByEmail,
-    // Remembered accounts
-    listRememberedAccounts: rememberedOps.listRememberedAccounts,
-    loginRememberedDesktopAccount: rememberedOps.loginRememberedDesktopAccount,
-    removeRememberedAccount: rememberedOps.removeRememberedAccount,
-    // Guest mode / session
-    enterGuestMode: guestOps.enterGuestMode,
-    autoLoginDesktop: guestOps.autoLoginDesktop,
-    refreshToken: guestOps.refreshToken,
-    logout: guestOps.logout,
+    signOut: async () => {
+      const result = await ctx.service.signOut();
+      if (result.ok) {
+        ctx.store.reset();
+      }
+      return result.ok;
+    },
   };
 }

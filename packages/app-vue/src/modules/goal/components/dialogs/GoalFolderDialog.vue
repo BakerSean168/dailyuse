@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:open="visible">
+  <Dialog :open="visible" @update:open="handleVisibilityChange">
     <DialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>{{
@@ -46,10 +46,15 @@
         </div>
 
         <div class="space-y-2">
-          <Label>{{ t('goal.folderDialog.color') }}</Label>
+          <Label for="goal-folder-color">{{ t('goal.folderDialog.color') }}</Label>
           <Popover>
             <PopoverTrigger as-child>
-              <Button variant="outline" class="h-10 w-[140px] justify-start gap-2">
+              <Button
+                id="goal-folder-color"
+                variant="outline"
+                class="h-10 w-[140px] justify-start gap-2"
+                :aria-label="t('goal.folderDialog.color')"
+              >
                 <div
                   class="h-4 w-4 rounded-full border"
                   :style="{ backgroundColor: draft.color || '#94a3b8' }"
@@ -64,7 +69,8 @@
                 <button
                   v-for="option in colorOptions"
                   :key="option.value"
-                  class="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
+                  type="button"
+                  class="h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   :class="
                     draft.color === option.value
                       ? 'border-foreground scale-110'
@@ -72,6 +78,8 @@
                   "
                   :style="{ backgroundColor: option.value }"
                   :title="option.label"
+                  :aria-label="option.label"
+                  :aria-pressed="draft.color === option.value"
                   @click="draft.color = option.value"
                 />
               </div>
@@ -90,8 +98,10 @@
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="handleCancel">{{ t('goal.folderDialog.cancel') }}</Button>
-        <Button :disabled="!isFormValid" @click="handleSave">{{
+        <Button variant="outline" :disabled="isSaving" @click="handleCancel">{{
+          t('goal.folderDialog.cancel')
+        }}</Button>
+        <Button :disabled="!isFormValid || isSaving" @click="handleSave">{{
           t('goal.folderDialog.confirm')
         }}</Button>
       </DialogFooter>
@@ -123,8 +133,10 @@ import {
   SelectValue,
 } from '@memoflow/ui-vue-shadcn';
 import { Popover, PopoverTrigger, PopoverContent } from '@memoflow/ui-vue-shadcn';
+import { useGoalFolders } from '../../composables/useGoalFolders';
 
 const { t } = useI18n();
+const { createFolder, updateFolder } = useGoalFolders();
 
 const colorOptions = [
   { value: '#ef4444', label: t('common.colors.red') },
@@ -166,6 +178,7 @@ const iconOptions = computed(() => [
 ]);
 
 const visible = ref(false);
+const isSaving = ref(false);
 const editingFolder = ref<GoalFolderClientDTO | null>(null);
 const draft = ref<GoalFolderDraft>({
   name: '',
@@ -232,18 +245,47 @@ const closeDialog = () => {
   visible.value = false;
 };
 
-const handleSave = () => {
-  if (!isFormValid.value) return;
+const handleSave = async () => {
+  if (!isFormValid.value || isSaving.value) return;
 
-  emit('save', {
+  const payload = {
     ...draft.value,
     name: draft.value.name.trim(),
-  });
+  };
 
-  closeDialog();
+  isSaving.value = true;
+  try {
+    const result = payload.id
+      ? await updateFolder(payload.id, {
+          name: payload.name,
+          description: payload.description,
+          icon: payload.icon,
+          color: payload.color,
+          parentFolderId: payload.parentFolderId,
+        })
+      : await createFolder({
+          name: payload.name,
+          description: payload.description ?? undefined,
+          icon: payload.icon,
+          color: payload.color ?? undefined,
+          parentFolderId: payload.parentFolderId ?? undefined,
+        });
+
+    if (!result) return;
+    emit('save', payload);
+    closeDialog();
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const handleVisibilityChange = (nextVisible: boolean) => {
+  if (isSaving.value && !nextVisible) return;
+  visible.value = nextVisible;
 };
 
 const handleCancel = () => {
+  if (isSaving.value) return;
   emit('cancel');
   closeDialog();
 };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, onBeforeUnmount, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@memoflow/ui-vue-shadcn';
 import { Plus, Target } from '@lucide/vue';
@@ -16,6 +16,8 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 const { goalProgress, isLoading, fetchDashboard } = useDashboard();
+const dashboardReconciliationDelays = [0, 250, 500, 1_000, 2_000] as const;
+let dashboardRefreshGeneration = 0;
 
 const todayLabel = computed(() =>
   new Intl.DateTimeFormat(locale.value, {
@@ -34,10 +36,19 @@ watch(
 );
 
 async function refreshAfterTaskCompletion() {
-  await fetchDashboard();
-  await new Promise((resolve) => setTimeout(resolve, 150));
-  await fetchDashboard();
+  const generation = ++dashboardRefreshGeneration;
+  for (const delay of dashboardReconciliationDelays) {
+    if (delay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+    if (generation !== dashboardRefreshGeneration) return;
+    await fetchDashboard();
+  }
 }
+
+onBeforeUnmount(() => {
+  dashboardRefreshGeneration++;
+});
 </script>
 
 <template>

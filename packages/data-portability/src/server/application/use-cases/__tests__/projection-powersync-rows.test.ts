@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { RefAllocator, type ExportContext } from '../../portable-runtime';
 import { projectGoalRecords, projectGoals } from '../projections/goal.projection';
 import { projectEditorWorkspaces } from '../projections/editor.projection';
-import { projectReminderResponses, projectReminderTemplates } from '../projections/reminder.projection';
+import {
+  projectReminderResponses,
+  projectReminderTemplates,
+} from '../projections/reminder.projection';
 import { projectScheduleTasks } from '../projections/schedule.projection';
 import { projectTaskTemplates } from '../projections/task.projection';
 import type { DataPortabilityDependencies } from '../../data-portability.dependencies';
@@ -49,7 +52,14 @@ describe('projection from PowerSync-shaped rows', () => {
       ctx,
     );
     const records = projectGoalRecords(
-      [{ id: 'record-db-id', keyResultId: 'kr-db-id', value: 1, recordedAt: '2026-06-03T00:00:00.000Z' }],
+      [
+        {
+          id: 'record-db-id',
+          keyResultId: 'kr-db-id',
+          value: 1,
+          recordedAt: '2026-06-03T00:00:00.000Z',
+        },
+      ],
       ctx,
     );
 
@@ -90,7 +100,10 @@ describe('projection from PowerSync-shaped rows', () => {
           tags: '["qa"]',
           recurrenceRuleType: 'Daily',
           recurrenceRuleInterval: 1,
-          goalBinding: '{"goalId":"goal-db-id","keyResultId":"kr-db-id"}',
+          goalId: 'goal-db-id',
+          keyResultId: 'kr-db-id',
+          goalRecordValue: 2.5,
+          goalProgressTrigger: 'PER_INSTANCE',
           checklist: '[{"title":"cover IPC","order":0}]',
           reminderConfigEnabled: 1,
           reminderConfigTimeOffsetMinutes: 15,
@@ -106,12 +119,15 @@ describe('projection from PowerSync-shaped rows', () => {
       tags: ['qa'],
       goalRef: 'goal:1',
       keyResultRef: 'keyResult:1',
+      goalRecordValue: 2.5,
+      goalProgressTrigger: 'PER_INSTANCE',
       checklist: [{ title: 'cover IPC', order: 0 }],
       reminderConfig: {
         enabled: 1,
         triggers: [{ relativeValue: 15, relativeUnit: 'Minute' }],
       },
     });
+    expect(templates[0]).not.toHaveProperty('goalBinding');
   });
 
   it('exports reminders from PowerSync names, refs, JSON strings, and integer booleans', () => {
@@ -136,7 +152,14 @@ describe('projection from PowerSync-shaped rows', () => {
       ctx,
     );
     const responses = projectReminderResponses(
-      [{ id: 'response-db-id', templateId: 'template-db-id', action: 'clicked', timestamp: '2026-06-03T00:00:00.000Z' }],
+      [
+        {
+          id: 'response-db-id',
+          templateId: 'template-db-id',
+          action: 'clicked',
+          timestamp: '2026-06-03T00:00:00.000Z',
+        },
+      ],
       ctx,
     );
 

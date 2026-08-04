@@ -4,7 +4,11 @@
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12">
         <div class="flex items-center gap-2">
-          <Switch :checked="localSnooze.enabled" @update:checked="updateEnabled" />
+          <Switch
+            :model-value="localSnooze.enabled"
+            :aria-label="t('task.reminderSnooze.allowSnooze')"
+            @update:model-value="updateEnabled"
+          />
           <Label>{{ t('task.reminderSnooze.allowSnooze') }}</Label>
         </div>
       </div>

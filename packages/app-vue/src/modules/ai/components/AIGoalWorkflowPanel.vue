@@ -11,7 +11,9 @@
           {{ t('aiAssistant.chatPage.workflow.goalClarificationTitle') }}
         </p>
         <p class="text-sm leading-6 text-muted-foreground">
-          {{ goalClarification.rationale || t('aiAssistant.chatPage.workflow.goalClarificationHint') }}
+          {{
+            goalClarification.rationale || t('aiAssistant.chatPage.workflow.goalClarificationHint')
+          }}
         </p>
       </div>
 
@@ -21,9 +23,7 @@
           :key="`${item.question}-${index}`"
           class="rounded-2xl border bg-muted/30 p-4"
         >
-          <p class="text-sm font-medium text-foreground">
-            {{ index + 1 }}. {{ item.question }}
-          </p>
+          <p class="text-sm font-medium text-foreground">{{ index + 1 }}. {{ item.question }}</p>
           <p v-if="item.context" class="mt-2 text-sm leading-6 text-muted-foreground">
             {{ item.context }}
           </p>
@@ -111,7 +111,7 @@
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {{ t('aiAssistant.dialogs.agent.observability') }}
         </p>
-        <div class="mt-2 grid gap-2 sm:grid-cols-2">
+        <div class="mt-2 grid gap-2 @sm/ai:grid-cols-2">
           <div
             v-for="item in getAgentObservabilityItems(goalAgentRun)"
             :key="`${item.label}-${item.value}`"
@@ -188,9 +188,7 @@
               <Input
                 :model-value="item.name"
                 :placeholder="t('aiAssistant.goalDraft.taskTemplateName')"
-                @update:model-value="
-                  updateTaskTemplate(index, { name: String($event ?? '') })
-                "
+                @update:model-value="updateTaskTemplate(index, { name: String($event ?? '') })"
               />
               <Textarea
                 class="min-h-20"
@@ -200,7 +198,7 @@
                   updateTaskTemplate(index, { description: String($event ?? '') })
                 "
               />
-              <div class="grid gap-3 sm:grid-cols-3">
+              <div class="grid gap-3 @sm/ai:grid-cols-3">
                 <div class="grid gap-2">
                   <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                     {{ t('aiAssistant.goalDraft.cadence') }}
@@ -236,9 +234,7 @@
                     type="time"
                     :model-value="item.timeOfDay"
                     data-testid="goal-agent-reminder-time"
-                    @update:model-value="
-                      updateReminder(index, { timeOfDay: String($event ?? '') })
-                    "
+                    @update:model-value="updateReminder(index, { timeOfDay: String($event ?? '') })"
                   />
                 </div>
 
@@ -299,19 +295,15 @@
               <Input
                 :model-value="item.title"
                 :placeholder="t('aiAssistant.goalDraft.reminderTitle')"
-                @update:model-value="
-                  updateReminder(index, { title: String($event ?? '') })
-                "
+                @update:model-value="updateReminder(index, { title: String($event ?? '') })"
               />
               <Textarea
                 class="min-h-20"
                 :model-value="item.description"
                 :placeholder="t('aiAssistant.goalDraft.reminderDescription')"
-                @update:model-value="
-                  updateReminder(index, { description: String($event ?? '') })
-                "
+                @update:model-value="updateReminder(index, { description: String($event ?? '') })"
               />
-              <div class="grid gap-3 sm:grid-cols-2">
+              <div class="grid gap-3 @sm/ai:grid-cols-2">
                 <div class="grid gap-2">
                   <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                     {{ t('aiAssistant.goalDraft.cadence') }}
@@ -541,10 +533,7 @@
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {{ t('aiAssistant.dialogs.automation.executionStatus') }}
         </p>
-        <p
-          v-if="goalExecutionSummary"
-          class="mt-2 text-sm leading-6 text-muted-foreground"
-        >
+        <p v-if="goalExecutionSummary" class="mt-2 text-sm leading-6 text-muted-foreground">
           {{
             t('aiAssistant.dialogs.automation.executionSummaryText', {
               status: formatExecutionOutcome(goalExecutionSummary.status),
@@ -577,15 +566,15 @@
       </div>
 
       <div
-        v-if="goalExecutionRecovery && (goalExecutionRecovery.canRetry || goalExecutionRecovery.suggestions.length)"
+        v-if="
+          goalExecutionRecovery &&
+          (goalExecutionRecovery.canRetry || goalExecutionRecovery.suggestions.length)
+        "
       >
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {{ t('aiAssistant.dialogs.automation.recoveryTitle') }}
         </p>
-        <p
-          v-if="goalExecutionRecovery.canRetry"
-          class="mt-2 text-sm leading-6 text-foreground"
-        >
+        <p v-if="goalExecutionRecovery.canRetry" class="mt-2 text-sm leading-6 text-foreground">
           {{ t('aiAssistant.dialogs.automation.recoveryRetryReady') }}
         </p>
         <div v-if="goalExecutionRecovery.suggestions.length" class="mt-2 space-y-2">
@@ -615,7 +604,9 @@
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {{ t('aiAssistant.dialogs.knowledge.answer') }}
         </p>
-        <span class="inline-flex rounded-full border bg-muted px-3 py-1 text-xs text-muted-foreground">
+        <span
+          class="inline-flex rounded-full border bg-muted px-3 py-1 text-xs text-muted-foreground"
+        >
           {{
             knowledgeAnswer.evidenceStatus === 'grounded'
               ? t('aiAssistant.dialogs.knowledge.grounded')
@@ -651,7 +642,7 @@
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {{ t('aiAssistant.dialogs.knowledge.relatedNotes') }}
         </p>
-        <div class="mt-2 grid gap-2 sm:grid-cols-2">
+        <div class="mt-2 grid gap-2 @sm/ai:grid-cols-2">
           <div
             v-for="note in getKnowledgeRelatedNotes(knowledgeAnswer)"
             :key="note.resourceId"
@@ -727,7 +718,7 @@
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {{ t('aiAssistant.dialogs.agent.observability') }}
         </p>
-        <div class="mt-2 grid gap-2 sm:grid-cols-2">
+        <div class="mt-2 grid gap-2 @sm/ai:grid-cols-2">
           <div
             v-for="item in getAgentObservabilityItems(knowledgeQaAgentRun)"
             :key="`${item.label}-${item.value}`"
@@ -767,7 +758,11 @@
 
   <!-- Knowledge note Agent draft -->
   <section
-    v-if="(toolMode === 'knowledge-generate' || toolMode === 'knowledge-qa') && noteAgentRun && !noteSummary"
+    v-if="
+      (toolMode === 'knowledge-generate' || toolMode === 'knowledge-qa') &&
+      noteAgentRun &&
+      !noteSummary
+    "
     class="rounded-3xl border bg-card p-5"
     data-testid="knowledge-note-agent-panel"
   >
@@ -793,7 +788,7 @@
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {{ t('aiAssistant.dialogs.agent.observability') }}
         </p>
-        <div class="mt-2 grid gap-2 sm:grid-cols-2">
+        <div class="mt-2 grid gap-2 @sm/ai:grid-cols-2">
           <div
             v-for="item in getAgentObservabilityItems(noteAgentRun)"
             :key="`${item.label}-${item.value}`"
@@ -825,7 +820,7 @@
         </p>
         <div
           v-if="getNoteArtifactMetadata(artifact).length"
-          class="mt-3 grid gap-2 sm:grid-cols-2"
+          class="mt-3 grid gap-2 @sm/ai:grid-cols-2"
         >
           <div
             v-for="item in getNoteArtifactMetadata(artifact)"
@@ -835,7 +830,9 @@
             <p class="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
               {{ item.label }}
             </p>
-            <p class="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm font-medium text-foreground">
+            <p
+              class="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm font-medium text-foreground"
+            >
               {{ item.value }}
             </p>
           </div>
@@ -877,7 +874,7 @@
         </h2>
       </div>
 
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="grid gap-3 @sm/ai:grid-cols-2 @lg/ai:grid-cols-3">
         <div class="rounded-2xl border bg-muted/30 p-4">
           <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
             {{ t('aiAssistant.dialogs.note.savedTo') }}
@@ -967,7 +964,12 @@ const props = defineProps<{
   showGoalDraftEditor: boolean;
   creatingGoal: boolean;
   goalExecutedActions: GoalExecutedAction[];
-  goalExecutionSummary: { status: 'success' | 'partial' | 'failed'; executedCount: number; skippedCount: number; failedCount: number } | null;
+  goalExecutionSummary: {
+    status: 'success' | 'partial' | 'failed';
+    executedCount: number;
+    skippedCount: number;
+    failedCount: number;
+  } | null;
   goalExecutionRecovery: { canRetry: boolean; suggestions: string[] } | null;
   knowledgeAnswer: KnowledgeAnswer | null;
   knowledgeQaAgentRun: AgentRunResult | null;
@@ -1031,10 +1033,7 @@ function updateClarificationAnswer(index: number, value: string) {
   emit('update:clarificationAnswers', next);
 }
 
-function updateTaskTemplate(
-  index: number,
-  patch: Partial<EditableGoalTaskTemplate>,
-) {
+function updateTaskTemplate(index: number, patch: Partial<EditableGoalTaskTemplate>) {
   emit('update-task-template', {
     index,
     value: {
@@ -1108,10 +1107,7 @@ function formatAgentActionNumber(index: number): string {
   return t('aiAssistant.dialogs.agent.actionNumber', { number: index + 1 });
 }
 
-function formatAgentActionDependencies(
-  action: AgentAction,
-  actions: AgentAction[],
-): string {
+function formatAgentActionDependencies(action: AgentAction, actions: AgentAction[]): string {
   const dependencyLabels = action.dependsOn
     .map((dependencyIndex) => {
       const dependency = actions[dependencyIndex];

@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 import { API_CONFIG, WEB_CONFIG, TIMEOUT_CONFIG, TEST_USERS } from '../config';
-import { completeEmailVerification } from './auth-email-code';
+import { completeEmailVerification } from './auth-email-link';
 
 type SSEEventRecord = {
   type: string;
@@ -190,7 +190,7 @@ async function registerViaAuth(page: Page, email: string, password: string): Pro
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
   await page.getByTestId('register-submit-button').click();
-  await completeEmailVerification(page, email);
+  await completeEmailVerification(page, email, password);
 }
 
 export async function registerAndLogin(
@@ -219,16 +219,11 @@ export async function registerAndLogin(
  */
 export async function ensureUserSettingsRecord(page: Page): Promise<void> {
   const response = await page.evaluate(async (apiBaseUrl) => {
-    const accessToken = window.localStorage.getItem('access_token');
-    if (!accessToken) {
-      throw new Error('Missing access_token while preparing user settings');
-    }
-
     const result = await fetch(`${apiBaseUrl}/settings`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      credentials: 'include',
     });
     return { ok: result.ok, status: result.status };
-  }, API_CONFIG.FULL_URL);
+  }, API_CONFIG.API_PREFIX);
 
   if (!response.ok) {
     throw new Error(`Failed to prepare user settings (HTTP ${response.status})`);

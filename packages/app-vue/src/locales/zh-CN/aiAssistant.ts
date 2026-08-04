@@ -23,6 +23,7 @@ export default {
     "emptyDescription": "选择提供商和模型，然后直接在这里持续对话。历史会话会保留在左侧，方便随时继续。",
     "chatUnavailable": "当前 AI 运行模式不支持聊天能力，请先检查 AI 服务配置。",
     "modelPending": "未选择模型",
+    "modelSelectorLabel": "AI 模型",
     "emptyModels": "当前没有可用模型，可以前往设置配置 AI 提供方和模型。",
     "context": {
       "title": "上下文",

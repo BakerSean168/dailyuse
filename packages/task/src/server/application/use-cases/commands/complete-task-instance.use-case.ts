@@ -11,6 +11,11 @@ import { ok, error } from '@memoflow/contracts/result';
 import type { TaskInstance } from '../../../domain/aggregates/task-instance';
 import type { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { isFiniteTaskPlan } from '../../../domain/aggregates/task-template-goal.policy';
+import {
+  createInlineTaskWriteTransactionRunner,
+  type TaskWriteRepositories,
+  type TaskWriteTransactionRunner,
+} from './task-write-support';
 
 /**
  * Complete Task Instance Service
@@ -23,6 +28,12 @@ export class CompleteTaskInstanceUseCase {
   constructor(
     private readonly instanceRepository: ITaskInstanceRepository,
     private readonly templateRepository: ITaskTemplateRepository,
+    private readonly transactionRunner: TaskWriteTransactionRunner = createInlineTaskWriteTransactionRunner(
+      {
+        instanceRepository,
+        templateRepository,
+      },
+    ),
   ) {}
 
   async execute(
@@ -30,7 +41,18 @@ export class CompleteTaskInstanceUseCase {
     identityId: string,
     request?: CompleteTaskInstanceReq,
   ): Promise<Result<TaskInstanceOperationRes>> {
-    const instance = await this.instanceRepository.findByIdForIdentity(identityId, id);
+    return this.transactionRunner.run((repositories) =>
+      this.executeInTransaction(repositories, id, identityId, request),
+    );
+  }
+
+  private async executeInTransaction(
+    repositories: TaskWriteRepositories,
+    id: string,
+    identityId: string,
+    request?: CompleteTaskInstanceReq,
+  ): Promise<Result<TaskInstanceOperationRes>> {
+    const instance = await repositories.instanceRepository.findByIdForIdentity(identityId, id);
     if (!instance) {
       return error('NOT_FOUND', `TaskInstance ${id} not found`);
     }
@@ -45,15 +67,19 @@ export class CompleteTaskInstanceUseCase {
       return error('VALIDATION_ERROR', 'Cannot complete this task instance');
     }
 
-    const template = await this.templateRepository.findByIdForIdentity(
+    const template = await repositories.templateRepository.findByIdForIdentity(
       identityId,
       String(instance.templateId),
     );
-    const goalContext = await this.buildGoalContext(instance, template);
+    const goalContext = await this.buildGoalContext(
+      instance,
+      template,
+      repositories.instanceRepository,
+    );
 
     // Mark as completed（goalContext 会被嵌入领域事件的 payload）
     instance.complete(request?.duration, request?.note, request?.rating, goalContext);
-    await this.instanceRepository.save(instance);
+    await repositories.instanceRepository.save(instance);
 
     return ok({
       instance: instance.toClientDTO(),
@@ -68,6 +94,7 @@ export class CompleteTaskInstanceUseCase {
   private async buildGoalContext(
     instance: TaskInstance,
     template: TaskTemplate | null,
+    instanceRepository: ITaskInstanceRepository,
   ): Promise<{
     taskTitle: string;
     goalBinding: ReturnType<TaskTemplate['toServerDTO']>['goalBinding'];
@@ -91,6 +118,7 @@ export class CompleteTaskInstanceUseCase {
         instance,
         template,
         String(instance.identityId),
+        instanceRepository,
       ),
     };
   }
@@ -103,12 +131,13 @@ export class CompleteTaskInstanceUseCase {
     instance: TaskInstance,
     template: TaskTemplate,
     identityId: string,
+    instanceRepository: ITaskInstanceRepository,
   ): Promise<boolean> {
     if (!isFiniteTaskPlan(template.taskType, template.recurrenceRule)) {
       return false;
     }
 
-    const siblings = await this.instanceRepository.findByTemplateId(
+    const siblings = await instanceRepository.findByTemplateId(
       String(instance.templateId),
       identityId,
     );

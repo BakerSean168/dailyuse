@@ -50,7 +50,7 @@ export function buildCleanupSql(prefix) {
     '        DELETE FROM pm_cleanup_identity_tables pending',
     '        WHERE pending.table_name = candidate.table_name;',
     '        deleted_tables := deleted_tables + 1;',
-    '      EXCEPTION WHEN foreign_key_violation THEN',
+    '      EXCEPTION WHEN foreign_key_violation OR restrict_violation THEN',
     '        NULL;',
     '      END;',
     '    END LOOP;',

@@ -9,11 +9,7 @@ const webAuthMocks = vi.hoisted(() => ({
   registerByEmail: vi.fn(async () => true as const),
   forgotPassword: vi.fn(async () => true),
   resetPassword: vi.fn(async () => true),
-  sendEmailCode: vi.fn(async () => true),
-  verifyEmailCode: vi.fn(async () => true),
-  completeGithubOAuth: vi.fn(async () => true),
   startGithubLogin: vi.fn(async () => true),
-  probeGithubAvailability: vi.fn(async () => true),
   clearError: vi.fn(),
   clearSuccessMessage: vi.fn(),
 }));
@@ -26,11 +22,7 @@ vi.mock('./useWebAuth', async () => {
       registerByEmail: webAuthMocks.registerByEmail,
       forgotPassword: webAuthMocks.forgotPassword,
       resetPassword: webAuthMocks.resetPassword,
-      sendEmailCode: webAuthMocks.sendEmailCode,
-      verifyEmailCode: webAuthMocks.verifyEmailCode,
-      completeGithubOAuth: webAuthMocks.completeGithubOAuth,
       startGithubLogin: webAuthMocks.startGithubLogin,
-      probeGithubAvailability: webAuthMocks.probeGithubAvailability,
       clearError: webAuthMocks.clearError,
       clearSuccessMessage: webAuthMocks.clearSuccessMessage,
       // Real refs so template auto-unwrap treats loading as boolean false.
@@ -121,10 +113,8 @@ function mountView() {
 
 describe('WebAuthView three-login surface contract', () => {
   beforeEach(() => {
-    webAuthMocks.probeGithubAvailability.mockReset();
     webAuthMocks.startGithubLogin.mockReset();
     webAuthMocks.loginByEmail.mockReset();
-    webAuthMocks.probeGithubAvailability.mockResolvedValue(true);
     webAuthMocks.startGithubLogin.mockResolvedValue(true);
     webAuthMocks.loginByEmail.mockResolvedValue(true as const);
     window.history.replaceState({}, '', '/auth');
@@ -139,7 +129,6 @@ describe('WebAuthView three-login surface contract', () => {
     await flushPromises();
     await nextTick();
 
-    expect(webAuthMocks.probeGithubAvailability).toHaveBeenCalled();
     expect(wrapper.find('[data-testid="login-form"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="login-username-input"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="login-password-input"]').exists()).toBe(true);
@@ -148,19 +137,20 @@ describe('WebAuthView three-login surface contract', () => {
     expect(wrapper.find('[data-testid="guest-mode-button"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="login-phone-input"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="send-sms-code-button"]').exists()).toBe(false);
+    expect(wrapper.find('#verify-code').exists()).toBe(false);
 
     wrapper.unmount();
   });
 
-  it('hides the GitHub entry when OAuth is unavailable', async () => {
-    webAuthMocks.probeGithubAvailability.mockResolvedValueOnce(false);
+  it('keeps cloud-only entries free of guest and verification-code controls', async () => {
     const wrapper = mountView();
     await flushPromises();
     await nextTick();
 
     expect(wrapper.find('[data-testid="login-submit-button"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="login-github-button"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="login-github-button"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="guest-mode-button"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="verify-submit-button"]').exists()).toBe(false);
 
     wrapper.unmount();
   });
@@ -175,7 +165,7 @@ describe('WebAuthView three-login surface contract', () => {
     await flushPromises();
 
     expect(webAuthMocks.startGithubLogin).toHaveBeenCalledWith(
-      expect.stringMatching(/\/auth$/),
+      new URL('/', window.location.origin).toString(),
     );
     expect(webAuthMocks.loginByEmail).not.toHaveBeenCalled();
 
