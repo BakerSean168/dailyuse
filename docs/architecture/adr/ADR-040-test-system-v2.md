@@ -34,7 +34,7 @@ PR 反馈时间从约 31 分钟降至约 10 分钟。
 - coverage 只在 `main` push、nightly 和手工触发时运行，回退可能在合并后才暴露。
 - 完整 governance target 已存在，但 PR 只运行 test-target governance。
 - performance workflow 没有历史基线，且输出、阈值和实际被收集的 benchmark 不一致。
-- GitHub `main` ruleset 处于 disabled，要求的旧 check `CI Build` 已不存在；当前 Oracle 并非真正
+- GitHub `main` ruleset 曾处于 disabled，要求的旧 check context 已不存在；当前 Oracle 并非真正
   强制的合并门禁。
 
 继续逐项修补会保留模糊边界，并让 workflow、target 和文档继续分叉。项目仍处于快速开发期，

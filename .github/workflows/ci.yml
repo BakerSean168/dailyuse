@@ -2,15 +2,10 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
 
-# 设置并发策略，避免重复运行
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -22,385 +17,240 @@ env:
   NODE_VERSION: '24'
   CI: 'true'
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+  NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
 
 jobs:
-  validate:
-    name: Validate
+  scope-detector:
+    name: Scope Detector
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Prepare workspace
-        uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Validate test target governance
-        run: pnpm test:targets:check
-
-      - name: Lint affected projects
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        shell: bash
-        run: |
-          EXCLUDED_PROJECTS=$(pnpm exec nx show projects | awk '/^prisma-client-/{printf "%s%s", sep, $0; sep=","}')
-          if [ -n "$EXCLUDED_PROJECTS" ]; then
-            echo "Excluding generated Prisma projects from lint: $EXCLUDED_PROJECTS"
-            pnpm exec nx affected -t lint --parallel=3 --exclude="$EXCLUDED_PROJECTS" --outputStyle=static
-          else
-            pnpm exec nx affected -t lint --parallel=3 --outputStyle=static
-          fi
-
-      - name: Typecheck affected projects
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t typecheck --parallel=3 --outputStyle=static
-
-      - name: Test affected projects
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t test --parallel=3 --exclude=memoflow --passWithNoTests --outputStyle=static
-
-      - name: Build affected apps
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client' --outputStyle=static
-
-  detect-ci-scope:
-    name: Detect CI Scope
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
     outputs:
-      has_smoke: ${{ steps.detect.outputs.has_smoke }}
-      has_integration: ${{ steps.detect.outputs.has_integration }}
-      has_ipc: ${{ steps.detect.outputs.has_ipc }}
-      has_main: ${{ steps.detect.outputs.has_main }}
-      has_web_flow: ${{ steps.detect.outputs.has_web_flow }}
-
+      has_unit: ${{ steps.scope.outputs.has_unit }}
+      has_coverage: ${{ steps.scope.outputs.has_coverage }}
+      has_smoke: ${{ steps.scope.outputs.has_smoke }}
+      has_integration: ${{ steps.scope.outputs.has_integration }}
+      has_boundary: ${{ steps.scope.outputs.has_boundary }}
+      has_desktop_boundary: ${{ steps.scope.outputs.has_desktop_boundary }}
+      has_perf: ${{ steps.scope.outputs.has_perf }}
+      has_web_flow: ${{ steps.scope.outputs.has_web_flow }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Prepare workspace
-        uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          setup-python: 'false'
-          setup-uv: 'false'
-
-      - name: Detect affected CI scopes
-        id: detect
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          detect_target() {
-            local target_name="$1"
-            local output_name="$2"
-            local projects
-            projects="$(pnpm exec nx show projects --affected --with-target="$target_name")"
-
-            if [ -n "$projects" ]; then
-              printf -v "$output_name" '%s' true
-              printf 'Affected projects with %s:\n%s\n' "$target_name" "$projects"
-            fi
-          }
-
-          has_smoke=false
-          has_integration=false
-          has_ipc=false
-          has_main=false
-          has_web_flow=false
-
-          detect_target "test:smoke" has_smoke
-          detect_target "test:integration" has_integration
-          detect_target "test:ipc" has_ipc
-          detect_target "test:main" has_main
-
-          affected_projects="$(pnpm exec nx show projects --affected)"
-          if grep -Eq '^(web|api|ai-service)$' <<< "$affected_projects"; then
-            has_web_flow=true
-            echo "Web Flow affected through one or more of: web, api, ai-service"
-          else
-            echo "Web Flow is not affected."
-          fi
-
-          echo "has_smoke=$has_smoke" >> "$GITHUB_OUTPUT"
-          echo "has_integration=$has_integration" >> "$GITHUB_OUTPUT"
-          echo "has_ipc=$has_ipc" >> "$GITHUB_OUTPUT"
-          echo "has_main=$has_main" >> "$GITHUB_OUTPUT"
-          echo "has_web_flow=$has_web_flow" >> "$GITHUB_OUTPUT"
-
-  boundary-smoke:
-    name: Boundary Smoke
-    needs: detect-ci-scope
-    if: needs.detect-ci-scope.outputs.has_smoke == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    env:
-      DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
-      JWT_SECRET: test-jwt-secret-not-for-production-use
-      TZ: UTC
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Prepare workspace
-        uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          setup-python: 'false'
-          setup-uv: 'false'
-
-      - name: Run affected smoke tests
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - name: Calculate versioned scope once
+        id: scope
         env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t test:smoke --parallel=2 --outputStyle=static
+          NX_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          NX_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          SCOPE_OUTPUT: scope/test-scope-v1.json
+        run: node ./tools/test-system-v2/lib/scope-detector.mjs
+      - uses: actions/upload-artifact@v6
+        with:
+          name: test-scope-v1
+          path: scope/test-scope-v1.json
+          retention-days: 14
 
-  boundary-integration:
-    name: Boundary Integration
-    needs: detect-ci-scope
-    if: needs.detect-ci-scope.outputs.has_integration == 'true'
+  governance:
+    name: Governance
+    needs: scope-detector
+    if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: node ./tools/test-system-v2/inventory.mjs --check
+      - run: node ./tools/test/test-target-governance.mjs --check
+      - run: pnpm exec nx run memoflow:governance-check
 
-    env:
-      DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
-      JWT_SECRET: test-jwt-secret-not-for-production-use
-      TZ: UTC
+  governance-oracle:
+    name: Governance Oracle
+    needs: [scope-detector, governance]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Aggregate Governance child
+        env:
+          ORACLE_INPUT: >-
+            {"detector":"${{ needs.scope-detector.result }}","enabled":["governance"],"children":{"governance":"${{ needs.governance.result }}"}}
+        run: node ./tools/test-system-v2/oracle.mjs
 
+  static-analysis:
+    name: Static Analysis
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: pnpm exec nx affected -t lint --parallel=3 --exclude=memoflow --outputStyle=static
+
+  unit:
+    name: Unit Tests
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_unit == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test --parallel=3 --exclude=memoflow --outputStyle=static
+        env: { TEST_REPORT_NAME: unit }
+
+  typecheck:
+    name: Typecheck
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t typecheck --parallel=3 --outputStyle=static
+        env: { TEST_REPORT_NAME: typecheck }
+
+  build:
+    name: Build
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client' --outputStyle=static
+        env: { TEST_REPORT_NAME: build }
+
+  validate-oracle:
+    name: Validate Oracle
+    needs: [scope-detector, static-analysis, unit, typecheck, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Aggregate Validate children
+        env:
+          ORACLE_INPUT: >-
+            {"detector":"${{ needs.scope-detector.result }}","enabled":{"static":true,"unit":"${{ needs.scope-detector.outputs.has_unit }}","typecheck":true,"build":true},"children":{"static":"${{ needs.static-analysis.result }}","unit":"${{ needs.unit.result }}","typecheck":"${{ needs.typecheck.result }}","build":"${{ needs.build.result }}"}}
+        run: node ./tools/test-system-v2/oracle.mjs
+
+  boundary:
+    name: Boundary Children
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_boundary == 'true'
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: pgvector/pgvector:0.8.5-pg18
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_pass
-          POSTGRES_DB: memoflow_test
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd "pg_isready -U test_user -d memoflow_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Prepare workspace
-        uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          setup-python: 'false'
-          setup-uv: 'false'
-
-      - name: Push Prisma schema to test database
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run database:prisma-push
-
-      - name: Run affected integration tests
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t test:integration --parallel=1 --outputStyle=static
-
-  boundary-ipc:
-    name: Boundary IPC
-    needs: detect-ci-scope
-    if: needs.detect-ci-scope.outputs.has_ipc == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+        env: { POSTGRES_USER: test_user, POSTGRES_PASSWORD: test_pass, POSTGRES_DB: memoflow_test }
+        ports: ['5433:5432']
+        options: --health-cmd "pg_isready -U test_user -d memoflow_test" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
+      DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
       JWT_SECRET: test-jwt-secret-not-for-production-use
       TZ: UTC
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: pnpm exec nx run database:prisma-push
+      - name: Desktop IPC boundary
+        if: needs.scope-detector.outputs.has_desktop_boundary == 'true'
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run desktop:test:ipc
+        env: { TEST_REPORT_NAME: desktop-ipc }
+      - name: Desktop main boundary
+        if: needs.scope-detector.outputs.has_desktop_boundary == 'true'
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run desktop:test:main
+        env: { TEST_REPORT_NAME: desktop-main }
+      - name: Smoke boundary
+        if: needs.scope-detector.outputs.has_smoke == 'true'
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:smoke --parallel=2 --outputStyle=static
+        env: { TEST_REPORT_NAME: smoke }
 
-      - name: Prepare workspace
-        uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          setup-python: 'false'
-          setup-uv: 'false'
-
-      - name: Run affected IPC tests
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t test:ipc --parallel=1 --outputStyle=static
-
-  boundary-main:
-    name: Boundary Main Process
-    needs: detect-ci-scope
-    if: needs.detect-ci-scope.outputs.has_main == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    env:
-      JWT_SECRET: test-jwt-secret-not-for-production-use
-      TZ: UTC
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Prepare workspace
-        uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          setup-python: 'false'
-          setup-uv: 'false'
-
-      - name: Run affected main-process tests
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t test:main --parallel=1 --outputStyle=static
-
-  boundary-tests:
-    name: Boundary Tests
+  boundary-oracle:
+    name: Boundary Oracle
+    needs: [scope-detector, boundary]
     if: always()
-    needs:
-      - detect-ci-scope
-      - boundary-smoke
-      - boundary-integration
-      - boundary-ipc
-      - boundary-main
     runs-on: ubuntu-latest
-    timeout-minutes: 2
-
     steps:
-      - name: Verify affected boundary jobs passed
+      - uses: actions/checkout@v6
+      - name: Aggregate Boundary children
         env:
-          DETECT_RESULT: ${{ needs.detect-ci-scope.result }}
-          SMOKE_ENABLED: ${{ needs.detect-ci-scope.outputs.has_smoke }}
-          SMOKE_RESULT: ${{ needs.boundary-smoke.result }}
-          INTEGRATION_ENABLED: ${{ needs.detect-ci-scope.outputs.has_integration }}
-          INTEGRATION_RESULT: ${{ needs.boundary-integration.result }}
-          IPC_ENABLED: ${{ needs.detect-ci-scope.outputs.has_ipc }}
-          IPC_RESULT: ${{ needs.boundary-ipc.result }}
-          MAIN_ENABLED: ${{ needs.detect-ci-scope.outputs.has_main }}
-          MAIN_RESULT: ${{ needs.boundary-main.result }}
-        shell: bash
-        run: |
-          set -euo pipefail
+          ORACLE_INPUT: >-
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_boundary == 'true' && '["boundary"]' || '[]' }},"children":{"boundary":"${{ needs.boundary.result }}"}}
+        run: node ./tools/test-system-v2/oracle.mjs
 
-          if [ "$DETECT_RESULT" != "success" ]; then
-            echo "CI scope detection did not pass: $DETECT_RESULT"
-            exit 1
-          fi
+  integration:
+    name: Integration Children
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_integration == 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.5-pg18
+        env: { POSTGRES_USER: test_user, POSTGRES_PASSWORD: test_pass, POSTGRES_DB: memoflow_test }
+        ports: ['5433:5432']
+        options: --health-cmd "pg_isready -U test_user -d memoflow_test" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
+      JWT_SECRET: test-jwt-secret-not-for-production-use
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: pnpm exec nx run database:prisma-push
+      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:integration --parallel=1 --outputStyle=static
+        env: { TEST_REPORT_NAME: integration }
 
-          failures=0
-          verify_boundary() {
-            local label="$1"
-            local enabled="$2"
-            local result="$3"
-
-            if [ "$enabled" = "true" ]; then
-              if [ "$result" != "success" ]; then
-                echo "$label was affected but did not pass: $result"
-                failures=$((failures + 1))
-              else
-                echo "$label passed."
-              fi
-            elif [ "$result" = "skipped" ]; then
-              echo "$label was not affected; skipped."
-            else
-              echo "$label was not affected but returned an unexpected result: $result"
-              failures=$((failures + 1))
-            fi
-          }
-
-          verify_boundary "Smoke" "$SMOKE_ENABLED" "$SMOKE_RESULT"
-          verify_boundary "Integration" "$INTEGRATION_ENABLED" "$INTEGRATION_RESULT"
-          verify_boundary "IPC" "$IPC_ENABLED" "$IPC_RESULT"
-          verify_boundary "Main process" "$MAIN_ENABLED" "$MAIN_RESULT"
-
-          if [ "$failures" -gt 0 ]; then
-            exit 1
-          fi
-
-          echo "All affected Boundary jobs passed."
+  integration-oracle:
+    name: Integration Oracle
+    needs: [scope-detector, integration]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Aggregate Integration children
+        env:
+          ORACLE_INPUT: >-
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_integration == 'true' && '["integration"]' || '[]' }},"children":{"integration":"${{ needs.integration.result }}"}}
+        run: node ./tools/test-system-v2/oracle.mjs
 
   web-flow-shard:
     name: Web Flow Shard (${{ matrix.shard }})
-    needs: detect-ci-scope
-    if: needs.detect-ci-scope.outputs.has_web_flow == 'true'
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_web_flow == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: ['1/4', '2/4', '3/4', '4/4']
-
+    strategy: { fail-fast: false, matrix: { shard: ['1/4', '2/4', '3/4', '4/4'] } }
     env:
       DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
       JWT_SECRET: test-jwt-secret-for-e2e-testing-purposes
       TZ: UTC
-
     services:
       postgres:
         image: pgvector/pgvector:0.8.5-pg18
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_pass
-          POSTGRES_DB: memoflow_test
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd "pg_isready -U test_user -d memoflow_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
+        env: { POSTGRES_USER: test_user, POSTGRES_PASSWORD: test_pass, POSTGRES_DB: memoflow_test }
+        ports: ['5433:5432']
+        options: --health-cmd "pg_isready -U test_user -d memoflow_test" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}' }
+      - run: pnpm exec nx run database:prisma-push
+      - run: pnpm exec playwright install chromium
+      - run: pnpm nx build api
+      - run: node ./tools/test-system-v2/run-command.mjs -- node ./tools/test-system-v2/run-web-shard.mjs ${{ matrix.shard }}
+        env:
+          TEST_REPORT_NAME: web-flow-${{ strategy.job-index }}
+      - uses: actions/upload-artifact@v6
+        if: always()
         with:
-          fetch-depth: 0
-
-      - name: Prepare workspace
-        uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Push Prisma schema to test database
-        run: pnpm exec nx run database:prisma-push
-
-      - name: Install Playwright browsers
-        # GitHub's Ubuntu image already provides Chromium runtime libraries. Avoid
-        # apt mirror latency from reinstalling optional font packages in every shard.
-        run: pnpm exec playwright install chromium
-
-      - name: Build API for E2E
-        run: pnpm nx build api
-
-      - name: Run web flow oracle
-        run: pnpm nx run web:e2e -- --shard=${{ matrix.shard }}
-
-      - name: Upload failed web flow evidence
-        if: failure()
+          name: web-flow-${{ strategy.job-index }}-results
+          path: apps/web/test-results/results.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - if: failure()
         uses: actions/upload-artifact@v6
         with:
           name: web-flow-${{ strategy.job-index }}-failure
@@ -410,41 +260,65 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  web-flow:
+  web-flow-oracle:
     name: Web Flow Oracle
+    needs: [scope-detector, web-flow-shard]
     if: always()
-    needs:
-      - detect-ci-scope
-      - web-flow-shard
     runs-on: ubuntu-latest
-    timeout-minutes: 2
-
     steps:
-      - name: Verify every web flow shard passed
+      - uses: actions/checkout@v6
+      - name: Aggregate Web Flow shards
         env:
-          DETECT_RESULT: ${{ needs.detect-ci-scope.result }}
-          WEB_FLOW_ENABLED: ${{ needs.detect-ci-scope.outputs.has_web_flow }}
-          WEB_FLOW_SHARDS_RESULT: ${{ needs.web-flow-shard.result }}
-        shell: bash
-        run: |
-          if [ "$DETECT_RESULT" != "success" ]; then
-            echo "CI scope detection did not pass: $DETECT_RESULT"
-            exit 1
-          fi
+          ORACLE_INPUT: >-
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_web_flow == 'true' && '["web"]' || '[]' }},"children":{"web":"${{ needs.web-flow-shard.result }}"}}
+        run: node ./tools/test-system-v2/oracle.mjs
 
-          if [ "$WEB_FLOW_ENABLED" != "true" ]; then
-            if [ "$WEB_FLOW_SHARDS_RESULT" != "skipped" ]; then
-              echo "Web Flow was not affected but returned an unexpected result: $WEB_FLOW_SHARDS_RESULT"
-              exit 1
-            fi
+  coverage:
+    name: Affected Coverage
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_coverage == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:coverage --parallel=2 --outputStyle=static
+        env: { TEST_REPORT_NAME: coverage }
 
-            echo "Web Flow was not affected; shards skipped."
-            exit 0
-          fi
+  coverage-oracle:
+    name: Coverage Oracle
+    needs: [scope-detector, coverage]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Aggregate Coverage children
+        env:
+          ORACLE_INPUT: >-
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_coverage == 'true' && '["coverage"]' || '[]' }},"children":{"coverage":"${{ needs.coverage.result }}"}}
+        run: node ./tools/test-system-v2/oracle.mjs
 
-          if [ "$WEB_FLOW_SHARDS_RESULT" != "success" ]; then
-            echo "One or more Web Flow shards did not pass: $WEB_FLOW_SHARDS_RESULT"
-            exit 1
-          fi
+  performance:
+    name: Performance Budget
+    needs: scope-detector
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_perf == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:perf --parallel=1 --outputStyle=static
+        env: { TEST_REPORT_NAME: performance }
 
-          echo "All Web Flow shards passed."
+  performance-oracle:
+    name: Performance Oracle
+    needs: [scope-detector, performance]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Aggregate Performance children
+        env:
+          ORACLE_INPUT: >-
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_perf == 'true' && '["performance"]' || '[]' }},"children":{"performance":"${{ needs.performance.result }}"}}
+        run: node ./tools/test-system-v2/oracle.mjs

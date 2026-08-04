@@ -6,7 +6,6 @@ const benchmarkIncludes = [
   'src/server/application/__tests__/benchmarks/sort-algorithm.bench.ts',
   'src/server/application/__tests__/benchmarks/service-sorting.bench.ts',
   'src/server/application/__tests__/benchmarks/stability.bench.ts',
-  'src/server/application/__tests__/benchmarks/http-endpoint.bench.ts',
 ];
 
 const sharedConfig = createSharedConfig({

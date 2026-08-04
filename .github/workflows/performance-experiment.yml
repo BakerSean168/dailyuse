@@ -1,0 +1,34 @@
+name: Nightly Performance Experiment
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  experiment:
+    name: Performance Experiment
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: '24', package-manager-cache: false }
+      - run: corepack enable && corepack prepare pnpm@10.15.1 --activate
+      - run: pnpm install --frozen-lockfile --reporter=append-only
+      - name: Run memory and stability experiment with explicit GC
+        env:
+          { NODE_OPTIONS: '--require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs' }
+        run: pnpm exec nx run task:test:perf:experiment
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          {
+            name: performance-experiment,
+            path: reports/test-system-v2,
+            if-no-files-found: ignore,
+            retention-days: 14,
+          }

@@ -23,7 +23,7 @@ pnpm nx run desktop:test:watch
 ```bash
 pnpm test:integration
 pnpm nx run task:test:integration
-pnpm nx run task:test:bench
+pnpm nx run task:test:perf
 pnpm nx run api:test:smoke
 pnpm nx run web:e2e
 pnpm nx run web:e2e:ui
@@ -37,13 +37,14 @@ pnpm nx run desktop:test:main
 
 - `pnpm test:integration`：顺序执行 `task`、`goal`、`schedule`、`reminder` 的 Prisma 集成测试，共享一套本地测试库
 - `task:test:integration`：数据库、Prisma、事务、仓储实现改动
-- `task:test:bench`：性能回归排查或性能优化验证
+- `task:test:perf`：确定性性能预算；真实 GC、长采样和环境实验由 nightly workflow 承担
 - `api:test:smoke`：HTTP 路由、middleware、序列化、状态码改动
 - `web:e2e`：核心浏览器主流程回归（登录、注册、任务模板、目标、提醒、通知、仪表盘、设置持久化）
 - `web:e2e:sync`：同步链路、跨端回归
 - `web:e2e:desktop-screenshots`：拉起 Electron desktop，批量生成论文截图
 - `desktop:test:ipc`：IPC handler、preload 暴露面改动
 - `desktop:test:main`：Electron main 进程逻辑改动
+- `desktop:test:boundary`：在同一准备过程内执行 IPC 和 main 边界
 
 首次在本机运行 Web E2E 前，先安装 Playwright 浏览器二进制：
 
@@ -107,7 +108,7 @@ docker compose -f docker-compose.yml --profile test up -d postgres-test
 ## CI 对应
 
 - 本地与 CI 使用同一组 Nx target。
-- CI 由 `Detect CI Scope` 计算 affected 范围，并行运行 smoke、integration、IPC、main-process Boundary jobs；稳定的 `Boundary Tests` check 只负责聚合结果。
+- CI 由 `Scope Detector` 一次计算 versioned affected manifest；稳定的 `Boundary Oracle`、`Integration Oracle`、`Web Flow Oracle` 等 check 只负责聚合 child 结果。
 - CI 仅在 `Boundary Integration` job 中拉起测试数据库；本地则依赖 Docker 可访问并允许 `integration-global-setup.ts` 自动启动 `postgres-test`。
 - Web E2E 在四个独立 runner 中分片执行，并由稳定的 `Web Flow Oracle` check 聚合结果。
 - `CI=true` 只会改变 reporter、重试、bail 等运行时行为，不应引入另一套文档命令。

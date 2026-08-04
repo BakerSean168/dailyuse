@@ -4,16 +4,15 @@ tags:
   - architecture
   - ci
   - target-state
-description: MemoFlow Test System V2 的目标架构、执行契约、质量门禁与验收指标
+description: MemoFlow Test System V2 的当前架构、执行契约、质量门禁与验收指标
 created: 2026-08-04T00:00:00+08:00
 updated: 2026-08-04T00:00:00+08:00
 ---
 
-# Test System V2 目标设计
+# Test System V2 当前架构
 
-> 状态：目标架构，尚未实施。当前命令和 CI 行为仍以项目 `project.json`、测试配置和
-> [CI 测试与反馈性能](./ci-validation.md) 为准。实施进度见
-> [active refactor plan](../plan/active/2026-08-04-test-system-v2-refactor.md)。
+> 状态：已实施。代码、项目 target、`.github/workflows/ci.yml` 和
+> `.github/rulesets/main.json` 是执行真源；本文件只记录稳定契约。
 
 ## 1. 设计目标
 
@@ -97,9 +96,10 @@ apps/desktop/src/main/**/*.main.spec.ts      -> desktop:test:main
 desktop:test:boundary                        -> 编排 ipc + main，不重复 unit
 ```
 
-现有 46 个 Desktop 测试文件中，9 个 `__tests__` 文件同时被 `test:ipc` 和 `test:main` 收集，且
+此前 46 个 Desktop 测试文件中，9 个 `__tests__` 文件曾同时被 `test:ipc` 和 `test:main` 收集，且
 常规 `desktop:test` 还会再次收集它们。V2 必须将这 9 个文件按真实职责重新分类；IPC 测试不能再
-包含 database、AI、utils 和 bootstrap 的普通测试。
+包含 database、AI、utils 和 bootstrap 的普通测试。当前收集关系由 inventory 生成并校验，IPC/Main
+使用互斥显式 include，默认 `desktop:test` 排除边界文件。
 
 Desktop 的 Vitest 配置应共享最小 base config，但各 suite 只声明自己的 include、exclude、setup 和
 coverage 例外。Electron mock surface 由需要它的边界 suite 显式拥有。

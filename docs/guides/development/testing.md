@@ -31,7 +31,7 @@ pnpm nx run desktop:test:watch
 - 本机 e2e 前建议：pnpm runtime:preflight:e2e（pnpm e2e 已内置 preflight）
 - 同步回归：`pnpm nx run web:e2e:sync`
 - Electron IPC / main：`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main`
-- 性能验证：`pnpm nx run task:test:bench`
+- 性能验证：`pnpm nx run task:test:perf`
 
 ## 文档入口
 
@@ -48,4 +48,3 @@ pnpm nx run desktop:test:watch
 - 共享 `postgres-test` 的 integration suite 必须顺序运行；默认使用 `pnpm test:integration`。
 - 具体实现理由应写在测试配置、setup、fixture 和 helper 注释中。
 - 如果文档与当前 `project.json`、测试配置或目录结构冲突，以代码为准。
-

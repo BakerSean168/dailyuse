@@ -66,9 +66,7 @@ export async function benchmark(
 
   const avg = times.reduce((a, b) => a + b, 0) / times.length;
   const median = times[Math.floor(times.length / 2)];
-  const stdDev = Math.sqrt(
-    times.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / times.length
-  );
+  const stdDev = Math.sqrt(times.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / times.length);
 
   return {
     name,
@@ -91,10 +89,7 @@ export async function benchmark(
  * @param seed Random seed for reproducibility
  * @returns Array of mock BenchmarkMockTask objects for testing
  */
-export function createMockTasks(
-  count: number,
-  seed: number = 42,
-): BenchmarkMockTask[] {
+export function createMockTasks(count: number, seed: number = 42): BenchmarkMockTask[] {
   const tasks: BenchmarkMockTask[] = [];
   const rng = seededRandom(seed);
 
@@ -126,7 +121,7 @@ export function createMockTasks(
       status: 'ACTIVE',
       createdAt,
       updatedAt: createdAt,
-      priority: Math.random() * 100, // Random priority for unsorted data
+      priority: rng() * 100,
     });
   }
 
@@ -184,10 +179,7 @@ export function compareResults(
   current: BenchmarkResult,
   regressionThreshold: number = 10,
 ) {
-  const percentChange = (
-    ((current.avgMs - baseline.avgMs) / baseline.avgMs) *
-    100
-  ).toFixed(2);
+  const percentChange = (((current.avgMs - baseline.avgMs) / baseline.avgMs) * 100).toFixed(2);
   const isRegression = parseFloat(percentChange) > regressionThreshold;
 
   return {
@@ -206,9 +198,7 @@ export function compareResults(
  */
 export function calculateVariance(times: number[]): number {
   const avg = times.reduce((a, b) => a + b, 0) / times.length;
-  const stdDev = Math.sqrt(
-    times.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / times.length
-  );
+  const stdDev = Math.sqrt(times.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / times.length);
   return (stdDev / avg) * 100;
 }
 
@@ -216,10 +206,7 @@ export function calculateVariance(times: number[]): number {
  * Check for outliers in timing data
  * Outlier = value > threshold * median
  */
-export function findOutliers(
-  times: number[],
-  threshold: number = 1.5,
-): number[] {
+export function findOutliers(times: number[], threshold: number = 1.5): number[] {
   const sorted = [...times].sort((a, b) => a - b);
   const median = sorted[Math.floor(sorted.length / 2)];
   return times.filter((t) => t > median * threshold);

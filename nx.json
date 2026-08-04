@@ -52,7 +52,7 @@
       "inputs": ["default", "^production"],
       "cache": true
     },
-    "test:bench": {
+    "test:perf": {
       "inputs": ["default", "^production"],
       "cache": false
     },

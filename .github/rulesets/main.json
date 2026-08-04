@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/github-ruleset.json",
+  "name": "main quality gates",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "required_status_checks": [
+          { "context": "Governance Oracle", "integration_id": 15368 },
+          { "context": "Validate Oracle", "integration_id": 15368 },
+          { "context": "Boundary Oracle", "integration_id": 15368 },
+          { "context": "Integration Oracle", "integration_id": 15368 },
+          { "context": "Web Flow Oracle", "integration_id": 15368 },
+          { "context": "Coverage Oracle", "integration_id": 15368 },
+          { "context": "Performance Oracle", "integration_id": 15368 }
+        ],
+        "strict_required_status_checks_policy": true,
+        "do_not_enforce_on_create": false
+      }
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true
+      }
+    }
+  ]
+}

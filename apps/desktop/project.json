@@ -152,6 +152,15 @@
         "cwd": "apps/desktop"
       }
     },
+    "test:boundary": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "parallelism": false,
+      "options": {
+        "command": "node ../../tools/test-system-v2/run-boundary.mjs",
+        "cwd": "apps/desktop"
+      }
+    },
     "test:live-github": {
       "executor": "nx:run-commands",
       "cache": false,

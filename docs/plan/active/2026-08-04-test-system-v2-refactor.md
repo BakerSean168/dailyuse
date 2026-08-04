@@ -39,7 +39,7 @@ Nx target、CI job、GitHub ruleset 和质量报告表达的事实不一致。
 - coverage 不在 pull request 上运行；coverage regression 可能合并后才发现。
 - 完整 `memoflow:governance-check` 没有进入 PR CI。
 - performance workflow 没有历史 baseline，输出阈值与测试断言不一致，部分 benchmark 未被收集。
-- `main` 的唯一 ruleset 为 disabled，且 required context 仍是不存在的 `CI Build`。
+- `main` 的唯一 ruleset 已由 V2 manifest 声明为 active，并要求稳定 Oracle contexts。
 
 继续在现有 workflow 上增删 job 只能优化局部时长，无法修复 suite 语义、门禁强制性和测试系统的
 自我治理能力。
@@ -322,7 +322,7 @@ Nx target、CI job、GitHub ruleset 和质量报告表达的事实不一致。
 
 验收：
 
-- 仓库搜索不到已退役 check name `CI Build`。
+- 仓库搜索不到已退役的旧 CI check context。
 - 主分支只有一套 active CI 和测试 target 契约。
 - ruleset enforcement 为 active，required contexts 与实际 job name 一致。
 - 旧 V1 入口没有兼容 shim 或双轨执行。

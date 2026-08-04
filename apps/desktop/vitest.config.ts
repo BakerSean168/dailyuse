@@ -4,6 +4,7 @@ import { createSharedConfig } from '../../vitest.shared';
 import {
   createAppVueSourceAliasEntries,
   createWorkspaceSourceAliasEntries,
+  createUiVueSourceAliasEntries,
 } from '../../vite.workspace-aliases';
 
 // Desktop renderer tests import many workspace packages through their source
@@ -37,6 +38,8 @@ const desktopTestWorkspaceEntries = [
   ['@memoflow/ai/electron', 'packages/ai/src/electron/index.ts'],
   ['@memoflow/dashboard', 'packages/dashboard/src/index.ts'],
   ['@memoflow/ipc-client', 'packages/ipc-client/src/index.ts'],
+  ['@memoflow/powersync-schema', 'packages/powersync-schema/src/index.ts'],
+  ['@memoflow/cloud-auth', 'packages/cloud-auth/src/index.ts'],
 ] as const;
 const sharedConfig = createSharedConfig({
   projectRoot: __dirname,
@@ -46,6 +49,7 @@ const sharedConfig = createSharedConfig({
   aliasEntries: [
     { find: /^electron$/, replacement: './test-support/electron.stub.ts' },
     ...createAppVueSourceAliasEntries(__dirname + '/../..'),
+    ...createUiVueSourceAliasEntries(__dirname + '/../..'),
     ...createWorkspaceSourceAliasEntries(__dirname + '/../..', desktopTestWorkspaceEntries),
   ],
 }) as Record<string, unknown>;
@@ -67,6 +71,16 @@ export default defineConfig({
     ...(sharedConfig.test ?? {}),
     name: 'desktop',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    // Boundary files have one primary owner and are run by the boundary target.
+    exclude: [
+      'src/main/ipc/**/*.{test,spec}.{ts,tsx}',
+      'src/main/modules/auto-update/ipc/**/*.{test,spec}.{ts,tsx}',
+      'src/main/**/*-ipc.{test,spec}.{ts,tsx}',
+      'src/main/**/*ipc*.{test,spec}.{ts,tsx}',
+      'src/main/database/**/*.{test,spec}.{ts,tsx}',
+      'src/main/__tests__/bootstrap.{test,spec}.{ts,tsx}',
+      'src/main/lifecycle/**/*.{test,spec}.{ts,tsx}',
+    ],
     environment: 'node',
   },
 });

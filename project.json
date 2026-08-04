@@ -44,7 +44,7 @@
     "governance-check": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": ["governance-tools:test"],
+      "dependsOn": ["governance-tools:test", "test-system-v2:test", "test-system-v2:test:governance", "test-system-v2:ruleset"],
       "inputs": [
         "{workspaceRoot}/AGENT.md",
         "{workspaceRoot}/AGENTS.md",
