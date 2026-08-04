@@ -180,6 +180,23 @@ describe('goal route contracts', () => {
     expect(searchSchema.safeParse({ q: 'contracts' }).success).toBe(false);
   });
 
+  it('coerces the delete expectedVersion from an HTTP query string', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerGoalCrudRoutes(
+      createGoalControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const deleteSchema = getQuerySchema(
+      getRegisteredRoute(registry, 'delete', '/api/v1/goals/{id}'),
+    );
+
+    expect(deleteSchema.safeParse({ expectedVersion: '1' }).success).toBe(true);
+    expect(deleteSchema.safeParse({ expectedVersion: 'invalid' }).success).toBe(false);
+  });
+
   it('registers focus mode routes before the dynamic goal id route', () => {
     const router = registerGoalRoutes(
       createGoalUseCasesStub(),

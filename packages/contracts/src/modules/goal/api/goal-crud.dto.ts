@@ -113,7 +113,7 @@ export type UpdateGoalReq = z.infer<typeof UpdateGoalSchema>;
 export type UpdateGoalRes = import('./response-schemas').GoalMutationReceipt;
 
 export const GoalVersionCommandSchema = z
-  .object({ expectedVersion: z.number().int().min(1) })
+  .object({ expectedVersion: z.coerce.number().int().min(1) })
   .strict();
 export type GoalVersionCommandReq = z.infer<typeof GoalVersionCommandSchema>;
 

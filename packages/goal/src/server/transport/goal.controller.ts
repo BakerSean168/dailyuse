@@ -28,6 +28,7 @@ import {
   UpdateGoalReviewSchema,
   ActivateFocusModeSchema,
   ExtendFocusModeSchema,
+  GoalVersionCommandSchema,
 } from '@memoflow/contracts/goal';
 import type {
   GoalSystemView,
@@ -175,10 +176,18 @@ export class GoalController {
 
   async delete(
     id: string,
-    expectedVersion: number,
+    expectedVersion: unknown,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    return this.useCases.deleteGoal(id, cx.identityId, expectedVersion);
+    const parsed = GoalVersionCommandSchema.safeParse({ expectedVersion });
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.deleteGoal(id, cx.identityId, parsed.data.expectedVersion);
   }
 
   async archiveExpired(cx: ExecutionContext): Promise<Result<unknown>> {
