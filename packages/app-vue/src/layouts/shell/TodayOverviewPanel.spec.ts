@@ -3,7 +3,7 @@
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { defineComponent, h, nextTick } from 'vue';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import TodayOverviewPanel from './TodayOverviewPanel.vue';
 
 const dashboardMocks = vi.hoisted(() => ({
@@ -28,6 +28,11 @@ const DailyTodoWidgetStub = defineComponent({
     return () =>
       h('div', { 'data-testid': 'daily-todo-widget' }, [
         h('button', { onClick: () => emit('view-all') }, 'tasks'),
+        h(
+          'button',
+          { 'data-testid': 'daily-todo-complete', onClick: () => emit('completed') },
+          'complete',
+        ),
       ]);
   },
 });
@@ -91,6 +96,10 @@ describe('TodayOverviewPanel', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('loads dashboard data only when the Home surface becomes active', async () => {
     const wrapper = mountPanel(false);
     expect(dashboardMocks.fetchDashboard).not.toHaveBeenCalled();
@@ -120,5 +129,17 @@ describe('TodayOverviewPanel', () => {
       ['goal', '/goals'],
       ['goal', '/goals/goal-1'],
     ]);
+  });
+
+  it('reconciles the dashboard projection after task completion', async () => {
+    vi.useFakeTimers();
+    const wrapper = mountPanel(true);
+    await nextTick();
+    dashboardMocks.fetchDashboard.mockClear();
+
+    await wrapper.get('[data-testid="daily-todo-complete"]').trigger('click');
+    await vi.runAllTimersAsync();
+
+    expect(dashboardMocks.fetchDashboard).toHaveBeenCalledTimes(5);
   });
 });
