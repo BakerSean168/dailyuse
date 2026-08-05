@@ -155,6 +155,8 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
 - `Delivery Observation` 对 manifest、lane evidence 和 run summary 使用 fail-closed 语义；缺失证据不会
   通过条件跳过。`run-fault-injection.mjs` 覆盖 detector、取消、manifest、artifact、runtime closure 和
   provenance/权限失败，`compare-timings.mjs` 只接受同 lane 集合且至少五次 comparable run。
+- GitHub Actions adapter 通过 `collect-github-run-metrics.mjs` 读取 run/jobs 元数据，向 Observation 提供
+  真实 `wallClockMs` 和 `runnerMinutes`；API 分页不完整、时间字段非法或权限不足均失败，不会回退为伪造的 0。
 
 最终切换 PR [#210](https://github.com/BakerSean168/memoflow/pull/210) 的 fresh-run
 [Actions run 31005675536](https://github.com/BakerSean168/memoflow/actions/runs/31005675536) 绑定 commit

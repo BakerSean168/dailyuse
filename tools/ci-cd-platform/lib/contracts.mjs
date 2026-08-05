@@ -282,6 +282,19 @@ export function validateRunSummary(summary) {
   );
   assert(Array.isArray(summary.lanes), 'lanes must be an array');
   assert(summary.timing && typeof summary.timing === 'object', 'timing is required');
+  for (const field of ['setupMs', 'executionMs', 'longestLaneMs']) {
+    assert(
+      Number.isFinite(summary.timing[field]) && summary.timing[field] >= 0,
+      `run summary timing.${field} must be non-negative`,
+    );
+  }
+  for (const field of ['wallClockMs', 'runnerMinutes']) {
+    assert(
+      summary.timing[field] === null ||
+        (Number.isFinite(summary.timing[field]) && summary.timing[field] >= 0),
+      `run summary timing.${field} must be non-negative or null`,
+    );
+  }
   assert(summary.provenance && typeof summary.provenance === 'object', 'provenance is required');
   assertSelfDigest(summary, 'run summary');
   return summary;

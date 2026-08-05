@@ -59,8 +59,17 @@ test('run observation detects missing enabled lanes and preserves provenance', a
   laneSummary.digest = digest(laneSummary);
   await writeFile(path.join(evidence, 'governance-summary.json'), JSON.stringify(laneSummary));
   const output = path.join(root, 'run-summary.json');
-  const summary = await observeRun({ manifest, evidenceDir: path.join(root, 'evidence'), output });
+  const summary = await observeRun({
+    manifest,
+    evidenceDir: path.join(root, 'evidence'),
+    output,
+    startedAt: '2026-08-05T00:00:00Z',
+    runnerMinutes: '1.25',
+    now: Date.parse('2026-08-05T00:02:00Z'),
+  });
   assert.equal(summary.status, 'incomplete');
   assert.deepEqual(summary.missingLanes, ['validate']);
+  assert.equal(summary.timing.wallClockMs, 120_000);
+  assert.equal(summary.timing.runnerMinutes, 1.25);
   assert.equal(JSON.parse(await readFile(output, 'utf8')).manifestDigest, manifest.digest);
 });

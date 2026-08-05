@@ -6,6 +6,7 @@ import {
   validateDeliveryManifest,
   validateLaneInput,
   validateLaneResult,
+  validateRunSummary,
 } from '../lib/contracts.mjs';
 
 const scope = {
@@ -130,4 +131,29 @@ test('accepts a complete lane input and result', () => {
   };
   result.digest = digest(result);
   validateLaneResult(result);
+});
+
+test('run summary timing rejects invalid measurements', () => {
+  const summary = {
+    kind: 'run-summary-v1',
+    version: 1,
+    commit: 'head',
+    manifestDigest: 'a'.repeat(64),
+    status: 'success',
+    lanes: [],
+    missingLanes: [],
+    timing: {
+      setupMs: 1,
+      executionMs: 2,
+      longestLaneMs: 2,
+      wallClockMs: null,
+      runnerMinutes: null,
+    },
+    provenance: { generator: 'test' },
+  };
+  summary.digest = digest(summary);
+  validateRunSummary(summary);
+  const invalid = { ...summary, timing: { ...summary.timing, setupMs: -1 } };
+  invalid.digest = digest(invalid);
+  assert.throws(() => validateRunSummary(invalid), /timing\.setupMs must be non-negative/);
 });

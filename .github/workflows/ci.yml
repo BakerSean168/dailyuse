@@ -12,6 +12,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   NODE_VERSION: '24'
@@ -506,9 +507,15 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           path: reports/run-evidence
+      - name: Collect GitHub run metrics
+        id: run_metrics
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node ./tools/ci-cd-platform/collect-github-run-metrics.mjs --github-output >> "$GITHUB_OUTPUT"
       - name: Aggregate run summary
         env:
-          DELIVERY_RUN_STARTED_AT: ${{ github.run_started_at }}
+          DELIVERY_RUN_STARTED_AT: ${{ steps.run_metrics.outputs.started_at }}
+          DELIVERY_RUNNER_MINUTES: ${{ steps.run_metrics.outputs.runner_minutes }}
         run: node ./tools/ci-cd-platform/observe-run.mjs --manifest scope/delivery-manifest-v1.json --evidence reports/run-evidence --output reports/ci-cd-platform/run-summary-v1.json
       - name: Upload run summary
         uses: actions/upload-artifact@v6

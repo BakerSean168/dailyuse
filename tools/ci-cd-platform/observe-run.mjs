@@ -26,7 +26,23 @@ async function findJsonFiles(directory) {
   return files.sort();
 }
 
-export async function observeRun({ manifest, evidenceDir, output }) {
+function optionalNonNegativeNumber(value, field) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0) {
+    throw new Error(`${field} must be a non-negative number`);
+  }
+  return number;
+}
+
+export async function observeRun({
+  manifest,
+  evidenceDir,
+  output,
+  startedAt = process.env.DELIVERY_RUN_STARTED_AT,
+  runnerMinutes: runnerMinutesInput = process.env.DELIVERY_RUNNER_MINUTES,
+  now = Date.now(),
+}) {
   validateDeliveryManifest(manifest);
   const summaries = [];
   for (const file of await findJsonFiles(evidenceDir)) {
@@ -54,13 +70,13 @@ export async function observeRun({ manifest, evidenceDir, output }) {
     .map(([lane]) => lane);
   const missing = enabled.filter((lane) => !byLane.has(lane));
   const failures = summaries.filter(({ value }) => value.status !== 'success');
-  const startedAt = process.env.DELIVERY_RUN_STARTED_AT
-    ? Date.parse(process.env.DELIVERY_RUN_STARTED_AT)
-    : Number.NaN;
-  const wallClockMs = Number.isFinite(startedAt) ? Math.max(0, Date.now() - startedAt) : null;
-  const runnerMinutesValue = Number(process.env.DELIVERY_RUNNER_MINUTES);
-  const runnerMinutes =
-    Number.isFinite(runnerMinutesValue) && runnerMinutesValue >= 0 ? runnerMinutesValue : null;
+  const startedAtMs = startedAt ? Date.parse(startedAt) : Number.NaN;
+  if (startedAt && !Number.isFinite(startedAtMs)) {
+    throw new Error('DELIVERY_RUN_STARTED_AT must be an ISO-8601 timestamp');
+  }
+  if (!Number.isFinite(now)) throw new Error('current time must be finite');
+  const wallClockMs = Number.isFinite(startedAtMs) ? Math.max(0, now - startedAtMs) : null;
+  const runnerMinutes = optionalNonNegativeNumber(runnerMinutesInput, 'DELIVERY_RUNNER_MINUTES');
   const summary = {
     kind: 'run-summary-v1',
     version: 1,

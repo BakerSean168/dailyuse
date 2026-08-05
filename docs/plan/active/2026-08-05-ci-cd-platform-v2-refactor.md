@@ -29,21 +29,21 @@ updated: 2026-08-05T12:45:00Z
 本分支已经把平台契约和主流程一次性收敛到以下边界；剩余项目是验证和切换证据，不是再设计一轮
 workflow：
 
-| Work package               | 当前状态                                                        | 证据                                                                                           |
-| -------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| W0 baseline/capacity       | 待 main 运行窗口采集                                            | 至少 5 次 comparable run；当前不伪造 baseline 报告                                             |
-| W1 contracts/schema        | 已实现                                                          | `tools/ci-cd-platform/schemas/`、digest negative tests                                         |
-| W2 workspace/capabilities  | 已实现                                                          | `setup-nx-affected-job`、`workspace-receipt-v1`                                                |
-| W3 control/risk/DAG input  | 已实现                                                          | `generate-delivery-manifest`、`create-lane-input`                                              |
-| W4 immutable artifacts     | 已实现                                                          | artifact registry、content/source digest verifier、API runtime closure、Docker prebuilt checks |
-| W5 lane execution          | 已实现                                                          | lane registry、lane result、stable Oracle workflow                                             |
-| W6 isolation contract      | 已实现/保留真实隔离                                             | boundary/integration/Web 独立 PostgreSQL service 与 lane policy                                |
-| W7 observation/budget data | 已实现                                                          | lane/run summary、fail-closed observation、`compare-timings` P50/P95 comparator                |
-| W8 nightly audit           | 已接入；main scheduled evidence 待执行                          | coverage/performance full workflow 复用同一 manifest/input contract                            |
-| W9 release promotion       | 已实现                                                          | production artifact closure、promotion manifest、verified download                             |
-| W10 governance/security    | 已实现                                                          | ruleset check、最小权限、fail-closed verifier                                                  |
-| W11 shadow/fault injection | 本地矩阵与 PR #210 evidence 已通过；main scheduled audit 待执行 | `run-fault-injection.mjs`、`ci-platform-audit.yml`、22 项平台测试                              |
-| W12 cutover/archive        | PR #210 cutover 已完成；长期指标后归档                          | required context 已同步、旧入口清理和最终运营证据                                              |
+| Work package               | 当前状态                                                        | 证据                                                                                             |
+| -------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| W0 baseline/capacity       | 待 main 运行窗口采集                                            | 至少 5 次 comparable run；当前不伪造 baseline 报告                                               |
+| W1 contracts/schema        | 已实现                                                          | `tools/ci-cd-platform/schemas/`、digest negative tests                                           |
+| W2 workspace/capabilities  | 已实现                                                          | `setup-nx-affected-job`、`workspace-receipt-v1`                                                  |
+| W3 control/risk/DAG input  | 已实现                                                          | `generate-delivery-manifest`、`create-lane-input`                                                |
+| W4 immutable artifacts     | 已实现                                                          | artifact registry、content/source digest verifier、API runtime closure、Docker prebuilt checks   |
+| W5 lane execution          | 已实现                                                          | lane registry、lane result、stable Oracle workflow                                               |
+| W6 isolation contract      | 已实现/保留真实隔离                                             | boundary/integration/Web 独立 PostgreSQL service 与 lane policy                                  |
+| W7 observation/budget data | 已实现                                                          | lane/run summary、GitHub run metrics adapter、fail-closed observation、`compare-timings` P50/P95 |
+| W8 nightly audit           | 已接入；main scheduled evidence 待执行                          | coverage/performance full workflow 复用同一 manifest/input contract                              |
+| W9 release promotion       | 已实现                                                          | production artifact closure、promotion manifest、verified download                               |
+| W10 governance/security    | 已实现                                                          | ruleset check、最小权限、fail-closed verifier                                                    |
+| W11 shadow/fault injection | 本地矩阵与 PR #210 evidence 已通过；main scheduled audit 待执行 | `run-fault-injection.mjs`、`ci-platform-audit.yml`、22 项平台测试                                |
+| W12 cutover/archive        | PR #210 cutover 已完成；长期指标后归档                          | required context 已同步、旧入口清理和最终运营证据                                                |
 
 W11/W12 不会产生第二套实现；它们只验证已经完成的契约，并在证据充分后把本计划归档。
 
@@ -59,8 +59,12 @@ execution 为 `1,890,704 ms`，最长 lane 为 `285,367 ms`；四个 Web shard e
 且 evidence artifact 名称带唯一 `shard-0..3` suffix。
 
 该 fresh-run 证明最终切换 PR 的 manifest、artifact closure、Oracle 和 evidence observation 闭环工作，不证明
-长期 P50/P95 或 runner-minute 预算已经达标。以下旧 run 仅保留作为历史容量参考，不构成当前分支验收：
-历史 run 证据保留在 git history，不作为本分支验收输入。以下数据仅用于解释前一轮实现，不构成当前分支验收：
+长期 P50/P95 或 runner-minute 预算已经达标。此前下载的历史 run summary 由旧 adapter 生成，
+`wallClockMs`/`runnerMinutes` 不完整，因此不作为 comparable timing 输入；修复后的 adapter 从后续 fresh run
+开始建立新的基线，避免把缺失指标当成 0 或伪造数据。
+
+### 历史实现参考（非 comparable timing 输入）
+
 前一轮 PR run [30998745996](https://github.com/BakerSean168/memoflow/actions/runs/30998745996) 绑定
 commit `c17b9c2d26e75198a7365ab8fc5365b8387c363b`，结果为 success。四个 Web shard 均完成
 `api-runtime-closure` 恢复、API/Web/Database artifact digest 校验、数据库初始化和 Playwright；
