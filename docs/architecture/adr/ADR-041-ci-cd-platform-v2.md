@@ -138,8 +138,9 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
 本分支已落地以下实现：
 
 - `delivery-manifest-v1`、`lane-input-v1`、`lane-result-v1`、`lane-summary-v1`、`run-summary-v1`、
-  `workspace-receipt-v1`、`artifact-manifest-v1` 和 `promotion-manifest-v1` 均有生成器、schema 和
-  负向/正向测试；digest 会校验对象内容，而不是只校验格式。
+  `workspace-receipt-v1`、`artifact-manifest-v1`、`promotion-manifest-v1`、`timing-report-v1` 和
+  `fault-injection-report-v1` 均有生成器、schema 和负向/正向测试；digest 会校验对象内容，而不是只
+  校验格式。
 - lane/artifact registry、capability-driven workspace action、artifact closure、Web/production
   source manifest 验证和 run-level observation 已接入 workflow。
 - API runtime dependency closure 会从 workspace manifest 递归计算，只收集 `packages/*/dist`，并在
@@ -147,6 +148,9 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
 - production promotion 强制 `api`、`api-runtime-closure`、`web`、`migrator`、`database`、
   `database-runtime` 六种产物；API prebuilt Docker path 同时检查 API、传递 workspace runtime
   closure、Migrator、Database runtime 和 Database package。
+- `Delivery Observation` 对 manifest、lane evidence 和 run summary 使用 fail-closed 语义；缺失证据不会
+  通过条件跳过。`run-fault-injection.mjs` 覆盖 detector、取消、manifest、artifact、runtime closure 和
+  provenance/权限失败，`compare-timings.mjs` 只接受同 lane 集合且至少五次 comparable run。
 
 最终 head 的完整远端验证已完成：[Actions run 30995540184](https://github.com/BakerSean168/memoflow/actions/runs/30995540184)
 绑定 commit `49775316f599579329959a7c6bcd13c854f3671d`，四个 Web shard 均通过 artifact closure 恢复、

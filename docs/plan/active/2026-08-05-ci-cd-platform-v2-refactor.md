@@ -7,14 +7,14 @@ tags:
   - architecture
 description: CI/CD Platform V2 解耦、可扩展交付平台的一次性重构计划
 created: 2026-08-05T00:00:00Z
-updated: 2026-08-05T10:10:00Z
+updated: 2026-08-05T10:45:00Z
 ---
 
 # CI/CD Platform V2 一次性重构计划
 
 ## 状态与范围
 
-- **计划状态**：Active / Implementation complete in branch; remote cutover evidence pending
+- **计划状态**：Active / Implementation complete in new main-based branch; remote acceptance evidence pending
 - **目标 ADR**：[ADR-041: CI/CD Platform V2 解耦与可扩展交付平台](../../architecture/adr/ADR-041-ci-cd-platform-v2.md)
 - **目标架构**：[CI/CD Platform V2](../../architecture/ci-cd-platform-v2.md)
 - **前置决策**：[ADR-040: Test System V2](../../architecture/adr/ADR-040-test-system-v2.md)
@@ -29,20 +29,20 @@ updated: 2026-08-05T10:10:00Z
 本分支已经把平台契约和主流程一次性收敛到以下边界；剩余项目是验证和切换证据，不是再设计一轮
 workflow：
 
-| Work package               | 当前状态                           | 证据                                                                                                                                       |
-| -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| W1 contracts/schema        | 已实现                             | `tools/ci-cd-platform/schemas/`、digest negative tests                                                                                     |
-| W2 workspace/capabilities  | 已实现                             | `setup-nx-affected-job`、`workspace-receipt-v1`                                                                                            |
-| W3 control/risk/DAG input  | 已实现                             | `generate-delivery-manifest`、`create-lane-input`                                                                                          |
-| W4 immutable artifacts     | 已实现                             | artifact registry、content/source digest verifier、API runtime closure、Docker prebuilt checks                                             |
-| W5 lane execution          | 已实现                             | lane registry、lane result、stable Oracle workflow                                                                                         |
-| W6 isolation contract      | 已实现/保留真实隔离                | boundary/integration/Web 独立 PostgreSQL service 与 lane policy                                                                            |
-| W7 observation/budget data | 已实现                             | lane/run summary、setup/execution/cache/failure fields                                                                                     |
-| W8 nightly audit           | 已接入                             | coverage/performance full workflow 复用同一 manifest/input contract                                                                        |
-| W9 release promotion       | 已实现                             | production artifact closure、promotion manifest、verified download                                                                         |
-| W10 governance/security    | 已实现                             | ruleset check、最小权限、fail-closed verifier                                                                                              |
-| W11 shadow/fault injection | 主流程远端验证已通过；故障注入待补 | [run 30995540184](https://github.com/BakerSean168/memoflow/actions/runs/30995540184)：7 Oracle、4 Web shard、Delivery Observation 全部成功 |
-| W12 cutover/archive        | 待合并后归档                       | required context 观察、旧 PR 归档和最终长期指标证据                                                                                        |
+| Work package               | 当前状态                       | 证据                                                                                           |
+| -------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| W1 contracts/schema        | 已实现                         | `tools/ci-cd-platform/schemas/`、digest negative tests                                         |
+| W2 workspace/capabilities  | 已实现                         | `setup-nx-affected-job`、`workspace-receipt-v1`                                                |
+| W3 control/risk/DAG input  | 已实现                         | `generate-delivery-manifest`、`create-lane-input`                                              |
+| W4 immutable artifacts     | 已实现                         | artifact registry、content/source digest verifier、API runtime closure、Docker prebuilt checks |
+| W5 lane execution          | 已实现                         | lane registry、lane result、stable Oracle workflow                                             |
+| W6 isolation contract      | 已实现/保留真实隔离            | boundary/integration/Web 独立 PostgreSQL service 与 lane policy                                |
+| W7 observation/budget data | 已实现                         | lane/run summary、fail-closed observation、`compare-timings` P50/P95 comparator                |
+| W8 nightly audit           | 已接入                         | coverage/performance full workflow 复用同一 manifest/input contract                            |
+| W9 release promotion       | 已实现                         | production artifact closure、promotion manifest、verified download                             |
+| W10 governance/security    | 已实现                         | ruleset check、最小权限、fail-closed verifier                                                  |
+| W11 shadow/fault injection | 故障矩阵已实现；远端审计待执行 | `run-fault-injection.mjs`、`ci-platform-audit.yml`、22 项平台测试                              |
+| W12 cutover/archive        | 待合并后归档                   | required context 观察、旧 PR 归档和最终长期指标证据                                            |
 
 W11/W12 不会产生第二套实现；它们只验证本分支已经完成的契约，并在证据充分后把本计划归档。
 
@@ -64,7 +64,8 @@ manifest digest 为 `615b3976e39aefb891d5f0f95083afd18497c91fa6d2b7cc1d64b83e1ad
 达标。计划剩余的验收证据是：
 
 - 至少 5 次同范围 run 的 setup、execution、artifact download、Web shard balance 和 runner-minute 对比。
-- 故障注入：detector failure、artifact mismatch、closure entry 缺失、取消和权限失败必须 fail closed。
+- 远端故障审计：detector failure、artifact mismatch、closure entry 缺失、取消和权限失败必须 fail closed；本地
+  `run-fault-injection.mjs` 已先验证同一契约。
 
 ## 设计不变量
 
@@ -370,6 +371,8 @@ node --test tools/test-system-v2/__tests__/*.test.mjs
 pnpm nx run ci-cd-platform:contract
 pnpm nx run ci-cd-platform:governance
 pnpm nx run ci-cd-platform:failure-matrix
+pnpm nx run ci-cd-platform:fault-injection
+pnpm nx run ci-cd-platform:timing
 ```
 
 上述新 target 在 W1/W2 创建前不得伪造为已存在的命令；计划中的命令必须在对应 work package 交付时落地。

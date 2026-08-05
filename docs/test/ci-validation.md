@@ -31,7 +31,8 @@ manifest 转换为可验证的 `lane-input-v1`。workspace action 先消费 mani
 
 每条命令输出唯一的 `lane-result-v1`，`publish-lane-evidence` 生成 `lane-summary-v1`；CI 末尾的
 `Delivery Observation` 递归聚合各 job 的证据为 `run-summary-v1`。这些对象都绑定 commit、manifest
-digest 和上游对象 digest，来源不一致时 fail closed。API、API runtime dependency closure、Web、
+digest 和上游对象 digest，来源不一致或证据缺失时 fail closed；Observation 不再通过跳过聚合产生
+false-green。API、API runtime dependency closure、Web、
 Migrator、Database、Database Runtime 属于同一 production artifact closure；closure 由 API workspace
 dependencies 递归计算。Web shard 和 `docker-deploy.yml` 都会在使用前验证每个内容 digest、source
 manifest digest 以及 closure 目录集合。
@@ -50,6 +51,8 @@ node --test tools/test-system-v2/__tests__/*.test.mjs
 node tools/ci-cd-platform/schema-check.mjs
 node tools/ci-cd-platform/registry-check.mjs
 node --test tools/ci-cd-platform/__tests__/*.test.mjs
+node tools/ci-cd-platform/run-fault-injection.mjs
+node --test tools/ci-cd-platform/__tests__/timing.test.mjs
 pnpm nx run desktop:test:boundary
 ```
 

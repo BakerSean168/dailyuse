@@ -491,23 +491,21 @@ jobs:
       - uses: actions/checkout@v6
       - name: Download delivery manifest
         uses: actions/download-artifact@v7
-        continue-on-error: true
         with:
           name: delivery-manifest-v1
           path: scope
       - name: Download lane evidence
         uses: actions/download-artifact@v7
-        continue-on-error: true
         with:
           path: reports/run-evidence
       - name: Aggregate run summary
-        if: ${{ hashFiles('scope/delivery-manifest-v1.json') != '' }}
+        env:
+          DELIVERY_RUN_STARTED_AT: ${{ github.run_started_at }}
         run: node ./tools/ci-cd-platform/observe-run.mjs --manifest scope/delivery-manifest-v1.json --evidence reports/run-evidence --output reports/ci-cd-platform/run-summary-v1.json
       - name: Upload run summary
-        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: delivery-run-summary-${{ github.run_id }}
           path: reports/ci-cd-platform/run-summary-v1.json
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 30

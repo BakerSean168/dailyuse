@@ -139,8 +139,10 @@ lane 使用统一 `lane-input-v1.json` 和 `lane-result-v1.json`，不得通过�
 - `assertion`、`infrastructure`、`process-crash`、`timeout`、`flaky` 分类。
 - base/head、manifest digest、runner image 和 toolchain 版本。
 
-Observation Plane 只读消费 lane receipt，不改变 lane 成败。这样以后替换 GitHub Actions、增加成本
-报表或接入 metrics backend，不需要修改测试实现。
+Observation Plane 只读消费 lane receipt，不改变 lane 成败；manifest、evidence 或 summary 缺失时自身
+失败，不会把“没有观测到”解释成成功。`compare-timings.mjs` 对同一 lane 集合计算 P50/P95，避免用单次
+最快结果做预算结论。这样以后替换 GitHub Actions、增加成本报表或接入 metrics backend，不需要修改测试
+实现。
 
 ### 3.6 Release Plane
 
@@ -240,15 +242,15 @@ detector 或 manifest 失败为失败。
 
 ## 10. 当前实现映射
 
-| 平面        | 当前入口                                               | 关键不变量                                                                                    |
-| ----------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| Control     | `generate-delivery-manifest.mjs`、`lib/risk.mjs`       | 每次 run 只生成一个带 self-digest 的 manifest                                                 |
-| Workspace   | `setup-nx-affected-job`、`write-workspace-receipt.mjs` | capability 驱动，receipt 绑定 toolchain/cache/setup timing                                    |
-| Artifact    | `create-artifact-manifest.mjs`、`verify-artifact.mjs`  | 内容 digest、commit、source manifest digest 缺一不可                                          |
-| Execution   | `lane-registry.mjs`、`run-command.mjs`                 | lane input/result 版本化，NX base/head 从 manifest 注入                                       |
-| Observation | `observe-lane.mjs`、`observe-run.mjs`                  | 多 job 同 lane 聚合，不以最后一个 child 覆盖失败                                              |
-| Release     | `promote-artifact.mjs`、`docker-deploy.yml`            | production 必须同时具备六种 artifact（含 API runtime closure），禁止 source rebuild promotion |
-| Governance  | `ruleset-check.mjs`、`.github/rulesets/main.json`      | 稳定 Oracle 必须 active；单人维护者不强制 approving review                                    |
+| 平面        | 当前入口                                                                   | 关键不变量                                                                                    |
+| ----------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Control     | `generate-delivery-manifest.mjs`、`lib/risk.mjs`                           | 每次 run 只生成一个带 self-digest 的 manifest                                                 |
+| Workspace   | `setup-nx-affected-job`、`write-workspace-receipt.mjs`                     | capability 驱动，receipt 绑定 toolchain/cache/setup timing                                    |
+| Artifact    | `create-artifact-manifest.mjs`、`verify-artifact.mjs`                      | 内容 digest、commit、source manifest digest 缺一不可                                          |
+| Execution   | `lane-registry.mjs`、`run-command.mjs`                                     | lane input/result 版本化，NX base/head 从 manifest 注入                                       |
+| Observation | `observe-lane.mjs`、`observe-run.mjs`、`compare-timings.mjs`               | 多 job 同 lane 聚合、缺失证据 fail closed、P50/P95 只能比较同 lane 集合                       |
+| Release     | `promote-artifact.mjs`、`docker-deploy.yml`                                | production 必须同时具备六种 artifact（含 API runtime closure），禁止 source rebuild promotion |
+| Governance  | `ruleset-check.mjs`、`.github/rulesets/main.json`、`ci-platform-audit.yml` | 稳定 Oracle 必须 active；单人维护者不强制 approving review；故障矩阵定期运行                  |
 
 新增 lane 或 artifact 类型必须先更新 registry、对应 schema、负向测试和 adapter；workflow 只能消费
 这些注册信息，不能重新声明一套隐含契约。

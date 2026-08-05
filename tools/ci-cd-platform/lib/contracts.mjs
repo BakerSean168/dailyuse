@@ -8,6 +8,8 @@ export const PROMOTION_MANIFEST_VERSION = 1;
 export const WORKSPACE_RECEIPT_VERSION = 1;
 export const LANE_SUMMARY_VERSION = 1;
 export const RUN_SUMMARY_VERSION = 1;
+export const TIMING_REPORT_VERSION = 1;
+export const FAULT_INJECTION_REPORT_VERSION = 1;
 
 const RISK_LEVELS = new Set(['docs', 'package', 'runtime', 'web-flow', 'root', 'release']);
 const LANE_NAMES = new Set([
@@ -274,6 +276,87 @@ export function validateRunSummary(summary) {
   assert(summary.provenance && typeof summary.provenance === 'object', 'provenance is required');
   assertSelfDigest(summary, 'run summary');
   return summary;
+}
+
+export function validateTimingReport(report) {
+  assert(report && typeof report === 'object', 'timing report must be an object');
+  assert(report.kind === 'timing-report-v1', 'kind must be timing-report-v1');
+  assert(report.version === TIMING_REPORT_VERSION, 'unsupported timing report version');
+  assertString(report.profile, 'profile');
+  assert(
+    Number.isInteger(report.sampleCount) && report.sampleCount > 0,
+    'sampleCount must be positive',
+  );
+  assert(
+    Array.isArray(report.samples) && report.samples.length === report.sampleCount,
+    'samples must match sampleCount',
+  );
+  for (const sample of report.samples) {
+    assert(sample && typeof sample === 'object', 'timing sample must be an object');
+    assertString(sample.commit, 'timing sample.commit');
+    assertStringArray(sample.lanes, 'timing sample.lanes');
+    for (const field of ['setupMs', 'executionMs', 'longestLaneMs']) {
+      assert(
+        Number.isFinite(sample[field]) && sample[field] >= 0,
+        `timing sample.${field} must be non-negative`,
+      );
+    }
+    for (const field of ['wallClockMs', 'runnerMinutes']) {
+      assert(
+        sample[field] === null || (Number.isFinite(sample[field]) && sample[field] >= 0),
+        `timing sample.${field} must be non-negative or null`,
+      );
+    }
+  }
+  assert(report.metrics && typeof report.metrics === 'object', 'timing metrics are required');
+  for (const field of ['setupMs', 'executionMs', 'longestLaneMs']) {
+    const metric = report.metrics[field];
+    assert(
+      metric && Number.isFinite(metric.p50) && Number.isFinite(metric.p95),
+      `timing metric ${field} is required`,
+    );
+  }
+  for (const field of ['wallClockMs', 'runnerMinutes']) {
+    const metric = report.metrics[field];
+    assert(
+      metric && (metric.p50 === null || Number.isFinite(metric.p50)),
+      `timing metric ${field} is required`,
+    );
+    assert(
+      metric && (metric.p95 === null || Number.isFinite(metric.p95)),
+      `timing metric ${field} is required`,
+    );
+  }
+  assertSelfDigest(report, 'timing report');
+  return report;
+}
+
+export function validateFaultInjectionReport(report) {
+  assert(report && typeof report === 'object', 'fault injection report must be an object');
+  assert(report.kind === 'fault-injection-report-v1', 'kind must be fault-injection-report-v1');
+  assert(
+    report.version === FAULT_INJECTION_REPORT_VERSION,
+    'unsupported fault injection report version',
+  );
+  assert(report.status === 'passed', 'fault injection report must pass');
+  assert(
+    Array.isArray(report.scenarios) && report.scenarios.length > 0,
+    'fault injection scenarios are required',
+  );
+  for (const scenario of report.scenarios) {
+    assert(scenario && typeof scenario === 'object', 'fault injection scenario must be an object');
+    assertString(scenario.name, 'fault injection scenario.name');
+    assert(
+      scenario.observed === 'fail-closed',
+      `fault injection scenario ${scenario.name} did not fail closed`,
+    );
+  }
+  assert(
+    report.provenance && typeof report.provenance === 'object',
+    'fault injection provenance is required',
+  );
+  assertSelfDigest(report, 'fault injection report');
+  return report;
 }
 
 export function buildLaneInput({

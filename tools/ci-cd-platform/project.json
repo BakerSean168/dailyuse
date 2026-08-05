@@ -57,7 +57,9 @@
       "executor": "nx:run-commands",
       "cache": true,
       "inputs": ["{projectRoot}/**/*"],
-      "options": { "command": "node tools/ci-cd-platform/__tests__/failure-matrix.test.mjs" }
+      "options": {
+        "command": "node tools/ci-cd-platform/run-fault-injection.mjs reports/ci-cd-platform/fault-injection-report-v1.json"
+      }
     },
     "registry": {
       "executor": "nx:run-commands",
@@ -74,6 +76,23 @@
       "cache": false,
       "options": {
         "command": "node tools/ci-cd-platform/observe-run.mjs"
+      }
+    },
+    "timing": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/**/*"],
+      "options": {
+        "command": "node --test tools/ci-cd-platform/__tests__/timing.test.mjs"
+      }
+    },
+    "fault-injection": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "inputs": ["{projectRoot}/**/*"],
+      "outputs": ["{workspaceRoot}/reports/ci-cd-platform/fault-injection-report-v1.json"],
+      "options": {
+        "command": "node tools/ci-cd-platform/run-fault-injection.mjs reports/ci-cd-platform/fault-injection-report-v1.json"
       }
     }
   }

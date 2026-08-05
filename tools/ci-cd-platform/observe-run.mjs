@@ -54,6 +54,13 @@ export async function observeRun({ manifest, evidenceDir, output }) {
     .map(([lane]) => lane);
   const missing = enabled.filter((lane) => !byLane.has(lane));
   const failures = summaries.filter(({ value }) => value.status !== 'success');
+  const startedAt = process.env.DELIVERY_RUN_STARTED_AT
+    ? Date.parse(process.env.DELIVERY_RUN_STARTED_AT)
+    : Number.NaN;
+  const wallClockMs = Number.isFinite(startedAt) ? Math.max(0, Date.now() - startedAt) : null;
+  const runnerMinutesValue = Number(process.env.DELIVERY_RUNNER_MINUTES);
+  const runnerMinutes =
+    Number.isFinite(runnerMinutesValue) && runnerMinutesValue >= 0 ? runnerMinutesValue : null;
   const summary = {
     kind: 'run-summary-v1',
     version: 1,
@@ -83,6 +90,8 @@ export async function observeRun({ manifest, evidenceDir, output }) {
         0,
       ),
       longestLaneMs: Math.max(0, ...summaries.map(({ value }) => value.timing.executionMs ?? 0)),
+      wallClockMs,
+      runnerMinutes,
     },
     cache: summaries.map(({ value }) => ({ lane: value.lane, cache: value.cache })),
     failures: failures.flatMap(({ value }) => value.failures),
