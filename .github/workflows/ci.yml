@@ -162,7 +162,7 @@ jobs:
         env: { TEST_REPORT_NAME: build, DELIVERY_LANE: validate }
       - name: Ensure Web flow build inputs exist
         if: needs.scope-detector.outputs.has_web_flow == 'true'
-        run: pnpm exec nx run-many -t build --projects=api,web --parallel=2 --outputStyle=static
+        run: pnpm exec nx run-many -t build --projects=api,web,database --parallel=2 --outputStyle=static
       - name: Ensure main release build closure exists
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -177,6 +177,9 @@ jobs:
       - name: Create Migrator artifact manifest
         if: ${{ hashFiles('apps/migrator/dist/**') != '' }}
         run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name migrator --path apps/migrator/dist --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/migrator-artifact-manifest.json
+      - name: Create Database artifact manifest
+        if: ${{ hashFiles('packages/database/dist/**') != '' }}
+        run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name database --path packages/database/dist --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/database-artifact-manifest.json
       - name: Create Database runtime artifact manifest
         if: ${{ hashFiles('packages/database/dist/runtime-scripts/**') != '' }}
         run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name database-runtime --path packages/database/dist/runtime-scripts --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/database-runtime-artifact-manifest.json
@@ -188,7 +191,7 @@ jobs:
             apps/api/dist
             apps/migrator/dist
             dist/apps/web
-            packages/database/dist/runtime-scripts
+            packages/database/dist
             reports/ci-cd-platform/*-artifact-manifest.json
           if-no-files-found: ignore
           retention-days: 14
@@ -340,6 +343,8 @@ jobs:
         run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist
       - name: Verify Web artifact
         run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web
+      - name: Verify Database artifact
+        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
         env: { TEST_REPORT_NAME: web-database, DELIVERY_LANE: web }
       - name: Cache Playwright browser
