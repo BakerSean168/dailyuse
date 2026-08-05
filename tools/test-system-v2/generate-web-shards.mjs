@@ -4,7 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { WEB_FLOW_SPECS } from '../../apps/web/web-flow-specs.mjs';
 import { balanceShards } from './lib/shard-balance.mjs';
 
-const durationsPath = 'reports/test-system-v2/web-spec-durations.json';
+const durationsPath = 'tools/test-system-v2/web-spec-durations.json';
 const historical = JSON.parse(await readFile(durationsPath, 'utf8').catch(() => '{}'));
 const specs = await Promise.all(
   WEB_FLOW_SPECS.map(async (spec) => {
