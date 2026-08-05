@@ -458,6 +458,9 @@ full audits、结构化 timing/failure classification、测量驱动的 Web shar
 - `.github/rulesets/main.json` 声明 active，required contexts 恰为七个稳定 Oracle；远端 active ruleset
   ID `9183921` 已复核。
 - governance、actionlint、inventory、target checks、Oracle/Scope/shard tests 和相关 project tests 已通过。
+- 完整 Coverage workflow [run 30970172037](https://github.com/BakerSean168/memoflow/actions/runs/30970172037)
+  实际执行 full configured lists，并因 `schedule:test:coverage:use-cases` 的 branch coverage `56.33% < 60%`
+  fail closed；未降低 threshold 或扩大 skip。
 
 未达到的时间与成本目标作为后续优化输入，不通过改变测试语义、阈值、retry 或 skip 隐藏。V2 的
 功能性 Definition of Done 已完成，本计划因此归档；PR 不在本计划执行中自动合并。

@@ -49,3 +49,8 @@ runner-minutes 目标已达成；公开仓库 billing API 返回的 0 billable m
 4.32 秒，明显低于此前约 1:42 的观测极差。最终 run 的四个 shard 实际 job 时长为 6:44、7:03、
 6:55、7:09，实际极差 25 秒。后续 run 应继续从 Actions artifact 记录墙钟、执行
 runner-minutes、cache 命中和实际 shard 平衡，不把单次测量写成永久保证。
+
+手动触发的完整 Coverage workflow [run 30970172037](https://github.com/BakerSean168/memoflow/actions/runs/30970172037)
+已验证 full configured project selection 不再 false-green；它实际执行 governed domain、store 和 use-case
+coverage，并在 `schedule:test:coverage:use-cases` 的 branch coverage `56.33% < 60%` 时失败。该回归保持
+原 threshold，证明 nightly audit 和 coverage regression gate 都会 fail closed。
