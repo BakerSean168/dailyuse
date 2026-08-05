@@ -154,13 +154,17 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
   通过条件跳过。`run-fault-injection.mjs` 覆盖 detector、取消、manifest、artifact、runtime closure 和
   provenance/权限失败，`compare-timings.mjs` 只接受同 lane 集合且至少五次 comparable run。
 
-前一轮未合并分支曾有一次完整 Actions fresh-run，但该 run 绑定旧分支提交，不能作为当前分支的验收证据。
-当前分支的可复核证据是本地契约测试、schema/registry 检查、故障矩阵和 Test System V2 inventory/ruleset
-检查；新的远端 evidence 必须在本分支 PR 上重新生成。
+当前 PR #209 的 fresh-run [Actions run 31002036565](https://github.com/BakerSean168/memoflow/actions/runs/31002036565)
+绑定 commit `c5bf40c8cccebaea14e7ac9fcd1ce9c98bc1d7fc`，Scope Detector、七个稳定 Oracle、四个 Web shard 和
+Delivery Observation 全部通过。`run-summary-v1` 的 manifest digest 为
+`ea4b2ff7131d362c5dac25df3e984c2cf2a5a4c79470c2ac0ed0475d4161257c`，summary digest 为
+`5b6ced2ac22925133cb5a10545e0a05b31fd465091d5df9f83da94561dc5b71c`，`missingLanes: []`、无 failures；
+setup 为 `378,369 ms`，lane execution 为 `1,902,840 ms`，最长 lane 为 `285,193 ms`。四个 Web evidence
+artifact 使用唯一的 `shard-0..3` suffix，Web execution 合计 `1,054,247 ms`。
 
-故障矩阵已在本地通过 7 个负向场景；`CI Platform Audit` 是合并到 `main` 后按周执行的审计入口。
+本地契约测试、schema/registry 检查、7 个 fail-closed 故障场景和 Test System V2 inventory/ruleset 检查也已通过。
 仍需至少五次 comparable timing、一次 `main` 上的 scheduled fault audit，以及一次 production promotion
-dry-run，才能把分支内实现转化为长期成本、恢复和发布证据。
+dry-run，才能把单次 fresh-run 转化为长期成本、恢复和发布证据。
 
 ## References
 

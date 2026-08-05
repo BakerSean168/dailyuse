@@ -62,8 +62,14 @@ pnpm nx run desktop:test:boundary
 
 ## 2026-08-05 V2 验收测量
 
-本节记录的是前一轮未合并实现的历史测量，保留用于容量和成本对照；它们不代表当前
-`refactor/ci-cd-platform-v2-mainline` 分支的远端验收。当前分支需要在新 PR 上重新生成 run evidence。
+本节同时记录历史容量数据和当前 PR fresh-run；历史数据仅用于成本对照，当前分支证据见下方 PR #209 段落。
+
+当前 PR #209 的 [Actions run 31002036565](https://github.com/BakerSean168/memoflow/actions/runs/31002036565)
+绑定 `c5bf40c8cccebaea14e7ac9fcd1ce9c98bc1d7fc`，七个稳定 Oracle、四个 Web shard 和 Delivery Observation
+全部通过。`run-summary-v1` 的 setup 为 `378,369 ms`，lane execution 为 `1,902,840 ms`，最长 lane 为
+`285,193 ms`，`missingLanes: []`；四个 Web shard 为约 4:44、5:47、6:02、5:53，证据 artifact 使用唯一
+`shard-0..3` suffix。该 run 是当前分支 fresh-run 证据，但仍不足以替代至少五次 comparable timing 的
+P50/P95 与 runner-minute 统计。
 
 [Actions run 30968872885](https://github.com/BakerSean168/memoflow/actions/runs/30968872885) 的七个
 required Oracle 全部通过。workflow 从 `02:16:23Z` 到 `02:24:46Z`，墙钟约 8:23；所有 job 的
