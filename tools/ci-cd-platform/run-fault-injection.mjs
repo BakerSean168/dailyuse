@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+import { execFile as execFileCallback } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { evaluateOracle } from '../test-system-v2/lib/oracle.mjs';
+import { promisify } from 'node:util';
 import { createArtifactManifest } from './create-artifact-manifest.mjs';
 import { buildPromotionManifest } from './promote-artifact.mjs';
 import {
@@ -13,6 +14,23 @@ import {
 } from './lib/contracts.mjs';
 import { restoreRuntimeClosure } from './restore-runtime-closure.mjs';
 import { verifyArtifact } from './verify-artifact.mjs';
+
+const execFile = promisify(execFileCallback);
+
+async function executeOracle(input) {
+  try {
+    const { stdout } = await execFile(
+      process.execPath,
+      [path.resolve('tools/test-system-v2/oracle.mjs')],
+      { env: { ...process.env, ORACLE_INPUT: JSON.stringify(input) } },
+    );
+    return JSON.parse(stdout.trim());
+  } catch (error) {
+    const output = error?.stdout?.toString().trim();
+    if (!output) throw error;
+    return JSON.parse(output);
+  }
+}
 
 async function expectFailure(name, operation) {
   try {
@@ -46,7 +64,7 @@ export async function runFaultInjection() {
   const scenarios = [];
   scenarios.push(
     await expectFailure('detector-failure', async () => {
-      const result = evaluateOracle({
+      const result = await executeOracle({
         detector: 'failure',
         enabled: ['validate'],
         children: { validate: 'success' },
@@ -58,7 +76,7 @@ export async function runFaultInjection() {
   );
   scenarios.push(
     await expectFailure('cancelled-child', async () => {
-      const result = evaluateOracle({
+      const result = await executeOracle({
         detector: 'success',
         enabled: ['web'],
         children: { web: 'cancelled' },
