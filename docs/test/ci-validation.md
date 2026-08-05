@@ -31,9 +31,10 @@ manifest 转换为可验证的 `lane-input-v1`。workspace action 先消费 mani
 
 每条命令输出唯一的 `lane-result-v1`，`publish-lane-evidence` 生成 `lane-summary-v1`；CI 末尾的
 `Delivery Observation` 递归聚合各 job 的证据为 `run-summary-v1`。这些对象都绑定 commit、manifest
-digest 和上游对象 digest，来源不一致时 fail closed。API/Web/Migrator/Database/Database Runtime
-属于同一 production artifact closure；Web shard 和 `docker-deploy.yml` 都会在使用前验证内容 digest
-及 source manifest digest。
+digest 和上游对象 digest，来源不一致时 fail closed。API、API runtime dependency closure、Web、
+Migrator、Database、Database Runtime 属于同一 production artifact closure；closure 由 API workspace
+dependencies 递归计算。Web shard 和 `docker-deploy.yml` 都会在使用前验证每个内容 digest、source
+manifest digest 以及 closure 目录集合。
 
 PR coverage 由 `Coverage Oracle` 门禁；`.github/workflows/coverage.yml` 的 schedule/manual 车道继续
 执行完整 configured project lists，作为 affected 图漏检的 nightly 兜底。PR `test:perf` 只执行固定

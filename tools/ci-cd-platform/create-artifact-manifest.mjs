@@ -37,6 +37,7 @@ export async function createArtifactManifest({
   sourceManifestDigest,
   output,
   createdBy = 'ci-cd-platform-v2/create-artifact-manifest@1',
+  entries,
 }) {
   if (!name || !target || !commit || !sourceManifestDigest || !output)
     throw new Error('name, target, commit, sourceManifestDigest and output are required');
@@ -55,6 +56,7 @@ export async function createArtifactManifest({
       runId: process.env.GITHUB_RUN_ID ?? null,
       ref: process.env.GITHUB_REF ?? null,
     },
+    ...(entries ? { entries } : {}),
   };
   validateArtifactManifest(manifest);
   await mkdir(path.dirname(output), { recursive: true });

@@ -24,6 +24,7 @@ const actual = await createArtifactManifest({
   sourceManifestDigest: expected.sourceManifestDigest,
   output: path.resolve('.tmp-artifact-verification.json'),
   createdBy: expected.createdBy,
+  entries: expected.entries,
 });
 if (actual.digest !== expected.digest) {
   console.error(

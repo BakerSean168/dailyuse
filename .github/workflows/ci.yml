@@ -188,6 +188,9 @@ jobs:
       - name: Create Database runtime artifact manifest
         if: ${{ hashFiles('packages/database/dist/runtime-scripts/**') != '' }}
         run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name database-runtime --path packages/database/dist/runtime-scripts --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/database-runtime-artifact-manifest.json
+      - name: Create API runtime dependency closure
+        if: ${{ hashFiles('apps/api/dist/**') != '' }}
+        run: node ./tools/ci-cd-platform/create-runtime-closure.mjs --manifest scope/delivery-manifest-v1.json --output-dir api-runtime-closure --output reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json
       - name: Upload immutable build artifacts
         uses: actions/upload-artifact@v6
         with:
@@ -197,6 +200,7 @@ jobs:
             apps/migrator/dist
             dist/apps/web
             packages/database/dist
+            api-runtime-closure
             scope/delivery-manifest-v1.json
             reports/ci-cd-platform/*-artifact-manifest.json
           if-no-files-found: ignore
@@ -355,6 +359,8 @@ jobs:
           digest=$(node -p "require('./reports/ci-cd-platform/web-input-v1.json').manifestDigest")
           test -n "$digest"
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
+      - name: Restore API runtime dependency closure
+        run: node ./tools/ci-cd-platform/restore-runtime-closure.mjs reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json api-runtime-closure . "${{ steps.artifact-source.outputs.digest }}"
       - name: Verify API artifact
         run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist "${{ steps.artifact-source.outputs.digest }}"
       - name: Verify Web artifact

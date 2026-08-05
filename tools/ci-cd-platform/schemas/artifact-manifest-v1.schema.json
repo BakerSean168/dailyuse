@@ -24,7 +24,31 @@
     "path": { "type": "string", "minLength": 1 },
     "createdBy": { "type": "string", "minLength": 1 },
     "toolchain": { "type": "object" },
-    "provenance": { "type": "object" }
+    "provenance": { "type": "object" },
+    "entries": { "type": "array" }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "name": { "const": "api-runtime-closure" } } },
+      "then": {
+        "required": ["entries"],
+        "properties": {
+          "entries": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["name", "path"],
+              "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "path": { "type": "string", "pattern": "^packages/.+/dist$" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ],
   "additionalProperties": false
 }
