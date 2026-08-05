@@ -12,6 +12,7 @@ RUN apt-get update \
 
 ARG PNPM_VERSION=11.12.0
 ARG PNPM_REGISTRY=https://registry.npmjs.org
+ARG USE_PREBUILT_ARTIFACT=0
 
 ENV CI=true
 ENV PNPM_HOME=/pnpm
@@ -97,9 +98,15 @@ COPY tools/nx-test-system ./tools/nx-test-system
 # Build the package surfaces consumed by production and the one-shot migrator.
 # Cache Nx data independently from pnpm's content-addressed store.
 RUN --mount=type=cache,id=memoflow-api-nx-cache,target=/app/.nx/cache \
-  ./node_modules/.bin/nx run api:build \
-  && ./node_modules/.bin/nx run migrator:build \
-  && ./node_modules/.bin/nx run database:runtime-scripts:build
+  if [ "$USE_PREBUILT_ARTIFACT" = "1" ]; then \
+    test -f apps/api/dist/main.js \
+      && test -f apps/migrator/dist/main.js \
+      && test -d packages/database/dist/runtime-scripts; \
+  else \
+    ./node_modules/.bin/nx run api:build \
+      && ./node_modules/.bin/nx run migrator:build \
+      && ./node_modules/.bin/nx run database:runtime-scripts:build; \
+  fi
 
 RUN --mount=type=cache,id=memoflow-api-pnpm-store,target=/pnpm/store \
   pnpm --config.inject-workspace-packages=true \

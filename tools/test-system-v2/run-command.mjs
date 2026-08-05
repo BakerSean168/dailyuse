@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { classifyFailure } from './lib/failure-classification.mjs';
@@ -72,6 +72,40 @@ const escapedName = reportName
   .replaceAll('"', '&quot;');
 const junit = `<testsuite name="${escapedName}" tests="1" failures="${final.exitCode === 0 ? 0 : 1}" time="${(final.durationMs / 1000).toFixed(3)}"><testcase classname="${escapedName}" name="command" time="${(final.durationMs / 1000).toFixed(3)}">${final.exitCode === 0 ? '' : `<failure type="${final.classification}"/>`}</testcase></testsuite>`;
 await writeFile(path.join(reportsDir, `${reportName}.junit.xml`), `${junit}\n`);
+if (process.env.DELIVERY_LANE && process.env.DELIVERY_MANIFEST_PATH) {
+  const manifest = JSON.parse(
+    await readFile(path.resolve(process.env.DELIVERY_MANIFEST_PATH), 'utf8'),
+  );
+  const laneResult = {
+    kind: 'lane-result-v1',
+    version: 1,
+    lane: process.env.DELIVERY_LANE,
+    commit: manifest.commit,
+    manifestDigest: manifest.digest,
+    status: final.exitCode === 0 ? 'success' : 'failure',
+    failure: {
+      classification: final.exitCode === 0 ? 'none' : final.classification,
+      attempts: attempts.length,
+      retried: attempts.length > 1,
+    },
+    timing: {
+      executionMs: final.durationMs,
+      attempts: attempts.map(({ attempt, durationMs, classification }) => ({
+        attempt,
+        durationMs,
+        classification,
+      })),
+    },
+    provenance: {
+      report: path.join(reportsDir, `${reportName}.json`),
+      runner: process.env.RUNNER_OS ?? process.platform,
+    },
+  };
+  await writeFile(
+    path.join(reportsDir, `${process.env.DELIVERY_LANE}.lane-result.json`),
+    `${JSON.stringify(laneResult, null, 2)}\n`,
+  );
+}
 console.log(
   `[test-system-v2] ${reportName}: ${report.result}; ${final.classification}; ${final.durationMs}ms`,
 );

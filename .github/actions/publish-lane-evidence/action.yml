@@ -1,0 +1,20 @@
+name: Publish Lane Evidence
+description: Upload structured timing, lane results, workspace receipts, and failure evidence.
+inputs:
+  lane:
+    description: Stable execution lane name
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Upload structured lane evidence
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: delivery-${{ inputs.lane }}-${{ github.job }}-${{ github.run_id }}
+        path: |
+          reports/test-system-v2
+          reports/ci-cd-platform
+          apps/web/test-results/results.json
+        if-no-files-found: ignore
+        retention-days: 14

@@ -17,12 +17,16 @@ env:
   NODE_VERSION: '24'
   CI: 'true'
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+  DELIVERY_MANIFEST_PATH: scope/delivery-manifest-v1.json
 
 jobs:
   scope-detector:
     name: Scope Detector
     runs-on: ubuntu-latest
     outputs:
+      manifest_path: ${{ steps.scope.outputs.manifest_path }}
+      manifest_digest: ${{ steps.scope.outputs.manifest_digest }}
+      risk: ${{ steps.scope.outputs.risk }}
       has_unit: ${{ steps.scope.outputs.has_unit }}
       has_coverage: ${{ steps.scope.outputs.has_coverage }}
       has_smoke: ${{ steps.scope.outputs.has_smoke }}
@@ -41,12 +45,12 @@ jobs:
         env:
           NX_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           NX_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-          SCOPE_OUTPUT: scope/test-scope-v1.json
-        run: node ./tools/test-system-v2/lib/scope-detector.mjs
+          DELIVERY_MANIFEST_OUTPUT: scope/delivery-manifest-v1.json
+        run: node ./tools/ci-cd-platform/generate-delivery-manifest.mjs
       - uses: actions/upload-artifact@v6
         with:
-          name: test-scope-v1
-          path: scope/test-scope-v1.json
+          name: delivery-manifest-v1
+          path: scope/delivery-manifest-v1.json
           retention-days: 14
 
   governance:
@@ -58,11 +62,17 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'false'
+          setup-uv: 'false'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/inventory.mjs --check
       - run: node ./tools/test/test-target-governance.mjs --check
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run memoflow:governance-check
-        env: { TEST_REPORT_NAME: governance }
+        env: { TEST_REPORT_NAME: governance, DELIVERY_LANE: governance }
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: governance }
 
   governance-oracle:
     name: Governance Oracle
@@ -86,9 +96,15 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'true', setup-uv: 'true' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'true'
+          setup-uv: 'true'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t lint --parallel=3 --exclude=memoflow --outputStyle=static
-        env: { TEST_REPORT_NAME: static-analysis }
+        env: { TEST_REPORT_NAME: static-analysis, DELIVERY_LANE: validate }
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: validate }
 
   unit:
     name: Unit Tests
@@ -99,9 +115,15 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'true', setup-uv: 'true' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'true'
+          setup-uv: 'true'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test --parallel=3 --exclude=memoflow --outputStyle=static
-        env: { TEST_REPORT_NAME: unit }
+        env: { TEST_REPORT_NAME: unit, DELIVERY_LANE: validate }
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: validate }
 
   typecheck:
     name: Typecheck
@@ -112,9 +134,15 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'true', setup-uv: 'true' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'true'
+          setup-uv: 'true'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t typecheck --parallel=3 --outputStyle=static
-        env: { TEST_REPORT_NAME: typecheck }
+        env: { TEST_REPORT_NAME: typecheck, DELIVERY_LANE: validate }
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: validate }
 
   build:
     name: Build
@@ -125,9 +153,40 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'true', setup-uv: 'true' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'true'
+          setup-uv: 'true'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client' --outputStyle=static
-        env: { TEST_REPORT_NAME: build }
+        env: { TEST_REPORT_NAME: build, DELIVERY_LANE: validate }
+      - name: Ensure Web flow build inputs exist
+        if: needs.scope-detector.outputs.has_web_flow == 'true'
+        run: pnpm exec nx run-many -t build --projects=api,web --parallel=2 --outputStyle=static
+      - name: Ensure main release build closure exists
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          pnpm exec nx run-many -t build --projects=api,web,migrator,database --parallel=2 --outputStyle=static
+          pnpm exec nx run database:runtime-scripts:build --outputStyle=static
+      - name: Create API artifact manifest
+        if: ${{ hashFiles('apps/api/dist/**') != '' }}
+        run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name api --path apps/api/dist --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/api-artifact-manifest.json
+      - name: Create Web artifact manifest
+        if: ${{ hashFiles('dist/apps/web/**') != '' }}
+        run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name web --path dist/apps/web --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/web-artifact-manifest.json
+      - name: Upload immutable build artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: ci-build-artifacts
+          path: |
+            apps/**/dist
+            packages/**/dist
+            tools/**/dist
+            reports/ci-cd-platform/*-artifact-manifest.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: validate }
 
   validate-oracle:
     name: Validate Oracle
@@ -161,21 +220,27 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'false'
+          setup-uv: 'false'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
-        env: { TEST_REPORT_NAME: boundary-database }
+        env: { TEST_REPORT_NAME: boundary-database, DELIVERY_LANE: boundary }
       - name: Desktop IPC boundary
         if: needs.scope-detector.outputs.has_desktop_boundary == 'true'
         run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run desktop:test:ipc
-        env: { TEST_REPORT_NAME: desktop-ipc }
+        env: { TEST_REPORT_NAME: desktop-ipc, DELIVERY_LANE: boundary }
       - name: Desktop main boundary
         if: needs.scope-detector.outputs.has_desktop_boundary == 'true'
         run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run desktop:test:main
-        env: { TEST_REPORT_NAME: desktop-main }
+        env: { TEST_REPORT_NAME: desktop-main, DELIVERY_LANE: boundary }
       - name: Smoke boundary
         if: needs.scope-detector.outputs.has_smoke == 'true'
         run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:smoke --parallel=2 --outputStyle=static
-        env: { TEST_REPORT_NAME: smoke }
+        env: { TEST_REPORT_NAME: smoke, DELIVERY_LANE: boundary }
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: boundary }
 
   boundary-oracle:
     name: Boundary Oracle
@@ -208,11 +273,17 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'false'
+          setup-uv: 'false'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
-        env: { TEST_REPORT_NAME: integration-database }
+        env: { TEST_REPORT_NAME: integration-database, DELIVERY_LANE: integration }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:integration --parallel=1 --outputStyle=static
-        env: { TEST_REPORT_NAME: integration }
+        env: { TEST_REPORT_NAME: integration, DELIVERY_LANE: integration }
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: integration }
 
   integration-oracle:
     name: Integration Oracle
@@ -229,8 +300,8 @@ jobs:
 
   web-flow-shard:
     name: Web Flow Shard (${{ matrix.shard }})
-    needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_web_flow == 'true'
+    needs: [scope-detector, build]
+    if: needs.scope-detector.result == 'success' && needs.build.result == 'success' && needs.scope-detector.outputs.has_web_flow == 'true'
     runs-on: ubuntu-latest
     strategy: { fail-fast: false, matrix: { shard: ['1/4', '2/4', '3/4', '4/4'] } }
     env:
@@ -247,9 +318,25 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'false'
+          setup-uv: 'false'
+          capabilities: node,pnpm,playwright,postgres
+          consume-delivery-manifest: 'true'
+      - name: Download immutable build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: ci-build-artifacts
+          path: .
+      - name: Verify API artifact
+        if: ${{ hashFiles('reports/ci-cd-platform/api-artifact-manifest.json') != '' }}
+        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist
+      - name: Verify Web artifact
+        if: ${{ hashFiles('reports/ci-cd-platform/web-artifact-manifest.json') != '' }}
+        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
-        env: { TEST_REPORT_NAME: web-database }
+        env: { TEST_REPORT_NAME: web-database, DELIVERY_LANE: web }
       - name: Cache Playwright browser
         uses: actions/cache@v5
         with:
@@ -260,6 +347,8 @@ jobs:
       - run: node ./tools/test-system-v2/run-command.mjs -- node ./tools/test-system-v2/run-web-shard.mjs ${{ matrix.shard }}
         env:
           TEST_REPORT_NAME: web-flow-${{ strategy.job-index }}
+          DELIVERY_LANE: web
+          E2E_PREBUILT_ARTIFACT: '1'
       - uses: actions/upload-artifact@v6
         if: always()
         with:
@@ -276,6 +365,8 @@ jobs:
             apps/web/playwright-report
           if-no-files-found: ignore
           retention-days: 7
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: web }
 
   web-flow-oracle:
     name: Web Flow Oracle
@@ -299,9 +390,15 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'false'
+          setup-uv: 'false'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:coverage --parallel=2 --outputStyle=static
-        env: { TEST_REPORT_NAME: coverage }
+        env: { TEST_REPORT_NAME: coverage, DELIVERY_LANE: coverage }
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: coverage }
 
   coverage-oracle:
     name: Coverage Oracle
@@ -325,9 +422,15 @@ jobs:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
-        with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          setup-python: 'false'
+          setup-uv: 'false'
+          consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:perf --parallel=1 --outputStyle=static
-        env: { TEST_REPORT_NAME: performance }
+        env: { TEST_REPORT_NAME: performance, DELIVERY_LANE: performance }
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: performance }
 
   performance-oracle:
     name: Performance Oracle
