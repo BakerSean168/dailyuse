@@ -3,6 +3,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { classifyFailure } from './lib/failure-classification.mjs';
+// The execution adapter is the single intentional consumer of the versioned CI/CD contracts.
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   digest,
   validateDeliveryManifest,

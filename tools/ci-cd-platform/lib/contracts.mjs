@@ -58,7 +58,8 @@ function assertDigest(value, field) {
 
 function assertSelfDigest(value, field) {
   assertDigest(value?.digest, `${field}.digest`);
-  const { digest: ignored, ...content } = value;
+  const content = { ...value };
+  delete content.digest;
   assert(value.digest === digest(content), `${field}.digest does not match content`);
 }
 
