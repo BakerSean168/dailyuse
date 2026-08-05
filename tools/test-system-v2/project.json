@@ -1,0 +1,49 @@
+{
+  "name": "test-system-v2",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": ["scope:tools", "type:plugin", "layer:testing"],
+  "sourceRoot": "tools/test-system-v2",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/**/*"],
+      "options": { "command": "node --test tools/test-system-v2/__tests__/*.test.mjs" }
+    },
+    "test:inventory": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/apps/**/*",
+        "{workspaceRoot}/packages/**/*",
+        "{workspaceRoot}/tools/test-system-v2/**/*"
+      ],
+      "outputs": ["{workspaceRoot}/tools/test-system-v2/test-inventory.json"],
+      "options": { "command": "node ./tools/test-system-v2/inventory.mjs --check" }
+    },
+    "test:governance": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/test-system-v2/**/*",
+        "{workspaceRoot}/apps/**/project.json",
+        "{workspaceRoot}/packages/**/project.json"
+      ],
+      "options": {
+        "command": "node ./tools/test-system-v2/inventory.mjs --check && node ./tools/test/test-target-governance.mjs --check"
+      }
+    },
+    "scope": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": { "command": "node ./tools/test-system-v2/lib/scope-detector.mjs" }
+    },
+    "ruleset": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{workspaceRoot}/.github/rulesets/main.json", "{projectRoot}/ruleset-check.mjs"],
+      "options": { "command": "node ./tools/test-system-v2/ruleset-check.mjs" }
+    }
+  }
+}

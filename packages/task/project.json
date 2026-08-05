@@ -56,13 +56,21 @@
         "cwd": "packages/task"
       }
     },
-    "test:bench": {
+    "test:perf": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}-bench"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}-perf"],
       "inputs": ["default", "^production"],
       "cache": false,
       "options": {
-        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.performance.config.ts -t \"acceptable time\"",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.performance.config.ts",
+        "cwd": "packages/task"
+      }
+    },
+    "test:perf:experiment": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node --expose-gc ../../node_modules/vitest/vitest.mjs run --config vitest.performance-experiment.config.ts --reporter=json --outputFile=../../reports/test-system-v2/performance-experiment.json",
         "cwd": "packages/task"
       }
     },

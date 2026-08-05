@@ -6,6 +6,7 @@ import {
   createWebServer,
   getE2EWebOrigin,
 } from './playwright.server';
+import { WEB_FLOW_SPECS } from './web-flow-specs.mjs';
 
 /**
  * Playwright 配置
@@ -16,30 +17,7 @@ export default defineConfig({
   // 避免日常回归被跨进程准备成本拖慢。
   testDir: './e2e',
   // 默认入口进一步收口成 AI 可依赖的核心业务回归集合。
-  testMatch: [
-    '**/ai/goal-workflow.spec.ts',
-    '**/ai/multi-engine-host.spec.ts',
-    '**/authentication/auth-flow.spec.ts',
-
-    '**/authentication/auth-login.spec.ts',
-    '**/authentication/auth-password.spec.ts',
-    '**/authentication/auth-register.spec.ts',
-    '**/authentication/auth-oauth.spec.ts',
-    '**/authentication/auth-page-contract.spec.ts',
-    '**/dashboard/dashboard-overview.spec.ts',
-    '**/goal/goal-crud.spec.ts',
-    '**/note/legacy-note-mutation-boundary.spec.ts',
-    '**/note/note-workspace.spec.ts',
-    '**/notification/notification-center.spec.ts',
-    '**/notification/reminder-notification-loop.spec.ts',
-    '**/reminder/reminder-template-crud.spec.ts',
-    '**/schedule/schedule-calendar.spec.ts',
-    '**/task/task-template-crud.spec.ts',
-    '**/task/task-completion-loop.spec.ts',
-    '**/user-settings/notifications.spec.ts',
-    '**/user-settings/persistence.spec.ts',
-    '**/user-settings/data-portability.spec.ts',
-  ],
+  testMatch: WEB_FLOW_SPECS.map((spec) => `**/${spec}`),
   testIgnore: [
     'sync/**',
     'desktop-screenshots/**',
@@ -63,7 +41,7 @@ export default defineConfig({
   fullyParallel: false,
   // PR 中优先快速暴露确定性契约错误；完整覆盖由四个独立 CI shard 汇总。
   maxFailures: process.env.CI ? 5 : 0,
-  retries: process.env.CI ? 1 : 0,
+  retries: 0,
 
   // 单 worker 可以避免数据污染，也让失败更容易复现。
   workers: 1,

@@ -7313,7 +7313,7 @@
               },
               "configurations": {}
             },
-            "test:bench": {
+            "test:perf": {
               "inputs": [
                 "default",
                 "^production"

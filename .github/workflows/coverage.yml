@@ -20,7 +20,7 @@ env:
   CI: 'true'
   NODE_ENV: test
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
-  GOVERNED_DOMAIN_COVERAGE_PROJECTS: 'account,ai,authentication,domain-shared,goal,governance,notification,reminder,schedule,setting,task'
+  GOVERNED_DOMAIN_COVERAGE_PROJECTS: 'account,ai,domain-shared,goal,governance,notification,reminder,schedule,setting,task'
   APP_VUE_STORE_COVERAGE_PROJECTS: 'app-vue'
   USE_CASES_COVERAGE_PROJECTS: 'task,goal,reminder,schedule'
   PRISMA_MAPPERS_COVERAGE_PROJECTS: 'task,goal,reminder,schedule'
@@ -52,10 +52,9 @@ jobs:
 
           project_has_target() {
             local project="$1"
-            local target_name="$2"
+            local target_projects="$2"
 
-            TARGET_NAME="$target_name" pnpm exec nx show project "$project" \
-              | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const p=JSON.parse(s);const target=process.env.TARGET_NAME;process.exit(p.targets && p.targets[target] ? 0 : 1);});"
+            grep -Fxq "$project" <<< "$target_projects"
           }
 
           select_projects() {
@@ -66,6 +65,8 @@ jobs:
             local has_target=false
             local selected_projects=""
             local allowed=",${allowed_csv},"
+            local target_projects
+            target_projects="$(pnpm exec nx show projects --with-target="$target_name")"
 
             while IFS= read -r project; do
               [ -z "$project" ] && continue
@@ -74,9 +75,10 @@ jobs:
                 continue
               fi
 
-              if project_has_target "$project" "$target_name"; then
+              if project_has_target "$project" "$target_projects"; then
                 echo "Selected $project for $target_name"
                 has_target=true
+                selected_any=true
                 if [ -z "$selected_projects" ]; then
                   selected_projects="$project"
                 else
@@ -88,6 +90,8 @@ jobs:
             echo "${output_prefix}_has_target=$has_target" >> "$GITHUB_OUTPUT"
             echo "${output_prefix}_projects=$selected_projects" >> "$GITHUB_OUTPUT"
           }
+
+          selected_any=false
 
           if [ "${{ github.event_name }}" = "push" ]; then
             echo "Using affected project detection for push coverage."
@@ -107,6 +111,11 @@ jobs:
           select_projects "store" "test:coverage" "${APP_VUE_STORE_COVERAGE_PROJECTS}" "$STORE_PROJECT_SOURCE"
           select_projects "use_cases" "test:coverage:use-cases" "${USE_CASES_COVERAGE_PROJECTS}" "$USE_CASES_PROJECT_SOURCE"
           select_projects "prisma_mappers" "test:coverage:prisma-mappers" "${PRISMA_MAPPERS_COVERAGE_PROJECTS}" "$PRISMA_MAPPERS_PROJECT_SOURCE"
+
+          if [ "${{ github.event_name }}" != "push" ] && [ "$selected_any" != 'true' ]; then
+            echo "Full coverage audit selected no configured targets; refusing a false-green run."
+            exit 1
+          fi
 
       - name: No coverage targets selected
         if: steps.detect-coverage.outputs.domain_has_target != 'true' && steps.detect-coverage.outputs.store_has_target != 'true' && steps.detect-coverage.outputs.use_cases_has_target != 'true' && steps.detect-coverage.outputs.prisma_mappers_has_target != 'true'

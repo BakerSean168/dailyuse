@@ -9,17 +9,14 @@ import { createMockTasks } from './benchmark-utils';
 /**
  * Simple sort by priority for testing
  */
-function sortByPriority(
-  tasks: Array<{ priority: number }>,
-): Array<{ priority: number }> {
+function sortByPriority(tasks: Array<{ priority: number }>): Array<{ priority: number }> {
   return [...tasks].sort((a, b) => b.priority - a.priority);
 }
 
 describe('Benchmarks: Memory Usage', () => {
   it('should not leak memory during sorting operations', async () => {
     if (typeof global.gc !== 'function') {
-      console.log('⚠️  Skipping memory test - run with: node --expose-gc');
-      return;
+      throw new Error('Memory experiment requires Node --expose-gc');
     }
 
     const taskCounts = [100, 500, 1000, 2000];
@@ -54,8 +51,7 @@ describe('Benchmarks: Memory Usage', () => {
 
   it('should not show excessive GC pauses', async () => {
     if (typeof global.gc !== 'function') {
-      console.log('⚠️  Skipping GC pause test - run with: node --expose-gc');
-      return;
+      throw new Error('Memory experiment requires Node --expose-gc');
     }
 
     const gcPauses: number[] = [];
@@ -68,13 +64,10 @@ describe('Benchmarks: Memory Usage', () => {
       gcPauses.push(after - before);
     }
 
-    const avgPause =
-      gcPauses.reduce((a, b) => a + b, 0) / gcPauses.length;
+    const avgPause = gcPauses.reduce((a, b) => a + b, 0) / gcPauses.length;
     const maxPause = Math.max(...gcPauses);
 
-    console.log(
-      `Average GC pause: ${avgPause.toFixed(2)}ms, Max: ${maxPause.toFixed(2)}ms`,
-    );
+    console.log(`Average GC pause: ${avgPause.toFixed(2)}ms, Max: ${maxPause.toFixed(2)}ms`);
 
     // Average GC pause should be <10ms
     expect(avgPause).toBeLessThan(10);
@@ -84,8 +77,7 @@ describe('Benchmarks: Memory Usage', () => {
 
   it('should handle large task sets without excessive heap growth', async () => {
     if (typeof global.gc !== 'function') {
-      console.log('⚠️  Skipping large set test - run with: node --expose-gc');
-      return;
+      throw new Error('Memory experiment requires Node --expose-gc');
     }
 
     global.gc();
@@ -103,7 +95,9 @@ describe('Benchmarks: Memory Usage', () => {
 
       results.push({ count, heapMB });
 
-      console.log(`Heap at ${count.toString().padStart(4)} tasks: ${heapMB.toFixed(2).padStart(6)} MB`);
+      console.log(
+        `Heap at ${count.toString().padStart(4)} tasks: ${heapMB.toFixed(2).padStart(6)} MB`,
+      );
     }
 
     // Verify linear growth (no exponential spike)
@@ -118,10 +112,7 @@ describe('Benchmarks: Memory Usage', () => {
 
   it('should not accumulate dead objects after sorting', async () => {
     if (typeof global.gc !== 'function') {
-      console.log(
-        '⚠️  Skipping object accumulation test - run with: node --expose-gc',
-      );
-      return;
+      throw new Error('Memory experiment requires Node --expose-gc');
     }
 
     global.gc();
@@ -145,8 +136,7 @@ describe('Benchmarks: Memory Usage', () => {
 
   it('should show realistic memory patterns for real-world load', async () => {
     if (typeof global.gc !== 'function') {
-      console.log('⚠️  Skipping realistic load test - run with: node --expose-gc');
-      return;
+      throw new Error('Memory experiment requires Node --expose-gc');
     }
 
     const samples: number[] = [];
@@ -156,8 +146,7 @@ describe('Benchmarks: Memory Usage', () => {
     for (let i = 0; i < 50; i++) {
       global.gc();
 
-      // Random task count between 100-3000
-      const count = 100 + Math.random() * 2900;
+      const count = 100 + ((i * 7919) % 2900);
       const tasks = createMockTasks(Math.floor(count));
 
       const before = process.memoryUsage().heapUsed;

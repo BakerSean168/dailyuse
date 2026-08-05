@@ -64,6 +64,7 @@
     "assets": "ui-lib",
     "@memoflow/test-utils": "tooling-lib",
     "nx-test-system": "tooling-lib",
+    "test-system-v2": "tooling-lib",
     "governance-tools": "tooling-lib",
     "time": "runtime-lib"
   },
@@ -127,6 +128,12 @@
       "target": "build",
       "type": "permanent",
       "reason": "Nx plugin: consumed directly by Nx devkit at runtime; no separate build artifact needed"
+    },
+    {
+      "project": "test-system-v2",
+      "target": "build",
+      "type": "permanent",
+      "reason": "CI and governance scripts are executed directly by Node and do not produce a build artifact"
     }
   ]
 }

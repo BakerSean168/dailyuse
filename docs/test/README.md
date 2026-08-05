@@ -14,22 +14,22 @@
 
 ## 测试类型总览
 
-| 类型                 | 主要位置                                                              | 常用入口                                                                                          |
-| -------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| 快测试（TDD 默认）   | 与源码同目录的 `*.test.ts` / `*.spec.ts`，或 `__tests__/` 子目录      | `pnpm nx run <project>:test`、`pnpm nx run <project>:test:watch`                                  |
-| 覆盖率门禁           | 领域包与 `domain-shared` 的快测试集合                                 | `pnpm nx run <project>:test:coverage`、`pnpm test:coverage:domain`、`pnpm test:coverage:affected` |
-| 集成测试             | `packages/{task,goal,schedule,reminder}/src/**/*.integration.test.ts` | `pnpm test:integration`、`pnpm nx run <project>:test:integration`                                 |
-| API 冒烟测试         | `apps/api/src/__tests__/smoke/**`                                     | `pnpm nx run api:test:smoke`                                                                      |
-| Web 契约测试         | `apps/web/src/mocks/handlers/*.spec.ts`                               | `pnpm nx run web:test`                                                                            |
-| Web E2E              | `apps/web/e2e/**`（默认入口仅核心 flow oracle）                       | `pnpm nx run web:e2e`                                                                             |
-| Web 同步回归 E2E     | `apps/web/e2e/sync/**`                                                | `pnpm nx run web:e2e:sync`                                                                        |
-| Desktop 论文截图 E2E | `apps/web/e2e/desktop-screenshots/**`                                 | `pnpm nx run web:e2e:desktop-screenshots`                                                         |
-| Desktop 专项测试     | `apps/desktop`、`apps/desktop/src/main/**`                            | `pnpm nx run desktop:test`、`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main`       |
-| 性能 / Bench         | `packages/task/**/**/*.bench.ts`                                      | `pnpm nx run task:test:bench`                                                                     |
+| 类型                 | 主要位置                                                              | 常用入口                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 快测试（TDD 默认）   | 与源码同目录的 `*.test.ts` / `*.spec.ts`，或 `__tests__/` 子目录      | `pnpm nx run <project>:test`、`pnpm nx run <project>:test:watch`                                                                 |
+| 覆盖率门禁           | 领域包与 `domain-shared` 的快测试集合                                 | `pnpm nx run <project>:test:coverage`、`pnpm test:coverage:domain`、`pnpm test:coverage:affected`                                |
+| 集成测试             | `packages/{task,goal,schedule,reminder}/src/**/*.integration.test.ts` | `pnpm test:integration`、`pnpm nx run <project>:test:integration`                                                                |
+| API 冒烟测试         | `apps/api/src/__tests__/smoke/**`                                     | `pnpm nx run api:test:smoke`                                                                                                     |
+| Web 契约测试         | `apps/web/src/mocks/handlers/*.spec.ts`                               | `pnpm nx run web:test`                                                                                                           |
+| Web E2E              | `apps/web/e2e/**`（默认入口仅核心 flow oracle）                       | `pnpm nx run web:e2e`                                                                                                            |
+| Web 同步回归 E2E     | `apps/web/e2e/sync/**`                                                | `pnpm nx run web:e2e:sync`                                                                                                       |
+| Desktop 论文截图 E2E | `apps/web/e2e/desktop-screenshots/**`                                 | `pnpm nx run web:e2e:desktop-screenshots`                                                                                        |
+| Desktop 专项测试     | `apps/desktop`、`apps/desktop/src/main/**`                            | `pnpm nx run desktop:test`、`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main`、`pnpm nx run desktop:test:boundary` |
+| 性能 / Budget        | `packages/task/**/**/*.bench.ts`                                      | `pnpm nx run task:test:perf`                                                                                                     |
 
 ## 文档索引
 
-- [test-system-v2.md](./test-system-v2.md)：下一代测试系统的目标架构、唯一归属、Nx 契约、CI Oracle 与验收预算（尚未实施）
+- [test-system-v2.md](./test-system-v2.md)：当前测试系统的唯一归属、Nx 契约、CI Oracle 与验收预算
 - [architecture.md](./architecture.md)：测试分层、职责边界、何时补哪类测试
 - [running-tests.md](./running-tests.md)：日常开发、回归排查、CI 对应命令
 - [configuration.md](./configuration.md)：测试配置、setup、helper 的入口位置

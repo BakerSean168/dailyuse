@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/test-scope-v1.json",
+  "type": "object",
+  "required": [
+    "version",
+    "projects",
+    "unit",
+    "coverage",
+    "smoke",
+    "integration",
+    "boundary",
+    "perf",
+    "webFlow"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "base": { "type": ["string", "null"] },
+    "head": { "type": ["string", "null"] },
+    "full": { "type": "boolean" },
+    "projects": { "type": "array", "items": { "type": "string" } },
+    "unit": { "type": "array", "items": { "type": "string" } },
+    "coverage": { "type": "array", "items": { "type": "string" } },
+    "smoke": { "type": "array", "items": { "type": "string" } },
+    "integration": { "type": "array", "items": { "type": "string" } },
+    "boundary": { "type": "array", "items": { "type": "string" } },
+    "perf": { "type": "array", "items": { "type": "string" } },
+    "webFlow": { "type": "boolean" }
+  },
+  "additionalProperties": false
+}

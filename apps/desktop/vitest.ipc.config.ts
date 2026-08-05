@@ -8,7 +8,15 @@ export default defineConfig({
     // Keep IPC tests rooted under src/main so they exercise handler registration
     // without pulling renderer-only setup into the suite.
     root: resolve(__dirname, 'src/main'),
-    include: ['**/__tests__/**/*.spec.ts', '**/__tests__/**/*.test.ts'],
+    include: [
+      'ipc/**/*.{test,spec}.ts',
+      'modules/auto-update/ipc/**/*.{test,spec}.ts',
+      '*-ipc.{test,spec}.ts',
+      '**/*-ipc.{test,spec}.ts',
+      'desktop-shared-ipc*.{test,spec}.ts',
+      'utils/ipc-cache*.{test,spec}.ts',
+    ],
+    exclude: ['**/node_modules/**', '**/dist/**'],
     environment: 'node',
     globals: true,
     // Centralized setup owns the Electron mock surface for all IPC specs.

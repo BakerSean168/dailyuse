@@ -16,6 +16,7 @@ const sharedConfig = createSharedConfig({
     '@memoflow/app-vue/web-shell-core': '../../packages/app-vue/src/web-shell-core.ts',
     '@memoflow/app-vue/web-overlays': '../../packages/app-vue/src/web-overlays.ts',
     '@memoflow/app-vue/web-bootstrap': '../../packages/app-vue/src/web-bootstrap.ts',
+    '@memoflow/cloud-auth': '../../packages/cloud-auth/src/index.ts',
     '@memoflow/app-vue/web-i18n': '../../packages/app-vue/src/web-i18n.ts',
     '@memoflow/reminder/client': '../../packages/reminder/src/client/index.ts',
     '@memoflow/schedule/client': '../../packages/schedule/src/client/index.ts',

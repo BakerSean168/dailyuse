@@ -23,7 +23,7 @@ const governedDomainProjects = new Set([
 
 const boundaryRequiredTargets = new Map([
   ['api', ['test', 'test:watch', 'test:smoke']],
-  ['task', ['test', 'test:watch', 'test:integration', 'test:bench']],
+  ['task', ['test', 'test:watch', 'test:integration', 'test:perf']],
   ['desktop', ['test', 'test:watch', 'test:ipc', 'test:main']],
   ['web', ['test', 'test:watch', 'e2e', 'e2e:sync']],
 ]);
@@ -67,8 +67,8 @@ for (const projectFile of projectFiles) {
   let changed = false;
 
   if (targets['test:performance']) {
-    if (!targets['test:bench']) {
-      targets['test:bench'] = targets['test:performance'];
+    if (!targets['test:perf']) {
+      targets['test:perf'] = targets['test:performance'];
       changed = true;
     }
     delete targets['test:performance'];
@@ -299,13 +299,13 @@ function getBoundaryTargetTemplates(projectName) {
           cwd: 'packages/task',
         },
       },
-      'test:bench': {
+      'test:perf': {
         executor: 'nx:run-commands',
-        outputs: ['{workspaceRoot}/coverage/{projectRoot}-bench'],
+        outputs: ['{workspaceRoot}/coverage/{projectRoot}-perf'],
         inputs: ['default', '^production'],
         cache: false,
         options: {
-          command: createVitestCommand('packages/task', 'run --config vitest.performance.config.ts -t "acceptable time"'),
+        command: createVitestCommand('packages/task', 'run --config vitest.performance.config.ts'),
           cwd: 'packages/task',
         },
       },

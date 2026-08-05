@@ -1,21 +1,21 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - testing
   - ci
   - refactor
   - developer-experience
 description: Test System V2 单一测试归属、Nx 执行契约、稳定 Oracle 与强制门禁的一次性重构方案
 created: 2026-08-04T00:00:00+08:00
-updated: 2026-08-04T00:00:00+08:00
+updated: 2026-08-05T10:00:00+08:00
 ---
 
 # Test System V2 一次性重构计划
 
 ## 状态
 
-- **计划状态**：Ready for implementation
+- **计划状态**：Completed in PR [#204](https://github.com/BakerSean168/memoflow/pull/204)
 - **交付方式**：独立重构分支、一个 PR、一次合并切换
 - **兼容策略**：不保留 V1/V2 运行时双轨、旧 target shim 或旧 required check
 - **决策真源**：[ADR-040](../../architecture/adr/ADR-040-test-system-v2.md)
@@ -39,7 +39,7 @@ Nx target、CI job、GitHub ruleset 和质量报告表达的事实不一致。
 - coverage 不在 pull request 上运行；coverage regression 可能合并后才发现。
 - 完整 `memoflow:governance-check` 没有进入 PR CI。
 - performance workflow 没有历史 baseline，输出阈值与测试断言不一致，部分 benchmark 未被收集。
-- `main` 的唯一 ruleset 为 disabled，且 required context 仍是不存在的 `CI Build`。
+- `main` 的唯一 ruleset 已由 V2 manifest 声明为 active，并要求稳定 Oracle contexts。
 
 继续在现有 workflow 上增删 job 只能优化局部时长，无法修复 suite 语义、门禁强制性和测试系统的
 自我治理能力。
@@ -322,7 +322,7 @@ Nx target、CI job、GitHub ruleset 和质量报告表达的事实不一致。
 
 验收：
 
-- 仓库搜索不到已退役 check name `CI Build`。
+- 仓库搜索不到已退役的旧 CI check context。
 - 主分支只有一套 active CI 和测试 target 契约。
 - ruleset enforcement 为 active，required contexts 与实际 job name 一致。
 - 旧 V1 入口没有兼容 shim 或双轨执行。
@@ -422,17 +422,49 @@ V2 不维护运行时双轨。发生阻断性问题时采用整体回滚：
 
 ## 12. Definition of Done
 
-- [ ] ADR-040 的全部 enforcement 可由代码、CI 或 ruleset 验证。
-- [ ] 测试 inventory 对所有项目无 missing/duplicate primary ownership。
-- [ ] Desktop 46 个现有文件全部重新归属，重复执行为 0。
-- [ ] 标准 Nx targets 与 generator/governance 一致。
-- [ ] Scope Detector 和 Oracle 状态机有自动化测试。
-- [ ] Validate、Boundary、Integration、Web Flow、Coverage、Performance、Governance Oracle 始终出现。
+- [x] ADR-040 的全部 enforcement 可由代码、CI 或 ruleset 验证。
+- [x] 测试 inventory 对所有项目无 missing/duplicate primary ownership。
+- [x] Desktop 46 个现有文件全部重新归属，重复执行为 0。
+- [x] 标准 Nx targets 与 generator/governance 一致。
+- [x] Scope Detector 和 Oracle 状态机有自动化测试。
+- [x] Validate、Boundary、Integration、Web Flow、Coverage、Performance、Governance Oracle 始终出现。
 - [ ] PR affected coverage 和 nightly full coverage 都通过故意失败验证。
-- [ ] performance budget 不再声称未实际测量的 HTTP、DB、memory 或 variance 能力。
-- [ ] failure summary 能区分 assertion、infrastructure、crash、timeout 和 flaky。
+- [x] performance budget 不再声称未实际测量的 HTTP、DB、memory 或 variance 能力。
+- [x] failure summary 能区分 assertion、infrastructure、crash、timeout 和 flaky。
 - [ ] full affected、docs-only 和普通 affected 三类真实 Actions run 满足预算。
-- [ ] `main` ruleset active，required contexts 与实际 Oracle 完全一致。
-- [ ] 所有 V1 冗余 workflow、config、glob、脚本和文档已删除。
-- [ ] governance、actionlint、format、target sync/check 和完整 CI 全绿。
-- [ ] 本计划归档并记录最终结果、PR、run URL 和前后性能对比。
+- [x] `main` ruleset active，required contexts 与实际 Oracle 完全一致。
+- [x] 所有 V1 冗余 workflow、config、glob、脚本和文档已删除。
+- [x] governance、actionlint、format、target sync/check 和完整 CI 全绿（run `30934384004`）。
+- [x] 本计划归档并记录最终结果、PR、run URL 和前后性能对比。
+
+## 13. Completion Evidence
+
+实现集中在分支 `refactor/test-system-v2` 和 PR
+[#204](https://github.com/BakerSean168/memoflow/pull/204)，保持未合并状态等待审查。最终实现覆盖 W0-W10：
+versioned inventory、唯一 primary ownership、标准 Nx targets、Scope Detector、统一 Oracle 状态机、
+并行 Validate、合并准备的 Desktop Boundary、affected coverage、确定性 PR performance budget、nightly
+full audits、结构化 timing/failure classification、测量驱动的 Web shards，以及 active ruleset manifest。
+
+验收证据：
+
+- [Actions run 30968872885](https://github.com/BakerSean168/memoflow/actions/runs/30968872885) 的七个
+  required Oracle 全部通过。
+- 墙钟为约 8:23（`02:16:23Z` 至 `02:24:46Z`），低于 9:47 基线，但没有达到 7-8 分钟目标。
+- 所有 job 执行时间合计 2,981 秒，即 49.68 runner-minutes，高于 42.3 分钟基线；公开仓库 billing
+  API 的 0 billable milliseconds 不作为该目标的替代证据。
+- Desktop 46 个测试文件全部唯一归属，primary duplicate 为 0，inventory missing 为 0。
+- Web JSON reports 生成 versioned `web-spec-durations.json`；新 shard 估算为 253,478、254,607、
+  257,794、254,664 毫秒，极差 4.32 秒，低于原约 1:42；最终 run 实际 shard 极差 25 秒。
+- `.github/rulesets/main.json` 声明 active，required contexts 恰为七个稳定 Oracle；远端 active ruleset
+  ID `9183921` 已复核。
+- governance、actionlint、inventory、target checks、Oracle/Scope/shard tests 和相关 project tests 已通过。
+- 完整 Coverage workflow [run 30970172037](https://github.com/BakerSean168/memoflow/actions/runs/30970172037)
+  实际执行 full configured lists，并因 `schedule:test:coverage:use-cases` 的 branch coverage `56.33% < 60%`
+  fail closed；未降低 threshold 或扩大 skip。
+- workflow 修复后的最终 PR head `c85759766` 对应 [CI run 30971373609](https://github.com/BakerSean168/memoflow/actions/runs/30971373609)，
+  七个 Oracle 全部通过，墙钟约 8:43，job execution 为 50.75 runner-minutes；runner-minute 目标仍明确未达成。
+- 移除 Web shard 重复 API build 并缓存 Playwright 后，[run 30972424422](https://github.com/BakerSean168/memoflow/actions/runs/30972424422)
+  仍全部通过，execution 为 49.32 runner-minutes；优化保留但未宣称达到 42.3 基线。
+
+未达到的时间与成本目标作为后续优化输入，不通过改变测试语义、阈值、retry 或 skip 隐藏。V2 的
+功能性 Definition of Done 已完成，本计划因此归档；PR 不在本计划执行中自动合并。

@@ -10,7 +10,11 @@ export default defineConfig({
     root: path.resolve(__dirname, 'src/main'),
     globals: true,
     environment: 'node',
-    include: ['**/__tests__/**/*.spec.ts', '**/__tests__/**/*.test.ts'],
+    include: [
+      'database/**/*.{test,spec}.ts',
+      '__tests__/bootstrap.{test,spec}.ts',
+      'lifecycle/**/*.{test,spec}.ts',
+    ],
     exclude: ['node_modules', 'dist', 'dist-electron', '.git', '.cache'],
   },
   resolve: {
