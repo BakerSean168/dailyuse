@@ -82,3 +82,10 @@ Oracle 全部通过；该 run 的墙钟约 8:43，job execution 合计 3,045 秒
 随后移除 Web shard 的重复 API build，并缓存 Playwright 浏览器；[run 30972424422](https://github.com/BakerSean168/memoflow/actions/runs/30972424422)
 仍七个 Oracle 全部通过，但 execution 为 49.32 runner-minutes，未达到 42.3 基线。该实验保留在实现
 中，因为它删除了真实重复工作，即使共享 runner 噪声使单次测量没有显著下降。
+
+最终 CI/CD Platform V2 head `49775316f` 的 [run 30995540184](https://github.com/BakerSean168/memoflow/actions/runs/30995540184)
+再次通过全部稳定 Oracle、四个 Web shard 和 `Delivery Observation`。run summary 记录 setup `279,052 ms`、
+lane execution `1,116,601 ms`、最长 lane `284,047 ms`，manifest digest
+`615b3976e39aefb891d5f0f95083afd18497c91fa6d2b7cc1d64b83e1adce80c`，无 failures、无 missing lanes。
+四个 Web shard 的实际 job 时长为 5:52、5:58、6:08、6:16，极差 24 秒；这证明 shard 平衡和登录
+helper 修复在该 head 上有效，但仍不足以替代至少五次 comparable timing 的 P50/P95 验收。

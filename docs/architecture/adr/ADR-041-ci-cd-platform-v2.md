@@ -148,10 +148,13 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
   `database-runtime` 六种产物；API prebuilt Docker path 同时检查 API、传递 workspace runtime
   closure、Migrator、Database runtime 和 Database package。
 
-新分支首个完整远端验证已完成：[Actions run 30991693177](https://github.com/BakerSean168/memoflow/actions/runs/30991693177)
-绑定 commit `f6e0f1a22`，四个 Web shard 均通过 artifact closure 恢复、API/Web/Database verifier 和
-Playwright，七个 Oracle 与 `Delivery Observation` 全部成功；run summary 的 `missingLanes` 为空。
-仍需补齐 release promotion dry run 和至少五次 comparable timing，才能把单次成功转化为长期成本结论。
+最终 head 的完整远端验证已完成：[Actions run 30995540184](https://github.com/BakerSean168/memoflow/actions/runs/30995540184)
+绑定 commit `49775316f599579329959a7c6bcd13c854f3671d`，四个 Web shard 均通过 artifact closure 恢复、
+API/Web/Database verifier 和 Playwright，七个 Oracle 与 `Delivery Observation` 全部成功；run summary 的
+`missingLanes` 为空，manifest digest 为 `615b3976e39aefb891d5f0f95083afd18497c91fa6d2b7cc1d64b83e1adce80c`。
+基于同一 head 的 production promotion dry-run 也已通过，生成六件 artifact closure 的 promotion receipt
+`12470f0f5d104adc4d2faa3c310ed061f63691c3d6d9559a73d41b2d3fa26174`；该验证没有触碰真实生产环境。
+仍需至少五次 comparable timing 和故障注入报告，才能把单次成功转化为长期成本与恢复结论。
 旧 PR #205 仍是历史实现，不作为本分支证据。
 
 ## References
