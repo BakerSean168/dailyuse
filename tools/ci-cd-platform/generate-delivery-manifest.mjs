@@ -4,9 +4,9 @@ import { execFile } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import path from 'node:path';
-import { detectScope } from '../test-system-v2/lib/scope-detector.mjs';
 import { buildProvenance, digest, validateDeliveryManifest } from './lib/contracts.mjs';
 import { classifyRisk, selectLanes } from './lib/risk.mjs';
+import { detectScope } from './lib/scope-detector.mjs';
 
 const exec = promisify(execFile);
 
