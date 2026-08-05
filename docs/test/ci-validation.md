@@ -58,3 +58,7 @@ coverage，并在 `schedule:test:coverage:use-cases` 的 branch coverage `56.33%
 覆盖 nightly-audit 修复后的最终 PR head `c85759766` 由
 [Actions run 30971373609](https://github.com/BakerSean168/memoflow/actions/runs/30971373609) 验证，七个
 Oracle 全部通过；该 run 的墙钟约 8:43，job execution 合计 3,045 秒（50.75 runner-minutes）。
+
+随后移除 Web shard 的重复 API build，并缓存 Playwright 浏览器；[run 30972424422](https://github.com/BakerSean168/memoflow/actions/runs/30972424422)
+仍七个 Oracle 全部通过，但 execution 为 49.32 runner-minutes，未达到 42.3 基线。该实验保留在实现
+中，因为它删除了真实重复工作，即使共享 runner 噪声使单次测量没有显著下降。

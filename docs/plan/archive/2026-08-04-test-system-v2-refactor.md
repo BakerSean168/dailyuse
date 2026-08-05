@@ -463,6 +463,8 @@ full audits、结构化 timing/failure classification、测量驱动的 Web shar
   fail closed；未降低 threshold 或扩大 skip。
 - workflow 修复后的最终 PR head `c85759766` 对应 [CI run 30971373609](https://github.com/BakerSean168/memoflow/actions/runs/30971373609)，
   七个 Oracle 全部通过，墙钟约 8:43，job execution 为 50.75 runner-minutes；runner-minute 目标仍明确未达成。
+- 移除 Web shard 重复 API build 并缓存 Playwright 后，[run 30972424422](https://github.com/BakerSean168/memoflow/actions/runs/30972424422)
+  仍全部通过，execution 为 49.32 runner-minutes；优化保留但未宣称达到 42.3 基线。
 
 未达到的时间与成本目标作为后续优化输入，不通过改变测试语义、阈值、retry 或 skip 隐藏。V2 的
 功能性 Definition of Done 已完成，本计划因此归档；PR 不在本计划执行中自动合并。
