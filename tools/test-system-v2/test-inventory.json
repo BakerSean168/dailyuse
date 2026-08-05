@@ -3674,11 +3674,27 @@
       "primarySuite": "unit"
     },
     {
+      "path": "tools/ci-cd-platform/__tests__/observe-lane.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/observe-run.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
       "path": "tools/ci-cd-platform/__tests__/promotion.test.mjs",
       "primarySuite": "unit"
     },
     {
+      "path": "tools/ci-cd-platform/__tests__/registry.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
       "path": "tools/ci-cd-platform/__tests__/risk.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/workspace-receipt.test.mjs",
       "primarySuite": "unit"
     },
     {
@@ -4554,8 +4570,12 @@
       "tools/ci-cd-platform/__tests__/contracts.test.mjs",
       "tools/ci-cd-platform/__tests__/failure-matrix.test.mjs",
       "tools/ci-cd-platform/__tests__/manifest.test.mjs",
+      "tools/ci-cd-platform/__tests__/observe-lane.test.mjs",
+      "tools/ci-cd-platform/__tests__/observe-run.test.mjs",
       "tools/ci-cd-platform/__tests__/promotion.test.mjs",
+      "tools/ci-cd-platform/__tests__/registry.test.mjs",
       "tools/ci-cd-platform/__tests__/risk.test.mjs",
+      "tools/ci-cd-platform/__tests__/workspace-receipt.test.mjs",
       "tools/docker/local-compose.env-shadow.spec.mjs",
       "tools/runtime/load-profiles.spec.mjs",
       "tools/test-system-v2/__tests__/failure-classification.test.mjs",
@@ -4570,7 +4590,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 831,
+    "unit": 835,
     "integration": 10,
     "smoke": 2,
     "boundary-ipc": 9,
