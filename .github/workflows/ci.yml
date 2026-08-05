@@ -393,7 +393,9 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - uses: ./.github/actions/publish-lane-evidence
-        with: { lane: web }
+        with:
+          lane: web
+          artifact-suffix: shard-${{ strategy.job-index }}
 
   web-flow-oracle:
     name: Web Flow Oracle
