@@ -148,9 +148,11 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
   `database-runtime` 六种产物；API prebuilt Docker path 同时检查 API、传递 workspace runtime
   closure、Migrator、Database runtime 和 Database package。
 
-仍需在远端完成一次新分支 CI 的真实切换验证：Web shards 实际执行、所有 Oracle 通过、artifact
-下载/晋级 dry run、run summary evidence 和至少五次 comparable timing。远端证据未完成前，本 ADR
-不标记为 `Implemented`，也不把旧 PR #205 的结果当作本分支证据。
+新分支首个完整远端验证已完成：[Actions run 30991693177](https://github.com/BakerSean168/memoflow/actions/runs/30991693177)
+绑定 commit `f6e0f1a22`，四个 Web shard 均通过 artifact closure 恢复、API/Web/Database verifier 和
+Playwright，七个 Oracle 与 `Delivery Observation` 全部成功；run summary 的 `missingLanes` 为空。
+仍需补齐 release promotion dry run 和至少五次 comparable timing，才能把单次成功转化为长期成本结论。
+旧 PR #205 仍是历史实现，不作为本分支证据。
 
 ## References
 
