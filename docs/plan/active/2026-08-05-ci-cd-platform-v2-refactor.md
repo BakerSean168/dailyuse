@@ -29,22 +29,37 @@ updated: 2026-08-05T00:00:00Z
 本分支已经把平台契约和主流程一次性收敛到以下边界；剩余项目是验证和切换证据，不是再设计一轮
 workflow：
 
-| Work package               | 当前状态            | 证据                                                                                           |
-| -------------------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
-| W1 contracts/schema        | 已实现              | `tools/ci-cd-platform/schemas/`、digest negative tests                                         |
-| W2 workspace/capabilities  | 已实现              | `setup-nx-affected-job`、`workspace-receipt-v1`                                                |
-| W3 control/risk/DAG input  | 已实现              | `generate-delivery-manifest`、`create-lane-input`                                              |
-| W4 immutable artifacts     | 已实现              | artifact registry、content/source digest verifier、API runtime closure、Docker prebuilt checks |
-| W5 lane execution          | 已实现              | lane registry、lane result、stable Oracle workflow                                             |
-| W6 isolation contract      | 已实现/保留真实隔离 | boundary/integration/Web 独立 PostgreSQL service 与 lane policy                                |
-| W7 observation/budget data | 已实现              | lane/run summary、setup/execution/cache/failure fields                                         |
-| W8 nightly audit           | 已接入              | coverage/performance full workflow 复用同一 manifest/input contract                            |
-| W9 release promotion       | 已实现              | production artifact closure、promotion manifest、verified download                             |
-| W10 governance/security    | 已实现              | ruleset check、最小权限、fail-closed verifier                                                  |
-| W11 shadow/fault injection | 待远端验证          | 新分支首次 Actions run 和故意失败场景                                                          |
-| W12 cutover/archive        | 待远端验证          | required context 观察、旧 PR #205 关闭/归档和最终证据                                          |
+| Work package               | 当前状态                         | 证据                                                                                                                                       |
+| -------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| W1 contracts/schema        | 已实现                           | `tools/ci-cd-platform/schemas/`、digest negative tests                                                                                     |
+| W2 workspace/capabilities  | 已实现                           | `setup-nx-affected-job`、`workspace-receipt-v1`                                                                                            |
+| W3 control/risk/DAG input  | 已实现                           | `generate-delivery-manifest`、`create-lane-input`                                                                                          |
+| W4 immutable artifacts     | 已实现                           | artifact registry、content/source digest verifier、API runtime closure、Docker prebuilt checks                                             |
+| W5 lane execution          | 已实现                           | lane registry、lane result、stable Oracle workflow                                                                                         |
+| W6 isolation contract      | 已实现/保留真实隔离              | boundary/integration/Web 独立 PostgreSQL service 与 lane policy                                                                            |
+| W7 observation/budget data | 已实现                           | lane/run summary、setup/execution/cache/failure fields                                                                                     |
+| W8 nightly audit           | 已接入                           | coverage/performance full workflow 复用同一 manifest/input contract                                                                        |
+| W9 release promotion       | 已实现                           | production artifact closure、promotion manifest、verified download                                                                         |
+| W10 governance/security    | 已实现                           | ruleset check、最小权限、fail-closed verifier                                                                                              |
+| W11 shadow/fault injection | 首轮远端验证已通过；故障注入待补 | [run 30991693177](https://github.com/BakerSean168/memoflow/actions/runs/30991693177)：7 Oracle、4 Web shard、Delivery Observation 全部成功 |
+| W12 cutover/archive        | 待远端验证                       | required context 观察、旧 PR #205 关闭/归档和最终证据                                                                                      |
 
 W11/W12 不会产生第二套实现；它们只验证本分支已经完成的契约，并在证据充分后把本计划归档。
+
+## Remote Evidence Checkpoint
+
+首个完整 PR run [30991693177](https://github.com/BakerSean168/memoflow/actions/runs/30991693177) 绑定
+`f6e0f1a22`，结果为 success。四个 Web shard 分别通过 18、20、18、18 个测试；每个 shard 都完成
+`api-runtime-closure` 恢复、API/Web/Database artifact digest 校验、数据库初始化和 Playwright。
+`Delivery Observation` 产出的 `run-summary-v1` 明确记录 7 个 lane、`missingLanes: []`、无 failures，
+并绑定 manifest digest `be83edf6d50ea36c11f3d9a32f9c77549ebe82eda9d0eb8315ea599492bc1a51`。
+
+该证据证明本次结构性重构在 fresh runner 上闭环工作，不证明长期 P50/P95 或 runner-minute 预算已经
+达标。计划剩余的验收证据是：
+
+- 至少 5 次同范围 run 的 setup、execution、artifact download、Web shard balance 和 runner-minute 对比。
+- release promotion dry run，确认生产六件 artifact closure 和 Docker prebuilt path 均可晋级。
+- 故障注入：detector failure、artifact mismatch、closure entry 缺失、取消和权限失败必须 fail closed。
 
 ## 设计不变量
 
