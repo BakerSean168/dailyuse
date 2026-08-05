@@ -189,7 +189,21 @@ async function registerViaAuth(page: Page, email: string, password: string): Pro
   await page.locator('#reg-email').fill(email);
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
+
+  // The test mail capture is written before the sign-up response necessarily
+  // reaches the browser. Wait for the auth transaction to commit before using
+  // its verification link; otherwise the verification endpoint can observe a
+  // user that has not been persisted yet.
+  const signUpResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/auth/sign-up/email') && response.request().method() === 'POST',
+    { timeout: TIMEOUT_CONFIG.API_REQUEST },
+  );
   await page.getByTestId('register-submit-button').click();
+  const signUpResponse = await signUpResponsePromise;
+  if (!signUpResponse.ok()) {
+    throw new Error(`Registration failed with HTTP ${signUpResponse.status()}`);
+  }
   await completeEmailVerification(page, email, password);
 }
 
