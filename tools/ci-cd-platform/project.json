@@ -1,0 +1,55 @@
+{
+  "name": "ci-cd-platform",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "tools/ci-cd-platform",
+  "tags": ["scope:tools", "type:platform", "layer:ci"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/**/*"],
+      "options": { "command": "node --test tools/ci-cd-platform/__tests__/*.test.mjs" }
+    },
+    "contract": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/**/*"],
+      "options": {
+        "command": "node --test tools/ci-cd-platform/__tests__/contracts.test.mjs tools/ci-cd-platform/__tests__/risk.test.mjs"
+      }
+    },
+    "governance": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/.github/workflows/**/*",
+        "{workspaceRoot}/.github/actions/**/*"
+      ],
+      "options": { "command": "node --test tools/ci-cd-platform/__tests__/*.test.mjs" }
+    },
+    "manifest": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "outputs": ["{workspaceRoot}/scope/delivery-manifest-v1.json"],
+      "options": { "command": "node tools/ci-cd-platform/generate-delivery-manifest.mjs" }
+    },
+    "artifact": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": { "command": "node tools/ci-cd-platform/__tests__/artifact-contract.test.mjs" }
+    },
+    "promotion": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": { "command": "node tools/ci-cd-platform/__tests__/promotion.test.mjs" }
+    },
+    "failure-matrix": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/**/*"],
+      "options": { "command": "node tools/ci-cd-platform/__tests__/failure-matrix.test.mjs" }
+    }
+  }
+}

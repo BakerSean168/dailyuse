@@ -13,6 +13,18 @@ inputs:
     description: Whether to set up uv for ai-service and other Python-backed Nx targets
     required: false
     default: 'true'
+  capabilities:
+    description: Comma-separated toolchain capabilities for the lane receipt
+    required: false
+    default: 'node,pnpm'
+  enable-nx-cache:
+    description: Whether to restore the lockfile-keyed Nx cache
+    required: false
+    default: 'true'
+  consume-delivery-manifest:
+    description: Download and validate the manifest produced by Scope Detector
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -47,15 +59,39 @@ runs:
       run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
 
     - name: Cache pnpm store
+      id: pnpm-cache
       uses: actions/cache@v5
       with:
         path: ${{ steps.pnpm-store.outputs.path }}
         key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: pnpm-store-${{ runner.os }}-
 
+    - name: Cache Nx task results
+      if: ${{ inputs.enable-nx-cache == 'true' }}
+      id: nx-cache
+      uses: actions/cache@v5
+      with:
+        path: .nx/cache
+        key: nx-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+        restore-keys: |
+          nx-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
     - name: Install dependencies
       shell: bash
       run: pnpm install --frozen-lockfile --reporter=append-only
+
+    - name: Write workspace receipt
+      shell: bash
+      env:
+        CI_CAPABILITIES: ${{ inputs.capabilities }}
+        PNPM_CACHE_HIT: ${{ steps.pnpm-cache.outputs.cache-hit || 'false' }}
+        NX_CACHE_HIT: ${{ steps.nx-cache.outputs.cache-hit || 'false' }}
+        WORKSPACE_RECEIPT_OUTPUT: reports/ci-cd-platform/workspace-receipt.json
+      run: node ./tools/ci-cd-platform/write-workspace-receipt.mjs
+
+    - name: Consume delivery manifest
+      if: ${{ inputs.consume-delivery-manifest == 'true' }}
+      uses: ./.github/actions/consume-delivery-manifest
 
     - name: Derive SHAs for affected
       shell: bash

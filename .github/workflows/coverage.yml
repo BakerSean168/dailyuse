@@ -20,6 +20,7 @@ env:
   CI: 'true'
   NODE_ENV: test
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+  DELIVERY_MANIFEST_PATH: scope/delivery-manifest-v1.json
   GOVERNED_DOMAIN_COVERAGE_PROJECTS: 'account,ai,domain-shared,goal,governance,notification,reminder,schedule,setting,task'
   APP_VUE_STORE_COVERAGE_PROJECTS: 'app-vue'
   USE_CASES_COVERAGE_PROJECTS: 'task,goal,reminder,schedule'
@@ -43,6 +44,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           setup-python: 'false'
           setup-uv: 'false'
+
+      - name: Generate full or affected delivery manifest
+        env:
+          NX_BASE: ${{ github.event.before }}
+          NX_HEAD: ${{ github.sha }}
+          DELIVERY_MANIFEST_OUTPUT: scope/delivery-manifest-v1.json
+        run: node ./tools/ci-cd-platform/generate-delivery-manifest.mjs
+      - name: Validate delivery manifest
+        run: node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
 
       - name: Detect coverage targets
         id: detect-coverage
@@ -95,7 +105,8 @@ jobs:
 
           if [ "${{ github.event_name }}" = "push" ]; then
             echo "Using affected project detection for push coverage."
-            DOMAIN_PROJECT_SOURCE="$(pnpm exec nx show projects --affected)"
+            AFFECTED_PROJECT_SOURCE="$(node -e "const m=require('./scope/delivery-manifest-v1.json'); console.log((m.scope.projects || []).join('\\n'))")"
+            DOMAIN_PROJECT_SOURCE="$AFFECTED_PROJECT_SOURCE"
             STORE_PROJECT_SOURCE="$DOMAIN_PROJECT_SOURCE"
             USE_CASES_PROJECT_SOURCE="$DOMAIN_PROJECT_SOURCE"
             PRISMA_MAPPERS_PROJECT_SOURCE="$DOMAIN_PROJECT_SOURCE"
@@ -125,22 +136,32 @@ jobs:
         if: steps.detect-coverage.outputs.domain_has_target == 'true'
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run-many -t test:coverage --projects="${{ steps.detect-coverage.outputs.domain_projects }}" --parallel=2 --outputStyle=static
+          DELIVERY_LANE: coverage
+          TEST_REPORT_NAME: coverage-domain
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run-many -t test:coverage --projects="${{ steps.detect-coverage.outputs.domain_projects }}" --parallel=2 --outputStyle=static
 
       - name: Run app-vue store coverage gates
         if: steps.detect-coverage.outputs.store_has_target == 'true'
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run-many -t test:coverage --projects="${{ steps.detect-coverage.outputs.store_projects }}" --parallel=1 --outputStyle=static
+          DELIVERY_LANE: coverage
+          TEST_REPORT_NAME: coverage-store
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run-many -t test:coverage --projects="${{ steps.detect-coverage.outputs.store_projects }}" --parallel=1 --outputStyle=static
 
       - name: Run use-cases coverage gates
         if: steps.detect-coverage.outputs.use_cases_has_target == 'true'
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run-many -t test:coverage:use-cases --projects="${{ steps.detect-coverage.outputs.use_cases_projects }}" --parallel=2 --outputStyle=static
+          DELIVERY_LANE: coverage
+          TEST_REPORT_NAME: coverage-use-cases
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run-many -t test:coverage:use-cases --projects="${{ steps.detect-coverage.outputs.use_cases_projects }}" --parallel=2 --outputStyle=static
 
       - name: Run prisma-mappers coverage gates
         if: steps.detect-coverage.outputs.prisma_mappers_has_target == 'true'
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run-many -t test:coverage:prisma-mappers --projects="${{ steps.detect-coverage.outputs.prisma_mappers_projects }}" --parallel=2 --outputStyle=static
+          DELIVERY_LANE: coverage
+          TEST_REPORT_NAME: coverage-prisma-mappers
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run-many -t test:coverage:prisma-mappers --projects="${{ steps.detect-coverage.outputs.prisma_mappers_projects }}" --parallel=2 --outputStyle=static
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: coverage }

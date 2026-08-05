@@ -1,7 +1,7 @@
 # CI 测试与反馈性能
 
 当前 PR workflow 是 `.github/workflows/ci.yml`。`Scope Detector` 使用统一 `NX_BASE` / `NX_HEAD`
-生成 versioned `test-scope-v1.json` artifact；后续 child 不重新解释 affected 范围。
+生成 versioned `delivery-manifest-v1.json` artifact；后续 child 只消费并校验同一份 manifest，不重新解释 affected 范围。
 
 稳定 required Oracle 始终出现：`Governance Oracle`、`Validate Oracle`、`Boundary Oracle`、
 `Integration Oracle`、`Web Flow Oracle`、`Coverage Oracle`、`Performance Oracle`。

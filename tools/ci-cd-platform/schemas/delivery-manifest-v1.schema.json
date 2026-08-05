@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/delivery-manifest-v1.schema.json",
+  "type": "object",
+  "required": ["kind", "version", "commit", "changedFiles", "risk", "scope", "lanes", "provenance"],
+  "properties": {
+    "kind": { "const": "delivery-manifest-v1" },
+    "version": { "const": 1 },
+    "commit": { "type": "string", "minLength": 1 },
+    "base": { "type": ["string", "null"] },
+    "head": { "type": ["string", "null"] },
+    "event": { "type": "string", "minLength": 1 },
+    "full": { "type": "boolean" },
+    "changedFiles": { "type": "array", "items": { "type": "string" } },
+    "risk": {
+      "type": "object",
+      "required": ["level", "reasons"],
+      "properties": {
+        "level": { "enum": ["docs", "package", "runtime", "web-flow", "root", "release"] },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "matchedLevels": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "lanes": {
+      "type": "object",
+      "additionalProperties": { "type": "boolean" }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["generator", "inputDigest"],
+      "properties": {
+        "generator": { "type": "string", "minLength": 1 },
+        "inputDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}
