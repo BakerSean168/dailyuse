@@ -327,9 +327,9 @@ jobs:
       - uses: ./.github/actions/setup-nx-affected-job
         with:
           node-version: '${{ env.NODE_VERSION }}'
-          setup-python: 'false'
-          setup-uv: 'false'
-          capabilities: node,pnpm,playwright,postgres
+          setup-python: 'true'
+          setup-uv: 'true'
+          capabilities: node,pnpm,python,uv,playwright,postgres
           consume-delivery-manifest: 'true'
       - name: Download immutable build artifacts
         uses: actions/download-artifact@v7
