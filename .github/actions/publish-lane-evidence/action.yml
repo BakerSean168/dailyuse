@@ -4,6 +4,10 @@ inputs:
   lane:
     description: Stable execution lane name
     required: true
+  artifact-suffix:
+    description: Unique suffix for matrix jobs that publish more than one evidence artifact
+    required: false
+    default: job
 runs:
   using: composite
   steps:
@@ -22,7 +26,7 @@ runs:
       if: always()
       uses: actions/upload-artifact@v6
       with:
-        name: delivery-${{ inputs.lane }}-${{ github.job }}-${{ github.run_id }}
+        name: delivery-${{ inputs.lane }}-${{ github.job }}-${{ inputs.artifact-suffix }}-${{ github.run_id }}
         path: |
           reports/test-system-v2
           reports/ci-cd-platform
