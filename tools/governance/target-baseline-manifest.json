@@ -65,6 +65,7 @@
     "@memoflow/test-utils": "tooling-lib",
     "nx-test-system": "tooling-lib",
     "test-system-v2": "tooling-lib",
+    "ci-cd-platform": "tooling-lib",
     "governance-tools": "tooling-lib",
     "time": "runtime-lib"
   },
@@ -134,6 +135,12 @@
       "target": "build",
       "type": "permanent",
       "reason": "CI and governance scripts are executed directly by Node and do not produce a build artifact"
+    },
+    {
+      "project": "ci-cd-platform",
+      "target": "build",
+      "type": "permanent",
+      "reason": "CI/CD orchestration scripts are executed directly by Node and do not produce a build artifact"
     }
   ]
 }

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/run-summary-v1.schema.json",
+  "type": "object",
+  "required": [
+    "kind",
+    "version",
+    "commit",
+    "manifestDigest",
+    "status",
+    "lanes",
+    "timing",
+    "provenance",
+    "digest"
+  ],
+  "properties": {
+    "kind": { "const": "run-summary-v1" },
+    "version": { "const": 1 },
+    "commit": { "type": "string", "minLength": 1 },
+    "manifestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "status": { "enum": ["success", "failure", "incomplete"] },
+    "lanes": { "type": "array" },
+    "missingLanes": { "type": "array", "items": { "type": "string" } },
+    "timing": { "type": "object" },
+    "provenance": { "type": "object" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": true
+}

@@ -1,6 +1,5 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const exec = promisify(execFile);
@@ -17,7 +16,7 @@ async function nxProjects(args, cwd) {
     },
   });
   return stdout
-    .split(/\r?\n/)
+    .split(/\r?\n/u)
     .map((value) => value.trim())
     .filter(Boolean)
     .sort();
@@ -57,37 +56,4 @@ export async function detectScope({
     perf,
     webFlow,
   };
-}
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  try {
-    const scope = await detectScope({ full: process.argv.includes('--full') });
-    if (process.env.SCOPE_OUTPUT) {
-      const target = path.resolve(process.env.SCOPE_OUTPUT);
-      await mkdir(path.dirname(target), { recursive: true });
-      await writeFile(target, `${JSON.stringify(scope, null, 2)}\n`);
-    }
-    if (process.env.GITHUB_OUTPUT) {
-      const lines = [
-        `unit=${scope.unit.join(',')}`,
-        `coverage=${scope.coverage.join(',')}`,
-        `smoke=${scope.smoke.join(',')}`,
-        `integration=${scope.integration.join(',')}`,
-        `boundary=${scope.boundary.join(',')}`,
-        `has_unit=${scope.unit.length > 0}`,
-        `has_coverage=${scope.coverage.length > 0}`,
-        `has_smoke=${scope.smoke.length > 0}`,
-        `has_integration=${scope.integration.length > 0}`,
-        `has_boundary=${scope.boundary.length > 0 || scope.smoke.length > 0}`,
-        `has_desktop_boundary=${scope.boundary.length > 0}`,
-        `has_perf=${scope.perf.length > 0}`,
-        `has_web_flow=${scope.webFlow}`,
-      ];
-      await appendFile(process.env.GITHUB_OUTPUT, `${lines.join('\n')}\n`);
-    }
-    process.stdout.write(`${JSON.stringify(scope, null, 2)}\n`);
-  } catch (error) {
-    console.error(`[scope-detector] ${error instanceof Error ? error.message : String(error)}`);
-    process.exitCode = 1;
-  }
 }

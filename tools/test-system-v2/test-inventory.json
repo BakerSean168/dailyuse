@@ -3658,6 +3658,58 @@
       "primarySuite": "unit"
     },
     {
+      "path": "tools/ci-cd-platform/__tests__/artifact-contract.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/contracts.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/failure-matrix.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/fault-injection.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/manifest.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/observe-lane.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/observe-run.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/promotion.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/registry.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/risk.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/runtime-closure.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/timing.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/workspace-receipt.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
       "path": "tools/docker/local-compose.env-shadow.spec.mjs",
       "primarySuite": "unit"
     },
@@ -4526,6 +4578,19 @@
       "packages/utils/src/shared/generate-uuid-keep-boundary.surface.spec.ts",
       "packages/utils/src/shared/new-id-keep-boundary.surface.spec.ts",
       "tools/agent-skills/validate-local-deploy/scripts/image-freshness.spec.mjs",
+      "tools/ci-cd-platform/__tests__/artifact-contract.test.mjs",
+      "tools/ci-cd-platform/__tests__/contracts.test.mjs",
+      "tools/ci-cd-platform/__tests__/failure-matrix.test.mjs",
+      "tools/ci-cd-platform/__tests__/fault-injection.test.mjs",
+      "tools/ci-cd-platform/__tests__/manifest.test.mjs",
+      "tools/ci-cd-platform/__tests__/observe-lane.test.mjs",
+      "tools/ci-cd-platform/__tests__/observe-run.test.mjs",
+      "tools/ci-cd-platform/__tests__/promotion.test.mjs",
+      "tools/ci-cd-platform/__tests__/registry.test.mjs",
+      "tools/ci-cd-platform/__tests__/risk.test.mjs",
+      "tools/ci-cd-platform/__tests__/runtime-closure.test.mjs",
+      "tools/ci-cd-platform/__tests__/timing.test.mjs",
+      "tools/ci-cd-platform/__tests__/workspace-receipt.test.mjs",
       "tools/docker/local-compose.env-shadow.spec.mjs",
       "tools/runtime/load-profiles.spec.mjs",
       "tools/test-system-v2/__tests__/failure-classification.test.mjs",
@@ -4540,7 +4605,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 825,
+    "unit": 838,
     "integration": 10,
     "smoke": 2,
     "boundary-ipc": 9,

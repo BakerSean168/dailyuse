@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/lane-summary-v1.schema.json",
+  "type": "object",
+  "required": [
+    "kind",
+    "version",
+    "lane",
+    "commit",
+    "manifestDigest",
+    "laneInputDigest",
+    "status",
+    "timing",
+    "failures",
+    "provenance",
+    "digest"
+  ],
+  "properties": {
+    "kind": { "const": "lane-summary-v1" },
+    "version": { "const": 1 },
+    "lane": { "type": "string", "minLength": 1 },
+    "commit": { "type": "string", "minLength": 1 },
+    "manifestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "laneInputDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "status": { "enum": ["success", "failure", "cancelled", "skipped"] },
+    "timing": { "type": "object" },
+    "failures": { "type": "array" },
+    "provenance": { "type": "object" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": true
+}
