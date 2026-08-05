@@ -1,0 +1,146 @@
+---
+tags:
+  - adr
+  - architecture
+  - ci
+  - cd
+  - delivery
+description: CI/CD Platform V2 解耦、artifact 晋级与可扩展交付平台决策
+created: 2026-08-05T00:00:00Z
+updated: 2026-08-05T00:00:00Z
+---
+
+# ADR-041: CI/CD Platform V2 解耦与可扩展交付平台
+
+**Status:** Proposed
+
+**Date:** 2026-08-05
+
+**Refines:** ADR-001、ADR-013、ADR-040，以及当前 release workflow 约定
+
+## Context
+
+Test System V2 已经统一了测试文件归属、Nx targets、Scope Detector、Oracle 和 required checks，但
+CI/CD 仍然存在平台层问题：
+
+- 每个 job 都重复 checkout、toolchain setup、pnpm install 和 workspace 准备。
+- workflow YAML 同时承担 scope 解释、环境准备、业务执行、结果聚合和发布逻辑，边界不清晰。
+- Web shard 为隔离性重复启动数据库、API 和浏览器；API 构建结果没有成为明确的可验证 artifact。
+- Nx cache、pnpm store、Playwright cache 和 build artifact 的语义混杂，无法知道何时可以安全复用。
+- PR、nightly、release 的质量目标不同，但当前流程仍以“每条 workflow 自己准备并运行”为主。
+- release 和 Docker deploy 仍可能重新安装依赖、重新构建，而不是晋级已经验证的 commit 产物。
+- 现有 timing 证明墙钟约 8.5 分钟，但 runner-minutes 约 49–51 分钟，高于约 42.3 分钟目标。
+
+继续在单个 workflow 中添加 cache、job 或条件判断，只会扩大隐式耦合，无法形成可扩展的平台契约。
+
+## Decision
+
+采用 CI/CD Platform V2，并把交付链路拆成六个逻辑平面：
+
+1. **Control Plane**：一次生成 versioned delivery manifest，负责 scope、risk、policy 和 DAG。
+2. **Workspace Plane**：统一 toolchain、依赖和可复现准备，不包含业务测试逻辑。
+3. **Artifact Plane**：管理带 commit/digest 的 build、evidence 和 release artifact。
+4. **Execution Plane**：以可插拔 lane 执行 validate、boundary、integration、web、coverage 和 performance。
+5. **Observation Plane**：统一 timing、cache、failure classification、cost 和 summary。
+6. **Release Plane**：采用 build-once, promote-many，验证过的 artifact 才能进入 main、tag 和生产。
+
+### 1. 稳定契约优先于 workflow 细节
+
+所有 plane 通过 versioned JSON manifest/receipt 连接。lane 不重新计算 affected scope，不通过隐含
+环境变量传递状态，也不直接修改其他 lane。GitHub Actions 只是第一种执行适配器，不能成为架构接口。
+
+### 2. 构建一次，产物晋级
+
+同一 commit 的 API、Web、Desktop 和 Docker 输入只构建一次；下游测试和部署消费 immutable artifact。
+Artifact 必须包含来源 commit、manifest digest、工具链版本、SBOM/attestation（适用时）和校验摘要。
+缓存可以失效，artifact 不能静默覆盖。
+
+### 3. 测试隔离与构建复用分离
+
+真实数据库、浏览器状态、integration/E2E 数据仍按 lane 或 shard 隔离；只读 build artifact、依赖缓存
+和 Playwright 浏览器可以复用。不得为了 runner-minutes 共享会改变测试结果的数据库或账号状态。
+
+### 4. 风险驱动的 PR 选择与 nightly 兜底
+
+Control Plane 根据 Nx graph、文件分类和 root inputs 生成 risk manifest，选择最小但完整的 PR lane。
+docs-only、单包、runtime/database、Web flow 和 root/toolchain 变化使用不同验证集合；nightly full audit
+继续发现 affected 漏检。风险选择不能降低对已经选中 lane 的质量门禁。
+
+### 5. 稳定 Oracle 与可插拔 child
+
+GitHub ruleset 继续只依赖稳定 Oracle。新增 lane、平台或部署目标只需要注册能力、输入输出和 owner，
+由对应 Oracle 或聚合器接入，不修改所有 workflow 的隐含分支。
+
+### 6. 最小权限与 fail closed
+
+PR 使用只读权限；生产 promotion 使用受保护环境、短期凭据和可审计身份。manifest 缺失、artifact
+mismatch、权限错误或 detector failure 均 fail closed。只有明确 infrastructure/startup failure 才能
+自动重试一次。
+
+## Consequences
+
+### Positive
+
+- Scope、构建、测试和发布互相解耦，替换 GitHub Actions 或增加新 lane 的成本下降。
+- 重复 workspace 准备和重复 API/build 工作可被测量并逐步消除。
+- release 不再从未验证的工作区重复构建，回滚变成 digest 选择。
+- 质量门禁、artifact 来源、失败分类和成本都有统一事实源。
+- 新增 mobile、preview、contract audit 或新部署平台不需要复制整套 workflow。
+
+### Negative
+
+- 需要维护 manifest schema、artifact registry、lane adapter 和更严格的权限边界。
+- artifact 上传/下载会引入网络和存储成本，必须用真实 timing 决定是否值得复用。
+- build-once 要求构建产物在不同 runner/OS 上可重现；Desktop 多平台仍需分别构建。
+- 风险分类错误会导致漏跑或过度运行，因此必须由 nightly full audit、治理测试和故意失败场景兜底。
+- 迁移期需要 shadow mode 和一次性 required context 切换，不能长期保留双轨。
+
+## Rejected Alternatives
+
+### 继续只优化测试命令
+
+拒绝。Web E2E 的真实执行、数据库隔离和单 worker 是主要下限；单独调整 Vitest/Playwright 参数无法
+解决跨 job 的重复准备、artifact 重建和发布链路重复工作。
+
+### 只增加 GitHub runner 或更激进并行
+
+拒绝。它可以减少墙钟，却会增加 runner-minutes、资源竞争和状态隔离复杂度，不能解决构建与发布重复。
+
+### 所有 job 共享一个数据库或一个长生命周期 runner
+
+拒绝。共享状态会制造污染和非确定性；长生命周期 runner 又会引入不可见环境依赖和安全风险。
+
+### 直接引入 Nx Cloud/第三方 CI 平台作为前提
+
+拒绝。平台迁移不是当前问题的必要条件；先建立与执行器无关的 manifest、artifact 和 lane 契约，之后再
+根据真实成本决定是否接入 remote cache 或其他执行平台。
+
+### PR 始终运行全量测试
+
+拒绝。它无法解决发布重复，也浪费单人维护者的反馈时间；risk-driven affected + nightly full 是更清晰的
+质量模型。
+
+## Enforcement
+
+- `delivery-manifest-v1`、`lane-input-v1`、`lane-result-v1` 和 `artifact-manifest-v1` 必须有 schema、
+  生成器和负向测试。
+- 每个 lane 必须声明 owner、输入、输出、timeout、retry、cache 和 isolation policy。
+- required Oracle 不能直接依赖未聚合的 matrix child。
+- 生产发布只能消费已验证 artifact digest；release workflow 不得直接从源码重复构建同一 commit。
+- 每次 run 必须产出 timing、cache、failure classification 和 manifest/artifact provenance。
+- nightly full audit 必须定期验证 risk classifier 没有漏检 root、database、Web 和 release 输入。
+- 新增 lane 或 artifact 类型必须更新本 ADR 关联的 registry、schema 和治理测试。
+
+## References
+
+- [CI/CD Platform V2 目标架构](../ci-cd-platform-v2.md)
+- [CI/CD Platform V2 一次性重构计划](../../plan/active/2026-08-05-ci-cd-platform-v2-refactor.md)
+- [ADR-040: Test System V2](./ADR-040-test-system-v2.md)
+- [CI 测试与反馈性能](../../test/ci-validation.md)
+- [Release 工作流](../../guides/development/release-workflow.md)
+
+## Decision Gate
+
+本 ADR 在 Action Plan 完成 W0-W3、schema 与 shadow mode 验证后从 `Proposed` 转为 `Accepted`；在旧
+workflow 删除、required contexts 切换和 release promotion 通过后标记为 `Implemented`。在此之前，
+本 ADR 是目标架构和实施约束，不代表当前 workflow 已经具备所有能力。
