@@ -54,7 +54,7 @@ jobs:
             local project="$1"
             local target_name="$2"
 
-            TARGET_NAME="$target_name" pnpm exec nx show project "$project" \
+            TARGET_NAME="$target_name" pnpm exec nx show project "$project" --json \
               | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const p=JSON.parse(s);const target=process.env.TARGET_NAME;process.exit(p.targets && p.targets[target] ? 0 : 1);});"
           }
 
