@@ -15,6 +15,7 @@ updated: 2026-04-26T00:00:00
 
 - [`../standards/architecture.md`](../standards/architecture.md)：长期有效的架构规则
 - [`adr/README.md`](./adr/README.md)：正式 ADR 索引与编号规则
+- [`ci-cd-platform-v2.md`](./ci-cd-platform-v2.md)：CI/CD Platform V2 的目标架构与稳定契约
 - [`../governance/README.md`](../governance/README.md)：仓库治理来源、检查方式与文档约定
 
 ## 使用方式
