@@ -19,6 +19,12 @@
         "command": "node --test tools/ci-cd-platform/__tests__/contracts.test.mjs tools/ci-cd-platform/__tests__/risk.test.mjs"
       }
     },
+    "schema": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/schemas/**/*", "{projectRoot}/schema-check.mjs"],
+      "options": { "command": "node tools/ci-cd-platform/schema-check.mjs" }
+    },
     "governance": {
       "executor": "nx:run-commands",
       "cache": true,
@@ -27,7 +33,9 @@
         "{workspaceRoot}/.github/workflows/**/*",
         "{workspaceRoot}/.github/actions/**/*"
       ],
-      "options": { "command": "node --test tools/ci-cd-platform/__tests__/*.test.mjs" }
+      "options": {
+        "command": "node tools/ci-cd-platform/schema-check.mjs && node --test tools/ci-cd-platform/__tests__/*.test.mjs"
+      }
     },
     "manifest": {
       "executor": "nx:run-commands",
