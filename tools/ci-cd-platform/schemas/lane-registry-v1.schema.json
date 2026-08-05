@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/lane-registry-v1.schema.json",
+  "type": "object",
+  "required": ["version", "lanes", "artifacts"],
+  "properties": {
+    "version": { "const": 1 },
+    "lanes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "owner",
+          "capabilities",
+          "inputs",
+          "outputs",
+          "environment",
+          "cache",
+          "failurePolicy"
+        ],
+        "properties": {
+          "owner": { "type": "string", "minLength": 1 },
+          "capabilities": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "inputs": { "type": "array", "items": { "type": "string" } },
+          "outputs": { "type": "array", "items": { "type": "string" } },
+          "environment": { "type": "object" },
+          "cache": { "type": "object" },
+          "failurePolicy": { "type": "object" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["path", "requiredFor"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "requiredFor": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

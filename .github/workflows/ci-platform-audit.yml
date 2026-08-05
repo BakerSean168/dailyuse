@@ -1,0 +1,30 @@
+name: CI Platform Audit
+
+on:
+  schedule:
+    - cron: '30 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fault-injection:
+    name: CI Platform Fault Matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Run fail-closed fault matrix
+        run: node tools/ci-cd-platform/run-fault-injection.mjs reports/ci-cd-platform/fault-injection-report-v1.json
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: ci-platform-fault-injection-${{ github.run_id }}
+          path: reports/ci-cd-platform/fault-injection-report-v1.json
+          if-no-files-found: error
+          retention-days: 30

@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   NODE_VERSION: '24'
@@ -24,8 +25,34 @@ env:
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
 jobs:
+  resolve-build-artifact:
+    name: Resolve Verified Main Artifact
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.resolve.outputs.run_id }}
+    steps:
+      - uses: actions/github-script@v8
+        id: resolve
+        with:
+          script: |
+            const sha = context.sha;
+            const response = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci.yml',
+              head_sha: sha,
+              status: 'success',
+              per_page: 20,
+            });
+            const run = response.data.workflow_runs.find((candidate) => candidate.head_sha === sha);
+            if (!run) core.setFailed(`No successful CI run found for ${sha}; refusing source rebuild promotion.`);
+            else core.setOutput('run_id', String(run.id));
+      - name: Resolve summary
+        run: echo "Using verified CI run ${{ steps.resolve.outputs.run_id }} for ${{ github.sha }}"
+
   build-and-push:
     name: Build & Push Images
+    needs: resolve-build-artifact
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -38,25 +65,38 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        run: corepack enable && pnpm --version
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
+      - name: Download verified build artifacts
+        uses: actions/download-artifact@v7
         with:
-          path: ~/.local/share/pnpm/store/v3
-          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: pnpm-store-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=append-only
-        env:
-          CI: 'true'
-
-      - name: Build applications
+          name: ci-build-artifacts
+          path: .
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve-build-artifact.outputs.run_id }}
+      - name: Validate delivery manifest and resolve digest
         run: |
-          pnpm nx build api --outputStyle=static
-          pnpm nx build web --configuration=production --outputStyle=static
+          node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
+          echo "DELIVERY_MANIFEST_DIGEST=$(node -p \"require('./scope/delivery-manifest-v1.json').digest\")" >> "$GITHUB_ENV"
+      - name: Restore API runtime dependency closure
+        run: node ./tools/ci-cd-platform/restore-runtime-closure.mjs reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json api-runtime-closure . "$DELIVERY_MANIFEST_DIGEST"
+      - name: Verify API and Web artifact manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json api-runtime-closure "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/migrator-artifact-manifest.json apps/migrator/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-runtime-artifact-manifest.json packages/database/dist/runtime-scripts "$DELIVERY_MANIFEST_DIGEST"
+          test -f apps/migrator/dist/main.js
+          test -f packages/database/dist/index.js
+          test -d packages/database/dist/runtime-scripts
+          node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
+      - name: Create production promotion manifest
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: node ./tools/ci-cd-platform/promote-artifact.mjs reports/ci-cd-platform "${{ github.sha }}" production reports/ci-cd-platform/promotion-manifest.json
 
       - name: Resolve image tag
         id: tag
@@ -97,8 +137,11 @@ jobs:
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
             VERSION=${{ steps.tag.outputs.tag }}
+            USE_PREBUILT_ARTIFACT=1
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
+          provenance: true
+          sbom: true
 
       - name: Build and push Migrator image
         uses: docker/build-push-action@v6
@@ -114,8 +157,11 @@ jobs:
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
             VERSION=${{ steps.tag.outputs.tag }}
+            USE_PREBUILT_ARTIFACT=1
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
+          provenance: true
+          sbom: true
 
       - name: Build and push Web image
         uses: docker/build-push-action@v6
@@ -132,6 +178,8 @@ jobs:
             VERSION=${{ steps.tag.outputs.tag }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
+          provenance: true
+          sbom: true
 
       - name: Build and push AI Service image
         uses: docker/build-push-action@v6
@@ -148,6 +196,8 @@ jobs:
             VERSION=${{ steps.tag.outputs.tag }}
           cache-from: type=gha,scope=ai-service
           cache-to: type=gha,mode=max,scope=ai-service
+          provenance: true
+          sbom: true
 
       - name: Summary
         run: |
@@ -165,3 +215,11 @@ jobs:
             echo ""
             echo "Web and AI Service remain eligible for Watchtower. API rollout must run the matching migrator image first."
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload promotion provenance
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: production-promotion-${{ github.sha }}
+          path: reports/ci-cd-platform/promotion-manifest.json
+          if-no-files-found: ignore
+          retention-days: 90
