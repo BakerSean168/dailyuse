@@ -250,9 +250,13 @@ jobs:
         with: { node-version: '${{ env.NODE_VERSION }}' }
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
         env: { TEST_REPORT_NAME: web-database }
+      - name: Cache Playwright browser
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm exec playwright install chromium
-      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm nx build api
-        env: { TEST_REPORT_NAME: web-api-build }
+      # start-api-server.ts builds the API immediately before launching its isolated process.
       - run: node ./tools/test-system-v2/run-command.mjs -- node ./tools/test-system-v2/run-web-shard.mjs ${{ matrix.shard }}
         env:
           TEST_REPORT_NAME: web-flow-${{ strategy.job-index }}
