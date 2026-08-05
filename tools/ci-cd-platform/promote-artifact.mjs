@@ -6,6 +6,7 @@ import { digest, validateArtifactManifest, validatePromotionManifest } from './l
 
 export const PRODUCTION_ARTIFACTS = Object.freeze([
   'api',
+  'api-runtime-closure',
   'web',
   'migrator',
   'database',

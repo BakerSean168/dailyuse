@@ -6,7 +6,7 @@ import test from 'node:test';
 import { buildPromotionManifest } from '../promote-artifact.mjs';
 
 function artifact(name, artifactDigest = 'a'.repeat(64)) {
-  return {
+  const manifest = {
     kind: 'artifact-manifest-v1',
     version: 1,
     name,
@@ -18,6 +18,10 @@ function artifact(name, artifactDigest = 'a'.repeat(64)) {
     toolchain: { node: 'test' },
     provenance: { workflow: 'test', runId: null, ref: null },
   };
+  if (name === 'api-runtime-closure') {
+    manifest.entries = [{ name: '@memoflow/test', path: 'packages/test/dist' }];
+  }
+  return manifest;
 }
 
 test('promotes only artifacts from the same commit', async () => {
@@ -62,9 +66,14 @@ test('promotes only artifacts from the same commit', async () => {
 test('production promotion fails closed unless the complete artifact closure is present', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'ci-cd-production-'));
   const output = path.join(directory, 'promotion.json');
-  const complete = ['api', 'web', 'migrator', 'database', 'database-runtime'].map((name) =>
-    artifact(name),
-  );
+  const complete = [
+    'api',
+    'api-runtime-closure',
+    'web',
+    'migrator',
+    'database',
+    'database-runtime',
+  ].map((name) => artifact(name));
   const promotion = await buildPromotionManifest({
     artifactManifests: complete,
     commit: 'sha',
@@ -74,7 +83,7 @@ test('production promotion fails closed unless the complete artifact closure is 
   });
   assert.deepEqual(
     promotion.artifacts.map(({ name }) => name),
-    ['api', 'database', 'database-runtime', 'migrator', 'web'],
+    ['api', 'api-runtime-closure', 'database', 'database-runtime', 'migrator', 'web'],
   );
   await assert.rejects(
     () =>

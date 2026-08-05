@@ -142,8 +142,11 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
   负向/正向测试；digest 会校验对象内容，而不是只校验格式。
 - lane/artifact registry、capability-driven workspace action、artifact closure、Web/production
   source manifest 验证和 run-level observation 已接入 workflow。
-- production promotion 强制 `api`、`web`、`migrator`、`database`、`database-runtime` 五种产物，
-  API prebuilt Docker path 同时检查 API、Migrator、Database runtime 和 Database package。
+- API runtime dependency closure 会从 workspace manifest 递归计算，只收集 `packages/*/dist`，并在
+  Web shard 和 Docker deploy 中校验 digest、source manifest digest 以及完整目录集合后恢复。
+- production promotion 强制 `api`、`api-runtime-closure`、`web`、`migrator`、`database`、
+  `database-runtime` 六种产物；API prebuilt Docker path 同时检查 API、传递 workspace runtime
+  closure、Migrator、Database runtime 和 Database package。
 
 仍需在远端完成一次新分支 CI 的真实切换验证：Web shards 实际执行、所有 Oracle 通过、artifact
 下载/晋级 dry run、run summary evidence 和至少五次 comparable timing。远端证据未完成前，本 ADR

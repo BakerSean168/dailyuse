@@ -100,14 +100,20 @@ Workspace Plane 可以在不同 runner 上重复执行，但重复必须是廉�
 
 Artifact Plane 管理三类产物：
 
-| 类型 | 例子 | 生命周期 | 是否可跨 lane 复用 |
-| --- | --- | --- | --- |
-| Build artifact | API/Web/desktop build output | 当前 commit/run | 是，digest 固定 |
-| Test evidence | JUnit、JSON、trace、coverage | 当前 run | 是，只读 |
-| Release artifact | OCI image、desktop package、SBOM、attestation | tag/release | 只能晋级，不重新构建 |
+| 类型             | 例子                                                         | 生命周期        | 是否可跨 lane 复用   |
+| ---------------- | ------------------------------------------------------------ | --------------- | -------------------- |
+| Build artifact   | API/Web/desktop build output、API runtime dependency closure | 当前 commit/run | 是，digest 固定      |
+| Test evidence    | JUnit、JSON、trace、coverage                                 | 当前 run        | 是，只读             |
+| Release artifact | OCI image、desktop package、SBOM、attestation                | tag/release     | 只能晋级，不重新构建 |
 
 artifact 名称必须包含 commit SHA 或 digest。缓存允许被丢弃，artifact 不能被静默覆盖；下载后必须
 校验 manifest、digest 和构建来源。
+
+API 不是只有 `apps/api/dist` 一个运行时输入。Control/Build Plane 会从 `apps/api/package.json`
+递归解析 workspace dependencies，生成 `api-runtime-closure`，只收集这些包的 `packages/*/dist`。
+Web shard 与 Docker deploy 在使用 API 前必须校验 closure 的内容 digest、source manifest digest 和
+完整目录集合，再恢复到 workspace；缺少任一传递依赖会 fail closed。这样不会把整个 `packages` 源码树
+上传，也不会让某个具体包名成为隐藏的特殊分支。
 
 ### 3.4 Execution Plane
 
@@ -146,21 +152,22 @@ Release Plane 采用 build-once, promote-many：
 4. 部署后执行 smoke、迁移检查和健康检查。
 5. 失败时按 digest 回滚，不重新从工作区构建一份“修复版”。
 
-生产 API 和 migrator 继续作为一个兼容版本单元发布。部署权限只授予 Release Plane，PR job 不拥有
-生产写入权限。
+生产 API 和 migrator 继续作为一个兼容版本单元发布；生产 promotion 的 artifact closure 包含 `api`、
+`api-runtime-closure`、`web`、`migrator`、`database` 和 `database-runtime`。部署权限只授予 Release
+Plane，PR job 不拥有生产写入权限。
 
 ## 4. 变更风险与 lane 选择
 
 控制平面根据 Nx graph、文件分类和配置输入生成 risk manifest：
 
-| 风险等级 | 典型变化 | PR lane |
-| --- | --- | --- |
-| `docs` | docs、注释、非执行 metadata | governance + Oracle |
-| `package` | 单一 package/domain | affected validate + coverage |
-| `runtime` | API、database、Prisma、IPC | validate + boundary + integration |
-| `web-flow` | Web route、adapter、UI flow | validate + web shards |
-| `root` | lockfile、Nx、CI、toolchain、Docker | full affected + governance |
-| `release` | tag、release config、deployment | release validation + promotion |
+| 风险等级   | 典型变化                            | PR lane                           |
+| ---------- | ----------------------------------- | --------------------------------- |
+| `docs`     | docs、注释、非执行 metadata         | governance + Oracle               |
+| `package`  | 单一 package/domain                 | affected validate + coverage      |
+| `runtime`  | API、database、Prisma、IPC          | validate + boundary + integration |
+| `web-flow` | Web route、adapter、UI flow         | validate + web shards             |
+| `root`     | lockfile、Nx、CI、toolchain、Docker | full affected + governance        |
+| `release`  | tag、release config、deployment     | release validation + promotion    |
 
 风险选择是增量优化，不是质量豁免。nightly full audit 继续覆盖 affected 漏检；root 变化默认进入最重
 的验证路径。
@@ -233,15 +240,15 @@ detector 或 manifest 失败为失败。
 
 ## 10. 当前实现映射
 
-| 平面 | 当前入口 | 关键不变量 |
-| --- | --- | --- |
-| Control | `generate-delivery-manifest.mjs`、`lib/risk.mjs` | 每次 run 只生成一个带 self-digest 的 manifest |
-| Workspace | `setup-nx-affected-job`、`write-workspace-receipt.mjs` | capability 驱动，receipt 绑定 toolchain/cache/setup timing |
-| Artifact | `create-artifact-manifest.mjs`、`verify-artifact.mjs` | 内容 digest、commit、source manifest digest 缺一不可 |
-| Execution | `lane-registry.mjs`、`run-command.mjs` | lane input/result 版本化，NX base/head 从 manifest 注入 |
-| Observation | `observe-lane.mjs`、`observe-run.mjs` | 多 job 同 lane 聚合，不以最后一个 child 覆盖失败 |
-| Release | `promote-artifact.mjs`、`docker-deploy.yml` | production 必须同时具备五种 artifact，禁止 source rebuild promotion |
-| Governance | `ruleset-check.mjs`、`.github/rulesets/main.json` | 稳定 Oracle 必须 active；单人维护者不强制 approving review |
+| 平面        | 当前入口                                               | 关键不变量                                                                                    |
+| ----------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Control     | `generate-delivery-manifest.mjs`、`lib/risk.mjs`       | 每次 run 只生成一个带 self-digest 的 manifest                                                 |
+| Workspace   | `setup-nx-affected-job`、`write-workspace-receipt.mjs` | capability 驱动，receipt 绑定 toolchain/cache/setup timing                                    |
+| Artifact    | `create-artifact-manifest.mjs`、`verify-artifact.mjs`  | 内容 digest、commit、source manifest digest 缺一不可                                          |
+| Execution   | `lane-registry.mjs`、`run-command.mjs`                 | lane input/result 版本化，NX base/head 从 manifest 注入                                       |
+| Observation | `observe-lane.mjs`、`observe-run.mjs`                  | 多 job 同 lane 聚合，不以最后一个 child 覆盖失败                                              |
+| Release     | `promote-artifact.mjs`、`docker-deploy.yml`            | production 必须同时具备六种 artifact（含 API runtime closure），禁止 source rebuild promotion |
+| Governance  | `ruleset-check.mjs`、`.github/rulesets/main.json`      | 稳定 Oracle 必须 active；单人维护者不强制 approving review                                    |
 
 新增 lane 或 artifact 类型必须先更新 registry、对应 schema、负向测试和 adapter；workflow 只能消费
 这些注册信息，不能重新声明一套隐含契约。

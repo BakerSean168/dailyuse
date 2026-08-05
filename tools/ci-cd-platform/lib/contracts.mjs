@@ -167,6 +167,21 @@ export function validateArtifactManifest(manifest) {
   assertString(manifest.createdBy, 'createdBy');
   assert(manifest.toolchain && typeof manifest.toolchain === 'object', 'toolchain is required');
   assert(manifest.provenance && typeof manifest.provenance === 'object', 'provenance is required');
+  if (manifest.name === 'api-runtime-closure') {
+    assert(
+      Array.isArray(manifest.entries) && manifest.entries.length > 0,
+      'runtime closure entries are required',
+    );
+    for (const entry of manifest.entries) {
+      assert(entry && typeof entry === 'object', 'runtime closure entry must be an object');
+      assertString(entry.name, 'runtime closure entry.name');
+      assertString(entry.path, 'runtime closure entry.path');
+      assert(
+        entry.path.startsWith('packages/') && entry.path.endsWith('/dist'),
+        'runtime closure entry must target packages/*/dist',
+      );
+    }
+  }
   return manifest;
 }
 

@@ -60,7 +60,13 @@ export const LANE_REGISTRY = Object.freeze({
   web: lane({
     owner: 'platform-web',
     capabilities: ['node', 'pnpm', 'python', 'uv', 'playwright', 'postgres'],
-    inputs: ['delivery-manifest', 'api-artifact', 'web-artifact', 'database-artifact'],
+    inputs: [
+      'delivery-manifest',
+      'api-artifact',
+      'api-runtime-closure',
+      'web-artifact',
+      'database-artifact',
+    ],
     outputs: ['lane-result', 'test-evidence'],
     environment: { isolation: 'dedicated', database: 'ephemeral-postgres', browser: 'chromium' },
     cache: { read: ['pnpm', 'playwright'], write: ['pnpm', 'playwright'] },
@@ -91,6 +97,10 @@ export const ARTIFACT_REGISTRY = Object.freeze({
   web: Object.freeze({ path: 'dist/apps/web', requiredFor: ['production'] }),
   migrator: Object.freeze({ path: 'apps/migrator/dist', requiredFor: ['production'] }),
   database: Object.freeze({ path: 'packages/database/dist', requiredFor: ['web', 'production'] }),
+  'api-runtime-closure': Object.freeze({
+    path: 'api-runtime-closure',
+    requiredFor: ['web', 'production'],
+  }),
   'database-runtime': Object.freeze({
     path: 'packages/database/dist/runtime-scripts',
     requiredFor: ['production'],
@@ -140,7 +150,10 @@ export function assertRegistry() {
     .filter(([, definition]) => definition.requiredFor.includes('production'))
     .map(([name]) => name)
     .sort();
-  if (productionArtifacts.join(',') !== 'api,database,database-runtime,migrator,web') {
+  if (
+    productionArtifacts.join(',') !==
+    'api,api-runtime-closure,database,database-runtime,migrator,web'
+  ) {
     throw new Error('production artifact closure is incomplete or ambiguous');
   }
   return true;

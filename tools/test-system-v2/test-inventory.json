@@ -3694,6 +3694,10 @@
       "primarySuite": "unit"
     },
     {
+      "path": "tools/ci-cd-platform/__tests__/runtime-closure.test.mjs",
+      "primarySuite": "unit"
+    },
+    {
       "path": "tools/ci-cd-platform/__tests__/workspace-receipt.test.mjs",
       "primarySuite": "unit"
     },
@@ -4575,6 +4579,7 @@
       "tools/ci-cd-platform/__tests__/promotion.test.mjs",
       "tools/ci-cd-platform/__tests__/registry.test.mjs",
       "tools/ci-cd-platform/__tests__/risk.test.mjs",
+      "tools/ci-cd-platform/__tests__/runtime-closure.test.mjs",
       "tools/ci-cd-platform/__tests__/workspace-receipt.test.mjs",
       "tools/docker/local-compose.env-shadow.spec.mjs",
       "tools/runtime/load-profiles.spec.mjs",
@@ -4590,7 +4595,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 835,
+    "unit": 836,
     "integration": 10,
     "smoke": 2,
     "boundary-ipc": 9,

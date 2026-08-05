@@ -29,20 +29,20 @@ updated: 2026-08-05T00:00:00Z
 本分支已经把平台契约和主流程一次性收敛到以下边界；剩余项目是验证和切换证据，不是再设计一轮
 workflow：
 
-| Work package | 当前状态 | 证据 |
-| --- | --- | --- |
-| W1 contracts/schema | 已实现 | `tools/ci-cd-platform/schemas/`、digest negative tests |
-| W2 workspace/capabilities | 已实现 | `setup-nx-affected-job`、`workspace-receipt-v1` |
-| W3 control/risk/DAG input | 已实现 | `generate-delivery-manifest`、`create-lane-input` |
-| W4 immutable artifacts | 已实现 | artifact registry、content/source digest verifier、Docker prebuilt checks |
-| W5 lane execution | 已实现 | lane registry、lane result、stable Oracle workflow |
-| W6 isolation contract | 已实现/保留真实隔离 | boundary/integration/Web 独立 PostgreSQL service 与 lane policy |
-| W7 observation/budget data | 已实现 | lane/run summary、setup/execution/cache/failure fields |
-| W8 nightly audit | 已接入 | coverage/performance full workflow 复用同一 manifest/input contract |
-| W9 release promotion | 已实现 | production artifact closure、promotion manifest、verified download |
-| W10 governance/security | 已实现 | ruleset check、最小权限、fail-closed verifier |
-| W11 shadow/fault injection | 待远端验证 | 新分支首次 Actions run 和故意失败场景 |
-| W12 cutover/archive | 待远端验证 | required context 观察、旧 PR #205 关闭/归档和最终证据 |
+| Work package               | 当前状态            | 证据                                                                                           |
+| -------------------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
+| W1 contracts/schema        | 已实现              | `tools/ci-cd-platform/schemas/`、digest negative tests                                         |
+| W2 workspace/capabilities  | 已实现              | `setup-nx-affected-job`、`workspace-receipt-v1`                                                |
+| W3 control/risk/DAG input  | 已实现              | `generate-delivery-manifest`、`create-lane-input`                                              |
+| W4 immutable artifacts     | 已实现              | artifact registry、content/source digest verifier、API runtime closure、Docker prebuilt checks |
+| W5 lane execution          | 已实现              | lane registry、lane result、stable Oracle workflow                                             |
+| W6 isolation contract      | 已实现/保留真实隔离 | boundary/integration/Web 独立 PostgreSQL service 与 lane policy                                |
+| W7 observation/budget data | 已实现              | lane/run summary、setup/execution/cache/failure fields                                         |
+| W8 nightly audit           | 已接入              | coverage/performance full workflow 复用同一 manifest/input contract                            |
+| W9 release promotion       | 已实现              | production artifact closure、promotion manifest、verified download                             |
+| W10 governance/security    | 已实现              | ruleset check、最小权限、fail-closed verifier                                                  |
+| W11 shadow/fault injection | 待远端验证          | 新分支首次 Actions run 和故意失败场景                                                          |
+| W12 cutover/archive        | 待远端验证          | required context 观察、旧 PR #205 关闭/归档和最终证据                                          |
 
 W11/W12 不会产生第二套实现；它们只验证本分支已经完成的契约，并在证据充分后把本计划归档。
 
@@ -151,13 +151,16 @@ event -> scope/risk manifest -> policy DAG
 
 - 为 API、Web、Desktop 和 Docker 输入定义 build target 与 artifact manifest。
 - 将 API build 从 Web shard 启动链路中拆出，上传带 SHA/digest 的 artifact。
+- 从 `apps/api/package.json` 递归解析 workspace dependencies，生成 `api-runtime-closure`；只上传
+  `packages/*/dist`，恢复前校验内容 digest、source manifest digest 和完整目录集合。
 - Web shard、integration smoke 和 preview 消费 build artifact；数据库仍独立初始化。
 - 为 artifact 增加 manifest、checksum、source SHA、toolchain、SBOM/attestation 字段。
 - 通过故意篡改、缺失、过期和跨 SHA 下载测试 fail closed。
 
 **交付物**：build/package lanes、artifact registry adapter、下载校验 action 和 provenance report。
 
-**验收**：同一 commit 的 API/Web 在 PR 中只构建一次；下游日志能证明消费了正确 digest；artifact 失败不会被当作 skipped。
+**验收**：同一 commit 的 API/Web 在 PR 中只构建一次；API 的传递 workspace runtime closure 与主构建
+一同生成并被 Web/Docker 消费；下游日志能证明消费了正确 digest；artifact 失败不会被当作 skipped。
 
 ### W5：重构 PR Execution Plane
 
@@ -321,14 +324,14 @@ event -> scope/risk manifest -> policy DAG
 
 ## 风险与预案
 
-| 风险 | 预防 | 触发后的动作 |
-| --- | --- | --- |
-| artifact 下载抵消构建节省 | W0 记录 upload/download/setup | 按数据决定复用粒度，必要时只复用 API/Web build |
-| risk classifier 漏检 | root inputs + nightly full + negative fixtures | 临时提升 risk 等级，修复 classifier 后再降级 |
-| cache 污染或 ABI 不匹配 | lock/toolchain/runner key + receipt | 失效 cache，从零准备；不得扩大 skip |
-| lane 解耦导致状态丢失 | versioned receipt + Oracle contract tests | fail closed，修复 adapter，不人工标绿 |
-| release provenance 缺失 | promotion manifest + digest check | 禁止发布，使用最近已知 digest 回滚 |
-| GitHub Actions 限制 | 执行器适配层和 artifact plane 解耦 | 迁移到新 runner/平台，不改业务测试契约 |
+| 风险                      | 预防                                           | 触发后的动作                                   |
+| ------------------------- | ---------------------------------------------- | ---------------------------------------------- |
+| artifact 下载抵消构建节省 | W0 记录 upload/download/setup                  | 按数据决定复用粒度，必要时只复用 API/Web build |
+| risk classifier 漏检      | root inputs + nightly full + negative fixtures | 临时提升 risk 等级，修复 classifier 后再降级   |
+| cache 污染或 ABI 不匹配   | lock/toolchain/runner key + receipt            | 失效 cache，从零准备；不得扩大 skip            |
+| lane 解耦导致状态丢失     | versioned receipt + Oracle contract tests      | fail closed，修复 adapter，不人工标绿          |
+| release provenance 缺失   | promotion manifest + digest check              | 禁止发布，使用最近已知 digest 回滚             |
+| GitHub Actions 限制       | 执行器适配层和 artifact plane 解耦             | 迁移到新 runner/平台，不改业务测试契约         |
 
 ## 验证命令
 

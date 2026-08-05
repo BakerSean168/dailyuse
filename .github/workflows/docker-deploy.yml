@@ -73,20 +73,26 @@ jobs:
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ needs.resolve-build-artifact.outputs.run_id }}
+      - name: Validate delivery manifest and resolve digest
+        run: |
+          node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
+          echo "DELIVERY_MANIFEST_DIGEST=$(node -p \"require('./scope/delivery-manifest-v1.json').digest\")" >> "$GITHUB_ENV"
+      - name: Restore API runtime dependency closure
+        run: node ./tools/ci-cd-platform/restore-runtime-closure.mjs reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json api-runtime-closure . "$DELIVERY_MANIFEST_DIGEST"
       - name: Verify API and Web artifact manifests
         shell: bash
         run: |
           set -euo pipefail
-          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist
-          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web
-          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/migrator-artifact-manifest.json apps/migrator/dist
-          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist
-          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-runtime-artifact-manifest.json packages/database/dist/runtime-scripts
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json api-runtime-closure "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/migrator-artifact-manifest.json apps/migrator/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-runtime-artifact-manifest.json packages/database/dist/runtime-scripts "$DELIVERY_MANIFEST_DIGEST"
           test -f apps/migrator/dist/main.js
           test -f packages/database/dist/index.js
           test -d packages/database/dist/runtime-scripts
           node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
-          echo "DELIVERY_MANIFEST_DIGEST=$(node -p \"require('./scope/delivery-manifest-v1.json').digest\")" >> "$GITHUB_ENV"
       - name: Create production promotion manifest
         env:
           GITHUB_ACTOR: ${{ github.actor }}
