@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-04T21:10:00+08:00
+updated: 2026-08-05T00:00:00Z
 ---
 
 # Active Plans
@@ -15,7 +15,7 @@ updated: 2026-08-04T21:10:00+08:00
 
 | 计划                                                                                 | 当前状态                                                                    |
 | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| [Test System V2 一次性重构](./2026-08-04-test-system-v2-refactor.md)                 | **Ready**：单一测试归属、Nx 契约、稳定 Oracle、coverage 前移与强制 ruleset  |
+| [CI/CD Platform V2 一次性重构](./2026-08-05-ci-cd-platform-v2-refactor.md)           | **Architecture ready**：六平面解耦、manifest、artifact 晋级、risk-driven lanes 与 release promotion |
 | [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)          | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称 |
 | [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式      |
 
