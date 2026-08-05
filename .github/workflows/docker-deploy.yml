@@ -80,9 +80,13 @@ jobs:
           node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist
           node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web
           node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/migrator-artifact-manifest.json apps/migrator/dist
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist
           node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-runtime-artifact-manifest.json packages/database/dist/runtime-scripts
           test -f apps/migrator/dist/main.js
+          test -f packages/database/dist/index.js
           test -d packages/database/dist/runtime-scripts
+          node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
+          echo "DELIVERY_MANIFEST_DIGEST=$(node -p \"require('./scope/delivery-manifest-v1.json').digest\")" >> "$GITHUB_ENV"
       - name: Create production promotion manifest
         env:
           GITHUB_ACTOR: ${{ github.actor }}
@@ -130,6 +134,8 @@ jobs:
             USE_PREBUILT_ARTIFACT=1
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
+          provenance: true
+          sbom: true
 
       - name: Build and push Migrator image
         uses: docker/build-push-action@v6
@@ -148,6 +154,8 @@ jobs:
             USE_PREBUILT_ARTIFACT=1
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
+          provenance: true
+          sbom: true
 
       - name: Build and push Web image
         uses: docker/build-push-action@v6
@@ -164,6 +172,8 @@ jobs:
             VERSION=${{ steps.tag.outputs.tag }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
+          provenance: true
+          sbom: true
 
       - name: Build and push AI Service image
         uses: docker/build-push-action@v6
@@ -180,6 +190,8 @@ jobs:
             VERSION=${{ steps.tag.outputs.tag }}
           cache-from: type=gha,scope=ai-service
           cache-to: type=gha,mode=max,scope=ai-service
+          provenance: true
+          sbom: true
 
       - name: Summary
         run: |

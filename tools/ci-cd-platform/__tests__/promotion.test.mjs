@@ -5,37 +5,32 @@ import path from 'node:path';
 import test from 'node:test';
 import { buildPromotionManifest } from '../promote-artifact.mjs';
 
+function artifact(name, artifactDigest = 'a'.repeat(64)) {
+  return {
+    kind: 'artifact-manifest-v1',
+    version: 1,
+    name,
+    commit: 'sha',
+    digest: artifactDigest,
+    sourceManifestDigest: 'a'.repeat(64),
+    path: `dist/${name}`,
+    createdBy: 'test',
+    toolchain: { node: 'test' },
+    provenance: { workflow: 'test', runId: null, ref: null },
+  };
+}
+
 test('promotes only artifacts from the same commit', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'ci-cd-promotion-'));
   const output = path.join(directory, 'promotion.json');
-  const artifacts = [
-    {
-      kind: 'artifact-manifest-v1',
-      version: 1,
-      name: 'api',
-      commit: 'sha',
-      digest: 'a'.repeat(64),
-      sourceManifestDigest: 'm'.repeat(64),
-      path: 'apps/api/dist',
-      createdBy: 'test',
-    },
-    {
-      kind: 'artifact-manifest-v1',
-      version: 1,
-      name: 'web',
-      commit: 'sha',
-      digest: 'b'.repeat(64),
-      sourceManifestDigest: 'm'.repeat(64),
-      path: 'dist/apps/web',
-      createdBy: 'test',
-    },
-  ];
+  const artifacts = [artifact('api'), artifact('web', 'b'.repeat(64))];
   const promotion = await buildPromotionManifest({
     artifactManifests: artifacts,
     commit: 'sha',
-    environment: 'production',
+    environment: 'preview',
     promotedBy: 'test',
     output,
+    sourceManifestDigest: 'a'.repeat(64),
   });
   assert.equal(promotion.kind, 'promotion-manifest-v1');
   assert.equal(JSON.parse(await readFile(output, 'utf8')).artifacts.length, 2);
@@ -44,10 +39,52 @@ test('promotes only artifacts from the same commit', async () => {
       buildPromotionManifest({
         artifactManifests: [{ ...artifacts[0], commit: 'other' }],
         commit: 'sha',
-        environment: 'production',
+        environment: 'preview',
         promotedBy: 'test',
         output,
       }),
     /does not match/,
+  );
+  await assert.rejects(
+    () =>
+      buildPromotionManifest({
+        artifactManifests: artifacts,
+        commit: 'sha',
+        environment: 'preview',
+        promotedBy: 'test',
+        output,
+        sourceManifestDigest: 'c'.repeat(64),
+      }),
+    /do not match the verified delivery manifest/,
+  );
+});
+
+test('production promotion fails closed unless the complete artifact closure is present', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'ci-cd-production-'));
+  const output = path.join(directory, 'promotion.json');
+  const complete = ['api', 'web', 'migrator', 'database', 'database-runtime'].map((name) =>
+    artifact(name),
+  );
+  const promotion = await buildPromotionManifest({
+    artifactManifests: complete,
+    commit: 'sha',
+    environment: 'production',
+    promotedBy: 'test',
+    output,
+  });
+  assert.deepEqual(
+    promotion.artifacts.map(({ name }) => name),
+    ['api', 'database', 'database-runtime', 'migrator', 'web'],
+  );
+  await assert.rejects(
+    () =>
+      buildPromotionManifest({
+        artifactManifests: complete.filter(({ name }) => name !== 'database'),
+        commit: 'sha',
+        environment: 'production',
+        promotedBy: 'test',
+        output,
+      }),
+    /missing required promotion artifacts: database/,
   );
 });

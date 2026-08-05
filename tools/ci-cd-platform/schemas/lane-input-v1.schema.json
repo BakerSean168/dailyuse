@@ -13,7 +13,12 @@
     "environment",
     "cache",
     "failurePolicy",
-    "owner"
+    "owner",
+    "capabilities",
+    "policy",
+    "scope",
+    "risk",
+    "digest"
   ],
   "properties": {
     "kind": { "const": "lane-input-v1" },
@@ -26,7 +31,13 @@
     "environment": { "type": "object" },
     "cache": { "type": "object" },
     "failurePolicy": { "type": "object" },
-    "owner": { "type": "string", "minLength": 1 }
+    "owner": { "type": "string", "minLength": 1 },
+    "capabilities": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "policy": { "type": "object" },
+    "scope": { "type": "object" },
+    "risk": { "type": "object" },
+    "runId": { "type": ["string", "null"] },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
   },
   "additionalProperties": true
 }

@@ -75,12 +75,13 @@ CI/CD Platform V2 解决的不是单个测试命令的速度，而是从代码�
 
 Control Plane 是唯一的编排来源，负责生成 versioned `delivery-manifest-v1.json`。它组合：
 
-- `scope`：受影响项目、可用 target、测试能力和根配置变化。
+- `scope`：受影响项目、可用 target、测试能力和根配置变化；Nx graph 仍是项目关系的唯一事实源。
 - `risk`：docs、package、API、database、runtime、release 等变更等级。
 - `policy`：当前事件允许的 PR、nightly 或 release lane 集合。
 - `dag`：稳定 Oracle 与动态 child 的依赖关系。
 
-下游 job 只消费 manifest，不再自行调用 Nx 重新推断范围。manifest 必须包含 base/head SHA、
+下游 job 只消费 manifest 的 risk/policy 和 base/head 边界；需要 Nx graph 执行 target 时只能使用
+manifest 注入的 base/head，不得自行选择另一套范围。manifest 必须包含 base/head SHA、
 生成器版本、规则版本和输入摘要，避免同一 run 出现多个事实源。
 
 ### 3.2 Workspace Plane
@@ -229,3 +230,18 @@ detector 或 manifest 失败为失败。
 4. 删除旧 workflow、旧 artifact 命名和兼容入口。
 
 详细顺序和 Definition of Done 见实施计划。
+
+## 10. 当前实现映射
+
+| 平面 | 当前入口 | 关键不变量 |
+| --- | --- | --- |
+| Control | `generate-delivery-manifest.mjs`、`lib/risk.mjs` | 每次 run 只生成一个带 self-digest 的 manifest |
+| Workspace | `setup-nx-affected-job`、`write-workspace-receipt.mjs` | capability 驱动，receipt 绑定 toolchain/cache/setup timing |
+| Artifact | `create-artifact-manifest.mjs`、`verify-artifact.mjs` | 内容 digest、commit、source manifest digest 缺一不可 |
+| Execution | `lane-registry.mjs`、`run-command.mjs` | lane input/result 版本化，NX base/head 从 manifest 注入 |
+| Observation | `observe-lane.mjs`、`observe-run.mjs` | 多 job 同 lane 聚合，不以最后一个 child 覆盖失败 |
+| Release | `promote-artifact.mjs`、`docker-deploy.yml` | production 必须同时具备五种 artifact，禁止 source rebuild promotion |
+| Governance | `ruleset-check.mjs`、`.github/rulesets/main.json` | 稳定 Oracle 必须 active；单人维护者不强制 approving review |
+
+新增 lane 或 artifact 类型必须先更新 registry、对应 schema、负向测试和 adapter；workflow 只能消费
+这些注册信息，不能重新声明一套隐含契约。

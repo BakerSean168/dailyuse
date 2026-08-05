@@ -7,6 +7,17 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Observe lane result
+      if: always()
+      shell: bash
+      env:
+        DELIVERY_LANE: ${{ inputs.lane }}
+      run: |
+        node ./tools/ci-cd-platform/observe-lane.mjs \
+          --lane "$DELIVERY_LANE" \
+          --input "reports/ci-cd-platform/${DELIVERY_LANE}-input-v1.json" \
+          --reports reports/test-system-v2 \
+          --output "reports/ci-cd-platform/${DELIVERY_LANE}-summary-v1.json"
     - name: Upload structured lane evidence
       if: always()
       uses: actions/upload-artifact@v6

@@ -3,11 +3,20 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createArtifactManifest } from './create-artifact-manifest.mjs';
+import { validateArtifactManifest } from './lib/contracts.mjs';
 
-const [manifestFile, targetArg] = process.argv.slice(2);
+const [manifestFile, targetArg, sourceManifestDigest] = process.argv.slice(2);
 if (!manifestFile || !targetArg)
-  throw new Error('Usage: verify-artifact.mjs <artifact-manifest.json> <target>');
+  throw new Error(
+    'Usage: verify-artifact.mjs <artifact-manifest.json> <target> [source-manifest-digest]',
+  );
 const expected = JSON.parse(await readFile(path.resolve(manifestFile), 'utf8'));
+validateArtifactManifest(expected);
+if (sourceManifestDigest && expected.sourceManifestDigest !== sourceManifestDigest) {
+  throw new Error(
+    `[artifact] source manifest mismatch for ${expected.name}: expected ${expected.sourceManifestDigest}, got ${sourceManifestDigest}`,
+  );
+}
 const actual = await createArtifactManifest({
   name: expected.name,
   target: path.resolve(targetArg),

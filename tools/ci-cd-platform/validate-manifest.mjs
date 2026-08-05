@@ -6,6 +6,10 @@ import {
   validateDeliveryManifest,
   validateLaneInput,
   validateLaneResult,
+  validatePromotionManifest,
+  validateWorkspaceReceipt,
+  validateLaneSummary,
+  validateRunSummary,
 } from './lib/contracts.mjs';
 
 const validators = {
@@ -13,6 +17,10 @@ const validators = {
   'lane-input': validateLaneInput,
   'lane-result': validateLaneResult,
   artifact: validateArtifactManifest,
+  promotion: validatePromotionManifest,
+  'workspace-receipt': validateWorkspaceReceipt,
+  'lane-summary': validateLaneSummary,
+  'run-summary': validateRunSummary,
 };
 
 export async function validateFile(file, kind) {
@@ -26,7 +34,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const [file, kind] = process.argv.slice(2);
   if (!file)
     throw new Error(
-      'Usage: validate-manifest.mjs <file> [delivery|lane-input|lane-result|artifact]',
+      'Usage: validate-manifest.mjs <file> [delivery|lane-input|lane-result|artifact|promotion|workspace-receipt|lane-summary|run-summary]',
     );
   validateFile(file, kind)
     .then(() => console.log(`[contract] valid: ${file}`))

@@ -39,6 +39,12 @@ export async function buildDeliveryManifest({
   const changed = files ?? (await changedFiles({ root, base, head, full }));
   const resolvedScope = scope ?? (await detectScope({ root, base, head, full }));
   const risk = classifyRisk(changed);
+  const forcedLanes = (process.env.DELIVERY_FORCE_LANES ?? '')
+    .split(',')
+    .map((lane) => lane.trim())
+    .filter(Boolean);
+  const selectedLanes = selectLanes({ risk, scope: resolvedScope, event });
+  for (const lane of forcedLanes) selectedLanes[lane] = true;
   const input = {
     base,
     head,
@@ -59,14 +65,15 @@ export async function buildDeliveryManifest({
     changedFiles: changed,
     risk,
     scope: resolvedScope,
-    lanes: selectLanes({ risk, scope: resolvedScope, event }),
+    lanes: selectedLanes,
     provenance: buildProvenance({
       generator: 'ci-cd-platform-v2/generate-delivery-manifest@1',
       input,
     }),
   };
-  validateDeliveryManifest(manifest);
-  return { ...manifest, digest: digest(manifest) };
+  const result = { ...manifest, digest: digest(manifest) };
+  validateDeliveryManifest(result);
+  return result;
 }
 
 async function main() {

@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { buildProvenance, digest } from './lib/contracts.mjs';
+import { buildProvenance, digest, validateWorkspaceReceipt } from './lib/contracts.mjs';
 
 function commandVersion(command, args = ['--version']) {
   try {
@@ -40,6 +40,17 @@ const receipt = {
     nx: process.env.NX_CACHE_HIT ?? 'unknown',
     playwright: process.env.PLAYWRIGHT_CACHE_HIT ?? 'unknown',
   },
+  timing: {
+    setupMs:
+      Number.isFinite(Number(process.env.WORKSPACE_SETUP_STARTED_AT)) &&
+      Number.isFinite(Number(process.env.WORKSPACE_SETUP_ENDED_AT))
+        ? Math.max(
+            0,
+            Number(process.env.WORKSPACE_SETUP_ENDED_AT) -
+              Number(process.env.WORKSPACE_SETUP_STARTED_AT),
+          )
+        : null,
+  },
 };
 receipt.provenance = buildProvenance({
   generator: 'ci-cd-platform-v2/write-workspace-receipt@1',
@@ -50,6 +61,7 @@ receipt.provenance = buildProvenance({
   },
 });
 receipt.digest = digest(receipt);
+validateWorkspaceReceipt(receipt);
 
 const output = path.resolve(
   process.env.WORKSPACE_RECEIPT_OUTPUT ?? 'reports/ci-cd-platform/workspace-receipt.json',

@@ -56,7 +56,7 @@ updated: 2026-08-04T00:00:00+08:00
 | [ADR-038](./ADR-038-goal-consistency-and-reliable-task-contributions.md) | Goal 一致性与可靠 Task 贡献链路 | 已采纳 | 2026-08-01 |
 | [ADR-039](./ADR-039-cloud-auth-and-local-profile-access.md) | Cloud Auth 与 Local Profile Access 分离 | 已采纳 | 2026-08-02 |
 | [ADR-040](./ADR-040-test-system-v2.md) | Test System V2 单一归属与稳定门禁 | 已采纳 | 2026-08-04 |
-| [ADR-041](./ADR-041-ci-cd-platform-v2.md) | CI/CD Platform V2 解耦与可扩展交付平台 | 提议中 | 2026-08-05 |
+| [ADR-041](./ADR-041-ci-cd-platform-v2.md) | CI/CD Platform V2 解耦与可扩展交付平台 | 已接受 | 2026-08-05 |
 
 ## 维护规则
 
