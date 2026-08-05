@@ -34,7 +34,7 @@
         "{workspaceRoot}/.github/actions/**/*"
       ],
       "options": {
-        "command": "node tools/ci-cd-platform/schema-check.mjs && node --test tools/ci-cd-platform/__tests__/*.test.mjs"
+        "command": "node tools/ci-cd-platform/schema-check.mjs && node tools/ci-cd-platform/registry-check.mjs && node --test tools/ci-cd-platform/__tests__/*.test.mjs"
       }
     },
     "manifest": {
@@ -58,6 +58,23 @@
       "cache": true,
       "inputs": ["{projectRoot}/**/*"],
       "options": { "command": "node tools/ci-cd-platform/__tests__/failure-matrix.test.mjs" }
+    },
+    "registry": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/lib/**/*",
+        "{projectRoot}/registry-check.mjs",
+        "{projectRoot}/schemas/lane-registry-v1.schema.json"
+      ],
+      "options": { "command": "node tools/ci-cd-platform/registry-check.mjs" }
+    },
+    "observation": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node tools/ci-cd-platform/observe-run.mjs"
+      }
     }
   }
 }

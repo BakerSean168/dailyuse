@@ -12,7 +12,7 @@ updated: 2026-08-05T00:00:00Z
 
 # ADR-041: CI/CD Platform V2 解耦与可扩展交付平台
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Date:** 2026-08-05
 
@@ -130,6 +130,24 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
 - 每次 run 必须产出 timing、cache、failure classification 和 manifest/artifact provenance。
 - nightly full audit 必须定期验证 risk classifier 没有漏检 root、database、Web 和 release 输入。
 - 新增 lane 或 artifact 类型必须更新本 ADR 关联的 registry、schema 和治理测试。
+- 单人维护仓库的 branch ruleset 不要求 approving review；自动化 required Oracle、thread resolution
+  和管理员审计仍然保留。该策略由 `ruleset-check` 作为治理契约校验。
+
+## Implementation State
+
+本分支已落地以下实现：
+
+- `delivery-manifest-v1`、`lane-input-v1`、`lane-result-v1`、`lane-summary-v1`、`run-summary-v1`、
+  `workspace-receipt-v1`、`artifact-manifest-v1` 和 `promotion-manifest-v1` 均有生成器、schema 和
+  负向/正向测试；digest 会校验对象内容，而不是只校验格式。
+- lane/artifact registry、capability-driven workspace action、artifact closure、Web/production
+  source manifest 验证和 run-level observation 已接入 workflow。
+- production promotion 强制 `api`、`web`、`migrator`、`database`、`database-runtime` 五种产物，
+  API prebuilt Docker path 同时检查 API、Migrator、Database runtime 和 Database package。
+
+仍需在远端完成一次新分支 CI 的真实切换验证：Web shards 实际执行、所有 Oracle 通过、artifact
+下载/晋级 dry run、run summary evidence 和至少五次 comparable timing。远端证据未完成前，本 ADR
+不标记为 `Implemented`，也不把旧 PR #205 的结果当作本分支证据。
 
 ## References
 
@@ -141,6 +159,6 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
 
 ## Decision Gate
 
-本 ADR 在 Action Plan 完成 W0-W3、schema 与 shadow mode 验证后从 `Proposed` 转为 `Accepted`；在旧
-workflow 删除、required contexts 切换和 release promotion 通过后标记为 `Implemented`。在此之前，
-本 ADR 是目标架构和实施约束，不代表当前 workflow 已经具备所有能力。
+本 ADR 已在契约、registry、workflow adapter 和治理检查落地后进入 `Accepted`。完成远端 shadow、
+故障注入、required contexts 切换和 release promotion 证据后，补充最终 run/cost/rollback receipt
+并标记为 `Implemented`。在此之前，ADR 是已批准的目标架构和实施约束，不伪造远端完成证据。

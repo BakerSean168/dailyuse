@@ -14,7 +14,7 @@ updated: 2026-08-05T00:00:00Z
 
 ## 状态与范围
 
-- **计划状态**：Active / Architecture approved for implementation
+- **计划状态**：Active / Implementation complete in branch; remote cutover evidence pending
 - **目标 ADR**：[ADR-041: CI/CD Platform V2 解耦与可扩展交付平台](../../architecture/adr/ADR-041-ci-cd-platform-v2.md)
 - **目标架构**：[CI/CD Platform V2](../../architecture/ci-cd-platform-v2.md)
 - **前置决策**：[ADR-040: Test System V2](../../architecture/adr/ADR-040-test-system-v2.md)
@@ -23,6 +23,28 @@ updated: 2026-08-05T00:00:00Z
 
 本计划不是“继续逐个优化 job”的 backlog，而是一次把 CI/CD 重新分层的实施方案。每个 work package
 都有明确的输入、输出和验收，不允许通过临时 YAML 分支形成新的隐性双轨。
+
+## Branch Implementation Ledger
+
+本分支已经把平台契约和主流程一次性收敛到以下边界；剩余项目是验证和切换证据，不是再设计一轮
+workflow：
+
+| Work package | 当前状态 | 证据 |
+| --- | --- | --- |
+| W1 contracts/schema | 已实现 | `tools/ci-cd-platform/schemas/`、digest negative tests |
+| W2 workspace/capabilities | 已实现 | `setup-nx-affected-job`、`workspace-receipt-v1` |
+| W3 control/risk/DAG input | 已实现 | `generate-delivery-manifest`、`create-lane-input` |
+| W4 immutable artifacts | 已实现 | artifact registry、content/source digest verifier、Docker prebuilt checks |
+| W5 lane execution | 已实现 | lane registry、lane result、stable Oracle workflow |
+| W6 isolation contract | 已实现/保留真实隔离 | boundary/integration/Web 独立 PostgreSQL service 与 lane policy |
+| W7 observation/budget data | 已实现 | lane/run summary、setup/execution/cache/failure fields |
+| W8 nightly audit | 已接入 | coverage/performance full workflow 复用同一 manifest/input contract |
+| W9 release promotion | 已实现 | production artifact closure、promotion manifest、verified download |
+| W10 governance/security | 已实现 | ruleset check、最小权限、fail-closed verifier |
+| W11 shadow/fault injection | 待远端验证 | 新分支首次 Actions run 和故意失败场景 |
+| W12 cutover/archive | 待远端验证 | required context 观察、旧 PR #205 关闭/归档和最终证据 |
+
+W11/W12 不会产生第二套实现；它们只验证本分支已经完成的契约，并在证据充分后把本计划归档。
 
 ## 设计不变量
 

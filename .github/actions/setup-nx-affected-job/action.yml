@@ -25,23 +25,75 @@ inputs:
     description: Download and validate the manifest produced by Scope Detector
     required: false
     default: 'false'
+  lane:
+    description: Stable execution lane registered by the CI/CD platform
+    required: false
+    default: ''
 
 runs:
   using: composite
   steps:
+    - name: Mark workspace setup start
+      shell: bash
+      run: echo "WORKSPACE_SETUP_STARTED_AT=$(date +%s%3N)" >> "$GITHUB_ENV"
+
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
 
+    - name: Consume delivery manifest
+      if: ${{ inputs.consume-delivery-manifest == 'true' }}
+      uses: ./.github/actions/consume-delivery-manifest
+
+    - name: Create lane input contract
+      if: ${{ inputs.consume-delivery-manifest == 'true' && inputs.lane != '' }}
+      shell: bash
+      env:
+        DELIVERY_LANE: ${{ inputs.lane }}
+        DELIVERY_MANIFEST_PATH: scope/delivery-manifest-v1.json
+        LANE_INPUT_OUTPUT: reports/ci-cd-platform/${{ inputs.lane }}-input-v1.json
+      run: |
+        node ./tools/ci-cd-platform/create-lane-input.mjs \
+          --lane "$DELIVERY_LANE" \
+          --manifest "$DELIVERY_MANIFEST_PATH" \
+          --output "$LANE_INPUT_OUTPUT"
+        echo "LANE_INPUT_PATH=$LANE_INPUT_OUTPUT" >> "$GITHUB_ENV"
+
+    - name: Resolve optional toolchain capabilities
+      id: capabilities
+      shell: bash
+      env:
+        SETUP_PYTHON_INPUT: ${{ inputs.setup-python }}
+        SETUP_UV_INPUT: ${{ inputs.setup-uv }}
+        CI_CAPABILITIES: ${{ inputs.capabilities }}
+        DELIVERY_MANIFEST_PATH: scope/delivery-manifest-v1.json
+      run: |
+        python_required=false
+        uv_required=false
+        if [ "$SETUP_PYTHON_INPUT" = 'true' ] && [[ ",$CI_CAPABILITIES," == *,python,* ]]; then
+          python_required=true
+        fi
+        if [ "$SETUP_UV_INPUT" = 'true' ] && [[ ",$CI_CAPABILITIES," == *,uv,* ]]; then
+          uv_required=true
+        fi
+        if [ -f "$DELIVERY_MANIFEST_PATH" ]; then
+          if node -e "const m=require('./$DELIVERY_MANIFEST_PATH'); process.exit((m.scope?.projects || []).includes('ai-service') ? 0 : 1)"; then
+            [ "$SETUP_PYTHON_INPUT" = 'true' ] && python_required=true
+            [ "$SETUP_UV_INPUT" = 'true' ] && uv_required=true
+          fi
+        fi
+        echo "python=$python_required" >> "$GITHUB_OUTPUT"
+        echo "uv=$uv_required" >> "$GITHUB_OUTPUT"
+
     - name: Setup Python
-      if: ${{ inputs.setup-python == 'true' }}
+      if: ${{ steps.capabilities.outputs.python == 'true' }}
       uses: actions/setup-python@v6
       with:
         python-version-file: apps/ai-service/.python-version
 
     - name: Setup uv
-      if: ${{ inputs.setup-uv == 'true' }}
+      if: ${{ steps.capabilities.outputs.uv == 'true' }}
       uses: astral-sh/setup-uv@v7
       with:
         working-directory: apps/ai-service
@@ -76,6 +128,14 @@ runs:
         restore-keys: |
           nx-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
 
+    - name: Cache Playwright browsers
+      if: ${{ contains(inputs.capabilities, 'playwright') }}
+      id: playwright-cache
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
     - name: Install dependencies
       shell: bash
       run: pnpm install --frozen-lockfile --reporter=append-only
@@ -86,12 +146,11 @@ runs:
         CI_CAPABILITIES: ${{ inputs.capabilities }}
         PNPM_CACHE_HIT: ${{ steps.pnpm-cache.outputs.cache-hit || 'false' }}
         NX_CACHE_HIT: ${{ steps.nx-cache.outputs.cache-hit || 'false' }}
+        PLAYWRIGHT_CACHE_HIT: ${{ steps.playwright-cache.outputs.cache-hit || 'false' }}
         WORKSPACE_RECEIPT_OUTPUT: reports/ci-cd-platform/workspace-receipt.json
-      run: node ./tools/ci-cd-platform/write-workspace-receipt.mjs
-
-    - name: Consume delivery manifest
-      if: ${{ inputs.consume-delivery-manifest == 'true' }}
-      uses: ./.github/actions/consume-delivery-manifest
+      run: |
+        echo "WORKSPACE_SETUP_ENDED_AT=$(date +%s%3N)" >> "$GITHUB_ENV"
+        WORKSPACE_SETUP_ENDED_AT="$(date +%s%3N)" node ./tools/ci-cd-platform/write-workspace-receipt.mjs
 
     - name: Derive SHAs for affected
       shell: bash

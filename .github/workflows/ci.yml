@@ -66,6 +66,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'false'
           setup-uv: 'false'
+          lane: governance
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/inventory.mjs --check
       - run: node ./tools/test/test-target-governance.mjs --check
@@ -100,6 +101,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'true'
           setup-uv: 'true'
+          lane: validate
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t lint --parallel=3 --exclude=memoflow --outputStyle=static
         env: { TEST_REPORT_NAME: static-analysis, DELIVERY_LANE: validate }
@@ -119,6 +121,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'true'
           setup-uv: 'true'
+          lane: validate
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test --parallel=3 --exclude=memoflow --outputStyle=static
         env: { TEST_REPORT_NAME: unit, DELIVERY_LANE: validate }
@@ -138,6 +141,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'true'
           setup-uv: 'true'
+          lane: validate
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t typecheck --parallel=3 --outputStyle=static
         env: { TEST_REPORT_NAME: typecheck, DELIVERY_LANE: validate }
@@ -157,6 +161,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'true'
           setup-uv: 'true'
+          lane: validate
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client' --outputStyle=static
         env: { TEST_REPORT_NAME: build, DELIVERY_LANE: validate }
@@ -192,6 +197,7 @@ jobs:
             apps/migrator/dist
             dist/apps/web
             packages/database/dist
+            scope/delivery-manifest-v1.json
             reports/ci-cd-platform/*-artifact-manifest.json
           if-no-files-found: ignore
           retention-days: 14
@@ -234,6 +240,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'false'
           setup-uv: 'false'
+          lane: boundary
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
         env: { TEST_REPORT_NAME: boundary-database, DELIVERY_LANE: boundary }
@@ -287,6 +294,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'false'
           setup-uv: 'false'
+          lane: integration
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
         env: { TEST_REPORT_NAME: integration-database, DELIVERY_LANE: integration }
@@ -333,25 +341,28 @@ jobs:
           setup-python: 'true'
           setup-uv: 'true'
           capabilities: node,pnpm,python,uv,playwright,postgres
+          lane: web
           consume-delivery-manifest: 'true'
       - name: Download immutable build artifacts
         uses: actions/download-artifact@v7
         with:
           name: ci-build-artifacts
           path: .
+      - name: Resolve artifact source manifest digest
+        id: artifact-source
+        shell: bash
+        run: |
+          digest=$(node -p "require('./reports/ci-cd-platform/web-input-v1.json').manifestDigest")
+          test -n "$digest"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
       - name: Verify API artifact
-        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist
+        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist "${{ steps.artifact-source.outputs.digest }}"
       - name: Verify Web artifact
-        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web
+        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web "${{ steps.artifact-source.outputs.digest }}"
       - name: Verify Database artifact
-        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist
+        run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist "${{ steps.artifact-source.outputs.digest }}"
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
         env: { TEST_REPORT_NAME: web-database, DELIVERY_LANE: web }
-      - name: Cache Playwright browser
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm exec playwright install chromium
       # start-api-server.ts builds the API immediately before launching its isolated process.
       - run: node ./tools/test-system-v2/run-command.mjs -- node ./tools/test-system-v2/run-web-shard.mjs ${{ matrix.shard }}
@@ -404,6 +415,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'false'
           setup-uv: 'false'
+          lane: coverage
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:coverage --parallel=2 --outputStyle=static
         env: { TEST_REPORT_NAME: coverage, DELIVERY_LANE: coverage }
@@ -436,6 +448,7 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'false'
           setup-uv: 'false'
+          lane: performance
           consume-delivery-manifest: 'true'
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:perf --parallel=1 --outputStyle=static
         env: { TEST_REPORT_NAME: performance, DELIVERY_LANE: performance }
@@ -454,3 +467,41 @@ jobs:
           ORACLE_INPUT: >-
             {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_perf == 'true' && '["performance"]' || '[]' }},"children":{"performance":"${{ needs.performance.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
+
+  delivery-observation:
+    name: Delivery Observation
+    needs:
+      - scope-detector
+      - governance-oracle
+      - validate-oracle
+      - boundary-oracle
+      - integration-oracle
+      - web-flow-oracle
+      - coverage-oracle
+      - performance-oracle
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download delivery manifest
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: delivery-manifest-v1
+          path: scope
+      - name: Download lane evidence
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          path: reports/run-evidence
+      - name: Aggregate run summary
+        if: ${{ hashFiles('scope/delivery-manifest-v1.json') != '' }}
+        run: node ./tools/ci-cd-platform/observe-run.mjs --manifest scope/delivery-manifest-v1.json --evidence reports/run-evidence --output reports/ci-cd-platform/run-summary-v1.json
+      - name: Upload run summary
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: delivery-run-summary-${{ github.run_id }}
+          path: reports/ci-cd-platform/run-summary-v1.json
+          if-no-files-found: ignore
+          retention-days: 30

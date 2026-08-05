@@ -51,6 +51,7 @@ test('validates a delivery manifest and gives deterministic provenance', () => {
     },
     provenance: buildProvenance({ generator: 'test', input }),
   };
+  manifest.digest = digest(manifest);
   validateDeliveryManifest(manifest);
   assert.equal(digest(input), digest({ files: input.files, head: input.head }));
   assert.match(manifest.provenance.inputDigest, /^[a-f0-9]{64}$/u);
@@ -69,7 +70,7 @@ test('rejects missing or unsupported contract fields', () => {
         version: 1,
         lane: 'web',
         commit: 'x',
-        manifestDigest: 'x',
+        manifestDigest: 'a'.repeat(64),
         status: 'unknown',
       }),
     /invalid lane status/,
@@ -77,7 +78,7 @@ test('rejects missing or unsupported contract fields', () => {
 });
 
 test('accepts a complete lane input and result', () => {
-  validateLaneInput({
+  const input = {
     kind: 'lane-input-v1',
     version: 1,
     lane: 'web',
@@ -89,16 +90,25 @@ test('accepts a complete lane input and result', () => {
     cache: { read: ['playwright'], write: [] },
     failurePolicy: { retry: 'infrastructure-only', timeoutMinutes: 30 },
     owner: 'web',
-  });
-  validateLaneResult({
+    capabilities: ['node', 'pnpm'],
+    policy: {},
+    scope: { version: 1, projects: [] },
+    risk: { level: 'docs' },
+  };
+  input.digest = digest(input);
+  validateLaneInput(input);
+  const result = {
     kind: 'lane-result-v1',
     version: 1,
     lane: 'web',
     commit: 'head',
     manifestDigest: 'a'.repeat(64),
+    laneInputDigest: input.digest,
     status: 'success',
     failure: { classification: 'none' },
     timing: { setupMs: 1, executionMs: 2 },
     provenance: { runner: 'ubuntu-latest' },
-  });
+  };
+  result.digest = digest(result);
+  validateLaneResult(result);
 });

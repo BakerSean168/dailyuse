@@ -4,6 +4,10 @@ export const DELIVERY_MANIFEST_VERSION = 1;
 export const LANE_INPUT_VERSION = 1;
 export const LANE_RESULT_VERSION = 1;
 export const ARTIFACT_MANIFEST_VERSION = 1;
+export const PROMOTION_MANIFEST_VERSION = 1;
+export const WORKSPACE_RECEIPT_VERSION = 1;
+export const LANE_SUMMARY_VERSION = 1;
+export const RUN_SUMMARY_VERSION = 1;
 
 const RISK_LEVELS = new Set(['docs', 'package', 'runtime', 'web-flow', 'root', 'release']);
 const LANE_NAMES = new Set([
@@ -14,6 +18,14 @@ const LANE_NAMES = new Set([
   'web',
   'coverage',
   'performance',
+]);
+const FAILURE_CLASSIFICATIONS = new Set([
+  'none',
+  'assertion',
+  'infrastructure',
+  'process-crash',
+  'timeout',
+  'flaky',
 ]);
 
 export function stableStringify(value) {
@@ -37,6 +49,19 @@ function assertString(value, field) {
   assert(typeof value === 'string' && value.length > 0, `${field} must be a non-empty string`);
 }
 
+function assertDigest(value, field) {
+  assert(
+    typeof value === 'string' && /^[a-f0-9]{64}$/u.test(value),
+    `${field} must be a SHA-256 digest`,
+  );
+}
+
+function assertSelfDigest(value, field) {
+  assertDigest(value?.digest, `${field}.digest`);
+  const { digest: ignored, ...content } = value;
+  assert(value.digest === digest(content), `${field}.digest does not match content`);
+}
+
 function assertStringArray(value, field) {
   assert(Array.isArray(value), `${field} must be an array`);
   assert(
@@ -50,6 +75,8 @@ export function validateDeliveryManifest(manifest) {
   assert(manifest.kind === 'delivery-manifest-v1', 'kind must be delivery-manifest-v1');
   assert(manifest.version === DELIVERY_MANIFEST_VERSION, 'unsupported manifest version');
   assertString(manifest.commit, 'commit');
+  assertString(manifest.event, 'event');
+  assert(typeof manifest.full === 'boolean', 'full must be boolean');
   assert(
     manifest.base === null || typeof manifest.base === 'string',
     'base must be null or string',
@@ -71,7 +98,8 @@ export function validateDeliveryManifest(manifest) {
   }
   assert(manifest.provenance && typeof manifest.provenance === 'object', 'provenance is required');
   assertString(manifest.provenance.generator, 'provenance.generator');
-  assertString(manifest.provenance.inputDigest, 'provenance.inputDigest');
+  assertDigest(manifest.provenance.inputDigest, 'provenance.inputDigest');
+  assertSelfDigest(manifest, 'manifest');
   return manifest;
 }
 
@@ -80,17 +108,25 @@ export function validateLaneInput(input) {
   assert(input.kind === 'lane-input-v1', 'kind must be lane-input-v1');
   assert(input.version === LANE_INPUT_VERSION, 'unsupported lane input version');
   assertString(input.lane, 'lane');
+  assert(LANE_NAMES.has(input.lane), `unsupported lane ${input.lane}`);
   assertString(input.commit, 'commit');
-  assertString(input.manifestDigest, 'manifestDigest');
+  assertDigest(input.manifestDigest, 'manifestDigest');
   assertStringArray(input.inputs, 'inputs');
   assertStringArray(input.outputs, 'outputs');
   assert(input.environment && typeof input.environment === 'object', 'environment is required');
   assert(input.cache && typeof input.cache === 'object', 'cache is required');
+  assert(input.scope && typeof input.scope === 'object', 'scope is required');
+  assert(input.scope.version === 1, 'scope version must be 1');
+  assert(input.risk && typeof input.risk === 'object', 'risk is required');
+  assert(RISK_LEVELS.has(input.risk.level), `unsupported risk level ${input.risk.level}`);
   assert(
     input.failurePolicy && typeof input.failurePolicy === 'object',
     'failurePolicy is required',
   );
   assertString(input.owner, 'owner');
+  assertStringArray(input.capabilities, 'capabilities');
+  assert(input.policy && typeof input.policy === 'object', 'policy is required');
+  assertSelfDigest(input, 'lane input');
   return input;
 }
 
@@ -99,21 +135,22 @@ export function validateLaneResult(result) {
   assert(result.kind === 'lane-result-v1', 'kind must be lane-result-v1');
   assert(result.version === LANE_RESULT_VERSION, 'unsupported lane result version');
   assertString(result.lane, 'lane');
+  assert(LANE_NAMES.has(result.lane), `unsupported lane ${result.lane}`);
   assertString(result.commit, 'commit');
-  assertString(result.manifestDigest, 'manifestDigest');
+  assertDigest(result.manifestDigest, 'manifestDigest');
   assert(
     ['success', 'failure', 'cancelled', 'skipped'].includes(result.status),
     'invalid lane status',
   );
   assert(result.failure && typeof result.failure === 'object', 'failure is required');
   assert(
-    ['none', 'assertion', 'infrastructure', 'process-crash', 'timeout', 'flaky'].includes(
-      result.failure.classification,
-    ),
+    FAILURE_CLASSIFICATIONS.has(result.failure.classification),
     'invalid failure classification',
   );
   assert(result.timing && typeof result.timing === 'object', 'timing is required');
   assert(result.provenance && typeof result.provenance === 'object', 'provenance is required');
+  assertDigest(result.laneInputDigest, 'laneInputDigest');
+  assertSelfDigest(result, 'lane result');
   return result;
 }
 
@@ -123,11 +160,134 @@ export function validateArtifactManifest(manifest) {
   assert(manifest.version === ARTIFACT_MANIFEST_VERSION, 'unsupported artifact manifest version');
   assertString(manifest.name, 'name');
   assertString(manifest.commit, 'commit');
-  assertString(manifest.digest, 'digest');
-  assertString(manifest.sourceManifestDigest, 'sourceManifestDigest');
+  assertDigest(manifest.digest, 'digest');
+  assertDigest(manifest.sourceManifestDigest, 'sourceManifestDigest');
   assertString(manifest.path, 'path');
   assertString(manifest.createdBy, 'createdBy');
+  assert(manifest.toolchain && typeof manifest.toolchain === 'object', 'toolchain is required');
+  assert(manifest.provenance && typeof manifest.provenance === 'object', 'provenance is required');
   return manifest;
+}
+
+export function validatePromotionManifest(manifest) {
+  assert(manifest && typeof manifest === 'object', 'promotion manifest must be an object');
+  assert(manifest.kind === 'promotion-manifest-v1', 'kind must be promotion-manifest-v1');
+  assert(manifest.version === PROMOTION_MANIFEST_VERSION, 'unsupported promotion version');
+  assertString(manifest.commit, 'commit');
+  assertString(manifest.environment, 'environment');
+  assertString(manifest.promotedBy, 'promotedBy');
+  assert(
+    Array.isArray(manifest.artifacts) && manifest.artifacts.length > 0,
+    'artifacts are required',
+  );
+  const names = new Set();
+  for (const artifact of manifest.artifacts) {
+    assert(artifact && typeof artifact === 'object', 'promotion artifact must be an object');
+    assertString(artifact.name, 'promotion artifact.name');
+    assertDigest(artifact.digest, `promotion artifact ${artifact.name}.digest`);
+    assertDigest(
+      artifact.sourceManifestDigest,
+      `promotion artifact ${artifact.name}.sourceManifestDigest`,
+    );
+    assertString(artifact.path, `promotion artifact ${artifact.name}.path`);
+    assertString(artifact.createdBy, `promotion artifact ${artifact.name}.createdBy`);
+    assert(
+      artifact.toolchain && typeof artifact.toolchain === 'object',
+      `promotion artifact ${artifact.name}.toolchain is required`,
+    );
+    assert(
+      artifact.provenance && typeof artifact.provenance === 'object',
+      `promotion artifact ${artifact.name}.provenance is required`,
+    );
+    assert(!names.has(artifact.name), `duplicate promotion artifact ${artifact.name}`);
+    names.add(artifact.name);
+  }
+  assertSelfDigest(manifest, 'promotion manifest');
+  return manifest;
+}
+
+export function validateWorkspaceReceipt(receipt) {
+  assert(receipt && typeof receipt === 'object', 'workspace receipt must be an object');
+  assert(receipt.kind === 'workspace-receipt-v1', 'kind must be workspace-receipt-v1');
+  assert(receipt.version === WORKSPACE_RECEIPT_VERSION, 'unsupported workspace receipt version');
+  assertString(receipt.commit, 'commit');
+  assert(receipt.runner && typeof receipt.runner === 'object', 'runner is required');
+  assert(receipt.toolchain && typeof receipt.toolchain === 'object', 'toolchain is required');
+  assertStringArray(receipt.capabilities, 'capabilities');
+  assert(receipt.cache && typeof receipt.cache === 'object', 'cache is required');
+  assert(receipt.timing && typeof receipt.timing === 'object', 'timing is required');
+  assert(receipt.provenance && typeof receipt.provenance === 'object', 'provenance is required');
+  assertString(receipt.provenance.generator, 'provenance.generator');
+  assertDigest(receipt.provenance.inputDigest, 'provenance.inputDigest');
+  assertSelfDigest(receipt, 'workspace receipt');
+  return receipt;
+}
+
+export function validateLaneSummary(summary) {
+  assert(summary && typeof summary === 'object', 'lane summary must be an object');
+  assert(summary.kind === 'lane-summary-v1', 'kind must be lane-summary-v1');
+  assert(summary.version === LANE_SUMMARY_VERSION, 'unsupported lane summary version');
+  assertString(summary.lane, 'lane');
+  assert(LANE_NAMES.has(summary.lane), `unsupported lane ${summary.lane}`);
+  assertString(summary.commit, 'commit');
+  assertDigest(summary.manifestDigest, 'manifestDigest');
+  assert(
+    ['success', 'failure', 'cancelled', 'skipped'].includes(summary.status),
+    'invalid lane summary status',
+  );
+  assert(summary.timing && typeof summary.timing === 'object', 'timing is required');
+  assert(Array.isArray(summary.failures), 'failures must be an array');
+  assert(summary.provenance && typeof summary.provenance === 'object', 'provenance is required');
+  assertDigest(summary.laneInputDigest, 'laneInputDigest');
+  assertSelfDigest(summary, 'lane summary');
+  return summary;
+}
+
+export function validateRunSummary(summary) {
+  assert(summary && typeof summary === 'object', 'run summary must be an object');
+  assert(summary.kind === 'run-summary-v1', 'kind must be run-summary-v1');
+  assert(summary.version === RUN_SUMMARY_VERSION, 'unsupported run summary version');
+  assertString(summary.commit, 'commit');
+  assertDigest(summary.manifestDigest, 'manifestDigest');
+  assert(
+    ['success', 'failure', 'incomplete'].includes(summary.status),
+    'invalid run summary status',
+  );
+  assert(Array.isArray(summary.lanes), 'lanes must be an array');
+  assert(summary.timing && typeof summary.timing === 'object', 'timing is required');
+  assert(summary.provenance && typeof summary.provenance === 'object', 'provenance is required');
+  assertSelfDigest(summary, 'run summary');
+  return summary;
+}
+
+export function buildLaneInput({
+  lane,
+  commit,
+  manifestDigest,
+  definition,
+  scope,
+  risk,
+  runId = null,
+  policy = {},
+}) {
+  return {
+    kind: 'lane-input-v1',
+    version: LANE_INPUT_VERSION,
+    lane,
+    commit,
+    manifestDigest,
+    inputs: definition.inputs,
+    outputs: definition.outputs,
+    environment: definition.environment,
+    cache: definition.cache,
+    failurePolicy: definition.failurePolicy,
+    owner: definition.owner,
+    capabilities: definition.capabilities,
+    scope,
+    risk,
+    policy,
+    runId,
+  };
 }
 
 export function buildProvenance({ generator, input }) {

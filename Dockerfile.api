@@ -101,6 +101,7 @@ RUN --mount=type=cache,id=memoflow-api-nx-cache,target=/app/.nx/cache \
   if [ "$USE_PREBUILT_ARTIFACT" = "1" ]; then \
     test -f apps/api/dist/main.js \
       && test -f apps/migrator/dist/main.js \
+      && test -f packages/database/dist/index.js \
       && test -d packages/database/dist/runtime-scripts; \
   else \
     ./node_modules/.bin/nx run api:build \

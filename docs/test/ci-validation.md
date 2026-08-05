@@ -23,6 +23,18 @@ Web Flow 的 21 个核心 spec 由 `apps/web/web-flow-specs.mjs` 唯一列出。
 明确 infrastructure 或 process crash 才自动重试一次。成功 run 不上传大体积浏览器证据，失败时保留
 trace、video、screenshot 和 JSON report。
 
+CI/CD Platform V2 现在把平台事实收敛到 `tools/ci-cd-platform/`：`lane-registry` 声明每个 lane 的
+capability、输入输出、隔离、cache、owner 和失败策略；`create-lane-input.mjs` 把同一份 delivery
+manifest 转换为可验证的 `lane-input-v1`。workspace action 先消费 manifest，再按 capability 和
+`ai-service` 是否受影响决定是否安装 Python/uv，并生成带 digest 和 setup timing 的
+`workspace-receipt-v1`。
+
+每条命令输出唯一的 `lane-result-v1`，`publish-lane-evidence` 生成 `lane-summary-v1`；CI 末尾的
+`Delivery Observation` 递归聚合各 job 的证据为 `run-summary-v1`。这些对象都绑定 commit、manifest
+digest 和上游对象 digest，来源不一致时 fail closed。API/Web/Migrator/Database/Database Runtime
+属于同一 production artifact closure；Web shard 和 `docker-deploy.yml` 都会在使用前验证内容 digest
+及 source manifest digest。
+
 PR coverage 由 `Coverage Oracle` 门禁；`.github/workflows/coverage.yml` 的 schedule/manual 车道继续
 执行完整 configured project lists，作为 affected 图漏检的 nightly 兜底。PR `test:perf` 只执行固定
 seed 的排序/service budget；真实 GC、memory 和长采样在 `performance-experiment.yml` nightly 车道，
@@ -34,8 +46,15 @@ seed 的排序/service budget；真实 GC、memory 和长采样在 `performance-
 node tools/test-system-v2/inventory.mjs --check
 node tools/test-system-v2/ruleset-check.mjs
 node --test tools/test-system-v2/__tests__/*.test.mjs
+node tools/ci-cd-platform/schema-check.mjs
+node tools/ci-cd-platform/registry-check.mjs
+node --test tools/ci-cd-platform/__tests__/*.test.mjs
 pnpm nx run desktop:test:boundary
 ```
+
+仓库只有一名维护者时，`.github/rulesets/main.json` 保留 active Oracle 和 required thread resolution，
+但 `required_approving_review_count`、code-owner review 和 last-push approval 均为 `0/false`；门禁是
+自动化 Oracle，不是给自己制造一个无法产生第二人的 review 阻塞。
 
 ## 2026-08-05 V2 验收测量
 

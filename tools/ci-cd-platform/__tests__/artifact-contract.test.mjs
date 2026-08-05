@@ -15,14 +15,14 @@ test('artifact digest is stable while the output manifest stays outside the arti
     name: 'api',
     target,
     commit: 'sha',
-    sourceManifestDigest: 'm'.repeat(64),
+    sourceManifestDigest: 'a'.repeat(64),
     output,
   });
   const second = await createArtifactManifest({
     name: 'api',
     target,
     commit: 'sha',
-    sourceManifestDigest: 'm'.repeat(64),
+    sourceManifestDigest: 'a'.repeat(64),
     output,
   });
   assert.equal(first.digest, second.digest);

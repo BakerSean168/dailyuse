@@ -10,7 +10,9 @@
     "digest",
     "sourceManifestDigest",
     "path",
-    "createdBy"
+    "createdBy",
+    "toolchain",
+    "provenance"
   ],
   "properties": {
     "kind": { "const": "artifact-manifest-v1" },
@@ -20,7 +22,9 @@
     "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "sourceManifestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "path": { "type": "string", "minLength": 1 },
-    "createdBy": { "type": "string", "minLength": 1 }
+    "createdBy": { "type": "string", "minLength": 1 },
+    "toolchain": { "type": "object" },
+    "provenance": { "type": "object" }
   },
   "additionalProperties": false
 }

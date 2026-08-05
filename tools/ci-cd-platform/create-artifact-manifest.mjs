@@ -3,7 +3,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { validateArtifactManifest } from './lib/contracts.mjs';
+import { validateArtifactManifest, validateDeliveryManifest } from './lib/contracts.mjs';
 
 async function filesUnder(root, current = root) {
   const entries = await readdir(current, { withFileTypes: true });
@@ -49,6 +49,12 @@ export async function createArtifactManifest({
     sourceManifestDigest,
     path: path.relative(process.cwd(), target).split(path.sep).join('/'),
     createdBy,
+    toolchain: { node: process.version },
+    provenance: {
+      workflow: process.env.GITHUB_WORKFLOW ?? 'local',
+      runId: process.env.GITHUB_RUN_ID ?? null,
+      ref: process.env.GITHUB_REF ?? null,
+    },
   };
   validateArtifactManifest(manifest);
   await mkdir(path.dirname(output), { recursive: true });
@@ -67,6 +73,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const source = JSON.parse(
     await readFile(path.resolve(args.get('manifest') ?? 'scope/delivery-manifest-v1.json'), 'utf8'),
   );
+  validateDeliveryManifest(source);
   const artifact = await createArtifactManifest({
     name: args.get('name'),
     target,

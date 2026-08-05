@@ -10,6 +10,10 @@ const expected = [
   'lane-result-v1.schema.json',
   'artifact-manifest-v1.schema.json',
   'promotion-manifest-v1.schema.json',
+  'lane-registry-v1.schema.json',
+  'workspace-receipt-v1.schema.json',
+  'lane-summary-v1.schema.json',
+  'run-summary-v1.schema.json',
 ];
 for (const file of expected) {
   const schema = JSON.parse(await readFile(path.join(root, file), 'utf8'));
