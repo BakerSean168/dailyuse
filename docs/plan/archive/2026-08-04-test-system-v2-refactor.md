@@ -447,14 +447,14 @@ full audits、结构化 timing/failure classification、测量驱动的 Web shar
 
 验收证据：
 
-- [Actions run 30934384004](https://github.com/BakerSean168/memoflow/actions/runs/30934384004) 的七个
+- [Actions run 30968872885](https://github.com/BakerSean168/memoflow/actions/runs/30968872885) 的七个
   required Oracle 全部通过。
-- 墙钟为约 9:16（`17:32:32Z` 至 `17:41:48Z`），低于 9:47 基线，但没有达到 7-8 分钟目标。
-- 所有 job 执行时间合计 2,933 秒，即 48.88 runner-minutes，高于 42.3 分钟基线；公开仓库 billing
+- 墙钟为约 8:23（`02:16:23Z` 至 `02:24:46Z`），低于 9:47 基线，但没有达到 7-8 分钟目标。
+- 所有 job 执行时间合计 2,981 秒，即 49.68 runner-minutes，高于 42.3 分钟基线；公开仓库 billing
   API 的 0 billable milliseconds 不作为该目标的替代证据。
 - Desktop 46 个测试文件全部唯一归属，primary duplicate 为 0，inventory missing 为 0。
 - Web JSON reports 生成 versioned `web-spec-durations.json`；新 shard 估算为 253,478、254,607、
-  257,794、254,664 毫秒，极差 4.32 秒，低于原约 1:42。
+  257,794、254,664 毫秒，极差 4.32 秒，低于原约 1:42；最终 run 实际 shard 极差 25 秒。
 - `.github/rulesets/main.json` 声明 active，required contexts 恰为七个稳定 Oracle；远端 active ruleset
   ID `9183921` 已复核。
 - governance、actionlint、inventory、target checks、Oracle/Scope/shard tests 和相关 project tests 已通过。

@@ -39,12 +39,13 @@ pnpm nx run desktop:test:boundary
 
 ## 2026-08-05 V2 验收测量
 
-[Actions run 30934384004](https://github.com/BakerSean168/memoflow/actions/runs/30934384004) 的七个
-required Oracle 全部通过。workflow 从 `17:32:32Z` 到 `17:41:48Z`，墙钟约 9:16；所有 job 的
-实际执行时间合计 2,933 秒，即 48.88 runner-minutes。该执行成本高于 42.3 分钟基线，因此不能视为
+[Actions run 30968872885](https://github.com/BakerSean168/memoflow/actions/runs/30968872885) 的七个
+required Oracle 全部通过。workflow 从 `02:16:23Z` 到 `02:24:46Z`，墙钟约 8:23；所有 job 的
+实际执行时间合计 2,981 秒，即 49.68 runner-minutes。该执行成本高于 42.3 分钟基线，因此不能视为
 runner-minutes 目标已达成；公开仓库 billing API 返回的 0 billable milliseconds 是不同指标。
 
-Web shard 的实际 job 时长为 6:48、7:29、5:53、7:11。由 JSON report 聚合的逐 spec baseline
+此前 run 的 Web shard 实际 job 时长为 6:48、7:29、5:53、7:11。由 JSON report 聚合的逐 spec baseline
 重新分配后，四个 shard 估算测试时长为 253,478、254,607、257,794、254,664 毫秒，估算极差
-4.32 秒，明显低于此前约 1:42 的观测极差。后续 run 应继续从 Actions artifact 记录墙钟、执行
+4.32 秒，明显低于此前约 1:42 的观测极差。最终 run 的四个 shard 实际 job 时长为 6:44、7:03、
+6:55、7:09，实际极差 25 秒。后续 run 应继续从 Actions artifact 记录墙钟、执行
 runner-minutes、cache 命中和实际 shard 平衡，不把单次测量写成永久保证。
