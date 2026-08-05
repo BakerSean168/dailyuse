@@ -7,7 +7,7 @@ tags:
   - delivery
 description: CI/CD Platform V2 解耦、artifact 晋级与可扩展交付平台决策
 created: 2026-08-05T00:00:00Z
-updated: 2026-08-05T10:57:23Z
+updated: 2026-08-05T12:45:00Z
 ---
 
 # ADR-041: CI/CD Platform V2 解耦与可扩展交付平台
@@ -156,17 +156,20 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
   通过条件跳过。`run-fault-injection.mjs` 覆盖 detector、取消、manifest、artifact、runtime closure 和
   provenance/权限失败，`compare-timings.mjs` 只接受同 lane 集合且至少五次 comparable run。
 
-当前 PR #209 的最终 fresh-run [Actions run 31002955215](https://github.com/BakerSean168/memoflow/actions/runs/31002955215)
-绑定 commit `30bf0da88b6541c9e5fe0c08410c5fd51ff1275d`，Scope Detector、七个稳定 Oracle、四个 Web shard 和
-Delivery Observation 全部通过。`run-summary-v1` 的 manifest digest 为
-`3c03341da73cb4a9ae1ae2060d33a500a75ab53697339237082a603f41126386`，summary digest 为
-`ae5b33d5deb91bac0508ce3e30853188c37bc21ed50713fd8c4ec1d40cf3e606`，`missingLanes: []`、无 failures；
-setup 为 `368,804 ms`，lane execution 为 `1,965,337 ms`，最长 lane 为 `284,813 ms`。四个 Web evidence
-artifact 使用唯一的 `shard-0..3` suffix，Web execution 合计 `1,124,604 ms`。
+最终切换 PR [#210](https://github.com/BakerSean168/memoflow/pull/210) 的 fresh-run
+[Actions run 31005675536](https://github.com/BakerSean168/memoflow/actions/runs/31005675536) 绑定 commit
+`1f5d6bd388809ae786897a0a8ba09a4ea0ff588a`，Scope Detector、七个稳定 Oracle、四个 Web shard 和
+`Delivery Observation` 全部通过。`run-summary-v1` 的 manifest digest 为
+`b13809e6885089a4aa0a3993eac2c3e5e3e1266a2c935b8e29d7efcdebac5dff`，summary digest 为
+`fcdb431a0436e5363eb1439e443b247de09020ddf0442b5b227c607807a42157`，`missingLanes: []`、无 failures；
+setup 为 `382,139 ms`，lane execution 为 `1,890,704 ms`，最长 lane 为 `285,367 ms`。四个 Web evidence
+artifact 使用唯一的 `shard-0..3` suffix，Web execution 合计 `1,124,792 ms`。
 
-本地契约测试、schema/registry 检查、7 个 fail-closed 故障场景和 Test System V2 inventory/ruleset 检查也已通过。
-仍需至少五次 comparable timing、一次 `main` 上的 scheduled fault audit，以及一次 production promotion
-dry-run，才能把单次 fresh-run 转化为长期成本、恢复和发布证据。
+本地契约测试、schema/registry 检查、7 个 fail-closed 故障场景和 Test System V2 inventory/ruleset 检查也已通过；
+远端 ruleset `9183921` 已同步为 8 个 required contexts（含 `Delivery Observation`），并保留单人维护者
+`required_approving_review_count: 0`。仍需至少五次 comparable timing、一次 `main` 上的 scheduled fault
+audit，以及一次 production promotion dry-run，才能把单次 fresh-run 转化为长期成本、恢复和发布证据；这些是
+运营验收，不是再次设计或局部重构。
 
 ## References
 
@@ -178,7 +181,7 @@ dry-run，才能把单次 fresh-run 转化为长期成本、恢复和发布证�
 
 ## Decision Gate
 
-本 ADR 已在契约、registry、workflow adapter 和本地治理检查落地后保持 `Accepted`。
-新 PR 合并后，执行一次 `main` 上的 scheduled fault audit，收集至少五次同范围 timing，并确认
-required contexts 与本 ADR 的 ruleset 一致；这些是切换后的验收和运营证据，不是第二轮架构设计。
+本 ADR 已在契约、registry、workflow adapter、PR #210 fresh-run 和远端 ruleset 同步后保持 `Accepted`。
+后续只需在 `main` 的日常运行中收集至少五次同范围 timing、执行 scheduled fault audit，并完成一次
+production promotion dry-run；这些是切换后的运营证据，不是第二轮架构设计。
 证据齐备后再将状态更新为 `Implemented` 并归档 Action Plan。
