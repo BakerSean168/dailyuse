@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  DELIVERY_MANIFEST_PATH: scope/delivery-manifest-v1.json
+
 jobs:
   experiment:
     name: Performance Experiment
@@ -15,14 +18,27 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with: { node-version: '24', package-manager-cache: false }
-      - run: corepack enable && corepack prepare pnpm@10.15.1 --activate
-      - run: pnpm install --frozen-lockfile --reporter=append-only
+      - uses: ./.github/actions/setup-nx-affected-job
+        with:
+          node-version: '24'
+          setup-python: 'false'
+          setup-uv: 'false'
+          capabilities: node,pnpm,performance
+      - name: Generate full delivery manifest
+        env:
+          DELIVERY_MANIFEST_OUTPUT: scope/delivery-manifest-v1.json
+          NX_HEAD: ${{ github.sha }}
+        run: node ./tools/ci-cd-platform/generate-delivery-manifest.mjs
+      - name: Validate delivery manifest
+        run: node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
       - name: Run memory and stability experiment with explicit GC
         env:
-          { NODE_OPTIONS: '--require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs' }
-        run: pnpm exec nx run task:test:perf:experiment
+          NODE_OPTIONS: '--require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs'
+          DELIVERY_LANE: performance
+          TEST_REPORT_NAME: performance-experiment
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run task:test:perf:experiment
+      - uses: ./.github/actions/publish-lane-evidence
+        with: { lane: performance }
       - uses: actions/upload-artifact@v6
         if: always()
         with:
