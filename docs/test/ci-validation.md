@@ -64,10 +64,10 @@ pnpm nx run desktop:test:boundary
 
 本节同时记录历史容量数据和当前 PR fresh-run；历史数据仅用于成本对照，当前分支证据见下方 PR #209 段落。
 
-当前 PR #209 的 [Actions run 31002036565](https://github.com/BakerSean168/memoflow/actions/runs/31002036565)
-绑定 `c5bf40c8cccebaea14e7ac9fcd1ce9c98bc1d7fc`，七个稳定 Oracle、四个 Web shard 和 Delivery Observation
-全部通过。`run-summary-v1` 的 setup 为 `378,369 ms`，lane execution 为 `1,902,840 ms`，最长 lane 为
-`285,193 ms`，`missingLanes: []`；四个 Web shard 为约 4:44、5:47、6:02、5:53，证据 artifact 使用唯一
+当前 PR #209 的最终 [Actions run 31002955215](https://github.com/BakerSean168/memoflow/actions/runs/31002955215)
+绑定 `30bf0da88b6541c9e5fe0c08410c5fd51ff1275d`，七个稳定 Oracle、四个 Web shard 和 Delivery Observation
+全部通过。`run-summary-v1` 的 setup 为 `368,804 ms`，lane execution 为 `1,965,337 ms`，最长 lane 为
+`284,813 ms`，`missingLanes: []`；四个 Web shard 为约 5:56、5:42、5:51、5:46，证据 artifact 使用唯一
 `shard-0..3` suffix。该 run 是当前分支 fresh-run 证据，但仍不足以替代至少五次 comparable timing 的
 P50/P95 与 runner-minute 统计。
 

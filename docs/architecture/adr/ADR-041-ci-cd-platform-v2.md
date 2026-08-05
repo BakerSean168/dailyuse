@@ -154,13 +154,13 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
   通过条件跳过。`run-fault-injection.mjs` 覆盖 detector、取消、manifest、artifact、runtime closure 和
   provenance/权限失败，`compare-timings.mjs` 只接受同 lane 集合且至少五次 comparable run。
 
-当前 PR #209 的 fresh-run [Actions run 31002036565](https://github.com/BakerSean168/memoflow/actions/runs/31002036565)
-绑定 commit `c5bf40c8cccebaea14e7ac9fcd1ce9c98bc1d7fc`，Scope Detector、七个稳定 Oracle、四个 Web shard 和
+当前 PR #209 的最终 fresh-run [Actions run 31002955215](https://github.com/BakerSean168/memoflow/actions/runs/31002955215)
+绑定 commit `30bf0da88b6541c9e5fe0c08410c5fd51ff1275d`，Scope Detector、七个稳定 Oracle、四个 Web shard 和
 Delivery Observation 全部通过。`run-summary-v1` 的 manifest digest 为
-`ea4b2ff7131d362c5dac25df3e984c2cf2a5a4c79470c2ac0ed0475d4161257c`，summary digest 为
-`5b6ced2ac22925133cb5a10545e0a05b31fd465091d5df9f83da94561dc5b71c`，`missingLanes: []`、无 failures；
-setup 为 `378,369 ms`，lane execution 为 `1,902,840 ms`，最长 lane 为 `285,193 ms`。四个 Web evidence
-artifact 使用唯一的 `shard-0..3` suffix，Web execution 合计 `1,054,247 ms`。
+`3c03341da73cb4a9ae1ae2060d33a500a75ab53697339237082a603f41126386`，summary digest 为
+`ae5b33d5deb91bac0508ce3e30853188c37bc21ed50713fd8c4ec1d40cf3e606`，`missingLanes: []`、无 failures；
+setup 为 `368,804 ms`，lane execution 为 `1,965,337 ms`，最长 lane 为 `284,813 ms`。四个 Web evidence
+artifact 使用唯一的 `shard-0..3` suffix，Web execution 合计 `1,124,604 ms`。
 
 本地契约测试、schema/registry 检查、7 个 fail-closed 故障场景和 Test System V2 inventory/ruleset 检查也已通过。
 仍需至少五次 comparable timing、一次 `main` 上的 scheduled fault audit，以及一次 production promotion
