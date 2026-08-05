@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { digest, validateArtifactManifest, validatePromotionManifest } from './lib/contracts.mjs';
 
@@ -82,7 +82,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     throw new Error(
       'Usage: promote-artifact.mjs <manifest-directory> <commit> <environment> <output>',
     );
-  const files = (await import('node:fs/promises')).readdir(manifestDirectory);
+  const files = await readdir(manifestDirectory);
   const manifests = await Promise.all(
     files
       .filter((file) => file.endsWith('-artifact-manifest.json'))

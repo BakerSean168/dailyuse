@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 import { buildPromotionManifest } from '../promote-artifact.mjs';
+
+const execFileAsync = promisify(execFile);
 
 function artifact(name, artifactDigest = 'a'.repeat(64)) {
   const manifest = {
@@ -96,4 +100,42 @@ test('production promotion fails closed unless the complete artifact closure is 
       }),
     /missing required promotion artifacts: database/,
   );
+});
+
+test('promotion CLI reads manifests and writes a validated production receipt', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'ci-cd-promotion-cli-'));
+  const output = path.join(directory, 'promotion.json');
+  const sourceManifestDigest = 'a'.repeat(64);
+  const manifests = [
+    'api',
+    'api-runtime-closure',
+    'web',
+    'migrator',
+    'database',
+    'database-runtime',
+  ].map((name) => artifact(name));
+
+  await Promise.all(
+    manifests.map((manifest) =>
+      writeFile(
+        path.join(directory, `${manifest.name}-artifact-manifest.json`),
+        `${JSON.stringify(manifest)}\n`,
+      ),
+    ),
+  );
+  await execFileAsync(
+    process.execPath,
+    [
+      path.resolve(new URL('../promote-artifact.mjs', import.meta.url).pathname),
+      directory,
+      'sha',
+      'production',
+      output,
+    ],
+    { env: { ...process.env, DELIVERY_MANIFEST_DIGEST: sourceManifestDigest } },
+  );
+
+  const promotion = JSON.parse(await readFile(output, 'utf8'));
+  assert.equal(promotion.environment, 'production');
+  assert.equal(promotion.artifacts.length, 6);
 });
