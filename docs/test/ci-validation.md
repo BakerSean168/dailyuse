@@ -54,3 +54,7 @@ runner-minutes、cache 命中和实际 shard 平衡，不把单次测量写成�
 已验证 full configured project selection 不再 false-green；它实际执行 governed domain、store 和 use-case
 coverage，并在 `schedule:test:coverage:use-cases` 的 branch coverage `56.33% < 60%` 时失败。该回归保持
 原 threshold，证明 nightly audit 和 coverage regression gate 都会 fail closed。
+
+覆盖 nightly-audit 修复后的最终 PR head `c85759766` 由
+[Actions run 30971373609](https://github.com/BakerSean168/memoflow/actions/runs/30971373609) 验证，七个
+Oracle 全部通过；该 run 的墙钟约 8:43，job execution 合计 3,045 秒（50.75 runner-minutes）。
