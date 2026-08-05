@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/lane-input-v1.schema.json",
+  "type": "object",
+  "required": [
+    "kind",
+    "version",
+    "lane",
+    "commit",
+    "manifestDigest",
+    "inputs",
+    "outputs",
+    "environment",
+    "cache",
+    "failurePolicy",
+    "owner"
+  ],
+  "properties": {
+    "kind": { "const": "lane-input-v1" },
+    "version": { "const": 1 },
+    "lane": { "type": "string", "minLength": 1 },
+    "commit": { "type": "string", "minLength": 1 },
+    "manifestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "environment": { "type": "object" },
+    "cache": { "type": "object" },
+    "failurePolicy": { "type": "object" },
+    "owner": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}

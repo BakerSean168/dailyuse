@@ -174,6 +174,12 @@ jobs:
       - name: Create Web artifact manifest
         if: ${{ hashFiles('dist/apps/web/**') != '' }}
         run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name web --path dist/apps/web --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/web-artifact-manifest.json
+      - name: Create Migrator artifact manifest
+        if: ${{ hashFiles('apps/migrator/dist/**') != '' }}
+        run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name migrator --path apps/migrator/dist --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/migrator-artifact-manifest.json
+      - name: Create Database runtime artifact manifest
+        if: ${{ hashFiles('packages/database/dist/runtime-scripts/**') != '' }}
+        run: node ./tools/ci-cd-platform/create-artifact-manifest.mjs --name database-runtime --path packages/database/dist/runtime-scripts --manifest scope/delivery-manifest-v1.json --output reports/ci-cd-platform/database-runtime-artifact-manifest.json
       - name: Upload immutable build artifacts
         uses: actions/upload-artifact@v6
         with:
@@ -330,10 +336,8 @@ jobs:
           name: ci-build-artifacts
           path: .
       - name: Verify API artifact
-        if: ${{ hashFiles('reports/ci-cd-platform/api-artifact-manifest.json') != '' }}
         run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist
       - name: Verify Web artifact
-        if: ${{ hashFiles('reports/ci-cd-platform/web-artifact-manifest.json') != '' }}
         run: node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
         env: { TEST_REPORT_NAME: web-database, DELIVERY_LANE: web }
