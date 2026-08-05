@@ -177,7 +177,8 @@ describe('Benchmarks: Sort Algorithm Performance', () => {
   it('should maintain consistent performance across multiple runs', async () => {
     const tasks = createMockTasks(2000);
     const times: number[] = [];
-    const sortsPerSample = 10;
+    // Amortize scheduler and timer resolution noise on shared CI runners.
+    const sortsPerSample = 100;
 
     // Warm-up runs to allow JIT compilation
     for (let i = 0; i < 5; i++) {

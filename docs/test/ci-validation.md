@@ -14,9 +14,9 @@ Validate children（static analysis、unit、typecheck、build）并行执行。
 prepared Boundary runner 内分别执行；integration、smoke 和每个 Web shard 使用独立数据库环境。
 真实数据库、浏览器和性能 target 均关闭 Nx cache。
 
-Web Flow 的 21 个核心 spec 由 `apps/web/web-flow-specs.mjs` 唯一列出，
-`tools/test-system-v2/generate-web-shards.mjs` 使用历史 duration artifact（首次运行无 artifact 时用
-可审计的 test-count fallback）生成 `web-shards.json`；`web-shards.test.mjs` 校验合集无遗漏、无重复。
+Web Flow 的 21 个核心 spec 由 `apps/web/web-flow-specs.mjs` 唯一列出。
+`tools/test-system-v2/web-spec-durations.json` 保存最近一次完整 V2 run 的逐 spec 测量基线，
+`generate-web-shards.mjs` 据此生成 `web-shards.json`；`web-shards.test.mjs` 校验合集无遗漏、无重复。
 
 `tools/test-system-v2/run-command.mjs` 输出结构化 timing/report，并使用
 `failure-classification.mjs` 区分 assertion、infrastructure、process-crash、timeout 和 flaky；只有
@@ -37,5 +37,14 @@ node --test tools/test-system-v2/__tests__/*.test.mjs
 pnpm nx run desktop:test:boundary
 ```
 
-墙钟、runner-minutes、cache 命中和四个 Web shard 的平衡应从 Actions artifact 记录，不在文档中把
-单次 run 写成永久保证。
+## 2026-08-05 V2 验收测量
+
+[Actions run 30934384004](https://github.com/BakerSean168/memoflow/actions/runs/30934384004) 的七个
+required Oracle 全部通过。workflow 从 `17:32:32Z` 到 `17:41:48Z`，墙钟约 9:16；所有 job 的
+实际执行时间合计 2,933 秒，即 48.88 runner-minutes。该执行成本高于 42.3 分钟基线，因此不能视为
+runner-minutes 目标已达成；公开仓库 billing API 返回的 0 billable milliseconds 是不同指标。
+
+Web shard 的实际 job 时长为 6:48、7:29、5:53、7:11。由 JSON report 聚合的逐 spec baseline
+重新分配后，四个 shard 估算测试时长为 253,478、254,607、257,794、254,664 毫秒，估算极差
+4.32 秒，明显低于此前约 1:42 的观测极差。后续 run 应继续从 Actions artifact 记录墙钟、执行
+runner-minutes、cache 命中和实际 shard 平衡，不把单次测量写成永久保证。

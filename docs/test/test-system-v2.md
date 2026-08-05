@@ -6,7 +6,7 @@ tags:
   - target-state
 description: MemoFlow Test System V2 的当前架构、执行契约、质量门禁与验收指标
 created: 2026-08-04T00:00:00+08:00
-updated: 2026-08-04T00:00:00+08:00
+updated: 2026-08-05T10:00:00+08:00
 ---
 
 # Test System V2 当前架构
@@ -219,6 +219,8 @@ Oracle 名称，而不是让 ruleset 依赖会变化的 child job。
 
 - 四个 shard 保持单 worker 和独立 PostgreSQL，防止账号及后端状态互相污染。
 - shard 分配使用历史 spec duration，而不是只按文件数或测试数平均。
+- 最近一次逐 spec 测量基线保存在 `tools/test-system-v2/web-spec-durations.json`，生成器据此更新
+  versioned `web-shards.json`；Actions JSON artifact 是测量来源，不是唯一持久副本。
 - 失败证据只在失败时上传，包含 JSON、trace、video、screenshot 和 HTML report。
 - API build artifact 只有在证明节省 runner-minutes 且不增加关键路径后才共享。
 
@@ -361,6 +363,6 @@ V2 首次切换验收预算：
 ## 15. 相关决策与实施
 
 - [ADR-040: Test System V2 单一归属与稳定门禁](../architecture/adr/ADR-040-test-system-v2.md)
-- [Test System V2 一次性重构计划](../plan/active/2026-08-04-test-system-v2-refactor.md)
+- [Test System V2 一次性重构计划与验收记录](../plan/archive/2026-08-04-test-system-v2-refactor.md)
 - [当前测试分层](./architecture.md)
 - [当前 CI 测试与反馈性能](./ci-validation.md)

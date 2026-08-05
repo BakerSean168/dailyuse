@@ -7,7 +7,7 @@ tags:
   - developer-experience
 description: 测试唯一归属、Nx 执行契约、稳定 CI Oracle 与一次性切换决策
 created: 2026-08-04T00:00:00+08:00
-updated: 2026-08-04T00:00:00+08:00
+updated: 2026-08-05T10:00:00+08:00
 ---
 
 # ADR-040: Test System V2 单一归属与稳定门禁
@@ -16,7 +16,7 @@ updated: 2026-08-04T00:00:00+08:00
 
 **Date:** 2026-08-04
 
-**Implementation:** Planned
+**Implementation:** Implemented in PR [#204](https://github.com/BakerSean168/memoflow/pull/204)
 **Refines:** ADR-013 的测试组织、执行入口与覆盖率门禁部分
 
 ## Context
@@ -167,6 +167,6 @@ Oracle 必须区分合法跳过、成功、失败、取消和 detector 失败。
 ## References
 
 - [Test System V2 目标设计](../../test/test-system-v2.md)
-- [Test System V2 一次性重构计划](../../plan/active/2026-08-04-test-system-v2-refactor.md)
+- [Test System V2 一次性重构计划与验收记录](../../plan/archive/2026-08-04-test-system-v2-refactor.md)
 - [ADR-013: Standard Testing Strategy](./ADR-013-standard-testing-strategy.md)
 - [CI 测试与反馈性能](../../test/ci-validation.md)

@@ -4,7 +4,7 @@ tags:
   - archive
 description: 归档计划目录
 created: 2026-04-26T00:00:00
-updated: 2026-08-04T21:10:00+08:00
+updated: 2026-08-05T10:00:00+08:00
 ---
 
 # Archived Plans
@@ -27,6 +27,7 @@ updated: 2026-08-04T21:10:00+08:00
 
 | 日期       | 计划                                                                                                     | 结果                                                                                         |
 | ---------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 2026-08-05 | [Test System V2](./2026-08-04-test-system-v2-refactor.md)                                               | #204；唯一归属、七 Oracle、active ruleset；全绿 run 30934384004                              |
 | 2026-08-04 | [CI Feedback Loop Phase Two](./2026-08-04-ci-feedback-loop-phase-two.md)                                 | 动态 pnpm cache、Boundary 并行 Oracle、Web affected gate、clean-source runner；#202 首轮全绿 |
 | 2026-08-04 | [CI Feedback Loop Optimization](./2026-08-04-ci-feedback-loop-optimization.md)                           | Required checks 约 8:20；Web E2E 完整 74 tests；Boundary 0:48                                |
 | 2026-08-03 | [Desktop Cloud Connection Boundary Refactor](./2026-08-03-desktop-cloud-connection-boundary-refactor.md) | Profile Access、Cloud Connection Dialog 与可选 PIN 解耦；全仓 prod-like validation 通过      |
