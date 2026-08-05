@@ -36,7 +36,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm exec eslint .",
+        "command": "node ../../node_modules/eslint/bin/eslint.js .",
         "cwd": "apps/mobile"
       }
     },
