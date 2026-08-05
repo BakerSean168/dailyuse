@@ -27,12 +27,12 @@ jobs:
       manifest_path: ${{ steps.scope.outputs.manifest_path }}
       manifest_digest: ${{ steps.scope.outputs.manifest_digest }}
       risk: ${{ steps.scope.outputs.risk }}
-      lane_validate: ${{ steps.scope.outputs.validate }}
-      lane_boundary: ${{ steps.scope.outputs.boundary }}
-      lane_integration: ${{ steps.scope.outputs.integration }}
-      lane_web: ${{ steps.scope.outputs.web }}
-      lane_coverage: ${{ steps.scope.outputs.coverage }}
-      lane_performance: ${{ steps.scope.outputs.performance }}
+      lane_validate: ${{ steps.scope.outputs.lane_validate }}
+      lane_boundary: ${{ steps.scope.outputs.lane_boundary }}
+      lane_integration: ${{ steps.scope.outputs.lane_integration }}
+      lane_web: ${{ steps.scope.outputs.lane_web }}
+      lane_coverage: ${{ steps.scope.outputs.lane_coverage }}
+      lane_performance: ${{ steps.scope.outputs.lane_performance }}
       has_unit: ${{ steps.scope.outputs.has_unit }}
       has_coverage: ${{ steps.scope.outputs.has_coverage }}
       has_smoke: ${{ steps.scope.outputs.has_smoke }}

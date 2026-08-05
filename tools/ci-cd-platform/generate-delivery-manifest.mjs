@@ -88,7 +88,7 @@ async function main() {
       `manifest_path=${output}`,
       `manifest_digest=${manifest.digest}`,
       `risk=${manifest.risk.level}`,
-      ...Object.entries(manifest.lanes).map(([lane, enabled]) => `${lane}=${enabled}`),
+      ...Object.entries(manifest.lanes).map(([lane, enabled]) => `lane_${lane}=${enabled}`),
       `unit=${manifest.scope.unit.join(',')}`,
       `coverage=${manifest.scope.coverage.join(',')}`,
       `smoke=${manifest.scope.smoke.join(',')}`,
