@@ -7,7 +7,7 @@ tags:
   - delivery
 description: CI/CD Platform V2 解耦、artifact 晋级与可扩展交付平台决策
 created: 2026-08-05T00:00:00Z
-updated: 2026-08-05T00:00:00Z
+updated: 2026-08-05T10:57:23Z
 ---
 
 # ADR-041: CI/CD Platform V2 解耦与可扩展交付平台
@@ -152,13 +152,20 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
   通过条件跳过。`run-fault-injection.mjs` 覆盖 detector、取消、manifest、artifact、runtime closure 和
   provenance/权限失败，`compare-timings.mjs` 只接受同 lane 集合且至少五次 comparable run。
 
-最终 head 的完整远端验证已完成：[Actions run 30995540184](https://github.com/BakerSean168/memoflow/actions/runs/30995540184)
-绑定 commit `49775316f599579329959a7c6bcd13c854f3671d`，四个 Web shard 均通过 artifact closure 恢复、
-API/Web/Database verifier 和 Playwright，七个 Oracle 与 `Delivery Observation` 全部成功；run summary 的
-`missingLanes` 为空，manifest digest 为 `615b3976e39aefb891d5f0f95083afd18497c91fa6d2b7cc1d64b83e1adce80c`。
-基于同一 head 的 production promotion dry-run 也已通过，生成六件 artifact closure 的 promotion receipt
+最新 main-based PR head 的完整远端验证已完成：[Actions run 30998745996](https://github.com/BakerSean168/memoflow/actions/runs/30998745996)
+绑定 commit `c17b9c2d26e75198a7365ab8fc5365b8387c363b`。Scope Detector、所有 child、七个稳定 Oracle、四个
+Web shard 和 `Delivery Observation` 全部成功；run summary 的 `missingLanes` 为空，manifest digest 为
+`6765b888d8eaed32786f8584056c1efcc632581fcce79266cc5c762a0e953e16`，summary digest 为
+`69f7af0590a5c6e99569cb46c336a34ae9b6470ac25bb52ebabff87b7af92484`。summary 记录 setup `270,994 ms`、
+lane execution `1,079,501 ms`、最长 lane `283,413 ms`；Actions 墙钟约 11:15，四个 Web shard job 为
+5:41、5:43、5:44、6:02。该 run 证明 fresh runner 的 artifact closure、fail-closed observation 和 Oracle
+聚合闭环工作，但不是长期 P50/P95 结论。
+
+基于此前 head 的 production promotion dry-run 也已通过，生成六件 artifact closure 的 promotion receipt
 `12470f0f5d104adc4d2faa3c310ed061f63691c3d6d9559a73d41b2d3fa26174`；该验证没有触碰真实生产环境。
-仍需至少五次 comparable timing 和故障注入报告，才能把单次成功转化为长期成本与恢复结论。
+故障矩阵已在本地通过 7 个负向场景，远端 `CI Platform Audit` 为合并到 main 后按周执行的审计入口。
+仍需至少五次 comparable timing 和一次 main 上的 scheduled fault audit，才能把单次成功转化为长期成本与
+恢复结论。
 旧 PR #205 仍是历史实现，不作为本分支证据。
 
 ## References
@@ -171,6 +178,7 @@ API/Web/Database verifier 和 Playwright，七个 Oracle 与 `Delivery Observati
 
 ## Decision Gate
 
-本 ADR 已在契约、registry、workflow adapter 和治理检查落地后进入 `Accepted`。完成远端 shadow、
-故障注入、required contexts 切换和 release promotion 证据后，补充最终 run/cost/rollback receipt
-并标记为 `Implemented`。在此之前，ADR 是已批准的目标架构和实施约束，不伪造远端完成证据。
+本 ADR 已在契约、registry、workflow adapter、治理检查和 PR fresh-run 验证落地后保持 `Accepted`。
+合并 PR #208 后，执行一次 main 上的 scheduled fault audit，收集至少五次同范围 timing，并确认
+required contexts 与本 ADR 的 ruleset 一致；这些是切换后的验收和运营证据，不是第二轮架构设计。
+证据齐备后再将状态更新为 `Implemented` 并归档 Action Plan。

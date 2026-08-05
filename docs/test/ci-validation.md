@@ -86,6 +86,14 @@ Oracle 全部通过；该 run 的墙钟约 8:43，job execution 合计 3,045 秒
 仍七个 Oracle 全部通过，但 execution 为 49.32 runner-minutes，未达到 42.3 基线。该实验保留在实现
 中，因为它删除了真实重复工作，即使共享 runner 噪声使单次测量没有显著下降。
 
+当前 main-based 重构 PR head `c17b9c2d2` 的 [run 30998745996](https://github.com/BakerSean168/memoflow/actions/runs/30998745996)
+七个稳定 Oracle、四个 Web shard 和 `Delivery Observation` 全部通过。`run-summary-v1` 的 manifest digest
+为 `6765b888d8eaed32786f8584056c1efcc632581fcce79266cc5c762a0e953e16`，summary digest 为
+`69f7af0590a5c6e99569cb46c336a34ae9b6470ac25bb52ebabff87b7af92484`；setup `270,994 ms`，lane execution
+`1,079,501 ms`，最长 lane `283,413 ms`，`missingLanes: []`。四个 Web shard job 为 5:41、5:43、5:44、
+6:02。该 run 是 fresh-run 验证，不替代至少五次 comparable run 的 P50/P95 统计；runner-minutes 仍需从
+同范围 Actions run 的 job receipts 计算，不能用 billing API 的 0 值替代。
+
 最终 CI/CD Platform V2 head `49775316f` 的 [run 30995540184](https://github.com/BakerSean168/memoflow/actions/runs/30995540184)
 再次通过全部稳定 Oracle、四个 Web shard 和 `Delivery Observation`。run summary 记录 setup `279,052 ms`、
 lane execution `1,116,601 ms`、最长 lane `284,047 ms`，manifest digest
