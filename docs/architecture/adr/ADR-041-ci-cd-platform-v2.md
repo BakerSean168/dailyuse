@@ -67,6 +67,7 @@ Artifact 必须包含来源 commit、manifest digest、工具链版本、SBOM/at
 Control Plane 根据 Nx graph、文件分类和 root inputs 生成 risk manifest，选择最小但完整的 PR lane。
 docs-only、单包、runtime/database、Web flow 和 root/toolchain 变化使用不同验证集合；nightly full audit
 继续发现 affected 漏检。风险选择不能降低对已经选中 lane 的质量门禁。
+workflow 只读取 manifest 的 lane policy；它不能根据旧的 scope 输出重新决定是否创建 job。
 
 ### 5. 稳定 Oracle 与可插拔 child
 
@@ -128,11 +129,12 @@ mismatch、权限错误或 detector failure 均 fail closed。只有明确 infra
   生成器和负向测试。
 - 每个 lane 必须声明 owner、输入、输出、timeout、retry、cache 和 isolation policy。
 - required Oracle 不能直接依赖未聚合的 matrix child。
+- `Delivery Observation` 必须是 required context；它对 enabled lane evidence 缺失使用 fail-closed 语义。
 - 生产发布只能消费已验证 artifact digest；release workflow 不得直接从源码重复构建同一 commit。
 - 每次 run 必须产出 timing、cache、failure classification 和 manifest/artifact provenance。
 - nightly full audit 必须定期验证 risk classifier 没有漏检 root、database、Web 和 release 输入。
 - 新增 lane 或 artifact 类型必须更新本 ADR 关联的 registry、schema 和治理测试。
-- 单人维护仓库的 branch ruleset 不要求 approving review；自动化 required Oracle、thread resolution
+- 单人维护仓库的 branch ruleset 不要求 approving review；自动化 required Oracle、Delivery Observation、thread resolution
   和管理员审计仍然保留。该策略由 `ruleset-check` 作为治理契约校验。
 
 ## Implementation State

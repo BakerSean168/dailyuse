@@ -252,7 +252,8 @@ Oracle job 使用 `if: always()`，不得因为 dependency skipped 而自身消�
 - 当前仓库由单一维护者维护，因此不强制额外 approving review；PR、required Oracle
   status checks 和 review thread resolution 仍然保留。维护者应在合并前自行完成变更复核，
   并以 CI 结果作为自动化质量门禁。
-- 所有 required Oracle 成功，包括合法未受影响时仍会出现的 `Performance Oracle`。
+- 所有 required Oracle 成功，包括合法未受影响时仍会出现的 `Performance Oracle`；最终
+  `Delivery Observation` 也必须成功，确认所有 enabled lane 的 evidence 已完整收集。
 - required checks 使用 strict policy，基于最新 `main` 验证。
 - 紧急绕过主体和操作流程单独记录，不把 disabled ruleset 当日常开发状态。
 

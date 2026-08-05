@@ -81,7 +81,9 @@ export function selectLanes({ risk, scope, event = 'pull_request' }) {
   const has = (values) => fullAudit || (Array.isArray(values) && values.length > 0);
   return {
     governance: true,
-    validate: true,
+    // Documentation-only changes still need governance, but do not need to
+    // reserve validation runners. Full audits always exercise every lane.
+    validate: fullAudit || risk.level !== 'docs',
     boundary: root || has(scope.boundary) || has(scope.smoke),
     integration: root || has(scope.integration),
     web: fullAudit || root || Boolean(scope.webFlow) || risk.level === 'web-flow',

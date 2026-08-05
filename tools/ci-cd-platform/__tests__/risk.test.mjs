@@ -24,9 +24,21 @@ test('selects lanes without letting docs-only changes skip governance', () => {
   };
   const lanes = selectLanes({ risk: { level: 'docs' }, scope, event: 'pull_request' });
   assert.equal(lanes.governance, true);
-  assert.equal(lanes.validate, true);
+  assert.equal(lanes.validate, false);
   assert.equal(lanes.web, false);
   assert.equal(lanes.integration, false);
+});
+
+test('keeps validation enabled for executable changes', () => {
+  const scope = {
+    boundary: [],
+    smoke: [],
+    integration: [],
+    coverage: [],
+    perf: [],
+    webFlow: false,
+  };
+  assert.equal(selectLanes({ risk: { level: 'package' }, scope }).validate, true);
 });
 
 test('full events enable every lane', () => {

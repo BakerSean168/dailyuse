@@ -2,9 +2,13 @@
 
 当前 PR workflow 是 `.github/workflows/ci.yml`。`Scope Detector` 使用统一 `NX_BASE` / `NX_HEAD`
 生成 versioned `delivery-manifest-v1.json` artifact；后续 child 只消费并校验同一份 manifest，不重新解释 affected 范围。
+job 的执行条件也只消费 manifest 的 lane policy：docs-only PR 只保留 governance，root/release/full policy
+则显式开启对应的完整 lane，避免 scope 输出与实际门禁分叉。
 
 稳定 required Oracle 始终出现：`Governance Oracle`、`Validate Oracle`、`Boundary Oracle`、
 `Integration Oracle`、`Web Flow Oracle`、`Coverage Oracle`、`Performance Oracle`。
+最终的 `Delivery Observation` 也属于 required context；它校验 manifest、lane evidence 和 run summary
+完整存在，避免所有 child 通过但观测证据缺失时仍然 false-green。
 
 Oracle 使用 `tools/test-system-v2/lib/oracle.mjs` 的同一状态机：未受影响且 child skipped 是成功，
 应执行但 skipped/cancelled/failed 是失败，detector failure 会 fail closed。GitHub ruleset 的 active
@@ -56,7 +60,7 @@ node --test tools/ci-cd-platform/__tests__/timing.test.mjs
 pnpm nx run desktop:test:boundary
 ```
 
-仓库只有一名维护者时，`.github/rulesets/main.json` 保留 active Oracle 和 required thread resolution，
+仓库只有一名维护者时，`.github/rulesets/main.json` 保留 active Oracle、Delivery Observation 和 required thread resolution，
 但 `required_approving_review_count`、code-owner review 和 last-push approval 均为 `0/false`；门禁是
 自动化 Oracle，不是给自己制造一个无法产生第二人的 review 阻塞。
 

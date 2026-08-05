@@ -333,6 +333,7 @@ release tag 上只构建一次；错误 digest 无法发布；回滚只需选择
 
 - [x] scope、workspace、execution、artifact、observation、release 六个平面有独立输入输出。
 - [x] workflow YAML 不再包含业务 scope 推断和重复环境准备实现。
+- [x] 执行 job 只消费 manifest lane policy；docs-only 不占用 validate runner，root/release/full 显式打开完整 lane。
 - [x] lane 之间只通过 manifest、receipt、artifact 或 Oracle 结果通信。
 - [x] release 不直接依赖 PR runner 的工作区状态。
 

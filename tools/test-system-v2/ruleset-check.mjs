@@ -13,6 +13,7 @@ const expected = [
   'Web Flow Oracle',
   'Coverage Oracle',
   'Performance Oracle',
+  'Delivery Observation',
 ];
 const actual = required.map((entry) => entry.context);
 const pullRequestRule = ruleset.rules.find((rule) => rule.type === 'pull_request');

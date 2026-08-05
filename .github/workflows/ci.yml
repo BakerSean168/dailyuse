@@ -27,6 +27,12 @@ jobs:
       manifest_path: ${{ steps.scope.outputs.manifest_path }}
       manifest_digest: ${{ steps.scope.outputs.manifest_digest }}
       risk: ${{ steps.scope.outputs.risk }}
+      lane_validate: ${{ steps.scope.outputs.validate }}
+      lane_boundary: ${{ steps.scope.outputs.boundary }}
+      lane_integration: ${{ steps.scope.outputs.integration }}
+      lane_web: ${{ steps.scope.outputs.web }}
+      lane_coverage: ${{ steps.scope.outputs.coverage }}
+      lane_performance: ${{ steps.scope.outputs.performance }}
       has_unit: ${{ steps.scope.outputs.has_unit }}
       has_coverage: ${{ steps.scope.outputs.has_coverage }}
       has_smoke: ${{ steps.scope.outputs.has_smoke }}
@@ -91,7 +97,7 @@ jobs:
   static-analysis:
     name: Static Analysis
     needs: scope-detector
-    if: needs.scope-detector.result == 'success'
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_validate == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -111,7 +117,7 @@ jobs:
   unit:
     name: Unit Tests
     needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_unit == 'true'
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_validate == 'true' && needs.scope-detector.outputs.has_unit == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -131,7 +137,7 @@ jobs:
   typecheck:
     name: Typecheck
     needs: scope-detector
-    if: needs.scope-detector.result == 'success'
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_validate == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -151,7 +157,7 @@ jobs:
   build:
     name: Build
     needs: scope-detector
-    if: needs.scope-detector.result == 'success'
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_validate == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -166,7 +172,7 @@ jobs:
       - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client' --outputStyle=static
         env: { TEST_REPORT_NAME: build, DELIVERY_LANE: validate }
       - name: Ensure Web flow build inputs exist
-        if: needs.scope-detector.outputs.has_web_flow == 'true'
+        if: needs.scope-detector.outputs.lane_web == 'true'
         run: pnpm exec nx run-many -t build --projects=api,web,database --parallel=2 --outputStyle=static
       - name: Ensure main release build closure exists
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -218,13 +224,13 @@ jobs:
       - name: Aggregate Validate children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":{"static":true,"unit":"${{ needs.scope-detector.outputs.has_unit }}","typecheck":true,"build":true},"children":{"static":"${{ needs.static-analysis.result }}","unit":"${{ needs.unit.result }}","typecheck":"${{ needs.typecheck.result }}","build":"${{ needs.build.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":{"static":"${{ needs.scope-detector.outputs.lane_validate }}","unit":"${{ needs.scope-detector.outputs.lane_validate == 'true' && needs.scope-detector.outputs.has_unit == 'true' && 'true' || 'false' }}","typecheck":"${{ needs.scope-detector.outputs.lane_validate }}","build":"${{ needs.scope-detector.outputs.lane_validate }}"},"children":{"static":"${{ needs.static-analysis.result }}","unit":"${{ needs.unit.result }}","typecheck":"${{ needs.typecheck.result }}","build":"${{ needs.build.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
   boundary:
     name: Boundary Children
     needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_boundary == 'true'
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_boundary == 'true'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -273,13 +279,13 @@ jobs:
       - name: Aggregate Boundary children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_boundary == 'true' && '["boundary"]' || '[]' }},"children":{"boundary":"${{ needs.boundary.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_boundary == 'true' && '["boundary"]' || '[]' }},"children":{"boundary":"${{ needs.boundary.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
   integration:
     name: Integration Children
     needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_integration == 'true'
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_integration == 'true'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -317,13 +323,13 @@ jobs:
       - name: Aggregate Integration children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_integration == 'true' && '["integration"]' || '[]' }},"children":{"integration":"${{ needs.integration.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_integration == 'true' && '["integration"]' || '[]' }},"children":{"integration":"${{ needs.integration.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
   web-flow-shard:
     name: Web Flow Shard (${{ matrix.shard }})
     needs: [scope-detector, build]
-    if: needs.scope-detector.result == 'success' && needs.build.result == 'success' && needs.scope-detector.outputs.has_web_flow == 'true'
+    if: needs.scope-detector.result == 'success' && needs.build.result == 'success' && needs.scope-detector.outputs.lane_web == 'true'
     runs-on: ubuntu-latest
     strategy: { fail-fast: false, matrix: { shard: ['1/4', '2/4', '3/4', '4/4'] } }
     env:
@@ -407,13 +413,13 @@ jobs:
       - name: Aggregate Web Flow shards
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_web_flow == 'true' && '["web"]' || '[]' }},"children":{"web":"${{ needs.web-flow-shard.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_web == 'true' && '["web"]' || '[]' }},"children":{"web":"${{ needs.web-flow-shard.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
   coverage:
     name: Affected Coverage
     needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_coverage == 'true'
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_coverage == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -440,13 +446,13 @@ jobs:
       - name: Aggregate Coverage children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_coverage == 'true' && '["coverage"]' || '[]' }},"children":{"coverage":"${{ needs.coverage.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_coverage == 'true' && '["coverage"]' || '[]' }},"children":{"coverage":"${{ needs.coverage.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
   performance:
     name: Performance Budget
     needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.has_perf == 'true'
+    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_performance == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -473,7 +479,7 @@ jobs:
       - name: Aggregate Performance children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.has_perf == 'true' && '["performance"]' || '[]' }},"children":{"performance":"${{ needs.performance.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_performance == 'true' && '["performance"]' || '[]' }},"children":{"performance":"${{ needs.performance.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
   delivery-observation:

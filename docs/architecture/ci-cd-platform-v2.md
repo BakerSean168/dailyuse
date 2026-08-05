@@ -39,7 +39,7 @@ CI/CD Platform V2 解决的不是单个测试命令的速度，而是从代码�
 以下是不变量：
 
 1. 所有工作都绑定到明确的 commit SHA、scope manifest 和 artifact digest。
-2. 所有 required Oracle 始终出现；动态 child 只能由 Oracle 聚合，不直接成为规则入口。
+2. 所有 required Oracle 和最终 `Delivery Observation` 始终出现；动态 child 只能由 Oracle 聚合，不直接成为规则入口。
 3. 测试 lane 不拥有 scope 解释权；scope 只能由控制平面生成。
 4. 执行平面不拥有发布权限；发布平面只能晋级已验证 artifact。
 5. 任何新 lane 必须声明输入、输出、环境隔离、cache policy、failure policy 和 owner。
@@ -83,6 +83,8 @@ Control Plane 是唯一的编排来源，负责生成 versioned `delivery-manife
 下游 job 只消费 manifest 的 risk/policy 和 base/head 边界；需要 Nx graph 执行 target 时只能使用
 manifest 注入的 base/head，不得自行选择另一套范围。manifest 必须包含 base/head SHA、
 生成器版本、规则版本和输入摘要，避免同一 run 出现多个事实源。
+job 是否创建由 manifest 的 lane policy 决定；docs-only 可以跳过执行 lane 而保留 governance，root、release
+和 full audit 则显式打开相应的完整 lane。
 
 ### 3.2 Workspace Plane
 

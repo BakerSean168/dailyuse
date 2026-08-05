@@ -33,3 +33,30 @@ test('builds one deterministic delivery manifest from injected scope', async () 
   assert.equal(first.lanes.web, true);
   assert.equal(first.lanes.integration, false);
 });
+
+test('uses the manifest lane policy for docs-only and root changes', async () => {
+  const docsManifest = await buildDeliveryManifest({
+    base: 'base',
+    head: 'head',
+    event: 'pull_request',
+    scope: { ...scope, projects: [], unit: [], webFlow: false },
+    files: ['docs/README.md'],
+  });
+  assert.equal(docsManifest.lanes.governance, true);
+  assert.equal(docsManifest.lanes.validate, false);
+  assert.equal(docsManifest.lanes.web, false);
+
+  const rootManifest = await buildDeliveryManifest({
+    base: 'base',
+    head: 'head',
+    event: 'pull_request',
+    scope,
+    files: ['nx.json'],
+  });
+  assert.equal(rootManifest.lanes.validate, true);
+  assert.equal(rootManifest.lanes.boundary, true);
+  assert.equal(rootManifest.lanes.integration, true);
+  assert.equal(rootManifest.lanes.web, true);
+  assert.equal(rootManifest.lanes.coverage, true);
+  assert.equal(rootManifest.lanes.performance, true);
+});
