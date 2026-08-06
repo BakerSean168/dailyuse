@@ -7,12 +7,14 @@
   "targets": {
     "test": {
       "executor": "nx:run-commands",
+      "dependsOn": ["contracts:build"],
       "cache": true,
       "inputs": ["{projectRoot}/**/*"],
       "options": { "command": "node --test tools/test-system-v2/__tests__/*.test.mjs" }
     },
     "test:inventory": {
       "executor": "nx:run-commands",
+      "dependsOn": ["contracts:build"],
       "cache": true,
       "inputs": [
         "{workspaceRoot}/apps/**/*",
@@ -24,6 +26,7 @@
     },
     "test:governance": {
       "executor": "nx:run-commands",
+      "dependsOn": ["contracts:build"],
       "cache": true,
       "inputs": [
         "{workspaceRoot}/tools/test-system-v2/**/*",
