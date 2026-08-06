@@ -100,7 +100,6 @@ updated: 2026-07-22T00:00:00
 | [`packages/notification/src/api/routes.spec.ts`](../../../packages/notification/src/api/routes.spec.ts) | 通知 routes 测试 |
 | [`packages/app-vue/src/modules/notification/stores/notificationStore.spec.ts`](../../../packages/app-vue/src/modules/notification/stores/notificationStore.spec.ts) | 通知 store 测试 |
 | [`apps/web/e2e/notification/notification-center.spec.ts`](../../../apps/web/e2e/notification/notification-center.spec.ts) | Web 通知中心 e2e |
-| [`apps/web/e2e/notification/notification-preferences.spec.ts`](../../../apps/web/e2e/notification/notification-preferences.spec.ts) | Web 通知偏好 e2e |
 
 ## 需要重点关注的改动风险
 

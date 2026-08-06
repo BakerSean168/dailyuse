@@ -2,7 +2,7 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import type { Alias } from 'vite';
+import type { Alias, UserConfig } from 'vite';
 import { createContractsAliasEntries } from './vite.workspace-aliases';
 
 /**
@@ -77,7 +77,7 @@ export function createVitestReportConfig(projectRoot: string, reportName?: strin
   if (!process.env.CI || !process.env.TEST_REPORT_NAME || process.env.TEST_INVENTORY_LIST === '1')
     return {};
   const workspaceRoot = path.resolve(projectRoot, '../..');
-  const projectId = path.relative(workspaceRoot, projectRoot).replaceAll(path.sep, '-');
+  const projectId = path.relative(workspaceRoot, projectRoot).split(path.sep).join('-');
   const suffix = reportName ?? path.basename(projectRoot);
   const prefix = `${process.env.TEST_REPORT_NAME}-${projectId}-${suffix}`.replace(
     /[^a-zA-Z0-9_.-]+/g,
@@ -166,7 +166,7 @@ function walkGovernedCoverageRoot(
       continue;
     }
 
-    includedFiles.add(path.relative(projectRoot, absolutePath).replaceAll(path.sep, '/'));
+    includedFiles.add(path.relative(projectRoot, absolutePath).split(path.sep).join('/'));
   }
 }
 
@@ -179,7 +179,7 @@ export function createGovernedCoverage(
   options: { extraRoots?: string[] } = {},
 ) {
   const workspaceRoot = path.resolve(projectRoot, '../..');
-  const relativeProjectRoot = path.relative(workspaceRoot, projectRoot).replaceAll(path.sep, '/');
+  const relativeProjectRoot = path.relative(workspaceRoot, projectRoot).split(path.sep).join('/');
   const include = collectGovernedCoverageFiles(projectRoot, [
     ...DEFAULT_GOVERNED_COVERAGE_ROOTS,
     ...(options.extraRoots ?? []),
@@ -230,7 +230,7 @@ export function createSliceCoverage(options: {
     include,
     exclude: ['**/index.ts', '**/*.d.ts', '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reportsDirectory: path.resolve(workspaceRoot, reportsDirectory),
-    reporter: ['text', 'json', 'html', 'lcov'] as const,
+    reporter: ['text', 'json', 'html', 'lcov'],
     thresholds,
   };
 }
@@ -272,14 +272,14 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'time',
   ] as const;
 
-  const resolvedAliases = Object.fromEntries(
+  const resolvedAliases: Record<string, string> = Object.fromEntries(
     Object.entries(aliases).map(([key, value]) => [
       key,
       value.startsWith('.') ? path.resolve(projectRoot, value) : value,
     ]),
   );
 
-  const resolvedAliasEntries = aliasEntries.map((entry) => ({
+  const resolvedAliasEntries: Alias[] = aliasEntries.map((entry) => ({
     ...entry,
     replacement:
       typeof entry.replacement === 'string' && entry.replacement.startsWith('.')
@@ -321,7 +321,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     ),
   ];
 
-  const commonBareAliases = Object.fromEntries([
+  const commonBareAliases: Record<string, string> = Object.fromEntries([
     ['@memoflow/database', path.resolve(workspaceRoot, 'packages/database/src/index.ts')],
     ['@memoflow/domain-shared', path.resolve(workspaceRoot, 'packages/domain-shared/src/index.ts')],
     ['@memoflow/utils', path.resolve(workspaceRoot, 'packages/utils/src/index.ts')],
@@ -333,18 +333,18 @@ export function createSharedConfig(options: SharedConfigOptions) {
   ]);
 
   // Common aliases for all projects
-  const baseAliases = {
+  const baseAliases: Record<string, string> = {
     ...commonBareAliases,
     ...resolvedAliases,
     '@': projectSrc,
     '@/': `${projectSrc}/`,
   };
 
-  const baseAliasEntries = Object.entries(baseAliases)
+  const baseAliasEntries: Alias[] = Object.entries(baseAliases)
     .sort(([a], [b]) => b.length - a.length)
     .map(([find, replacement]) => ({ find, replacement }));
 
-  const finalAliasEntries = [
+  const finalAliasEntries: Alias[] = [
     ...resolvedAliasEntries,
     ...commonWorkspaceAliasEntries,
     ...createContractsAliasEntries(workspaceRoot),
@@ -379,7 +379,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
         exclude: ['node_modules/', 'src/test/', '**/*.d.ts', '**/*.config.*', 'dist/'],
       },
     },
-  });
+  }) as UserConfig;
 }
 
 export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
@@ -423,7 +423,7 @@ export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
               }
             : {}),
       },
-    }),
+    }) as UserConfig,
   );
 }
 

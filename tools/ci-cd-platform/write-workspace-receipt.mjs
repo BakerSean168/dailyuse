@@ -17,7 +17,7 @@ function commandVersion(command, args = ['--version']) {
 const receipt = {
   kind: 'workspace-receipt-v1',
   version: 1,
-  commit: process.env.GITHUB_SHA ?? 'local',
+  commit: process.env.NX_HEAD ?? process.env.GITHUB_SHA ?? 'local',
   runner: {
     os: process.env.RUNNER_OS ?? process.platform,
     image: process.env.ImageOS ?? process.env.RUNNER_IMAGE ?? null,

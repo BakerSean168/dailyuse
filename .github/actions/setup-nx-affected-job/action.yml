@@ -140,18 +140,6 @@ runs:
       shell: bash
       run: pnpm install --frozen-lockfile --reporter=append-only
 
-    - name: Write workspace receipt
-      shell: bash
-      env:
-        CI_CAPABILITIES: ${{ inputs.capabilities }}
-        PNPM_CACHE_HIT: ${{ steps.pnpm-cache.outputs.cache-hit || 'false' }}
-        NX_CACHE_HIT: ${{ steps.nx-cache.outputs.cache-hit || 'false' }}
-        PLAYWRIGHT_CACHE_HIT: ${{ steps.playwright-cache.outputs.cache-hit || 'false' }}
-        WORKSPACE_RECEIPT_OUTPUT: reports/ci-cd-platform/workspace-receipt.json
-      run: |
-        echo "WORKSPACE_SETUP_ENDED_AT=$(date +%s%3N)" >> "$GITHUB_ENV"
-        WORKSPACE_SETUP_ENDED_AT="$(date +%s%3N)" node ./tools/ci-cd-platform/write-workspace-receipt.mjs
-
     - name: Resolve affected range from delivery manifest
       if: ${{ inputs.consume-delivery-manifest == 'true' }}
       shell: bash
@@ -212,3 +200,15 @@ runs:
         echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
         echo "Using NX_BASE=$NX_BASE_VALUE"
         echo "Using NX_HEAD=$NX_HEAD_VALUE"
+
+    - name: Write workspace receipt
+      shell: bash
+      env:
+        CI_CAPABILITIES: ${{ inputs.capabilities }}
+        PNPM_CACHE_HIT: ${{ steps.pnpm-cache.outputs.cache-hit || 'false' }}
+        NX_CACHE_HIT: ${{ steps.nx-cache.outputs.cache-hit || 'false' }}
+        PLAYWRIGHT_CACHE_HIT: ${{ steps.playwright-cache.outputs.cache-hit || 'false' }}
+        WORKSPACE_RECEIPT_OUTPUT: reports/ci-cd-platform/workspace-receipt.json
+      run: |
+        echo "WORKSPACE_SETUP_ENDED_AT=$(date +%s%3N)" >> "$GITHUB_ENV"
+        WORKSPACE_SETUP_ENDED_AT="$(date +%s%3N)" node ./tools/ci-cd-platform/write-workspace-receipt.mjs
