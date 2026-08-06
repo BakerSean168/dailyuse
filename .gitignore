@@ -58,6 +58,8 @@ tsconfig.tsbuildinfo
 # Test and debug files
 test-*.mjs
 !tools/test/test-target-governance.mjs
+!tools/test-system-v2/lib/test-report-summary.mjs
+!tools/test-system-v2/__tests__/test-report-summary.test.mjs
 test-*.html
 test-*.json
 test-*.txt
@@ -149,6 +151,7 @@ __pycache__/
 
 # 测试报告
 **/reports/**/junit.xml
+reports/test-system-v2/
 reports/local-deploy-validation/
 homeprojectsmemoflow/
 test-results/

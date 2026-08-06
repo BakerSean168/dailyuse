@@ -4,8 +4,11 @@ import { createSharedConfig, createSliceCoverage } from '../../vitest.shared';
 
 const baseConfig = createSharedConfig({
   projectRoot: __dirname,
+  reportName: 'reminder-mappers',
   environment: 'node',
-  testInclude: ['src/server/infrastructure/adapters/prisma/mappers/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+  testInclude: [
+    'src/server/infrastructure/adapters/prisma/mappers/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+  ],
 });
 
 export default mergeConfig(
@@ -17,7 +20,8 @@ export default mergeConfig(
       coverage: createSliceCoverage({
         projectRoot: __dirname,
         roots: ['src/server/infrastructure/adapters/prisma/mappers'],
-        reportsDirectory: 'coverage/packages/reminder/server-infrastructure-adapters-prisma-mappers',
+        reportsDirectory:
+          'coverage/packages/reminder/server-infrastructure-adapters-prisma-mappers',
         thresholds: {
           statements: 80,
           lines: 80,

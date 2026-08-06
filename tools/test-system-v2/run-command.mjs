@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { classifyFailure } from './lib/failure-classification.mjs';
+import { collectTestReportSummaries } from './lib/test-report-summary.mjs';
 // The execution adapter is the single intentional consumer of the versioned CI/CD contracts.
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
@@ -87,12 +88,18 @@ const attempts = [await run(1)];
 if (['infrastructure', 'process-crash'].includes(attempts[0].classification))
   attempts.push(await run(2));
 const final = attempts.at(-1);
+const testSummary = await collectTestReportSummaries(
+  process.cwd(),
+  Date.parse(attempts[0].startedAt),
+);
 const report = {
   version: 1,
   name: reportName,
+  lane: process.env.DELIVERY_LANE ?? null,
   flaky: attempts.length > 1 && final.exitCode === 0,
   attempts,
   result: final.exitCode === 0 ? 'success' : 'failure',
+  testSummary,
 };
 await mkdir(reportsDir, { recursive: true });
 await writeFile(
@@ -128,6 +135,7 @@ if (laneContext) {
         classification,
       })),
     },
+    tests: testSummary,
     provenance: {
       report: path.join(reportsDir, `${reportName}.json`),
       runner: process.env.RUNNER_OS ?? process.platform,
@@ -138,6 +146,27 @@ if (laneContext) {
   await writeFile(
     path.join(reportsDir, `${process.env.DELIVERY_LANE}.${reportName}.lane-result.json`),
     `${JSON.stringify(laneResult, null, 2)}\n`,
+  );
+}
+if (process.env.GITHUB_STEP_SUMMARY) {
+  const slowest = testSummary.slowestTests
+    .slice(0, 5)
+    .map(
+      (entry) =>
+        `| ${String(entry.name).replaceAll('|', '\\|')} | ${entry.durationMs.toFixed(1)} ms |`,
+    )
+    .join('\n');
+  await appendFile(
+    process.env.GITHUB_STEP_SUMMARY,
+    [
+      `### ${reportName}`,
+      '',
+      `- Result: **${report.result}** (${final.classification})`,
+      `- Attempts: ${attempts.length}; duration: ${final.durationMs} ms`,
+      `- Test files: ${testSummary.files.total}; tests: ${testSummary.tests.total}; skipped: ${testSummary.tests.skipped}; retries: ${testSummary.tests.retries}`,
+      ...(slowest ? ['', '| Slowest test | Duration |', '| --- | ---: |', slowest] : []),
+      '',
+    ].join('\n'),
   );
 }
 console.log(

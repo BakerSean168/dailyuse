@@ -1,0 +1,73 @@
+name: Nightly Web Flow Audit
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CI: 'true'
+  DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
+  JWT_SECRET: test-jwt-secret-for-e2e-testing-purposes
+  PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+  TZ: UTC
+
+jobs:
+  audit:
+    name: Web Flow Full Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.5-pg18
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: memoflow_test
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U test_user -d memoflow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-nx-affected-job
+        with:
+          node-version: '24'
+          setup-python: 'true'
+          setup-uv: 'true'
+          capabilities: node,pnpm,python,uv,playwright,postgres
+      - name: Prepare database
+        run: pnpm exec nx run database:prisma-push
+      - name: Install Chromium
+        run: pnpm exec playwright install chromium
+      - name: Run extended Web Flow audit
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+          DELIVERY_LANE: web
+          TEST_REPORT_NAME: web-flow-audit
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run web:e2e:audit
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: web-flow-audit-${{ github.run_id }}
+          path: |
+            apps/web/test-results/audit-results.json
+            reports/test-system-v2
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: web-flow-audit-failure-${{ github.run_id }}
+          path: |
+            apps/web/test-results
+            apps/web/playwright-audit-report
+          if-no-files-found: ignore
+          retention-days: 7

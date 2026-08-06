@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { describe, it } from 'node:test';
 import { detectHostEnvShadowing } from './env-shadow.mjs';
 import {
   createLocalDockerAuthBaseUrl,
@@ -23,37 +24,47 @@ describe('detectHostEnvShadowing', () => {
       },
       envFileMap,
     );
-    expect(warnings.some((warning) => warning.includes('DB_PASSWORD'))).toBe(true);
-    expect(warnings.some((warning) => warning.includes('NODE_ENV'))).toBe(true);
-    expect(warnings.some((warning) => warning.includes('JWT_SECRET'))).toBe(false);
+    assert.equal(
+      warnings.some((warning) => warning.includes('DB_PASSWORD')),
+      true,
+    );
+    assert.equal(
+      warnings.some((warning) => warning.includes('NODE_ENV')),
+      true,
+    );
+    assert.equal(
+      warnings.some((warning) => warning.includes('JWT_SECRET')),
+      false,
+    );
   });
 
   it('is silent when host matches file or host key is unset', () => {
     const envFileMap = new Map([['DB_PASSWORD', 'same']]);
-    expect(detectHostEnvShadowing({ DB_PASSWORD: 'same' }, envFileMap)).toEqual([]);
-    expect(detectHostEnvShadowing({}, envFileMap)).toEqual([]);
+    assert.deepEqual(detectHostEnvShadowing({ DB_PASSWORD: 'same' }, envFileMap), []);
+    assert.deepEqual(detectHostEnvShadowing({}, envFileMap), []);
   });
 });
 
 describe('mergeLocalDockerWebOrigins', () => {
   it('adds the resolved machine Web port to API and AI allowlists', () => {
-    expect(
+    assert.deepEqual(
       mergeLocalDockerWebOrigins('12137', 'https://app.example.com,http://localhost:12137').split(
         ',',
       ),
-    ).toEqual(['https://app.example.com', 'http://localhost:12137', 'http://127.0.0.1:12137']);
+      ['https://app.example.com', 'http://localhost:12137', 'http://127.0.0.1:12137'],
+    );
   });
 });
 
 describe('createLocalDockerAuthBaseUrl', () => {
   it('uses the resolved machine API port for Better Auth callbacks', () => {
-    expect(createLocalDockerAuthBaseUrl('12136')).toBe('http://localhost:12136/api/auth');
+    assert.equal(createLocalDockerAuthBaseUrl('12136'), 'http://localhost:12136/api/auth');
   });
 });
 
 describe('createLocalDockerWebUrl', () => {
   it('uses the resolved machine Web port for device confirmation pages', () => {
-    expect(createLocalDockerWebUrl('12137')).toBe('http://localhost:12137');
+    assert.equal(createLocalDockerWebUrl('12137'), 'http://localhost:12137');
   });
 });
 
@@ -61,25 +72,31 @@ describe('API runtime image boundary', () => {
   it('deploys isolated API and migrator production closures', () => {
     const dockerfile = readFileSync(resolve(process.cwd(), 'Dockerfile.api'), 'utf8');
 
-    expect(dockerfile).not.toMatch(/RUN[^\n]*pnpm fetch/);
-    expect(dockerfile.indexOf('COPY apps/api/package.json')).toBeLessThan(
-      dockerfile.indexOf('pnpm --config.node-linker=isolated'),
+    assert.doesNotMatch(dockerfile, /RUN[^\n]*pnpm fetch/);
+    assert.ok(
+      dockerfile.indexOf('COPY apps/api/package.json') <
+        dockerfile.indexOf('pnpm --config.node-linker=isolated'),
     );
-    expect(dockerfile.indexOf('pnpm --config.node-linker=isolated')).toBeLessThan(
-      dockerfile.indexOf('COPY apps/api ./apps/api'),
+    assert.ok(
+      dockerfile.indexOf('pnpm --config.node-linker=isolated') <
+        dockerfile.indexOf('COPY apps/api ./apps/api'),
     );
-    expect(dockerfile).toContain('pnpm --config.node-linker=isolated');
-    expect(dockerfile).toContain('--filter @memoflow/api deploy --prod --ignore-scripts /prod/api');
-    expect(dockerfile).toContain(
-      '--filter @memoflow/migrator deploy --prod --ignore-scripts /prod/migrator',
+    assert.ok(dockerfile.includes('pnpm --config.node-linker=isolated'));
+    assert.ok(
+      dockerfile.includes('--filter @memoflow/api deploy --prod --ignore-scripts /prod/api'),
     );
-    expect(dockerfile).toContain('COPY --from=builder /prod/api/node_modules ./node_modules');
-    expect(dockerfile).not.toContain('COPY --from=builder /app/node_modules ./node_modules');
-    expect(dockerfile).not.toContain('COPY --from=builder /app/packages ./packages');
+    assert.ok(
+      dockerfile.includes(
+        '--filter @memoflow/migrator deploy --prod --ignore-scripts /prod/migrator',
+      ),
+    );
+    assert.ok(dockerfile.includes('COPY --from=builder /prod/api/node_modules ./node_modules'));
+    assert.ok(!dockerfile.includes('COPY --from=builder /app/node_modules ./node_modules'));
+    assert.ok(!dockerfile.includes('COPY --from=builder /app/packages ./packages'));
 
     const apiRuntime = dockerfile.slice(dockerfile.indexOf('FROM node-base AS api-runtime'));
-    expect(apiRuntime).not.toContain('packages/database');
-    expect(apiRuntime).not.toContain('tsx');
-    expect(apiRuntime).not.toContain('prisma');
+    assert.ok(!apiRuntime.includes('packages/database'));
+    assert.ok(!apiRuntime.includes('tsx'));
+    assert.ok(!apiRuntime.includes('prisma'));
   });
 });

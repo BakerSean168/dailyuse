@@ -47,18 +47,23 @@ export default defineConfig({
   workers: 1,
 
   // 报告配置
-  reporter: process.env.CI
-    ? [
-        ['html', { outputFolder: 'playwright-report', open: 'always' }],
-        ['json', { outputFile: 'test-results/results.json' }],
-        ['list'],
-        ['github'], // GitHub Actions 集成
-      ]
-    : [
-        ['html', { outputFolder: 'playwright-report' }],
-        ['list'],
-        ['json', { outputFile: 'test-results/results.json' }],
-      ],
+  reporter:
+    process.env.TEST_INVENTORY_LIST === '1'
+      ? [['list']]
+      : process.env.CI
+        ? [
+            ['html', { outputFolder: 'playwright-report', open: 'always' }],
+            ['json', { outputFile: 'test-results/results.json' }],
+            ['junit', { outputFile: 'test-results/results.junit.xml' }],
+            ['list'],
+            ['github'], // GitHub Actions 集成
+          ]
+        : [
+            ['html', { outputFolder: 'playwright-report' }],
+            ['list'],
+            ['json', { outputFile: 'test-results/results.json' }],
+            ['junit', { outputFile: 'test-results/results.junit.xml' }],
+          ],
 
   // 全局配置
   use: {

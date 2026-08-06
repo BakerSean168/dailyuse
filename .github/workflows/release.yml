@@ -193,7 +193,6 @@ jobs:
         with:
           tag_name: ${{ needs.prepare-release.outputs.release_tag }}
           fail_on_unmatched_files: false
-          overwrite_files: true
           files: |
             artifacts/**/*Setup.exe
             artifacts/**/*Setup.zip

@@ -9,7 +9,16 @@ export default defineConfig({
   expect: {
     timeout: 30 * 1000,
   },
-  reporter: [['list']],
+  reporter:
+    process.env.TEST_INVENTORY_LIST === '1'
+      ? [['list']]
+      : process.env.CI
+        ? [
+            ['list'],
+            ['json', { outputFile: 'test-results/results.json' }],
+            ['junit', { outputFile: 'test-results/results.junit.xml' }],
+          ]
+        : [['list']],
   use: {
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

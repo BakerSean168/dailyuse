@@ -7,6 +7,7 @@ import {
   taskResolveAliases,
 } from '../../vitest.workspace-helpers';
 import { createIntegrationTestEnv } from '../test-utils/src/setup/database';
+import { createVitestReportConfig } from '../../vitest.shared';
 
 export default defineConfig({
   plugins: [contractsDeepImportResolver, domainResolveAtAlias],
@@ -15,6 +16,7 @@ export default defineConfig({
   },
   test: {
     name: 'task-integration',
+    ...createVitestReportConfig(__dirname, 'task-integration'),
     root: __dirname,
     globals: true,
     environment: 'node',

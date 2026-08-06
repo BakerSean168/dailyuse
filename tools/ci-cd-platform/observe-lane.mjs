@@ -7,6 +7,7 @@ import {
   validateLaneInput,
   validateLaneResult,
   validateLaneSummary,
+  validateWorkspaceReceipt,
 } from './lib/contracts.mjs';
 import { getLaneDefinition } from './lib/registry.mjs';
 
@@ -30,9 +31,20 @@ async function readJsonFiles(directory, predicate) {
 export async function observeLane({ lane, input, reportsDir, receipt = null, output }) {
   const definition = getLaneDefinition(lane);
   validateLaneInput(input);
+  if (receipt) {
+    validateWorkspaceReceipt(receipt);
+    if (receipt.commit !== input.commit) {
+      throw new Error(`Workspace receipt commit does not match lane input for ${lane}`);
+    }
+  }
   const reports = await readJsonFiles(
     reportsDir,
-    (value) => value && value.version === 1 && Array.isArray(value.attempts) && value.name,
+    (value) =>
+      value &&
+      value.version === 1 &&
+      value.lane === lane &&
+      Array.isArray(value.attempts) &&
+      value.name,
   );
   const laneResults = await readJsonFiles(
     reportsDir,
@@ -48,10 +60,16 @@ export async function observeLane({ lane, input, reportsDir, receipt = null, out
     }
   }
 
-  const failures = reports.flatMap(({ file, value }) =>
-    value.result === 'success'
-      ? []
-      : [{ report: file, classification: value.attempts.at(-1)?.classification ?? 'assertion' }],
+  const failures = [];
+  if (reports.length === 0 && laneResults.length === 0) {
+    failures.push({ report: reportsDir, classification: 'infrastructure' });
+  }
+  failures.push(
+    ...reports.flatMap(({ file, value }) =>
+      value.result === 'success'
+        ? []
+        : [{ report: file, classification: value.attempts.at(-1)?.classification ?? 'assertion' }],
+    ),
   );
   failures.push(
     ...laneResults.flatMap(({ file, value }) =>
@@ -62,6 +80,27 @@ export async function observeLane({ lane, input, reportsDir, receipt = null, out
   );
   const attempts = reports.flatMap(({ value }) => value.attempts);
   const executionMs = attempts.reduce((total, attempt) => total + (attempt.durationMs ?? 0), 0);
+  const testSummaries = reports.map(({ value }) => value.testSummary).filter(Boolean);
+  const testTotals = {
+    reportCount: testSummaries.reduce((total, value) => total + (value.reportCount ?? 0), 0),
+    files: { total: 0, passed: 0, failed: 0, skipped: 0 },
+    tests: { total: 0, passed: 0, failed: 0, skipped: 0, retries: 0 },
+    slowestSpecs: testSummaries
+      .flatMap((value) => value.slowestSpecs ?? [])
+      .sort((left, right) => right.durationMs - left.durationMs)
+      .slice(0, 10),
+    slowestTests: testSummaries
+      .flatMap((value) => value.slowestTests ?? [])
+      .sort((left, right) => right.durationMs - left.durationMs)
+      .slice(0, 10),
+  };
+  for (const value of testSummaries) {
+    for (const field of ['total', 'passed', 'failed', 'skipped']) {
+      testTotals.files[field] += value.files?.[field] ?? 0;
+      testTotals.tests[field] += value.tests?.[field] ?? 0;
+    }
+    testTotals.tests.retries += value.tests?.retries ?? 0;
+  }
   const summary = {
     kind: 'lane-summary-v1',
     version: 1,
@@ -79,6 +118,7 @@ export async function observeLane({ lane, input, reportsDir, receipt = null, out
       longestCommandMs: Math.max(0, ...attempts.map((attempt) => attempt.durationMs ?? 0)),
     },
     failures,
+    tests: testTotals,
     cache: receipt?.cache ?? null,
     toolchain: receipt?.toolchain ?? null,
     evidence: {

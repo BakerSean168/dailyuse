@@ -2,29 +2,30 @@
 import { defineConfig, mergeConfig, type UserConfig } from 'vitest/config';
 import { createSharedConfig } from '../../vitest.shared';
 
+export const taskPerformanceAliases = {
+  '@memoflow/contracts/task': '../contracts/src/modules/task/index.ts',
+  '@memoflow/contracts/result': '../contracts/src/result/index.ts',
+  '@memoflow/contracts/shared': '../contracts/src/shared/index.ts',
+  '@memoflow/contracts/primitives': '../contracts/src/primitives/index.ts',
+  '@memoflow/test-utils': '../test-utils/src/index.ts',
+  '@memoflow/test-utils/mocks': '../test-utils/src/mocks/index.ts',
+  '@memoflow/test-utils/helpers/result-matchers': '../test-utils/src/helpers/result-matchers.ts',
+  '@memoflow/task/testing': './src/testing/index.ts',
+  '@memoflow/task': './src/index.ts',
+  '@memoflow/domain-shared': '../../packages/domain-shared/src',
+  '@memoflow/database': '../../packages/database/src',
+};
+
 const benchmarkIncludes = [
   'src/server/application/__tests__/benchmarks/sort-algorithm.bench.ts',
   'src/server/application/__tests__/benchmarks/service-sorting.bench.ts',
-  'src/server/application/__tests__/benchmarks/stability.bench.ts',
 ];
 
 const sharedConfig = createSharedConfig({
   projectRoot: __dirname,
   environment: 'node',
   testInclude: benchmarkIncludes,
-  aliases: {
-    '@memoflow/contracts/task': '../contracts/src/modules/task/index.ts',
-    '@memoflow/contracts/result': '../contracts/src/result/index.ts',
-    '@memoflow/contracts/shared': '../contracts/src/shared/index.ts',
-    '@memoflow/contracts/primitives': '../contracts/src/primitives/index.ts',
-    '@memoflow/test-utils': '../test-utils/src/index.ts',
-    '@memoflow/test-utils/mocks': '../test-utils/src/mocks/index.ts',
-    '@memoflow/test-utils/helpers/result-matchers': '../test-utils/src/helpers/result-matchers.ts',
-    '@memoflow/task/testing': './src/testing/index.ts',
-    '@memoflow/task': './src/index.ts',
-    '@memoflow/domain-shared': '../../packages/domain-shared/src',
-    '@memoflow/database': '../../packages/database/src',
-  },
+  aliases: taskPerformanceAliases,
 }) as UserConfig;
 
 const projectConfig = defineConfig({

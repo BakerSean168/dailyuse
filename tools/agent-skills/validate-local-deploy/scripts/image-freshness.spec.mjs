@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 import { checkLocalImageFreshness } from './image-freshness.mjs';
 
 describe('checkLocalImageFreshness', () => {
@@ -15,9 +16,9 @@ describe('checkLocalImageFreshness', () => {
         return { exitCode: 1, stdout: '', stderr: 'unknown' };
       },
     });
-    expect(result.warnings.length).toBe(1);
-    expect(result.warnings[0]).toMatch(/lags HEAD/);
-    expect(result.comparisons[0].matches).toBe(false);
+    assert.equal(result.warnings.length, 1);
+    assert.match(result.warnings[0], /lags HEAD/);
+    assert.equal(result.comparisons[0].matches, false);
   });
 
   it('is quiet when image revision matches HEAD', () => {
@@ -29,8 +30,8 @@ describe('checkLocalImageFreshness', () => {
         return { exitCode: 0, stdout: `${sha}-dirty\n`, stderr: '' };
       },
     });
-    expect(result.warnings).toEqual([]);
-    expect(result.comparisons[0].matches).toBe(true);
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.comparisons[0].matches, true);
   });
 
   it('skips missing images without failing', () => {
@@ -43,7 +44,7 @@ describe('checkLocalImageFreshness', () => {
         return { exitCode: 1, stdout: '', stderr: 'No such image' };
       },
     });
-    expect(result.comparisons[0].imageRevision).toBeNull();
-    expect(result.warnings).toEqual([]);
+    assert.equal(result.comparisons[0].imageRevision, null);
+    assert.deepEqual(result.warnings, []);
   });
 });

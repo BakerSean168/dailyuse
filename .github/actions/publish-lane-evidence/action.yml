@@ -8,6 +8,10 @@ inputs:
     description: Unique suffix for matrix jobs that publish more than one evidence artifact
     required: false
     default: job
+  receipt:
+    description: Workspace receipt to attribute to this lane
+    required: false
+    default: reports/ci-cd-platform/workspace-receipt.json
 runs:
   using: composite
   steps:
@@ -21,6 +25,7 @@ runs:
           --lane "$DELIVERY_LANE" \
           --input "reports/ci-cd-platform/${DELIVERY_LANE}-input-v1.json" \
           --reports reports/test-system-v2 \
+          --receipt "${{ inputs.receipt }}" \
           --output "reports/ci-cd-platform/${DELIVERY_LANE}-summary-v1.json"
     - name: Upload structured lane evidence
       if: always()

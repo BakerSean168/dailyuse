@@ -3,10 +3,12 @@ import { defineConfig } from 'vitest/config';
 import path from 'node:path';
 import { resolve } from 'path';
 import { createContractsAliasEntries } from '../../vite.workspace-aliases';
+import { createVitestReportConfig } from '../../vitest.shared';
 
 export default defineConfig({
   test: {
     name: 'desktop-main',
+    ...createVitestReportConfig(__dirname, 'desktop-main'),
     root: path.resolve(__dirname, 'src/main'),
     globals: true,
     environment: 'node',

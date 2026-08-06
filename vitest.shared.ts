@@ -39,6 +39,8 @@ interface SharedConfigOptions {
   testInclude?: string[];
   /** Extra test exclude globs appended to shared defaults. */
   testExclude?: string[];
+  /** Stable suffix for CI JSON/JUnit report names. */
+  reportName?: string;
   /** Additional path aliases */
   aliases?: Record<string, string>;
   /** Additional alias entries that must precede the generic @/@/ aliases */
@@ -71,6 +73,26 @@ export const GOVERNED_DOMAIN_COVERAGE_THRESHOLDS = {
   branches: 70,
 } as const;
 
+export function createVitestReportConfig(projectRoot: string, reportName?: string) {
+  if (!process.env.CI || !process.env.TEST_REPORT_NAME || process.env.TEST_INVENTORY_LIST === '1')
+    return {};
+  const workspaceRoot = path.resolve(projectRoot, '../..');
+  const projectId = path.relative(workspaceRoot, projectRoot).replaceAll(path.sep, '-');
+  const suffix = reportName ?? path.basename(projectRoot);
+  const prefix = `${process.env.TEST_REPORT_NAME}-${projectId}-${suffix}`.replace(
+    /[^a-zA-Z0-9_.-]+/g,
+    '-',
+  );
+  const outputRoot = path.resolve(workspaceRoot, 'reports/test-system-v2/vitest');
+  return {
+    reporters: ['default', 'json', 'junit'],
+    outputFile: {
+      json: path.resolve(outputRoot, `${prefix}.json`),
+      junit: path.resolve(outputRoot, `${prefix}.junit.xml`),
+    },
+  };
+}
+
 const DEFAULT_GOVERNED_COVERAGE_ROOTS = [
   'src/server/domain/aggregates',
   'src/server/domain/entities',
@@ -83,17 +105,15 @@ const RUNTIME_IMPLEMENTATION_PATTERN =
   /\b(class|function|const|let|var|enum|if|switch|throw|return|new)\b|=>/;
 
 function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/.*$/gm, '');
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 }
 
 function isIgnorableGovernedFile(fileName: string) {
   return (
-    fileName === 'index.ts'
-    || fileName.endsWith('.d.ts')
-    || /\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName)
-    || fileName.endsWith('.config.ts')
+    fileName === 'index.ts' ||
+    fileName.endsWith('.d.ts') ||
+    /\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName) ||
+    fileName.endsWith('.config.ts')
   );
 }
 
@@ -159,9 +179,7 @@ export function createGovernedCoverage(
   options: { extraRoots?: string[] } = {},
 ) {
   const workspaceRoot = path.resolve(projectRoot, '../..');
-  const relativeProjectRoot = path
-    .relative(workspaceRoot, projectRoot)
-    .replaceAll(path.sep, '/');
+  const relativeProjectRoot = path.relative(workspaceRoot, projectRoot).replaceAll(path.sep, '/');
   const include = collectGovernedCoverageFiles(projectRoot, [
     ...DEFAULT_GOVERNED_COVERAGE_ROOTS,
     ...(options.extraRoots ?? []),
@@ -170,11 +188,7 @@ export function createGovernedCoverage(
   return {
     all: true,
     include,
-    exclude: [
-      '**/index.ts',
-      '**/*.d.ts',
-      '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
+    exclude: ['**/index.ts', '**/*.d.ts', '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reportsDirectory: path.resolve(workspaceRoot, 'coverage', relativeProjectRoot),
     reporter: ['text', 'json', 'html', 'lcov'],
     thresholds: GOVERNED_DOMAIN_COVERAGE_THRESHOLDS,
@@ -205,13 +219,7 @@ export function createSliceCoverage(options: {
   reportsDirectory: string;
   fileIncludePattern?: RegExp;
 }) {
-  const {
-    projectRoot,
-    roots,
-    thresholds,
-    reportsDirectory,
-    fileIncludePattern,
-  } = options;
+  const { projectRoot, roots, thresholds, reportsDirectory, fileIncludePattern } = options;
   const workspaceRoot = path.resolve(projectRoot, '../..');
   const include = collectGovernedCoverageFiles(projectRoot, roots).filter((relativePath) =>
     fileIncludePattern ? fileIncludePattern.test(relativePath) : true,
@@ -220,11 +228,7 @@ export function createSliceCoverage(options: {
   return {
     all: true,
     include,
-    exclude: [
-      '**/index.ts',
-      '**/*.d.ts',
-      '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
+    exclude: ['**/index.ts', '**/*.d.ts', '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reportsDirectory: path.resolve(workspaceRoot, reportsDirectory),
     reporter: ['text', 'json', 'html', 'lcov'] as const,
     thresholds,
@@ -240,6 +244,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     environment = 'node',
     testInclude,
     testExclude = [],
+    reportName,
     aliases = {},
     aliasEntries = [],
   } = options;
@@ -353,6 +358,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     test: {
       globals: true,
       environment,
+      ...createVitestReportConfig(projectRoot, reportName),
       passWithNoTests: false,
       include: testInclude ?? ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       exclude: [
@@ -391,6 +397,7 @@ export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
   return mergeConfig(
     createSharedConfig({
       projectRoot,
+      reportName: name,
       ...sharedOptions,
     }),
     defineConfig({

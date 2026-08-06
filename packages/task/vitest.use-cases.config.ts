@@ -4,8 +4,11 @@ import { createSharedConfig, createSliceCoverage } from '../../vitest.shared';
 
 const baseConfig = createSharedConfig({
   projectRoot: __dirname,
+  reportName: 'task-use-cases',
   environment: 'node',
-  testInclude: ['src/server/application/use-cases/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+  testInclude: [
+    'src/server/application/use-cases/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+  ],
 });
 
 export default mergeConfig(

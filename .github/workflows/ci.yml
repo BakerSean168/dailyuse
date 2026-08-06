@@ -228,11 +228,21 @@ jobs:
             {"detector":"${{ needs.scope-detector.result }}","enabled":{"static":"${{ needs.scope-detector.outputs.lane_validate }}","unit":"${{ needs.scope-detector.outputs.lane_validate == 'true' && needs.scope-detector.outputs.has_unit == 'true' && 'true' || 'false' }}","typecheck":"${{ needs.scope-detector.outputs.lane_validate }}","build":"${{ needs.scope-detector.outputs.lane_validate }}"},"children":{"static":"${{ needs.static-analysis.result }}","unit":"${{ needs.unit.result }}","typecheck":"${{ needs.typecheck.result }}","build":"${{ needs.build.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
-  boundary:
-    name: Boundary Children
+  verification-children:
+    name: Verification Children
     needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_boundary == 'true'
+    if: >-
+      needs.scope-detector.result == 'success' &&
+      (needs.scope-detector.outputs.lane_boundary == 'true' ||
+       needs.scope-detector.outputs.lane_integration == 'true' ||
+       needs.scope-detector.outputs.lane_coverage == 'true' ||
+       needs.scope-detector.outputs.lane_performance == 'true')
     runs-on: ubuntu-latest
+    outputs:
+      boundary: ${{ steps.lane_status.outputs.boundary }}
+      integration: ${{ steps.lane_status.outputs.integration }}
+      coverage: ${{ steps.lane_status.outputs.coverage }}
+      performance: ${{ steps.lane_status.outputs.performance }}
     services:
       postgres:
         image: pgvector/pgvector:0.8.5-pg18
@@ -251,28 +261,115 @@ jobs:
           node-version: '${{ env.NODE_VERSION }}'
           setup-python: 'false'
           setup-uv: 'false'
-          lane: boundary
           consume-delivery-manifest: 'true'
-      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
-        env: { TEST_REPORT_NAME: boundary-database, DELIVERY_LANE: boundary }
-      - name: Desktop IPC boundary
+      - name: Prepare independent lane contracts on the shared runner
+        run: >-
+          node ./tools/ci-cd-platform/prepare-shared-lanes.mjs
+          --lanes boundary,integration,coverage,performance
+          --manifest scope/delivery-manifest-v1.json
+          --receipt reports/ci-cd-platform/workspace-receipt.json
+          --output reports/ci-cd-platform
+      - name: Boundary children
+        id: boundary
         if: needs.scope-detector.outputs.has_desktop_boundary == 'true'
-        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run desktop:test:ipc
-        env: { TEST_REPORT_NAME: desktop-ipc, DELIVERY_LANE: boundary }
-      - name: Desktop main boundary
-        if: needs.scope-detector.outputs.has_desktop_boundary == 'true'
-        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run desktop:test:main
-        env: { TEST_REPORT_NAME: desktop-main, DELIVERY_LANE: boundary }
-      - name: Smoke boundary
-        if: needs.scope-detector.outputs.has_smoke == 'true'
-        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:smoke --parallel=2 --outputStyle=static
-        env: { TEST_REPORT_NAME: smoke, DELIVERY_LANE: boundary }
+        continue-on-error: true
+        env:
+          DELIVERY_LANE: boundary
+          LANE_INPUT_PATH: reports/ci-cd-platform/boundary-input-v1.json
+        run: |
+          status=0
+          TEST_REPORT_NAME=boundary-database node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push || status=$?
+          TEST_REPORT_NAME=desktop-ipc node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run desktop:test:ipc || status=$?
+          TEST_REPORT_NAME=desktop-main node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run desktop:test:main || status=$?
+          if [ "${{ needs.scope-detector.outputs.has_smoke }}" = 'true' ]; then
+            TEST_REPORT_NAME=smoke node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:smoke --parallel=2 --outputStyle=static || status=$?
+          fi
+          exit "$status"
+      - name: Boundary smoke-only children
+        id: boundary_smoke
+        if: needs.scope-detector.outputs.lane_boundary == 'true' && needs.scope-detector.outputs.has_desktop_boundary != 'true'
+        continue-on-error: true
+        env:
+          DELIVERY_LANE: boundary
+          LANE_INPUT_PATH: reports/ci-cd-platform/boundary-input-v1.json
+        run: |
+          status=0
+          TEST_REPORT_NAME=boundary-database node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push || status=$?
+          if [ "${{ needs.scope-detector.outputs.has_smoke }}" = 'true' ]; then
+            TEST_REPORT_NAME=smoke node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:smoke --parallel=2 --outputStyle=static || status=$?
+          fi
+          exit "$status"
+      - name: Integration children
+        id: integration
+        if: needs.scope-detector.outputs.lane_integration == 'true'
+        continue-on-error: true
+        env:
+          DELIVERY_LANE: integration
+          LANE_INPUT_PATH: reports/ci-cd-platform/integration-input-v1.json
+        run: |
+          status=0
+          TEST_REPORT_NAME=integration-database node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push || status=$?
+          TEST_REPORT_NAME=integration node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:integration --parallel=1 --outputStyle=static || status=$?
+          exit "$status"
+      - name: Affected coverage
+        id: coverage
+        if: needs.scope-detector.outputs.lane_coverage == 'true'
+        continue-on-error: true
+        env:
+          DELIVERY_LANE: coverage
+          LANE_INPUT_PATH: reports/ci-cd-platform/coverage-input-v1.json
+          TEST_REPORT_NAME: coverage
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:coverage --parallel=2 --outputStyle=static
+      - name: Performance budget
+        id: performance
+        if: needs.scope-detector.outputs.lane_performance == 'true'
+        continue-on-error: true
+        env:
+          DELIVERY_LANE: performance
+          LANE_INPUT_PATH: reports/ci-cd-platform/performance-input-v1.json
+          TEST_REPORT_NAME: performance
+        run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:perf --parallel=1 --outputStyle=static
       - uses: ./.github/actions/publish-lane-evidence
-        with: { lane: boundary }
+        if: always() && needs.scope-detector.outputs.lane_boundary == 'true'
+        with:
+          lane: boundary
+          receipt: reports/ci-cd-platform/boundary-workspace-receipt.json
+      - uses: ./.github/actions/publish-lane-evidence
+        if: always() && needs.scope-detector.outputs.lane_integration == 'true'
+        with:
+          lane: integration
+          receipt: reports/ci-cd-platform/integration-workspace-receipt.json
+      - uses: ./.github/actions/publish-lane-evidence
+        if: always() && needs.scope-detector.outputs.lane_coverage == 'true'
+        with:
+          lane: coverage
+          receipt: reports/ci-cd-platform/coverage-workspace-receipt.json
+      - uses: ./.github/actions/publish-lane-evidence
+        if: always() && needs.scope-detector.outputs.lane_performance == 'true'
+        with:
+          lane: performance
+          receipt: reports/ci-cd-platform/performance-workspace-receipt.json
+      - name: Expose independent lane status
+        id: lane_status
+        if: always()
+        shell: bash
+        run: |
+          echo "boundary=${{ needs.scope-detector.outputs.lane_boundary == 'true' && (steps.boundary.outcome == 'success' || steps.boundary_smoke.outcome == 'success') && 'success' || needs.scope-detector.outputs.lane_boundary == 'true' && 'failure' || 'skipped' }}" >> "$GITHUB_OUTPUT"
+          echo "integration=${{ needs.scope-detector.outputs.lane_integration == 'true' && steps.integration.outcome == 'success' && 'success' || needs.scope-detector.outputs.lane_integration == 'true' && 'failure' || 'skipped' }}" >> "$GITHUB_OUTPUT"
+          echo "coverage=${{ needs.scope-detector.outputs.lane_coverage == 'true' && steps.coverage.outcome == 'success' && 'success' || needs.scope-detector.outputs.lane_coverage == 'true' && 'failure' || 'skipped' }}" >> "$GITHUB_OUTPUT"
+          echo "performance=${{ needs.scope-detector.outputs.lane_performance == 'true' && steps.performance.outcome == 'success' && 'success' || needs.scope-detector.outputs.lane_performance == 'true' && 'failure' || 'skipped' }}" >> "$GITHUB_OUTPUT"
+      - name: Fail closed when an enabled lane failed
+        if: >-
+          always() &&
+          ((needs.scope-detector.outputs.lane_boundary == 'true' && steps.lane_status.outputs.boundary != 'success') ||
+           (needs.scope-detector.outputs.lane_integration == 'true' && steps.lane_status.outputs.integration != 'success') ||
+           (needs.scope-detector.outputs.lane_coverage == 'true' && steps.lane_status.outputs.coverage != 'success') ||
+           (needs.scope-detector.outputs.lane_performance == 'true' && steps.lane_status.outputs.performance != 'success'))
+        run: exit 1
 
   boundary-oracle:
     name: Boundary Oracle
-    needs: [scope-detector, boundary]
+    needs: [scope-detector, verification-children]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -280,43 +377,12 @@ jobs:
       - name: Aggregate Boundary children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_boundary == 'true' && '["boundary"]' || '[]' }},"children":{"boundary":"${{ needs.boundary.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_boundary == 'true' && '["boundary"]' || '[]' }},"children":{"boundary":"${{ needs.verification-children.outputs.boundary || needs.verification-children.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
-
-  integration:
-    name: Integration Children
-    needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_integration == 'true'
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: pgvector/pgvector:0.8.5-pg18
-        env: { POSTGRES_USER: test_user, POSTGRES_PASSWORD: test_pass, POSTGRES_DB: memoflow_test }
-        ports: ['5433:5432']
-        options: --health-cmd "pg_isready -U test_user -d memoflow_test" --health-interval 5s --health-timeout 5s --health-retries 10
-    env:
-      DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
-      JWT_SECRET: test-jwt-secret-not-for-production-use
-    steps:
-      - uses: actions/checkout@v6
-        with: { fetch-depth: 0 }
-      - uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: '${{ env.NODE_VERSION }}'
-          setup-python: 'false'
-          setup-uv: 'false'
-          lane: integration
-          consume-delivery-manifest: 'true'
-      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx run database:prisma-push
-        env: { TEST_REPORT_NAME: integration-database, DELIVERY_LANE: integration }
-      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:integration --parallel=1 --outputStyle=static
-        env: { TEST_REPORT_NAME: integration, DELIVERY_LANE: integration }
-      - uses: ./.github/actions/publish-lane-evidence
-        with: { lane: integration }
 
   integration-oracle:
     name: Integration Oracle
-    needs: [scope-detector, integration]
+    needs: [scope-detector, verification-children]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -324,7 +390,7 @@ jobs:
       - name: Aggregate Integration children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_integration == 'true' && '["integration"]' || '[]' }},"children":{"integration":"${{ needs.integration.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_integration == 'true' && '["integration"]' || '[]' }},"children":{"integration":"${{ needs.verification-children.outputs.integration || needs.verification-children.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
   web-flow-shard:
@@ -417,29 +483,9 @@ jobs:
             {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_web == 'true' && '["web"]' || '[]' }},"children":{"web":"${{ needs.web-flow-shard.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
-  coverage:
-    name: Affected Coverage
-    needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_coverage == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with: { fetch-depth: 0 }
-      - uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: '${{ env.NODE_VERSION }}'
-          setup-python: 'false'
-          setup-uv: 'false'
-          lane: coverage
-          consume-delivery-manifest: 'true'
-      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:coverage --parallel=2 --outputStyle=static
-        env: { TEST_REPORT_NAME: coverage, DELIVERY_LANE: coverage }
-      - uses: ./.github/actions/publish-lane-evidence
-        with: { lane: coverage }
-
   coverage-oracle:
     name: Coverage Oracle
-    needs: [scope-detector, coverage]
+    needs: [scope-detector, verification-children]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -447,32 +493,12 @@ jobs:
       - name: Aggregate Coverage children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_coverage == 'true' && '["coverage"]' || '[]' }},"children":{"coverage":"${{ needs.coverage.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_coverage == 'true' && '["coverage"]' || '[]' }},"children":{"coverage":"${{ needs.verification-children.outputs.coverage || needs.verification-children.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
-
-  performance:
-    name: Performance Budget
-    needs: scope-detector
-    if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_performance == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with: { fetch-depth: 0 }
-      - uses: ./.github/actions/setup-nx-affected-job
-        with:
-          node-version: '${{ env.NODE_VERSION }}'
-          setup-python: 'false'
-          setup-uv: 'false'
-          lane: performance
-          consume-delivery-manifest: 'true'
-      - run: node ./tools/test-system-v2/run-command.mjs -- pnpm exec nx affected -t test:perf --parallel=1 --outputStyle=static
-        env: { TEST_REPORT_NAME: performance, DELIVERY_LANE: performance }
-      - uses: ./.github/actions/publish-lane-evidence
-        with: { lane: performance }
 
   performance-oracle:
     name: Performance Oracle
-    needs: [scope-detector, performance]
+    needs: [scope-detector, verification-children]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -480,20 +506,20 @@ jobs:
       - name: Aggregate Performance children
         env:
           ORACLE_INPUT: >-
-            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_performance == 'true' && '["performance"]' || '[]' }},"children":{"performance":"${{ needs.performance.result }}"}}
+            {"detector":"${{ needs.scope-detector.result }}","enabled":${{ needs.scope-detector.outputs.lane_performance == 'true' && '["performance"]' || '[]' }},"children":{"performance":"${{ needs.verification-children.outputs.performance || needs.verification-children.result }}"}}
         run: node ./tools/test-system-v2/oracle.mjs
 
   delivery-observation:
     name: Delivery Observation
     needs:
       - scope-detector
-      - governance-oracle
-      - validate-oracle
-      - boundary-oracle
-      - integration-oracle
-      - web-flow-oracle
-      - coverage-oracle
-      - performance-oracle
+      - governance
+      - static-analysis
+      - unit
+      - typecheck
+      - build
+      - verification-children
+      - web-flow-shard
     if: always()
     runs-on: ubuntu-latest
     steps:

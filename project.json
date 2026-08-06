@@ -44,7 +44,13 @@
     "governance-check": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": ["governance-tools:test", "test-system-v2:test", "test-system-v2:test:governance", "test-system-v2:ruleset"],
+      "dependsOn": [
+        "test:governance",
+        "governance-tools:test",
+        "test-system-v2:test",
+        "test-system-v2:test:governance",
+        "test-system-v2:ruleset"
+      ],
       "inputs": [
         "{workspaceRoot}/AGENT.md",
         "{workspaceRoot}/AGENTS.md",
@@ -93,6 +99,18 @@
       ],
       "options": {
         "command": "node ./tools/docs/check-docs-config.mjs && node ./tools/governance/product-identity-audit.mjs && node ./tools/governance/target-baseline-audit.mjs && node ./tools/governance/file-naming-audit.mjs && node ./tools/governance/governance-module-docs-audit.mjs && node ./tools/governance/platform-leakage-audit.mjs && node ./tools/governance/singleton-audit.mjs && node ./tools/governance/desktop-runtime-locator-audit.mjs && node ./tools/governance/vitest-no-tests-audit.mjs && node ./tools/governance/server-feature-shape-audit.mjs && node ./tools/governance/package-internal-boundary-audit.mjs && node ./tools/governance/package-export-audit.mjs && node ./tools/governance/public-surface-audit.mjs && node ./tools/governance/raw-event-bus-audit.mjs && node ./tools/governance/mitt-rpc-forbidden-audit.mjs && node ./tools/governance/unflushed-events-audit.mjs && node ./tools/governance/scope-constraint-audit.mjs && node ./tools/governance/reka-ui-primitive-audit.mjs && node ./tools/governance/accessible-interaction-audit.mjs && node ./tools/governance/date-fns-import-audit.mjs && node ./tools/governance/api-runtime-dependency-audit.mjs"
+      }
+    },
+    "test:governance": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/agent-skills/validate-local-deploy/scripts/image-freshness.spec.mjs",
+        "{workspaceRoot}/tools/docker/local-compose.env-shadow.spec.mjs",
+        "{workspaceRoot}/tools/runtime/load-profiles.spec.mjs"
+      ],
+      "options": {
+        "command": "node --test tools/agent-skills/validate-local-deploy/scripts/image-freshness.spec.mjs tools/docker/local-compose.env-shadow.spec.mjs tools/runtime/load-profiles.spec.mjs"
       }
     },
 

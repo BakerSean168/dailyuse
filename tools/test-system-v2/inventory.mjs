@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { buildInventory, writeInventory } from './lib/test-inventory.mjs';
+import { buildInventory } from './lib/test-inventory.mjs';
 
 const root = process.cwd();
 const check = process.argv.includes('--check');
@@ -15,12 +15,30 @@ if (check) {
     process.exitCode = 1;
   }
 } else {
-  await writeInventory(root);
+  const target = path.resolve(root, 'tools/test-system-v2/test-inventory.json');
+  await fs.writeFile(target, serialized);
 }
 console.log(
   `[test-inventory] ${inventory.primary.length} files; ${JSON.stringify(inventory.counts)}`,
 );
-if (inventory.missing.length || inventory.duplicate.length || inventory.unexpected.length) {
+if (
+  inventory.missing.length ||
+  inventory.duplicate.length ||
+  inventory.unexpected.length ||
+  inventory.measurementOnly.length
+) {
+  console.error(
+    JSON.stringify(
+      {
+        missing: inventory.missing,
+        duplicate: inventory.duplicate,
+        unexpected: inventory.unexpected,
+        measurementOnly: inventory.measurementOnly,
+      },
+      null,
+      2,
+    ),
+  );
   console.error('[test-inventory] ownership contract failed');
   process.exitCode = 1;
 }
