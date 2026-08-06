@@ -80,29 +80,21 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --coverage",
-        "cwd": "packages/task"
-      }
-    },
-    "test:coverage:use-cases": {
-      "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}/server-application-use-cases"],
-      "inputs": ["default", "^production"],
-      "cache": true,
-      "options": {
-        "command": "vitest run --config vitest.use-cases.config.ts --coverage",
-        "cwd": "packages/task"
-      }
-    },
-    "test:coverage:prisma-mappers": {
-      "executor": "nx:run-commands",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}/server-infrastructure-adapters-prisma-mappers"
-      ],
-      "inputs": ["default", "^production"],
-      "cache": true,
-      "options": {
-        "command": "vitest run --config vitest.mappers.config.ts --coverage",
+        "commands": [
+          {
+            "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --coverage",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.use-cases.config.ts --coverage",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.mappers.config.ts --coverage",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false,
         "cwd": "packages/task"
       }
     }

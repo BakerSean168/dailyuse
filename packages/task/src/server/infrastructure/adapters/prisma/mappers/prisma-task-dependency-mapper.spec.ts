@@ -1,8 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PrismaTaskDependencyMapper } from './prisma-task-dependency-mapper';
 import type { TaskDependency as PrismaTaskDependency } from '@memoflow/database';
 
 describe('PrismaTaskDependencyMapper', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   const createMinimalRow = (): PrismaTaskDependency => ({
     id: 'dep-1',
     identityId: 'identity-1',
@@ -85,6 +89,32 @@ describe('PrismaTaskDependencyMapper', () => {
         const dto = PrismaTaskDependencyMapper.toDTO(row);
         expect(dto.dependencyType).toBe(type);
       }
+    });
+
+    it('accepts numeric and numeric-string timestamps', () => {
+      const dto = PrismaTaskDependencyMapper.toDTO({
+        ...createMinimalRow(),
+        createdAt: 1_704_067_200_000 as unknown as Date,
+        updatedAt: '1704067200000' as unknown as Date,
+      });
+
+      expect(dto.createdAt).toBe(1_704_067_200_000);
+      expect(dto.updatedAt).toBe(1_704_067_200_000);
+    });
+
+    it('falls back to the current time for missing or invalid timestamps', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-08-06T10:00:00.000Z'));
+
+      const dto = PrismaTaskDependencyMapper.toDTO({
+        ...createMinimalRow(),
+        createdAt: null as unknown as Date,
+        updatedAt: 'not-a-timestamp' as unknown as Date,
+      });
+
+      const now = Date.parse('2026-08-06T10:00:00.000Z');
+      expect(dto.createdAt).toBe(now);
+      expect(dto.updatedAt).toBe(now);
     });
   });
 

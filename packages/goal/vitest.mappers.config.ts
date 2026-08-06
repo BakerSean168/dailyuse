@@ -4,8 +4,11 @@ import { createSharedConfig, createSliceCoverage } from '../../vitest.shared';
 
 const baseConfig = createSharedConfig({
   projectRoot: __dirname,
+  reportName: 'goal-mappers',
   environment: 'node',
-  testInclude: ['src/server/infrastructure/adapters/prisma/mappers/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+  testInclude: [
+    'src/server/infrastructure/adapters/prisma/mappers/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+  ],
 });
 
 export default mergeConfig(

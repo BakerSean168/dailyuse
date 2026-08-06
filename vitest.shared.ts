@@ -2,7 +2,7 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import type { Alias } from 'vite';
+import type { Alias, UserConfig } from 'vite';
 import { createContractsAliasEntries } from './vite.workspace-aliases';
 
 /**
@@ -39,6 +39,8 @@ interface SharedConfigOptions {
   testInclude?: string[];
   /** Extra test exclude globs appended to shared defaults. */
   testExclude?: string[];
+  /** Stable suffix for CI JSON/JUnit report names. */
+  reportName?: string;
   /** Additional path aliases */
   aliases?: Record<string, string>;
   /** Additional alias entries that must precede the generic @/@/ aliases */
@@ -71,6 +73,26 @@ export const GOVERNED_DOMAIN_COVERAGE_THRESHOLDS = {
   branches: 70,
 } as const;
 
+export function createVitestReportConfig(projectRoot: string, reportName?: string) {
+  if (!process.env.CI || !process.env.TEST_REPORT_NAME || process.env.TEST_INVENTORY_LIST === '1')
+    return {};
+  const workspaceRoot = path.resolve(projectRoot, '../..');
+  const projectId = path.relative(workspaceRoot, projectRoot).split(path.sep).join('-');
+  const suffix = reportName ?? path.basename(projectRoot);
+  const prefix = `${process.env.TEST_REPORT_NAME}-${projectId}-${suffix}`.replace(
+    /[^a-zA-Z0-9_.-]+/g,
+    '-',
+  );
+  const outputRoot = path.resolve(workspaceRoot, 'reports/test-system-v2/vitest');
+  return {
+    reporters: ['default', 'json', 'junit'],
+    outputFile: {
+      json: path.resolve(outputRoot, `${prefix}.json`),
+      junit: path.resolve(outputRoot, `${prefix}.junit.xml`),
+    },
+  };
+}
+
 const DEFAULT_GOVERNED_COVERAGE_ROOTS = [
   'src/server/domain/aggregates',
   'src/server/domain/entities',
@@ -83,17 +105,15 @@ const RUNTIME_IMPLEMENTATION_PATTERN =
   /\b(class|function|const|let|var|enum|if|switch|throw|return|new)\b|=>/;
 
 function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/.*$/gm, '');
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 }
 
 function isIgnorableGovernedFile(fileName: string) {
   return (
-    fileName === 'index.ts'
-    || fileName.endsWith('.d.ts')
-    || /\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName)
-    || fileName.endsWith('.config.ts')
+    fileName === 'index.ts' ||
+    fileName.endsWith('.d.ts') ||
+    /\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName) ||
+    fileName.endsWith('.config.ts')
   );
 }
 
@@ -146,7 +166,7 @@ function walkGovernedCoverageRoot(
       continue;
     }
 
-    includedFiles.add(path.relative(projectRoot, absolutePath).replaceAll(path.sep, '/'));
+    includedFiles.add(path.relative(projectRoot, absolutePath).split(path.sep).join('/'));
   }
 }
 
@@ -159,9 +179,7 @@ export function createGovernedCoverage(
   options: { extraRoots?: string[] } = {},
 ) {
   const workspaceRoot = path.resolve(projectRoot, '../..');
-  const relativeProjectRoot = path
-    .relative(workspaceRoot, projectRoot)
-    .replaceAll(path.sep, '/');
+  const relativeProjectRoot = path.relative(workspaceRoot, projectRoot).split(path.sep).join('/');
   const include = collectGovernedCoverageFiles(projectRoot, [
     ...DEFAULT_GOVERNED_COVERAGE_ROOTS,
     ...(options.extraRoots ?? []),
@@ -170,11 +188,7 @@ export function createGovernedCoverage(
   return {
     all: true,
     include,
-    exclude: [
-      '**/index.ts',
-      '**/*.d.ts',
-      '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
+    exclude: ['**/index.ts', '**/*.d.ts', '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reportsDirectory: path.resolve(workspaceRoot, 'coverage', relativeProjectRoot),
     reporter: ['text', 'json', 'html', 'lcov'],
     thresholds: GOVERNED_DOMAIN_COVERAGE_THRESHOLDS,
@@ -205,13 +219,7 @@ export function createSliceCoverage(options: {
   reportsDirectory: string;
   fileIncludePattern?: RegExp;
 }) {
-  const {
-    projectRoot,
-    roots,
-    thresholds,
-    reportsDirectory,
-    fileIncludePattern,
-  } = options;
+  const { projectRoot, roots, thresholds, reportsDirectory, fileIncludePattern } = options;
   const workspaceRoot = path.resolve(projectRoot, '../..');
   const include = collectGovernedCoverageFiles(projectRoot, roots).filter((relativePath) =>
     fileIncludePattern ? fileIncludePattern.test(relativePath) : true,
@@ -220,13 +228,9 @@ export function createSliceCoverage(options: {
   return {
     all: true,
     include,
-    exclude: [
-      '**/index.ts',
-      '**/*.d.ts',
-      '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
+    exclude: ['**/index.ts', '**/*.d.ts', '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reportsDirectory: path.resolve(workspaceRoot, reportsDirectory),
-    reporter: ['text', 'json', 'html', 'lcov'] as const,
+    reporter: ['text', 'json', 'html', 'lcov'],
     thresholds,
   };
 }
@@ -240,6 +244,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     environment = 'node',
     testInclude,
     testExclude = [],
+    reportName,
     aliases = {},
     aliasEntries = [],
   } = options;
@@ -267,14 +272,14 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'time',
   ] as const;
 
-  const resolvedAliases = Object.fromEntries(
+  const resolvedAliases: Record<string, string> = Object.fromEntries(
     Object.entries(aliases).map(([key, value]) => [
       key,
       value.startsWith('.') ? path.resolve(projectRoot, value) : value,
     ]),
   );
 
-  const resolvedAliasEntries = aliasEntries.map((entry) => ({
+  const resolvedAliasEntries: Alias[] = aliasEntries.map((entry) => ({
     ...entry,
     replacement:
       typeof entry.replacement === 'string' && entry.replacement.startsWith('.')
@@ -316,7 +321,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     ),
   ];
 
-  const commonBareAliases = Object.fromEntries([
+  const commonBareAliases: Record<string, string> = Object.fromEntries([
     ['@memoflow/database', path.resolve(workspaceRoot, 'packages/database/src/index.ts')],
     ['@memoflow/domain-shared', path.resolve(workspaceRoot, 'packages/domain-shared/src/index.ts')],
     ['@memoflow/utils', path.resolve(workspaceRoot, 'packages/utils/src/index.ts')],
@@ -328,18 +333,18 @@ export function createSharedConfig(options: SharedConfigOptions) {
   ]);
 
   // Common aliases for all projects
-  const baseAliases = {
+  const baseAliases: Record<string, string> = {
     ...commonBareAliases,
     ...resolvedAliases,
     '@': projectSrc,
     '@/': `${projectSrc}/`,
   };
 
-  const baseAliasEntries = Object.entries(baseAliases)
+  const baseAliasEntries: Alias[] = Object.entries(baseAliases)
     .sort(([a], [b]) => b.length - a.length)
     .map(([find, replacement]) => ({ find, replacement }));
 
-  const finalAliasEntries = [
+  const finalAliasEntries: Alias[] = [
     ...resolvedAliasEntries,
     ...commonWorkspaceAliasEntries,
     ...createContractsAliasEntries(workspaceRoot),
@@ -353,6 +358,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     test: {
       globals: true,
       environment,
+      ...createVitestReportConfig(projectRoot, reportName),
       passWithNoTests: false,
       include: testInclude ?? ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       exclude: [
@@ -373,7 +379,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
         exclude: ['node_modules/', 'src/test/', '**/*.d.ts', '**/*.config.*', 'dist/'],
       },
     },
-  });
+  }) as UserConfig;
 }
 
 export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
@@ -391,6 +397,7 @@ export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
   return mergeConfig(
     createSharedConfig({
       projectRoot,
+      reportName: name,
       ...sharedOptions,
     }),
     defineConfig({
@@ -416,7 +423,7 @@ export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
               }
             : {}),
       },
-    }),
+    }) as UserConfig,
   );
 }
 

@@ -151,9 +151,9 @@ describe('legacy editor/repository runtime surface', () => {
       resolve(repoRoot, '.github/workflows/coverage.yml'),
       'utf8',
     );
-    expect(coverageWorkflow).toContain('GOVERNED_DOMAIN_COVERAGE_PROJECTS:');
+    expect(coverageWorkflow).toContain('GOVERNED_COVERAGE_PROJECTS:');
     expect(coverageWorkflow).not.toMatch(
-      /GOVERNED_DOMAIN_COVERAGE_PROJECTS:\s*'[^']*\beditor\b[^']*'/,
+      /GOVERNED_COVERAGE_PROJECTS:\s*'[^']*\beditor\b[^']*'/,
     );
     expect(coverageWorkflow).toContain('domain-shared,goal,governance');
   });

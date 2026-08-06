@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
 import path from 'node:path';
+import { createVitestReportConfig } from '../../vitest.shared';
 import {
   domainResolveAtAlias,
   taskDeepImportResolver,
@@ -20,6 +21,7 @@ export default defineConfig({
   },
   test: {
     name: 'api-smoke',
+    ...createVitestReportConfig(__dirname, 'api-smoke'),
     root: __dirname,
     globals: true,
     environment: 'node',

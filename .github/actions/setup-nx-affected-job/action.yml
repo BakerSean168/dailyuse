@@ -13,23 +13,87 @@ inputs:
     description: Whether to set up uv for ai-service and other Python-backed Nx targets
     required: false
     default: 'true'
+  capabilities:
+    description: Comma-separated toolchain capabilities for the lane receipt
+    required: false
+    default: 'node,pnpm'
+  enable-nx-cache:
+    description: Whether to restore the lockfile-keyed Nx cache
+    required: false
+    default: 'true'
+  consume-delivery-manifest:
+    description: Download and validate the manifest produced by Scope Detector
+    required: false
+    default: 'false'
+  lane:
+    description: Stable execution lane registered by the CI/CD platform
+    required: false
+    default: ''
 
 runs:
   using: composite
   steps:
+    - name: Mark workspace setup start
+      shell: bash
+      run: echo "WORKSPACE_SETUP_STARTED_AT=$(date +%s%3N)" >> "$GITHUB_ENV"
+
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
 
+    - name: Consume delivery manifest
+      if: ${{ inputs.consume-delivery-manifest == 'true' }}
+      uses: ./.github/actions/consume-delivery-manifest
+
+    - name: Create lane input contract
+      if: ${{ inputs.consume-delivery-manifest == 'true' && inputs.lane != '' }}
+      shell: bash
+      env:
+        DELIVERY_LANE: ${{ inputs.lane }}
+        DELIVERY_MANIFEST_PATH: scope/delivery-manifest-v1.json
+        LANE_INPUT_OUTPUT: reports/ci-cd-platform/${{ inputs.lane }}-input-v1.json
+      run: |
+        node ./tools/ci-cd-platform/create-lane-input.mjs \
+          --lane "$DELIVERY_LANE" \
+          --manifest "$DELIVERY_MANIFEST_PATH" \
+          --output "$LANE_INPUT_OUTPUT"
+        echo "LANE_INPUT_PATH=$LANE_INPUT_OUTPUT" >> "$GITHUB_ENV"
+
+    - name: Resolve optional toolchain capabilities
+      id: capabilities
+      shell: bash
+      env:
+        SETUP_PYTHON_INPUT: ${{ inputs.setup-python }}
+        SETUP_UV_INPUT: ${{ inputs.setup-uv }}
+        CI_CAPABILITIES: ${{ inputs.capabilities }}
+        DELIVERY_MANIFEST_PATH: scope/delivery-manifest-v1.json
+      run: |
+        python_required=false
+        uv_required=false
+        if [ "$SETUP_PYTHON_INPUT" = 'true' ] && [[ ",$CI_CAPABILITIES," == *,python,* ]]; then
+          python_required=true
+        fi
+        if [ "$SETUP_UV_INPUT" = 'true' ] && [[ ",$CI_CAPABILITIES," == *,uv,* ]]; then
+          uv_required=true
+        fi
+        if [ -f "$DELIVERY_MANIFEST_PATH" ]; then
+          if node -e "const m=require('./$DELIVERY_MANIFEST_PATH'); process.exit((m.scope?.projects || []).includes('ai-service') ? 0 : 1)"; then
+            [ "$SETUP_PYTHON_INPUT" = 'true' ] && python_required=true
+            [ "$SETUP_UV_INPUT" = 'true' ] && uv_required=true
+          fi
+        fi
+        echo "python=$python_required" >> "$GITHUB_OUTPUT"
+        echo "uv=$uv_required" >> "$GITHUB_OUTPUT"
+
     - name: Setup Python
-      if: ${{ inputs.setup-python == 'true' }}
+      if: ${{ steps.capabilities.outputs.python == 'true' }}
       uses: actions/setup-python@v6
       with:
         python-version-file: apps/ai-service/.python-version
 
     - name: Setup uv
-      if: ${{ inputs.setup-uv == 'true' }}
+      if: ${{ steps.capabilities.outputs.uv == 'true' }}
       uses: astral-sh/setup-uv@v7
       with:
         working-directory: apps/ai-service
@@ -47,17 +111,68 @@ runs:
       run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
 
     - name: Cache pnpm store
+      id: pnpm-cache
       uses: actions/cache@v5
       with:
         path: ${{ steps.pnpm-store.outputs.path }}
         key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: pnpm-store-${{ runner.os }}-
 
+    - name: Cache Nx task results
+      if: ${{ inputs.enable-nx-cache == 'true' }}
+      id: nx-cache
+      uses: actions/cache@v5
+      with:
+        path: .nx/cache
+        key: nx-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+        restore-keys: |
+          nx-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+    - name: Cache Playwright browsers
+      if: ${{ contains(inputs.capabilities, 'playwright') }}
+      id: playwright-cache
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
     - name: Install dependencies
       shell: bash
       run: pnpm install --frozen-lockfile --reporter=append-only
 
+    - name: Resolve affected range from delivery manifest
+      if: ${{ inputs.consume-delivery-manifest == 'true' }}
+      shell: bash
+      env:
+        DELIVERY_MANIFEST_PATH: scope/delivery-manifest-v1.json
+      run: |
+        set -euo pipefail
+        test -f "$DELIVERY_MANIFEST_PATH"
+        NX_BASE_VALUE="$(node -p "const m=require('./$DELIVERY_MANIFEST_PATH'); m.base ?? ''")"
+        NX_HEAD_VALUE="$(node -p "const m=require('./$DELIVERY_MANIFEST_PATH'); m.head ?? ''")"
+        MANIFEST_COMMIT="$(node -p "require('./$DELIVERY_MANIFEST_PATH').commit")"
+        if [ -z "$NX_HEAD_VALUE" ]; then
+          echo "Delivery manifest must provide head for CI affected execution (commit=$MANIFEST_COMMIT)"
+          exit 1
+        fi
+        if ! git rev-parse --verify "${NX_HEAD_VALUE}^{commit}" >/dev/null 2>&1; then
+          echo "Delivery manifest head is not available in the checkout: $NX_HEAD_VALUE"
+          exit 1
+        fi
+        if [ -n "$NX_BASE_VALUE" ] && ! git rev-parse --verify "${NX_BASE_VALUE}^{commit}" >/dev/null 2>&1; then
+          echo "Delivery manifest base is not available in the checkout: $NX_BASE_VALUE"
+          exit 1
+        fi
+        if [ -n "$NX_BASE_VALUE" ]; then
+          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
+        else
+          echo "NX_BASE=" >> "$GITHUB_ENV"
+        fi
+        echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
+        echo "Using manifest range NX_BASE=${NX_BASE_VALUE:-<none>} NX_HEAD=$NX_HEAD_VALUE"
+
     - name: Derive SHAs for affected
+      if: ${{ inputs.consume-delivery-manifest != 'true' }}
       shell: bash
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -85,3 +200,15 @@ runs:
         echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
         echo "Using NX_BASE=$NX_BASE_VALUE"
         echo "Using NX_HEAD=$NX_HEAD_VALUE"
+
+    - name: Write workspace receipt
+      shell: bash
+      env:
+        CI_CAPABILITIES: ${{ inputs.capabilities }}
+        PNPM_CACHE_HIT: ${{ steps.pnpm-cache.outputs.cache-hit || 'false' }}
+        NX_CACHE_HIT: ${{ steps.nx-cache.outputs.cache-hit || 'false' }}
+        PLAYWRIGHT_CACHE_HIT: ${{ steps.playwright-cache.outputs.cache-hit || 'false' }}
+        WORKSPACE_RECEIPT_OUTPUT: reports/ci-cd-platform/workspace-receipt.json
+      run: |
+        echo "WORKSPACE_SETUP_ENDED_AT=$(date +%s%3N)" >> "$GITHUB_ENV"
+        WORKSPACE_SETUP_ENDED_AT="$(date +%s%3N)" node ./tools/ci-cd-platform/write-workspace-receipt.mjs

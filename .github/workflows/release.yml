@@ -67,12 +67,6 @@ jobs:
         with:
           ref: ${{ needs.prepare-release.outputs.release_tag }}
 
-      - name: Restore desktop release build overrides from main
-        shell: bash
-        run: |
-          git fetch origin main --depth=1
-          git checkout origin/main -- apps/desktop/project.json
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -158,7 +152,7 @@ jobs:
 
   upload-release-assets:
     name: Upload Release Assets
-    if: ${{ always() }}
+    if: ${{ needs.build-release-assets.result == 'success' }}
     needs:
       - prepare-release
       - build-release-assets
@@ -166,17 +160,9 @@ jobs:
 
     steps:
       - name: Download build artifacts
-        id: download-artifacts
         uses: actions/download-artifact@v7
-        continue-on-error: true
         with:
           path: artifacts
-
-      - name: Summarize partial build status
-        if: ${{ needs.build-release-assets.result != 'success' }}
-        shell: bash
-        run: |
-          echo "One or more platform builds failed. Uploading any assets that were produced." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Validate downloaded assets
         shell: bash
@@ -207,7 +193,6 @@ jobs:
         with:
           tag_name: ${{ needs.prepare-release.outputs.release_tag }}
           fail_on_unmatched_files: false
-          overwrite_files: true
           files: |
             artifacts/**/*Setup.exe
             artifacts/**/*Setup.zip

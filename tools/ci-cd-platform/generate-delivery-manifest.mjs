@@ -1,0 +1,122 @@
+#!/usr/bin/env node
+
+import { execFile } from 'node:child_process';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { promisify } from 'node:util';
+import path from 'node:path';
+import { buildProvenance, digest, validateDeliveryManifest } from './lib/contracts.mjs';
+import { classifyRisk, selectLanes } from './lib/risk.mjs';
+import { detectScope } from './lib/scope-detector.mjs';
+
+const exec = promisify(execFile);
+
+async function changedFiles({ root, base, head, full }) {
+  if (full || !base || !head) return [];
+  const { stdout } = await exec(
+    'git',
+    ['diff', '--name-only', '--diff-filter=ACMRTUXB', `${base}...${head}`],
+    {
+      cwd: root,
+      maxBuffer: 4 * 1024 * 1024,
+    },
+  );
+  return stdout
+    .split(/\r?\n/u)
+    .map((file) => file.trim())
+    .filter(Boolean)
+    .sort();
+}
+
+export async function buildDeliveryManifest({
+  root = process.cwd(),
+  base = process.env.NX_BASE ?? null,
+  head = process.env.NX_HEAD ?? process.env.GITHUB_SHA ?? null,
+  event = process.env.GITHUB_EVENT_NAME ?? 'pull_request',
+  full = event === 'schedule' || event === 'workflow_dispatch',
+  scope,
+  files,
+} = {}) {
+  const changed = files ?? (await changedFiles({ root, base, head, full }));
+  const resolvedScope = scope ?? (await detectScope({ root, base, head, full }));
+  const risk = classifyRisk(changed);
+  const forcedLanes = (process.env.DELIVERY_FORCE_LANES ?? '')
+    .split(',')
+    .map((lane) => lane.trim())
+    .filter(Boolean);
+  const selectedLanes = selectLanes({ risk, scope: resolvedScope, event });
+  for (const lane of forcedLanes) selectedLanes[lane] = true;
+  const input = {
+    base,
+    head,
+    event,
+    full,
+    changedFiles: changed,
+    scope: resolvedScope,
+    risk,
+  };
+  const manifest = {
+    kind: 'delivery-manifest-v1',
+    version: 1,
+    commit: head ?? 'local',
+    base,
+    head,
+    event,
+    full,
+    changedFiles: changed,
+    risk,
+    scope: resolvedScope,
+    lanes: selectedLanes,
+    provenance: buildProvenance({
+      generator: 'ci-cd-platform-v2/generate-delivery-manifest@1',
+      input,
+    }),
+  };
+  const result = { ...manifest, digest: digest(manifest) };
+  validateDeliveryManifest(result);
+  return result;
+}
+
+async function main() {
+  const output = path.resolve(
+    process.env.DELIVERY_MANIFEST_OUTPUT ?? 'scope/delivery-manifest-v1.json',
+  );
+  const manifest = await buildDeliveryManifest();
+  await mkdir(path.dirname(output), { recursive: true });
+  await writeFile(output, `${JSON.stringify(manifest, null, 2)}\n`);
+  if (process.env.GITHUB_OUTPUT) {
+    const lines = [
+      `manifest_path=${output}`,
+      `manifest_digest=${manifest.digest}`,
+      `risk=${manifest.risk.level}`,
+      ...Object.entries(manifest.lanes).map(([lane, enabled]) => `lane_${lane}=${enabled}`),
+      `unit=${manifest.scope.unit.join(',')}`,
+      `coverage=${manifest.scope.coverage.join(',')}`,
+      `smoke=${manifest.scope.smoke.join(',')}`,
+      `integration=${manifest.scope.integration.join(',')}`,
+      `boundary=${manifest.scope.boundary.join(',')}`,
+      `has_unit=${manifest.scope.unit.length > 0}`,
+      `has_coverage=${manifest.scope.coverage.length > 0}`,
+      `has_smoke=${manifest.scope.smoke.length > 0}`,
+      `has_integration=${manifest.scope.integration.length > 0}`,
+      `has_boundary=${manifest.scope.boundary.length > 0 || manifest.scope.smoke.length > 0}`,
+      `has_desktop_boundary=${manifest.scope.boundary.length > 0}`,
+      `has_perf=${manifest.scope.perf.length > 0}`,
+      `has_web_flow=${manifest.scope.webFlow}`,
+    ];
+    await writeFile(process.env.GITHUB_OUTPUT, `${lines.join('\n')}\n`, { flag: 'a' });
+  }
+  console.log(
+    JSON.stringify(
+      { path: output, digest: manifest.digest, risk: manifest.risk, lanes: manifest.lanes },
+      null,
+      2,
+    ),
+  );
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error(`[delivery-manifest] ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  });
+}

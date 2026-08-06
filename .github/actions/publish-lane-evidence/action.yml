@@ -1,0 +1,40 @@
+name: Publish Lane Evidence
+description: Upload structured timing, lane results, workspace receipts, and failure evidence.
+inputs:
+  lane:
+    description: Stable execution lane name
+    required: true
+  artifact-suffix:
+    description: Unique suffix for matrix jobs that publish more than one evidence artifact
+    required: false
+    default: job
+  receipt:
+    description: Workspace receipt to attribute to this lane
+    required: false
+    default: reports/ci-cd-platform/workspace-receipt.json
+runs:
+  using: composite
+  steps:
+    - name: Observe lane result
+      if: always()
+      shell: bash
+      env:
+        DELIVERY_LANE: ${{ inputs.lane }}
+      run: |
+        node ./tools/ci-cd-platform/observe-lane.mjs \
+          --lane "$DELIVERY_LANE" \
+          --input "reports/ci-cd-platform/${DELIVERY_LANE}-input-v1.json" \
+          --reports reports/test-system-v2 \
+          --receipt "${{ inputs.receipt }}" \
+          --output "reports/ci-cd-platform/${DELIVERY_LANE}-summary-v1.json"
+    - name: Upload structured lane evidence
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: delivery-${{ inputs.lane }}-${{ github.job }}-${{ inputs.artifact-suffix }}-${{ github.run_id }}
+        path: |
+          reports/test-system-v2
+          reports/ci-cd-platform
+          apps/web/test-results/results.json
+        if-no-files-found: ignore
+        retention-days: 14

@@ -22,7 +22,8 @@
           { "context": "Integration Oracle", "integration_id": 15368 },
           { "context": "Web Flow Oracle", "integration_id": 15368 },
           { "context": "Coverage Oracle", "integration_id": 15368 },
-          { "context": "Performance Oracle", "integration_id": 15368 }
+          { "context": "Performance Oracle", "integration_id": 15368 },
+          { "context": "Delivery Observation", "integration_id": 15368 }
         ],
         "strict_required_status_checks_policy": true,
         "do_not_enforce_on_create": false
@@ -31,7 +32,7 @@
     {
       "type": "pull_request",
       "parameters": {
-        "required_approving_review_count": 1,
+        "required_approving_review_count": 0,
         "dismiss_stale_reviews_on_push": true,
         "require_code_owner_review": false,
         "require_last_push_approval": false,

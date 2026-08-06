@@ -1,10 +1,12 @@
 import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
 import { createContractsAliasEntries } from '../../vite.workspace-aliases';
+import { createVitestReportConfig } from '../../vitest.shared';
 
 export default defineConfig({
   test: {
     name: 'desktop-ipc',
+    ...createVitestReportConfig(__dirname, 'desktop-ipc'),
     // Keep IPC tests rooted under src/main so they exercise handler registration
     // without pulling renderer-only setup into the suite.
     root: resolve(__dirname, 'src/main'),

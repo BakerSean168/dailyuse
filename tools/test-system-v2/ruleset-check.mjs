@@ -13,10 +13,23 @@ const expected = [
   'Web Flow Oracle',
   'Coverage Oracle',
   'Performance Oracle',
+  'Delivery Observation',
 ];
 const actual = required.map((entry) => entry.context);
-if (ruleset.enforcement !== 'active' || actual.join('\n') !== expected.join('\n')) {
+const pullRequestRule = ruleset.rules.find((rule) => rule.type === 'pull_request');
+const reviewPolicy = pullRequestRule?.parameters;
+const soloMaintainerPolicy =
+  reviewPolicy?.required_approving_review_count === 0 &&
+  reviewPolicy?.require_code_owner_review === false &&
+  reviewPolicy?.require_last_push_approval === false;
+if (
+  ruleset.enforcement !== 'active' ||
+  actual.join('\n') !== expected.join('\n') ||
+  !soloMaintainerPolicy
+) {
   console.error('[ruleset-check] enforcement or required Oracle contexts do not match');
   process.exit(1);
 }
-console.log(`[ruleset-check] active; ${actual.length} Oracle contexts`);
+console.log(
+  `[ruleset-check] active; ${actual.length} Oracle contexts; solo-maintainer review policy enabled`,
+);

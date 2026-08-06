@@ -7,12 +7,14 @@
   "targets": {
     "test": {
       "executor": "nx:run-commands",
+      "dependsOn": ["contracts:build"],
       "cache": true,
       "inputs": ["{projectRoot}/**/*"],
       "options": { "command": "node --test tools/test-system-v2/__tests__/*.test.mjs" }
     },
     "test:inventory": {
       "executor": "nx:run-commands",
+      "dependsOn": ["contracts:build"],
       "cache": true,
       "inputs": [
         "{workspaceRoot}/apps/**/*",
@@ -24,6 +26,7 @@
     },
     "test:governance": {
       "executor": "nx:run-commands",
+      "dependsOn": ["contracts:build"],
       "cache": true,
       "inputs": [
         "{workspaceRoot}/tools/test-system-v2/**/*",
@@ -37,7 +40,8 @@
     "scope": {
       "executor": "nx:run-commands",
       "cache": false,
-      "options": { "command": "node ./tools/test-system-v2/lib/scope-detector.mjs" }
+      "outputs": ["{workspaceRoot}/scope/delivery-manifest-v1.json"],
+      "options": { "command": "node ./tools/ci-cd-platform/generate-delivery-manifest.mjs" }
     },
     "ruleset": {
       "executor": "nx:run-commands",

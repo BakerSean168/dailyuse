@@ -29,6 +29,12 @@ const boundaryRequiredTargets = new Map([
 ]);
 
 const governedRequiredTargets = ['test', 'test:watch', 'test:coverage'];
+const coverageConfigsByProject = new Map([
+  ['goal', ['vitest.config.ts', 'vitest.use-cases.config.ts', 'vitest.mappers.config.ts']],
+  ['reminder', ['vitest.config.ts', 'vitest.use-cases.config.ts', 'vitest.mappers.config.ts']],
+  ['schedule', ['vitest.config.ts', 'vitest.use-cases.config.ts', 'vitest.mappers.config.ts']],
+  ['task', ['vitest.config.ts', 'vitest.use-cases.config.ts', 'vitest.mappers.config.ts']],
+]);
 
 function createVitestCommand(cwd, args) {
   const executable = cwd
@@ -39,11 +45,13 @@ function createVitestCommand(cwd, args) {
 }
 
 function relativeWorkspaceRoot(projectRoot) {
-  return projectRoot
-    .split(/[\\/]/)
-    .filter(Boolean)
-    .map(() => '..')
-    .join('/') || '.';
+  return (
+    projectRoot
+      .split(/[\\/]/)
+      .filter(Boolean)
+      .map(() => '..')
+      .join('/') || '.'
+  );
 }
 
 const projectFiles = await findProjectJsonFiles(ROOT);
@@ -61,7 +69,9 @@ for (const projectFile of projectFiles) {
   matchedProjectCount += 1;
   const targets = json.targets ?? {};
   const projectRoot = toRelative(path.dirname(projectFile));
-  const hasLocalVitestConfig = await fileExists(path.join(path.dirname(projectFile), 'vitest.config.ts'));
+  const hasLocalVitestConfig = await fileExists(
+    path.join(path.dirname(projectFile), 'vitest.config.ts'),
+  );
   const isBoundaryProject = boundaryRequiredTargets.has(json.name);
   const isGovernedDomainProject = governedDomainProjects.has(json.name);
   let changed = false;
@@ -76,11 +86,17 @@ for (const projectFile of projectFiles) {
   }
 
   const targetTemplates = getBoundaryTargetTemplates(json.name);
-  if (shouldWrite && targetTemplates) {
+  if (targetTemplates) {
     for (const [targetName, targetTemplate] of Object.entries(targetTemplates)) {
       if (!areTargetsEqual(targets[targetName], targetTemplate)) {
-        targets[targetName] = structuredClone(targetTemplate);
-        changed = true;
+        if (shouldWrite) {
+          targets[targetName] = structuredClone(targetTemplate);
+          changed = true;
+        } else {
+          errors.push(
+            `${json.name}: target "${targetName}" drifted from the generator template in ${toRelative(projectFile)}`,
+          );
+        }
       }
     }
   }
@@ -88,26 +104,54 @@ for (const projectFile of projectFiles) {
   const shouldNormalizeLocalVitestTargets =
     hasLocalVitestConfig &&
     !isBoundaryProject &&
-    (
-      isGovernedDomainProject
-      || usesVitest(targets.test)
-      || usesVitest(targets['test:watch'])
-      || usesVitest(targets['test:coverage'])
-    );
+    (isGovernedDomainProject ||
+      usesVitest(targets.test) ||
+      usesVitest(targets['test:watch']) ||
+      usesVitest(targets['test:coverage']));
 
-  if (shouldWrite && shouldNormalizeLocalVitestTargets) {
-    const localVitestTargets = getLocalVitestTargetTemplates(projectRoot, isGovernedDomainProject);
+  if (shouldNormalizeLocalVitestTargets) {
+    const localVitestTargets = getLocalVitestTargetTemplates(
+      projectRoot,
+      isGovernedDomainProject,
+      json.name,
+    );
     for (const [targetName, targetTemplate] of Object.entries(localVitestTargets)) {
       if (!areTargetsEqual(targets[targetName], targetTemplate)) {
-        targets[targetName] = structuredClone(targetTemplate);
-        changed = true;
+        if (shouldWrite) {
+          targets[targetName] = structuredClone(targetTemplate);
+          changed = true;
+        } else {
+          errors.push(
+            `${json.name}: target "${targetName}" drifted from the generator template in ${toRelative(projectFile)}`,
+          );
+        }
       }
     }
-  } else if (shouldWrite && isGovernedDomainProject && hasLocalVitestConfig) {
-    const coverageTarget = getLocalVitestTargetTemplates(projectRoot, true)['test:coverage'];
+  } else if (isGovernedDomainProject && hasLocalVitestConfig) {
+    const coverageTarget = getLocalVitestTargetTemplates(projectRoot, true, json.name)[
+      'test:coverage'
+    ];
     if (!areTargetsEqual(targets['test:coverage'], coverageTarget)) {
-      targets['test:coverage'] = structuredClone(coverageTarget);
-      changed = true;
+      if (shouldWrite) {
+        targets['test:coverage'] = structuredClone(coverageTarget);
+        changed = true;
+      } else {
+        errors.push(
+          `${json.name}: target "test:coverage" drifted from the generator template in ${toRelative(projectFile)}`,
+        );
+      }
+    }
+  }
+
+  for (const deprecatedTarget of [
+    'test:performance',
+    'test:coverage:use-cases',
+    'test:coverage:prisma-mappers',
+  ]) {
+    if (targets[deprecatedTarget]) {
+      errors.push(
+        `${json.name}: deprecated target "${deprecatedTarget}" must be folded into the standard vocabulary in ${toRelative(projectFile)}`,
+      );
     }
   }
 
@@ -115,7 +159,9 @@ for (const projectFile of projectFiles) {
     if (json.name !== projectName) continue;
     for (const targetName of requiredTargets) {
       if (!targets[targetName]) {
-        errors.push(`${json.name}: missing required target "${targetName}" in ${toRelative(projectFile)}`);
+        errors.push(
+          `${json.name}: missing required target "${targetName}" in ${toRelative(projectFile)}`,
+        );
       }
     }
   }
@@ -123,13 +169,17 @@ for (const projectFile of projectFiles) {
   if (isGovernedDomainProject) {
     for (const targetName of governedRequiredTargets) {
       if (!targets[targetName]) {
-        errors.push(`${json.name}: missing required target "${targetName}" in ${toRelative(projectFile)}`);
+        errors.push(
+          `${json.name}: missing required target "${targetName}" in ${toRelative(projectFile)}`,
+        );
       }
     }
   }
 
   if (targets.test && usesVitest(targets.test) && !targets['test:watch']) {
-    errors.push(`${json.name}: vitest test target requires "test:watch" in ${toRelative(projectFile)}`);
+    errors.push(
+      `${json.name}: vitest test target requires "test:watch" in ${toRelative(projectFile)}`,
+    );
   }
 
   if (isGovernedDomainProject) {
@@ -203,7 +253,7 @@ function deriveWatchTarget(testTarget) {
   };
 }
 
-function getLocalVitestTargetTemplates(projectRoot, includeCoverage = false) {
+function getLocalVitestTargetTemplates(projectRoot, includeCoverage = false, projectName = '') {
   const templates = {
     test: {
       executor: 'nx:run-commands',
@@ -226,13 +276,20 @@ function getLocalVitestTargetTemplates(projectRoot, includeCoverage = false) {
   };
 
   if (includeCoverage) {
+    const coverageConfigs = coverageConfigsByProject.get(projectName) ?? ['vitest.config.ts'];
+    const commands = coverageConfigs.map((configFile) => ({
+      command: createVitestCommand(projectRoot, `run --config ${configFile} --coverage`),
+      forwardAllArgs: false,
+    }));
     templates['test:coverage'] = {
       executor: 'nx:run-commands',
       outputs: ['{workspaceRoot}/coverage/{projectRoot}'],
       inputs: ['default', '^production'],
       cache: true,
       options: {
-        command: createVitestCommand(projectRoot, 'run --config vitest.config.ts --coverage'),
+        ...(commands.length === 1
+          ? { command: commands[0].command }
+          : { commands, parallel: false }),
         cwd: projectRoot,
       },
     };
@@ -295,7 +352,10 @@ function getBoundaryTargetTemplates(projectName) {
         inputs: ['default', '^production'],
         cache: false,
         options: {
-          command: createVitestCommand('packages/task', 'run --config vitest.integration.config.ts'),
+          command: createVitestCommand(
+            'packages/task',
+            'run --config vitest.integration.config.ts',
+          ),
           cwd: 'packages/task',
         },
       },
@@ -305,7 +365,10 @@ function getBoundaryTargetTemplates(projectName) {
         inputs: ['default', '^production'],
         cache: false,
         options: {
-        command: createVitestCommand('packages/task', 'run --config vitest.performance.config.ts'),
+          command: createVitestCommand(
+            'packages/task',
+            'run --config vitest.performance.config.ts',
+          ),
           cwd: 'packages/task',
         },
       },
@@ -599,7 +662,8 @@ async function walk(dir, found) {
   const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.name.startsWith('.')) continue;
-    if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === 'coverage') continue;
+    if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === 'coverage')
+      continue;
 
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {

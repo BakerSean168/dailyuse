@@ -100,6 +100,18 @@
         }
       }
     },
+    "e2e:audit": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "outputs": [
+        "{workspaceRoot}/apps/web/test-results",
+        "{workspaceRoot}/apps/web/playwright-audit-report"
+      ],
+      "options": {
+        "command": "playwright test --config playwright.audit.config.ts",
+        "cwd": "apps/web"
+      }
+    },
     "e2e:ui": {
       "executor": "nx:run-commands",
       "options": {
@@ -180,7 +192,7 @@
         }
       }
     },
-        "e2e:shell": {
+    "e2e:shell": {
       "executor": "nx:run-commands",
       "outputs": [
         "{workspaceRoot}/apps/web/playwright-shell-report",

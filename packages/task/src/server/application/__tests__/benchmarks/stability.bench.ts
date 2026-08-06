@@ -5,12 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  benchmark,
-  createMockTasks,
-  calculateVariance,
-  findOutliers,
-} from './benchmark-utils';
+import { benchmark, createMockTasks, calculateVariance, findOutliers } from './benchmark-utils';
 import type { BenchmarkMockTask } from './benchmark-utils';
 
 /**
@@ -43,24 +38,16 @@ describe('Benchmarks: Performance Stability', () => {
     const variance = calculateVariance(times);
     const avg = times.reduce((a, b) => a + b, 0) / times.length;
 
-    console.log(
-      `[100 ops] avg=${avg.toFixed(2)}ms, variance=${variance.toFixed(2)}%`,
-    );
+    console.log(`[100 ops] avg=${avg.toFixed(2)}ms, variance=${variance.toFixed(2)}%`);
 
     // Variance should be <100% (realistic for JS runtime with JIT and full test suite)
     expect(variance).toBeLessThan(100);
-
   });
 
   it('should not degrade performance between 1st and 100th operation', async () => {
     const tasks = createMockTasks(2000);
 
-    const firstOp = await benchmark(
-      'First operation',
-      () => sortByPriority(tasks),
-      2000,
-      1,
-    );
+    const firstOp = await benchmark('First operation', () => sortByPriority(tasks), 2000, 1);
 
     // Run 98 operations to warm up
     for (let i = 0; i < 98; i++) {
@@ -74,10 +61,11 @@ describe('Benchmarks: Performance Stability', () => {
       1,
     );
 
-    const degradation =
-      ((hundredthOp.avgMs - firstOp.avgMs) / firstOp.avgMs) * 100;
+    const degradation = ((hundredthOp.avgMs - firstOp.avgMs) / firstOp.avgMs) * 100;
 
-    console.log(`[degradation] 1st=${firstOp.avgMs}ms, 100th=${hundredthOp.avgMs}ms, degradation=${degradation.toFixed(2)}%`);
+    console.log(
+      `[degradation] 1st=${firstOp.avgMs}ms, 100th=${hundredthOp.avgMs}ms, degradation=${degradation.toFixed(2)}%`,
+    );
 
     // Should not degrade by more than 50% (JS runtime variance is high)
     expect(degradation).toBeLessThan(50);
@@ -111,9 +99,7 @@ describe('Benchmarks: Performance Stability', () => {
     const variance = calculateVariance(times);
     const outliers = findOutliers(times, 2); // More lenient threshold for mixed loads
 
-    console.log(
-      `[mixed load] variance=${variance.toFixed(2)}%, outliers=${outliers.length}/20`,
-    );
+    console.log(`[mixed load] variance=${variance.toFixed(2)}%, outliers=${outliers.length}/20`);
 
     // Variance can be higher with mixed loads (different task counts)
     expect(variance).toBeLessThan(100); // Very high threshold since task counts vary
@@ -122,8 +108,7 @@ describe('Benchmarks: Performance Stability', () => {
 
   it('should not show memory accumulation across operations', async () => {
     if (typeof global.gc !== 'function') {
-      console.log('Skipping GC test - run with --expose-gc');
-      return;
+      throw new Error('Performance experiment requires Node --expose-gc');
     }
 
     const initialMemory = process.memoryUsage().heapUsed;
@@ -162,13 +147,10 @@ describe('Benchmarks: Performance Stability', () => {
     const firstHalf = times.slice(0, 100);
     const secondHalf = times.slice(100, 200);
 
-    const firstHalfAvg =
-      firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
-    const secondHalfAvg =
-      secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+    const firstHalfAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+    const secondHalfAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
 
-    const degradation =
-      ((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100;
+    const degradation = ((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100;
 
     console.log(
       `[cliff detection] first 100 avg=${firstHalfAvg.toFixed(2)}ms, second 100 avg=${secondHalfAvg.toFixed(2)}ms, degradation=${degradation.toFixed(2)}%`,

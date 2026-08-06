@@ -46,6 +46,8 @@
     "test:inventory:check": "node ./tools/test-system-v2/inventory.mjs --check",
     "test:oracle": "node ./tools/test-system-v2/oracle.mjs",
     "ci:boundary:clean": "node ./tools/ci/run-clean-boundary.mjs",
+    "ci:delivery:manifest": "node ./tools/ci-cd-platform/generate-delivery-manifest.mjs",
+    "ci:delivery:check": "pnpm nx run ci-cd-platform:governance",
     "// ========== Documentation & Governance ==========": "",
     "docs:check": "pnpm nx run memoflow:docs-check",
     "governance:check": "pnpm nx run memoflow:governance-check",
