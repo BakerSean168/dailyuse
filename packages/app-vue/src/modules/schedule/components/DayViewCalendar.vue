@@ -1,6 +1,6 @@
 <template>
   <div class="day-calendar flex h-full min-h-0 flex-col" data-testid="schedule-day-calendar">
-    <div class="min-h-0 flex-1 overflow-auto" data-testid="schedule-calendar-scroll-host">
+    <div class="min-h-0 flex-1 overflow-y-auto" data-testid="schedule-calendar-scroll-host" data-scroll-host="schedule-calendar">
       <div v-if="loading" class="flex justify-center items-center py-8">
         <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
       </div>

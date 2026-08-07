@@ -2757,6 +2757,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/layouts/shell/ModuleCapsule.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/layouts/shell/PanelErrorBoundary.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -2846,6 +2854,14 @@
     },
     {
       "path": "packages/app-vue/src/layouts/shell/previews/TaskCapsulePreview.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/layouts/shell/surface-leave-protocol.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -3237,6 +3253,14 @@
       ]
     },
     {
+      "path": "packages/app-vue/src/modules/governance/views/RuleEditorView.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/notification/components/NotificationCapsulePreview.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3549,6 +3573,14 @@
       "measurementCollectors": [
         "packages/app-vue/vitest.store-coverage.config.ts"
       ]
+    },
+    {
+      "path": "packages/app-vue/src/modules/setting/views/UserSettingsView.contract.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
     },
     {
       "path": "packages/app-vue/src/modules/setting/views/settingsPanelAdaptation.spec.ts",
@@ -8698,7 +8730,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 158
+      "fileCount": 162
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -9628,7 +9660,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 818,
+    "unit": 822,
     "integration": 10,
     "smoke": 2,
     "boundary-ipc": 9,

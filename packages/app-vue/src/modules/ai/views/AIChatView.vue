@@ -334,7 +334,9 @@
           class="rounded-lg border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground"
           data-testid="ai-context-empty-state"
         >
-          {{ workflowStatusText }}
+          <!-- Phase 5：ContextPanel 是工作台布局容器，空态只表达"暂无工作台内容"，
+               不再重复渲染 timeline/ActionBar 的 workflowStatusText。 -->
+          {{ t('aiAssistant.chatPage.context.empty') }}
         </div>
       </AIContextPanel>
     </Teleport>

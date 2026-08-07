@@ -5,6 +5,7 @@ import {
   type RouterHistory,
 } from 'vue-router';
 import { createAppAccessGuard } from './guards';
+import { createSettingsSceneGuard } from '../layouts/shell/surface-leave-protocol';
 
 import AppShell from '../layouts/shell/AppShell.vue';
 import ShellHomeRoute from '../layouts/shell/shell-home-route';
@@ -92,6 +93,7 @@ export function createAppRouter(options?: {
   });
 
   router.beforeEach(createAppAccessGuard({ canAccessApp, accessEntryRoute: loginRoute }));
+  router.beforeEach(createSettingsSceneGuard());
 
   return router;
 }

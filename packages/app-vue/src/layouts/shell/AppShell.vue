@@ -22,14 +22,21 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
 import { useAppShellStore, MAX_BUSINESS_TABS } from './useAppShellStore';
-import { useShellRouterSync, AUTO_FOCUS_VIEWPORT } from './useShellRouterSync';
+import { useShellRouterSync, AUTO_FOCUS_VIEWPORT, moduleForPath } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
 import { hasDesktopAuthApi } from '../../shared/utils/desktop-auth-recovery';
+import { useNotification } from '../../modules/notification/composables/useNotification';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
 import { useAccountStore } from '../../modules/account/stores/account-store';
 import AIChatView from '../../modules/ai/views/AIChatView.vue';
 import type { ConversationSummary } from '../../modules/ai/composables/types';
-import WindowHeader from './WindowHeader.vue';
+import WindowHeader, { type WindowHeaderCapsule } from './WindowHeader.vue';
+import GoalCapsulePreview from './previews/GoalCapsulePreview.vue';
+import TaskCapsulePreview from './previews/TaskCapsulePreview.vue';
+import NoteCapsulePreview from './previews/NoteCapsulePreview.vue';
+import ReminderCapsulePreview from './previews/ReminderCapsulePreview.vue';
+import ScheduleCapsulePreview from './previews/ScheduleCapsulePreview.vue';
+import NotificationCapsulePreview from '../../modules/notification/components/NotificationCapsulePreview.vue';
 import ConversationSidebar from './ConversationSidebar.vue';
 import BusinessPanel from './BusinessPanel.vue';
 import TodayOverviewPanel from './TodayOverviewPanel.vue';
@@ -41,9 +48,14 @@ import CloudConnectionDialog from './CloudConnectionDialog.vue';
 import StandaloneSettingsLayout from './StandaloneSettingsLayout.vue';
 import {
   COMPOSER_BOTTOM_GAP,
+  AI_HARD_MIN,
+  BUSINESS_HARD_MIN,
+  SIDEBAR_HARD_MIN,
   computePanelGeometry,
   panelWidthFromPointer,
   resolveComposerDensity,
+  shouldCollapsePanelWidth,
+  shouldCollapseSidebarWidth,
   shouldAutoCollapseSidebar,
   type ComposerDensity,
 } from './panel-geometry';
@@ -53,7 +65,9 @@ import {
   SHELL_WORKFLOW_MOUNT_KEY,
   DESKTOP_ACCESS_SNAPSHOT_KEY,
   LOGOUT_HANDLER_KEY,
+  MODULE_CAPSULES_KEY,
 } from '../../di/keys';
+import { defaultModuleCapsules } from '../../di/navigation';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -62,7 +76,6 @@ const store = useAppShellStore();
 const {
   tabs,
   activeTabId,
-  activeTab,
   layout,
   sidebarCollapsed,
   sidebarWidth,
@@ -95,6 +108,25 @@ const shellScene = computed<'workspace' | 'settings'>(() => {
 });
 
 const isSettingsScene = computed(() => shellScene.value === 'settings');
+const configuredModuleCapsules = inject(MODULE_CAPSULES_KEY, defaultModuleCapsules);
+
+// Phase 5 / UI-008：badgeSource token → 实时计数（notification unread）。
+const { unreadCount: notificationUnreadCount } = useNotification();
+function resolveCapsuleBadge(source: string | undefined): number | null {
+  if (source === 'notification.unread') return notificationUnreadCount.value;
+  return null;
+}
+
+const headerCapsules = computed<WindowHeaderCapsule[]>(() =>
+  configuredModuleCapsules.map((entry) => ({
+    id: entry.id,
+    label: t(entry.title),
+    route: entry.route,
+    icon: entry.icon,
+    placement: entry.id === 'schedule' || entry.id === 'notification' ? 'utility' : 'primary',
+    badge: resolveCapsuleBadge(entry.badgeSource),
+  })),
+);
 
 /** STATE A/B/C 派生（§1.1）。 */
 const shellState = computed<'chat' | 'split' | 'focus'>(() => {
@@ -109,6 +141,14 @@ const showSidebar = computed(
 );
 /** 右侧面板显隐由独立持久化偏好控制。 */
 const showPanel = computed(() => rightPanelOpen.value);
+/** 当前几何下的有效侧栏宽度；用户偏好本身不被动态边界改写。 */
+const effectiveSidebarWidth = computed(() => {
+  const reserved = showPanel.value
+    ? BUSINESS_HARD_MIN + (layout.value === 'split' ? AI_HARD_MIN : 0)
+    : AI_HARD_MIN;
+  const dynamicMax = Math.max(SIDEBAR_HARD_MIN, effectiveViewportWidth.value - reserved);
+  return Math.min(sidebarWidth.value, dynamicMax);
+});
 // ── AI 常驻层（单实例；会话侧栏数据经 defineExpose 上浮） ──
 const aiRef = ref<InstanceType<typeof AIChatView> | null>(null);
 
@@ -121,6 +161,8 @@ const workspaceMainRef = ref<HTMLElement | null>(null);
 const aiColumnRef = ref<HTMLElement | null>(null);
 const workspaceMainWidth = ref(0);
 const aiColumnWidth = ref(0);
+const isSidebarResizing = ref(false);
+const isPanelResizing = ref(false);
 provide(SHELL_COMPOSER_MOUNT_KEY, shellComposerMount);
 provide(SHELL_COMPOSER_DENSITY_KEY, shellComposerDensity);
 provide(SHELL_WORKFLOW_MOUNT_KEY, shellWorkflowMount);
@@ -233,9 +275,10 @@ const logout = inject(LOGOUT_HANDLER_KEY, null);
 const desktopAccess = inject(DESKTOP_ACCESS_SNAPSHOT_KEY, ref(null));
 const cloudConnectionOpen = ref(false);
 const userName = computed<string | undefined>(
-  () => accountStore.currentAccount?.profile.nickname
-    ?? authStore.currentIdentity?.name
-    ?? desktopAccess.value?.profile?.displayName,
+  () =>
+    accountStore.currentAccount?.profile.nickname ??
+    authStore.currentIdentity?.name ??
+    desktopAccess.value?.profile?.displayName,
 );
 const shellIdentityKind = computed<'guest' | 'registered-local' | 'cloud'>(() => {
   if (isAuthenticated.value) return 'cloud';
@@ -265,28 +308,66 @@ onBeforeUnmount(() => {
 });
 
 // ── 拖拽调宽（侧栏 / 面板），状态回写 store ──
+function maxSidebarWidth(): number {
+  if (typeof window === 'undefined') return Number.POSITIVE_INFINITY;
+  const reserved = showPanel.value
+    ? BUSINESS_HARD_MIN + (shellState.value === 'split' ? AI_HARD_MIN : 0)
+    : AI_HARD_MIN;
+  return Math.max(SIDEBAR_HARD_MIN, window.innerWidth - reserved);
+}
+
 function startSidebarResize(e: MouseEvent) {
   e.preventDefault();
-  const move = (ev: MouseEvent) => store.setSidebarWidth(ev.clientX);
-  const up = () => {
+  const previousUserSelect = document.body.style.userSelect;
+  const previousCursor = document.body.style.cursor;
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'col-resize';
+  isSidebarResizing.value = true;
+  const cleanup = () => {
+    isSidebarResizing.value = false;
     window.removeEventListener('mousemove', move);
     window.removeEventListener('mouseup', up);
+    window.removeEventListener('keydown', cancel);
+    window.removeEventListener('blur', cleanup);
+    document.body.style.userSelect = previousUserSelect;
+    document.body.style.cursor = previousCursor;
+  };
+  const move = (ev: MouseEvent) => {
+    if (shouldCollapseSidebarWidth(ev.clientX)) {
+      cleanup();
+      store.setSidebarCollapsed(true);
+      return;
+    }
+    store.setSidebarWidth(ev.clientX, maxSidebarWidth());
+  };
+  const up = () => {
+    cleanup();
+  };
+  const cancel = (ev: KeyboardEvent) => {
+    if (ev.key === 'Escape') cleanup();
   };
   window.addEventListener('mousemove', move);
   window.addEventListener('mouseup', up);
+  window.addEventListener('keydown', cancel);
+  window.addEventListener('blur', cleanup);
 }
 
 function resizeSidebarBy(delta: number): void {
-  store.setSidebarWidth(sidebarWidth.value + delta);
+  const next = effectiveSidebarWidth.value + delta;
+  if (shouldCollapseSidebarWidth(next)) {
+    store.setSidebarCollapsed(true);
+    return;
+  }
+  store.setSidebarWidth(next, maxSidebarWidth());
 }
 
 function occupiedSidebarWidth(): number {
-  return showSidebar.value ? sidebarWidth.value : 0;
+  return showSidebar.value ? effectiveSidebarWidth.value : 0;
 }
 
 /** 分栏态会占用的侧栏宽度（不受 focus 隐藏影响，避免 canSplit 抖动）。 */
 function prospectiveSidebarOccupied(): number {
-  return showSidebar.value ? sidebarWidth.value : 0;
+  return showSidebar.value ? effectiveSidebarWidth.value : 0;
 }
 
 function effectivePanelWidth(): number {
@@ -342,28 +423,53 @@ function startPanelResize(e: PointerEvent) {
   const previousCursor = document.body.style.cursor;
   document.body.style.userSelect = 'none';
   document.body.style.cursor = 'col-resize';
+  isPanelResizing.value = true;
 
-  const move = (ev: PointerEvent) => {
-    store.setPanelWidth(
-      panelWidthFromPointer(ev.clientX, window.innerWidth, occupiedSidebarWidth()),
-    );
-  };
-  const up = (ev: PointerEvent) => {
-    try {
-      captureTarget?.releasePointerCapture?.(ev.pointerId);
-    } catch {
-      // ignore
+  const cleanup = (pointerId?: number) => {
+    if (typeof pointerId === 'number') {
+      try {
+        captureTarget?.releasePointerCapture?.(pointerId);
+      } catch {
+        // ignore
+      }
     }
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
+    window.removeEventListener('pointercancel', pointerCancel);
+    window.removeEventListener('keydown', cancel);
+    window.removeEventListener('blur', blur);
     document.body.style.userSelect = previousUserSelect;
     document.body.style.cursor = previousCursor;
+    isPanelResizing.value = false;
     if (focusedElement?.isConnected && document.activeElement !== focusedElement) {
       focusedElement.focus({ preventScroll: true });
     }
   };
+
+  const move = (ev: PointerEvent) => {
+    const width = panelWidthFromPointer(ev.clientX, window.innerWidth, occupiedSidebarWidth());
+    if (shouldCollapsePanelWidth(width)) {
+      cleanup(ev.pointerId);
+      void sync.closePanel();
+      return;
+    }
+    store.setPanelWidth(width);
+  };
+  const up = (ev: PointerEvent) => {
+    cleanup(ev.pointerId);
+  };
+  const pointerCancel = (ev: PointerEvent) => {
+    cleanup(ev.pointerId);
+  };
+  const cancel = (ev: KeyboardEvent) => {
+    if (ev.key === 'Escape') cleanup();
+  };
+  const blur = () => cleanup();
   window.addEventListener('pointermove', move);
   window.addEventListener('pointerup', up);
+  window.addEventListener('pointercancel', pointerCancel);
+  window.addEventListener('keydown', cancel);
+  window.addEventListener('blur', blur);
 }
 
 function resetPanelWidth(): void {
@@ -371,7 +477,12 @@ function resetPanelWidth(): void {
 }
 
 function resizePanelBy(delta: number): void {
-  store.setPanelWidth(effectivePanelWidth() + delta);
+  const next = effectivePanelWidth() + delta;
+  if (shouldCollapsePanelWidth(next)) {
+    void sync.closePanel();
+    return;
+  }
+  store.setPanelWidth(next);
 }
 
 onMounted(() => {
@@ -404,6 +515,47 @@ watch([showSidebar, sidebarWidth, sidebarCollapsed], () => {
 // ── 业务工作区入口 / 面板动作（导航细节在 useShellRouterSync） ──
 function openWorkspace() {
   void sync.goHome();
+}
+
+function openHeaderModule(payload: { id: string; route: string }): void {
+  if (!headerCapsules.value.some((entry) => entry.id === payload.id)) return;
+  const module = moduleForPath(payload.route);
+  if (!module) {
+    void router.push(payload.route).catch(() => {});
+    return;
+  }
+  void sync.openModule(module, payload.route);
+}
+
+function openHeaderPreviewModule(
+  closePreview: () => void,
+  payload: { id: string; route: string },
+): void {
+  closePreview();
+  openHeaderModule(payload);
+}
+
+/** Phase 1 deep-link：Goal preview 项目进入精确对象路由。 */
+function openHeaderGoalPreview(closePreview: () => void, goalId: string): void {
+  openHeaderPreviewModule(closePreview, {
+    id: 'goal',
+    route: `/goals/${encodeURIComponent(goalId)}`,
+  });
+}
+
+/** Phase 1 deep-link：Task preview 项目进入精确对象路由。 */
+function openHeaderTaskPreview(closePreview: () => void, taskId: string): void {
+  openHeaderPreviewModule(closePreview, {
+    id: 'task',
+    route: `/tasks/${encodeURIComponent(taskId)}`,
+  });
+}
+
+function openHeaderNotePreview(closePreview: () => void, noteId: string): void {
+  openHeaderPreviewModule(closePreview, {
+    id: 'note',
+    route: `/repository?note=${encodeURIComponent(noteId)}`,
+  });
 }
 
 function openPanelRoute(_module: 'goal' | 'task' | 'reminder', path: string) {
@@ -488,52 +640,105 @@ function panelCacheKey(
       :is-desktop="isDesktop"
       :is-mac="isMac"
       :window-controls="windowControls.windowControlsState"
+      :capsules="headerCapsules"
       @toggle-sidebar="store.toggleSidebar()"
       @toggle-right-panel="() => void sync.togglePanel()"
       @go-back="router.back()"
       @go-forward="router.forward()"
       @open-workspace="openWorkspace"
+      @open-module="openHeaderModule"
       @window-minimize="windowControls.minimizeWindow()"
       @window-toggle-maximize="windowControls.toggleMaximize()"
       @window-close="windowControls.closeWindow()"
-    />
+    >
+      <template #capsule-preview-goal="{ closePreview }">
+        <GoalCapsulePreview
+          @view-all="openHeaderPreviewModule(closePreview, { id: 'goal', route: '/goals' })"
+          @select="openHeaderGoalPreview(closePreview, $event)"
+        />
+      </template>
+      <template #capsule-preview-task="{ closePreview }">
+        <TaskCapsulePreview
+          @view-all="openHeaderPreviewModule(closePreview, { id: 'task', route: '/tasks' })"
+          @select="openHeaderTaskPreview(closePreview, $event)"
+        />
+      </template>
+      <template #capsule-preview-note="{ closePreview }">
+        <NoteCapsulePreview
+          @view-all="openHeaderPreviewModule(closePreview, { id: 'note', route: '/repository' })"
+          @select="openHeaderNotePreview(closePreview, $event)"
+        />
+      </template>
+      <template #capsule-preview-reminder="{ closePreview }">
+        <ReminderCapsulePreview
+          @view-all="
+            openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })
+          "
+          @select="
+            openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })
+          "
+        />
+      </template>
+      <template #capsule-preview-schedule="{ closePreview }">
+        <ScheduleCapsulePreview
+          @view-all="
+            openHeaderPreviewModule(closePreview, { id: 'schedule', route: '/schedule' })
+          "
+        />
+      </template>
+      <template #capsule-preview-notification="{ closePreview }">
+        <NotificationCapsulePreview
+          @view-all="
+            openHeaderPreviewModule(closePreview, {
+              id: 'notification',
+              route: '/notifications',
+            })
+          "
+        />
+      </template>
+    </WindowHeader>
 
-    <!-- STATE D：独立设置场景。与 workspace 互斥挂载，避免双 router-view 同渲。
-         tabs/layout 由 store 保留，返回后按 store 恢复。 -->
+    <!-- STATE D：独立设置场景。设置路由只渲染 named view `settings`（UserSettingsView），
+         业务 default view 为空；WorkspaceSceneHost 用 v-show 常驻——KeepAlive 实例、
+         AIChatView 流式回复、Teleport 宿主都不随设置导航销毁（Phase 0 / UI-001）。 -->
     <StandaloneSettingsLayout
       v-if="isSettingsScene"
       class="min-h-0 flex-1"
       @return-to-app="returnFromSettings"
     >
-      <router-view />
+      <router-view name="settings" />
     </StandaloneSettingsLayout>
 
-    <!-- 主工作区（STATE A/B/C） -->
-    <div v-else class="relative flex min-h-0 flex-1 overflow-hidden">
+    <!-- 主工作区（STATE A/B/C）：DOM 常驻，设置场景时隐藏而非卸载。 -->
+    <div v-show="!isSettingsScene" class="relative flex min-h-0 flex-1 overflow-hidden">
       <!-- 会话侧栏只响应自己的 Toggle，和右栏/Focus 独立。 -->
-      <ConversationSidebar
-        v-if="showSidebar"
-        class="shrink-0"
-        :style="{ width: sidebarWidth + 'px' }"
-        :groups="conversationGroups"
-        :active-conversation-id="activeConversationId"
-        :user-name="userName"
-        :identity-kind="shellIdentityKind"
-        :cloud-connected="isAuthenticated"
-        :loading="Boolean(aiRef?.conversationListLoading)"
-        :is-desktop="isDesktop"
-        :width="sidebarWidth"
-        @new-conversation="handleNewConversation"
-        @select-conversation="handleSelectConversation"
-        @delete-conversation="handleDeleteConversation"
-        @open-search="handleNewConversation"
-        @open-settings="openSettings"
-        @open-account="openAccount"
-        @open-cloud-connection="openCloudConnection"
-        @logout="() => void handleLogout()"
-        @start-resize="startSidebarResize"
-        @resize-by="resizeSidebarBy"
-      />
+      <Transition name="shell-sidebar">
+        <ConversationSidebar
+          v-if="showSidebar"
+          class="shrink-0"
+          :class="isSidebarResizing ? 'transition-none' : ''"
+          :style="{ width: effectiveSidebarWidth + 'px' }"
+          :groups="conversationGroups"
+          :active-conversation-id="activeConversationId"
+          :user-name="userName"
+          :identity-kind="shellIdentityKind"
+          :cloud-connected="isAuthenticated"
+          :loading="Boolean(aiRef?.conversationListLoading)"
+          :is-desktop="isDesktop"
+          :width="effectiveSidebarWidth"
+          @new-conversation="handleNewConversation"
+          @select-conversation="handleSelectConversation"
+          @delete-conversation="handleDeleteConversation"
+          @open-search="handleNewConversation"
+          @open-settings="openSettings"
+          @open-account="openAccount"
+          @open-help="openSettings('/settings?tab=advanced')"
+          @open-cloud-connection="openCloudConnection"
+          @logout="() => void handleLogout()"
+          @start-resize="startSidebarResize"
+          @resize-by="resizeSidebarBy"
+        />
+      </Transition>
 
       <!-- 中央区：AI 常驻层 + 业务面板 + GlobalComposer 宿主。
            三态只换 flex / 显隐，AI 实例永不卸载（流式不中断）。 -->
@@ -561,14 +766,20 @@ function panelCacheKey(
 
         <!-- 右侧面板 DOM 常驻；Toggle 只显隐，Tab、草稿和工作流上下文继续保活。 -->
         <div
-          v-show="showPanel"
+          :aria-hidden="showPanel ? undefined : 'true'"
           :class="
             shellState === 'focus'
               ? 'order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'
-              : 'order-2 hidden h-full min-h-0 shrink-0 flex-col overflow-hidden md:flex'
+              : [
+                  'order-2 flex h-full min-h-0 min-w-0 shrink-0 flex-col overflow-hidden transition-[width,opacity] duration-200 ease-out motion-reduce:transition-none md:flex',
+                  showPanel ? 'opacity-100' : 'pointer-events-none invisible w-0 opacity-0',
+                  isPanelResizing ? 'transition-none' : '',
+                ]
           "
           :style="{
-            ...(shellState === 'split' ? { width: effectivePanelWidth() + 'px' } : {}),
+            ...(shellState === 'split'
+              ? { width: showPanel ? effectivePanelWidth() + 'px' : '0px' }
+              : {}),
             ...(shellState === 'focus' ? { paddingBottom: focusComposerPad + 'px' } : {}),
           }"
         >
@@ -635,3 +846,26 @@ function panelCacheKey(
     :profile-name="desktopAccess?.profile?.displayName"
   />
 </template>
+
+<style scoped>
+.shell-sidebar-enter-active,
+.shell-sidebar-leave-active {
+  overflow: hidden;
+  transition:
+    width 180ms ease-out,
+    opacity 180ms ease-out;
+}
+
+.shell-sidebar-enter-from,
+.shell-sidebar-leave-to {
+  width: 0 !important;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-sidebar-enter-active,
+  .shell-sidebar-leave-active {
+    transition: none;
+  }
+}
+</style>

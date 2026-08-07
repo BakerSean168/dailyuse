@@ -10,7 +10,9 @@ const notificationSource = readFileSync(
 describe('Notification single-page architecture', () => {
   it('owns one inbox toolbar without panel-tier structure branches', () => {
     expect(notificationSource).toContain('data-testid="notification-page-toolbar"');
-    expect(notificationSource.match(/<header/g)).toHaveLength(1);
+    // Phase 4：页头由共享 ModuleHeader 承载（无手写 <header> 变体）。
+    expect(notificationSource).toContain('<ModuleHeader');
+    expect(notificationSource.match(/<header/g)).toBeNull();
     expect(notificationSource).not.toContain('FilterBar');
     expect(notificationSource).not.toContain('usePanelWidth');
     expect(notificationSource).not.toContain('isNarrow');

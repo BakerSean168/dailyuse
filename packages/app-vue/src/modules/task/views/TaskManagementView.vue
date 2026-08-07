@@ -1,75 +1,74 @@
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden" data-testid="task-management-view">
-    <header
-      class="z-10 flex min-h-14 shrink-0 flex-col border-b border-border bg-background/80 backdrop-blur-sm"
-      data-testid="task-page-toolbar"
-    >
-      <div class="flex items-center justify-between gap-2 px-3 pt-2">
+    <!-- Phase 4：统一 ModuleHeader 约定（leading=计数，actions=主/次操作，subnav=筛选）。 -->
+    <ModuleHeader data-testid="task-page-toolbar">
+      <template #leading>
         <p class="truncate text-xs text-muted-foreground" data-testid="task-count-label">
           {{ countLabel }}
         </p>
-        <div class="flex shrink-0 items-center gap-1">
-          <Button
-            data-testid="quick-task-button"
-            data-primary-action="quick-task"
-            :aria-label="t('task.templateMgmt.quickCreate')"
-            size="sm"
-            class="h-8 px-2 @xl/panel:px-3"
-            @click="showQuickTaskDialog = true"
-          >
-            <Zap class="h-4 w-4 @xl/panel:mr-1.5" />
-            <span class="hidden @xl/panel:inline">{{ t('task.templateMgmt.quickCreate') }}</span>
-          </Button>
-          <Button
-            data-testid="create-task-template-button"
-            :aria-label="t('task.templateMgmt.createNew')"
-            size="sm"
-            variant="outline"
-            class="h-8 px-2 @xl/panel:px-3"
-            @click="handleCreate"
-          >
-            <Plus class="h-4 w-4 @xl/panel:mr-1.5" />
-            <span class="hidden @xl/panel:inline">{{ t('task.templateMgmt.createNew') }}</span>
-          </Button>
+      </template>
+      <template #actions>
+        <Button
+          data-testid="quick-task-button"
+          data-primary-action="quick-task"
+          :aria-label="t('task.templateMgmt.quickCreate')"
+          size="sm"
+          class="h-8 px-2 @xl/panel:px-3"
+          @click="showQuickTaskDialog = true"
+        >
+          <Zap class="h-4 w-4 @xl/panel:mr-1.5" />
+          <span class="hidden @xl/panel:inline">{{ t('task.templateMgmt.quickCreate') }}</span>
+        </Button>
+        <Button
+          data-testid="create-task-template-button"
+          :aria-label="t('task.templateMgmt.createNew')"
+          size="sm"
+          variant="outline"
+          class="h-8 px-2 @xl/panel:px-3"
+          @click="handleCreate"
+        >
+          <Plus class="h-4 w-4 @xl/panel:mr-1.5" />
+          <span class="hidden @xl/panel:inline">{{ t('task.templateMgmt.createNew') }}</span>
+        </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                :aria-label="t('common.more')"
-                data-testid="task-more-actions"
-              >
-                <MoreHorizontal class="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" class="w-44">
-              <DropdownMenuItem
-                data-testid="delete-all-templates-button"
-                class="text-destructive focus:text-destructive"
-                :disabled="templates.length === 0"
-                @click="showDeleteAllDialog = true"
-              >
-                <Trash2 class="mr-2 h-4 w-4" />
-                {{ t('task.templateMgmt.deleteAll') }}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :aria-label="t('common.more')"
+              data-testid="task-more-actions"
+            >
+              <MoreHorizontal class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="w-44">
+            <DropdownMenuItem
+              data-testid="delete-all-templates-button"
+              class="text-destructive focus:text-destructive"
+              :disabled="templates.length === 0"
+              @click="showDeleteAllDialog = true"
+            >
+              <Trash2 class="mr-2 h-4 w-4" />
+              {{ t('task.templateMgmt.deleteAll') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </template>
+      <template #subnav>
+        <TaskFilterBar
+          v-model:status="currentStatus"
+          v-model:relation="currentRelation"
+          v-model:search="searchQuery"
+          v-model:view-mode="viewMode"
+          :status-options="statusOptions"
+          :relation-options="relationOptions"
+        />
+      </template>
+    </ModuleHeader>
 
-      <TaskFilterBar
-        v-model:status="currentStatus"
-        v-model:relation="currentRelation"
-        v-model:search="searchQuery"
-        v-model:view-mode="viewMode"
-        :status-options="statusOptions"
-        :relation-options="relationOptions"
-      />
-    </header>
-
-    <div id="task-template-management" class="min-h-0 flex-1 overflow-y-auto p-3">
+    <div id="task-template-management" class="min-h-0 flex-1 overflow-y-auto p-3" data-scroll-host="task-management">
       <template v-if="viewMode === 'card'">
         <TaskTemplateGrid
           :templates="filteredViewModels"
@@ -231,6 +230,7 @@ import {
   useConfirm,
 } from '@memoflow/ui-vue-shadcn';
 import TaskFilterBar from '../components/TaskFilterBar.vue';
+import ModuleHeader from '../../../components/shared/ModuleHeader.vue';
 import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
 import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';

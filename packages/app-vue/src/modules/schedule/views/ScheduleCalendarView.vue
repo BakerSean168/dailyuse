@@ -158,6 +158,8 @@ import { getProductTime } from '../../../shared/utils/product-time';
 // Residual 1285: getWeekStart dual retired onto schedule sole.
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';
+import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceStatus';
+import type { PanelSurfaceStatus } from '../../../layouts/shell/useAppShellStore';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 import type { CreateScheduleRequest } from '@memoflow/contracts/schedule';
 
@@ -169,6 +171,13 @@ const { tasks: scheduleTasks, createCalendarEntry } = useSchedule();
 const task = useTask();
 
 const showCreateDialog = ref(false);
+
+// Phase 0 / UI-004：日程创建/编辑弹窗打开即视为未完成操作——统一离开协议
+// （设置场景守卫 / Tab 切换 / 关面板）要求确认，取消不改变路由或草稿。
+const surfaceStatus = computed<PanelSurfaceStatus>(() =>
+  showCreateDialog.value ? 'dirty' : 'clean',
+);
+usePanelSurfaceStatus(surfaceStatus);
 const activeView = ref<CalendarView>('week');
 const calendarDate = ref(new Date());
 const dayDetailOpen = ref(false);

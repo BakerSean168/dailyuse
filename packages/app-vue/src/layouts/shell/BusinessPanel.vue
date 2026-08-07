@@ -28,6 +28,7 @@ import {
 } from '@lucide/vue';
 import type { Component } from 'vue';
 import type { BusinessTab, PanelSurface, ShellLayout, ShellModule } from './useAppShellStore';
+import { BUSINESS_HARD_MIN } from './panel-geometry';
 import { providePanelWidth } from './usePanelWidth';
 
 const props = defineProps<{
@@ -200,15 +201,18 @@ const isFocused = computed(() => props.layout === 'focus');
       </div>
     </div>
 
-    <!-- 内容区（router-view 由 AppShell slot 注入；命名容器供 CSS 容器查询） -->
+    <!-- 内容区（router-view 由 AppShell slot 注入；命名容器供 CSS 容器查询）。
+         Phase 2 单一滚动责任：surface wrapper 只负责尺寸与裁剪（overflow-hidden），
+         滚动由每个 surface 内部唯一的主滚动宿主（data-scroll-host）承担，
+         避免外层 wrapper 与模块页面重复声明滚动层。 -->
     <div ref="contentEl" class="@container/panel min-h-0 flex-1 overflow-hidden">
-      <div v-show="panelSurface === 'home'" class="h-full overflow-auto">
+      <div v-show="panelSurface === 'home'" class="h-full overflow-hidden" data-surface-scroll-root="home">
         <slot name="home" />
       </div>
-      <div v-show="panelSurface === 'business'" class="h-full overflow-auto">
+      <div v-show="panelSurface === 'business'" class="h-full overflow-hidden" data-surface-scroll-root="business">
         <slot />
       </div>
-      <div v-show="panelSurface === 'workflow'" class="h-full overflow-auto">
+      <div v-show="panelSurface === 'workflow'" class="h-full overflow-hidden" data-surface-scroll-root="workflow">
         <slot name="workflow" />
       </div>
     </div>
@@ -221,8 +225,7 @@ const isFocused = computed(() => props.layout === 'focus');
       tabindex="0"
       aria-orientation="vertical"
       :aria-label="t('shell.panel.resize')"
-      aria-valuemin="520"
-      aria-valuemax="960"
+      :aria-valuemin="BUSINESS_HARD_MIN"
       :aria-valuenow="Math.round(panelContentWidth ?? 720)"
       class="absolute left-0 top-0 h-full w-2 -translate-x-1/2 cursor-col-resize bg-transparent transition-colors hover:bg-primary/40 focus-visible:bg-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       :title="t('shell.panel.resize')"

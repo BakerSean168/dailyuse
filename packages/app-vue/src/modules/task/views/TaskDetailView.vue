@@ -10,7 +10,7 @@
           size="icon"
           class="h-8 w-8"
           :aria-label="t('common.back')"
-          @click="router.back()"
+          @click="router.push('/tasks')"
         >
           <ArrowLeft class="h-4 w-4" />
         </Button>
@@ -31,7 +31,7 @@
     </header>
 
     <!-- Content -->
-    <div class="flex-1 overflow-auto p-6">
+    <div class="flex-1 overflow-y-auto p-6" data-scroll-host="task-detail">
       <div v-if="isLoading" class="flex h-[50vh] items-center justify-center text-muted-foreground">
         {{ t('task.detail.loading') }}
       </div>
@@ -332,6 +332,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, FileQuestion, Pencil } from '@lucide/vue';
+import { useTabObjectTitle } from '../../../layouts/shell/useTabTitle';
 import {
   Button,
   Badge,
@@ -383,10 +384,15 @@ const templateViewModels = computed(() =>
 );
 const graphData = computed(() => buildTaskGraphData(templates.value, dependencies.value));
 
-const detailViewModel = computed<TaskTemplateViewModel | null>(() => {
-  if (!currentTemplate.value) return null;
+const detailViewModel = computed<TaskTemplateViewModel | null>(() => {  if (!currentTemplate.value) return null;
   return mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
 });
+
+// Phase 1：详情 Tab 标题 = 「模块名 · 对象标题」，列表 Tab 保持模块名。
+const detailTabTitle = computed(() =>
+  detailViewModel.value?.title ? `${t('nav.capsule.task')} · ${detailViewModel.value.title}` : null,
+);
+useTabObjectTitle(detailTabTitle);
 
 const goalBindingDisplay = computed(() => resolveGoalBinding(detailViewModel.value?.goalBinding));
 

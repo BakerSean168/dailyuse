@@ -1,5 +1,7 @@
 <template>
-  <div class="max-w-[960px] mx-auto p-6">
+  <!-- Phase 2：自带唯一主滚动宿主。 -->
+  <div class="h-full min-h-0 overflow-y-auto" data-scroll-host="governance-history">
+    <div class="max-w-[960px] mx-auto p-6">
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold">{{ t('governance.revision.title') }}</h1>
@@ -38,6 +40,7 @@
         ></div>
         <RevisionCard :revision="revision" />
       </div>
+    </div>
     </div>
   </div>
 </template>

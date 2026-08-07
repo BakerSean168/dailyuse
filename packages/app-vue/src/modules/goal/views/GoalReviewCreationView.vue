@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden p-6">
     <div class="mb-6 flex items-center gap-3">
-      <Button variant="ghost" size="sm" @click="$router.back()">
+      <Button variant="ghost" size="sm" @click="router.push('/goals')">
         <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.reviewCreation.back') }}
       </Button>
       <Separator orientation="vertical" class="h-6" />
@@ -91,7 +91,7 @@
 
         <!-- 操作按钮 -->
         <div class="flex justify-end gap-3 pt-4">
-          <Button variant="outline" @click="$router.back()">{{
+          <Button variant="outline" @click="router.push('/goals')">{{
             t('goal.reviewCreation.cancel')
           }}</Button>
           <Button :disabled="isSaving" @click="handleSubmit">
@@ -160,7 +160,7 @@ async function handleSubmit() {
   });
   if (result) {
     toast.success(t('goal.reviewCreation.createSuccess'));
-    router.back();
+    router.push('/goals');
   }
 }
 </script>

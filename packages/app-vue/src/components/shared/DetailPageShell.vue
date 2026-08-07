@@ -25,11 +25,8 @@ const router = useRouter();
 const { t } = useI18n();
 
 function goBack() {
-  if (props.backTo) {
-    router.push(props.backTo);
-  } else {
-    router.back();
-  }
+  // Phase 4：deterministic back-to-parent；无 backTo 时回 Home，不依赖 history。
+  router.push(props.backTo ?? '/');
 }
 </script>
 
@@ -66,7 +63,7 @@ function goBack() {
       <slot name="meta" />
     </div>
 
-    <div class="min-h-0 flex-1 overflow-y-auto">
+    <div class="min-h-0 flex-1 overflow-y-auto" data-scroll-host="detail-page">
       <div class="mx-auto w-full max-w-4xl px-6 py-6">
         <slot />
       </div>

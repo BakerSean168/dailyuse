@@ -165,3 +165,7 @@ docs/proto
 # AI service live eval local outputs (non-canonical)
 reports/apps/ai-service/evals/live-latest.json
 reports/apps/ai-service/evals/live-history/
+
+# Reasonix agent tooling (local-only, not project source)
+.reasonix/
+reasonix.toml

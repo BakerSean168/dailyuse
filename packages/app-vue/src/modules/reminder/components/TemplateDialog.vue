@@ -378,6 +378,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   save: [data: CreateReminderTemplateReq];
   update: [id: string, data: UpdateReminderTemplateReq];
+  /** 编辑弹窗打开/关闭状态上浮，供宿主上报 shell dirty（Phase 0 / UI-004）。 */
+  'open-change': [open: boolean];
 }>();
 
 const visible = ref(false);
@@ -472,25 +474,30 @@ const loadTemplateData = (template: ReminderTemplateClientDTO) => {
 const open = () => {
   resetForm();
   visible.value = true;
+  emit('open-change', true);
 };
 
 const openForCreate = () => {
   resetForm();
   visible.value = true;
+  emit('open-change', true);
 };
 
 const openForEdit = (template: ReminderTemplateClientDTO) => {
   loadTemplateData(template);
   visible.value = true;
+  emit('open-change', true);
 };
 
 const close = () => {
   visible.value = false;
+  emit('open-change', false);
   setTimeout(resetForm, 300);
 };
 
 const handleVisibleChange = (value: boolean) => {
   visible.value = value;
+  emit('open-change', value);
   if (!value) setTimeout(resetForm, 300);
 };
 

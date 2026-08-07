@@ -1,8 +1,8 @@
 /**
  * Settings scene adaptation (STATE D)
  *
- * Settings is no longer a BusinessPanel tab. Narrow/wide now follows viewport
- * width for the standalone settings scene (<1024 = top tabs, >=1024 = sidebar).
+ * Settings is no longer a BusinessPanel tab. Narrow/wide follows the settings
+ * content container (<1024 = top tabs, >=1024 = sidebar).
  */
 import { describe, expect, it } from 'vitest';
 import { defineComponent, h, nextTick, ref } from 'vue';
@@ -18,41 +18,37 @@ function mountSettingsSceneAdaptationProbe(initialWidth: number) {
       const activeTab = ref<'appearance' | 'account'>('appearance');
 
       return () =>
-        h(
-          'div',
-          { 'data-testid': 'settings-panel-layout' },
-          [
-            h(
-              'nav',
-              {
-                'data-testid': isNarrow() ? 'settings-group-tabs' : 'settings-group-sidebar',
-              },
-              [
-                h(
-                  'button',
-                  {
-                    'data-testid': 'settings-tab-appearance',
-                    onClick: () => {
-                      activeTab.value = 'appearance';
-                    },
+        h('div', { 'data-testid': 'settings-panel-layout' }, [
+          h(
+            'nav',
+            {
+              'data-testid': isNarrow() ? 'settings-group-tabs' : 'settings-group-sidebar',
+            },
+            [
+              h(
+                'button',
+                {
+                  'data-testid': 'settings-tab-appearance',
+                  onClick: () => {
+                    activeTab.value = 'appearance';
                   },
-                  'appearance',
-                ),
-                h(
-                  'button',
-                  {
-                    'data-testid': 'settings-tab-account',
-                    onClick: () => {
-                      activeTab.value = 'account';
-                    },
+                },
+                'appearance',
+              ),
+              h(
+                'button',
+                {
+                  'data-testid': 'settings-tab-account',
+                  onClick: () => {
+                    activeTab.value = 'account';
                   },
-                  'account',
-                ),
-              ],
-            ),
-            h('div', { 'data-testid': 'settings-active-tab' }, activeTab.value),
-          ],
-        );
+                },
+                'account',
+              ),
+            ],
+          ),
+          h('div', { 'data-testid': 'settings-active-tab' }, activeTab.value),
+        ]);
     },
   });
 
@@ -69,8 +65,8 @@ function mountSettingsSceneAdaptationProbe(initialWidth: number) {
   };
 }
 
-describe('Settings scene adaptation (STATE D / viewport)', () => {
-  it('uses top group tabs in narrow viewport and sidebar groups when wide', async () => {
+describe('Settings scene adaptation (STATE D / content container)', () => {
+  it('uses top group tabs in narrow content and sidebar groups when wide', async () => {
     // jsdom default innerWidth is 1024; probe uses injected width ref instead.
     const { wrapper, setWidth } = mountSettingsSceneAdaptationProbe(900);
 
@@ -93,4 +89,3 @@ describe('Settings scene adaptation (STATE D / viewport)', () => {
     wide.wrapper.unmount();
   });
 });
-

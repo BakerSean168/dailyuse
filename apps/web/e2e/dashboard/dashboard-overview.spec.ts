@@ -4,8 +4,8 @@
  * V2 shell contract (docs/UI_REDESIGN_V2_PLAN.md §3):
  * - Dashboard is retired: `/dashboard` redirects to `/` (AI workspace ground)
  * - `/` renders the persistent AI layer inside the AppShell
- * - the window header exposes one workspace launcher; business context lives
- *   in BusinessPanel tabs instead of a second module-navigation surface
+ * - the window header exposes a workspace launcher plus explicit compound module capsules;
+ *   business context remains in BusinessPanel tabs
  */
 import { test, expect } from '@playwright/test';
 import { login } from '../helpers/testHelpers';
@@ -41,13 +41,14 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     expect(page.url()).toContain(WEB_CONFIG.LOGIN_PATH);
   });
 
-  test('[P0] should expose one workspace launcher without legacy module capsules', async ({
-    page,
-  }) => {
+  test('[P0] should expose workspace launcher and explicit module capsules', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByTestId('shell-workspace-launcher')).toBeVisible();
-    await expect(page.locator('[data-testid^="capsule-nav-"]')).toHaveCount(0);
+    await expect(page.getByTestId('capsule-nav-goal')).toBeVisible();
+    await expect(page.getByTestId('capsule-nav-task')).toBeVisible();
+    await expect(page.getByTestId('capsule-nav-schedule')).toBeVisible();
+    await expect(page.getByTestId('capsule-nav-notification')).toBeVisible();
   });
 
   test('[P1] should show panel Home by default and return there from a business tab', async ({
@@ -70,7 +71,8 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     await page.goto('/account/center', { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveURL(/\/settings\?tab=account$/);
     await expect(page.getByTestId('standalone-settings-layout')).toBeVisible();
-    await expect(page.getByTestId('settings-scene-rail')).toBeVisible();
+    await expect(page.getByTestId('settings-scene-rail')).toHaveCount(0);
+    await expect(page.getByTestId('settings-return-to-app')).toBeVisible();
   });
 
   test('[P2] should preserve a business tab and hidden-panel preference across reload', async ({

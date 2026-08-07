@@ -107,4 +107,56 @@ describe('DailyTodoWidget', () => {
       'width: 0%',
     );
   });
+
+  it('refreshes today data when the kept-alive Home surface becomes active again', async () => {
+    const fetchInstancesByDateRange = vi.fn().mockResolvedValue(undefined);
+    const fetchTemplates = vi.fn().mockResolvedValue(undefined);
+
+    vi.mocked(useTask).mockReturnValue({
+      instances: ref<TaskInstanceClientDTO[]>([]),
+      templates: ref<TaskTemplateClientDTO[]>([]),
+      isLoading: ref(false),
+      fetchInstancesByDateRange,
+      fetchTemplates,
+      completeInstance: vi.fn(),
+      uncompleteInstance: vi.fn(),
+    } as unknown as ReturnType<typeof useTask>);
+
+    const wrapper = mount(DailyTodoWidget, {
+      props: { active: false },
+      global: {
+        stubs: {
+          Card: PassThroughStub,
+          CardHeader: PassThroughStub,
+          CardTitle: PassThroughStub,
+          CardContent: PassThroughStub,
+          ScrollArea: PassThroughStub,
+          Button: PassThroughStub,
+          Skeleton: true,
+          ListTodo: true,
+          ArrowRight: true,
+          CheckCircle2: true,
+          Check: true,
+          Loader2: true,
+        },
+      },
+    });
+    await flushPromises();
+
+    expect(fetchInstancesByDateRange).not.toHaveBeenCalled();
+    expect(fetchTemplates).not.toHaveBeenCalled();
+
+    await wrapper.setProps({ active: true });
+    await flushPromises();
+
+    expect(fetchInstancesByDateRange).toHaveBeenCalledOnce();
+    expect(fetchTemplates).toHaveBeenCalledWith({ page: 1, limit: 200 });
+
+    await wrapper.setProps({ active: false });
+    await wrapper.setProps({ active: true });
+    await flushPromises();
+
+    expect(fetchInstancesByDateRange).toHaveBeenCalledTimes(2);
+    expect(fetchTemplates).toHaveBeenCalledTimes(2);
+  });
 });

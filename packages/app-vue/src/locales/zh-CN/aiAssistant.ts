@@ -29,6 +29,7 @@ export default {
       "title": "上下文",
       "show": "显示上下文",
       "hide": "隐藏上下文",
+      "empty": "工作台暂无内容——让 AI 创建目标、任务或知识笔记。",
       "todayOverview": "今日概览",
       "hostWorkbenchTitle": "Host 提案工作台",
       "hostProposalPending": "{count} 个提案待审批",

@@ -196,7 +196,7 @@
                 {{ t('repository.localVault.openNote') }}
               </Button>
             </div>
-            <div class="min-h-0 flex-1 overflow-auto">
+            <div class="min-h-0 flex-1 overflow-y-auto" data-scroll-host="local-vault-preview">
               <article
                 class="preview-content mx-auto max-w-3xl px-5 py-5"
                 data-testid="local-vault-preview"

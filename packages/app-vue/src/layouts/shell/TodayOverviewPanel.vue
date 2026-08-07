@@ -52,7 +52,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="min-h-full bg-background" data-testid="today-overview-panel">
+  <section
+    class="h-full min-h-0 overflow-y-auto bg-background"
+    data-testid="today-overview-panel"
+    data-scroll-host="home"
+  >
     <header
       class="sticky top-0 z-10 border-b border-border bg-background/95 px-4 py-4 backdrop-blur-sm"
     >
@@ -90,6 +94,7 @@ onBeforeUnmount(() => {
     <div class="grid gap-3 p-3" data-testid="today-overview-widgets">
       <DailyTodoWidget
         class="min-h-[9rem]"
+        :active="active"
         @view-all="emit('open-route', 'task', '/tasks')"
         @completed="refreshAfterTaskCompletion"
       />

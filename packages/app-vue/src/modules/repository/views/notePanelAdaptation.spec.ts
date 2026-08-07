@@ -49,7 +49,8 @@ describe('Note single-page architecture', () => {
 
     expect(wrapper.findAll('[data-testid="note-page-toolbar"]')).toHaveLength(1);
     expect(wrapper.get('[data-testid="note-page-toolbar"]').element).toBe(toolbar.element);
-    expect(wrapper.get('[data-testid="note-segment-governance"]').attributes('aria-pressed')).toBe(
+    expect(wrapper.get('[data-testid="note-segment-governance"]').attributes('role')).toBe('tab');
+    expect(wrapper.get('[data-testid="note-segment-governance"]').attributes('aria-selected')).toBe(
       'true',
     );
     expect(wrapper.find('#note-page-toolbar-actions').exists()).toBe(true);

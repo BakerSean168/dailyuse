@@ -29,6 +29,7 @@ export default {
       "title": "Context",
       "show": "Show context",
       "hide": "Hide context",
+      "empty": "The workbench is empty — ask the AI to create a goal, task, or note.",
       "todayOverview": "Today",
       "hostWorkbenchTitle": "Host Proposal Workbench",
       "hostProposalPending": "{count} proposal(s) waiting for approval",

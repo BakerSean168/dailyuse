@@ -21,7 +21,16 @@ import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type { RouteLocationNormalizedGeneric } from 'vue-router';
 import { useAppShellStore, type ShellLayoutReason, type ShellModule } from './useAppShellStore';
-import { computePanelGeometry } from './panel-geometry';
+import { canLeaveBusinessSurface } from './surface-leave-protocol';
+import { isStandaloneSettingsPath } from './shell-scene';
+import {
+  AI_HARD_MIN,
+  BUSINESS_HARD_MIN,
+  SIDEBAR_HARD_MIN,
+  computePanelGeometry,
+} from './panel-geometry';
+
+export { isStandaloneSettingsPath } from './shell-scene';
 
 /** 分栏放不下的窗口宽度阈值：新开面板自动升专注态（V2 §1.1 / §7）。 */
 export const AUTO_FOCUS_VIEWPORT = 1024;
@@ -49,15 +58,7 @@ export const MODULE_TITLE_KEYS: Record<ShellModule, string> = {
 };
 
 /** Settings / Account 独立场景：不落 BusinessTab。 */
-export function isStandaloneSettingsPath(path: string): boolean {
-  const bare = path.split('?')[0] ?? path;
-  return (
-    bare === '/settings' ||
-    bare.startsWith('/settings/') ||
-    bare === '/account' ||
-    bare.startsWith('/account/')
-  );
-}
+// isStandaloneSettingsPath 定义移至 ./shell-scene（供场景守卫复用，避免循环依赖）。
 
 /** 判定一条路由路径归属哪个业务模块；壳外/未知路径返回 null。 */
 export function moduleForPath(path: string): ShellModule | null {
@@ -105,10 +106,16 @@ export function useShellRouterSync() {
 
   function maybeAutoFocus(): void {
     if (typeof window === 'undefined') return;
+    const splitSidebarMax = Math.max(
+      SIDEBAR_HARD_MIN,
+      window.innerWidth - AI_HARD_MIN - BUSINESS_HARD_MIN,
+    );
     const geo = computePanelGeometry({
       viewportWidth: window.innerWidth,
       // 使用分栏态侧栏占用，避免 focus 隐藏侧栏后 canSplit 抖动。
-      sidebarOccupiedWidth: store.sidebarCollapsed ? 0 : store.sidebarWidth,
+      sidebarOccupiedWidth: store.sidebarCollapsed
+        ? 0
+        : Math.min(store.sidebarWidth, splitSidebarMax),
     });
     const next = resolveEntryLayout(
       window.innerWidth,
@@ -119,20 +126,16 @@ export function useShellRouterSync() {
     if (next) store.setLayout(next.layout, next.reason);
   }
 
+  /** 统一离开协议（Phase 0）：busy 拦截 / dirty 确认 / clean 放行。 */
   function canLeaveSurface(): boolean {
-    if (store.panelSurface !== 'business') return true;
-    if (store.surfaceStatus === 'busy') {
-      toast.info(t('shell.panel.busyTransitionHint'));
-      return false;
-    }
-    if (store.surfaceStatus !== 'dirty') return true;
-    if (typeof window === 'undefined') return false;
-    return window.confirm(t('shell.panel.dirtyTransitionConfirm'));
+    return canLeaveBusinessSurface(t);
   }
 
   /** URL → 面板状态（V2 §4）。 */
   function syncRouteToStore(
     to: Pick<RouteLocationNormalizedGeneric, 'path' | 'fullPath' | 'meta'>,
+    /** 进入当前路由前的路由；超限取消时用于回滚 URL（Phase 1 验收：URL/Tab/对象一致）。 */
+    from?: Pick<RouteLocationNormalizedGeneric, 'fullPath'>,
   ): void {
     // STATE D：独立设置场景不创建/激活 BusinessTab，也不改 layout。
     if (isStandaloneSettingsPath(to.path) || to.meta?.shellScene === 'settings') {
@@ -163,16 +166,40 @@ export function useShellRouterSync() {
     }
 
     // 3. 其余（胶囊新开 / 深链 / AI 硬跳转）→ 新开 Tab，不抢占现有 Tab。
-    const { evictionCandidateId } = store.openTab({
+    // Phase 1：超限时 openTab 不创建，返回候选——UI 明确确认（关闭最久未用）
+    // 后重试；取消则保持现状（tabs ≤ MAX_BUSINESS_TABS = KeepAlive max，
+    // 杜绝缓存静默驱逐）。
+    let opened = store.openTab({
       module,
       route: to.fullPath,
       title: titleFor(module),
       intent: 'deeplink',
     });
-    maybeAutoFocus();
-    if (evictionCandidateId) {
-      const candidate = store.tabs.find((tab) => tab.id === evictionCandidateId);
-      toast.info(t('shell.panel.tabLimitHint', { title: candidate?.title ?? '' }));
+    if (opened.evictionCandidateId && !opened.tabId) {
+      const candidate = store.tabs.find((tab) => tab.id === opened.evictionCandidateId);
+      const confirmed =
+        typeof window === 'undefined'
+          ? false
+          : window.confirm(t('shell.panel.tabLimitConfirm', { title: candidate?.title ?? '' }));
+      if (confirmed && candidate) {
+        store.closeTab(candidate.id);
+        opened = store.openTab({
+          module,
+          route: to.fullPath,
+          title: titleFor(module),
+          intent: 'deeplink',
+        });
+      } else {
+        toast.info(t('shell.panel.tabLimitDeniedHint'));
+        // 导航已成功但 Tab 未创建：回滚 URL 到进入前，保持 URL/Tab/对象一致。
+        if (from && from.fullPath !== to.fullPath) {
+          void router.replace(from.fullPath).catch(() => {});
+        }
+        return;
+      }
+    }
+    if (opened.tabId) {
+      maybeAutoFocus();
     }
   }
 
@@ -234,13 +261,25 @@ export function useShellRouterSync() {
   }
 
   /**
-   * 胶囊「进入」（V2 §2.3）：已有该模块 Tab → 激活；否则导航到模块落地路由
-   * （afterEach 落成新 Tab）。Schedule 与其它业务模块规则一致，不再强制 focus。
+   * 胶囊「进入」（V2 §2.3 + Phase 1 landing 语义）：主入口永远进入模块
+   * 默认 route，不因旧 Tab 存在而停在详情。已有同模块 Tab → 更新为 landing
+   * route 并激活（replace，不污染 history）；否则 push 后由 afterEach 落 Tab。
    */
   async function openModule(module: ShellModule, landingRoute: string): Promise<void> {
+    // Phase 1：胶囊入口同样经过统一离开协议（dirty/busy 检查），
+    // 避免编辑中点击胶囊静默切走（review P1）。
+    if (!canLeaveSurface()) return;
     const existing = store.tabs.find((tab) => tab.module === module);
     if (existing) {
-      await activateTab(existing.id);
+      store.openTab({
+        module,
+        route: landingRoute,
+        title: titleFor(module),
+        intent: 'capsule',
+      });
+      if (route.fullPath !== landingRoute) {
+        await router.replace(landingRoute).catch(() => {});
+      }
       return;
     }
     await router.push(landingRoute).catch(() => {});
@@ -257,17 +296,53 @@ export function useShellRouterSync() {
     await router.push(path).catch(() => {});
   }
 
-  /** 从设置返回应用：优先恢复后台业务 Tab，否则 `/`。 */
+  /** 从设置返回应用：优先恢复 origin（进入设置前的 route/tab/surface/layout）。 */
   async function returnFromSettings(): Promise<void> {
-    if (store.activeTab) {
-      await router.push(store.activeTab.route).catch(() => {});
+    const origin = store.settingsOrigin;
+    store.clearSettingsOrigin();
+
+    // 深链/刷新直接落在设置页：没有 origin，回 active tab，否则 back / '/'。
+    if (!origin) {
+      if (store.activeTab) {
+        await router.push(store.activeTab.route).catch(() => {});
+        return;
+      }
+      if (typeof window !== 'undefined' && window.history.length > 1) {
+        router.back();
+        return;
+      }
+      await router.push('/').catch(() => {});
       return;
     }
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back();
-      return;
+
+    // 恢复 layout；surface 先按非 workflow 恢复（避免 replace 触发 afterEach
+    // 的 syncRouteToStore 把 surface 重置回 business/home）。
+    store.setLayout(origin.layout, origin.layoutReason === 'user' ? 'user' : 'default');
+
+    // origin 的 Tab 仍存在 → 激活它；否则回 active tab；都没有 → Home。
+    if (origin.tabId && store.tabs.some((tab) => tab.id === origin.tabId)) {
+      store.activateTab(origin.tabId);
+    } else if (origin.panelSurface === 'home' && !store.activeTab) {
+      store.showHome();
     }
-    await router.push('/').catch(() => {});
+
+    if (origin.panelSurface === 'home') {
+      store.showHome();
+    } else if (origin.panelSurface === 'workflow' && !store.workflowAvailable && !store.activeTab) {
+      store.showHome();
+    }
+
+    // 用 replace 落回 origin route，避免 [settings, origin, settings] 循环历史。
+    const target = store.panelSurface === 'home' ? '/' : store.activeTab?.route ?? '/';
+    if (route.fullPath !== target) {
+      await router.replace(target).catch(() => {});
+    }
+
+    // workflow origin：导航稳定后再恢复 workflow surface，避免被 afterEach 覆盖
+    // （review P1：requestWorkflowSurface 后 replace 会经 syncRouteToStore 重置）。
+    if (origin.panelSurface === 'workflow' && store.workflowAvailable) {
+      store.requestWorkflowSurface('explicit');
+    }
   }
 
   /** 回 STATE A（新对话 / 关面板后的地面态）。 */
@@ -321,14 +396,39 @@ export function useShellRouterSync() {
     syncRouteToStore(route);
   }
 
+  /**
+   * 进入/离开独立设置场景时保存/清除 origin（Phase 0 / UI-007）。
+   * 进入设置时 store 状态仍对应 from 路由（settings 不修改 store），
+   * 因此此时捕获的 tab/surface/layout 即进入设置前的现场。
+   */
+  function trackSettingsScene(
+    to: Pick<RouteLocationNormalizedGeneric, 'path' | 'fullPath' | 'meta'>,
+    from: Pick<RouteLocationNormalizedGeneric, 'path' | 'fullPath' | 'meta'>,
+  ): void {
+    const entering = isStandaloneSettingsPath(to.path) || to.meta?.shellScene === 'settings';
+    const leaving = isStandaloneSettingsPath(from.path) || from.meta?.shellScene === 'settings';
+    if (entering && !leaving) {
+      store.saveSettingsOrigin({
+        route: from.fullPath,
+        tabId: store.activeTabId,
+        panelSurface: store.panelSurface,
+        layout: store.layout,
+        layoutReason: store.layoutReason,
+      });
+    } else if (leaving && !entering) {
+      store.clearSettingsOrigin();
+    }
+  }
+
   // router-view 的 KeepAlive key 依赖 Tab id。必须在首次渲染前创建深链 Tab，
   // 否则首帧使用 fallback key、挂载后切到 Tab key，会留下两套业务组件和 Teleport DOM。
   restoreStartupRoute();
 
   onMounted(() => {
-    removeAfterEach = router.afterEach((to, _from, failure) => {
+    removeAfterEach = router.afterEach((to, from, failure) => {
       if (failure) return;
-      syncRouteToStore(to);
+      trackSettingsScene(to, from);
+      syncRouteToStore(to, from);
     });
   });
 

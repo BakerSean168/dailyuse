@@ -4,6 +4,7 @@ export default {
     "noteEdit": "编辑笔记"
   },
   "segments": {
+    "title": "仓库分区",
     "notes": "笔记",
     "governance": "规范"
   },

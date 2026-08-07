@@ -2,9 +2,12 @@
 /**
  * UserSettingsView — 设置页（UI 重构 V2 § Settings / §7；沿 V1 §13 分组方案）
  *
- * 10 个平铺 Tab 重组为 6 组：
- *   外观与语言 / AI / 通知与提醒 / 账户与隐私（账户中心迁入）/ 数据 / 高级
- * 窄窗口（<1024）顶部分组 tabs；宽窗口左侧垂直分组导航 + 右侧内容 max-w-3xl。
+ * 10 个平铺 Tab 重组为 7 组：
+ *   外观与语言 / 知识库 / AI / 通知与提醒 / 账户与隐私（账户中心迁入）/ 数据 / 高级
+ * 分组定义集中在 `GROUP_DEFINITIONS` 单一模型（值 + i18n label key），
+ * `groups` 与 `GROUP_VALUES` 均由其派生，避免注释/代码漂移。
+ * 设置内容容器窄于 1024px 时使用顶部分组 tabs；宽容器使用左侧垂直分组导航
+ * （sticky，长页面滚动时保持可见）。
  * `?tab=` 查询参数为分组深链契约（/account/center redirect 依赖）。
  * `settings-tab-{value}` testid 保留（appearance / notifications 被 e2e 锚定）。
  * 作为 AppShell STATE D 独立场景渲染，不进 BusinessPanel。
@@ -43,21 +46,14 @@ const route = useRoute();
 const router = useRouter();
 const presentationStore = usePresentationPreferenceStore();
 const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
-// 独立设置场景：窄窗口用顶部分组 tabs；宽窗口用左侧垂直导航。
+// 独立设置场景：适配依据设置内容容器，而不是整个窗口。
 const SETTINGS_NARROW_VIEWPORT = 1024;
-const viewportWidth = ref(
+const contentWidth = ref(
   typeof window !== 'undefined' ? window.innerWidth : SETTINGS_NARROW_VIEWPORT,
 );
-const isNarrow = computed(() => viewportWidth.value < SETTINGS_NARROW_VIEWPORT);
-
-function onViewportResize(): void {
-  viewportWidth.value = window.innerWidth;
-}
-
-onBeforeUnmount(() => {
-  if (typeof window === 'undefined') return;
-  window.removeEventListener('resize', onViewportResize);
-});
+const isNarrow = computed(() => contentWidth.value < SETTINGS_NARROW_VIEWPORT);
+const settingsContentRef = ref<HTMLElement | null>(null);
+let settingsResizeObserver: ResizeObserver | null = null;
 
 const {
   userSetting,
@@ -81,19 +77,25 @@ const {
   importAllData,
 } = useDataPortability();
 
-// ── 分组导航（§13-3）──
+// ── 分组导航（§13-3；Phase 3 单一模型）──
 type SettingsGroup =
   'appearance' | 'repository' | 'ai' | 'notifications' | 'account' | 'data' | 'advanced';
 
-const GROUP_VALUES: SettingsGroup[] = [
-  'appearance',
-  'repository',
-  'ai',
-  'notifications',
-  'account',
-  'data',
-  'advanced',
+/** 分组定义唯一来源：value + i18n label key。groups / GROUP_VALUES 由此派生。 */
+const GROUP_DEFINITIONS: ReadonlyArray<{
+  value: SettingsGroup;
+  labelKey: string;
+}> = [
+  { value: 'appearance', labelKey: 'setting.groups.appearance' },
+  { value: 'repository', labelKey: 'setting.groups.repository' },
+  { value: 'ai', labelKey: 'setting.groups.ai' },
+  { value: 'notifications', labelKey: 'setting.groups.notifications' },
+  { value: 'account', labelKey: 'setting.groups.account' },
+  { value: 'data', labelKey: 'setting.groups.data' },
+  { value: 'advanced', labelKey: 'setting.groups.advanced' },
 ];
+
+const GROUP_VALUES: SettingsGroup[] = GROUP_DEFINITIONS.map((group) => group.value);
 
 function normalizeGroup(value: unknown): SettingsGroup {
   return GROUP_VALUES.includes(value as SettingsGroup) ? (value as SettingsGroup) : 'appearance';
@@ -101,15 +103,9 @@ function normalizeGroup(value: unknown): SettingsGroup {
 
 const activeTab = ref<SettingsGroup>(normalizeGroup(route.query.tab));
 
-const groups = computed(() => [
-  { value: 'appearance' as const, label: t('setting.groups.appearance') },
-  { value: 'repository' as const, label: t('setting.groups.repository') },
-  { value: 'ai' as const, label: t('setting.groups.ai') },
-  { value: 'notifications' as const, label: t('setting.groups.notifications') },
-  { value: 'account' as const, label: t('setting.groups.account') },
-  { value: 'data' as const, label: t('setting.groups.data') },
-  { value: 'advanced' as const, label: t('setting.groups.advanced') },
-]);
+const groups = computed(() =>
+  GROUP_DEFINITIONS.map((group) => ({ value: group.value, label: t(group.labelKey) })),
+);
 
 // `?tab=` 双向同步（深链契约）
 watch(
@@ -357,16 +353,24 @@ watch(
 );
 
 onMounted(async () => {
-  if (typeof window !== 'undefined') {
-    window.addEventListener('resize', onViewportResize);
+  if (typeof ResizeObserver !== 'undefined' && settingsContentRef.value) {
+    settingsResizeObserver = new ResizeObserver(([entry]) => {
+      if (entry) contentWidth.value = entry.contentRect.width;
+    });
+    settingsResizeObserver.observe(settingsContentRef.value);
   }
   await loadSettings();
   hydrateFromStore();
 });
+
+onBeforeUnmount(() => {
+  settingsResizeObserver?.disconnect();
+  settingsResizeObserver = null;
+});
 </script>
 
 <template>
-  <div class="h-full min-h-0 overflow-auto bg-background">
+  <div ref="settingsContentRef" class="min-h-full min-w-0 overflow-hidden bg-background">
     <!-- Hidden file input for importing settings -->
     <input
       ref="fileInput"
@@ -378,8 +382,6 @@ onMounted(async () => {
     />
 
     <div class="mx-auto max-w-5xl px-6 py-8">
-      <h1 class="text-2xl font-bold tracking-tight">{{ t('setting.title') }}</h1>
-
       <!-- Loading state -->
       <div v-if="isLoading" class="flex items-center justify-center py-12">
         <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
@@ -387,14 +389,19 @@ onMounted(async () => {
 
       <div
         v-else
-        class="mt-6 flex gap-6"
+        class="flex min-h-0 gap-6"
         :class="isNarrow ? 'flex-col' : 'flex-row'"
         data-testid="settings-panel-layout"
       >
-        <!-- 窄档：顶部分组横向 tabs；宽档：左侧垂直分组导航（V2 §7 / V1 §13-8） -->
+        <!-- 窄档：顶部分组横向 tabs；宽档：左侧垂直分组导航（V2 §7 / V1 §13-8）。
+             Phase 3：宽档 nav sticky top-0（相对正文滚动容器），长页面滚动时保持可见。 -->
         <nav
           class="flex shrink-0 gap-1"
-          :class="isNarrow ? 'overflow-x-auto' : 'w-48 flex-col overflow-visible'"
+          :class="
+            isNarrow
+              ? 'overflow-x-auto'
+              : 'sticky top-0 w-48 flex-col self-start overflow-visible'
+          "
           :data-testid="isNarrow ? 'settings-group-tabs' : 'settings-group-sidebar'"
           :aria-label="t('setting.title')"
         >
@@ -403,6 +410,7 @@ onMounted(async () => {
             :key="group.value"
             :data-testid="`settings-tab-${group.value}`"
             type="button"
+            :aria-current="activeTab === group.value ? 'page' : undefined"
             class="whitespace-nowrap rounded-md px-3 py-2 text-left text-sm transition-colors"
             :class="
               activeTab === group.value

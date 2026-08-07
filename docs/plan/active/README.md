@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-05T00:00:00Z
+updated: 2026-08-06T00:00:00Z
 ---
 
 # Active Plans
@@ -18,6 +18,9 @@ updated: 2026-08-05T00:00:00Z
 | [CI/CD Platform V2 一次性重构](./2026-08-05-ci-cd-platform-v2-refactor.md)           | **Architecture implementation and PR cutover complete**：六平面契约、capability workspace、artifact 晋级、run observation；持续收集长期 timing/fault evidence |
 | [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)          | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称                                                                                   |
 | [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                        |
+| [基础 UI 与 Shell 重构](./2026-08-06-ui-foundation-and-shell-refactor.md)            | **实现与 local-docker 验证完成**：三栏最小宽度与拖拽收缩、compound capsule/摘要入口、设置页扁平化；Docker 产品旅程 7/7 通过 |
+| [基础 UI 与桌面 Shell 后续优化](./2026-08-06-ui-foundation-shell-follow-up-optimization.md) | **诊断后续实施计划**：场景生命周期、统一导航意图、Tab/KeepAlive、单一滚动宿主、设置桌面导航与模块骨架；移动端暂不纳入 |
+| [业务闭环与模块边界重构](./2026-08-07-business-loop-and-module-boundary-rebuild.md) | **深度审查完成，待实施**：Occurrence、可靠 outbox/inbox、Task/Goal 贡献账本、Reminder/Notification 投递、AI Command Gateway、ModuleManifest；移动端暂不纳入 |
 
 ## 本轮已归档（2026-08-03）
 

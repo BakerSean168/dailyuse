@@ -3,23 +3,31 @@
     class="z-10 flex min-h-12 shrink-0 flex-wrap items-center gap-1 border-b bg-background/80 px-2 py-2 backdrop-blur-sm @2xl/panel:px-4"
     data-testid="note-page-toolbar"
   >
-    <button
-      v-for="segment in segments"
-      :key="segment.value"
-      type="button"
-      :data-testid="`note-segment-${segment.value}`"
-      :aria-pressed="active === segment.value"
-      class="rounded-md px-3 py-1.5 text-sm transition-colors"
-      :class="
-        active === segment.value
-          ? 'bg-secondary font-medium text-foreground'
-          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-      "
-      @click="$emit('select', segment.value)"
+    <!-- Phase 4：分区切换使用 tablist/tab/aria-selected（与 Schedule/Notification 一致）。 -->
+    <div
+      role="tablist"
+      :aria-label="t('repository.segments.title')"
+      class="flex min-w-0 items-center gap-1"
     >
-      <component :is="segment.icon" class="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
-      {{ segment.label }}
-    </button>
+      <button
+        v-for="segment in segments"
+        :key="segment.value"
+        type="button"
+        role="tab"
+        :aria-selected="active === segment.value"
+        :data-testid="`note-segment-${segment.value}`"
+        class="rounded-md px-3 py-1.5 text-sm transition-colors"
+        :class="
+          active === segment.value
+            ? 'bg-secondary font-medium text-foreground'
+            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+        "
+        @click="$emit('select', segment.value)"
+      >
+        <component :is="segment.icon" class="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
+        {{ segment.label }}
+      </button>
+    </div>
     <div id="note-page-toolbar-actions" class="ml-auto flex min-w-0 items-center gap-1" />
   </header>
 </template>

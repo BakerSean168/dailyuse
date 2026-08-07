@@ -251,6 +251,8 @@ const { t } = useI18n();
 const emit = defineEmits<{
   save: [data: CreateReminderGroupReq];
   update: [id: string, data: UpdateReminderGroupReq];
+  /** 编辑弹窗打开/关闭状态上浮，供宿主上报 shell dirty（Phase 0 / UI-004）。 */
+  'open-change': [open: boolean];
 }>();
 
 const visible = ref(false);
@@ -319,20 +321,24 @@ const fillForm = (group: ReminderGroupClientDTO) => {
 const open = () => {
   resetForm();
   visible.value = true;
+  emit('open-change', true);
 };
 
 const openForEdit = (group: ReminderGroupClientDTO) => {
   fillForm(group);
   visible.value = true;
+  emit('open-change', true);
 };
 
 const close = () => {
   visible.value = false;
+  emit('open-change', false);
   setTimeout(resetForm, 300);
 };
 
 const handleVisibleChange = (value: boolean) => {
   visible.value = value;
+  emit('open-change', value);
   if (!value) {
     setTimeout(resetForm, 300);
   }

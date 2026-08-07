@@ -58,7 +58,7 @@ export type { IDashboardApiClient as IDashboardService } from '../modules/dashbo
  * @see docs/UI_REDESIGN_V2_PLAN.md §2.1, §5
  */
 export interface ModuleCapsule {
-  /** Stable module id, e.g. 'goal' | 'task' | 'note' | 'reminder' | 'notification'. */
+  /** Stable module id, e.g. 'goal' | 'task' | 'note' | 'reminder' | 'schedule' | 'notification'. */
   id: string;
   /** i18n key for the capsule label (e.g. 'nav.capsule.goal'). */
   title: string;

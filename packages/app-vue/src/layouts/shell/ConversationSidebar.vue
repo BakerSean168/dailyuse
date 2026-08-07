@@ -83,6 +83,7 @@ const identityLabel = () => {
         type="button"
         class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
         :title="t('shell.search')"
+        :aria-label="t('shell.search')"
         @click="emit('open-search')"
       >
         <Search class="h-4 w-4" />
@@ -159,7 +160,9 @@ const identityLabel = () => {
             >
               {{ displayName().slice(0, 1).toUpperCase() }}
             </span>
-            <span data-testid="shell-account-name" class="truncate text-xs font-semibold">{{ displayName() }}</span>
+            <span data-testid="shell-account-name" class="truncate text-xs font-semibold">{{
+              displayName()
+            }}</span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="top" class="w-52">
@@ -202,35 +205,16 @@ const identityLabel = () => {
             data-testid="shell-help-menu"
             class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
             :title="t('shell.help')"
+            :aria-label="t('shell.help')"
           >
             <HelpCircle class="h-4 w-4" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" side="top" class="w-52">
-          <DropdownMenuItem disabled data-testid="shell-help-shortcuts">
+          <!-- Phase 5：Help 只显示已实现入口——快捷键跳转设置「高级」组（ShortcutSettings 已实现）；
+               未实现的 guide/feedback/about 不再以 disabled + soon 展示。 -->
+          <DropdownMenuItem data-testid="shell-help-shortcuts" @click="emit('open-help')">
             {{ t('shell.helpMenu.shortcuts') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{
-              t('shell.helpMenu.soon')
-            }}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled data-testid="shell-help-guide">
-            {{ t('shell.helpMenu.guide') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{
-              t('shell.helpMenu.soon')
-            }}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled data-testid="shell-help-feedback">
-            {{ t('shell.helpMenu.feedback') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{
-              t('shell.helpMenu.soon')
-            }}</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem disabled data-testid="shell-help-about">
-            {{ t('shell.helpMenu.about') }}
-            <span class="ml-auto text-[10px] text-muted-foreground">{{
-              t('shell.helpMenu.soon')
-            }}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -243,7 +227,6 @@ const identityLabel = () => {
       aria-orientation="vertical"
       :aria-label="t('shell.conversation.resize')"
       aria-valuemin="200"
-      aria-valuemax="400"
       :aria-valuenow="width ?? 260"
       class="absolute right-0 top-0 h-full w-[3px] cursor-col-resize bg-transparent transition-colors hover:bg-primary/40"
       @mousedown="emit('start-resize', $event)"

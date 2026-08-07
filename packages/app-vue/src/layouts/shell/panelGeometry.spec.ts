@@ -10,6 +10,8 @@ import {
   computePanelGeometry,
   panelWidthFromPointer,
   resolveComposerDensity,
+  shouldCollapsePanelWidth,
+  shouldCollapseSidebarWidth,
   shouldAutoCollapseSidebar,
 } from './panel-geometry';
 
@@ -100,6 +102,17 @@ describe('computePanelGeometry', () => {
     expect(geo.aiWidth).toBeGreaterThanOrEqual(AI_HARD_MIN);
   });
 
+  it('does not impose a product maximum on a wide workspace', () => {
+    const geo = computePanelGeometry({
+      viewportWidth: 2200,
+      sidebarOccupiedWidth: 0,
+      preferredPanelWidth: 1400,
+    });
+    expect(geo.panelWidth).toBe(1400);
+    expect(geo.aiWidth).toBe(800);
+    expect(geo.panelMax).toBe(1880);
+  });
+
   it('makes the business workspace dominant at the 1280px desktop reference size', () => {
     const geo = computePanelGeometry({
       viewportWidth: 1280,
@@ -136,14 +149,13 @@ describe('shouldAutoCollapseSidebar', () => {
 });
 
 describe('panelWidthFromPointer', () => {
-  it('clamps drag width into the legal panel range', () => {
+  it('returns the raw width so the shell can detect a collapse gesture', () => {
     const width = panelWidthFromPointer(200, 1200, 260);
-    const geo = computePanelGeometry({
-      viewportWidth: 1200,
-      sidebarOccupiedWidth: 260,
-    });
-    expect(width).toBeGreaterThanOrEqual(geo.panelMin);
-    expect(width).toBeLessThanOrEqual(geo.panelMax);
+    expect(width).toBe(1000);
+    expect(shouldCollapsePanelWidth(420)).toBe(true);
+    expect(shouldCollapsePanelWidth(520)).toBe(false);
+    expect(shouldCollapseSidebarWidth(103)).toBe(true);
+    expect(shouldCollapseSidebarWidth(200)).toBe(false);
   });
 });
 

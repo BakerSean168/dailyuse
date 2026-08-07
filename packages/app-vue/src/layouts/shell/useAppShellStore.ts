@@ -18,15 +18,13 @@
  * 不在此处直连 router。
  */
 import { defineStore } from 'pinia';
-import { BUSINESS_HARD_MIN, computePanelGeometry } from './panel-geometry';
+import { BUSINESS_HARD_MIN, SIDEBAR_HARD_MIN, computePanelGeometry } from './panel-geometry';
 // Residual 1001: sole clamp (local dual retired).
 import { clamp } from './clamp';
 
 /** 面板可容纳的最大 Tab 数（V2 §2.3 建议 8）。 */
 export const MAX_BUSINESS_TABS = 8;
 
-const SIDEBAR_MIN = 200;
-const SIDEBAR_MAX = 400;
 const SIDEBAR_DEFAULT = 260;
 // 面板绝对像素上下限由 panel-geometry 动态计算；此处仅保留偏好默认值种子。
 
@@ -43,6 +41,23 @@ export type WorkflowSurfaceRequest = 'opened' | 'deferred' | 'unavailable';
  */
 export type ShellLayoutReason = 'default' | 'user' | 'viewport';
 export type PanelWidthSource = 'responsive' | 'user';
+
+/**
+ * 进入独立设置场景前保存的 workspace 状态（Phase 0 / 诊断 UI-007）。
+ * 返回设置时优先恢复 origin；origin 失效（Tab 被关）时才回 active tab，
+ * 再回 `/`。origin 是会话内临时导航状态，不参与 localStorage 持久化。
+ */
+export interface ShellOrigin {
+  /** 进入设置前的完整路由（含 query），如 `/goals/g-1?tab=x`。 */
+  route: string;
+  /** 进入设置前激活的业务 Tab id；Home surface 时为 null。 */
+  tabId: string | null;
+  /** 进入设置前的 BusinessPanel surface。 */
+  panelSurface: PanelSurface;
+  /** 进入设置前的布局态与来源，返回时恢复。 */
+  layout: ShellLayout;
+  layoutReason: ShellLayoutReason;
+}
 
 /** 胶囊/深链可落地的业务模块标识。Settings 已升为独立场景，不在此列。 */
 export type ShellModule = 'goal' | 'task' | 'note' | 'reminder' | 'notification' | 'schedule';
@@ -63,7 +78,14 @@ export interface OpenTabInput {
 }
 
 export interface OpenTabResult {
+  /**
+   * 打开的 Tab id。超限未创建时为 ''（此时 evictionCandidateId 非 null）。
+   */
   tabId: string;
+  /**
+   * 超限时的最久未激活 Tab 候选 id（UI 层确认后可 closeTab 后重试）；
+   * 未超限时为 null。
+   */
   evictionCandidateId: string | null;
 }
 
@@ -94,6 +116,11 @@ interface AppShellState {
    * `responsive`, so their stale 520px seed cannot override the new ratio.
    */
   panelWidthSource: PanelWidthSource;
+  /**
+   * 进入独立设置场景前保存的 workspace 状态（会话内，不持久化）。
+   * 返回设置时优先恢复；origin 失效时才回 active tab，再回 `/`。
+   */
+  settingsOrigin: ShellOrigin | null;
 }
 
 const BUSINESS_MODULES = new Set<ShellModule>([
@@ -134,6 +161,7 @@ export const useAppShellStore = defineStore('app-shell', {
     sidebarWidth: SIDEBAR_DEFAULT,
     panelWidth: null,
     panelWidthSource: 'responsive',
+    settingsOrigin: null,
   }),
 
   getters: {
@@ -153,10 +181,18 @@ export const useAppShellStore = defineStore('app-shell', {
 
   actions: {
     /**
-     * 打开一个业务 Tab（V2 §2.3 打开规则）。
-     * - capsule 意图：同 module 已存在 → 激活并更新路由/标题；否则新开。
+     * 打开一个业务 Tab（V2 §2.3 打开规则 + Phase 1 收敛）。
+     * - capsule 意图：同 module 已存在 → 激活并更新为 landing 路由/标题；否则新开。
      * - deeplink 意图：同 route 已存在 → 激活；否则新开（不抢占当前 Tab）。
-     * 新开后若超过上限，返回最久未激活 Tab 作为淘汰候选（UI 决定是否关）。
+     *
+     * 多 Tab 产品决策（Phase 1 写入 contract）：同模块**不同对象**允许多 Tab
+     * （deeplink 按 route 精确匹配，各对象独立保活）；capsule/landing 意图
+     * 同模块**复用**一个 Tab 并切回列表页。
+     *
+     * 上限契约：Tab 数量不得超过 `MAX_BUSINESS_TABS`（= KeepAlive `max`）。
+     * 超限时**不创建**新 Tab，返回最久未激活候选 id 交 UI 层决定
+     * （确认后 closeTab 重试；取消则保持现状），避免"Tab 可见但实例被
+     * 缓存层静默驱逐"（诊断 UI-005）。
      */
     openTab(input: OpenTabInput): OpenTabResult {
       const now = Date.now();
@@ -177,6 +213,15 @@ export const useAppShellStore = defineStore('app-shell', {
         return { tabId: existing.id, evictionCandidateId: null };
       }
 
+      // 超限：不创建，返回最久未激活候选（UI 层确认后 closeTab 重试）。
+      if (this.tabs.length >= MAX_BUSINESS_TABS) {
+        const candidate = this.tabs.reduce<BusinessTab | null>(
+          (oldest, t) => (!oldest || t.lastActiveAt < oldest.lastActiveAt ? t : oldest),
+          null,
+        );
+        return { tabId: '', evictionCandidateId: candidate?.id ?? null };
+      }
+
       const tab: BusinessTab = {
         id: nextTabId(input.module),
         module: input.module,
@@ -190,18 +235,7 @@ export const useAppShellStore = defineStore('app-shell', {
       this.panelSurface = 'business';
       this.returnPanelSurface = null;
 
-      let evictionCandidateId: string | null = null;
-      if (this.tabs.length > MAX_BUSINESS_TABS) {
-        const candidate = this.tabs
-          .filter((t) => t.id !== tab.id)
-          .reduce<BusinessTab | null>(
-            (oldest, t) => (!oldest || t.lastActiveAt < oldest.lastActiveAt ? t : oldest),
-            null,
-          );
-        evictionCandidateId = candidate?.id ?? null;
-      }
-
-      return { tabId: tab.id, evictionCandidateId };
+      return { tabId: tab.id, evictionCandidateId: null };
     },
 
     /** 激活已存在的 Tab，刷新其 LRU 时间戳。 */
@@ -283,6 +317,19 @@ export const useAppShellStore = defineStore('app-shell', {
 
     setSurfaceStatus(status: PanelSurfaceStatus): void {
       this.surfaceStatus = status;
+    },
+
+    /**
+     * 进入独立设置场景前保存 origin（useShellRouterSync 在 afterEach 中调用）。
+     * origin 只存会话状态，不持久化；进入设置前的 workspace 实例保持常驻。
+     */
+    saveSettingsOrigin(origin: ShellOrigin): void {
+      this.settingsOrigin = origin;
+    },
+
+    /** 离开设置场景后清除 origin（返回恢复动作或浏览器导航触发）。 */
+    clearSettingsOrigin(): void {
+      this.settingsOrigin = null;
     },
 
     setWorkflowAvailable(available: boolean, itemCount = 0): void {
@@ -372,6 +419,15 @@ export const useAppShellStore = defineStore('app-shell', {
       }
     },
 
+    /**
+     * 更新当前激活 Tab 的标题（Phase 1：详情视图加载到对象名后调用，
+     * 格式由视图拼装为「模块名 · 对象标题」；列表路由保持模块名）。
+     */
+    setActiveTabTitle(title: string): void {
+      const tab = this.tabs.find((t) => t.id === this.activeTabId);
+      if (tab) tab.title = title;
+    },
+
     setLayout(layout: ShellLayout, reason: ShellLayoutReason = 'default'): void {
       this.layout = layout;
       this.layoutReason = reason;
@@ -391,8 +447,10 @@ export const useAppShellStore = defineStore('app-shell', {
       this.sidebarCollapsed = collapsed;
     },
 
-    setSidebarWidth(width: number): void {
-      this.sidebarWidth = clamp(width, SIDEBAR_MIN, SIDEBAR_MAX);
+    setSidebarWidth(width: number, maxWidth = Number.POSITIVE_INFINITY): void {
+      if (!Number.isFinite(width)) return;
+      const upper = Math.max(SIDEBAR_HARD_MIN, maxWidth);
+      this.sidebarWidth = clamp(width, SIDEBAR_HARD_MIN, upper);
     },
 
     /**

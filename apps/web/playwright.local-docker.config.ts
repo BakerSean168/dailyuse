@@ -26,6 +26,7 @@ export default defineConfig({
   use: {
     baseURL: webOrigin,
     viewport: { width: 1280, height: 720 },
+    timezoneId: 'Asia/Shanghai',
     actionTimeout: 15 * 1000,
     navigationTimeout: 30 * 1000,
     trace: 'on',
