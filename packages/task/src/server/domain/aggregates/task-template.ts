@@ -338,22 +338,27 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   public activate(): void {
     lifecyclePolicy.activate(this);
+    this.advanceVersion();
   }
 
   public pause(): void {
     lifecyclePolicy.pause(this);
+    this.advanceVersion();
   }
 
   public archive(): void {
     lifecyclePolicy.archive(this);
+    this.advanceVersion();
   }
 
   public softDelete(): void {
     lifecyclePolicy.softDelete(this);
+    this.advanceVersion();
   }
 
   public restore(): void {
     lifecyclePolicy.restore(this);
+    this.advanceVersion();
   }
 
   // ===== Time-related methods (delegated to instance-generation.policy) =====

@@ -368,10 +368,8 @@ export function createScheduleRuntimeContribution(
 
   let started = false;
   let starting: Promise<void> | null = null;
-  /** R3a：持有 lease 期间阻塞在 execute 内的释放器（宿主停止时调用）。 */
-  let releaseLease: (() => void) | null = null;
-  /** R3a：正在执行的 lease.execute promise（stop 时等待其完成并释放租约）。 */
-  let leaseExecution: Promise<{ acquired: boolean; value?: void }> | null = null;
+  /** R3a：acquire 返回的 owner token（stop 时释放租约）。 */
+  let leaseOwnerToken: string | undefined;
 
   const startScheduler = async (): Promise<void> => {
     registerListeners();
@@ -400,16 +398,9 @@ export function createScheduleRuntimeContribution(
 
           // R3a：唯一调度宿主——先原子抢占 DB lease；失败则本宿主只作为
           // 读模型宿主（不启动执行队列）。
-          leaseExecution = lease.execute(SCHEDULE_LEASE_KEY, async () => {
-            await startScheduler();
-            logger.info('[Schedule] Runtime contribution started (lease held)');
-            // 保持租约直到宿主停止；心跳由 coordinator 维护。
-            await new Promise<void>((resolve) => {
-              releaseLease = resolve;
-            });
-          });
-          const result = await leaseExecution;
-
+          // 注意：不能 await 一个阻塞式 lease 回调（会让 bootstrap register
+          // 阶段事件循环空转导致进程退出）；acquire 只抢占+心跳并立即返回。
+          const result = await lease.acquire(SCHEDULE_LEASE_KEY);
           if (!result.acquired) {
             logger.warn(
               '[Schedule] Lease not acquired; running as read-model host only (no scheduler)',
@@ -417,7 +408,12 @@ export function createScheduleRuntimeContribution(
             // 仍注册事件监听以跟踪任务变化，便于宿主后续可升级为调度宿主。
             registerListeners();
             started = true;
+            return;
           }
+
+          leaseOwnerToken = result.ownerToken;
+          await startScheduler();
+          logger.info('[Schedule] Runtime contribution started (lease held)');
         } catch (error) {
           unregisterListeners();
           throw error;
@@ -434,12 +430,10 @@ export function createScheduleRuntimeContribution(
         return;
       }
 
-      // R3a：若持有 lease，先释放阻塞让 coordinator 释放租约并等待完成。
-      releaseLease?.();
-      releaseLease = null;
-      if (leaseExecution) {
-        await leaseExecution;
-        leaseExecution = null;
+      // R3a：释放租约（仅 owner）；心跳 timer 由 coordinator 一并清理。
+      if (leaseOwnerToken !== undefined) {
+        await deps.leaseCoordinator?.release(SCHEDULE_LEASE_KEY, leaseOwnerToken);
+        leaseOwnerToken = undefined;
       }
 
       unregisterListeners();

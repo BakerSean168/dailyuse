@@ -34,6 +34,11 @@ export class ScheduleLeaseCoordinator {
   private readonly now: () => number;
   private readonly ttlMs: number;
   private readonly renewalIntervalMs: number;
+  /** R3a：acquire 路径持有的活跃租约（owner → 心跳 timer）。 */
+  private readonly activeLeases = new Map<
+    string,
+    { ownerToken: string; timer: NodeJS.Timeout; isHeld: () => boolean }
+  >();
 
   constructor(
     private readonly repository: IScheduleLeaseRepository | null | undefined,
@@ -104,6 +109,71 @@ export class ScheduleLeaseCoordinator {
       clearInterval(timer);
       await renewal;
       held = false;
+      await this.repository.release(leaseKey, ownerToken).catch(() => undefined);
+    }
+  }
+
+  /**
+   * R3a 宿主启动路径：原子抢占租约并开始心跳续约，立即返回（不阻塞调用方）。
+   * 与 `execute` 的区别：`execute` 会等待回调完成（回调通常阻塞到宿主停止），
+   * 若在 bootstrap register 阶段 await 它会令事件循环空转导致进程退出；
+   * `acquire` 只负责抢占与心跳，宿主在 stop() 时调用 `release` 释放。
+   */
+  async acquire(leaseKey: string): Promise<{ acquired: boolean; ownerToken?: string }> {
+    if (!this.repository) {
+      return { acquired: true, ownerToken: 'single-host' };
+    }
+
+    const ownerToken = randomUUID();
+    const request = (): ScheduleLeaseRequest => {
+      const now = this.now();
+      return { leaseKey, ownerToken, now, expiresAt: now + this.ttlMs };
+    };
+
+    let acquired = false;
+    try {
+      acquired = await this.repository.tryAcquire(request());
+    } catch (error) {
+      console.error('[ScheduleLease] tryAcquire failed', { leaseKey, error });
+      return { acquired: false };
+    }
+    if (!acquired) return { acquired: false };
+
+    let held = true;
+    let renewal: Promise<void> | null = null;
+    const renew = async (): Promise<void> => {
+      if (!held) return;
+      renewal ??= this.repository!.renew(request())
+        .then((renewed) => {
+          held = renewed;
+        })
+        .catch(() => {
+          held = false;
+        })
+        .finally(() => {
+          renewal = null;
+        });
+      await renewal;
+    };
+    const timer = setInterval(() => void renew(), this.renewalIntervalMs);
+    timer.unref?.();
+    this.activeLeases.set(leaseKey, {
+      ownerToken,
+      timer,
+      isHeld: () => held,
+    });
+
+    return { acquired: true, ownerToken };
+  }
+
+  /** 仅 owner 释放租约（宿主 stop 时调用）。 */
+  async release(leaseKey: string, ownerToken?: string): Promise<void> {
+    if (!this.repository) return;
+    const entry = this.activeLeases.get(leaseKey);
+    // 非 owner（token 不匹配）不触碰租约：防止误释放他人租约。
+    if (entry && entry.ownerToken === ownerToken) {
+      clearInterval(entry.timer);
+      this.activeLeases.delete(leaseKey);
       await this.repository.release(leaseKey, ownerToken).catch(() => undefined);
     }
   }

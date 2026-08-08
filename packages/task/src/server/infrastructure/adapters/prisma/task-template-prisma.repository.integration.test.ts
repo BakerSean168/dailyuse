@@ -169,6 +169,8 @@ describe('TaskTemplatePrismaRepository integration', () => {
 
     // Update the template
     template.updateTitle('Updated Title');
+    // R2-5a 乐观锁契约：变更后由调用方递增版本。
+    template.advanceVersion();
 
     await repository.save(template);
 

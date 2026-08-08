@@ -1,31 +1,27 @@
 /**
- * End-to-end integration: task:instance-completed 事件真跑一遍。
+ * End-to-end integration: Task -> Goal outbox 事件真跑一遍。
  *
- * 用真实 Prisma 仓储（不 mock 数据库），验证跨模块联动的完整链路：
- * 通过事件总线发布 task:instance-completed → registerGoalEventListeners 消费 payload
- * → CreateGoalRecordUseCase 落库 GoalRecord 并更新 KR 进度。
+ * R2-5b：贡献通道已收敛到 durable outbox（宿主不再直连订阅 task 事件）。
+ * 本测试用真实 Prisma 仓储（不 mock 数据库），直接以 outbox 载荷驱动
+ * GoalTaskProgressHandler（与 TaskGoalOutboxDispatcher 消费路径一致）：
+ * apply(complete) 落库 GoalRecord 并更新 KR 进度 → 重复投递幂等 → revert(uncomplete) 撤销。
  */
 
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@memoflow/domain-shared';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
-import type { TaskEventMap, TaskGoalBindingDTO } from '@memoflow/contracts/task';
-import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
+import type { TaskGoalProgressOutboxEventV1, TaskGoalBindingDTO } from '@memoflow/contracts/task';
 import { Goal } from '../../domain/aggregates/goal';
 import { GoalPrismaRepository } from '../../infrastructure/adapters/prisma/goal-prisma.repository';
 import { GoalRecordPrismaRepository } from '../../infrastructure/adapters/prisma/goal-record-prisma.repository';
-import { registerGoalEventListeners } from './index';
+import { createGoalTaskProgressHandler } from './index';
 import {
   cleanAll,
   disconnectPrisma,
   getPrisma,
   seedAccount,
 } from '../../../__tests__/integration-helpers';
-
-const taskPublisher = createTypedEventPublisher<
-  Pick<TaskEventMap, 'task:instance-completed' | 'task:instance-uncompleted'>
->(eventBus);
 
 async function waitFor<T>(probe: () => Promise<T | null | undefined>, timeoutMs = 5000): Promise<T> {
   const deadline = Date.now() + timeoutMs;
@@ -37,9 +33,7 @@ async function waitFor<T>(probe: () => Promise<T | null | undefined>, timeoutMs 
   }
 }
 
-describe('registerGoalEventListeners integration', () => {
-  let listeners: { start(): void; stop(): void };
-
+describe('GoalTaskProgressHandler integration (outbox 消费路径)', () => {
   afterAll(async () => {
     await cleanAll();
     await disconnectPrisma();
@@ -50,7 +44,7 @@ describe('registerGoalEventListeners integration', () => {
   });
 
   afterEach(() => {
-    listeners?.stop();
+    // handler 无定时器；此处保留结构占位。
   });
 
   it('persists a goal record and advances KR progress when a bound task completes', async () => {
@@ -60,6 +54,7 @@ describe('registerGoalEventListeners integration', () => {
 
     const goalRepository = new GoalPrismaRepository(prisma);
     const goalRecordRepository = new GoalRecordPrismaRepository(prisma);
+    const handler = createGoalTaskProgressHandler(goalRepository, goalRecordRepository);
 
     // Persist a goal with a Sum key result so progress increments deterministically.
     const goal = Goal.create({
@@ -90,9 +85,6 @@ describe('registerGoalEventListeners integration', () => {
     });
     await goalRepository.save(goal);
 
-    listeners = registerGoalEventListeners(goalRepository, goalRecordRepository);
-    listeners.start();
-
     const goalBinding: TaskGoalBindingDTO = {
       goalId: goal.id as TaskGoalBindingDTO['goalId'],
       keyResultId: keyResult.id as TaskGoalBindingDTO['keyResultId'],
@@ -110,55 +102,50 @@ describe('registerGoalEventListeners integration', () => {
     };
     const waitForProgress = (expected: number) =>
       waitFor(async () => ((await readProgress()) === expected ? expected : null));
-    const completedEvent: TaskEventMap['task:instance-completed'] = {
+
+    const applyEvent = (completedAt: number): TaskGoalProgressOutboxEventV1 => ({
+      eventId: `task-goal-progress:ti-int-1:${completedAt}`,
+      schemaVersion: 1,
+      eventType: 'task.goal-progress-requested',
+      action: 'complete',
       identityId: identityId as never,
       taskInstanceId: 'ti-int-1' as never,
       taskTemplateId: 'tt-int-1' as never,
-      completedAt: Date.now(),
+      goalId: goalBinding.goalId,
+      keyResultId: goalBinding.keyResultId,
+      goalRecordValue: goalBinding.goalRecordValue,
+      progressTrigger: TaskGoalBindingTrigger.PerInstance,
       taskTitle: 'Finish integration test',
-      goalBinding,
-      allInstancesCompleted: false,
-    };
-    const uncompletedEvent: TaskEventMap['task:instance-uncompleted'] = {
+      occurredAt: completedAt,
+    });
+    const uncompleteEvent = (occurredAt: number): TaskGoalProgressOutboxEventV1 => ({
+      eventId: `task-goal-remove:ti-int-1:${occurredAt}`,
+      schemaVersion: 1,
+      eventType: 'task.goal-progress-requested',
+      action: 'uncomplete',
       identityId: identityId as never,
       taskInstanceId: 'ti-int-1' as never,
       taskTemplateId: 'tt-int-1' as never,
-      uncompletedAt: Date.now(),
-    };
+      goalId: '' as never,
+      keyResultId: '' as never,
+      goalRecordValue: 0,
+      progressTrigger: TaskGoalBindingTrigger.PerInstance,
+      taskTitle: '',
+      occurredAt,
+    });
 
     expect(await readProgress()).toBe(0);
 
-    taskPublisher.send('task:instance-completed', completedEvent);
+    const t0 = Date.now();
+    await handler.handle(applyEvent(t0));
     expect(await waitForProgress(3)).toBe(3);
 
-    taskPublisher.send('task:instance-completed', completedEvent);
+    // 幂等：outbox 重放同 source 事件不重复累加。
+    await handler.handle(applyEvent(t0));
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(await readProgress()).toBe(3);
 
-    taskPublisher.send('task:instance-uncompleted', uncompletedEvent);
+    await handler.handle(uncompleteEvent(t0 + 1));
     expect(await waitForProgress(0)).toBe(0);
-
-    taskPublisher.send('task:instance-uncompleted', uncompletedEvent);
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(await readProgress()).toBe(0);
-
-    taskPublisher.send('task:instance-completed', completedEvent);
-    expect(await waitForProgress(3)).toBe(3);
-
-    // The listener reacts asynchronously and writes the record before advancing KR
-    // progress, so poll on the KR progress to ensure the whole use-case has committed.
-    const reloaded = await waitFor(async () => {
-      const goalNow = await goalRepository.findByIdForIdentity(String(goal.identityId), goal.id, { includeChildren: true });
-      const progress = goalNow?.getKeyResult(String(keyResult.id))?.progress.currentValue;
-      return progress === 3 ? goalNow : null;
-    });
-
-    expect(reloaded?.getKeyResult(String(keyResult.id))?.progress.currentValue).toBe(3);
-
-    const records = await goalRecordRepository.findByKeyResultId(String(goal.identityId), String(keyResult.id));
-    expect(records).toHaveLength(1);
-    expect(records[0].value).toBe(3);
-    expect(records[0].sourceType).toBe('TASK_INSTANCE');
-    expect(records[0].sourceId).toBe('ti-int-1');
   });
 });

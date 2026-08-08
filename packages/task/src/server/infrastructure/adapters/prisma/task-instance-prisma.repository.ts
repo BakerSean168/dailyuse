@@ -26,18 +26,6 @@ interface TaskInstanceDb {
 }
 
 
-/**
- * R2-1：识别 occurrenceKey 唯一约束冲突（P2002, target 含 occurrence_key）。
- * 幂等跳过条件——并发宿主已生成同一模板同一天的实例。
- */
-function isOccurrenceKeyUniqueViolation(error: unknown): boolean {
-  if (typeof error !== 'object' || error === null) return false;
-  const e = error as { code?: string; meta?: { target?: unknown } };
-  if (e.code !== 'P2002') return false;
-  const target = e.meta?.target;
-  return Array.isArray(target) && target.some((t) => String(t).includes('occurrence_key'));
-}
-
 export class TaskInstancePrismaRepository
   extends AggregateRepositoryBase<TaskInstance>
   implements ITaskInstanceRepository

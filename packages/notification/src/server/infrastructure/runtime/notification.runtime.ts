@@ -46,8 +46,6 @@ export function createNotificationRuntimeContribution(
 
   const pollIntervalMs = deps?.pollIntervalMs ?? NOTIFICATION_CHANNEL_POLL_INTERVAL_MS;
   const backoffBaseMs = deps?.backoffBaseMs ?? NOTIFICATION_CHANNEL_BACKOFF_BASE_MS;
-  const deadLetterThreshold = deps?.deadLetterThreshold ?? NOTIFICATION_CHANNEL_DEAD_LETTER_THRESHOLD;
-
   const deliverer: NotificationChannelDeliverer = deps?.deliverer ?? {
     async deliver() {
       // 默认 no-op：未配置渠道适配器时仅推进渠道状态。
