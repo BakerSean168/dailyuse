@@ -67,6 +67,14 @@ export function createContractsAliasEntries(workspaceRoot: string): Alias[] {
       replacement: `${contractsRoot}/primitives/index.ts`,
     },
     {
+      find: /^@memoflow\/contracts\/primitives\/(.+)$/,
+      replacement: `${contractsRoot}/primitives/$1`,
+    },
+    {
+      find: /^@memoflow\/contracts\/reliable-messaging$/,
+      replacement: `${contractsRoot}/modules/reliable-messaging/index.ts`,
+    },
+    {
       find: /^@memoflow\/contracts\/shared$/,
       replacement: `${contractsRoot}/shared/index.ts`,
     },

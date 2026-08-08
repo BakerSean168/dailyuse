@@ -62,12 +62,12 @@ export async function startScheduleRuntime(): Promise<void> {
   logger.info('Schedule runtime started');
 }
 
-export function stopScheduleRuntime(): void {
+export async function stopScheduleRuntime(): Promise<void> {
   if (!activeScheduleModule || !runtimeStarted) {
     return;
   }
 
-  activeScheduleModule.dispose();
+  await activeScheduleModule.dispose();
   runtimeStarted = false;
   logger.info('Schedule runtime stopped');
 }

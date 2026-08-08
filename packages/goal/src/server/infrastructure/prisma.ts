@@ -16,6 +16,7 @@ import {
   GoalRecordPrismaRepository,
   PrismaGoalWriteTransactionRunner,
 } from './adapters/prisma';
+import { PrismaHabitRepository } from './adapters/prisma/prisma-habit.repository';
 import { createGoalScheduleExecutionSource } from './schedule-execution-source';
 import { createGoalScheduleProjectionSource } from './schedule-projection-source';
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
@@ -35,6 +36,8 @@ export function createGoalPrismaModule(
     focusModeRepository: new FocusModePrismaRepository(db),
     goalWriteTransactionRunner: new PrismaGoalWriteTransactionRunner(db),
     runtimeContributions: options?.runtimeContributions,
+    // R4：习惯仓储（Habit 模块）
+    habitRepository: new PrismaHabitRepository(db),
   });
 }
 

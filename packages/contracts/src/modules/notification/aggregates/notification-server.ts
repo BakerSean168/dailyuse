@@ -29,6 +29,16 @@ import type {
  * Notification Server DTO
  * Residual 863: sole body for Client/Server nested-channel dual retirement.
  */
+/**
+ * R3d：稳定导航意图——点击通知时的目标描述。
+ * route 是业务模块路由（如 `/goals/:id`），params 是稳定参数；
+ * 消费方（点击导航）只依赖它，不解析任意 payload。
+ */
+export interface NotificationNavigationIntentDTO {
+  route: string;
+  params?: Record<string, string>;
+}
+
 export interface NotificationServerDTO {
   id: NotificationId;
   identityId: IdentityId;
@@ -46,6 +56,7 @@ export interface NotificationServerDTO {
 
   actions?: NotificationActionDTO[] | null;
   metadata?: NotificationMetadataDTO | null;
+  navigationIntent?: NotificationNavigationIntentDTO | null;
   expiresAt?: TransferDate | null;
 
   version: number;

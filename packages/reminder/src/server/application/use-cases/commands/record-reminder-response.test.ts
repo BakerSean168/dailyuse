@@ -125,3 +125,67 @@ describe('RecordReminderResponseUseCase', () => {
     await expect(useCase.getResponseStats('template-1', 'identity-1')).rejects.toThrow('stats error');
   });
 });
+
+describe('RecordReminderResponseUseCase R3c (snooze command semantics)', () => {
+  const repo = { save: vi.fn(), findByTemplateId: vi.fn(), deleteByTemplateId: vi.fn(), getResponseStats: vi.fn() } as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    repo.save.mockResolvedValue(undefined);
+  });
+
+  it('rejects snooze without a positive duration', async () => {
+    const useCase = new RecordReminderResponseUseCase(repo);
+    const result = await useCase.execute({
+      templateId: 'template-1',
+      action: 'SNOOZED',
+      identityId: 'identity-1',
+    });
+    expect(result.ok).toBe(false);
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it('calls the snooze rescheduler to defer the next trigger', async () => {
+    const rescheduler = { reschedule: vi.fn(async () => undefined) };
+    const useCase = new RecordReminderResponseUseCase(repo, rescheduler);
+
+    const result = await useCase.execute({
+      templateId: 'template-1',
+      action: 'SNOOZED',
+      responseTime: 900, // seconds
+      identityId: 'identity-1',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(rescheduler.reschedule).toHaveBeenCalledWith('template-1', 'identity-1', 900);
+  });
+
+  it('still records the response when rescheduling fails', async () => {
+    const rescheduler = { reschedule: vi.fn(async () => { throw new Error('schedule down'); }) };
+    const useCase = new RecordReminderResponseUseCase(repo, rescheduler);
+
+    const result = await useCase.execute({
+      templateId: 'template-1',
+      action: 'SNOOZED',
+      responseTime: 300,
+      identityId: 'identity-1',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(repo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not reschedule for non-snooze actions', async () => {
+    const rescheduler = { reschedule: vi.fn(async () => undefined) };
+    const useCase = new RecordReminderResponseUseCase(repo, rescheduler);
+
+    await useCase.execute({
+      templateId: 'template-1',
+      action: 'COMPLETED',
+      responseTime: 10,
+      identityId: 'identity-1',
+    });
+
+    expect(rescheduler.reschedule).not.toHaveBeenCalled();
+  });
+});

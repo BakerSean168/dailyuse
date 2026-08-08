@@ -149,6 +149,8 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
+      # 本地验证环境（空库）：允许 db push 接受 data-loss 警告（唯一约束重建）。
+      MIGRATOR_ACCEPT_DATA_LOSS: ${MIGRATOR_ACCEPT_DATA_LOSS:-1}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:?set DB_NAME}

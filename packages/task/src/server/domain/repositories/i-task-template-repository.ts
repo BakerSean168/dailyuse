@@ -82,6 +82,13 @@ export interface ITaskTemplateRepository {
   findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]>;
 
   /**
+   * 全量模板引用（R1-4 projection reconcile 用）。
+   * 返回所有用户的 (id, identityId)，供投影 runtime 启动时全量对账；
+   * 不支持全量扫描的实现应返回空数组（该宿主跳过 reconcile 并记录告警）。
+   */
+  findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>>;
+
+  /**
    * 硬删除任务模板（identity-scoped）
    */
   delete(identityId: string, id: string): Promise<void>;

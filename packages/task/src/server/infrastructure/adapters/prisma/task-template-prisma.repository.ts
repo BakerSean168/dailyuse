@@ -19,6 +19,7 @@ import {
 } from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import { PrismaTaskTemplateMapper } from './mappers/prisma-task-template-mapper';
+import { OptimisticConcurrencyError } from '../../../domain/errors/optimistic-concurrency.error';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -55,19 +56,39 @@ export class TaskTemplatePrismaRepository
 
   /**
    * Protected persistence method - called by base class before event publishing
+   *
+   * R2-5a：乐观锁——已存在模板必须匹配 `version: template.version - 1`，
+   * 否则并发修改抛 OptimisticConcurrencyError；不存在则 create。
    */
   protected async persist(template: TaskTemplate): Promise<void> {
     const data = this.toWriteData(template);
 
-    await this.db.taskTemplate.upsert({
-      where: { id: template.id },
-      create: {
-        id: template.id,
-        ...data,
-        createdAt: new Date(template.createdAt),
-      },
-      update: data,
+    const updated = await this.db.taskTemplate.updateMany({
+      where: { id: template.id, version: template.version - 1 },
+      data,
     });
+
+    if (updated.count === 0) {
+      const existing = await this.db.taskTemplate.findUnique({
+        where: { id: template.id },
+        select: { id: true, version: true },
+      });
+      if (existing) {
+        throw new OptimisticConcurrencyError(
+          'TaskTemplate',
+          String(template.id),
+          template.version - 1,
+          existing.version,
+        );
+      }
+      await this.db.taskTemplate.create({
+        data: {
+          id: template.id,
+          ...data,
+          createdAt: new Date(template.createdAt),
+        },
+      });
+    }
   }
 
   async findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null> {
@@ -151,6 +172,13 @@ export class TaskTemplatePrismaRepository
         }
       })
       .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+  }
+
+  async findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    const rows = await this.db.taskTemplate.findMany({
+      select: { id: true, identityId: true },
+    });
+    return rows.map((row) => ({ id: row.id, identityId: row.identityId }));
   }
 
   async findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]> {

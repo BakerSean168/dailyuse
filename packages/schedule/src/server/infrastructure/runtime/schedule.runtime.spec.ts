@@ -80,6 +80,7 @@ vi.mock('../../application/scheduler/schedule-task-queue', () => {
     public readonly addTask = vi.fn();
     public readonly removeTask = vi.fn();
     public readonly stop = vi.fn();
+    public readonly drain = vi.fn().mockResolvedValue(undefined);
     public loadedItems: unknown[] = [];
     public startPromise: Promise<void> | null = null;
 
@@ -108,6 +109,7 @@ interface MockQueueInstance {
   readonly addTask: ReturnType<typeof vi.fn>;
   readonly removeTask: ReturnType<typeof vi.fn>;
   readonly stop: ReturnType<typeof vi.fn>;
+  readonly drain: ReturnType<typeof vi.fn>;
   readonly config: {
     readonly taskLoader?: { loadActiveTasks(): Promise<unknown[]> };
     readonly onExecuteTask: (taskId: string, item: { identityId: string }) => Promise<void>;
@@ -152,6 +154,7 @@ function createRepositoryMock(): ScheduleTaskRepositoryMock {
     count: vi.fn(async () => 0),
     saveBatch: vi.fn(async () => undefined),
     deleteBatch: vi.fn(async () => undefined),
+    claimForExecution: vi.fn(async () => true),
     withTransaction: vi.fn(),
   } as unknown as ScheduleTaskRepositoryMock;
 
@@ -447,6 +450,32 @@ describe('createScheduleRuntimeContribution', () => {
     expect(task.status).toBe(ScheduleTaskStatus.Active);
   });
 
+  it('R3b: skips execution when the atomic claim fails (another host already claimed)', async () => {
+    const task = createLoadedTask({ id: 'task-claim-conflict', nextRunAt: Date.now() - 60_000 });
+    const repository = createRepositoryMock();
+    repository.findByIdForIdentity.mockResolvedValue(task);
+    repository.claimForExecution.mockResolvedValue(false);
+    const sourceExecutor = {
+      execute: vi.fn(async () => ({ nextRunAt: Date.now() + 300_000, result: { ok: true } })),
+    };
+
+    createScheduleRuntimeContribution({
+      scheduleTaskRepository: repository,
+      sourceExecutor,
+    });
+    const queue = getLastQueue();
+
+    await queue.config.onExecuteTask(task.id, { identityId: String(task.identityId) });
+
+    expect(repository.claimForExecution).toHaveBeenCalledWith(
+      task.id,
+      new Date(task.execution.nextRunAt),
+    );
+    expect(sourceExecutor.execute).not.toHaveBeenCalled();
+    expect(repository.save).not.toHaveBeenCalled();
+    expect(task.execution.executionCount).toBe(0);
+  });
+
   it('marks execution as failed when source execution throws and no retry can be scheduled', async () => {
     const startTime = Date.now() - 120_000;
     const task = createLoadedTask({
@@ -556,7 +585,8 @@ describe('createScheduleRuntimeContribution', () => {
     await runtime.start();
     const queue = getLastQueue();
 
-    runtime.stop();
+    // R1-3：stop 为 async（先 drain 再停队列）。
+    await runtime.stop();
 
     expect(mocked.eventBus.off).toHaveBeenCalledTimes(9);
     expect(queue.stop).toHaveBeenCalledTimes(1);

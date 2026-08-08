@@ -16,6 +16,11 @@ export interface TaskGoalProgressOutboxEventV1 {
   eventId: string;
   schemaVersion: 1;
   eventType: 'task.goal-progress-requested';
+  /**
+   * R2-5b：贡献方向。'complete'（默认，历史事件缺省视为 complete）应用贡献，
+   * 'uncomplete' 回滚贡献（撤销完成时投递，消费方按 source 删除 GoalRecord）。
+   */
+  action?: 'complete' | 'uncomplete';
   identityId: IdentityId;
   taskInstanceId: TaskInstanceId;
   taskTemplateId: TaskTemplateId;

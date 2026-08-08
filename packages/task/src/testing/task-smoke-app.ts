@@ -61,6 +61,7 @@ export function createMockTemplateRepo(): ITaskTemplateRepository {
     countTasks: vi.fn().mockResolvedValue(0),
     saveBatch: vi.fn().mockResolvedValue(undefined),
     deleteBatch: vi.fn().mockResolvedValue(undefined),
+    findAllTemplateRefs: vi.fn(async () => []),
   };
 }
 

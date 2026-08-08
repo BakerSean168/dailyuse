@@ -9,6 +9,7 @@ import type {
   ScheduleTaskSourceExecutor,
 } from '../../application/source-executors/runtime-contract';
 import { ScheduleTaskQueue, type ScheduledItem } from '../../application/scheduler/schedule-task-queue';
+import { SCHEDULE_LEASE_KEY } from '../lease/schedule-lease-coordinator';
 import type { ScheduleModuleRuntimeContribution } from '../schedule.module';
 
 const logger = createLogger('ScheduleRuntime');
@@ -36,6 +37,14 @@ export interface ScheduleRuntimeDependencies {
   readonly scheduleTaskRepository: IScheduleTaskRepository;
   readonly sourceExecutor: ScheduleTaskSourceExecutor;
   readonly shouldScheduleTask?: (task: ScheduleTask) => boolean | Promise<boolean>;
+  /** R0-3：业务指标 recorder（可选）。 */
+  readonly metrics?: import('@memoflow/patterns').BusinessMetricRecorder;
+  /**
+   * R3a：调度器宿主租约（可选）。提供时，start 先原子 acquire DB lease，
+   * 失败则本宿主不启动执行队列（只作为读模型宿主）；无 repository 的
+   * coordinator（单宿主/测试）直接放行。
+   */
+  readonly leaseCoordinator?: import('../lease/schedule-lease-coordinator').ScheduleLeaseCoordinator;
 }
 
 function toScheduledItem(task: ScheduleTask): ScheduledItem | null {
@@ -158,6 +167,19 @@ async function executeScheduledTask(
   let result: Record<string, unknown> | undefined;
   let nextRunAt: number | null | undefined;
 
+  // R3b：原子 claim——共享 DB 的多个宿主并发出队同一任务时，
+  // 只有先 claim 成功的宿主继续执行；另一宿主直接跳过。
+  if (repository.claimForExecution && task.execution.nextRunAt !== null) {
+    const claimed = await repository.claimForExecution(taskId, new Date(task.execution.nextRunAt));
+    if (!claimed) {
+      logger.info('[Schedule] Execution skipped: task already claimed by another host', {
+        taskId,
+        nextRunAt: task.execution.nextRunAt,
+      });
+      return;
+    }
+  }
+
   if (!task.execute()) {
     status = ExecutionStatus.Skipped;
     errorMessage = 'Task is not executable';
@@ -237,6 +259,8 @@ export function createScheduleRuntimeContribution(
       },
     },
     onExecuteTask: async (taskId, item) => {
+      // R0-3：occurrence claimed 指标（执行开始）。
+      deps.metrics?.increment('schedule.occurrence.claimed');
       await executeScheduledTask(
         deps.scheduleTaskRepository,
         deps.sourceExecutor,
@@ -244,9 +268,12 @@ export function createScheduleRuntimeContribution(
         deps.shouldScheduleTask,
         item.identityId,
       );
+      // 执行成功（executeScheduledTask 内部会保存 completed 状态）。
+      deps.metrics?.increment('schedule.occurrence.completed');
     },
     onExecuteError: (taskId, error) => {
       logger.error('[Schedule] Queue execution failed', { taskId, error: error.message });
+      deps.metrics?.increment('schedule.occurrence.failed');
     },
   });
 
@@ -341,6 +368,17 @@ export function createScheduleRuntimeContribution(
 
   let started = false;
   let starting: Promise<void> | null = null;
+  /** R3a：持有 lease 期间阻塞在 execute 内的释放器（宿主停止时调用）。 */
+  let releaseLease: (() => void) | null = null;
+  /** R3a：正在执行的 lease.execute promise（stop 时等待其完成并释放租约）。 */
+  let leaseExecution: Promise<{ acquired: boolean; value?: void }> | null = null;
+
+  const startScheduler = async (): Promise<void> => {
+    registerListeners();
+    await queue.start();
+    started = true;
+    logger.info('[Schedule] Runtime contribution started');
+  };
 
   return {
     start(): Promise<void> {
@@ -353,12 +391,33 @@ export function createScheduleRuntimeContribution(
       }
 
       starting = (async () => {
-        registerListeners();
-
         try {
-          await queue.start();
-          started = true;
-          logger.info('[Schedule] Runtime contribution started');
+          const lease = deps.leaseCoordinator;
+          if (!lease) {
+            await startScheduler();
+            return;
+          }
+
+          // R3a：唯一调度宿主——先原子抢占 DB lease；失败则本宿主只作为
+          // 读模型宿主（不启动执行队列）。
+          leaseExecution = lease.execute(SCHEDULE_LEASE_KEY, async () => {
+            await startScheduler();
+            logger.info('[Schedule] Runtime contribution started (lease held)');
+            // 保持租约直到宿主停止；心跳由 coordinator 维护。
+            await new Promise<void>((resolve) => {
+              releaseLease = resolve;
+            });
+          });
+          const result = await leaseExecution;
+
+          if (!result.acquired) {
+            logger.warn(
+              '[Schedule] Lease not acquired; running as read-model host only (no scheduler)',
+            );
+            // 仍注册事件监听以跟踪任务变化，便于宿主后续可升级为调度宿主。
+            registerListeners();
+            started = true;
+          }
         } catch (error) {
           unregisterListeners();
           throw error;
@@ -370,12 +429,22 @@ export function createScheduleRuntimeContribution(
       return starting;
     },
 
-    stop(): void {
+    stop: async (): Promise<void> => {
       if (!started) {
         return;
       }
 
+      // R3a：若持有 lease，先释放阻塞让 coordinator 释放租约并等待完成。
+      releaseLease?.();
+      releaseLease = null;
+      if (leaseExecution) {
+        await leaseExecution;
+        leaseExecution = null;
+      }
+
       unregisterListeners();
+      // R1-3：先排空（等待进行中的 handler 完成），再停队列。
+      await queue.drain();
       queue.stop();
       started = false;
       logger.info('[Schedule] Runtime contribution stopped');

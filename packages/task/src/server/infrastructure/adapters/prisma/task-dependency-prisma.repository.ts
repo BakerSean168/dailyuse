@@ -177,7 +177,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
     if (deleted.count !== 1) {
       throw new Error('Task dependency not found for the current identity.');
     }
-    await publishAggregateEvents(dependency, eventBusAdapter);
+    await publishAggregateEvents(dependency, { eventBus: eventBusAdapter });
   }
 
   async findAggregateById(identityId: string, id: string): Promise<TaskDependency | null> {

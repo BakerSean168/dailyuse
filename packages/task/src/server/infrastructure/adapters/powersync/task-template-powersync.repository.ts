@@ -249,6 +249,11 @@ export class PowerSyncTaskTemplateRepository
     return rows.filter((template) => tags.some((tag) => template.tags.includes(tag)));
   }
 
+  async findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    // 本地 PowerSync 宿主不执行全量 reconcile（跨用户扫描需要服务端源）。
+    return [];
+  }
+
   async findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]> {
     const rows = await this.queryTemplates(
       `SELECT * FROM task_templates

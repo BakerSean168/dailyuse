@@ -138,7 +138,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
     if (deleted.count !== 1) {
       throw new Error('Schedule event not found for the current identity.');
     }
-    await publishAggregateEvents(entry, eventBusAdapter);
+    await publishAggregateEvents(entry, { eventBus: eventBusAdapter });
   }
 
   /**

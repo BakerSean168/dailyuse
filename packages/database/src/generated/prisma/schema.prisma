@@ -64,9 +64,13 @@ model Account {
   repositoryExplorers             RepositoryExplorer[]
   repositoryStatistics            RepositoryStatistic?
   schedules                       Schedule[]
-  scheduleJobs                    ScheduleJob[]
   scheduleTasks                   ScheduleTask[]
   scheduleStatistics              ScheduleStatistic?
+  habits                          Habit[]
+  relations                       Relation[]
+  walletAccounts                  WalletAccount[]
+  walletTransactions              WalletTransaction[]              @relation("AccountWalletTransactions")
+  activityLedger                  ActivityLedger[]
   taskFolders                     TaskFolder[]
   taskTemplates                   TaskTemplate[]
   taskInstances                   TaskInstance[]
@@ -101,6 +105,33 @@ model Account {
   @@index([emailAddress])
   @@index([phoneFullNumber])
   @@map("accounts")
+}
+
+// ==========================================
+// Activity Ledger (R6)
+// 全业务事件的可解释活动账本（Dashboard 读模型之源）
+// ==========================================
+
+model ActivityLedger {
+  id            String   @id
+  identityId    String   @map("identity_id")
+  actorId       String   @map("actor_id")
+  subjectType   String   @map("subject_type") /// goal | task | reminder | schedule | habit | knowledge
+  subjectId     String   @map("subject_id")
+  action        String   @map("action") /// created | completed | updated | response | executed | ...
+  title         String? /// 归档标题快照（跨 DST/归档实体仍显示准确标题）
+  correlationId String?  @map("correlation_id")
+  beforeSummary String?  @map("before_summary")
+  afterSummary  String?  @map("after_summary")
+  sourceEvent   String   @map("source_event")
+  occurredAt    DateTime @map("occurred_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId, occurredAt])
+  @@index([identityId, subjectType, subjectId])
+  @@map("activity_ledger")
 }
 
 // ==========================================
@@ -580,6 +611,7 @@ model Goal {
   // ============ 层级与组织 ============
   folderId     String? @map("folder_id") /// 所属文件夹
   parentGoalId String? @map("parent_goal_id") /// 父目标ID（支持目标层级）
+  rollupPolicy String  @default("kr") @map("rollup_policy") /// R4：子目标进度汇总策略（kr/weighted/manual/disabled）
   sortOrder    Int     @default(0) @map("sort_order") /// 排序顺序
 
   // ============ 扩展功能 ============
@@ -734,13 +766,15 @@ model GoalReview {
   goalId     String @map("goal_id")
 
   // ============ 评审内容 ============
-  reviewType     String  @map("review_type") /// 评审类型（weekly/monthly/milestone/completion）
-  content        String /// 主要内容
-  achievements   String? /// 成就总结
-  challenges     String? /// 遇到的挑战
-  lessonsLearned String? @map("lessons_learned") /// 经验教训
-  nextSteps      String? @map("next_steps") /// 下一步计划
-  rating         Int? /// 评分（1-5星）
+  reviewType         String  @map("review_type") /// 评审类型（weekly/monthly/milestone/completion）
+  title              String? /// 评审标题（R4）
+  content            String /// 主要内容
+  achievements       String? /// 成就总结
+  challenges         String? /// 遇到的挑战
+  lessonsLearned     String? @map("lessons_learned") /// 经验教训
+  nextSteps          String? @map("next_steps") /// 下一步计划（JSON 数组：next actions）
+  rating             Int? /// 评分（1-5星）
+  keyResultSnapshots String? @map("key_result_snapshots") /// KR 快照（JSON，R4）
 
   // ============ 审计 ============
   createdAt DateTime @default(now()) @map("created_at")
@@ -932,6 +966,74 @@ model RuleRevision {
 }
 
 // ==========================================
+// Habit Module (R4)
+// 习惯、习惯发生、打卡与连续天数投影
+// ==========================================
+
+model Habit {
+  id          String    @id
+  identityId  String    @map("identity_id")
+  name        String
+  description String?
+  frequency   String    @default("daily") /// daily | weekly
+  goalId      String?   @map("goal_id") /// 关联目标（贡献策略使用）
+  status      String    @default("Active") /// Active | Archived
+  startDate   DateTime? @map("start_date")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  occurrences HabitOccurrence[]
+  streak      HabitStreakProjection?
+
+  @@index([identityId])
+  @@map("habits")
+}
+
+model HabitOccurrence {
+  id             String   @id
+  habitId        String   @map("habit_id")
+  occurrenceDate DateTime @map("occurrence_date") /// 本地日 00:00
+  status         String   @default("Pending") /// Pending | Completed | Skipped
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  habit    Habit          @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  checkIns HabitCheckIn[]
+
+  @@unique([habitId, occurrenceDate])
+  @@index([habitId, status])
+  @@map("habit_occurrences")
+}
+
+model HabitCheckIn {
+  id           String   @id
+  occurrenceId String   @map("occurrence_id")
+  checkedAt    DateTime @map("checked_at")
+  note         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  occurrence HabitOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+
+  @@index([occurrenceId])
+  @@map("habit_check_ins")
+}
+
+model HabitStreakProjection {
+  id              String    @id
+  habitId         String    @unique @map("habit_id")
+  currentStreak   Int       @map("current_streak")
+  longestStreak   Int       @map("longest_streak")
+  lastCheckInDate DateTime? @map("last_check_in_date")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@map("habit_streak_projections")
+}
+
+// ==========================================
 // Notification Module
 // 通知聚合根、渠道、历史、偏好、模板
 // ==========================================
@@ -950,6 +1052,7 @@ model Notification {
   relatedEntityId   String?   @map("related_entity_id")
   metadata          String?
   actions           String?
+  navigationIntent  String?   @map("navigation_intent")
   readAt            DateTime? @map("read_at")
   sentAt            DateTime? @map("sent_at")
   expiresAt         DateTime? @map("expires_at")
@@ -968,16 +1071,19 @@ model Notification {
 }
 
 model NotificationChannel {
-  id             String  @id
-  identityId     String  @map("identity_id")
-  notificationId String  @map("notification_id")
-  channelType    String  @map("channel_type")
+  id             String    @id
+  identityId     String    @map("identity_id")
+  notificationId String    @map("notification_id")
+  channelType    String    @map("channel_type")
   status         String
   recipient      String?
-  maxRetries     Int     @default(3) @map("max_retries")
+  maxRetries     Int       @default(3) @map("max_retries")
   error          String?
   response       String?
-  retryCount     Int     @default(0) @map("retry_count")
+  retryCount     Int       @default(0) @map("retry_count")
+  sentAt         DateTime? @map("sent_at")
+  failedAt       DateTime? @map("failed_at")
+  attempts       Int       @default(0)
 
   identity     Account      @relation("AccountNotificationChannels", fields: [identityId], references: [id])
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
@@ -1039,6 +1145,84 @@ model NotificationTemplate {
 
   @@index([name])
   @@map("notification_templates")
+}
+
+// ==========================================
+// Relation Module (R5)
+// 跨模块 SubjectRef 关系：Note/Goal/Task/Reminder/Habit 双向连接
+// ==========================================
+
+model Relation {
+  id           String   @id
+  identityId   String   @map("identity_id")
+  subjectType  String   @map("subject_type") /// note | goal | task | reminder | habit
+  subjectId    String   @map("subject_id")
+  relationType String   @map("relation_type") /// references | related | depends_on | contributes_to
+  objectType   String   @map("object_type")
+  objectId     String   @map("object_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@unique([identityId, subjectType, subjectId, relationType, objectType, objectId])
+  @@index([identityId, objectType, objectId]) /// 反向查询
+  @@map("relations")
+}
+
+// ==========================================
+// Reliable Messaging (R1-1)
+// 通用 outbox / inbox receipt / projection cursor
+// 提供跨模块副作用的 durable 边界与崩溃恢复游标
+// ==========================================
+
+/// Outbox 消息：跨模块写入与投递意图的 durable 队列。
+/// AggregateRepositoryBase 发布事件失败时落入此表，由 dispatcher 重试投递。
+model OutboxMessage {
+  id            String    @id
+  identityId    String?   @map("identity_id")
+  messageType   String    @map("message_type")
+  schemaVersion Int       @default(1) @map("schema_version")
+  correlationId String    @map("correlation_id")
+  causationId   String?   @map("causation_id")
+  payloadJson   String    @map("payload_json")
+  status        String    @default("pending")
+  attempts      Int       @default(0)
+  availableAt   DateTime  @default(now()) @map("available_at")
+  lastError     String?   @map("last_error")
+  dispatchedAt  DateTime? @map("dispatched_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([status, availableAt])
+  @@index([correlationId])
+  @@index([messageType])
+  @@map("reliable_outbox_messages")
+}
+
+/// Inbox 回执：同一消息对同一消费者只允许一次成功处理（幂等去重）。
+model InboxReceipt {
+  id          String
+  consumer    String
+  outcome     String
+  error       String?
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@id([id, consumer])
+  @@index([consumer, outcome])
+  @@map("reliable_inbox_receipts")
+}
+
+/// Projection 游标：启动 reconcile 与增量重放的断点。
+model ProjectionCursor {
+  projector       String
+  sourceName      String    @map("source_name")
+  lastProcessedId String?   @map("last_processed_id")
+  lastProcessedAt DateTime? @map("last_processed_at")
+  version         Int       @default(0)
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@id([projector, sourceName])
+  @@map("reliable_projection_cursors")
 }
 
 // ==========================================
@@ -1614,39 +1798,6 @@ model Schedule {
   @@map("schedules")
 }
 
-/// ScheduleJob 聚合根 - 调度作业
-/// 跨模块的调度触发器，关联到业务模块的具体资源
-model ScheduleJob {
-  // ============ 主键与外键 ============
-  id         String @id
-  identityId String @map("identity_id")
-
-  // ============ 调度配置 ============
-  nextRunAt      DateTime @map("next_run_at")
-  cronExpression String?  @map("cron_expression")
-
-  // ============ 来源 ============
-  sourceModule String @map("source_module") /// 来源模块
-  sourceId     String @map("source_id") /// 来源实体ID
-
-  // ============ 触发配置 ============
-  triggerEvent String  @map("trigger_event")
-  payload      String? /// JSON: Record<string, any>
-
-  // ============ 审计 ============
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // ============ 关系映射 ============
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  // ============ 索引优化 ============
-  @@index([identityId])
-  @@index([nextRunAt])
-  @@index([sourceModule, sourceId])
-  @@map("schedule_jobs")
-}
-
 model ScheduleTask {
   id                    String    @id
   identityId            String    @map("identity_id")
@@ -1733,6 +1884,21 @@ model ScheduleStatistic {
 
   @@index([identityId])
   @@map("schedule_statistics")
+}
+
+/// R3a：调度器宿主互斥租约（DB lease/heartbeat）。
+/// 共享数据库的多个宿主（API 多实例、同库进程）通过本表互斥：
+/// 只有成功 acquire 的宿主启动 ScheduleTaskQueue；其余宿主只消费读模型。
+model ScheduleLease {
+  id         String   @id
+  leaseKey   String   @unique @map("lease_key")
+  ownerToken String   @map("owner_token")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([expiresAt])
+  @@map("schedule_leases")
 }
 
 // ==========================================
@@ -1895,10 +2061,11 @@ model TaskInstance {
   identityId String @map("identity_id")
 
   // ============ 实例基本信息 ============
-  instanceDate DateTime @map("instance_date")
-  status       String /// TaskInstanceStatus
-  importance   String   @default("moderate") /// ImportanceLevel
-  priority     Int? /// 动态计算的优先级分数
+  instanceDate  DateTime @map("instance_date")
+  occurrenceKey String?  @map("occurrence_key") /// R2-1 幂等键 templateId:localDate
+  status        String /// TaskInstanceStatus
+  importance    String   @default("moderate") /// ImportanceLevel
+  priority      Int? /// 动态计算的优先级分数
 
   // ============ 时间追踪 ============
   timeConfig      String    @map("time_config") /// JSON: TaskTimeConfigDTO
@@ -1918,6 +2085,8 @@ model TaskInstance {
   account  Account      @relation(fields: [identityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   template TaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  // R2-1：同一模板同一天最多一个实例（幂等键，防双宿主/并发重复生成）。
+  @@unique([templateId, occurrenceKey])
   // ============ 索引优化 ============
   @@index([templateId, instanceDate])
   @@index([identityId, status])
@@ -1935,6 +2104,7 @@ model TaskGoalOutbox {
   goalId         String    @map("goal_id")
   keyResultId    String    @map("key_result_id")
   payload        String
+  action         String    @default("complete")
   status         String    @default("PENDING")
   attempts       Int       @default(0)
   availableAt    DateTime  @default(now()) @map("available_at")
@@ -2026,4 +2196,45 @@ model TaskStatistic {
 
   @@index([identityId])
   @@map("task_statistics")
+}
+
+// ==========================================
+// Wallet (R7 试点)
+// 第一个外部模块：交易/预算/账户，与 Goal 通过 Relation 连接
+// ==========================================
+
+model WalletAccount {
+  id         String   @id
+  identityId String   @map("identity_id")
+  name       String
+  currency   String   @default("CNY")
+  balance    Decimal  @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  transactions WalletTransaction[]
+
+  @@index([identityId])
+  @@map("wallet_accounts")
+}
+
+model WalletTransaction {
+  id         String   @id
+  accountId  String   @map("account_id")
+  identityId String   @map("identity_id")
+  type       String /// income | expense | transfer
+  amount     Decimal
+  category   String?
+  note       String?
+  goalId     String?  @map("goal_id") /// 与 Goal 的 relation（contributes_to）
+  occurredAt DateTime @map("occurred_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  account          WalletAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account_identity Account       @relation("AccountWalletTransactions", fields: [identityId], references: [id])
+
+  @@index([identityId, occurredAt])
+  @@map("wallet_transactions")
 }

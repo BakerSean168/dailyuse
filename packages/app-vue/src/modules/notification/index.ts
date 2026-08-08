@@ -20,5 +20,6 @@ export { notificationRoutes } from './router';
 
 // Initialization
 export { createNotificationStartupHook } from './initialization';
+export { createNotificationClickNavigation } from './desktop/notification-click-navigation';
 // Components
 export * from './components';

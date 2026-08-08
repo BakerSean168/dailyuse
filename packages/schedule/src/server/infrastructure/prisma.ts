@@ -15,8 +15,11 @@ export function createSchedulePrismaRepository(db: PrismaClient) {
   return new SchedulePrismaRepository(db);
 }
 
-export function createScheduleTaskPrismaRepository(db: PrismaClient) {
-  return new ScheduleTaskPrismaRepository(db);
+export function createScheduleTaskPrismaRepository(
+  db: PrismaClient,
+  outboxWriter?: import('@memoflow/patterns').IOutboxWriter,
+) {
+  return new ScheduleTaskPrismaRepository(db, undefined, outboxWriter);
 }
 
 export function createScheduleExecutionPrismaRepository(db: PrismaClient) {

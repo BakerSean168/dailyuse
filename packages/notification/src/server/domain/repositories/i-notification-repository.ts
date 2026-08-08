@@ -39,6 +39,11 @@ export interface INotificationRepository {
    * Find notification by id + identity (ownership fence).
    * Returns null when missing or not owned by identityId.
    */
+  /**
+   * R3e：渠道 worker 用——按渠道状态查询（返回带渠道的聚合，渠道经 status 过滤）。
+   */
+  findChannelsByStatus(status: string, limit?: number): Promise<Notification[]>;
+
   findByIdForIdentity(
     identityId: string,
     id: string,

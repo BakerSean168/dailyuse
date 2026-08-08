@@ -16,6 +16,7 @@ import type {
   NotificationCategory,
   RelatedEntityType,
   NotificationChannelType,
+  NotificationNavigationIntentDTO,
 } from '@memoflow/contracts/notification';
 import { NotificationChannelType as ChannelTypeEnum } from '@memoflow/contracts/notification';
 import type { IdentityId } from '@memoflow/contracts/primitives';
@@ -57,6 +58,8 @@ export class CreateNotificationUseCase {
     category: NotificationCategory;
     relatedEntityType?: RelatedEntityType;
     relatedEntityId?: string;
+    /** R3d：稳定导航意图（点击通知跳转目标）。 */
+    navigationIntent?: NotificationNavigationIntentDTO | null;
     channels?: NotificationChannelType[];
     expiresAt?: number | null;
   }): Promise<Result<NotificationClientDTO>> {
@@ -89,6 +92,7 @@ export class CreateNotificationUseCase {
       content: params.content,
       type: params.type,
       category: params.category,
+      navigationIntent: params.navigationIntent ?? null,
       expiresAt: params.expiresAt,
     });
 

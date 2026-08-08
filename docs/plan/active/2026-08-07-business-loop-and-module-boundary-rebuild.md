@@ -164,3 +164,34 @@ created: 2026-08-07T00:00:00Z
 ## 6. 本计划完成定义
 
 当 R1-R3 的可靠执行与任务贡献闭环通过 Docker/E2E、并发、崩溃恢复、DST、PowerSync 双宿主矩阵后，才进入 Habit/AI/Wallet 扩展。每个阶段必须提交源码、领域测试、集成测试、故障注入结果和文档状态；不能以“页面能显示”替代闭环完成。
+
+## 7. 实施状态（持续更新）
+
+- [x] **R0-1 Runtime ownership**：`@memoflow/contracts/primitives/runtime`（RuntimeOwnership/createRuntimeOwnership）；API（cloud-api）与 Desktop（desktop-local）启动输出 `[runtime-ownership]` 日志。
+- [x] **R0-2 CommandEnvelope 雏形**：`@memoflow/contracts/primitives/command`（CommandEnvelope + requestId/correlationId/causationId/commandId/messageId 工厂）；`command.spec.ts` 固化根命令/延续链语义。
+- [x] **R0-3 业务指标**：`@memoflow/patterns/observability`（BusinessMetricRecorder：occurrence claimed/completed/failed、outbox fallback enqueued/failed、duplicate key/optimistic conflict、projection lag）；已接入聚合仓储 outbox 兜底与 schedule 执行成功/失败。
+- [x] **R0-5 Findings 追踪**：`docs/plan/active/2026-08-07-business-loop-findings-tracking.md`（P0/P1 finding → 状态/承接；P0-02、P1-12 已修复并固化测试）。
+- [x] **R1-1 可靠消息表与端口**：`database/prisma/schema/reliable-messaging.prisma`（OutboxMessage/InboxReceipt/ProjectionCursor）+ `@memoflow/contracts/reliable-messaging` 类型。
+- [x] **R1-2 聚合仓储 outbox 兜底**：`publishAggregateEvents` 总线失败改落 durable outbox（可选 IOutboxWriter），14 处调用点迁移；`aggregate-repository.base.spec.ts` 固化 outbox fallback 语义。
+- [x] **R1-3 统一 async 生命周期**：`RuntimeContribution` 转 Promise；composite/三个投影 runtime/`ScheduleTaskQueue.drain`/schedule module dispose 逆序排空关闭；desktop window-manager 与 profile manager await。
+- [x] **R1-4 Projection reconcile + 原子交换**：task 投影源 `listTemplateRefs`（Prisma 全量；PowerSync 宿主跳过并告警），runtime 启动先对账再注册监听；`replaceSelection` 先 upsert 新计划再删陈旧任务（消除空窗）；`shared-projection.spec.ts` + reconcile 测试固化。
+- [x] **R1-5 事件契约**：MessageSchemaVersion / MessageRetryPolicy / MessageId 类型就绪（dispatcher/retry 执行在 R2+ 迁移时落地）。
+
+### 后续阶段（未开始）
+
+- [x] **R2（完成）**：P0-03 唯一键（`occurrenceKey` + `@@unique`）、P1-01 查询纯读（maintenance worker）、P1-02 fromDate 修复（force 尊重区间）已完成并固化测试；时区 local-day-aware（`startOfLocalDay` 主导）。
+- [x] **R2-5a expectedVersion 乐观锁**：TaskInstance complete/uncomplete/skip 递增 version，Prisma persist 改 `updateMany where version-1`，冲突抛 `OptimisticConcurrencyError`（新建走 create）；TaskTemplate 加 `advanceVersion()`，UpdateTaskTemplateReq 增加可选 `expectedVersion`，use case 校验不匹配返回 CONFLICT，Prisma 乐观锁兜底。
+- [x] **R2-5b 贡献通道收敛（单通道）**：`toTaskGoalOutboxRecord` 支持 `task:instance-uncompleted`（action:'uncomplete' 反向投递）；`UncompleteTaskInstanceUseCase` 改经 `TaskWriteTransactionRunner` 提交（与 complete 对齐，事务内落 outbox）；`GoalTaskProgressHandler` 增加 uncomplete 分支（按 instance/template source 调 `RemoveTaskGoalContributionUseCase` revert，失败保持 retryable）；`registerGoalEventListeners` 移除 task 事件直连订阅（保留幂等启停契约，宿主挂载点不变）——Task→Goal 贡献统一经 durable outbox（apply/revert/幂等重放），不再双轨并存。
+- [x] **R3（部分完成，余项承接）**：
+  - **R3a 唯一调度宿主（DB lease）**：`ScheduleLease` 表（schedule.prisma）+ `ScheduleLeaseCoordinator`（原子抢占/心跳续约/仅 owner 释放，仿 KnowledgeRepositoryLease）+ Prisma 仓储；API 组合根注入 lease，`createScheduleRuntimeContribution.start` 先 acquire，失败则本实例只作读模型宿主不启动执行队列（多 API 实例互斥）；无 repo 的 coordinator 保持单宿主/测试旧行为。
+  - **R3b 原子 claim（exactly-once）**：`IScheduleTaskRepository.claimForExecution`（Prisma updateMany / PowerSync 事务条件更新，仅 Active 且 nextRunAt 匹配时置 lastRunAt）；`executeScheduledTask` 执行 source 前 claim，失败即跳过（防双宿主重复执行同一任务）。
+  - **R3c Reminder response command 化**：`ReminderResponseDurationSeconds` 值对象（非负整秒 + 工厂校验）；snooze 必须带正时长（否则 VALIDATION_ERROR）；`ReminderSnoozeRescheduler` 端口 + Prisma 实现（把 reminder 对应 schedule task 的 nextRunAt 推迟 duration 秒），API 组合根注入——snooze 成为真正的 command；顺带修复 responseTime 秒/毫秒语义混乱（实体内部 ms、DTO 输出秒）。
+  - **R3d Notification 模型贯通**：`NotificationNavigationIntentDTO`（route+params 稳定导航意图）贯通 contracts DTO/聚合（state/getter/create/updateDetails/toServerDTO）/表列 `navigation_intent`/Prisma mapper/PowerSync repo/CreateNotificationUseCase 透传；`NotificationChannel` 表补 `sent_at/failed_at/attempts` 列（与实体字段对齐，写读贯通）。
+  - **R3e 遗留清理**：删除 `ScheduleJob` 模型（schedule.prisma/account.prisma/powersync-schema/table-mapping 四处清理，无领域代码使用）。
+- [x] **R3（完成）**：
+  - **渠道 worker**：`notification.runtime.ts` 实现轮询（PENDING 投递 → send+markAsDelivered 记录 receipt；失败 markAsFailed + 指数退避后 retry；attempts ≥ 阈值保持 Failed 终态 = dead-letter）；`INotificationRepository.findChannelsByStatus`（Prisma/PowerSync）+ `NotificationChannelDeliverer` 端口（默认 no-op，API/desktop 可注入渠道适配器）；Prisma module 默认接线 worker；4 个单测（投递成功/失败/退避重试/dead-letter）。
+  - **点击导航**：`createNotificationClickNavigation`（app-vue）监听 `notification:clicked` → 按 navigationIntent（route+params）导航，否则按 category 映射模块 landing，未知回 `/notifications`；desktop renderer bootstrap 接入；4 个单测。
+- [x] **R4（核心闭环）**：GoalReview 字段统一（表加 title/key_result_snapshots 列，title 不再被忽略，improvements 改存 nextSteps JSON 数组，keyResultSnapshots 读写贯通，修复 nextSteps 列丢弃与恒空）；父子 Goal `rollupPolicy`（kr/weighted/manual/disabled，表/聚合/DTO/双端 mapper 贯通）；Habit 最小闭环（habit.prisma 四表 Habit/HabitOccurrence/HabitCheckIn/HabitStreakProjection + goal 包内聚合（occurrence 幂等补齐/check-in/skip/streak 纯函数）+ 3 use cases + Prisma 仓储 + 模块注册，7 测试）；ActionItem 采用 plan 允许的「explicit Task proposal」路径（review nextActions 已结构化持久化）。
+- [x] **R5（核心闭环）**：Relation 基础设施（relation.prisma 表 + SubjectRef（note/goal/task/reminder/habit/wallet）+ 双向查询（正向/反向）+ use cases + Prisma 仓储，3 测试）；AI proposal 契约增强（planHash/expiresAt/actionId，kernel create 计算 planHash、过期置 stale、executeApproved 拒绝过期提案，3 测试）。
+- [x] **R6（核心闭环）**：activity.prisma `ActivityLedger` 表 + API 宿主记录器（订阅 goal/task/reminder/schedule 7 类关键事件写 durable ledger，写入失败不影响主链路）+ Dashboard 读模型 `listActivities` 窗口查询（提供时不再全量加载实体内存拼接，未提供回退旧派生）。
+- [x] **R7（试点）**：`ModuleManifest` 类型契约（commands/queries/relations/activities）+ `CommandRegistry`；Goal 模块 code-owned manifest（goal.create/relation.create/wallet.account.create/wallet.transaction.record + relations/activities 声明）；Wallet 外部模块试点（wallet.prisma 两表 + goal 包内 use cases（建账户/记账/列表，事务更新余额，不依赖 Goal/Task 数据表，与 Goal 经 Relation contributes_to 连接）+ manifest 命令注册）。

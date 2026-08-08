@@ -18,7 +18,7 @@ import type { IScheduleTaskRepository } from '../../../domain/repositories/i-sch
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
 import type { SourceModule } from '@memoflow/contracts/schedule';
 import { ScheduleTaskStatus } from '@memoflow/contracts/schedule';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter, type IOutboxWriter } from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import {
   PrismaScheduleTaskMapper,
@@ -69,10 +69,13 @@ export class ScheduleTaskPrismaRepository
   private readonly db: ScheduleTaskDb;
   private readonly rootClient: PrismaTransactionRoot | null;
 
-  constructor(prisma: PrismaClient);
-  constructor(prisma: ScheduleTaskDb, rootClient?: PrismaTransactionRoot);
-  constructor(prisma: ScheduleTaskDb | PrismaClient, rootClient?: PrismaTransactionRoot) {
-    super(eventBusAdapter);
+  constructor(
+    prisma: ScheduleTaskDb | PrismaClient,
+    rootClient?: PrismaTransactionRoot,
+    outboxWriter?: IOutboxWriter,
+  ) {
+    // R1-2：事件总线失败时的 durable outbox 兜底（可选）。
+    super(eventBusAdapter, outboxWriter);
     this.db = prisma;
     this.rootClient = rootClient ?? (isScheduleTaskRootDb(prisma) ? prisma : null);
   }
@@ -257,6 +260,19 @@ export class ScheduleTaskPrismaRepository
     });
 
     return tasks.map((task) => this.toDomain(task));
+  }
+
+  async claimForExecution(id: string, expectedNextRunAt: Date): Promise<boolean> {
+    const result = await this.db.scheduleTask.updateMany({
+      where: {
+        id,
+        status: ScheduleTaskStatus.Active,
+        enabled: true,
+        nextRunAt: expectedNextRunAt,
+      },
+      data: { lastRunAt: new Date() },
+    });
+    return result.count > 0;
   }
 
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {

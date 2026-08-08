@@ -156,6 +156,16 @@
       ]
     },
     {
+      "path": "apps/api/src/outbox/prisma-outbox-writer.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
       "path": "apps/api/src/scripts/database-startup-chain.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3285,6 +3295,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/notification/desktop/notification-click-navigation.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/notification/stores/notificationStore.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4433,6 +4451,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/contracts/src/primitives/command.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/contracts/src/result/action-result-dual.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5153,6 +5179,17 @@
       ]
     },
     {
+      "path": "packages/goal/src/server/application/use-cases/commands/__tests__/relation.use-cases.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts",
+        "packages/goal/vitest.use-cases.config.ts"
+      ]
+    },
+    {
       "path": "packages/goal/src/server/application/use-cases/commands/__tests__/remove-task-goal-contribution.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5391,6 +5428,16 @@
     },
     {
       "path": "packages/goal/src/server/domain/aggregates/goal.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/goal/src/server/domain/habit/__tests__/habit.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/goal/vitest.config.ts"
@@ -6253,6 +6300,16 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/infrastructure/runtime/notification.runtime.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/notification/src/server/transport/notification-usecases-export.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -7031,6 +7088,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/schedule-orchestration/src/__tests__/shared-projection.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule-orchestration/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/schedule-orchestration/src/__tests__/task-projection-runtime.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -7353,6 +7418,16 @@
         "packages/schedule/vitest.integration.config.ts"
       ],
       "measurementCollectors": []
+    },
+    {
+      "path": "packages/schedule/src/server/infrastructure/lease/schedule-lease-coordinator.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
     },
     {
       "path": "packages/schedule/src/server/infrastructure/runtime/schedule-runtime-ownership.surface.spec.ts",
@@ -7979,6 +8054,16 @@
       ]
     },
     {
+      "path": "packages/task/src/server/domain/value-objects/__tests__/task-instance-occurrence-key.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/task/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/task/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/task/src/server/domain/value-objects/__tests__/task-server-value-objects.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8174,6 +8259,16 @@
     },
     {
       "path": "packages/task/src/server/infrastructure/normalize-runtime-contributions-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/task/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/task/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/task/src/server/infrastructure/runtime/__tests__/task-instance-maintenance-runtime.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/task/vitest.config.ts"
@@ -8639,7 +8734,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 29
+      "fileCount": 30
     },
     {
       "id": "apps/api/vitest.smoke.config.ts",
@@ -8660,7 +8755,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 29
+      "fileCount": 30
     },
     {
       "id": "apps/desktop/vitest.config.ts",
@@ -8730,7 +8825,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 162
+      "fileCount": 163
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -8758,7 +8853,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 57
+      "fileCount": 58
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -8807,7 +8902,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 82
+      "fileCount": 84
     },
     {
       "id": "packages/goal/vitest.integration.config.ts",
@@ -8821,14 +8916,14 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 82
+      "fileCount": 84
     },
     {
       "id": "packages/goal/vitest.use-cases.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 33
+      "fileCount": 34
     },
     {
       "id": "packages/goal/vitest.mappers.config.ts",
@@ -8870,14 +8965,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 30
+      "fileCount": 31
     },
     {
       "id": "packages/notification/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 30
+      "fileCount": 31
     },
     {
       "id": "packages/patterns/vitest.config.ts",
@@ -8940,14 +9035,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 4
+      "fileCount": 5
     },
     {
       "id": "packages/schedule/vitest.config.ts",
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 32
+      "fileCount": 33
     },
     {
       "id": "packages/schedule/vitest.integration.config.ts",
@@ -8961,7 +9056,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 32
+      "fileCount": 33
     },
     {
       "id": "packages/schedule/vitest.use-cases.config.ts",
@@ -8996,7 +9091,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 66
+      "fileCount": 68
     },
     {
       "id": "packages/task/vitest.integration.config.ts",
@@ -9024,7 +9119,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 66
+      "fileCount": 68
     },
     {
       "id": "packages/task/vitest.use-cases.config.ts",
@@ -9175,6 +9270,7 @@
       "apps/api/src/modules/powersync/powersync-schema-result-envelope.surface.spec.ts",
       "apps/api/src/modules/powersync/snapshot-builder.spec.ts",
       "apps/api/src/modules/powersync/snapshot-storage.spec.ts",
+      "apps/api/src/outbox/prisma-outbox-writer.spec.ts",
       "apps/api/src/scripts/database-startup-chain.test.ts",
       "apps/api/src/shared/infrastructure/config/env.schema.spec.ts",
       "apps/api/src/shared/infrastructure/config/get-cors-origins-keep-boundary.surface.spec.ts",
@@ -9393,6 +9489,7 @@
       "packages/goal/src/server/application/use-cases/commands/__tests__/delete-goal-record.test.ts",
       "packages/goal/src/server/application/use-cases/commands/__tests__/delete-goal.test.ts",
       "packages/goal/src/server/application/use-cases/commands/__tests__/permanently-delete-goal.test.ts",
+      "packages/goal/src/server/application/use-cases/commands/__tests__/relation.use-cases.spec.ts",
       "packages/goal/src/server/application/use-cases/commands/__tests__/remove-task-goal-contribution.test.ts",
       "packages/goal/src/server/application/use-cases/commands/__tests__/update-goal-folder.test.ts",
       "packages/goal/src/server/application/use-cases/commands/__tests__/update-goal-key-result-progress.test.ts",
@@ -9416,6 +9513,7 @@
       "packages/goal/src/server/domain/aggregates/goal-management.spec.ts",
       "packages/goal/src/server/domain/aggregates/goal-record.spec.ts",
       "packages/goal/src/server/domain/aggregates/goal.spec.ts",
+      "packages/goal/src/server/domain/habit/__tests__/habit.spec.ts",
       "packages/goal/src/server/domain/services/__tests__/focus-session-policy.service.spec.ts",
       "packages/goal/src/server/domain/services/__tests__/goal-policy.service.spec.ts",
       "packages/goal/src/server/domain/services/__tests__/goal-progress-calculator.spec.ts",
@@ -9494,6 +9592,7 @@
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-preference-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-template-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/mappers/notification-prisma.mapper.spec.ts",
+      "packages/notification/src/server/infrastructure/runtime/notification.runtime.spec.ts",
       "packages/notification/src/server/transport/notification-usecases-export.surface.spec.ts",
       "packages/reminder/src/api/routes/reminder-group.routes.spec.ts",
       "packages/reminder/src/api/routes/reminder-template.routes.spec.ts",
@@ -9571,6 +9670,7 @@
       "packages/schedule/src/server/infrastructure/adapters/prisma/mappers/prisma-schedule-execution-mapper.spec.ts",
       "packages/schedule/src/server/infrastructure/adapters/prisma/mappers/prisma-schedule-mapper.spec.ts",
       "packages/schedule/src/server/infrastructure/adapters/prisma/mappers/prisma-schedule-task-mapper.spec.ts",
+      "packages/schedule/src/server/infrastructure/lease/schedule-lease-coordinator.spec.ts",
       "packages/schedule/src/server/infrastructure/runtime/schedule-runtime-ownership.surface.spec.ts",
       "packages/schedule/src/server/infrastructure/runtime/schedule.runtime.spec.ts",
       "packages/setting/src/api/routes.spec.ts",
@@ -9628,6 +9728,7 @@
       "packages/task/src/server/domain/services/task-dependency-policy.spec.ts",
       "packages/task/src/server/domain/task-domain-events-barrel.surface.spec.ts",
       "packages/task/src/server/domain/value-objects/__tests__/task-domain-value-objects.spec.ts",
+      "packages/task/src/server/domain/value-objects/__tests__/task-instance-occurrence-key.spec.ts",
       "packages/task/src/server/domain/value-objects/__tests__/task-server-value-objects.spec.ts",
       "packages/task/src/server/domain/value-objects/__tests__/task-template-id.spec.ts",
       "packages/task/src/server/domain/value-objects/__tests__/task-time-config-ymd.spec.ts",
@@ -9644,6 +9745,7 @@
       "packages/task/src/server/infrastructure/adapters/prisma/mappers/prisma-task-instance-mapper.spec.ts",
       "packages/task/src/server/infrastructure/adapters/prisma/mappers/prisma-task-template-mapper.spec.ts",
       "packages/task/src/server/infrastructure/normalize-runtime-contributions-dual.surface.spec.ts",
+      "packages/task/src/server/infrastructure/runtime/__tests__/task-instance-maintenance-runtime.spec.ts",
       "packages/task/src/server/infrastructure/runtime/task.runtime.spec.ts",
       "packages/task/src/server/infrastructure/schedule-execution-source.spec.ts",
       "packages/task/src/server/infrastructure/schedule-projection-source.spec.ts",
@@ -9660,7 +9762,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 822,
+    "unit": 832,
     "integration": 10,
     "smoke": 2,
     "boundary-ipc": 9,

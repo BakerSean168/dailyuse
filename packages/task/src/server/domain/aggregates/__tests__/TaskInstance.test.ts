@@ -293,6 +293,12 @@ describe('TaskInstance Aggregate', () => {
         expect(instance.actualEndTime!).toBeLessThanOrEqual(after);
       });
 
+      it('should bump version after complete (R2-5a)', () => {
+        const versionBefore = instance.version;
+        instance.complete();
+        expect(instance.version).toBe(versionBefore + 1);
+      });
+
       it('should complete an InProgress task', () => {
         instance.start();
         expect(instance.status).toBe(TaskInstanceStatus.InProgress);

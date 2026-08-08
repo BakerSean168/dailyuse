@@ -6,7 +6,10 @@ import { APP_TITLE_NAME } from '@memoflow/assets';
 import { createAppRouter } from '@memoflow/app-vue/router';
 import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@memoflow/app-vue/plugins/i18n';
 import { readDesktopAccessSnapshot } from '@memoflow/app-vue/desktop';
-import { createNotificationStartupHook } from '@memoflow/app-vue/modules/notification';
+import {
+  createNotificationStartupHook,
+  createNotificationClickNavigation,
+} from '@memoflow/app-vue/modules/notification';
 import { usePresentationPreferenceStore } from '@memoflow/app-vue/modules/setting';
 import { useAuthenticationStore } from '@memoflow/app-vue/modules/authentication';
 import { useAccountStore } from '@memoflow/app-vue/modules/account';
@@ -83,6 +86,8 @@ export async function bootstrapMainApp() {
     try {
       const notificationHook = createNotificationStartupHook();
       notificationHook.start();
+      // R3 收尾：桌面通知点击 → 稳定导航（navigationIntent / category landing）。
+      createNotificationClickNavigation(router, () => bridge).start();
     } catch (error) {
       console.error('[desktop] APP_STARTUP phase failed', error);
     }

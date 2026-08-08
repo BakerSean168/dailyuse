@@ -311,7 +311,7 @@ export class WindowManager {
     logger.info('Transitioning from main to Profile Access window');
 
     try {
-      stopScheduleRuntime();
+      await stopScheduleRuntime();
       const profileAccessWindow = this.createProfileAccessWindow();
 
       // 2. 等待 Profile Access 窗口准备好

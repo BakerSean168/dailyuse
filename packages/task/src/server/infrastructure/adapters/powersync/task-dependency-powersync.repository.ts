@@ -133,7 +133,7 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
       'DELETE FROM task_dependencies WHERE id = ? AND identity_id = ?',
       [dependency.id, dependency.identityId],
     );
-    await publishAggregateEvents(dependency, eventBusAdapter);
+    await publishAggregateEvents(dependency, { eventBus: eventBusAdapter });
   }
 
   async findAggregateById(identityId: string, id: string): Promise<TaskDependency | null> {

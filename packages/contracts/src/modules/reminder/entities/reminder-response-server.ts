@@ -9,6 +9,19 @@
 import type { ReminderResponseId, ReminderTemplateId, IdentityId } from '../../../primitives';
 
 /**
+ * R3c：响应时长值对象（秒）。
+ * 语义约束：非负整数秒；snooze 的 duration 必填且 > 0。
+ */
+export type ReminderResponseDurationSeconds = number & { readonly __brand: 'ReminderResponseDurationSeconds' };
+
+export function toReminderResponseDurationSeconds(value: number): ReminderResponseDurationSeconds {
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(`Invalid reminder response duration: ${value} (must be non-negative integer seconds)`);
+  }
+  return value as ReminderResponseDurationSeconds;
+}
+
+/**
  * 响应行为类型
  */
 export const ReminderResponseAction = {
@@ -28,7 +41,8 @@ export interface ReminderResponseServerDTO {
   reminderTemplateId: ReminderTemplateId;
   identityId: IdentityId;
   action: ReminderResponseAction;
-  responseTime?: number | null; // seconds from send to response when CLICKED/COMPLETED
+  /** R3c：响应/延后时长（秒）；snooze 必填且 > 0。 */
+  responseTime?: ReminderResponseDurationSeconds | null;
   timestamp: number; // epoch ms
 }
 

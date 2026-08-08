@@ -42,6 +42,44 @@ describe('UpdateTaskTemplateUseCase', () => {
     expect(templateRepo.save).not.toHaveBeenCalled();
   });
 
+  it('should return CONFLICT when expectedVersion does not match current version (R2-5a)', async () => {
+    const template = aOneTimeTask({ title: 'Old Name' });
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      name: 'New Name',
+      expectedVersion: template.version + 1,
+    });
+
+    expect(result).toBeErrorWithCode('CONFLICT');
+    expect(templateRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should accept expectedVersion matching current version and bump version on save (R2-5a)', async () => {
+    const template = aOneTimeTask({ title: 'Old Name' });
+    const versionBefore = template.version;
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      name: 'New Name',
+      expectedVersion: versionBefore,
+    });
+
+    expect(result).toBeOk();
+    expect(template.version).toBe(versionBefore + 1);
+    expect(templateRepo.save).toHaveBeenCalledWith(template);
+  });
+
+  it('should bump version on save even when expectedVersion is omitted (backward compat)', async () => {
+    const template = aOneTimeTask({ title: 'Old Name' });
+    const versionBefore = template.version;
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+
+    await useCase.execute(template.id, template.identityId, { name: 'New Name' });
+
+    expect(template.version).toBe(versionBefore + 1);
+  });
+
   it('should update the title when name is provided', async () => {
     const template = aOneTimeTask({ title: 'Old Name' });
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);

@@ -22,6 +22,18 @@ import type {
 
 export const PROPOSAL_KERNEL_PROVIDER_ID = 'proposal-kernel' as const;
 
+/** R5：稳定内容哈希（忽略 id/revision/status/时间戳等易变字段）。 */
+function computePlanHash(proposal: AgentProposal): string {
+  const { id: _id, status: _status, revision: _rev, createdAt: _c, updatedAt: _u, planHash: _ph, ...stable } =
+    proposal as Record<string, unknown>;
+  const json = JSON.stringify(stable);
+  let hash = 0;
+  for (let i = 0; i < json.length; i++) {
+    hash = (hash * 31 + json.charCodeAt(i)) | 0;
+  }
+  return `plan:${Math.abs(hash).toString(36)}`;
+}
+
 function now(): number {
   return Date.now();
 }
@@ -85,13 +97,20 @@ export class ProposalKernel implements IProposalKernelPort {
     }
 
     const createdAt = proposal.createdAt ?? now();
+    // R5：过期提案直接置 stale（不可批准/执行）。
+    const isExpired =
+      proposal.expiresAt != null && proposal.expiresAt <= createdAt;
     const status: AgentProposal['status'] =
-      proposal.status === 'ready' || proposal.status === 'draft' || proposal.status === 'stale'
-        ? proposal.status
-        : 'draft';
+      isExpired
+        ? 'stale'
+        : proposal.status === 'ready' || proposal.status === 'draft' || proposal.status === 'stale'
+          ? proposal.status
+          : 'draft';
 
     const stored = cloneProposal({
       ...proposal,
+      planHash: proposal.planHash ?? computePlanHash(proposal),
+      actionId: proposal.actionId ?? proposal.id,
       status,
       revision: 1,
       createdAt,
@@ -272,6 +291,18 @@ export class ProposalKernel implements IProposalKernelPort {
         ok: false,
         code: 'STALE_REVISION',
         message: `Expected revision ${current.revision}, got ${revision}`,
+        requestId,
+      });
+    }
+
+    // R5：过期提案拒绝执行。
+    if (current.expiresAt != null && current.expiresAt <= now()) {
+      return this.recordReceipt({
+        proposalId,
+        proposalRevision: revision,
+        ok: false,
+        code: 'PROPOSAL_EXPIRED',
+        message: 'Proposal has expired',
         requestId,
       });
     }

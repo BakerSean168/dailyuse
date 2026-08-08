@@ -17,11 +17,25 @@ import {
 } from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import { PrismaTaskInstanceMapper } from './mappers/prisma-task-instance-mapper';
+import { OptimisticConcurrencyError } from '../../../domain/errors/optimistic-concurrency.error';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
 interface TaskInstanceDb {
   taskInstance: PrismaClient['taskInstance'];
+}
+
+
+/**
+ * R2-1：识别 occurrenceKey 唯一约束冲突（P2002, target 含 occurrence_key）。
+ * 幂等跳过条件——并发宿主已生成同一模板同一天的实例。
+ */
+function isOccurrenceKeyUniqueViolation(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const e = error as { code?: string; meta?: { target?: unknown } };
+  if (e.code !== 'P2002') return false;
+  const target = e.meta?.target;
+  return Array.isArray(target) && target.some((t) => String(t).includes('occurrence_key'));
 }
 
 export class TaskInstancePrismaRepository
@@ -53,19 +67,47 @@ export class TaskInstancePrismaRepository
 
   /**
    * Protected persistence method - called by base class before event publishing
+   *
+   * R2-5a：乐观锁——已存在实例必须匹配 `version: instance.version - 1`
+   * （调用方读到的是旧版本），否则说明并发修改，抛 OptimisticConcurrencyError；
+   * 不存在则走 create（新建实例 version=1）。
    */
   protected async persist(instance: TaskInstance): Promise<void> {
     const data = this.toWriteData(instance);
 
-    await this.db.taskInstance.upsert({
-      where: { id: instance.id },
-      create: {
-        id: instance.id,
-        ...data,
-        createdAt: new Date(instance.createdAt),
-      },
-      update: data,
+    const updated = await this.db.taskInstance.updateMany({
+      where: { id: instance.id, version: instance.version - 1 },
+      data,
     });
+
+    if (updated.count === 0) {
+      const existing = await this.db.taskInstance.findUnique({
+        where: { id: instance.id },
+        select: { id: true, version: true },
+      });
+      if (existing) {
+        throw new OptimisticConcurrencyError(
+          'TaskInstance',
+          String(instance.id),
+          instance.version - 1,
+          existing.version,
+        );
+      }
+      try {
+        await this.db.taskInstance.create({
+          data: {
+            id: instance.id,
+            ...data,
+            createdAt: new Date(instance.createdAt),
+          },
+        });
+      } catch (error) {
+        // R2-1 幂等：saveMany 已在事务内先查重（见 saveMany），此处仍冲突
+        // 属于真正并发窗口，原样抛出（不在事务内 catch 后查询，避免
+        // "current transaction is aborted" 恶化错误）。
+        throw error;
+      }
+    }
   }
 
   /**
@@ -79,6 +121,26 @@ export class TaskInstancePrismaRepository
    */
   async saveMany(instances: TaskInstance[]): Promise<void> {
     for (const instance of instances) {
+      // R2-1 幂等：同 (template_id, occurrence_key) 的实例已被并发宿主创建时
+      // （create 的 generateInitialInstances 与 maintenance worker 竞态），
+      // 事务内先查重并跳过，避免 create 撞唯一约束使事务 aborted。
+      if (instance.occurrenceKey) {
+        const existing = await this.db.taskInstance.findFirst({
+          where: {
+            templateId: String(instance.templateId),
+            occurrenceKey: instance.occurrenceKey,
+          },
+          select: { id: true },
+        });
+        if (existing) {
+          // 同 id = 内容更新（applyPlanProjection 等），走 persist 的版本化 update；
+          // 不同 id = 并发宿主已生成同一实例，幂等跳过。
+          if (String(existing.id) === String(instance.id)) {
+            await this.persist(instance);
+          }
+          continue;
+        }
+      }
       await this.persist(instance);
     }
   }

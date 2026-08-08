@@ -86,9 +86,17 @@ export class UpdateTaskTemplateUseCase {
         templateRepository,
         instanceRepository,
       }) => {
-        const template = await templateRepository.findByIdForIdentity(identityId, id);
+        const template = await templateRepository!.findByIdForIdentity(identityId, id);
         if (!template) {
           return error('NOT_FOUND', `TaskTemplate ${id} not found`);
+        }
+
+        // R2-5a：期望版本校验（可选；不传则跳过，向后兼容）。
+        if (request.expectedVersion !== undefined && request.expectedVersion !== template.version) {
+          return error(
+            'CONFLICT',
+            `TaskTemplate ${id} version conflict: expected ${request.expectedVersion}, current ${template.version}`,
+          );
         }
 
         if (request.timeConfig === null) {
@@ -136,7 +144,7 @@ export class UpdateTaskTemplateUseCase {
 
         if (request.parentTaskId !== undefined) {
           const parentValidation = await this.validateParentTask(
-            templateRepository,
+            templateRepository!,
             id,
             identityId,
             request.parentTaskId ?? null,
@@ -241,7 +249,9 @@ export class UpdateTaskTemplateUseCase {
           }
         }
 
-        await templateRepository.save(template);
+        // R2-5a：编辑完成 → 递增版本（乐观锁）。
+        template.advanceVersion();
+        await templateRepository!.save(template);
         return ok(template.toClientDTO());
       });
     } catch (caughtError) {

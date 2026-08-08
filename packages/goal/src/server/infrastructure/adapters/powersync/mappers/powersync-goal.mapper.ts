@@ -1,3 +1,4 @@
+import { GoalRollupPolicy } from '@memoflow/contracts/goal';
 import type { ReviewType, KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
 import { Goal } from '../../../../domain';
 import { rawDataToGoalState } from '../../prisma/mappers/goal-state-mapper';
@@ -42,6 +43,7 @@ export class PowerSyncGoalMapper {
       archivedAt: optionalMs(row.archived_at ? String(row.archived_at) : null),
       folderId: row.folder_id ? String(row.folder_id) : null,
       parentGoalId: row.parent_goal_id ? String(row.parent_goal_id) : null,
+      rollupPolicy: (row.rollup_policy as GoalRollupPolicy) ?? "kr",
       sortOrder: Number(row.sort_order ?? 0),
       reminderConfig: row.reminder_config
         ? JSON.parse(String(row.reminder_config))
@@ -84,6 +86,7 @@ export class PowerSyncGoalMapper {
       id: String(row.id),
       goalId: String(row.goal_id),
       type: String(row.review_type) as ReviewType,
+      title: row.title ? String(row.title) : null,
       rating: Number(row.rating ?? 3),
       summary: row.content ? String(row.content) : '',
       achievements: row.achievements ? String(row.achievements) : null,

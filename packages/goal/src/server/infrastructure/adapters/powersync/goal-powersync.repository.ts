@@ -256,12 +256,12 @@ export class GoalPowerSyncRepository
         const repository = new GoalPowerSyncRepository(tx, this.eventBus, true);
         await repository.persistWithExpectedVersion(goal, expectedVersion);
       });
-      await publishAggregateEvents(goal, this.eventBus);
+      await publishAggregateEvents(goal, { eventBus: this.eventBus });
       return;
     }
 
     await this.persistWithExpectedVersion(goal, expectedVersion);
-    await publishAggregateEvents(goal, this.eventBus);
+    await publishAggregateEvents(goal, { eventBus: this.eventBus });
   }
 
   private async persistWithExpectedVersion(goal: Goal, expectedVersion: number): Promise<void> {

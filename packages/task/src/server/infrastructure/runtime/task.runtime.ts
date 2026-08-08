@@ -66,7 +66,7 @@ export function createTaskRuntimeContribution(): TaskModuleRuntimeContribution {
   let started = false;
 
   return {
-    start(): void {
+    async start(): Promise<void> {
       if (started) {
         return;
       }
@@ -80,7 +80,7 @@ export function createTaskRuntimeContribution(): TaskModuleRuntimeContribution {
       logger.info('[Task] Runtime contribution started');
     },
 
-    stop(): void {
+    async stop(): Promise<void> {
       if (!started) {
         return;
       }

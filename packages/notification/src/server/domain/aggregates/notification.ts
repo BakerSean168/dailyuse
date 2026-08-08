@@ -6,6 +6,7 @@ import type {
   NotificationServerDTO,
   NotificationActionDTO,
   NotificationMetadataDTO,
+  NotificationNavigationIntentDTO,
   NotificationEventMap,
 } from '@memoflow/contracts/notification';
 import type { IdentityId, NotificationId as NotificationIdBranded } from '@memoflow/contracts/primitives';
@@ -42,6 +43,7 @@ export interface NotificationState {
   readAt: number | null;
   actions: NotificationAction[] | null;
   metadata: NotificationMetadata | null;
+  navigationIntent: NotificationNavigationIntentDTO | null;
   expiresAt: number | null;
   version: number;
   deletedAt: Date | null;
@@ -106,6 +108,10 @@ export class Notification extends AggregateRoot<NotificationId> {
 
   public get metadata(): NotificationMetadata | null {
     return this._props.metadata;
+  }
+
+  public get navigationIntent(): NotificationNavigationIntentDTO | null {
+    return this._props.navigationIntent;
   }
 
   public get expiresAt(): number | null {
@@ -233,6 +239,7 @@ export class Notification extends AggregateRoot<NotificationId> {
     content?: string;
     status?: NotificationStatus;
     metadata?: NotificationMetadataDTO | null;
+    navigationIntent?: NotificationNavigationIntentDTO | null;
     expiresAt?: number | null;
   }): void {
     const previousStatus = this._props.status;
@@ -248,6 +255,9 @@ export class Notification extends AggregateRoot<NotificationId> {
     }
     if (patch.metadata !== undefined) {
       this._props.metadata = patch.metadata ? NotificationMetadata.fromDTO(patch.metadata) : null;
+    }
+    if (patch.navigationIntent !== undefined) {
+      this._props.navigationIntent = patch.navigationIntent ?? null;
     }
     if (patch.expiresAt !== undefined) {
       this._props.expiresAt = patch.expiresAt;
@@ -317,6 +327,7 @@ export class Notification extends AggregateRoot<NotificationId> {
       readAt: this._props.readAt,
       actions: this._props.actions?.map((a) => a.toDTO()) ?? null,
       metadata: this._props.metadata?.toDTO() ?? null,
+      navigationIntent: this._props.navigationIntent,
       expiresAt: this._props.expiresAt,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
@@ -343,6 +354,7 @@ export class Notification extends AggregateRoot<NotificationId> {
     importance?: ImportanceLevel;
     actions?: NotificationActionDTO[];
     metadata?: NotificationMetadataDTO;
+    navigationIntent?: NotificationNavigationIntentDTO | null;
     expiresAt?: number | null;
   }): Notification {
     logger.info('🔨 [聚合根] 创建 Notification 实例', {
@@ -368,6 +380,7 @@ export class Notification extends AggregateRoot<NotificationId> {
       readAt: null,
       actions: params.actions?.map((a) => NotificationAction.fromDTO(a)) ?? null,
       metadata: params.metadata ? NotificationMetadata.fromDTO(params.metadata) : null,
+      navigationIntent: params.navigationIntent ?? null,
       expiresAt: params.expiresAt ?? null,
       version: 1,
       deletedAt: null,

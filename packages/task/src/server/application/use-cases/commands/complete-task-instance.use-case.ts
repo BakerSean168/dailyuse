@@ -67,7 +67,7 @@ export class CompleteTaskInstanceUseCase {
       return error('VALIDATION_ERROR', 'Cannot complete this task instance');
     }
 
-    const template = await repositories.templateRepository.findByIdForIdentity(
+    const template = await repositories.templateRepository!.findByIdForIdentity(
       identityId,
       String(instance.templateId),
     );

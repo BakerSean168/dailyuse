@@ -150,13 +150,11 @@ describe('ActivateTaskTemplateUseCase', () => {
     }
   });
 
-  it('should return INTERNAL_ERROR when post-generation template persistence fails', async () => {
+  it('should return INTERNAL_ERROR when template persistence fails', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     mockGenerateInstances.mockReturnValue([{}, {}]);
-    vi.mocked(templateRepo.save)
-      .mockResolvedValueOnce(undefined)
-      .mockRejectedValueOnce(new Error('late save failed'));
+    vi.mocked(templateRepo.save).mockRejectedValueOnce(new Error('save failed'));
 
     const result = await useCase.execute(template.id, template.identityId);
 

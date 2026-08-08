@@ -132,7 +132,7 @@ export interface ScheduleModuleInstance {
   readonly api: ScheduleApplicationPort;
   readonly eventApi: ScheduleEventApplicationPort;
   start(): Promise<void>;
-  dispose(): void;
+  dispose(): Promise<void>;
 }
 
 function toCreateSchedulePayload(data: CreateScheduleRequest, identityId: string) {
@@ -427,13 +427,14 @@ export function createScheduleModule(
 
       started = true;
     },
-    dispose(): void {
+    async dispose(): Promise<void> {
       if (!started) {
         return;
       }
 
+      // R1-3：按启动逆序关闭，并等待每个 runtime 排空。
       for (const runtime of [...startedRuntimes].reverse()) {
-        runtime.stop();
+        await runtime.stop();
       }
 
       startedRuntimes.length = 0;

@@ -81,6 +81,8 @@ export const UpdateTaskTemplateSchema = z.object({
   tags: z.array(z.string()).optional(),
   color: z.string().optional().nullable(),
   goalBinding: TaskGoalBindingSchema.optional().nullable(),
+  /** R2-5a：乐观锁期望版本（可选；提供时校验，旧客户端可不传）。 */
+  expectedVersion: z.number().int().positive().optional(),
 }).strict();
 
 export type UpdateTaskTemplateReq = z.infer<typeof UpdateTaskTemplateSchema>;

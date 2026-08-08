@@ -22,6 +22,19 @@ import type { KeyResultWeightSnapshotDTO } from '../value-objects/key-result-wei
 // ============ Transfer DTO ============
 
 /** Goal Server DTO for API transfer. */
+/** R4：子目标进度汇总策略。 */
+export const GoalRollupPolicy = {
+  /** 仅由 KR 加权计算（默认，不含子目标）。 */
+  Kr: 'kr',
+  /** 按子目标进度加权汇总。 */
+  Weighted: 'weighted',
+  /** 手工维护（不自动汇总）。 */
+  Manual: 'manual',
+  /** 禁止子目标（层级仅用于组织）。 */
+  Disabled: 'disabled',
+} as const;
+export type GoalRollupPolicy = (typeof GoalRollupPolicy)[keyof typeof GoalRollupPolicy];
+
 export interface GoalServerDTO {
   id: GoalId;
   identityId: IdentityId;
@@ -40,6 +53,8 @@ export interface GoalServerDTO {
   archivedAt: TransferDate | null;
   folderId: GoalFolderId | null;
   parentGoalId: GoalId | null;
+  /** R4：子目标进度汇总策略。 */
+  rollupPolicy: GoalRollupPolicy;
   sortOrder: number;
   reminderConfig: GoalReminderConfigDTO | null;
 

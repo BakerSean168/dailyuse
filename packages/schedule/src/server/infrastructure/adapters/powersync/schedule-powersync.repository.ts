@@ -113,7 +113,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
       entry.id,
       entry.identityId,
     ]);
-    await publishAggregateEvents(entry, eventBusAdapter);
+    await publishAggregateEvents(entry, { eventBus: eventBusAdapter });
   }
 
   async findByTimeRange(

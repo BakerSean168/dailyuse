@@ -145,7 +145,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
     try {
       const row = PowerSyncRuleMapper.toPersistence(rule);
       await this._upsertRule(this.db, row);
-      await publishAggregateEvents(rule, eventBusAdapter);
+      await publishAggregateEvents(rule, { eventBus: eventBusAdapter });
     } catch (err) {
       throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to save rule'));
     }
@@ -191,7 +191,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         );
       });
 
-      await publishAggregateEvents(rule, eventBusAdapter);
+      await publishAggregateEvents(rule, { eventBus: eventBusAdapter });
     } catch (err) {
       throw toResultErrorException(
         mapInfraErrorToResultError(err, 'Failed to save rule with revision'),

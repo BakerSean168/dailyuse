@@ -203,6 +203,18 @@ export class ScheduleTaskQueue {
   }
 
   /**
+   * 排空（R1-3）：停止调度新任务，并等待当前正在执行的 handler 完成。
+   * 供宿主 stop() 在关闭前调用，避免 runtime 停止时中断进行中的投递。
+   */
+  async drain(): Promise<void> {
+    this.isRunning = false;
+    while (this.isExecuting) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    this.logger.info('ScheduleTaskQueue drained');
+  }
+
+  /**
    * 添加任务到队列
    * @param item 任务项
    */

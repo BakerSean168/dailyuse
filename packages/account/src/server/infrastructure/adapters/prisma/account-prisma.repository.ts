@@ -98,7 +98,7 @@ export class PrismaAccountRepository
    */
   override async save(account: Account, tx?: AccountDb): Promise<void> {
     await this.persist(account, tx);
-    await publishAggregateEvents(account, this.eventBus);
+    await publishAggregateEvents(account, { eventBus: this.eventBus });
   }
 
   async findById(id: string, tx?: AccountDb): Promise<Account | null> {

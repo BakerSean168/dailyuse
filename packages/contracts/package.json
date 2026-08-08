@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": false,
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -22,6 +24,18 @@
     "./governance": {
       "types": "./dist/modules/governance/index.d.ts",
       "import": "./dist/modules/governance/index.js"
+    },
+    "./reliable-messaging": {
+      "types": "./dist/modules/reliable-messaging/index.d.ts",
+      "import": "./dist/modules/reliable-messaging/index.js"
+    },
+    "./primitives": {
+      "types": "./dist/primitives/index.d.ts",
+      "import": "./dist/primitives/index.js"
+    },
+    "./primitives/*": {
+      "types": "./dist/primitives/*.d.ts",
+      "import": "./dist/primitives/*.js"
     },
     "./reminder": {
       "types": "./dist/modules/reminder/index.d.ts",
@@ -66,10 +80,6 @@
     "./shared": {
       "types": "./dist/shared/index.d.ts",
       "import": "./dist/shared/index.js"
-    },
-    "./primitives": {
-      "types": "./dist/primitives/index.d.ts",
-      "import": "./dist/primitives/index.js"
     },
     "./electron": {
       "types": "./dist/electron/index.d.ts",

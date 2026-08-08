@@ -27,16 +27,19 @@ export class TaskInstanceGenerationService {
     options: {
       forceGenerate?: boolean;
       targetDate?: number; // 覆盖默认的 100 天
+      /** R2-2：显式请求区间起点（毫秒）。传入时优先于 lastGeneratedTime/now。 */
+      fromDate?: number;
     } = {},
   ): TaskInstance[] {
     const now = Date.now();
     const { forceGenerate = false } = options;
 
-    // 1. 计算起始日期：从上次生成日期的下一天，或从今天开始
-    // 注意：如果是强制生成，调用方应该负责清理旧实例，这里只负责生成新的
+    // 1. 计算起始日期：显式 fromDate 优先；否则从上次生成日期的下一天，
+    // 或从今天开始。force 路径同样尊重显式 fromDate（不再忽略请求区间）。
     const lastGeneratedTime = template.lastGeneratedDate;
     const fromDate =
-      !forceGenerate && lastGeneratedTime ? lastGeneratedTime + 86400000 : now;
+      options.fromDate ??
+      (!forceGenerate && lastGeneratedTime ? lastGeneratedTime + 86400000 : now);
 
     // 2. 计算目标结束日期：默认未来 100 天
     const targetDays = TARGET_GENERATE_AHEAD_DAYS;

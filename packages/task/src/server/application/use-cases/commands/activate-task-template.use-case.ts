@@ -48,22 +48,23 @@ export class ActivateTaskTemplateUseCase {
   ): Promise<Result<{ template: TaskTemplateClientDTO; instancesGenerated: number }>> {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
-        const template = await templateRepository.findByIdForIdentity(identityId, id);
+        const template = await templateRepository!.findByIdForIdentity(identityId, id);
         if (!template) {
           return error('NOT_FOUND', `TaskTemplate ${id} not found`);
         }
 
         template.activate();
-        await templateRepository.save(template);
 
+        // R2-5a 乐观锁：模板只保存一次（generate 会更新 lastGeneratedDate）。
         const instances = this.generationService.generateInstances(template);
         let instancesGenerated = 0;
 
         if (instances.length > 0) {
           await instanceRepository.saveMany(instances);
-          await templateRepository.save(template);
           instancesGenerated = instances.length;
         }
+
+        await templateRepository!.save(template);
 
         return ok({
           template: template.toClientDTO(),

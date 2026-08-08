@@ -77,7 +77,7 @@ export class RulePrismaRepository implements IRuleRepository {
         },
       });
 
-      await publishAggregateEvents(rule, eventBusAdapter);
+      await publishAggregateEvents(rule, { eventBus: eventBusAdapter });
     } catch (err) {
       throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to save rule'));
     }
@@ -117,7 +117,7 @@ export class RulePrismaRepository implements IRuleRepository {
         await tx.ruleRevision.create({ data: revisionData });
       });
 
-      await publishAggregateEvents(rule, eventBusAdapter);
+      await publishAggregateEvents(rule, { eventBus: eventBusAdapter });
     } catch (err) {
       throw toResultErrorException(
         mapInfraErrorToResultError(err, 'Failed to save rule with revision'),

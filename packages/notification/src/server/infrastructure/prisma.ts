@@ -6,6 +6,7 @@ import {
   NotificationPrismaRepository,
   NotificationTemplatePrismaRepository,
 } from './adapters/prisma';
+import { createNotificationRuntimeContribution } from './runtime/notification.runtime';
 import {
   createNotificationModule,
   type NotificationModuleInstance,
@@ -14,17 +15,25 @@ import {
 
 export interface CreateNotificationPrismaModuleOptions {
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
+  /** R3e：渠道投递适配器（默认 no-op，仅推进渠道状态）。 */
+  readonly channelDeliverer?: import('./runtime/notification.runtime').NotificationChannelDeliverer;
 }
 
 export function createNotificationPrismaModule(
   db: PrismaClient,
   options: CreateNotificationPrismaModuleOptions = {},
 ): NotificationModuleInstance {
+  const notificationRepository = new NotificationPrismaRepository(db);
   return createNotificationModule({
-    notificationRepository: new NotificationPrismaRepository(db),
+    notificationRepository,
     preferenceRepository: new NotificationPreferencePrismaRepository(db),
     templateRepository: new NotificationTemplatePrismaRepository(db),
-    runtimeContributions: options.runtimeContributions,
+    runtimeContributions: options.runtimeContributions ?? [
+      createNotificationRuntimeContribution({
+        repository: notificationRepository,
+        deliverer: options.channelDeliverer,
+      }),
+    ],
   });
 }
 

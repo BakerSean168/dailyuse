@@ -32,7 +32,7 @@ import { AggregateRoot } from '@memoflow/utils/domain';
 import { IdentityId } from '@memoflow/domain-shared';
 import { GoalId, GoalFolderId, KeyResultWeightSnapshotId, KeyResultId } from '../value-objects';
 import type { GoalEventMap } from '@memoflow/contracts/goal';
-import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
+import { GoalStatus, ReminderTriggerType, GoalRollupPolicy } from '@memoflow/contracts/goal';
 import type { SnapshotTrigger, GoalReminderConfigDTO, ReviewType } from '@memoflow/contracts/goal';
 import type {
   GoalServerDTO,
@@ -102,6 +102,7 @@ export interface GoalState {
   // === Relations ===
   folderId: GoalFolderId | null;
   parentGoalId: GoalId | null;
+  rollupPolicy: GoalRollupPolicy;
 
   // === Config ===
   sortOrder: number;
@@ -158,6 +159,7 @@ export class Goal extends AggregateRoot<GoalId> {
       archivedAt: params.archivedAt ?? null,
       folderId: params.folderId ?? null,
       parentGoalId: params.parentGoalId ?? null,
+      rollupPolicy: params.rollupPolicy ?? GoalRollupPolicy.Kr,
       sortOrder: params.sortOrder,
       reminderConfig: params.reminderConfig ?? null,
       version: params.version ?? 1,
@@ -289,6 +291,10 @@ export class Goal extends AggregateRoot<GoalId> {
     return this._props.parentGoalId;
   }
 
+  get rollupPolicy(): GoalRollupPolicy {
+    return this._props.rollupPolicy;
+  }
+
   get sortOrder(): number {
     return this._props.sortOrder;
   }
@@ -378,6 +384,7 @@ export class Goal extends AggregateRoot<GoalId> {
       targetDate: Instant | null;
       folderId: GoalFolderId | null;
       parentGoalId: GoalId | null;
+      rollupPolicy?: GoalRollupPolicy;
       reminderConfig: GoalReminderConfig | null;
     },
     parentGoal?: Goal,
@@ -421,6 +428,7 @@ export class Goal extends AggregateRoot<GoalId> {
       archivedAt: null,
       folderId: params.folderId ?? null,
       parentGoalId: params.parentGoalId ?? null,
+      rollupPolicy: params.rollupPolicy ?? GoalRollupPolicy.Kr,
       sortOrder: 0,
       reminderConfig: params.reminderConfig ?? null,
       version: 1,
@@ -1273,6 +1281,7 @@ export class Goal extends AggregateRoot<GoalId> {
     const review = GoalReview.create({
       goalId: this.id,
       type: params.reviewType as ReviewType,
+      title: params.title ?? null,
       rating: params.rating || 3,
       summary: params.content,
       achievements: params.achievements,
@@ -1408,6 +1417,7 @@ export class Goal extends AggregateRoot<GoalId> {
       archivedAt: this._props.archivedAt ?? null,
       folderId: this._props.folderId as GoalFolderId | null,
       parentGoalId: this._props.parentGoalId,
+      rollupPolicy: this._props.rollupPolicy,
       sortOrder: this._props.sortOrder,
       reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
       createdAt: this._props.createdAt,

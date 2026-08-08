@@ -273,6 +273,9 @@ Goal system view、Note/治理分区、Schedule day/week/month、Notification al
 
 ### 6.2 local-docker Playwright
 
+> **本地部署验证（2026-08-08）**：`docker:local:up` 全服务 healthy（postgres/redis/powersync/ai-service/api/web）；`/healthz` 200、`/api/docs.json` 200、业务端点 401（认证保护生效）、`sign-up/email` 200（DB 读写 + console 验证码正常）。
+> 环境修复：pnpm 11.12.0 坏版本 → `packageManager` 与 `Dockerfile.api` 改 11.20.0；contracts tsup 补 `primitives/command|runtime` entry；migrator 支持 `MIGRATOR_ACCEPT_DATA_LOSS=1`（空库 db push 唯一约束重建）。
+
 桌面验证建议使用 1440x900、1280x720 两个视口，暂不增加移动视口：
 
 | 场景 | 关键断言 |

@@ -126,7 +126,7 @@ describe('task projection runtime', () => {
       scheduleEvents: scheduleEvents.publisher,
     });
 
-    runtime.start();
+    await runtime.start();
     await taskEvents.emit('task:created', {
       identityId: 'IdentityId_schedule-owner',
       templateId: 'TaskTemplateId_template',
@@ -194,14 +194,14 @@ describe('task projection runtime', () => {
       scheduleEvents: scheduleEvents.publisher,
     });
 
-    runtime.start();
+    await runtime.start();
     await taskEvents.emit('task:instance-deleted', {
       identityId: 'IdentityId_schedule-owner',
       taskInstanceId: 'TaskInstanceId_dead',
       taskTemplateId: 'TaskTemplateId_template',
       deletedAt: Date.now(),
     } as never);
-    runtime.stop();
+    await runtime.stop();
     await taskEvents.emit('task:instance-deleted', {
       identityId: 'IdentityId_schedule-owner',
       taskInstanceId: 'TaskInstanceId_dead',
@@ -217,5 +217,64 @@ describe('task projection runtime', () => {
         payload: { taskId: matchingTask.id },
       },
     ]);
+  });
+
+  it('reconciles every template from the source before registering listeners (R1-4)', async () => {
+    const taskEvents = createTaskEventsHarness();
+    const scheduleEvents = createScheduleEventsHarness();
+    const scheduleTaskRepository: IScheduleTaskRepository = {
+      save: vi.fn(),
+      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
+      deleteById: vi.fn(),
+      findByIdentityId: vi.fn(),
+      findBySourceModule: vi.fn().mockResolvedValue([]),
+      findBySourceEntity: vi.fn(),
+      findByStatus: vi.fn(),
+      findEnabled: vi.fn(),
+      findDueTasksForExecution: vi.fn(),
+      query: vi.fn(),
+      count: vi.fn(),
+      saveBatch: vi.fn().mockResolvedValue(undefined),
+      deleteBatch: vi.fn().mockResolvedValue(undefined),
+      withTransaction: vi.fn(),
+    };
+
+    const buildTemplatePlan = vi.fn().mockResolvedValue({
+      selection: {
+        sourceModule: SourceModule.Task,
+        identityId: 'identity-1',
+        matches() {
+          return true;
+        },
+      },
+      nextTasks: [],
+    });
+    const source: TaskScheduleProjectionSource = {
+      buildTemplatePlan,
+      buildTemplateDeletionSelection: vi.fn(),
+      buildInstanceDeletionSelection: vi.fn(),
+      listTemplateRefs: vi.fn().mockResolvedValue([
+        { templateId: 'tpl-1', identityId: 'identity-1' },
+        { templateId: 'tpl-2', identityId: 'identity-1' },
+      ]),
+    };
+
+    const runtime = createTaskProjectionRuntime({
+      source,
+      scheduleTaskRepository,
+      taskEvents: taskEvents.subscriber,
+      scheduleEvents: scheduleEvents.publisher,
+    });
+
+    await runtime.start();
+
+    // 启动即对账：每个模板重建一次投影（幂等 upsert）。
+    expect(source.listTemplateRefs).toHaveBeenCalledTimes(1);
+    expect(buildTemplatePlan).toHaveBeenCalledTimes(2);
+    expect(buildTemplatePlan).toHaveBeenCalledWith('tpl-1', 'identity-1');
+    expect(buildTemplatePlan).toHaveBeenCalledWith('tpl-2', 'identity-1');
+
+    await runtime.stop();
   });
 });

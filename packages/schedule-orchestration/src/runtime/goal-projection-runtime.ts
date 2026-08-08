@@ -29,7 +29,7 @@ export function createGoalProjectionRuntime(
   let started = false;
 
   return {
-    start() {
+    async start(): Promise<void> {
       if (started) {
         return;
       }
@@ -51,7 +51,7 @@ export function createGoalProjectionRuntime(
       started = true;
     },
 
-    stop() {
+    async stop(): Promise<void> {
       if (!started) {
         return;
       }

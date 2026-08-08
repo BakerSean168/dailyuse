@@ -8,7 +8,6 @@
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { TaskTemplate } from '../../../domain/aggregates/task-template';
-import { TaskInstanceGenerationService } from '../../../domain/services/index';
 import type {
   QueryTaskTemplatesInternal,
   QueryTaskTemplatesRes,
@@ -22,13 +21,11 @@ import { ok } from '@memoflow/contracts/result';
  * List Task Templates Service
  */
 export class ListTaskTemplatesUseCase {
-  private readonly generationService: TaskInstanceGenerationService;
 
   constructor(
     private readonly templateRepository: ITaskTemplateRepository,
     private readonly instanceRepository: ITaskInstanceRepository,
   ) {
-    this.generationService = new TaskInstanceGenerationService();
   }
 
   async execute(request: QueryTaskTemplatesInternal): Promise<Result<QueryTaskTemplatesRes>> {
@@ -50,15 +47,8 @@ export class ListTaskTemplatesUseCase {
       templates = await this.templateRepository.findByIdentityId(request.identityId);
     }
 
-    // Auto-check and replenish instances for each ACTIVE template (async, non-blocking)
-    for (const template of templates) {
-      if (template.status === TaskTemplateStatus.Active) {
-        this.checkAndRefillInstances(template).catch((error) => {
-          console.error(`Failed to replenish instances for template "${template.title}":`, error);
-        });
-      }
-    }
-
+    // R2-3：列表查询保持纯读——实例补充由显式 maintenance worker 负责
+    // （task-instance-maintenance-runtime），不再在查询路径写库。
     const statsByTemplateId =
       (await this.instanceRepository.getTemplateStats(
         templates.map((template) => template.id),
@@ -92,19 +82,4 @@ export class ListTaskTemplatesUseCase {
     });
   }
 
-  /** Checks and replenishes instances for a template if needed. */
-  private async checkAndRefillInstances(template: TaskTemplate): Promise<void> {
-    try {
-      if (this.generationService.shouldRefillInstances(template)) {
-        const instances = this.generationService.generateInstances(template);
-
-        if (instances.length > 0) {
-          await this.instanceRepository.saveMany(instances);
-          await this.templateRepository.save(template);
-        }
-      }
-    } catch (error) {
-      console.error(`[ListTaskTemplatesUseCase] Failed to replenish instances:`, error);
-    }
-  }
 }

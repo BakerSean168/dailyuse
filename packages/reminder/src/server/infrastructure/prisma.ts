@@ -13,6 +13,7 @@ import {
 } from './reminder.module';
 import { createReminderScheduleExecutionSource } from './schedule-execution-source';
 import { createReminderScheduleProjectionSource } from './schedule-projection-source';
+import { createReminderSnoozeReschedulerPrisma } from './reminder-snooze-rescheduler.prisma';
 import {
   ReminderTemplatePrismaRepository,
   ReminderGroupPrismaRepository,
@@ -41,6 +42,8 @@ export function createReminderPrismaModule(
     reminderResponseRepository: new ReminderResponsePrismaRepository(db),
     userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(db),
     runtimeContributions: options.runtimeContributions,
+    // R3c：snooze 作为真 command——推迟 reminder 对应 schedule task 的下次触发。
+    snoozeRescheduler: createReminderSnoozeReschedulerPrisma(db),
   });
 }
 

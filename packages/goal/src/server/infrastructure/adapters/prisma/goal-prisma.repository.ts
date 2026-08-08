@@ -277,19 +277,28 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               goalId: dto.id as string,
               identityId: dto.identityId as string,
               reviewType: review.type,
+              title: review.title,
               content: review.summary,
               achievements: review.achievements,
               challenges: review.challenges,
-              lessonsLearned: review.improvements,
-              nextSteps: null,
+              lessonsLearned: null,
+              nextSteps: review.improvements ?? null,
+              keyResultSnapshots: review.keyResultSnapshots.length > 0
+                ? JSON.stringify(review.keyResultSnapshots)
+                : null,
               rating: review.rating,
             },
             update: {
               reviewType: review.type,
+              title: review.title,
               content: review.summary,
               achievements: review.achievements,
               challenges: review.challenges,
-              lessonsLearned: review.improvements,
+              lessonsLearned: null,
+              nextSteps: review.improvements ?? null,
+              keyResultSnapshots: review.keyResultSnapshots.length > 0
+                ? JSON.stringify(review.keyResultSnapshots)
+                : null,
               rating: review.rating,
               updatedAt: new Date(),
             },
@@ -339,12 +348,12 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
         const repository = new GoalPrismaRepository(tx, this.eventBus, true);
         await repository.persistWithExpectedVersion(goal, expectedVersion);
       });
-      await publishAggregateEvents(goal, this.eventBus);
+      await publishAggregateEvents(goal, { eventBus: this.eventBus });
       return;
     }
 
     await this.persistWithExpectedVersion(goal, expectedVersion);
-    await publishAggregateEvents(goal, this.eventBus);
+    await publishAggregateEvents(goal, { eventBus: this.eventBus });
   }
 
   private async persistWithExpectedVersion(goal: Goal, expectedVersion: number): Promise<void> {

@@ -272,6 +272,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.version;
   }
 
+  /** R2-5a：编辑后递增版本（乐观锁；调用方在写回前调用一次）。 */
+  public advanceVersion(): void {
+    this._props.version += 1;
+  }
+
   public get history(): TaskTemplateHistory[] {
     return this._history;
   }
