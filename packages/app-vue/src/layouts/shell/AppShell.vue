@@ -320,6 +320,10 @@ function startSidebarResize(e: MouseEvent) {
   e.preventDefault();
   const previousUserSelect = document.body.style.userSelect;
   const previousCursor = document.body.style.cursor;
+  // 记录拖拽前聚焦元素，拖拽结束后恢复（面板调整不打断用户输入焦点，
+  // 如任务搜索框——e2e 断言拖拽布局后搜索框保持聚焦）。
+  const previouslyFocused =
+    document.activeElement instanceof HTMLElement ? document.activeElement : null;
   document.body.style.userSelect = 'none';
   document.body.style.cursor = 'col-resize';
   isSidebarResizing.value = true;
@@ -331,6 +335,9 @@ function startSidebarResize(e: MouseEvent) {
     window.removeEventListener('blur', cleanup);
     document.body.style.userSelect = previousUserSelect;
     document.body.style.cursor = previousCursor;
+    if (previouslyFocused && document.contains(previouslyFocused)) {
+      previouslyFocused.focus();
+    }
   };
   const move = (ev: MouseEvent) => {
     if (shouldCollapseSidebarWidth(ev.clientX)) {
@@ -443,6 +450,16 @@ function startPanelResize(e: PointerEvent) {
     isPanelResizing.value = false;
     if (focusedElement?.isConnected && document.activeElement !== focusedElement) {
       focusedElement.focus({ preventScroll: true });
+    } else if (focusedElement && !focusedElement.isConnected) {
+      // 拖拽触发布局重渲染导致原元素被替换（如任务搜索框）时，
+      // 按 data-testid 定位新元素恢复焦点，保持用户输入上下文。
+      const testId = focusedElement.getAttribute('data-testid');
+      if (testId) {
+        const replacement = document.querySelector<HTMLElement>(
+          `[data-testid="${CSS.escape(testId)}"]`,
+        );
+        replacement?.focus({ preventScroll: true });
+      }
     }
   };
 

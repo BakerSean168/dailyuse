@@ -57,6 +57,7 @@ function dayDiff(aMs: number, bMs: number): number {
  * 完成日期按本地日去重；从最近完成日向前数连续天数。
  */
 export function calculateStreak(completedDates: number[], now: number): HabitStreak {
+  const today = startOfLocalDay(now);
   const dates = Array.from(new Set(completedDates.map((d) => startOfLocalDay(d)))).sort(
     (a, b) => a - b,
   );
@@ -65,9 +66,14 @@ export function calculateStreak(completedDates: number[], now: number): HabitStr
     return { currentStreak: 0, longestStreak: 0, lastCheckInDate: null };
   }
 
-  // 今天未完成时，从昨天开始数（今天还没到不算断）。
+  // 最近一次完成若早于昨天，当前连续天数已断（今天/昨天均未完成）。
   const last = dates[dates.length - 1];
+  if (dayDiff(today, last) > 1) {
+    return { currentStreak: 0, longestStreak: longestRun(dates), lastCheckInDate: last };
+  }
 
+  // 从最近完成日（今天或昨天）向前数连续天数：今天未完成时从昨天数，
+  // 今天不算断更。
   let currentStreak = 1;
   for (let i = dates.length - 2; i >= 0; i--) {
     if (dayDiff(dates[i + 1], dates[i]) === 1) {
@@ -77,14 +83,18 @@ export function calculateStreak(completedDates: number[], now: number): HabitStr
     }
   }
 
+  return { currentStreak, longestStreak: longestRun(dates), lastCheckInDate: last };
+}
+
+/** 历史最长连续完成天数。 */
+function longestRun(dates: number[]): number {
   let longestStreak = 1;
   let run = 1;
   for (let i = 1; i < dates.length; i++) {
     run = dayDiff(dates[i], dates[i - 1]) === 1 ? run + 1 : 1;
     if (run > longestStreak) longestStreak = run;
   }
-
-  return { currentStreak, longestStreak, lastCheckInDate: last };
+  return longestStreak;
 }
 
 export class Habit {

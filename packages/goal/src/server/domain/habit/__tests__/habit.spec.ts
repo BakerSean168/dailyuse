@@ -29,6 +29,22 @@ describe('calculateStreak (R4 Habit)', () => {
     expect(streak.longestStreak).toBe(3);
   });
 
+  it('breaks the current streak when the last completion is older than yesterday', () => {
+    const base = startOfLocalDay(Date.now());
+    const completed = [base - 2 * DAY, base - 3 * DAY, base - 4 * DAY];
+    const streak = calculateStreak(completed, base);
+    expect(streak.currentStreak).toBe(0); // 昨天与今天均未完成
+    expect(streak.longestStreak).toBe(3);
+  });
+
+  it('counts from yesterday when today is not yet completed', () => {
+    const base = startOfLocalDay(Date.now());
+    const completed = [base - DAY, base - 2 * DAY, base - 3 * DAY];
+    const streak = calculateStreak(completed, base);
+    expect(streak.currentStreak).toBe(3); // 今天未完成不算断
+    expect(streak.longestStreak).toBe(3);
+  });
+
   it('deduplicates same-day completions', () => {
     const base = startOfLocalDay(Date.now());
     const streak = calculateStreak([base, base, base - DAY], base);
