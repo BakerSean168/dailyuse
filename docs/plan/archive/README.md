@@ -27,6 +27,12 @@ updated: 2026-08-05T10:00:00+08:00
 
 | 日期       | 计划                                                                                                     | 结果                                                                                         |
 | ---------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 2026-08-08 | [基础 UI 与 Shell 重构](./2026-08-06-ui-foundation-and-shell-refactor.md)                               | 三栏最小宽度与拖拽收缩、compound capsule、设置页扁平化；local-docker 产品旅程 7/7            |
+| 2026-08-08 | [基础 UI 与桌面 Shell 后续优化](./2026-08-06-ui-foundation-shell-follow-up-optimization.md)             | 场景生命周期/导航意图/滚动宿主/模块骨架；commit 784fb9f6                                   |
+| 2026-08-08 | [业务闭环与模块边界重构 R0-R7](./2026-08-07-business-loop-and-module-boundary-rebuild.md)               | R0-R7 实施完成；local-docker e2e 7/7、PR #211 19/19 全绿                                    |
+| 2026-08-08 | [业务重构 findings 追踪](./2026-08-07-business-loop-findings-tracking.md)                               | 状态全部同步 done；P0-01/P0-04/R2-5 证据回填                                                  |
+| 2026-08-05 | [Test System V2](./2026-08-04-test-system-v2-refactor.md)                                               | #204；唯一归属、七 Oracle、active ruleset；全绿 run 30934384004                              |
+| ---------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | 2026-08-05 | [Test System V2](./2026-08-04-test-system-v2-refactor.md)                                               | #204；唯一归属、七 Oracle、active ruleset；全绿 run 30934384004                              |
 | 2026-08-04 | [CI Feedback Loop Phase Two](./2026-08-04-ci-feedback-loop-phase-two.md)                                 | 动态 pnpm cache、Boundary 并行 Oracle、Web affected gate、clean-source runner；#202 首轮全绿 |
 | 2026-08-04 | [CI Feedback Loop Optimization](./2026-08-04-ci-feedback-loop-optimization.md)                           | Required checks 约 8:20；Web E2E 完整 74 tests；Boundary 0:48                                |

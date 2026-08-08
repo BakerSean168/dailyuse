@@ -15,12 +15,18 @@ updated: 2026-08-06T00:00:00Z
 
 | 计划                                                                                 | 当前状态                                                                                                                                                      |
 | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [CI/CD Platform V2 一次性重构](./2026-08-05-ci-cd-platform-v2-refactor.md)           | **Architecture implementation and PR cutover complete**：六平面契约、capability workspace、artifact 晋级、run observation；持续收集长期 timing/fault evidence |
+| [CI/CD Platform V2 一次性重构](./2026-08-05-ci-cd-platform-v2-refactor.md)           | **Architecture implementation and PR cutover complete**：六平面契约、capability workspace、artifact 晋级、run observation；保留以采集长期 timing/fault 运营证据（baseline-v1 待 comparable run） |
 | [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)          | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称                                                                                   |
 | [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                        |
-| [基础 UI 与 Shell 重构](./2026-08-06-ui-foundation-and-shell-refactor.md)            | **实现与 local-docker 验证完成**：三栏最小宽度与拖拽收缩、compound capsule/摘要入口、设置页扁平化；Docker 产品旅程 7/7 通过 |
-| [基础 UI 与桌面 Shell 后续优化](./2026-08-06-ui-foundation-shell-follow-up-optimization.md) | **诊断后续实施计划**：场景生命周期、统一导航意图、Tab/KeepAlive、单一滚动宿主、设置桌面导航与模块骨架；移动端暂不纳入 |
-| [业务闭环与模块边界重构](./2026-08-07-business-loop-and-module-boundary-rebuild.md) | **深度审查完成，待实施**：Occurrence、可靠 outbox/inbox、Task/Goal 贡献账本、Reminder/Notification 投递、AI Command Gateway、ModuleManifest；移动端暂不纳入 |
+
+## 本轮已归档（2026-08-08）
+
+| 计划                                                                                                              | 结果                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| [基础 UI 与 Shell 重构](../archive/2026-08-06-ui-foundation-and-shell-refactor.md)                               | 三栏最小宽度与拖拽收缩、compound capsule/摘要入口、设置页扁平化；local-docker 产品旅程 7/7 通过，验收 6/6 勾选               |
+| [基础 UI 与桌面 Shell 后续优化](../archive/2026-08-06-ui-foundation-shell-follow-up-optimization.md)             | 场景生命周期、统一导航意图、Tab/KeepAlive、单一滚动宿主、设置桌面导航与模块骨架；commit 784fb9f6 落地，Phase 0-5 全勾选      |
+| [业务闭环与模块边界重构 R0-R7](../archive/2026-08-07-business-loop-and-module-boundary-rebuild.md)               | R0 可观测 → R7 全部实施：乐观锁、outbox 单通道、ScheduleLease/claim、Reminder/Notification、Habit/Relation/AI/Activity/Wallet；commit d60e6eaf8 + local-docker e2e 7/7 + PR #211 19/19 全绿 |
+| [业务重构 findings 追踪（R0-5）](../archive/2026-08-07-business-loop-findings-tracking.md)                       | 全部 finding 状态同步为 done/wip→done；P0-01/P0-04/R2-5 落地证据回填                                              |
 
 ## 本轮已归档（2026-08-03）
 
