@@ -8,14 +8,14 @@
         size="icon"
         class="mr-3 h-8 w-8"
         :aria-label="t('common.back')"
-        @click="$router.back()"
+        @click="$router.push('/tasks')"
       >
         <ArrowLeft class="h-4 w-4" />
       </Button>
       <h1 class="text-lg font-medium text-foreground">{{ t('task.depValidationDemo.title') }}</h1>
     </header>
 
-    <div class="flex-1 overflow-auto p-6">
+    <div class="flex-1 overflow-y-auto p-6" data-scroll-host="task-dependency-demo">
       <div class="mx-auto max-w-4xl">
         <Card>
           <CardHeader>

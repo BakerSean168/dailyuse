@@ -4,7 +4,7 @@
 
 **日期**: 2025-12-03
 
-**修订**: 2026-08-01（Vue primitive 单一实现）
+**修订**: 2026-08-06（Vue primitive 单一实现；全局复合胶囊与可收缩壳层）
 
 **决策者**: BMAD Agent
 
@@ -28,7 +28,8 @@ Vue primitive 的唯一 **Module** 是 `@memoflow/ui-vue-shadcn`：
 - 真实挂载 contract tests 覆盖 Select、Dialog、Dropdown、Popover、Tabs 的键盘、动态卸载和焦点行为。
 - governance 要求 `radix-vue` 零依赖/零 import，且 primitive 包外 `reka-ui` 零直接 import。
 - 桌面分栏统一通过几何函数与 token 计算：AI 硬下限 320px，业务硬下限 520px，业务默认占可用区 64%；无法同时满足时进入 focus/overlay。
-- 业务入口收敛为 BusinessPanel Tab 与统一 launcher，不再维护常驻胶囊和 Tab 两套导航。
+- 入口职责分层：顶部复合胶囊是全局模块启动器与摘要预览，BusinessPanel Tab 只表达当前已打开业务上下文；交互式摘要统一使用 `@memoflow/ui-vue-shadcn` Popover 语义。
+- 桌面三栏只定义 AI/业务/侧栏最小宽度，拖拽越过吸附阈值进入可逆收缩状态；合法上限由当前容器动态推导，不设产品级固定最大宽度。
 
 ## 结果
 

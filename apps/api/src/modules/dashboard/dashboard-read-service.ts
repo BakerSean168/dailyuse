@@ -122,5 +122,22 @@ export async function getApiDashboardData(
         toReminderRecord,
       ),
     countUnreadNotifications: (id) => notificationRepos.notificationRepository.countUnread(id),
+    // R6：Activity Ledger 窗口查询（避免全量加载后内存拼接）。
+    listActivities: async (id, opts = {}) => {
+      const limit = opts.limit ?? 10;
+      const windowMs = opts.windowMs ?? 14 * 24 * 60 * 60 * 1000;
+      const since = new Date(Date.now() - windowMs);
+      const rows = await db.activityLedger.findMany({
+        where: { identityId: id, occurredAt: { gte: since } },
+        orderBy: { occurredAt: 'desc' },
+        take: limit,
+      });
+      return rows.map((row) => ({
+        id: row.id,
+        type: row.action,
+        description: row.title ?? `${row.subjectType}:${row.subjectId}`,
+        timestamp: row.occurredAt.getTime(),
+      }));
+    },
   });
 }

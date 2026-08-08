@@ -62,8 +62,22 @@ export async function replaceSelection(
   plan: ProjectionPlan,
   scheduleEvents: Publisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>,
 ): Promise<void> {
-  await deleteSelection(scheduleTaskRepository, plan.selection, scheduleEvents);
+  // R1-4：原子交换——先 upsert 新计划（save 为 upsert 语义），再删除
+  // selection 中不在新计划里的旧任务。避免原"先删后存"在重建中途失败时
+  // 留下半成品读模型（P0-02）。
+  const existing = await findMatchingTasks(scheduleTaskRepository, plan.selection);
+  const nextIds = new Set(plan.nextTasks.map((task) => task.id));
+
   if (plan.nextTasks.length > 0) {
     await scheduleTaskRepository.saveBatch(Array.from(plan.nextTasks));
+  }
+
+  const toDelete = existing.filter((task) => !nextIds.has(task.id));
+  if (toDelete.length > 0) {
+    const ids = toDelete.map((task) => task.id);
+    await scheduleTaskRepository.deleteBatch(plan.selection.identityId, ids);
+    for (const task of toDelete) {
+      scheduleEvents.send('schedule:task-deleted', { taskId: task.id });
+    }
   }
 }

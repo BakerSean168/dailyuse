@@ -16,6 +16,7 @@ const pendingEvent = {
     progressTrigger: 'PER_INSTANCE' as const,
     taskTitle: 'Task',
     occurredAt: 1,
+    action: 'complete' as const,
   }),
 };
 

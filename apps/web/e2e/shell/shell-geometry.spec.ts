@@ -105,7 +105,7 @@ test.describe('Electron shell geometry matrix', () => {
     await desktop.close();
   });
 
-  test('[P0] 1200x800 default panel, max drag keeps AI >= 420, composer in AI column', async () => {
+  test('[P0] 1200x800 panel drag preserves minimums and collapses past the threshold', async () => {
     const page = desktop.page;
     await desktop.setWindowSize({ width: 1200, height: 800 });
 
@@ -138,10 +138,11 @@ test.describe('Electron shell geometry matrix', () => {
     expect(containsBox(aiMax, composerMax, 4)).toBe(true);
 
     await dragPanelToExtreme(page, 'min');
-    const aiMin = await boxOf(page, 'shell-ai-column');
-    const panelMin = await boxOf(page, 'business-panel');
-    expect(panelMin.width).toBeGreaterThanOrEqual(PANEL_MIN - 1);
-    expect(aiMin.width).toBeGreaterThanOrEqual(CHAT_MIN - 1);
+    await expect(page.getByTestId('business-panel')).toBeHidden();
+    await page.getByTestId('shell-right-panel-toggle').click();
+    await expect(page.getByTestId('business-panel')).toBeVisible();
+    const panelRestored = await boxOf(page, 'business-panel');
+    expect(panelRestored.width).toBeGreaterThanOrEqual(PANEL_MIN - 1);
 
     await saveMatrixShot(page, '1200x800-split-task.png');
   });
@@ -172,7 +173,7 @@ test.describe('Electron shell geometry matrix', () => {
 
     await openModuleFromCapsule(page, 'task');
     await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'focus');
-    await expect(page.getByTestId('conversation-sidebar')).toBeVisible();
+    await expect(page.getByTestId('conversation-sidebar')).toHaveCount(0);
 
     // AI column hidden in focus, but floating GlobalComposer is present.
     const composer = page.getByTestId('global-composer');
@@ -192,14 +193,8 @@ test.describe('Electron shell geometry matrix', () => {
 
     // Settings narrow navigation still independent.
     await openStandaloneSettings(page);
-    const mobileReturn = page.getByTestId('settings-return-to-app-mobile');
-    const railReturn = page.getByTestId('settings-return-to-app');
-    // 900px is above Tailwind md; rail return is preferred when visible.
-    if (await railReturn.isVisible().catch(() => false)) {
-      await expect(railReturn).toBeVisible();
-    } else {
-      await expect(mobileReturn).toBeVisible();
-    }
+    await expect(page.getByTestId('settings-return-to-app')).toBeVisible();
+    await expect(page.getByTestId('settings-scene-rail')).toHaveCount(0);
     await expect(page.getByTestId('global-composer')).toHaveCount(0);
   });
 

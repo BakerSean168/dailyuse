@@ -57,6 +57,7 @@ import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-so
 import { configureDesktopShellIdentity } from './utils/app-icon';
 import { getApiBaseUrl } from './utils/api-config';
 import { createLogger } from '@memoflow/utils/logger';
+import { createRuntimeOwnership } from '@memoflow/contracts/primitives';
 import { getSharedPathResolver } from './runtime-init';
 import { WindowManager } from './lifecycle/window-manager';
 import type { ProfilePathResolver } from './paths';
@@ -94,6 +95,12 @@ async function registerBusinessModules(
   closeCurrentCloudConnection: () => Promise<void>,
 ): Promise<void> {
   const startTime = performance.now();
+
+  // R0-1：runtime ownership —— 明确"哪个宿主在运行、当前进程是谁"。
+  // Desktop 是本地 scheduler 宿主（schedule.runtime 的内存队列），
+  // 与 cloud API 分开记录，供双宿主对账。
+  const ownership = createRuntimeOwnership('desktop-local', undefined, () => new Date());
+  logger.info('[runtime-ownership] Desktop host ownership', ownership);
 
   const localVaultRuntime = createLocalVaultRuntime({
     bindingFilePath: profilePaths.localVaultBindingPath,

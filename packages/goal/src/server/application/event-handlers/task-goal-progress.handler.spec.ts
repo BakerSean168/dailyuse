@@ -5,6 +5,7 @@ import { GoalTaskProgressHandler } from './task-goal-progress.handler';
 
 function event(
   progressTrigger: TaskGoalProgressOutboxEventV1['progressTrigger'] = 'PER_INSTANCE',
+  overrides: Partial<TaskGoalProgressOutboxEventV1> = {},
 ): TaskGoalProgressOutboxEventV1 {
   return {
     eventId: 'task-goal-progress:instance-1:1000',
@@ -19,14 +20,22 @@ function event(
     progressTrigger,
     taskTitle: 'Write tests',
     occurredAt: 1000,
+    ...overrides,
   };
+}
+
+function handler(overrides: { create?: ReturnType<typeof vi.fn>; remove?: ReturnType<typeof vi.fn> } = {}) {
+  return new GoalTaskProgressHandler(
+    { execute: overrides.create ?? vi.fn(async () => ok({} as never)) },
+    { execute: overrides.remove ?? vi.fn(async () => ok({} as never)) },
+  );
 }
 
 describe('GoalTaskProgressHandler', () => {
   it('maps per-instance delivery to the GoalRecord source idempotency key', async () => {
     const execute = vi.fn(async () => ok({} as never));
 
-    await new GoalTaskProgressHandler({ execute }).handle(event());
+    await new GoalTaskProgressHandler({ execute }, { execute: vi.fn(async () => ok({} as never)) }).handle(event());
 
     expect(execute).toHaveBeenCalledWith(
       'goal-1',
@@ -43,7 +52,9 @@ describe('GoalTaskProgressHandler', () => {
   it('maps all-instances delivery to one contribution per template', async () => {
     const execute = vi.fn(async () => ok({} as never));
 
-    await new GoalTaskProgressHandler({ execute }).handle(event('ALL_INSTANCES_COMPLETED'));
+    await new GoalTaskProgressHandler({ execute }, { execute: vi.fn(async () => ok({} as never)) }).handle(
+      event('ALL_INSTANCES_COMPLETED'),
+    );
 
     expect(execute).toHaveBeenCalledWith(
       'goal-1',
@@ -59,8 +70,30 @@ describe('GoalTaskProgressHandler', () => {
   it('rejects the delivery so the outbox remains retryable when Goal returns an error', async () => {
     const execute = vi.fn(async () => error('NOT_FOUND', 'Goal not found'));
 
-    await expect(new GoalTaskProgressHandler({ execute }).handle(event())).rejects.toThrow(
-      'Task -> Goal delivery failed (NOT_FOUND): Goal not found',
+    await expect(
+      new GoalTaskProgressHandler({ execute }, { execute: vi.fn(async () => ok({} as never)) }).handle(event()),
+    ).rejects.toThrow('Task -> Goal delivery failed (NOT_FOUND): Goal not found');
+  });
+
+  it('reverts contributions on uncomplete action (R2-5b)', async () => {
+    const remove = vi.fn(async () => ok({} as never));
+    const execute = vi.fn(async () => ok({} as never));
+
+    await handler({ remove, create: execute }).handle(
+      event('PER_INSTANCE', { action: 'uncomplete' }),
+    );
+
+    expect(remove).toHaveBeenCalledTimes(2);
+    expect(remove).toHaveBeenCalledWith('identity-1', 'TASK_INSTANCE', 'instance-1');
+    expect(remove).toHaveBeenCalledWith('identity-1', 'TASK_TEMPLATE', 'template-1');
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('keeps the outbox retryable when removal fails on uncomplete (R2-5b)', async () => {
+    const remove = vi.fn(async () => error('NOT_FOUND', 'Record missing'));
+
+    await expect(handler({ remove }).handle(event('PER_INSTANCE', { action: 'uncomplete' }))).rejects.toThrow(
+      'Task -> Goal removal failed (NOT_FOUND): Record missing',
     );
   });
 });

@@ -11,6 +11,7 @@ export type PowerSyncTaskInstanceRow = {
   template_id: string;
   identity_id: string;
   instance_date: string;
+  occurrence_key: string | null; // R2-1 幂等键
   status: string;
   importance: string | null;
   priority: number | null;
@@ -31,6 +32,7 @@ export class PowerSyncTaskInstanceMapper {
       templateId: TaskTemplateId.of(data.template_id),
       identityId: IdentityId.of(data.identity_id),
       instanceDate: new Date(data.instance_date).getTime(),
+      occurrenceKey: data.occurrence_key ?? null,
       timeConfig: TaskTimeConfig.fromDTO(JSON.parse(data.time_config || '{}')),
       importance: (data.importance ?? 'Moderate') as unknown as ImportanceLevel,
       priority: data.priority ?? undefined,
@@ -54,6 +56,7 @@ export class PowerSyncTaskInstanceMapper {
       templateId: String(dto.templateId),
       identityId: String(dto.identityId),
       instanceDate: new Date(dto.instanceDate).toISOString(),
+      occurrenceKey: instance.occurrenceKey,
       status: dto.status,
       importance: dto.importance,
       priority: dto.priority ?? null,

@@ -85,6 +85,7 @@ function hydrateNotification(row: NotificationRow): Notification {
     readAt: dto.readAt ?? null,
     actions: dto.actions?.map((action) => NotificationAction.fromDTO(action)) ?? null,
     metadata: dto.metadata ? NotificationMetadata.fromDTO(dto.metadata) : null,
+    navigationIntent: dto.navigationIntent ?? null,
     expiresAt: dto.expiresAt ?? null,
     version: dto.version,
     deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
@@ -204,6 +205,16 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     for (const notification of notifications) {
       await this.save(notification);
     }
+  }
+
+  async findChannelsByStatus(status: string, limit?: number): Promise<Notification[]> {
+    const rows = await this.db.getAll<NotificationRow>(
+      `SELECT n.* FROM notifications n
+       JOIN notification_channels c ON c.notification_id = n.id
+       WHERE n.deleted_at IS NULL AND c.status = ? ${limit ? 'LIMIT ?' : ''}`,
+      limit ? [status, limit] : [status],
+    );
+    return rows.map((row) => hydrateNotification(row));
   }
 
   async findByIdForIdentity(

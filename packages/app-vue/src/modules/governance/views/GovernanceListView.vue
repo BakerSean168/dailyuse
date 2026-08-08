@@ -103,7 +103,7 @@
           </template>
     </FilterBar>
 
-    <div class="min-h-0 flex-1 overflow-y-auto p-3">
+    <div class="min-h-0 flex-1 overflow-y-auto p-3" data-scroll-host="governance-list">
       <div class="mx-auto max-w-4xl space-y-4">
         <!-- 错误：inline Alert + 重试 -->
         <Alert v-if="error" variant="destructive">

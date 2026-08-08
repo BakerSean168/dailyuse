@@ -6,7 +6,7 @@
  */
 
 import type { ReviewType, KeyResultWeightSnapshotDTO, KeyResultValueType, KeyResultCalculationMethod, GoalReminderConfigDTO, KeyResultSnapshotDTO } from '@memoflow/contracts/goal';
-import { GoalStatus } from '@memoflow/contracts/goal';
+import { GoalStatus, GoalRollupPolicy } from '@memoflow/contracts/goal';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { IdentityId } from '@memoflow/domain-shared';
 import { GoalId, GoalFolderId, GoalReviewId, KeyResultId } from '../../../../domain';
@@ -42,6 +42,7 @@ export interface RawGoalData {
   archivedAt: number | null;
   folderId: string | null;
   parentGoalId: string | null;
+  rollupPolicy: string;
   sortOrder: number;
   reminderConfig: { enabled: boolean; triggers: unknown[] } | null;
   keyResults: RawKeyResultData[] | null;
@@ -76,6 +77,7 @@ export interface RawGoalReviewData {
   id: string;
   goalId: string;
   type: string;
+  title: string | null;
   rating: number;
   summary: string;
   achievements: string | null;
@@ -120,6 +122,7 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       id: GoalReviewId.of(r.id),
       goalId: GoalId.of(r.goalId),
       type: r.type as ReviewType,
+      title: r.title ?? null,
       rating: r.rating,
       summary: r.summary,
       achievements: r.achievements ?? null,
@@ -155,6 +158,7 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
     archivedAt: raw.archivedAt ? Number(raw.archivedAt) : null,
     folderId: raw.folderId ? GoalFolderId.of(raw.folderId) : null,
     parentGoalId: raw.parentGoalId ? GoalId.of(raw.parentGoalId) : null,
+    rollupPolicy: (raw.rollupPolicy as GoalRollupPolicy) ?? GoalRollupPolicy.Kr,
     sortOrder: raw.sortOrder,
     reminderConfig,
     version: raw.version ?? 1,

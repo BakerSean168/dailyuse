@@ -11,7 +11,7 @@ import type {
   GoalReview as PrismaGoalReview,
   KeyResultWeightSnapshot as PrismaKeyResultWeightSnapshot,
 } from '@memoflow/database';
-import type { KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
+import type { KeyResultWeightSnapshotDTO, KeyResultSnapshotDTO } from '@memoflow/contracts/goal';
 import type { RawGoalData, RawKeyResultData, RawGoalReviewData } from './goal-state-mapper';
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
@@ -69,6 +69,7 @@ export class PrismaGoalMapper {
       archivedAt: optionalInstant(row.archivedAt),
       folderId: row.folderId ?? null,
       parentGoalId: row.parentGoalId ?? null,
+      rollupPolicy: row.rollupPolicy ?? 'kr',
       sortOrder: row.sortOrder ?? 0,
       reminderConfig: row.reminderConfig ? JSON.parse(row.reminderConfig) : null,
       keyResults: row.keyResults ? row.keyResults.map(PrismaGoalMapper.mapKeyResult) : null,
@@ -111,17 +112,42 @@ export class PrismaGoalMapper {
   /**
    * Map a Prisma GoalReview row to raw goal review data
    */
+  /**
+   * R4：next_steps 列以 JSON 数组承载 next actions（向后兼容旧 lessonsLearned）。
+   */
+  static parseReviewImprovements(nextSteps: string | null): string | null {
+    if (nextSteps == null) return null;
+    try {
+      const parsed = JSON.parse(nextSteps);
+      if (Array.isArray(parsed)) return JSON.stringify(parsed);
+      return nextSteps;
+    } catch {
+      return nextSteps;
+    }
+  }
+
+  static parseReviewKeyResultSnapshots(raw: string | null): KeyResultSnapshotDTO[] {
+    if (raw == null) return [];
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      return Array.isArray(parsed) ? (parsed as KeyResultSnapshotDTO[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
   static mapGoalReview(row: PrismaGoalReview): RawGoalReviewData {
     return {
       id: row.id,
       goalId: row.goalId,
       type: row.reviewType,
+      title: row.title ?? null,
       rating: row.rating ?? 3,
       summary: row.content,
       achievements: row.achievements ?? null,
       challenges: row.challenges ?? null,
-      improvements: row.lessonsLearned ?? null,
-      keyResultSnapshots: [],
+      improvements: PrismaGoalMapper.parseReviewImprovements(row.nextSteps) ?? row.lessonsLearned ?? null,
+      keyResultSnapshots: PrismaGoalMapper.parseReviewKeyResultSnapshots(row.keyResultSnapshots),
       reviewedAt: requiredInstant(row.createdAt),
       createdAt: requiredInstant(row.createdAt),
       updatedAt: requiredInstant(row.updatedAt),

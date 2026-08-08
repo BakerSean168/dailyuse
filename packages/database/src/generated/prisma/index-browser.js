@@ -140,6 +140,22 @@ exports.Prisma.AccountScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
+exports.Prisma.ActivityLedgerScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  actorId: 'actorId',
+  subjectType: 'subjectType',
+  subjectId: 'subjectId',
+  action: 'action',
+  title: 'title',
+  correlationId: 'correlationId',
+  beforeSummary: 'beforeSummary',
+  afterSummary: 'afterSummary',
+  sourceEvent: 'sourceEvent',
+  occurredAt: 'occurredAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AiConversationScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -449,6 +465,7 @@ exports.Prisma.GoalScalarFieldEnum = {
   archivedAt: 'archivedAt',
   folderId: 'folderId',
   parentGoalId: 'parentGoalId',
+  rollupPolicy: 'rollupPolicy',
   sortOrder: 'sortOrder',
   reminderConfig: 'reminderConfig',
   version: 'version',
@@ -510,12 +527,14 @@ exports.Prisma.GoalReviewScalarFieldEnum = {
   identityId: 'identityId',
   goalId: 'goalId',
   reviewType: 'reviewType',
+  title: 'title',
   content: 'content',
   achievements: 'achievements',
   challenges: 'challenges',
   lessonsLearned: 'lessonsLearned',
   nextSteps: 'nextSteps',
   rating: 'rating',
+  keyResultSnapshots: 'keyResultSnapshots',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -601,6 +620,45 @@ exports.Prisma.RuleRevisionScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.HabitScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  name: 'name',
+  description: 'description',
+  frequency: 'frequency',
+  goalId: 'goalId',
+  status: 'status',
+  startDate: 'startDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HabitOccurrenceScalarFieldEnum = {
+  id: 'id',
+  habitId: 'habitId',
+  occurrenceDate: 'occurrenceDate',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HabitCheckInScalarFieldEnum = {
+  id: 'id',
+  occurrenceId: 'occurrenceId',
+  checkedAt: 'checkedAt',
+  note: 'note',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.HabitStreakProjectionScalarFieldEnum = {
+  id: 'id',
+  habitId: 'habitId',
+  currentStreak: 'currentStreak',
+  longestStreak: 'longestStreak',
+  lastCheckInDate: 'lastCheckInDate',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -615,6 +673,7 @@ exports.Prisma.NotificationScalarFieldEnum = {
   relatedEntityId: 'relatedEntityId',
   metadata: 'metadata',
   actions: 'actions',
+  navigationIntent: 'navigationIntent',
   readAt: 'readAt',
   sentAt: 'sentAt',
   expiresAt: 'expiresAt',
@@ -635,7 +694,10 @@ exports.Prisma.NotificationChannelScalarFieldEnum = {
   maxRetries: 'maxRetries',
   error: 'error',
   response: 'response',
-  retryCount: 'retryCount'
+  retryCount: 'retryCount',
+  sentAt: 'sentAt',
+  failedAt: 'failedAt',
+  attempts: 'attempts'
 };
 
 exports.Prisma.NotificationHistoryScalarFieldEnum = {
@@ -676,6 +738,51 @@ exports.Prisma.NotificationTemplateScalarFieldEnum = {
   isSystem: 'isSystem',
   isActive: 'isActive',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RelationScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  subjectType: 'subjectType',
+  subjectId: 'subjectId',
+  relationType: 'relationType',
+  objectType: 'objectType',
+  objectId: 'objectId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OutboxMessageScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  messageType: 'messageType',
+  schemaVersion: 'schemaVersion',
+  correlationId: 'correlationId',
+  causationId: 'causationId',
+  payloadJson: 'payloadJson',
+  status: 'status',
+  attempts: 'attempts',
+  availableAt: 'availableAt',
+  lastError: 'lastError',
+  dispatchedAt: 'dispatchedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.InboxReceiptScalarFieldEnum = {
+  id: 'id',
+  consumer: 'consumer',
+  outcome: 'outcome',
+  error: 'error',
+  processedAt: 'processedAt'
+};
+
+exports.Prisma.ProjectionCursorScalarFieldEnum = {
+  projector: 'projector',
+  sourceName: 'sourceName',
+  lastProcessedId: 'lastProcessedId',
+  lastProcessedAt: 'lastProcessedAt',
+  version: 'version',
   updatedAt: 'updatedAt'
 };
 
@@ -1046,19 +1153,6 @@ exports.Prisma.ScheduleScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.ScheduleJobScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  nextRunAt: 'nextRunAt',
-  cronExpression: 'cronExpression',
-  sourceModule: 'sourceModule',
-  sourceId: 'sourceId',
-  triggerEvent: 'triggerEvent',
-  payload: 'payload',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.ScheduleTaskScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1127,6 +1221,15 @@ exports.Prisma.ScheduleStatisticScalarFieldEnum = {
   moduleStatistics: 'moduleStatistics',
   lastUpdatedAt: 'lastUpdatedAt',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.ScheduleLeaseScalarFieldEnum = {
+  id: 'id',
+  leaseKey: 'leaseKey',
+  ownerToken: 'ownerToken',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.UserSettingScalarFieldEnum = {
@@ -1202,6 +1305,7 @@ exports.Prisma.TaskInstanceScalarFieldEnum = {
   templateId: 'templateId',
   identityId: 'identityId',
   instanceDate: 'instanceDate',
+  occurrenceKey: 'occurrenceKey',
   status: 'status',
   importance: 'importance',
   priority: 'priority',
@@ -1223,6 +1327,7 @@ exports.Prisma.TaskGoalOutboxScalarFieldEnum = {
   goalId: 'goalId',
   keyResultId: 'keyResultId',
   payload: 'payload',
+  action: 'action',
   status: 'status',
   attempts: 'attempts',
   availableAt: 'availableAt',
@@ -1290,6 +1395,29 @@ exports.Prisma.TaskStatisticScalarFieldEnum = {
   distributionByTag: 'distributionByTag'
 };
 
+exports.Prisma.WalletAccountScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  name: 'name',
+  currency: 'currency',
+  balance: 'balance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WalletTransactionScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  identityId: 'identityId',
+  type: 'type',
+  amount: 'amount',
+  category: 'category',
+  note: 'note',
+  goalId: 'goalId',
+  occurredAt: 'occurredAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1323,6 +1451,7 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   Account: 'Account',
+  ActivityLedger: 'ActivityLedger',
   AiConversation: 'AiConversation',
   AiMessage: 'AiMessage',
   AiGenerationTask: 'AiGenerationTask',
@@ -1353,11 +1482,19 @@ exports.Prisma.ModelName = {
   FocusMode: 'FocusMode',
   Rule: 'Rule',
   RuleRevision: 'RuleRevision',
+  Habit: 'Habit',
+  HabitOccurrence: 'HabitOccurrence',
+  HabitCheckIn: 'HabitCheckIn',
+  HabitStreakProjection: 'HabitStreakProjection',
   Notification: 'Notification',
   NotificationChannel: 'NotificationChannel',
   NotificationHistory: 'NotificationHistory',
   NotificationPreference: 'NotificationPreference',
   NotificationTemplate: 'NotificationTemplate',
+  Relation: 'Relation',
+  OutboxMessage: 'OutboxMessage',
+  InboxReceipt: 'InboxReceipt',
+  ProjectionCursor: 'ProjectionCursor',
   ReminderTemplate: 'ReminderTemplate',
   ReminderGroup: 'ReminderGroup',
   ReminderInstance: 'ReminderInstance',
@@ -1381,10 +1518,10 @@ exports.Prisma.ModelName = {
   KnowledgeWriteRequest: 'KnowledgeWriteRequest',
   KnowledgeRepositoryLease: 'KnowledgeRepositoryLease',
   Schedule: 'Schedule',
-  ScheduleJob: 'ScheduleJob',
   ScheduleTask: 'ScheduleTask',
   ScheduleExecution: 'ScheduleExecution',
   ScheduleStatistic: 'ScheduleStatistic',
+  ScheduleLease: 'ScheduleLease',
   UserSetting: 'UserSetting',
   TaskFolder: 'TaskFolder',
   TaskTemplate: 'TaskTemplate',
@@ -1392,7 +1529,9 @@ exports.Prisma.ModelName = {
   TaskGoalOutbox: 'TaskGoalOutbox',
   TaskDependency: 'TaskDependency',
   TaskTemplateHistory: 'TaskTemplateHistory',
-  TaskStatistic: 'TaskStatistic'
+  TaskStatistic: 'TaskStatistic',
+  WalletAccount: 'WalletAccount',
+  WalletTransaction: 'WalletTransaction'
 };
 
 /**

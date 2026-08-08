@@ -3,25 +3,25 @@ import { ReminderResponse } from '../reminder-response';
 import { ReminderResponseId } from '../../value-objects/reminder-response-id';
 
 describe('ReminderResponse entity', () => {
-  it('creates responses with optional timestamps and serializes them', () => {
+  it('creates responses with optional timestamps and serializes them (R3c: seconds semantics)', () => {
     const response = ReminderResponse.create({
       reminderTemplateId: 'template-1',
       identityId: 'identity-1',
       action: 'CLICKED',
-      responseTime: 45_000,
+      responseTime: 45, // seconds
       timestamp: 1_000,
     });
 
     expect(response.reminderTemplateId).toBe('template-1');
     expect(response.identityId).toBe('identity-1');
     expect(response.timestamp.getTime()).toBe(1_000);
-    expect(response.responseTime?.getTime()).toBe(45_000);
+    expect(response.responseTime?.getTime()).toBe(45_000); // 45s -> 45_000ms
     expect(response.toServerDTO()).toEqual({
       id: response.id,
       reminderTemplateId: 'template-1',
       identityId: 'identity-1',
       action: 'CLICKED',
-      responseTime: 45_000,
+      responseTime: 45,
       timestamp: 1_000,
     });
   });

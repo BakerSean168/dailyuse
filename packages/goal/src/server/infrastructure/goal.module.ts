@@ -62,6 +62,12 @@ import {
 import type { GoalSystemView } from '@memoflow/contracts/goal';
 import type { GoalApplicationPort } from '../application';
 import type { GoalWriteTransactionRunner } from '../application/use-cases/commands/goal-write-support';
+import {
+  CreateHabitUseCase,
+  RecordHabitCheckInUseCase,
+  ListHabitUseCase,
+  type IHabitRepository,
+} from '../application/use-cases/commands/habit.use-cases';
 import { createInlineGoalWriteTransactionRunner } from '../application/use-cases/commands/goal-write-support';
 
 // ---------------------------------------------------------------------------
@@ -84,6 +90,8 @@ export interface GoalModuleDependencies {
   readonly focusModeRepository: IFocusModeRepository;
   readonly goalWriteTransactionRunner?: GoalWriteTransactionRunner;
   readonly runtimeContributions?: GoalRuntimeContributionsInput;
+  /** R4：习惯仓储（可选；提供时启用 habit use cases）。 */
+  readonly habitRepository?: IHabitRepository;
 }
 
 /**
@@ -110,6 +118,12 @@ export interface GoalModuleRuntimeContribution {
 // ---------------------------------------------------------------------------
 
 export interface GoalModuleUseCases {
+  // R4 Habit / 习惯
+  readonly habit?: {
+    readonly create: CreateHabitUseCase;
+    readonly checkIn: RecordHabitCheckInUseCase;
+    readonly list: ListHabitUseCase;
+  };
   // Goal CRUD / 目标增删改查
   readonly createGoal: CreateGoalUseCase;
   readonly getGoal: GetGoalUseCase;
@@ -196,7 +210,19 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     deps.goalWriteTransactionRunner ??
     createInlineGoalWriteTransactionRunner({ goalRepository, goalRecordRepository });
 
+  const habitRepository: IHabitRepository | undefined = deps.habitRepository;
+
   return {
+    // R4 Habit（可选：未注入仓储时不启用）
+    ...(habitRepository
+      ? {
+          habit: {
+            create: new CreateHabitUseCase(habitRepository),
+            checkIn: new RecordHabitCheckInUseCase(habitRepository),
+            list: new ListHabitUseCase(habitRepository),
+          },
+        }
+      : {}),
     // Goal CRUD / 目标增删改查
     createGoal: new CreateGoalUseCase(goalRepository, goalPolicy),
     getGoal: new GetGoalUseCase(goalRepository),

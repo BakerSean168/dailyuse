@@ -4,7 +4,8 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createI18n } from 'vue-i18n';
 import { createMemoryHistory, createRouter } from 'vue-router';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, nextTick } from 'vue';
+import { flushPromises } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   moduleForPath,
@@ -14,7 +15,7 @@ import {
   AUTO_FOCUS_VIEWPORT,
 } from './useShellRouterSync';
 import { useShellRouterSync } from './useShellRouterSync';
-import { useAppShellStore } from './useAppShellStore';
+import { MAX_BUSINESS_TABS, useAppShellStore } from './useAppShellStore';
 
 const originalInnerWidth = window.innerWidth;
 
@@ -130,6 +131,14 @@ async function mountRouterSync(initialPath: string) {
     routes: [
       { path: '/', component: { template: '<div />' } },
       { path: '/goals', component: { template: '<div />' } },
+      { path: '/goals/g-1', component: { template: '<div />' } },
+      { path: '/goals/g-2', component: { template: '<div />' } },
+      { path: '/tasks', component: { template: '<div />' } },
+      {
+        path: '/settings',
+        component: { template: '<div />' },
+        meta: { shellScene: 'settings' },
+      },
     ],
   });
   await router.push(initialPath);
@@ -220,6 +229,198 @@ describe('useShellRouterSync startup restoration', () => {
     expect(confirm).toHaveBeenCalledOnce();
     expect(fixture.store.rightPanelOpen).toBe(false);
     expect(fixture.store.surfaceStatus).toBe('dirty');
+    wrapper.unmount();
+  });
+});
+
+describe('useShellRouterSync settings origin (Phase 0 / UI-007)', () => {
+  it('saves the workspace origin when entering settings and restores it on return', async () => {
+    const fixture = await mountRouterSync('/goals/g-1');
+    const tab = fixture.store.openTab({
+      module: 'goal',
+      route: '/goals/g-1',
+      title: 'Goal 1',
+      intent: 'deeplink',
+    });
+    const wrapper = fixture.mount();
+
+    await fixture.router.push('/settings');
+
+    expect(fixture.store.settingsOrigin).toEqual({
+      route: '/goals/g-1',
+      tabId: tab.tabId,
+      panelSurface: 'business',
+      layout: 'split',
+      layoutReason: 'default',
+    });
+
+    await fixture.actions().returnFromSettings();
+
+    expect(fixture.router.currentRoute.value.fullPath).toBe('/goals/g-1');
+    expect(fixture.store.activeTabId).toBe(tab.tabId);
+    expect(fixture.store.settingsOrigin).toBeNull();
+    wrapper.unmount();
+  });
+
+  it('returns to the active tab when settings were deep-linked (no origin)', async () => {
+    const fixture = await mountRouterSync('/settings');
+    fixture.store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'capsule',
+    });
+    const wrapper = fixture.mount();
+
+    await fixture.actions().returnFromSettings();
+
+    expect(fixture.router.currentRoute.value.fullPath).toBe('/goals');
+    expect(fixture.store.activeTab?.route).toBe('/goals');
+    wrapper.unmount();
+  });
+
+  it('falls back to Home when the saved origin tab is gone', async () => {
+    const fixture = await mountRouterSync('/goals/g-1');
+    const tab = fixture.store.openTab({
+      module: 'goal',
+      route: '/goals/g-1',
+      title: 'Goal 1',
+      intent: 'deeplink',
+    });
+    const wrapper = fixture.mount();
+
+    await fixture.router.push('/settings');
+    // 进入设置后原 Tab 被外部动作关闭 → origin 失效。
+    fixture.store.closeTab(tab.tabId);
+
+    await fixture.actions().returnFromSettings();
+
+    expect(fixture.router.currentRoute.value.fullPath).toBe('/');
+    expect(fixture.store.panelSurface).toBe('home');
+    wrapper.unmount();
+  });
+
+  it('clears the origin when leaving settings back into a business route', async () => {
+    const fixture = await mountRouterSync('/goals');
+    fixture.store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'capsule',
+    });
+    const wrapper = fixture.mount();
+
+    await fixture.router.push('/settings');
+    expect(fixture.store.settingsOrigin).not.toBeNull();
+
+    // 浏览器 back / 直接导航离开设置 → afterEach 清除 origin。
+    await fixture.router.push('/goals');
+    expect(fixture.store.settingsOrigin).toBeNull();
+    wrapper.unmount();
+  });
+});
+
+describe('useShellRouterSync Phase 1 landing / deep-link semantics', () => {
+  it('lands on the module list even when a detail tab already exists', async () => {
+    const fixture = await mountRouterSync('/goals/g-1');
+    fixture.store.openTab({
+      module: 'goal',
+      route: '/goals/g-1',
+      title: 'Goals',
+      intent: 'deeplink',
+    });
+    const wrapper = fixture.mount();
+
+    await fixture.actions().openModule('goal', '/goals');
+
+    expect(fixture.router.currentRoute.value.fullPath).toBe('/goals');
+    expect(fixture.store.activeTab?.route).toBe('/goals');
+    expect(fixture.store.tabs).toHaveLength(1); // landing 复用已有 Tab，不新建
+    wrapper.unmount();
+  });
+
+  it('opens a new tab for a distinct deep-link route (multi-tab per module)', async () => {
+    const fixture = await mountRouterSync('/tasks');
+    const wrapper = fixture.mount();
+    expect(fixture.store.tabs).toHaveLength(1); // startup 深链建 task Tab
+
+    // 跨模块 deep-link：活动 task Tab 时打开 goal 详情 → 新开 goal Tab。
+    await fixture.router.push('/goals/g-1');
+    await nextTick();
+
+    expect(fixture.store.tabs).toHaveLength(2);
+    expect(fixture.store.activeTab?.route).toBe('/goals/g-1');
+    expect(fixture.store.tabs.find((t) => t.module === 'task')).toBeDefined();
+    wrapper.unmount();
+  });
+
+  it('reuses the existing tab for the same deep-link route', async () => {
+    const fixture = await mountRouterSync('/goals/g-1');
+    const tab = fixture.store.openTab({
+      module: 'goal',
+      route: '/goals/g-1',
+      title: 'Goals',
+      intent: 'deeplink',
+    });
+    const wrapper = fixture.mount();
+
+    await fixture.router.push('/goals/g-1');
+    await nextTick();
+
+    expect(fixture.store.tabs).toHaveLength(1);
+    expect(fixture.store.activeTabId).toBe(tab.tabId);
+    wrapper.unmount();
+  });
+
+  it('rolls the URL back when the tab-limit confirm is cancelled (review P1)', async () => {
+    const fixture = await mountRouterSync('/goals');
+    const wrapper = fixture.mount();
+    // 初始 startup 已有 1 个 goal Tab；再开满至 MAX_BUSINESS_TABS。
+    for (let i = 0; i < MAX_BUSINESS_TABS - 1; i += 1) {
+      fixture.store.openTab({
+        module: 'note',
+        route: `/repository?note=${i}`,
+        title: `N${i}`,
+        intent: 'deeplink',
+      });
+    }
+    expect(fixture.store.tabs).toHaveLength(MAX_BUSINESS_TABS);
+
+    const denyConfirm = vi.fn(() => false);
+    Object.defineProperty(window, 'confirm', { configurable: true, value: denyConfirm });
+    await fixture.router.push('/goals/g-2');
+    // afterEach 内的回滚 replace 是异步发起的，等待其导航完成。
+    await flushPromises();
+    await nextTick();
+    await flushPromises();
+
+    // 取消：不创建 Tab，URL 回滚到进入前 → URL/Tab/对象保持一致。
+    expect(fixture.store.tabs).toHaveLength(MAX_BUSINESS_TABS);
+    expect(fixture.router.currentRoute.value.fullPath).toBe('/goals');
+    wrapper.unmount();
+  });
+
+  it('restores the workflow origin surface after returning from settings (review P1)', async () => {
+    const fixture = await mountRouterSync('/goals/g-1');
+    fixture.store.openTab({
+      module: 'goal',
+      route: '/goals/g-1',
+      title: 'Goal 1',
+      intent: 'deeplink',
+    });
+    const wrapper = fixture.mount();
+    // mount 时 restoreStartupRoute 会按业务路由重置 surface；
+    // 真实进入设置→返回场景 workspace 常驻不重挂，这里在 mount 后设 workflow。
+    fixture.store.setWorkflowAvailable(true);
+    fixture.store.requestWorkflowSurface('explicit');
+
+    await fixture.router.push('/settings');
+    expect(fixture.store.settingsOrigin?.panelSurface).toBe('workflow');
+
+    await fixture.actions().returnFromSettings();
+
+    expect(fixture.router.currentRoute.value.fullPath).toBe('/goals/g-1');
+    expect(fixture.store.panelSurface).toBe('workflow');
     wrapper.unmount();
   });
 });

@@ -7,7 +7,7 @@
 
       <div
         v-else
-        class="calendar-container h-full overflow-auto"
+        class="calendar-container h-full overflow-y-auto" data-scroll-host="schedule-calendar"
         data-testid="schedule-calendar-scroll-host"
       >
         <!-- Header: Days of Week -->

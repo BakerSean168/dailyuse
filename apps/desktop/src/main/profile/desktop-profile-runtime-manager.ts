@@ -324,7 +324,7 @@ export class DesktopProfileRuntimeManager {
   async deactivateProfile(options: { preserveSelection?: boolean } = {}): Promise<void> {
     if (!this.activeRuntime) return;
     const profileId = this.activeRuntime.descriptor.profileId;
-    try { stopScheduleRuntime(); } catch (error) { logger.warn('Failed to stop schedule runtime', { error }); }
+    try { await stopScheduleRuntime(); } catch (error) { logger.warn('Failed to stop schedule runtime', { error }); }
     await this.activeRuntime.bootstrapper.destroy().catch((error) => logger.error('Failed to destroy profile modules', { error }));
     await shutdownPowerSync();
     this.activeRuntime = null;

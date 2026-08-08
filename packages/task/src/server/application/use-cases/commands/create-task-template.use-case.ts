@@ -52,7 +52,7 @@ export class CreateTaskTemplateUseCase {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
         if (request.parentTaskId) {
-          const parentTemplate = await templateRepository.findByIdForIdentity(
+          const parentTemplate = await templateRepository!.findByIdForIdentity(
             request.identityId,
             request.parentTaskId,
           );
@@ -103,17 +103,32 @@ export class CreateTaskTemplateUseCase {
             : null,
         });
 
-        await templateRepository.save(template);
+        // R2-5a 乐观锁：模板只保存一次。顺序：先 generate（内存更新
+        // lastGeneratedDate），再 save 模板（持久化模板供实例 FK），
+        // 最后 saveMany 实例。
+        const instances =
+          template.status === TaskTemplateStatus.Active
+            ? this.generationService.generateInstances(template)
+            : [];
 
-        let generation = { instanceCount: 0, todayInstanceCreated: false };
-
-        if (template.status === TaskTemplateStatus.Active) {
-          generation = await this.generateInitialInstances(
-            template,
-            templateRepository,
-            instanceRepository,
-          );
+        await templateRepository!.save(template);
+        if (instances.length > 0) {
+          await instanceRepository.saveMany(instances);
         }
+
+        const generation = {
+          instanceCount: instances.length,
+          todayInstanceCreated: instances.some((instance) => {
+            if (!Number.isFinite(instance.instanceDate)) return false;
+            const d = new Date(instance.instanceDate);
+            const now = new Date();
+            return (
+              d.getFullYear() === now.getFullYear() &&
+              d.getMonth() === now.getMonth() &&
+              d.getDate() === now.getDate()
+            );
+          }),
+        };
 
         return ok({
           template: template.toClientDTO(),
@@ -121,6 +136,13 @@ export class CreateTaskTemplateUseCase {
         });
       });
     } catch (caughtError) {
+      // eslint-disable-next-line no-console
+      console.error('[CreateTaskTemplate] failed', {
+        message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+        code: (caughtError as { code?: string }).code,
+        meta: (caughtError as { meta?: unknown }).meta,
+        stack: caughtError instanceof Error ? caughtError.stack?.split('\n').slice(0, 6).join('\n') : undefined,
+      });
       this.logger.error('Failed to create task template', { error: caughtError });
       return fail(
         mapTaskWriteErrorToResultError(caughtError, 'Failed to create task template'),
@@ -128,31 +150,4 @@ export class CreateTaskTemplateUseCase {
     }
   }
 
-  private async generateInitialInstances(
-    template: TaskTemplate,
-    templateRepository: ITaskTemplateRepository,
-    instanceRepository: ITaskInstanceRepository,
-  ): Promise<{ instanceCount: number; todayInstanceCreated: boolean }> {
-    const instances = this.generationService.generateInstances(template);
-
-    if (instances.length > 0) {
-      await instanceRepository.saveMany(instances);
-      await templateRepository.save(template);
-    }
-
-    const today = new Date();
-    const todayInstanceCreated = instances.some((instance) => {
-      if (!Number.isFinite(instance.instanceDate)) {
-        return false;
-      }
-      const instanceDate = new Date(instance.instanceDate);
-      return (
-        instanceDate.getFullYear() === today.getFullYear() &&
-        instanceDate.getMonth() === today.getMonth() &&
-        instanceDate.getDate() === today.getDate()
-      );
-    });
-
-    return { instanceCount: instances.length, todayInstanceCreated };
-  }
 }

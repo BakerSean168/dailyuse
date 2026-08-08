@@ -4,7 +4,8 @@ import type { ITaskTemplateRepository } from '../../../domain/repositories/i-tas
 import { isDomainError, mapInfraErrorToResultError } from '@memoflow/utils/errors';
 
 export interface TaskWriteRepositories {
-  readonly templateRepository: ITaskTemplateRepository;
+  /** 完整事务（complete 等）需要模板读取；仅实例操作（uncomplete）可省略。 */
+  readonly templateRepository?: ITaskTemplateRepository;
   readonly instanceRepository: ITaskInstanceRepository;
 }
 

@@ -89,7 +89,15 @@ export function createMigrationCommands(workspaceRoot: string): Command[] {
       },
       {
         executable: prismaBin,
-        args: ['db', 'push', '--config', './prisma/prisma.config.ts'],
+        args: [
+          'db',
+          'push',
+          '--config',
+          './prisma/prisma.config.ts',
+          ...(process.env.MIGRATOR_ACCEPT_DATA_LOSS === '1'
+            ? ['--accept-data-loss']
+            : []),
+        ],
         cwd: databaseRoot,
         label: 'reconcile Prisma schema',
       },

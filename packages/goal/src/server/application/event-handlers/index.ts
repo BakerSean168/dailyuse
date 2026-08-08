@@ -1,21 +1,17 @@
 /**
  * Goal Event Handlers (Server)
  *
- * 跨模块「通知式反应」的落地点（ADR-033 范式 A）：订阅 Task 的
- * `task:instance-completed`，据自包含的 payload 更新关联 KR 进度。
+ * R2-5b：跨模块「任务实例 → Goal 进度贡献」已收敛为单一 durable 通道——
+ * Task 侧写 TaskGoalOutbox（事务内），宿主 dispatcher 投递，Goal 侧由
+ * GoalTaskProgressHandler 消费（apply / revert，GoalRecord 唯一键幂等）。
  *
- * 反应逻辑收敛在 Goal 包内，`apps/api` 与 `apps/desktop` 两宿主挂载同一实现，
- * 不再各自维护 bespoke 副本；订阅方直接消费 payload，不回查 Task 的 repository。
+ * 因此这里不再直连订阅 task 事件（原 ADR-033 范式 A 的 eventBus 直连已移除，
+ * 避免与 outbox 双轨并存）；保留 `registerGoalEventListeners` 签名与
+ * start/stop 契约，宿主挂载点无需改动。
  */
 
-import type { TaskEventMap } from '@memoflow/contracts/task';
-import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
-import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
 import { createLogger } from '@memoflow/utils/logger';
 import type { IGoalRepository, IGoalRecordRepository } from '../../domain';
-import { CreateGoalRecordUseCase } from '../use-cases/commands/create-goal-record.use-case';
-import { GoalRecordSourceType } from '@memoflow/contracts/goal';
-import { RemoveTaskGoalContributionUseCase } from '../use-cases/commands/remove-task-goal-contribution.use-case';
 import type { GoalWriteTransactionRunner } from '../use-cases/commands/goal-write-support';
 
 export {
@@ -26,122 +22,17 @@ export {
 
 const logger = createLogger('GoalEventListeners');
 
-type GoalReactionEventMap = Pick<
-  TaskEventMap,
-  'task:instance-completed' | 'task:instance-uncompleted'
->;
-
-const taskSubscriber = createTypedEventSubscriber<GoalReactionEventMap>(eventBus);
-
 /**
  * Register Goal event listeners.
  *
- * 返回可幂等启停的 runtime（仿 register-account-event-listeners）。
- * 宿主在启动时 `start()`，关闭时 `stop()`。
+ * 保留幂等启停契约（宿主在启动时 `start()`，关闭时 `stop()`）；
+ * R2-5b 起内部不再注册 task 事件直连订阅（贡献通道已收敛到 outbox）。
  */
 export function registerGoalEventListeners(
-  goalRepository: IGoalRepository,
-  goalRecordRepository: IGoalRecordRepository,
-  goalWriteTransactionRunner?: GoalWriteTransactionRunner,
+  _goalRepository: IGoalRepository,
+  _goalRecordRepository: IGoalRecordRepository,
+  _goalWriteTransactionRunner?: GoalWriteTransactionRunner,
 ): { start(): void; stop(): void } {
-  const createGoalRecord = new CreateGoalRecordUseCase(
-    goalRepository,
-    goalRecordRepository,
-    goalWriteTransactionRunner,
-  );
-  const removeTaskContribution = new RemoveTaskGoalContributionUseCase(
-    goalRepository,
-    goalRecordRepository,
-    goalWriteTransactionRunner,
-  );
-
-  const onTaskInstanceCompleted = async (
-    payload: GoalReactionEventMap['task:instance-completed'],
-  ): Promise<void> => {
-    try {
-      const { identityId, goalBinding, allInstancesCompleted, taskTitle } = payload;
-
-      // 未绑定目标：与本联动无关，忽略。
-      if (!goalBinding) {
-        return;
-      }
-
-      const shouldCreateRecord =
-        goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
-          ? allInstancesCompleted
-          : true;
-
-      if (!shouldCreateRecord) {
-        return;
-      }
-
-      const note =
-        goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
-          ? `模板实例全部完成: ${taskTitle}`
-          : `任务实例完成: ${taskTitle}`;
-      const source =
-        goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
-          ? { type: GoalRecordSourceType.TaskTemplate, id: String(payload.taskTemplateId) }
-          : { type: GoalRecordSourceType.TaskInstance, id: String(payload.taskInstanceId) };
-
-      const result = await createGoalRecord.execute(
-        String(goalBinding.goalId),
-        String(goalBinding.keyResultId),
-        { value: goalBinding.goalRecordValue, note, source },
-        String(identityId),
-      );
-
-      if (!result.ok) {
-        logger.error('[GoalEventListeners] Failed to create goal record from task completion', {
-          goalId: String(goalBinding.goalId),
-          keyResultId: String(goalBinding.keyResultId),
-          error: result.error,
-        });
-        return;
-      }
-
-      logger.info('[GoalEventListeners] Goal record created from task completion', {
-        goalId: String(goalBinding.goalId),
-        keyResultId: String(goalBinding.keyResultId),
-        value: goalBinding.goalRecordValue,
-      });
-    } catch (error) {
-      logger.error('[GoalEventListeners] Error handling task:instance-completed', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  };
-
-  const onTaskInstanceUncompleted = async (
-    payload: GoalReactionEventMap['task:instance-uncompleted'],
-  ): Promise<void> => {
-    const sources = [
-      { type: GoalRecordSourceType.TaskInstance, id: String(payload.taskInstanceId) },
-      { type: GoalRecordSourceType.TaskTemplate, id: String(payload.taskTemplateId) },
-    ] as const;
-
-    for (const source of sources) {
-      try {
-        const result = await removeTaskContribution.execute(
-          String(payload.identityId),
-          source.type,
-          source.id,
-        );
-        if (!result.ok) {
-          logger.error('[GoalEventListeners] Failed to remove task goal contribution', {
-            source,
-            error: result.error,
-          });
-        }
-      } catch (error) {
-        logger.error('[GoalEventListeners] Error handling task:instance-uncompleted', {
-          source,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
-  };
-
   let started = false;
 
   return {
@@ -149,19 +40,14 @@ export function registerGoalEventListeners(
       if (started) {
         return;
       }
-      taskSubscriber.on('task:instance-completed', onTaskInstanceCompleted);
-      taskSubscriber.on('task:instance-uncompleted', onTaskInstanceUncompleted);
       started = true;
-      logger.info('[GoalEventListeners] Goal event listeners registered');
+      logger.info(
+        '[GoalEventListeners] No direct task subscriptions (R2-5b: Task->Goal via outbox)',
+      );
     },
     stop(): void {
-      if (!started) {
-        return;
-      }
-      taskSubscriber.off('task:instance-completed', onTaskInstanceCompleted);
-      taskSubscriber.off('task:instance-uncompleted', onTaskInstanceUncompleted);
       started = false;
-      logger.info('[GoalEventListeners] Goal event listeners unregistered');
+      logger.info('[GoalEventListeners] Stopped');
     },
   };
 }

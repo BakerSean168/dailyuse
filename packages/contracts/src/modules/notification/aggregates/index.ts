@@ -6,6 +6,7 @@
 // ===== Notification Server =====
 export type {
   NotificationServerDTO,
+  NotificationNavigationIntentDTO,
 } from './notification-server';
 
 // ===== Notification Client =====

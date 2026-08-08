@@ -3,6 +3,7 @@
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { describe, expect, it } from 'vitest';
+import { Target } from '@lucide/vue';
 import WindowHeader from './WindowHeader.vue';
 
 const i18n = createI18n({
@@ -28,6 +29,7 @@ const i18n = createI18n({
         moduleNav: 'Module navigation',
         moduleWithCount: '{name}, {count} items',
         previewModule: 'Preview {name}',
+        openWorkspace: 'Open workspace',
         openSchedule: 'Open schedule',
         enterModule: 'Enter',
         previewPlaceholder: 'Preview',
@@ -38,18 +40,23 @@ const i18n = createI18n({
   },
 });
 
-describe('WindowHeader workspace launcher', () => {
-  it('uses one workspace launcher instead of persistent module capsules', () => {
+describe('WindowHeader workspace navigation', () => {
+  it('renders compound module capsules alongside the workspace launcher', async () => {
     const wrapper = mount(WindowHeader, {
       props: {
         sidebarCollapsed: false,
         rightPanelOpen: true,
+        capsules: [{ id: 'goal', label: 'Goals', route: '/goals', icon: Target }],
       },
       global: { plugins: [i18n] },
     });
 
     expect(wrapper.get('[data-testid="shell-workspace-launcher"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid^="capsule-nav-"]').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="capsule-nav-goal"]').exists()).toBe(true);
+    expect(wrapper.get('[data-testid="capsule-preview-goal"]').exists()).toBe(true);
+
+    await wrapper.get('[data-testid="capsule-nav-goal"]').trigger('click');
+    expect(wrapper.emitted('open-module')).toEqual([[{ id: 'goal', route: '/goals' }]]);
   });
 
   it('opens the workspace through its single launcher', async () => {

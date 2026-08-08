@@ -43,7 +43,7 @@ export class GenerateTaskInstancesUseCase {
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
-        const template = await templateRepository.findByIdForIdentity(identityId, templateId);
+        const template = await templateRepository!.findByIdForIdentity(identityId, templateId);
         if (!template) {
           return error('NOT_FOUND', `TaskTemplate ${templateId} not found`);
         }
@@ -51,11 +51,13 @@ export class GenerateTaskInstancesUseCase {
         const instances = this.generationService.generateInstances(template, {
           forceGenerate: true,
           targetDate: request.toDate,
+          // R2-2：force 路径不再忽略请求区间——从 fromDate 生成到 toDate。
+          fromDate: request.fromDate,
         });
 
         if (instances.length > 0) {
           await instanceRepository.saveMany(instances);
-          await templateRepository.save(template);
+          await templateRepository!.save(template);
         }
 
         return ok(instances.map((instance) => instance.toClientDTO()));

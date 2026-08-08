@@ -235,7 +235,7 @@
               </div>
               <Badge variant="outline">{{ t('repository.projection.readOnly') }}</Badge>
             </div>
-            <div v-if="noteView === 'preview'" class="min-h-0 flex-1 overflow-auto">
+            <div v-if="noteView === 'preview'" class="min-h-0 flex-1 overflow-y-auto" data-scroll-host="repository-preview">
               <article
                 class="preview-content mx-auto max-w-3xl px-5 py-5"
                 data-testid="knowledge-projection-preview"
@@ -392,6 +392,8 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceStatus';
+import type { PanelSurfaceStatus } from '../../../layouts/shell/useAppShellStore';
 import {
   BookOpen,
   CheckCircle,
@@ -477,6 +479,17 @@ const reviewedProposal = ref<{
   request: CreateConfirmedKnowledgeNoteReq;
 } | null>(null);
 let noteLoadSequence = 0;
+
+// Phase 0 / UI-004：知识库创建确认流打开即视为未完成操作——统一离开协议
+// （设置场景守卫 / Tab 切换 / 关面板）要求确认；创建提交中标记 busy 禁止离开。
+// 每次求值都读取两个源，避免提前 return 清空响应式依赖。
+const surfaceStatus = computed<PanelSurfaceStatus>(() => {
+  const creatingNow = creating.value;
+  const dialogOpen = createDialogOpen.value;
+  if (creatingNow) return 'busy';
+  return dialogOpen ? 'dirty' : 'clean';
+});
+usePanelSurfaceStatus(surfaceStatus);
 
 const selectedConnection = computed(
   () =>

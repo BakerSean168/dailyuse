@@ -28,7 +28,9 @@ export default {
     "empty": "Nothing scheduled today",
     "current": "{start}–{end} · {title}",
     "upcoming": "{start} · {title} (in {minutes} min)",
-    "currentAllDay": "Today · {title}"
+    "currentAllDay": "Today · {title}",
+    "upcomingTitle": "Next up",
+    "moreCount": "+{count} more",
   },
   "conversation": {
     "today": "Today",
@@ -54,7 +56,8 @@ export default {
     "busyTransitionHint": "This operation is still in progress. Try again when it finishes.",
     "enterFocus": "Focus mode",
     "exitFocus": "Exit focus",
-    "tabLimitHint": "Tab limit reached — consider closing \"{title}\" (least recently used).",
+    "tabLimitConfirm": "Tab limit reached — close \"{title}\" (least recently used) to open this?",
+    "tabLimitDeniedHint": "Tab limit reached — close a tab first.",
     "contentErrorTitle": "This panel ran into a problem",
     "contentErrorDescription": "This business panel failed to render. Retry, or close the panel and keep using the AI workspace."
   },

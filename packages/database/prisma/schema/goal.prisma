@@ -33,6 +33,7 @@ model Goal {
   // ============ 层级与组织 ============
   folderId     String? @map("folder_id") /// 所属文件夹
   parentGoalId String? @map("parent_goal_id") /// 父目标ID（支持目标层级）
+  rollupPolicy String  @default("kr") @map("rollup_policy") /// R4：子目标进度汇总策略（kr/weighted/manual/disabled）
   sortOrder    Int     @default(0) @map("sort_order") /// 排序顺序
 
   // ============ 扩展功能 ============
@@ -188,12 +189,14 @@ model GoalReview {
 
   // ============ 评审内容 ============
   reviewType     String  @map("review_type") /// 评审类型（weekly/monthly/milestone/completion）
+  title          String? /// 评审标题（R4）
   content        String /// 主要内容
   achievements   String? /// 成就总结
   challenges     String? /// 遇到的挑战
   lessonsLearned String? @map("lessons_learned") /// 经验教训
-  nextSteps      String? @map("next_steps") /// 下一步计划
+  nextSteps      String? @map("next_steps") /// 下一步计划（JSON 数组：next actions）
   rating         Int? /// 评分（1-5星）
+  keyResultSnapshots String? @map("key_result_snapshots") /// KR 快照（JSON，R4）
 
   // ============ 审计 ============
   createdAt DateTime @default(now()) @map("created_at")

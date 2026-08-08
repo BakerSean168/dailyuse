@@ -117,7 +117,7 @@ const hostWorkbenchActive = computed(
     <!-- Optional top strip (unused when actions live near composer/timeline) -->
     <slot name="action-bar" />
 
-    <div class="min-h-0 flex-1 overflow-y-auto p-4">
+    <div class="min-h-0 flex-1 overflow-y-auto p-4" data-scroll-host="workflow">
       <div class="space-y-4">
         <slot />
       </div>

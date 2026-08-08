@@ -28,7 +28,9 @@ export default {
     "empty": "今日无安排",
     "current": "{start}–{end} · {title}",
     "upcoming": "{start} · {title}（{minutes} 分钟后）",
-    "currentAllDay": "今日 · {title}"
+    "currentAllDay": "今日 · {title}",
+    "upcomingTitle": "接下来",
+    "moreCount": "另有 {count} 项",
   },
   "conversation": {
     "today": "今天",
@@ -54,7 +56,8 @@ export default {
     "busyTransitionHint": "当前操作正在处理中，完成后即可切换。",
     "enterFocus": "专注模式",
     "exitFocus": "退出专注",
-    "tabLimitHint": "标签数已达上限——建议关闭最久未用的「{title}」。",
+    "tabLimitConfirm": "标签数已达上限——关闭最久未用的「{title}」以打开新内容？",
+    "tabLimitDeniedHint": "标签数已达上限，请先关闭部分标签。",
     "contentErrorTitle": "面板内容出错了",
     "contentErrorDescription": "此业务面板暂时无法显示。可重试，或关闭面板继续使用 AI 工作区。"
   },

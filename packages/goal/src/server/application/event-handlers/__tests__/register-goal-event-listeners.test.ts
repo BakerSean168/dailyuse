@@ -61,75 +61,16 @@ describe('registerGoalEventListeners', () => {
     vi.restoreAllMocks();
   });
 
-  it('creates a goal record from a bound task completion (PerInstance)', async () => {
-    taskPublisher.send('task:instance-completed', aCompletedEvent());
-    await Promise.resolve();
-
-    expect(executeSpy).toHaveBeenCalledTimes(1);
-    expect(executeSpy).toHaveBeenCalledWith(
-      'goal-1',
-      'kr-1',
-      {
-        value: 1,
-        note: '任务实例完成: Write ADR',
-        source: { type: 'TASK_INSTANCE', id: 'ti-1' },
-      },
-      'identity-1',
-    );
+  it('keeps start/stop idempotent contract', () => {
+    expect(() => listeners.start()).not.toThrow();
+    expect(() => listeners.stop()).not.toThrow();
+    expect(() => listeners.start()).not.toThrow();
   });
 
-  it('ignores completions without a goal binding', async () => {
-    taskPublisher.send('task:instance-completed', aCompletedEvent({ goalBinding: null }));
-    await Promise.resolve();
-
-    expect(executeSpy).not.toHaveBeenCalled();
-  });
-
-  it('skips AllInstancesCompleted trigger until all instances are completed', async () => {
-    taskPublisher.send(
-      'task:instance-completed',
-      aCompletedEvent({
-        goalBinding: aGoalBinding({
-          progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
-        }),
-        allInstancesCompleted: false,
-      }),
-    );
-    await Promise.resolve();
-
-    expect(executeSpy).not.toHaveBeenCalled();
-  });
-
-  it('creates a record for AllInstancesCompleted once all instances are completed', async () => {
-    taskPublisher.send(
-      'task:instance-completed',
-      aCompletedEvent({
-        goalBinding: aGoalBinding({
-          progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
-        }),
-        allInstancesCompleted: true,
-      }),
-    );
-    await Promise.resolve();
-
-    expect(executeSpy).toHaveBeenCalledTimes(1);
-    expect(executeSpy).toHaveBeenCalledWith(
-      'goal-1',
-      'kr-1',
-      {
-        value: 1,
-        note: '模板实例全部完成: Write ADR',
-        source: { type: 'TASK_TEMPLATE', id: 'tt-1' },
-      },
-      'identity-1',
-    );
-  });
-
-  it('stops reacting after stop()', async () => {
-    listeners.stop();
-    taskPublisher.send('task:instance-completed', aCompletedEvent());
-    await Promise.resolve();
-
+  it('R2-5b: does not react to direct task events (single outbox channel)', async () => {
+    // 贡献通道已收敛到 TaskGoalOutbox -> GoalTaskProgressHandler；
+    // eventBus 上直接发布 task 事件不应再触发 Goal 写入。
+    await taskPublisher.send('task:instance-completed', aCompletedEvent());
     expect(executeSpy).not.toHaveBeenCalled();
   });
 });

@@ -293,6 +293,20 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     );
   }
 
+  async claimForExecution(id: string, expectedNextRunAt: Date): Promise<boolean> {
+    let claimed = 0;
+    await this.db.writeTransaction(async (tx) => {
+      const result = await tx.execute(
+        `UPDATE schedule_tasks
+         SET last_run_at = ?
+         WHERE id = ? AND status = ? AND enabled = 1 AND next_run_at = ?`,
+        [new Date().toISOString(), id, ScheduleTaskStatus.Active, expectedNextRunAt.toISOString()],
+      );
+      claimed = result.rowsAffected;
+    });
+    return claimed > 0;
+  }
+
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {
     return this.queryRows(
       `SELECT * FROM schedule_tasks

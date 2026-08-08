@@ -128,4 +128,28 @@ describe('BusinessPanel surfaces', () => {
     await separator.trigger('keydown', { key: 'ArrowRight' });
     expect(wrapper.emitted('resize-by')).toEqual([[24], [-24]]);
   });
+
+  it('keeps surface wrappers overflow-hidden with exactly one data-scroll-host each (Phase 2)', () => {
+    const wrapper = mount(BusinessPanel, {
+      props: {
+        tabs,
+        activeTabId: 'tab-goal-1',
+        layout: 'split',
+        panelSurface: 'business',
+      },
+      slots: {
+        home: '<div data-scroll-host="home-probe">Home</div>',
+        default: '<div data-scroll-host="business-probe">Business</div>',
+        workflow: '<div data-scroll-host="workflow-probe">Workflow</div>',
+      },
+      global: { plugins: [i18n] },
+    });
+
+    // 每个 surface wrapper 只负责尺寸与裁剪；主滚动由内部唯一 data-scroll-host 承担。
+    for (const name of ['home', 'business', 'workflow']) {
+      const root = wrapper.get(`[data-surface-scroll-root="${name}"]`);
+      expect(root.classes()).toContain('overflow-hidden');
+      expect(root.findAll('[data-scroll-host]')).toHaveLength(1);
+    }
+  });
 });

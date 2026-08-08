@@ -311,6 +311,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useTabObjectTitle } from '../../../layouts/shell/useTabTitle';
 import { ChevronDown, ChevronUp, MoreHorizontal, Pencil, Plus, Target, Trash2 } from '@lucide/vue';
 import {
   Badge,
@@ -378,6 +379,11 @@ const goalProgress = computed(() => getGoalOverallProgress(goal.value));
 const totalKeyResultCount = computed(() => goal.value?.totalKeyResults ?? 0);
 const completedKeyResultCount = computed(() => getCompletedKeyResultCount(goal.value));
 const goalAccentColor = computed(() => goal.value?.color || 'hsl(var(--primary))');
+// Phase 1：详情 Tab 标题 = 「模块名 · 对象标题」，列表 Tab 保持模块名。
+const detailTabTitle = computed(() =>
+  goal.value?.name ? `${t('nav.capsule.goal')} · ${goal.value.name}` : null,
+);
+useTabObjectTitle(detailTabTitle);
 const ringDashOffset = computed(
   () => ringCircumference * (1 - Math.min(100, Math.max(0, goalProgress.value)) / 100),
 );

@@ -17,6 +17,7 @@
 import type {
   ITaskTemplateRepository,
 } from '../domain/repositories/i-task-template-repository';
+import { createTaskInstanceMaintenanceRuntime } from './runtime/task-instance-maintenance-runtime';
 import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
 import type { ITaskDependencyRepository } from '../domain/repositories/i-task-dependency-repository';
 import type { ITaskFolderRepository } from '../domain/repositories/i-task-folder-repository';
@@ -66,8 +67,8 @@ import type { TaskApplicationPort } from '../application';
  * This replaces the older global InitializationManager registration.
  */
 export interface TaskModuleRuntimeContribution {
-  start(): void;
-  stop(): void;
+  start(): Promise<void>;
+  stop(): Promise<void>;
 }
 
 export type TaskRuntimeContributionsInput =
@@ -254,7 +255,10 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
       taskTemplateRepository,
       taskWriteTransactionRunner,
     ),
-    uncompleteTaskInstance: new UncompleteTaskInstanceUseCase(taskInstanceRepository),
+    uncompleteTaskInstance: new UncompleteTaskInstanceUseCase(
+      taskInstanceRepository,
+      taskWriteTransactionRunner,
+    ),
     skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository),
     startTaskInstance: new StartTaskInstanceUseCase(taskInstanceRepository),
     deleteTaskInstance: new DeleteTaskInstanceUseCase(taskInstanceRepository),
@@ -302,7 +306,14 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     taskFolderRepository,
   } = dependencies;
 
-  const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
+  const runtimeContributions = [
+    // R2-3：实例补充 maintenance worker（列表查询保持纯读）。
+    createTaskInstanceMaintenanceRuntime({
+      taskTemplateRepository: dependencies.taskTemplateRepository,
+      taskInstanceRepository: dependencies.taskInstanceRepository,
+    }),
+    ...normalizeRuntimeContributions(dependencies.runtimeContributions),
+  ];
   const useCases = createTaskUseCases(dependencies);
   let started = false;
 
@@ -370,24 +381,26 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     taskFolderRepository,
     useCases,
     api,
-    start(): void {
+    async start(): Promise<void> {
       if (started) {
         return;
       }
 
+      // R1-3：await 每个 contribution，避免 async runtime 的 floating promise。
       for (const runtime of runtimeContributions) {
-        runtime.start();
+        await runtime.start();
       }
 
       started = true;
     },
-    dispose(): void {
+    async dispose(): Promise<void> {
       if (!started) {
         return;
       }
 
+      // R1-3：逆序关闭并等待排空。
       for (const runtime of [...runtimeContributions].reverse()) {
-        runtime.stop();
+        await runtime.stop();
       }
 
       started = false;

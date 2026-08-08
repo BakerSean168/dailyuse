@@ -34,13 +34,13 @@ export function createTaskGoalOutboxRuntime(
   };
 
   return {
-    start(): void {
+    async start(): Promise<void> {
       if (timer) return;
       void dispatch();
       timer = setInterval(() => void dispatch(), intervalMs);
       timer.unref?.();
     },
-    stop(): void {
+    async stop(): Promise<void> {
       if (!timer) return;
       clearInterval(timer);
       timer = null;

@@ -27,6 +27,12 @@ export type AgentProposal =
       revision: number;
       title: string;
       description?: string | null;
+      /** R5：plan 内容哈希（防篡改/去重）。 */
+      planHash?: string;
+      /** R5：proposal 过期时间（过期不可执行）。 */
+      expiresAt?: TransferDate | null;
+      /** R5：plan 内的 action id（执行侧引用）。 */
+      actionId?: string;
       createdAt: TransferDate;
       updatedAt: TransferDate;
     }
@@ -38,6 +44,9 @@ export type AgentProposal =
       /** Absolute or vault-relative path; never outside vault root. */
       targetPath: string;
       contentMarkdown: string;
+      planHash?: string;
+      expiresAt?: TransferDate | null;
+      actionId?: string;
       createdAt: TransferDate;
       updatedAt: TransferDate;
     }
@@ -48,6 +57,9 @@ export type AgentProposal =
       revision: number;
       title: string;
       goalId?: string | null;
+      planHash?: string;
+      expiresAt?: TransferDate | null;
+      actionId?: string;
       createdAt: TransferDate;
       updatedAt: TransferDate;
     };

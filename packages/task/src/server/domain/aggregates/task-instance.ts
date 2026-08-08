@@ -22,6 +22,7 @@ import { IdentityId } from '@memoflow/domain-shared';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
+import { buildTaskInstanceOccurrenceKey } from '../value-objects/task-instance-occurrence-key';
 
 /**
  * Internal props interface for TaskInstance
@@ -31,6 +32,8 @@ export interface TaskInstanceState {
   templateId: TaskTemplateId;
   identityId: IdentityId;
   instanceDate: number;
+  /** R2-1：确定性幂等键 `templateId:localDate`；数据库唯一约束防重复生成。 */
+  occurrenceKey: string | null;
   timeConfig: TaskTimeConfig;
   importance: ImportanceLevel;
   priority?: number;
@@ -67,6 +70,10 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
   public get instanceDate(): number {
     return this._props.instanceDate;
+  }
+
+  public get occurrenceKey(): string | null {
+    return this._props.occurrenceKey;
   }
 
   public get timeConfig(): TaskTimeConfig {
@@ -134,6 +141,11 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.version;
   }
 
+  /** R2-5a：状态变更后递增版本（乐观锁）。 */
+  private advanceVersion(): void {
+    this._props.version += 1;
+  }
+
   public get deletedAt(): Instant | null {
     const v = this._props.deletedAt;
     if (v == null) return null;
@@ -151,6 +163,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.status = TaskInstanceStatus.InProgress;
     this._props.actualStartTime = Date.now();
     this._props.updatedAt = Date.now();
+    this.advanceVersion();
   }
 
   /**
@@ -192,6 +205,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     this._props.updatedAt = now;
+    this.advanceVersion();
 
     // Trigger domain event（payload 自包含，供 Goal 等跨模块订阅方直接消费）
     this.addDomainEvent<TaskEventMap['task:instance-completed']>('task:instance-completed', {
@@ -216,6 +230,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.completionRecord = null;
     this._props.actualEndTime = null;
     this._props.updatedAt = now;
+    this.advanceVersion();
 
     this.addDomainEvent<TaskEventMap['task:instance-uncompleted']>(
       'task:instance-uncompleted',
@@ -248,6 +263,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     this._props.updatedAt = now;
+    this.advanceVersion();
 
     this.addDomainEvent<TaskEventMap['task:instance-skipped']>('task:instance-skipped', {
       identityId: this._props.identityId,
@@ -266,6 +282,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     ) {
       this._props.status = TaskInstanceStatus.Expired;
       this._props.updatedAt = Date.now();
+      this.advanceVersion();
     }
   }
 
@@ -293,6 +310,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
     if (changed) {
       this._props.updatedAt = Date.now();
+      this.advanceVersion();
     }
     return changed;
   }
@@ -405,6 +423,10 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       templateId: params.templateId,
       identityId: params.identityId,
       instanceDate: params.instanceDate,
+      occurrenceKey: buildTaskInstanceOccurrenceKey(
+        String(params.templateId),
+        params.instanceDate,
+      ),
       timeConfig: params.timeConfig,
       importance: params.importance,
       status: TaskInstanceStatus.Pending,

@@ -10,8 +10,11 @@ import { clamp } from './clamp';
 
 export const AI_HARD_MIN = 320;
 export const BUSINESS_HARD_MIN = 520;
-export const BUSINESS_MAX = 960;
+export const SIDEBAR_HARD_MIN = 200;
 export const BUSINESS_PREFERRED_RATIO = 0.64;
+/** Dragging past this distance below a usable minimum enters collapsed state. */
+export const PANEL_COLLAPSE_THRESHOLD = 96;
+export const SIDEBAR_COLLAPSE_THRESHOLD = 96;
 /** Below this effective viewport, release the sidebar budget without changing user preference. */
 export const SIDEBAR_AUTO_COLLAPSE_VIEWPORT = 960;
 
@@ -67,9 +70,11 @@ export function computePanelGeometry(input: PanelGeometryInput): PanelGeometry {
   const viewportWidth = Math.max(0, Math.floor(input.viewportWidth));
   const sidebarOccupiedWidth = Math.max(0, Math.floor(input.sidebarOccupiedWidth));
   const workspaceWidth = Math.max(0, viewportWidth - sidebarOccupiedWidth);
-  const panelMax = Math.max(0, Math.min(BUSINESS_MAX, workspaceWidth - AI_HARD_MIN));
+  // There is no product maximum. The upper bound is only the current legal
+  // split range after reserving the AI minimum; this changes with the window.
+  const panelMax = Math.max(0, workspaceWidth - AI_HARD_MIN);
   const canSplit = panelMax >= BUSINESS_HARD_MIN;
-  const effectiveMax = canSplit ? panelMax : BUSINESS_HARD_MIN;
+  const effectiveMax = canSplit ? panelMax : Math.max(BUSINESS_HARD_MIN, workspaceWidth);
   const defaultPanelWidth = canSplit
     ? clamp(Math.round(workspaceWidth * BUSINESS_PREFERRED_RATIO), BUSINESS_HARD_MIN, effectiveMax)
     : BUSINESS_HARD_MIN;
@@ -81,7 +86,7 @@ export function computePanelGeometry(input: PanelGeometryInput): PanelGeometry {
 
   const panelWidth = canSplit
     ? clamp(Math.round(preferred), BUSINESS_HARD_MIN, effectiveMax)
-    : BUSINESS_HARD_MIN;
+    : Math.min(BUSINESS_HARD_MIN, workspaceWidth);
   const aiWidth = Math.max(0, workspaceWidth - panelWidth);
 
   return {
@@ -101,10 +106,17 @@ export function panelWidthFromPointer(
   viewportWidth: number,
   sidebarOccupiedWidth: number,
 ): number {
-  const geometry = computePanelGeometry({ viewportWidth, sidebarOccupiedWidth });
-  if (!geometry.canSplit) return geometry.panelWidth;
-  const raw = viewportWidth - clientX;
-  return clamp(Math.round(raw), geometry.panelMin, geometry.panelMax);
+  void sidebarOccupiedWidth;
+  const raw = Math.max(0, Math.round(viewportWidth - clientX));
+  return raw;
+}
+
+export function shouldCollapsePanelWidth(width: number): boolean {
+  return width < BUSINESS_HARD_MIN - PANEL_COLLAPSE_THRESHOLD;
+}
+
+export function shouldCollapseSidebarWidth(width: number): boolean {
+  return width < SIDEBAR_HARD_MIN - SIDEBAR_COLLAPSE_THRESHOLD;
 }
 
 /**

@@ -1,5 +1,7 @@
 <template>
-  <div class="max-w-[960px] mx-auto p-6">
+  <!-- Phase 2：detail 自带唯一主滚动宿主（BusinessPanel surface wrapper 已 overflow-hidden）。 -->
+  <div class="h-full min-h-0 overflow-y-auto" data-scroll-host="governance-detail">
+    <div class="max-w-[960px] mx-auto p-6">
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-8" role="status" aria-live="polite">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -249,6 +251,7 @@
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    </div>
   </div>
 </template>
 

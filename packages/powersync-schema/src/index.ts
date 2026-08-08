@@ -375,18 +375,6 @@ const schedules = new Table({
   updated_at: column.text,
 });
 
-const schedule_jobs = new Table({
-  identity_id: column.text,
-  next_run_at: column.text,
-  cron_expression: column.text,
-  source_module: column.text,
-  source_id: column.text,
-  trigger_event: column.text,
-  payload: column.text, // JSON
-  created_at: column.text,
-  updated_at: column.text,
-});
-
 const schedule_tasks = new Table({
   identity_id: column.text,
   name: column.text,
@@ -1019,7 +1007,6 @@ export const PowerSyncAppSchema = new Schema({
   task_statistics,
   // Schedule
   schedules,
-  schedule_jobs,
   schedule_tasks,
   schedule_executions,
   schedule_statistics,

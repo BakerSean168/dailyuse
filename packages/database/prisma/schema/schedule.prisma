@@ -25,39 +25,6 @@ model Schedule {
   @@map("schedules")
 }
 
-/// ScheduleJob 聚合根 - 调度作业
-/// 跨模块的调度触发器，关联到业务模块的具体资源
-model ScheduleJob {
-  // ============ 主键与外键 ============
-  id         String @id
-  identityId String @map("identity_id")
-
-  // ============ 调度配置 ============
-  nextRunAt      DateTime @map("next_run_at")
-  cronExpression String?  @map("cron_expression")
-
-  // ============ 来源 ============
-  sourceModule String @map("source_module") /// 来源模块
-  sourceId     String @map("source_id") /// 来源实体ID
-
-  // ============ 触发配置 ============
-  triggerEvent String  @map("trigger_event")
-  payload      String? /// JSON: Record<string, any>
-
-  // ============ 审计 ============
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // ============ 关系映射 ============
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  // ============ 索引优化 ============
-  @@index([identityId])
-  @@index([nextRunAt])
-  @@index([sourceModule, sourceId])
-  @@map("schedule_jobs")
-}
-
 model ScheduleTask {
   id                    String    @id
   identityId            String    @map("identity_id")
@@ -144,4 +111,19 @@ model ScheduleStatistic {
 
   @@index([identityId])
   @@map("schedule_statistics")
+}
+
+/// R3a：调度器宿主互斥租约（DB lease/heartbeat）。
+/// 共享数据库的多个宿主（API 多实例、同库进程）通过本表互斥：
+/// 只有成功 acquire 的宿主启动 ScheduleTaskQueue；其余宿主只消费读模型。
+model ScheduleLease {
+  id         String   @id
+  leaseKey   String   @unique @map("lease_key")
+  ownerToken String   @map("owner_token")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([expiresAt])
+  @@map("schedule_leases")
 }

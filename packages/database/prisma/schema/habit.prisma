@@ -1,0 +1,67 @@
+// ==========================================
+// Habit Module (R4)
+// 习惯、习惯发生、打卡与连续天数投影
+// ==========================================
+
+model Habit {
+  id          String   @id
+  identityId  String   @map("identity_id")
+  name        String
+  description String?
+  frequency   String   @default("daily") /// daily | weekly
+  goalId      String?  @map("goal_id") /// 关联目标（贡献策略使用）
+  status      String   @default("Active") /// Active | Archived
+  startDate   DateTime? @map("start_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  occurrences HabitOccurrence[]
+  streak      HabitStreakProjection?
+
+  @@index([identityId])
+  @@map("habits")
+}
+
+model HabitOccurrence {
+  id             String   @id
+  habitId        String   @map("habit_id")
+  occurrenceDate DateTime @map("occurrence_date") /// 本地日 00:00
+  status         String   @default("Pending") /// Pending | Completed | Skipped
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  habit    Habit           @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  checkIns HabitCheckIn[]
+
+  @@unique([habitId, occurrenceDate])
+  @@index([habitId, status])
+  @@map("habit_occurrences")
+}
+
+model HabitCheckIn {
+  id           String   @id
+  occurrenceId String   @map("occurrence_id")
+  checkedAt    DateTime @map("checked_at")
+  note         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  occurrence HabitOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+
+  @@index([occurrenceId])
+  @@map("habit_check_ins")
+}
+
+model HabitStreakProjection {
+  id              String    @id
+  habitId         String    @unique @map("habit_id")
+  currentStreak   Int       @map("current_streak")
+  longestStreak   Int       @map("longest_streak")
+  lastCheckInDate DateTime? @map("last_check_in_date")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@map("habit_streak_projections")
+}

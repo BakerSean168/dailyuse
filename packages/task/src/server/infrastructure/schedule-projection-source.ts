@@ -146,6 +146,11 @@ export interface TaskScheduleProjectionSource {
   buildTemplatePlan(templateId: string, identityId: string): Promise<TaskScheduleProjectionPlan>;
   buildTemplateDeletionSelection(templateId: string, identityId: string): TaskScheduleProjectionSelection;
   buildInstanceDeletionSelection(instanceId: string, identityId: string): TaskScheduleProjectionSelection;
+  /**
+   * 全量模板引用（R1-4 reconcile）。未提供时投影 runtime 跳过初次对账
+   * 并记录告警（宿主未实现全量扫描源）。
+   */
+  listTemplateRefs?(): Promise<Array<{ templateId: string; identityId: string }>>;
 }
 
 export interface TaskScheduleProjectionHandlers {
@@ -215,6 +220,11 @@ export function createTaskScheduleProjectionSource(deps: {
   taskInstanceRepository: ITaskInstanceRepository;
 }): TaskScheduleProjectionSource {
   return {
+    async listTemplateRefs() {
+      const refs = await deps.taskTemplateRepository.findAllTemplateRefs();
+      return refs.map((ref) => ({ templateId: ref.id, identityId: ref.identityId }));
+    },
+
     async buildTemplatePlan(templateId, identityId) {
       const template = await deps.taskTemplateRepository.findByIdForIdentity(
         identityId,

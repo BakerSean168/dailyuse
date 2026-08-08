@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { startOfDayMs, endOfDayMs, isTodayMs } from '../../../../shared/utils/product-time';
 import {
   Card,
@@ -138,6 +138,14 @@ const emit = defineEmits<{
   (e: 'completed', instance: TaskInstanceClientDTO): void;
 }>();
 
+const props = withDefaults(
+  defineProps<{
+    /** Home keeps this widget mounted while other shell surfaces are active. */
+    active?: boolean;
+  }>(),
+  { active: true },
+);
+
 const task = useTask();
 const completing = ref<string | null>(null);
 
@@ -151,14 +159,25 @@ function getTodayRange(): { startDate: number; endDate: number } {
   };
 }
 
-// ── Load today's data on mount ──
-onMounted(async () => {
+async function loadToday() {
   const todayRange = getTodayRange();
   await Promise.all([
     task.fetchInstancesByDateRange(todayRange.startDate, todayRange.endDate),
     task.fetchTemplates({ page: 1, limit: TEMPLATE_FETCH_LIMIT }),
   ]);
+}
+
+// Home keeps this widget mounted while other shell surfaces are active. Refresh
+// when the surface becomes active again so task creation in another tab is visible.
+onMounted(() => {
+  if (props.active) void loadToday();
 });
+watch(
+  () => props.active,
+  (active, wasActive) => {
+    if (active && !wasActive) void loadToday();
+  },
+);
 
 const isLoading = computed(() => task.isLoading.value);
 

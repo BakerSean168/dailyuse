@@ -127,7 +127,7 @@
       </nav>
 
       <main class="flex min-h-0 min-w-0 flex-col overflow-hidden" data-testid="reminder-content">
-        <div class="min-h-0 flex-1 overflow-auto p-3 @2xl/panel:p-6" data-testid="reminder-scroll-host">
+        <div class="min-h-0 flex-1 overflow-y-auto p-3 @2xl/panel:p-6" data-testid="reminder-scroll-host" data-scroll-host="reminder">
           <div class="mx-auto max-w-5xl">
           <div
             v-if="preferences && !preferences.globalReminderEnabled"
@@ -240,6 +240,7 @@
       :saving="isSaving"
       @save="handleSaveTemplate"
       @update="handleUpdateTemplate"
+      @open-change="templateDialogOpen = $event"
     />
 
     <GroupDialog
@@ -248,6 +249,7 @@
       :saving="isSaving"
       @save="handleSaveGroup"
       @update="handleUpdateGroup"
+      @open-change="groupDialogOpen = $event"
     />
 
     <TemplateMoveDialog
@@ -293,6 +295,8 @@ import TemplateDialog from '../components/TemplateDialog.vue';
 import GroupDialog from '../components/GroupDialog.vue';
 import TemplateMoveDialog from '../components/TemplateMoveDialog.vue';
 import { useReminder } from '../composables/useReminder';
+import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceStatus';
+import type { PanelSurfaceStatus } from '../../../layouts/shell/useAppShellStore';
 import {
   getGroupActiveStatusLabel,
   getGroupControlModeText,
@@ -348,6 +352,15 @@ const templateMoveDialogRef = ref<InstanceType<typeof TemplateMoveDialog> | null
 const groupDialogRef = ref<InstanceType<typeof GroupDialog> | null>(null);
 const editingGroup = ref<ReminderGroupClientDTO | null>(null);
 const movingTemplate = ref<ReminderTemplateClientDTO | null>(null);
+
+// Phase 0 / UI-004：模板/分组编辑弹窗打开即视为未完成操作——统一离开协议
+// （设置场景守卫 / Tab 切换 / 关面板）要求确认，取消不改变路由或草稿。
+const templateDialogOpen = ref(false);
+const groupDialogOpen = ref(false);
+const surfaceStatus = computed<PanelSurfaceStatus>(() =>
+  templateDialogOpen.value || groupDialogOpen.value ? 'dirty' : 'clean',
+);
+usePanelSurfaceStatus(surfaceStatus);
 
 const filteredTemplates = computed(() => {
   let result = templates.value;

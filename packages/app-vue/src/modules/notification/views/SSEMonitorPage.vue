@@ -10,7 +10,7 @@
           size="icon"
           class="h-8 w-8"
           :aria-label="t('common.back')"
-          @click="$router.back()"
+          @click="$router.push('/notifications')"
         >
           <ArrowLeft class="h-4 w-4" />
         </Button>

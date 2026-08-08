@@ -11,6 +11,7 @@ export interface GoalReviewServerDTO {
   id: GoalReviewId;
   goalId: GoalId;
   type: ReviewType;
+  title: string | null;
   rating: number;
   summary: string;
   achievements: string | null;

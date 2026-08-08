@@ -29,7 +29,7 @@ export function createReminderProjectionRuntime(
   let started = false;
 
   return {
-    start() {
+    async start(): Promise<void> {
       if (started) {
         return;
       }
@@ -62,7 +62,7 @@ export function createReminderProjectionRuntime(
       started = true;
     },
 
-    stop() {
+    async stop(): Promise<void> {
       if (!started) {
         return;
       }

@@ -22,6 +22,8 @@
           v-for="view in systemViews"
           :key="view.id"
           :data-testid="`goal-system-view-${view.id}`"
+          :aria-checked="activeSystemView === view.id && !selectedFolderId ? 'true' : 'false'"
+          role="menuitemradio"
           :class="activeSystemView === view.id && !selectedFolderId ? 'bg-accent' : ''"
           @click="emit('select-system-view', view.id)"
         >
@@ -36,6 +38,8 @@
             v-for="folder in folders"
             :key="folder.id"
             :data-testid="`goal-folder-${folder.id}`"
+            :aria-checked="selectedFolderId === folder.id ? 'true' : 'false'"
+            role="menuitemradio"
             :class="selectedFolderId === folder.id ? 'bg-accent' : ''"
             @click="emit('select-folder', folder.id)"
           >

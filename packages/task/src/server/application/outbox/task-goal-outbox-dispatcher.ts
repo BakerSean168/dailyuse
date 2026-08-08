@@ -73,7 +73,16 @@ function decodeTaskGoalProgressEvent(
     'keyResultId',
     'taskTitle',
   ] as const;
-  if (stringFields.some((field) => typeof value[field] !== 'string' || value[field].length === 0)) {
+  const action = value.action;
+  if (action !== 'complete' && action !== 'uncomplete') {
+    throw new Error('Task -> Goal payload contains an invalid action');
+  }
+  // uncomplete 撤销只需要 source 定位字段（goalId/keyResultId/taskTitle 为空串合法）。
+  const requiredFields =
+    action === 'uncomplete'
+      ? (['identityId', 'taskInstanceId', 'taskTemplateId'] as const)
+      : stringFields;
+  if (requiredFields.some((field) => typeof value[field] !== 'string' || value[field].length === 0)) {
     throw new Error('Task -> Goal payload contains an invalid identifier or title');
   }
   if (!Number.isFinite(value.goalRecordValue) || !Number.isFinite(value.occurredAt)) {

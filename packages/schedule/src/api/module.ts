@@ -20,6 +20,8 @@ import {
   createScheduleRuntimeContribution,
   type ScheduleModuleInstance,
 } from '../server/infrastructure';
+import { ScheduleLeaseCoordinator } from '../server/infrastructure/lease/schedule-lease-coordinator';
+import { createScheduleLeasePrismaRepository } from '../server/infrastructure/lease/schedule-lease.repository';
 import { registerScheduleRoutes } from './routes';
 import { registerScheduleEventRoutes } from './schedule-event.routes';
 import type { ScheduleTaskSourceExecutor } from '../server/application';
@@ -51,6 +53,11 @@ export function createScheduleApiModule(
     async register(context) {
       const { router, middleware, db } = context;
 
+      // R3a：唯一调度宿主——API 共享 DB 的多个实例通过 DB lease 互斥，
+      // 只有拿到租约的实例启动执行队列；其余实例只消费读模型。
+      const leaseCoordinator = new ScheduleLeaseCoordinator(
+        createScheduleLeasePrismaRepository(db),
+      );
       const runtimeContribution = createScheduleRuntimeContribution({
         scheduleTaskRepository: createScheduleTaskPrismaRepository(db),
         sourceExecutor:
@@ -60,6 +67,7 @@ export function createScheduleApiModule(
               throw new Error(`No schedule source executor configured for ${task.sourceModule}`);
             },
           },
+        leaseCoordinator,
       });
 
       const scheduleModule = createSchedulePrismaModule(db, {

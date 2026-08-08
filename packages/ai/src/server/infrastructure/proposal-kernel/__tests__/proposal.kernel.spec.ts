@@ -171,3 +171,34 @@ describe('ProposalKernel', () => {
     expect(receipt.message).toContain('host mutation ports');
   });
 });
+
+describe('ProposalKernel R5 (plan hash / expiry / action id)', () => {
+  let kernel: ProposalKernel;
+
+  beforeEach(() => {
+    kernel = new ProposalKernel();
+  });
+
+  it('derives planHash and actionId at create time', async () => {
+    const created = await kernel.create(knowledgeDraft({ status: 'ready' }));
+    expect(created.planHash).toMatch(/^plan:/);
+    expect(created.actionId).toBe('prop-1');
+  });
+
+  it('marks an already-expired proposal as stale at create', async () => {
+    const created = await kernel.create(
+      knowledgeDraft({ status: 'ready', expiresAt: 0 }),
+    );
+    expect(created.status).toBe('stale');
+  });
+
+  it('rejects execution of an expired proposal', async () => {
+    const created = await kernel.create(
+      knowledgeDraft({ status: 'ready', expiresAt: Date.now() - 1 }),
+    );
+    await kernel.approve(created.id, created.revision);
+    const receipt = await kernel.executeApproved(created.id, created.revision, 'req-expired');
+    expect(receipt.ok).toBe(false);
+    expect(receipt.code).toBe('PROPOSAL_EXPIRED');
+  });
+});

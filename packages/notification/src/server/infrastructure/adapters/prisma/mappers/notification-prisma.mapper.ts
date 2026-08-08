@@ -24,6 +24,7 @@ import type {
   ChannelStatus,
   NotificationActionDTO,
   NotificationMetadataDTO,
+  NotificationNavigationIntentDTO,
 } from '@memoflow/contracts/notification';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import { Notification } from '../../../../domain/aggregates/notification';
@@ -60,6 +61,7 @@ export type PrismaNotificationRow = {
   relatedEntityId: string | null;
   metadata: string | null;
   actions: string | null;
+  navigationIntent: string | null;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -77,6 +79,9 @@ export type PrismaNotificationChannelRow = {
   retryCount: number;
   error: string | null;
   response: string | null;
+  sentAt: Date | null;
+  failedAt: Date | null;
+  attempts: number;
 };
 
 export type PrismaNotificationHistoryRow = {
@@ -162,6 +167,7 @@ export class NotificationPrismaMapper {
       readAt: row.readAt ? row.readAt.getTime() : null,
       actions: actions ? actions.map((a) => NotificationAction.fromDTO(a)) : null,
       metadata: metadata ? NotificationMetadata.fromDTO(metadata) : null,
+      navigationIntent: parseJsonSafe<NotificationNavigationIntentDTO>(row.navigationIntent),
       expiresAt: row.expiresAt ? row.expiresAt.getTime() : null,
       version: row.version,
       deletedAt: row.deletedAt,

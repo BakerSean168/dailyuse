@@ -8,6 +8,7 @@ import type {
   ReminderResponseClientDTO,
   ReminderResponseAction,
 } from '@memoflow/contracts/reminder';
+import { toReminderResponseDurationSeconds } from '@memoflow/contracts/reminder';
 import type { ReminderTemplateId, IdentityId } from '@memoflow/contracts/primitives';
 import { Entity } from '@memoflow/utils/domain';
 import { ReminderResponseId } from '../value-objects/reminder-response-id';
@@ -86,7 +87,8 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
       reminderTemplateId: params.reminderTemplateId,
       identityId: params.identityId,
       action: params.action,
-      responseTime: params.responseTime != null ? new Date(params.responseTime) : null,
+      // R3c：params.responseTime 语义为秒，内部 Date 存对应毫秒时刻。
+      responseTime: params.responseTime != null ? new Date(params.responseTime * 1_000) : null,
       timestamp: new Date(params.timestamp ?? Date.now()),
     });
   }
@@ -174,7 +176,9 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
       reminderTemplateId: this._props.reminderTemplateId as ReminderTemplateId,
       identityId: this._props.identityId as IdentityId,
       action: this._props.action,
-      responseTime: this._props.responseTime?.getTime() ?? null,
+      responseTime: this._props.responseTime
+        ? toReminderResponseDurationSeconds(Math.round(this._props.responseTime.getTime() / 1_000))
+        : null,
       timestamp: this._props.timestamp.getTime(),
     };
   }
@@ -187,7 +191,9 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
       id: this.id,
       reminderTemplateId: this._props.reminderTemplateId as ReminderTemplateId,
       action: this._props.action,
-      responseTime: this._props.responseTime?.getTime() ?? null,
+      responseTime: this._props.responseTime
+        ? toReminderResponseDurationSeconds(Math.round(this._props.responseTime.getTime() / 1_000))
+        : null,
       timestamp: this._props.timestamp.getTime(),
     };
   }

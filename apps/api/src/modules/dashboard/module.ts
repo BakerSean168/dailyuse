@@ -13,6 +13,10 @@ import type { ServerModuleContext } from '@memoflow/contracts/shared';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/auth-middleware.js';
 import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';
 import { getApiDashboardData } from './dashboard-read-service.js';
+import {
+  PrismaActivityLedgerWriter,
+  createActivityLedgerRecorder,
+} from './activity-ledger.js';
 
 export const DashboardApiModule: IApiModule = {
   name: 'Dashboard',
@@ -21,6 +25,12 @@ export const DashboardApiModule: IApiModule = {
     const { router, middleware, db } = context;
     const dashboardRouter = Router();
     const prisma = db;
+
+    // R6：Activity Ledger——订阅关键业务事件写入 durable ledger。
+    const ledgerRecorder = createActivityLedgerRecorder(
+      new PrismaActivityLedgerWriter(prisma),
+    );
+    ledgerRecorder.start();
 
     // GET /dashboard/stats — Aggregated dashboard statistics
     dashboardRouter.get('/stats', middleware.auth, async (req, res) => {

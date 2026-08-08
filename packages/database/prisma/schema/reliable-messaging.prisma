@@ -1,0 +1,54 @@
+// ==========================================
+// Reliable Messaging (R1-1)
+// 通用 outbox / inbox receipt / projection cursor
+// 提供跨模块副作用的 durable 边界与崩溃恢复游标
+// ==========================================
+
+/// Outbox 消息：跨模块写入与投递意图的 durable 队列。
+/// AggregateRepositoryBase 发布事件失败时落入此表，由 dispatcher 重试投递。
+model OutboxMessage {
+  id            String    @id
+  identityId    String?   @map("identity_id")
+  messageType   String    @map("message_type")
+  schemaVersion Int       @default(1) @map("schema_version")
+  correlationId String    @map("correlation_id")
+  causationId   String?   @map("causation_id")
+  payloadJson   String    @map("payload_json")
+  status        String    @default("pending")
+  attempts      Int       @default(0)
+  availableAt   DateTime  @default(now()) @map("available_at")
+  lastError     String?   @map("last_error")
+  dispatchedAt  DateTime? @map("dispatched_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([status, availableAt])
+  @@index([correlationId])
+  @@index([messageType])
+  @@map("reliable_outbox_messages")
+}
+
+/// Inbox 回执：同一消息对同一消费者只允许一次成功处理（幂等去重）。
+model InboxReceipt {
+  id          String
+  consumer    String
+  outcome     String
+  error       String?
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@id([id, consumer])
+  @@index([consumer, outcome])
+  @@map("reliable_inbox_receipts")
+}
+
+/// Projection 游标：启动 reconcile 与增量重放的断点。
+model ProjectionCursor {
+  projector       String
+  sourceName      String    @map("source_name")
+  lastProcessedId String?   @map("last_processed_id")
+  lastProcessedAt DateTime? @map("last_processed_at")
+  version         Int       @default(0)
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@id([projector, sourceName])
+  @@map("reliable_projection_cursors")
+}

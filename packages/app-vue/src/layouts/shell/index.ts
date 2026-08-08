@@ -7,6 +7,7 @@
  */
 export { default as AppShell } from './AppShell.vue';
 export { default as WindowHeader } from './WindowHeader.vue';
+export { default as ModuleCapsule } from './ModuleCapsule.vue';
 export { default as ConversationSidebar } from './ConversationSidebar.vue';
 export { default as BusinessPanel } from './BusinessPanel.vue';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary.vue';
@@ -21,6 +22,9 @@ export {
   type ShellLayout,
   type ShellLayoutReason,
   type ShellModule,
+  type ShellOrigin,
+  type PanelSurface,
+  type PanelSurfaceStatus,
 } from './useAppShellStore';
 
 export {
@@ -33,12 +37,19 @@ export {
 } from './useShellRouterSync';
 
 export {
+  canLeaveBusinessSurface,
+  createSettingsSceneGuard,
+} from './surface-leave-protocol';
+
+export {
   computePanelGeometry,
   panelWidthFromPointer,
   shouldAutoCollapseSidebar,
   AI_HARD_MIN,
   BUSINESS_HARD_MIN,
-  BUSINESS_MAX,
+  SIDEBAR_HARD_MIN,
+  PANEL_COLLAPSE_THRESHOLD,
+  SIDEBAR_COLLAPSE_THRESHOLD,
   BUSINESS_PREFERRED_RATIO,
   SIDEBAR_AUTO_COLLAPSE_VIEWPORT,
 } from './panel-geometry';

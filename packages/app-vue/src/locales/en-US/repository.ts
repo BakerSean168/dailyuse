@@ -4,6 +4,7 @@ export default {
     "noteEdit": "Edit Note"
   },
   "segments": {
+    "title": "Repository sections",
     "notes": "Notes",
     "governance": "Standards"
   },

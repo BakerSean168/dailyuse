@@ -94,7 +94,7 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.activeTab?.route).toBe('/repository?note=a');
   });
 
-  it('reports the LRU eviction candidate beyond the tab limit without auto-closing', () => {
+  it('refuses to create beyond the tab limit and reports the LRU eviction candidate (Phase 1)', () => {
     const store = useAppShellStore();
     let firstId = '';
     for (let i = 0; i < MAX_BUSINESS_TABS; i += 1) {
@@ -114,8 +114,35 @@ describe('useAppShellStore (V2 shell tabs)', () => {
       intent: 'deeplink',
     });
 
-    expect(store.tabs).toHaveLength(MAX_BUSINESS_TABS + 1);
+    // 超限不创建：tabs 数量 = KeepAlive max，杜绝缓存静默驱逐（诊断 UI-005）。
+    expect(store.tabs).toHaveLength(MAX_BUSINESS_TABS);
+    expect(overflow.tabId).toBe('');
     expect(overflow.evictionCandidateId).toBe(firstId);
+
+    // UI 确认后 closeTab 候选再重试 → 新 Tab 正常创建。
+    store.closeTab(firstId);
+    const retried = store.openTab({
+      module: 'goal',
+      route: '/goals',
+      title: 'Goals',
+      intent: 'deeplink',
+    });
+    expect(retried.tabId).not.toBe('');
+    expect(retried.evictionCandidateId).toBeNull();
+    expect(store.tabs).toHaveLength(MAX_BUSINESS_TABS);
+  });
+
+  it('updates the active tab title (Phase 1 object titles)', () => {
+    const store = useAppShellStore();
+    const result = store.openTab({
+      module: 'goal',
+      route: '/goals/g-1',
+      title: 'Goals',
+      intent: 'deeplink',
+    });
+
+    store.setActiveTabTitle('Goals · My goal');
+    expect(store.tabs.find((t) => t.id === result.tabId)?.title).toBe('Goals · My goal');
   });
 
   it('closing the active tab activates a neighbor; closing the last returns to panel Home', () => {
@@ -299,5 +326,49 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.panelWidth).toBeNull();
     expect(store.panelWidthSource).toBe('responsive');
     expect(store.resolvePanelWidth(1280, 260)).toBe(653);
+  });
+
+  it('does not clamp user widths to a product maximum', () => {
+    const store = useAppShellStore();
+    store.setSidebarWidth(720);
+    store.setPanelWidth(1400);
+
+    expect(store.sidebarWidth).toBe(720);
+    expect(store.panelWidth).toBe(1400);
+    expect(store.resolvePanelWidth(2200, 0)).toBe(1400);
+  });
+
+  it('starts without a settings origin (session-only state)', () => {
+    const store = useAppShellStore();
+    expect(store.settingsOrigin).toBeNull();
+  });
+
+  it('saves and clears the settings origin', () => {
+    const store = useAppShellStore();
+    const tab = store.openTab({
+      module: 'goal',
+      route: '/goals/g-1',
+      title: 'Goal 1',
+      intent: 'deeplink',
+    });
+
+    store.saveSettingsOrigin({
+      route: '/goals/g-1',
+      tabId: tab.tabId,
+      panelSurface: 'business',
+      layout: 'focus',
+      layoutReason: 'user',
+    });
+
+    expect(store.settingsOrigin).toEqual({
+      route: '/goals/g-1',
+      tabId: tab.tabId,
+      panelSurface: 'business',
+      layout: 'focus',
+      layoutReason: 'user',
+    });
+
+    store.clearSettingsOrigin();
+    expect(store.settingsOrigin).toBeNull();
   });
 });

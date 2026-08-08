@@ -47,9 +47,13 @@ model Account {
   repositoryExplorers             RepositoryExplorer[]
   repositoryStatistics            RepositoryStatistic?
   schedules                       Schedule[]
-  scheduleJobs                    ScheduleJob[]
   scheduleTasks                   ScheduleTask[]
   scheduleStatistics              ScheduleStatistic?
+  habits                          Habit[]
+  relations                       Relation[]
+  walletAccounts                  WalletAccount[]
+  walletTransactions              WalletTransaction[] @relation("AccountWalletTransactions")
+  activityLedger                  ActivityLedger[]
   taskFolders                     TaskFolder[]
   taskTemplates                   TaskTemplate[]
   taskInstances                   TaskInstance[]

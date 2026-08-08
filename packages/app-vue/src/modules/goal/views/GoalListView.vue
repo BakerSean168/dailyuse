@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden" data-testid="goal-list-view">
-    <ScrollArea class="min-h-0 flex-1 p-4 @2xl/panel:p-6" data-testid="goal-list-scroll">
+    <ScrollArea class="min-h-0 flex-1 p-4 @2xl/panel:p-6" data-testid="goal-list-scroll" data-scroll-host="goal-list">
       <div class="mx-auto max-w-7xl">
         <!-- 加载 = 卡片骨架 ×6（§0.3） -->
         <div

@@ -46,7 +46,7 @@ export class PauseTaskTemplateUseCase {
   ): Promise<Result<{ template: TaskTemplateClientDTO; instancesDeleted: number }>> {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
-        const template = await templateRepository.findByIdForIdentity(identityId, id);
+        const template = await templateRepository!.findByIdForIdentity(identityId, id);
         if (!template) {
           return error('NOT_FOUND', `TaskTemplate ${id} not found`);
         }
@@ -54,7 +54,7 @@ export class PauseTaskTemplateUseCase {
         const effectiveFrom = Date.now();
 
         template.pause();
-        await templateRepository.save(template);
+        await templateRepository!.save(template);
 
         const instancesDeleted = await instanceRepository.deleteIncompleteInstancesFrom(
           id,

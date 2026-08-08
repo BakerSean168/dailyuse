@@ -7,6 +7,7 @@
 export type {
   GoalServerDTO,
 } from './goal-server';
+export { GoalRollupPolicy } from './goal-server';
 
 export type {
   GoalClientDTO,

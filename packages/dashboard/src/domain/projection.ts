@@ -138,13 +138,18 @@ export async function getDashboardData(
       unreadNotifications,
       scheduleConflicts: activeSchedules.filter((schedule) => schedule.hasConflict).length,
     },
-    activityTimeline: buildActivityTimeline({
-      goals: activeGoals,
-      taskTemplates: activeTemplates,
-      taskInstances: liveTaskInstances,
-      schedules,
-      now,
-    }),
+    activityTimeline: source.listActivities
+      ? await source.listActivities(identityId, {
+          limit: ACTIVITY_LIMIT,
+          windowMs: ACTIVITY_WINDOW_MS,
+        })
+      : buildActivityTimeline({
+          goals: activeGoals,
+          taskTemplates: activeTemplates,
+          taskInstances: liveTaskInstances,
+          schedules,
+          now,
+        }),
     trendDays: buildTrendDays(now, activeTemplates, liveTaskInstances),
     goalProgress,
     taskBoard,

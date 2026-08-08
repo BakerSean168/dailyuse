@@ -158,6 +158,11 @@ async function mountShell(initialPath = '/') {
     routes: [
       { path: '/', component: { template: '<div />' } },
       { path: '/goals', component: GoalRouteProbe },
+      {
+        path: '/settings',
+        components: { settings: { template: '<div data-testid="settings-view" />' } },
+        meta: { shellScene: 'settings' },
+      },
     ],
   });
   await router.push(initialPath);
@@ -221,6 +226,40 @@ describe('AppShell right-panel integration', () => {
     await nextTick();
 
     expect(store.activeTab?.route).toBe('/goals');
+    expect(goalRouteMountCount).toBe(1);
+    wrapper.unmount();
+  });
+
+  it('keeps the workspace and AI instance mounted while the settings scene is active', async () => {
+    const { wrapper, router } = await mountShell('/goals');
+    await nextTick();
+    expect(goalRouteMountCount).toBe(1);
+    const aiInstance = wrapper.get('[data-testid="ai-chat-view"]').element;
+
+    await router.push('/settings');
+    await nextTick();
+
+    // 设置场景外壳切换（data-shell-scene + settings view 渲染）。
+    expect(wrapper.get('[data-testid="app-shell"]').attributes('data-shell-scene')).toBe(
+      'settings',
+    );
+    expect(wrapper.get('[data-testid="settings-view"]').exists()).toBe(true);
+
+    // Phase 0 / UI-001：workspace scene host 常驻——AI 实例不卸载（只是隐藏），
+    // 业务 Tab 组件不再重挂载（KeepAlive 缓存实例保持，流式回复/草稿不丢）。
+    expect(wrapper.get('[data-testid="ai-chat-view"]').element).toBe(aiInstance);
+    // v-show 隐藏 workspace host（happy-dom 下 isVisible 对祖先 display:none 检测不可靠，
+    // 直接断言 v-show 写入的 inline style）。
+    const workspaceHost = wrapper.get('[data-testid="shell-workspace-main"]').element
+      .parentElement as HTMLElement;
+    expect(workspaceHost.style.display).toBe('none');
+    expect(goalRouteMountCount).toBe(1);
+
+    // 返回 workspace 后：AI 仍是同一实例，业务 Tab 恢复且没有二次挂载。
+    await router.push('/goals');
+    await nextTick();
+    expect(wrapper.get('[data-testid="ai-chat-view"]').element).toBe(aiInstance);
+    expect(wrapper.get('[data-testid="goal-draft-probe"]').exists()).toBe(true);
     expect(goalRouteMountCount).toBe(1);
     wrapper.unmount();
   });

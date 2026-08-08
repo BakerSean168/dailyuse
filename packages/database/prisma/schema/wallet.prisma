@@ -1,0 +1,40 @@
+// ==========================================
+// Wallet (R7 试点)
+// 第一个外部模块：交易/预算/账户，与 Goal 通过 Relation 连接
+// ==========================================
+
+model WalletAccount {
+  id         String   @id
+  identityId String   @map("identity_id")
+  name       String
+  currency   String   @default("CNY")
+  balance    Decimal  @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  transactions WalletTransaction[]
+
+  @@index([identityId])
+  @@map("wallet_accounts")
+}
+
+model WalletTransaction {
+  id          String   @id
+  accountId   String   @map("account_id")
+  identityId  String   @map("identity_id")
+  type        String   /// income | expense | transfer
+  amount      Decimal
+  category    String?
+  note        String?
+  goalId      String?  @map("goal_id") /// 与 Goal 的 relation（contributes_to）
+  occurredAt  DateTime @map("occurred_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  account WalletAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account_identity Account @relation("AccountWalletTransactions", fields: [identityId], references: [id])
+
+  @@index([identityId, occurredAt])
+  @@map("wallet_transactions")
+}

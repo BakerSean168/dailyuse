@@ -102,6 +102,8 @@ describe('Instance maintenance use-cases', () => {
       expect(mockGenerateInstances).toHaveBeenCalledWith(template, {
         forceGenerate: true,
         targetDate: 2,
+        // R2-2：force 路径尊重请求区间 fromDate。
+        fromDate: 1,
       });
       expect(instanceRepo.saveMany).not.toHaveBeenCalled();
       expect(templateRepo.save).not.toHaveBeenCalled();

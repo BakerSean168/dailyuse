@@ -15,4 +15,6 @@ export type {
   ReminderResponseAction,
   ReminderResponseServerDTO,
   ReminderResponseClientDTO,
+  ReminderResponseDurationSeconds,
 } from './reminder-response-server';
+export { toReminderResponseDurationSeconds } from './reminder-response-server';

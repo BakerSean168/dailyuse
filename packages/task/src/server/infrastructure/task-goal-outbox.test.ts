@@ -43,4 +43,25 @@ describe('toTaskGoalOutboxRecord', () => {
 
     expect(toTaskGoalOutboxRecord(source)).toBeNull();
   });
+
+  it('converts an uncompleted instance into a revert delivery (R2-5b)', () => {
+    const source: IDomainEvent = {
+      eventType: 'task:instance-uncompleted',
+      aggregateId: 'instance-1',
+      occurredAt: new Date(2_000),
+      payload: {
+        identityId: 'identity-1',
+        taskInstanceId: 'instance-1',
+        taskTemplateId: 'template-1',
+        uncompletedAt: 2_000,
+      },
+    };
+
+    const record = toTaskGoalOutboxRecord(source);
+
+    expect(record).not.toBeNull();
+    expect(record!.eventId).toBe('task-goal-remove:instance-1:2000');
+    const parsed = JSON.parse(record!.payload) as { action?: string };
+    expect(parsed.action).toBe('uncomplete');
+  });
 });

@@ -58,6 +58,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
           readAt: dto.readAt ? new Date(dto.readAt) : null,
           metadata: dto.metadata ? JSON.stringify(dto.metadata) : null,
           actions: dto.actions ? JSON.stringify(dto.actions) : null,
+          navigationIntent: dto.navigationIntent ? JSON.stringify(dto.navigationIntent) : null,
           expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
           version: dto.version,
           deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
@@ -74,6 +75,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
           readAt: dto.readAt ? new Date(dto.readAt) : null,
           metadata: dto.metadata ? JSON.stringify(dto.metadata) : null,
           actions: dto.actions ? JSON.stringify(dto.actions) : null,
+          navigationIntent: dto.navigationIntent ? JSON.stringify(dto.navigationIntent) : null,
           expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
           version: dto.version,
           deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
@@ -106,6 +108,9 @@ export class NotificationPrismaRepository implements INotificationRepository {
               recipient: channel.recipient,
               maxRetries: channel.maxRetries,
               retryCount: channel.sendAttempts,
+              attempts: channel.sendAttempts,
+              sentAt: channel.sentAt ? new Date(channel.sentAt) : null,
+              failedAt: channel.failedAt ? new Date(channel.failedAt) : null,
               error: channel.error ? JSON.stringify(channel.error) : null,
               response: channel.response ? JSON.stringify(channel.response) : null,
             },
@@ -115,6 +120,9 @@ export class NotificationPrismaRepository implements INotificationRepository {
               recipient: channel.recipient,
               maxRetries: channel.maxRetries,
               retryCount: channel.sendAttempts,
+              attempts: channel.sendAttempts,
+              sentAt: channel.sentAt ? new Date(channel.sentAt) : null,
+              failedAt: channel.failedAt ? new Date(channel.failedAt) : null,
               error: channel.error ? JSON.stringify(channel.error) : null,
               response: channel.response ? JSON.stringify(channel.response) : null,
             },
@@ -130,6 +138,20 @@ export class NotificationPrismaRepository implements INotificationRepository {
     for (const notification of notifications) {
       await this.save(notification);
     }
+  }
+
+  async findChannelsByStatus(status: string, limit?: number): Promise<Notification[]> {
+    const rows = await this.prisma.notification.findMany({
+      where: {
+        deletedAt: null,
+        channels: { some: { status } },
+      },
+      include: INCLUDE_CHILDREN,
+      take: limit,
+    });
+    return rows.map((row) =>
+      NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations),
+    );
   }
 
   async findByIdForIdentity(

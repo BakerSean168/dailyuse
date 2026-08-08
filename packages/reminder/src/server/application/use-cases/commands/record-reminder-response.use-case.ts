@@ -5,7 +5,7 @@
  */
 
 import type { Result } from '@memoflow/contracts/result';
-import { ok } from '@memoflow/contracts/result';
+import { error, ok } from '@memoflow/contracts/result';
 import type { IReminderResponseRepository } from '../../../domain/repositories/i-reminder-response-repository';
 import type { ReminderEventMap, ReminderResponseAction } from '@memoflow/contracts/reminder';
 import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
@@ -16,6 +16,14 @@ const logger = createLogger('RecordReminderResponseUseCase');
 const reminderAnalyticsEvents = createTypedEventPublisher<
   Pick<ReminderEventMap, 'reminder:response-recorded'>
 >(eventBus);
+
+/**
+ * R3c：snooze 副作用端口——把提醒的下次触发推迟 duration 秒。
+ * 由宿主/模块组合根注入实现（API：更新 schedule task nextRunAt；desktop 同理）。
+ */
+export interface ReminderSnoozeRescheduler {
+  reschedule(templateId: string, identityId: string, durationSeconds: number): Promise<void>;
+}
 
 /**
  * 响应记录DTO
@@ -60,7 +68,10 @@ export interface ResponseStatsResult {
  * - 触发相关业务事件
  */
 export class RecordReminderResponseUseCase {
-  constructor(private readonly responseRepository: IReminderResponseRepository) {}
+  constructor(
+    private readonly responseRepository: IReminderResponseRepository,
+    private readonly snoozeRescheduler?: ReminderSnoozeRescheduler,
+  ) {}
 
   /**
    * 记录响应行为
@@ -75,6 +86,13 @@ export class RecordReminderResponseUseCase {
       responseTime: dto.responseTime,
       identityId: dto.identityId,
     });
+
+    // R3c：snooze 必须带正的时长；其他 action 的时长可选非负。
+    if (dto.action === 'SNOOZED') {
+      if (dto.responseTime === undefined || dto.responseTime <= 0) {
+        return error('VALIDATION_ERROR', 'Snooze requires a positive duration (responseTime seconds)');
+      }
+    }
 
     const response = ReminderResponse.create({
       reminderTemplateId: dto.templateId,
@@ -92,6 +110,22 @@ export class RecordReminderResponseUseCase {
       templateId: dto.templateId,
       action: dto.action,
     });
+
+    // R3c：snooze 是真正的 command——推迟该提醒的下次触发。
+    if (dto.action === 'SNOOZED' && this.snoozeRescheduler) {
+      try {
+        await this.snoozeRescheduler.reschedule(
+          dto.templateId,
+          dto.identityId,
+          dto.responseTime ?? 0,
+        );
+      } catch (error) {
+        logger.error('Snooze reschedule failed (response still recorded)', {
+          templateId: dto.templateId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
 
     // 发布响应记录事件
     const recordedEvent: ReminderEventMap['reminder:response-recorded'] = {

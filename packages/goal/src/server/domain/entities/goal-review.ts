@@ -29,6 +29,7 @@ export interface GoalReviewState {
   id: IGoalReviewId;
   goalId: IGoalId;
   type: ReviewType;
+  title: string | null;
   rating: number;
   summary: string;
   achievements: string | null;
@@ -109,6 +110,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
     id?: IGoalReviewId; // 支持前端生成 ID
     goalId: IGoalId;
     type: ReviewType;
+    title?: string | null;
     rating: number;
     summary: string;
     achievements?: string;
@@ -131,6 +133,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
       id,
       goalId: params.goalId,
       type: params.type,
+      title: params.title?.trim() || null,
       rating: params.rating,
       summary: params.summary.trim(),
       achievements: params.achievements?.trim() ?? null,
@@ -237,6 +240,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
       id: this.id,
       goalId: this._props.goalId,
       type: this._props.type,
+      title: this._props.title,
       rating: this._props.rating,
       summary: this._props.summary,
       achievements: this._props.achievements,

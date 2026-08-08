@@ -20,6 +20,7 @@ import {
 import { prisma, connectDatabase, disconnectDatabase } from '@memoflow/database';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@memoflow/utils/logger';
+import { createRuntimeOwnership } from '@memoflow/contracts/primitives';
 import { ApiBootstrapper } from './bootstrap';
 import { ensurePowerSyncPublication } from './shared/infrastructure/database/ensure-powersync-publication.js';
 
@@ -45,6 +46,7 @@ import { createReminderPrismaScheduleProjectionSource } from '@memoflow/reminder
 import { createRepositoryApiModule } from '@memoflow/repository/api';
 import { resolveRepositoryStorageBaseDir } from '@memoflow/repository';
 import { createScheduleTaskPrismaRepository } from '@memoflow/schedule';
+import { PrismaOutboxWriter } from './outbox/prisma-outbox-writer';
 import { createScheduleApiModule } from '@memoflow/schedule/api';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
 import { SettingApiModule } from '@memoflow/setting/api';
@@ -74,6 +76,15 @@ let scheduler: CronSchedulerManager | null = null;
 const repositoryStorageBaseDir = resolveRepositoryStorageBaseDir();
 
 async function bootstrap(): Promise<void> {
+  // R0-1：runtime ownership —— 明确"哪个宿主在运行、当前进程是谁"，
+  // 为双宿主对账与 R3 的 scheduler 单宿主租约打底。
+  const ownership = createRuntimeOwnership('cloud-api', undefined, () => new Date());
+  logger.info('[runtime-ownership] API host ownership', {
+    ...ownership,
+    nodeEnv: env.NODE_ENV,
+    port: env.API_PORT,
+  });
+
   logger.info('Starting MemoFlow API server...', {
     ...getStartupInfo(),
     port: env.API_PORT,
@@ -122,7 +133,11 @@ async function bootstrap(): Promise<void> {
 
   // 2. 白名单注册 & 启动
   bootstrapper = new ApiBootstrapper(prisma, cloudAuth, testEmailLinks);
-  const scheduleTaskRepository = createScheduleTaskPrismaRepository(prisma);
+  const scheduleTaskRepository = createScheduleTaskPrismaRepository(
+    prisma,
+    // R1-2：事件总线失败时兜底到 durable outbox（重试/对账）。
+    new PrismaOutboxWriter(prisma),
+  );
   const scheduleOrchestrationModule = createScheduleOrchestrationModule({
     taskProjection: {
       source: createTaskPrismaScheduleProjectionSource(prisma),

@@ -139,8 +139,9 @@ model TaskInstance {
   identityId String @map("identity_id")
 
   // ============ 实例基本信息 ============
-  instanceDate DateTime @map("instance_date")
-  status       String /// TaskInstanceStatus
+  instanceDate  DateTime @map("instance_date")
+  occurrenceKey String?  @map("occurrence_key") /// R2-1 幂等键 templateId:localDate
+  status        String /// TaskInstanceStatus
   importance   String   @default("moderate") /// ImportanceLevel
   priority     Int? /// 动态计算的优先级分数
 
@@ -166,6 +167,8 @@ model TaskInstance {
   @@index([templateId, instanceDate])
   @@index([identityId, status])
   @@index([identityId, instanceDate])
+  // R2-1：同一模板同一天最多一个实例（幂等键，防双宿主/并发重复生成）。
+  @@unique([templateId, occurrenceKey])
   @@map("task_instances")
 }
 
@@ -179,6 +182,7 @@ model TaskGoalOutbox {
   goalId         String    @map("goal_id")
   keyResultId    String    @map("key_result_id")
   payload        String
+  action         String    @default("complete")
   status         String    @default("PENDING")
   attempts       Int       @default(0)
   availableAt    DateTime  @default(now()) @map("available_at")

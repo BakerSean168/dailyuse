@@ -1,5 +1,7 @@
 <template>
-  <div class="max-w-[1100px] mx-auto p-6">
+  <!-- Phase 2：editor 自带唯一主滚动宿主（BusinessPanel surface wrapper 已 overflow-hidden）。 -->
+  <div class="h-full min-h-0 overflow-y-auto" data-scroll-host="governance-editor">
+    <div class="max-w-[1100px] mx-auto p-6">
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-1 text-sm text-muted-foreground mb-4">
       <router-link
@@ -294,16 +296,19 @@
         </div>
       </div>
     </form>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted } from 'vue';
+import { reactive, computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ChevronRight, Plus, CheckCircle, XCircle, Trash2 } from '@lucide/vue';
 import { TagInput } from '@memoflow/ui-vue-shadcn';
 import { useGovernance } from '../composables/useGovernance';
+import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceStatus';
+import type { PanelSurfaceStatus } from '../../../layouts/shell/useAppShellStore';
 import type {
   CreateRuleReq,
   UpdateRuleReq,
@@ -357,6 +362,26 @@ function addExample(type: 'good' | 'bad') {
   } else {
     form.badExamples.push(example);
   }
+}
+
+// ── Dirty/busy 上报（Phase 0 / UI-004）──────────────────────────────────
+// 表单与初始快照不一致 → dirty；保存中 → busy。由统一离开协议（settings
+// scene guard / Tab 切换 / 关面板）消费，离开前弹确认，取消不改变路由或草稿。
+// 注意：每次求值都必须读取 form，避免提前 return 清空响应式依赖——
+// 否则 saving 期间的表单编辑不会让 computed 失效。
+const hydrated = ref(false);
+const formBaseline = ref('');
+const surfaceStatus = computed<PanelSurfaceStatus>(() => {
+  const saving = isSaving.value;
+  const dirty = hydrated.value && JSON.stringify(form) !== formBaseline.value;
+  if (saving) return 'busy';
+  return dirty ? 'dirty' : 'clean';
+});
+usePanelSurfaceStatus(surfaceStatus);
+
+function captureFormBaseline(): void {
+  formBaseline.value = JSON.stringify(form);
+  hydrated.value = true;
 }
 
 function removeExample(type: 'good' | 'bad', index: number) {
@@ -434,12 +459,13 @@ async function loadEditData() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (isEdit.value) {
-    loadEditData();
+    await loadEditData();
   } else {
     addExample('good');
     addExample('bad');
   }
+  captureFormBaseline();
 });
 </script>

@@ -54,8 +54,8 @@ export interface TaskApiModuleOptions {
 
 export interface TaskApiModuleDef {
   readonly name: string;
-  register(context: TaskApiModuleContext): void;
-  destroy?(): void;
+  register(context: TaskApiModuleContext): Promise<void>;
+  destroy?(): Promise<void>;
 }
 
 let activeTaskModule: TaskModuleInstance | null = null;
@@ -66,7 +66,7 @@ export function createTaskApiModule(
   return {
     name: 'Task',
 
-    register(context) {
+    async register(context) {
       const { router, middleware, db } = context;
 
       const taskModule = createTaskPrismaModule(db, {
@@ -86,7 +86,7 @@ export function createTaskApiModule(
         ],
       });
       activeTaskModule = taskModule;
-      taskModule.start();
+      await taskModule.start();
 
       // 2. Create transport handlers then controllers
       //    创建传输层处理器然后创建控制器
@@ -111,8 +111,8 @@ export function createTaskApiModule(
       router.use(taskRoutes);
     },
 
-    destroy() {
-      activeTaskModule?.dispose();
+    async destroy() {
+      await activeTaskModule?.dispose();
       activeTaskModule = null;
     },
   };

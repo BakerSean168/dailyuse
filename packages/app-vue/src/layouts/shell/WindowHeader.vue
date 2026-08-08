@@ -4,14 +4,15 @@
  *
  * 桌面式壳的顶栏（h-48px）。三段式：
  * - 左：侧栏折叠按钮 · 返回/前进
- * - 中：单一业务工作区 launcher
- * - 右：右侧面板 Toggle · [桌面端] 窗口控制
+ * - 中：工作区 launcher + 全局模块复合胶囊
+ * - 右：Schedule/Notification 复合胶囊 · 右侧面板 Toggle · 窗口控制
  *
- * 业务上下文只由 BusinessPanel Tab 表达；顶栏不再保留第二套模块导航。
+ * 顶栏胶囊是全局模块启动器和摘要预览；BusinessPanel Tab 只表达当前业务上下文。
  * 桌面窗控复用既有 useDesktopWindowControls（apps/desktop 已落地 IPC）。
  * 交互逻辑不接业务数据，只 emit 给 AppShell。
  *
- * 契约：workspace launcher 的 data-testid = `shell-workspace-launcher`。
+ * 契约：workspace launcher 的 data-testid = `shell-workspace-launcher`；
+ * 复合入口主按钮/预览按钮分别是 `capsule-nav-*` / `capsule-preview-*`。
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -28,12 +29,24 @@ import {
   PanelsTopLeft,
   X,
 } from '@lucide/vue';
+import type { Component } from 'vue';
+import ModuleCapsule from './ModuleCapsule.vue';
 
 interface WindowControlsState {
   isMaximized: boolean;
   isMinimizable: boolean;
   isMaximizable: boolean;
   isClosable: boolean;
+}
+
+export interface WindowHeaderCapsule {
+  id: string;
+  label: string;
+  route: string;
+  icon: Component;
+  placement?: 'primary' | 'utility';
+  /** 未读/待办计数（如 notification unread）；null 表示不显示 badge（Phase 5 / UI-008）。 */
+  badge?: number | null;
 }
 
 const props = defineProps<{
@@ -51,6 +64,8 @@ const props = defineProps<{
   isMac?: boolean;
   /** 桌面窗控状态（isDesktop 时由 AppShell 透传）。 */
   windowControls?: WindowControlsState;
+  /** 全局模块启动器；主按钮跳转，预览按钮打开摘要浮层。 */
+  capsules?: WindowHeaderCapsule[];
 }>();
 
 const emit = defineEmits<{
@@ -59,12 +74,20 @@ const emit = defineEmits<{
   (e: 'go-back'): void;
   (e: 'go-forward'): void;
   (e: 'open-workspace'): void;
+  (e: 'open-module', payload: { id: string; route: string }): void;
   (e: 'window-minimize'): void;
   (e: 'window-toggle-maximize'): void;
   (e: 'window-close'): void;
 }>();
 
 const { t } = useI18n();
+
+const primaryCapsules = computed(() =>
+  (props.capsules ?? []).filter((entry) => entry.placement !== 'utility'),
+);
+const utilityCapsules = computed(() =>
+  (props.capsules ?? []).filter((entry) => entry.placement === 'utility'),
+);
 </script>
 
 <template>
@@ -85,7 +108,9 @@ const { t } = useI18n();
         <PanelLeftClose v-if="!sidebarCollapsed" class="h-4 w-4" />
         <PanelLeft v-else class="h-4 w-4" />
       </button>
-      <div class="flex items-center gap-1">
+      <!-- 历史后退/前进只在 workspace 显示；设置场景仅保留「返回应用」单一返回语义，
+           避免两个「返回」语义重叠（Phase 3）。 -->
+      <div v-if="props.mode !== 'settings'" class="flex items-center gap-1">
         <button
           type="button"
           class="rounded p-1 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
@@ -107,21 +132,64 @@ const { t } = useI18n();
       </div>
     </div>
 
-    <div v-if="props.mode !== 'settings'" class="no-drag">
+    <div
+      v-if="props.mode !== 'settings'"
+      class="no-drag flex min-w-0 flex-1 items-center justify-center gap-1.5 overflow-hidden"
+    >
       <button
         type="button"
         data-testid="shell-workspace-launcher"
-        class="flex min-h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        class="flex min-h-9 shrink-0 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         :aria-label="t('shell.openWorkspace')"
         @click="emit('open-workspace')"
       >
         <PanelsTopLeft class="h-4 w-4" />
-        <span>{{ t('shell.openWorkspace') }}</span>
+        <span class="workspace-launcher-label">{{ t('shell.openWorkspace') }}</span>
       </button>
+      <nav
+        v-if="primaryCapsules.length"
+        class="flex min-w-0 items-center gap-1 overflow-x-auto py-1"
+        :aria-label="t('shell.moduleNav')"
+        data-testid="shell-primary-capsules"
+      >
+        <ModuleCapsule
+          v-for="entry in primaryCapsules"
+          :key="entry.id"
+          :id="entry.id"
+          :label="entry.label"
+          :route="entry.route"
+          :icon="entry.icon"
+          :badge="entry.badge"
+          @open="emit('open-module', $event)"
+          v-slot="{ closePreview }"
+        >
+          <slot :name="`capsule-preview-${entry.id}`" :close-preview="closePreview" />
+        </ModuleCapsule>
+      </nav>
     </div>
 
-    <!-- 右：面板与桌面窗控。业务模块只从 workspace launcher / panel tabs 进入。 -->
+    <!-- 右：日程/通知入口、面板与桌面窗控。 -->
     <div class="flex shrink-0 items-center gap-3 no-drag">
+      <nav
+        v-if="props.mode !== 'settings' && utilityCapsules.length"
+        class="flex max-w-[35vw] items-center gap-1 overflow-x-auto"
+        :aria-label="t('shell.moduleNav')"
+        data-testid="shell-utility-capsules"
+      >
+        <ModuleCapsule
+          v-for="entry in utilityCapsules"
+          :key="entry.id"
+          :id="entry.id"
+          :label="entry.label"
+          :route="entry.route"
+          :icon="entry.icon"
+          :badge="entry.badge"
+          @open="emit('open-module', $event)"
+          v-slot="{ closePreview }"
+        >
+          <slot :name="`capsule-preview-${entry.id}`" :close-preview="closePreview" />
+        </ModuleCapsule>
+      </nav>
       <button
         v-if="props.mode !== 'settings'"
         type="button"
@@ -186,5 +254,11 @@ const { t } = useI18n();
 }
 .no-drag {
   -webkit-app-region: no-drag;
+}
+
+@media (max-width: 1000px) {
+  .workspace-launcher-label {
+    display: none;
+  }
 }
 </style>

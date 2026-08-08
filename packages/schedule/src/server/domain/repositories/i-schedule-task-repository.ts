@@ -83,6 +83,13 @@ export interface IScheduleTaskRepository {
   findEnabled(identityId?: string): Promise<ScheduleTask[]>;
 
   /**
+   * R3b：原子 claim——执行前条件抢占，防止共享 DB 的多个宿主重复执行同一任务。
+   * 仅当任务仍是 Active 且 nextRunAt 等于读取值时才抢占成功（把 lastRunAt
+   * 前置为 claim 时间）；另一宿主已 claim 时返回 false，调用方应跳过执行。
+   */
+  claimForExecution?(id: string, expectedNextRunAt: Date): Promise<boolean>;
+
+  /**
    * 鏌ヨ闇€瑕佹墽琛岀殑浠诲姟 (鍒版椂闂?+ 宸插惎鐢?+ 娲昏穬鐘舵€?
    */
   findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]>;
