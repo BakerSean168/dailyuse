@@ -193,3 +193,54 @@ describe('PrismaGoalMapper additional coverage', () => {
     });
   });
 });
+
+describe('PrismaGoalMapper fallback branches (R4)', () => {
+  it('applies defaults for nullable columns and instants', () => {
+    const row = {
+      id: 'goal-1',
+      identityId: 'identity-1',
+      name: 'Goal',
+      description: null,
+      color: null,
+      feasibilityAnalysis: null,
+      motivation: null,
+      status: 'InProgress',
+      importance: 'Medium',
+      priority: null,
+      category: null,
+      tags: null,
+      startDate: Date.parse('2026-01-01T00:00:00.000Z'),
+      targetDate: null,
+      completedAt: null,
+      archivedAt: null,
+      folderId: null,
+      parentGoalId: null,
+      rollupPolicy: null,
+      sortOrder: null,
+      reminderConfig: null,
+      keyResults: null,
+      reviews: null,
+      keyResultWeightSnapshots: null,
+      createdAt: 1_000,
+      updatedAt: 2_000,
+      deletedAt: null,
+      version: null,
+    };
+
+    const raw = PrismaGoalMapper.toDomainDTO(row as never);
+    expect(raw.rollupPolicy).toBe('kr');
+    expect(raw.sortOrder).toBe(0);
+    expect(raw.version).toBe(1);
+    expect(raw.reminderConfig).toBeNull();
+    expect(raw.keyResults).toBeNull();
+    expect(raw.startDate).toBe(Date.parse('2026-01-01T00:00:00.000Z'));
+    expect(raw.createdAt).toBe(1_000);
+    expect(raw.updatedAt).toBe(2_000);
+  });
+
+  it('parses review improvements across JSON / legacy / null inputs', () => {
+    expect(PrismaGoalMapper.parseReviewImprovements(null)).toBeNull();
+    expect(PrismaGoalMapper.parseReviewImprovements('["a","b"]')).toBe('["a","b"]');
+    expect(PrismaGoalMapper.parseReviewImprovements('not-json')).toBe('not-json');
+  });
+});
