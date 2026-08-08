@@ -57,7 +57,6 @@ function dayDiff(aMs: number, bMs: number): number {
  * 完成日期按本地日去重；从最近完成日向前数连续天数。
  */
 export function calculateStreak(completedDates: number[], now: number): HabitStreak {
-  const today = startOfLocalDay(now);
   const dates = Array.from(new Set(completedDates.map((d) => startOfLocalDay(d)))).sort(
     (a, b) => a - b,
   );
@@ -68,7 +67,6 @@ export function calculateStreak(completedDates: number[], now: number): HabitStr
 
   // 今天未完成时，从昨天开始数（今天还没到不算断）。
   const last = dates[dates.length - 1];
-  let cursor = dayDiff(today, last) <= 1 ? last : last;
 
   let currentStreak = 1;
   for (let i = dates.length - 2; i >= 0; i--) {

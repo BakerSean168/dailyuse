@@ -13,7 +13,6 @@ import type {
   QueryTaskTemplatesRes,
   TaskTemplateStatus as TaskTemplateStatusType,
 } from '@memoflow/contracts/task';
-import { TaskTemplateStatus } from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
 import { ok } from '@memoflow/contracts/result';
 
