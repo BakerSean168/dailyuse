@@ -8,7 +8,7 @@
  * Does NOT support knowledge query, analytics, or goal automation.
  */
 
-import type { AICapabilities } from '@memoflow/contracts/ai';
+import { assembleCapabilities } from '../../shared/assemble-capabilities';
 import type {
   AIModuleDependencies,
   AIModuleServices,
@@ -56,9 +56,6 @@ import { CapabilityResolver } from '../capability-resolver';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
 import { CustomModelGateway } from '../model-gateway';
-
-const ADVANCED_AI_REASON =
-  'Advanced AI features require a remote ai-service runtime. Configure AI_SERVICE_BASE_URL and AI_SERVICE_SECRET to enable goal automation, knowledge retrieval, analytics, and reindexing.';
 
 /**
  * Creates the direct-provider runtime.
@@ -151,19 +148,9 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
       )
     : null;
 
-  const capabilities: AICapabilities = {
-    runtimeMode: 'direct-provider',
-    supportsChat: true,
-    supportsGoalGeneration: true,
+  const capabilities = assembleCapabilities('direct-provider', {
     supportsKnowledgeNotes: Boolean(knowledgeNoteUseCase),
-    supportsKnowledgeQuery: false,
-    supportsKnowledgeReindex: false,
-    supportsAnalyticsQuery: false,
-    supportsGoalAutomation: false,
-    supportsAgentRuntime: false,
-    supportsEvaluationReports: false,
-    advancedFeaturesReason: ADVANCED_AI_REASON,
-  };
+  });
 
   // Residual 322/324: fail-closed capability projection shared with agent start gate.
   const capabilityResolver = new CapabilityResolver(

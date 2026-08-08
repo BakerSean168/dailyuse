@@ -14,7 +14,7 @@
  * Only fail-fast on explicitly attempted incomplete bundles (handled at call site).
  */
 
-import type { AICapabilities } from '@memoflow/contracts/ai';
+import { assembleCapabilities } from '../../shared/assemble-capabilities';
 import type {
   AIModuleDependencies,
   AIModuleServices,
@@ -74,9 +74,6 @@ import { LangGraphWorkflowAdapter } from '../workflow';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
 import { CustomModelGateway } from '../model-gateway';
-
-const ADVANCED_AI_REASON =
-  'Advanced AI features require a remote ai-service runtime. Configure AI_SERVICE_BASE_URL and AI_SERVICE_SECRET to enable goal automation, knowledge retrieval, analytics, and reindexing.';
 
 /**
  * Creates the remote AI-service runtime.
@@ -272,25 +269,15 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
   );
   const supportsAgentRuntime = Boolean(dependencies.agentRuntimePort);
 
-  const capabilities: AICapabilities = {
-    runtimeMode: 'remote-ai-service',
-    supportsChat: true,
-    supportsGoalGeneration: true,
+  const capabilities = assembleCapabilities('remote-ai-service', {
     supportsKnowledgeNotes: Boolean(knowledgeNoteUseCase),
     supportsKnowledgeQuery,
-    supportsKnowledgeReindex: supportsKnowledgeQuery,
     supportsAnalyticsQuery,
     supportsGoalAutomation,
     supportsAgentRuntime,
     supportsEvaluationReports: Boolean(evaluationReportUseCase),
-    advancedFeaturesReason:
-      supportsKnowledgeQuery &&
-      supportsAnalyticsQuery &&
-      supportsGoalAutomation &&
-      supportsAgentRuntime
-        ? undefined
-        : ADVANCED_AI_REASON,
-  };
+    clearAdvancedReasonWhenComplete: true,
+  });
 
   // Residual 322/324: fail-closed capability projection shared with agent start gate.
   // Workflow adapter offers are explicit (not silent engine.*) when remote agent runtime is present.
