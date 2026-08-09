@@ -1,12 +1,47 @@
 // ==========================================
-// Reliable Messaging (R1)
-// 通用 OutboxMessage / InboxReceipt / ProjectionCursor
+// Reliable Messaging (W0 / R1)
+// 通用 OutboxMessage / InboxReceipt / ProjectionCursor / BusinessOperationReceipt / Lease / Fail-Fast Capability / Application Ports
 // ==========================================
 
 import type { CausationId, CorrelationId, MessageId } from '../../primitives/command';
 
-/** Outbox 消息状态机（R1-1）。 */
+// ============ W0-1: 统一业务操作、交付、租约、能力与 Application Port 契约 ============
+export * from './operation-receipt';
+export * from './lease';
+export * from './projection';
+export * from './capability';
+export * from './ports';
+
+// ============ R1-1: 传统/通用 Outbox / Inbox / ProjectionCursor 类型 ============
+
+/**
+ * Outbox 消息状态机（R1-1 Legacy 4 状态）。
+ *
+ * 与 W0-1 8 状态 BusinessOperationStatus 的映射边界 (P2-3)：
+ * - pending    -> pending (等待 Outbox 调度)
+ * - dispatched -> succeeded (投递成功终态)
+ * - failed     -> retryable (暂态失败可重试) / failed (终态失败)
+ * - dead       -> dead_letter (死信队列等待运维 replay)
+ */
 export type OutboxMessageStatus = 'pending' | 'dispatched' | 'failed' | 'dead';
+
+/**
+ * 映射 R1 遗留 OutboxMessageStatus 到 W0 8 状态 BusinessOperationStatus (P2-3)
+ */
+export function mapOutboxStatusToBusinessOperationStatus(
+  status: OutboxMessageStatus
+): import('./operation-receipt').BusinessOperationStatus {
+  switch (status) {
+    case 'pending':
+      return 'pending';
+    case 'dispatched':
+      return 'succeeded';
+    case 'failed':
+      return 'failed';
+    case 'dead':
+      return 'dead_letter';
+  }
+}
 
 /** Inbox 回执状态：同一 messageId 只允许一次成功处理（幂等）。 */
 export type InboxReceiptOutcome = 'ok' | 'failed';

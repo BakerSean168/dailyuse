@@ -47,9 +47,9 @@ updated: 2026-08-09T00:00:00Z
 
 ### W0：冻结契约、指标和迁移边界
 
-**涉及文件**：`packages/contracts/src/modules/reliable-messaging/**`、新增业务 operation/delivery contract；各模块 `application` port；`docs/architecture/adr/`（新增 ADR）。
+**涉及文件**：`packages/contracts/src/modules/reliable-messaging/**`、新增业务 operation/delivery contract；各模块 `application` port；`docs/architecture/adr/ADR-042-unified-business-operation-and-delivery-contracts.md`（新增 ADR）；`docs/audit/2026-08-09-w0-infrastructure-audit.md`（盘点文档）。
 
-**改动要点**：定义版本化 `BusinessOperationReceipt`、`DeliveryAttempt`、`LeaseClaim` 和 `ProjectionOperation`；统一 `pending/running/succeeded/skipped/failed/retryable/dead_letter/cancelled` 语义、幂等键（identity + source + occurrence）、correlation/causation；规定生产 capability 缺失必须 fail-fast，测试 double 只能显式注入。盘点 Prisma 表、事务 runner、outbox dispatcher、指标和运维 replay 权限。
+**改动要点**：定义版本化 `BusinessOperationReceipt`、`DeliveryAttempt`、`LeaseClaim` 和 `ProjectionOperation`；统一 `pending/running/succeeded/skipped/failed/retryable/dead_letter/cancelled` 语义、幂等键（identity + source + occurrence）、correlation/causation；规定生产 capability 缺失必须 fail-fast，测试 double 只能显式注入。盘点 Prisma 表、事务 runner、outbox dispatcher、指标和运维 replay 权限（见盘点报告 [`docs/audit/2026-08-09-w0-infrastructure-audit.md`](../../audit/2026-08-09-w0-infrastructure-audit.md)）。
 
 **验证方式**：契约 schema 正/负向校验；每个 operation 能关联 receipt、lastError、nextRetryAt 和 dead-letter；治理检查通过；不宣称任何业务行为已实施。
 
