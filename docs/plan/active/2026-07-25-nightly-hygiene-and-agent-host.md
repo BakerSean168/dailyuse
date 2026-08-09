@@ -97,7 +97,7 @@ residual 记本文件 §9 与 elegance plan §9。
 | AH-4 | Task 共用 Artifact 工作台一小步（非全量富编辑） | Host UI + journey | pending |
 | AH-5 | Electron multi-engine 产品 E2E（或诚实 external + driver 一步） | scaffold `e2e.electron_desktop_full` | pending / 可 external |
 | AH-6 | real Pi spawn：要么 fail-closed 产品路径，要么永久 research keep-boundary | scaffold `e2e.real_pi_spawn` | pending / 默认不假绿 |
-| AH-7 | 阶段 8 遗留：direct/remote runtimeMode 向 capability 组装收缩（小步） | 单 capability 投影 | pending |
+| AH-7 | 阶段 8 遗留：direct/remote runtimeMode 向 capability 组装收缩（小步） | 单 capability 投影 | **本文件 residual N4 落地（2026-08-08）** |
 
 诚实：AH-5/AH-6 可长期 external；**不**据此勾 agent-host §20 全项。
 
@@ -129,6 +129,7 @@ residual 记本文件 §9 与 elegance plan §9。
 | E-PR189 | 2026-07-26 | elegance A+B+C：archive vault；Dual Registry；dual 237→84；AI path map；AH-2 书面不做 | elegance | merge 门槛 |
 | E5b | 2026-07-26 | bootstrap LegacyAccountModule → AccountApiModule + surface（#189 后真 E5 S） | elegance | 死域 S |
 | N3 | 2026-07-25 | AH-3：ProposalKernel stale 禁 approve；revise 清 stale→draft；STALE_REVISION 仍在 | agent-host | kernel tests |
+| N4 | 2026-08-08 | AH-7：`assembleCapabilities` 单 capability 投影落地；direct/remote 两 runtime 统一能力组装；focused tests 5 绿；PM 系统审查文档见 docs/audit/2026-08-08-pm-systematic-review.md | agent-host | shared spec 5 绿 |
 
 ## 10. 完成 / 归档
 

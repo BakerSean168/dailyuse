@@ -25,6 +25,10 @@ updated: 2026-07-22T00:00:00
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
 
+### 当前进展（2026-08-08；nightly N4 / AH-7 对齐）
+
+- **Nightly residual N4（AH-7）**：capability 组装从两个 runtime 各自手写收拢为共享 `assembleCapabilities`（`packages/ai/src/server/shared/assemble-capabilities.ts`），direct/remote 两模式同一投影函数，含 focused tests 5 绿；配套 PM 系统审查见 docs/audit/2026-08-08-pm-systematic-review.md。
+
 ### 当前进展（2026-07-25 续；与 vault residual 1342 + nightly N1 对齐）
 
 - **Nightly residual N1（AH-1）**：`AssistantEvent` `run.started` 可选 `conversationId`；`AssistantFacade` 在 open-chat（direct_turn / pi_readonly）下发 trimmed conversationId；缺 conversation 时 omit 字段且 direct_turn 仍 `CONVERSATION_REQUIRED`。**不**宣称 Conversation↔AgentRun 持久多对一产品完成定义已勾。

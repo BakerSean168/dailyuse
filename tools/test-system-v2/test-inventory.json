@@ -2645,6 +2645,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/server/transport/__tests__/ai-assistant-facade.controller.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8811,14 +8821,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 113
+      "fileCount": 114
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 113
+      "fileCount": 114
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
@@ -9418,6 +9428,7 @@
       "packages/ai/src/server/infrastructure/turn-engine/__tests__/pi-readonly-process.adapter.surface.spec.ts",
       "packages/ai/src/server/infrastructure/turn-engine/__tests__/readonly-analysis.turn-engine.spec.ts",
       "packages/ai/src/server/infrastructure/workflow/__tests__/langgraph-workflow.adapter.spec.ts",
+      "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
       "packages/ai/src/server/transport/__tests__/ai-assistant-facade.controller.spec.ts",
       "packages/ai/src/server/transport/ai-agent-runtime.controller.test.ts",
       "packages/ai/src/server/transport/ai-goal-generation.controller.test.ts",
@@ -9762,7 +9773,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 832,
+    "unit": 833,
     "integration": 10,
     "smoke": 2,
     "boundary-ipc": 9,
