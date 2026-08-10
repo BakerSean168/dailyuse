@@ -590,7 +590,55 @@ const notification_channels = new Table({
   error: column.text,
   response: column.text,
   retry_count: column.integer,
+  attempts: column.integer,
+  sent_at: column.text,
+  failed_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
 });
+
+// Durable dispatch outbox (desktop durable worker; consumed with W0 lease semantics)
+const notification_dispatch_outbox = new Table({
+  identity_id: column.text,
+  notification_id: column.text, // FK
+  source: column.text,
+  occurrence_key: column.text,
+  channel: column.text,
+  payload_json: column.text, // JSON
+  idempotency_key: column.text,
+  status: column.text,
+  attempt: column.integer,
+  owner_token: column.text,
+  claim_id: column.text,
+  fencing_token: column.integer,
+  lease_expires_at: column.text,
+  last_heartbeat_at: column.text,
+  heartbeat_interval_ms: column.integer,
+  last_error: column.text,
+  next_retry_at: column.text,
+  dead_letter_at: column.text,
+  correlation_id: column.text,
+  causation_id: column.text,
+  attempts_history_json: column.text, // JSON
+  created_at: column.text,
+  updated_at: column.text,
+  finished_at: column.text,
+});
+
+// Durable desktop transport delivery receipts / acknowledgments
+const desktop_delivery_acks = new Table(
+  {
+    idempotency_key: column.text,
+    status: column.text,
+    ack_id: column.text,
+    payload_json: column.text,
+    error: column.text,
+    created_at: column.text,
+    updated_at: column.text,
+  },
+  { localOnly: true },
+);
+
 
 const notification_history = new Table({
   identity_id: column.text,
@@ -1021,6 +1069,8 @@ export const PowerSyncAppSchema = new Schema({
   // Notification
   notifications,
   notification_channels,
+  notification_dispatch_outbox,
+  desktop_delivery_acks,
   notification_history,
   notification_preferences,
   notification_templates,

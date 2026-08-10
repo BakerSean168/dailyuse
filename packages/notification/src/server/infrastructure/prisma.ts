@@ -5,6 +5,7 @@ import {
   NotificationPreferencePrismaRepository,
   NotificationPrismaRepository,
   NotificationTemplatePrismaRepository,
+  NotificationReliableOperationPrismaAdapter,
 } from './adapters/prisma';
 import { createNotificationRuntimeContribution } from './runtime/notification.runtime';
 import {
@@ -13,27 +14,58 @@ import {
   type NotificationRuntimeContributionsInput,
 } from './notification.module';
 
+import { NotificationMetricsService } from '../domain/services/notification-metrics-service';
+
+import {
+  RealInAppChannelDeliverer,
+  RealDesktopChannelDeliverer,
+} from './adapters/deliverers/real-channel-deliverers';
+
 export interface CreateNotificationPrismaModuleOptions {
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
-  /** R3e：渠道投递适配器（默认 no-op，仅推进渠道状态）。 */
+  readonly durableRuntime?: import('./runtime/notification.runtime').NotificationDurableRuntimePort;
   readonly channelDeliverer?: import('./runtime/notification.runtime').NotificationChannelDeliverer;
+  readonly channelDeliverers?: Record<string, import('./runtime/notification.runtime').NotificationChannelDeliverer>;
+  readonly channelCapabilities?: import('./runtime/notification.runtime').ChannelCapabilitySpec[];
+  readonly desktopTransport?: unknown;
+  readonly pushTransport?: unknown;
 }
 
 export function createNotificationPrismaModule(
   db: PrismaClient,
   options: CreateNotificationPrismaModuleOptions = {},
 ): NotificationModuleInstance {
-  const notificationRepository = new NotificationPrismaRepository(db);
+  const metricsService = new NotificationMetricsService();
+  const notificationRepository = new NotificationPrismaRepository(db, metricsService);
+  const reliableAdapter = new NotificationReliableOperationPrismaAdapter(db, metricsService);
+
+  const defaultDeliverers: Record<string, import('./runtime/notification.runtime').NotificationChannelDeliverer> = {
+    InApp: new RealInAppChannelDeliverer(notificationRepository),
+    'in-app': new RealInAppChannelDeliverer(notificationRepository),
+    Desktop: new RealDesktopChannelDeliverer(options.desktopTransport),
+    desktop: new RealDesktopChannelDeliverer(options.desktopTransport),
+    Push: new RealDesktopChannelDeliverer(options.pushTransport),
+    push: new RealDesktopChannelDeliverer(options.pushTransport),
+    ...(options.channelDeliverers ?? {}),
+  };
+
+  const defaultRuntimeContribution = createNotificationRuntimeContribution({
+    repository: notificationRepository,
+    reliableAdapter,
+    deliverer: options.channelDeliverer,
+    delivererRegistry: defaultDeliverers,
+    channelCapabilities: options.channelCapabilities,
+    metricsService,
+  });
+
+  const durableRuntime = options.durableRuntime ?? defaultRuntimeContribution;
+
   return createNotificationModule({
     notificationRepository,
     preferenceRepository: new NotificationPreferencePrismaRepository(db),
     templateRepository: new NotificationTemplatePrismaRepository(db),
-    runtimeContributions: options.runtimeContributions ?? [
-      createNotificationRuntimeContribution({
-        repository: notificationRepository,
-        deliverer: options.channelDeliverer,
-      }),
-    ],
+    durableRuntime,
+    runtimeContributions: options.runtimeContributions ?? [durableRuntime],
   });
 }
 

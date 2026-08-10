@@ -38,7 +38,7 @@ import { GoalApiModule } from '@memoflow/goal/api';
 import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
 import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
-import { NotificationApiModule } from '@memoflow/notification/api';
+import { createNotificationApiModule } from '@memoflow/notification/api';
 import { createNotificationPrismaScheduleNotificationPort } from '@memoflow/notification/schedule-execution';
 import { ReminderApiModule } from '@memoflow/reminder/api';
 import { createReminderPrismaScheduleExecutionSource } from '@memoflow/reminder/schedule-execution';
@@ -196,7 +196,19 @@ async function bootstrap(): Promise<void> {
     // === 核心：白名单注册 ===
     .register(GovernanceApiModule) // ✅ 治理模块
     .register(AccountApiModule) // ✅ 账户模块
-    .register(NotificationApiModule) // ✅ 通知模块
+    // 架构决策 A：apps/api（API lane）显式声明其自治掌控的 InApp 渠道 capability。
+    // Desktop/Push 渠道 capability 归属于桌面 Desktop lane，单机 API lane 不处理跨进程 Native Notification。
+    .register(
+      createNotificationApiModule({
+        channelCapabilities: [
+          {
+            channelType: 'InApp',
+            status: 'available',
+            requiredInProduction: true,
+          },
+        ],
+      }),
+    ) // ✅ 通知模块
     .register(ReminderApiModule) // ✅ 提醒模块
     .register(repositoryApiModule) // ✅ 仓库模块
     .register(scheduleApiModule) // ✅ 日程模块

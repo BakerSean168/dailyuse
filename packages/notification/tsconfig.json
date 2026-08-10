@@ -19,7 +19,8 @@
       "@memoflow/contracts/schedule": ["../contracts/src/modules/schedule/index.ts"],
       "@memoflow/utils": ["../utils/src/index.ts"],
       "@memoflow/utils/result": ["../utils/src/result/index.ts"],
-      "@memoflow/patterns": ["../patterns/src/index.ts"]
+      "@memoflow/patterns": ["../patterns/src/index.ts"],
+      "@memoflow/powersync-schema": ["../powersync-schema/src/index.ts"]
     }
   },
   "include": ["src"],

@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "通知模块 - 多渠道通知管理",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -43,7 +45,8 @@
     "@memoflow/utils": "workspace:*",
     "express": "^5.2.1",
     "zod": "^4.4.3",
-    "@memoflow/patterns": "workspace:*"
+    "@memoflow/patterns": "workspace:*",
+    "@memoflow/powersync-schema": "workspace:*"
   },
   "devDependencies": {
     "@types/express": "^5.0.0"

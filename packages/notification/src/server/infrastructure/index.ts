@@ -49,3 +49,4 @@ export {
 export {
   createNotificationRuntimeContribution,
 } from './runtime';
+export { InMemoryNotificationReliableAdapter } from './adapters/in-memory/in-memory-notification-reliable.adapter';

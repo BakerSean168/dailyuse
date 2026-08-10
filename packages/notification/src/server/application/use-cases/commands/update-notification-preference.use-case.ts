@@ -1,3 +1,5 @@
+// Product boundary (architecture decision A): Desktop notifications are system-explicit
+// (created by the desktop durable worker), NOT user-configurable via preferences.
 import { NotificationChannelType } from '@memoflow/contracts/notification';
 import type {
   NotificationPreferenceClientDTO,

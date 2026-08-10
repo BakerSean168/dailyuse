@@ -42,6 +42,7 @@ import {
   UnreadCountResponseSchema,
   NotificationPreferenceResponseSchema,
 } from '@memoflow/contracts/notification';
+import { BusinessOperationReceiptSchema } from '@memoflow/contracts/reliable-messaging';
 import type { NotificationApplicationPort } from '../server/application';
 import { NotificationController } from '../server/transport/notification.controller';
 
@@ -231,6 +232,154 @@ export function registerNotificationRoutes(
     [auth],
     (req, ctx) => controller.updatePreferences(req.body, ctx),
   );
+
+  // GET /dead-letters — Identity-scoped dead-letter query
+  r.route(
+    {
+      method: 'get',
+      path: '/dead-letters',
+      summary: '查询死信通知队列',
+      responses: {
+        200: successResponse(z.array(BusinessOperationReceiptSchema), '获取成功'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.queryDeadLetters(ctx),
+  );
+
+  // POST /dead-letters/:id/replay — Identity-scoped dead-letter replay
+  r.route(
+    {
+      method: 'post',
+      path: '/dead-letters/:id/replay',
+      summary: '重发死信通知',
+      request: { params: z.object({ id: z.string().min(1) }) },
+      responses: {
+        200: successResponse(BusinessOperationReceiptSchema, '重发成功'),
+        404: errorResponse('死信通知不存在'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.replayDeadLetter(req.params!.id, ctx),
+  );
+
+  // GET /receipts — Delivery receipt timeline query
+  r.route(
+    {
+      method: 'get',
+      path: '/receipts',
+      summary: '查询通知投递回执时间线',
+      responses: {
+        200: successResponse(z.array(BusinessOperationReceiptSchema), '获取成功'),
+      },
+    },
+    [auth],
+    (req, ctx) =>
+      controller.getDeliveryReceipts(ctx, {
+        limit: parseNumber(req.query?.limit),
+        lastCursor: parseString(req.query?.lastCursor ?? req.query?.since),
+        since: parseString(req.query?.since),
+        status: parseString(req.query?.status),
+      }),
+  );
+
+  // GET /sse — Real-time SSE Stream with Last-Event-ID / lastCursor reconnection catch-up
+  router.get('/sse', auth, async (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    const resWithFlush = res as unknown as { flushHeaders?: () => void };
+    if (typeof resWithFlush.flushHeaders === 'function') {
+      resWithFlush.flushHeaders();
+    }
+
+    const reqRecord = req as unknown as Record<string, unknown>;
+    const userObj = reqRecord.user as { id?: string } | undefined;
+    const identityId = userObj?.id ?? (reqRecord.identityId as string | undefined) ?? (req.query?.identityId as string);
+    const lastEventId = (req.headers['last-event-id'] as string) || (req.query?.lastCursor as string) || (req.query?.since as string);
+
+    const seenOperationIds = new Set<string>();
+    const bufferedLiveEvents: import('../server/application').NotificationSseDeliveryEvent[] = [];
+    let isHistoricalQueryFinished = false;
+
+    // Subscribe via the SSE application port (typed event seam) BEFORE query to eliminate window loss.
+    const unsubscribe = api.subscribeSseEvents((event) => {
+      if (identityId && event.identityId !== identityId) return;
+
+      const opId = (event as unknown as { operationId?: string; id?: string }).operationId ?? (event as unknown as { id?: string }).id;
+      if (opId && seenOperationIds.has(opId)) {
+        return; // Skip duplicate event already covered in query
+      }
+
+      if (!isHistoricalQueryFinished) {
+        bufferedLiveEvents.push(event);
+      } else {
+        if (opId) seenOperationIds.add(opId);
+        const cursor = event.updatedAt && opId ? `${event.updatedAt}|${opId}` : new Date().toISOString();
+        res.write(`id: ${cursor}\nevent: notification\ndata: ${JSON.stringify(event)}\n\n`);
+      }
+    });
+
+    req.on('close', () => {
+      unsubscribe();
+    });
+
+    // Query historical receipts with composite cursor pagination loop (>100 backlog support)
+    if (lastEventId && identityId) {
+      let currentCursor: string | undefined = lastEventId;
+      let hasMore = true;
+
+      while (hasMore) {
+        try {
+          const receiptsResult = await api.getDeliveryReceipts(identityId, {
+            lastCursor: currentCursor,
+            status: 'succeeded',
+            limit: 100,
+          });
+
+          if (receiptsResult.ok) {
+            const receipts = (receiptsResult.data ?? []) as Array<Record<string, unknown>>;
+            const previousCursor: string | undefined = currentCursor;
+            for (const receipt of receipts) {
+              if (receipt.operationId) {
+                seenOperationIds.add(String(receipt.operationId));
+              }
+              const cursor = `${receipt.updatedAt}|${receipt.operationId}`;
+              res.write(`id: ${cursor}\nevent: notification\ndata: ${JSON.stringify(receipt)}\n\n`);
+              currentCursor = cursor;
+            }
+
+            if (receipts.length < 100 || currentCursor === previousCursor) {
+              hasMore = false;
+            }
+          } else {
+            hasMore = false;
+            res.write(`event: error\ndata: ${JSON.stringify({ message: receiptsResult.error.message })}\n\n`);
+            res.end();
+            return;
+          }
+        } catch (loopErr) {
+          hasMore = false;
+          res.write(
+            `event: error\ndata: ${JSON.stringify({ message: loopErr instanceof Error ? loopErr.message : String(loopErr) })}\n\n`,
+          );
+          res.end();
+          return;
+        }
+      }
+    }
+
+    // Flush buffered live events that were not returned in historical query
+    isHistoricalQueryFinished = true;
+    for (const event of bufferedLiveEvents) {
+      const opId = event.operationId ?? event.id;
+      if (!opId || !seenOperationIds.has(opId)) {
+        if (opId) seenOperationIds.add(opId);
+        const cursor = event.updatedAt && opId ? `${event.updatedAt}|${opId}` : new Date().toISOString();
+        res.write(`id: ${cursor}\nevent: notification\ndata: ${JSON.stringify(event)}\n\n`);
+      }
+    }
+  });
 
   // GET /:id — Get notification by ID
   r.route(

@@ -1,3 +1,5 @@
+// Product boundary (architecture decision A): Desktop notifications are system-explicit
+// (desktop durable worker), NOT user-configurable via preferences UI.
 /**
  * useNotificationPreferences — residual 199
  *

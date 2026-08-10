@@ -30,12 +30,16 @@ import {
   GetUnreadNotificationsUseCase,
   GetNotificationPreferenceUseCase,
 } from '../application';
-import { ok } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   NotificationMaintenanceApplicationService,
   NotificationQueryApplicationService,
 } from '../application';
-import type { NotificationApplicationPort } from '../application';
+import type {
+  NotificationApplicationPort,
+  NotificationSseDeliveryEvent,
+} from '../application';
+import type { NotificationDurableRuntimePort } from './runtime/notification.runtime';
 
 export interface NotificationModuleRuntimeContribution {
   start(): void;
@@ -52,6 +56,7 @@ export interface NotificationModuleDependencies {
   readonly templateRepository: INotificationTemplateRepository;
   readonly db?: IElectronDatabase;
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
+  readonly durableRuntime: NotificationDurableRuntimePort;
 }
 
 export interface NotificationModuleUseCases {
@@ -70,6 +75,7 @@ export interface NotificationModuleInstance {
   readonly templateRepository: INotificationTemplateRepository;
   readonly useCases: NotificationModuleUseCases;
   readonly api: NotificationApplicationPort;
+  readonly durableRuntime: NotificationDurableRuntimePort;
   start(): void;
   dispose(): void;
 }
@@ -113,8 +119,15 @@ function normalizeRuntimeContributions(
 export function createNotificationModule(
   dependencies: NotificationModuleDependencies,
 ): NotificationModuleInstance {
-  const { notificationRepository, preferenceRepository, templateRepository } = dependencies;
+  const { notificationRepository, preferenceRepository, templateRepository, durableRuntime } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
+
+  if (!durableRuntime) {
+    throw new Error(
+      '[FAIL-CLOSED] NotificationModule requires an explicit durableRuntime dependency providing dead-letter, receipt, and SSE capabilities.',
+    );
+  }
+
   const useCases = createNotificationUseCases(dependencies);
   const notificationQueryApplicationService = new NotificationQueryApplicationService(
     notificationRepository,
@@ -203,6 +216,33 @@ export function createNotificationModule(
         dto as Parameters<UpdateNotificationPreferenceUseCase['execute']>[1],
       );
     },
+
+    queryDeadLetters: async (identityId) => {
+      const res = await durableRuntime.queryDeadLetters(identityId);
+      return ok(res);
+    },
+
+    replayDeadLetter: async (operationId, identityId) => {
+      try {
+        const res = await durableRuntime.replayDeadLetter({ identityId, operationId });
+        return ok(res);
+      } catch (err) {
+        return fail({
+          code: 'NOT_FOUND',
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+
+    getDeliveryReceipts: async (identityId, query) => {
+      const res = await durableRuntime.queryReceipts(identityId, query);
+      return ok(res);
+    },
+
+    subscribeSseEvents: (handler: (payload: NotificationSseDeliveryEvent) => void) => {
+      const sseAdapter = durableRuntime.getSseAdapter();
+      return sseAdapter.subscribe(handler);
+    },
   };
 
   return {
@@ -211,6 +251,7 @@ export function createNotificationModule(
     templateRepository,
     useCases,
     api,
+    durableRuntime,
     start(): void {
       if (started) {
         return;

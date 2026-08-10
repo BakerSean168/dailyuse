@@ -25,6 +25,7 @@ export const NotificationChannelType = {
   InApp: 'InApp' as NotificationChannelType,
   Email: 'Email' as NotificationChannelType,
   Push: 'Push' as NotificationChannelType,
+  Desktop: 'Desktop' as NotificationChannelType,
   Sms: 'Sms' as NotificationChannelType,
   Webhook: 'Webhook' as NotificationChannelType,
 
@@ -55,7 +56,9 @@ export const NotificationChannelType = {
    * 判断是否为实时渠道（立即投递）
    */
   isRealtime(value: NotificationChannelType): boolean {
-    return value === 'InApp' || value === 'Push' || value === 'Sms';
+    // Desktop is realtime per architecture decision A: delivered immediately by the
+    // desktop durable worker through the Electron transport (native notification).
+    return value === 'InApp' || value === 'Push' || value === 'Sms' || value === 'Desktop';
   },
 
   /**

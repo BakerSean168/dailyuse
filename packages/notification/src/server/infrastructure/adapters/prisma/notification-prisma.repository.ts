@@ -16,6 +16,11 @@ import {
   type PrismaNotificationWithRelations,
 } from './mappers/notification-prisma.mapper';
 
+import {
+  NotificationOutboxDispatchInputSchema,
+  type NotificationOutboxDispatchInput,
+} from '@memoflow/contracts/reliable-messaging';
+
 const notificationEventPublisher = createTypedEventPublisher<NotificationEventMap>(eventBus);
 
 // ============================================================
@@ -35,9 +40,15 @@ const INCLUDE_CHANNELS = {
  * Notification Prisma Repository
  */
 export class NotificationPrismaRepository implements INotificationRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly metricsService?: import('../../../domain/services/notification-metrics-service').NotificationMetricsService,
+  ) {}
 
-  async save(notification: Notification): Promise<void> {
+  async save(
+    notification: Notification,
+    outboxDispatches?: NotificationOutboxDispatchInput[],
+  ): Promise<void> {
     const dto = notification.toServerDTO();
 
     await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -127,6 +138,46 @@ export class NotificationPrismaRepository implements INotificationRepository {
               response: channel.response ? JSON.stringify(channel.response) : null,
             },
           });
+        }
+      }
+
+      // 3. Save NotificationDispatchOutbox entries in the same transaction
+      if (outboxDispatches && outboxDispatches.length > 0) {
+        let insertedCount = 0;
+        const now = new Date();
+        for (const outboxInput of outboxDispatches) {
+          const validatedInput = NotificationOutboxDispatchInputSchema.parse(outboxInput);
+          const existing = await tx.notificationDispatchOutbox.findUnique({
+            where: { idempotencyKey: validatedInput.idempotencyKey },
+          });
+
+          if (!existing) {
+            // The aggregate being saved IS the notificationId: never parse the
+            // occurrenceKey (W1 occurrenceKeys are `${templateId}:${time}`).
+            const notificationId = String(dto.id);
+
+            await tx.notificationDispatchOutbox.create({
+              data: {
+                id: validatedInput.operationId,
+                identityId: validatedInput.identityId,
+                notificationId,
+                source: validatedInput.source,
+                occurrenceKey: validatedInput.occurrenceKey,
+                channel: validatedInput.channel,
+                payloadJson: validatedInput.payloadJson,
+                idempotencyKey: validatedInput.idempotencyKey,
+                status: 'pending',
+                attempt: 0,
+                fencingToken: 0,
+                createdAt: now,
+                updatedAt: now,
+              },
+            });
+            insertedCount++;
+          }
+        }
+        if (insertedCount > 0 && this.metricsService) {
+          this.metricsService.recordPersisted(insertedCount);
         }
       }
     });

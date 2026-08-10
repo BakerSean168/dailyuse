@@ -96,6 +96,7 @@ model Account {
   reminderOccurrences            ReminderOccurrence[]            @relation("AccountReminderOccurrences")
   notificationChannels           NotificationChannel[]           @relation("AccountNotificationChannels")
   notificationHistory            NotificationHistory[]           @relation("AccountNotificationHistory")
+  notificationDispatchOutboxes   NotificationDispatchOutbox[]    @relation("AccountNotificationDispatchOutboxes")
   aiMessages                     AiMessage[]                     @relation("AccountAiMessages")
   folders                        Folder[]                        @relation("AccountFolders")
   resources                      Resource[]                      @relation("AccountResources")
@@ -1063,9 +1064,10 @@ model Notification {
   deletedAt         DateTime? @map("deleted_at")
   isRead            Boolean   @default(false) @map("is_read")
 
-  channels NotificationChannel[]
-  history  NotificationHistory[]
-  account  Account               @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  channels         NotificationChannel[]
+  history          NotificationHistory[]
+  dispatchOutboxes NotificationDispatchOutbox[]
+  account          Account                      @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@map("notifications")
@@ -1148,6 +1150,43 @@ model NotificationTemplate {
   @@map("notification_templates")
 }
 
+/// NotificationDispatchOutbox 投递意图/Outbox（W2: LeaseClaim 与 durable receipt）
+model NotificationDispatchOutbox {
+  id                  String    @id
+  identityId          String    @map("identity_id")
+  notificationId      String    @map("notification_id")
+  source              String    @default("notification")
+  occurrenceKey       String    @map("occurrence_key")
+  channel             String
+  payloadJson         String    @map("payload_json")
+  idempotencyKey      String    @unique @map("idempotency_key")
+  status              String
+  attempt             Int       @default(0)
+  ownerToken          String?   @map("owner_token")
+  claimId             String?   @map("claim_id")
+  fencingToken        Int       @default(0) @map("fencing_token")
+  leaseExpiresAt      DateTime? @map("lease_expires_at")
+  lastHeartbeatAt     DateTime? @map("last_heartbeat_at")
+  heartbeatIntervalMs Int?      @map("heartbeat_interval_ms")
+  lastError           String?   @map("last_error")
+  nextRetryAt         DateTime? @map("next_retry_at")
+  deadLetterAt        DateTime? @map("dead_letter_at")
+  correlationId       String?   @map("correlation_id")
+  causationId         String?   @map("causation_id")
+  attemptsHistoryJson String?   @map("attempts_history_json")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  finishedAt          DateTime? @map("finished_at")
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  account      Account      @relation("AccountNotificationDispatchOutboxes", fields: [identityId], references: [id])
+
+  @@index([identityId])
+  @@index([status])
+  @@index([leaseExpiresAt])
+  @@map("notification_dispatch_outbox")
+}
+
 // ==========================================
 // Relation Module (R5)
 // 跨模块 SubjectRef 关系：Note/Goal/Task/Reminder/Habit 双向连接
@@ -1194,6 +1233,10 @@ model OutboxMessage {
   lastError      String?   @map("last_error")
   dispatchedAt   DateTime? @map("dispatched_at")
   createdAt      DateTime  @default(now()) @map("created_at")
+  ownerToken     String?
+  claimId        String?
+  fencingToken   Int?
+  leaseExpiresAt DateTime? @map("lease_expires_at")
 
   @@index([status, availableAt])
   @@index([correlationId])

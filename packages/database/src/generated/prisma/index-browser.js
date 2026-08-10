@@ -741,6 +741,34 @@ exports.Prisma.NotificationTemplateScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.NotificationDispatchOutboxScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  notificationId: 'notificationId',
+  source: 'source',
+  occurrenceKey: 'occurrenceKey',
+  channel: 'channel',
+  payloadJson: 'payloadJson',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  attempt: 'attempt',
+  ownerToken: 'ownerToken',
+  claimId: 'claimId',
+  fencingToken: 'fencingToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastHeartbeatAt: 'lastHeartbeatAt',
+  heartbeatIntervalMs: 'heartbeatIntervalMs',
+  lastError: 'lastError',
+  nextRetryAt: 'nextRetryAt',
+  deadLetterAt: 'deadLetterAt',
+  correlationId: 'correlationId',
+  causationId: 'causationId',
+  attemptsHistoryJson: 'attemptsHistoryJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  finishedAt: 'finishedAt'
+};
+
 exports.Prisma.RelationScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -767,7 +795,11 @@ exports.Prisma.OutboxMessageScalarFieldEnum = {
   availableAt: 'availableAt',
   lastError: 'lastError',
   dispatchedAt: 'dispatchedAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  ownerToken: 'ownerToken',
+  claimId: 'claimId',
+  fencingToken: 'fencingToken',
+  leaseExpiresAt: 'leaseExpiresAt'
 };
 
 exports.Prisma.InboxReceiptScalarFieldEnum = {
@@ -1518,6 +1550,7 @@ exports.Prisma.ModelName = {
   NotificationHistory: 'NotificationHistory',
   NotificationPreference: 'NotificationPreference',
   NotificationTemplate: 'NotificationTemplate',
+  NotificationDispatchOutbox: 'NotificationDispatchOutbox',
   Relation: 'Relation',
   OutboxMessage: 'OutboxMessage',
   InboxReceipt: 'InboxReceipt',

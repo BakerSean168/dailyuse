@@ -10,6 +10,7 @@
 
 import type { Notification } from '../aggregates/notification';
 import { NotificationCategory, NotificationStatus } from '@memoflow/contracts/notification';
+import type { NotificationOutboxDispatchInput } from '@memoflow/contracts/reliable-messaging';
 
 /**
  * INotificationRepository 浠撳偍鎺ュ彛
@@ -17,18 +18,16 @@ import { NotificationCategory, NotificationStatus } from '@memoflow/contracts/no
  * 鑱岃矗锛?
  * - 瀹氫箟鎸佷箙鍖栨搷浣滅殑濂戠害
  * - 鑱氬悎鏍规槸鎿嶄綔鐨勫熀鏈崟浣?
- * - 绾ц仈淇濆瓨/鍔犺浇瀛愬疄浣擄紙channels, history锛?
+ * - 绾ц仈淇濆瓨/鍔犺浇瀛愬疄ﻠ擄紙channels, history锛?
  */
 export interface INotificationRepository {
   /**
-   * 淇濆瓨鑱氬悎鏍癸紙鍒涘缓鎴栨洿鏂帮級
-   *
-   * 娉ㄦ剰锛?
-   * - 杩欐槸浜嬪姟鎿嶄綔
-   * - 绾ц仈淇濆瓨鎵€鏈夊瓙瀹炰綋锛坈hannels, history锛?
-   * - 濡傛灉 UUID 宸插瓨鍦ㄥ垯鏇存柊锛屽惁鍒欐彃鍏?
+   * 保存聚合根（创建或更新）以及可选的 Outbox 投递意图（同一事务）
    */
-  save(notification: Notification): Promise<void>;
+  save(
+    notification: Notification,
+    outboxDispatches?: NotificationOutboxDispatchInput[],
+  ): Promise<void>;
 
   /**
    * 鎵归噺淇濆瓨閫氱煡

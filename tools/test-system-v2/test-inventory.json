@@ -6034,6 +6034,16 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/notification/src/api/__tests__/notification-lane-bootstrap.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/notification/src/api/notification-void-success-envelope.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6284,6 +6294,16 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-powersync-durable-worker.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-ownership.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6304,6 +6324,14 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-reliable-operation.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/notification/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-template-ownership.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6315,6 +6343,16 @@
     },
     {
       "path": "packages/notification/src/server/infrastructure/adapters/prisma/mappers/notification-prisma.mapper.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/notification/src/server/infrastructure/runtime/__tests__/notification-durable-dispatch.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/notification/vitest.config.ts"
@@ -9007,14 +9045,21 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 31
+      "fileCount": 34
+    },
+    {
+      "id": "packages/notification/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 1
     },
     {
       "id": "packages/notification/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 31
+      "fileCount": 34
     },
     {
       "id": "packages/patterns/vitest.config.ts",
@@ -9605,6 +9650,7 @@
       "packages/governance/src/server/domain/value-objects/__tests__/governance-rich-value-objects.spec.ts",
       "packages/governance/src/server/domain/value-objects/__tests__/rule-id.spec.ts",
       "packages/governance/src/server/infrastructure/adapters/prisma/__tests__/governance-rule-ownership.surface.spec.ts",
+      "packages/notification/src/api/__tests__/notification-lane-bootstrap.spec.ts",
       "packages/notification/src/api/notification-void-success-envelope.surface.spec.ts",
       "packages/notification/src/api/routes.spec.ts",
       "packages/notification/src/application-client/notification-client-port-dual.surface.spec.ts",
@@ -9630,10 +9676,12 @@
       "packages/notification/src/server/domain/value-objects/__tests__/notification-server-value-objects.spec.ts",
       "packages/notification/src/server/domain/value-objects/__tests__/notification-template-config.spec.ts",
       "packages/notification/src/server/domain/value-objects/__tests__/notification-value-objects.spec.ts",
+      "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-powersync-durable-worker.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-preference-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-template-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/mappers/notification-prisma.mapper.spec.ts",
+      "packages/notification/src/server/infrastructure/runtime/__tests__/notification-durable-dispatch.spec.ts",
       "packages/notification/src/server/infrastructure/runtime/notification.runtime.spec.ts",
       "packages/notification/src/server/transport/notification-usecases-export.surface.spec.ts",
       "packages/reminder/src/api/routes/reminder-group.routes.spec.ts",
@@ -9805,8 +9853,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 836,
-    "integration": 11,
+    "unit": 839,
+    "integration": 12,
     "smoke": 2,
     "boundary-ipc": 9,
     "boundary-main": 5,

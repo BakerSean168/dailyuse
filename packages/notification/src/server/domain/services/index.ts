@@ -24,3 +24,5 @@ export { NotificationDomainService } from './notification-domain-service';
 export { NotificationPolicy } from './notification-policy';
 export { NotificationTemplateDomainService } from './notification-template-domain-service';
 export { NotificationPreferenceDomainService } from './notification-preference-domain-service';
+export { NotificationMetricsService } from './notification-metrics-service';
+

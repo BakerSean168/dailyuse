@@ -21,6 +21,10 @@ model OutboxMessage {
   lastError      String?   @map("last_error")
   dispatchedAt   DateTime? @map("dispatched_at")
   createdAt      DateTime  @default(now()) @map("created_at")
+  ownerToken     String?
+  claimId        String?
+  fencingToken   Int?
+  leaseExpiresAt DateTime? @map("lease_expires_at")
 
   @@index([status, availableAt])
   @@index([correlationId])

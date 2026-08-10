@@ -109,7 +109,12 @@ export class NotificationChannel extends Entity<NotificationChannelId> {
     }
   }
 
+  public setResponse(response: ChannelResponse): void {
+    this._props.response = response;
+  }
+
   public markAsFailed(error: ChannelError): void {
+    this._props.sendAttempts++;
     this._props.status = ChannelStatusType.Failed;
     this._props.error = error;
     this._props.failedAt = new Date();

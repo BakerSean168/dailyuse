@@ -2,7 +2,13 @@ import type { Result } from '@memoflow/contracts/result';
 import type {
   DeleteNotificationsBatchReq,
   MarkAsReadBatchReq,
+  NotificationDispatchDesktopEvent,
+  NotificationDispatchInAppEvent,
 } from '@memoflow/contracts/notification';
+
+export type NotificationSseDeliveryEvent =
+  | NotificationDispatchInAppEvent
+  | NotificationDispatchDesktopEvent;
 
 export interface NotificationApplicationPort {
   createNotification(data: unknown): Promise<Result<unknown>>;
@@ -28,4 +34,15 @@ export interface NotificationApplicationPort {
   }): Promise<Result<unknown>>;
   getPreferences(identityId: string): Promise<Result<unknown>>;
   updatePreferences(dto: unknown, identityId: string): Promise<Result<unknown>>;
+  queryDeadLetters(identityId: string): Promise<Result<unknown>>;
+  replayDeadLetter(operationId: string, identityId: string): Promise<Result<unknown>>;
+  getDeliveryReceipts(
+    identityId: string,
+    query?: { limit?: number; lastCursor?: string; since?: string; status?: string },
+  ): Promise<Result<unknown>>;
+  /**
+   * Subscribe to real-time delivery events via the SSE port.
+   * Returns an unsubscribe function to be called when the transport connection closes.
+   */
+  subscribeSseEvents(handler: (payload: NotificationSseDeliveryEvent) => void): () => void;
 }
