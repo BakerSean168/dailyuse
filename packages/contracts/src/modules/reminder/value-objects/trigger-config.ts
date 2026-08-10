@@ -10,6 +10,10 @@ import { TriggerType } from './trigger-type';
 
 export const FixedTimeTriggerSchema = z.object({
   time: z.string(),
+  /**
+   * 固定时间触发的时区标识 (IANA 名称或 'UTC')。
+   * 若为 null，表示显式默认时区 'UTC'（绝不依赖宿主进程/服务器本地时区或隐式 fallback）。
+   */
   timezone: z.string().nullable(),
 });
 

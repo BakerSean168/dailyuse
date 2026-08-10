@@ -82,6 +82,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     limit?: number;
     importanceLevel?: string;
     type?: string;
+    timezone?: string;
   }): Promise<Result<GetUpcomingRemindersRes>> {
     return this.httpClient.get('/reminders/templates/upcoming', { params });
   }
@@ -89,6 +90,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
   async getTodaySchedule(params?: {
     limit?: number;
     includeExpired?: boolean;
+    timezone?: string;
   }): Promise<Result<GetReminderTodayScheduleRes>> {
     return this.httpClient.get('/reminders/templates/today-schedule', { params });
   }

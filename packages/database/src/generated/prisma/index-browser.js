@@ -761,6 +761,7 @@ exports.Prisma.OutboxMessageScalarFieldEnum = {
   correlationId: 'correlationId',
   causationId: 'causationId',
   payloadJson: 'payloadJson',
+  idempotencyKey: 'idempotencyKey',
   status: 'status',
   attempts: 'attempts',
   availableAt: 'availableAt',
@@ -898,6 +899,32 @@ exports.Prisma.UserReminderPreferenceScalarFieldEnum = {
   globalSmartFrequency: 'globalSmartFrequency',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ReminderOccurrenceScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  templateId: 'templateId',
+  source: 'source',
+  occurrenceKey: 'occurrenceKey',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  attempt: 'attempt',
+  ownerToken: 'ownerToken',
+  claimId: 'claimId',
+  fencingToken: 'fencingToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastHeartbeatAt: 'lastHeartbeatAt',
+  heartbeatIntervalMs: 'heartbeatIntervalMs',
+  lastError: 'lastError',
+  nextRetryAt: 'nextRetryAt',
+  deadLetterAt: 'deadLetterAt',
+  correlationId: 'correlationId',
+  causationId: 'causationId',
+  attemptsHistoryJson: 'attemptsHistoryJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  finishedAt: 'finishedAt'
 };
 
 exports.Prisma.RepositoryScalarFieldEnum = {
@@ -1502,6 +1529,7 @@ exports.Prisma.ModelName = {
   ReminderStatistic: 'ReminderStatistic',
   ReminderResponse: 'ReminderResponse',
   UserReminderPreference: 'UserReminderPreference',
+  ReminderOccurrence: 'ReminderOccurrence',
   Repository: 'Repository',
   Folder: 'Folder',
   Resource: 'Resource',

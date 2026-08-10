@@ -3353,6 +3353,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/reminder/composables/useReminderTemplates.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/reminder/presentation/lifecyclePresentation.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3369,6 +3377,14 @@
       "measurementCollectors": [
         "packages/app-vue/vitest.store-coverage.config.ts"
       ]
+    },
+    {
+      "path": "packages/app-vue/src/modules/reminder/utils/user-timezone.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
     },
     {
       "path": "packages/app-vue/src/modules/reminder/views/ReminderLinearView.spec.ts",
@@ -4300,6 +4316,14 @@
     },
     {
       "path": "packages/contracts/src/modules/notification/value-objects/dual-registry.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/modules/reliable-messaging/reliable-messaging-contracts.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/contracts/vitest.config.ts"
@@ -6738,6 +6762,24 @@
       ]
     },
     {
+      "path": "packages/reminder/src/server/infrastructure/adapters/__tests__/account-timezone-adapter.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/reminder/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/reminder/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/reminder/src/server/infrastructure/adapters/prisma/__tests__/reminder-reliable-operation.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/reminder/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/reminder/src/server/infrastructure/adapters/prisma/__tests__/reminder-response-ownership.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8825,7 +8867,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 163
+      "fileCount": 165
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -8853,7 +8895,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 58
+      "fileCount": 59
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -8993,21 +9035,21 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 46
+      "fileCount": 47
     },
     {
       "id": "packages/reminder/vitest.integration.config.ts",
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 1
+      "fileCount": 2
     },
     {
       "id": "packages/reminder/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 46
+      "fileCount": 47
     },
     {
       "id": "packages/reminder/vitest.use-cases.config.ts",
@@ -9631,6 +9673,7 @@
       "packages/reminder/src/server/domain/value-objects/__tests__/reminder-enums.spec.ts",
       "packages/reminder/src/server/domain/value-objects/__tests__/reminder-template-id.spec.ts",
       "packages/reminder/src/server/domain/value-objects/__tests__/reminder-value-objects.spec.ts",
+      "packages/reminder/src/server/infrastructure/adapters/__tests__/account-timezone-adapter.spec.ts",
       "packages/reminder/src/server/infrastructure/adapters/prisma/__tests__/reminder-response-ownership.surface.spec.ts",
       "packages/reminder/src/server/infrastructure/adapters/prisma/__tests__/reminder-template-ownership.surface.spec.ts",
       "packages/reminder/src/server/infrastructure/adapters/prisma/mappers/prisma-reminder-group-mapper.spec.ts",
@@ -9762,8 +9805,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 832,
-    "integration": 10,
+    "unit": 836,
+    "integration": 11,
     "smoke": 2,
     "boundary-ipc": 9,
     "boundary-main": 5,

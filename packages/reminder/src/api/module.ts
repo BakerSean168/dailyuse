@@ -17,9 +17,11 @@ import type { PrismaClient } from '@memoflow/database';
 import type { ServerModuleContext } from '@memoflow/contracts/shared';
 import {
   createReminderPrismaModule,
+  createReminderPrismaRepositories,
   createReminderRuntimeContribution,
   type ReminderModuleInstance,
 } from '../server/infrastructure';
+import { createReminderTriggerCronJob } from '../server/infrastructure/cron/reminder-trigger-cron-job';
 import { registerReminderRoutes } from './routes';
 
 /**
@@ -42,8 +44,20 @@ export const ReminderApiModule: ReminderApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
+    const repositories = createReminderPrismaRepositories(db);
+    const cronJob = createReminderTriggerCronJob({
+      reminderTemplateRepository: repositories.reminderTemplateRepository,
+      reminderGroupRepository: repositories.reminderGroupRepository,
+      reliablePort: repositories.reliablePort,
+      transactionRunner: repositories.transactionRunner,
+    });
+
+    const runtimeContribution = createReminderRuntimeContribution({
+      cronContribution: cronJob,
+    });
+
     const reminderModule = createReminderPrismaModule(db, {
-      runtimeContributions: createReminderRuntimeContribution(),
+      runtimeContributions: runtimeContribution,
     });
     activeReminderModule = reminderModule;
     reminderModule.start();
@@ -58,8 +72,10 @@ export const ReminderApiModule: ReminderApiModuleDef = {
     router.use('/reminders', reminderRoutes);
   },
 
-  destroy() {
-    activeReminderModule?.dispose();
-    activeReminderModule = null;
+  async destroy() {
+    if (activeReminderModule) {
+      await activeReminderModule.dispose();
+      activeReminderModule = null;
+    }
   },
 };

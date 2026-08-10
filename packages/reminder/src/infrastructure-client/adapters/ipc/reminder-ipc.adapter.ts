@@ -84,6 +84,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     limit?: number;
     importanceLevel?: string;
     type?: string;
+    timezone?: string;
   }): Promise<Result<GetUpcomingRemindersRes>> {
     return this.ipcClient.invoke(ReminderChannels.UPCOMING_GET, params);
   }
@@ -91,6 +92,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
   async getTodaySchedule(params?: {
     limit?: number;
     includeExpired?: boolean;
+    timezone?: string;
   }): Promise<Result<GetReminderTodayScheduleRes>> {
     return this.ipcClient.invoke(ReminderChannels.TODAY_SCHEDULE_GET, params);
   }

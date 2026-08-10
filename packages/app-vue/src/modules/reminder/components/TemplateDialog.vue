@@ -357,6 +357,7 @@ import type {
 import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 import { ColorPickerField } from '../../../shared/components';
 import { defaultNamedColor } from '../../../shared/constants/color-palette';
+import { getUserTimezone } from '../utils/user-timezone';
 
 const { t } = useI18n();
 
@@ -504,11 +505,13 @@ const handleVisibleChange = (value: boolean) => {
 // ── Build payload ──────────────────────────────────────────────────────
 
 function buildPayload(): CreateReminderTemplateReq {
+  const userTz = getUserTimezone();
+
   const trigger: CreateReminderTemplateReq['trigger'] =
     formData.triggerType === 'FixedTime'
       ? {
           type: 'FixedTime',
-          fixedTime: { time: formData.fixedTime, timezone: null },
+          fixedTime: { time: formData.fixedTime, timezone: userTz },
           interval: null,
         }
       : {
@@ -536,7 +539,7 @@ function buildPayload(): CreateReminderTemplateReq {
       ? {
           startHour: formData.activeStartHour,
           endHour: formData.activeEndHour,
-          timezone: null,
+          timezone: userTz,
         }
       : undefined;
 

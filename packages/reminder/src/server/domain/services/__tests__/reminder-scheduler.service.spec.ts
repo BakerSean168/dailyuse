@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TriggerResult } from '@memoflow/contracts/reminder';
 import { ReminderSchedulerService } from '../reminder-scheduler-service';
+import { ReminderMetricsCollector } from '../reminder-metrics-service';
 
 function createStubTemplate(id: string, title: string, nextTriggerAt: number | null) {
   return {
     id,
     title,
+    identityId: 'user-1',
     getNextTriggerTime: vi.fn().mockReturnValue(nextTriggerAt),
     calculateNextTrigger: vi.fn().mockReturnValue(nextTriggerAt === null ? null : nextTriggerAt + 1_000),
   } as any;
@@ -17,17 +19,54 @@ describe('ReminderSchedulerService', () => {
     findByNextTriggerBefore: vi.fn(),
     save: vi.fn(),
   } as any;
+
   const triggerService = {
     getPendingReminders: vi.fn(),
     triggerRemindersBatch: vi.fn(),
     recordTriggerSkipped: vi.fn(),
   } as any;
 
+  const reliablePort = {
+    claimOccurrence: vi.fn(),
+    heartbeatLease: vi.fn(),
+    recordDeliveryIntent: vi.fn(),
+  } as any;
+
+  const transactionRunner = {
+    executeClaimedOccurrenceTransaction: vi.fn(),
+  } as any;
+
+  const controlService = {
+    isTemplateEffectivelyEnabled: vi.fn().mockResolvedValue(true),
+  } as any;
+
+  let metricsCollector: ReminderMetricsCollector;
   let service: ReminderSchedulerService;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new ReminderSchedulerService(templateRepository, triggerService);
+    metricsCollector = new ReminderMetricsCollector();
+    service = new ReminderSchedulerService(
+      templateRepository,
+      triggerService,
+      reliablePort,
+      transactionRunner,
+      controlService,
+      metricsCollector,
+    );
+  });
+
+  it('fails fast on missing mandatory reliable dependencies', () => {
+    expect(
+      () =>
+        new ReminderSchedulerService(
+          templateRepository,
+          triggerService,
+          null as any,
+          null as any,
+          null as any,
+        ),
+    ).toThrow('[REMINDER_SCHEDULER] Mandatory dependencies missing');
   });
 
   it('returns an empty result when no pending reminders are found', async () => {
@@ -45,34 +84,100 @@ describe('ReminderSchedulerService', () => {
     });
   });
 
-  it('chunks scheduling work by concurrency and counts outcomes', async () => {
+  it('chunks scheduling work by concurrency and processes through reliable path', async () => {
     const templates = [
       createStubTemplate('1', 'one', 1),
       createStubTemplate('2', 'two', 2),
       createStubTemplate('3', 'three', 3),
       createStubTemplate('4', 'four', 4),
-      createStubTemplate('5', 'five', 5),
     ];
 
     triggerService.getPendingReminders.mockResolvedValue(templates);
-    triggerService.triggerRemindersBatch
-      .mockResolvedValueOnce([
-        { ok: true, result: TriggerResult.Success, triggerTime: 1, nextTriggerTime: 2, message: 'ok' },
-        { ok: false, result: TriggerResult.Failed, triggerTime: 1, nextTriggerTime: null, message: 'fail' },
-      ])
-      .mockResolvedValueOnce([
-        { ok: false, result: TriggerResult.Skipped, triggerTime: 1, nextTriggerTime: 2, message: 'skip' },
-        { ok: true, result: TriggerResult.Success, triggerTime: 1, nextTriggerTime: 2, message: 'ok' },
-      ]);
+
+    reliablePort.claimOccurrence.mockImplementation(({ templateId }: any) => ({
+      claimed: true,
+      lease: { fencingToken: 1, claimId: `claim-${templateId}`, ownerToken: 'owner-1' },
+      receipt: { operationId: `op-${templateId}`, status: 'running', attempt: 1 },
+    }));
+
+    transactionRunner.executeClaimedOccurrenceTransaction
+      .mockResolvedValueOnce({ status: 'succeeded', operationId: 'op-1' })
+      .mockRejectedValueOnce(new Error('Trigger error'))
+      .mockResolvedValueOnce({ status: 'skipped', operationId: 'op-3' })
+      .mockResolvedValueOnce({ status: 'succeeded', operationId: 'op-4' });
 
     const result = await service.schedule({ beforeTime: 200, maxCount: 4, concurrency: 2 });
 
     expect(triggerService.getPendingReminders).toHaveBeenCalledWith(200, undefined);
-    expect(triggerService.triggerRemindersBatch).toHaveBeenCalledTimes(2);
+    expect(reliablePort.claimOccurrence).toHaveBeenCalledTimes(4);
+    expect(transactionRunner.executeClaimedOccurrenceTransaction).toHaveBeenCalledTimes(4);
     expect(result.successCount).toBe(2);
     expect(result.failedCount).toBe(1);
     expect(result.skippedCount).toBe(1);
     expect(result.totalCount).toBe(4);
+  });
+
+  it('correctly transitions status from retryable to dead_letter upon max retries with metrics calls', async () => {
+    const sampleReceipt = {
+      schemaVersion: 1,
+      operationId: 'op-fail',
+      identityId: 'user-1',
+      source: 'reminder',
+      occurrenceKey: '2026-08-09T10:00:00.000Z',
+      idempotencyKey: 'rem:user-1:2026-08-09T10:00:00.000Z',
+      status: 'running',
+      attempt: 1,
+      lease: null,
+      lastError: null,
+      nextRetryAt: null,
+      deadLetterAt: null,
+      correlationId: null,
+      causationId: null,
+      attemptsHistory: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      finishedAt: null,
+    } as any;
+
+    // Attempt 1 -> retryable
+    await service.recordOccurrenceFailure({
+      receipt: { ...sampleReceipt, attempt: 1 },
+      error: new Error('Network timeout'),
+      maxRetries: 3,
+    });
+
+    let snapshot = metricsCollector.getSnapshot();
+    expect(snapshot.failedTotal).toBe(1);
+    expect(snapshot.retryTotal).toBe(1);
+    expect(snapshot.deadLetterTotal).toBe(0);
+
+    expect(reliablePort.recordDeliveryIntent).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        status: 'retryable',
+        nextRetryAt: expect.any(String),
+        deadLetterAt: null,
+      }),
+    );
+
+    // Attempt 3 -> dead_letter
+    await service.recordOccurrenceFailure({
+      receipt: { ...sampleReceipt, attempt: 3 },
+      error: new Error('Persistent failure'),
+      maxRetries: 3,
+    });
+
+    snapshot = metricsCollector.getSnapshot();
+    expect(snapshot.failedTotal).toBe(2);
+    expect(snapshot.retryTotal).toBe(1);
+    expect(snapshot.deadLetterTotal).toBe(1);
+
+    expect(reliablePort.recordDeliveryIntent).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        status: 'dead_letter',
+        nextRetryAt: null,
+        deadLetterAt: expect.any(String),
+      }),
+    );
   });
 
   it('recalculates next trigger times and saves only changed templates', async () => {

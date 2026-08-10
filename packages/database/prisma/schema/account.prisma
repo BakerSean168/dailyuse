@@ -76,6 +76,7 @@ model Account {
   scheduleExecutions             ScheduleExecution[]             @relation("AccountScheduleExecutions")
   reminderHistory                ReminderHistory[]               @relation("AccountReminderHistory")
   reminderResponses              ReminderResponse[]              @relation("AccountReminderResponses")
+  reminderOccurrences            ReminderOccurrence[]            @relation("AccountReminderOccurrences")
   notificationChannels           NotificationChannel[]           @relation("AccountNotificationChannels")
   notificationHistory            NotificationHistory[]           @relation("AccountNotificationHistory")
   aiMessages                     AiMessage[]                     @relation("AccountAiMessages")

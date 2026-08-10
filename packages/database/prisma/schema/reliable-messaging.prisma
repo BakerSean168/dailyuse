@@ -7,19 +7,20 @@
 /// Outbox 消息：跨模块写入与投递意图的 durable 队列。
 /// AggregateRepositoryBase 发布事件失败时落入此表，由 dispatcher 重试投递。
 model OutboxMessage {
-  id            String    @id
-  identityId    String?   @map("identity_id")
-  messageType   String    @map("message_type")
-  schemaVersion Int       @default(1) @map("schema_version")
-  correlationId String    @map("correlation_id")
-  causationId   String?   @map("causation_id")
-  payloadJson   String    @map("payload_json")
-  status        String    @default("pending")
-  attempts      Int       @default(0)
-  availableAt   DateTime  @default(now()) @map("available_at")
-  lastError     String?   @map("last_error")
-  dispatchedAt  DateTime? @map("dispatched_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id             String    @id
+  identityId     String?   @map("identity_id")
+  messageType    String    @map("message_type")
+  schemaVersion  Int       @default(1) @map("schema_version")
+  correlationId  String    @map("correlation_id")
+  causationId    String?   @map("causation_id")
+  payloadJson    String    @map("payload_json")
+  idempotencyKey String?   @unique @map("idempotency_key")
+  status         String    @default("pending")
+  attempts       Int       @default(0)
+  availableAt    DateTime  @default(now()) @map("available_at")
+  lastError      String?   @map("last_error")
+  dispatchedAt   DateTime? @map("dispatched_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   @@index([status, availableAt])
   @@index([correlationId])

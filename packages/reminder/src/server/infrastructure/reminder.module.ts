@@ -38,6 +38,7 @@ export interface ReminderModuleDependencies {
   readonly reminderGroupRepository: IReminderGroupRepository;
   readonly reminderResponseRepository: IReminderResponseRepository;
   readonly userReminderPreferenceRepository: IUserReminderPreferenceRepository;
+  readonly accountTimezonePort?: import('../domain/ports/account-timezone.port').AccountTimezonePort;
   readonly runtimeContributions?: ReminderRuntimeContributionsInput;
   /** R3c：snooze 副作用（可选）——推迟提醒的下次触发。 */
   readonly snoozeRescheduler?: import('../application/use-cases/commands/record-reminder-response.use-case').ReminderSnoozeRescheduler;
@@ -46,6 +47,7 @@ export interface ReminderModuleDependencies {
 export interface ReminderModuleRuntimeContribution {
   start(): void | Promise<void>;
   stop(): void | Promise<void>;
+  execute?(): Promise<void>;
 }
 
 export interface ReminderModuleInstance {
@@ -183,6 +185,7 @@ export function createReminderModule(
   });
   const reminderScheduleQueryApplicationService = new ReminderScheduleQueryApplicationService({
     reminderTemplateRepository,
+    accountTimezonePort: dependencies.accountTimezonePort,
   });
   const reminderTemplateActionApplicationService = new ReminderTemplateActionApplicationService({
     reminderTemplateRepository,

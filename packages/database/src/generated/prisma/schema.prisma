@@ -93,6 +93,7 @@ model Account {
   scheduleExecutions             ScheduleExecution[]             @relation("AccountScheduleExecutions")
   reminderHistory                ReminderHistory[]               @relation("AccountReminderHistory")
   reminderResponses              ReminderResponse[]              @relation("AccountReminderResponses")
+  reminderOccurrences            ReminderOccurrence[]            @relation("AccountReminderOccurrences")
   notificationChannels           NotificationChannel[]           @relation("AccountNotificationChannels")
   notificationHistory            NotificationHistory[]           @relation("AccountNotificationHistory")
   aiMessages                     AiMessage[]                     @relation("AccountAiMessages")
@@ -1179,19 +1180,20 @@ model Relation {
 /// Outbox 消息：跨模块写入与投递意图的 durable 队列。
 /// AggregateRepositoryBase 发布事件失败时落入此表，由 dispatcher 重试投递。
 model OutboxMessage {
-  id            String    @id
-  identityId    String?   @map("identity_id")
-  messageType   String    @map("message_type")
-  schemaVersion Int       @default(1) @map("schema_version")
-  correlationId String    @map("correlation_id")
-  causationId   String?   @map("causation_id")
-  payloadJson   String    @map("payload_json")
-  status        String    @default("pending")
-  attempts      Int       @default(0)
-  availableAt   DateTime  @default(now()) @map("available_at")
-  lastError     String?   @map("last_error")
-  dispatchedAt  DateTime? @map("dispatched_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id             String    @id
+  identityId     String?   @map("identity_id")
+  messageType    String    @map("message_type")
+  schemaVersion  Int       @default(1) @map("schema_version")
+  correlationId  String    @map("correlation_id")
+  causationId    String?   @map("causation_id")
+  payloadJson    String    @map("payload_json")
+  idempotencyKey String?   @unique @map("idempotency_key")
+  status         String    @default("pending")
+  attempts       Int       @default(0)
+  availableAt    DateTime  @default(now()) @map("available_at")
+  lastError      String?   @map("last_error")
+  dispatchedAt   DateTime? @map("dispatched_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   @@index([status, availableAt])
   @@index([correlationId])
@@ -1273,11 +1275,12 @@ model ReminderTemplate {
   userConfirmed         Boolean   @default(false) @map("user_confirmed")
   smartFrequencyEnabled Boolean   @default(true) @map("smart_frequency_enabled")
 
-  history   ReminderHistory[]
-  instances ReminderInstance[]
-  responses ReminderResponse[]
-  account   Account            @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  group     ReminderGroup?     @relation(fields: [reminderGroupId], references: [id])
+  history     ReminderHistory[]
+  instances   ReminderInstance[]
+  responses   ReminderResponse[]
+  occurrences ReminderOccurrence[]
+  account     Account              @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  group       ReminderGroup?       @relation(fields: [reminderGroupId], references: [id])
 
   @@index([status])
   @@map("reminder_templates")
@@ -1402,6 +1405,42 @@ model UserReminderPreference {
   // ============ 索引优化 ============
   @@index([identityId])
   @@map("user_reminder_preferences")
+}
+
+/// ReminderOccurrence 触发实例/投递意图（W1: LeaseClaim 与 durable receipt）
+model ReminderOccurrence {
+  id                  String    @id
+  identityId          String    @map("identity_id")
+  templateId          String    @map("template_id")
+  source              String    @default("reminder")
+  occurrenceKey       String    @map("occurrence_key")
+  idempotencyKey      String    @unique @map("idempotency_key")
+  status              String
+  attempt             Int       @default(0)
+  ownerToken          String?   @map("owner_token")
+  claimId             String?   @map("claim_id")
+  fencingToken        Int       @default(0) @map("fencing_token")
+  leaseExpiresAt      DateTime? @map("lease_expires_at")
+  lastHeartbeatAt     DateTime? @map("last_heartbeat_at")
+  heartbeatIntervalMs Int?      @map("heartbeat_interval_ms")
+  lastError           String?   @map("last_error")
+  nextRetryAt         DateTime? @map("next_retry_at")
+  deadLetterAt        DateTime? @map("dead_letter_at")
+  correlationId       String?   @map("correlation_id")
+  causationId         String?   @map("causation_id")
+  attemptsHistoryJson String?   @map("attempts_history_json")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  finishedAt          DateTime? @map("finished_at")
+
+  template ReminderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  account  Account          @relation("AccountReminderOccurrences", fields: [identityId], references: [id])
+
+  @@unique([templateId, occurrenceKey])
+  @@index([identityId])
+  @@index([status])
+  @@index([leaseExpiresAt])
+  @@map("reminder_occurrences")
 }
 
 // ==========================================

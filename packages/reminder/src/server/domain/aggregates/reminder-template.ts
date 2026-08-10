@@ -580,6 +580,10 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     return this._props.nextTriggerAt;
   }
 
+  public setNextTriggerTime(time: number | null): void {
+    this._props.nextTriggerAt = time;
+  }
+
   public async getGroup(): Promise<unknown | null> {
     // 需要在应用层实现
     return null;

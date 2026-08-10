@@ -19,6 +19,8 @@ import {
   ReminderGroupPrismaRepository,
   ReminderResponsePrismaRepository,
   UserReminderPreferencePrismaRepository,
+  ReminderReliableOperationPrismaAdapter,
+  PrismaReminderWriteTransactionRunner,
 } from './adapters/prisma';
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 import type { ReminderScheduleProjectionSource } from '../../schedule-projection';
@@ -57,6 +59,8 @@ export function createReminderPrismaRepositories(db: PrismaClient) {
     reminderGroupRepository: new ReminderGroupPrismaRepository(db),
     reminderResponseRepository: new ReminderResponsePrismaRepository(db),
     userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(db),
+    reliablePort: new ReminderReliableOperationPrismaAdapter(db),
+    transactionRunner: new PrismaReminderWriteTransactionRunner(db),
   };
 }
 
