@@ -40,12 +40,18 @@ const logger = createLogger('CreateNotificationUseCase');
  */
 export class CreateNotificationUseCase {
   private readonly policy: NotificationPolicy;
+  private readonly closureChecker: (identityId: string) => Promise<boolean>;
 
   constructor(
     private readonly notificationRepository: INotificationRepository,
     private readonly templateRepository: INotificationTemplateRepository,
     private readonly preferenceRepository: INotificationPreferenceRepository,
+    closureChecker?: (identityId: string) => Promise<boolean>,
   ) {
+    if (!closureChecker) {
+      throw new Error('[FAIL-CLOSED] CreateNotificationUseCase requires closureChecker');
+    }
+    this.closureChecker = closureChecker;
     this.policy = new NotificationPolicy();
   }
 
@@ -62,6 +68,9 @@ export class CreateNotificationUseCase {
     channels?: NotificationChannelType[];
     expiresAt?: number | null;
   }): Promise<Result<NotificationClientDTO>> {
+    if (await this.closureChecker(params.identityId)) {
+      return error('FORBIDDEN', 'Account is closed or closure in progress');
+    }
     logger.info('📬 [应用服务] 接收创建通知请求', {
       identityId: params.identityId,
       title: params.title,

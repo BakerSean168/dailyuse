@@ -253,6 +253,11 @@ export type InboxReceipt = $Result.DefaultSelection<Prisma.$InboxReceiptPayload>
  */
 export type ProjectionCursor = $Result.DefaultSelection<Prisma.$ProjectionCursorPayload>
 /**
+ * Model AccountClosureOperation
+ * 闭户操作表：记录账户注销 saga 的状态、幂等键与恢复点。
+ */
+export type AccountClosureOperation = $Result.DefaultSelection<Prisma.$AccountClosureOperationPayload>
+/**
  * Model ReminderTemplate
  * 
  */
@@ -1031,6 +1036,16 @@ export class PrismaClient<
     * ```
     */
   get projectionCursor(): Prisma.ProjectionCursorDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.accountClosureOperation`: Exposes CRUD operations for the **AccountClosureOperation** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AccountClosureOperations
+    * const accountClosureOperations = await prisma.accountClosureOperation.findMany()
+    * ```
+    */
+  get accountClosureOperation(): Prisma.AccountClosureOperationDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.reminderTemplate`: Exposes CRUD operations for the **ReminderTemplate** model.
@@ -1891,6 +1906,7 @@ export namespace Prisma {
     OutboxMessage: 'OutboxMessage',
     InboxReceipt: 'InboxReceipt',
     ProjectionCursor: 'ProjectionCursor',
+    AccountClosureOperation: 'AccountClosureOperation',
     ReminderTemplate: 'ReminderTemplate',
     ReminderGroup: 'ReminderGroup',
     ReminderInstance: 'ReminderInstance',
@@ -1944,7 +1960,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "agentRunCheckpoint" | "langGraphCheckpoint" | "langGraphCheckpointWrite" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
+      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "agentRunCheckpoint" | "langGraphCheckpoint" | "langGraphCheckpointWrite" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -5352,6 +5368,80 @@ export namespace Prisma {
           }
         }
       }
+      AccountClosureOperation: {
+        payload: Prisma.$AccountClosureOperationPayload<ExtArgs>
+        fields: Prisma.AccountClosureOperationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AccountClosureOperationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AccountClosureOperationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>
+          }
+          findFirst: {
+            args: Prisma.AccountClosureOperationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AccountClosureOperationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>
+          }
+          findMany: {
+            args: Prisma.AccountClosureOperationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>[]
+          }
+          create: {
+            args: Prisma.AccountClosureOperationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>
+          }
+          createMany: {
+            args: Prisma.AccountClosureOperationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AccountClosureOperationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>[]
+          }
+          delete: {
+            args: Prisma.AccountClosureOperationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>
+          }
+          update: {
+            args: Prisma.AccountClosureOperationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>
+          }
+          deleteMany: {
+            args: Prisma.AccountClosureOperationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AccountClosureOperationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AccountClosureOperationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>[]
+          }
+          upsert: {
+            args: Prisma.AccountClosureOperationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountClosureOperationPayload>
+          }
+          aggregate: {
+            args: Prisma.AccountClosureOperationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAccountClosureOperation>
+          }
+          groupBy: {
+            args: Prisma.AccountClosureOperationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AccountClosureOperationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AccountClosureOperationCountArgs<ExtArgs>
+            result: $Utils.Optional<AccountClosureOperationCountAggregateOutputType> | number
+          }
+        }
+      }
       ReminderTemplate: {
         payload: Prisma.$ReminderTemplatePayload<ExtArgs>
         fields: Prisma.ReminderTemplateFieldRefs
@@ -8318,6 +8408,7 @@ export namespace Prisma {
     outboxMessage?: OutboxMessageOmit
     inboxReceipt?: InboxReceiptOmit
     projectionCursor?: ProjectionCursorOmit
+    accountClosureOperation?: AccountClosureOperationOmit
     reminderTemplate?: ReminderTemplateOmit
     reminderGroup?: ReminderGroupOmit
     reminderInstance?: ReminderInstanceOmit
@@ -26675,6 +26766,8 @@ export namespace Prisma {
     email: string | null
     emailVerified: boolean | null
     image: string | null
+    status: string | null
+    disabledAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -26685,6 +26778,8 @@ export namespace Prisma {
     email: string | null
     emailVerified: boolean | null
     image: string | null
+    status: string | null
+    disabledAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -26695,6 +26790,8 @@ export namespace Prisma {
     email: number
     emailVerified: number
     image: number
+    status: number
+    disabledAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -26707,6 +26804,8 @@ export namespace Prisma {
     email?: true
     emailVerified?: true
     image?: true
+    status?: true
+    disabledAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -26717,6 +26816,8 @@ export namespace Prisma {
     email?: true
     emailVerified?: true
     image?: true
+    status?: true
+    disabledAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -26727,6 +26828,8 @@ export namespace Prisma {
     email?: true
     emailVerified?: true
     image?: true
+    status?: true
+    disabledAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -26810,6 +26913,8 @@ export namespace Prisma {
     email: string
     emailVerified: boolean
     image: string | null
+    status: string
+    disabledAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: CloudAuthUserCountAggregateOutputType | null
@@ -26837,6 +26942,8 @@ export namespace Prisma {
     email?: boolean
     emailVerified?: boolean
     image?: boolean
+    status?: boolean
+    disabledAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     sessions?: boolean | CloudAuthUser$sessionsArgs<ExtArgs>
@@ -26852,6 +26959,8 @@ export namespace Prisma {
     email?: boolean
     emailVerified?: boolean
     image?: boolean
+    status?: boolean
+    disabledAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["cloudAuthUser"]>
@@ -26862,6 +26971,8 @@ export namespace Prisma {
     email?: boolean
     emailVerified?: boolean
     image?: boolean
+    status?: boolean
+    disabledAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["cloudAuthUser"]>
@@ -26872,11 +26983,13 @@ export namespace Prisma {
     email?: boolean
     emailVerified?: boolean
     image?: boolean
+    status?: boolean
+    disabledAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type CloudAuthUserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "createdAt" | "updatedAt", ExtArgs["result"]["cloudAuthUser"]>
+  export type CloudAuthUserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "status" | "disabledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["cloudAuthUser"]>
   export type CloudAuthUserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sessions?: boolean | CloudAuthUser$sessionsArgs<ExtArgs>
     providerAccounts?: boolean | CloudAuthUser$providerAccountsArgs<ExtArgs>
@@ -26901,6 +27014,8 @@ export namespace Prisma {
       email: string
       emailVerified: boolean
       image: string | null
+      status: string
+      disabledAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["cloudAuthUser"]>
@@ -27335,6 +27450,8 @@ export namespace Prisma {
     readonly email: FieldRef<"CloudAuthUser", 'String'>
     readonly emailVerified: FieldRef<"CloudAuthUser", 'Boolean'>
     readonly image: FieldRef<"CloudAuthUser", 'String'>
+    readonly status: FieldRef<"CloudAuthUser", 'String'>
+    readonly disabledAt: FieldRef<"CloudAuthUser", 'DateTime'>
     readonly createdAt: FieldRef<"CloudAuthUser", 'DateTime'>
     readonly updatedAt: FieldRef<"CloudAuthUser", 'DateTime'>
   }
@@ -63033,6 +63150,7 @@ export namespace Prisma {
     claimId: string | null
     fencingToken: number | null
     leaseExpiresAt: Date | null
+    lastHeartbeatAt: Date | null
   }
 
   export type OutboxMessageMaxAggregateOutputType = {
@@ -63054,6 +63172,7 @@ export namespace Prisma {
     claimId: string | null
     fencingToken: number | null
     leaseExpiresAt: Date | null
+    lastHeartbeatAt: Date | null
   }
 
   export type OutboxMessageCountAggregateOutputType = {
@@ -63075,6 +63194,7 @@ export namespace Prisma {
     claimId: number
     fencingToken: number
     leaseExpiresAt: number
+    lastHeartbeatAt: number
     _all: number
   }
 
@@ -63110,6 +63230,7 @@ export namespace Prisma {
     claimId?: true
     fencingToken?: true
     leaseExpiresAt?: true
+    lastHeartbeatAt?: true
   }
 
   export type OutboxMessageMaxAggregateInputType = {
@@ -63131,6 +63252,7 @@ export namespace Prisma {
     claimId?: true
     fencingToken?: true
     leaseExpiresAt?: true
+    lastHeartbeatAt?: true
   }
 
   export type OutboxMessageCountAggregateInputType = {
@@ -63152,6 +63274,7 @@ export namespace Prisma {
     claimId?: true
     fencingToken?: true
     leaseExpiresAt?: true
+    lastHeartbeatAt?: true
     _all?: true
   }
 
@@ -63260,6 +63383,7 @@ export namespace Prisma {
     claimId: string | null
     fencingToken: number | null
     leaseExpiresAt: Date | null
+    lastHeartbeatAt: Date | null
     _count: OutboxMessageCountAggregateOutputType | null
     _avg: OutboxMessageAvgAggregateOutputType | null
     _sum: OutboxMessageSumAggregateOutputType | null
@@ -63300,6 +63424,7 @@ export namespace Prisma {
     claimId?: boolean
     fencingToken?: boolean
     leaseExpiresAt?: boolean
+    lastHeartbeatAt?: boolean
   }, ExtArgs["result"]["outboxMessage"]>
 
   export type OutboxMessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -63321,6 +63446,7 @@ export namespace Prisma {
     claimId?: boolean
     fencingToken?: boolean
     leaseExpiresAt?: boolean
+    lastHeartbeatAt?: boolean
   }, ExtArgs["result"]["outboxMessage"]>
 
   export type OutboxMessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -63342,6 +63468,7 @@ export namespace Prisma {
     claimId?: boolean
     fencingToken?: boolean
     leaseExpiresAt?: boolean
+    lastHeartbeatAt?: boolean
   }, ExtArgs["result"]["outboxMessage"]>
 
   export type OutboxMessageSelectScalar = {
@@ -63363,9 +63490,10 @@ export namespace Prisma {
     claimId?: boolean
     fencingToken?: boolean
     leaseExpiresAt?: boolean
+    lastHeartbeatAt?: boolean
   }
 
-  export type OutboxMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "messageType" | "schemaVersion" | "correlationId" | "causationId" | "payloadJson" | "idempotencyKey" | "status" | "attempts" | "availableAt" | "lastError" | "dispatchedAt" | "createdAt" | "ownerToken" | "claimId" | "fencingToken" | "leaseExpiresAt", ExtArgs["result"]["outboxMessage"]>
+  export type OutboxMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "messageType" | "schemaVersion" | "correlationId" | "causationId" | "payloadJson" | "idempotencyKey" | "status" | "attempts" | "availableAt" | "lastError" | "dispatchedAt" | "createdAt" | "ownerToken" | "claimId" | "fencingToken" | "leaseExpiresAt" | "lastHeartbeatAt", ExtArgs["result"]["outboxMessage"]>
 
   export type $OutboxMessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "OutboxMessage"
@@ -63389,6 +63517,7 @@ export namespace Prisma {
       claimId: string | null
       fencingToken: number | null
       leaseExpiresAt: Date | null
+      lastHeartbeatAt: Date | null
     }, ExtArgs["result"]["outboxMessage"]>
     composites: {}
   }
@@ -63830,6 +63959,7 @@ export namespace Prisma {
     readonly claimId: FieldRef<"OutboxMessage", 'String'>
     readonly fencingToken: FieldRef<"OutboxMessage", 'Int'>
     readonly leaseExpiresAt: FieldRef<"OutboxMessage", 'DateTime'>
+    readonly lastHeartbeatAt: FieldRef<"OutboxMessage", 'DateTime'>
   }
     
 
@@ -66245,6 +66375,1269 @@ export namespace Prisma {
      * Omit specific fields from the ProjectionCursor
      */
     omit?: ProjectionCursorOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AccountClosureOperation
+   */
+
+  export type AggregateAccountClosureOperation = {
+    _count: AccountClosureOperationCountAggregateOutputType | null
+    _avg: AccountClosureOperationAvgAggregateOutputType | null
+    _sum: AccountClosureOperationSumAggregateOutputType | null
+    _min: AccountClosureOperationMinAggregateOutputType | null
+    _max: AccountClosureOperationMaxAggregateOutputType | null
+  }
+
+  export type AccountClosureOperationAvgAggregateOutputType = {
+    attempts: number | null
+    version: number | null
+    revokedSessions: number | null
+  }
+
+  export type AccountClosureOperationSumAggregateOutputType = {
+    attempts: number | null
+    version: number | null
+    revokedSessions: number | null
+  }
+
+  export type AccountClosureOperationMinAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    idempotencyKey: string | null
+    phase: string | null
+    status: string | null
+    attempts: number | null
+    version: number | null
+    ownerToken: string | null
+    leaseExpiresAt: Date | null
+    lastHeartbeatAt: Date | null
+    nextRetryAt: Date | null
+    deadLetterAt: Date | null
+    eventId: string | null
+    reason: string | null
+    revokedSessions: number | null
+    piiCleanupStatus: string | null
+    piiReason: string | null
+    lastError: string | null
+    receiptJson: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    finishedAt: Date | null
+  }
+
+  export type AccountClosureOperationMaxAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    idempotencyKey: string | null
+    phase: string | null
+    status: string | null
+    attempts: number | null
+    version: number | null
+    ownerToken: string | null
+    leaseExpiresAt: Date | null
+    lastHeartbeatAt: Date | null
+    nextRetryAt: Date | null
+    deadLetterAt: Date | null
+    eventId: string | null
+    reason: string | null
+    revokedSessions: number | null
+    piiCleanupStatus: string | null
+    piiReason: string | null
+    lastError: string | null
+    receiptJson: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    finishedAt: Date | null
+  }
+
+  export type AccountClosureOperationCountAggregateOutputType = {
+    id: number
+    identityId: number
+    idempotencyKey: number
+    phase: number
+    status: number
+    attempts: number
+    version: number
+    ownerToken: number
+    leaseExpiresAt: number
+    lastHeartbeatAt: number
+    nextRetryAt: number
+    deadLetterAt: number
+    eventId: number
+    reason: number
+    revokedSessions: number
+    piiCleanupStatus: number
+    piiReason: number
+    lastError: number
+    receiptJson: number
+    createdAt: number
+    updatedAt: number
+    finishedAt: number
+    _all: number
+  }
+
+
+  export type AccountClosureOperationAvgAggregateInputType = {
+    attempts?: true
+    version?: true
+    revokedSessions?: true
+  }
+
+  export type AccountClosureOperationSumAggregateInputType = {
+    attempts?: true
+    version?: true
+    revokedSessions?: true
+  }
+
+  export type AccountClosureOperationMinAggregateInputType = {
+    id?: true
+    identityId?: true
+    idempotencyKey?: true
+    phase?: true
+    status?: true
+    attempts?: true
+    version?: true
+    ownerToken?: true
+    leaseExpiresAt?: true
+    lastHeartbeatAt?: true
+    nextRetryAt?: true
+    deadLetterAt?: true
+    eventId?: true
+    reason?: true
+    revokedSessions?: true
+    piiCleanupStatus?: true
+    piiReason?: true
+    lastError?: true
+    receiptJson?: true
+    createdAt?: true
+    updatedAt?: true
+    finishedAt?: true
+  }
+
+  export type AccountClosureOperationMaxAggregateInputType = {
+    id?: true
+    identityId?: true
+    idempotencyKey?: true
+    phase?: true
+    status?: true
+    attempts?: true
+    version?: true
+    ownerToken?: true
+    leaseExpiresAt?: true
+    lastHeartbeatAt?: true
+    nextRetryAt?: true
+    deadLetterAt?: true
+    eventId?: true
+    reason?: true
+    revokedSessions?: true
+    piiCleanupStatus?: true
+    piiReason?: true
+    lastError?: true
+    receiptJson?: true
+    createdAt?: true
+    updatedAt?: true
+    finishedAt?: true
+  }
+
+  export type AccountClosureOperationCountAggregateInputType = {
+    id?: true
+    identityId?: true
+    idempotencyKey?: true
+    phase?: true
+    status?: true
+    attempts?: true
+    version?: true
+    ownerToken?: true
+    leaseExpiresAt?: true
+    lastHeartbeatAt?: true
+    nextRetryAt?: true
+    deadLetterAt?: true
+    eventId?: true
+    reason?: true
+    revokedSessions?: true
+    piiCleanupStatus?: true
+    piiReason?: true
+    lastError?: true
+    receiptJson?: true
+    createdAt?: true
+    updatedAt?: true
+    finishedAt?: true
+    _all?: true
+  }
+
+  export type AccountClosureOperationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AccountClosureOperation to aggregate.
+     */
+    where?: AccountClosureOperationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AccountClosureOperations to fetch.
+     */
+    orderBy?: AccountClosureOperationOrderByWithRelationInput | AccountClosureOperationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AccountClosureOperationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AccountClosureOperations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AccountClosureOperations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AccountClosureOperations
+    **/
+    _count?: true | AccountClosureOperationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AccountClosureOperationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AccountClosureOperationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AccountClosureOperationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AccountClosureOperationMaxAggregateInputType
+  }
+
+  export type GetAccountClosureOperationAggregateType<T extends AccountClosureOperationAggregateArgs> = {
+        [P in keyof T & keyof AggregateAccountClosureOperation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAccountClosureOperation[P]>
+      : GetScalarType<T[P], AggregateAccountClosureOperation[P]>
+  }
+
+
+
+
+  export type AccountClosureOperationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AccountClosureOperationWhereInput
+    orderBy?: AccountClosureOperationOrderByWithAggregationInput | AccountClosureOperationOrderByWithAggregationInput[]
+    by: AccountClosureOperationScalarFieldEnum[] | AccountClosureOperationScalarFieldEnum
+    having?: AccountClosureOperationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AccountClosureOperationCountAggregateInputType | true
+    _avg?: AccountClosureOperationAvgAggregateInputType
+    _sum?: AccountClosureOperationSumAggregateInputType
+    _min?: AccountClosureOperationMinAggregateInputType
+    _max?: AccountClosureOperationMaxAggregateInputType
+  }
+
+  export type AccountClosureOperationGroupByOutputType = {
+    id: string
+    identityId: string
+    idempotencyKey: string
+    phase: string
+    status: string
+    attempts: number
+    version: number
+    ownerToken: string | null
+    leaseExpiresAt: Date | null
+    lastHeartbeatAt: Date | null
+    nextRetryAt: Date | null
+    deadLetterAt: Date | null
+    eventId: string | null
+    reason: string | null
+    revokedSessions: number
+    piiCleanupStatus: string | null
+    piiReason: string | null
+    lastError: string | null
+    receiptJson: string | null
+    createdAt: Date
+    updatedAt: Date
+    finishedAt: Date | null
+    _count: AccountClosureOperationCountAggregateOutputType | null
+    _avg: AccountClosureOperationAvgAggregateOutputType | null
+    _sum: AccountClosureOperationSumAggregateOutputType | null
+    _min: AccountClosureOperationMinAggregateOutputType | null
+    _max: AccountClosureOperationMaxAggregateOutputType | null
+  }
+
+  type GetAccountClosureOperationGroupByPayload<T extends AccountClosureOperationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AccountClosureOperationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AccountClosureOperationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AccountClosureOperationGroupByOutputType[P]>
+            : GetScalarType<T[P], AccountClosureOperationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AccountClosureOperationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    idempotencyKey?: boolean
+    phase?: boolean
+    status?: boolean
+    attempts?: boolean
+    version?: boolean
+    ownerToken?: boolean
+    leaseExpiresAt?: boolean
+    lastHeartbeatAt?: boolean
+    nextRetryAt?: boolean
+    deadLetterAt?: boolean
+    eventId?: boolean
+    reason?: boolean
+    revokedSessions?: boolean
+    piiCleanupStatus?: boolean
+    piiReason?: boolean
+    lastError?: boolean
+    receiptJson?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    finishedAt?: boolean
+  }, ExtArgs["result"]["accountClosureOperation"]>
+
+  export type AccountClosureOperationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    idempotencyKey?: boolean
+    phase?: boolean
+    status?: boolean
+    attempts?: boolean
+    version?: boolean
+    ownerToken?: boolean
+    leaseExpiresAt?: boolean
+    lastHeartbeatAt?: boolean
+    nextRetryAt?: boolean
+    deadLetterAt?: boolean
+    eventId?: boolean
+    reason?: boolean
+    revokedSessions?: boolean
+    piiCleanupStatus?: boolean
+    piiReason?: boolean
+    lastError?: boolean
+    receiptJson?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    finishedAt?: boolean
+  }, ExtArgs["result"]["accountClosureOperation"]>
+
+  export type AccountClosureOperationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    idempotencyKey?: boolean
+    phase?: boolean
+    status?: boolean
+    attempts?: boolean
+    version?: boolean
+    ownerToken?: boolean
+    leaseExpiresAt?: boolean
+    lastHeartbeatAt?: boolean
+    nextRetryAt?: boolean
+    deadLetterAt?: boolean
+    eventId?: boolean
+    reason?: boolean
+    revokedSessions?: boolean
+    piiCleanupStatus?: boolean
+    piiReason?: boolean
+    lastError?: boolean
+    receiptJson?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    finishedAt?: boolean
+  }, ExtArgs["result"]["accountClosureOperation"]>
+
+  export type AccountClosureOperationSelectScalar = {
+    id?: boolean
+    identityId?: boolean
+    idempotencyKey?: boolean
+    phase?: boolean
+    status?: boolean
+    attempts?: boolean
+    version?: boolean
+    ownerToken?: boolean
+    leaseExpiresAt?: boolean
+    lastHeartbeatAt?: boolean
+    nextRetryAt?: boolean
+    deadLetterAt?: boolean
+    eventId?: boolean
+    reason?: boolean
+    revokedSessions?: boolean
+    piiCleanupStatus?: boolean
+    piiReason?: boolean
+    lastError?: boolean
+    receiptJson?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    finishedAt?: boolean
+  }
+
+  export type AccountClosureOperationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "idempotencyKey" | "phase" | "status" | "attempts" | "version" | "ownerToken" | "leaseExpiresAt" | "lastHeartbeatAt" | "nextRetryAt" | "deadLetterAt" | "eventId" | "reason" | "revokedSessions" | "piiCleanupStatus" | "piiReason" | "lastError" | "receiptJson" | "createdAt" | "updatedAt" | "finishedAt", ExtArgs["result"]["accountClosureOperation"]>
+
+  export type $AccountClosureOperationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AccountClosureOperation"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      identityId: string
+      idempotencyKey: string
+      phase: string
+      status: string
+      attempts: number
+      version: number
+      ownerToken: string | null
+      leaseExpiresAt: Date | null
+      lastHeartbeatAt: Date | null
+      nextRetryAt: Date | null
+      deadLetterAt: Date | null
+      eventId: string | null
+      reason: string | null
+      revokedSessions: number
+      piiCleanupStatus: string | null
+      piiReason: string | null
+      lastError: string | null
+      receiptJson: string | null
+      createdAt: Date
+      updatedAt: Date
+      finishedAt: Date | null
+    }, ExtArgs["result"]["accountClosureOperation"]>
+    composites: {}
+  }
+
+  type AccountClosureOperationGetPayload<S extends boolean | null | undefined | AccountClosureOperationDefaultArgs> = $Result.GetResult<Prisma.$AccountClosureOperationPayload, S>
+
+  type AccountClosureOperationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AccountClosureOperationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AccountClosureOperationCountAggregateInputType | true
+    }
+
+  export interface AccountClosureOperationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AccountClosureOperation'], meta: { name: 'AccountClosureOperation' } }
+    /**
+     * Find zero or one AccountClosureOperation that matches the filter.
+     * @param {AccountClosureOperationFindUniqueArgs} args - Arguments to find a AccountClosureOperation
+     * @example
+     * // Get one AccountClosureOperation
+     * const accountClosureOperation = await prisma.accountClosureOperation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AccountClosureOperationFindUniqueArgs>(args: SelectSubset<T, AccountClosureOperationFindUniqueArgs<ExtArgs>>): Prisma__AccountClosureOperationClient<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AccountClosureOperation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AccountClosureOperationFindUniqueOrThrowArgs} args - Arguments to find a AccountClosureOperation
+     * @example
+     * // Get one AccountClosureOperation
+     * const accountClosureOperation = await prisma.accountClosureOperation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AccountClosureOperationFindUniqueOrThrowArgs>(args: SelectSubset<T, AccountClosureOperationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AccountClosureOperationClient<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AccountClosureOperation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountClosureOperationFindFirstArgs} args - Arguments to find a AccountClosureOperation
+     * @example
+     * // Get one AccountClosureOperation
+     * const accountClosureOperation = await prisma.accountClosureOperation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AccountClosureOperationFindFirstArgs>(args?: SelectSubset<T, AccountClosureOperationFindFirstArgs<ExtArgs>>): Prisma__AccountClosureOperationClient<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AccountClosureOperation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountClosureOperationFindFirstOrThrowArgs} args - Arguments to find a AccountClosureOperation
+     * @example
+     * // Get one AccountClosureOperation
+     * const accountClosureOperation = await prisma.accountClosureOperation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AccountClosureOperationFindFirstOrThrowArgs>(args?: SelectSubset<T, AccountClosureOperationFindFirstOrThrowArgs<ExtArgs>>): Prisma__AccountClosureOperationClient<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AccountClosureOperations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountClosureOperationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AccountClosureOperations
+     * const accountClosureOperations = await prisma.accountClosureOperation.findMany()
+     * 
+     * // Get first 10 AccountClosureOperations
+     * const accountClosureOperations = await prisma.accountClosureOperation.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const accountClosureOperationWithIdOnly = await prisma.accountClosureOperation.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AccountClosureOperationFindManyArgs>(args?: SelectSubset<T, AccountClosureOperationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AccountClosureOperation.
+     * @param {AccountClosureOperationCreateArgs} args - Arguments to create a AccountClosureOperation.
+     * @example
+     * // Create one AccountClosureOperation
+     * const AccountClosureOperation = await prisma.accountClosureOperation.create({
+     *   data: {
+     *     // ... data to create a AccountClosureOperation
+     *   }
+     * })
+     * 
+     */
+    create<T extends AccountClosureOperationCreateArgs>(args: SelectSubset<T, AccountClosureOperationCreateArgs<ExtArgs>>): Prisma__AccountClosureOperationClient<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AccountClosureOperations.
+     * @param {AccountClosureOperationCreateManyArgs} args - Arguments to create many AccountClosureOperations.
+     * @example
+     * // Create many AccountClosureOperations
+     * const accountClosureOperation = await prisma.accountClosureOperation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AccountClosureOperationCreateManyArgs>(args?: SelectSubset<T, AccountClosureOperationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AccountClosureOperations and returns the data saved in the database.
+     * @param {AccountClosureOperationCreateManyAndReturnArgs} args - Arguments to create many AccountClosureOperations.
+     * @example
+     * // Create many AccountClosureOperations
+     * const accountClosureOperation = await prisma.accountClosureOperation.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AccountClosureOperations and only return the `id`
+     * const accountClosureOperationWithIdOnly = await prisma.accountClosureOperation.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AccountClosureOperationCreateManyAndReturnArgs>(args?: SelectSubset<T, AccountClosureOperationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AccountClosureOperation.
+     * @param {AccountClosureOperationDeleteArgs} args - Arguments to delete one AccountClosureOperation.
+     * @example
+     * // Delete one AccountClosureOperation
+     * const AccountClosureOperation = await prisma.accountClosureOperation.delete({
+     *   where: {
+     *     // ... filter to delete one AccountClosureOperation
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AccountClosureOperationDeleteArgs>(args: SelectSubset<T, AccountClosureOperationDeleteArgs<ExtArgs>>): Prisma__AccountClosureOperationClient<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AccountClosureOperation.
+     * @param {AccountClosureOperationUpdateArgs} args - Arguments to update one AccountClosureOperation.
+     * @example
+     * // Update one AccountClosureOperation
+     * const accountClosureOperation = await prisma.accountClosureOperation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AccountClosureOperationUpdateArgs>(args: SelectSubset<T, AccountClosureOperationUpdateArgs<ExtArgs>>): Prisma__AccountClosureOperationClient<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AccountClosureOperations.
+     * @param {AccountClosureOperationDeleteManyArgs} args - Arguments to filter AccountClosureOperations to delete.
+     * @example
+     * // Delete a few AccountClosureOperations
+     * const { count } = await prisma.accountClosureOperation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AccountClosureOperationDeleteManyArgs>(args?: SelectSubset<T, AccountClosureOperationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AccountClosureOperations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountClosureOperationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AccountClosureOperations
+     * const accountClosureOperation = await prisma.accountClosureOperation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AccountClosureOperationUpdateManyArgs>(args: SelectSubset<T, AccountClosureOperationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AccountClosureOperations and returns the data updated in the database.
+     * @param {AccountClosureOperationUpdateManyAndReturnArgs} args - Arguments to update many AccountClosureOperations.
+     * @example
+     * // Update many AccountClosureOperations
+     * const accountClosureOperation = await prisma.accountClosureOperation.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AccountClosureOperations and only return the `id`
+     * const accountClosureOperationWithIdOnly = await prisma.accountClosureOperation.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AccountClosureOperationUpdateManyAndReturnArgs>(args: SelectSubset<T, AccountClosureOperationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AccountClosureOperation.
+     * @param {AccountClosureOperationUpsertArgs} args - Arguments to update or create a AccountClosureOperation.
+     * @example
+     * // Update or create a AccountClosureOperation
+     * const accountClosureOperation = await prisma.accountClosureOperation.upsert({
+     *   create: {
+     *     // ... data to create a AccountClosureOperation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AccountClosureOperation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AccountClosureOperationUpsertArgs>(args: SelectSubset<T, AccountClosureOperationUpsertArgs<ExtArgs>>): Prisma__AccountClosureOperationClient<$Result.GetResult<Prisma.$AccountClosureOperationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AccountClosureOperations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountClosureOperationCountArgs} args - Arguments to filter AccountClosureOperations to count.
+     * @example
+     * // Count the number of AccountClosureOperations
+     * const count = await prisma.accountClosureOperation.count({
+     *   where: {
+     *     // ... the filter for the AccountClosureOperations we want to count
+     *   }
+     * })
+    **/
+    count<T extends AccountClosureOperationCountArgs>(
+      args?: Subset<T, AccountClosureOperationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AccountClosureOperationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AccountClosureOperation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountClosureOperationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AccountClosureOperationAggregateArgs>(args: Subset<T, AccountClosureOperationAggregateArgs>): Prisma.PrismaPromise<GetAccountClosureOperationAggregateType<T>>
+
+    /**
+     * Group by AccountClosureOperation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountClosureOperationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AccountClosureOperationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AccountClosureOperationGroupByArgs['orderBy'] }
+        : { orderBy?: AccountClosureOperationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AccountClosureOperationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAccountClosureOperationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AccountClosureOperation model
+   */
+  readonly fields: AccountClosureOperationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AccountClosureOperation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AccountClosureOperationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AccountClosureOperation model
+   */
+  interface AccountClosureOperationFieldRefs {
+    readonly id: FieldRef<"AccountClosureOperation", 'String'>
+    readonly identityId: FieldRef<"AccountClosureOperation", 'String'>
+    readonly idempotencyKey: FieldRef<"AccountClosureOperation", 'String'>
+    readonly phase: FieldRef<"AccountClosureOperation", 'String'>
+    readonly status: FieldRef<"AccountClosureOperation", 'String'>
+    readonly attempts: FieldRef<"AccountClosureOperation", 'Int'>
+    readonly version: FieldRef<"AccountClosureOperation", 'Int'>
+    readonly ownerToken: FieldRef<"AccountClosureOperation", 'String'>
+    readonly leaseExpiresAt: FieldRef<"AccountClosureOperation", 'DateTime'>
+    readonly lastHeartbeatAt: FieldRef<"AccountClosureOperation", 'DateTime'>
+    readonly nextRetryAt: FieldRef<"AccountClosureOperation", 'DateTime'>
+    readonly deadLetterAt: FieldRef<"AccountClosureOperation", 'DateTime'>
+    readonly eventId: FieldRef<"AccountClosureOperation", 'String'>
+    readonly reason: FieldRef<"AccountClosureOperation", 'String'>
+    readonly revokedSessions: FieldRef<"AccountClosureOperation", 'Int'>
+    readonly piiCleanupStatus: FieldRef<"AccountClosureOperation", 'String'>
+    readonly piiReason: FieldRef<"AccountClosureOperation", 'String'>
+    readonly lastError: FieldRef<"AccountClosureOperation", 'String'>
+    readonly receiptJson: FieldRef<"AccountClosureOperation", 'String'>
+    readonly createdAt: FieldRef<"AccountClosureOperation", 'DateTime'>
+    readonly updatedAt: FieldRef<"AccountClosureOperation", 'DateTime'>
+    readonly finishedAt: FieldRef<"AccountClosureOperation", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AccountClosureOperation findUnique
+   */
+  export type AccountClosureOperationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * Filter, which AccountClosureOperation to fetch.
+     */
+    where: AccountClosureOperationWhereUniqueInput
+  }
+
+  /**
+   * AccountClosureOperation findUniqueOrThrow
+   */
+  export type AccountClosureOperationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * Filter, which AccountClosureOperation to fetch.
+     */
+    where: AccountClosureOperationWhereUniqueInput
+  }
+
+  /**
+   * AccountClosureOperation findFirst
+   */
+  export type AccountClosureOperationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * Filter, which AccountClosureOperation to fetch.
+     */
+    where?: AccountClosureOperationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AccountClosureOperations to fetch.
+     */
+    orderBy?: AccountClosureOperationOrderByWithRelationInput | AccountClosureOperationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AccountClosureOperations.
+     */
+    cursor?: AccountClosureOperationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AccountClosureOperations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AccountClosureOperations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AccountClosureOperations.
+     */
+    distinct?: AccountClosureOperationScalarFieldEnum | AccountClosureOperationScalarFieldEnum[]
+  }
+
+  /**
+   * AccountClosureOperation findFirstOrThrow
+   */
+  export type AccountClosureOperationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * Filter, which AccountClosureOperation to fetch.
+     */
+    where?: AccountClosureOperationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AccountClosureOperations to fetch.
+     */
+    orderBy?: AccountClosureOperationOrderByWithRelationInput | AccountClosureOperationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AccountClosureOperations.
+     */
+    cursor?: AccountClosureOperationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AccountClosureOperations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AccountClosureOperations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AccountClosureOperations.
+     */
+    distinct?: AccountClosureOperationScalarFieldEnum | AccountClosureOperationScalarFieldEnum[]
+  }
+
+  /**
+   * AccountClosureOperation findMany
+   */
+  export type AccountClosureOperationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * Filter, which AccountClosureOperations to fetch.
+     */
+    where?: AccountClosureOperationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AccountClosureOperations to fetch.
+     */
+    orderBy?: AccountClosureOperationOrderByWithRelationInput | AccountClosureOperationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AccountClosureOperations.
+     */
+    cursor?: AccountClosureOperationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AccountClosureOperations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AccountClosureOperations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AccountClosureOperations.
+     */
+    distinct?: AccountClosureOperationScalarFieldEnum | AccountClosureOperationScalarFieldEnum[]
+  }
+
+  /**
+   * AccountClosureOperation create
+   */
+  export type AccountClosureOperationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AccountClosureOperation.
+     */
+    data: XOR<AccountClosureOperationCreateInput, AccountClosureOperationUncheckedCreateInput>
+  }
+
+  /**
+   * AccountClosureOperation createMany
+   */
+  export type AccountClosureOperationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AccountClosureOperations.
+     */
+    data: AccountClosureOperationCreateManyInput | AccountClosureOperationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AccountClosureOperation createManyAndReturn
+   */
+  export type AccountClosureOperationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * The data used to create many AccountClosureOperations.
+     */
+    data: AccountClosureOperationCreateManyInput | AccountClosureOperationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AccountClosureOperation update
+   */
+  export type AccountClosureOperationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AccountClosureOperation.
+     */
+    data: XOR<AccountClosureOperationUpdateInput, AccountClosureOperationUncheckedUpdateInput>
+    /**
+     * Choose, which AccountClosureOperation to update.
+     */
+    where: AccountClosureOperationWhereUniqueInput
+  }
+
+  /**
+   * AccountClosureOperation updateMany
+   */
+  export type AccountClosureOperationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AccountClosureOperations.
+     */
+    data: XOR<AccountClosureOperationUpdateManyMutationInput, AccountClosureOperationUncheckedUpdateManyInput>
+    /**
+     * Filter which AccountClosureOperations to update
+     */
+    where?: AccountClosureOperationWhereInput
+    /**
+     * Limit how many AccountClosureOperations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AccountClosureOperation updateManyAndReturn
+   */
+  export type AccountClosureOperationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * The data used to update AccountClosureOperations.
+     */
+    data: XOR<AccountClosureOperationUpdateManyMutationInput, AccountClosureOperationUncheckedUpdateManyInput>
+    /**
+     * Filter which AccountClosureOperations to update
+     */
+    where?: AccountClosureOperationWhereInput
+    /**
+     * Limit how many AccountClosureOperations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AccountClosureOperation upsert
+   */
+  export type AccountClosureOperationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AccountClosureOperation to update in case it exists.
+     */
+    where: AccountClosureOperationWhereUniqueInput
+    /**
+     * In case the AccountClosureOperation found by the `where` argument doesn't exist, create a new AccountClosureOperation with this data.
+     */
+    create: XOR<AccountClosureOperationCreateInput, AccountClosureOperationUncheckedCreateInput>
+    /**
+     * In case the AccountClosureOperation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AccountClosureOperationUpdateInput, AccountClosureOperationUncheckedUpdateInput>
+  }
+
+  /**
+   * AccountClosureOperation delete
+   */
+  export type AccountClosureOperationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
+    /**
+     * Filter which AccountClosureOperation to delete.
+     */
+    where: AccountClosureOperationWhereUniqueInput
+  }
+
+  /**
+   * AccountClosureOperation deleteMany
+   */
+  export type AccountClosureOperationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AccountClosureOperations to delete
+     */
+    where?: AccountClosureOperationWhereInput
+    /**
+     * Limit how many AccountClosureOperations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AccountClosureOperation without action
+   */
+  export type AccountClosureOperationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountClosureOperation
+     */
+    select?: AccountClosureOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AccountClosureOperation
+     */
+    omit?: AccountClosureOperationOmit<ExtArgs> | null
   }
 
 
@@ -113565,6 +114958,8 @@ export namespace Prisma {
     email: 'email',
     emailVerified: 'emailVerified',
     image: 'image',
+    status: 'status',
+    disabledAt: 'disabledAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -114124,7 +115519,8 @@ export namespace Prisma {
     ownerToken: 'ownerToken',
     claimId: 'claimId',
     fencingToken: 'fencingToken',
-    leaseExpiresAt: 'leaseExpiresAt'
+    leaseExpiresAt: 'leaseExpiresAt',
+    lastHeartbeatAt: 'lastHeartbeatAt'
   };
 
   export type OutboxMessageScalarFieldEnum = (typeof OutboxMessageScalarFieldEnum)[keyof typeof OutboxMessageScalarFieldEnum]
@@ -114151,6 +115547,34 @@ export namespace Prisma {
   };
 
   export type ProjectionCursorScalarFieldEnum = (typeof ProjectionCursorScalarFieldEnum)[keyof typeof ProjectionCursorScalarFieldEnum]
+
+
+  export const AccountClosureOperationScalarFieldEnum: {
+    id: 'id',
+    identityId: 'identityId',
+    idempotencyKey: 'idempotencyKey',
+    phase: 'phase',
+    status: 'status',
+    attempts: 'attempts',
+    version: 'version',
+    ownerToken: 'ownerToken',
+    leaseExpiresAt: 'leaseExpiresAt',
+    lastHeartbeatAt: 'lastHeartbeatAt',
+    nextRetryAt: 'nextRetryAt',
+    deadLetterAt: 'deadLetterAt',
+    eventId: 'eventId',
+    reason: 'reason',
+    revokedSessions: 'revokedSessions',
+    piiCleanupStatus: 'piiCleanupStatus',
+    piiReason: 'piiReason',
+    lastError: 'lastError',
+    receiptJson: 'receiptJson',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    finishedAt: 'finishedAt'
+  };
+
+  export type AccountClosureOperationScalarFieldEnum = (typeof AccountClosureOperationScalarFieldEnum)[keyof typeof AccountClosureOperationScalarFieldEnum]
 
 
   export const ReminderTemplateScalarFieldEnum: {
@@ -116510,6 +117934,8 @@ export namespace Prisma {
     email?: StringFilter<"CloudAuthUser"> | string
     emailVerified?: BoolFilter<"CloudAuthUser"> | boolean
     image?: StringNullableFilter<"CloudAuthUser"> | string | null
+    status?: StringFilter<"CloudAuthUser"> | string
+    disabledAt?: DateTimeNullableFilter<"CloudAuthUser"> | Date | string | null
     createdAt?: DateTimeFilter<"CloudAuthUser"> | Date | string
     updatedAt?: DateTimeFilter<"CloudAuthUser"> | Date | string
     sessions?: CloudAuthSessionListRelationFilter
@@ -116524,6 +117950,8 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrder
     image?: SortOrderInput | SortOrder
+    status?: SortOrder
+    disabledAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     sessions?: CloudAuthSessionOrderByRelationAggregateInput
@@ -116541,6 +117969,8 @@ export namespace Prisma {
     name?: StringFilter<"CloudAuthUser"> | string
     emailVerified?: BoolFilter<"CloudAuthUser"> | boolean
     image?: StringNullableFilter<"CloudAuthUser"> | string | null
+    status?: StringFilter<"CloudAuthUser"> | string
+    disabledAt?: DateTimeNullableFilter<"CloudAuthUser"> | Date | string | null
     createdAt?: DateTimeFilter<"CloudAuthUser"> | Date | string
     updatedAt?: DateTimeFilter<"CloudAuthUser"> | Date | string
     sessions?: CloudAuthSessionListRelationFilter
@@ -116555,6 +117985,8 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrder
     image?: SortOrderInput | SortOrder
+    status?: SortOrder
+    disabledAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: CloudAuthUserCountOrderByAggregateInput
@@ -116571,6 +118003,8 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"CloudAuthUser"> | string
     emailVerified?: BoolWithAggregatesFilter<"CloudAuthUser"> | boolean
     image?: StringNullableWithAggregatesFilter<"CloudAuthUser"> | string | null
+    status?: StringWithAggregatesFilter<"CloudAuthUser"> | string
+    disabledAt?: DateTimeNullableWithAggregatesFilter<"CloudAuthUser"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"CloudAuthUser"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"CloudAuthUser"> | Date | string
   }
@@ -119395,6 +120829,7 @@ export namespace Prisma {
     claimId?: StringNullableFilter<"OutboxMessage"> | string | null
     fencingToken?: IntNullableFilter<"OutboxMessage"> | number | null
     leaseExpiresAt?: DateTimeNullableFilter<"OutboxMessage"> | Date | string | null
+    lastHeartbeatAt?: DateTimeNullableFilter<"OutboxMessage"> | Date | string | null
   }
 
   export type OutboxMessageOrderByWithRelationInput = {
@@ -119416,6 +120851,7 @@ export namespace Prisma {
     claimId?: SortOrderInput | SortOrder
     fencingToken?: SortOrderInput | SortOrder
     leaseExpiresAt?: SortOrderInput | SortOrder
+    lastHeartbeatAt?: SortOrderInput | SortOrder
   }
 
   export type OutboxMessageWhereUniqueInput = Prisma.AtLeast<{
@@ -119440,6 +120876,7 @@ export namespace Prisma {
     claimId?: StringNullableFilter<"OutboxMessage"> | string | null
     fencingToken?: IntNullableFilter<"OutboxMessage"> | number | null
     leaseExpiresAt?: DateTimeNullableFilter<"OutboxMessage"> | Date | string | null
+    lastHeartbeatAt?: DateTimeNullableFilter<"OutboxMessage"> | Date | string | null
   }, "id" | "idempotencyKey">
 
   export type OutboxMessageOrderByWithAggregationInput = {
@@ -119461,6 +120898,7 @@ export namespace Prisma {
     claimId?: SortOrderInput | SortOrder
     fencingToken?: SortOrderInput | SortOrder
     leaseExpiresAt?: SortOrderInput | SortOrder
+    lastHeartbeatAt?: SortOrderInput | SortOrder
     _count?: OutboxMessageCountOrderByAggregateInput
     _avg?: OutboxMessageAvgOrderByAggregateInput
     _max?: OutboxMessageMaxOrderByAggregateInput
@@ -119490,6 +120928,7 @@ export namespace Prisma {
     claimId?: StringNullableWithAggregatesFilter<"OutboxMessage"> | string | null
     fencingToken?: IntNullableWithAggregatesFilter<"OutboxMessage"> | number | null
     leaseExpiresAt?: DateTimeNullableWithAggregatesFilter<"OutboxMessage"> | Date | string | null
+    lastHeartbeatAt?: DateTimeNullableWithAggregatesFilter<"OutboxMessage"> | Date | string | null
   }
 
   export type InboxReceiptWhereInput = {
@@ -119603,6 +121042,146 @@ export namespace Prisma {
     lastProcessedAt?: DateTimeNullableWithAggregatesFilter<"ProjectionCursor"> | Date | string | null
     version?: IntWithAggregatesFilter<"ProjectionCursor"> | number
     updatedAt?: DateTimeWithAggregatesFilter<"ProjectionCursor"> | Date | string
+  }
+
+  export type AccountClosureOperationWhereInput = {
+    AND?: AccountClosureOperationWhereInput | AccountClosureOperationWhereInput[]
+    OR?: AccountClosureOperationWhereInput[]
+    NOT?: AccountClosureOperationWhereInput | AccountClosureOperationWhereInput[]
+    id?: StringFilter<"AccountClosureOperation"> | string
+    identityId?: StringFilter<"AccountClosureOperation"> | string
+    idempotencyKey?: StringFilter<"AccountClosureOperation"> | string
+    phase?: StringFilter<"AccountClosureOperation"> | string
+    status?: StringFilter<"AccountClosureOperation"> | string
+    attempts?: IntFilter<"AccountClosureOperation"> | number
+    version?: IntFilter<"AccountClosureOperation"> | number
+    ownerToken?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+    lastHeartbeatAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+    nextRetryAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+    deadLetterAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+    eventId?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    reason?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    revokedSessions?: IntFilter<"AccountClosureOperation"> | number
+    piiCleanupStatus?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    piiReason?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    lastError?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    receiptJson?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    createdAt?: DateTimeFilter<"AccountClosureOperation"> | Date | string
+    updatedAt?: DateTimeFilter<"AccountClosureOperation"> | Date | string
+    finishedAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+  }
+
+  export type AccountClosureOperationOrderByWithRelationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    idempotencyKey?: SortOrder
+    phase?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    version?: SortOrder
+    ownerToken?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    lastHeartbeatAt?: SortOrderInput | SortOrder
+    nextRetryAt?: SortOrderInput | SortOrder
+    deadLetterAt?: SortOrderInput | SortOrder
+    eventId?: SortOrderInput | SortOrder
+    reason?: SortOrderInput | SortOrder
+    revokedSessions?: SortOrder
+    piiCleanupStatus?: SortOrderInput | SortOrder
+    piiReason?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    receiptJson?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    finishedAt?: SortOrderInput | SortOrder
+  }
+
+  export type AccountClosureOperationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    identityId_idempotencyKey?: AccountClosureOperationIdentityIdIdempotencyKeyCompoundUniqueInput
+    AND?: AccountClosureOperationWhereInput | AccountClosureOperationWhereInput[]
+    OR?: AccountClosureOperationWhereInput[]
+    NOT?: AccountClosureOperationWhereInput | AccountClosureOperationWhereInput[]
+    identityId?: StringFilter<"AccountClosureOperation"> | string
+    idempotencyKey?: StringFilter<"AccountClosureOperation"> | string
+    phase?: StringFilter<"AccountClosureOperation"> | string
+    status?: StringFilter<"AccountClosureOperation"> | string
+    attempts?: IntFilter<"AccountClosureOperation"> | number
+    version?: IntFilter<"AccountClosureOperation"> | number
+    ownerToken?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+    lastHeartbeatAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+    nextRetryAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+    deadLetterAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+    eventId?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    reason?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    revokedSessions?: IntFilter<"AccountClosureOperation"> | number
+    piiCleanupStatus?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    piiReason?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    lastError?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    receiptJson?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    createdAt?: DateTimeFilter<"AccountClosureOperation"> | Date | string
+    updatedAt?: DateTimeFilter<"AccountClosureOperation"> | Date | string
+    finishedAt?: DateTimeNullableFilter<"AccountClosureOperation"> | Date | string | null
+  }, "id" | "identityId_idempotencyKey">
+
+  export type AccountClosureOperationOrderByWithAggregationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    idempotencyKey?: SortOrder
+    phase?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    version?: SortOrder
+    ownerToken?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    lastHeartbeatAt?: SortOrderInput | SortOrder
+    nextRetryAt?: SortOrderInput | SortOrder
+    deadLetterAt?: SortOrderInput | SortOrder
+    eventId?: SortOrderInput | SortOrder
+    reason?: SortOrderInput | SortOrder
+    revokedSessions?: SortOrder
+    piiCleanupStatus?: SortOrderInput | SortOrder
+    piiReason?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    receiptJson?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    finishedAt?: SortOrderInput | SortOrder
+    _count?: AccountClosureOperationCountOrderByAggregateInput
+    _avg?: AccountClosureOperationAvgOrderByAggregateInput
+    _max?: AccountClosureOperationMaxOrderByAggregateInput
+    _min?: AccountClosureOperationMinOrderByAggregateInput
+    _sum?: AccountClosureOperationSumOrderByAggregateInput
+  }
+
+  export type AccountClosureOperationScalarWhereWithAggregatesInput = {
+    AND?: AccountClosureOperationScalarWhereWithAggregatesInput | AccountClosureOperationScalarWhereWithAggregatesInput[]
+    OR?: AccountClosureOperationScalarWhereWithAggregatesInput[]
+    NOT?: AccountClosureOperationScalarWhereWithAggregatesInput | AccountClosureOperationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AccountClosureOperation"> | string
+    identityId?: StringWithAggregatesFilter<"AccountClosureOperation"> | string
+    idempotencyKey?: StringWithAggregatesFilter<"AccountClosureOperation"> | string
+    phase?: StringWithAggregatesFilter<"AccountClosureOperation"> | string
+    status?: StringWithAggregatesFilter<"AccountClosureOperation"> | string
+    attempts?: IntWithAggregatesFilter<"AccountClosureOperation"> | number
+    version?: IntWithAggregatesFilter<"AccountClosureOperation"> | number
+    ownerToken?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
+    leaseExpiresAt?: DateTimeNullableWithAggregatesFilter<"AccountClosureOperation"> | Date | string | null
+    lastHeartbeatAt?: DateTimeNullableWithAggregatesFilter<"AccountClosureOperation"> | Date | string | null
+    nextRetryAt?: DateTimeNullableWithAggregatesFilter<"AccountClosureOperation"> | Date | string | null
+    deadLetterAt?: DateTimeNullableWithAggregatesFilter<"AccountClosureOperation"> | Date | string | null
+    eventId?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
+    reason?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
+    revokedSessions?: IntWithAggregatesFilter<"AccountClosureOperation"> | number
+    piiCleanupStatus?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
+    piiReason?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
+    lastError?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
+    receiptJson?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AccountClosureOperation"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AccountClosureOperation"> | Date | string
+    finishedAt?: DateTimeNullableWithAggregatesFilter<"AccountClosureOperation"> | Date | string | null
   }
 
   export type ReminderTemplateWhereInput = {
@@ -125298,6 +126877,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: CloudAuthSessionCreateNestedManyWithoutUserInput
@@ -125312,6 +126893,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: CloudAuthSessionUncheckedCreateNestedManyWithoutUserInput
@@ -125326,6 +126909,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: CloudAuthSessionUpdateManyWithoutUserNestedInput
@@ -125340,6 +126925,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: CloudAuthSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -125354,6 +126941,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -125364,6 +126953,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -125374,6 +126965,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -128558,6 +130151,7 @@ export namespace Prisma {
     claimId?: string | null
     fencingToken?: number | null
     leaseExpiresAt?: Date | string | null
+    lastHeartbeatAt?: Date | string | null
   }
 
   export type OutboxMessageUncheckedCreateInput = {
@@ -128579,6 +130173,7 @@ export namespace Prisma {
     claimId?: string | null
     fencingToken?: number | null
     leaseExpiresAt?: Date | string | null
+    lastHeartbeatAt?: Date | string | null
   }
 
   export type OutboxMessageUpdateInput = {
@@ -128600,6 +130195,7 @@ export namespace Prisma {
     claimId?: NullableStringFieldUpdateOperationsInput | string | null
     fencingToken?: NullableIntFieldUpdateOperationsInput | number | null
     leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastHeartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type OutboxMessageUncheckedUpdateInput = {
@@ -128621,6 +130217,7 @@ export namespace Prisma {
     claimId?: NullableStringFieldUpdateOperationsInput | string | null
     fencingToken?: NullableIntFieldUpdateOperationsInput | number | null
     leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastHeartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type OutboxMessageCreateManyInput = {
@@ -128642,6 +130239,7 @@ export namespace Prisma {
     claimId?: string | null
     fencingToken?: number | null
     leaseExpiresAt?: Date | string | null
+    lastHeartbeatAt?: Date | string | null
   }
 
   export type OutboxMessageUpdateManyMutationInput = {
@@ -128663,6 +130261,7 @@ export namespace Prisma {
     claimId?: NullableStringFieldUpdateOperationsInput | string | null
     fencingToken?: NullableIntFieldUpdateOperationsInput | number | null
     leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastHeartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type OutboxMessageUncheckedUpdateManyInput = {
@@ -128684,6 +130283,7 @@ export namespace Prisma {
     claimId?: NullableStringFieldUpdateOperationsInput | string | null
     fencingToken?: NullableIntFieldUpdateOperationsInput | number | null
     leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastHeartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type InboxReceiptCreateInput = {
@@ -128803,6 +130403,181 @@ export namespace Prisma {
     lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AccountClosureOperationCreateInput = {
+    id?: string
+    identityId: string
+    idempotencyKey: string
+    phase: string
+    status: string
+    attempts?: number
+    version?: number
+    ownerToken?: string | null
+    leaseExpiresAt?: Date | string | null
+    lastHeartbeatAt?: Date | string | null
+    nextRetryAt?: Date | string | null
+    deadLetterAt?: Date | string | null
+    eventId?: string | null
+    reason?: string | null
+    revokedSessions?: number
+    piiCleanupStatus?: string | null
+    piiReason?: string | null
+    lastError?: string | null
+    receiptJson?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    finishedAt?: Date | string | null
+  }
+
+  export type AccountClosureOperationUncheckedCreateInput = {
+    id?: string
+    identityId: string
+    idempotencyKey: string
+    phase: string
+    status: string
+    attempts?: number
+    version?: number
+    ownerToken?: string | null
+    leaseExpiresAt?: Date | string | null
+    lastHeartbeatAt?: Date | string | null
+    nextRetryAt?: Date | string | null
+    deadLetterAt?: Date | string | null
+    eventId?: string | null
+    reason?: string | null
+    revokedSessions?: number
+    piiCleanupStatus?: string | null
+    piiReason?: string | null
+    lastError?: string | null
+    receiptJson?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    finishedAt?: Date | string | null
+  }
+
+  export type AccountClosureOperationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    phase?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    version?: IntFieldUpdateOperationsInput | number
+    ownerToken?: NullableStringFieldUpdateOperationsInput | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastHeartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deadLetterAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedSessions?: IntFieldUpdateOperationsInput | number
+    piiCleanupStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    piiReason?: NullableStringFieldUpdateOperationsInput | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptJson?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AccountClosureOperationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    phase?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    version?: IntFieldUpdateOperationsInput | number
+    ownerToken?: NullableStringFieldUpdateOperationsInput | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastHeartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deadLetterAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedSessions?: IntFieldUpdateOperationsInput | number
+    piiCleanupStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    piiReason?: NullableStringFieldUpdateOperationsInput | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptJson?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AccountClosureOperationCreateManyInput = {
+    id?: string
+    identityId: string
+    idempotencyKey: string
+    phase: string
+    status: string
+    attempts?: number
+    version?: number
+    ownerToken?: string | null
+    leaseExpiresAt?: Date | string | null
+    lastHeartbeatAt?: Date | string | null
+    nextRetryAt?: Date | string | null
+    deadLetterAt?: Date | string | null
+    eventId?: string | null
+    reason?: string | null
+    revokedSessions?: number
+    piiCleanupStatus?: string | null
+    piiReason?: string | null
+    lastError?: string | null
+    receiptJson?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    finishedAt?: Date | string | null
+  }
+
+  export type AccountClosureOperationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    phase?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    version?: IntFieldUpdateOperationsInput | number
+    ownerToken?: NullableStringFieldUpdateOperationsInput | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastHeartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deadLetterAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedSessions?: IntFieldUpdateOperationsInput | number
+    piiCleanupStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    piiReason?: NullableStringFieldUpdateOperationsInput | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptJson?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AccountClosureOperationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    phase?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    version?: IntFieldUpdateOperationsInput | number
+    ownerToken?: NullableStringFieldUpdateOperationsInput | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastHeartbeatAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deadLetterAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedSessions?: IntFieldUpdateOperationsInput | number
+    piiCleanupStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    piiReason?: NullableStringFieldUpdateOperationsInput | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptJson?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ReminderTemplateCreateInput = {
@@ -135027,6 +136802,8 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrder
     image?: SortOrder
+    status?: SortOrder
+    disabledAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -135037,6 +136814,8 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrder
     image?: SortOrder
+    status?: SortOrder
+    disabledAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -135047,6 +136826,8 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrder
     image?: SortOrder
+    status?: SortOrder
+    disabledAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -136804,6 +138585,7 @@ export namespace Prisma {
     claimId?: SortOrder
     fencingToken?: SortOrder
     leaseExpiresAt?: SortOrder
+    lastHeartbeatAt?: SortOrder
   }
 
   export type OutboxMessageAvgOrderByAggregateInput = {
@@ -136831,6 +138613,7 @@ export namespace Prisma {
     claimId?: SortOrder
     fencingToken?: SortOrder
     leaseExpiresAt?: SortOrder
+    lastHeartbeatAt?: SortOrder
   }
 
   export type OutboxMessageMinOrderByAggregateInput = {
@@ -136852,6 +138635,7 @@ export namespace Prisma {
     claimId?: SortOrder
     fencingToken?: SortOrder
     leaseExpiresAt?: SortOrder
+    lastHeartbeatAt?: SortOrder
   }
 
   export type OutboxMessageSumOrderByAggregateInput = {
@@ -136927,6 +138711,98 @@ export namespace Prisma {
 
   export type ProjectionCursorSumOrderByAggregateInput = {
     version?: SortOrder
+  }
+
+  export type AccountClosureOperationIdentityIdIdempotencyKeyCompoundUniqueInput = {
+    identityId: string
+    idempotencyKey: string
+  }
+
+  export type AccountClosureOperationCountOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    idempotencyKey?: SortOrder
+    phase?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    version?: SortOrder
+    ownerToken?: SortOrder
+    leaseExpiresAt?: SortOrder
+    lastHeartbeatAt?: SortOrder
+    nextRetryAt?: SortOrder
+    deadLetterAt?: SortOrder
+    eventId?: SortOrder
+    reason?: SortOrder
+    revokedSessions?: SortOrder
+    piiCleanupStatus?: SortOrder
+    piiReason?: SortOrder
+    lastError?: SortOrder
+    receiptJson?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    finishedAt?: SortOrder
+  }
+
+  export type AccountClosureOperationAvgOrderByAggregateInput = {
+    attempts?: SortOrder
+    version?: SortOrder
+    revokedSessions?: SortOrder
+  }
+
+  export type AccountClosureOperationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    idempotencyKey?: SortOrder
+    phase?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    version?: SortOrder
+    ownerToken?: SortOrder
+    leaseExpiresAt?: SortOrder
+    lastHeartbeatAt?: SortOrder
+    nextRetryAt?: SortOrder
+    deadLetterAt?: SortOrder
+    eventId?: SortOrder
+    reason?: SortOrder
+    revokedSessions?: SortOrder
+    piiCleanupStatus?: SortOrder
+    piiReason?: SortOrder
+    lastError?: SortOrder
+    receiptJson?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    finishedAt?: SortOrder
+  }
+
+  export type AccountClosureOperationMinOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    idempotencyKey?: SortOrder
+    phase?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    version?: SortOrder
+    ownerToken?: SortOrder
+    leaseExpiresAt?: SortOrder
+    lastHeartbeatAt?: SortOrder
+    nextRetryAt?: SortOrder
+    deadLetterAt?: SortOrder
+    eventId?: SortOrder
+    reason?: SortOrder
+    revokedSessions?: SortOrder
+    piiCleanupStatus?: SortOrder
+    piiReason?: SortOrder
+    lastError?: SortOrder
+    receiptJson?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    finishedAt?: SortOrder
+  }
+
+  export type AccountClosureOperationSumOrderByAggregateInput = {
+    attempts?: SortOrder
+    version?: SortOrder
+    revokedSessions?: SortOrder
   }
 
   export type FloatNullableFilter<$PrismaModel = never> = {
@@ -145803,6 +147679,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: CloudAuthSessionCreateNestedManyWithoutUserInput
@@ -145816,6 +147694,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: CloudAuthSessionUncheckedCreateNestedManyWithoutUserInput
@@ -148237,6 +150117,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: CloudAuthSessionUpdateManyWithoutUserNestedInput
@@ -148250,6 +150132,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: CloudAuthSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -154302,6 +156186,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     providerAccounts?: CloudAuthProviderAccountCreateNestedManyWithoutUserInput
@@ -154315,6 +156201,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     providerAccounts?: CloudAuthProviderAccountUncheckedCreateNestedManyWithoutUserInput
@@ -154344,6 +156232,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     providerAccounts?: CloudAuthProviderAccountUpdateManyWithoutUserNestedInput
@@ -154357,6 +156247,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     providerAccounts?: CloudAuthProviderAccountUncheckedUpdateManyWithoutUserNestedInput
@@ -154370,6 +156262,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: CloudAuthSessionCreateNestedManyWithoutUserInput
@@ -154383,6 +156277,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: CloudAuthSessionUncheckedCreateNestedManyWithoutUserInput
@@ -154412,6 +156308,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: CloudAuthSessionUpdateManyWithoutUserNestedInput
@@ -154425,6 +156323,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: CloudAuthSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -154438,6 +156338,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: CloudAuthSessionCreateNestedManyWithoutUserInput
@@ -154451,6 +156353,8 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
+    status?: string
+    disabledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: CloudAuthSessionUncheckedCreateNestedManyWithoutUserInput
@@ -154480,6 +156384,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: CloudAuthSessionUpdateManyWithoutUserNestedInput
@@ -154493,6 +156399,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: CloudAuthSessionUncheckedUpdateManyWithoutUserNestedInput

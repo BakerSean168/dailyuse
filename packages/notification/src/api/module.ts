@@ -45,6 +45,8 @@ export type NotificationApiModuleContext = ServerModuleContext<PrismaClient> & {
   readonly pushTransport?: unknown;
   /** Expressed channel capabilities owned by this lane/module instance. */
   readonly channelCapabilities?: import('../server/infrastructure/runtime/notification.runtime').ChannelCapabilitySpec[];
+  /** Closure checker function. Required for fail-closed verification. */
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
 };
 
 export interface NotificationApiModuleOptions {
@@ -54,6 +56,8 @@ export interface NotificationApiModuleOptions {
   readonly desktopTransport?: unknown;
   /** Real Push transport. */
   readonly pushTransport?: unknown;
+  /** Closure checker function. Required for fail-closed verification. */
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
 }
 
 export interface NotificationApiModuleDef {
@@ -73,10 +77,13 @@ export function createNotificationApiModule(
     register(context) {
       const { router, middleware, db } = context;
 
-      // 透传 API composition 注入的 transport/config/lane capability（P0-1/P0-3）：
-      // 有 transport 或显式 lane capability 声明 → 对应 channel capability available/checked；
-      // 无声明且无 transport → fail-closed（production 启动对缺失 capability fail-fast）。
+      const closureChecker = options.closureChecker ?? context.closureChecker;
+      if (!closureChecker) {
+        throw new Error('[FAIL-CLOSED] NotificationApiModule requires options.closureChecker or context.closureChecker');
+      }
+
       const notificationModule = createNotificationPrismaModule(db, {
+        closureChecker,
         desktopTransport: options.desktopTransport ?? context.desktopTransport,
         pushTransport: options.pushTransport ?? context.pushTransport,
         channelCapabilities: options.channelCapabilities ?? context.channelCapabilities,
@@ -100,5 +107,3 @@ export function createNotificationApiModule(
     },
   };
 }
-
-export const NotificationApiModule: NotificationApiModuleDef = createNotificationApiModule();

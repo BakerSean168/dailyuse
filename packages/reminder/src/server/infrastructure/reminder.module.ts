@@ -38,6 +38,7 @@ export interface ReminderModuleDependencies {
   readonly reminderGroupRepository: IReminderGroupRepository;
   readonly reminderResponseRepository: IReminderResponseRepository;
   readonly userReminderPreferenceRepository: IUserReminderPreferenceRepository;
+  readonly closureChecker: (identityId: string) => Promise<boolean>;
   readonly accountTimezonePort?: import('../domain/ports/account-timezone.port').AccountTimezonePort;
   readonly runtimeContributions?: ReminderRuntimeContributionsInput;
   /** R3c：snooze 副作用（可选）——推迟提醒的下次触发。 */
@@ -79,6 +80,10 @@ export function createReminderUseCases(
     templateMapper?: ReminderTemplateClientMapper;
   },
 ): ReminderModuleUseCases {
+  if (!dependencies.closureChecker) {
+    throw new Error('[FAIL-CLOSED] ReminderModule requires closureChecker dependency');
+  }
+
   const { reminderTemplateRepository, reminderGroupRepository, reminderResponseRepository } = dependencies;
 
   const reminderDomainService =
@@ -98,6 +103,7 @@ export function createReminderUseCases(
       reminderGroupRepository,
       reminderDomainService,
       templateMapper,
+      dependencies.closureChecker,
     ),
     listReminderTemplates: new ListReminderTemplatesUseCase(
       reminderTemplateRepository,

@@ -3,10 +3,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Account void-success envelope surface (stage-6 residual 93):
- * close account uses z.null()/ok(null); dead ImportAccountData success dual-track removed.
+ * Account close-response envelope surface (W3 round 2):
+ * close account returns a structured AccountClosureReceiptDTO (P1-1 receipt flow).
  */
-describe('account void success envelope surface', () => {
+describe('account close receipt envelope surface', () => {
   const routes = readFileSync(resolve(__dirname, './routes.ts'), 'utf8');
   const controller = readFileSync(
     resolve(__dirname, '../server/transport/account.controller.ts'),
@@ -22,17 +22,16 @@ describe('account void success envelope surface', () => {
     'utf8',
   );
 
-  it('OpenAPI close uses z.null(); CloseAccountRes is null', () => {
-    expect(routes).toContain("successResponse(z.null(), '注销成功')");
-    expect(lifecycle).toContain('export type CloseAccountRes = null');
+  it('OpenAPI close returns AccountClosureReceiptDTO (structured receipt)', () => {
+    expect(routes).toContain("/me/close");
+    expect(routes).not.toContain("successResponse(z.null(), '注销成功')");
+    expect(lifecycle).toContain('export type CloseAccountRes = AccountClosureReceiptDTO');
     expect(lifecycle).not.toContain('ImportAccountData');
     expect(dtosIndex).not.toContain('ImportAccountDataResultDTO');
   });
 
-  it('controller/electron normalize close to ok(null)', () => {
-    expect(controller).toMatch(/async closeAccount[\s\S]*?Promise<Result<null>>/);
-    expect(controller).toContain('return ok(null)');
+  it('controller returns CloseAccountRes receipt (not null)', () => {
+    expect(controller).toMatch(/async closeAccount[\s\S]*?Promise<Result<.*CloseAccountRes>>/);
     expect(electron).toContain('AccountChannels.CLOSE');
-    expect(electron).toContain('return ok(null)');
   });
 });

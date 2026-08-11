@@ -13,6 +13,7 @@ import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
+  CloseAccountRes,
   UpdateAccountSettingsReq,
   UpdateAccountSettingsRes,
   AccountClientDTO,
@@ -62,7 +63,7 @@ export interface AccountClientPort {
   updateMyProfile(request: UpdateAccountReq): Promise<Result<Account>>;
   checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>>;
   updateSettings(request: UpdateAccountSettingsReq): Promise<Result<UpdateAccountSettingsRes>>;
-  closeAccount(request: CloseAccountReq): Promise<Result<void>>;
+  closeAccount(request: CloseAccountReq): Promise<Result<CloseAccountRes>>;
 }
 
 export class AccountClientService implements AccountClientPort {
@@ -94,7 +95,7 @@ export class AccountClientService implements AccountClientPort {
     return this.apiClient.updateSettings(request);
   }
 
-  async closeAccount(request: CloseAccountReq): Promise<Result<void>> {
+  async closeAccount(request: CloseAccountReq): Promise<Result<CloseAccountRes>> {
     return this.apiClient.closeAccount(request);
   }
 }

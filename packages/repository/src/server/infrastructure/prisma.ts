@@ -30,6 +30,7 @@ import { KnowledgeNoteCommitService } from '../application/services/knowledge-no
 
 export interface CreateRepositoryPrismaModuleOptions {
   readonly storageBaseDir?: string;
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
   readonly runtimeContributions?:
     RepositoryModuleRuntimeContribution | readonly RepositoryModuleRuntimeContribution[];
   readonly githubApp?: {
@@ -55,6 +56,10 @@ export function createRepositoryPrismaModule(
   db: PrismaClient,
   options: CreateRepositoryPrismaModuleOptions = {},
 ): RepositoryModuleInstance {
+  if (options.githubApp && !options.closureChecker) {
+    throw new Error('[FAIL-CLOSED] createRepositoryPrismaModule requires options.closureChecker dependency');
+  }
+
   const connectionRepository = options.githubApp
     ? new KnowledgeRepositoryConnectionPrismaRepository(db)
     : null;
@@ -107,13 +112,14 @@ export function createRepositoryPrismaModule(
         })
       : null;
   const knowledgeNoteCommitService =
-    options.githubApp && connectionRepository && githubAppClient && projectionRepository
+    options.githubApp && connectionRepository && githubAppClient && projectionRepository && options.closureChecker
       ? new KnowledgeNoteCommitService({
           connectionRepository,
           projectionRepository,
           writeRequestRepository: new KnowledgeWriteRequestPrismaRepository(db),
           leaseRepository: leaseRepository ?? undefined,
           githubAppClient,
+          closureChecker: options.closureChecker,
         })
       : null;
 

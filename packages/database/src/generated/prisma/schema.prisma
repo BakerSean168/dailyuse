@@ -397,13 +397,15 @@ model LangGraphCheckpointWrite {
 // Explicit model names avoid confusing provider accounts with MemoFlow Account.
 
 model CloudAuthUser {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   name          String
-  email         String   @unique
-  emailVerified Boolean  @default(false) @map("email_verified")
+  email         String    @unique
+  emailVerified Boolean   @default(false) @map("email_verified")
   image         String?
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  status        String    @default("active")
+  disabledAt    DateTime? @map("disabled_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   sessions         CloudAuthSession[]
   providerAccounts CloudAuthProviderAccount[]
@@ -1219,24 +1221,25 @@ model Relation {
 /// Outbox 消息：跨模块写入与投递意图的 durable 队列。
 /// AggregateRepositoryBase 发布事件失败时落入此表，由 dispatcher 重试投递。
 model OutboxMessage {
-  id             String    @id
-  identityId     String?   @map("identity_id")
-  messageType    String    @map("message_type")
-  schemaVersion  Int       @default(1) @map("schema_version")
-  correlationId  String    @map("correlation_id")
-  causationId    String?   @map("causation_id")
-  payloadJson    String    @map("payload_json")
-  idempotencyKey String?   @unique @map("idempotency_key")
-  status         String    @default("pending")
-  attempts       Int       @default(0)
-  availableAt    DateTime  @default(now()) @map("available_at")
-  lastError      String?   @map("last_error")
-  dispatchedAt   DateTime? @map("dispatched_at")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  ownerToken     String?
-  claimId        String?
-  fencingToken   Int?
-  leaseExpiresAt DateTime? @map("lease_expires_at")
+  id              String    @id
+  identityId      String?   @map("identity_id")
+  messageType     String    @map("message_type")
+  schemaVersion   Int       @default(1) @map("schema_version")
+  correlationId   String    @map("correlation_id")
+  causationId     String?   @map("causation_id")
+  payloadJson     String    @map("payload_json")
+  idempotencyKey  String?   @unique @map("idempotency_key")
+  status          String    @default("pending")
+  attempts        Int       @default(0)
+  availableAt     DateTime  @default(now()) @map("available_at")
+  lastError       String?   @map("last_error")
+  dispatchedAt    DateTime? @map("dispatched_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  ownerToken      String?
+  claimId         String?
+  fencingToken    Int?
+  leaseExpiresAt  DateTime? @map("lease_expires_at")
+  lastHeartbeatAt DateTime? @map("last_heartbeat_at")
 
   @@index([status, availableAt])
   @@index([correlationId])
@@ -1268,6 +1271,37 @@ model ProjectionCursor {
 
   @@id([projector, sourceName])
   @@map("reliable_projection_cursors")
+}
+
+/// 闭户操作表：记录账户注销 saga 的状态、幂等键与恢复点。
+model AccountClosureOperation {
+  id               String    @id @default(uuid())
+  identityId       String    @map("identity_id")
+  idempotencyKey   String    @map("idempotency_key")
+  phase            String
+  status           String
+  attempts         Int       @default(0)
+  version          Int       @default(1)
+  ownerToken       String?   @map("owner_token")
+  leaseExpiresAt   DateTime? @map("lease_expires_at")
+  lastHeartbeatAt  DateTime? @map("last_heartbeat_at")
+  nextRetryAt      DateTime? @map("next_retry_at")
+  deadLetterAt     DateTime? @map("dead_letter_at")
+  eventId          String?   @map("event_id")
+  reason           String?
+  revokedSessions  Int       @default(0) @map("revoked_sessions")
+  piiCleanupStatus String?   @map("pii_cleanup_status")
+  piiReason        String?   @map("pii_reason")
+  lastError        String?   @map("last_error")
+  receiptJson      String?   @map("receipt_json")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  finishedAt       DateTime? @map("finished_at")
+
+  @@unique([identityId, idempotencyKey])
+  @@index([identityId])
+  @@index([identityId, phase])
+  @@map("reliable_account_closure_operations")
 }
 
 // ==========================================

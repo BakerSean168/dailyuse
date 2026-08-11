@@ -11,7 +11,6 @@
  *   DELETE /me             — 注销账户（别名）
  */
 
-import { z } from 'zod';
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import {
@@ -27,7 +26,7 @@ import {
   CloseAccountSchema,
   AccountResponseSchema,
   AvailabilityResponseSchema,
-} from '@memoflow/contracts/account';
+  AccountClosureReceiptSchema,} from '@memoflow/contracts/account';
 import { AccountController } from '../server/transport';
 import type { AccountApplicationPort } from '../server/application';
 
@@ -128,7 +127,7 @@ export function registerAccountRoutes(
       summary: '注销账户',
       request: { body: { content: { 'application/json': { schema: CloseAccountSchema } } } },
       responses: {
-        200: successResponse(z.null(), '注销成功'),
+        200: successResponse(AccountClosureReceiptSchema, '注销成功'),
         400: errorResponse('参数错误'),
       },
     },

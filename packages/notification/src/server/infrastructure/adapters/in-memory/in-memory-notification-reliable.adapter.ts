@@ -58,6 +58,7 @@ export interface SharedOutboxRow {
   schemaVersion: number;
   availableAt: Date;
   dispatchedAt: Date | null;
+  lastHeartbeatAt: Date | null;
 }
 
 const TERMINAL_STATUSES = ['succeeded', 'skipped', 'failed', 'cancelled'] as const;

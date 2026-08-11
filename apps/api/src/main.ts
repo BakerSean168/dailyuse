@@ -27,8 +27,15 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
 import { GovernanceApiModule } from '@memoflow/governance/api';
-import { AccountApiModule } from '@memoflow/account/api';
-import { createCloudAccountProvisioner } from '@memoflow/account';
+import { AccountApiModule, createAccountApiModule } from '@memoflow/account/api';
+import {
+  AccountClosedWorker,
+  PrismaAccountClosureOperationRepository,
+  createCloudAccountProvisioner,
+} from '@memoflow/account';
+import { ReminderAccountClosedConsumer } from '@memoflow/reminder/server';
+import { NotificationAccountClosedConsumer } from '@memoflow/notification/server';
+import { RepositoryAccountClosedConsumer } from '@memoflow/repository/server';
 import {
   createCloudAuth,
   createCloudAuthEmailDelivery,
@@ -40,7 +47,7 @@ import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { createNotificationApiModule } from '@memoflow/notification/api';
 import { createNotificationPrismaScheduleNotificationPort } from '@memoflow/notification/schedule-execution';
-import { ReminderApiModule } from '@memoflow/reminder/api';
+import { createReminderApiModule } from '@memoflow/reminder/api';
 import { createReminderPrismaScheduleExecutionSource } from '@memoflow/reminder/schedule-execution';
 import { createReminderPrismaScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
 import { createRepositoryApiModule } from '@memoflow/repository/api';
@@ -113,6 +120,9 @@ async function bootstrap(): Promise<void> {
   const testEmailLinks = env.LOCAL_VALIDATION
     ? createCloudAuthEmailLinkCapture(baseEmailDelivery)
     : undefined;
+  const closureRepo = new PrismaAccountClosureOperationRepository(prisma);
+  const accountActiveChecker = async (identityId: string) =>
+    (await closureRepo.findActiveByIdentityId(identityId)) !== null;
   const cloudAuth = createCloudAuth({
     database: prisma,
     secret: jwtConfig.secret,
@@ -129,6 +139,7 @@ async function bootstrap(): Promise<void> {
     github: githubOAuthConfig ?? undefined,
     userProvisioner: createCloudAccountProvisioner(prisma),
     emailDelivery: testEmailLinks?.delivery ?? baseEmailDelivery,
+    closureChecker: accountActiveChecker,
   });
 
   // 2. 白名单注册 & 启动
@@ -155,7 +166,7 @@ async function bootstrap(): Promise<void> {
       taskSource: createTaskPrismaScheduleExecutionSource(prisma),
       goalSource: createGoalPrismaScheduleExecutionSource(prisma),
       reminderSource: createReminderPrismaScheduleExecutionSource(prisma),
-      notificationPort: createNotificationPrismaScheduleNotificationPort(prisma),
+      notificationPort: createNotificationPrismaScheduleNotificationPort(prisma, accountActiveChecker),
     },
   });
   const taskApiModule = createTaskApiModule({
@@ -167,6 +178,7 @@ async function bootstrap(): Promise<void> {
   });
   const repositoryApiModule = createRepositoryApiModule({
     storageBaseDir: repositoryStorageBaseDir,
+    closureChecker: accountActiveChecker,
     githubApp: getGithubAppConfig() ?? undefined,
     knowledgeRepositoryCloudDataPurger: new RepositoryKnowledgeCloudDataPurgerAdapter(prisma),
   });
@@ -195,11 +207,12 @@ async function bootstrap(): Promise<void> {
   const app = await bootstrapper
     // === 核心：白名单注册 ===
     .register(GovernanceApiModule) // ✅ 治理模块
-    .register(AccountApiModule) // ✅ 账户模块
+    .register(createAccountApiModule({ cloudAuth })) // ✅ 账户模块
     // 架构决策 A：apps/api（API lane）显式声明其自治掌控的 InApp 渠道 capability。
     // Desktop/Push 渠道 capability 归属于桌面 Desktop lane，单机 API lane 不处理跨进程 Native Notification。
     .register(
       createNotificationApiModule({
+        closureChecker: accountActiveChecker,
         channelCapabilities: [
           {
             channelType: 'InApp',
@@ -209,7 +222,7 @@ async function bootstrap(): Promise<void> {
         ],
       }),
     ) // ✅ 通知模块
-    .register(ReminderApiModule) // ✅ 提醒模块
+    .register(createReminderApiModule({ closureChecker: accountActiveChecker })) // ✅ 提醒模块
     .register(repositoryApiModule) // ✅ 仓库模块
     .register(scheduleApiModule) // ✅ 日程模块
     .register(SettingApiModule) // ✅ 设置模块
@@ -229,6 +242,12 @@ async function bootstrap(): Promise<void> {
   // 5. 注册并启动 Cron Jobs
   scheduler = createCronScheduler({
     cleanupExpiredDeviceCodes: () => cloudAuth.cleanupExpiredDeviceCodes(),
+    processAccountClosedOutbox: () =>
+      new AccountClosedWorker(prisma, {
+        reminderConsumer: new ReminderAccountClosedConsumer(prisma),
+        notificationConsumer: new NotificationAccountClosedConsumer(prisma),
+        repositoryConsumer: new RepositoryAccountClosedConsumer(prisma),
+      }).processPendingMessages(),
   });
   scheduler.start();
 }

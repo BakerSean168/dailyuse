@@ -267,6 +267,7 @@ function createService(
     now?: () => number;
     leaseTtlMs?: number;
     leaseRenewalIntervalMs?: number;
+    closureChecker?: (identityId: string) => Promise<boolean>;
   } = {},
 ) {
   const projectionRepository = overrides.projectionRepository ?? new MemoryProjectionRepository();
@@ -289,6 +290,7 @@ function createService(
       now: overrides.now ?? (() => 1_750_000_000_000),
       leaseTtlMs: overrides.leaseTtlMs,
       leaseRenewalIntervalMs: overrides.leaseRenewalIntervalMs,
+      closureChecker: overrides.closureChecker ?? (async () => false),
     }),
   };
 }
@@ -591,6 +593,19 @@ describe('KnowledgeNoteCommitService', () => {
     });
     expect(createFileCommit).not.toHaveBeenCalled();
     expect(state.writeRequestRepository.rows.size).toBe(0);
+  });
+
+  it('rejects commit request when account is closed or closure in progress', async () => {
+    const closureChecker = vi.fn().mockResolvedValue(true);
+    const { service, github } = createService(githubClient(), { closureChecker });
+
+    const result = await service.create('identity-1', request());
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN', message: 'Account is closed or closure in progress' },
+    });
+    expect(github.createFileCommit).not.toHaveBeenCalled();
   });
 });
 

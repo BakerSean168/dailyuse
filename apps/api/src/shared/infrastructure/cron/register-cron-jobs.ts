@@ -17,7 +17,8 @@ const logger = createLogger('CronJobRegistration');
  * The returned scheduler is not started — call .start() when ready.
  */
 export function createCronScheduler(options?: {
-  cleanupExpiredDeviceCodes: () => Promise<number>;
+  cleanupExpiredDeviceCodes?: () => Promise<number>;
+  processAccountClosedOutbox?: () => Promise<number>;
 }): CronSchedulerManager {
   const scheduler = new CronSchedulerManager();
 
@@ -35,13 +36,27 @@ export function createCronScheduler(options?: {
     });
   }
 
-  if (options) {
+  if (options?.cleanupExpiredDeviceCodes) {
     scheduler.register({
       name: 'cloud-auth:expired-device-code-cleanup',
       schedule: '0 * * * *',
       task: async () => {
-        const deleted = await options.cleanupExpiredDeviceCodes();
+        const deleted = await options.cleanupExpiredDeviceCodes!();
         logger.info('Expired cloud auth device codes removed', { deleted });
+      },
+      timezone: env.TZ,
+    });
+  }
+
+  if (options?.processAccountClosedOutbox) {
+    scheduler.register({
+      name: 'account:closed-outbox-worker',
+      schedule: '*/1 * * * *',
+      task: async () => {
+        const processed = await options.processAccountClosedOutbox!();
+        if (processed > 0) {
+          logger.info('Account closed outbox messages processed', { processed });
+        }
       },
       timezone: env.TZ,
     });

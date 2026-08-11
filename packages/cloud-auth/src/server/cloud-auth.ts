@@ -39,6 +39,7 @@ export interface CloudAuthOptions {
   };
   readonly userProvisioner: CloudUserProvisioner;
   readonly emailDelivery: CloudAuthEmailDelivery;
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
 }
 
 export interface CloudAuth {
@@ -47,9 +48,26 @@ export interface CloudAuth {
   resolvePrincipal(headers: Headers): Promise<CloudPrincipal | null>;
   resolveNodePrincipal(headers: IncomingHttpHeaders): Promise<CloudPrincipal | null>;
   cleanupExpiredDeviceCodes(now?: Date): Promise<number>;
+  revokeAllSessions(identityId: string): Promise<{ revokedSessions: number }>;
 }
 
 export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
+  async function isClosureBlocked(identityId: string): Promise<boolean> {
+    if (options.closureChecker && (await options.closureChecker(identityId))) {
+      return true;
+    }
+    if (typeof options.database.cloudAuthUser?.findUnique === 'function') {
+      const user = await options.database.cloudAuthUser.findUnique({
+        where: { id: identityId },
+        select: { status: true, disabledAt: true },
+      });
+      if (user && (user.status === 'disabled' || user.disabledAt !== null)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   const auth = betterAuth({
     appName: 'MemoFlow',
     baseURL: options.baseUrl,
@@ -61,7 +79,7 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
     }),
     advanced: {
       database: {
-        generateId: ({ model }) => model === 'user' ? IdentityId.generate().toString() : false,
+        generateId: ({ model }) => (model === 'user' ? IdentityId.generate().toString() : false),
       },
     },
     user: { modelName: 'cloudAuthUser' },
@@ -125,6 +143,15 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
           },
         },
       },
+      session: {
+        create: {
+          before: async (session) => {
+            if (await isClosureBlocked(session.userId)) {
+              throw new Error('Account closure in progress or completed');
+            }
+          },
+        },
+      },
     },
     plugins: [
       bearer(),
@@ -140,36 +167,180 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
     ],
   });
 
+  const rawExpressHandler = toNodeHandler(auth);
+  const rawHandler = auth.handler;
+
+  const resolvePrincipal = async (headers: Headers): Promise<CloudPrincipal | null> => {
+    const resolved = await auth.api.getSession({ headers });
+    if (!resolved) return null;
+    if (await isClosureBlocked(resolved.user.id)) return null;
+
+    return {
+      identityId: resolved.user.id,
+      sessionId: resolved.session.id,
+      email: resolved.user.email,
+      emailVerified: resolved.user.emailVerified,
+    };
+  };
+
+  const resolveNodePrincipal = async (headers: IncomingHttpHeaders): Promise<CloudPrincipal | null> => {
+    const resolved = await auth.api.getSession({ headers: fromNodeHeaders(headers) });
+    if (!resolved) return null;
+    if (await isClosureBlocked(resolved.user.id)) return null;
+
+    return {
+      identityId: resolved.user.id,
+      sessionId: resolved.session.id,
+      email: resolved.user.email,
+      emailVerified: resolved.user.emailVerified,
+    };
+  };
+
+  const checkRequestClosure = async (
+    headers: Headers,
+    body?: unknown,
+  ): Promise<Response | null> => {
+    // 1. Check existing session in request headers (e.g. get-session, refresh, or session-authenticated calls)
+    const resolved = await auth.api.getSession({ headers }).catch(() => null);
+    let sessionUserId: string | null = resolved?.user?.id ?? null;
+    if (!sessionUserId) {
+      // Bearer-token sessions (not cookie): resolve via Authorization header
+      const authz = headers.get('authorization') ?? headers.get('Authorization');
+      const bearer = authz?.startsWith('Bearer ') ? authz.slice('Bearer '.length).trim() : null;
+      if (bearer && options.database.cloudAuthSession) {
+        const session = await options.database.cloudAuthSession
+          .findFirst({ where: { token: bearer }, select: { userId: true } })
+          .catch(() => null);
+        if (session?.userId) sessionUserId = session.userId;
+      }
+    }
+    if (sessionUserId && (await isClosureBlocked(sessionUserId))) {
+      return new Response(
+        JSON.stringify({ error: 'Account closure in progress or completed', code: 'ACCOUNT_CLOSED' }),
+        { status: 403, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    // 2. Check email/identifier in body for sign-in calls
+    if (body && typeof body === 'object') {
+      const email = 'email' in body && typeof body.email === 'string' ? body.email : undefined;
+      const identifier =
+        'identifier' in body && typeof body.identifier === 'string' ? body.identifier : undefined;
+      const targetEmail = email || identifier;
+      if (targetEmail) {
+        if (options.database.cloudAuthUser) {
+          const user = await options.database.cloudAuthUser.findFirst({
+            where: { email: targetEmail },
+            select: { id: true },
+          });
+          if (user && (await isClosureBlocked(user.id))) {
+            return new Response(
+              JSON.stringify({ error: 'Account closure in progress or completed', code: 'ACCOUNT_CLOSED' }),
+              { status: 403, headers: { 'content-type': 'application/json' } },
+            );
+          }
+        }
+      }
+    }
+
+    return null;
+  };
+
+  const readExpressBody = async (req: any): Promise<unknown> => {
+    if (req.body !== undefined && req.body !== null) return req.body;
+    if (req.method !== 'POST' && req.method !== 'PUT' && req.method !== 'PATCH') return undefined;
+    if (req.readableEnded || req.destroyed) return undefined;
+
+    return new Promise((resolve) => {
+      let data = '';
+      const onData = (chunk: Buffer | string) => {
+        data += chunk;
+      };
+      const onEnd = () => {
+        cleanup();
+        try {
+          const parsed = JSON.parse(data);
+          req.body = parsed;
+          resolve(parsed);
+        } catch {
+          resolve(undefined);
+        }
+      };
+      const onError = () => {
+        cleanup();
+        resolve(undefined);
+      };
+      const cleanup = () => {
+        if (typeof req.off === 'function') {
+          req.off('data', onData);
+          req.off('end', onEnd);
+          req.off('error', onError);
+        } else if (typeof req.removeListener === 'function') {
+          req.removeListener('data', onData);
+          req.removeListener('end', onEnd);
+          req.removeListener('error', onError);
+        }
+      };
+      req.on('data', onData);
+      req.on('end', onEnd);
+      req.on('error', onError);
+    });
+  };
+
+  const expressHandler: RequestHandler = async (req, res, next) => {
+    const headers = fromNodeHeaders(req.headers);
+    const body = await readExpressBody(req);
+    const closureResponse = await checkRequestClosure(headers, body);
+    if (closureResponse) {
+      res.status(closureResponse.status);
+      for (const [key, value] of closureResponse.headers.entries()) {
+        res.setHeader(key, value);
+      }
+      const text = await closureResponse.text();
+      res.send(text);
+      return;
+    }
+    return rawExpressHandler(req, res);
+  };
+
+  const handler = async (request: Request): Promise<Response> => {
+    let body: unknown = undefined;
+    if (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH') {
+      body = await request.clone().json().catch(() => undefined);
+    }
+    const closureResponse = await checkRequestClosure(request.headers, body);
+    if (closureResponse) {
+      return closureResponse;
+    }
+    return rawHandler(request);
+  };
+
   return {
-    handler: auth.handler,
-    expressHandler: toNodeHandler(auth),
-    async resolvePrincipal(headers) {
-      const resolved = await auth.api.getSession({ headers });
-      if (!resolved) return null;
-
-      return {
-        identityId: resolved.user.id,
-        sessionId: resolved.session.id,
-        email: resolved.user.email,
-        emailVerified: resolved.user.emailVerified,
-      };
-    },
-    async resolveNodePrincipal(headers) {
-      const resolved = await auth.api.getSession({ headers: fromNodeHeaders(headers) });
-      if (!resolved) return null;
-
-      return {
-        identityId: resolved.user.id,
-        sessionId: resolved.session.id,
-        email: resolved.user.email,
-        emailVerified: resolved.user.emailVerified,
-      };
-    },
+    handler,
+    expressHandler,
+    resolvePrincipal,
+    resolveNodePrincipal,
     async cleanupExpiredDeviceCodes(now = new Date()) {
       const result = await options.database.cloudAuthDeviceCode.deleteMany({
         where: { expiresAt: { lt: now } },
       });
       return result.count;
+    },
+    async revokeAllSessions(identityId) {
+      const sessionResult = await options.database.cloudAuthSession.deleteMany({
+        where: { userId: identityId },
+      });
+      await options.database.cloudAuthDeviceCode.deleteMany({
+        where: { userId: identityId },
+      });
+      await options.database.cloudAuthUser.updateMany({
+        where: { id: identityId },
+        data: {
+          status: 'disabled',
+          disabledAt: new Date(),
+        },
+      });
+      return { revokedSessions: sessionResult.count };
     },
   };
 }

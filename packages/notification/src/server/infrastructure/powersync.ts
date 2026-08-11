@@ -285,6 +285,33 @@ export function createDefaultElectronDesktopTransport(optionsOrDb?: unknown): un
  * Creates a notification module instance backed by PowerSync repositories and SQLite durable worker.
  * 创建由 PowerSync 仓储和 SQLite 持久 worker 支持的通知模块实例。
  */
+
+/**
+ * Desktop PowerSync closure gate (see reminder createPowerSyncClosureChecker).
+ * Fails closed when the local Account row is missing/not Active or a local
+ * closure-request marker exists (requested/revoking window).
+ */
+export function createPowerSyncClosureChecker(db: IElectronDatabase): (identityId: string) => Promise<boolean> {
+  return async (identityId: string): Promise<boolean> => {
+    try {
+      const row = await db.getOptional<{ status: string }>(
+        'SELECT status FROM accounts WHERE id = ? LIMIT 1',
+        [identityId],
+      );
+      if (!row || row.status !== 'Active') {
+        return true;
+      }
+      const marker = await db.getOptional<{ identity_id: string }>(
+        'SELECT identity_id FROM account_closure_requested WHERE identity_id = ? LIMIT 1',
+        [identityId],
+      );
+      return marker !== null;
+    } catch {
+      return true; // fail-closed on query failure
+    }
+  };
+}
+
 export function createNotificationPowerSyncModule(
   db: IElectronDatabase,
   options?: NotificationRuntimeContributionsInput | CreateNotificationPowerSyncModuleOptions,
@@ -334,6 +361,8 @@ export function createNotificationPowerSyncModule(
     });
   }
 
+  const closureChecker = createPowerSyncClosureChecker(db);
+
   return createNotificationModule({
     db,
     notificationRepository,
@@ -341,6 +370,7 @@ export function createNotificationPowerSyncModule(
     templateRepository: new PowerSyncNotificationTemplateRepository(db),
     durableRuntime,
     runtimeContributions: runtimeContributions ?? [durableRuntime],
+    closureChecker,
   });
 }
 

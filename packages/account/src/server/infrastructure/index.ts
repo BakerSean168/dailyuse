@@ -8,6 +8,11 @@
 
 /** @internal Concrete Prisma implementation — use IAccountRepository interface instead. Prisma 具体实现 — 请使用 IAccountRepository 接口。 */
 export { PrismaAccountRepository } from './adapters/prisma/account-prisma.repository';
+export { PrismaAccountClosureOperationRepository } from './adapters/prisma/account-closure-operation-prisma.repository';
+export { PrismaCloudAuthRevocationAdapter } from './adapters/cloud-auth/cloud-auth-revocation.adapter';
+export { AccountClosureOutboxEventPublisher } from './adapters/outbox/account-closure-outbox-event-publisher';
+export { AccountClosedWorker } from './workers/account-closed.worker';
+
 /** @internal Concrete PowerSync implementation — use IAccountRepository interface instead. PowerSync 具体实现 — 请使用 IAccountRepository 接口。 */
 export {
   PowerSyncAccountRepository,

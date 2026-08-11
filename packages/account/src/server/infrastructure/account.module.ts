@@ -1,4 +1,4 @@
-import type { IAccountRepository } from '../domain';
+import type { IAccountRepository, IAccountClosureOperationRepository } from '../domain';
 import {
   ListAccountsUseCase,
   GetAccountProfileUseCase,
@@ -6,12 +6,22 @@ import {
   UpdateAccountSettingsUseCase,
   CloseAccountUseCase,
   CheckAvailabilityUseCase,
+  AccountClosureCoordinator,
+  type CloudAuthRevocationPort,
+  type AccountClosureEventPublisher,
+  type Clock,
 } from '../application';
 import type { AccountApplicationPort } from '../application';
 
 /** Explicit dependencies required by the account runtime. */
 export interface AccountModuleDependencies {
   readonly accountRepository: IAccountRepository;
+  readonly closureOperationRepository?: IAccountClosureOperationRepository;
+  readonly revocationPort?: CloudAuthRevocationPort;
+  readonly eventPublisher?: AccountClosureEventPublisher;
+  readonly coordinator?: AccountClosureCoordinator;
+  readonly clock?: Clock;
+  readonly laneCapability?: 'api' | 'desktop';
   readonly runtimeContributions?:
     | AccountModuleRuntimeContribution
     | readonly AccountModuleRuntimeContribution[];
@@ -47,14 +57,48 @@ export interface AccountModuleInstance {
 export function createAccountUseCases(
   dependencies: AccountModuleDependencies,
 ): AccountModuleUseCases {
-  const { accountRepository } = dependencies;
+  const { accountRepository, laneCapability = 'api' } = dependencies;
+
+  let coordinator: AccountClosureCoordinator | null = dependencies.coordinator ?? null;
+
+  if (!coordinator) {
+    if (
+      dependencies.closureOperationRepository &&
+      dependencies.revocationPort &&
+      dependencies.eventPublisher
+    ) {
+      coordinator = new AccountClosureCoordinator({
+        accountRepository,
+        closureOperationRepository: dependencies.closureOperationRepository,
+        revocationPort: dependencies.revocationPort,
+        eventPublisher: dependencies.eventPublisher,
+        clock: dependencies.clock,
+      });
+    }
+  }
+
+  if (!coordinator) {
+    if (laneCapability === 'desktop') {
+      // Desktop lane capability declaration: closure is delegated to Cloud API
+      coordinator = {
+        async execute(): Promise<never> {
+          throw new Error('Account closure must be initiated through the Cloud API endpoint');
+        },
+      } as unknown as AccountClosureCoordinator;
+    } else {
+      // API lane fail-fast check
+      throw new Error(
+        'CloseAccountUseCase requires AccountClosureCoordinator or (closureOperationRepository, revocationPort, eventPublisher) to be explicitly provided on API lane.',
+      );
+    }
+  }
 
   return {
     listAccounts: new ListAccountsUseCase(accountRepository),
     getProfile: new GetAccountProfileUseCase(accountRepository),
     updateProfile: new UpdateAccountProfileUseCase(accountRepository),
     updateSettings: new UpdateAccountSettingsUseCase(accountRepository),
-    closeAccount: new CloseAccountUseCase(accountRepository),
+    closeAccount: new CloseAccountUseCase(coordinator),
     checkAvailability: new CheckAvailabilityUseCase(accountRepository),
   };
 }
@@ -83,7 +127,8 @@ export function createAccountModule(
 ): AccountModuleInstance {
   const { accountRepository } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
-  const useCases = createAccountUseCases({ accountRepository });
+  const useCases = createAccountUseCases(dependencies);
+
   let started = false;
 
   return {

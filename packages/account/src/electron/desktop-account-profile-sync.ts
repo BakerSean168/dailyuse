@@ -19,8 +19,16 @@ export interface DesktopAccountProfileSyncOptions {
   getCloudAccessToken(): Promise<string | null>;
   pushCloudProfile(token: string, request: UpdateAccountReq): Promise<void>;
   updateLocalProfileMetadata?(request: UpdateAccountReq): Promise<void>;
-  closeCloudAccount?(token: string, request: { reason: string }): Promise<void>;
-  afterCloudAccountClosed?(): Promise<void>;
+  closeCloudAccount?(
+    token: string,
+    request: { reason: string },
+  ): Promise<import('@memoflow/contracts/account').AccountClosureReceiptDTO>;
+  /** Set the local closure-requested marker BEFORE the cloud close call (required, fail-closed). */
+  markAccountClosing(): Promise<void>;
+  /** Clear the marker when the cloud close FAILS (restore local access; no permanent lock). */
+  clearAccountClosingMarker(identityId: string): Promise<void>;
+  /** Called after the cloud close succeeds; must NOT reopen local new-work before profile teardown. */
+  afterCloudAccountClosed(): Promise<void>;
 }
 
 export class DesktopAccountProfileSync {

@@ -22,13 +22,19 @@ import { ReminderTemplateClientMapper } from '../../mappers/reminder-template-cl
 export class CreateReminderTemplateUseCase {
   private readonly reminderDomainService: ReminderDomainService;
   private readonly templateMapper: ReminderTemplateClientMapper;
+  private readonly closureChecker: (identityId: string) => Promise<boolean>;
 
   constructor(
     private readonly templateRepository: IReminderTemplateRepository,
     private readonly groupRepository: IReminderGroupRepository,
     reminderDomainService?: ReminderDomainService,
     templateMapper?: ReminderTemplateClientMapper,
+    closureChecker?: (identityId: string) => Promise<boolean>,
   ) {
+    if (!closureChecker) {
+      throw new Error('[FAIL-CLOSED] CreateReminderTemplateUseCase requires closureChecker');
+    }
+    this.closureChecker = closureChecker;
     this.reminderDomainService =
       reminderDomainService ?? new ReminderDomainService(templateRepository, groupRepository);
     this.templateMapper =
@@ -39,6 +45,9 @@ export class CreateReminderTemplateUseCase {
     input: CreateReminderTemplateReq,
     cx: ExecutionContext,
   ): Promise<Result<ReminderTemplateClientDTO>> {
+    if (await this.closureChecker(cx.identityId)) {
+      return error('FORBIDDEN', 'Account is closed or closure in progress');
+    }
     // Residual 835: request activeTime is already ActiveTimeConfigDTO (activatedAt).
     const normalizedInput = {
       ...input,

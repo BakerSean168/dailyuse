@@ -73,6 +73,21 @@ const account_profile_sync_outbox = new Table(
   { localOnly: true },
 );
 
+/**
+ * Local-only marker set BEFORE a cloud account-close request starts (the
+ * requested/revoking window where the remote Account row is still Active).
+ * Local new-work entrypoints (AI / scheduler / use-cases) fail-closed against
+ * this marker so the device stops creating work the moment the user initiates
+ * close, not only after the cloud saga completes.
+ */
+const account_closure_requested = new Table(
+  {
+    identity_id: column.text,
+    requested_at: column.integer,
+  },
+  { localOnly: true },
+);
+
 // ──────────────────────────────────────────────
 // Settings
 // ──────────────────────────────────────────────
@@ -1036,6 +1051,7 @@ export const PowerSyncAppSchema = new Schema({
   accounts,
   profile_adoption_journal,
   account_profile_sync_outbox,
+  account_closure_requested,
   user_settings,
   // Goal
   goals,

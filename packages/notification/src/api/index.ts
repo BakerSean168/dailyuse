@@ -28,5 +28,5 @@
  * 路由前缀：/notifications
  */
 
-export { NotificationApiModule, createNotificationApiModule } from './module';
+export { createNotificationApiModule } from './module';
 export type { NotificationApiModuleContext, NotificationApiModuleDef, NotificationApiModuleOptions } from './module';

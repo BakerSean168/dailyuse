@@ -257,4 +257,38 @@ describe('BackendAutomationToolExecutorAdapter', () => {
     expect(mocks.createTaskTemplate).not.toHaveBeenCalled();
     expect(mocks.createReminderTemplate).not.toHaveBeenCalled();
   });
+
+  it('closureChecker blocks when account closure operation is requested or revoking or closing', async () => {
+    let passedClosureChecker: ((identityId: string) => Promise<boolean>) | undefined;
+    const { createReminderPrismaModule } = await import('@memoflow/reminder');
+    vi.mocked(createReminderPrismaModule).mockImplementationOnce((_db, options: any) => {
+      passedClosureChecker = options?.closureChecker;
+      return {
+        api: {
+          createTemplate: mocks.createReminderTemplate,
+        },
+      } as any;
+    });
+
+    const mockDb = {
+      account: {
+        findUnique: vi.fn().mockResolvedValue({ status: 'Active' }),
+      },
+      accountClosureOperation: {
+        findFirst: vi.fn().mockResolvedValue({ id: 'op-1', phase: 'requested' }),
+      },
+    };
+
+    new BackendAutomationToolExecutorAdapter(mockDb as any, 'storage');
+    expect(passedClosureChecker).toBeDefined();
+
+    const isBlocked = await passedClosureChecker!('identity-closing');
+    expect(isBlocked).toBe(true);
+    expect(mockDb.accountClosureOperation.findFirst).toHaveBeenCalledWith({
+      where: {
+        identityId: 'identity-closing',
+        phase: { in: ['requested', 'revoking', 'closing'] },
+      },
+    });
+  });
 });

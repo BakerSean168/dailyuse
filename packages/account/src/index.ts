@@ -14,6 +14,8 @@ export {
   createAccountPrismaModule,
   createAccountPrismaRepository,
   createCloudAccountProvisioner,
+  AccountClosedWorker,
+  PrismaAccountClosureOperationRepository,
   type AccountModuleDependencies,
   type AccountModuleInstance,
   type CreateAccountPowerSyncModuleOptions,

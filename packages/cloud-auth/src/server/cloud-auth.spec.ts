@@ -172,4 +172,108 @@ describe('cloud auth contract', () => {
       where: { expiresAt: { lt: now } },
     });
   });
+
+  it('denies session resolution when closureChecker returns true', async () => {
+    const closureChecker = vi.fn().mockResolvedValue(true);
+    const user = {
+      id: 'user-closing-123',
+      email: 'closing@example.com',
+      emailVerified: true,
+      status: 'active',
+      disabledAt: null,
+    };
+    const session = {
+      id: 'session-123',
+      userId: user.id,
+      token: 'closing-token',
+      expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+      user,
+    };
+
+    const database = {
+      cloudAuthSession: { findFirst: vi.fn().mockResolvedValue(session) },
+      cloudAuthUser: {
+        findFirst: vi.fn().mockResolvedValue(user),
+        findUnique: vi.fn().mockResolvedValue(user),
+      },
+      cloudAuthDeviceCode: { deleteMany: vi.fn() },
+    };
+
+    const auth = createCloudAuth({
+      database: database as never,
+      secret: 'test-secret-with-at-least-thirty-two-characters',
+      baseUrl: 'https://api.memo.test/api/auth',
+      deviceVerificationUrl: 'https://app.memo.test/auth/device',
+      trustedOrigins: ['https://app.memo.test'],
+      userProvisioner: { provision: vi.fn() },
+      emailDelivery: { send: vi.fn() },
+      closureChecker,
+    });
+
+    const headers = new Headers({ authorization: 'Bearer closing-token' });
+    const principal = await auth.resolvePrincipal(headers);
+
+    expect(principal).toBeNull();
+    expect(closureChecker).toHaveBeenCalledWith(user.id);
+  });
+
+  it('denies raw endpoint calls (/api/auth/get-session & sign-in) with 403 when closure is in progress', async () => {
+    const closureChecker = vi.fn().mockResolvedValue(true);
+    const user = {
+      id: 'user-closing-456',
+      email: 'closing-raw@example.com',
+      emailVerified: true,
+      status: 'active',
+      disabledAt: null,
+    };
+    const session = {
+      id: 'session-456',
+      userId: user.id,
+      token: 'raw-closing-token',
+      expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+      user,
+    };
+
+    const database = {
+      cloudAuthSession: { findFirst: vi.fn().mockResolvedValue(session) },
+      cloudAuthUser: {
+        findFirst: vi.fn().mockResolvedValue(user),
+        findUnique: vi.fn().mockResolvedValue(user),
+      },
+      cloudAuthDeviceCode: { deleteMany: vi.fn() },
+    };
+
+    const auth = createCloudAuth({
+      database: database as never,
+      secret: 'test-secret-with-at-least-thirty-two-characters',
+      baseUrl: 'https://api.memo.test/api/auth',
+      deviceVerificationUrl: 'https://app.memo.test/auth/device',
+      trustedOrigins: ['https://app.memo.test'],
+      userProvisioner: { provision: vi.fn() },
+      emailDelivery: { send: vi.fn() },
+      closureChecker,
+    });
+
+    // Test raw get-session with Bearer token
+    const getSessionRes = await auth.handler(
+      new Request('https://api.memo.test/api/auth/get-session', {
+        headers: { authorization: 'Bearer raw-closing-token' },
+      }),
+    );
+    expect(getSessionRes.status).toBe(403);
+    const body1 = (await getSessionRes.json()) as { error: string };
+    expect(body1.error).toBe('Account closure in progress or completed');
+
+    // Test raw sign-in with email body
+    const signInRes = await auth.handler(
+      new Request('https://api.memo.test/api/auth/sign-in/email', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'closing-raw@example.com', password: 'password123' }),
+      }),
+    );
+    expect(signInRes.status).toBe(403);
+    const body2 = (await signInRes.json()) as { error: string };
+    expect(body2.error).toBe('Account closure in progress or completed');
+  });
 });

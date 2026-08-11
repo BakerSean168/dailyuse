@@ -2,6 +2,22 @@
   "version": 2,
   "primary": [
     {
+      "path": "apps/api/src/__tests__/integration/account-closure-consumers.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "apps/api/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/api/src/__tests__/integration/express-auth-closure.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "apps/api/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/api/src/__tests__/integration/task-goal-host-restart.integration.test.ts",
       "primarySuite": "integration",
       "collectors": [
@@ -1405,6 +1421,24 @@
       ]
     },
     {
+      "path": "packages/account/src/server/application/services/__tests__/account-closure-coordinator.integration.spec.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/account/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/account/src/server/application/services/__tests__/account-closure-coordinator.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/account/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/account/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/account/src/server/application/use-cases/commands/__tests__/close-account.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -1533,6 +1567,22 @@
       "measurementCollectors": [
         "packages/account/vitest.config.ts"
       ]
+    },
+    {
+      "path": "packages/account/src/server/infrastructure/adapters/prisma/__tests__/account-closure-coordinator-db.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/account/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/account/src/server/infrastructure/adapters/prisma/__tests__/account-closure-operation-prisma.repository.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/account/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
     },
     {
       "path": "packages/account/src/server/infrastructure/adapters/prisma/__tests__/account-ownership.surface.spec.ts",
@@ -6304,6 +6354,16 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-powersync.closure-checker.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-ownership.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6791,6 +6851,16 @@
     },
     {
       "path": "packages/reminder/src/server/domain/value-objects/__tests__/reminder-value-objects.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/reminder/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/reminder/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/reminder/src/server/infrastructure/__tests__/powersync.closure-checker.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/reminder/vitest.config.ts"
@@ -8828,7 +8898,7 @@
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 1
+      "fileCount": 3
     },
     {
       "id": "apps/api/vitest.config.ts",
@@ -8877,14 +8947,21 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 23
+      "fileCount": 24
     },
     {
       "id": "packages/account/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 23
+      "fileCount": 24
+    },
+    {
+      "id": "packages/account/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 3
     },
     {
       "id": "packages/ai/vitest.config.ts",
@@ -9045,7 +9122,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "id": "packages/notification/vitest.integration.config.ts",
@@ -9059,7 +9136,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "id": "packages/patterns/vitest.config.ts",
@@ -9080,7 +9157,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 47
+      "fileCount": 48
     },
     {
       "id": "packages/reminder/vitest.integration.config.ts",
@@ -9094,7 +9171,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 47
+      "fileCount": 48
     },
     {
       "id": "packages/reminder/vitest.use-cases.config.ts",
@@ -9381,6 +9458,7 @@
       "packages/account/src/electron/account-electron.surface.spec.ts",
       "packages/account/src/electron/desktop-account-profile-sync.spec.ts",
       "packages/account/src/electron/index.spec.ts",
+      "packages/account/src/server/application/services/__tests__/account-closure-coordinator.spec.ts",
       "packages/account/src/server/application/use-cases/commands/__tests__/close-account.test.ts",
       "packages/account/src/server/application/use-cases/commands/__tests__/update-account-profile.test.ts",
       "packages/account/src/server/application/use-cases/commands/__tests__/update-account-settings.test.ts",
@@ -9677,6 +9755,7 @@
       "packages/notification/src/server/domain/value-objects/__tests__/notification-template-config.spec.ts",
       "packages/notification/src/server/domain/value-objects/__tests__/notification-value-objects.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-powersync-durable-worker.spec.ts",
+      "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-powersync.closure-checker.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-preference-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-template-ownership.surface.spec.ts",
@@ -9721,6 +9800,7 @@
       "packages/reminder/src/server/domain/value-objects/__tests__/reminder-enums.spec.ts",
       "packages/reminder/src/server/domain/value-objects/__tests__/reminder-template-id.spec.ts",
       "packages/reminder/src/server/domain/value-objects/__tests__/reminder-value-objects.spec.ts",
+      "packages/reminder/src/server/infrastructure/__tests__/powersync.closure-checker.spec.ts",
       "packages/reminder/src/server/infrastructure/adapters/__tests__/account-timezone-adapter.spec.ts",
       "packages/reminder/src/server/infrastructure/adapters/prisma/__tests__/reminder-response-ownership.surface.spec.ts",
       "packages/reminder/src/server/infrastructure/adapters/prisma/__tests__/reminder-template-ownership.surface.spec.ts",
@@ -9853,8 +9933,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 839,
-    "integration": 12,
+    "unit": 842,
+    "integration": 17,
     "smoke": 2,
     "boundary-ipc": 9,
     "boundary-main": 5,

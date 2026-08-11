@@ -14,6 +14,7 @@ import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
+  CloseAccountRes,
   UpdateAccountSettingsReq,
   UpdateAccountSettingsRes,
 } from '@memoflow/contracts/account';
@@ -41,7 +42,7 @@ export class AccountHttpAdapter implements IAccountApiClient {
     return this.httpClient.post(`${this.baseUrl}/availability`, request);
   }
 
-  async closeAccount(request: CloseAccountReq): Promise<Result<void>> {
+  async closeAccount(request: CloseAccountReq): Promise<Result<CloseAccountRes>> {
     return this.httpClient.post(`${this.baseUrl}/me/close`, request);
   }
 }

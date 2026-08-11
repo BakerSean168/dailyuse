@@ -30,7 +30,12 @@ describe('CreateNotificationUseCase', () => {
       findByIdentityId: vi.fn().mockResolvedValue(null),
     });
 
-    useCase = new CreateNotificationUseCase(notificationRepo, templateRepo, preferenceRepo);
+    useCase = new CreateNotificationUseCase(
+      notificationRepo,
+      templateRepo,
+      preferenceRepo,
+      async () => false,
+    );
   });
 
   it('should create a notification and return a client DTO', async () => {
@@ -146,5 +151,28 @@ describe('CreateNotificationUseCase', () => {
     expect(typeof result.data.createdAt).toBe('number');
     expect(typeof result.data.updatedAt).toBe('number');
     expect(result.data.version).toBe(1);
+  });
+
+  it('should return FORBIDDEN error when account closure is active', async () => {
+    const closureChecker = vi.fn().mockResolvedValue(true);
+    const closureUseCase = new CreateNotificationUseCase(
+      notificationRepo,
+      templateRepo,
+      preferenceRepo,
+      closureChecker,
+    );
+
+    const result = await closureUseCase.execute({
+      identityId: anIdentityId(),
+      title: 'Closure Test',
+      content: 'Content',
+      type: NotificationType.Info,
+      category: NotificationCategory.System,
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected error');
+    expect(result.error.code).toBe('FORBIDDEN');
+    expect(result.error.message).toContain('Account is closed');
   });
 });

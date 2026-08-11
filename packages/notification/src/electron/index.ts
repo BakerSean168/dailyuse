@@ -18,6 +18,7 @@ import {
   type IElectronModuleContext,
 } from '@memoflow/contracts/electron';
 import { fail, ok } from '@memoflow/contracts/result';
+import { createPowerSyncClosureChecker } from '../server/infrastructure/powersync';
 import { CreateNotificationUseCase } from '../commands';
 import type { ScheduleNotificationPort } from '../schedule-execution';
 import {
@@ -75,6 +76,7 @@ export function createNotificationPowerSyncScheduleNotificationPort(
     new PowerSyncNotificationRepository(db),
     new PowerSyncNotificationTemplateRepository(db),
     new PowerSyncNotificationPreferenceRepository(db),
+    createPowerSyncClosureChecker(db),
   );
 
   return {

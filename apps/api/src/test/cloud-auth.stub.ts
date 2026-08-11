@@ -8,6 +8,7 @@ export function createCloudAuthStub(): CloudAuth {
     },
     resolvePrincipal: async () => null,
     resolveNodePrincipal: async () => null,
+    revokeAllSessions: async () => ({ revokedSessions: 0 }),
     cleanupExpiredDeviceCodes: async () => 0,
   };
 }

@@ -30,6 +30,10 @@
       "types": "./dist/client/index.d.ts",
       "import": "./dist/client/index.js"
     },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    },
     "./electron": {
       "types": "./dist/electron/index.d.ts",
       "import": "./dist/electron/index.js"

@@ -22,6 +22,7 @@ import {
 } from './adapters/deliverers/real-channel-deliverers';
 
 export interface CreateNotificationPrismaModuleOptions {
+  readonly closureChecker: (identityId: string) => Promise<boolean>;
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
   readonly durableRuntime?: import('./runtime/notification.runtime').NotificationDurableRuntimePort;
   readonly channelDeliverer?: import('./runtime/notification.runtime').NotificationChannelDeliverer;
@@ -33,8 +34,12 @@ export interface CreateNotificationPrismaModuleOptions {
 
 export function createNotificationPrismaModule(
   db: PrismaClient,
-  options: CreateNotificationPrismaModuleOptions = {},
+  options: CreateNotificationPrismaModuleOptions,
 ): NotificationModuleInstance {
+  if (!options?.closureChecker) {
+    throw new Error('[FAIL-CLOSED] createNotificationPrismaModule requires options.closureChecker');
+  }
+
   const metricsService = new NotificationMetricsService();
   const notificationRepository = new NotificationPrismaRepository(db, metricsService);
   const reliableAdapter = new NotificationReliableOperationPrismaAdapter(db, metricsService);
@@ -64,6 +69,7 @@ export function createNotificationPrismaModule(
     notificationRepository,
     preferenceRepository: new NotificationPreferencePrismaRepository(db),
     templateRepository: new NotificationTemplatePrismaRepository(db),
+    closureChecker: options.closureChecker,
     durableRuntime,
     runtimeContributions: options.runtimeContributions ?? [durableRuntime],
   });
@@ -79,12 +85,17 @@ export function createNotificationPrismaRepositories(db: PrismaClient) {
 
 export function createNotificationPrismaScheduleNotificationPort(
   db: PrismaClient,
+  closureChecker: (identityId: string) => Promise<boolean>,
 ): ScheduleNotificationPort {
+  if (!closureChecker) {
+    throw new Error('[FAIL-CLOSED] createNotificationPrismaScheduleNotificationPort requires closureChecker');
+  }
   const repositories = createNotificationPrismaRepositories(db);
   const createNotification = new CreateNotificationUseCase(
     repositories.notificationRepository,
     repositories.notificationTemplateRepository,
     repositories.notificationPreferenceRepository,
+    closureChecker,
   );
 
   return {

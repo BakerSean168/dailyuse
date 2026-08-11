@@ -4,14 +4,22 @@ import type { IAccountRepository } from '../../../../domain/repositories/i-accou
 import { Account } from '../../../../domain/aggregates/account';
 import { IdentityId } from '@memoflow/domain-shared/shared';
 import { CloseAccountUseCase } from '../close-account.use-case';
+import { AccountClosureCoordinator } from '../../../services/account-closure-coordinator';
+import { InMemoryAccountClosureOperationRepository } from '../../../../infrastructure/adapters/in-memory/account-closure-operation-in-memory.repository';
+import type { CloudAuthRevocationPort } from '../../../ports/cloud-auth-revocation.port';
+import type { AccountClosureEventPublisher } from '../../../ports/account-closure-event-publisher.port';
 
 describe('CloseAccountUseCase', () => {
   let repo: ReturnType<typeof createMockRepo<IAccountRepository>>;
+  let closureOpRepo: InMemoryAccountClosureOperationRepository;
+  let mockRevocationPort: CloudAuthRevocationPort;
+  let mockEventPublisher: AccountClosureEventPublisher;
+  let coordinator: AccountClosureCoordinator;
   let useCase: CloseAccountUseCase;
 
-  function anAccount(overrides: { email?: string } = {}) {
+  function anAccount(overrides: { id?: IdentityId; email?: string } = {}) {
     return Account.create({
-      id: IdentityId.generate(),
+      id: overrides.id ?? IdentityId.generate(),
       email: overrides.email ?? 'test@example.com',
     });
   }
@@ -21,23 +29,48 @@ describe('CloseAccountUseCase', () => {
     repo = createMockRepo<IAccountRepository>({
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new CloseAccountUseCase(repo);
+    closureOpRepo = new InMemoryAccountClosureOperationRepository();
+    mockRevocationPort = {
+      revokeAll: vi.fn().mockResolvedValue({ revokedSessions: 1 }),
+    };
+    mockEventPublisher = {
+      publishAccountClosed: vi.fn().mockResolvedValue(undefined),
+    };
+    coordinator = new AccountClosureCoordinator({
+      accountRepository: repo,
+      closureOperationRepository: closureOpRepo,
+      revocationPort: mockRevocationPort,
+      eventPublisher: mockEventPublisher,
+    });
+    useCase = new CloseAccountUseCase(coordinator);
   });
 
-  it('should close an active account', async () => {
+  it('should close an active account and return closure receipt', async () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute({ reason: 'Test', feedback: '' }, { identityId: account.id.toString() });
+    const result = await useCase.execute(
+      { reason: 'Test', feedback: '' },
+      { identityId: account.id.toString() },
+    );
 
     expect(result.ok).toBe(true);
-    expect(repo.save).toHaveBeenCalledTimes(1);
+    if (result.ok) {
+      expect(result.data.status).toBe('succeeded');
+      expect(result.data.phase).toBe('closed');
+    }
+    expect(repo.save).toHaveBeenCalled();
+    expect(mockRevocationPort.revokeAll).toHaveBeenCalledWith(account.id.toString());
+    expect(mockEventPublisher.publishAccountClosed).toHaveBeenCalled();
   });
 
   it('should return NOT_FOUND if account not found', async () => {
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-    const result = await useCase.execute({ reason: 'Test', feedback: '' }, { identityId: 'nonexistent' });
+    const result = await useCase.execute(
+      { reason: 'Test', feedback: '' },
+      { identityId: 'nonexistent' },
+    );
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -45,13 +78,19 @@ describe('CloseAccountUseCase', () => {
     }
   });
 
-  it('should propagate aggregate close() errors', async () => {
+  it('should handle already closed account idempotently and return succeeded receipt', async () => {
     const account = anAccount();
     account.close(); // first close succeeds
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    await expect(
-      useCase.execute({ reason: 'Again', feedback: '' }, { identityId: account.id.toString() }),
-    ).rejects.toThrow('Account is already closed');
+    const result = await useCase.execute(
+      { reason: 'Again', feedback: '' },
+      { identityId: account.id.toString() },
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.status).toBe('succeeded');
+    }
   });
 });

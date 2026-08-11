@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "账户模块 - 用户账户生命周期管理",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -37,7 +39,11 @@
     "express": "^5.2.1",
     "tslib": "^2.3.0",
     "zod": "^4.4.3",
-    "@memoflow/time": "workspace:*"
+    "@memoflow/time": "workspace:*",
+    "@memoflow/cloud-auth": "workspace:*",
+    "@memoflow/reminder": "workspace:*",
+    "@memoflow/notification": "workspace:*",
+    "@memoflow/repository": "workspace:*"
   },
   "devDependencies": {
     "@types/express": "^5.0.0"

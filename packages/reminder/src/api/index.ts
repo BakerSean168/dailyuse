@@ -20,5 +20,5 @@
  * 路由前缀：/reminders
  */
 
-export { ReminderApiModule } from './module';
+export { createReminderApiModule } from './module';
 export type { ReminderApiModuleContext, ReminderApiModuleDef } from './module';

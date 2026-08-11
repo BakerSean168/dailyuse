@@ -330,6 +330,8 @@ exports.Prisma.CloudAuthUserScalarFieldEnum = {
   email: 'email',
   emailVerified: 'emailVerified',
   image: 'image',
+  status: 'status',
+  disabledAt: 'disabledAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -799,7 +801,8 @@ exports.Prisma.OutboxMessageScalarFieldEnum = {
   ownerToken: 'ownerToken',
   claimId: 'claimId',
   fencingToken: 'fencingToken',
-  leaseExpiresAt: 'leaseExpiresAt'
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastHeartbeatAt: 'lastHeartbeatAt'
 };
 
 exports.Prisma.InboxReceiptScalarFieldEnum = {
@@ -817,6 +820,31 @@ exports.Prisma.ProjectionCursorScalarFieldEnum = {
   lastProcessedAt: 'lastProcessedAt',
   version: 'version',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountClosureOperationScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  idempotencyKey: 'idempotencyKey',
+  phase: 'phase',
+  status: 'status',
+  attempts: 'attempts',
+  version: 'version',
+  ownerToken: 'ownerToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastHeartbeatAt: 'lastHeartbeatAt',
+  nextRetryAt: 'nextRetryAt',
+  deadLetterAt: 'deadLetterAt',
+  eventId: 'eventId',
+  reason: 'reason',
+  revokedSessions: 'revokedSessions',
+  piiCleanupStatus: 'piiCleanupStatus',
+  piiReason: 'piiReason',
+  lastError: 'lastError',
+  receiptJson: 'receiptJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  finishedAt: 'finishedAt'
 };
 
 exports.Prisma.ReminderTemplateScalarFieldEnum = {
@@ -1555,6 +1583,7 @@ exports.Prisma.ModelName = {
   OutboxMessage: 'OutboxMessage',
   InboxReceipt: 'InboxReceipt',
   ProjectionCursor: 'ProjectionCursor',
+  AccountClosureOperation: 'AccountClosureOperation',
   ReminderTemplate: 'ReminderTemplate',
   ReminderGroup: 'ReminderGroup',
   ReminderInstance: 'ReminderInstance',

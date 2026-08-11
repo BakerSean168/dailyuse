@@ -25,6 +25,7 @@ model OutboxMessage {
   claimId        String?
   fencingToken   Int?
   leaseExpiresAt DateTime? @map("lease_expires_at")
+  lastHeartbeatAt DateTime? @map("last_heartbeat_at")
 
   @@index([status, availableAt])
   @@index([correlationId])
@@ -57,3 +58,35 @@ model ProjectionCursor {
   @@id([projector, sourceName])
   @@map("reliable_projection_cursors")
 }
+
+/// 闭户操作表：记录账户注销 saga 的状态、幂等键与恢复点。
+model AccountClosureOperation {
+  id               String    @id @default(uuid())
+  identityId       String    @map("identity_id")
+  idempotencyKey   String    @map("idempotency_key")
+  phase            String
+  status           String
+  attempts         Int       @default(0)
+  version          Int       @default(1)
+  ownerToken       String?   @map("owner_token")
+  leaseExpiresAt   DateTime? @map("lease_expires_at")
+  lastHeartbeatAt  DateTime? @map("last_heartbeat_at")
+  nextRetryAt      DateTime? @map("next_retry_at")
+  deadLetterAt     DateTime? @map("dead_letter_at")
+  eventId          String?   @map("event_id")
+  reason           String?
+  revokedSessions  Int       @default(0) @map("revoked_sessions")
+  piiCleanupStatus String?   @map("pii_cleanup_status")
+  piiReason        String?   @map("pii_reason")
+  lastError        String?   @map("last_error")
+  receiptJson      String?   @map("receipt_json")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  finishedAt       DateTime? @map("finished_at")
+
+  @@unique([identityId, idempotencyKey])
+  @@index([identityId])
+  @@index([identityId, phase])
+  @@map("reliable_account_closure_operations")
+}
+

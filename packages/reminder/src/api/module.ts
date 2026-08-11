@@ -30,6 +30,11 @@ import { registerReminderRoutes } from './routes';
  */
 export type ReminderApiModuleContext = ServerModuleContext<PrismaClient>;
 
+export interface ReminderApiModuleOptions {
+  /** Required: production fail-closed guard for new-work entrypoints. */
+  readonly closureChecker: (identityId: string) => Promise<boolean>;
+}
+
 export interface ReminderApiModuleDef {
   readonly name: string;
   register(context: ReminderApiModuleContext): Promise<void> | void;
@@ -38,44 +43,55 @@ export interface ReminderApiModuleDef {
 
 let activeReminderModule: ReminderModuleInstance | null = null;
 
-export const ReminderApiModule: ReminderApiModuleDef = {
-  name: 'Reminder',
+export function createReminderApiModule(
+  options: ReminderApiModuleOptions,
+): ReminderApiModuleDef {
+  return {
+    name: 'Reminder',
 
-  register(context) {
-    const { router, middleware, db } = context;
+    register(context) {
+      const { router, middleware, db } = context;
 
-    const repositories = createReminderPrismaRepositories(db);
-    const cronJob = createReminderTriggerCronJob({
-      reminderTemplateRepository: repositories.reminderTemplateRepository,
-      reminderGroupRepository: repositories.reminderGroupRepository,
-      reliablePort: repositories.reliablePort,
-      transactionRunner: repositories.transactionRunner,
-    });
+      const repositories = createReminderPrismaRepositories(db);
+      const cronJob = createReminderTriggerCronJob({
+        reminderTemplateRepository: repositories.reminderTemplateRepository,
+        reminderGroupRepository: repositories.reminderGroupRepository,
+        reliablePort: repositories.reliablePort,
+        transactionRunner: repositories.transactionRunner,
+      });
 
-    const runtimeContribution = createReminderRuntimeContribution({
-      cronContribution: cronJob,
-    });
+      const runtimeContribution = createReminderRuntimeContribution({
+        cronContribution: cronJob,
+      });
 
-    const reminderModule = createReminderPrismaModule(db, {
-      runtimeContributions: runtimeContribution,
-    });
-    activeReminderModule = reminderModule;
-    reminderModule.start();
+      if (!options.closureChecker) {
+        throw new Error('[FAIL-CLOSED] createReminderApiModule requires closureChecker');
+      }
+      const closureChecker = options.closureChecker;
 
-    // 2. Create and mount routes (inject platform middleware)
-    //    创建并挂载路由（注入平台中间件）
-    const reminderRoutes = registerReminderRoutes(
-      reminderModule.api,
-      middleware,
-      context.openApiRegistry,
-    );
-    router.use('/reminders', reminderRoutes);
-  },
+      const reminderModule = createReminderPrismaModule(db, {
+        closureChecker,
+        runtimeContributions: runtimeContribution,
+      });
+      activeReminderModule = reminderModule;
+      reminderModule.start();
 
-  async destroy() {
-    if (activeReminderModule) {
-      await activeReminderModule.dispose();
-      activeReminderModule = null;
-    }
-  },
-};
+      // 2. Create and mount routes (inject platform middleware)
+      //    创建并挂载路由（注入平台中间件）
+      const reminderRoutes = registerReminderRoutes(
+        reminderModule.api,
+        middleware,
+        context.openApiRegistry,
+      );
+      router.use('/reminders', reminderRoutes);
+    },
+
+    async destroy() {
+      if (activeReminderModule) {
+        await activeReminderModule.dispose();
+        activeReminderModule = null;
+      }
+    },
+  };
+}
+

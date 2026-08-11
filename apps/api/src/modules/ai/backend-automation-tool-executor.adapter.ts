@@ -41,7 +41,24 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
   constructor(db: PrismaClient, storageBaseDir: string) {
     this.goalModule = createGoalPrismaModule(db);
     this.taskModule = createTaskPrismaModule(db);
-    this.reminderModule = createReminderPrismaModule(db);
+    this.reminderModule = createReminderPrismaModule(db, {
+      closureChecker: async (identityId: string) => {
+        const account = await db.account.findUnique({
+          where: { id: identityId },
+          select: { status: true },
+        });
+        if (!account || account.status === 'Deactivated' || account.status === 'Closed') {
+          return true;
+        }
+        const pendingClosure = await db.accountClosureOperation.findFirst({
+          where: {
+            identityId,
+            phase: { in: ['requested', 'revoking', 'closing'] },
+          },
+        });
+        return pendingClosure !== null;
+      },
+    });
     this.knowledgeSource = new RepositoryKnowledgeSourceAdapter(db, storageBaseDir);
     this.analyticsRead = new ControlledAnalyticsReadAdapter(db);
   }

@@ -196,12 +196,31 @@ describe('AccountController', () => {
   // closeAccount
   // =========================================================================
   describe('closeAccount', () => {
-    it('should validate input and normalize success to ok(null)', async () => {
-      (api.closeAccount as ReturnType<typeof vi.fn>).mockResolvedValue(ok(undefined));
+    it('should validate input and pass through the structured close receipt', async () => {
+      const receipt = {
+        operationId: 'op-1',
+        identityId: FAKE_CONTEXT.identityId,
+        idempotencyKey: 'closure:test-identity-123:1',
+        phase: 'closed' as const,
+        status: 'succeeded' as const,
+        attempts: 1,
+        version: 4,
+        ownerToken: null,
+        leaseExpiresAt: null,
+        nextRetryAt: null,
+        deadLetterAt: null,
+        eventId: 'evt-1',
+        reason: 'No longer needed',
+        revokedSessions: 2,
+        createdAt: 0,
+        updatedAt: 0,
+        finishedAt: 100,
+      };
+      (api.closeAccount as ReturnType<typeof vi.fn>).mockResolvedValue(ok(receipt));
 
       const result = await controller.closeAccount({ reason: 'No longer needed' }, FAKE_CONTEXT);
 
-      expect(result).toEqual(ok(null));
+      expect(result).toEqual(ok(receipt));
       expect(api.closeAccount).toHaveBeenCalledWith(
         expect.objectContaining({ reason: 'No longer needed' }),
         FAKE_CONTEXT,

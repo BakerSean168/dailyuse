@@ -295,6 +295,7 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
       notificationRepo,
       templateRepo,
       preferenceRepo,
+      async () => false,
     );
 
     let deliveredCount = 0;
@@ -422,7 +423,9 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
 
   it('8. Authorized Application/API entrances for dead-letter query & replay', async () => {
     const { createNotificationPrismaModule } = await import('../../../prisma');
-    const moduleInstance = createNotificationPrismaModule(prisma);
+    const moduleInstance = createNotificationPrismaModule(prisma, {
+      closureChecker: async () => false,
+    });
 
     const opId = randomUUID();
     const notificationId = 'notif_api_dl';
@@ -474,7 +477,9 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
 
   it('9. Delivery receipts timeline query for disconnect recovery', async () => {
     const { createNotificationPrismaModule } = await import('../../../prisma');
-    const moduleInstance = createNotificationPrismaModule(prisma);
+    const moduleInstance = createNotificationPrismaModule(prisma, {
+      closureChecker: async () => false,
+    });
 
     const opId = randomUUID();
     const notificationId = 'notif_timeline';
@@ -589,6 +594,7 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     });
     const moduleInstance = createNotificationPrismaModule(prisma, {
       runtimeContributions: [runtime],
+      closureChecker: async () => false,
     });
 
     const mockAuth = (_req: any, _res: any, next: any) => {
@@ -1095,6 +1101,7 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     });
     const moduleInstance = createNotificationPrismaModule(prisma, {
       runtimeContributions: [runtime],
+      closureChecker: async () => false,
     });
 
     const mockAuth = (_req: any, _res: any, next: any) => {
@@ -1200,7 +1207,9 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     const app = express();
     app.use(express.json());
 
-    const moduleInstance = createNotificationPrismaModule(prisma);
+    const moduleInstance = createNotificationPrismaModule(prisma, {
+      closureChecker: async () => false,
+    });
     const mockAuth = (_req: any, _res: any, next: any) => {
       _req.identityId = identityId;
       _req.user = { id: identityId };

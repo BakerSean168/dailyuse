@@ -29,10 +29,10 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
   goal: ['./analytics', './events', './schedule-execution', './schedule-projection'],
   task: ['./analytics', './testing', './schema', './schedule-execution', './schedule-projection'],
   ai: ['./ports', './schema'],
-  repository: ['./schema'],
+  repository: ['./schema', './server'],
   'cloud-auth': ['./server'],
-  notification: ['./commands', './schedule-execution'],
-  reminder: ['./schema', './schedule-execution', './schedule-projection'],
+  notification: ['./commands', './schedule-execution', './server'],
+  reminder: ['./schema', './schedule-execution', './schedule-projection', './server'],
   contracts: [
     './task', './goal', './governance', './reminder', './repository',
     './account', './schedule', './setting',

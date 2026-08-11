@@ -54,6 +54,7 @@ export interface NotificationModuleDependencies {
   readonly notificationRepository: INotificationRepository;
   readonly preferenceRepository: INotificationPreferenceRepository;
   readonly templateRepository: INotificationTemplateRepository;
+  readonly closureChecker: (identityId: string) => Promise<boolean>;
   readonly db?: IElectronDatabase;
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
   readonly durableRuntime: NotificationDurableRuntimePort;
@@ -83,6 +84,10 @@ export interface NotificationModuleInstance {
 export function createNotificationUseCases(
   deps: NotificationModuleDependencies,
 ): NotificationModuleUseCases {
+  if (!deps.closureChecker) {
+    throw new Error('[FAIL-CLOSED] NotificationModule requires closureChecker dependency');
+  }
+
   const { notificationRepository, preferenceRepository, templateRepository } = deps;
 
   return {
@@ -90,6 +95,7 @@ export function createNotificationUseCases(
       notificationRepository,
       templateRepository,
       preferenceRepository,
+      deps.closureChecker,
     ),
     updateNotification: new UpdateNotificationUseCase(notificationRepository),
     markAsRead: new MarkNotificationAsReadUseCase(notificationRepository),
@@ -121,6 +127,12 @@ export function createNotificationModule(
 ): NotificationModuleInstance {
   const { notificationRepository, preferenceRepository, templateRepository, durableRuntime } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
+
+  if (!dependencies.closureChecker) {
+    throw new Error(
+      '[FAIL-CLOSED] NotificationModule requires an explicit closureChecker dependency.',
+    );
+  }
 
   if (!durableRuntime) {
     throw new Error(

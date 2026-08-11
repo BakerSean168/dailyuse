@@ -458,6 +458,7 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
       moduleInstance.notificationRepository,
       moduleInstance.templateRepository,
       moduleInstance.preferenceRepository,
+      async () => false,
     );
 
     const createResult = await useCase.execute({
@@ -674,6 +675,7 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
         moduleInstance1.notificationRepository,
         moduleInstance1.templateRepository,
         moduleInstance1.preferenceRepository,
+        async () => false,
       );
 
       const createRes = await useCase1.execute({
@@ -809,6 +811,7 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
         moduleInstance1.notificationRepository,
         moduleInstance1.templateRepository,
         moduleInstance1.preferenceRepository,
+        async () => false,
       );
 
       const createRes = await useCase1.execute({

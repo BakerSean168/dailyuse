@@ -43,6 +43,7 @@ export interface KnowledgeNoteCommitServiceOptions {
   leaseRepository?: IKnowledgeRepositoryLeaseRepository;
   leaseTtlMs?: number;
   leaseRenewalIntervalMs?: number;
+  closureChecker?: (identityId: string) => Promise<boolean>;
 }
 
 /**
@@ -64,6 +65,9 @@ export class KnowledgeNoteCommitService {
   private readonly leaseCoordinator: KnowledgeRepositoryLeaseCoordinator;
 
   constructor(private readonly options: KnowledgeNoteCommitServiceOptions) {
+    if (!options.closureChecker) {
+      throw new Error('[FAIL-CLOSED] KnowledgeNoteCommitService requires options.closureChecker');
+    }
     this.now = options.now ?? Date.now;
     this.publishMutation = options.publishMutation ?? publishRepositoryNoteMutation;
     this.leaseCoordinator = new KnowledgeRepositoryLeaseCoordinator(options.leaseRepository, {
@@ -130,6 +134,12 @@ export class KnowledgeNoteCommitService {
     requestHash: string,
     guard: KnowledgeRepositoryLeaseGuard,
   ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>> {
+    if (this.options.closureChecker && (await this.options.closureChecker(identityId))) {
+      return fail({
+        code: 'FORBIDDEN',
+        message: 'Account is closed or closure in progress',
+      });
+    }
     const existing = await this.options.writeRequestRepository.findByIdentityAndRequestId(
       identityId,
       request.requestId,

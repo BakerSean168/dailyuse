@@ -74,6 +74,7 @@ export interface PowerSyncSharedOutboxRow {
   claim_id: string | null;
   fencing_token: number;
   lease_expires_at: string | null;
+  last_heartbeat_at: string | null;
   last_error: string | null;
   next_retry_at: string | null;
   identity_id: string | null;
@@ -253,6 +254,7 @@ export function mapPowerSyncSharedOutboxToOutboxMessage(
     claimId: row.claim_id ?? null,
     fencingToken: row.fencing_token ? Number(row.fencing_token) : null,
     leaseExpiresAt: row.lease_expires_at ? new Date(row.lease_expires_at) : null,
+    lastHeartbeatAt: row.last_heartbeat_at ? new Date(row.last_heartbeat_at) : null,
   };
 }
 
@@ -990,4 +992,3 @@ export class PowerSyncNotificationReliableAdapter implements NotificationReliabl
     return store.getAck(idempotencyKey);
   }
 }
-
