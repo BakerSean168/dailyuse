@@ -8,6 +8,7 @@ import type { CreateTaskTemplateUseCaseReq } from '@memoflow/contracts/task';
 import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { CreateTaskTemplateUseCase } from '../create-task-template.use-case';
+import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
 vi.mock('@memoflow/utils', async () => {
   const actual = await vi.importActual<typeof import('@memoflow/utils')>('@memoflow/utils');
@@ -70,11 +71,22 @@ describe('CreateTaskTemplateUseCase', () => {
       saveMany: vi.fn().mockResolvedValue(undefined),
     });
 
-    useCase = new CreateTaskTemplateUseCase(templateRepo, instanceRepo);
+    const transactionRunner = createInlineTaskWriteTransactionRunner({
+      templateRepository: templateRepo,
+      instanceRepository: instanceRepo,
+    });
+
+    useCase = new CreateTaskTemplateUseCase(templateRepo, instanceRepo, transactionRunner);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('throws an error if transactionRunner is missing', () => {
+    expect(
+      () => new CreateTaskTemplateUseCase(templateRepo, instanceRepo, undefined as any),
+    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to CreateTaskTemplateUseCase');
   });
 
   it('should create a one-time task template', async () => {

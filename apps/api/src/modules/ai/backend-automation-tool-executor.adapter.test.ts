@@ -26,6 +26,10 @@ vi.mock('@memoflow/task', () => ({
       createTaskTemplate: mocks.createTaskTemplate,
     },
   })),
+  PrismaTaskBindingReadPort: class {
+    constructor() {}
+    checkActiveTaskBindings = vi.fn().mockResolvedValue({ hasActiveBindings: false, activeCount: 0 });
+  },
 }));
 
 vi.mock('@memoflow/reminder', () => ({

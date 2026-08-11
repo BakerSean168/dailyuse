@@ -8,7 +8,7 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { prisma } from '@memoflow/database';
 import { IdentityId } from '@memoflow/domain-shared';
 import { createGoalPrismaModule, createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
-import { createTaskPrismaModule } from '@memoflow/task';
+import { createTaskPrismaModule, PrismaTaskBindingReadPort } from '@memoflow/task';
 import { createTaskApiModule } from '@memoflow/task/api';
 import {
   cleanAll,
@@ -32,7 +32,9 @@ describe('API host Task -> Goal restart recovery', () => {
     const identityId = IdentityId.generate();
     await seedAccount({ id: identityId });
 
-    const goalModule = createGoalPrismaModule(prisma);
+    const goalModule = createGoalPrismaModule(prisma, {
+      taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
+    });
     const createdGoal = await goalModule.api.createGoal(
       {
         name: 'Recover Task contribution after restart',

@@ -22,7 +22,8 @@ import { ElectronBootstrapper } from './bootstrap';
 import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
-import { GoalElectronModule } from '@memoflow/goal/electron';
+import { createGoalElectronModule } from '@memoflow/goal/electron';
+import { PowerSyncTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
 import { createTaskElectronModule } from '@memoflow/task/electron';
 import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
@@ -277,7 +278,9 @@ async function registerBusinessModules(
     .register(NotificationElectronModule)
     .register(DataPortabilityElectronModule)
     // Feature modules
-    .register(GoalElectronModule)
+    .register(createGoalElectronModule({
+      taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
+    }))
     .register(taskElectronModule)
     .register(scheduleElectronModule)
     .register(ReminderElectronModule)

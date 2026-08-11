@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 import '@memoflow/test-utils/helpers/result-matchers';
 import { IdentityId } from '@memoflow/domain-shared';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
-import { TaskType } from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
 import { eventBus } from '@memoflow/utils/domain';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { TaskInstance } from '../../../domain/aggregates/task-instance';
@@ -223,6 +223,125 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
     expect(savedTemplate?.title).toBe('Propagation plan');
     expect(savedTemplate?.importance).toBe(ImportanceLevel.Moderate);
     expect(savedFuture?.importance).toBe(ImportanceLevel.Moderate);
+
+    module.dispose();
+  });
+
+  it('rolls back template, instances, outbox and publishes no events when taskGoalOutbox append fails', async () => {
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+    const prisma = await getPrisma();
+
+    // Seed the Goal + KeyResult rows required by the goal-binding FK.
+    const goalId = `goal-${Date.now()}`;
+    const keyResultId = `kr-${Date.now()}`;
+    await prisma.goal.create({
+      data: {
+        id: goalId,
+        identityId,
+        name: 'Outbox Rollback Goal',
+        color: '#3B82F6',
+        status: 'active',
+        importance: 'moderate',
+      },
+    });
+    await prisma.keyResult.create({
+      data: {
+        id: keyResultId,
+        identityId,
+        goalId,
+        title: 'KR',
+        valueType: 'numeric',
+        aggregationMethod: 'sum',
+        targetValue: 10,
+      },
+    });
+    const module = createTaskPrismaModule(prisma);
+    const sendSpy = vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+
+    const createRes = await module.api.createTaskTemplate({
+      identityId,
+      name: 'Goal Task',
+      taskType: TaskType.Recurring,
+      timeConfig: {
+        timeType: 'AllDay',
+        startDate: Date.now(),
+        timePoint: null,
+        timeRange: null,
+      },
+      recurrenceRule: {
+        frequency: 'Daily',
+        interval: 1,
+        daysOfWeek: [],
+        endDate: null,
+        occurrences: null,
+      },
+      importance: ImportanceLevel.Moderate,
+      tags: [],
+      goalBinding: {
+        goalId,
+        keyResultId,
+        goalRecordValue: 1,
+        progressTrigger: TaskGoalBindingTrigger.PerInstance,
+      },
+    });
+    expect(createRes.ok).toBe(true);
+    if (!createRes.ok) return;
+
+    const instances = await module.taskInstanceRepository.findByTemplateId(
+      createRes.data.template.id,
+      identityId,
+    );
+    expect(instances.length).toBeGreaterThan(0);
+    const instanceId = String(instances[0].id);
+
+    sendSpy.mockClear();
+
+    // Fail the outbox write INSIDE the transaction: the runner uses the tx-bound
+    // client (not the top-level prisma), so wrap $transaction with a Proxy tx.
+    const realTransaction = prisma.$transaction.bind(prisma);
+    let injected = false;
+    vi.spyOn(prisma, '$transaction').mockImplementation((async (fn: unknown, opts?: unknown) => {
+      return realTransaction(async (tx: any) => {
+        if (!injected) {
+          injected = true;
+          const failingTx = new Proxy(tx, {
+            get(target, prop) {
+              if (prop === 'taskGoalOutbox') {
+                const outbox = target.taskGoalOutbox;
+                return new Proxy(outbox, {
+                  get(t, p) {
+                    if (p === 'createMany') {
+                      return () => Promise.reject(new Error('Outbox write failure simulation'));
+                    }
+                    return (t as Record<string, unknown>)[p];
+                  },
+                });
+              }
+              return (target as Record<string, unknown>)[prop];
+            },
+          });
+          return (fn as (t: unknown) => Promise<unknown>)(failingTx);
+        }
+        return (fn as (t: unknown) => Promise<unknown>)(tx);
+      });
+    }) as never);
+
+    const result = await module.api.completeTaskInstance(instanceId, identityId);
+
+    expect(result).toBeErrorWithCode('INTERNAL_ERROR');
+
+    const instanceInDb = await prisma.taskInstance.findUnique({
+      where: { id: instanceId },
+    });
+    expect(instanceInDb?.status).toBe('Pending');
+
+    const outboxCount = await prisma.taskGoalOutbox.count({
+      where: { taskInstanceId: instanceId },
+    });
+    expect(outboxCount).toBe(0);
+
+    expect(sendSpy).not.toHaveBeenCalled();
 
     module.dispose();
   });

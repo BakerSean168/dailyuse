@@ -22,19 +22,26 @@ import { createGoalScheduleProjectionSource } from './schedule-projection-source
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
 import type { GoalScheduleProjectionSource } from '../../schedule-projection';
 import { createGoalTaskProgressHandler } from '../application/event-handlers';
+import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
 
 export function createGoalPowerSyncModule(
   db: IElectronDatabase,
-  options?: {
+  options: {
     runtimeContributions?: GoalRuntimeContributionsInput;
+    /** Required: W0 GoalDependencyReadPort implementation (provided by the Task package). */
+    taskBindingReadPort: GoalDependencyReadPort;
   },
 ): GoalModuleInstance {
+  if (!options?.taskBindingReadPort) {
+    throw new Error('[FAIL-CLOSED] createGoalPowerSyncModule requires options.taskBindingReadPort');
+  }
   return createGoalModule({
     goalRepository: new GoalPowerSyncRepository(db),
     goalFolderRepository: new GoalFolderPowerSyncRepository(db),
     goalRecordRepository: new GoalRecordPowerSyncRepository(db),
     focusModeRepository: new FocusModePowerSyncRepository(db),
     goalWriteTransactionRunner: new PowerSyncGoalWriteTransactionRunner(db),
+    taskBindingReadPort: options.taskBindingReadPort,
     runtimeContributions: options?.runtimeContributions,
   });
 }

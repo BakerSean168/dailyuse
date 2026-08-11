@@ -8,6 +8,7 @@ import { TaskTemplateStatus } from '@memoflow/contracts/task';
 import { InvalidTaskTemplateStateError } from '../../../../domain/value-objects/task-errors';
 import { CheckExpiredInstancesUseCase } from '../check-expired-instances.use-case';
 import { GenerateTaskInstancesUseCase } from '../generate-task-instances.use-case';
+import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
 const mockMarkExpiredInstances = vi.fn();
 const mockGenerateInstances = vi.fn();
@@ -26,10 +27,19 @@ describe('Instance maintenance use-cases', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
 
+  const createGenerateUseCase = () =>
+    new GenerateTaskInstancesUseCase(
+      templateRepo,
+      instanceRepo,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
+    );
+
   beforeEach(() => {
     vi.clearAllMocks();
-    mockMarkExpiredInstances.mockReturnValue([]);
-    mockGenerateInstances.mockReturnValue([]);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findByIdForIdentity: vi.fn(),
@@ -72,9 +82,15 @@ describe('Instance maintenance use-cases', () => {
   });
 
   describe('GenerateTaskInstancesUseCase', () => {
+    it('throws an error if transactionRunner is missing', () => {
+      expect(
+        () => new GenerateTaskInstancesUseCase(templateRepo, instanceRepo, undefined as any),
+      ).toThrow('TaskWriteTransactionRunner must be explicitly provided to GenerateTaskInstancesUseCase');
+    });
+
     it('returns NOT_FOUND when template does not exist', async () => {
       vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
-      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
+      const useCase = createGenerateUseCase();
 
       const result = await useCase.execute('tpl-404', 'identity-1', {
         fromDate: 0,
@@ -91,7 +107,7 @@ describe('Instance maintenance use-cases', () => {
       const template = { id: 'tpl-1' } as any;
       vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
       mockGenerateInstances.mockReturnValue([]);
-      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
+      const useCase = createGenerateUseCase();
 
       const result = await useCase.execute('tpl-1', 'identity-1', {
         fromDate: 1,
@@ -102,7 +118,6 @@ describe('Instance maintenance use-cases', () => {
       expect(mockGenerateInstances).toHaveBeenCalledWith(template, {
         forceGenerate: true,
         targetDate: 2,
-        // R2-2：force 路径尊重请求区间 fromDate。
         fromDate: 1,
       });
       expect(instanceRepo.saveMany).not.toHaveBeenCalled();
@@ -117,7 +132,7 @@ describe('Instance maintenance use-cases', () => {
       ];
       vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
       mockGenerateInstances.mockReturnValue(generated as any);
-      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
+      const useCase = createGenerateUseCase();
 
       const result = await useCase.execute('tpl-1', 'identity-1', {
         fromDate: 10,
@@ -135,7 +150,7 @@ describe('Instance maintenance use-cases', () => {
       mockGenerateInstances.mockImplementation(() => {
         throw new InvalidTaskTemplateStateError('Can only generate instances for active templates');
       });
-      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
+      const useCase = createGenerateUseCase();
 
       const result = await useCase.execute(template.id, template.identityId, {
         fromDate: 10,
@@ -152,7 +167,7 @@ describe('Instance maintenance use-cases', () => {
       vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
       mockGenerateInstances.mockReturnValue(generated as any);
       vi.mocked(templateRepo.save).mockRejectedValue(new Error('save failed'));
-      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
+      const useCase = createGenerateUseCase();
 
       const result = await useCase.execute(template.id, template.identityId, {
         fromDate: 10,

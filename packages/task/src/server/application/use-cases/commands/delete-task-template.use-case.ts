@@ -10,7 +10,6 @@ import type { Result } from '@memoflow/contracts/result';
 import { fail, ok } from '@memoflow/contracts/result';
 import { createLogger } from '@memoflow/utils/logger';
 import {
-  createInlineTaskWriteTransactionRunner,
   mapTaskWriteErrorToResultError,
   type TaskWriteTransactionRunner,
 } from './task-write-support';
@@ -25,14 +24,12 @@ export class DeleteTaskTemplateUseCase {
   constructor(
     private readonly templateRepository: ITaskTemplateRepository,
     private readonly instanceRepository: ITaskInstanceRepository,
-    transactionRunner?: TaskWriteTransactionRunner,
+    transactionRunner: TaskWriteTransactionRunner,
   ) {
-    this.transactionRunner =
-      transactionRunner ??
-      createInlineTaskWriteTransactionRunner({
-        templateRepository,
-        instanceRepository,
-      });
+    if (!transactionRunner) {
+      throw new Error('TaskWriteTransactionRunner must be explicitly provided to DeleteTaskTemplateUseCase');
+    }
+    this.transactionRunner = transactionRunner;
   }
 
   async execute(id: string, identityId: string, soft = false): Promise<Result<void>> {

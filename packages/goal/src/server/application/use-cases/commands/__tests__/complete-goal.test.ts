@@ -3,6 +3,8 @@ import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '../../../../domain';
 import { CompleteGoalUseCase } from '../complete-goal.use-case';
+import { createInlineGoalWriteTransactionRunner } from '../goal-write-support';
+import { InMemoryGoalReliableOperationAdapter } from '../../../../infrastructure/adapters/in-memory/in-memory-goal-reliable-operation.adapter';
 
 // ============================================================
 // Helpers
@@ -38,7 +40,17 @@ describe('CompleteGoalUseCase', () => {
       save: vi.fn().mockResolvedValue(undefined),
       saveRootWithExpectedVersion: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new CompleteGoalUseCase(goalRepo, new GoalPolicy());
+    useCase = new CompleteGoalUseCase(
+      goalRepo,
+      new GoalPolicy(),
+      createInlineGoalWriteTransactionRunner(
+        {
+          goalRepository: goalRepo,
+          goalRecordRepository: null as any,
+        },
+        new InMemoryGoalReliableOperationAdapter(),
+      ),
+    );
   });
 
   it('should return error when goal does not exist', async () => {
@@ -73,17 +85,31 @@ describe('CompleteGoalUseCase', () => {
     }
   });
 
-  it('should be idempotent for already completed goals', async () => {
+  it('should be idempotent for already completed goals without extra version increments or save calls', async () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
+    const initialVersion = goal.version; // e.g. 1
+    const initialEventsCount = goal.domainEvents.length;
+
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, 'identity-1', goal.version);
+    // Call execute once on already completed goal
+    const result1 = await useCase.execute(goal.id, 'identity-1', initialVersion);
+    expect(result1.ok).toBe(true);
+    expect(goal.version).toBe(initialVersion);
+    expect(goal.domainEvents).toHaveLength(initialEventsCount);
+    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
 
-    expect(result.ok).toBe(true);
-    expect(goal.status).toBe('Archived');
-    if (result.ok) {
-      expect(result.data.readModel).toBeDefined();
+    // Call execute a second time
+    const result2 = await useCase.execute(goal.id, 'identity-1', initialVersion);
+    expect(result2.ok).toBe(true);
+    expect(goal.version).toBe(initialVersion);
+    expect(goal.domainEvents).toHaveLength(initialEventsCount);
+    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
+
+    if (result1.ok && result2.ok) {
+      expect(result1.data.readModel.id).toBe(result2.data.readModel.id);
+      expect(result1.data.version).toBe(result2.data.version);
     }
   });
 

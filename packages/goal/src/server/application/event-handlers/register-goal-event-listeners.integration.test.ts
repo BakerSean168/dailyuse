@@ -16,6 +16,7 @@ import { Goal } from '../../domain/aggregates/goal';
 import { GoalPrismaRepository } from '../../infrastructure/adapters/prisma/goal-prisma.repository';
 import { GoalRecordPrismaRepository } from '../../infrastructure/adapters/prisma/goal-record-prisma.repository';
 import { createGoalTaskProgressHandler } from './index';
+import { PrismaGoalWriteTransactionRunner } from '../../infrastructure/adapters/prisma/prisma-goal-write-transaction-runner';
 import {
   cleanAll,
   disconnectPrisma,
@@ -54,7 +55,11 @@ describe('GoalTaskProgressHandler integration (outbox 消费路径)', () => {
 
     const goalRepository = new GoalPrismaRepository(prisma);
     const goalRecordRepository = new GoalRecordPrismaRepository(prisma);
-    const handler = createGoalTaskProgressHandler(goalRepository, goalRecordRepository);
+    const handler = createGoalTaskProgressHandler(
+      goalRepository,
+      goalRecordRepository,
+      new PrismaGoalWriteTransactionRunner(prisma),
+    );
 
     // Persist a goal with a Sum key result so progress increments deterministically.
     const goal = Goal.create({

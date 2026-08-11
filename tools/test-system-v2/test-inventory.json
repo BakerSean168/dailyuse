@@ -4949,6 +4949,16 @@
       ]
     },
     {
+      "path": "packages/goal/src/api/__tests__/goal-api-module-gate.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/goal/src/api/routes/goal-parse-number-string-array-keep-boundary.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5632,6 +5642,16 @@
     },
     {
       "path": "packages/goal/src/server/infrastructure/adapters/goal-write-buffered-event-bus.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/goal/src/server/infrastructure/adapters/powersync/__tests__/powersync-goal-reliable-operation.adapter.test.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/goal/vitest.config.ts"
@@ -8244,6 +8264,16 @@
       ]
     },
     {
+      "path": "packages/task/src/server/infrastructure/adapters/powersync/powersync-task-binding-read-port.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/task/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/task/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/task/src/server/infrastructure/adapters/powersync/powersync-task-goal-outbox-dispatch-store.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8366,6 +8396,14 @@
         "packages/task/vitest.config.ts",
         "packages/task/vitest.mappers.config.ts"
       ]
+    },
+    {
+      "path": "packages/task/src/server/infrastructure/adapters/prisma/prisma-task-binding-read-port.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/task/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
     },
     {
       "path": "packages/task/src/server/infrastructure/adapters/prisma/prisma-task-goal-outbox-dispatch-store.integration.test.ts",
@@ -9059,7 +9097,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 84
+      "fileCount": 86
     },
     {
       "id": "packages/goal/vitest.integration.config.ts",
@@ -9073,7 +9111,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 84
+      "fileCount": 86
     },
     {
       "id": "packages/goal/vitest.use-cases.config.ts",
@@ -9255,14 +9293,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 68
+      "fileCount": 69
     },
     {
       "id": "packages/task/vitest.integration.config.ts",
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 5
+      "fileCount": 6
     },
     {
       "id": "packages/task/vitest.performance.config.ts",
@@ -9283,7 +9321,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 68
+      "fileCount": 69
     },
     {
       "id": "packages/task/vitest.use-cases.config.ts",
@@ -9626,6 +9664,7 @@
       "packages/data-portability/src/server/transport/data-portability.controller.test.ts",
       "packages/domain-shared/src/shared/primitives/__tests__/identity-id.spec.ts",
       "packages/goal/src/__tests__/dual-registry.surface.spec.ts",
+      "packages/goal/src/api/__tests__/goal-api-module-gate.surface.spec.ts",
       "packages/goal/src/api/routes/goal-parse-number-string-array-keep-boundary.surface.spec.ts",
       "packages/goal/src/api/routes/goal-void-success-envelope.surface.spec.ts",
       "packages/goal/src/api/routes/goal.routes.spec.ts",
@@ -9691,6 +9730,7 @@
       "packages/goal/src/server/domain/value-objects/goal-domain-errors-and-focus-mode.spec.ts",
       "packages/goal/src/server/infrastructure/__tests__/schedule-source-ownership.surface.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/goal-write-buffered-event-bus.spec.ts",
+      "packages/goal/src/server/infrastructure/adapters/powersync/__tests__/powersync-goal-reliable-operation.adapter.test.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/__tests__/focus-mode-ownership.surface.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/__tests__/focus-session-ownership.surface.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/__tests__/goal-folder-ownership.surface.spec.ts",
@@ -9903,6 +9943,7 @@
       "packages/task/src/server/domain/value-objects/__tests__/task-server-value-objects.spec.ts",
       "packages/task/src/server/domain/value-objects/__tests__/task-template-id.spec.ts",
       "packages/task/src/server/domain/value-objects/__tests__/task-time-config-ymd.spec.ts",
+      "packages/task/src/server/infrastructure/adapters/powersync/powersync-task-binding-read-port.spec.ts",
       "packages/task/src/server/infrastructure/adapters/powersync/powersync-task-goal-outbox-dispatch-store.test.ts",
       "packages/task/src/server/infrastructure/adapters/powersync/powersync-task-write-transaction-runner.test.ts",
       "packages/task/src/server/infrastructure/adapters/powersync/task-instance-powersync.repository.test.ts",
@@ -9933,8 +9974,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 842,
-    "integration": 17,
+    "unit": 845,
+    "integration": 18,
     "smoke": 2,
     "boundary-ipc": 9,
     "boundary-main": 5,

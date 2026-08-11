@@ -80,7 +80,7 @@ export class GoalTaskProgressHandler implements TaskGoalProgressHandler {
 export function createGoalTaskProgressHandler(
   goalRepository: IGoalRepository,
   goalRecordRepository: IGoalRecordRepository,
-  transactionRunner?: GoalWriteTransactionRunner,
+  transactionRunner: GoalWriteTransactionRunner,
 ): TaskGoalProgressHandler {
   return new GoalTaskProgressHandler(
     new CreateGoalRecordUseCase(goalRepository, goalRecordRepository, transactionRunner),

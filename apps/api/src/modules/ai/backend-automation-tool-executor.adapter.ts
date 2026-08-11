@@ -7,6 +7,7 @@ import type { GoalAutomationExecutedAction } from '@memoflow/contracts/ai';
 import type { GoalId, KeyResultId } from '@memoflow/contracts/goal';
 import type { PrismaClient } from '@memoflow/database';
 import { createGoalPrismaModule } from '@memoflow/goal';
+import { PrismaTaskBindingReadPort } from '@memoflow/task';
 import { createReminderPrismaModule } from '@memoflow/reminder';
 import { createTaskPrismaModule } from '@memoflow/task';
 import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
@@ -39,7 +40,9 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
   private readonly analyticsRead;
 
   constructor(db: PrismaClient, storageBaseDir: string) {
-    this.goalModule = createGoalPrismaModule(db);
+    this.goalModule = createGoalPrismaModule(db, {
+      taskBindingReadPort: new PrismaTaskBindingReadPort(db),
+    });
     this.taskModule = createTaskPrismaModule(db);
     this.reminderModule = createReminderPrismaModule(db, {
       closureChecker: async (identityId: string) => {

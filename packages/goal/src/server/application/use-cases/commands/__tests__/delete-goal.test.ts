@@ -4,6 +4,7 @@ import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '../../../../domain';
 import { DeleteGoalUseCase } from '../delete-goal.use-case';
+import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
 
 // ============================================================
 // Helpers
@@ -36,6 +37,7 @@ function createCompletedGoal(name = 'Completed Goal'): Goal {
 
 describe('DeleteGoalUseCase', () => {
   let goalRepo: ReturnType<typeof createMockRepo<IGoalRepository>>;
+  let taskBindingReadPort: GoalDependencyReadPort;
   let useCase: DeleteGoalUseCase;
 
   beforeEach(() => {
@@ -45,7 +47,16 @@ describe('DeleteGoalUseCase', () => {
       save: vi.fn().mockResolvedValue(undefined),
       saveRootWithExpectedVersion: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new DeleteGoalUseCase(goalRepo, new GoalPolicy());
+    taskBindingReadPort = {
+      checkActiveTaskBindings: vi.fn().mockResolvedValue({ hasActiveBindings: false, activeCount: 0 }),
+    };
+    useCase = new DeleteGoalUseCase(goalRepo, new GoalPolicy(), taskBindingReadPort);
+  });
+
+  it('throws an error if taskBindingReadPort is missing', () => {
+    expect(() => new DeleteGoalUseCase(goalRepo, new GoalPolicy(), undefined as any)).toThrow(
+      'ITaskBindingReadPort must be explicitly provided to DeleteGoalUseCase',
+    );
   });
 
   describe('execute()', () => {
@@ -58,7 +69,7 @@ describe('DeleteGoalUseCase', () => {
       expect(goalRepo.save).not.toHaveBeenCalled();
     });
 
-    it('should soft delete a completed goal', async () => {
+    it('should soft delete a completed goal when no task bindings exist', async () => {
       const goal = createCompletedGoal();
       vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
@@ -69,7 +80,7 @@ describe('DeleteGoalUseCase', () => {
       expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
     });
 
-    it('should soft delete an active goal', async () => {
+    it('should soft delete an active goal when no task bindings exist', async () => {
       const goal = createTestGoal();
       vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
@@ -77,6 +88,43 @@ describe('DeleteGoalUseCase', () => {
 
       expect(result).toBeOk();
       expect(goal.deletedAt).not.toBeNull();
+    });
+
+    it('should reject deletion when active task bindings exist', async () => {
+      const goal = createTestGoal();
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
+      vi.mocked(taskBindingReadPort.checkActiveTaskBindings).mockResolvedValue({ hasActiveBindings: true, activeCount: 2 });
+
+      const result = await useCase.execute(goal.id, 'identity-1', goal.version);
+
+      expect(result).toBeErrorWithCode('CONFLICT');
+      if (!result.ok) {
+        expect(result.error.message).toContain('2 active task binding(s)');
+      }
+      expect(goal.deletedAt).toBeNull();
+      expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
+    });
+
+    it('isolates task binding queries by identityId', async () => {
+      const goal = createTestGoal();
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
+
+      vi.mocked(taskBindingReadPort.checkActiveTaskBindings).mockImplementation(
+        async (input: { identityId: string }) => {
+          if (input.identityId === 'identity-A') {
+            return { hasActiveBindings: true, activeCount: 3 };
+          }
+          return { hasActiveBindings: false, activeCount: 0 };
+        },
+      );
+
+      // Identity A is blocked
+      const resultA = await useCase.execute(goal.id, 'identity-A', goal.version);
+      expect(resultA).toBeErrorWithCode('CONFLICT');
+
+      // Identity B is allowed
+      const resultB = await useCase.execute(goal.id, 'identity-B', goal.version);
+      expect(resultB).toBeOk();
     });
 
     it('should return the DTO after deleting', async () => {
@@ -113,7 +161,7 @@ describe('DeleteGoalUseCase', () => {
       expect(result).toBeErrorWithCode('NOT_FOUND');
     });
 
-    it('should return dependency info for goal with no children', async () => {
+    it('should return dependency info for goal with no children or task links', async () => {
       const goal = createTestGoal();
       vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
@@ -125,28 +173,26 @@ describe('DeleteGoalUseCase', () => {
         expect(result.data.keyResultCount).toBe(0);
         expect(result.data.hasReviews).toBe(false);
         expect(result.data.reviewCount).toBe(0);
+        expect(result.data.hasTaskLinks).toBe(false);
+        expect(result.data.taskBindingCount).toBe(0);
         expect(result.data.canDelete).toBe(true);
         expect(result.data.warnings).toHaveLength(0);
       }
     });
 
-    it('should report key results when they exist', async () => {
+    it('should report active task links when they exist', async () => {
       const goal = createTestGoal();
-      goal.createAndAddKeyResult({
-        title: 'KR1',
-        valueType: 'NUMERIC',
-        targetValue: 100,
-        weight: 3,
-      });
       vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
+      vi.mocked(taskBindingReadPort.checkActiveTaskBindings).mockResolvedValue({ hasActiveBindings: true, activeCount: 1 });
 
       const result = await useCase.checkDependencies(goal.id, 'identity-1');
 
       expect(result).toBeOk();
       if (result.ok) {
-        expect(result.data.hasKeyResults).toBe(true);
-        expect(result.data.keyResultCount).toBe(1);
-        expect(result.data.warnings).toHaveLength(1);
+        expect(result.data.hasTaskLinks).toBe(true);
+        expect(result.data.taskBindingCount).toBe(1);
+        expect(result.data.canDelete).toBe(false);
+        expect(result.data.warnings).toContain('该目标包含 1 个关联任务');
       }
     });
   });

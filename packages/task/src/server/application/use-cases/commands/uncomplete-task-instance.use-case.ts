@@ -3,7 +3,6 @@ import type { Result } from '@memoflow/contracts/result';
 import { error, ok } from '@memoflow/contracts/result';
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import {
-  createInlineTaskWriteTransactionRunner,
   type TaskWriteRepositories,
   type TaskWriteTransactionRunner,
 } from './task-write-support';
@@ -16,14 +15,17 @@ import {
  * 走同一条 durable 通道（不再只依赖 eventBus 直连）。
  */
 export class UncompleteTaskInstanceUseCase {
+  private readonly transactionRunner: TaskWriteTransactionRunner;
+
   constructor(
     private readonly instanceRepository: ITaskInstanceRepository,
-    private readonly transactionRunner: TaskWriteTransactionRunner = createInlineTaskWriteTransactionRunner(
-      {
-        instanceRepository,
-      },
-    ),
-  ) {}
+    transactionRunner: TaskWriteTransactionRunner,
+  ) {
+    if (!transactionRunner) {
+      throw new Error('TaskWriteTransactionRunner must be explicitly provided to UncompleteTaskInstanceUseCase');
+    }
+    this.transactionRunner = transactionRunner;
+  }
 
   async execute(id: string, identityId: string): Promise<Result<TaskInstanceOperationRes>> {
     return this.transactionRunner.run((repositories) =>

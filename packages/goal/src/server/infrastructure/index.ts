@@ -24,6 +24,7 @@ export { GoalPowerSyncRepository } from './adapters/powersync/goal-powersync.rep
 export { GoalFolderPowerSyncRepository } from './adapters/powersync/goal-folder-powersync.repository';
 export { GoalRecordPowerSyncRepository } from './adapters/powersync/goal-record-powersync.repository';
 export { PowerSyncGoalWriteTransactionRunner } from './adapters/powersync/powersync-goal-write-transaction-runner';
+export { PowerSyncGoalReliableOperationAdapter } from './adapters/powersync/powersync-goal-reliable-operation.adapter';
 
 // ============ Composition Root ============
 export {

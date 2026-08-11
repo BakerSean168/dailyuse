@@ -3,6 +3,8 @@ import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { Goal, GoalRecord } from '../../../../domain';
 import type { IGoalRecordRepository, IGoalRepository } from '../../../../domain';
 import { DeleteGoalRecordUseCase } from '../delete-goal-record.use-case';
+import { createInlineGoalWriteTransactionRunner } from '../goal-write-support';
+import { InMemoryGoalReliableOperationAdapter } from '../../../../infrastructure/adapters/in-memory/in-memory-goal-reliable-operation.adapter';
 
 describe('DeleteGoalRecordUseCase', () => {
   it('atomically removes a record and preserves the implicit Sum baseline', async () => {
@@ -51,7 +53,14 @@ describe('DeleteGoalRecordUseCase', () => {
       findByKeyResultId: vi.fn().mockResolvedValue([deletedRecord, remainingRecord]),
       delete: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new DeleteGoalRecordUseCase(goalRepository, recordRepository);
+    const useCase = new DeleteGoalRecordUseCase(
+      goalRepository,
+      recordRepository,
+      createInlineGoalWriteTransactionRunner(
+        { goalRepository, goalRecordRepository: recordRepository },
+        new InMemoryGoalReliableOperationAdapter(),
+      ),
+    );
 
     const result = await useCase.execute(
       goal.id,
@@ -83,7 +92,14 @@ describe('DeleteGoalRecordUseCase', () => {
       findByIdForIdentity: vi.fn().mockResolvedValue(null),
       delete: vi.fn(),
     });
-    const useCase = new DeleteGoalRecordUseCase(goalRepository, recordRepository);
+    const useCase = new DeleteGoalRecordUseCase(
+      goalRepository,
+      recordRepository,
+      createInlineGoalWriteTransactionRunner(
+        { goalRepository, goalRecordRepository: recordRepository },
+        new InMemoryGoalReliableOperationAdapter(),
+      ),
+    );
 
     const result = await useCase.execute('goal-1', 'kr-1', 'record-1', 'identity-other', 1);
 

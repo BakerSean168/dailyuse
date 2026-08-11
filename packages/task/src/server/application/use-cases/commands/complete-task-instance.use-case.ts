@@ -7,12 +7,13 @@ import type { ITaskTemplateRepository } from '../../../domain/repositories/i-tas
 import type { CompleteTaskInstanceReq, TaskInstanceOperationRes } from '@memoflow/contracts/task';
 import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
-import { ok, error } from '@memoflow/contracts/result';
+import { ok, error, fail } from '@memoflow/contracts/result';
 import type { TaskInstance } from '../../../domain/aggregates/task-instance';
 import type { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { isFiniteTaskPlan } from '../../../domain/aggregates/task-template-goal.policy';
+import { createLogger } from '@memoflow/utils/logger';
 import {
-  createInlineTaskWriteTransactionRunner,
+  mapTaskWriteErrorToResultError,
   type TaskWriteRepositories,
   type TaskWriteTransactionRunner,
 } from './task-write-support';
@@ -25,25 +26,35 @@ import {
  * 因此从旧的 desktop handler 迁到这里，事件发布前算好。
  */
 export class CompleteTaskInstanceUseCase {
+  private readonly logger = createLogger('CompleteTaskInstanceUseCase');
+  private readonly transactionRunner: TaskWriteTransactionRunner;
+
   constructor(
     private readonly instanceRepository: ITaskInstanceRepository,
     private readonly templateRepository: ITaskTemplateRepository,
-    private readonly transactionRunner: TaskWriteTransactionRunner = createInlineTaskWriteTransactionRunner(
-      {
-        instanceRepository,
-        templateRepository,
-      },
-    ),
-  ) {}
+    transactionRunner: TaskWriteTransactionRunner,
+  ) {
+    if (!transactionRunner) {
+      throw new Error('TaskWriteTransactionRunner must be explicitly provided to CompleteTaskInstanceUseCase');
+    }
+    this.transactionRunner = transactionRunner;
+  }
 
   async execute(
     id: string,
     identityId: string,
     request?: CompleteTaskInstanceReq,
   ): Promise<Result<TaskInstanceOperationRes>> {
-    return this.transactionRunner.run((repositories) =>
-      this.executeInTransaction(repositories, id, identityId, request),
-    );
+    try {
+      return await this.transactionRunner.run((repositories) =>
+        this.executeInTransaction(repositories, id, identityId, request),
+      );
+    } catch (caughtError) {
+      this.logger.error('Failed to complete task instance', { error: caughtError });
+      return fail(
+        mapTaskWriteErrorToResultError(caughtError, 'Failed to complete task instance'),
+      );
+    }
   }
 
   private async executeInTransaction(

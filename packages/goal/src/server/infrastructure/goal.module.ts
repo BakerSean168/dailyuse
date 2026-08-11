@@ -61,6 +61,7 @@ import {
 } from '../application';
 import type { GoalSystemView } from '@memoflow/contracts/goal';
 import type { GoalApplicationPort } from '../application';
+import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
 import type { GoalWriteTransactionRunner } from '../application/use-cases/commands/goal-write-support';
 import {
   CreateHabitUseCase,
@@ -68,7 +69,6 @@ import {
   ListHabitUseCase,
   type IHabitRepository,
 } from '../application/use-cases/commands/habit.use-cases';
-import { createInlineGoalWriteTransactionRunner } from '../application/use-cases/commands/goal-write-support';
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the goal server runtime needs from the outside.
@@ -88,7 +88,8 @@ export interface GoalModuleDependencies {
   readonly goalFolderRepository: IGoalFolderRepository;
   readonly goalRecordRepository: IGoalRecordRepository;
   readonly focusModeRepository: IFocusModeRepository;
-  readonly goalWriteTransactionRunner?: GoalWriteTransactionRunner;
+  readonly goalWriteTransactionRunner: GoalWriteTransactionRunner;
+  readonly taskBindingReadPort: GoalDependencyReadPort;
   readonly runtimeContributions?: GoalRuntimeContributionsInput;
   /** R4：习惯仓储（可选；提供时启用 habit use cases）。 */
   readonly habitRepository?: IHabitRepository;
@@ -202,13 +203,24 @@ export interface GoalModuleInstance {
 // ---------------------------------------------------------------------------
 
 export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseCases {
-  const { goalRepository, goalFolderRepository, goalRecordRepository, focusModeRepository } = deps;
+  if (!deps.goalWriteTransactionRunner) {
+    throw new Error('goalWriteTransactionRunner must be explicitly provided to GoalModule (no inline fallback allowed).');
+  }
+  if (!deps.taskBindingReadPort) {
+    throw new Error('taskBindingReadPort must be explicitly provided to GoalModule (no inline fallback allowed).');
+  }
+
+  const {
+    goalRepository,
+    goalFolderRepository,
+    goalRecordRepository,
+    focusModeRepository,
+    goalWriteTransactionRunner,
+    taskBindingReadPort,
+  } = deps;
 
   const goalPolicy = new GoalPolicy();
   const focusSessionPolicy = new FocusSessionPolicy();
-  const goalWriteTransactionRunner =
-    deps.goalWriteTransactionRunner ??
-    createInlineGoalWriteTransactionRunner({ goalRepository, goalRecordRepository });
 
   const habitRepository: IHabitRepository | undefined = deps.habitRepository;
 
@@ -228,12 +240,12 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     getGoal: new GetGoalUseCase(goalRepository),
     listGoals: new ListGoalsUseCase(goalRepository),
     updateGoal: new UpdateGoalUseCase(goalRepository, goalPolicy),
-    deleteGoal: new DeleteGoalUseCase(goalRepository, goalPolicy),
+    deleteGoal: new DeleteGoalUseCase(goalRepository, goalPolicy, taskBindingReadPort),
     permanentlyDeleteGoal: new PermanentlyDeleteGoalUseCase(goalRepository, goalPolicy),
-    archiveGoal: new ArchiveGoalUseCase(goalRepository, goalPolicy),
+    archiveGoal: new ArchiveGoalUseCase(goalRepository, goalPolicy, goalWriteTransactionRunner),
     archiveExpiredGoals: new ArchiveExpiredGoalsUseCase(goalWriteTransactionRunner, goalRepository),
     activateGoal: new ActivateGoalUseCase(goalRepository, goalPolicy),
-    completeGoal: new CompleteGoalUseCase(goalRepository, goalPolicy),
+    completeGoal: new CompleteGoalUseCase(goalRepository, goalPolicy, goalWriteTransactionRunner),
     searchGoals: new SearchGoalsUseCase(goalRepository),
 
     // Folder CRUD / 文件夹增删改查
@@ -319,10 +331,18 @@ function normalizeRuntimeContributions(
 // ---------------------------------------------------------------------------
 
 export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstance {
-  const { goalRepository, goalFolderRepository, goalRecordRepository } = deps;
-  const goalWriteTransactionRunner =
-    deps.goalWriteTransactionRunner ??
-    createInlineGoalWriteTransactionRunner({ goalRepository, goalRecordRepository });
+  if (!deps.goalWriteTransactionRunner) {
+    throw new Error('goalWriteTransactionRunner must be explicitly provided to GoalModule (no inline fallback allowed).');
+  }
+  if (!deps.taskBindingReadPort) {
+    throw new Error('taskBindingReadPort must be explicitly provided to GoalModule (no inline fallback allowed).');
+  }
+  const {
+    goalRepository,
+    goalFolderRepository,
+    goalRecordRepository,
+    goalWriteTransactionRunner,
+  } = deps;
   const runtimeContributions = normalizeRuntimeContributions(deps.runtimeContributions);
   const useCases = createGoalUseCases(deps);
   let started = false;

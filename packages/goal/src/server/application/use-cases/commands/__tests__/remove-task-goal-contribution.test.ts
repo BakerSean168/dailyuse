@@ -5,6 +5,8 @@ import { Goal, GoalRecord, GoalVersionConflictError } from '../../../../domain';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
 import type { IGoalRecordRepository } from '../../../../domain/repositories/i-goal-record-repository';
 import { RemoveTaskGoalContributionUseCase } from '../remove-task-goal-contribution.use-case';
+import { createInlineGoalWriteTransactionRunner } from '../goal-write-support';
+import { InMemoryGoalReliableOperationAdapter } from '../../../../infrastructure/adapters/in-memory/in-memory-goal-reliable-operation.adapter';
 
 function createGoalWithProgress() {
   const goal = Goal.create({
@@ -51,7 +53,14 @@ describe('RemoveTaskGoalContributionUseCase', () => {
       findByKeyResultId: vi.fn().mockResolvedValue([]),
       delete: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new RemoveTaskGoalContributionUseCase(goalRepository, goalRecordRepository);
+    useCase = new RemoveTaskGoalContributionUseCase(
+      goalRepository,
+      goalRecordRepository,
+      createInlineGoalWriteTransactionRunner(
+        { goalRepository, goalRecordRepository },
+        new InMemoryGoalReliableOperationAdapter(),
+      ),
+    );
   });
 
   it('deletes the exact source record and reverses its Sum contribution', async () => {

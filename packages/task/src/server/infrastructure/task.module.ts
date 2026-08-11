@@ -89,7 +89,7 @@ export interface TaskModuleDependencies {
   readonly taskInstanceRepository: ITaskInstanceRepository;
   readonly taskDependencyRepository: ITaskDependencyRepository;
   readonly taskFolderRepository?: ITaskFolderRepository;
-  readonly taskWriteTransactionRunner?: TaskWriteTransactionRunner;
+  readonly taskWriteTransactionRunner: TaskWriteTransactionRunner;
   readonly runtimeContributions?: TaskRuntimeContributionsInput;
 }
 
@@ -199,6 +199,10 @@ function normalizeRuntimeContributions(
  * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
  */
 export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskModuleUseCases {
+  if (!dependencies.taskWriteTransactionRunner) {
+    throw new Error('taskWriteTransactionRunner must be explicitly provided to TaskModule (no inline fallback allowed).');
+  }
+
   const {
     taskTemplateRepository,
     taskInstanceRepository,
@@ -299,6 +303,10 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
  * 5. let the module instance own `start` / `dispose`
  */
 export function createTaskModule(dependencies: TaskModuleDependencies): TaskModuleInstance {
+  if (!dependencies.taskWriteTransactionRunner) {
+    throw new Error('taskWriteTransactionRunner must be explicitly provided to TaskModule (no inline fallback allowed).');
+  }
+
   const {
     taskTemplateRepository,
     taskInstanceRepository,

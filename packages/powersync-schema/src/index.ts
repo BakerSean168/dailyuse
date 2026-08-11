@@ -654,6 +654,23 @@ const desktop_delivery_acks = new Table(
   { localOnly: true },
 );
 
+/**
+ * Local-only durable operation receipts for Goal mutations (completion / archive).
+ * Persisted in SQLite to guarantee idempotency across process restarts.
+ */
+const goal_operation_receipts = new Table(
+  {
+    idempotency_key: column.text,
+    operation_id: column.text,
+    identity_id: column.text,
+    source: column.text,
+    occurrence_key: column.text,
+    status: column.text,
+    created_at: column.text,
+  },
+  { localOnly: true },
+);
+
 
 const notification_history = new Table({
   identity_id: column.text,
@@ -1062,6 +1079,7 @@ export const PowerSyncAppSchema = new Schema({
   key_result_weight_snapshots,
   focus_sessions,
   focus_modes,
+  goal_operation_receipts,
   // Task
   task_folders,
   task_templates,

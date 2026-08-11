@@ -6,6 +6,8 @@ import type { IGoalRepository } from '../../../../domain/repositories/i-goal-rep
 import type { IGoalRecordRepository } from '../../../../domain/repositories/i-goal-record-repository';
 import { CreateGoalRecordUseCase } from '../create-goal-record.use-case';
 import type { GoalWriteTransactionRunner } from '../goal-write-support';
+import { createInlineGoalWriteTransactionRunner } from '../goal-write-support';
+import { InMemoryGoalReliableOperationAdapter } from '../../../../infrastructure/adapters/in-memory/in-memory-goal-reliable-operation.adapter';
 
 function createTestGoal() {
   return Goal.create({
@@ -48,7 +50,14 @@ describe('CreateGoalRecordUseCase', () => {
       deleteMany: vi.fn().mockResolvedValue(undefined),
       findBySource: vi.fn().mockResolvedValue(null),
     });
-    useCase = new CreateGoalRecordUseCase(goalRepository, goalRecordRepository);
+    useCase = new CreateGoalRecordUseCase(
+      goalRepository,
+      goalRecordRepository,
+      createInlineGoalWriteTransactionRunner(
+        { goalRepository, goalRecordRepository },
+        new InMemoryGoalReliableOperationAdapter(),
+      ),
+    );
   });
 
   it('rejects a manual record created from a stale Goal version', async () => {

@@ -41,7 +41,8 @@ import {
   createCloudAuthEmailDelivery,
   createCloudAuthEmailLinkCapture,
 } from '@memoflow/cloud-auth/server';
-import { GoalApiModule } from '@memoflow/goal/api';
+import { createGoalApiModule } from '@memoflow/goal/api';
+import { PrismaTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
 import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
@@ -228,7 +229,7 @@ async function bootstrap(): Promise<void> {
     .register(SettingApiModule) // ✅ 设置模块
     .register(taskApiModule) // ✅ 任务模块
     .register(AIApiModule) // ✅ AI 模块
-    .register(GoalApiModule) // ✅ 目标模块
+    .register(createGoalApiModule({ taskBindingReadPort: new PrismaTaskBindingReadPort(prisma) })) // ✅ 目标模块
     .register(DataPortabilityApiModule) // ✅ 数据导入导出模块
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块
     .register(DashboardApiModule) // ✅ 仪表盘聚合模块

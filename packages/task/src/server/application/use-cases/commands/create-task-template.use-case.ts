@@ -17,7 +17,6 @@ import { createLogger } from '@memoflow/utils/logger';
 import type { Result } from '@memoflow/contracts/result';
 import { error, fail, ok } from '@memoflow/contracts/result';
 import {
-  createInlineTaskWriteTransactionRunner,
   mapTaskWriteErrorToResultError,
   type TaskWriteTransactionRunner,
 } from './task-write-support';
@@ -35,15 +34,13 @@ export class CreateTaskTemplateUseCase {
   constructor(
     private readonly templateRepository: ITaskTemplateRepository,
     private readonly instanceRepository: ITaskInstanceRepository,
-    transactionRunner?: TaskWriteTransactionRunner,
+    transactionRunner: TaskWriteTransactionRunner,
   ) {
+    if (!transactionRunner) {
+      throw new Error('TaskWriteTransactionRunner must be explicitly provided to CreateTaskTemplateUseCase');
+    }
     this.generationService = new TaskInstanceGenerationService();
-    this.transactionRunner =
-      transactionRunner ??
-      createInlineTaskWriteTransactionRunner({
-        templateRepository,
-        instanceRepository,
-      });
+    this.transactionRunner = transactionRunner;
   }
 
   async execute(

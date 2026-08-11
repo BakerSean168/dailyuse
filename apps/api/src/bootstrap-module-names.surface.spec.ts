@@ -19,9 +19,9 @@ describe('api bootstrap module names (elegance E5b)', () => {
     expect(bootstrap).not.toMatch(/\.register\(\s*Legacy\w*Module\s*\)/);
   });
 
-  it('main wires AccountApiModule as the account API module', () => {
+  it('main wires createAccountApiModule as the account API module', () => {
     expect(main).toContain("from '@memoflow/account/api'");
-    expect(main).toContain('.register(AccountApiModule)');
+    expect(main).toContain('.register(createAccountApiModule({ cloudAuth }))');
     expect(main).not.toMatch(/LegacyAccountModule/);
   });
 });

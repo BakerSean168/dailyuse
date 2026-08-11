@@ -23,6 +23,7 @@ export { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependenc
 export { TaskFolderPrismaRepository } from './adapters/prisma/task-folder-prisma.repository';
 export { PrismaTaskWriteTransactionRunner } from './adapters/prisma/prisma-task-write-transaction-runner';
 export { PrismaTaskGoalOutboxDispatchStore } from './adapters/prisma/prisma-task-goal-outbox-dispatch-store';
+export { PrismaTaskBindingReadPort } from './adapters/prisma/prisma-task-binding-read-port';
 
 // ============ Adapters - PowerSync ============
 /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
@@ -33,6 +34,7 @@ export {
   PowerSyncTaskFolderRepository,
   PowerSyncTaskWriteTransactionRunner,
   PowerSyncTaskGoalOutboxDispatchStore,
+  PowerSyncTaskBindingReadPort,
 } from './adapters/powersync';
 
 // ============ Composition Root ============

@@ -76,3 +76,4 @@ export {
 export * from './errors/weight-snapshot-errors';
 
 export type { GoalApplicationPort } from './goal.application.port';
+

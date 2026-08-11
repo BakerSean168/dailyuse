@@ -14,7 +14,6 @@ import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
 import {
-  createInlineGoalWriteTransactionRunner,
   type GoalWriteTransactionRunner,
 } from './goal-write-support';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
@@ -23,9 +22,7 @@ export class DeleteGoalRecordUseCase {
   constructor(
     private readonly goalRepository: IGoalRepository,
     private readonly goalRecordRepository: IGoalRecordRepository,
-    private readonly transactionRunner: GoalWriteTransactionRunner = createInlineGoalWriteTransactionRunner(
-      { goalRepository, goalRecordRepository },
-    ),
+    private readonly transactionRunner: GoalWriteTransactionRunner,
   ) {}
 
   async execute(

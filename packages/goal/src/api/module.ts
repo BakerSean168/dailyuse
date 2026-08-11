@@ -39,16 +39,24 @@ export interface GoalApiModuleDef {
 let activeGoalModule: GoalModuleInstance | null = null;
 let goalEventListeners: { start(): void; stop(): void } | null = null;
 
-export const GoalApiModule: GoalApiModuleDef = {
-  name: 'Goal',
+export function createGoalApiModule(options: {
+  /** W0 GoalDependencyReadPort implementation provided by the host (Task package adapter). */
+  taskBindingReadPort: import('@memoflow/contracts/reliable-messaging').GoalDependencyReadPort;
+}): GoalApiModuleDef {
+  if (!options?.taskBindingReadPort) {
+    throw new Error('[FAIL-CLOSED] createGoalApiModule requires options.taskBindingReadPort');
+  }
+  return {
+    name: 'Goal',
 
-  register(context) {
-    const { router, middleware, db } = context;
+    register(context) {
+      const { router, middleware, db } = context;
 
-    // 1. Composition Root — 组装依赖
-    const goalModule = createGoalPrismaModule(db, {
-      runtimeContributions: [createGoalRuntimeContribution()],
-    });
+      // 1. Composition Root — 组装依赖
+      const goalModule = createGoalPrismaModule(db, {
+        runtimeContributions: [createGoalRuntimeContribution()],
+        taskBindingReadPort: options.taskBindingReadPort,
+      });
     activeGoalModule = goalModule;
     goalModule.start();
 
@@ -78,10 +86,11 @@ export const GoalApiModule: GoalApiModuleDef = {
     router.use('/goal-folders', folderRoutes);
   },
 
-  destroy() {
-    goalEventListeners?.stop();
-    goalEventListeners = null;
-    activeGoalModule?.dispose();
-    activeGoalModule = null;
-  },
-};
+    destroy() {
+      goalEventListeners?.stop();
+      goalEventListeners = null;
+      activeGoalModule?.dispose();
+      activeGoalModule = null;
+    },
+  };
+}

@@ -1527,6 +1527,9 @@ importers:
       '@memoflow/schedule':
         specifier: workspace:*
         version: link:../schedule
+      '@memoflow/task':
+        specifier: workspace:*
+        version: link:../task
       '@memoflow/time':
         specifier: workspace:*
         version: link:../time
