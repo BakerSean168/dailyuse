@@ -14,11 +14,11 @@
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/contracts/dist"],
+      "cache": true,
       "options": {
         "command": "node ../../node_modules/tsup/dist/cli-default.js && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json",
         "cwd": "packages/contracts"
-      },
-      "cache": true
+      }
     },
     "serve": {
       "executor": "nx:run-commands",
@@ -38,6 +38,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "inputs": ["default", "^production"],
+      "dependsOn": ["build"],
       "cache": true,
       "options": {
         "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",

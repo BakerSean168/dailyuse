@@ -111,6 +111,29 @@ export interface IScheduleRepository {
   ): Promise<ScheduleRebuildOutboxDTO[]>;
 
   /**
+   * W7: Fetch the rebuild operation timeline for an identity (all statuses, newest first)
+   */
+  fetchRebuildTimeline(identityId: string, limit?: number): Promise<ScheduleRebuildOutboxDTO[]>;
+
+  /**
+   * W7: Replay a failed rebuild outbox entry back to pending so the worker reclaims it.
+   * Identity-scoped; throws if the entry does not belong to identityId or is not failed.
+   */
+  replayRebuildOutbox(
+    input: { identityId: string; operationId: string },
+  ): Promise<ScheduleRebuildOutboxDTO>;
+
+  /**
+   * P1-4: Replay + audit in a single transaction (state advancement and audit fact
+   * are atomic; audit write failure rolls back the replay). Server lane only.
+   */
+  replayRebuildOutboxWithAudit?(
+    input: { identityId: string; operationId: string },
+    audit: import('@memoflow/patterns/operations').OperationAuditRecordInput,
+    auditRepository: import('@memoflow/patterns/operations').OperationAuditRepository,
+  ): Promise<ScheduleRebuildOutboxDTO>;
+
+  /**
    * Atomically claim pending rebuild outbox items for worker processing
    */
   claimRebuildOutboxItems(

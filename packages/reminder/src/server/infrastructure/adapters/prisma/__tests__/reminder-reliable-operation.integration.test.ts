@@ -444,6 +444,10 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
     expect(dbOcc1.deadLetterAt).toBeNull();
     expect(metrics.getSnapshot().retryTotal).toBe(1);
     expect(metrics.getSnapshot().deadLetterTotal).toBe(0);
+    // P1-5: unified recorder keys fire on the real scheduler path.
+    const unified1 = metrics.getUnifiedSnapshot();
+    expect(unified1['memoflow.reminder.outbox.retried']).toBe(1);
+    expect(unified1['memoflow.reminder.outbox.dead_letter']).toBeUndefined();
 
     // Attempt 3 -> dead_letter
     const receiptAttempt3 = { ...claimRes.receipt, attempt: 3 };
@@ -461,6 +465,13 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
     expect(dbOcc3.nextRetryAt).toBeNull();
     expect(dbOcc3.deadLetterAt).not.toBeNull();
     expect(metrics.getSnapshot().deadLetterTotal).toBe(1);
+    // P1-5: dead-letter is a distinct unified key, not lumped into failed.
+    const unified2 = metrics.getUnifiedSnapshot();
+    expect(unified2['memoflow.reminder.outbox.dead_letter']).toBe(1);
+    // W7 互斥语义：retryable 与 dead_letter 分支不得再累计终态 outbox.failed
+    expect(unified2['memoflow.reminder.outbox.retried']).toBe(1);
+    expect(unified2['memoflow.reminder.outbox.failed']).toBeUndefined();
+    expect(metrics.getSnapshot().failedTotal).toBe(0);
   });
 
   it('8. Notification outbox DB unique idempotency constraint prevents duplicate outbox messages', async () => {
@@ -1563,5 +1574,223 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
 
     const dbTemplate = await templateRepo.findByIdForIdentity(template.id, identityId);
     expect(dbTemplate?.nextTriggerAt).toBeFalsy();
+  });
+
+  it('18. W7 unified operation timeline query + audited replay via module API', async () => {
+    const { createReminderPrismaModule } = await import('../../../prisma');
+    const prisma = await getPrisma();
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+
+    const moduleInstance = createReminderPrismaModule(prisma, {
+      closureChecker: async () => false,
+    });
+
+    const templateRepo = new ReminderTemplatePrismaRepository(prisma);
+    const template = createSampleTemplate(identityId);
+    const now = new Date();
+    template.setNextTriggerTime(now.getTime() - 1000);
+    await templateRepo.save(template);
+
+    const templateId = template.id as string;
+    const triggerTime = template.getNextTriggerTime()!;
+    const occurrenceKey = `${templateId}:${new Date(triggerTime).toISOString()}`;
+    const idempotencyKey = buildIdempotencyKeyString({
+      identityId,
+      source: 'reminder',
+      occurrenceKey,
+    });
+
+    // Seed a dead-letter occurrence
+    await prisma.reminderOccurrence.create({
+      data: {
+        id: 'occ-w7-reminder-1',
+        identityId,
+        templateId,
+        source: 'reminder',
+        occurrenceKey,
+        idempotencyKey,
+        status: 'dead_letter',
+        attempt: 3,
+        lastError: 'deliverer unavailable',
+        deadLetterAt: now,
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+
+    const ctx = { identityId } as never;
+    const timelineRes = await moduleInstance.api.queryOperationTimeline(ctx);
+    expect(timelineRes.ok).toBe(true);
+    const entries = timelineRes.ok ? (timelineRes.data as any[]) : [];
+    const entry = entries.find((e) => e.operationId === 'occ-w7-reminder-1');
+    expect(entry).toBeDefined();
+    expect(entry.source).toBe('reminder');
+    expect(entry.status).toBe('dead_letter');
+    expect(entry.failureReason).toBe('deliverer unavailable');
+    expect(entry.attempts).toBe(3);
+    expect(entry.replayable).toBe(true);
+
+    // Unauthorized identity cannot replay another identity's occurrence
+    const otherIdentity = IdentityId.generate();
+    const otherCtx = { identityId: otherIdentity } as never;
+    const rejected = await moduleInstance.api.replayOperation('occ-w7-reminder-1', otherCtx);
+    expect(rejected.ok).toBe(false);
+
+    // Authorized replay advances state and records audit
+    const replayRes = await moduleInstance.api.replayOperation('occ-w7-reminder-1', ctx);
+    expect(replayRes.ok).toBe(true);
+    const replayed = replayRes.ok ? (replayRes.data as any) : null;
+    expect(replayed.status).toBe('retryable');
+
+    const auditRes = await moduleInstance.api.getOperationAudit(ctx);
+    expect(auditRes.ok).toBe(true);
+    const audit = auditRes.ok ? (auditRes.data as any[]) : [];
+    const replayAudit = audit.find(
+      (a) => a.operationId === 'occ-w7-reminder-1' && a.action === 'replay' && a.source === 'reminder',
+    );
+    expect(replayAudit).toBeDefined();
+    expect(replayAudit.actorIdentityId).toBe(identityId);
+
+    // Timeline after replay reflects state advancement
+    const timelineAfter = await moduleInstance.api.queryOperationTimeline(ctx);
+    const entryAfter = (
+      timelineAfter.ok ? (timelineAfter.data as any[]) : []
+    ).find((e) => e.operationId === 'occ-w7-reminder-1');
+    expect(entryAfter.status).toBe('retryable');
+    expect(entryAfter.replayable).toBe(false);
+
+    // P1-3: every timeline query records a timeline_query audit with result count.
+    const queryAuditRows = await prisma.operationAuditLog.findMany({
+      where: { actorIdentityId: identityId, action: 'timeline_query', source: 'reminder' },
+    });
+    expect(queryAuditRows.length).toBeGreaterThanOrEqual(2);
+    const queryAudit = queryAuditRows[0];
+    expect(queryAudit.operationId).toBe('*timeline-query*');
+    const details = JSON.parse(queryAudit.details as string);
+    expect(details.resultCount).toBeGreaterThanOrEqual(1);
+    expect(typeof details.filters).toBe('object');
+
+    moduleInstance.dispose();
+  });
+
+  it('P1-4: reminder replay audit write failure rolls back the state advancement (atomicity)', async () => {
+    const { createReminderModule } = await import('../../../reminder.module');
+    const prisma = await getPrisma();
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+
+    const templateRepo = new ReminderTemplatePrismaRepository(prisma);
+    const template = createSampleTemplate(identityId);
+    const now = new Date();
+    template.setNextTriggerTime(now.getTime() - 1000);
+    await templateRepo.save(template);
+
+    const templateId = template.id as string;
+    const triggerTime = template.getNextTriggerTime()!;
+    const occurrenceKey = `${templateId}:${new Date(triggerTime).toISOString()}`;
+    const idempotencyKey = buildIdempotencyKeyString({
+      identityId,
+      source: 'reminder',
+      occurrenceKey,
+    });
+
+    await prisma.reminderOccurrence.create({
+      data: {
+        id: 'occ-w7-fail-inject-1',
+        identityId,
+        templateId,
+        source: 'reminder',
+        occurrenceKey,
+        idempotencyKey,
+        status: 'dead_letter',
+        attempt: 3,
+        lastError: 'deliverer unavailable',
+        deadLetterAt: now,
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+
+    const { ReminderResponsePrismaRepository } = await import(
+      '../../../../infrastructure/adapters/prisma/reminder-response-prisma.repository'
+    );
+    const { UserReminderPreferencePrismaRepository } = await import(
+      '../../../../infrastructure/adapters/prisma/user-reminder-preference-prisma.repository'
+    );
+
+    const moduleInstance = createReminderModule({
+      reminderTemplateRepository: templateRepo,
+      reminderGroupRepository: new ReminderGroupPrismaRepository(prisma),
+      reminderResponseRepository: new ReminderResponsePrismaRepository(prisma),
+      userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(prisma),
+      closureChecker: async () => false,
+      reliablePort: new ReminderReliableOperationPrismaAdapter(prisma),
+      auditRepository: failingAudit as never,
+    });
+
+    const ctx = { identityId } as never;
+    const replayRes = await moduleInstance.api.replayOperation('occ-w7-fail-inject-1', ctx);
+    expect(replayRes.ok).toBe(false);
+
+    // The occurrence must NOT have advanced out of dead_letter: atomic rollback.
+    const after = await prisma.reminderOccurrence.findUniqueOrThrow({
+      where: { id: 'occ-w7-fail-inject-1' },
+    });
+    expect(after.status).toBe('dead_letter');
+    expect(after.deadLetterAt).not.toBeNull();
+
+    moduleInstance.dispose();
+  });
+
+  it('P1-3: reminder timeline query fails closed when audit write fails', async () => {
+    const { createReminderModule } = await import('../../../reminder.module');
+    const prisma = await getPrisma();
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+
+    const templateRepo = new ReminderTemplatePrismaRepository(prisma);
+    const template = createSampleTemplate(identityId);
+    const now = new Date();
+    template.setNextTriggerTime(now.getTime() - 1000);
+    await templateRepo.save(template);
+
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+
+    const { ReminderResponsePrismaRepository } = await import(
+      '../../../../infrastructure/adapters/prisma/reminder-response-prisma.repository'
+    );
+    const { UserReminderPreferencePrismaRepository } = await import(
+      '../../../../infrastructure/adapters/prisma/user-reminder-preference-prisma.repository'
+    );
+
+    const moduleInstance = createReminderModule({
+      reminderTemplateRepository: templateRepo,
+      reminderGroupRepository: new ReminderGroupPrismaRepository(prisma),
+      reminderResponseRepository: new ReminderResponsePrismaRepository(prisma),
+      userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(prisma),
+      closureChecker: async () => false,
+      reliablePort: new ReminderReliableOperationPrismaAdapter(prisma),
+      auditRepository: failingAudit as never,
+    });
+
+    const ctx = { identityId } as never;
+    await expect(moduleInstance.api.queryOperationTimeline(ctx)).rejects.toThrow(
+      'audit write failure injected',
+    );
+
+    moduleInstance.dispose();
   });
 });

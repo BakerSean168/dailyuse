@@ -44,6 +44,7 @@ export interface KnowledgeNoteCommitServiceOptions {
   leaseTtlMs?: number;
   leaseRenewalIntervalMs?: number;
   closureChecker?: (identityId: string) => Promise<boolean>;
+  metrics?: import('@memoflow/patterns/operations').UnifiedOperationMetricsRecorder;
 }
 
 /**
@@ -252,6 +253,8 @@ export class KnowledgeNoteCommitService {
       }
       return fail({ code: 'CONFLICT', message: 'Knowledge note commit is already in progress' });
     }
+    // P1-5：write request 落库（persistence 分支）发射 persisted 指标。
+    this.options.metrics?.recordOutbox('knowledge', 'persisted');
 
     const frontmatter = { ...request.frontmatter, title: request.title };
     const markdownContent = matter.stringify(request.content, frontmatter);

@@ -48,8 +48,13 @@ import { ScheduleRebuildWorkerService, ScheduleRebuildWorkerRuntime } from '../a
 import { ScheduleDomainEventPublisherService, ScheduleDomainEventPublisherRuntime } from '../application/services/schedule-domain-event-publisher';
 import { ScheduleEventDeliveryLogConsumer } from './consumers/schedule-event-delivery-log.consumer';
 import { ScheduleLeaseCoordinator } from './lease/schedule-lease-coordinator';
-import { toResultErrorException } from '@memoflow/contracts/result';
+import { ok, fail, toResultErrorException } from '@memoflow/contracts/result';
 import { createEventBusAdapter } from '@memoflow/patterns';
+import type { OperationAuditRepository } from '@memoflow/patterns/operations';
+import { runTimelineQueryWithAudit, globalUnifiedOperationMetrics } from '@memoflow/patterns/operations';
+import { OperationTimelineEntrySchema } from '@memoflow/contracts/operations';
+import type { OperationTimelineEntry } from '@memoflow/contracts/operations';
+import type { ScheduleRebuildOutboxDTO } from '../domain/repositories/i-schedule-repository';
 import { eventBus } from '@memoflow/utils/domain';
 import type { RetryPolicyDTO, ScheduleConfigDTO } from '@memoflow/contracts/schedule';
 import type {
@@ -86,6 +91,8 @@ export interface ScheduleModuleDependencies {
    */
   readonly eventDeliveryLogConsumer?: ScheduleEventDeliveryLogConsumer;
   readonly runtimeContributions?: ScheduleRuntimeContributionsInput;
+  /** W7：审计仓库（最小权限 + 审计） */
+  readonly auditRepository?: OperationAuditRepository;
 }
 
 /**
@@ -288,8 +295,14 @@ export function createScheduleModule(
   dependencies: ScheduleModuleDependencies,
 ): ScheduleModuleInstance {
   const { scheduleRepository, scheduleExecutionRepository, scheduleTaskRepository } = dependencies;
+  const auditRepository = dependencies.auditRepository;
   const leaseCoordinator = dependencies.leaseCoordinator ?? new ScheduleLeaseCoordinator(null);
-  const workerService = new ScheduleRebuildWorkerService(scheduleRepository, leaseCoordinator);
+  const workerService = new ScheduleRebuildWorkerService(
+    scheduleRepository,
+    leaseCoordinator,
+    undefined,
+    globalUnifiedOperationMetrics,
+  );
   const workerRuntime = new ScheduleRebuildWorkerRuntime(workerService);
   const domainEventPublisher =
     dependencies.domainEventPublisher ??
@@ -371,6 +384,70 @@ export function createScheduleModule(
       useCases.batchDeleteScheduleTasks.execute(ids, ctx.identityId),
     updateTaskMetadata: async (id, metadata, ctx) =>
       useCases.updateScheduleTaskMetadata.execute(id, ctx.identityId, metadata),
+
+    queryRebuildTimeline: async (ctx) => {
+      if (!auditRepository) {
+        return fail({
+          code: 'FAIL_CLOSED',
+          message:
+            '[FAIL-CLOSED] schedule rebuild timeline requires an explicit auditRepository dependency (timeline_query audit is mandatory).',
+        });
+      }
+      const { entries } = await runTimelineQueryWithAudit({
+        repository: auditRepository,
+        source: 'schedule-rebuild',
+        actorIdentityId: ctx.identityId,
+        filters: { limit: 100 },
+        query: () => scheduleRepository.fetchRebuildTimeline(ctx.identityId, 100),
+      });
+      return ok(entries.map(mapRebuildOutboxToTimelineEntry));
+    },
+
+    replayRebuildOutbox: async (operationId, ctx) => {
+      if (!auditRepository) {
+        return fail({
+          code: 'FAIL_CLOSED',
+          message:
+            '[FAIL-CLOSED] schedule rebuild replay requires an explicit auditRepository dependency.',
+        });
+      }
+      try {
+        if (!scheduleRepository.replayRebuildOutboxWithAudit) {
+          return fail({
+            code: 'FAIL_CLOSED',
+            message:
+              '[FAIL-CLOSED] schedule rebuild replay requires a repository implementing atomic replayRebuildOutboxWithAudit (state + audit in one transaction).',
+          });
+        }
+        const dto = await scheduleRepository.replayRebuildOutboxWithAudit(
+          { identityId: ctx.identityId, operationId },
+          {
+            actorIdentityId: ctx.identityId,
+            source: 'schedule-rebuild',
+            operationId,
+            action: 'replay',
+          },
+          auditRepository,
+        );
+        return ok(mapRebuildOutboxToTimelineEntry(dto));
+      } catch (err) {
+        return fail({
+          code: 'NOT_FOUND',
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+
+    getOperationAudit: async (ctx) => {
+      if (!auditRepository) {
+        return fail({
+          code: 'FAIL_CLOSED',
+          message:
+            '[FAIL-CLOSED] schedule operation audit requires an explicit auditRepository dependency.',
+        });
+      }
+      return ok(await auditRepository.listByActor({ identityId: ctx.identityId }));
+    },
   };
 
   const eventApi: ScheduleEventApplicationPort = {
@@ -474,4 +551,35 @@ export function createScheduleModule(
       started = false;
     },
   };
+}
+
+function mapRebuildOutboxToTimelineEntry(item: ScheduleRebuildOutboxDTO): OperationTimelineEntry {
+  const entry: OperationTimelineEntry = {
+    source: 'schedule-rebuild',
+    operationId: item.id,
+    status: normalizeRebuildStatus(item.status),
+    failureReason: item.lastError ?? null,
+    attempts: item.attempts ?? 0,
+    nextRetryAt: item.nextAttemptAt ? item.nextAttemptAt.toISOString() : null,
+    replayable: item.status === 'failed',
+    updatedAt: (item.processedAt ?? item.createdAt).toISOString(),
+  };
+  return OperationTimelineEntrySchema.parse(entry);
+}
+
+function normalizeRebuildStatus(
+  status: string,
+): 'pending' | 'running' | 'succeeded' | 'skipped' | 'failed' | 'retryable' | 'dead_letter' | 'cancelled' {
+  switch (status) {
+    case 'processing':
+      return 'running';
+    case 'completed':
+      return 'succeeded';
+    case 'retry':
+      return 'retryable';
+    case 'failed':
+      return 'dead_letter';
+    default:
+      return 'pending';
+  }
 }

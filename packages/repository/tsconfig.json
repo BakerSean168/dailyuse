@@ -16,9 +16,11 @@
       "@memoflow/contracts/shared": ["../contracts/src/shared/index.ts"],
       "@memoflow/contracts/primitives": ["../contracts/src/primitives/index.ts"],
       "@memoflow/contracts/electron": ["../contracts/src/electron/index.ts"],
+      "@memoflow/contracts/operations": ["../contracts/src/modules/operations/index.ts"],
       "@memoflow/utils": ["../utils/src/index.ts"],
       "@memoflow/utils/result": ["../utils/src/result/index.ts"],
-      "@memoflow/patterns": ["../patterns/src/index.ts"]
+      "@memoflow/patterns": ["../patterns/src/index.ts"],
+      "@memoflow/patterns/operations": ["../patterns/src/operations/index.ts"]
     }
   },
   "include": ["src"],

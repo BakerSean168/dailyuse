@@ -141,4 +141,18 @@ export class ScheduleController {
 
     return this.api.batchOperateTasks(parsed.data, ctx);
   }
+
+  // ==================== W7 Operation Timeline / Replay / Audit ====================
+
+  async queryRebuildTimeline(ctx: Context): Promise<Result<unknown>> {
+    return this.api.queryRebuildTimeline(ctx);
+  }
+
+  async replayRebuildOutbox(operationId: string, ctx: Context): Promise<Result<unknown>> {
+    return this.api.replayRebuildOutbox(operationId, ctx);
+  }
+
+  async getOperationAudit(ctx: Context): Promise<Result<unknown>> {
+    return this.api.getOperationAudit(ctx);
+  }
 }

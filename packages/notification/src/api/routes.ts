@@ -43,6 +43,10 @@ import {
   NotificationPreferenceResponseSchema,
 } from '@memoflow/contracts/notification';
 import { BusinessOperationReceiptSchema } from '@memoflow/contracts/reliable-messaging';
+import {
+  OperationAuditRecordSchema,
+  OperationTimelineEntrySchema,
+} from '@memoflow/contracts/operations';
 import type { NotificationApplicationPort } from '../server/application';
 import { NotificationController } from '../server/transport/notification.controller';
 
@@ -280,6 +284,43 @@ export function registerNotificationRoutes(
         lastCursor: parseString(req.query?.lastCursor ?? req.query?.since),
         since: parseString(req.query?.since),
         status: parseString(req.query?.status),
+      }),
+  );
+
+  // GET /operations/timeline — W7 unified operation timeline (identity-scoped)
+  r.route(
+    {
+      method: 'get',
+      path: '/operations/timeline',
+      summary: '查询统一操作时间线（W7）',
+      responses: {
+        200: successResponse(z.array(OperationTimelineEntrySchema), '获取成功'),
+      },
+    },
+    [auth],
+    (req, ctx) =>
+      controller.getOperationTimeline(ctx, {
+        status: parseString(req.query?.status),
+        limit: parseNumber(req.query?.limit),
+      }),
+  );
+
+  // GET /operations/audit — W7 audit trail (actor-scoped, least privilege)
+  r.route(
+    {
+      method: 'get',
+      path: '/operations/audit',
+      summary: '查询操作审计记录（W7，最小权限）',
+      responses: {
+        200: successResponse(z.array(OperationAuditRecordSchema), '获取成功'),
+      },
+    },
+    [auth],
+    (req, ctx) =>
+      controller.getOperationAudit(ctx, {
+        source: parseString(req.query?.source),
+        operationId: parseString(req.query?.operationId),
+        limit: parseNumber(req.query?.limit),
       }),
   );
 

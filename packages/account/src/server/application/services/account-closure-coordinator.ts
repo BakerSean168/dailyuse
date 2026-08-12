@@ -8,6 +8,7 @@ import type {
 import type { CloudAuthRevocationPort } from '../ports/cloud-auth-revocation.port';
 import type { AccountClosureEventPublisher } from '../ports/account-closure-event-publisher.port';
 import { AccountStatus } from '../../domain/value-objects';
+import type { UnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
 export interface Clock {
   now(): Date;
@@ -47,6 +48,7 @@ export interface AccountClosureCoordinatorDependencies {
   clock?: Clock;
   leaseDurationMs?: number;
   enableHeartbeat?: boolean;
+  metrics?: UnifiedOperationMetricsRecorder;
 }
 
 export class AccountClosureCoordinator {
@@ -57,6 +59,7 @@ export class AccountClosureCoordinator {
   private readonly clock: Clock;
   private readonly leaseDurationMs: number;
   private readonly enableHeartbeat: boolean;
+  private readonly metrics: UnifiedOperationMetricsRecorder | undefined;
 
   constructor(deps: AccountClosureCoordinatorDependencies) {
     this.accountRepository = deps.accountRepository;
@@ -66,6 +69,7 @@ export class AccountClosureCoordinator {
     this.clock = deps.clock ?? systemClock;
     this.leaseDurationMs = deps.leaseDurationMs ?? 30000;
     this.enableHeartbeat = deps.enableHeartbeat ?? true;
+    this.metrics = deps.metrics;
   }
 
   async execute(
@@ -108,6 +112,7 @@ export class AccountClosureCoordinator {
             );
           return this.toReceipt(current ?? existing);
         }
+        this.metrics?.recordOutbox('account-closure', 'claimed');
         record = {
           ...existing,
           ownerToken,
@@ -131,6 +136,8 @@ export class AccountClosureCoordinator {
             );
           return this.toReceipt(current ?? existing);
         }
+        // P1-5：failed → running 的重新认领是一次 retry，不得笼统计为 failed。
+        this.metrics?.recordOutbox('account-closure', 'retried');
         record = {
           ...existing,
           ownerToken,
@@ -167,6 +174,7 @@ export class AccountClosureCoordinator {
       };
 
       const created = await this.closureOperationRepository.create(record);
+      this.metrics?.recordOutbox('account-closure', 'persisted');
       if (!created) {
         const competitor =
           await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
@@ -435,6 +443,8 @@ export class AccountClosureCoordinator {
           if (latest) return this.toReceipt(latest);
         }
 
+        this.metrics?.recordOutbox('account-closure', 'succeeded');
+        this.metrics?.recordWorker('account-closure', 'completed');
         return receipt;
       }
 
@@ -467,6 +477,8 @@ export class AccountClosureCoordinator {
         if (latest) return this.toReceipt(latest);
       }
 
+      this.metrics?.recordOutbox('account-closure', 'failed');
+      this.metrics?.recordWorker('account-closure', 'failed');
       return failedReceipt;
     } finally {
       if (heartbeatTimer) {

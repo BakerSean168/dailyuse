@@ -25,6 +25,7 @@ import {
   createAccountRuntimeContributions,
   type AccountRuntimeContributionsInput,
 } from './runtime';
+import { PrismaOperationAuditRepository } from '@memoflow/patterns/operations';
 
 export interface CreateAccountPrismaModuleOptions {
   readonly runtimeContributions?: AccountRuntimeContributionsInput;
@@ -61,5 +62,6 @@ export function createAccountPrismaModule(
       accountRepository,
       options.runtimeContributions,
     ),
+    auditRepository: new PrismaOperationAuditRepository(db),
   });
 }

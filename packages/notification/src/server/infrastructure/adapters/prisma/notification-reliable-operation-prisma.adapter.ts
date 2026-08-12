@@ -17,6 +17,7 @@ import {
   NotificationOutboxDispatchInputSchema,
   type NotificationReliableOperationPort,
 } from '@memoflow/contracts/reliable-messaging';
+import type { OperationAuditRecordInput, OperationAuditRepository } from '@memoflow/patterns/operations';
 
 function formatResourceKey(notificationId: string, occurrenceKey: string): string {
   return occurrenceKey.startsWith('notification:')
@@ -563,6 +564,77 @@ export class NotificationReliableOperationPrismaAdapter implements NotificationR
     });
 
     return mapPrismaOutboxToReceipt(updated);
+  }
+
+  /**
+   * P1-4：与审计同一事务的 replay。状态推进与 audit 事实同入一个
+   * `prisma.$transaction`；审计写失败时整个事务回滚，绝不留下
+   * “已重放但无审计”的部分成功。
+   */
+  async replayDeadLetterWithAudit(
+    params: { identityId: string; operationId: string },
+    audit: OperationAuditRecordInput,
+    auditRepository: OperationAuditRepository,
+  ): Promise<BusinessOperationReceipt> {
+    return this.prisma.$transaction(async (tx) => {
+      const { identityId, operationId } = params;
+      const now = new Date();
+
+      const existing = await tx.notificationDispatchOutbox.findFirst({
+        where: {
+          id: operationId,
+          identityId,
+          status: 'dead_letter',
+        },
+      });
+
+      if (!existing) {
+        throw new Error(
+          `Dead letter notification outbox not found for operationId '${operationId}' and identityId '${identityId}'`,
+        );
+      }
+
+      const updateResult = await tx.notificationDispatchOutbox.updateMany({
+        where: {
+          id: existing.id,
+          identityId,
+          status: 'dead_letter',
+          OR: [{ leaseExpiresAt: null }, { leaseExpiresAt: { lt: now } }],
+        },
+        data: {
+          status: 'retryable',
+          nextRetryAt: new Date(now.getTime() - 1000),
+          deadLetterAt: null,
+          ownerToken: null,
+          claimId: null,
+          leaseExpiresAt: null,
+          fencingToken: { increment: 1 },
+          updatedAt: now,
+        },
+      });
+
+      let receipt: BusinessOperationReceipt;
+      if (updateResult.count === 0) {
+        const reFetched = await tx.notificationDispatchOutbox.findUniqueOrThrow({
+          where: { id: existing.id },
+        });
+        receipt = mapPrismaOutboxToReceipt(reFetched);
+      } else {
+        const updated = await tx.notificationDispatchOutbox.findUniqueOrThrow({
+          where: { id: existing.id },
+        });
+        receipt = mapPrismaOutboxToReceipt(updated);
+      }
+
+      await auditRepository.record(
+        {
+          ...audit,
+          details: `status -> ${receipt.status}`,
+        },
+        tx,
+      );
+      return receipt;
+    });
   }
 
   /**

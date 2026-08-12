@@ -21,6 +21,12 @@ import {
   ReminderReplayDeadLetterInputSchema,
   type ReminderReliableOperationPort,
 } from '@memoflow/contracts/reliable-messaging';
+import type { OperationTimelineEntry } from '@memoflow/contracts/operations';
+import type {
+  OperationAuditRecordInput,
+  OperationAuditRepository,
+} from '@memoflow/patterns/operations';
+import { mapReceiptToTimelineEntry } from '@memoflow/patterns/operations';
 
 function formatResourceKey(templateId: string, occurrenceKey: string): string {
   return occurrenceKey.startsWith(`${templateId}:`)
@@ -392,6 +398,22 @@ export class ReminderReliableOperationPrismaAdapter implements ReminderReliableO
     return deadLetters.map(mapPrismaOccurrenceToReceipt);
   }
 
+  async queryOperationTimeline(
+    identityId: string,
+  ): Promise<OperationTimelineEntry[]> {
+    if (!identityId) {
+      throw new Error('identityId is required');
+    }
+    const occurrences = await this.prisma.reminderOccurrence.findMany({
+      where: { identityId },
+      orderBy: { updatedAt: 'desc' },
+      take: 100,
+    });
+    return occurrences.map((occ) =>
+      mapReceiptToTimelineEntry(mapPrismaOccurrenceToReceipt(occ), 'reminder'),
+    );
+  }
+
   async replayDeadLetter(input: ReminderReplayDeadLetterInput): Promise<BusinessOperationReceipt> {
     const validatedInput = ReminderReplayDeadLetterInputSchema.parse(input);
     const now = new Date();
@@ -445,5 +467,74 @@ export class ReminderReliableOperationPrismaAdapter implements ReminderReliableO
     });
 
     return mapPrismaOccurrenceToReceipt(updated);
+  }
+
+  /**
+   * P1-4：与审计同一事务的 replay。状态推进与 audit 事实同入一个
+   * `prisma.$transaction`；审计写失败时整个事务回滚，绝不留下
+   * “已重放但无审计”的部分成功。
+   */
+  async replayDeadLetterWithAudit(
+    input: ReminderReplayDeadLetterInput,
+    audit: OperationAuditRecordInput,
+    auditRepository: OperationAuditRepository,
+  ): Promise<BusinessOperationReceipt> {
+    return this.prisma.$transaction(async (tx) => {
+      const validatedInput = ReminderReplayDeadLetterInputSchema.parse(input);
+      const now = new Date();
+
+      const whereCondition: Prisma.ReminderOccurrenceWhereInput = {
+        identityId: validatedInput.identityId,
+        status: 'dead_letter',
+      };
+
+      if (validatedInput.operationId) {
+        whereCondition.id = validatedInput.operationId;
+      } else if (validatedInput.occurrenceKey) {
+        whereCondition.occurrenceKey = validatedInput.occurrenceKey;
+      }
+
+      const existing = await tx.reminderOccurrence.findFirst({ where: whereCondition });
+      if (!existing) {
+        throw new Error(
+          `Dead letter occurrence not found for identityId '${validatedInput.identityId}'`,
+        );
+      }
+
+      const updateResult = await tx.reminderOccurrence.updateMany({
+        where: { id: existing.id, status: 'dead_letter' },
+        data: {
+          status: 'retryable',
+          nextRetryAt: new Date(now.getTime() - 1000),
+          deadLetterAt: null,
+          ownerToken: null,
+          claimId: null,
+          leaseExpiresAt: null,
+          updatedAt: now,
+        },
+      });
+
+      let receipt: BusinessOperationReceipt;
+      if (updateResult.count === 0) {
+        const reFetched = await tx.reminderOccurrence.findUniqueOrThrow({
+          where: { id: existing.id },
+        });
+        receipt = mapPrismaOccurrenceToReceipt(reFetched);
+      } else {
+        const updated = await tx.reminderOccurrence.findUniqueOrThrow({
+          where: { id: existing.id },
+        });
+        receipt = mapPrismaOccurrenceToReceipt(updated);
+      }
+
+      await auditRepository.record(
+        {
+          ...audit,
+          details: `status -> ${receipt.status}`,
+        },
+        tx,
+      );
+      return receipt;
+    });
   }
 }

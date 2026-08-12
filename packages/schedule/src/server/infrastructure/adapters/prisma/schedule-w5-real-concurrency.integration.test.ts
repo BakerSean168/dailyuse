@@ -6,6 +6,8 @@ import {
   seedAccount,
 } from '../../../../__tests__/integration-helpers';
 import { SchedulePrismaRepository } from './schedule-prisma.repository';
+import { ScheduleExecutionPrismaRepository } from './schedule-execution-prisma.repository';
+import { ScheduleTaskPrismaRepository } from './schedule-task-prisma.repository';
 import { ScheduleEventApplicationService } from '../../../application/services/schedule-event-application-service';
 import { ScheduleRebuildWorkerService } from '../../../application/services/schedule-rebuild-worker-service';
 import { ScheduleLeaseCoordinator } from '../../../infrastructure/lease/schedule-lease-coordinator';
@@ -20,6 +22,7 @@ import { createEventBusAdapter } from '@memoflow/patterns';
 import type { IElectronDatabase, IElectronDatabaseQueryResult } from '@memoflow/contracts/electron';
 import { CrossPlatformEventBus, eventBus } from '@memoflow/utils/domain';
 import { ScheduleEventDeliveryLogConsumer } from '../../consumers/schedule-event-delivery-log.consumer';
+import { createUnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
 function createRealSqlitePowerSyncDb(): IElectronDatabase {
   const sqlite = new (require('better-sqlite3'))(':memory:') as {
@@ -764,6 +767,237 @@ describe('W5: Real Database Concurrency & PowerSync Integration Matrix', () => {
     consumer.stop();
     await prisma.scheduleEventConsumerReceipt.deleteMany({ where: { idempotencyKey: key } });
     await prisma.scheduleEventDeliveryLog.deleteMany({ where: { idempotencyKey: key } });
+  });
+
+  it('P1-5: schedule rebuild worker drives the real worker path and emits unified metric events', async () => {
+    const prisma = await getPrisma();
+    const recorder = createUnifiedOperationMetricsRecorder();
+    const repo = new SchedulePrismaRepository(prisma, undefined, recorder);
+    const service = new ScheduleEventApplicationService(repo);
+
+    const e1 = await service.createSchedule({
+      identityId,
+      title: 'Metrics Worker A',
+      startTime: 1000,
+      endTime: 2000,
+    });
+    const e2 = await service.createSchedule({
+      identityId,
+      title: 'Metrics Worker B',
+      startTime: 1500,
+      endTime: 2500,
+    });
+    await service.deleteSchedule(e2.id, identityId, e2.version);
+
+    // W7：真实 outbox 持久化成功点必须发射 persisted
+    const persistedSnap = recorder.snapshot();
+    expect(persistedSnap['memoflow.schedule-rebuild.outbox.persisted']).toBeGreaterThanOrEqual(1);
+
+    const worker = new ScheduleRebuildWorkerService(repo, passThroughLease, {}, recorder);
+    const res = await worker.processOutbox(identityId);
+
+    expect(res.processedCount).toBeGreaterThan(0);
+    const snap = recorder.snapshot();
+    expect(snap['memoflow.schedule-rebuild.outbox.persisted']).toBeGreaterThanOrEqual(1);
+    expect(snap['memoflow.schedule-rebuild.outbox.claimed']).toBeGreaterThanOrEqual(1);
+    expect(snap['memoflow.schedule-rebuild.outbox.succeeded']).toBeGreaterThanOrEqual(1);
+    expect(snap['memoflow.schedule-rebuild.worker.completed']).toBeGreaterThanOrEqual(1);
+  });
+
+  it('P1-5: schedule rebuild worker distinguishes retried from dead_letter metrics on failure', async () => {
+    const prisma = await getPrisma();
+    const repo = new SchedulePrismaRepository(prisma);
+    const service = new ScheduleEventApplicationService(repo);
+
+    await service.createSchedule({
+      identityId,
+      title: 'Metrics Retry A',
+      startTime: 1000,
+      endTime: 2000,
+    });
+    const e2 = await service.createSchedule({
+      identityId,
+      title: 'Metrics Retry B',
+      startTime: 1500,
+      endTime: 2500,
+    });
+    await service.deleteSchedule(e2.id, identityId, e2.version);
+
+    // Make the conflict cache refresh always fail so every item lands in the catch path.
+    vi.spyOn(repo, 'findByTimeRange').mockRejectedValue(new Error('cache backend down'));
+
+    const recorder = createUnifiedOperationMetricsRecorder();
+    // maxAttempts=1: nextAttempts(1) >= maxAttempts(1) -> dead_letter, not a generic failed.
+    const worker = new ScheduleRebuildWorkerService(
+      repo,
+      passThroughLease,
+      { maxAttempts: 1 },
+      recorder,
+    );
+    const res = await worker.processOutbox(identityId);
+
+    expect(res.failedCount).toBeGreaterThan(0);
+    const snap = recorder.snapshot();
+    expect(snap['memoflow.schedule-rebuild.outbox.dead_letter']).toBeGreaterThanOrEqual(1);
+    expect(snap['memoflow.schedule-rebuild.outbox.failed']).toBeUndefined();
+    expect(snap['memoflow.schedule-rebuild.outbox.retried']).toBeUndefined();
+    expect(snap['memoflow.schedule-rebuild.worker.failed']).toBeGreaterThanOrEqual(1);
+  });
+
+  it('W7: unified rebuild timeline query + audited replay; unauthorized identity rejected', async () => {
+    const prisma = await getPrisma();
+    const { createSchedulePrismaModule } = await import('../../prisma');
+    const moduleInstance = createSchedulePrismaModule(prisma, {
+      wireDeliveryLogConsumer: false,
+    });
+
+    const opId = 'rebuild-w7-failed-1';
+    await prisma.scheduleRebuildOutbox.create({
+      data: {
+        id: opId,
+        identityId,
+        scheduleId: null,
+        startTime: new Date(1000),
+        endTime: new Date(2000),
+        sourceRevision: 3,
+        idempotencyKey: 'rebuild:w7-failed-1',
+        status: 'failed',
+        attempts: 5,
+        lastError: 'cache rebuild exceeded max attempts',
+        createdAt: new Date(),
+        processedAt: new Date(),
+      },
+    });
+
+    const ctx = { identityId } as never;
+    const timelineRes = await moduleInstance.api.queryRebuildTimeline(ctx);
+    expect(timelineRes.ok).toBe(true);
+    const entries = timelineRes.ok ? (timelineRes.data as any[]) : [];
+    const entry = entries.find((e) => e.operationId === opId);
+    expect(entry).toBeDefined();
+    expect(entry.source).toBe('schedule-rebuild');
+    expect(entry.status).toBe('dead_letter');
+    expect(entry.failureReason).toBe('cache rebuild exceeded max attempts');
+    expect(entry.attempts).toBe(5);
+    expect(entry.replayable).toBe(true);
+
+    // Unauthorized identity cannot replay another identity's failed rebuild
+    const otherIdentity = `other-${Date.now()}`;
+    const otherCtx = { identityId: otherIdentity } as never;
+    const rejected = await moduleInstance.api.replayRebuildOutbox(opId, otherCtx);
+    expect(rejected.ok).toBe(false);
+
+    // Authorized replay advances state to pending and records audit
+    const replayRes = await moduleInstance.api.replayRebuildOutbox(opId, ctx);
+    expect(replayRes.ok).toBe(true);
+    const replayed = replayRes.ok ? (replayRes.data as any) : null;
+    expect(replayed.status).toBe('pending');
+    expect(replayed.replayable).toBe(false);
+
+    const auditRes = await moduleInstance.api.getOperationAudit(ctx);
+    expect(auditRes.ok).toBe(true);
+    const audit = auditRes.ok ? (auditRes.data as any[]) : [];
+    const replayAudit = audit.find(
+      (a) => a.operationId === opId && a.action === 'replay' && a.source === 'schedule-rebuild',
+    );
+    expect(replayAudit).toBeDefined();
+    expect(replayAudit.actorIdentityId).toBe(identityId);
+
+    // Timeline after replay reflects state advancement
+    const timelineAfter = await moduleInstance.api.queryRebuildTimeline(ctx);
+    const entryAfter = (
+      timelineAfter.ok ? (timelineAfter.data as any[]) : []
+    ).find((e) => e.operationId === opId);
+    expect(entryAfter.status).toBe('pending');
+    expect(entryAfter.replayable).toBe(false);
+
+    // P1-3: timeline queries wrote timeline_query audits with result count.
+    const queryAuditRows = await prisma.operationAuditLog.findMany({
+      where: {
+        actorIdentityId: identityId,
+        action: 'timeline_query',
+        source: 'schedule-rebuild',
+      },
+    });
+    expect(queryAuditRows.length).toBeGreaterThanOrEqual(2);
+    const qDetails = JSON.parse(queryAuditRows[0].details as string);
+    expect(qDetails.resultCount).toBeGreaterThanOrEqual(1);
+
+    moduleInstance.dispose();
+  });
+
+  it('P1-4: schedule rebuild replay audit write failure rolls back the state advancement', async () => {
+    const prisma = await getPrisma();
+    const { createScheduleModule } = await import('../../schedule.module');
+    const opId = 'rebuild-w7-fail-inject-1';
+    await prisma.scheduleRebuildOutbox.create({
+      data: {
+        id: opId,
+        identityId,
+        scheduleId: null,
+        startTime: new Date(1000),
+        endTime: new Date(2000),
+        sourceRevision: 4,
+        idempotencyKey: 'rebuild:w7-fail-inject-1',
+        status: 'failed',
+        attempts: 5,
+        lastError: 'cache rebuild exceeded max attempts',
+        createdAt: new Date(),
+        processedAt: new Date(),
+      },
+    });
+
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+
+    const moduleInstance = createScheduleModule({
+      scheduleRepository: new SchedulePrismaRepository(prisma),
+      scheduleExecutionRepository: new ScheduleExecutionPrismaRepository(prisma),
+      scheduleTaskRepository: new ScheduleTaskPrismaRepository(prisma),
+      wireDeliveryLogConsumer: false,
+      auditRepository: failingAudit as never,
+    });
+
+    const ctx = { identityId } as never;
+    const replayRes = await moduleInstance.api.replayRebuildOutbox(opId, ctx);
+    expect(replayRes.ok).toBe(false);
+
+    const after = await prisma.scheduleRebuildOutbox.findUniqueOrThrow({ where: { id: opId } });
+    expect(after.status).toBe('failed');
+    expect(after.claimToken).toBeNull();
+
+    await moduleInstance.dispose();
+  });
+
+  it('P1-3: schedule timeline query fails closed when audit write fails', async () => {
+    const prisma = await getPrisma();
+    const { createScheduleModule } = await import('../../schedule.module');
+
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+
+    const moduleInstance = createScheduleModule({
+      scheduleRepository: new SchedulePrismaRepository(prisma),
+      scheduleExecutionRepository: new ScheduleExecutionPrismaRepository(prisma),
+      scheduleTaskRepository: new ScheduleTaskPrismaRepository(prisma),
+      wireDeliveryLogConsumer: false,
+      auditRepository: failingAudit as never,
+    });
+
+    const ctx = { identityId } as never;
+    await expect(moduleInstance.api.queryRebuildTimeline(ctx)).rejects.toThrow(
+      'audit write failure injected',
+    );
+
+    await moduleInstance.dispose();
   });
 
 });

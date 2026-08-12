@@ -129,8 +129,12 @@ describe('Notification Durable Dispatch Worker & Capability (W2)', () => {
     await runtime.tick();
     const metrics1 = runtime.getMetrics();
     expect(metrics1.dispatchedTotal).toBe(1);
-    expect(metrics1.failedTotal).toBe(1);
+    // W7 互斥语义：retryable 分支只累计 retried，不得累计终态 failed
+    expect(metrics1.failedTotal).toBe(0);
     expect(metrics1.retryTotal).toBe(1);
+    const unified1 = runtime.getUnifiedSnapshot();
+    expect(unified1['memoflow.notification.outbox.retried']).toBe(1);
+    expect(unified1['memoflow.notification.outbox.failed']).toBeUndefined();
 
     // Second attempt -> reaches dead letter threshold (2)
     const row = adapter.rows[0];
@@ -139,8 +143,13 @@ describe('Notification Durable Dispatch Worker & Capability (W2)', () => {
     await runtime.tick();
     const metrics2 = runtime.getMetrics();
     expect(metrics2.dispatchedTotal).toBe(2);
-    expect(metrics2.failedTotal).toBe(2);
+    // W7 互斥语义：dead_letter 分支只累计 dead_letter，不得再累计终态 failed
+    expect(metrics2.failedTotal).toBe(0);
     expect(metrics2.deadLetterTotal).toBe(1);
+    const unified2 = runtime.getUnifiedSnapshot();
+    expect(unified2['memoflow.notification.outbox.retried']).toBe(1);
+    expect(unified2['memoflow.notification.outbox.dead_letter']).toBe(1);
+    expect(unified2['memoflow.notification.outbox.failed']).toBeUndefined();
 
     const deadLetters = await adapter.queryDeadLetters('user_123');
     expect(deadLetters).toHaveLength(1);

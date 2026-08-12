@@ -621,4 +621,193 @@ describe('Account Closure Coordinator & Worker Real DB Concurrency Integration T
     expect(finalOp?.status).toBe('succeeded');
     expect(finalOp?.phase).toBe('closed');
   });
+
+  it('W7: unified closure timeline query + audited replay; unauthorized identity rejected', async () => {
+    const identityId = IdentityId.generate().toString();
+    await prisma.cloudAuthUser.create({
+      data: {
+        id: identityId,
+        email: `w7-${identityId}@example.com`,
+        name: 'W7 User',
+        emailVerified: true,
+      },
+    });
+
+    const opId = `closure-w7-failed-${Date.now()}`;
+    const now = new Date();
+    await prisma.accountClosureOperation.create({
+      data: {
+        id: opId,
+        identityId,
+        idempotencyKey: `w7-failed-key-${Date.now()}`,
+        phase: 'failed',
+        status: 'failed',
+        attempts: 5,
+        version: 1,
+        lastError: 'cloud auth revocation timed out',
+        deadLetterAt: now,
+        nextRetryAt: null,
+        createdAt: now,
+        updatedAt: now,
+        finishedAt: now,
+      },
+    });
+
+    const { createAccountPrismaModule } = await import('../../../prisma');
+    const moduleInstance = createAccountPrismaModule(prisma, {
+      cloudAuth: {
+        revokeAllSessions: async () => ({ revokedSessions: 0 }),
+        deleteUserData: async () => ({ deletedRecords: 0 }),
+      },
+    });
+
+    const cx = { identityId } as never;
+    const timelineRes = await moduleInstance.api.queryClosureTimeline(cx);
+    expect(timelineRes.ok).toBe(true);
+    const entries = timelineRes.ok ? (timelineRes.data as any[]) : [];
+    const entry = entries.find((e) => e.operationId === opId);
+    expect(entry).toBeDefined();
+    expect(entry.source).toBe('account-closure');
+    expect(entry.status).toBe('dead_letter');
+    expect(entry.failureReason).toBe('cloud auth revocation timed out');
+    expect(entry.attempts).toBe(5);
+    expect(entry.replayable).toBe(true);
+
+    // Unauthorized identity cannot replay another identity's closure
+    const otherIdentity = IdentityId.generate().toString();
+    const otherCx = { identityId: otherIdentity } as never;
+    const rejected = await moduleInstance.api.replayClosure(opId, otherCx);
+    expect(rejected.ok).toBe(false);
+
+    // Authorized replay advances state and records audit
+    const replayRes = await moduleInstance.api.replayClosure(opId, cx);
+    expect(replayRes.ok).toBe(true);
+    const replayed = replayRes.ok ? (replayRes.data as any) : null;
+    expect(replayed.status).toBe('running');
+    expect(replayed.replayable).toBe(false);
+
+    const auditRes = await moduleInstance.api.getOperationAudit(cx);
+    expect(auditRes.ok).toBe(true);
+    const audit = auditRes.ok ? (auditRes.data as any[]) : [];
+    const replayAudit = audit.find(
+      (a) => a.operationId === opId && a.action === 'replay' && a.source === 'account-closure',
+    );
+    expect(replayAudit).toBeDefined();
+    expect(replayAudit.actorIdentityId).toBe(identityId);
+
+    // P1-3: the timeline query wrote a timeline_query audit with result count.
+    const queryAudit = await prisma.operationAuditLog.findFirst({
+      where: {
+        actorIdentityId: identityId,
+        action: 'timeline_query',
+        source: 'account-closure',
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    expect(queryAudit).toBeDefined();
+    expect(queryAudit?.operationId).toBe('*timeline-query*');
+    const qDetails = JSON.parse(queryAudit?.details as string);
+    expect(qDetails.resultCount).toBeGreaterThanOrEqual(1);
+
+    moduleInstance.dispose();
+  });
+
+  it('P1-4: account closure replay audit write failure rolls back the state advancement', async () => {
+    const identityId = IdentityId.generate().toString();
+    await prisma.cloudAuthUser.create({
+      data: {
+        id: identityId,
+        email: `w7-fail-${identityId}@example.com`,
+        name: 'W7 Fail User',
+        emailVerified: true,
+      },
+    });
+
+    const opId = `closure-w7-fail-inject-${Date.now()}`;
+    const now = new Date();
+    await prisma.accountClosureOperation.create({
+      data: {
+        id: opId,
+        identityId,
+        idempotencyKey: `w7-fail-key-${Date.now()}`,
+        phase: 'failed',
+        status: 'failed',
+        attempts: 5,
+        version: 1,
+        lastError: 'cloud auth revocation timed out',
+        deadLetterAt: now,
+        nextRetryAt: null,
+        createdAt: now,
+        updatedAt: now,
+        finishedAt: now,
+      },
+    });
+
+    const { createAccountModule } = await import('../../../account.module');
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+    const moduleInstance = createAccountModule({
+      accountRepository: new PrismaAccountRepository(prisma),
+      closureOperationRepository: closureOpRepo,
+      revocationPort: {
+        revokeAllSessions: async () => ({ revokedSessions: 0, success: true }),
+      },
+      eventPublisher: { publishAccountClosed: async () => undefined },
+      laneCapability: 'api',
+      auditRepository: failingAudit as never,
+    });
+
+    const cx = { identityId } as never;
+    const replayRes = await moduleInstance.api.replayClosure(opId, cx);
+    expect(replayRes.ok).toBe(false);
+
+    const after = await prisma.accountClosureOperation.findUniqueOrThrow({
+      where: { id: opId },
+    });
+    expect(after.status).toBe('failed');
+    expect(after.deadLetterAt).not.toBeNull();
+
+    moduleInstance.dispose();
+  });
+
+  it('P1-3: account closure timeline query fails closed when audit write fails', async () => {
+    const identityId = IdentityId.generate().toString();
+    await prisma.cloudAuthUser.create({
+      data: {
+        id: identityId,
+        email: `w7-queryfail-${identityId}@example.com`,
+        name: 'W7 Query Fail User',
+        emailVerified: true,
+      },
+    });
+
+    const { createAccountModule } = await import('../../../account.module');
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+    const moduleInstance = createAccountModule({
+      accountRepository: new PrismaAccountRepository(prisma),
+      closureOperationRepository: closureOpRepo,
+      revocationPort: {
+        revokeAllSessions: async () => ({ revokedSessions: 0, success: true }),
+      },
+      eventPublisher: { publishAccountClosed: async () => undefined },
+      laneCapability: 'api',
+      auditRepository: failingAudit as never,
+    });
+
+    const cx = { identityId } as never;
+    await expect(moduleInstance.api.queryClosureTimeline(cx)).rejects.toThrow(
+      'audit write failure injected',
+    );
+
+    moduleInstance.dispose();
+  });
 });

@@ -17,9 +17,11 @@
       "@memoflow/contracts/electron": ["../contracts/src/electron/index.ts"],
       "@memoflow/contracts/reminder": ["../contracts/src/modules/reminder/index.ts"],
       "@memoflow/contracts/schedule": ["../contracts/src/modules/schedule/index.ts"],
+      "@memoflow/contracts/operations": ["../contracts/src/modules/operations/index.ts"],
       "@memoflow/utils": ["../utils/src/index.ts"],
       "@memoflow/utils/result": ["../utils/src/result/index.ts"],
       "@memoflow/patterns": ["../patterns/src/index.ts"],
+      "@memoflow/patterns/operations": ["../patterns/src/operations/index.ts"],
       "@memoflow/powersync-schema": ["../powersync-schema/src/index.ts"]
     }
   },

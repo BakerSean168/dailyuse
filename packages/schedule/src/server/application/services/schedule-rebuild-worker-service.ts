@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { IScheduleRepository } from '../../domain/repositories/i-schedule-repository';
 import { ScheduleConflictCacheService } from './schedule-conflict-cache-service';
+import type { UnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
 export interface ProcessOutboxResult {
   processedCount: number;
@@ -29,6 +30,7 @@ export class ScheduleRebuildWorkerService {
     private readonly scheduleRepository: IScheduleRepository,
     private readonly leaseCoordinator: ScheduleLeaseCoordinatorPort,
     private readonly options: ScheduleRebuildWorkerOptions = {},
+    private readonly metrics?: UnifiedOperationMetricsRecorder,
   ) {}
 
   async processOutbox(identityId?: string, limit = 50): Promise<ProcessOutboxResult> {
@@ -45,6 +47,8 @@ export class ScheduleRebuildWorkerService {
       if (items.length === 0) {
         return { processedCount: 0, failedCount: 0 };
       }
+
+      this.metrics?.recordOutbox('schedule-rebuild', 'claimed', items.length);
 
       const conflictCacheService = new ScheduleConflictCacheService(this.scheduleRepository);
       let processedCount = 0;
@@ -69,6 +73,7 @@ export class ScheduleRebuildWorkerService {
             undefined,
             this.options.maxAttempts ?? 5,
           );
+          this.metrics?.recordOutbox('schedule-rebuild', 'succeeded');
           processedCount++;
         } catch (err: unknown) {
           const isLeaseLost =
@@ -85,14 +90,27 @@ export class ScheduleRebuildWorkerService {
             errorMessage,
             this.options.maxAttempts ?? 5,
           );
+          // P1-5：不得把 retry/dead-letter 笼统计为 failed。markRebuildOutboxProcessed
+          // 在 attempts+1 >= maxAttempts 时落 dead_letter（failed 终态），否则落 retry。
+          const maxAttempts = this.options.maxAttempts ?? 5;
+          const nextAttempts = item.attempts + 1;
+          this.metrics?.recordOutbox(
+            'schedule-rebuild',
+            nextAttempts >= maxAttempts ? 'dead_letter' : 'retried',
+          );
+          this.metrics?.recordWorker('schedule-rebuild', 'failed');
           failedCount++;
         }
       }
 
+      if (processedCount > 0) {
+        this.metrics?.recordWorker('schedule-rebuild', 'completed');
+      }
       return { processedCount, failedCount };
     });
 
     if (!execution.acquired) {
+      this.metrics?.recordWorker('schedule-rebuild', 'skipped');
       return { processedCount: 0, failedCount: 0, leaseAcquired: false };
     }
 

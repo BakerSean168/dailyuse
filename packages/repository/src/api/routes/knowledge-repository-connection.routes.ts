@@ -22,6 +22,10 @@ import {
   ListKnowledgeWriteRequestsResSchema,
   KnowledgeWriteRequestReplayResponseSchema,
 } from '@memoflow/contracts/repository';
+import {
+  OperationTimelineEntrySchema,
+  OperationAuditRecordSchema,
+} from '@memoflow/contracts/operations';
 import { successResponse, errorResponse, RouteRegistrar } from '@memoflow/utils/result';
 import type { RepositoryApplicationPort } from '../../server/application';
 import { KnowledgeRepositoryConnectionController } from '../../server/transport/knowledge-repository-connection.controller';
@@ -447,7 +451,7 @@ export function registerKnowledgeRepositoryConnectionRoutes(
       path: '/knowledge-write-requests/:writeRequestId/replay',
       summary: '重放一个 Committed 且投影 Pending/Failed 的 projection 操作',
       description:
-        '在连接 lease 下重放投影；重复重放幂等，已 Succeeded 的投影不会倒退。',
+        '在连接 lease 下重放投影；重复重放幂等，已 Succeeded 的投影不会倒退。W7：重放写审计。',
       request: { params: z.object({ writeRequestId: z.string().min(1) }) },
       responses: {
         200: successResponse(KnowledgeWriteRequestReplayResponseSchema, '重放完成'),
@@ -459,6 +463,41 @@ export function registerKnowledgeRepositoryConnectionRoutes(
     },
     auth,
     (req, ctx) => controller.replayWriteRequestProjection(ctx, req.params?.writeRequestId ?? ''),
+  );
+
+  // GET /operations/timeline — W7 unified knowledge projection timeline (identity-scoped)
+  r.route(
+    {
+      method: 'get',
+      path: '/operations/timeline',
+      summary: '查询统一投影 operation timeline（W7）',
+      responses: {
+        200: successResponse(z.array(OperationTimelineEntrySchema), '获取成功'),
+      },
+    },
+    auth,
+    (_req, ctx) => controller.queryKnowledgeTimeline(ctx),
+  );
+
+  // GET /operations/audit — W7 actor-scoped audit trail
+  r.route(
+    {
+      method: 'get',
+      path: '/operations/audit',
+      summary: '查询投影操作审计记录（W7，最小权限）',
+      request: {
+        query: z.object({
+          source: z.string().optional(),
+          operationId: z.string().optional(),
+          limit: z.coerce.number().int().min(1).max(200).optional(),
+        }),
+      },
+      responses: {
+        200: successResponse(z.array(OperationAuditRecordSchema), '获取成功'),
+      },
+    },
+    auth,
+    (req, ctx) => controller.getOperationAudit(ctx, req.query),
   );
 
   return router;

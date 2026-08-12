@@ -10,6 +10,7 @@ import { createScheduleLeasePrismaRepository } from './lease/schedule-lease.repo
 import { ScheduleLeaseCoordinator } from './lease/schedule-lease-coordinator';
 import type { ScheduleRuntimeContributionsInput } from './schedule.module';
 import { eventBus } from '@memoflow/utils/domain';
+import { PrismaOperationAuditRepository, globalUnifiedOperationMetrics } from '@memoflow/patterns/operations';
 
 export interface CreateSchedulePrismaModuleOptions {
   readonly runtimeContributions?: ScheduleRuntimeContributionsInput;
@@ -22,7 +23,7 @@ export interface CreateSchedulePrismaModuleOptions {
 }
 
 export function createSchedulePrismaRepository(db: PrismaClient) {
-  return new SchedulePrismaRepository(db);
+  return new SchedulePrismaRepository(db, undefined, globalUnifiedOperationMetrics);
 }
 
 export function createScheduleTaskPrismaRepository(
@@ -56,5 +57,6 @@ export function createSchedulePrismaModule(
     leaseCoordinator,
     eventDeliveryLogConsumer,
     runtimeContributions: options.runtimeContributions,
+    auditRepository: new PrismaOperationAuditRepository(db),
   });
 }

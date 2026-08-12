@@ -1595,6 +1595,14 @@
       ]
     },
     {
+      "path": "packages/account/src/server/infrastructure/adapters/prisma/__tests__/w7-cross-module-operation-gate.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/account/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/account/src/server/infrastructure/cloud-account-provisioner.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4413,6 +4421,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/contracts/src/modules/operations/operations-dist.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/contracts/src/modules/reliable-messaging/reliable-messaging-contracts.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6364,6 +6380,16 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/domain/services/notification-metrics-unified.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/notification/src/server/domain/value-objects/__tests__/notification-id.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6503,6 +6529,22 @@
     },
     {
       "path": "packages/patterns/src/events/create-event-bus-adapter-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/patterns/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/patterns/src/operations/operations-dist.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/patterns/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/patterns/src/operations/operations.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/patterns/vitest.config.ts"
@@ -6871,6 +6913,16 @@
     },
     {
       "path": "packages/reminder/src/server/domain/services/__tests__/upcoming-reminder-calculation.service.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/reminder/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/reminder/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/reminder/src/server/domain/services/reminder-metrics-unified.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/reminder/vitest.config.ts"
@@ -9119,7 +9171,7 @@
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 3
+      "fileCount": 4
     },
     {
       "id": "packages/ai/vitest.config.ts",
@@ -9168,7 +9220,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 59
+      "fileCount": 60
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -9280,7 +9332,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "id": "packages/notification/vitest.integration.config.ts",
@@ -9294,14 +9346,14 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "id": "packages/patterns/vitest.config.ts",
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 4
+      "fileCount": 6
     },
     {
       "id": "packages/powersync-schema/vitest.config.ts",
@@ -9315,7 +9367,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 48
+      "fileCount": 49
     },
     {
       "id": "packages/reminder/vitest.integration.config.ts",
@@ -9329,7 +9381,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 48
+      "fileCount": 49
     },
     {
       "id": "packages/reminder/vitest.use-cases.config.ts",
@@ -9924,6 +9976,7 @@
       "packages/notification/src/server/domain/services/__tests__/notification-policy.spec.ts",
       "packages/notification/src/server/domain/services/__tests__/notification-preference-domain.service.spec.ts",
       "packages/notification/src/server/domain/services/__tests__/notification-template-domain.service.spec.ts",
+      "packages/notification/src/server/domain/services/notification-metrics-unified.surface.spec.ts",
       "packages/notification/src/server/domain/value-objects/__tests__/notification-id.spec.ts",
       "packages/notification/src/server/domain/value-objects/__tests__/notification-server-value-objects.spec.ts",
       "packages/notification/src/server/domain/value-objects/__tests__/notification-template-config.spec.ts",
@@ -9970,6 +10023,7 @@
       "packages/reminder/src/server/domain/services/__tests__/reminder-template-control.service.spec.ts",
       "packages/reminder/src/server/domain/services/__tests__/reminder-trigger.service.spec.ts",
       "packages/reminder/src/server/domain/services/__tests__/upcoming-reminder-calculation.service.spec.ts",
+      "packages/reminder/src/server/domain/services/reminder-metrics-unified.surface.spec.ts",
       "packages/reminder/src/server/domain/services/upcoming-reminder-dto-surface.spec.ts",
       "packages/reminder/src/server/domain/value-objects/__tests__/reminder-enums.spec.ts",
       "packages/reminder/src/server/domain/value-objects/__tests__/reminder-template-id.spec.ts",
@@ -10112,8 +10166,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 855,
-    "integration": 22,
+    "unit": 860,
+    "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,
     "boundary-main": 5,

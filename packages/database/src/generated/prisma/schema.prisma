@@ -1304,6 +1304,24 @@ model AccountClosureOperation {
   @@map("reliable_account_closure_operations")
 }
 
+/// 运维审计日志 (W7)：记录谁何时对哪个 operation 做了什么（query / replay）。
+/// 跨模块共享：Reminder / Notification / Schedule rebuild / Account closure / Knowledge projection
+/// 的最小权限查询与 replay 操作都必须写审计记录，禁止静默操作。
+model OperationAuditLog {
+  id              String   @id @default(uuid())
+  actorIdentityId String   @map("actor_identity_id")
+  source          String
+  operationId     String   @map("operation_id")
+  action          String
+  details         String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([actorIdentityId, createdAt])
+  @@index([source, operationId])
+  @@index([createdAt])
+  @@map("reliable_operation_audit_logs")
+}
+
 // ==========================================
 // Reminder Module
 // 提醒模板、实例、分组、历史、统计、响应

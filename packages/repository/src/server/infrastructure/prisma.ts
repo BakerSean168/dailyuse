@@ -27,6 +27,7 @@ import { KnowledgeWriteRequestPrismaRepository } from './adapters/prisma/knowled
 import { KnowledgeRepositoryLeasePrismaRepository } from './adapters/prisma/knowledge-repository-lease-prisma.repository';
 import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
 import { KnowledgeNoteCommitService } from '../application/services/knowledge-note-commit.service';
+import { PrismaOperationAuditRepository, globalUnifiedOperationMetrics } from '@memoflow/patterns/operations';
 
 export interface CreateRepositoryPrismaModuleOptions {
   readonly storageBaseDir?: string;
@@ -113,6 +114,7 @@ export function createRepositoryPrismaModule(
           writeRequestRepository: writeRequestRepository ?? undefined,
           leaseRepository: leaseRepository ?? undefined,
           githubAppClient,
+          metrics: globalUnifiedOperationMetrics,
         })
       : null;
   const knowledgeNoteCommitService =
@@ -124,6 +126,7 @@ export function createRepositoryPrismaModule(
           leaseRepository: leaseRepository ?? undefined,
           githubAppClient,
           closureChecker: options.closureChecker,
+          metrics: globalUnifiedOperationMetrics,
         })
       : null;
 
@@ -141,5 +144,6 @@ export function createRepositoryPrismaModule(
       ...configuredRuntimeContributions,
       ...(knowledgeRepositoryProjectionService ? [knowledgeRepositoryProjectionService] : []),
     ],
+    auditRepository: new PrismaOperationAuditRepository(db),
   });
 }

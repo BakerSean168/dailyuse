@@ -11,6 +11,7 @@ import type { IScheduleRepository, ScheduleRebuildOutboxDTO } from '../../../dom
 import { CalendarEntry } from '../../../domain/aggregates/calendar-entry';
 import { PrismaScheduleMapper } from './mappers/prisma-schedule-mapper';
 import { toResultErrorException } from '@memoflow/contracts/result';
+import type { UnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
 interface ScheduleDb {
   schedule: PrismaClient['schedule'];
@@ -28,12 +29,18 @@ function isScheduleRootDb(db: ScheduleDb | ScheduleRootDb): db is ScheduleRootDb
 export class SchedulePrismaRepository implements IScheduleRepository {
   private readonly db: ScheduleDb;
   private readonly rootClient: PrismaTransactionRoot | null;
+  private readonly metrics?: UnifiedOperationMetricsRecorder;
 
-  constructor(prisma: PrismaClient, rootClient?: PrismaTransactionRoot);
-  constructor(prisma: ScheduleDb, rootClient?: PrismaTransactionRoot);
-  constructor(prisma: ScheduleDb | PrismaClient, rootClient?: PrismaTransactionRoot) {
+  constructor(prisma: PrismaClient, rootClient?: PrismaTransactionRoot, metrics?: UnifiedOperationMetricsRecorder);
+  constructor(prisma: ScheduleDb, rootClient?: PrismaTransactionRoot, metrics?: UnifiedOperationMetricsRecorder);
+  constructor(
+    prisma: ScheduleDb | PrismaClient,
+    rootClient?: PrismaTransactionRoot,
+    metrics?: UnifiedOperationMetricsRecorder,
+  ) {
     this.db = prisma;
     this.rootClient = rootClient ?? (isScheduleRootDb(prisma) ? prisma : null);
+    this.metrics = metrics;
   }
 
   private mapToEntity(data: PrismaSchedule): CalendarEntry {
@@ -240,6 +247,9 @@ export class SchedulePrismaRepository implements IScheduleRepository {
         status: 'pending',
       },
     });
+
+    // W7 关闭条件：在真实 outbox 持久化成功点发射 persisted
+    this.metrics?.recordOutbox('schedule-rebuild', 'persisted');
   }
 
   async fetchPendingRebuildOutbox(
@@ -254,6 +264,113 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       },
       take: limit,
       orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async fetchRebuildTimeline(
+    identityId: string,
+    limit = 100,
+  ): Promise<ScheduleRebuildOutboxDTO[]> {
+    if (!identityId) {
+      throw new Error('identityId is required for rebuild timeline query');
+    }
+    if (!this.db.scheduleRebuildOutbox) {
+      throw new Error('[FAIL-CLOSED] scheduleRebuildOutbox model is not available on this client');
+    }
+    return this.db.scheduleRebuildOutbox.findMany({
+      where: { identityId },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async replayRebuildOutbox(input: {
+    identityId: string;
+    operationId: string;
+  }): Promise<ScheduleRebuildOutboxDTO> {
+    if (!input.identityId || !input.operationId) {
+      throw new Error('identityId and operationId are required for rebuild replay');
+    }
+    if (!this.db.scheduleRebuildOutbox) {
+      throw new Error('[FAIL-CLOSED] scheduleRebuildOutbox model is not available on this client');
+    }
+    const existing = await this.db.scheduleRebuildOutbox.findFirst({
+      where: { id: input.operationId, identityId: input.identityId },
+    });
+    if (!existing) {
+      throw new Error(
+        `Rebuild outbox operation '${input.operationId}' not found for this identity`,
+      );
+    }
+    if (existing.status !== 'failed') {
+      throw new Error(
+        `Rebuild outbox operation '${input.operationId}' is not replayable (status: ${existing.status})`,
+      );
+    }
+    const updated = await this.db.scheduleRebuildOutbox.update({
+      where: { id: existing.id },
+      data: {
+        status: 'pending',
+        claimToken: null,
+        claimedAt: null,
+        nextAttemptAt: null,
+      },
+    });
+    return updated;
+  }
+
+  /**
+   * P1-4：与审计同一事务的 rebuild replay。状态推进与 audit 事实同入一个
+   * `prisma.$transaction`；审计写失败时整个事务回滚，绝不留下
+   * “已重放但无审计”的部分成功。
+   */
+  async replayRebuildOutboxWithAudit(
+    input: { identityId: string; operationId: string },
+    audit: import('@memoflow/patterns/operations').OperationAuditRecordInput,
+    auditRepository: import('@memoflow/patterns/operations').OperationAuditRepository,
+  ): Promise<ScheduleRebuildOutboxDTO> {
+    if (!input.identityId || !input.operationId) {
+      throw new Error('identityId and operationId are required for rebuild replay');
+    }
+    if (!this.db.scheduleRebuildOutbox) {
+      throw new Error('[FAIL-CLOSED] scheduleRebuildOutbox model is not available on this client');
+    }
+    if (!this.rootClient) {
+      throw new Error(
+        '[FAIL-CLOSED] schedule rebuild atomic replay requires a root Prisma client with $transaction',
+      );
+    }
+    return this.rootClient.$transaction(async (tx) => {
+      const existing = await tx.scheduleRebuildOutbox.findFirst({
+        where: { id: input.operationId, identityId: input.identityId },
+      });
+      if (!existing) {
+        throw new Error(
+          `Rebuild outbox operation '${input.operationId}' not found for this identity`,
+        );
+      }
+      if (existing.status !== 'failed') {
+        throw new Error(
+          `Rebuild outbox operation '${input.operationId}' is not replayable (status: ${existing.status})`,
+        );
+      }
+      const updated = await tx.scheduleRebuildOutbox.update({
+        where: { id: existing.id },
+        data: {
+          status: 'pending',
+          claimToken: null,
+          claimedAt: null,
+          nextAttemptAt: null,
+        },
+      });
+      await auditRepository.record(
+        {
+          ...audit,
+          details: `status -> ${updated.status}`,
+        },
+        tx,
+      );
+      return updated;
     });
   }
 
@@ -518,7 +635,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       throw new Error('withTransaction requires a root PrismaClient (not a TransactionClient)');
     }
     return this.rootClient.$transaction(async (tx) => {
-      const txRepo = new SchedulePrismaRepository(tx, undefined);
+      const txRepo = new SchedulePrismaRepository(tx, undefined, this.metrics);
       return fn(txRepo);
     });
   }

@@ -11,6 +11,11 @@ import type { RepositoryApplicationPort } from '../application';
 import { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
 import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
 import { KnowledgeNoteCommitService } from '../application/services/knowledge-note-commit.service';
+import type { OperationAuditRepository } from '@memoflow/patterns/operations';
+import { runTimelineQueryWithAudit } from '@memoflow/patterns/operations';
+import { OperationTimelineEntrySchema } from '@memoflow/contracts/operations';
+import type { OperationTimelineEntry } from '@memoflow/contracts/operations';
+import type { KnowledgeWriteRequestClientDTO } from '@memoflow/contracts/repository';
 
 export type RepositoryRuntimeContributionsInput =
   | RepositoryModuleRuntimeContribution
@@ -21,6 +26,8 @@ export interface RepositoryModuleDependencies {
   readonly knowledgeRepositoryConnectionService?: KnowledgeRepositoryConnectionService | null;
   readonly knowledgeRepositoryProjectionService?: KnowledgeRepositoryProjectionService | null;
   readonly knowledgeNoteCommitService?: KnowledgeNoteCommitService | null;
+  /** W7：审计仓库（最小权限 + 审计） */
+  readonly auditRepository?: OperationAuditRepository;
 }
 
 export interface RepositoryModuleRuntimeContribution {
@@ -53,6 +60,7 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
   const connectionService = deps.knowledgeRepositoryConnectionService ?? null;
   const projectionService = deps.knowledgeRepositoryProjectionService ?? null;
   const noteCommitService = deps.knowledgeNoteCommitService ?? null;
+  const auditRepository = deps.auditRepository;
   const unavailable = <T>(): Promise<Result<T>> =>
     Promise.resolve(
       fail({
@@ -146,10 +154,93 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
       projectionService ? projectionService.ingest(request) : unavailable(),
     listKnowledgeWriteRequests: async (ctx, request) =>
       projectionService ? projectionService.listWriteRequests(ctx.identityId, request) : unavailable(),
-    replayKnowledgeWriteRequestProjection: async (ctx, writeRequestId) =>
-      projectionService
-        ? projectionService.replayWriteRequestProjection(ctx.identityId, writeRequestId)
-        : unavailable(),
+    replayKnowledgeWriteRequestProjection: async (ctx, writeRequestId) => {
+      if (!projectionService) return unavailable();
+      if (!auditRepository) {
+        return fail({
+          code: 'FAIL_CLOSED',
+          message:
+            '[FAIL-CLOSED] knowledge projection replay requires an explicit auditRepository dependency (replay audit is mandatory).',
+        });
+      }
+      // P1-4：审计先行。外部 GitHub projection 无法与审计共享事务，因此把
+      // "replay intent" 事实在发起任何外部投影之前先行落库；审计写失败即
+      // fail-closed，外部投影绝不执行，杜绝"投影已成功但 replay audit 缺失"
+      // 的部分成功。投影结果（成功/失败）再追加 outcome 审计事实。
+      try {
+        await auditRepository.record({
+          actorIdentityId: ctx.identityId,
+          source: 'knowledge-projection',
+          operationId: writeRequestId,
+          action: 'replay',
+          details: `replay intent for write request ${writeRequestId} (audit-first)`,
+        });
+      } catch (err) {
+        return fail({
+          code: 'FAIL_CLOSED',
+          message: `[FAIL-CLOSED] knowledge replay audit intent write failed; projection not executed: ${err instanceof Error ? err.message : String(err)}`,
+        });
+      }
+      const result = await projectionService.replayWriteRequestProjection(
+        ctx.identityId,
+        writeRequestId,
+      );
+      await auditRepository.record({
+        actorIdentityId: ctx.identityId,
+        source: 'knowledge-projection',
+        operationId: writeRequestId,
+        action: 'replay',
+        details: result.ok
+          ? `status -> ${result.data.status}`
+          : `replay attempted; projection result: ${result.error.code} ${result.error.message}`,
+      });
+      return result;
+    },
+    queryKnowledgeTimeline: async (ctx) => {
+      if (!projectionService) return unavailable();
+      if (!auditRepository) {
+        return fail({
+          code: 'FAIL_CLOSED',
+          message:
+            '[FAIL-CLOSED] knowledge timeline requires an explicit auditRepository dependency (timeline_query audit is mandatory).',
+        });
+      }
+      const { entries } = await runTimelineQueryWithAudit({
+        repository: auditRepository,
+        source: 'knowledge-projection',
+        actorIdentityId: ctx.identityId,
+        filters: { limit: 100 },
+        query: async () => {
+          const result = await projectionService!.listWriteRequests(ctx.identityId, {
+            limit: 100,
+          });
+          if (!result.ok) {
+            throw new Error(
+              `knowledge timeline query failed: ${result.error.code} ${result.error.message}`,
+            );
+          }
+          return result.data.writeRequests;
+        },
+      });
+      const mapped = entries.map(mapWriteRequestToTimelineEntry);
+      return ok(mapped);
+    },
+    getOperationAudit: async (ctx, request) => {
+      if (!auditRepository) {
+        return fail({
+          code: 'FAIL_CLOSED',
+          message:
+            '[FAIL-CLOSED] knowledge operation audit requires an explicit auditRepository dependency.',
+        });
+      }
+      const records = await auditRepository.listByActor({
+        identityId: ctx.identityId,
+        source: request?.source,
+        operationId: request?.operationId,
+        limit: request?.limit,
+      });
+      return ok(records);
+    },
   };
 }
 
@@ -180,4 +271,26 @@ export function createRepositoryModule(
       started = false;
     },
   };
+}
+
+function mapWriteRequestToTimelineEntry(
+  request: KnowledgeWriteRequestClientDTO,
+): OperationTimelineEntry {
+  const projectionStatus = request.projectionStatus;
+  const entry: OperationTimelineEntry = {
+    source: 'knowledge-projection',
+    operationId: request.id,
+    status:
+      projectionStatus === 'Succeeded'
+        ? 'succeeded'
+        : projectionStatus === 'Failed'
+          ? 'failed'
+          : 'pending',
+    failureReason: request.projectionErrorMessage ?? request.errorMessage ?? null,
+    attempts: request.projectionAttempts,
+    nextRetryAt: null,
+    replayable: projectionStatus === 'Failed',
+    updatedAt: new Date(request.updatedAt).toISOString(),
+  };
+  return OperationTimelineEntrySchema.parse(entry);
 }

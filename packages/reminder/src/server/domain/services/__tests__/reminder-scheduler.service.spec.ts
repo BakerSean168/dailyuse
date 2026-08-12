@@ -147,9 +147,13 @@ describe('ReminderSchedulerService', () => {
     });
 
     let snapshot = metricsCollector.getSnapshot();
-    expect(snapshot.failedTotal).toBe(1);
+    // W7 互斥语义：retryable 分支只累计 retried，不得累计终态 failed
+    expect(snapshot.failedTotal).toBe(0);
     expect(snapshot.retryTotal).toBe(1);
     expect(snapshot.deadLetterTotal).toBe(0);
+    const unified1 = metricsCollector.getUnifiedSnapshot();
+    expect(unified1['memoflow.reminder.outbox.retried']).toBe(1);
+    expect(unified1['memoflow.reminder.outbox.failed']).toBeUndefined();
 
     expect(reliablePort.recordDeliveryIntent).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -167,9 +171,14 @@ describe('ReminderSchedulerService', () => {
     });
 
     snapshot = metricsCollector.getSnapshot();
-    expect(snapshot.failedTotal).toBe(2);
+    // W7 互斥语义：dead_letter 分支只累计 dead_letter，不得再累计终态 failed
+    expect(snapshot.failedTotal).toBe(0);
     expect(snapshot.retryTotal).toBe(1);
     expect(snapshot.deadLetterTotal).toBe(1);
+    const unified2 = metricsCollector.getUnifiedSnapshot();
+    expect(unified2['memoflow.reminder.outbox.retried']).toBe(1);
+    expect(unified2['memoflow.reminder.outbox.dead_letter']).toBe(1);
+    expect(unified2['memoflow.reminder.outbox.failed']).toBeUndefined();
 
     expect(reliablePort.recordDeliveryIntent).toHaveBeenLastCalledWith(
       expect.objectContaining({

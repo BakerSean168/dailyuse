@@ -7,6 +7,7 @@ import type { AccountClosureEventPublisher } from '../../ports/account-closure-e
 import { Account } from '../../../domain/aggregates/account';
 import { IdentityId } from '@memoflow/domain-shared/shared';
 import { AccountStatus } from '../../../domain/value-objects';
+import { createUnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
 describe('AccountClosureCoordinator Unit Tests', () => {
   let closureOpRepo: InMemoryAccountClosureOperationRepository;
@@ -122,5 +123,87 @@ describe('AccountClosureCoordinator Unit Tests', () => {
     expect(receipt.status).toBe('failed');
     expect(receipt.phase).toBe('closing');
     expect(receipt.lastError).toContain(`Account not found for identityId: ${nonexistentId}`);
+  });
+
+  it('P1-5: drives the real coordinator and asserts unified metric events (persisted/claimed/retried/succeeded/worker)', async () => {
+    const recorder = createUnifiedOperationMetricsRecorder();
+
+    const metricsCoordinator = new AccountClosureCoordinator({
+      accountRepository: mockAccountRepo,
+      closureOperationRepository: closureOpRepo,
+      revocationPort: mockRevocationPort,
+      eventPublisher: mockEventPublisher,
+      clock: { now: () => new Date(1700000000000) },
+      metrics: recorder,
+    });
+
+    // Fresh create run: persisted + succeeded + worker.completed.
+    const receipt = await metricsCoordinator.execute(testIdentityId, 'idempotency-key-metrics-1');
+    expect(receipt.status).toBe('succeeded');
+    const snap = recorder.snapshot();
+    expect(snap['memoflow.account-closure.outbox.persisted']).toBe(1);
+    expect(snap['memoflow.account-closure.outbox.succeeded']).toBe(1);
+    expect(snap['memoflow.account-closure.worker.completed']).toBe(1);
+    expect(snap['memoflow.account-closure.outbox.failed']).toBeUndefined();
+
+    // retried on re-claiming a failed operation (attempt 1 -> 2), then succeeded.
+    const failedCoordinator = new AccountClosureCoordinator({
+      accountRepository: mockAccountRepo,
+      closureOperationRepository: closureOpRepo,
+      revocationPort: {
+        revokeAll: vi.fn().mockRejectedValueOnce(new Error('auth down')).mockResolvedValueOnce({ revokedSessions: 1 }),
+      },
+      eventPublisher: mockEventPublisher,
+      clock: { now: () => new Date(1700000000000) },
+      metrics: recorder,
+    });
+    await failedCoordinator.execute(testIdentityId, 'idempotency-key-metrics-2');
+    await failedCoordinator.execute(testIdentityId, 'idempotency-key-metrics-2');
+
+    const snap2 = recorder.snapshot();
+    expect(snap2['memoflow.account-closure.outbox.retried']).toBeGreaterThanOrEqual(1);
+    expect(snap2['memoflow.account-closure.outbox.failed']).toBe(1);
+  });
+
+  it('P1-5: claims an existing running closure and emits the claimed metric', async () => {
+    const recorder = createUnifiedOperationMetricsRecorder();
+
+    // Seed an existing running closure so the re-claim branch emits `claimed`.
+    const now = new Date(1700000000000);
+    const existing = {
+      id: 'closure-claimed-1',
+      identityId: testIdentityId,
+      idempotencyKey: 'idempotency-key-claimed',
+      phase: 'revoking',
+      status: 'running',
+      attempts: 1,
+      version: 1,
+      ownerToken: 'stale-owner',
+      leaseExpiresAt: new Date(now.getTime() - 5000),
+      nextRetryAt: null,
+      deadLetterAt: null,
+      eventId: null,
+      reason: null,
+      revokedSessions: 0,
+      piiCleanupStatus: null,
+      lastError: null,
+      receiptJson: null,
+      createdAt: now,
+      updatedAt: now,
+      finishedAt: null,
+    };
+    await closureOpRepo.create(existing);
+
+    const claimCoordinator = new AccountClosureCoordinator({
+      accountRepository: mockAccountRepo,
+      closureOperationRepository: closureOpRepo,
+      revocationPort: mockRevocationPort,
+      eventPublisher: mockEventPublisher,
+      clock: { now: () => new Date(1700000000000) },
+      metrics: recorder,
+    });
+    const receipt = await claimCoordinator.execute(testIdentityId, 'idempotency-key-claimed');
+    expect(receipt.status).toBe('succeeded');
+    expect(recorder.snapshot()['memoflow.account-closure.outbox.claimed']).toBeGreaterThanOrEqual(1);
   });
 });

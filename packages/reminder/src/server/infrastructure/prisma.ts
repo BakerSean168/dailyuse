@@ -24,6 +24,7 @@ import {
 } from './adapters/prisma';
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 import type { ReminderScheduleProjectionSource } from '../../schedule-projection';
+import { PrismaOperationAuditRepository } from '@memoflow/patterns/operations';
 
 export interface CreateReminderPrismaModuleOptions {
   readonly closureChecker: (identityId: string) => Promise<boolean>;
@@ -52,6 +53,9 @@ export function createReminderPrismaModule(
     runtimeContributions: options.runtimeContributions,
     // R3c：snooze 作为真 command——推迟 reminder 对应 schedule task 的下次触发。
     snoozeRescheduler: createReminderSnoozeReschedulerPrisma(db),
+    // W7：统一 operation timeline / replay / audit。
+    reliablePort: new ReminderReliableOperationPrismaAdapter(db),
+    auditRepository: new PrismaOperationAuditRepository(db),
   });
 }
 

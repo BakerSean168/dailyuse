@@ -6,6 +6,12 @@ import type {
   UpdateAccountProfileUseCase,
   UpdateAccountSettingsUseCase,
 } from './use-cases';
+import type {
+  OperationTimelineEntry,
+  OperationAuditRecord,
+} from '@memoflow/contracts/operations';
+import type { Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 
 /**
  * Transport-neutral account application surface.
@@ -33,4 +39,10 @@ export interface AccountApplicationPort {
     data: Parameters<CloseAccountUseCase['execute']>[0],
     cx: Parameters<CloseAccountUseCase['execute']>[1],
   ): Promise<Awaited<ReturnType<CloseAccountUseCase['execute']>>>;
+  /** W7: 按 identity 查询 closure operation timeline */
+  queryClosureTimeline(cx: ExecutionContext): Promise<Result<OperationTimelineEntry[]>>;
+  /** W7: 重放失败的 closure operation 并记录审计 */
+  replayClosure(operationId: string, cx: ExecutionContext): Promise<Result<unknown>>;
+  /** W7: 查询操作审计记录（actor 最小权限） */
+  getOperationAudit(cx: ExecutionContext): Promise<Result<OperationAuditRecord[]>>;
 }

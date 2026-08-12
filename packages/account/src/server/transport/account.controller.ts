@@ -87,4 +87,18 @@ export class AccountController {
     }
     return this.api.closeAccount(parsed.data, cx);
   }
+
+  // ==================== W7 Operation Timeline / Replay / Audit ====================
+
+  async queryClosureTimeline(cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.api.queryClosureTimeline(cx);
+  }
+
+  async replayClosure(operationId: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.api.replayClosure(operationId, cx);
+  }
+
+  async getOperationAudit(cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.api.getOperationAudit(cx);
+  }
 }

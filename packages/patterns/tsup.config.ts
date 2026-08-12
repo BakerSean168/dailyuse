@@ -8,6 +8,7 @@ export default defineConfig({
     'src/repository/index.ts',
     'src/cache/index.ts',
     'src/events/index.ts',
+    'src/operations/index.ts',
   ],
   format: ['esm'],
   dts: createLocalOnlyDtsPaths(),

@@ -221,6 +221,38 @@ export const domainResolveAliases = [
     replacement: path.resolve(__dirname, './packages/schedule/src/index.ts'),
   },
   {
+    find: /^@memoflow\/reminder\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/reminder/src/$1'),
+  },
+  {
+    find: '@memoflow/reminder',
+    replacement: path.resolve(__dirname, './packages/reminder/src/index.ts'),
+  },
+  {
+    find: /^@memoflow\/notification\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/notification/src/$1'),
+  },
+  {
+    find: '@memoflow/notification',
+    replacement: path.resolve(__dirname, './packages/notification/src/index.ts'),
+  },
+  {
+    find: /^@memoflow\/account\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/account/src/$1'),
+  },
+  {
+    find: '@memoflow/account',
+    replacement: path.resolve(__dirname, './packages/account/src/index.ts'),
+  },
+  {
+    find: /^@memoflow\/repository\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/repository/src/$1'),
+  },
+  {
+    find: '@memoflow/repository',
+    replacement: path.resolve(__dirname, './packages/repository/src/index.ts'),
+  },
+  {
     find: /^@memoflow\/task\/(.+)/,
     replacement: path.resolve(__dirname, './packages/task/src/$1/index.ts'),
   },

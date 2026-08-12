@@ -40,6 +40,14 @@ export interface NotificationApplicationPort {
     identityId: string,
     query?: { limit?: number; lastCursor?: string; since?: string; status?: string },
   ): Promise<Result<unknown>>;
+  getOperationTimeline(
+    identityId: string,
+    query?: { status?: string; limit?: number },
+  ): Promise<Result<unknown>>;
+  getOperationAudit(
+    identityId: string,
+    query?: { source?: string; operationId?: string; limit?: number },
+  ): Promise<Result<unknown>>;
   /**
    * Subscribe to real-time delivery events via the SSE port.
    * Returns an unsubscribe function to be called when the transport connection closes.

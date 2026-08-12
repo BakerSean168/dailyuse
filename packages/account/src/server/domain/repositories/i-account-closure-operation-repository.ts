@@ -79,6 +79,23 @@ export interface IAccountClosureOperationRepository {
     tx?: unknown,
   ): Promise<AccountClosureOperationRecord | null>;
 
+  /** W7: 按 identity 查询 closure operation timeline（全部状态，新到旧） */
+  listByIdentityId(identityId: string): Promise<AccountClosureOperationRecord[]>;
+
+  /** W7: 重置失败闭户操作回可重试态（仅 status === 'failed'，identity 校验） */
+  resetForReplay(identityId: string, id: string): Promise<AccountClosureOperationRecord>;
+
+  /**
+   * P1-4: Replay + audit in a single transaction (state advancement and audit fact
+   * are atomic; audit write failure rolls back the replay). Server lane only.
+   */
+  resetForReplayWithAudit?(
+    identityId: string,
+    id: string,
+    audit: import('@memoflow/patterns/operations').OperationAuditRecordInput,
+    auditRepository: import('@memoflow/patterns/operations').OperationAuditRepository,
+  ): Promise<AccountClosureOperationRecord>;
+
   create(record: AccountClosureOperationRecord, tx?: unknown): Promise<boolean>;
 
   claimOwnership(params: ClaimOwnershipParams, tx?: unknown): Promise<boolean>;

@@ -38,11 +38,11 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
     './account', './schedule', './setting',
     './notification', './ai', './dashboard', './response', './result',
     './data-portability', './shared', './primitives', './primitives/*',
-    './reliable-messaging', './electron', './mocks',
+    './reliable-messaging', './operations', './electron', './mocks',
   ],
   database: ['./prisma'],
   'domain-shared': ['./shared'],
-  patterns: ['./scheduler', './repository', './cache', './events'],
+  patterns: ['./scheduler', './repository', './cache', './events', './operations'],
   utils: [
     './domain', './errors', './frontend', './lifecycle',
     './logger', './result', './shared', './validation', './winston',

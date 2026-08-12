@@ -13,6 +13,7 @@
 
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
+import { z } from 'zod';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -27,6 +28,10 @@ import {
   AccountResponseSchema,
   AvailabilityResponseSchema,
   AccountClosureReceiptSchema,} from '@memoflow/contracts/account';
+import {
+  OperationTimelineEntrySchema,
+  OperationAuditRecordSchema,
+} from '@memoflow/contracts/operations';
 import { AccountController } from '../server/transport';
 import type { AccountApplicationPort } from '../server/application';
 
@@ -144,6 +149,50 @@ export function registerAccountRoutes(
     },
     [...writeAuth],
     (req, ctx) => controller.closeAccount(req.body, ctx),
+  );
+
+  // GET /operations/closure/timeline — W7 closure operation timeline (identity-scoped)
+  r.route(
+    {
+      method: 'get',
+      path: '/operations/closure/timeline',
+      summary: '查询账户关闭 operation timeline（W7）',
+      responses: {
+        200: successResponse(z.array(OperationTimelineEntrySchema), '获取成功'),
+      },
+    },
+    [...readAuth],
+    (_req, ctx) => controller.queryClosureTimeline(ctx),
+  );
+
+  // POST /operations/closure/:id/replay — W7 replay failed closure operation (audited)
+  r.route(
+    {
+      method: 'post',
+      path: '/operations/closure/:id/replay',
+      summary: '重放失败的账户关闭操作并记录审计（W7）',
+      request: { params: z.object({ id: z.string().min(1) }) },
+      responses: {
+        200: successResponse(OperationTimelineEntrySchema, '重放成功'),
+        404: errorResponse('操作不存在'),
+      },
+    },
+    [...writeAuth],
+    (req, ctx) => controller.replayClosure(req.params!.id, ctx),
+  );
+
+  // GET /operations/closure/audit — W7 actor-scoped audit trail
+  r.route(
+    {
+      method: 'get',
+      path: '/operations/closure/audit',
+      summary: '查询账户关闭审计记录（W7，最小权限）',
+      responses: {
+        200: successResponse(z.array(OperationAuditRecordSchema), '获取成功'),
+      },
+    },
+    [...readAuth],
+    (_req, ctx) => controller.getOperationAudit(ctx),
   );
 
   return router;

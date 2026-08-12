@@ -412,23 +412,64 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
     const params = identityId ? ['pending', identityId, limit] : ['pending', limit];
 
     const rows = await this.db.getAll<ScheduleRebuildOutboxRow>(sql, params);
-    return rows.map((r) => ({
-      id: r.id,
-      identityId: r.identity_id,
-      scheduleId: r.schedule_id,
-      startTime: new Date(r.start_time),
-      endTime: new Date(r.end_time),
-      sourceRevision: Number(r.source_revision),
-      idempotencyKey: r.idempotency_key,
-      status: r.status,
-      attempts: Number(r.attempts),
-      claimToken: r.claim_token ?? null,
-      claimedAt: r.claimed_at ? new Date(r.claimed_at) : null,
-      nextAttemptAt: r.next_attempt_at ? new Date(r.next_attempt_at) : null,
-      lastError: r.last_error ?? null,
-      processedAt: r.processed_at ? new Date(r.processed_at) : null,
-      createdAt: new Date(r.created_at),
-    }));
+    return rows.map(mapRebuildOutboxRowToDTO);
+  }
+
+  async fetchRebuildTimeline(
+    identityId: string,
+    limit = 100,
+  ): Promise<ScheduleRebuildOutboxDTO[]> {
+    await this.ensureOutboxTable();
+    if (!identityId) {
+      throw new Error('identityId is required for rebuild timeline query');
+    }
+    const rows = await this.db.getAll<ScheduleRebuildOutboxRow>(
+      `SELECT * FROM schedule_rebuild_outbox
+       WHERE identity_id = ?
+       ORDER BY created_at DESC LIMIT ?`,
+      [identityId, limit],
+    );
+    return rows.map(mapRebuildOutboxRowToDTO);
+  }
+
+  async replayRebuildOutbox(input: {
+    identityId: string;
+    operationId: string;
+  }): Promise<ScheduleRebuildOutboxDTO> {
+    await this.ensureOutboxTable();
+    if (!input.identityId || !input.operationId) {
+      throw new Error('identityId and operationId are required for rebuild replay');
+    }
+    const existing = await this.db.getOptional<ScheduleRebuildOutboxRow>(
+      `SELECT * FROM schedule_rebuild_outbox
+       WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [input.operationId, input.identityId],
+    );
+    if (!existing) {
+      throw new Error(
+        `Rebuild outbox operation '${input.operationId}' not found for this identity`,
+      );
+    }
+    if (existing.status !== 'failed') {
+      throw new Error(
+        `Rebuild outbox operation '${input.operationId}' is not replayable (status: ${existing.status})`,
+      );
+    }
+    const nowIso = new Date().toISOString();
+    await this.db.execute(
+      `UPDATE schedule_rebuild_outbox
+       SET status = 'pending', claim_token = NULL, claimed_at = NULL, next_attempt_at = NULL, updated_at = ?
+       WHERE id = ? AND identity_id = ?`,
+      [nowIso, input.operationId, input.identityId],
+    );
+    const updated = await this.db.getOptional<ScheduleRebuildOutboxRow>(
+      `SELECT * FROM schedule_rebuild_outbox WHERE id = ? LIMIT 1`,
+      [input.operationId],
+    );
+    if (!updated) {
+      throw new Error(`Rebuild outbox operation '${input.operationId}' disappeared during replay`);
+    }
+    return mapRebuildOutboxRowToDTO(updated);
   }
 
   async claimRebuildOutboxItems(
@@ -724,4 +765,24 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
       return fn(txRepo);
     });
   }
+}
+
+function mapRebuildOutboxRowToDTO(r: ScheduleRebuildOutboxRow): ScheduleRebuildOutboxDTO {
+  return {
+    id: r.id,
+    identityId: r.identity_id,
+    scheduleId: r.schedule_id,
+    startTime: new Date(r.start_time),
+    endTime: new Date(r.end_time),
+    sourceRevision: Number(r.source_revision),
+    idempotencyKey: r.idempotency_key,
+    status: r.status,
+    attempts: Number(r.attempts),
+    claimToken: r.claim_token ?? null,
+    claimedAt: r.claimed_at ? new Date(r.claimed_at) : null,
+    nextAttemptAt: r.next_attempt_at ? new Date(r.next_attempt_at) : null,
+    lastError: r.last_error ?? null,
+    processedAt: r.processed_at ? new Date(r.processed_at) : null,
+    createdAt: new Date(r.created_at),
+  };
 }

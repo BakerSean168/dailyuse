@@ -27,10 +27,15 @@
     "./events": {
       "types": "./dist/events/index.d.ts",
       "import": "./dist/events/index.js"
+    },
+    "./operations": {
+      "types": "./dist/operations/index.d.ts",
+      "import": "./dist/operations/index.js"
     }
   },
   "dependencies": {
     "@memoflow/contracts": "workspace:*",
+    "@memoflow/database": "workspace:*",
     "@memoflow/utils": "workspace:*"
   },
   "devDependencies": {

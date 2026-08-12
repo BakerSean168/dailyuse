@@ -847,6 +847,16 @@ exports.Prisma.AccountClosureOperationScalarFieldEnum = {
   finishedAt: 'finishedAt'
 };
 
+exports.Prisma.OperationAuditLogScalarFieldEnum = {
+  id: 'id',
+  actorIdentityId: 'actorIdentityId',
+  source: 'source',
+  operationId: 'operationId',
+  action: 'action',
+  details: 'details',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.ReminderTemplateScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1644,6 +1654,7 @@ exports.Prisma.ModelName = {
   InboxReceipt: 'InboxReceipt',
   ProjectionCursor: 'ProjectionCursor',
   AccountClosureOperation: 'AccountClosureOperation',
+  OperationAuditLog: 'OperationAuditLog',
   ReminderTemplate: 'ReminderTemplate',
   ReminderGroup: 'ReminderGroup',
   ReminderInstance: 'ReminderInstance',

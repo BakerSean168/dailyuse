@@ -14,12 +14,14 @@ import {
   type NotificationRuntimeContributionsInput,
 } from './notification.module';
 
-import { NotificationMetricsService } from '../domain/services/notification-metrics-service';
+import { NotificationMetricsService, globalNotificationMetrics } from '../domain/services/notification-metrics-service';
 
 import {
   RealInAppChannelDeliverer,
   RealDesktopChannelDeliverer,
 } from './adapters/deliverers/real-channel-deliverers';
+
+import { PrismaOperationAuditRepository } from '@memoflow/patterns/operations';
 
 export interface CreateNotificationPrismaModuleOptions {
   readonly closureChecker: (identityId: string) => Promise<boolean>;
@@ -30,6 +32,7 @@ export interface CreateNotificationPrismaModuleOptions {
   readonly channelCapabilities?: import('./runtime/notification.runtime').ChannelCapabilitySpec[];
   readonly desktopTransport?: unknown;
   readonly pushTransport?: unknown;
+  readonly metricsService?: NotificationMetricsService;
 }
 
 export function createNotificationPrismaModule(
@@ -40,7 +43,7 @@ export function createNotificationPrismaModule(
     throw new Error('[FAIL-CLOSED] createNotificationPrismaModule requires options.closureChecker');
   }
 
-  const metricsService = new NotificationMetricsService();
+  const metricsService = options.metricsService ?? globalNotificationMetrics;
   const notificationRepository = new NotificationPrismaRepository(db, metricsService);
   const reliableAdapter = new NotificationReliableOperationPrismaAdapter(db, metricsService);
 
@@ -72,6 +75,7 @@ export function createNotificationPrismaModule(
     closureChecker: options.closureChecker,
     durableRuntime,
     runtimeContributions: options.runtimeContributions ?? [durableRuntime],
+    auditRepository: new PrismaOperationAuditRepository(db),
   });
 }
 

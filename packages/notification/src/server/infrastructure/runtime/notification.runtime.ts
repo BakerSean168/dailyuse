@@ -14,6 +14,8 @@ import {
 import type { NotificationReliableOperationPrismaAdapter } from '../adapters/prisma/notification-reliable-operation-prisma.adapter';
 import type { InMemoryNotificationReliableAdapter } from '../adapters/in-memory/in-memory-notification-reliable.adapter';
 import type { PowerSyncNotificationReliableAdapter } from '../adapters/powersync/power-sync-notification-reliable.adapter';
+import type { OperationAuditRecordInput, OperationAuditRepository } from '@memoflow/patterns/operations';
+import type { NotificationDispatchOutbox, OutboxMessage } from '@memoflow/database';
 
 export type NotificationReliableOperationAdapter =
   | NotificationReliableOperationPrismaAdapter
@@ -88,8 +90,13 @@ export interface NotificationDurableRuntimePort extends NotificationModuleRuntim
   getDurableRuntime(): NotificationDurableRuntimePort;
   tick(): Promise<void>;
   getMetrics(): NotificationMetricsSnapshot;
+  getUnifiedSnapshot(): Readonly<Record<string, number>>;
   queryDeadLetters(identityId: string): Promise<BusinessOperationReceipt[]>;
-  replayDeadLetter(params: { identityId: string; operationId: string }): Promise<BusinessOperationReceipt>;
+  replayDeadLetter(
+    params: { identityId: string; operationId: string },
+    audit?: OperationAuditRecordInput,
+    auditRepository?: OperationAuditRepository,
+  ): Promise<BusinessOperationReceipt>;
   queryReceipts(
     identityId: string,
     options?: number | { limit?: number; lastCursor?: string; since?: string; status?: string },
@@ -298,7 +305,7 @@ export function createNotificationRuntimeContribution(
   const processClaimedDispatch = async (entry: {
     claimed: boolean;
     receipt: BusinessOperationReceipt;
-    outbox: import('@memoflow/database').NotificationDispatchOutbox;
+    outbox: NotificationDispatchOutbox;
     notification?: Notification | null;
   }): Promise<BusinessOperationReceipt> => {
     const { receipt, outbox } = entry;
@@ -463,7 +470,7 @@ export function createNotificationRuntimeContribution(
         const recordedReceipt = await reliableAdapter.recordDeliveryReceipt(deadReceipt, claimContext);
         if (recordedReceipt.status === 'dead_letter') {
           await saveNotificationChannels(notification, outbox.channel, errorMsg);
-          metricsService.recordFailed();
+          // W7 互斥语义：dead-letter 是独立终态，不再累计 outbox.failed
           metricsService.recordDeadLetter();
 
           logger.error('[NotificationRuntime] Outbox dispatch reached dead-letter state', {
@@ -507,7 +514,7 @@ export function createNotificationRuntimeContribution(
       const recordedReceipt = await reliableAdapter.recordDeliveryReceipt(retryReceipt, claimContext);
       if (recordedReceipt.status === 'retryable') {
         await saveNotificationChannels(notification, outbox.channel, errorMsg);
-        metricsService.recordFailed();
+        // W7 互斥语义：retryable 是独立状态，不再累计 outbox.failed
         metricsService.recordRetry();
 
         logger.warn('[NotificationRuntime] Outbox dispatch failed, scheduled retry', {
@@ -558,7 +565,7 @@ export function createNotificationRuntimeContribution(
       const pendingSharedById = new Map<
         string,
         {
-          sharedMsg: import('@memoflow/database').OutboxMessage;
+          sharedMsg: OutboxMessage;
           notification: Notification;
           leaseContext: { ownerToken: string; claimId: string; fencingToken: number };
         }
@@ -669,7 +676,7 @@ export function createNotificationRuntimeContribution(
               leaseContext,
             );
             if (res === 'ok') {
-              metricsService.recordFailed();
+              // W7 互斥语义：dead-letter 是独立终态，不再累计 outbox.failed
               metricsService.recordDeadLetter();
             } else {
               logger.warn('[NotificationRuntime] Shared outbox dead-letter returned conflict (stale owner ignored)', {
@@ -691,7 +698,7 @@ export function createNotificationRuntimeContribution(
               leaseContext,
             );
             if (res === 'ok') {
-              metricsService.recordFailed();
+              // W7 互斥语义：retryable 是独立状态，不再累计 outbox.failed
               metricsService.recordRetry();
             } else {
               logger.warn('[NotificationRuntime] Shared outbox retryable returned conflict (stale owner ignored)', {
@@ -871,10 +878,12 @@ export function createNotificationRuntimeContribution(
       };
 
       await reconcileUnprojectedOutboxes();
+      metricsService.recordWorkerOutcome('completed');
     } catch (error) {
       logger.error('[NotificationRuntime] Channel worker tick failed', {
         error: error instanceof Error ? error.message : String(error),
       });
+      metricsService.recordWorkerOutcome('failed');
     } finally {
       flushing = false;
     }
@@ -915,6 +924,10 @@ export function createNotificationRuntimeContribution(
       return metricsService.getMetrics();
     },
 
+    getUnifiedSnapshot(): Readonly<Record<string, number>> {
+      return metricsService.getUnifiedSnapshot();
+    },
+
     async queryDeadLetters(identityId: string): Promise<BusinessOperationReceipt[]> {
       if (!deps?.reliableAdapter) {
         throw new Error('Reliable adapter is required to query dead letters.');
@@ -922,11 +935,31 @@ export function createNotificationRuntimeContribution(
       return deps.reliableAdapter.queryDeadLetters(identityId);
     },
 
-    async replayDeadLetter(params: { identityId: string; operationId: string }): Promise<BusinessOperationReceipt> {
+    async replayDeadLetter(
+      params: { identityId: string; operationId: string },
+      audit?: OperationAuditRecordInput,
+      auditRepository?: OperationAuditRepository,
+    ): Promise<BusinessOperationReceipt> {
       if (!deps?.reliableAdapter) {
         throw new Error('Reliable adapter is required to replay dead letters.');
       }
-      const receipt = await deps.reliableAdapter.replayDeadLetter(params);
+      const adapter = deps.reliableAdapter as unknown as {
+        replayDeadLetter(params: { identityId: string; operationId: string }): Promise<BusinessOperationReceipt>;
+        replayDeadLetterWithAudit?: (
+          params: { identityId: string; operationId: string },
+          audit: OperationAuditRecordInput,
+          auditRepository: OperationAuditRepository,
+        ) => Promise<BusinessOperationReceipt>;
+      };
+      if (audit && (!adapter.replayDeadLetterWithAudit || !auditRepository)) {
+        throw new Error(
+          '[FAIL-CLOSED] replay with audit requires an adapter implementing replayDeadLetterWithAudit and an explicit auditRepository dependency.',
+        );
+      }
+      const receipt =
+        audit && adapter.replayDeadLetterWithAudit && auditRepository
+          ? await adapter.replayDeadLetterWithAudit(params, audit, auditRepository)
+          : await adapter.replayDeadLetter(params);
       void tick();
       return receipt;
     },

@@ -35,6 +35,39 @@ export class InMemoryAccountClosureOperationRepository
     return list.length > 0 ? { ...list[0] } : null;
   }
 
+  async listByIdentityId(identityId: string): Promise<AccountClosureOperationRecord[]> {
+    return Array.from(this.records.values())
+      .filter((r) => r.identityId === identityId)
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+  }
+
+  async resetForReplay(
+    identityId: string,
+    id: string,
+  ): Promise<AccountClosureOperationRecord> {
+    for (const [key, record] of this.records.entries()) {
+      if (record.id === id && record.identityId === identityId) {
+        if (record.status !== 'failed') {
+          throw new Error(`Closure operation '${id}' is not replayable (status: ${record.status})`);
+        }
+        const now = new Date();
+        const updated: AccountClosureOperationRecord = {
+          ...record,
+          status: 'running',
+          deadLetterAt: null,
+          nextRetryAt: new Date(now.getTime() - 1000),
+          lastError: null,
+          ownerToken: null,
+          leaseExpiresAt: null,
+          updatedAt: now,
+        };
+        this.records.set(key, updated);
+        return { ...updated };
+      }
+    }
+    throw new Error(`Closure operation '${id}' not found for this identity`);
+  }
+
   async create(record: AccountClosureOperationRecord): Promise<boolean> {
     const key = this.makeKey(record.identityId, record.idempotencyKey);
     if (this.records.has(key)) {

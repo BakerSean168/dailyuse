@@ -131,6 +131,11 @@ describe('NotificationChannel durable worker (R3 收尾)', () => {
     const metrics = runtime.getMetrics();
     expect(metrics.dispatchedTotal).toBe(1);
     expect(metrics.deliveredTotal).toBe(1);
+
+    // P1-5: unified recorder keys fire on the real worker tick path.
+    const unified = runtime.getUnifiedSnapshot();
+    expect(unified['memoflow.notification.outbox.claimed']).toBe(1);
+    expect(unified['memoflow.notification.outbox.succeeded']).toBe(1);
   });
 
   it('marks failed channels with backoff window and retries them later', async () => {
@@ -174,6 +179,11 @@ describe('NotificationChannel durable worker (R3 收尾)', () => {
 
     receipts = await adapter.queryReceipts(String(notification.identityId));
     expect(receipts[0].status).toBe('succeeded');
+
+    // W7 互斥语义：retryable 分支记录 retried，不累计 outbox.failed
+    const unified = runtime.getUnifiedSnapshot();
+    expect(unified['memoflow.notification.outbox.retried']).toBe(1);
+    expect(unified['memoflow.notification.outbox.failed']).toBeUndefined();
   });
 
   it('keeps failed channels in dead-letter once attempts exceed the threshold', async () => {
@@ -210,7 +220,12 @@ describe('NotificationChannel durable worker (R3 收尾)', () => {
 
     const metrics = runtime.getMetrics();
     expect(metrics.deadLetterTotal).toBe(1);
-    expect(metrics.failedTotal).toBe(1);
+    // W7 互斥语义：dead-letter 是独立终态，不得同时累计 failed
+    expect(metrics.failedTotal).toBe(0);
+    const unified = runtime.getUnifiedSnapshot();
+    expect(unified['memoflow.notification.outbox.dead_letter']).toBe(1);
+    expect(unified['memoflow.notification.outbox.retried']).toBeUndefined();
+    expect(unified['memoflow.notification.outbox.failed']).toBeUndefined();
   });
 
   it('marks delivery failure and does not crash the tick', async () => {

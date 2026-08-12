@@ -112,6 +112,7 @@
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
     "@memoflow/contracts": "workspace:*",
+    "@memoflow/patterns": "workspace:*",
     "@memoflow/utils": "workspace:*",
     "@prisma/client": "7.8.0",
     "@types/multer": "2.0.0",

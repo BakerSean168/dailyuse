@@ -6,6 +6,7 @@ import type {
   AccountClosureStatus,
   CASUpdatePhaseParams,
 } from '../../../domain/repositories/i-account-closure-operation-repository';
+import type { OperationAuditRecordInput } from '@memoflow/patterns/operations';
 
 interface ClosureOperationDb {
   accountClosureOperation: PrismaClient['accountClosureOperation'];
@@ -100,6 +101,104 @@ export class PrismaAccountClosureOperationRepository
     });
     if (!row) return null;
     return this.mapRowToRecord(row);
+  }
+
+  async listByIdentityId(
+    identityId: string,
+  ): Promise<AccountClosureOperationRecord[]> {
+    if (!identityId) {
+      throw new Error('identityId is required for closure timeline query');
+    }
+    const rows = await this.prisma.accountClosureOperation.findMany({
+      where: { identityId },
+      orderBy: { updatedAt: 'desc' },
+      take: 100,
+    });
+    return rows.map((row) => this.mapRowToRecord(row));
+  }
+
+  async resetForReplay(
+    identityId: string,
+    id: string,
+  ): Promise<AccountClosureOperationRecord> {
+    if (!identityId || !id) {
+      throw new Error('identityId and id are required for closure replay');
+    }
+    const existing = await this.prisma.accountClosureOperation.findFirst({
+      where: { id, identityId },
+    });
+    if (!existing) {
+      throw new Error(`Closure operation '${id}' not found for this identity`);
+    }
+    if (existing.status !== 'failed') {
+      throw new Error(
+        `Closure operation '${id}' is not replayable (status: ${existing.status})`,
+      );
+    }
+    const now = new Date();
+    const updated = await this.prisma.accountClosureOperation.update({
+      where: { id: existing.id },
+      data: {
+        status: 'running',
+        deadLetterAt: null,
+        nextRetryAt: new Date(now.getTime() - 1000),
+        lastError: null,
+        ownerToken: null,
+        leaseExpiresAt: null,
+        updatedAt: now,
+      },
+    });
+    return this.mapRowToRecord(updated);
+  }
+
+  /**
+   * P1-4：与审计同一事务的 closure replay。状态推进与 audit 事实同入一个
+   * `prisma.$transaction`；审计写失败时整个事务回滚，绝不留下
+   * “已重放但无审计”的部分成功。
+   */
+  async resetForReplayWithAudit(
+    identityId: string,
+    id: string,
+    audit: OperationAuditRecordInput,
+    auditRepository: import('@memoflow/patterns/operations').OperationAuditRepository,
+  ): Promise<AccountClosureOperationRecord> {
+    if (!identityId || !id) {
+      throw new Error('identityId and id are required for closure replay');
+    }
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.accountClosureOperation.findFirst({
+        where: { id, identityId },
+      });
+      if (!existing) {
+        throw new Error(`Closure operation '${id}' not found for this identity`);
+      }
+      if (existing.status !== 'failed') {
+        throw new Error(
+          `Closure operation '${id}' is not replayable (status: ${existing.status})`,
+        );
+      }
+      const now = new Date();
+      const updated = await tx.accountClosureOperation.update({
+        where: { id: existing.id },
+        data: {
+          status: 'running',
+          deadLetterAt: null,
+          nextRetryAt: new Date(now.getTime() - 1000),
+          lastError: null,
+          ownerToken: null,
+          leaseExpiresAt: null,
+          updatedAt: now,
+        },
+      });
+      await auditRepository.record(
+        {
+          ...audit,
+          details: `status -> ${updated.status}`,
+        },
+        tx,
+      );
+      return this.mapRowToRecord(updated);
+    });
   }
 
   async create(

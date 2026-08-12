@@ -513,6 +513,296 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     moduleInstance.dispose();
   });
 
+  it('9b. W7 unified operation timeline exposes failure reason and next retry', async () => {
+    const { createNotificationPrismaModule } = await import('../../../prisma');
+    const moduleInstance = createNotificationPrismaModule(prisma, {
+      closureChecker: async () => false,
+    });
+
+    const opId = randomUUID();
+    const notificationId = 'notif_w7_timeline';
+    await seedNotification(notificationId);
+    const occurrenceKey = `${notificationId}:${NotificationChannelType.InApp}`;
+    const idempotencyKey = buildIdempotencyKeyString({
+      identityId,
+      source: 'notification',
+      occurrenceKey,
+    });
+
+    const nextRetryAt = new Date(Date.now() + 60_000).toISOString();
+    await reliableAdapter.dispatchOutbox(
+      {
+        operationId: opId,
+        identityId,
+        source: 'notification',
+        occurrenceKey,
+        channel: NotificationChannelType.InApp,
+        payloadJson: JSON.stringify({ title: 'W7 timeline', notificationId }),
+        idempotencyKey,
+      },
+      { notificationId },
+    );
+    await reliableAdapter.recordDeliveryReceipt({
+      schemaVersion: 1,
+      operationId: opId,
+      identityId,
+      source: 'notification',
+      occurrenceKey,
+      idempotencyKey,
+      status: 'retryable',
+      attempt: 2,
+      lease: null,
+      lastError: 'desktop transport timeout',
+      nextRetryAt,
+      deadLetterAt: null,
+      correlationId: null,
+      causationId: null,
+      attemptsHistory: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      finishedAt: null,
+    });
+
+    const timelineRes = await moduleInstance.api.getOperationTimeline(identityId);
+    expect(timelineRes.ok).toBe(true);
+    const entries = timelineRes.ok ? (timelineRes.data as any[]) : [];
+    const entry = entries.find((e) => e.operationId === opId);
+    expect(entry).toBeDefined();
+    expect(entry.source).toBe('notification');
+    expect(entry.status).toBe('retryable');
+    expect(entry.failureReason).toBe('desktop transport timeout');
+    expect(entry.attempts).toBe(2);
+    expect(entry.nextRetryAt).toBe(nextRetryAt);
+    expect(entry.replayable).toBe(false);
+
+    moduleInstance.dispose();
+  });
+
+  it('9c. W7 replay records audit trail and moves state forward; unauthorized identity is rejected', async () => {
+    const { createNotificationPrismaModule } = await import('../../../prisma');
+    const moduleInstance = createNotificationPrismaModule(prisma, {
+      closureChecker: async () => false,
+    });
+
+    const opId = randomUUID();
+    const notificationId = 'notif_w7_audit';
+    await seedNotification(notificationId);
+    const occurrenceKey = `${notificationId}:${NotificationChannelType.InApp}`;
+    const idempotencyKey = buildIdempotencyKeyString({
+      identityId,
+      source: 'notification',
+      occurrenceKey,
+    });
+
+    const dispatchReceipt = await reliableAdapter.dispatchOutbox(
+      {
+        operationId: opId,
+        identityId,
+        source: 'notification',
+        occurrenceKey,
+        channel: NotificationChannelType.InApp,
+        payloadJson: JSON.stringify({ title: 'W7 audit', notificationId }),
+        idempotencyKey,
+      },
+      { notificationId },
+    );
+    await reliableAdapter.recordDeliveryReceipt({
+      ...dispatchReceipt,
+      status: 'dead_letter',
+      attempt: 3,
+      lastError: 'dead',
+      deadLetterAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    const dlResult = await moduleInstance.api.queryDeadLetters(identityId);
+    expect(dlResult.ok).toBe(true);
+    const dl = (dlResult.ok ? (dlResult.data as any[]) : []).find((d) => d.operationId === opId);
+    expect(dl).toBeDefined();
+
+    // Unauthorized identity cannot replay another identity's dead letter
+    const otherIdentity = `identity_other_${randomUUID()}`;
+    await seedAccount({ id: otherIdentity });
+    const rejected = await moduleInstance.api.replayDeadLetter(opId, otherIdentity);
+    expect(rejected.ok).toBe(false);
+
+    // Authorized replay advances state and records audit
+    const replayResult = await moduleInstance.api.replayDeadLetter(opId, identityId);
+    expect(replayResult.ok).toBe(true);
+    const replayed = replayResult.ok ? (replayResult.data as any) : null;
+    expect(replayed.status).toBe('retryable');
+
+    const auditRes = await moduleInstance.api.getOperationAudit(identityId);
+    expect(auditRes.ok).toBe(true);
+    const audit = auditRes.ok ? (auditRes.data as any[]) : [];
+    const replayAudit = audit.find(
+      (a) => a.operationId === opId && a.action === 'replay' && a.source === 'notification',
+    );
+    expect(replayAudit).toBeDefined();
+    expect(replayAudit.actorIdentityId).toBe(identityId);
+
+    // Audit is actor-scoped: other identity sees none of ours
+    const otherAuditRes = await moduleInstance.api.getOperationAudit(otherIdentity);
+    expect(otherAuditRes.ok).toBe(true);
+    const otherAudit = otherAuditRes.ok ? (otherAuditRes.data as any[]) : [];
+    expect(otherAudit.some((a) => a.operationId === opId)).toBe(false);
+
+    moduleInstance.dispose();
+  });
+
+  it('9d. P1-3 timeline query writes a timeline_query audit with result count', async () => {
+    const { createNotificationPrismaModule } = await import('../../../prisma');
+    const moduleInstance = createNotificationPrismaModule(prisma, {
+      closureChecker: async () => false,
+    });
+
+    const opId = randomUUID();
+    const notificationId = 'notif_w7_query_audit';
+    await seedNotification(notificationId);
+    const occurrenceKey = `${notificationId}:${NotificationChannelType.InApp}`;
+    const idempotencyKey = buildIdempotencyKeyString({
+      identityId,
+      source: 'notification',
+      occurrenceKey,
+    });
+    await reliableAdapter.dispatchOutbox(
+      {
+        operationId: opId,
+        identityId,
+        source: 'notification',
+        occurrenceKey,
+        channel: NotificationChannelType.InApp,
+        payloadJson: JSON.stringify({ title: 'W7 query audit', notificationId }),
+        idempotencyKey,
+      },
+      { notificationId },
+    );
+
+    const timelineRes = await moduleInstance.api.getOperationTimeline(identityId);
+    expect(timelineRes.ok).toBe(true);
+    expect((timelineRes.ok ? (timelineRes.data as any[]) : []).length).toBeGreaterThanOrEqual(1);
+
+    const queryAuditRows = await prisma.operationAuditLog.findMany({
+      where: {
+        actorIdentityId: identityId,
+        action: 'timeline_query',
+        source: 'notification',
+      },
+    });
+    expect(queryAuditRows.length).toBeGreaterThanOrEqual(1);
+    const queryAudit = queryAuditRows[0];
+    expect(queryAudit.operationId).toBe('*timeline-query*');
+    const details = JSON.parse(queryAudit.details as string);
+    expect(details.resultCount).toBeGreaterThanOrEqual(1);
+    expect(typeof details.filters).toBe('object');
+
+    moduleInstance.dispose();
+  });
+
+  it('9e. P1-4 notification replay audit write failure rolls back the state advancement', async () => {
+    const { createNotificationModule } = await import('../../../notification.module');
+    const opId = randomUUID();
+    const notificationId = 'notif_w7_fail_inject';
+    await seedNotification(notificationId);
+    const occurrenceKey = `${notificationId}:${NotificationChannelType.InApp}`;
+    const idempotencyKey = buildIdempotencyKeyString({
+      identityId,
+      source: 'notification',
+      occurrenceKey,
+    });
+    await reliableAdapter.dispatchOutbox(
+      {
+        operationId: opId,
+        identityId,
+        source: 'notification',
+        occurrenceKey,
+        channel: NotificationChannelType.InApp,
+        payloadJson: JSON.stringify({ title: 'W7 fail inject', notificationId }),
+        idempotencyKey,
+      },
+      { notificationId },
+    );
+    await reliableAdapter.recordDeliveryReceipt({
+      schemaVersion: 1,
+      operationId: opId,
+      identityId,
+      source: 'notification',
+      occurrenceKey,
+      idempotencyKey,
+      status: 'dead_letter',
+      attempt: 3,
+      lease: null,
+      lastError: 'dead',
+      nextRetryAt: null,
+      deadLetterAt: new Date().toISOString(),
+      correlationId: null,
+      causationId: null,
+      attemptsHistory: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      finishedAt: null,
+    });
+
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+
+    const moduleInstance = createNotificationModule({
+      notificationRepository: notificationRepo,
+      preferenceRepository: preferenceRepo,
+      templateRepository: templateRepo,
+      closureChecker: async () => false,
+      durableRuntime: createNotificationRuntimeContribution({
+        repository: notificationRepo,
+        reliableAdapter,
+      }),
+      auditRepository: failingAudit as never,
+    });
+
+    const replayResult = await moduleInstance.api.replayDeadLetter(opId, identityId);
+    expect(replayResult.ok).toBe(false);
+
+    const after = await prisma.notificationDispatchOutbox.findUniqueOrThrow({
+      where: { id: opId },
+    });
+    expect(after.status).toBe('dead_letter');
+    expect(after.deadLetterAt).not.toBeNull();
+
+    moduleInstance.dispose();
+  });
+
+  it('9f. P1-3 notification timeline query fails closed when audit write fails', async () => {
+    const { createNotificationModule } = await import('../../../notification.module');
+
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+
+    const moduleInstance = createNotificationModule({
+      notificationRepository: notificationRepo,
+      preferenceRepository: preferenceRepo,
+      templateRepository: templateRepo,
+      closureChecker: async () => false,
+      durableRuntime: createNotificationRuntimeContribution({
+        repository: notificationRepo,
+        reliableAdapter,
+      }),
+      auditRepository: failingAudit as never,
+    });
+
+    await expect(moduleInstance.api.getOperationTimeline(identityId)).rejects.toThrow(
+      'audit write failure injected',
+    );
+
+    moduleInstance.dispose();
+  });
+
   it('10. Concurrent worker competition prevents double sending and enforces atomic claim', async () => {
     let deliverCount = 0;
     const mockDeliverer = {

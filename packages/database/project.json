@@ -11,7 +11,7 @@
       "dependsOn": ["^build"],
       "options": {
         "cwd": "packages/database",
-        "command": "prisma generate --config ./prisma/prisma.config.ts && tsc --build && node ../../tools/build/copy-with-retry.mjs src/generated/prisma dist/generated/prisma"
+        "command": "prisma generate --config ./prisma/prisma.config.ts && node ../../tools/build/normalize-generated-prisma.mjs && tsc --build && node ../../tools/build/copy-with-retry.mjs src/generated/prisma dist/generated/prisma"
       },
       "inputs": [
         "{projectRoot}/prisma/schema/**/*",
@@ -43,7 +43,7 @@
       "outputs": ["{projectRoot}/src/generated/prisma"],
       "options": {
         "cwd": "packages/database",
-        "command": "prisma generate --config ./prisma/prisma.config.ts"
+        "command": "prisma generate --config ./prisma/prisma.config.ts && node ../../tools/build/normalize-generated-prisma.mjs"
       },
       "inputs": ["{projectRoot}/prisma/schema/**/*", "{projectRoot}/prisma/prisma.config.ts"],
       "cache": true

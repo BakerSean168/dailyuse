@@ -179,4 +179,18 @@ export class NotificationController {
   ): Promise<Result<unknown>> {
     return this.useCases.getDeliveryReceipts(ctx.identityId, query);
   }
+
+  async getOperationTimeline(
+    ctx: Context,
+    query?: { status?: string; limit?: number },
+  ): Promise<Result<unknown>> {
+    return this.useCases.getOperationTimeline(ctx.identityId, query);
+  }
+
+  async getOperationAudit(
+    ctx: Context,
+    query?: { source?: string; operationId?: string; limit?: number },
+  ): Promise<Result<unknown>> {
+    return this.useCases.getOperationAudit(ctx.identityId, query);
+  }
 }

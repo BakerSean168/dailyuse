@@ -12,6 +12,15 @@ import {
   type Clock,
 } from '../application';
 import type { AccountApplicationPort } from '../application';
+import type { OperationAuditRepository } from '@memoflow/patterns/operations';
+import { runTimelineQueryWithAudit, globalUnifiedOperationMetrics } from '@memoflow/patterns/operations';
+import type {
+  OperationTimelineEntry,
+  OperationAuditRecord,
+} from '@memoflow/contracts/operations';
+import { OperationTimelineEntrySchema } from '@memoflow/contracts/operations';
+import { ok, fail } from '@memoflow/contracts/result';
+import type { AccountClosureOperationRecord } from '../domain/repositories/i-account-closure-operation-repository';
 
 /** Explicit dependencies required by the account runtime. */
 export interface AccountModuleDependencies {
@@ -25,6 +34,8 @@ export interface AccountModuleDependencies {
   readonly runtimeContributions?:
     | AccountModuleRuntimeContribution
     | readonly AccountModuleRuntimeContribution[];
+  /** W7：审计仓库（最小权限 + 审计） */
+  readonly auditRepository?: OperationAuditRepository;
 }
 
 /** Module-owned side effects that start and stop with an account module instance. */
@@ -73,6 +84,7 @@ export function createAccountUseCases(
         revocationPort: dependencies.revocationPort,
         eventPublisher: dependencies.eventPublisher,
         clock: dependencies.clock,
+        metrics: globalUnifiedOperationMetrics,
       });
     }
   }
@@ -128,6 +140,7 @@ export function createAccountModule(
   const { accountRepository } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
   const useCases = createAccountUseCases(dependencies);
+  const auditRepository = dependencies.auditRepository;
 
   let started = false;
 
@@ -141,6 +154,73 @@ export function createAccountModule(
       updateSettings: (data, cx) => useCases.updateSettings.execute(data, cx),
       checkAvailability: (data) => useCases.checkAvailability.execute(data),
       closeAccount: (data, cx) => useCases.closeAccount.execute(data, cx),
+      queryClosureTimeline: async (cx) => {
+        const operationRepo = dependencies.closureOperationRepository;
+        if (!operationRepo || !auditRepository) {
+          return fail({
+            code: 'FAIL_CLOSED',
+            message:
+              '[FAIL-CLOSED] account closure timeline requires closureOperationRepository and auditRepository dependencies (timeline_query audit is mandatory).',
+          });
+        }
+        const { entries } = await runTimelineQueryWithAudit({
+          repository: auditRepository,
+          source: 'account-closure',
+          actorIdentityId: cx.identityId,
+          filters: { limit: 100 },
+          query: () => operationRepo.listByIdentityId(cx.identityId),
+        });
+        return ok(entries.map(mapClosureRecordToTimelineEntry));
+      },
+      replayClosure: async (operationId, cx) => {
+        const operationRepo = dependencies.closureOperationRepository;
+        if (!operationRepo || !auditRepository) {
+          return fail({
+            code: 'FAIL_CLOSED',
+            message:
+              '[FAIL-CLOSED] account closure replay requires closureOperationRepository and auditRepository dependencies.',
+          });
+        }
+        try {
+          if (!operationRepo.resetForReplayWithAudit) {
+            return fail({
+              code: 'FAIL_CLOSED',
+              message:
+                '[FAIL-CLOSED] account closure replay requires a repository implementing atomic resetForReplayWithAudit (state + audit in one transaction).',
+            });
+          }
+          const record = await operationRepo.resetForReplayWithAudit(
+            cx.identityId,
+            operationId,
+            {
+              actorIdentityId: cx.identityId,
+              source: 'account-closure',
+              operationId,
+              action: 'replay',
+            },
+            auditRepository,
+          );
+          return ok(mapClosureRecordToTimelineEntry(record));
+        } catch (err) {
+          return fail({
+            code: 'NOT_FOUND',
+            message: err instanceof Error ? err.message : String(err),
+          });
+        }
+      },
+      getOperationAudit: async (cx) => {
+        if (!auditRepository) {
+          return fail({
+            code: 'FAIL_CLOSED',
+            message:
+              '[FAIL-CLOSED] account operation audit requires an explicit auditRepository dependency.',
+          });
+        }
+        const records: OperationAuditRecord[] = await auditRepository.listByActor({
+          identityId: cx.identityId,
+        });
+        return ok(records);
+      },
     },
     start(): void {
       if (started) return;
@@ -157,4 +237,37 @@ export function createAccountModule(
       started = false;
     },
   };
+}
+
+function mapClosureRecordToTimelineEntry(
+  record: AccountClosureOperationRecord,
+): OperationTimelineEntry {
+  const entry: OperationTimelineEntry = {
+    source: 'account-closure',
+    operationId: record.id,
+    status: normalizeClosureStatus(record.status, record.deadLetterAt),
+    failureReason: record.lastError ?? null,
+    attempts: record.attempts,
+    nextRetryAt: record.nextRetryAt ? record.nextRetryAt.toISOString() : null,
+    replayable: record.status === 'failed',
+    updatedAt: record.updatedAt.toISOString(),
+  };
+  return OperationTimelineEntrySchema.parse(entry);
+}
+
+function normalizeClosureStatus(
+  status: string,
+  deadLetterAt: Date | null,
+): OperationTimelineEntry['status'] {
+  if (deadLetterAt) return 'dead_letter';
+  switch (status) {
+    case 'running':
+      return 'running';
+    case 'succeeded':
+      return 'succeeded';
+    case 'failed':
+      return 'failed';
+    default:
+      return 'pending';
+  }
 }

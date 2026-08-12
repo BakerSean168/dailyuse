@@ -19,6 +19,7 @@ import type {
 import type { IGitHubAppClient } from '../ports/github-app-client.port';
 import { GitHubAppClientError } from '../ports/github-app-client.port';
 import { KnowledgeNoteCommitService } from './knowledge-note-commit.service';
+import { createUnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
 function connection(): KnowledgeRepositoryConnectionServerDTO {
   return {
@@ -370,6 +371,7 @@ function createService(
     leaseTtlMs?: number;
     leaseRenewalIntervalMs?: number;
     closureChecker?: (identityId: string) => Promise<boolean>;
+    metrics?: import('@memoflow/patterns/operations').UnifiedOperationMetricsRecorder;
   } = {},
 ) {
   const projectionRepository = overrides.projectionRepository ?? new MemoryProjectionRepository();
@@ -393,6 +395,7 @@ function createService(
       leaseTtlMs: overrides.leaseTtlMs,
       leaseRenewalIntervalMs: overrides.leaseRenewalIntervalMs,
       closureChecker: overrides.closureChecker ?? (async () => false),
+      metrics: overrides.metrics,
     }),
   };
 }
@@ -441,6 +444,20 @@ describe('KnowledgeNoteCommitService', () => {
         mutation: 'created',
       }),
     );
+  });
+
+  it('P1-5: write request persistence emits the unified knowledge persisted metric', async () => {
+    const recorder = createUnifiedOperationMetricsRecorder();
+    const { service, writeRequestRepository } = createService(githubClient(), {
+      metrics: recorder,
+    });
+
+    const result = await service.create('identity-1', request());
+    expect(result.ok).toBe(true);
+    expect(writeRequestRepository.rows.size).toBe(1);
+
+    const snap = recorder.snapshot();
+    expect(snap['memoflow.knowledge.outbox.persisted']).toBe(1);
   });
 
   it('rejects request-id reuse with a different immutable proposal', async () => {

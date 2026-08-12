@@ -34,6 +34,10 @@ import { KnowledgeRepositoryLeasePrismaRepository } from '../knowledge-repositor
 import { KnowledgeWriteRequestPrismaRepository } from '../knowledge-write-request-prisma.repository';
 import { GithubWebhookDeliveryPrismaRepository } from '../github-webhook-delivery-prisma.repository';
 import { cleanAllTables } from '@memoflow/test-utils/setup/database';
+import {
+  PrismaOperationAuditRepository,
+  createUnifiedOperationMetricsRecorder,
+} from '@memoflow/patterns/operations';
 
 const WEBHOOK_SECRET = 'integration-webhook-secret';
 const WEBHOOK_SIGNATURE_HEADER = 'x-hub-signature-256';
@@ -335,7 +339,10 @@ interface TestRuntime {
   close(): Promise<void>;
 }
 
-async function startRuntime(seed: Seed): Promise<TestRuntime> {
+async function startRuntime(
+  seed: Seed,
+  options: { metrics?: import('@memoflow/patterns/operations').UnifiedOperationMetricsRecorder } = {},
+): Promise<TestRuntime> {
   const connectionRepo = new GatedConnectionRepository(
     new KnowledgeRepositoryConnectionPrismaRepository(prisma),
   );
@@ -384,12 +391,14 @@ async function startRuntime(seed: Seed): Promise<TestRuntime> {
     githubAppClient,
     leaseRepository: leaseRepo,
     reconciliationIntervalMs: 0,
+    metrics: options.metrics,
   });
 
   const module = createRepositoryModule({
     knowledgeRepositoryConnectionService: null,
     knowledgeRepositoryProjectionService: projectionService,
     knowledgeNoteCommitService: commitService,
+    auditRepository: new PrismaOperationAuditRepository(prisma),
   });
 
   const app = express();
@@ -425,6 +434,7 @@ async function startRuntime(seed: Seed): Promise<TestRuntime> {
     connectionRepo,
     writeRequestRepo,
     projectionService,
+    module,
     close: async () => {
       projectionService.stop();
       await new Promise<void>((resolveClose) => server.close(() => resolveClose()));
@@ -1026,6 +1036,223 @@ describe('Knowledge write-request projection ledger (W6-A real routes/services, 
     expect(dto?.projectionErrorCode).toBeNull();
     expect(dto?.projectionAttempts).toBe(1);
     expect(dto?.projectedAt).not.toBeNull();
+
+    await runtime.close();
+  });
+
+  it('W7: unified projection timeline + audited replay via module API', async () => {
+    const seed = await seedContext();
+    const runtime = await startRuntime(seed);
+    const writeRequestId = await seedPendingWriteRequest(runtime, seed, 'notes/w7-timeline.md');
+
+    // Arm a real projection failure so the timeline exposes a replayable entry.
+    runtime.projectionRepo.failNextProjection();
+    const failedReplay = await runtime.projectionService.replayWriteRequestProjection(
+      seed.identityId,
+      writeRequestId,
+    );
+    expect(failedReplay.ok).toBe(false);
+
+    const ctx = { identityId: seed.identityId } as never;
+    const timelineRes = await runtime.module.api.queryKnowledgeTimeline(ctx);
+    expect(timelineRes.ok).toBe(true);
+    const entries = timelineRes.ok ? (timelineRes.data as any[]) : [];
+    const entry = entries.find((e) => e.operationId === writeRequestId);
+    expect(entry).toBeDefined();
+    expect(entry.source).toBe('knowledge-projection');
+    expect(entry.status).toBe('failed');
+    expect(entry.attempts).toBeGreaterThanOrEqual(1);
+    expect(entry.replayable).toBe(true);
+
+    // P1-3: the query wrote a timeline_query audit with marker + filters + resultCount.
+    const queryAuditRows = await prisma.operationAuditLog.findMany({
+      where: {
+        actorIdentityId: seed.identityId,
+        action: 'timeline_query',
+        source: 'knowledge-projection',
+      },
+    });
+    expect(queryAuditRows.length).toBeGreaterThanOrEqual(1);
+    const queryAudit = queryAuditRows[0];
+    expect(queryAudit.operationId).toBe('*timeline-query*');
+    const queryDetails = JSON.parse(queryAudit.details as string);
+    expect(queryDetails.resultCount).toBeGreaterThanOrEqual(1);
+    expect(typeof queryDetails.filters).toBe('object');
+
+    // Successful replay advances the timeline to succeeded and records audit.
+    const replayRes = await runtime.module.api.replayKnowledgeWriteRequestProjection(
+      ctx,
+      writeRequestId,
+    );
+    expect(replayRes.ok).toBe(true);
+    expect(replayRes.data?.status).toBe('Succeeded');
+
+    const auditRes = await runtime.module.api.getOperationAudit(ctx);
+    expect(auditRes.ok).toBe(true);
+    const audit = auditRes.ok ? (auditRes.data as any[]) : [];
+    const replayAudit = audit.find(
+      (a) => a.operationId === writeRequestId && a.action === 'replay' && a.source === 'knowledge-projection',
+    );
+    expect(replayAudit).toBeDefined();
+    expect(replayAudit.actorIdentityId).toBe(seed.identityId);
+
+    const timelineAfter = await runtime.module.api.queryKnowledgeTimeline(ctx);
+    const entryAfter = (
+      timelineAfter.ok ? (timelineAfter.data as any[]) : []
+    ).find((e) => e.operationId === writeRequestId);
+    expect(entryAfter.status).toBe('succeeded');
+    expect(entryAfter.replayable).toBe(false);
+
+    await runtime.close();
+  });
+
+  it('P1-4: knowledge replay fails closed when auditRepository is missing (no projection, no state change)', async () => {
+    const seed = await seedContext();
+    const runtime = await startRuntime(seed);
+    const writeRequestId = await seedPendingWriteRequest(runtime, seed, 'notes/audit-missing.md');
+
+    const moduleWithoutAudit = createRepositoryModule({
+      knowledgeRepositoryConnectionService: null,
+      knowledgeRepositoryProjectionService: runtime.projectionService,
+      knowledgeNoteCommitService: null,
+    });
+
+    const ctx = { identityId: seed.identityId } as never;
+    const replayRes = await moduleWithoutAudit.api.replayKnowledgeWriteRequestProjection(
+      ctx,
+      writeRequestId,
+    );
+    expect(replayRes.ok).toBe(false);
+    if (!replayRes.ok) {
+      expect(replayRes.error.code).toBe('FAIL_CLOSED');
+    }
+
+    // No external projection ran and durable ledger state is unchanged.
+    const after = await runtime.writeRequestRepo.findByIdForIdentity(seed.identityId, writeRequestId);
+    expect(after?.projectionStatus).toBe('Pending');
+    expect(after?.projectionAttempts).toBe(0);
+
+    const projections = await runtime.projectionRepo.listByIdentity(seed.identityId, { limit: 10 });
+    expect(projections.find((p) => p.relativePath === 'notes/audit-missing.md')).toBeUndefined();
+
+    moduleWithoutAudit.dispose();
+    await runtime.close();
+  });
+
+  it('P1-4: knowledge replay audit write failure fails closed before any external projection (audit-first)', async () => {
+    const seed = await seedContext();
+    const runtime = await startRuntime(seed);
+    const writeRequestId = await seedPendingWriteRequest(runtime, seed, 'notes/audit-write-fail.md');
+
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+
+    const moduleWithFailingAudit = createRepositoryModule({
+      knowledgeRepositoryConnectionService: null,
+      knowledgeRepositoryProjectionService: runtime.projectionService,
+      knowledgeNoteCommitService: null,
+      auditRepository: failingAudit as never,
+    });
+
+    const ctx = { identityId: seed.identityId } as never;
+    const replayRes = await moduleWithFailingAudit.api.replayKnowledgeWriteRequestProjection(
+      ctx,
+      writeRequestId,
+    );
+    expect(replayRes.ok).toBe(false);
+
+    // Audit-first: the external projection must NOT have run — durable state unchanged.
+    const after = await runtime.writeRequestRepo.findByIdForIdentity(seed.identityId, writeRequestId);
+    expect(after?.projectionStatus).toBe('Pending');
+    expect(after?.projectionAttempts).toBe(0);
+
+    const projections = await runtime.projectionRepo.listByIdentity(seed.identityId, { limit: 10 });
+    expect(projections.find((p) => p.relativePath === 'notes/audit-write-fail.md')).toBeUndefined();
+
+    moduleWithFailingAudit.dispose();
+    await runtime.close();
+  });
+
+  it('P1-3: knowledge timeline query fails closed when audit write fails', async () => {
+    const seed = await seedContext();
+    const runtime = await startRuntime(seed);
+
+    const failingAudit = {
+      record: async () => {
+        throw new Error('audit write failure injected');
+      },
+      listByActor: async () => [],
+    };
+
+    const moduleWithFailingAudit = createRepositoryModule({
+      knowledgeRepositoryConnectionService: null,
+      knowledgeRepositoryProjectionService: runtime.projectionService,
+      knowledgeNoteCommitService: null,
+      auditRepository: failingAudit as never,
+    });
+
+    const ctx = { identityId: seed.identityId } as never;
+    await expect(
+      moduleWithFailingAudit.api.queryKnowledgeTimeline(ctx),
+    ).rejects.toThrow('audit write failure injected');
+
+    moduleWithFailingAudit.dispose();
+    await runtime.close();
+  });
+
+  it('P1-5: knowledge replay drives the real projection path and emits unified metric events', async () => {
+    const seed = await seedContext();
+    const recorder = createUnifiedOperationMetricsRecorder();
+    const runtime = await startRuntime(seed, { metrics: recorder });
+    const writeRequestId = await seedPendingWriteRequest(runtime, seed, 'notes/metrics-replay.md');
+
+    const replay = await runtime.projectionService.replayWriteRequestProjection(
+      seed.identityId,
+      writeRequestId,
+    );
+    expect(replay.ok).toBe(true);
+
+    const snap = recorder.snapshot();
+    expect(snap['memoflow.knowledge.outbox.claimed']).toBe(1);
+    expect(snap['memoflow.knowledge.outbox.succeeded']).toBe(1);
+    expect(snap['memoflow.knowledge.worker.completed']).toBe(1);
+
+    await runtime.close();
+  });
+
+  it('P1-5: knowledge replay failure emits failed + worker.failed, and a retry emits retried', async () => {
+    const seed = await seedContext();
+    const recorder = createUnifiedOperationMetricsRecorder();
+    const runtime = await startRuntime(seed, { metrics: recorder });
+    const writeRequestId = await seedPendingWriteRequest(runtime, seed, 'notes/metrics-fail.md');
+
+    runtime.projectionRepo.failNextProjection();
+    const replay = await runtime.projectionService.replayWriteRequestProjection(
+      seed.identityId,
+      writeRequestId,
+    );
+    expect(replay.ok).toBe(false);
+
+    // First replay of a Pending write request is a failure, not a retry.
+    const snap = recorder.snapshot();
+    expect(snap['memoflow.knowledge.outbox.failed']).toBe(1);
+    expect(snap['memoflow.knowledge.worker.failed']).toBe(1);
+    expect(snap['memoflow.knowledge.outbox.retried']).toBeUndefined();
+
+    // A second replay of the same (now Failed) write request is a retry.
+    const retried = await runtime.projectionService.replayWriteRequestProjection(
+      seed.identityId,
+      writeRequestId,
+    );
+    expect(retried.ok).toBe(true);
+    const snap2 = recorder.snapshot();
+    expect(snap2['memoflow.knowledge.outbox.retried']).toBe(1);
+    expect(snap2['memoflow.knowledge.outbox.succeeded']).toBe(1);
+    expect(snap2['memoflow.knowledge.worker.completed']).toBe(1);
 
     await runtime.close();
   });

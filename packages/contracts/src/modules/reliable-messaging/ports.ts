@@ -8,6 +8,7 @@ import {
 import { IsoDatetimeSchema, type LeaseClaim } from './lease';
 import type { ProjectionOperation } from './projection';
 import { ProjectionOperationSchema, SourceRevisionSchema } from './projection';
+import type { OperationTimelineEntry } from '../operations/timeline-entry';
 
 /**
  * ==========================================
@@ -122,6 +123,8 @@ export interface ReminderReliableOperationPort {
   recordDeliveryIntent(receipt: BusinessOperationReceipt): Promise<BusinessOperationReceipt>;
   /** 查询指定 identity 的死信 Reminder occurrences (输出必须过 BusinessOperationReceiptSchema.parse) */
   queryDeadLetters(identityId: string): Promise<BusinessOperationReceipt[]>;
+  /** W7: 按 identity 查询 operation timeline (输出必须过 OperationTimelineEntrySchema.parse) */
+  queryOperationTimeline(identityId: string): Promise<OperationTimelineEntry[]>;
   /** 人工/运维 重发死信 Reminder occurrence (输出必须过 BusinessOperationReceiptSchema.parse) */
   replayDeadLetter(input: ReminderReplayDeadLetterInput): Promise<BusinessOperationReceipt>;
 }

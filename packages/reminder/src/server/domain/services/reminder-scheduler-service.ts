@@ -27,6 +27,7 @@ import {
   type LeaseClaim,
   type ReminderHeartbeatInput,
   type ReminderReliableOperationPort,
+  type ReminderReplayDeadLetterInput,
 } from '@memoflow/contracts/reliable-messaging';
 import { createLogger } from '@memoflow/utils/logger';
 import { ReminderMetricsCollector, globalReminderMetrics } from './reminder-metrics-service';
@@ -185,6 +186,7 @@ export class ReminderSchedulerService {
             };
           }
 
+          this.metricsCollector.recordPersisted();
           this.metricsCollector.recordClaimed();
           this.metricsCollector.recordDueLatency(Date.now() - triggerTime);
 
@@ -243,6 +245,7 @@ export class ReminderSchedulerService {
             });
 
             if (receipt.status === 'succeeded') {
+              this.metricsCollector.recordSucceeded();
               return {
                 ok: true,
                 result: TriggerResult.Success,
@@ -297,6 +300,16 @@ export class ReminderSchedulerService {
       duration: Date.now() - startTime
     });
 
+    if (successCount > 0) {
+      this.metricsCollector.recordWorkerOutcome('completed');
+    }
+    if (failedCount > 0) {
+      this.metricsCollector.recordWorkerOutcome('failed');
+    }
+    if (skippedCount > 0) {
+      this.metricsCollector.recordWorkerOutcome('skipped');
+    }
+
     return {
       successCount,
       failedCount,
@@ -323,7 +336,7 @@ export class ReminderSchedulerService {
     const isDeadLetter = attempt >= maxRetries;
     const status: BusinessOperationStatus = isDeadLetter ? 'dead_letter' : 'retryable';
 
-    this.metricsCollector.recordFailed();
+    // W7 互斥语义：失败分叉为 retryable/dead_letter，不再累计终态 outbox.failed
     if (isDeadLetter) {
       this.metricsCollector.recordDeadLetter();
     } else {
@@ -395,7 +408,7 @@ export class ReminderSchedulerService {
    * 人工/运维 重发死信 Reminder occurrence
    */
   async replayDeadLetter(
-    input: import('@memoflow/contracts/reliable-messaging').ReminderReplayDeadLetterInput,
+    input: ReminderReplayDeadLetterInput,
   ): Promise<BusinessOperationReceipt> {
     return this.reliablePort.replayDeadLetter(input);
   }

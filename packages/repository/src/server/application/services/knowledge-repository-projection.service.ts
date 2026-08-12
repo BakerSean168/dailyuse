@@ -111,6 +111,7 @@ export interface KnowledgeRepositoryProjectionServiceOptions {
   leaseRepository?: IKnowledgeRepositoryLeaseRepository;
   leaseTtlMs?: number;
   leaseRenewalIntervalMs?: number;
+  metrics?: import('@memoflow/patterns/operations').UnifiedOperationMetricsRecorder;
 }
 
 export interface KnowledgeWriteRequestReplayResponse {
@@ -579,6 +580,10 @@ export class KnowledgeRepositoryProjectionService {
         message: 'Knowledge repository connection was not found',
       });
     }
+    // P1-5：对已 Failed 的 write request 再次 replay 是一次 retry（不得笼统计为 failed）。
+    if (writeRequest.projectionStatus === 'Failed') {
+      this.options.metrics?.recordOutbox('knowledge', 'retried');
+    }
     const outcome = await this.leaseCoordinator.execute(
       knowledgeRepositoryConnectionLeaseKey(connection.id),
       async (guard) =>
@@ -592,6 +597,8 @@ export class KnowledgeRepositoryProjectionService {
         message: 'Knowledge repository is processing another write or projection',
       });
     }
+    // P1-5：replay 取得连接级 lease 即 claim 成功。
+    this.options.metrics?.recordOutbox('knowledge', 'claimed');
     return outcome.value!;
   }
 
@@ -707,6 +714,8 @@ export class KnowledgeRepositoryProjectionService {
         writeRequest.id,
         this.now(),
       );
+      this.options.metrics?.recordOutbox('knowledge', 'succeeded');
+      this.options.metrics?.recordWorker('knowledge', 'completed');
       return ok({
         writeRequestId: writeRequest.id,
         commitSha,
@@ -722,6 +731,8 @@ export class KnowledgeRepositoryProjectionService {
         error instanceof Error ? error.message : 'Knowledge write request projection replay failed',
         this.now(),
       );
+      this.options.metrics?.recordOutbox('knowledge', 'failed');
+      this.options.metrics?.recordWorker('knowledge', 'failed');
       return fail({
         code: 'SERVICE_UNAVAILABLE',
         message: 'Knowledge write request projection replay failed',
