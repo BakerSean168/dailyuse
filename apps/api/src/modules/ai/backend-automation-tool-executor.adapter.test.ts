@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   createGoal: vi.fn(),
   createTaskTemplate: vi.fn(),
   createReminderTemplate: vi.fn(),
+  createReminderPrismaModule: vi.fn(),
   listRelevantNotes: vi.fn(),
   buildContext: vi.fn(),
 }));
@@ -32,12 +33,11 @@ vi.mock('@memoflow/task', () => ({
   },
 }));
 
+// Historical W4-baseline note: this test hoists the module mock so the adapter test
+// never statically imports the reminder package (keeps the api project free of a
+// lazy-load boundary violation); W5 does not refactor the test semantics.
 vi.mock('@memoflow/reminder', () => ({
-  createReminderPrismaModule: vi.fn(() => ({
-    api: {
-      createTemplate: mocks.createReminderTemplate,
-    },
-  })),
+  createReminderPrismaModule: mocks.createReminderPrismaModule,
 }));
 
 vi.mock('./repository-knowledge-source.adapter', () => ({
@@ -115,6 +115,11 @@ function createExecutionInput(): GoalAutomationExecutionInput {
 describe('BackendAutomationToolExecutorAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.createReminderPrismaModule.mockImplementation(() => ({
+      api: {
+        createTemplate: mocks.createReminderTemplate,
+      },
+    }));
     mocks.createGoal.mockResolvedValue(
       ok({
         goalId: 'goal-1',
@@ -264,15 +269,19 @@ describe('BackendAutomationToolExecutorAdapter', () => {
 
   it('closureChecker blocks when account closure operation is requested or revoking or closing', async () => {
     let passedClosureChecker: ((identityId: string) => Promise<boolean>) | undefined;
-    const { createReminderPrismaModule } = await import('@memoflow/reminder');
-    vi.mocked(createReminderPrismaModule).mockImplementationOnce((_db, options: any) => {
-      passedClosureChecker = options?.closureChecker;
-      return {
-        api: {
-          createTemplate: mocks.createReminderTemplate,
-        },
-      } as any;
-    });
+    mocks.createReminderPrismaModule.mockImplementationOnce(
+      (
+        _db: unknown,
+        options: { closureChecker?: (identityId: string) => Promise<boolean> },
+      ) => {
+        passedClosureChecker = options?.closureChecker;
+        return {
+          api: {
+            createTemplate: mocks.createReminderTemplate,
+          },
+        };
+      },
+    );
 
     const mockDb = {
       account: {
@@ -281,9 +290,9 @@ describe('BackendAutomationToolExecutorAdapter', () => {
       accountClosureOperation: {
         findFirst: vi.fn().mockResolvedValue({ id: 'op-1', phase: 'requested' }),
       },
-    };
+    } as unknown as ConstructorParameters<typeof BackendAutomationToolExecutorAdapter>[0];
 
-    new BackendAutomationToolExecutorAdapter(mockDb as any, 'storage');
+    new BackendAutomationToolExecutorAdapter(mockDb, 'storage');
     expect(passedClosureChecker).toBeDefined();
 
     const isBlocked = await passedClosureChecker!('identity-closing');

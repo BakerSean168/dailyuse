@@ -53,6 +53,66 @@ class InMemoryScheduleRepository implements IScheduleRepository {
       })
       .sort((left, right) => left.startTime - right.startTime);
   }
+  private readonly conflictProjections = new Map<
+    string,
+    { hasConflict: boolean; conflictingEntries: string[] | null }
+  >();
+
+  async updateConflictProjection(
+    identityId: string,
+    id: string,
+    hasConflict: boolean,
+    conflictingEntries: string[] | null,
+    _sourceRevision: number,
+  ): Promise<void> {
+    const s = this.schedules.get(id);
+    if (s && s.identityId === identityId) {
+      this.conflictProjections.set(id, { hasConflict, conflictingEntries });
+      this.schedules.set(
+        id,
+        CalendarEntry.load({
+          id: s.id,
+          identityId: s.identityId,
+          title: s.title,
+          description: s.description,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          duration: s.duration,
+          hasConflict,
+          conflictingEntries,
+          priority: s.priority,
+          location: s.location,
+          attendees: s.attendees,
+          version: s.version,
+          createdAt: s.createdAt,
+          updatedAt: s.updatedAt,
+        }),
+      );
+    }
+  }
+
+  async createRebuildOutbox(_item: {
+    identityId: string;
+    scheduleId?: string;
+    startTime: number;
+    endTime: number;
+    sourceRevision: number;
+    idempotencyKey?: string;
+  }): Promise<void> {
+    return undefined;
+  }
+
+  async fetchPendingRebuildOutbox(): Promise<unknown[]> {
+    return [];
+  }
+
+  async claimRebuildOutboxItems(): Promise<unknown[]> {
+    return [];
+  }
+
+  async markRebuildOutboxProcessed(_id: string): Promise<void> {
+    return undefined;
+  }
 
   async withTransaction<T>(fn: (repo: IScheduleRepository) => Promise<T>): Promise<T> {
     return fn(this);
@@ -139,6 +199,7 @@ describe('Schedule services', () => {
       location: 'Room B',
       priority: 4,
       attendees: ['a@example.com', 'b@example.com'],
+      expectedVersion: first.version,
     });
 
     const refreshedSecond = await repository.findByIdForIdentity(identityId, second.id);
@@ -170,7 +231,7 @@ describe('Schedule services', () => {
       endTime: hour(10.5),
     });
 
-    await service.deleteSchedule(first.id, identityId);
+    await service.deleteSchedule(first.id, identityId, first.version);
 
     const deleted = await repository.findByIdForIdentity(identityId, first.id);
     const refreshedSecond = await repository.findByIdForIdentity(identityId, second.id);
@@ -195,9 +256,9 @@ describe('Schedule services', () => {
 
     await expect(service.getSchedule(created.id, otherId)).resolves.toBeNull();
     await expect(
-      service.updateSchedule(created.id, otherId, { title: 'Hijacked' }),
+      service.updateSchedule(created.id, otherId, { title: 'Hijacked', expectedVersion: 1 }),
     ).rejects.toMatchObject({ code: 'NOT_FOUND' });
-    await expect(service.deleteSchedule(created.id, otherId)).rejects.toMatchObject({
+    await expect(service.deleteSchedule(created.id, otherId, 1)).rejects.toMatchObject({
       code: 'NOT_FOUND',
     });
 

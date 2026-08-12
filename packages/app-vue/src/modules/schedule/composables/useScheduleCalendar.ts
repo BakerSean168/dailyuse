@@ -58,10 +58,15 @@ export function useScheduleCalendar(ctx: ScheduleContext) {
     }
   }
 
-  async function deleteCalendarEntry(id: string) {
+  async function deleteCalendarEntry(id: string, expectedVersion?: number) {
     store.setError(null);
     try {
-      const result = await service.deleteSchedule(id);
+      const entry = store.calendarEntries.find((e) => e.id === id);
+      const version = expectedVersion ?? entry?.version;
+      if (version === undefined || version === null) {
+        throw new Error('Cannot delete schedule entry without a known current version');
+      }
+      const result = await service.deleteSchedule(id, version);
       if (result.ok) {
         store.setCalendarEntries(store.calendarEntries.filter((e) => e.id !== id));
         return true;

@@ -44,7 +44,13 @@ import type {
 import { ScheduleEventApplicationService } from '../application/services/schedule-event-application-service';
 import { ScheduleConflictDetectionService } from '../application/services/schedule-conflict-detection-service';
 import { ScheduleConflictResolutionService } from '../application/services/schedule-conflict-resolution-service';
+import { ScheduleRebuildWorkerService, ScheduleRebuildWorkerRuntime } from '../application/services/schedule-rebuild-worker-service';
+import { ScheduleDomainEventPublisherService, ScheduleDomainEventPublisherRuntime } from '../application/services/schedule-domain-event-publisher';
+import { ScheduleEventDeliveryLogConsumer } from './consumers/schedule-event-delivery-log.consumer';
+import { ScheduleLeaseCoordinator } from './lease/schedule-lease-coordinator';
 import { toResultErrorException } from '@memoflow/contracts/result';
+import { createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import type { RetryPolicyDTO, ScheduleConfigDTO } from '@memoflow/contracts/schedule';
 import type {
   CreateScheduleRequest,
@@ -72,6 +78,13 @@ export interface ScheduleModuleDependencies {
   readonly scheduleRepository: IScheduleRepository;
   readonly scheduleExecutionRepository: IScheduleExecutionRepository;
   readonly scheduleTaskRepository: IScheduleTaskRepository;
+  readonly leaseCoordinator?: import('./lease/schedule-lease-coordinator').ScheduleLeaseCoordinator;
+  readonly domainEventPublisher?: ScheduleDomainEventPublisherService;
+  /**
+   * P1-1 production consumer：可靠、幂等消费 schedule domain events。
+   * 提供时作为 module-owned runtime 随 start()/dispose() 启停。
+   */
+  readonly eventDeliveryLogConsumer?: ScheduleEventDeliveryLogConsumer;
   readonly runtimeContributions?: ScheduleRuntimeContributionsInput;
 }
 
@@ -131,6 +144,7 @@ export interface ScheduleModuleInstance {
   readonly useCases: ScheduleModuleUseCases;
   readonly api: ScheduleApplicationPort;
   readonly eventApi: ScheduleEventApplicationPort;
+  readonly eventDeliveryLogConsumer?: ScheduleEventDeliveryLogConsumer;
   start(): Promise<void>;
   dispose(): Promise<void>;
 }
@@ -157,6 +171,7 @@ function toUpdateSchedulePayload(data: UpdateScheduleRequest) {
     location: data.location,
     priority: data.priority,
     attendees: data.attendees,
+    expectedVersion: data.expectedVersion,
   };
 }
 
@@ -273,7 +288,24 @@ export function createScheduleModule(
   dependencies: ScheduleModuleDependencies,
 ): ScheduleModuleInstance {
   const { scheduleRepository, scheduleExecutionRepository, scheduleTaskRepository } = dependencies;
-  const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
+  const leaseCoordinator = dependencies.leaseCoordinator ?? new ScheduleLeaseCoordinator(null);
+  const workerService = new ScheduleRebuildWorkerService(scheduleRepository, leaseCoordinator);
+  const workerRuntime = new ScheduleRebuildWorkerRuntime(workerService);
+  const domainEventPublisher =
+    dependencies.domainEventPublisher ??
+    new ScheduleDomainEventPublisherService(
+      scheduleRepository,
+      leaseCoordinator,
+      createEventBusAdapter(eventBus),
+    );
+  const publisherRuntime = new ScheduleDomainEventPublisherRuntime(domainEventPublisher);
+  const eventDeliveryLogConsumer = dependencies.eventDeliveryLogConsumer;
+  const runtimeContributions = [
+    workerRuntime,
+    publisherRuntime,
+    ...(eventDeliveryLogConsumer ? [eventDeliveryLogConsumer] : []),
+    ...normalizeRuntimeContributions(dependencies.runtimeContributions),
+  ];
   const useCases = createScheduleUseCases(dependencies);
   let started = false;
   const startedRuntimes: ScheduleModuleRuntimeContribution[] = [];
@@ -376,9 +408,9 @@ export function createScheduleModule(
           ),
         'Failed to update schedule event',
       ),
-    deleteEvent: async (id, ctx) =>
+    deleteEvent: async (id, ctx, expectedVersion: number) =>
       resultify(async () => {
-        await useCases.scheduleEventService.deleteSchedule(id, ctx.identityId);
+        await useCases.scheduleEventService.deleteSchedule(id, ctx.identityId, expectedVersion);
         return null;
       }, 'Failed to delete schedule event'),
     getConflicts: async (id, ctx) =>
@@ -407,6 +439,7 @@ export function createScheduleModule(
     useCases,
     api,
     eventApi,
+    eventDeliveryLogConsumer,
     async start(): Promise<void> {
       if (started) {
         return;

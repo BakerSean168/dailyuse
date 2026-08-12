@@ -16,7 +16,8 @@ describe('createEventBusAdapter dual retired (residual 1031)', () => {
   it('owns sole createEventBusAdapter helper body', () => {
     expect(sole).toContain('Residual 1031');
     expect(sole).toMatch(/export function createEventBusAdapter\b/);
-    expect(sole).toContain('sender.send(event.eventType, event.payload)');
+    expect(sole).toContain('sender.send(event.eventType, event.payload, {');
+    expect(sole).toContain('idempotencyKey: event.idempotencyKey,');
     expect(sole).toContain('sender.send(eventType, payload)');
   });
 

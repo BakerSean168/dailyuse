@@ -51,6 +51,7 @@ export function createScheduleStoryEvent(
     priority: 2,
     location: undefined,
     attendees: undefined,
+    version: 1,
     createdAt: now,
     updatedAt: now,
     ...restOverrides,

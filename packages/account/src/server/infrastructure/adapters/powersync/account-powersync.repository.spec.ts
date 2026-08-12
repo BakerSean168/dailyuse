@@ -40,7 +40,16 @@ describe('PowerSyncAccountRepository', () => {
     expect(tx.execute).toHaveBeenCalledOnce();
     expect(defaultDb.getOptional).not.toHaveBeenCalled();
     expect(defaultDb.execute).not.toHaveBeenCalled();
-    expect(sendSpy).toHaveBeenCalledWith('account:created', expect.any(Object));
+    // W5 metadata contract: the reliable delivery adapter now passes the envelope
+    // metadata (aggregateId / occurredAt / optional idempotencyKey) as the 3rd arg.
+    expect(sendSpy).toHaveBeenCalledWith(
+      'account:created',
+      expect.any(Object),
+      expect.objectContaining({
+        aggregateId: expect.any(String),
+        occurredAt: expect.any(Date),
+      }),
+    );
     expect(account.domainEvents).toHaveLength(0);
   });
 });

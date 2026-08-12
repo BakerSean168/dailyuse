@@ -402,6 +402,33 @@ export type ScheduleStatistic = $Result.DefaultSelection<Prisma.$ScheduleStatist
  */
 export type ScheduleLease = $Result.DefaultSelection<Prisma.$ScheduleLeasePayload>
 /**
+ * Model ScheduleRebuildOutbox
+ * 
+ */
+export type ScheduleRebuildOutbox = $Result.DefaultSelection<Prisma.$ScheduleRebuildOutboxPayload>
+/**
+ * Model ScheduleDomainEventOutbox
+ * 
+ */
+export type ScheduleDomainEventOutbox = $Result.DefaultSelection<Prisma.$ScheduleDomainEventOutboxPayload>
+/**
+ * Model ScheduleEventConsumerReceipt
+ * Durable consumer receipt for at-least-once domain-event delivery.
+ * Consumers with side effects must record a receipt keyed by the envelope's
+ * idempotencyKey inside their own durable transaction; the unique constraint
+ * makes the dedup atomic under concurrency.
+ */
+export type ScheduleEventConsumerReceipt = $Result.DefaultSelection<Prisma.$ScheduleEventConsumerReceiptPayload>
+/**
+ * Model ScheduleEventDeliveryLog
+ * Independent durable business side effect written by the schedule
+ * delivery-log consumer (P1-1). The consumer commits the receipt
+ * (ScheduleEventConsumerReceipt) and exactly one delivery-log row in the same
+ * transaction; both carry their own unique idempotency_key so concurrent
+ * duplicate delivery converges to exactly one of each.
+ */
+export type ScheduleEventDeliveryLog = $Result.DefaultSelection<Prisma.$ScheduleEventDeliveryLogPayload>
+/**
  * Model UserSetting
  * 
  */
@@ -1328,6 +1355,46 @@ export class PrismaClient<
   get scheduleLease(): Prisma.ScheduleLeaseDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.scheduleRebuildOutbox`: Exposes CRUD operations for the **ScheduleRebuildOutbox** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ScheduleRebuildOutboxes
+    * const scheduleRebuildOutboxes = await prisma.scheduleRebuildOutbox.findMany()
+    * ```
+    */
+  get scheduleRebuildOutbox(): Prisma.ScheduleRebuildOutboxDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.scheduleDomainEventOutbox`: Exposes CRUD operations for the **ScheduleDomainEventOutbox** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ScheduleDomainEventOutboxes
+    * const scheduleDomainEventOutboxes = await prisma.scheduleDomainEventOutbox.findMany()
+    * ```
+    */
+  get scheduleDomainEventOutbox(): Prisma.ScheduleDomainEventOutboxDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.scheduleEventConsumerReceipt`: Exposes CRUD operations for the **ScheduleEventConsumerReceipt** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ScheduleEventConsumerReceipts
+    * const scheduleEventConsumerReceipts = await prisma.scheduleEventConsumerReceipt.findMany()
+    * ```
+    */
+  get scheduleEventConsumerReceipt(): Prisma.ScheduleEventConsumerReceiptDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.scheduleEventDeliveryLog`: Exposes CRUD operations for the **ScheduleEventDeliveryLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ScheduleEventDeliveryLogs
+    * const scheduleEventDeliveryLogs = await prisma.scheduleEventDeliveryLog.findMany()
+    * ```
+    */
+  get scheduleEventDeliveryLog(): Prisma.ScheduleEventDeliveryLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.userSetting`: Exposes CRUD operations for the **UserSetting** model.
     * Example usage:
     * ```ts
@@ -1935,6 +2002,10 @@ export namespace Prisma {
     ScheduleExecution: 'ScheduleExecution',
     ScheduleStatistic: 'ScheduleStatistic',
     ScheduleLease: 'ScheduleLease',
+    ScheduleRebuildOutbox: 'ScheduleRebuildOutbox',
+    ScheduleDomainEventOutbox: 'ScheduleDomainEventOutbox',
+    ScheduleEventConsumerReceipt: 'ScheduleEventConsumerReceipt',
+    ScheduleEventDeliveryLog: 'ScheduleEventDeliveryLog',
     UserSetting: 'UserSetting',
     TaskFolder: 'TaskFolder',
     TaskTemplate: 'TaskTemplate',
@@ -1960,7 +2031,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "agentRunCheckpoint" | "langGraphCheckpoint" | "langGraphCheckpointWrite" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
+      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "agentRunCheckpoint" | "langGraphCheckpoint" | "langGraphCheckpointWrite" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -7514,6 +7585,302 @@ export namespace Prisma {
           }
         }
       }
+      ScheduleRebuildOutbox: {
+        payload: Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>
+        fields: Prisma.ScheduleRebuildOutboxFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ScheduleRebuildOutboxFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ScheduleRebuildOutboxFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>
+          }
+          findFirst: {
+            args: Prisma.ScheduleRebuildOutboxFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ScheduleRebuildOutboxFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>
+          }
+          findMany: {
+            args: Prisma.ScheduleRebuildOutboxFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>[]
+          }
+          create: {
+            args: Prisma.ScheduleRebuildOutboxCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>
+          }
+          createMany: {
+            args: Prisma.ScheduleRebuildOutboxCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ScheduleRebuildOutboxCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>[]
+          }
+          delete: {
+            args: Prisma.ScheduleRebuildOutboxDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>
+          }
+          update: {
+            args: Prisma.ScheduleRebuildOutboxUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>
+          }
+          deleteMany: {
+            args: Prisma.ScheduleRebuildOutboxDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ScheduleRebuildOutboxUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ScheduleRebuildOutboxUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>[]
+          }
+          upsert: {
+            args: Prisma.ScheduleRebuildOutboxUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleRebuildOutboxPayload>
+          }
+          aggregate: {
+            args: Prisma.ScheduleRebuildOutboxAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateScheduleRebuildOutbox>
+          }
+          groupBy: {
+            args: Prisma.ScheduleRebuildOutboxGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ScheduleRebuildOutboxGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ScheduleRebuildOutboxCountArgs<ExtArgs>
+            result: $Utils.Optional<ScheduleRebuildOutboxCountAggregateOutputType> | number
+          }
+        }
+      }
+      ScheduleDomainEventOutbox: {
+        payload: Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>
+        fields: Prisma.ScheduleDomainEventOutboxFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ScheduleDomainEventOutboxFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ScheduleDomainEventOutboxFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>
+          }
+          findFirst: {
+            args: Prisma.ScheduleDomainEventOutboxFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ScheduleDomainEventOutboxFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>
+          }
+          findMany: {
+            args: Prisma.ScheduleDomainEventOutboxFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>[]
+          }
+          create: {
+            args: Prisma.ScheduleDomainEventOutboxCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>
+          }
+          createMany: {
+            args: Prisma.ScheduleDomainEventOutboxCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ScheduleDomainEventOutboxCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>[]
+          }
+          delete: {
+            args: Prisma.ScheduleDomainEventOutboxDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>
+          }
+          update: {
+            args: Prisma.ScheduleDomainEventOutboxUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>
+          }
+          deleteMany: {
+            args: Prisma.ScheduleDomainEventOutboxDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ScheduleDomainEventOutboxUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ScheduleDomainEventOutboxUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>[]
+          }
+          upsert: {
+            args: Prisma.ScheduleDomainEventOutboxUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleDomainEventOutboxPayload>
+          }
+          aggregate: {
+            args: Prisma.ScheduleDomainEventOutboxAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateScheduleDomainEventOutbox>
+          }
+          groupBy: {
+            args: Prisma.ScheduleDomainEventOutboxGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ScheduleDomainEventOutboxGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ScheduleDomainEventOutboxCountArgs<ExtArgs>
+            result: $Utils.Optional<ScheduleDomainEventOutboxCountAggregateOutputType> | number
+          }
+        }
+      }
+      ScheduleEventConsumerReceipt: {
+        payload: Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>
+        fields: Prisma.ScheduleEventConsumerReceiptFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ScheduleEventConsumerReceiptFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ScheduleEventConsumerReceiptFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>
+          }
+          findFirst: {
+            args: Prisma.ScheduleEventConsumerReceiptFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ScheduleEventConsumerReceiptFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>
+          }
+          findMany: {
+            args: Prisma.ScheduleEventConsumerReceiptFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>[]
+          }
+          create: {
+            args: Prisma.ScheduleEventConsumerReceiptCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>
+          }
+          createMany: {
+            args: Prisma.ScheduleEventConsumerReceiptCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ScheduleEventConsumerReceiptCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>[]
+          }
+          delete: {
+            args: Prisma.ScheduleEventConsumerReceiptDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>
+          }
+          update: {
+            args: Prisma.ScheduleEventConsumerReceiptUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>
+          }
+          deleteMany: {
+            args: Prisma.ScheduleEventConsumerReceiptDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ScheduleEventConsumerReceiptUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ScheduleEventConsumerReceiptUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>[]
+          }
+          upsert: {
+            args: Prisma.ScheduleEventConsumerReceiptUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventConsumerReceiptPayload>
+          }
+          aggregate: {
+            args: Prisma.ScheduleEventConsumerReceiptAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateScheduleEventConsumerReceipt>
+          }
+          groupBy: {
+            args: Prisma.ScheduleEventConsumerReceiptGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ScheduleEventConsumerReceiptGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ScheduleEventConsumerReceiptCountArgs<ExtArgs>
+            result: $Utils.Optional<ScheduleEventConsumerReceiptCountAggregateOutputType> | number
+          }
+        }
+      }
+      ScheduleEventDeliveryLog: {
+        payload: Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>
+        fields: Prisma.ScheduleEventDeliveryLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ScheduleEventDeliveryLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ScheduleEventDeliveryLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>
+          }
+          findFirst: {
+            args: Prisma.ScheduleEventDeliveryLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ScheduleEventDeliveryLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>
+          }
+          findMany: {
+            args: Prisma.ScheduleEventDeliveryLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>[]
+          }
+          create: {
+            args: Prisma.ScheduleEventDeliveryLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>
+          }
+          createMany: {
+            args: Prisma.ScheduleEventDeliveryLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ScheduleEventDeliveryLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>[]
+          }
+          delete: {
+            args: Prisma.ScheduleEventDeliveryLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>
+          }
+          update: {
+            args: Prisma.ScheduleEventDeliveryLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.ScheduleEventDeliveryLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ScheduleEventDeliveryLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ScheduleEventDeliveryLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.ScheduleEventDeliveryLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduleEventDeliveryLogPayload>
+          }
+          aggregate: {
+            args: Prisma.ScheduleEventDeliveryLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateScheduleEventDeliveryLog>
+          }
+          groupBy: {
+            args: Prisma.ScheduleEventDeliveryLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ScheduleEventDeliveryLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ScheduleEventDeliveryLogCountArgs<ExtArgs>
+            result: $Utils.Optional<ScheduleEventDeliveryLogCountAggregateOutputType> | number
+          }
+        }
+      }
       UserSetting: {
         payload: Prisma.$UserSettingPayload<ExtArgs>
         fields: Prisma.UserSettingFieldRefs
@@ -8437,6 +8804,10 @@ export namespace Prisma {
     scheduleExecution?: ScheduleExecutionOmit
     scheduleStatistic?: ScheduleStatisticOmit
     scheduleLease?: ScheduleLeaseOmit
+    scheduleRebuildOutbox?: ScheduleRebuildOutboxOmit
+    scheduleDomainEventOutbox?: ScheduleDomainEventOutboxOmit
+    scheduleEventConsumerReceipt?: ScheduleEventConsumerReceiptOmit
+    scheduleEventDeliveryLog?: ScheduleEventDeliveryLogOmit
     userSetting?: UserSettingOmit
     taskFolder?: TaskFolderOmit
     taskTemplate?: TaskTemplateOmit
@@ -95666,11 +96037,13 @@ export namespace Prisma {
   export type ScheduleAvgAggregateOutputType = {
     duration: number | null
     priority: number | null
+    version: number | null
   }
 
   export type ScheduleSumAggregateOutputType = {
     duration: number | null
     priority: number | null
+    version: number | null
   }
 
   export type ScheduleMinAggregateOutputType = {
@@ -95687,6 +96060,7 @@ export namespace Prisma {
     location: string | null
     attendees: string | null
     createdAt: Date | null
+    version: number | null
     updatedAt: Date | null
   }
 
@@ -95704,6 +96078,7 @@ export namespace Prisma {
     location: string | null
     attendees: string | null
     createdAt: Date | null
+    version: number | null
     updatedAt: Date | null
   }
 
@@ -95721,6 +96096,7 @@ export namespace Prisma {
     location: number
     attendees: number
     createdAt: number
+    version: number
     updatedAt: number
     _all: number
   }
@@ -95729,11 +96105,13 @@ export namespace Prisma {
   export type ScheduleAvgAggregateInputType = {
     duration?: true
     priority?: true
+    version?: true
   }
 
   export type ScheduleSumAggregateInputType = {
     duration?: true
     priority?: true
+    version?: true
   }
 
   export type ScheduleMinAggregateInputType = {
@@ -95750,6 +96128,7 @@ export namespace Prisma {
     location?: true
     attendees?: true
     createdAt?: true
+    version?: true
     updatedAt?: true
   }
 
@@ -95767,6 +96146,7 @@ export namespace Prisma {
     location?: true
     attendees?: true
     createdAt?: true
+    version?: true
     updatedAt?: true
   }
 
@@ -95784,6 +96164,7 @@ export namespace Prisma {
     location?: true
     attendees?: true
     createdAt?: true
+    version?: true
     updatedAt?: true
     _all?: true
   }
@@ -95888,6 +96269,7 @@ export namespace Prisma {
     location: string | null
     attendees: string | null
     createdAt: Date
+    version: number
     updatedAt: Date
     _count: ScheduleCountAggregateOutputType | null
     _avg: ScheduleAvgAggregateOutputType | null
@@ -95924,6 +96306,7 @@ export namespace Prisma {
     location?: boolean
     attendees?: boolean
     createdAt?: boolean
+    version?: boolean
     updatedAt?: boolean
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["schedule"]>
@@ -95942,6 +96325,7 @@ export namespace Prisma {
     location?: boolean
     attendees?: boolean
     createdAt?: boolean
+    version?: boolean
     updatedAt?: boolean
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["schedule"]>
@@ -95960,6 +96344,7 @@ export namespace Prisma {
     location?: boolean
     attendees?: boolean
     createdAt?: boolean
+    version?: boolean
     updatedAt?: boolean
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["schedule"]>
@@ -95978,10 +96363,11 @@ export namespace Prisma {
     location?: boolean
     attendees?: boolean
     createdAt?: boolean
+    version?: boolean
     updatedAt?: boolean
   }
 
-  export type ScheduleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "title" | "description" | "startTime" | "endTime" | "duration" | "hasConflict" | "conflictingSchedules" | "priority" | "location" | "attendees" | "createdAt" | "updatedAt", ExtArgs["result"]["schedule"]>
+  export type ScheduleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "title" | "description" | "startTime" | "endTime" | "duration" | "hasConflict" | "conflictingSchedules" | "priority" | "location" | "attendees" | "createdAt" | "version" | "updatedAt", ExtArgs["result"]["schedule"]>
   export type ScheduleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }
@@ -96011,6 +96397,7 @@ export namespace Prisma {
       location: string | null
       attendees: string | null
       createdAt: Date
+      version: number
       updatedAt: Date
     }, ExtArgs["result"]["schedule"]>
     composites: {}
@@ -96449,6 +96836,7 @@ export namespace Prisma {
     readonly location: FieldRef<"Schedule", 'String'>
     readonly attendees: FieldRef<"Schedule", 'String'>
     readonly createdAt: FieldRef<"Schedule", 'DateTime'>
+    readonly version: FieldRef<"Schedule", 'Int'>
     readonly updatedAt: FieldRef<"Schedule", 'DateTime'>
   }
     
@@ -101902,6 +102290,4372 @@ export namespace Prisma {
      * Omit specific fields from the ScheduleLease
      */
     omit?: ScheduleLeaseOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ScheduleRebuildOutbox
+   */
+
+  export type AggregateScheduleRebuildOutbox = {
+    _count: ScheduleRebuildOutboxCountAggregateOutputType | null
+    _avg: ScheduleRebuildOutboxAvgAggregateOutputType | null
+    _sum: ScheduleRebuildOutboxSumAggregateOutputType | null
+    _min: ScheduleRebuildOutboxMinAggregateOutputType | null
+    _max: ScheduleRebuildOutboxMaxAggregateOutputType | null
+  }
+
+  export type ScheduleRebuildOutboxAvgAggregateOutputType = {
+    sourceRevision: number | null
+    attempts: number | null
+  }
+
+  export type ScheduleRebuildOutboxSumAggregateOutputType = {
+    sourceRevision: number | null
+    attempts: number | null
+  }
+
+  export type ScheduleRebuildOutboxMinAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    scheduleId: string | null
+    startTime: Date | null
+    endTime: Date | null
+    sourceRevision: number | null
+    idempotencyKey: string | null
+    status: string | null
+    attempts: number | null
+    claimToken: string | null
+    claimedAt: Date | null
+    nextAttemptAt: Date | null
+    lastError: string | null
+    processedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ScheduleRebuildOutboxMaxAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    scheduleId: string | null
+    startTime: Date | null
+    endTime: Date | null
+    sourceRevision: number | null
+    idempotencyKey: string | null
+    status: string | null
+    attempts: number | null
+    claimToken: string | null
+    claimedAt: Date | null
+    nextAttemptAt: Date | null
+    lastError: string | null
+    processedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ScheduleRebuildOutboxCountAggregateOutputType = {
+    id: number
+    identityId: number
+    scheduleId: number
+    startTime: number
+    endTime: number
+    sourceRevision: number
+    idempotencyKey: number
+    status: number
+    attempts: number
+    claimToken: number
+    claimedAt: number
+    nextAttemptAt: number
+    lastError: number
+    processedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ScheduleRebuildOutboxAvgAggregateInputType = {
+    sourceRevision?: true
+    attempts?: true
+  }
+
+  export type ScheduleRebuildOutboxSumAggregateInputType = {
+    sourceRevision?: true
+    attempts?: true
+  }
+
+  export type ScheduleRebuildOutboxMinAggregateInputType = {
+    id?: true
+    identityId?: true
+    scheduleId?: true
+    startTime?: true
+    endTime?: true
+    sourceRevision?: true
+    idempotencyKey?: true
+    status?: true
+    attempts?: true
+    claimToken?: true
+    claimedAt?: true
+    nextAttemptAt?: true
+    lastError?: true
+    processedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ScheduleRebuildOutboxMaxAggregateInputType = {
+    id?: true
+    identityId?: true
+    scheduleId?: true
+    startTime?: true
+    endTime?: true
+    sourceRevision?: true
+    idempotencyKey?: true
+    status?: true
+    attempts?: true
+    claimToken?: true
+    claimedAt?: true
+    nextAttemptAt?: true
+    lastError?: true
+    processedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ScheduleRebuildOutboxCountAggregateInputType = {
+    id?: true
+    identityId?: true
+    scheduleId?: true
+    startTime?: true
+    endTime?: true
+    sourceRevision?: true
+    idempotencyKey?: true
+    status?: true
+    attempts?: true
+    claimToken?: true
+    claimedAt?: true
+    nextAttemptAt?: true
+    lastError?: true
+    processedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ScheduleRebuildOutboxAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduleRebuildOutbox to aggregate.
+     */
+    where?: ScheduleRebuildOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleRebuildOutboxes to fetch.
+     */
+    orderBy?: ScheduleRebuildOutboxOrderByWithRelationInput | ScheduleRebuildOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ScheduleRebuildOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleRebuildOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleRebuildOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ScheduleRebuildOutboxes
+    **/
+    _count?: true | ScheduleRebuildOutboxCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ScheduleRebuildOutboxAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ScheduleRebuildOutboxSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ScheduleRebuildOutboxMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ScheduleRebuildOutboxMaxAggregateInputType
+  }
+
+  export type GetScheduleRebuildOutboxAggregateType<T extends ScheduleRebuildOutboxAggregateArgs> = {
+        [P in keyof T & keyof AggregateScheduleRebuildOutbox]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateScheduleRebuildOutbox[P]>
+      : GetScalarType<T[P], AggregateScheduleRebuildOutbox[P]>
+  }
+
+
+
+
+  export type ScheduleRebuildOutboxGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ScheduleRebuildOutboxWhereInput
+    orderBy?: ScheduleRebuildOutboxOrderByWithAggregationInput | ScheduleRebuildOutboxOrderByWithAggregationInput[]
+    by: ScheduleRebuildOutboxScalarFieldEnum[] | ScheduleRebuildOutboxScalarFieldEnum
+    having?: ScheduleRebuildOutboxScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ScheduleRebuildOutboxCountAggregateInputType | true
+    _avg?: ScheduleRebuildOutboxAvgAggregateInputType
+    _sum?: ScheduleRebuildOutboxSumAggregateInputType
+    _min?: ScheduleRebuildOutboxMinAggregateInputType
+    _max?: ScheduleRebuildOutboxMaxAggregateInputType
+  }
+
+  export type ScheduleRebuildOutboxGroupByOutputType = {
+    id: string
+    identityId: string
+    scheduleId: string | null
+    startTime: Date
+    endTime: Date
+    sourceRevision: number
+    idempotencyKey: string | null
+    status: string
+    attempts: number
+    claimToken: string | null
+    claimedAt: Date | null
+    nextAttemptAt: Date | null
+    lastError: string | null
+    processedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ScheduleRebuildOutboxCountAggregateOutputType | null
+    _avg: ScheduleRebuildOutboxAvgAggregateOutputType | null
+    _sum: ScheduleRebuildOutboxSumAggregateOutputType | null
+    _min: ScheduleRebuildOutboxMinAggregateOutputType | null
+    _max: ScheduleRebuildOutboxMaxAggregateOutputType | null
+  }
+
+  type GetScheduleRebuildOutboxGroupByPayload<T extends ScheduleRebuildOutboxGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ScheduleRebuildOutboxGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ScheduleRebuildOutboxGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ScheduleRebuildOutboxGroupByOutputType[P]>
+            : GetScalarType<T[P], ScheduleRebuildOutboxGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ScheduleRebuildOutboxSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    scheduleId?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    sourceRevision?: boolean
+    idempotencyKey?: boolean
+    status?: boolean
+    attempts?: boolean
+    claimToken?: boolean
+    claimedAt?: boolean
+    nextAttemptAt?: boolean
+    lastError?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduleRebuildOutbox"]>
+
+  export type ScheduleRebuildOutboxSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    scheduleId?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    sourceRevision?: boolean
+    idempotencyKey?: boolean
+    status?: boolean
+    attempts?: boolean
+    claimToken?: boolean
+    claimedAt?: boolean
+    nextAttemptAt?: boolean
+    lastError?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduleRebuildOutbox"]>
+
+  export type ScheduleRebuildOutboxSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    scheduleId?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    sourceRevision?: boolean
+    idempotencyKey?: boolean
+    status?: boolean
+    attempts?: boolean
+    claimToken?: boolean
+    claimedAt?: boolean
+    nextAttemptAt?: boolean
+    lastError?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduleRebuildOutbox"]>
+
+  export type ScheduleRebuildOutboxSelectScalar = {
+    id?: boolean
+    identityId?: boolean
+    scheduleId?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    sourceRevision?: boolean
+    idempotencyKey?: boolean
+    status?: boolean
+    attempts?: boolean
+    claimToken?: boolean
+    claimedAt?: boolean
+    nextAttemptAt?: boolean
+    lastError?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ScheduleRebuildOutboxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "scheduleId" | "startTime" | "endTime" | "sourceRevision" | "idempotencyKey" | "status" | "attempts" | "claimToken" | "claimedAt" | "nextAttemptAt" | "lastError" | "processedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["scheduleRebuildOutbox"]>
+
+  export type $ScheduleRebuildOutboxPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ScheduleRebuildOutbox"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      identityId: string
+      scheduleId: string | null
+      startTime: Date
+      endTime: Date
+      sourceRevision: number
+      idempotencyKey: string | null
+      status: string
+      attempts: number
+      claimToken: string | null
+      claimedAt: Date | null
+      nextAttemptAt: Date | null
+      lastError: string | null
+      processedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["scheduleRebuildOutbox"]>
+    composites: {}
+  }
+
+  type ScheduleRebuildOutboxGetPayload<S extends boolean | null | undefined | ScheduleRebuildOutboxDefaultArgs> = $Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload, S>
+
+  type ScheduleRebuildOutboxCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ScheduleRebuildOutboxFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ScheduleRebuildOutboxCountAggregateInputType | true
+    }
+
+  export interface ScheduleRebuildOutboxDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ScheduleRebuildOutbox'], meta: { name: 'ScheduleRebuildOutbox' } }
+    /**
+     * Find zero or one ScheduleRebuildOutbox that matches the filter.
+     * @param {ScheduleRebuildOutboxFindUniqueArgs} args - Arguments to find a ScheduleRebuildOutbox
+     * @example
+     * // Get one ScheduleRebuildOutbox
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ScheduleRebuildOutboxFindUniqueArgs>(args: SelectSubset<T, ScheduleRebuildOutboxFindUniqueArgs<ExtArgs>>): Prisma__ScheduleRebuildOutboxClient<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ScheduleRebuildOutbox that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ScheduleRebuildOutboxFindUniqueOrThrowArgs} args - Arguments to find a ScheduleRebuildOutbox
+     * @example
+     * // Get one ScheduleRebuildOutbox
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ScheduleRebuildOutboxFindUniqueOrThrowArgs>(args: SelectSubset<T, ScheduleRebuildOutboxFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ScheduleRebuildOutboxClient<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduleRebuildOutbox that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleRebuildOutboxFindFirstArgs} args - Arguments to find a ScheduleRebuildOutbox
+     * @example
+     * // Get one ScheduleRebuildOutbox
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ScheduleRebuildOutboxFindFirstArgs>(args?: SelectSubset<T, ScheduleRebuildOutboxFindFirstArgs<ExtArgs>>): Prisma__ScheduleRebuildOutboxClient<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduleRebuildOutbox that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleRebuildOutboxFindFirstOrThrowArgs} args - Arguments to find a ScheduleRebuildOutbox
+     * @example
+     * // Get one ScheduleRebuildOutbox
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ScheduleRebuildOutboxFindFirstOrThrowArgs>(args?: SelectSubset<T, ScheduleRebuildOutboxFindFirstOrThrowArgs<ExtArgs>>): Prisma__ScheduleRebuildOutboxClient<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ScheduleRebuildOutboxes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleRebuildOutboxFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ScheduleRebuildOutboxes
+     * const scheduleRebuildOutboxes = await prisma.scheduleRebuildOutbox.findMany()
+     * 
+     * // Get first 10 ScheduleRebuildOutboxes
+     * const scheduleRebuildOutboxes = await prisma.scheduleRebuildOutbox.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const scheduleRebuildOutboxWithIdOnly = await prisma.scheduleRebuildOutbox.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ScheduleRebuildOutboxFindManyArgs>(args?: SelectSubset<T, ScheduleRebuildOutboxFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ScheduleRebuildOutbox.
+     * @param {ScheduleRebuildOutboxCreateArgs} args - Arguments to create a ScheduleRebuildOutbox.
+     * @example
+     * // Create one ScheduleRebuildOutbox
+     * const ScheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.create({
+     *   data: {
+     *     // ... data to create a ScheduleRebuildOutbox
+     *   }
+     * })
+     * 
+     */
+    create<T extends ScheduleRebuildOutboxCreateArgs>(args: SelectSubset<T, ScheduleRebuildOutboxCreateArgs<ExtArgs>>): Prisma__ScheduleRebuildOutboxClient<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ScheduleRebuildOutboxes.
+     * @param {ScheduleRebuildOutboxCreateManyArgs} args - Arguments to create many ScheduleRebuildOutboxes.
+     * @example
+     * // Create many ScheduleRebuildOutboxes
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ScheduleRebuildOutboxCreateManyArgs>(args?: SelectSubset<T, ScheduleRebuildOutboxCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ScheduleRebuildOutboxes and returns the data saved in the database.
+     * @param {ScheduleRebuildOutboxCreateManyAndReturnArgs} args - Arguments to create many ScheduleRebuildOutboxes.
+     * @example
+     * // Create many ScheduleRebuildOutboxes
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ScheduleRebuildOutboxes and only return the `id`
+     * const scheduleRebuildOutboxWithIdOnly = await prisma.scheduleRebuildOutbox.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ScheduleRebuildOutboxCreateManyAndReturnArgs>(args?: SelectSubset<T, ScheduleRebuildOutboxCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ScheduleRebuildOutbox.
+     * @param {ScheduleRebuildOutboxDeleteArgs} args - Arguments to delete one ScheduleRebuildOutbox.
+     * @example
+     * // Delete one ScheduleRebuildOutbox
+     * const ScheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.delete({
+     *   where: {
+     *     // ... filter to delete one ScheduleRebuildOutbox
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ScheduleRebuildOutboxDeleteArgs>(args: SelectSubset<T, ScheduleRebuildOutboxDeleteArgs<ExtArgs>>): Prisma__ScheduleRebuildOutboxClient<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ScheduleRebuildOutbox.
+     * @param {ScheduleRebuildOutboxUpdateArgs} args - Arguments to update one ScheduleRebuildOutbox.
+     * @example
+     * // Update one ScheduleRebuildOutbox
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ScheduleRebuildOutboxUpdateArgs>(args: SelectSubset<T, ScheduleRebuildOutboxUpdateArgs<ExtArgs>>): Prisma__ScheduleRebuildOutboxClient<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ScheduleRebuildOutboxes.
+     * @param {ScheduleRebuildOutboxDeleteManyArgs} args - Arguments to filter ScheduleRebuildOutboxes to delete.
+     * @example
+     * // Delete a few ScheduleRebuildOutboxes
+     * const { count } = await prisma.scheduleRebuildOutbox.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ScheduleRebuildOutboxDeleteManyArgs>(args?: SelectSubset<T, ScheduleRebuildOutboxDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduleRebuildOutboxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleRebuildOutboxUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ScheduleRebuildOutboxes
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ScheduleRebuildOutboxUpdateManyArgs>(args: SelectSubset<T, ScheduleRebuildOutboxUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduleRebuildOutboxes and returns the data updated in the database.
+     * @param {ScheduleRebuildOutboxUpdateManyAndReturnArgs} args - Arguments to update many ScheduleRebuildOutboxes.
+     * @example
+     * // Update many ScheduleRebuildOutboxes
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ScheduleRebuildOutboxes and only return the `id`
+     * const scheduleRebuildOutboxWithIdOnly = await prisma.scheduleRebuildOutbox.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ScheduleRebuildOutboxUpdateManyAndReturnArgs>(args: SelectSubset<T, ScheduleRebuildOutboxUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ScheduleRebuildOutbox.
+     * @param {ScheduleRebuildOutboxUpsertArgs} args - Arguments to update or create a ScheduleRebuildOutbox.
+     * @example
+     * // Update or create a ScheduleRebuildOutbox
+     * const scheduleRebuildOutbox = await prisma.scheduleRebuildOutbox.upsert({
+     *   create: {
+     *     // ... data to create a ScheduleRebuildOutbox
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ScheduleRebuildOutbox we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ScheduleRebuildOutboxUpsertArgs>(args: SelectSubset<T, ScheduleRebuildOutboxUpsertArgs<ExtArgs>>): Prisma__ScheduleRebuildOutboxClient<$Result.GetResult<Prisma.$ScheduleRebuildOutboxPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ScheduleRebuildOutboxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleRebuildOutboxCountArgs} args - Arguments to filter ScheduleRebuildOutboxes to count.
+     * @example
+     * // Count the number of ScheduleRebuildOutboxes
+     * const count = await prisma.scheduleRebuildOutbox.count({
+     *   where: {
+     *     // ... the filter for the ScheduleRebuildOutboxes we want to count
+     *   }
+     * })
+    **/
+    count<T extends ScheduleRebuildOutboxCountArgs>(
+      args?: Subset<T, ScheduleRebuildOutboxCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ScheduleRebuildOutboxCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ScheduleRebuildOutbox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleRebuildOutboxAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ScheduleRebuildOutboxAggregateArgs>(args: Subset<T, ScheduleRebuildOutboxAggregateArgs>): Prisma.PrismaPromise<GetScheduleRebuildOutboxAggregateType<T>>
+
+    /**
+     * Group by ScheduleRebuildOutbox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleRebuildOutboxGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ScheduleRebuildOutboxGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ScheduleRebuildOutboxGroupByArgs['orderBy'] }
+        : { orderBy?: ScheduleRebuildOutboxGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ScheduleRebuildOutboxGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetScheduleRebuildOutboxGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ScheduleRebuildOutbox model
+   */
+  readonly fields: ScheduleRebuildOutboxFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ScheduleRebuildOutbox.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ScheduleRebuildOutboxClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ScheduleRebuildOutbox model
+   */
+  interface ScheduleRebuildOutboxFieldRefs {
+    readonly id: FieldRef<"ScheduleRebuildOutbox", 'String'>
+    readonly identityId: FieldRef<"ScheduleRebuildOutbox", 'String'>
+    readonly scheduleId: FieldRef<"ScheduleRebuildOutbox", 'String'>
+    readonly startTime: FieldRef<"ScheduleRebuildOutbox", 'DateTime'>
+    readonly endTime: FieldRef<"ScheduleRebuildOutbox", 'DateTime'>
+    readonly sourceRevision: FieldRef<"ScheduleRebuildOutbox", 'Int'>
+    readonly idempotencyKey: FieldRef<"ScheduleRebuildOutbox", 'String'>
+    readonly status: FieldRef<"ScheduleRebuildOutbox", 'String'>
+    readonly attempts: FieldRef<"ScheduleRebuildOutbox", 'Int'>
+    readonly claimToken: FieldRef<"ScheduleRebuildOutbox", 'String'>
+    readonly claimedAt: FieldRef<"ScheduleRebuildOutbox", 'DateTime'>
+    readonly nextAttemptAt: FieldRef<"ScheduleRebuildOutbox", 'DateTime'>
+    readonly lastError: FieldRef<"ScheduleRebuildOutbox", 'String'>
+    readonly processedAt: FieldRef<"ScheduleRebuildOutbox", 'DateTime'>
+    readonly createdAt: FieldRef<"ScheduleRebuildOutbox", 'DateTime'>
+    readonly updatedAt: FieldRef<"ScheduleRebuildOutbox", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ScheduleRebuildOutbox findUnique
+   */
+  export type ScheduleRebuildOutboxFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleRebuildOutbox to fetch.
+     */
+    where: ScheduleRebuildOutboxWhereUniqueInput
+  }
+
+  /**
+   * ScheduleRebuildOutbox findUniqueOrThrow
+   */
+  export type ScheduleRebuildOutboxFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleRebuildOutbox to fetch.
+     */
+    where: ScheduleRebuildOutboxWhereUniqueInput
+  }
+
+  /**
+   * ScheduleRebuildOutbox findFirst
+   */
+  export type ScheduleRebuildOutboxFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleRebuildOutbox to fetch.
+     */
+    where?: ScheduleRebuildOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleRebuildOutboxes to fetch.
+     */
+    orderBy?: ScheduleRebuildOutboxOrderByWithRelationInput | ScheduleRebuildOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduleRebuildOutboxes.
+     */
+    cursor?: ScheduleRebuildOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleRebuildOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleRebuildOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleRebuildOutboxes.
+     */
+    distinct?: ScheduleRebuildOutboxScalarFieldEnum | ScheduleRebuildOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleRebuildOutbox findFirstOrThrow
+   */
+  export type ScheduleRebuildOutboxFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleRebuildOutbox to fetch.
+     */
+    where?: ScheduleRebuildOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleRebuildOutboxes to fetch.
+     */
+    orderBy?: ScheduleRebuildOutboxOrderByWithRelationInput | ScheduleRebuildOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduleRebuildOutboxes.
+     */
+    cursor?: ScheduleRebuildOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleRebuildOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleRebuildOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleRebuildOutboxes.
+     */
+    distinct?: ScheduleRebuildOutboxScalarFieldEnum | ScheduleRebuildOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleRebuildOutbox findMany
+   */
+  export type ScheduleRebuildOutboxFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleRebuildOutboxes to fetch.
+     */
+    where?: ScheduleRebuildOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleRebuildOutboxes to fetch.
+     */
+    orderBy?: ScheduleRebuildOutboxOrderByWithRelationInput | ScheduleRebuildOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ScheduleRebuildOutboxes.
+     */
+    cursor?: ScheduleRebuildOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleRebuildOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleRebuildOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleRebuildOutboxes.
+     */
+    distinct?: ScheduleRebuildOutboxScalarFieldEnum | ScheduleRebuildOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleRebuildOutbox create
+   */
+  export type ScheduleRebuildOutboxCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ScheduleRebuildOutbox.
+     */
+    data: XOR<ScheduleRebuildOutboxCreateInput, ScheduleRebuildOutboxUncheckedCreateInput>
+  }
+
+  /**
+   * ScheduleRebuildOutbox createMany
+   */
+  export type ScheduleRebuildOutboxCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ScheduleRebuildOutboxes.
+     */
+    data: ScheduleRebuildOutboxCreateManyInput | ScheduleRebuildOutboxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduleRebuildOutbox createManyAndReturn
+   */
+  export type ScheduleRebuildOutboxCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * The data used to create many ScheduleRebuildOutboxes.
+     */
+    data: ScheduleRebuildOutboxCreateManyInput | ScheduleRebuildOutboxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduleRebuildOutbox update
+   */
+  export type ScheduleRebuildOutboxUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ScheduleRebuildOutbox.
+     */
+    data: XOR<ScheduleRebuildOutboxUpdateInput, ScheduleRebuildOutboxUncheckedUpdateInput>
+    /**
+     * Choose, which ScheduleRebuildOutbox to update.
+     */
+    where: ScheduleRebuildOutboxWhereUniqueInput
+  }
+
+  /**
+   * ScheduleRebuildOutbox updateMany
+   */
+  export type ScheduleRebuildOutboxUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ScheduleRebuildOutboxes.
+     */
+    data: XOR<ScheduleRebuildOutboxUpdateManyMutationInput, ScheduleRebuildOutboxUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduleRebuildOutboxes to update
+     */
+    where?: ScheduleRebuildOutboxWhereInput
+    /**
+     * Limit how many ScheduleRebuildOutboxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleRebuildOutbox updateManyAndReturn
+   */
+  export type ScheduleRebuildOutboxUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * The data used to update ScheduleRebuildOutboxes.
+     */
+    data: XOR<ScheduleRebuildOutboxUpdateManyMutationInput, ScheduleRebuildOutboxUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduleRebuildOutboxes to update
+     */
+    where?: ScheduleRebuildOutboxWhereInput
+    /**
+     * Limit how many ScheduleRebuildOutboxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleRebuildOutbox upsert
+   */
+  export type ScheduleRebuildOutboxUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ScheduleRebuildOutbox to update in case it exists.
+     */
+    where: ScheduleRebuildOutboxWhereUniqueInput
+    /**
+     * In case the ScheduleRebuildOutbox found by the `where` argument doesn't exist, create a new ScheduleRebuildOutbox with this data.
+     */
+    create: XOR<ScheduleRebuildOutboxCreateInput, ScheduleRebuildOutboxUncheckedCreateInput>
+    /**
+     * In case the ScheduleRebuildOutbox was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ScheduleRebuildOutboxUpdateInput, ScheduleRebuildOutboxUncheckedUpdateInput>
+  }
+
+  /**
+   * ScheduleRebuildOutbox delete
+   */
+  export type ScheduleRebuildOutboxDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+    /**
+     * Filter which ScheduleRebuildOutbox to delete.
+     */
+    where: ScheduleRebuildOutboxWhereUniqueInput
+  }
+
+  /**
+   * ScheduleRebuildOutbox deleteMany
+   */
+  export type ScheduleRebuildOutboxDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduleRebuildOutboxes to delete
+     */
+    where?: ScheduleRebuildOutboxWhereInput
+    /**
+     * Limit how many ScheduleRebuildOutboxes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleRebuildOutbox without action
+   */
+  export type ScheduleRebuildOutboxDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleRebuildOutbox
+     */
+    select?: ScheduleRebuildOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleRebuildOutbox
+     */
+    omit?: ScheduleRebuildOutboxOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ScheduleDomainEventOutbox
+   */
+
+  export type AggregateScheduleDomainEventOutbox = {
+    _count: ScheduleDomainEventOutboxCountAggregateOutputType | null
+    _avg: ScheduleDomainEventOutboxAvgAggregateOutputType | null
+    _sum: ScheduleDomainEventOutboxSumAggregateOutputType | null
+    _min: ScheduleDomainEventOutboxMinAggregateOutputType | null
+    _max: ScheduleDomainEventOutboxMaxAggregateOutputType | null
+  }
+
+  export type ScheduleDomainEventOutboxAvgAggregateOutputType = {
+    attempts: number | null
+  }
+
+  export type ScheduleDomainEventOutboxSumAggregateOutputType = {
+    attempts: number | null
+  }
+
+  export type ScheduleDomainEventOutboxMinAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    scheduleId: string | null
+    eventType: string | null
+    payload: string | null
+    status: string | null
+    attempts: number | null
+    claimToken: string | null
+    claimedAt: Date | null
+    nextAttemptAt: Date | null
+    publishedAt: Date | null
+    lastError: string | null
+    idempotencyKey: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ScheduleDomainEventOutboxMaxAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    scheduleId: string | null
+    eventType: string | null
+    payload: string | null
+    status: string | null
+    attempts: number | null
+    claimToken: string | null
+    claimedAt: Date | null
+    nextAttemptAt: Date | null
+    publishedAt: Date | null
+    lastError: string | null
+    idempotencyKey: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ScheduleDomainEventOutboxCountAggregateOutputType = {
+    id: number
+    identityId: number
+    scheduleId: number
+    eventType: number
+    payload: number
+    status: number
+    attempts: number
+    claimToken: number
+    claimedAt: number
+    nextAttemptAt: number
+    publishedAt: number
+    lastError: number
+    idempotencyKey: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ScheduleDomainEventOutboxAvgAggregateInputType = {
+    attempts?: true
+  }
+
+  export type ScheduleDomainEventOutboxSumAggregateInputType = {
+    attempts?: true
+  }
+
+  export type ScheduleDomainEventOutboxMinAggregateInputType = {
+    id?: true
+    identityId?: true
+    scheduleId?: true
+    eventType?: true
+    payload?: true
+    status?: true
+    attempts?: true
+    claimToken?: true
+    claimedAt?: true
+    nextAttemptAt?: true
+    publishedAt?: true
+    lastError?: true
+    idempotencyKey?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ScheduleDomainEventOutboxMaxAggregateInputType = {
+    id?: true
+    identityId?: true
+    scheduleId?: true
+    eventType?: true
+    payload?: true
+    status?: true
+    attempts?: true
+    claimToken?: true
+    claimedAt?: true
+    nextAttemptAt?: true
+    publishedAt?: true
+    lastError?: true
+    idempotencyKey?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ScheduleDomainEventOutboxCountAggregateInputType = {
+    id?: true
+    identityId?: true
+    scheduleId?: true
+    eventType?: true
+    payload?: true
+    status?: true
+    attempts?: true
+    claimToken?: true
+    claimedAt?: true
+    nextAttemptAt?: true
+    publishedAt?: true
+    lastError?: true
+    idempotencyKey?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ScheduleDomainEventOutboxAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduleDomainEventOutbox to aggregate.
+     */
+    where?: ScheduleDomainEventOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleDomainEventOutboxes to fetch.
+     */
+    orderBy?: ScheduleDomainEventOutboxOrderByWithRelationInput | ScheduleDomainEventOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ScheduleDomainEventOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleDomainEventOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleDomainEventOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ScheduleDomainEventOutboxes
+    **/
+    _count?: true | ScheduleDomainEventOutboxCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ScheduleDomainEventOutboxAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ScheduleDomainEventOutboxSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ScheduleDomainEventOutboxMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ScheduleDomainEventOutboxMaxAggregateInputType
+  }
+
+  export type GetScheduleDomainEventOutboxAggregateType<T extends ScheduleDomainEventOutboxAggregateArgs> = {
+        [P in keyof T & keyof AggregateScheduleDomainEventOutbox]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateScheduleDomainEventOutbox[P]>
+      : GetScalarType<T[P], AggregateScheduleDomainEventOutbox[P]>
+  }
+
+
+
+
+  export type ScheduleDomainEventOutboxGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ScheduleDomainEventOutboxWhereInput
+    orderBy?: ScheduleDomainEventOutboxOrderByWithAggregationInput | ScheduleDomainEventOutboxOrderByWithAggregationInput[]
+    by: ScheduleDomainEventOutboxScalarFieldEnum[] | ScheduleDomainEventOutboxScalarFieldEnum
+    having?: ScheduleDomainEventOutboxScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ScheduleDomainEventOutboxCountAggregateInputType | true
+    _avg?: ScheduleDomainEventOutboxAvgAggregateInputType
+    _sum?: ScheduleDomainEventOutboxSumAggregateInputType
+    _min?: ScheduleDomainEventOutboxMinAggregateInputType
+    _max?: ScheduleDomainEventOutboxMaxAggregateInputType
+  }
+
+  export type ScheduleDomainEventOutboxGroupByOutputType = {
+    id: string
+    identityId: string
+    scheduleId: string
+    eventType: string
+    payload: string
+    status: string
+    attempts: number
+    claimToken: string | null
+    claimedAt: Date | null
+    nextAttemptAt: Date | null
+    publishedAt: Date | null
+    lastError: string | null
+    idempotencyKey: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ScheduleDomainEventOutboxCountAggregateOutputType | null
+    _avg: ScheduleDomainEventOutboxAvgAggregateOutputType | null
+    _sum: ScheduleDomainEventOutboxSumAggregateOutputType | null
+    _min: ScheduleDomainEventOutboxMinAggregateOutputType | null
+    _max: ScheduleDomainEventOutboxMaxAggregateOutputType | null
+  }
+
+  type GetScheduleDomainEventOutboxGroupByPayload<T extends ScheduleDomainEventOutboxGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ScheduleDomainEventOutboxGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ScheduleDomainEventOutboxGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ScheduleDomainEventOutboxGroupByOutputType[P]>
+            : GetScalarType<T[P], ScheduleDomainEventOutboxGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ScheduleDomainEventOutboxSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    scheduleId?: boolean
+    eventType?: boolean
+    payload?: boolean
+    status?: boolean
+    attempts?: boolean
+    claimToken?: boolean
+    claimedAt?: boolean
+    nextAttemptAt?: boolean
+    publishedAt?: boolean
+    lastError?: boolean
+    idempotencyKey?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduleDomainEventOutbox"]>
+
+  export type ScheduleDomainEventOutboxSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    scheduleId?: boolean
+    eventType?: boolean
+    payload?: boolean
+    status?: boolean
+    attempts?: boolean
+    claimToken?: boolean
+    claimedAt?: boolean
+    nextAttemptAt?: boolean
+    publishedAt?: boolean
+    lastError?: boolean
+    idempotencyKey?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduleDomainEventOutbox"]>
+
+  export type ScheduleDomainEventOutboxSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    scheduleId?: boolean
+    eventType?: boolean
+    payload?: boolean
+    status?: boolean
+    attempts?: boolean
+    claimToken?: boolean
+    claimedAt?: boolean
+    nextAttemptAt?: boolean
+    publishedAt?: boolean
+    lastError?: boolean
+    idempotencyKey?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduleDomainEventOutbox"]>
+
+  export type ScheduleDomainEventOutboxSelectScalar = {
+    id?: boolean
+    identityId?: boolean
+    scheduleId?: boolean
+    eventType?: boolean
+    payload?: boolean
+    status?: boolean
+    attempts?: boolean
+    claimToken?: boolean
+    claimedAt?: boolean
+    nextAttemptAt?: boolean
+    publishedAt?: boolean
+    lastError?: boolean
+    idempotencyKey?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ScheduleDomainEventOutboxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "scheduleId" | "eventType" | "payload" | "status" | "attempts" | "claimToken" | "claimedAt" | "nextAttemptAt" | "publishedAt" | "lastError" | "idempotencyKey" | "createdAt" | "updatedAt", ExtArgs["result"]["scheduleDomainEventOutbox"]>
+
+  export type $ScheduleDomainEventOutboxPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ScheduleDomainEventOutbox"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      identityId: string
+      scheduleId: string
+      eventType: string
+      payload: string
+      status: string
+      attempts: number
+      claimToken: string | null
+      claimedAt: Date | null
+      nextAttemptAt: Date | null
+      publishedAt: Date | null
+      lastError: string | null
+      idempotencyKey: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["scheduleDomainEventOutbox"]>
+    composites: {}
+  }
+
+  type ScheduleDomainEventOutboxGetPayload<S extends boolean | null | undefined | ScheduleDomainEventOutboxDefaultArgs> = $Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload, S>
+
+  type ScheduleDomainEventOutboxCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ScheduleDomainEventOutboxFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ScheduleDomainEventOutboxCountAggregateInputType | true
+    }
+
+  export interface ScheduleDomainEventOutboxDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ScheduleDomainEventOutbox'], meta: { name: 'ScheduleDomainEventOutbox' } }
+    /**
+     * Find zero or one ScheduleDomainEventOutbox that matches the filter.
+     * @param {ScheduleDomainEventOutboxFindUniqueArgs} args - Arguments to find a ScheduleDomainEventOutbox
+     * @example
+     * // Get one ScheduleDomainEventOutbox
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ScheduleDomainEventOutboxFindUniqueArgs>(args: SelectSubset<T, ScheduleDomainEventOutboxFindUniqueArgs<ExtArgs>>): Prisma__ScheduleDomainEventOutboxClient<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ScheduleDomainEventOutbox that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ScheduleDomainEventOutboxFindUniqueOrThrowArgs} args - Arguments to find a ScheduleDomainEventOutbox
+     * @example
+     * // Get one ScheduleDomainEventOutbox
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ScheduleDomainEventOutboxFindUniqueOrThrowArgs>(args: SelectSubset<T, ScheduleDomainEventOutboxFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ScheduleDomainEventOutboxClient<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduleDomainEventOutbox that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleDomainEventOutboxFindFirstArgs} args - Arguments to find a ScheduleDomainEventOutbox
+     * @example
+     * // Get one ScheduleDomainEventOutbox
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ScheduleDomainEventOutboxFindFirstArgs>(args?: SelectSubset<T, ScheduleDomainEventOutboxFindFirstArgs<ExtArgs>>): Prisma__ScheduleDomainEventOutboxClient<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduleDomainEventOutbox that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleDomainEventOutboxFindFirstOrThrowArgs} args - Arguments to find a ScheduleDomainEventOutbox
+     * @example
+     * // Get one ScheduleDomainEventOutbox
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ScheduleDomainEventOutboxFindFirstOrThrowArgs>(args?: SelectSubset<T, ScheduleDomainEventOutboxFindFirstOrThrowArgs<ExtArgs>>): Prisma__ScheduleDomainEventOutboxClient<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ScheduleDomainEventOutboxes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleDomainEventOutboxFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ScheduleDomainEventOutboxes
+     * const scheduleDomainEventOutboxes = await prisma.scheduleDomainEventOutbox.findMany()
+     * 
+     * // Get first 10 ScheduleDomainEventOutboxes
+     * const scheduleDomainEventOutboxes = await prisma.scheduleDomainEventOutbox.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const scheduleDomainEventOutboxWithIdOnly = await prisma.scheduleDomainEventOutbox.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ScheduleDomainEventOutboxFindManyArgs>(args?: SelectSubset<T, ScheduleDomainEventOutboxFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ScheduleDomainEventOutbox.
+     * @param {ScheduleDomainEventOutboxCreateArgs} args - Arguments to create a ScheduleDomainEventOutbox.
+     * @example
+     * // Create one ScheduleDomainEventOutbox
+     * const ScheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.create({
+     *   data: {
+     *     // ... data to create a ScheduleDomainEventOutbox
+     *   }
+     * })
+     * 
+     */
+    create<T extends ScheduleDomainEventOutboxCreateArgs>(args: SelectSubset<T, ScheduleDomainEventOutboxCreateArgs<ExtArgs>>): Prisma__ScheduleDomainEventOutboxClient<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ScheduleDomainEventOutboxes.
+     * @param {ScheduleDomainEventOutboxCreateManyArgs} args - Arguments to create many ScheduleDomainEventOutboxes.
+     * @example
+     * // Create many ScheduleDomainEventOutboxes
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ScheduleDomainEventOutboxCreateManyArgs>(args?: SelectSubset<T, ScheduleDomainEventOutboxCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ScheduleDomainEventOutboxes and returns the data saved in the database.
+     * @param {ScheduleDomainEventOutboxCreateManyAndReturnArgs} args - Arguments to create many ScheduleDomainEventOutboxes.
+     * @example
+     * // Create many ScheduleDomainEventOutboxes
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ScheduleDomainEventOutboxes and only return the `id`
+     * const scheduleDomainEventOutboxWithIdOnly = await prisma.scheduleDomainEventOutbox.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ScheduleDomainEventOutboxCreateManyAndReturnArgs>(args?: SelectSubset<T, ScheduleDomainEventOutboxCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ScheduleDomainEventOutbox.
+     * @param {ScheduleDomainEventOutboxDeleteArgs} args - Arguments to delete one ScheduleDomainEventOutbox.
+     * @example
+     * // Delete one ScheduleDomainEventOutbox
+     * const ScheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.delete({
+     *   where: {
+     *     // ... filter to delete one ScheduleDomainEventOutbox
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ScheduleDomainEventOutboxDeleteArgs>(args: SelectSubset<T, ScheduleDomainEventOutboxDeleteArgs<ExtArgs>>): Prisma__ScheduleDomainEventOutboxClient<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ScheduleDomainEventOutbox.
+     * @param {ScheduleDomainEventOutboxUpdateArgs} args - Arguments to update one ScheduleDomainEventOutbox.
+     * @example
+     * // Update one ScheduleDomainEventOutbox
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ScheduleDomainEventOutboxUpdateArgs>(args: SelectSubset<T, ScheduleDomainEventOutboxUpdateArgs<ExtArgs>>): Prisma__ScheduleDomainEventOutboxClient<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ScheduleDomainEventOutboxes.
+     * @param {ScheduleDomainEventOutboxDeleteManyArgs} args - Arguments to filter ScheduleDomainEventOutboxes to delete.
+     * @example
+     * // Delete a few ScheduleDomainEventOutboxes
+     * const { count } = await prisma.scheduleDomainEventOutbox.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ScheduleDomainEventOutboxDeleteManyArgs>(args?: SelectSubset<T, ScheduleDomainEventOutboxDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduleDomainEventOutboxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleDomainEventOutboxUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ScheduleDomainEventOutboxes
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ScheduleDomainEventOutboxUpdateManyArgs>(args: SelectSubset<T, ScheduleDomainEventOutboxUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduleDomainEventOutboxes and returns the data updated in the database.
+     * @param {ScheduleDomainEventOutboxUpdateManyAndReturnArgs} args - Arguments to update many ScheduleDomainEventOutboxes.
+     * @example
+     * // Update many ScheduleDomainEventOutboxes
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ScheduleDomainEventOutboxes and only return the `id`
+     * const scheduleDomainEventOutboxWithIdOnly = await prisma.scheduleDomainEventOutbox.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ScheduleDomainEventOutboxUpdateManyAndReturnArgs>(args: SelectSubset<T, ScheduleDomainEventOutboxUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ScheduleDomainEventOutbox.
+     * @param {ScheduleDomainEventOutboxUpsertArgs} args - Arguments to update or create a ScheduleDomainEventOutbox.
+     * @example
+     * // Update or create a ScheduleDomainEventOutbox
+     * const scheduleDomainEventOutbox = await prisma.scheduleDomainEventOutbox.upsert({
+     *   create: {
+     *     // ... data to create a ScheduleDomainEventOutbox
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ScheduleDomainEventOutbox we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ScheduleDomainEventOutboxUpsertArgs>(args: SelectSubset<T, ScheduleDomainEventOutboxUpsertArgs<ExtArgs>>): Prisma__ScheduleDomainEventOutboxClient<$Result.GetResult<Prisma.$ScheduleDomainEventOutboxPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ScheduleDomainEventOutboxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleDomainEventOutboxCountArgs} args - Arguments to filter ScheduleDomainEventOutboxes to count.
+     * @example
+     * // Count the number of ScheduleDomainEventOutboxes
+     * const count = await prisma.scheduleDomainEventOutbox.count({
+     *   where: {
+     *     // ... the filter for the ScheduleDomainEventOutboxes we want to count
+     *   }
+     * })
+    **/
+    count<T extends ScheduleDomainEventOutboxCountArgs>(
+      args?: Subset<T, ScheduleDomainEventOutboxCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ScheduleDomainEventOutboxCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ScheduleDomainEventOutbox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleDomainEventOutboxAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ScheduleDomainEventOutboxAggregateArgs>(args: Subset<T, ScheduleDomainEventOutboxAggregateArgs>): Prisma.PrismaPromise<GetScheduleDomainEventOutboxAggregateType<T>>
+
+    /**
+     * Group by ScheduleDomainEventOutbox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleDomainEventOutboxGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ScheduleDomainEventOutboxGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ScheduleDomainEventOutboxGroupByArgs['orderBy'] }
+        : { orderBy?: ScheduleDomainEventOutboxGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ScheduleDomainEventOutboxGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetScheduleDomainEventOutboxGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ScheduleDomainEventOutbox model
+   */
+  readonly fields: ScheduleDomainEventOutboxFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ScheduleDomainEventOutbox.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ScheduleDomainEventOutboxClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ScheduleDomainEventOutbox model
+   */
+  interface ScheduleDomainEventOutboxFieldRefs {
+    readonly id: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly identityId: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly scheduleId: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly eventType: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly payload: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly status: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly attempts: FieldRef<"ScheduleDomainEventOutbox", 'Int'>
+    readonly claimToken: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly claimedAt: FieldRef<"ScheduleDomainEventOutbox", 'DateTime'>
+    readonly nextAttemptAt: FieldRef<"ScheduleDomainEventOutbox", 'DateTime'>
+    readonly publishedAt: FieldRef<"ScheduleDomainEventOutbox", 'DateTime'>
+    readonly lastError: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly idempotencyKey: FieldRef<"ScheduleDomainEventOutbox", 'String'>
+    readonly createdAt: FieldRef<"ScheduleDomainEventOutbox", 'DateTime'>
+    readonly updatedAt: FieldRef<"ScheduleDomainEventOutbox", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ScheduleDomainEventOutbox findUnique
+   */
+  export type ScheduleDomainEventOutboxFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleDomainEventOutbox to fetch.
+     */
+    where: ScheduleDomainEventOutboxWhereUniqueInput
+  }
+
+  /**
+   * ScheduleDomainEventOutbox findUniqueOrThrow
+   */
+  export type ScheduleDomainEventOutboxFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleDomainEventOutbox to fetch.
+     */
+    where: ScheduleDomainEventOutboxWhereUniqueInput
+  }
+
+  /**
+   * ScheduleDomainEventOutbox findFirst
+   */
+  export type ScheduleDomainEventOutboxFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleDomainEventOutbox to fetch.
+     */
+    where?: ScheduleDomainEventOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleDomainEventOutboxes to fetch.
+     */
+    orderBy?: ScheduleDomainEventOutboxOrderByWithRelationInput | ScheduleDomainEventOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduleDomainEventOutboxes.
+     */
+    cursor?: ScheduleDomainEventOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleDomainEventOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleDomainEventOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleDomainEventOutboxes.
+     */
+    distinct?: ScheduleDomainEventOutboxScalarFieldEnum | ScheduleDomainEventOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleDomainEventOutbox findFirstOrThrow
+   */
+  export type ScheduleDomainEventOutboxFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleDomainEventOutbox to fetch.
+     */
+    where?: ScheduleDomainEventOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleDomainEventOutboxes to fetch.
+     */
+    orderBy?: ScheduleDomainEventOutboxOrderByWithRelationInput | ScheduleDomainEventOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduleDomainEventOutboxes.
+     */
+    cursor?: ScheduleDomainEventOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleDomainEventOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleDomainEventOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleDomainEventOutboxes.
+     */
+    distinct?: ScheduleDomainEventOutboxScalarFieldEnum | ScheduleDomainEventOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleDomainEventOutbox findMany
+   */
+  export type ScheduleDomainEventOutboxFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleDomainEventOutboxes to fetch.
+     */
+    where?: ScheduleDomainEventOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleDomainEventOutboxes to fetch.
+     */
+    orderBy?: ScheduleDomainEventOutboxOrderByWithRelationInput | ScheduleDomainEventOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ScheduleDomainEventOutboxes.
+     */
+    cursor?: ScheduleDomainEventOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleDomainEventOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleDomainEventOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleDomainEventOutboxes.
+     */
+    distinct?: ScheduleDomainEventOutboxScalarFieldEnum | ScheduleDomainEventOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleDomainEventOutbox create
+   */
+  export type ScheduleDomainEventOutboxCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ScheduleDomainEventOutbox.
+     */
+    data: XOR<ScheduleDomainEventOutboxCreateInput, ScheduleDomainEventOutboxUncheckedCreateInput>
+  }
+
+  /**
+   * ScheduleDomainEventOutbox createMany
+   */
+  export type ScheduleDomainEventOutboxCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ScheduleDomainEventOutboxes.
+     */
+    data: ScheduleDomainEventOutboxCreateManyInput | ScheduleDomainEventOutboxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduleDomainEventOutbox createManyAndReturn
+   */
+  export type ScheduleDomainEventOutboxCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * The data used to create many ScheduleDomainEventOutboxes.
+     */
+    data: ScheduleDomainEventOutboxCreateManyInput | ScheduleDomainEventOutboxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduleDomainEventOutbox update
+   */
+  export type ScheduleDomainEventOutboxUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ScheduleDomainEventOutbox.
+     */
+    data: XOR<ScheduleDomainEventOutboxUpdateInput, ScheduleDomainEventOutboxUncheckedUpdateInput>
+    /**
+     * Choose, which ScheduleDomainEventOutbox to update.
+     */
+    where: ScheduleDomainEventOutboxWhereUniqueInput
+  }
+
+  /**
+   * ScheduleDomainEventOutbox updateMany
+   */
+  export type ScheduleDomainEventOutboxUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ScheduleDomainEventOutboxes.
+     */
+    data: XOR<ScheduleDomainEventOutboxUpdateManyMutationInput, ScheduleDomainEventOutboxUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduleDomainEventOutboxes to update
+     */
+    where?: ScheduleDomainEventOutboxWhereInput
+    /**
+     * Limit how many ScheduleDomainEventOutboxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleDomainEventOutbox updateManyAndReturn
+   */
+  export type ScheduleDomainEventOutboxUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * The data used to update ScheduleDomainEventOutboxes.
+     */
+    data: XOR<ScheduleDomainEventOutboxUpdateManyMutationInput, ScheduleDomainEventOutboxUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduleDomainEventOutboxes to update
+     */
+    where?: ScheduleDomainEventOutboxWhereInput
+    /**
+     * Limit how many ScheduleDomainEventOutboxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleDomainEventOutbox upsert
+   */
+  export type ScheduleDomainEventOutboxUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ScheduleDomainEventOutbox to update in case it exists.
+     */
+    where: ScheduleDomainEventOutboxWhereUniqueInput
+    /**
+     * In case the ScheduleDomainEventOutbox found by the `where` argument doesn't exist, create a new ScheduleDomainEventOutbox with this data.
+     */
+    create: XOR<ScheduleDomainEventOutboxCreateInput, ScheduleDomainEventOutboxUncheckedCreateInput>
+    /**
+     * In case the ScheduleDomainEventOutbox was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ScheduleDomainEventOutboxUpdateInput, ScheduleDomainEventOutboxUncheckedUpdateInput>
+  }
+
+  /**
+   * ScheduleDomainEventOutbox delete
+   */
+  export type ScheduleDomainEventOutboxDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+    /**
+     * Filter which ScheduleDomainEventOutbox to delete.
+     */
+    where: ScheduleDomainEventOutboxWhereUniqueInput
+  }
+
+  /**
+   * ScheduleDomainEventOutbox deleteMany
+   */
+  export type ScheduleDomainEventOutboxDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduleDomainEventOutboxes to delete
+     */
+    where?: ScheduleDomainEventOutboxWhereInput
+    /**
+     * Limit how many ScheduleDomainEventOutboxes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleDomainEventOutbox without action
+   */
+  export type ScheduleDomainEventOutboxDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleDomainEventOutbox
+     */
+    select?: ScheduleDomainEventOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleDomainEventOutbox
+     */
+    omit?: ScheduleDomainEventOutboxOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ScheduleEventConsumerReceipt
+   */
+
+  export type AggregateScheduleEventConsumerReceipt = {
+    _count: ScheduleEventConsumerReceiptCountAggregateOutputType | null
+    _avg: ScheduleEventConsumerReceiptAvgAggregateOutputType | null
+    _sum: ScheduleEventConsumerReceiptSumAggregateOutputType | null
+    _min: ScheduleEventConsumerReceiptMinAggregateOutputType | null
+    _max: ScheduleEventConsumerReceiptMaxAggregateOutputType | null
+  }
+
+  export type ScheduleEventConsumerReceiptAvgAggregateOutputType = {
+    effectCount: number | null
+  }
+
+  export type ScheduleEventConsumerReceiptSumAggregateOutputType = {
+    effectCount: number | null
+  }
+
+  export type ScheduleEventConsumerReceiptMinAggregateOutputType = {
+    id: string | null
+    idempotencyKey: string | null
+    effectCount: number | null
+    consumedAt: Date | null
+  }
+
+  export type ScheduleEventConsumerReceiptMaxAggregateOutputType = {
+    id: string | null
+    idempotencyKey: string | null
+    effectCount: number | null
+    consumedAt: Date | null
+  }
+
+  export type ScheduleEventConsumerReceiptCountAggregateOutputType = {
+    id: number
+    idempotencyKey: number
+    effectCount: number
+    consumedAt: number
+    _all: number
+  }
+
+
+  export type ScheduleEventConsumerReceiptAvgAggregateInputType = {
+    effectCount?: true
+  }
+
+  export type ScheduleEventConsumerReceiptSumAggregateInputType = {
+    effectCount?: true
+  }
+
+  export type ScheduleEventConsumerReceiptMinAggregateInputType = {
+    id?: true
+    idempotencyKey?: true
+    effectCount?: true
+    consumedAt?: true
+  }
+
+  export type ScheduleEventConsumerReceiptMaxAggregateInputType = {
+    id?: true
+    idempotencyKey?: true
+    effectCount?: true
+    consumedAt?: true
+  }
+
+  export type ScheduleEventConsumerReceiptCountAggregateInputType = {
+    id?: true
+    idempotencyKey?: true
+    effectCount?: true
+    consumedAt?: true
+    _all?: true
+  }
+
+  export type ScheduleEventConsumerReceiptAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduleEventConsumerReceipt to aggregate.
+     */
+    where?: ScheduleEventConsumerReceiptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleEventConsumerReceipts to fetch.
+     */
+    orderBy?: ScheduleEventConsumerReceiptOrderByWithRelationInput | ScheduleEventConsumerReceiptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ScheduleEventConsumerReceiptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleEventConsumerReceipts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleEventConsumerReceipts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ScheduleEventConsumerReceipts
+    **/
+    _count?: true | ScheduleEventConsumerReceiptCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ScheduleEventConsumerReceiptAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ScheduleEventConsumerReceiptSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ScheduleEventConsumerReceiptMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ScheduleEventConsumerReceiptMaxAggregateInputType
+  }
+
+  export type GetScheduleEventConsumerReceiptAggregateType<T extends ScheduleEventConsumerReceiptAggregateArgs> = {
+        [P in keyof T & keyof AggregateScheduleEventConsumerReceipt]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateScheduleEventConsumerReceipt[P]>
+      : GetScalarType<T[P], AggregateScheduleEventConsumerReceipt[P]>
+  }
+
+
+
+
+  export type ScheduleEventConsumerReceiptGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ScheduleEventConsumerReceiptWhereInput
+    orderBy?: ScheduleEventConsumerReceiptOrderByWithAggregationInput | ScheduleEventConsumerReceiptOrderByWithAggregationInput[]
+    by: ScheduleEventConsumerReceiptScalarFieldEnum[] | ScheduleEventConsumerReceiptScalarFieldEnum
+    having?: ScheduleEventConsumerReceiptScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ScheduleEventConsumerReceiptCountAggregateInputType | true
+    _avg?: ScheduleEventConsumerReceiptAvgAggregateInputType
+    _sum?: ScheduleEventConsumerReceiptSumAggregateInputType
+    _min?: ScheduleEventConsumerReceiptMinAggregateInputType
+    _max?: ScheduleEventConsumerReceiptMaxAggregateInputType
+  }
+
+  export type ScheduleEventConsumerReceiptGroupByOutputType = {
+    id: string
+    idempotencyKey: string
+    effectCount: number
+    consumedAt: Date
+    _count: ScheduleEventConsumerReceiptCountAggregateOutputType | null
+    _avg: ScheduleEventConsumerReceiptAvgAggregateOutputType | null
+    _sum: ScheduleEventConsumerReceiptSumAggregateOutputType | null
+    _min: ScheduleEventConsumerReceiptMinAggregateOutputType | null
+    _max: ScheduleEventConsumerReceiptMaxAggregateOutputType | null
+  }
+
+  type GetScheduleEventConsumerReceiptGroupByPayload<T extends ScheduleEventConsumerReceiptGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ScheduleEventConsumerReceiptGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ScheduleEventConsumerReceiptGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ScheduleEventConsumerReceiptGroupByOutputType[P]>
+            : GetScalarType<T[P], ScheduleEventConsumerReceiptGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ScheduleEventConsumerReceiptSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    idempotencyKey?: boolean
+    effectCount?: boolean
+    consumedAt?: boolean
+  }, ExtArgs["result"]["scheduleEventConsumerReceipt"]>
+
+  export type ScheduleEventConsumerReceiptSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    idempotencyKey?: boolean
+    effectCount?: boolean
+    consumedAt?: boolean
+  }, ExtArgs["result"]["scheduleEventConsumerReceipt"]>
+
+  export type ScheduleEventConsumerReceiptSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    idempotencyKey?: boolean
+    effectCount?: boolean
+    consumedAt?: boolean
+  }, ExtArgs["result"]["scheduleEventConsumerReceipt"]>
+
+  export type ScheduleEventConsumerReceiptSelectScalar = {
+    id?: boolean
+    idempotencyKey?: boolean
+    effectCount?: boolean
+    consumedAt?: boolean
+  }
+
+  export type ScheduleEventConsumerReceiptOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "idempotencyKey" | "effectCount" | "consumedAt", ExtArgs["result"]["scheduleEventConsumerReceipt"]>
+
+  export type $ScheduleEventConsumerReceiptPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ScheduleEventConsumerReceipt"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      idempotencyKey: string
+      effectCount: number
+      consumedAt: Date
+    }, ExtArgs["result"]["scheduleEventConsumerReceipt"]>
+    composites: {}
+  }
+
+  type ScheduleEventConsumerReceiptGetPayload<S extends boolean | null | undefined | ScheduleEventConsumerReceiptDefaultArgs> = $Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload, S>
+
+  type ScheduleEventConsumerReceiptCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ScheduleEventConsumerReceiptFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ScheduleEventConsumerReceiptCountAggregateInputType | true
+    }
+
+  export interface ScheduleEventConsumerReceiptDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ScheduleEventConsumerReceipt'], meta: { name: 'ScheduleEventConsumerReceipt' } }
+    /**
+     * Find zero or one ScheduleEventConsumerReceipt that matches the filter.
+     * @param {ScheduleEventConsumerReceiptFindUniqueArgs} args - Arguments to find a ScheduleEventConsumerReceipt
+     * @example
+     * // Get one ScheduleEventConsumerReceipt
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ScheduleEventConsumerReceiptFindUniqueArgs>(args: SelectSubset<T, ScheduleEventConsumerReceiptFindUniqueArgs<ExtArgs>>): Prisma__ScheduleEventConsumerReceiptClient<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ScheduleEventConsumerReceipt that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ScheduleEventConsumerReceiptFindUniqueOrThrowArgs} args - Arguments to find a ScheduleEventConsumerReceipt
+     * @example
+     * // Get one ScheduleEventConsumerReceipt
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ScheduleEventConsumerReceiptFindUniqueOrThrowArgs>(args: SelectSubset<T, ScheduleEventConsumerReceiptFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ScheduleEventConsumerReceiptClient<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduleEventConsumerReceipt that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventConsumerReceiptFindFirstArgs} args - Arguments to find a ScheduleEventConsumerReceipt
+     * @example
+     * // Get one ScheduleEventConsumerReceipt
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ScheduleEventConsumerReceiptFindFirstArgs>(args?: SelectSubset<T, ScheduleEventConsumerReceiptFindFirstArgs<ExtArgs>>): Prisma__ScheduleEventConsumerReceiptClient<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduleEventConsumerReceipt that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventConsumerReceiptFindFirstOrThrowArgs} args - Arguments to find a ScheduleEventConsumerReceipt
+     * @example
+     * // Get one ScheduleEventConsumerReceipt
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ScheduleEventConsumerReceiptFindFirstOrThrowArgs>(args?: SelectSubset<T, ScheduleEventConsumerReceiptFindFirstOrThrowArgs<ExtArgs>>): Prisma__ScheduleEventConsumerReceiptClient<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ScheduleEventConsumerReceipts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventConsumerReceiptFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ScheduleEventConsumerReceipts
+     * const scheduleEventConsumerReceipts = await prisma.scheduleEventConsumerReceipt.findMany()
+     * 
+     * // Get first 10 ScheduleEventConsumerReceipts
+     * const scheduleEventConsumerReceipts = await prisma.scheduleEventConsumerReceipt.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const scheduleEventConsumerReceiptWithIdOnly = await prisma.scheduleEventConsumerReceipt.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ScheduleEventConsumerReceiptFindManyArgs>(args?: SelectSubset<T, ScheduleEventConsumerReceiptFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ScheduleEventConsumerReceipt.
+     * @param {ScheduleEventConsumerReceiptCreateArgs} args - Arguments to create a ScheduleEventConsumerReceipt.
+     * @example
+     * // Create one ScheduleEventConsumerReceipt
+     * const ScheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.create({
+     *   data: {
+     *     // ... data to create a ScheduleEventConsumerReceipt
+     *   }
+     * })
+     * 
+     */
+    create<T extends ScheduleEventConsumerReceiptCreateArgs>(args: SelectSubset<T, ScheduleEventConsumerReceiptCreateArgs<ExtArgs>>): Prisma__ScheduleEventConsumerReceiptClient<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ScheduleEventConsumerReceipts.
+     * @param {ScheduleEventConsumerReceiptCreateManyArgs} args - Arguments to create many ScheduleEventConsumerReceipts.
+     * @example
+     * // Create many ScheduleEventConsumerReceipts
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ScheduleEventConsumerReceiptCreateManyArgs>(args?: SelectSubset<T, ScheduleEventConsumerReceiptCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ScheduleEventConsumerReceipts and returns the data saved in the database.
+     * @param {ScheduleEventConsumerReceiptCreateManyAndReturnArgs} args - Arguments to create many ScheduleEventConsumerReceipts.
+     * @example
+     * // Create many ScheduleEventConsumerReceipts
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ScheduleEventConsumerReceipts and only return the `id`
+     * const scheduleEventConsumerReceiptWithIdOnly = await prisma.scheduleEventConsumerReceipt.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ScheduleEventConsumerReceiptCreateManyAndReturnArgs>(args?: SelectSubset<T, ScheduleEventConsumerReceiptCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ScheduleEventConsumerReceipt.
+     * @param {ScheduleEventConsumerReceiptDeleteArgs} args - Arguments to delete one ScheduleEventConsumerReceipt.
+     * @example
+     * // Delete one ScheduleEventConsumerReceipt
+     * const ScheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.delete({
+     *   where: {
+     *     // ... filter to delete one ScheduleEventConsumerReceipt
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ScheduleEventConsumerReceiptDeleteArgs>(args: SelectSubset<T, ScheduleEventConsumerReceiptDeleteArgs<ExtArgs>>): Prisma__ScheduleEventConsumerReceiptClient<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ScheduleEventConsumerReceipt.
+     * @param {ScheduleEventConsumerReceiptUpdateArgs} args - Arguments to update one ScheduleEventConsumerReceipt.
+     * @example
+     * // Update one ScheduleEventConsumerReceipt
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ScheduleEventConsumerReceiptUpdateArgs>(args: SelectSubset<T, ScheduleEventConsumerReceiptUpdateArgs<ExtArgs>>): Prisma__ScheduleEventConsumerReceiptClient<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ScheduleEventConsumerReceipts.
+     * @param {ScheduleEventConsumerReceiptDeleteManyArgs} args - Arguments to filter ScheduleEventConsumerReceipts to delete.
+     * @example
+     * // Delete a few ScheduleEventConsumerReceipts
+     * const { count } = await prisma.scheduleEventConsumerReceipt.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ScheduleEventConsumerReceiptDeleteManyArgs>(args?: SelectSubset<T, ScheduleEventConsumerReceiptDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduleEventConsumerReceipts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventConsumerReceiptUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ScheduleEventConsumerReceipts
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ScheduleEventConsumerReceiptUpdateManyArgs>(args: SelectSubset<T, ScheduleEventConsumerReceiptUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduleEventConsumerReceipts and returns the data updated in the database.
+     * @param {ScheduleEventConsumerReceiptUpdateManyAndReturnArgs} args - Arguments to update many ScheduleEventConsumerReceipts.
+     * @example
+     * // Update many ScheduleEventConsumerReceipts
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ScheduleEventConsumerReceipts and only return the `id`
+     * const scheduleEventConsumerReceiptWithIdOnly = await prisma.scheduleEventConsumerReceipt.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ScheduleEventConsumerReceiptUpdateManyAndReturnArgs>(args: SelectSubset<T, ScheduleEventConsumerReceiptUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ScheduleEventConsumerReceipt.
+     * @param {ScheduleEventConsumerReceiptUpsertArgs} args - Arguments to update or create a ScheduleEventConsumerReceipt.
+     * @example
+     * // Update or create a ScheduleEventConsumerReceipt
+     * const scheduleEventConsumerReceipt = await prisma.scheduleEventConsumerReceipt.upsert({
+     *   create: {
+     *     // ... data to create a ScheduleEventConsumerReceipt
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ScheduleEventConsumerReceipt we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ScheduleEventConsumerReceiptUpsertArgs>(args: SelectSubset<T, ScheduleEventConsumerReceiptUpsertArgs<ExtArgs>>): Prisma__ScheduleEventConsumerReceiptClient<$Result.GetResult<Prisma.$ScheduleEventConsumerReceiptPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ScheduleEventConsumerReceipts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventConsumerReceiptCountArgs} args - Arguments to filter ScheduleEventConsumerReceipts to count.
+     * @example
+     * // Count the number of ScheduleEventConsumerReceipts
+     * const count = await prisma.scheduleEventConsumerReceipt.count({
+     *   where: {
+     *     // ... the filter for the ScheduleEventConsumerReceipts we want to count
+     *   }
+     * })
+    **/
+    count<T extends ScheduleEventConsumerReceiptCountArgs>(
+      args?: Subset<T, ScheduleEventConsumerReceiptCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ScheduleEventConsumerReceiptCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ScheduleEventConsumerReceipt.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventConsumerReceiptAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ScheduleEventConsumerReceiptAggregateArgs>(args: Subset<T, ScheduleEventConsumerReceiptAggregateArgs>): Prisma.PrismaPromise<GetScheduleEventConsumerReceiptAggregateType<T>>
+
+    /**
+     * Group by ScheduleEventConsumerReceipt.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventConsumerReceiptGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ScheduleEventConsumerReceiptGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ScheduleEventConsumerReceiptGroupByArgs['orderBy'] }
+        : { orderBy?: ScheduleEventConsumerReceiptGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ScheduleEventConsumerReceiptGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetScheduleEventConsumerReceiptGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ScheduleEventConsumerReceipt model
+   */
+  readonly fields: ScheduleEventConsumerReceiptFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ScheduleEventConsumerReceipt.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ScheduleEventConsumerReceiptClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ScheduleEventConsumerReceipt model
+   */
+  interface ScheduleEventConsumerReceiptFieldRefs {
+    readonly id: FieldRef<"ScheduleEventConsumerReceipt", 'String'>
+    readonly idempotencyKey: FieldRef<"ScheduleEventConsumerReceipt", 'String'>
+    readonly effectCount: FieldRef<"ScheduleEventConsumerReceipt", 'Int'>
+    readonly consumedAt: FieldRef<"ScheduleEventConsumerReceipt", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ScheduleEventConsumerReceipt findUnique
+   */
+  export type ScheduleEventConsumerReceiptFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventConsumerReceipt to fetch.
+     */
+    where: ScheduleEventConsumerReceiptWhereUniqueInput
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt findUniqueOrThrow
+   */
+  export type ScheduleEventConsumerReceiptFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventConsumerReceipt to fetch.
+     */
+    where: ScheduleEventConsumerReceiptWhereUniqueInput
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt findFirst
+   */
+  export type ScheduleEventConsumerReceiptFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventConsumerReceipt to fetch.
+     */
+    where?: ScheduleEventConsumerReceiptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleEventConsumerReceipts to fetch.
+     */
+    orderBy?: ScheduleEventConsumerReceiptOrderByWithRelationInput | ScheduleEventConsumerReceiptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduleEventConsumerReceipts.
+     */
+    cursor?: ScheduleEventConsumerReceiptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleEventConsumerReceipts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleEventConsumerReceipts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleEventConsumerReceipts.
+     */
+    distinct?: ScheduleEventConsumerReceiptScalarFieldEnum | ScheduleEventConsumerReceiptScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt findFirstOrThrow
+   */
+  export type ScheduleEventConsumerReceiptFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventConsumerReceipt to fetch.
+     */
+    where?: ScheduleEventConsumerReceiptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleEventConsumerReceipts to fetch.
+     */
+    orderBy?: ScheduleEventConsumerReceiptOrderByWithRelationInput | ScheduleEventConsumerReceiptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduleEventConsumerReceipts.
+     */
+    cursor?: ScheduleEventConsumerReceiptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleEventConsumerReceipts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleEventConsumerReceipts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleEventConsumerReceipts.
+     */
+    distinct?: ScheduleEventConsumerReceiptScalarFieldEnum | ScheduleEventConsumerReceiptScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt findMany
+   */
+  export type ScheduleEventConsumerReceiptFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventConsumerReceipts to fetch.
+     */
+    where?: ScheduleEventConsumerReceiptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleEventConsumerReceipts to fetch.
+     */
+    orderBy?: ScheduleEventConsumerReceiptOrderByWithRelationInput | ScheduleEventConsumerReceiptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ScheduleEventConsumerReceipts.
+     */
+    cursor?: ScheduleEventConsumerReceiptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleEventConsumerReceipts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleEventConsumerReceipts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleEventConsumerReceipts.
+     */
+    distinct?: ScheduleEventConsumerReceiptScalarFieldEnum | ScheduleEventConsumerReceiptScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt create
+   */
+  export type ScheduleEventConsumerReceiptCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ScheduleEventConsumerReceipt.
+     */
+    data: XOR<ScheduleEventConsumerReceiptCreateInput, ScheduleEventConsumerReceiptUncheckedCreateInput>
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt createMany
+   */
+  export type ScheduleEventConsumerReceiptCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ScheduleEventConsumerReceipts.
+     */
+    data: ScheduleEventConsumerReceiptCreateManyInput | ScheduleEventConsumerReceiptCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt createManyAndReturn
+   */
+  export type ScheduleEventConsumerReceiptCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * The data used to create many ScheduleEventConsumerReceipts.
+     */
+    data: ScheduleEventConsumerReceiptCreateManyInput | ScheduleEventConsumerReceiptCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt update
+   */
+  export type ScheduleEventConsumerReceiptUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ScheduleEventConsumerReceipt.
+     */
+    data: XOR<ScheduleEventConsumerReceiptUpdateInput, ScheduleEventConsumerReceiptUncheckedUpdateInput>
+    /**
+     * Choose, which ScheduleEventConsumerReceipt to update.
+     */
+    where: ScheduleEventConsumerReceiptWhereUniqueInput
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt updateMany
+   */
+  export type ScheduleEventConsumerReceiptUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ScheduleEventConsumerReceipts.
+     */
+    data: XOR<ScheduleEventConsumerReceiptUpdateManyMutationInput, ScheduleEventConsumerReceiptUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduleEventConsumerReceipts to update
+     */
+    where?: ScheduleEventConsumerReceiptWhereInput
+    /**
+     * Limit how many ScheduleEventConsumerReceipts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt updateManyAndReturn
+   */
+  export type ScheduleEventConsumerReceiptUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * The data used to update ScheduleEventConsumerReceipts.
+     */
+    data: XOR<ScheduleEventConsumerReceiptUpdateManyMutationInput, ScheduleEventConsumerReceiptUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduleEventConsumerReceipts to update
+     */
+    where?: ScheduleEventConsumerReceiptWhereInput
+    /**
+     * Limit how many ScheduleEventConsumerReceipts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt upsert
+   */
+  export type ScheduleEventConsumerReceiptUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ScheduleEventConsumerReceipt to update in case it exists.
+     */
+    where: ScheduleEventConsumerReceiptWhereUniqueInput
+    /**
+     * In case the ScheduleEventConsumerReceipt found by the `where` argument doesn't exist, create a new ScheduleEventConsumerReceipt with this data.
+     */
+    create: XOR<ScheduleEventConsumerReceiptCreateInput, ScheduleEventConsumerReceiptUncheckedCreateInput>
+    /**
+     * In case the ScheduleEventConsumerReceipt was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ScheduleEventConsumerReceiptUpdateInput, ScheduleEventConsumerReceiptUncheckedUpdateInput>
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt delete
+   */
+  export type ScheduleEventConsumerReceiptDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+    /**
+     * Filter which ScheduleEventConsumerReceipt to delete.
+     */
+    where: ScheduleEventConsumerReceiptWhereUniqueInput
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt deleteMany
+   */
+  export type ScheduleEventConsumerReceiptDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduleEventConsumerReceipts to delete
+     */
+    where?: ScheduleEventConsumerReceiptWhereInput
+    /**
+     * Limit how many ScheduleEventConsumerReceipts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleEventConsumerReceipt without action
+   */
+  export type ScheduleEventConsumerReceiptDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventConsumerReceipt
+     */
+    select?: ScheduleEventConsumerReceiptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventConsumerReceipt
+     */
+    omit?: ScheduleEventConsumerReceiptOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ScheduleEventDeliveryLog
+   */
+
+  export type AggregateScheduleEventDeliveryLog = {
+    _count: ScheduleEventDeliveryLogCountAggregateOutputType | null
+    _min: ScheduleEventDeliveryLogMinAggregateOutputType | null
+    _max: ScheduleEventDeliveryLogMaxAggregateOutputType | null
+  }
+
+  export type ScheduleEventDeliveryLogMinAggregateOutputType = {
+    id: string | null
+    idempotencyKey: string | null
+    eventType: string | null
+    aggregateId: string | null
+    createdAt: Date | null
+  }
+
+  export type ScheduleEventDeliveryLogMaxAggregateOutputType = {
+    id: string | null
+    idempotencyKey: string | null
+    eventType: string | null
+    aggregateId: string | null
+    createdAt: Date | null
+  }
+
+  export type ScheduleEventDeliveryLogCountAggregateOutputType = {
+    id: number
+    idempotencyKey: number
+    eventType: number
+    aggregateId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ScheduleEventDeliveryLogMinAggregateInputType = {
+    id?: true
+    idempotencyKey?: true
+    eventType?: true
+    aggregateId?: true
+    createdAt?: true
+  }
+
+  export type ScheduleEventDeliveryLogMaxAggregateInputType = {
+    id?: true
+    idempotencyKey?: true
+    eventType?: true
+    aggregateId?: true
+    createdAt?: true
+  }
+
+  export type ScheduleEventDeliveryLogCountAggregateInputType = {
+    id?: true
+    idempotencyKey?: true
+    eventType?: true
+    aggregateId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ScheduleEventDeliveryLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduleEventDeliveryLog to aggregate.
+     */
+    where?: ScheduleEventDeliveryLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleEventDeliveryLogs to fetch.
+     */
+    orderBy?: ScheduleEventDeliveryLogOrderByWithRelationInput | ScheduleEventDeliveryLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ScheduleEventDeliveryLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleEventDeliveryLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleEventDeliveryLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ScheduleEventDeliveryLogs
+    **/
+    _count?: true | ScheduleEventDeliveryLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ScheduleEventDeliveryLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ScheduleEventDeliveryLogMaxAggregateInputType
+  }
+
+  export type GetScheduleEventDeliveryLogAggregateType<T extends ScheduleEventDeliveryLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateScheduleEventDeliveryLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateScheduleEventDeliveryLog[P]>
+      : GetScalarType<T[P], AggregateScheduleEventDeliveryLog[P]>
+  }
+
+
+
+
+  export type ScheduleEventDeliveryLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ScheduleEventDeliveryLogWhereInput
+    orderBy?: ScheduleEventDeliveryLogOrderByWithAggregationInput | ScheduleEventDeliveryLogOrderByWithAggregationInput[]
+    by: ScheduleEventDeliveryLogScalarFieldEnum[] | ScheduleEventDeliveryLogScalarFieldEnum
+    having?: ScheduleEventDeliveryLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ScheduleEventDeliveryLogCountAggregateInputType | true
+    _min?: ScheduleEventDeliveryLogMinAggregateInputType
+    _max?: ScheduleEventDeliveryLogMaxAggregateInputType
+  }
+
+  export type ScheduleEventDeliveryLogGroupByOutputType = {
+    id: string
+    idempotencyKey: string
+    eventType: string
+    aggregateId: string | null
+    createdAt: Date
+    _count: ScheduleEventDeliveryLogCountAggregateOutputType | null
+    _min: ScheduleEventDeliveryLogMinAggregateOutputType | null
+    _max: ScheduleEventDeliveryLogMaxAggregateOutputType | null
+  }
+
+  type GetScheduleEventDeliveryLogGroupByPayload<T extends ScheduleEventDeliveryLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ScheduleEventDeliveryLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ScheduleEventDeliveryLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ScheduleEventDeliveryLogGroupByOutputType[P]>
+            : GetScalarType<T[P], ScheduleEventDeliveryLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ScheduleEventDeliveryLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    idempotencyKey?: boolean
+    eventType?: boolean
+    aggregateId?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["scheduleEventDeliveryLog"]>
+
+  export type ScheduleEventDeliveryLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    idempotencyKey?: boolean
+    eventType?: boolean
+    aggregateId?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["scheduleEventDeliveryLog"]>
+
+  export type ScheduleEventDeliveryLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    idempotencyKey?: boolean
+    eventType?: boolean
+    aggregateId?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["scheduleEventDeliveryLog"]>
+
+  export type ScheduleEventDeliveryLogSelectScalar = {
+    id?: boolean
+    idempotencyKey?: boolean
+    eventType?: boolean
+    aggregateId?: boolean
+    createdAt?: boolean
+  }
+
+  export type ScheduleEventDeliveryLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "idempotencyKey" | "eventType" | "aggregateId" | "createdAt", ExtArgs["result"]["scheduleEventDeliveryLog"]>
+
+  export type $ScheduleEventDeliveryLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ScheduleEventDeliveryLog"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      idempotencyKey: string
+      eventType: string
+      aggregateId: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["scheduleEventDeliveryLog"]>
+    composites: {}
+  }
+
+  type ScheduleEventDeliveryLogGetPayload<S extends boolean | null | undefined | ScheduleEventDeliveryLogDefaultArgs> = $Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload, S>
+
+  type ScheduleEventDeliveryLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ScheduleEventDeliveryLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ScheduleEventDeliveryLogCountAggregateInputType | true
+    }
+
+  export interface ScheduleEventDeliveryLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ScheduleEventDeliveryLog'], meta: { name: 'ScheduleEventDeliveryLog' } }
+    /**
+     * Find zero or one ScheduleEventDeliveryLog that matches the filter.
+     * @param {ScheduleEventDeliveryLogFindUniqueArgs} args - Arguments to find a ScheduleEventDeliveryLog
+     * @example
+     * // Get one ScheduleEventDeliveryLog
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ScheduleEventDeliveryLogFindUniqueArgs>(args: SelectSubset<T, ScheduleEventDeliveryLogFindUniqueArgs<ExtArgs>>): Prisma__ScheduleEventDeliveryLogClient<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ScheduleEventDeliveryLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ScheduleEventDeliveryLogFindUniqueOrThrowArgs} args - Arguments to find a ScheduleEventDeliveryLog
+     * @example
+     * // Get one ScheduleEventDeliveryLog
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ScheduleEventDeliveryLogFindUniqueOrThrowArgs>(args: SelectSubset<T, ScheduleEventDeliveryLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ScheduleEventDeliveryLogClient<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduleEventDeliveryLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventDeliveryLogFindFirstArgs} args - Arguments to find a ScheduleEventDeliveryLog
+     * @example
+     * // Get one ScheduleEventDeliveryLog
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ScheduleEventDeliveryLogFindFirstArgs>(args?: SelectSubset<T, ScheduleEventDeliveryLogFindFirstArgs<ExtArgs>>): Prisma__ScheduleEventDeliveryLogClient<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduleEventDeliveryLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventDeliveryLogFindFirstOrThrowArgs} args - Arguments to find a ScheduleEventDeliveryLog
+     * @example
+     * // Get one ScheduleEventDeliveryLog
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ScheduleEventDeliveryLogFindFirstOrThrowArgs>(args?: SelectSubset<T, ScheduleEventDeliveryLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__ScheduleEventDeliveryLogClient<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ScheduleEventDeliveryLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventDeliveryLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ScheduleEventDeliveryLogs
+     * const scheduleEventDeliveryLogs = await prisma.scheduleEventDeliveryLog.findMany()
+     * 
+     * // Get first 10 ScheduleEventDeliveryLogs
+     * const scheduleEventDeliveryLogs = await prisma.scheduleEventDeliveryLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const scheduleEventDeliveryLogWithIdOnly = await prisma.scheduleEventDeliveryLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ScheduleEventDeliveryLogFindManyArgs>(args?: SelectSubset<T, ScheduleEventDeliveryLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ScheduleEventDeliveryLog.
+     * @param {ScheduleEventDeliveryLogCreateArgs} args - Arguments to create a ScheduleEventDeliveryLog.
+     * @example
+     * // Create one ScheduleEventDeliveryLog
+     * const ScheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.create({
+     *   data: {
+     *     // ... data to create a ScheduleEventDeliveryLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends ScheduleEventDeliveryLogCreateArgs>(args: SelectSubset<T, ScheduleEventDeliveryLogCreateArgs<ExtArgs>>): Prisma__ScheduleEventDeliveryLogClient<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ScheduleEventDeliveryLogs.
+     * @param {ScheduleEventDeliveryLogCreateManyArgs} args - Arguments to create many ScheduleEventDeliveryLogs.
+     * @example
+     * // Create many ScheduleEventDeliveryLogs
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ScheduleEventDeliveryLogCreateManyArgs>(args?: SelectSubset<T, ScheduleEventDeliveryLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ScheduleEventDeliveryLogs and returns the data saved in the database.
+     * @param {ScheduleEventDeliveryLogCreateManyAndReturnArgs} args - Arguments to create many ScheduleEventDeliveryLogs.
+     * @example
+     * // Create many ScheduleEventDeliveryLogs
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ScheduleEventDeliveryLogs and only return the `id`
+     * const scheduleEventDeliveryLogWithIdOnly = await prisma.scheduleEventDeliveryLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ScheduleEventDeliveryLogCreateManyAndReturnArgs>(args?: SelectSubset<T, ScheduleEventDeliveryLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ScheduleEventDeliveryLog.
+     * @param {ScheduleEventDeliveryLogDeleteArgs} args - Arguments to delete one ScheduleEventDeliveryLog.
+     * @example
+     * // Delete one ScheduleEventDeliveryLog
+     * const ScheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.delete({
+     *   where: {
+     *     // ... filter to delete one ScheduleEventDeliveryLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ScheduleEventDeliveryLogDeleteArgs>(args: SelectSubset<T, ScheduleEventDeliveryLogDeleteArgs<ExtArgs>>): Prisma__ScheduleEventDeliveryLogClient<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ScheduleEventDeliveryLog.
+     * @param {ScheduleEventDeliveryLogUpdateArgs} args - Arguments to update one ScheduleEventDeliveryLog.
+     * @example
+     * // Update one ScheduleEventDeliveryLog
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ScheduleEventDeliveryLogUpdateArgs>(args: SelectSubset<T, ScheduleEventDeliveryLogUpdateArgs<ExtArgs>>): Prisma__ScheduleEventDeliveryLogClient<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ScheduleEventDeliveryLogs.
+     * @param {ScheduleEventDeliveryLogDeleteManyArgs} args - Arguments to filter ScheduleEventDeliveryLogs to delete.
+     * @example
+     * // Delete a few ScheduleEventDeliveryLogs
+     * const { count } = await prisma.scheduleEventDeliveryLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ScheduleEventDeliveryLogDeleteManyArgs>(args?: SelectSubset<T, ScheduleEventDeliveryLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduleEventDeliveryLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventDeliveryLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ScheduleEventDeliveryLogs
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ScheduleEventDeliveryLogUpdateManyArgs>(args: SelectSubset<T, ScheduleEventDeliveryLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduleEventDeliveryLogs and returns the data updated in the database.
+     * @param {ScheduleEventDeliveryLogUpdateManyAndReturnArgs} args - Arguments to update many ScheduleEventDeliveryLogs.
+     * @example
+     * // Update many ScheduleEventDeliveryLogs
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ScheduleEventDeliveryLogs and only return the `id`
+     * const scheduleEventDeliveryLogWithIdOnly = await prisma.scheduleEventDeliveryLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ScheduleEventDeliveryLogUpdateManyAndReturnArgs>(args: SelectSubset<T, ScheduleEventDeliveryLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ScheduleEventDeliveryLog.
+     * @param {ScheduleEventDeliveryLogUpsertArgs} args - Arguments to update or create a ScheduleEventDeliveryLog.
+     * @example
+     * // Update or create a ScheduleEventDeliveryLog
+     * const scheduleEventDeliveryLog = await prisma.scheduleEventDeliveryLog.upsert({
+     *   create: {
+     *     // ... data to create a ScheduleEventDeliveryLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ScheduleEventDeliveryLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ScheduleEventDeliveryLogUpsertArgs>(args: SelectSubset<T, ScheduleEventDeliveryLogUpsertArgs<ExtArgs>>): Prisma__ScheduleEventDeliveryLogClient<$Result.GetResult<Prisma.$ScheduleEventDeliveryLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ScheduleEventDeliveryLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventDeliveryLogCountArgs} args - Arguments to filter ScheduleEventDeliveryLogs to count.
+     * @example
+     * // Count the number of ScheduleEventDeliveryLogs
+     * const count = await prisma.scheduleEventDeliveryLog.count({
+     *   where: {
+     *     // ... the filter for the ScheduleEventDeliveryLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends ScheduleEventDeliveryLogCountArgs>(
+      args?: Subset<T, ScheduleEventDeliveryLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ScheduleEventDeliveryLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ScheduleEventDeliveryLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventDeliveryLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ScheduleEventDeliveryLogAggregateArgs>(args: Subset<T, ScheduleEventDeliveryLogAggregateArgs>): Prisma.PrismaPromise<GetScheduleEventDeliveryLogAggregateType<T>>
+
+    /**
+     * Group by ScheduleEventDeliveryLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduleEventDeliveryLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ScheduleEventDeliveryLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ScheduleEventDeliveryLogGroupByArgs['orderBy'] }
+        : { orderBy?: ScheduleEventDeliveryLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ScheduleEventDeliveryLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetScheduleEventDeliveryLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ScheduleEventDeliveryLog model
+   */
+  readonly fields: ScheduleEventDeliveryLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ScheduleEventDeliveryLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ScheduleEventDeliveryLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ScheduleEventDeliveryLog model
+   */
+  interface ScheduleEventDeliveryLogFieldRefs {
+    readonly id: FieldRef<"ScheduleEventDeliveryLog", 'String'>
+    readonly idempotencyKey: FieldRef<"ScheduleEventDeliveryLog", 'String'>
+    readonly eventType: FieldRef<"ScheduleEventDeliveryLog", 'String'>
+    readonly aggregateId: FieldRef<"ScheduleEventDeliveryLog", 'String'>
+    readonly createdAt: FieldRef<"ScheduleEventDeliveryLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ScheduleEventDeliveryLog findUnique
+   */
+  export type ScheduleEventDeliveryLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventDeliveryLog to fetch.
+     */
+    where: ScheduleEventDeliveryLogWhereUniqueInput
+  }
+
+  /**
+   * ScheduleEventDeliveryLog findUniqueOrThrow
+   */
+  export type ScheduleEventDeliveryLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventDeliveryLog to fetch.
+     */
+    where: ScheduleEventDeliveryLogWhereUniqueInput
+  }
+
+  /**
+   * ScheduleEventDeliveryLog findFirst
+   */
+  export type ScheduleEventDeliveryLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventDeliveryLog to fetch.
+     */
+    where?: ScheduleEventDeliveryLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleEventDeliveryLogs to fetch.
+     */
+    orderBy?: ScheduleEventDeliveryLogOrderByWithRelationInput | ScheduleEventDeliveryLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduleEventDeliveryLogs.
+     */
+    cursor?: ScheduleEventDeliveryLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleEventDeliveryLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleEventDeliveryLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleEventDeliveryLogs.
+     */
+    distinct?: ScheduleEventDeliveryLogScalarFieldEnum | ScheduleEventDeliveryLogScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleEventDeliveryLog findFirstOrThrow
+   */
+  export type ScheduleEventDeliveryLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventDeliveryLog to fetch.
+     */
+    where?: ScheduleEventDeliveryLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleEventDeliveryLogs to fetch.
+     */
+    orderBy?: ScheduleEventDeliveryLogOrderByWithRelationInput | ScheduleEventDeliveryLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduleEventDeliveryLogs.
+     */
+    cursor?: ScheduleEventDeliveryLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleEventDeliveryLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleEventDeliveryLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleEventDeliveryLogs.
+     */
+    distinct?: ScheduleEventDeliveryLogScalarFieldEnum | ScheduleEventDeliveryLogScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleEventDeliveryLog findMany
+   */
+  export type ScheduleEventDeliveryLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduleEventDeliveryLogs to fetch.
+     */
+    where?: ScheduleEventDeliveryLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduleEventDeliveryLogs to fetch.
+     */
+    orderBy?: ScheduleEventDeliveryLogOrderByWithRelationInput | ScheduleEventDeliveryLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ScheduleEventDeliveryLogs.
+     */
+    cursor?: ScheduleEventDeliveryLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduleEventDeliveryLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduleEventDeliveryLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduleEventDeliveryLogs.
+     */
+    distinct?: ScheduleEventDeliveryLogScalarFieldEnum | ScheduleEventDeliveryLogScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduleEventDeliveryLog create
+   */
+  export type ScheduleEventDeliveryLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ScheduleEventDeliveryLog.
+     */
+    data: XOR<ScheduleEventDeliveryLogCreateInput, ScheduleEventDeliveryLogUncheckedCreateInput>
+  }
+
+  /**
+   * ScheduleEventDeliveryLog createMany
+   */
+  export type ScheduleEventDeliveryLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ScheduleEventDeliveryLogs.
+     */
+    data: ScheduleEventDeliveryLogCreateManyInput | ScheduleEventDeliveryLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduleEventDeliveryLog createManyAndReturn
+   */
+  export type ScheduleEventDeliveryLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many ScheduleEventDeliveryLogs.
+     */
+    data: ScheduleEventDeliveryLogCreateManyInput | ScheduleEventDeliveryLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduleEventDeliveryLog update
+   */
+  export type ScheduleEventDeliveryLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ScheduleEventDeliveryLog.
+     */
+    data: XOR<ScheduleEventDeliveryLogUpdateInput, ScheduleEventDeliveryLogUncheckedUpdateInput>
+    /**
+     * Choose, which ScheduleEventDeliveryLog to update.
+     */
+    where: ScheduleEventDeliveryLogWhereUniqueInput
+  }
+
+  /**
+   * ScheduleEventDeliveryLog updateMany
+   */
+  export type ScheduleEventDeliveryLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ScheduleEventDeliveryLogs.
+     */
+    data: XOR<ScheduleEventDeliveryLogUpdateManyMutationInput, ScheduleEventDeliveryLogUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduleEventDeliveryLogs to update
+     */
+    where?: ScheduleEventDeliveryLogWhereInput
+    /**
+     * Limit how many ScheduleEventDeliveryLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleEventDeliveryLog updateManyAndReturn
+   */
+  export type ScheduleEventDeliveryLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * The data used to update ScheduleEventDeliveryLogs.
+     */
+    data: XOR<ScheduleEventDeliveryLogUpdateManyMutationInput, ScheduleEventDeliveryLogUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduleEventDeliveryLogs to update
+     */
+    where?: ScheduleEventDeliveryLogWhereInput
+    /**
+     * Limit how many ScheduleEventDeliveryLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleEventDeliveryLog upsert
+   */
+  export type ScheduleEventDeliveryLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ScheduleEventDeliveryLog to update in case it exists.
+     */
+    where: ScheduleEventDeliveryLogWhereUniqueInput
+    /**
+     * In case the ScheduleEventDeliveryLog found by the `where` argument doesn't exist, create a new ScheduleEventDeliveryLog with this data.
+     */
+    create: XOR<ScheduleEventDeliveryLogCreateInput, ScheduleEventDeliveryLogUncheckedCreateInput>
+    /**
+     * In case the ScheduleEventDeliveryLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ScheduleEventDeliveryLogUpdateInput, ScheduleEventDeliveryLogUncheckedUpdateInput>
+  }
+
+  /**
+   * ScheduleEventDeliveryLog delete
+   */
+  export type ScheduleEventDeliveryLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
+    /**
+     * Filter which ScheduleEventDeliveryLog to delete.
+     */
+    where: ScheduleEventDeliveryLogWhereUniqueInput
+  }
+
+  /**
+   * ScheduleEventDeliveryLog deleteMany
+   */
+  export type ScheduleEventDeliveryLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduleEventDeliveryLogs to delete
+     */
+    where?: ScheduleEventDeliveryLogWhereInput
+    /**
+     * Limit how many ScheduleEventDeliveryLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduleEventDeliveryLog without action
+   */
+  export type ScheduleEventDeliveryLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduleEventDeliveryLog
+     */
+    select?: ScheduleEventDeliveryLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduleEventDeliveryLog
+     */
+    omit?: ScheduleEventDeliveryLogOmit<ExtArgs> | null
   }
 
 
@@ -116036,6 +120790,7 @@ export namespace Prisma {
     location: 'location',
     attendees: 'attendees',
     createdAt: 'createdAt',
+    version: 'version',
     updatedAt: 'updatedAt'
   };
 
@@ -116131,6 +120886,70 @@ export namespace Prisma {
   };
 
   export type ScheduleLeaseScalarFieldEnum = (typeof ScheduleLeaseScalarFieldEnum)[keyof typeof ScheduleLeaseScalarFieldEnum]
+
+
+  export const ScheduleRebuildOutboxScalarFieldEnum: {
+    id: 'id',
+    identityId: 'identityId',
+    scheduleId: 'scheduleId',
+    startTime: 'startTime',
+    endTime: 'endTime',
+    sourceRevision: 'sourceRevision',
+    idempotencyKey: 'idempotencyKey',
+    status: 'status',
+    attempts: 'attempts',
+    claimToken: 'claimToken',
+    claimedAt: 'claimedAt',
+    nextAttemptAt: 'nextAttemptAt',
+    lastError: 'lastError',
+    processedAt: 'processedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ScheduleRebuildOutboxScalarFieldEnum = (typeof ScheduleRebuildOutboxScalarFieldEnum)[keyof typeof ScheduleRebuildOutboxScalarFieldEnum]
+
+
+  export const ScheduleDomainEventOutboxScalarFieldEnum: {
+    id: 'id',
+    identityId: 'identityId',
+    scheduleId: 'scheduleId',
+    eventType: 'eventType',
+    payload: 'payload',
+    status: 'status',
+    attempts: 'attempts',
+    claimToken: 'claimToken',
+    claimedAt: 'claimedAt',
+    nextAttemptAt: 'nextAttemptAt',
+    publishedAt: 'publishedAt',
+    lastError: 'lastError',
+    idempotencyKey: 'idempotencyKey',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ScheduleDomainEventOutboxScalarFieldEnum = (typeof ScheduleDomainEventOutboxScalarFieldEnum)[keyof typeof ScheduleDomainEventOutboxScalarFieldEnum]
+
+
+  export const ScheduleEventConsumerReceiptScalarFieldEnum: {
+    id: 'id',
+    idempotencyKey: 'idempotencyKey',
+    effectCount: 'effectCount',
+    consumedAt: 'consumedAt'
+  };
+
+  export type ScheduleEventConsumerReceiptScalarFieldEnum = (typeof ScheduleEventConsumerReceiptScalarFieldEnum)[keyof typeof ScheduleEventConsumerReceiptScalarFieldEnum]
+
+
+  export const ScheduleEventDeliveryLogScalarFieldEnum: {
+    id: 'id',
+    idempotencyKey: 'idempotencyKey',
+    eventType: 'eventType',
+    aggregateId: 'aggregateId',
+    createdAt: 'createdAt'
+  };
+
+  export type ScheduleEventDeliveryLogScalarFieldEnum = (typeof ScheduleEventDeliveryLogScalarFieldEnum)[keyof typeof ScheduleEventDeliveryLogScalarFieldEnum]
 
 
   export const UserSettingScalarFieldEnum: {
@@ -123548,6 +128367,7 @@ export namespace Prisma {
     location?: StringNullableFilter<"Schedule"> | string | null
     attendees?: StringNullableFilter<"Schedule"> | string | null
     createdAt?: DateTimeFilter<"Schedule"> | Date | string
+    version?: IntFilter<"Schedule"> | number
     updatedAt?: DateTimeFilter<"Schedule"> | Date | string
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
   }
@@ -123566,6 +128386,7 @@ export namespace Prisma {
     location?: SortOrderInput | SortOrder
     attendees?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    version?: SortOrder
     updatedAt?: SortOrder
     account?: AccountOrderByWithRelationInput
   }
@@ -123587,6 +128408,7 @@ export namespace Prisma {
     location?: StringNullableFilter<"Schedule"> | string | null
     attendees?: StringNullableFilter<"Schedule"> | string | null
     createdAt?: DateTimeFilter<"Schedule"> | Date | string
+    version?: IntFilter<"Schedule"> | number
     updatedAt?: DateTimeFilter<"Schedule"> | Date | string
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
   }, "id">
@@ -123605,6 +128427,7 @@ export namespace Prisma {
     location?: SortOrderInput | SortOrder
     attendees?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    version?: SortOrder
     updatedAt?: SortOrder
     _count?: ScheduleCountOrderByAggregateInput
     _avg?: ScheduleAvgOrderByAggregateInput
@@ -123630,6 +128453,7 @@ export namespace Prisma {
     location?: StringNullableWithAggregatesFilter<"Schedule"> | string | null
     attendees?: StringNullableWithAggregatesFilter<"Schedule"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Schedule"> | Date | string
+    version?: IntWithAggregatesFilter<"Schedule"> | number
     updatedAt?: DateTimeWithAggregatesFilter<"Schedule"> | Date | string
   }
 
@@ -124095,6 +128919,320 @@ export namespace Prisma {
     expiresAt?: DateTimeWithAggregatesFilter<"ScheduleLease"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"ScheduleLease"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ScheduleLease"> | Date | string
+  }
+
+  export type ScheduleRebuildOutboxWhereInput = {
+    AND?: ScheduleRebuildOutboxWhereInput | ScheduleRebuildOutboxWhereInput[]
+    OR?: ScheduleRebuildOutboxWhereInput[]
+    NOT?: ScheduleRebuildOutboxWhereInput | ScheduleRebuildOutboxWhereInput[]
+    id?: StringFilter<"ScheduleRebuildOutbox"> | string
+    identityId?: StringFilter<"ScheduleRebuildOutbox"> | string
+    scheduleId?: StringNullableFilter<"ScheduleRebuildOutbox"> | string | null
+    startTime?: DateTimeFilter<"ScheduleRebuildOutbox"> | Date | string
+    endTime?: DateTimeFilter<"ScheduleRebuildOutbox"> | Date | string
+    sourceRevision?: IntFilter<"ScheduleRebuildOutbox"> | number
+    idempotencyKey?: StringNullableFilter<"ScheduleRebuildOutbox"> | string | null
+    status?: StringFilter<"ScheduleRebuildOutbox"> | string
+    attempts?: IntFilter<"ScheduleRebuildOutbox"> | number
+    claimToken?: StringNullableFilter<"ScheduleRebuildOutbox"> | string | null
+    claimedAt?: DateTimeNullableFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    lastError?: StringNullableFilter<"ScheduleRebuildOutbox"> | string | null
+    processedAt?: DateTimeNullableFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    createdAt?: DateTimeFilter<"ScheduleRebuildOutbox"> | Date | string
+    updatedAt?: DateTimeFilter<"ScheduleRebuildOutbox"> | Date | string
+  }
+
+  export type ScheduleRebuildOutboxOrderByWithRelationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrderInput | SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    sourceRevision?: SortOrder
+    idempotencyKey?: SortOrderInput | SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrderInput | SortOrder
+    claimedAt?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduleRebuildOutboxWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    idempotencyKey?: string
+    AND?: ScheduleRebuildOutboxWhereInput | ScheduleRebuildOutboxWhereInput[]
+    OR?: ScheduleRebuildOutboxWhereInput[]
+    NOT?: ScheduleRebuildOutboxWhereInput | ScheduleRebuildOutboxWhereInput[]
+    identityId?: StringFilter<"ScheduleRebuildOutbox"> | string
+    scheduleId?: StringNullableFilter<"ScheduleRebuildOutbox"> | string | null
+    startTime?: DateTimeFilter<"ScheduleRebuildOutbox"> | Date | string
+    endTime?: DateTimeFilter<"ScheduleRebuildOutbox"> | Date | string
+    sourceRevision?: IntFilter<"ScheduleRebuildOutbox"> | number
+    status?: StringFilter<"ScheduleRebuildOutbox"> | string
+    attempts?: IntFilter<"ScheduleRebuildOutbox"> | number
+    claimToken?: StringNullableFilter<"ScheduleRebuildOutbox"> | string | null
+    claimedAt?: DateTimeNullableFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    lastError?: StringNullableFilter<"ScheduleRebuildOutbox"> | string | null
+    processedAt?: DateTimeNullableFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    createdAt?: DateTimeFilter<"ScheduleRebuildOutbox"> | Date | string
+    updatedAt?: DateTimeFilter<"ScheduleRebuildOutbox"> | Date | string
+  }, "id" | "idempotencyKey">
+
+  export type ScheduleRebuildOutboxOrderByWithAggregationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrderInput | SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    sourceRevision?: SortOrder
+    idempotencyKey?: SortOrderInput | SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrderInput | SortOrder
+    claimedAt?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ScheduleRebuildOutboxCountOrderByAggregateInput
+    _avg?: ScheduleRebuildOutboxAvgOrderByAggregateInput
+    _max?: ScheduleRebuildOutboxMaxOrderByAggregateInput
+    _min?: ScheduleRebuildOutboxMinOrderByAggregateInput
+    _sum?: ScheduleRebuildOutboxSumOrderByAggregateInput
+  }
+
+  export type ScheduleRebuildOutboxScalarWhereWithAggregatesInput = {
+    AND?: ScheduleRebuildOutboxScalarWhereWithAggregatesInput | ScheduleRebuildOutboxScalarWhereWithAggregatesInput[]
+    OR?: ScheduleRebuildOutboxScalarWhereWithAggregatesInput[]
+    NOT?: ScheduleRebuildOutboxScalarWhereWithAggregatesInput | ScheduleRebuildOutboxScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ScheduleRebuildOutbox"> | string
+    identityId?: StringWithAggregatesFilter<"ScheduleRebuildOutbox"> | string
+    scheduleId?: StringNullableWithAggregatesFilter<"ScheduleRebuildOutbox"> | string | null
+    startTime?: DateTimeWithAggregatesFilter<"ScheduleRebuildOutbox"> | Date | string
+    endTime?: DateTimeWithAggregatesFilter<"ScheduleRebuildOutbox"> | Date | string
+    sourceRevision?: IntWithAggregatesFilter<"ScheduleRebuildOutbox"> | number
+    idempotencyKey?: StringNullableWithAggregatesFilter<"ScheduleRebuildOutbox"> | string | null
+    status?: StringWithAggregatesFilter<"ScheduleRebuildOutbox"> | string
+    attempts?: IntWithAggregatesFilter<"ScheduleRebuildOutbox"> | number
+    claimToken?: StringNullableWithAggregatesFilter<"ScheduleRebuildOutbox"> | string | null
+    claimedAt?: DateTimeNullableWithAggregatesFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableWithAggregatesFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    lastError?: StringNullableWithAggregatesFilter<"ScheduleRebuildOutbox"> | string | null
+    processedAt?: DateTimeNullableWithAggregatesFilter<"ScheduleRebuildOutbox"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ScheduleRebuildOutbox"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ScheduleRebuildOutbox"> | Date | string
+  }
+
+  export type ScheduleDomainEventOutboxWhereInput = {
+    AND?: ScheduleDomainEventOutboxWhereInput | ScheduleDomainEventOutboxWhereInput[]
+    OR?: ScheduleDomainEventOutboxWhereInput[]
+    NOT?: ScheduleDomainEventOutboxWhereInput | ScheduleDomainEventOutboxWhereInput[]
+    id?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    identityId?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    scheduleId?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    eventType?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    payload?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    status?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    attempts?: IntFilter<"ScheduleDomainEventOutbox"> | number
+    claimToken?: StringNullableFilter<"ScheduleDomainEventOutbox"> | string | null
+    claimedAt?: DateTimeNullableFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    publishedAt?: DateTimeNullableFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    lastError?: StringNullableFilter<"ScheduleDomainEventOutbox"> | string | null
+    idempotencyKey?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    createdAt?: DateTimeFilter<"ScheduleDomainEventOutbox"> | Date | string
+    updatedAt?: DateTimeFilter<"ScheduleDomainEventOutbox"> | Date | string
+  }
+
+  export type ScheduleDomainEventOutboxOrderByWithRelationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrder
+    eventType?: SortOrder
+    payload?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrderInput | SortOrder
+    claimedAt?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
+    publishedAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    idempotencyKey?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduleDomainEventOutboxWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    idempotencyKey?: string
+    AND?: ScheduleDomainEventOutboxWhereInput | ScheduleDomainEventOutboxWhereInput[]
+    OR?: ScheduleDomainEventOutboxWhereInput[]
+    NOT?: ScheduleDomainEventOutboxWhereInput | ScheduleDomainEventOutboxWhereInput[]
+    identityId?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    scheduleId?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    eventType?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    payload?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    status?: StringFilter<"ScheduleDomainEventOutbox"> | string
+    attempts?: IntFilter<"ScheduleDomainEventOutbox"> | number
+    claimToken?: StringNullableFilter<"ScheduleDomainEventOutbox"> | string | null
+    claimedAt?: DateTimeNullableFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    publishedAt?: DateTimeNullableFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    lastError?: StringNullableFilter<"ScheduleDomainEventOutbox"> | string | null
+    createdAt?: DateTimeFilter<"ScheduleDomainEventOutbox"> | Date | string
+    updatedAt?: DateTimeFilter<"ScheduleDomainEventOutbox"> | Date | string
+  }, "id" | "idempotencyKey">
+
+  export type ScheduleDomainEventOutboxOrderByWithAggregationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrder
+    eventType?: SortOrder
+    payload?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrderInput | SortOrder
+    claimedAt?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
+    publishedAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    idempotencyKey?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ScheduleDomainEventOutboxCountOrderByAggregateInput
+    _avg?: ScheduleDomainEventOutboxAvgOrderByAggregateInput
+    _max?: ScheduleDomainEventOutboxMaxOrderByAggregateInput
+    _min?: ScheduleDomainEventOutboxMinOrderByAggregateInput
+    _sum?: ScheduleDomainEventOutboxSumOrderByAggregateInput
+  }
+
+  export type ScheduleDomainEventOutboxScalarWhereWithAggregatesInput = {
+    AND?: ScheduleDomainEventOutboxScalarWhereWithAggregatesInput | ScheduleDomainEventOutboxScalarWhereWithAggregatesInput[]
+    OR?: ScheduleDomainEventOutboxScalarWhereWithAggregatesInput[]
+    NOT?: ScheduleDomainEventOutboxScalarWhereWithAggregatesInput | ScheduleDomainEventOutboxScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string
+    identityId?: StringWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string
+    scheduleId?: StringWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string
+    eventType?: StringWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string
+    payload?: StringWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string
+    status?: StringWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string
+    attempts?: IntWithAggregatesFilter<"ScheduleDomainEventOutbox"> | number
+    claimToken?: StringNullableWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string | null
+    claimedAt?: DateTimeNullableWithAggregatesFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableWithAggregatesFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    publishedAt?: DateTimeNullableWithAggregatesFilter<"ScheduleDomainEventOutbox"> | Date | string | null
+    lastError?: StringNullableWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string | null
+    idempotencyKey?: StringWithAggregatesFilter<"ScheduleDomainEventOutbox"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ScheduleDomainEventOutbox"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ScheduleDomainEventOutbox"> | Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptWhereInput = {
+    AND?: ScheduleEventConsumerReceiptWhereInput | ScheduleEventConsumerReceiptWhereInput[]
+    OR?: ScheduleEventConsumerReceiptWhereInput[]
+    NOT?: ScheduleEventConsumerReceiptWhereInput | ScheduleEventConsumerReceiptWhereInput[]
+    id?: StringFilter<"ScheduleEventConsumerReceipt"> | string
+    idempotencyKey?: StringFilter<"ScheduleEventConsumerReceipt"> | string
+    effectCount?: IntFilter<"ScheduleEventConsumerReceipt"> | number
+    consumedAt?: DateTimeFilter<"ScheduleEventConsumerReceipt"> | Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptOrderByWithRelationInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    effectCount?: SortOrder
+    consumedAt?: SortOrder
+  }
+
+  export type ScheduleEventConsumerReceiptWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    idempotencyKey?: string
+    AND?: ScheduleEventConsumerReceiptWhereInput | ScheduleEventConsumerReceiptWhereInput[]
+    OR?: ScheduleEventConsumerReceiptWhereInput[]
+    NOT?: ScheduleEventConsumerReceiptWhereInput | ScheduleEventConsumerReceiptWhereInput[]
+    effectCount?: IntFilter<"ScheduleEventConsumerReceipt"> | number
+    consumedAt?: DateTimeFilter<"ScheduleEventConsumerReceipt"> | Date | string
+  }, "id" | "idempotencyKey">
+
+  export type ScheduleEventConsumerReceiptOrderByWithAggregationInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    effectCount?: SortOrder
+    consumedAt?: SortOrder
+    _count?: ScheduleEventConsumerReceiptCountOrderByAggregateInput
+    _avg?: ScheduleEventConsumerReceiptAvgOrderByAggregateInput
+    _max?: ScheduleEventConsumerReceiptMaxOrderByAggregateInput
+    _min?: ScheduleEventConsumerReceiptMinOrderByAggregateInput
+    _sum?: ScheduleEventConsumerReceiptSumOrderByAggregateInput
+  }
+
+  export type ScheduleEventConsumerReceiptScalarWhereWithAggregatesInput = {
+    AND?: ScheduleEventConsumerReceiptScalarWhereWithAggregatesInput | ScheduleEventConsumerReceiptScalarWhereWithAggregatesInput[]
+    OR?: ScheduleEventConsumerReceiptScalarWhereWithAggregatesInput[]
+    NOT?: ScheduleEventConsumerReceiptScalarWhereWithAggregatesInput | ScheduleEventConsumerReceiptScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ScheduleEventConsumerReceipt"> | string
+    idempotencyKey?: StringWithAggregatesFilter<"ScheduleEventConsumerReceipt"> | string
+    effectCount?: IntWithAggregatesFilter<"ScheduleEventConsumerReceipt"> | number
+    consumedAt?: DateTimeWithAggregatesFilter<"ScheduleEventConsumerReceipt"> | Date | string
+  }
+
+  export type ScheduleEventDeliveryLogWhereInput = {
+    AND?: ScheduleEventDeliveryLogWhereInput | ScheduleEventDeliveryLogWhereInput[]
+    OR?: ScheduleEventDeliveryLogWhereInput[]
+    NOT?: ScheduleEventDeliveryLogWhereInput | ScheduleEventDeliveryLogWhereInput[]
+    id?: StringFilter<"ScheduleEventDeliveryLog"> | string
+    idempotencyKey?: StringFilter<"ScheduleEventDeliveryLog"> | string
+    eventType?: StringFilter<"ScheduleEventDeliveryLog"> | string
+    aggregateId?: StringNullableFilter<"ScheduleEventDeliveryLog"> | string | null
+    createdAt?: DateTimeFilter<"ScheduleEventDeliveryLog"> | Date | string
+  }
+
+  export type ScheduleEventDeliveryLogOrderByWithRelationInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    eventType?: SortOrder
+    aggregateId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ScheduleEventDeliveryLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    idempotencyKey?: string
+    AND?: ScheduleEventDeliveryLogWhereInput | ScheduleEventDeliveryLogWhereInput[]
+    OR?: ScheduleEventDeliveryLogWhereInput[]
+    NOT?: ScheduleEventDeliveryLogWhereInput | ScheduleEventDeliveryLogWhereInput[]
+    eventType?: StringFilter<"ScheduleEventDeliveryLog"> | string
+    aggregateId?: StringNullableFilter<"ScheduleEventDeliveryLog"> | string | null
+    createdAt?: DateTimeFilter<"ScheduleEventDeliveryLog"> | Date | string
+  }, "id" | "idempotencyKey">
+
+  export type ScheduleEventDeliveryLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    eventType?: SortOrder
+    aggregateId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: ScheduleEventDeliveryLogCountOrderByAggregateInput
+    _max?: ScheduleEventDeliveryLogMaxOrderByAggregateInput
+    _min?: ScheduleEventDeliveryLogMinOrderByAggregateInput
+  }
+
+  export type ScheduleEventDeliveryLogScalarWhereWithAggregatesInput = {
+    AND?: ScheduleEventDeliveryLogScalarWhereWithAggregatesInput | ScheduleEventDeliveryLogScalarWhereWithAggregatesInput[]
+    OR?: ScheduleEventDeliveryLogScalarWhereWithAggregatesInput[]
+    NOT?: ScheduleEventDeliveryLogScalarWhereWithAggregatesInput | ScheduleEventDeliveryLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ScheduleEventDeliveryLog"> | string
+    idempotencyKey?: StringWithAggregatesFilter<"ScheduleEventDeliveryLog"> | string
+    eventType?: StringWithAggregatesFilter<"ScheduleEventDeliveryLog"> | string
+    aggregateId?: StringNullableWithAggregatesFilter<"ScheduleEventDeliveryLog"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ScheduleEventDeliveryLog"> | Date | string
   }
 
   export type UserSettingWhereInput = {
@@ -133260,6 +138398,7 @@ export namespace Prisma {
     location?: string | null
     attendees?: string | null
     createdAt?: Date | string
+    version?: number
     updatedAt?: Date | string
     account: AccountCreateNestedOneWithoutSchedulesInput
   }
@@ -133278,6 +138417,7 @@ export namespace Prisma {
     location?: string | null
     attendees?: string | null
     createdAt?: Date | string
+    version?: number
     updatedAt?: Date | string
   }
 
@@ -133294,6 +138434,7 @@ export namespace Prisma {
     location?: NullableStringFieldUpdateOperationsInput | string | null
     attendees?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     account?: AccountUpdateOneRequiredWithoutSchedulesNestedInput
   }
@@ -133312,6 +138453,7 @@ export namespace Prisma {
     location?: NullableStringFieldUpdateOperationsInput | string | null
     attendees?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -133329,6 +138471,7 @@ export namespace Prisma {
     location?: string | null
     attendees?: string | null
     createdAt?: Date | string
+    version?: number
     updatedAt?: Date | string
   }
 
@@ -133345,6 +138488,7 @@ export namespace Prisma {
     location?: NullableStringFieldUpdateOperationsInput | string | null
     attendees?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -133362,6 +138506,7 @@ export namespace Prisma {
     location?: NullableStringFieldUpdateOperationsInput | string | null
     attendees?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -133913,6 +139058,370 @@ export namespace Prisma {
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleRebuildOutboxCreateInput = {
+    id?: string
+    identityId: string
+    scheduleId?: string | null
+    startTime: Date | string
+    endTime: Date | string
+    sourceRevision?: number
+    idempotencyKey?: string | null
+    status?: string
+    attempts?: number
+    claimToken?: string | null
+    claimedAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
+    processedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduleRebuildOutboxUncheckedCreateInput = {
+    id?: string
+    identityId: string
+    scheduleId?: string | null
+    startTime: Date | string
+    endTime: Date | string
+    sourceRevision?: number
+    idempotencyKey?: string | null
+    status?: string
+    attempts?: number
+    claimToken?: string | null
+    claimedAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
+    processedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduleRebuildOutboxUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    scheduleId?: NullableStringFieldUpdateOperationsInput | string | null
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    sourceRevision?: IntFieldUpdateOperationsInput | number
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    claimToken?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleRebuildOutboxUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    scheduleId?: NullableStringFieldUpdateOperationsInput | string | null
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    sourceRevision?: IntFieldUpdateOperationsInput | number
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    claimToken?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleRebuildOutboxCreateManyInput = {
+    id?: string
+    identityId: string
+    scheduleId?: string | null
+    startTime: Date | string
+    endTime: Date | string
+    sourceRevision?: number
+    idempotencyKey?: string | null
+    status?: string
+    attempts?: number
+    claimToken?: string | null
+    claimedAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
+    processedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduleRebuildOutboxUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    scheduleId?: NullableStringFieldUpdateOperationsInput | string | null
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    sourceRevision?: IntFieldUpdateOperationsInput | number
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    claimToken?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleRebuildOutboxUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    scheduleId?: NullableStringFieldUpdateOperationsInput | string | null
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    sourceRevision?: IntFieldUpdateOperationsInput | number
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    claimToken?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleDomainEventOutboxCreateInput = {
+    id?: string
+    identityId: string
+    scheduleId: string
+    eventType: string
+    payload: string
+    status?: string
+    attempts?: number
+    claimToken?: string | null
+    claimedAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    publishedAt?: Date | string | null
+    lastError?: string | null
+    idempotencyKey: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduleDomainEventOutboxUncheckedCreateInput = {
+    id?: string
+    identityId: string
+    scheduleId: string
+    eventType: string
+    payload: string
+    status?: string
+    attempts?: number
+    claimToken?: string | null
+    claimedAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    publishedAt?: Date | string | null
+    lastError?: string | null
+    idempotencyKey: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduleDomainEventOutboxUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    payload?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    claimToken?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleDomainEventOutboxUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    payload?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    claimToken?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleDomainEventOutboxCreateManyInput = {
+    id?: string
+    identityId: string
+    scheduleId: string
+    eventType: string
+    payload: string
+    status?: string
+    attempts?: number
+    claimToken?: string | null
+    claimedAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    publishedAt?: Date | string | null
+    lastError?: string | null
+    idempotencyKey: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduleDomainEventOutboxUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    payload?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    claimToken?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleDomainEventOutboxUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    payload?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    claimToken?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptCreateInput = {
+    id?: string
+    idempotencyKey: string
+    effectCount?: number
+    consumedAt?: Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptUncheckedCreateInput = {
+    id?: string
+    idempotencyKey: string
+    effectCount?: number
+    consumedAt?: Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    effectCount?: IntFieldUpdateOperationsInput | number
+    consumedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    effectCount?: IntFieldUpdateOperationsInput | number
+    consumedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptCreateManyInput = {
+    id?: string
+    idempotencyKey: string
+    effectCount?: number
+    consumedAt?: Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    effectCount?: IntFieldUpdateOperationsInput | number
+    consumedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleEventConsumerReceiptUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    effectCount?: IntFieldUpdateOperationsInput | number
+    consumedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleEventDeliveryLogCreateInput = {
+    id?: string
+    idempotencyKey: string
+    eventType: string
+    aggregateId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type ScheduleEventDeliveryLogUncheckedCreateInput = {
+    id?: string
+    idempotencyKey: string
+    eventType: string
+    aggregateId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type ScheduleEventDeliveryLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    aggregateId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleEventDeliveryLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    aggregateId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleEventDeliveryLogCreateManyInput = {
+    id?: string
+    idempotencyKey: string
+    eventType: string
+    aggregateId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type ScheduleEventDeliveryLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    aggregateId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduleEventDeliveryLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    aggregateId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserSettingCreateInput = {
@@ -140276,12 +145785,14 @@ export namespace Prisma {
     location?: SortOrder
     attendees?: SortOrder
     createdAt?: SortOrder
+    version?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type ScheduleAvgOrderByAggregateInput = {
     duration?: SortOrder
     priority?: SortOrder
+    version?: SortOrder
   }
 
   export type ScheduleMaxOrderByAggregateInput = {
@@ -140298,6 +145809,7 @@ export namespace Prisma {
     location?: SortOrder
     attendees?: SortOrder
     createdAt?: SortOrder
+    version?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -140315,12 +145827,14 @@ export namespace Prisma {
     location?: SortOrder
     attendees?: SortOrder
     createdAt?: SortOrder
+    version?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type ScheduleSumOrderByAggregateInput = {
     duration?: SortOrder
     priority?: SortOrder
+    version?: SortOrder
   }
 
   export type ScheduleTaskCountOrderByAggregateInput = {
@@ -140635,6 +146149,188 @@ export namespace Prisma {
     expiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type ScheduleRebuildOutboxCountOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    sourceRevision?: SortOrder
+    idempotencyKey?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrder
+    claimedAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    lastError?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduleRebuildOutboxAvgOrderByAggregateInput = {
+    sourceRevision?: SortOrder
+    attempts?: SortOrder
+  }
+
+  export type ScheduleRebuildOutboxMaxOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    sourceRevision?: SortOrder
+    idempotencyKey?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrder
+    claimedAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    lastError?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduleRebuildOutboxMinOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    sourceRevision?: SortOrder
+    idempotencyKey?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrder
+    claimedAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    lastError?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduleRebuildOutboxSumOrderByAggregateInput = {
+    sourceRevision?: SortOrder
+    attempts?: SortOrder
+  }
+
+  export type ScheduleDomainEventOutboxCountOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrder
+    eventType?: SortOrder
+    payload?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrder
+    claimedAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    publishedAt?: SortOrder
+    lastError?: SortOrder
+    idempotencyKey?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduleDomainEventOutboxAvgOrderByAggregateInput = {
+    attempts?: SortOrder
+  }
+
+  export type ScheduleDomainEventOutboxMaxOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrder
+    eventType?: SortOrder
+    payload?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrder
+    claimedAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    publishedAt?: SortOrder
+    lastError?: SortOrder
+    idempotencyKey?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduleDomainEventOutboxMinOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    scheduleId?: SortOrder
+    eventType?: SortOrder
+    payload?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    claimToken?: SortOrder
+    claimedAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    publishedAt?: SortOrder
+    lastError?: SortOrder
+    idempotencyKey?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduleDomainEventOutboxSumOrderByAggregateInput = {
+    attempts?: SortOrder
+  }
+
+  export type ScheduleEventConsumerReceiptCountOrderByAggregateInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    effectCount?: SortOrder
+    consumedAt?: SortOrder
+  }
+
+  export type ScheduleEventConsumerReceiptAvgOrderByAggregateInput = {
+    effectCount?: SortOrder
+  }
+
+  export type ScheduleEventConsumerReceiptMaxOrderByAggregateInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    effectCount?: SortOrder
+    consumedAt?: SortOrder
+  }
+
+  export type ScheduleEventConsumerReceiptMinOrderByAggregateInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    effectCount?: SortOrder
+    consumedAt?: SortOrder
+  }
+
+  export type ScheduleEventConsumerReceiptSumOrderByAggregateInput = {
+    effectCount?: SortOrder
+  }
+
+  export type ScheduleEventDeliveryLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    eventType?: SortOrder
+    aggregateId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ScheduleEventDeliveryLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    eventType?: SortOrder
+    aggregateId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ScheduleEventDeliveryLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    idempotencyKey?: SortOrder
+    eventType?: SortOrder
+    aggregateId?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type UserSettingCountOrderByAggregateInput = {
@@ -148451,6 +154147,7 @@ export namespace Prisma {
     location?: string | null
     attendees?: string | null
     createdAt?: Date | string
+    version?: number
     updatedAt?: Date | string
   }
 
@@ -148467,6 +154164,7 @@ export namespace Prisma {
     location?: string | null
     attendees?: string | null
     createdAt?: Date | string
+    version?: number
     updatedAt?: Date | string
   }
 
@@ -150775,6 +156473,7 @@ export namespace Prisma {
     location?: StringNullableFilter<"Schedule"> | string | null
     attendees?: StringNullableFilter<"Schedule"> | string | null
     createdAt?: DateTimeFilter<"Schedule"> | Date | string
+    version?: IntFilter<"Schedule"> | number
     updatedAt?: DateTimeFilter<"Schedule"> | Date | string
   }
 
@@ -178564,6 +184263,7 @@ export namespace Prisma {
     location?: string | null
     attendees?: string | null
     createdAt?: Date | string
+    version?: number
     updatedAt?: Date | string
   }
 
@@ -179867,6 +185567,7 @@ export namespace Prisma {
     location?: NullableStringFieldUpdateOperationsInput | string | null
     attendees?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -179883,6 +185584,7 @@ export namespace Prisma {
     location?: NullableStringFieldUpdateOperationsInput | string | null
     attendees?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -179899,6 +185601,7 @@ export namespace Prisma {
     location?: NullableStringFieldUpdateOperationsInput | string | null
     attendees?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

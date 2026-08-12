@@ -53,7 +53,7 @@ describe('schedule event ownership surface', () => {
     expect(port).toContain(
       'findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null>;',
     );
-    expect(port).toContain('deleteById(identityId: string, id: string): Promise<void>;');
+    expect(port).toContain('deleteById(identityId: string, id: string');
   });
 
   it('port drops bare findById dual method (residual 170)', () => {
@@ -65,15 +65,13 @@ describe('schedule event ownership surface', () => {
   it('prisma filters by id + identityId', () => {
     expect(prisma).toContain('where: { id, identityId }');
     expect(prisma).toContain('deleteMany({');
-    expect(prisma).toContain(
-      "throw new Error('Schedule event not found for the current identity.');",
-    );
+    expect(prisma).toContain('toResultErrorException');
   });
 
   it('application services load via findByIdForIdentity', () => {
     expect(service).toContain('findByIdForIdentity(identityId, id)');
     expect(service).toMatch(/getSchedule\(id: string, identityId: string\)/);
-    expect(service).toMatch(/deleteSchedule\(id: string, identityId: string\)/);
+    expect(service).toMatch(/deleteSchedule\(id: string, identityId: string/);
     expect(conflictDetection).toContain('findByIdForIdentity(');
     expect(conflictDetection).toMatch(
       /getScheduleConflicts\(\s*scheduleId: string,\s*identityId: string,/,
@@ -85,7 +83,7 @@ describe('schedule event ownership surface', () => {
 
   it('module eventApi passes ctx.identityId into get/update/delete/conflicts', () => {
     expect(module).toContain('getSchedule(id, ctx.identityId)');
-    expect(module).toContain('deleteSchedule(id, ctx.identityId)');
+    expect(module).toContain('deleteSchedule(id, ctx.identityId');
     expect(module).toContain('getConflicts(id, ctx.identityId)');
     expect(module).toContain('resolveConflict(id, data, ctx.identityId)');
     expect(module).toMatch(/updateSchedule\(\s*id,\s*ctx\.identityId,/);
@@ -94,14 +92,14 @@ describe('schedule event ownership surface', () => {
   it('HTTP and Electron event get/update/delete pass identity context', () => {
     expect(controller).toContain('async get(id: string, ctx: Context)');
     expect(controller).toContain('async update(id: string, input: unknown, ctx: Context)');
-    expect(controller).toContain('async delete(id: string, ctx: Context)');
+    expect(controller).toContain('async delete(id: string, input: unknown, ctx: Context');
     expect(controller).toContain('async getConflicts(id: string, ctx: Context)');
     expect(controller).toContain(
       'async resolveConflict(id: string, input: unknown, ctx: Context)',
     );
     expect(routes).toContain('controller.get(req.params!.id, ctx)');
     expect(routes).toContain('controller.update(req.params!.id, req.body, ctx)');
-    expect(routes).toContain('controller.delete(req.params!.id, ctx)');
+    expect(routes).toContain('controller.delete(req.params!.id, req.body, ctx)');
     expect(routes).toContain('controller.getConflicts(req.params!.id, ctx)');
     expect(routes).toContain('controller.resolveConflict(req.params!.id, req.body, ctx)');
     expect(electron).toMatch(
@@ -111,7 +109,7 @@ describe('schedule event ownership surface', () => {
       /ScheduleChannels\.UPDATE[\s\S]*eventController\.update\(id, dto, requestContext\)/,
     );
     expect(electron).toMatch(
-      /ScheduleChannels\.DELETE[\s\S]*eventController\.delete\(id, requestContext\)/,
+      /ScheduleChannels\.DELETE[\s\S]*eventController\.delete\(id, payload, requestContext\)/,
     );
     expect(electron).not.toContain('ipcMain.handle(ScheduleChannels.GET, (_event, id) => eventController.get(id));');
   });

@@ -9,3 +9,6 @@ export * from './schedule-conflict-resolution-service';
 export * from './schedule-event-application-service';
 
 
+export * from './schedule-rebuild-worker-service';
+export * from './schedule-domain-event-publisher';
+export * from './schedule-conflict-integrity-service';

@@ -1,24 +1,9 @@
 import type { PrismaClient } from '@memoflow/database';
+import type { IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 
-export interface ScheduleLeaseRequest {
-  leaseKey: string;
-  ownerToken: string;
-  now: number;
-  expiresAt: number;
-}
-
-/**
- * R3a：调度器宿主租约仓储端口（Prisma 原子实现）。
- * 语义与 KnowledgeRepositoryLease 一致：tryAcquire 原子抢占，
- * renew 仅 owner 可续约，release 仅 owner 可释放。
- */
-export interface IScheduleLeaseRepository {
-  tryAcquire(request: ScheduleLeaseRequest): Promise<boolean>;
-  renew(request: ScheduleLeaseRequest): Promise<boolean>;
-  release(leaseKey: string, ownerToken: string): Promise<void>;
-}
-
-export function createScheduleLeasePrismaRepository(db: PrismaClient): IScheduleLeaseRepository {
+export function createScheduleLeasePrismaRepository(
+  db: PrismaClient,
+): import('../../application/ports/schedule-lease.port').IScheduleLeaseRepository {
   return {
     async tryAcquire(request): Promise<boolean> {
       const now = new Date(request.now);
@@ -56,6 +41,69 @@ export function createScheduleLeasePrismaRepository(db: PrismaClient): ISchedule
       await db.scheduleLease.deleteMany({
         where: { leaseKey, ownerToken },
       });
+    },
+  };
+}
+
+export function createScheduleLeasePowerSyncRepository(
+  db: IElectronDatabaseTransaction,
+): import('../../application/ports/schedule-lease.port').IScheduleLeaseRepository {
+  let tableEnsured = false;
+  const ensureTable = async () => {
+    if (tableEnsured) return;
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS schedule_leases (
+        id TEXT PRIMARY KEY,
+        lease_key TEXT UNIQUE,
+        owner_token TEXT,
+        expires_at TEXT,
+        created_at TEXT,
+        updated_at TEXT
+      );
+    `);
+    tableEnsured = true;
+  };
+
+  return {
+    async tryAcquire(request): Promise<boolean> {
+      await ensureTable();
+      const nowIso = new Date(request.now).toISOString();
+      const expiresIso = new Date(request.expiresAt).toISOString();
+      const id = `${request.leaseKey}:${request.ownerToken}`;
+
+      await db.execute(
+        'DELETE FROM schedule_leases WHERE lease_key = ? AND expires_at <= ?',
+        [request.leaseKey, nowIso],
+      );
+
+      try {
+        await db.execute(
+          'INSERT INTO schedule_leases (id, lease_key, owner_token, expires_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+          [id, request.leaseKey, request.ownerToken, expiresIso, nowIso, nowIso],
+        );
+        return true;
+      } catch (_err) {
+        return false;
+      }
+    },
+
+    async renew(request): Promise<boolean> {
+      await ensureTable();
+      const nowIso = new Date(request.now).toISOString();
+      const expiresIso = new Date(request.expiresAt).toISOString();
+      const res = await db.execute(
+        'UPDATE schedule_leases SET expires_at = ?, updated_at = ? WHERE lease_key = ? AND owner_token = ? AND expires_at > ?',
+        [expiresIso, nowIso, request.leaseKey, request.ownerToken, nowIso],
+      );
+      return res.rowsAffected > 0;
+    },
+
+    async release(leaseKey, ownerToken): Promise<void> {
+      await ensureTable();
+      await db.execute(
+        'DELETE FROM schedule_leases WHERE lease_key = ? AND owner_token = ?',
+        [leaseKey, ownerToken],
+      );
     },
   };
 }

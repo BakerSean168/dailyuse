@@ -128,9 +128,10 @@ export function createScheduleElectronModule(
           eventController.update(id, dto, requestContext),
         ),
       );
-      ipcMain.handle(ScheduleChannels.DELETE, async (_event, id) =>
+      ipcMain.handle(ScheduleChannels.DELETE, async (_event, id, input) =>
         withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await eventController.delete(id, requestContext);
+          const payload = typeof input === 'number' ? { expectedVersion: input } : input;
+          const result = await eventController.delete(id, payload, requestContext);
           if (!result.ok) return result;
           return ok(null);
         }),

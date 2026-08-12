@@ -16,6 +16,7 @@ export interface CalendarEntryState {
   priority: number | null;
   location: string | null;
   attendees: string[] | null;
+  version: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -90,6 +91,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
       priority: this._props.priority ?? undefined,
       location: this._props.location ?? undefined,
       attendees: this._props.attendees ?? undefined,
+      version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
     };

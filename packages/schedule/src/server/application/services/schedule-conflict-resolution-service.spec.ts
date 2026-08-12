@@ -56,6 +56,53 @@ class InMemoryScheduleRepository implements IScheduleRepository {
   async withTransaction<T>(fn: (repo: IScheduleRepository) => Promise<T>): Promise<T> {
     return fn(this);
   }
+  async updateConflictProjection(
+    identityId: string,
+    id: string,
+    hasConflict: boolean,
+    conflictingEntries: string[] | null,
+    _sourceRevision: number,
+  ): Promise<void> {
+    const s = this.schedules.get(id);
+    if (s && s.identityId === identityId) {
+      this.schedules.set(
+        id,
+        CalendarEntry.load({
+          id: s.id,
+          identityId: s.identityId,
+          title: s.title,
+          description: s.description,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          duration: s.duration,
+          hasConflict,
+          conflictingEntries,
+          priority: s.priority,
+          location: s.location,
+          attendees: s.attendees,
+          version: s.version,
+          createdAt: s.createdAt,
+          updatedAt: s.updatedAt,
+        }),
+      );
+    }
+  }
+
+  async createRebuildOutbox(): Promise<void> {
+    return undefined;
+  }
+
+  async fetchPendingRebuildOutbox(): Promise<unknown[]> {
+    return [];
+  }
+
+  async claimRebuildOutboxItems(): Promise<unknown[]> {
+    return [];
+  }
+
+  async markRebuildOutboxProcessed(_id: string): Promise<void> {
+    return undefined;
+  }
 }
 
 const hour = (h: number): number => {
@@ -125,4 +172,6 @@ describe('ScheduleConflictResolutionService', () => {
     expect(result.conflicts.hasConflict).toBe(true);
     expect(result.conflicts.conflicts.some((conflict) => conflict.scheduleId === first.id)).toBe(true);
   });
+
+
 });

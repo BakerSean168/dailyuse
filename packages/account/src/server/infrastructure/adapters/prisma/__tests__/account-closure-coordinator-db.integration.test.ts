@@ -8,8 +8,14 @@ import { PrismaCloudAuthRevocationAdapter } from '../../../adapters/cloud-auth/c
 import { AccountClosedWorker } from '../../../workers/account-closed.worker';
 import { IdentityId } from '@memoflow/domain-shared/shared';
 import { Account } from '../../../../domain/aggregates/account';
+// Historical W3/W4 baseline: this integration test wires the real cross-module
+// consumers into AccountClosedWorker. scope:account may not depend on other
+// feature scopes; the boundary exemption is test-only and documented here.
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ReminderAccountClosedConsumer } from '@memoflow/reminder/server';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { NotificationAccountClosedConsumer } from '@memoflow/notification/server';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RepositoryAccountClosedConsumer } from '@memoflow/repository/server';
 import type { CloudAuthRevocationPort } from '../../../../application/ports/cloud-auth-revocation.port';
 

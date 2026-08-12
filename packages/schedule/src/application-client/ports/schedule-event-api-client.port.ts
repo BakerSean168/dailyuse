@@ -31,7 +31,7 @@ export interface IScheduleEventApiClient {
     params: GetSchedulesByTimeRangeRequest,
   ): Promise<Result<CalendarEntryClientDTO[]>>;
   updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>>;
-  deleteSchedule(id: string): Promise<Result<void>>;
+  deleteSchedule(id: string, expectedVersion: number): Promise<Result<void>>;
 
   // ===== Schedule Conflict Detection =====
   getScheduleConflicts(id: string): Promise<Result<ConflictDetectionResult>>;

@@ -17,6 +17,7 @@ model Schedule {
   location             String?
   attendees            String?
   createdAt            DateTime @default(now()) @map("created_at")
+  version              Int      @default(1)
   updatedAt            DateTime @updatedAt @map("updated_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
@@ -126,4 +127,76 @@ model ScheduleLease {
 
   @@index([expiresAt])
   @@map("schedule_leases")
+}
+
+model ScheduleRebuildOutbox {
+  id             String    @id @default(uuid())
+  identityId     String    @map("identity_id")
+  scheduleId     String?   @map("schedule_id")
+  startTime      DateTime  @map("start_time")
+  endTime        DateTime  @map("end_time")
+  sourceRevision Int       @default(1) @map("source_revision")
+  idempotencyKey String?   @unique @map("idempotency_key")
+  status         String    @default("pending")
+  attempts       Int       @default(0)
+  claimToken     String?   @map("claim_token")
+  claimedAt      DateTime? @map("claimed_at")
+  nextAttemptAt  DateTime? @map("next_attempt_at")
+  lastError      String?   @map("last_error")
+  processedAt    DateTime? @map("processed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([identityId, status])
+  @@map("schedule_rebuild_outbox")
+}
+
+model ScheduleDomainEventOutbox {
+  id             String    @id @default(uuid())
+  identityId     String    @map("identity_id")
+  scheduleId     String    @map("schedule_id")
+  eventType      String    @map("event_type")
+  payload        String
+  status         String    @default("pending")
+  attempts       Int       @default(0)
+  claimToken     String?   @map("claim_token")
+  claimedAt      DateTime? @map("claimed_at")
+  nextAttemptAt  DateTime? @map("next_attempt_at")
+  publishedAt    DateTime? @map("published_at")
+  lastError      String?   @map("last_error")
+  idempotencyKey String    @unique @map("idempotency_key")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([identityId, status])
+  @@map("schedule_domain_event_outbox")
+}
+
+/// Durable consumer receipt for at-least-once domain-event delivery.
+/// Consumers with side effects must record a receipt keyed by the envelope's
+/// idempotencyKey inside their own durable transaction; the unique constraint
+/// makes the dedup atomic under concurrency.
+model ScheduleEventConsumerReceipt {
+  id             String   @id @default(uuid())
+  idempotencyKey String   @unique @map("idempotency_key")
+  effectCount    Int      @default(0) @map("effect_count")
+  consumedAt     DateTime @default(now()) @map("consumed_at")
+
+  @@map("schedule_event_consumer_receipt")
+}
+
+/// Independent durable business side effect written by the schedule
+/// delivery-log consumer (P1-1). The consumer commits the receipt
+/// (ScheduleEventConsumerReceipt) and exactly one delivery-log row in the same
+/// transaction; both carry their own unique idempotency_key so concurrent
+/// duplicate delivery converges to exactly one of each.
+model ScheduleEventDeliveryLog {
+  id             String   @id @default(uuid())
+  idempotencyKey String   @unique @map("idempotency_key")
+  eventType      String   @map("event_type")
+  aggregateId    String?  @map("aggregate_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([aggregateId])
+  @@map("schedule_event_delivery_log")
 }

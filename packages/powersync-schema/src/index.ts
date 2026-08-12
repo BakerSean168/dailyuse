@@ -386,6 +386,7 @@ const schedules = new Table({
   priority: column.integer,
   location: column.text,
   attendees: column.text, // JSON
+  version: column.integer,
   created_at: column.text,
   updated_at: column.text,
 });
@@ -456,6 +457,26 @@ const schedule_statistics = new Table({
   last_updated_at: column.text,
   created_at: column.text,
 });
+
+const schedule_domain_event_outbox = new Table(
+  {
+    identity_id: column.text,
+    schedule_id: column.text,
+    event_type: column.text,
+    payload: column.text,
+    status: column.text,
+    attempts: column.integer,
+    claim_token: column.text,
+    claimed_at: column.text,
+    next_attempt_at: column.text,
+    published_at: column.text,
+    last_error: column.text,
+    idempotency_key: column.text,
+    created_at: column.text,
+    updated_at: column.text,
+  },
+  { localOnly: true },
+);
 
 // ──────────────────────────────────────────────
 // Reminder
@@ -1092,6 +1113,7 @@ export const PowerSyncAppSchema = new Schema({
   schedule_tasks,
   schedule_executions,
   schedule_statistics,
+  schedule_domain_event_outbox,
   // Reminder
   reminder_templates,
   reminder_groups,

@@ -45,6 +45,7 @@ export const UpdateScheduleRequestSchema = z.object({
   priority: z.number().int().min(1).max(5).optional(),
   location: z.string().max(500).optional(),
   attendees: z.array(z.string().email()).optional(),
+  expectedVersion: z.number().int().positive(),
 });
 
 export const DetectConflictsRequestSchema = z.object({
@@ -121,3 +122,12 @@ export type AppliedResolution = z.infer<typeof AppliedResolutionSchema>;
 
 /** Response DTO for resolving a schedule conflict */
 export type ResolveConflictResponseDTO = z.infer<typeof ResolveConflictResponseSchema>;
+
+
+export const DeleteScheduleRequestSchema = z.object({
+  expectedVersion: z.number().int().positive(),
+});
+
+export type DeleteScheduleRequest = z.infer<typeof DeleteScheduleRequestSchema>;
+export type UpdateScheduleReq = UpdateScheduleRequest;
+export type DeleteScheduleReq = DeleteScheduleRequest;

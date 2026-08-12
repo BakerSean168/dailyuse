@@ -55,8 +55,8 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
     return this.httpClient.patch(`${this.baseUrl}/${id}`, data);
   }
 
-  async deleteSchedule(id: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${id}`);
+  async deleteSchedule(id: string, expectedVersion: number): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`, { data: { expectedVersion } });
   }
 
   // ===== Schedule Conflict Detection =====

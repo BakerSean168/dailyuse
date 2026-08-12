@@ -19,7 +19,6 @@ import {
   LeaseFencingException,
 } from '@memoflow/contracts/reliable-messaging';
 import { TriggerResult } from '@memoflow/contracts/reminder';
-import type { ReminderTemplate } from '../../../domain/aggregates/reminder-template';
 import type {
   ReminderTransactionRunner,
   ExecuteClaimedOccurrenceTransactionParams,

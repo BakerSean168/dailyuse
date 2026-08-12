@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { IScheduleLeaseRepository, ScheduleLeaseRequest } from './schedule-lease.repository';
+import type { IScheduleLeaseRepository, ScheduleLeaseRequest } from '../../application/ports/schedule-lease.port';
 
 export const SCHEDULE_LEASE_TTL_MS = 60_000;
 export const SCHEDULE_LEASE_RENEWAL_INTERVAL_MS = 20_000;

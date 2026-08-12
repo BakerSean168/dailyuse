@@ -27,6 +27,7 @@ export class PrismaScheduleMapper {
       priority: data.priority,
       location: data.location,
       attendees: data.attendees ? JSON.parse(data.attendees) : null,
+      version: data.version ?? 1,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
@@ -51,6 +52,7 @@ export class PrismaScheduleMapper {
       priority: schedule.priority ?? null,
       location: schedule.location ?? null,
       attendees: schedule.attendees ? JSON.stringify(schedule.attendees) : null,
+      version: schedule.version,
       createdAt: schedule.createdAt,
       updatedAt: schedule.updatedAt,
     };

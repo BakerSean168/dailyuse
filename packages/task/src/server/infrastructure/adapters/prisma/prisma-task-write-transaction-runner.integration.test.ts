@@ -105,9 +105,15 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
     });
 
     expect(sentBeforeCommit).toBe(false);
+    // W5 metadata contract: the reliable delivery adapter passes envelope metadata
+    // (aggregateId / occurredAt / optional idempotencyKey) as the 3rd arg.
     expect(sendSpy).toHaveBeenCalledWith(
       'task:created',
       expect.objectContaining({ templateId: template.id }),
+      expect.objectContaining({
+        aggregateId: expect.any(String),
+        occurredAt: expect.any(Date),
+      }),
     );
 
     const saved = await prisma.taskTemplate.findUnique({

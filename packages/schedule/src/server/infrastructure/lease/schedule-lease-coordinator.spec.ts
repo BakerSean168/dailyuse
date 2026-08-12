@@ -4,7 +4,7 @@ import {
   SCHEDULE_LEASE_KEY,
   SCHEDULE_LEASE_TTL_MS,
 } from './schedule-lease-coordinator';
-import type { IScheduleLeaseRepository } from './schedule-lease.repository';
+import type { IScheduleLeaseRepository } from '../../application/ports/schedule-lease.port';
 
 function mockRepository(overrides: Partial<IScheduleLeaseRepository> = {}): IScheduleLeaseRepository {
   return {

@@ -16,6 +16,7 @@ export type PowerSyncScheduleRow = {
   priority: number | null;
   location: string | null;
   attendees: string | null;
+  version: number;
   created_at: string;
   updated_at: string;
 };
@@ -37,6 +38,7 @@ export class PowerSyncScheduleMapper {
       priority: data.priority,
       location: data.location,
       attendees: data.attendees ? JSON.parse(data.attendees) : null,
+      version: Number(data.version ?? 1),
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
     };
@@ -60,6 +62,7 @@ export class PowerSyncScheduleMapper {
       priority: schedule.priority ?? null,
       location: schedule.location ?? null,
       attendees: schedule.attendees ? JSON.stringify(schedule.attendees) : null,
+      version: schedule.version,
       createdAt: schedule.createdAt.toISOString(),
       updatedAt: schedule.updatedAt.toISOString(),
     };

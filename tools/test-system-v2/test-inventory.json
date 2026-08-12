@@ -7284,6 +7284,16 @@
       ]
     },
     {
+      "path": "packages/schedule/src/api/schedule-event-routes-roundtrip.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/schedule/src/api/schedule-event.routes.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -7324,6 +7334,16 @@
       ]
     },
     {
+      "path": "packages/schedule/src/electron/schedule-electron-delete-contract.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/schedule/src/electron/schedule-electron.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -7345,6 +7365,26 @@
     },
     {
       "path": "packages/schedule/src/server/application/scheduler/patterns-scheduler-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/schedule/src/server/application/services/__tests__/schedule-domain-event-publisher.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/schedule/src/server/application/services/__tests__/schedule-w5-concurrency-projection.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/schedule/vitest.config.ts"
@@ -7582,7 +7622,23 @@
       ]
     },
     {
+      "path": "packages/schedule/src/server/infrastructure/adapters/prisma/schedule-event-delivery-log-consumer.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/schedule/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/schedule/src/server/infrastructure/adapters/prisma/schedule-task-prisma.repository.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/schedule/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/schedule/src/server/infrastructure/adapters/prisma/schedule-w5-real-concurrency.integration.test.ts",
       "primarySuite": "integration",
       "collectors": [
         "packages/schedule/vitest.integration.config.ts"
@@ -9244,21 +9300,21 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 33
+      "fileCount": 37
     },
     {
       "id": "packages/schedule/vitest.integration.config.ts",
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 1
+      "fileCount": 3
     },
     {
       "id": "packages/schedule/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 33
+      "fileCount": 37
     },
     {
       "id": "packages/schedule/vitest.use-cases.config.ts",
@@ -9852,13 +9908,17 @@
       "packages/reminder/src/server/infrastructure/schedule-projection-source.spec.ts",
       "packages/reminder/src/server/transport/reminder-usecases-export.surface.spec.ts",
       "packages/schedule/src/api/routes.spec.ts",
+      "packages/schedule/src/api/schedule-event-routes-roundtrip.spec.ts",
       "packages/schedule/src/api/schedule-event.routes.spec.ts",
       "packages/schedule/src/api/schedule-route-parsers-keep-boundary.surface.spec.ts",
       "packages/schedule/src/api/schedule-void-success-envelope.surface.spec.ts",
       "packages/schedule/src/application-client/schedule-client-port-facade-dual.surface.spec.ts",
+      "packages/schedule/src/electron/schedule-electron-delete-contract.spec.ts",
       "packages/schedule/src/electron/schedule-electron.surface.spec.ts",
       "packages/schedule/src/infrastructure-client/adapters/ipc/schedule-ipc.adapter.surface.spec.ts",
       "packages/schedule/src/server/application/scheduler/patterns-scheduler-dual.surface.spec.ts",
+      "packages/schedule/src/server/application/services/__tests__/schedule-domain-event-publisher.spec.ts",
+      "packages/schedule/src/server/application/services/__tests__/schedule-w5-concurrency-projection.spec.ts",
       "packages/schedule/src/server/application/services/schedule-conflict-resolution-service.spec.ts",
       "packages/schedule/src/server/application/services/schedule-event-application-service.spec.ts",
       "packages/schedule/src/server/application/use-cases/calculate-next-run.test.ts",
@@ -9974,8 +10034,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 845,
-    "integration": 18,
+    "unit": 849,
+    "integration": 20,
     "smoke": 2,
     "boundary-ipc": 9,
     "boundary-main": 5,

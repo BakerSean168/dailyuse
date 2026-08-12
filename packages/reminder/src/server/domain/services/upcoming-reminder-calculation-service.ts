@@ -647,7 +647,6 @@ export class UpcomingReminderCalculationService {
         trigger.fixedTime,
         todayStart,
         todayEnd,
-        effectiveTimezone,
       );
       result.push(...triggerTimes.slice(0, maxItems));
     } else if (trigger.type === TriggerType.Interval && trigger.interval) {
@@ -674,7 +673,6 @@ export class UpcomingReminderCalculationService {
     fixedTime: FixedTimeTrigger,
     todayStart: number,
     todayEnd: number,
-    effectiveTimezone?: string | null,
   ): UpcomingReminderDTO[] {
     const result: UpcomingReminderDTO[] = [];
 

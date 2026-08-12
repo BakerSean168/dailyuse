@@ -108,6 +108,7 @@ export class ScheduleConflictResolutionService {
     const schedule = await this.scheduleEventService.updateSchedule(scheduleId, identityId, {
       startTime: suggestion.newStartTime,
       endTime: suggestion.newEndTime,
+      expectedVersion: currentEvent.version,
     });
 
     return {
@@ -145,6 +146,7 @@ export class ScheduleConflictResolutionService {
     const schedule = await this.scheduleEventService.updateSchedule(scheduleId, identityId, {
       startTime: adjustedStartTime,
       endTime: adjustedEndTime,
+      expectedVersion: currentEvent.version,
     });
 
     return {
@@ -189,6 +191,7 @@ export class ScheduleConflictResolutionService {
 
     const schedule = await this.scheduleEventService.updateSchedule(scheduleId, identityId, {
       endTime: adjustedEndTime,
+      expectedVersion: currentEvent.version,
     });
 
     return {
@@ -235,6 +238,7 @@ export class ScheduleConflictResolutionService {
 
     const schedule = await this.scheduleEventService.updateSchedule(scheduleId, identityId, {
       endTime: adjustedEndTime,
+      expectedVersion: currentEvent.version,
     });
 
     return {

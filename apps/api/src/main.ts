@@ -27,7 +27,7 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
 import { GovernanceApiModule } from '@memoflow/governance/api';
-import { AccountApiModule, createAccountApiModule } from '@memoflow/account/api';
+import { createAccountApiModule } from '@memoflow/account/api';
 import {
   AccountClosedWorker,
   PrismaAccountClosureOperationRepository,

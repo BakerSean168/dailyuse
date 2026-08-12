@@ -1237,6 +1237,7 @@ exports.Prisma.ScheduleScalarFieldEnum = {
   location: 'location',
   attendees: 'attendees',
   createdAt: 'createdAt',
+  version: 'version',
   updatedAt: 'updatedAt'
 };
 
@@ -1317,6 +1318,58 @@ exports.Prisma.ScheduleLeaseScalarFieldEnum = {
   expiresAt: 'expiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ScheduleRebuildOutboxScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  scheduleId: 'scheduleId',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  sourceRevision: 'sourceRevision',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  attempts: 'attempts',
+  claimToken: 'claimToken',
+  claimedAt: 'claimedAt',
+  nextAttemptAt: 'nextAttemptAt',
+  lastError: 'lastError',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ScheduleDomainEventOutboxScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  scheduleId: 'scheduleId',
+  eventType: 'eventType',
+  payload: 'payload',
+  status: 'status',
+  attempts: 'attempts',
+  claimToken: 'claimToken',
+  claimedAt: 'claimedAt',
+  nextAttemptAt: 'nextAttemptAt',
+  publishedAt: 'publishedAt',
+  lastError: 'lastError',
+  idempotencyKey: 'idempotencyKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ScheduleEventConsumerReceiptScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  effectCount: 'effectCount',
+  consumedAt: 'consumedAt'
+};
+
+exports.Prisma.ScheduleEventDeliveryLogScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  eventType: 'eventType',
+  aggregateId: 'aggregateId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.UserSettingScalarFieldEnum = {
@@ -1612,6 +1665,10 @@ exports.Prisma.ModelName = {
   ScheduleExecution: 'ScheduleExecution',
   ScheduleStatistic: 'ScheduleStatistic',
   ScheduleLease: 'ScheduleLease',
+  ScheduleRebuildOutbox: 'ScheduleRebuildOutbox',
+  ScheduleDomainEventOutbox: 'ScheduleDomainEventOutbox',
+  ScheduleEventConsumerReceipt: 'ScheduleEventConsumerReceipt',
+  ScheduleEventDeliveryLog: 'ScheduleEventDeliveryLog',
   UserSetting: 'UserSetting',
   TaskFolder: 'TaskFolder',
   TaskTemplate: 'TaskTemplate',
