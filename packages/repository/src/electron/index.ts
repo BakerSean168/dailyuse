@@ -52,6 +52,8 @@ export type KnowledgeRepositoryConnectionElectronPort = Pick<
   | 'connectKnowledgeRepository'
   | 'disconnectKnowledgeRepository'
   | 'issueDesktopKnowledgeRepositoryToken'
+  | 'listKnowledgeWriteRequests'
+  | 'replayKnowledgeWriteRequestProjection'
 > & {
   previewKnowledgeRepositoryReconciliation(
     connectionId: string,
@@ -208,6 +210,19 @@ export function createRepositoryElectronModule(
         withAuthenticatedValue(ctx, () =>
           withKnowledgeConnection((port) =>
             port.issueDesktopKnowledgeRepositoryToken(request.connectionId),
+          ),
+        ),
+      );
+
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_WRITE_REQUEST_LIST, (_, request) =>
+        withAuthenticatedValue(ctx, () =>
+          withKnowledgeConnection((port) => port.listKnowledgeWriteRequests(request ?? {})),
+        ),
+      );
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_WRITE_REQUEST_REPLAY, (_, request) =>
+        withAuthenticatedValue(ctx, () =>
+          withKnowledgeConnection((port) =>
+            port.replayKnowledgeWriteRequestProjection(request.writeRequestId),
           ),
         ),
       );

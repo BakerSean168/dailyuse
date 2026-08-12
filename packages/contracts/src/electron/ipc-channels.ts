@@ -230,6 +230,8 @@ export const RepositoryChannels = {
     'repository:knowledge-connection:reconciliation-execute',
   KNOWLEDGE_CONNECTION_SYNC: 'repository:knowledge-connection:sync',
   KNOWLEDGE_CONNECTION_DESKTOP_TOKEN: 'repository:knowledge-connection:desktop-token',
+  KNOWLEDGE_WRITE_REQUEST_LIST: 'repository:knowledge-write-request:list',
+  KNOWLEDGE_WRITE_REQUEST_REPLAY: 'repository:knowledge-write-request:replay',
   LOCAL_VAULT_GET: 'repository:local-vault:get',
   LOCAL_VAULT_SELECT: 'repository:local-vault:select',
   LOCAL_VAULT_DETACH: 'repository:local-vault:detach',
@@ -242,6 +244,7 @@ export const RepositoryChannels = {
 
 export const SettingChannels = {
   GET_ALL: 'setting:all',
+  GET_DEFAULTS: 'setting:defaults',
   PATCH: 'setting:patch',
   RESET: 'setting:reset',
   IMPORT: 'setting:import',

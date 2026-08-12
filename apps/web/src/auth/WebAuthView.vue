@@ -6,6 +6,10 @@ import { Button } from '@memoflow/ui-vue-shadcn/components/ui/button';
 import { Input } from '@memoflow/ui-vue-shadcn/components/ui/input';
 import { Label } from '@memoflow/ui-vue-shadcn/components/ui/label';
 import { Loader2 } from '@lucide/vue';
+import {
+  usePassword,
+  useAuthenticationStore,
+} from '@memoflow/app-vue/modules/authentication';
 import { useWebAuth } from './useWebAuth';
 import {
   applyAuthLocale,
@@ -65,8 +69,6 @@ const resetErrors = reactive<ValidationErrors<ResetField>>({});
 const {
   loginByEmail,
   registerByEmail,
-  forgotPassword,
-  resetPassword,
   startGithubLogin,
   isLoading,
   errorMessage,
@@ -75,6 +77,18 @@ const {
   clearError,
   clearSuccessMessage,
 } = useWebAuth();
+
+// Forgot/reset-password go through the unified password mutation receipt path
+// (usePassword + authentication store). Failures persist a structured, safe
+// receipt (localized allowlist message + request id + retryability) that is
+// restored from localStorage when the page is unmounted and remounted. The
+// reset token itself is never persisted — a reset-password failure retries by
+// re-issuing a fresh reset link.
+const passwordActions = usePassword();
+const authStore = useAuthenticationStore();
+const receipt = computed(() => authStore.passwordMutationError);
+const passwordLoading = computed(() => passwordActions.isLoading.value);
+const localSuccessMessage = ref<string | null>(null);
 
 const INPUT_CLASS =
   'h-10 rounded-md border-white/10 bg-white/[0.05] px-3 text-sm text-white placeholder:text-white/25 focus-visible:border-blue-400/60 focus-visible:ring-1 focus-visible:ring-blue-400/40 aria-[invalid=true]:border-red-400/70';
@@ -132,7 +146,10 @@ function clearValidationErrors() {
 function switchScene(next: Scene, options?: { keepSuccess?: boolean }) {
   action.value = null;
   clearError();
-  if (!options?.keepSuccess) clearSuccessMessage();
+  if (!options?.keepSuccess) {
+    clearSuccessMessage();
+    localSuccessMessage.value = null;
+  }
   clearValidationErrors();
   scene.value = next;
 }
@@ -190,8 +207,12 @@ async function submitForgotPassword() {
   const invalid = firstInvalidField(errors, ['email']);
   if (invalid) return focusField(invalid, { email: 'forgot-email' });
   action.value = 'forgot';
-  await forgotPassword({ email: email.value.trim() });
+  const sent = await passwordActions.forgotPassword({ email: email.value.trim() });
   action.value = null;
+  if (sent) {
+    localSuccessMessage.value = t('auth.forgot.sent');
+    clearError();
+  }
 }
 
 async function submitResetPassword() {
@@ -209,9 +230,35 @@ async function submitResetPassword() {
   }
   if (!resetToken) return;
   action.value = 'reset';
-  const success = await resetPassword({ token: resetToken, newPassword: newPassword.value });
+  const success = await passwordActions.resetPassword({
+    token: resetToken,
+    newPassword: newPassword.value,
+  });
   action.value = null;
-  if (success) switchScene('login', { keepSuccess: true });
+  if (success) {
+    localSuccessMessage.value = t('auth.reset.success');
+    switchScene('login', { keepSuccess: true });
+  }
+}
+
+/** Recover from a persisted receipt. The reset token is never stored, so a
+ * reset-password receipt recovers by re-issuing a fresh reset link (forgot
+ * flow with the email pre-filled); a forgot-password receipt re-sends the
+ * reset email directly. */
+async function handleReceiptRetry() {
+  const current = receipt.value;
+  if (!current) {
+    return;
+  }
+  if (current.operation === 'reset-password') {
+    switchScene('forgot');
+    return;
+  }
+  await submitForgotPassword();
+}
+
+function handleReceiptDismiss() {
+  authStore.clearPasswordMutationError();
 }
 
 async function handleGithubLogin() {
@@ -291,13 +338,48 @@ watch([newPassword, confirmNewPassword], () => {
         {{ errorMessage }}
       </p>
       <p
-        v-if="successMessage && !errorMessage"
+        v-if="successMessage || localSuccessMessage"
         data-testid="auth-success-banner"
         class="mb-4 border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200"
         role="status"
       >
-        {{ successMessage }}
+        {{ successMessage || localSuccessMessage }}
       </p>
+
+      <div
+        v-if="receipt && (scene === 'forgot' || scene === 'reset')"
+        role="alert"
+        data-testid="web-auth-password-receipt"
+        class="mb-4 flex flex-col gap-2 border border-red-400/20 bg-red-400/10 px-3 py-2 text-sm text-red-200"
+      >
+        <p data-testid="web-auth-password-receipt-message">{{ receipt.message }}</p>
+        <p
+          v-if="receipt.requestId"
+          data-testid="web-auth-password-receipt-request-id"
+          class="text-xs text-white/55"
+        >
+          {{ t('auth.receipt.requestId') }}: {{ receipt.requestId }}
+        </p>
+        <div class="flex gap-3">
+          <button
+            v-if="receipt.retryable"
+            type="button"
+            data-testid="web-auth-password-receipt-retry"
+            class="underline underline-offset-2 hover:text-white"
+            @click="handleReceiptRetry"
+          >
+            {{ t('auth.receipt.retry') }}
+          </button>
+          <button
+            type="button"
+            data-testid="web-auth-password-receipt-dismiss"
+            class="underline underline-offset-2 hover:text-white"
+            @click="handleReceiptDismiss"
+          >
+            {{ t('auth.receipt.dismiss') }}
+          </button>
+        </div>
+      </div>
 
       <form v-if="scene === 'login'" data-testid="login-form" class="grid gap-4" novalidate @submit.prevent="submitLogin">
         <div data-testid="login-username-input" class="grid gap-1.5">
@@ -352,9 +434,9 @@ watch([newPassword, confirmNewPassword], () => {
           <Input id="forgot-email" v-model="email" type="email" autocomplete="email" :class="INPUT_CLASS" :aria-invalid="Boolean(forgotErrors.email)" />
           <p v-if="forgotErrors.email" class="text-xs text-red-300">{{ t(forgotErrors.email) }}</p>
         </div>
-        <Button data-testid="forgot-submit-button" type="submit" :disabled="isLoading">
-          <Loader2 v-if="isLoading && action === 'forgot'" class="mr-2 h-4 w-4 animate-spin" />
-          {{ t(isLoading && action === 'forgot' ? 'auth.forgot.submitting' : 'auth.forgot.submit') }}
+        <Button data-testid="forgot-submit-button" type="submit" :disabled="passwordLoading">
+          <Loader2 v-if="passwordLoading && action === 'forgot'" class="mr-2 h-4 w-4 animate-spin" />
+          {{ t(passwordLoading && action === 'forgot' ? 'auth.forgot.submitting' : 'auth.forgot.submit') }}
         </Button>
       </form>
 
@@ -369,7 +451,7 @@ watch([newPassword, confirmNewPassword], () => {
           <Input id="confirm-new-password" v-model="confirmNewPassword" type="password" autocomplete="new-password" :class="INPUT_CLASS" :aria-invalid="Boolean(resetErrors.confirmPassword)" />
           <p v-if="resetErrors.confirmPassword" class="text-xs text-red-300">{{ t(resetErrors.confirmPassword) }}</p>
         </div>
-        <Button data-testid="reset-submit-button" type="submit" :disabled="isLoading">{{ t('auth.reset.submit') }}</Button>
+        <Button data-testid="reset-submit-button" type="submit" :disabled="passwordLoading">{{ t('auth.reset.submit') }}</Button>
       </form>
 
       <section v-else data-testid="verify-email-form" class="border border-white/10 bg-white/[0.03] p-4 text-center text-sm leading-6 text-white/65">

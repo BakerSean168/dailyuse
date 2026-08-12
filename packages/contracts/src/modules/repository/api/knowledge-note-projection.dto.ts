@@ -143,3 +143,63 @@ export const CreateConfirmedKnowledgeNoteResponseSchema = z.object({
 export type CreateConfirmedKnowledgeNoteResponse = z.infer<
   typeof CreateConfirmedKnowledgeNoteResponseSchema
 >;
+
+/**
+ * W6-A: write-request ledger DTO exposed to the UI. The Git commit state
+ * (`status`/`commitSha`) and the projection operation state
+ * (`projectionStatus`/`projectionError*`) are separate so a Committed note
+ * whose projection is Pending/Failed stays visible and replayable.
+ */
+export const KnowledgeWriteRequestStatusSchema = z.enum(['Pending', 'Committed', 'Failed']);
+export type KnowledgeWriteRequestStatus = z.infer<typeof KnowledgeWriteRequestStatusSchema>;
+
+export const KnowledgeWriteRequestProjectionStatusSchema = z.enum([
+  'Pending',
+  'Succeeded',
+  'Failed',
+]);
+export type KnowledgeWriteRequestProjectionStatus = z.infer<
+  typeof KnowledgeWriteRequestProjectionStatusSchema
+>;
+
+export const KnowledgeWriteRequestClientSchema = z.object({
+  id: z.string().min(1),
+  connectionId: z.string().min(1),
+  requestId: z.string().min(1),
+  relativePath: vaultRelativeMarkdownPath,
+  status: KnowledgeWriteRequestStatusSchema,
+  commitSha: z.string().nullable(),
+  errorCode: z.string().nullable(),
+  errorMessage: z.string().nullable(),
+  projectionStatus: KnowledgeWriteRequestProjectionStatusSchema,
+  projectionErrorCode: z.string().nullable(),
+  projectionErrorMessage: z.string().nullable(),
+  projectionAttempts: z.number().int().min(0),
+  projectedAt: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  completedAt: z.number().nullable(),
+});
+export type KnowledgeWriteRequestClientDTO = z.infer<typeof KnowledgeWriteRequestClientSchema>;
+
+export const ListKnowledgeWriteRequestsSchema = z.object({
+  connectionId: z.string().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type ListKnowledgeWriteRequestsReq = z.infer<typeof ListKnowledgeWriteRequestsSchema>;
+
+export const ListKnowledgeWriteRequestsResSchema = z.object({
+  writeRequests: z.array(KnowledgeWriteRequestClientSchema),
+});
+export type ListKnowledgeWriteRequestsRes = z.infer<
+  typeof ListKnowledgeWriteRequestsResSchema
+>;
+
+export const KnowledgeWriteRequestReplayResponseSchema = z.object({
+  writeRequestId: z.string().min(1),
+  commitSha: z.string().nullable(),
+  status: z.enum(['Succeeded', 'Failed', 'Pending']),
+});
+export type KnowledgeWriteRequestReplayResponse = z.infer<
+  typeof KnowledgeWriteRequestReplayResponseSchema
+>;

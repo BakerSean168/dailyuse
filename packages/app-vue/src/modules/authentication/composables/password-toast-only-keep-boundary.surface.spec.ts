@@ -6,6 +6,10 @@ import { describe, expect, it } from 'vitest';
  * Residual 1075: password + account checkAvailability toast-only keep-boundary.
  * These paths translate Result errors and toast without store.setError / without
  * createComposableHandleError (setError + report dual shape).
+ * W6-C: password mutations additionally write a structured receipt through the
+ * dedicated store action `setPasswordMutationError` (never the generic setError
+ * nor the handleError sole), keeping the toast path while making the failure
+ * survive page reloads.
  * Soft residual 1055: useSession/useAccount other ops still use handleError toast cluster.
  * Soft residual 1065: goal createGoalErrorHandler rich-log keep-boundary remains.
  * Does not flip §13.2 checkboxes.
@@ -33,6 +37,15 @@ describe('password/checkAvailability toast-only keep-boundary (residual 1075)', 
     expect(password).not.toMatch(/store\.setError\s*\(/);
     expect(password).not.toMatch(/from ['"].*create-composable-handle-error['"]/);
     expect(password).not.toMatch(/createComposableHandleError\s*\(/);
+  });
+
+  it('password mutations persist a structured receipt through the dedicated store action (W6-C)', () => {
+    expect(password).toContain('buildPasswordMutationErrorReceipt');
+    expect(password).toContain('store.setPasswordMutationError(');
+    expect(password).toContain('store.clearPasswordMutationError()');
+    expect(password).toMatch(/store\.setPasswordMutationError\s*\(/);
+    // The structured receipt path must never fall back to the generic setError.
+    expect(password).not.toMatch(/store\.setError\s*\(/);
   });
 
   it('useAccount checkAvailability owns Residual 1075 toast-only keep-boundary', () => {

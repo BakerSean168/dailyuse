@@ -24,6 +24,7 @@ import {
   ListKnowledgeProjectionsSchema,
   CreateConfirmedKnowledgeNoteSchema,
   GetKnowledgeNoteLinkGraphSchema,
+  ListKnowledgeWriteRequestsSchema,
   type CreateConfirmedKnowledgeNoteReq,
   type CreateConfirmedKnowledgeNoteResponse,
   type KnowledgeNoteProjectionClientDTO,
@@ -34,6 +35,9 @@ import {
   type KnowledgeAttachmentContentResponse,
   type KnowledgeAttachmentProjectionListResponse,
   type ListKnowledgeAttachmentProjectionsReq,
+  type ListKnowledgeWriteRequestsReq,
+  type ListKnowledgeWriteRequestsRes,
+  type KnowledgeWriteRequestReplayResponse,
 } from '@memoflow/contracts/repository';
 import { formatZodErrors } from '@memoflow/utils/result';
 
@@ -97,6 +101,14 @@ export interface KnowledgeRepositoryConnectionUseCases {
     ctx: Context,
     request: CreateConfirmedKnowledgeNoteReq,
   ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>>;
+  listKnowledgeWriteRequests(
+    ctx: Context,
+    request: ListKnowledgeWriteRequestsReq,
+  ): Promise<Result<ListKnowledgeWriteRequestsRes>>;
+  replayKnowledgeWriteRequestProjection(
+    ctx: Context,
+    writeRequestId: string,
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>>;
 }
 
 export class KnowledgeRepositoryConnectionController {
@@ -269,5 +281,24 @@ export class KnowledgeRepositoryConnectionController {
       });
     }
     return this.useCases.createConfirmedKnowledgeNote(ctx, parsed.data);
+  }
+
+  async listWriteRequests(ctx: Context, input: unknown) {
+    const parsed = ListKnowledgeWriteRequestsSchema.safeParse(input ?? {});
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid knowledge write request query',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.listKnowledgeWriteRequests(ctx, parsed.data);
+  }
+
+  async replayWriteRequestProjection(ctx: Context, writeRequestId: string) {
+    if (!writeRequestId) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'writeRequestId is required' });
+    }
+    return this.useCases.replayKnowledgeWriteRequestProjection(ctx, writeRequestId);
   }
 }

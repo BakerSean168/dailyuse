@@ -381,6 +381,22 @@ export default {
     "lastSynced": "Last Synced",
     "version": "Version"
   },
+  "resetPreferences": {
+    "title": "Reset preferences",
+    "description": "Restore appearance, region, notification and other preferences to their defaults. Resetting a single category leaves every other category untouched.",
+    "categoryLabel": "Category",
+    "categoryAll": "All categories",
+    "categoryAppearance": "Appearance",
+    "categoryLocale": "Region",
+    "categoryNotification": "Notifications",
+    "categoryPrivacy": "Privacy",
+    "categoryExperimental": "Experimental",
+    "resetButton": "Reset",
+    "resetting": "Resetting...",
+    "currentTheme": "Current theme",
+    "currentNotification": "Notifications enabled",
+    "themeUnknown": "Unknown"
+  },
   "time": {
     "justNow": "Just now",
     "minutesAgo": "{n} min ago",

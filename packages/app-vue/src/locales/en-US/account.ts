@@ -65,6 +65,23 @@ export default {
     "removeFailed": "Failed to remove local PIN",
     "removed": "Local PIN turned off"
   },
+  "password": {
+    "title": "Cloud password",
+    "description": "Change your MemoFlow cloud password or request a password reset email.",
+    "changeTitle": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordMismatch": "Passwords do not match",
+    "changePassword": "Change password",
+    "forgotTitle": "Trouble signing in?",
+    "forgotDescription": "Send a password reset link to your account email.",
+    "resetEmail": "Email",
+    "sendResetEmail": "Send reset email",
+    "retry": "Try again",
+    "dismiss": "Dismiss",
+    "requestId": "Request ID"
+  },
   "profile": {
     "editTitle": "Edit Profile",
     "changeAvatar": "Change Avatar",

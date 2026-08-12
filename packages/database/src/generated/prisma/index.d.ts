@@ -367,6 +367,10 @@ export type KnowledgeAttachmentContentCache = $Result.DefaultSelection<Prisma.$K
 /**
  * Model KnowledgeWriteRequest
  * Idempotency ledger for confirmed Web note creation requests.
+ * The Git commit state (`status`/`commitSha`) and the projection operation
+ * state (`projectionStatus`/`projectionError*`/`projectedAt`) are tracked
+ * separately so a Committed note whose projection is pending/failed stays
+ * visible and replayable instead of being conflated with the commit result.
  */
 export type KnowledgeWriteRequest = $Result.DefaultSelection<Prisma.$KnowledgeWriteRequestPayload>
 /**
@@ -93840,8 +93844,18 @@ export namespace Prisma {
 
   export type AggregateKnowledgeWriteRequest = {
     _count: KnowledgeWriteRequestCountAggregateOutputType | null
+    _avg: KnowledgeWriteRequestAvgAggregateOutputType | null
+    _sum: KnowledgeWriteRequestSumAggregateOutputType | null
     _min: KnowledgeWriteRequestMinAggregateOutputType | null
     _max: KnowledgeWriteRequestMaxAggregateOutputType | null
+  }
+
+  export type KnowledgeWriteRequestAvgAggregateOutputType = {
+    projectionAttempts: number | null
+  }
+
+  export type KnowledgeWriteRequestSumAggregateOutputType = {
+    projectionAttempts: number | null
   }
 
   export type KnowledgeWriteRequestMinAggregateOutputType = {
@@ -93855,6 +93869,13 @@ export namespace Prisma {
     commitSha: string | null
     errorCode: string | null
     errorMessage: string | null
+    projectionStatus: string | null
+    projectionErrorCode: string | null
+    projectionErrorMessage: string | null
+    projectionAttempts: number | null
+    projectedAt: Date | null
+    blobSha: string | null
+    markdownContent: string | null
     createdAt: Date | null
     updatedAt: Date | null
     completedAt: Date | null
@@ -93871,6 +93892,13 @@ export namespace Prisma {
     commitSha: string | null
     errorCode: string | null
     errorMessage: string | null
+    projectionStatus: string | null
+    projectionErrorCode: string | null
+    projectionErrorMessage: string | null
+    projectionAttempts: number | null
+    projectedAt: Date | null
+    blobSha: string | null
+    markdownContent: string | null
     createdAt: Date | null
     updatedAt: Date | null
     completedAt: Date | null
@@ -93887,12 +93915,27 @@ export namespace Prisma {
     commitSha: number
     errorCode: number
     errorMessage: number
+    projectionStatus: number
+    projectionErrorCode: number
+    projectionErrorMessage: number
+    projectionAttempts: number
+    projectedAt: number
+    blobSha: number
+    markdownContent: number
     createdAt: number
     updatedAt: number
     completedAt: number
     _all: number
   }
 
+
+  export type KnowledgeWriteRequestAvgAggregateInputType = {
+    projectionAttempts?: true
+  }
+
+  export type KnowledgeWriteRequestSumAggregateInputType = {
+    projectionAttempts?: true
+  }
 
   export type KnowledgeWriteRequestMinAggregateInputType = {
     id?: true
@@ -93905,6 +93948,13 @@ export namespace Prisma {
     commitSha?: true
     errorCode?: true
     errorMessage?: true
+    projectionStatus?: true
+    projectionErrorCode?: true
+    projectionErrorMessage?: true
+    projectionAttempts?: true
+    projectedAt?: true
+    blobSha?: true
+    markdownContent?: true
     createdAt?: true
     updatedAt?: true
     completedAt?: true
@@ -93921,6 +93971,13 @@ export namespace Prisma {
     commitSha?: true
     errorCode?: true
     errorMessage?: true
+    projectionStatus?: true
+    projectionErrorCode?: true
+    projectionErrorMessage?: true
+    projectionAttempts?: true
+    projectedAt?: true
+    blobSha?: true
+    markdownContent?: true
     createdAt?: true
     updatedAt?: true
     completedAt?: true
@@ -93937,6 +93994,13 @@ export namespace Prisma {
     commitSha?: true
     errorCode?: true
     errorMessage?: true
+    projectionStatus?: true
+    projectionErrorCode?: true
+    projectionErrorMessage?: true
+    projectionAttempts?: true
+    projectedAt?: true
+    blobSha?: true
+    markdownContent?: true
     createdAt?: true
     updatedAt?: true
     completedAt?: true
@@ -93981,6 +94045,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: KnowledgeWriteRequestAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: KnowledgeWriteRequestSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: KnowledgeWriteRequestMinAggregateInputType
@@ -94011,6 +94087,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: KnowledgeWriteRequestCountAggregateInputType | true
+    _avg?: KnowledgeWriteRequestAvgAggregateInputType
+    _sum?: KnowledgeWriteRequestSumAggregateInputType
     _min?: KnowledgeWriteRequestMinAggregateInputType
     _max?: KnowledgeWriteRequestMaxAggregateInputType
   }
@@ -94026,10 +94104,19 @@ export namespace Prisma {
     commitSha: string | null
     errorCode: string | null
     errorMessage: string | null
+    projectionStatus: string
+    projectionErrorCode: string | null
+    projectionErrorMessage: string | null
+    projectionAttempts: number
+    projectedAt: Date | null
+    blobSha: string | null
+    markdownContent: string | null
     createdAt: Date
     updatedAt: Date
     completedAt: Date | null
     _count: KnowledgeWriteRequestCountAggregateOutputType | null
+    _avg: KnowledgeWriteRequestAvgAggregateOutputType | null
+    _sum: KnowledgeWriteRequestSumAggregateOutputType | null
     _min: KnowledgeWriteRequestMinAggregateOutputType | null
     _max: KnowledgeWriteRequestMaxAggregateOutputType | null
   }
@@ -94059,6 +94146,13 @@ export namespace Prisma {
     commitSha?: boolean
     errorCode?: boolean
     errorMessage?: boolean
+    projectionStatus?: boolean
+    projectionErrorCode?: boolean
+    projectionErrorMessage?: boolean
+    projectionAttempts?: boolean
+    projectedAt?: boolean
+    blobSha?: boolean
+    markdownContent?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     completedAt?: boolean
@@ -94077,6 +94171,13 @@ export namespace Prisma {
     commitSha?: boolean
     errorCode?: boolean
     errorMessage?: boolean
+    projectionStatus?: boolean
+    projectionErrorCode?: boolean
+    projectionErrorMessage?: boolean
+    projectionAttempts?: boolean
+    projectedAt?: boolean
+    blobSha?: boolean
+    markdownContent?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     completedAt?: boolean
@@ -94095,6 +94196,13 @@ export namespace Prisma {
     commitSha?: boolean
     errorCode?: boolean
     errorMessage?: boolean
+    projectionStatus?: boolean
+    projectionErrorCode?: boolean
+    projectionErrorMessage?: boolean
+    projectionAttempts?: boolean
+    projectedAt?: boolean
+    blobSha?: boolean
+    markdownContent?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     completedAt?: boolean
@@ -94113,12 +94221,19 @@ export namespace Prisma {
     commitSha?: boolean
     errorCode?: boolean
     errorMessage?: boolean
+    projectionStatus?: boolean
+    projectionErrorCode?: boolean
+    projectionErrorMessage?: boolean
+    projectionAttempts?: boolean
+    projectedAt?: boolean
+    blobSha?: boolean
+    markdownContent?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     completedAt?: boolean
   }
 
-  export type KnowledgeWriteRequestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "connectionId" | "requestId" | "requestHash" | "relativePath" | "status" | "commitSha" | "errorCode" | "errorMessage" | "createdAt" | "updatedAt" | "completedAt", ExtArgs["result"]["knowledgeWriteRequest"]>
+  export type KnowledgeWriteRequestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "connectionId" | "requestId" | "requestHash" | "relativePath" | "status" | "commitSha" | "errorCode" | "errorMessage" | "projectionStatus" | "projectionErrorCode" | "projectionErrorMessage" | "projectionAttempts" | "projectedAt" | "blobSha" | "markdownContent" | "createdAt" | "updatedAt" | "completedAt", ExtArgs["result"]["knowledgeWriteRequest"]>
   export type KnowledgeWriteRequestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
     connection?: boolean | KnowledgeRepositoryConnectionDefaultArgs<ExtArgs>
@@ -94149,6 +94264,13 @@ export namespace Prisma {
       commitSha: string | null
       errorCode: string | null
       errorMessage: string | null
+      projectionStatus: string
+      projectionErrorCode: string | null
+      projectionErrorMessage: string | null
+      projectionAttempts: number
+      projectedAt: Date | null
+      blobSha: string | null
+      markdownContent: string | null
       createdAt: Date
       updatedAt: Date
       completedAt: Date | null
@@ -94587,6 +94709,13 @@ export namespace Prisma {
     readonly commitSha: FieldRef<"KnowledgeWriteRequest", 'String'>
     readonly errorCode: FieldRef<"KnowledgeWriteRequest", 'String'>
     readonly errorMessage: FieldRef<"KnowledgeWriteRequest", 'String'>
+    readonly projectionStatus: FieldRef<"KnowledgeWriteRequest", 'String'>
+    readonly projectionErrorCode: FieldRef<"KnowledgeWriteRequest", 'String'>
+    readonly projectionErrorMessage: FieldRef<"KnowledgeWriteRequest", 'String'>
+    readonly projectionAttempts: FieldRef<"KnowledgeWriteRequest", 'Int'>
+    readonly projectedAt: FieldRef<"KnowledgeWriteRequest", 'DateTime'>
+    readonly blobSha: FieldRef<"KnowledgeWriteRequest", 'String'>
+    readonly markdownContent: FieldRef<"KnowledgeWriteRequest", 'String'>
     readonly createdAt: FieldRef<"KnowledgeWriteRequest", 'DateTime'>
     readonly updatedAt: FieldRef<"KnowledgeWriteRequest", 'DateTime'>
     readonly completedAt: FieldRef<"KnowledgeWriteRequest", 'DateTime'>
@@ -120756,6 +120885,13 @@ export namespace Prisma {
     commitSha: 'commitSha',
     errorCode: 'errorCode',
     errorMessage: 'errorMessage',
+    projectionStatus: 'projectionStatus',
+    projectionErrorCode: 'projectionErrorCode',
+    projectionErrorMessage: 'projectionErrorMessage',
+    projectionAttempts: 'projectionAttempts',
+    projectedAt: 'projectedAt',
+    blobSha: 'blobSha',
+    markdownContent: 'markdownContent',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     completedAt: 'completedAt'
@@ -128208,6 +128344,13 @@ export namespace Prisma {
     commitSha?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     errorCode?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     errorMessage?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionStatus?: StringFilter<"KnowledgeWriteRequest"> | string
+    projectionErrorCode?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionErrorMessage?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionAttempts?: IntFilter<"KnowledgeWriteRequest"> | number
+    projectedAt?: DateTimeNullableFilter<"KnowledgeWriteRequest"> | Date | string | null
+    blobSha?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    markdownContent?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     createdAt?: DateTimeFilter<"KnowledgeWriteRequest"> | Date | string
     updatedAt?: DateTimeFilter<"KnowledgeWriteRequest"> | Date | string
     completedAt?: DateTimeNullableFilter<"KnowledgeWriteRequest"> | Date | string | null
@@ -128226,6 +128369,13 @@ export namespace Prisma {
     commitSha?: SortOrderInput | SortOrder
     errorCode?: SortOrderInput | SortOrder
     errorMessage?: SortOrderInput | SortOrder
+    projectionStatus?: SortOrder
+    projectionErrorCode?: SortOrderInput | SortOrder
+    projectionErrorMessage?: SortOrderInput | SortOrder
+    projectionAttempts?: SortOrder
+    projectedAt?: SortOrderInput | SortOrder
+    blobSha?: SortOrderInput | SortOrder
+    markdownContent?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
@@ -128248,6 +128398,13 @@ export namespace Prisma {
     commitSha?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     errorCode?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     errorMessage?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionStatus?: StringFilter<"KnowledgeWriteRequest"> | string
+    projectionErrorCode?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionErrorMessage?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionAttempts?: IntFilter<"KnowledgeWriteRequest"> | number
+    projectedAt?: DateTimeNullableFilter<"KnowledgeWriteRequest"> | Date | string | null
+    blobSha?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    markdownContent?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     createdAt?: DateTimeFilter<"KnowledgeWriteRequest"> | Date | string
     updatedAt?: DateTimeFilter<"KnowledgeWriteRequest"> | Date | string
     completedAt?: DateTimeNullableFilter<"KnowledgeWriteRequest"> | Date | string | null
@@ -128266,12 +128423,21 @@ export namespace Prisma {
     commitSha?: SortOrderInput | SortOrder
     errorCode?: SortOrderInput | SortOrder
     errorMessage?: SortOrderInput | SortOrder
+    projectionStatus?: SortOrder
+    projectionErrorCode?: SortOrderInput | SortOrder
+    projectionErrorMessage?: SortOrderInput | SortOrder
+    projectionAttempts?: SortOrder
+    projectedAt?: SortOrderInput | SortOrder
+    blobSha?: SortOrderInput | SortOrder
+    markdownContent?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
     _count?: KnowledgeWriteRequestCountOrderByAggregateInput
+    _avg?: KnowledgeWriteRequestAvgOrderByAggregateInput
     _max?: KnowledgeWriteRequestMaxOrderByAggregateInput
     _min?: KnowledgeWriteRequestMinOrderByAggregateInput
+    _sum?: KnowledgeWriteRequestSumOrderByAggregateInput
   }
 
   export type KnowledgeWriteRequestScalarWhereWithAggregatesInput = {
@@ -128288,6 +128454,13 @@ export namespace Prisma {
     commitSha?: StringNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | string | null
     errorCode?: StringNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | string | null
     errorMessage?: StringNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | string | null
+    projectionStatus?: StringWithAggregatesFilter<"KnowledgeWriteRequest"> | string
+    projectionErrorCode?: StringNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | string | null
+    projectionErrorMessage?: StringNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | string | null
+    projectionAttempts?: IntWithAggregatesFilter<"KnowledgeWriteRequest"> | number
+    projectedAt?: DateTimeNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | Date | string | null
+    blobSha?: StringNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | string | null
+    markdownContent?: StringNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"KnowledgeWriteRequest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"KnowledgeWriteRequest"> | Date | string
     completedAt?: DateTimeNullableWithAggregatesFilter<"KnowledgeWriteRequest"> | Date | string | null
@@ -138221,6 +138394,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -138239,6 +138419,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -138253,6 +138440,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -138271,6 +138465,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -138287,6 +138488,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -138301,6 +138509,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -138317,6 +138532,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -145707,9 +145929,20 @@ export namespace Prisma {
     commitSha?: SortOrder
     errorCode?: SortOrder
     errorMessage?: SortOrder
+    projectionStatus?: SortOrder
+    projectionErrorCode?: SortOrder
+    projectionErrorMessage?: SortOrder
+    projectionAttempts?: SortOrder
+    projectedAt?: SortOrder
+    blobSha?: SortOrder
+    markdownContent?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrder
+  }
+
+  export type KnowledgeWriteRequestAvgOrderByAggregateInput = {
+    projectionAttempts?: SortOrder
   }
 
   export type KnowledgeWriteRequestMaxOrderByAggregateInput = {
@@ -145723,6 +145956,13 @@ export namespace Prisma {
     commitSha?: SortOrder
     errorCode?: SortOrder
     errorMessage?: SortOrder
+    projectionStatus?: SortOrder
+    projectionErrorCode?: SortOrder
+    projectionErrorMessage?: SortOrder
+    projectionAttempts?: SortOrder
+    projectedAt?: SortOrder
+    blobSha?: SortOrder
+    markdownContent?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrder
@@ -145739,9 +145979,20 @@ export namespace Prisma {
     commitSha?: SortOrder
     errorCode?: SortOrder
     errorMessage?: SortOrder
+    projectionStatus?: SortOrder
+    projectionErrorCode?: SortOrder
+    projectionErrorMessage?: SortOrder
+    projectionAttempts?: SortOrder
+    projectedAt?: SortOrder
+    blobSha?: SortOrder
+    markdownContent?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrder
+  }
+
+  export type KnowledgeWriteRequestSumOrderByAggregateInput = {
+    projectionAttempts?: SortOrder
   }
 
   export type KnowledgeRepositoryLeaseCountOrderByAggregateInput = {
@@ -155767,6 +156018,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -155783,6 +156041,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -157865,6 +158130,13 @@ export namespace Prisma {
     commitSha?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     errorCode?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     errorMessage?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionStatus?: StringFilter<"KnowledgeWriteRequest"> | string
+    projectionErrorCode?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionErrorMessage?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    projectionAttempts?: IntFilter<"KnowledgeWriteRequest"> | number
+    projectedAt?: DateTimeNullableFilter<"KnowledgeWriteRequest"> | Date | string | null
+    blobSha?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
+    markdownContent?: StringNullableFilter<"KnowledgeWriteRequest"> | string | null
     createdAt?: DateTimeFilter<"KnowledgeWriteRequest"> | Date | string
     updatedAt?: DateTimeFilter<"KnowledgeWriteRequest"> | Date | string
     completedAt?: DateTimeNullableFilter<"KnowledgeWriteRequest"> | Date | string | null
@@ -176810,6 +177082,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -176826,6 +177105,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -184794,6 +185080,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -187210,6 +187503,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -187226,6 +187526,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -187241,6 +187548,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -189697,6 +190011,13 @@ export namespace Prisma {
     commitSha?: string | null
     errorCode?: string | null
     errorMessage?: string | null
+    projectionStatus?: string
+    projectionErrorCode?: string | null
+    projectionErrorMessage?: string | null
+    projectionAttempts?: number
+    projectedAt?: Date | string | null
+    blobSha?: string | null
+    markdownContent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
@@ -189852,6 +190173,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -189868,6 +190196,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -189883,6 +190218,13 @@ export namespace Prisma {
     commitSha?: NullableStringFieldUpdateOperationsInput | string | null
     errorCode?: NullableStringFieldUpdateOperationsInput | string | null
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionStatus?: StringFieldUpdateOperationsInput | string
+    projectionErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionErrorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    projectionAttempts?: IntFieldUpdateOperationsInput | number
+    projectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    blobSha?: NullableStringFieldUpdateOperationsInput | string | null
+    markdownContent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

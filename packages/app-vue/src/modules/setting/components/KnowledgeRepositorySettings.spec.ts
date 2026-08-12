@@ -166,6 +166,10 @@ function createService(overrides: Partial<IRepositoryService> = {}): IRepository
     getLocalVaultBinding: vi.fn(),
     selectLocalVault: vi.fn(),
     detachLocalVault: vi.fn(),
+    listKnowledgeWriteRequests: vi.fn(async () => ok({ writeRequests: [] })),
+    replayKnowledgeWriteRequestProjection: vi.fn(async () =>
+      ok({ writeRequestId: 'write-request-1', commitSha: 'a'.repeat(40), status: 'Succeeded' }),
+    ),
     ...overrides,
   } as unknown as IRepositoryService;
 }

@@ -16,6 +16,8 @@ import type {
   KnowledgeNoteLinkGraphResponse,
   GetKnowledgeNoteLinkGraphReq,
   ListKnowledgeNoteProjectionsReq,
+  ListKnowledgeWriteRequestsReq,
+  ListKnowledgeWriteRequestsRes,
   GitHubInstallationRepositoryDTO,
 } from '@memoflow/contracts/repository';
 import type { IdentityId, RepositoryId, ResourceId } from '@memoflow/contracts/primitives';
@@ -33,7 +35,9 @@ import type {
   GithubWebhookDeliveryRecord,
   IGithubWebhookDeliveryRepository,
   IKnowledgeNoteProjectionRepository,
+  IKnowledgeWriteRequestRepository,
   KnowledgeNoteProjectionUpsert,
+  KnowledgeWriteRequestRecord,
 } from '../ports/knowledge-note-projection.repository';
 import type {
   IKnowledgeAttachmentProjectionRepository,
@@ -98,6 +102,7 @@ export interface KnowledgeRepositoryProjectionServiceOptions {
   attachmentRepository?: IKnowledgeAttachmentProjectionRepository;
   attachmentContentCache?: IKnowledgeAttachmentContentCache;
   attachmentCacheTtlMs?: number;
+  writeRequestRepository?: IKnowledgeWriteRequestRepository;
   githubAppClient: IGitHubAppClient;
   now?: () => number;
   publishMutation?: (event: RepositoryNoteMutationPayload) => void;
@@ -106,6 +111,12 @@ export interface KnowledgeRepositoryProjectionServiceOptions {
   leaseRepository?: IKnowledgeRepositoryLeaseRepository;
   leaseTtlMs?: number;
   leaseRenewalIntervalMs?: number;
+}
+
+export interface KnowledgeWriteRequestReplayResponse {
+  writeRequestId: string;
+  commitSha: string | null;
+  status: 'Succeeded' | 'Failed' | 'Pending';
 }
 
 /**
@@ -523,6 +534,201 @@ export class KnowledgeRepositoryProjectionService {
     }
   }
 
+  /**
+   * Replays the projection operation for one Committed write request whose
+   * projection is Pending or Failed. Idempotent: a write request whose
+   * projection is already Succeeded is returned without re-projecting and never
+   * regresses. Replay is serialized under the connection lease so it cannot race
+   * the webhook/reconciliation projection path.
+   */
+  async replayWriteRequestProjection(
+    identityId: string,
+    writeRequestId: string,
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>> {
+    if (!this.options.writeRequestRepository) {
+      return fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'Knowledge write request projection replay is not configured',
+      });
+    }
+    const writeRequest =
+      await this.options.writeRequestRepository.findByIdForIdentity(identityId, writeRequestId);
+    if (!writeRequest) {
+      return fail({ code: 'NOT_FOUND', message: 'Knowledge write request was not found' });
+    }
+    if (writeRequest.status !== 'Committed' || !writeRequest.commitSha) {
+      return fail({
+        code: 'CONFLICT',
+        message: 'Knowledge write request is not committed; projection cannot be replayed',
+      });
+    }
+    if (writeRequest.projectionStatus === 'Succeeded') {
+      return ok({
+        writeRequestId: writeRequest.id,
+        commitSha: writeRequest.commitSha,
+        status: 'Succeeded',
+      });
+    }
+    const connection = await this.options.connectionRepository.findByIdForIdentity(
+      identityId,
+      writeRequest.connectionId,
+    );
+    if (!connection) {
+      return fail({
+        code: 'NOT_FOUND',
+        message: 'Knowledge repository connection was not found',
+      });
+    }
+    const outcome = await this.leaseCoordinator.execute(
+      knowledgeRepositoryConnectionLeaseKey(connection.id),
+      async (guard) =>
+        this.replayWriteRequestCore(connection.id, writeRequest, {
+          ensureHeld: guard.ensureHeld,
+        }),
+    );
+    if (!outcome.acquired) {
+      return fail({
+        code: 'CONFLICT',
+        message: 'Knowledge repository is processing another write or projection',
+      });
+    }
+    return outcome.value!;
+  }
+
+  async listWriteRequests(
+    identityId: string,
+    request: ListKnowledgeWriteRequestsReq,
+  ): Promise<Result<ListKnowledgeWriteRequestsRes>> {
+    if (!this.options.writeRequestRepository) {
+      return fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'Knowledge write requests are not configured',
+      });
+    }
+    const rows = await this.options.writeRequestRepository.listForIdentity(identityId, {
+      connectionId: request.connectionId,
+      limit: request.limit,
+    });
+    return ok({
+      writeRequests: rows.map((row) => ({
+        id: row.id,
+        connectionId: row.connectionId,
+        requestId: row.requestId,
+        relativePath: row.relativePath,
+        status: row.status,
+        commitSha: row.commitSha,
+        errorCode: row.errorCode,
+        errorMessage: row.errorMessage,
+        projectionStatus: row.projectionStatus,
+        projectionErrorCode: row.projectionErrorCode,
+        projectionErrorMessage: row.projectionErrorMessage,
+        projectionAttempts: row.projectionAttempts,
+        projectedAt: row.projectedAt,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        completedAt: row.completedAt,
+      })),
+    });
+  }
+
+  /**
+   * Replays all Committed write requests whose projection is Pending/Failed for
+   * one connection (automatic replay used by the reconciliation cycle).
+   */
+  private async replayPendingWriteRequests(connectionId: string): Promise<void> {
+    const repository = this.options.writeRequestRepository;
+    if (!repository) return;
+    const candidates = await repository.listProjectionPendingOrFailedForConnection(connectionId, 50);
+    for (const writeRequest of candidates) {
+      if (!this.running) return;
+      const result = await this.replayWriteRequestProjection(
+        writeRequest.identityId,
+        writeRequest.id,
+      );
+      if (!result.ok) {
+        logger.warn('Knowledge write request projection replay failed', {
+          error: result.error,
+          connectionId,
+          writeRequestId: writeRequest.id,
+        });
+      }
+    }
+  }
+
+  private async replayWriteRequestCore(
+    connectionId: string,
+    writeRequest: KnowledgeWriteRequestRecord,
+    guard: { ensureHeld(): Promise<void> },
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>> {
+    if (!this.options.writeRequestRepository) {
+      return fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'Knowledge write request projection replay is not configured',
+      });
+    }
+    const commitSha = writeRequest.commitSha;
+    const blobSha = writeRequest.blobSha;
+    const markdownContent = writeRequest.markdownContent;
+    if (!commitSha || !blobSha || !markdownContent) {
+      return fail({
+        code: 'CONFLICT',
+        message: 'Knowledge write request has no rebuildable projection source',
+      });
+    }
+    let frontmatter: Record<string, unknown> = {};
+    try {
+      const parsed = matter(markdownContent);
+      frontmatter = parsed.data as Record<string, unknown>;
+    } catch {
+      frontmatter = {};
+    }
+    const projection: KnowledgeNoteProjectionUpsert = {
+      id: `knowledge-note-${createHash('sha256').update(`${connectionId}:${writeRequest.relativePath}`).digest('hex')}`,
+      connectionId,
+      relativePath: writeRequest.relativePath,
+      commitSha,
+      blobSha,
+      contentHash: createHash('sha256').update(markdownContent).digest('hex'),
+      frontmatter,
+      markdownContent,
+      indexStatus: 'pending',
+    };
+    try {
+      await guard.ensureHeld();
+      await this.options.projectionRepository.applyChanges(
+        connectionId,
+        commitSha,
+        [projection],
+        [],
+      );
+      await guard.ensureHeld();
+      await this.options.writeRequestRepository.markProjectionSucceeded(
+        writeRequest.identityId,
+        writeRequest.id,
+        this.now(),
+      );
+      return ok({
+        writeRequestId: writeRequest.id,
+        commitSha,
+        status: 'Succeeded',
+      });
+    } catch (error) {
+      if (error instanceof KnowledgeRepositoryLeaseLostError) throw error;
+      await guard.ensureHeld();
+      await this.options.writeRequestRepository.markProjectionFailed(
+        writeRequest.identityId,
+        writeRequest.id,
+        'PROJECTION_REPLAY_FAILED',
+        error instanceof Error ? error.message : 'Knowledge write request projection replay failed',
+        this.now(),
+      );
+      return fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'Knowledge write request projection replay failed',
+      });
+    }
+  }
+
   private enqueue(deliveryId: string, connectionId: string): void {
     if (this.inFlight.has(deliveryId)) return;
     this.inFlight.add(deliveryId);
@@ -598,7 +804,12 @@ export class KnowledgeRepositoryProjectionService {
       }
       await Promise.all(
         candidates.map((connection) =>
-          this.queueConnectionTask(connection.id, () => this.reconcileConnection(connection.id)),
+          this.queueConnectionTask(connection.id, async () => {
+            await this.reconcileConnection(connection.id);
+            // Automatic replay: Committed write requests whose projection is
+            // Pending/Failed are replayed during the reconciliation cycle.
+            await this.replayPendingWriteRequests(connection.id);
+          }),
         ),
       );
     } catch (error) {
@@ -677,6 +888,14 @@ export class KnowledgeRepositoryProjectionService {
         version: connection.status === 'Active' ? connection.version : connection.version + 1,
         updatedAt: this.now() as KnowledgeRepositoryConnectionServerDTO['updatedAt'],
       });
+      await guard.ensureHeld();
+      if (this.options.writeRequestRepository) {
+        await this.options.writeRequestRepository.markProjectionSucceededByCommit(
+          connection.id,
+          remote.headSha,
+          this.now(),
+        );
+      }
     } catch (error) {
       if (error instanceof KnowledgeRepositoryLeaseLostError) return;
       logger.warn('Knowledge projection connection reconciliation failed', {
@@ -891,6 +1110,16 @@ export class KnowledgeRepositoryProjectionService {
         lastProjectedCommitSha: afterSha,
         updatedAt: this.now() as KnowledgeRepositoryConnectionServerDTO['updatedAt'],
       });
+      // Bind write requests committed at this SHA to a Succeeded projection so
+      // external Git commits refresh the ledger (W6-A refresh).
+      await guard.ensureHeld();
+      if (this.options.writeRequestRepository) {
+        await this.options.writeRequestRepository.markProjectionSucceededByCommit(
+          connection.id,
+          afterSha,
+          this.now(),
+        );
+      }
       await guard.ensureHeld();
       await this.options.deliveryRepository.updateStatus(
         delivery.id,

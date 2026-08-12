@@ -39,11 +39,11 @@ export function useUserSetting() {
     setError: (message) => store.setError(message),
   });
 
-  /** 获取指定分类设置 */
+  /** 获取指定分类设置（未设置时回退默认值） */
   function getCategory<K extends PreferenceCategory>(
     category: K,
   ): UserSettingPreferences[K] | undefined {
-    return store.userSetting?.preferences?.[category];
+    return store.getCategory(category);
   }
 
   /** 按 dot-notation key 获取值 (e.g., 'appearance.theme') */
@@ -67,8 +67,13 @@ export function useUserSetting() {
   }
 
   async function loadDefaults() {
-    // TODO: Replace with service method or injected HTTP client when available
-    console.warn('loadDefaults: not yet implemented — requires HTTP client integration');
+    store.setError(null);
+    try {
+      const data = unwrapOrThrowError<UserSettingClientDTO>(await service.getUserSettingDefaults());
+      store.setDefaults(data);
+    } catch (e: unknown) {
+      handleError(e, 'setting.errors.loadDefaultsFailed');
+    }
   }
 
   /** 按分类更新设置 (e.g., updateCategory('appearance', { theme: 'dark' })) */
@@ -91,10 +96,13 @@ export function useUserSetting() {
     }
   }
 
-  async function resetToDefaults(_category?: PreferenceCategory) {
+  /** 重置设置：传入 category 只重置该分类；不传则全量重置。 */
+  async function resetToDefaults(category?: PreferenceCategory) {
     store.setError(null);
     try {
-      const data = unwrapOrThrowError<UserSettingClientDTO>(await service.resetUserSettings());
+      const data = unwrapOrThrowError<UserSettingClientDTO>(
+        await service.resetUserSettings(category),
+      );
       store.setUserSetting(data);
       store.setInitialized(true);
       presentationStore.syncFromUserSetting(data.preferences);

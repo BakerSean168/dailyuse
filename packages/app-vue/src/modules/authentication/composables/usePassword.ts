@@ -6,9 +6,11 @@
  *
  * @module authentication/composables
  *
- * Soft residual 1055 / Residual 1075 keep-boundary: toast-only failure path
- * (no store.setError; not createComposableHandleError dual body).
- * Password flows report via toast only; intentional UX keep-boundary.
+ * Soft residual 1055 / Residual 1075 keep-boundary: password flows keep a
+ * dedicated structured receipt path — they write the structured password
+ * mutation error (W6-C) into the shared authentication store via
+ * `setPasswordMutationError`, and keep toasting. They do NOT use the generic
+ * `store.setError` nor `createComposableHandleError` sole.
  */
 
 import { ref } from 'vue';
@@ -16,6 +18,7 @@ import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import type { CloudAuthClientPort } from '@memoflow/contracts';
 import { useAuthenticationStore } from '../stores/authentication-store';
+import { buildPasswordMutationErrorReceipt } from './reportAuthOperationFailure';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
@@ -47,13 +50,18 @@ export function usePassword() {
     isLoading.value = false;
 
     if (result.ok) {
+      store.clearPasswordMutationError();
       toast.success(t('auth.toast.passwordChanged'), {
         description: t('auth.toast.reloginWithNew'),
       });
       return true;
     }
+    const message = getPasswordErrorMessage(result.error, 'auth.toast.changePasswordFailed');
+    store.setPasswordMutationError(
+      buildPasswordMutationErrorReceipt(result.error, result.meta, 'change-password', t),
+    );
     toast.error(t('auth.toast.operationFailed'), {
-      description: getPasswordErrorMessage(result.error, 'auth.toast.changePasswordFailed'),
+      description: message,
     });
     return false;
   }
@@ -66,13 +74,18 @@ export function usePassword() {
     isLoading.value = false;
 
     if (result.ok) {
+      store.clearPasswordMutationError();
       toast.success(t('auth.toast.resetEmailSent'), {
         description: t('auth.toast.checkResetEmail'),
       });
       return true;
     }
+    const message = getPasswordErrorMessage(result.error, 'auth.toast.sendResetEmailFailed');
+    store.setPasswordMutationError(
+      buildPasswordMutationErrorReceipt(result.error, result.meta, 'forgot-password', t),
+    );
     toast.error(t('auth.toast.operationFailed'), {
-      description: getPasswordErrorMessage(result.error, 'auth.toast.sendResetEmailFailed'),
+      description: message,
     });
     return false;
   }
@@ -85,11 +98,16 @@ export function usePassword() {
     isLoading.value = false;
 
     if (result.ok) {
+      store.clearPasswordMutationError();
       toast.success(t('auth.toast.passwordReset'), { description: t('auth.toast.loginWithNew') });
       return true;
     }
+    const message = getPasswordErrorMessage(result.error, 'auth.toast.resetPasswordFailed');
+    store.setPasswordMutationError(
+      buildPasswordMutationErrorReceipt(result.error, result.meta, 'reset-password', t),
+    );
     toast.error(t('auth.toast.operationFailed'), {
-      description: getPasswordErrorMessage(result.error, 'auth.toast.resetPasswordFailed'),
+      description: message,
     });
     return false;
   }

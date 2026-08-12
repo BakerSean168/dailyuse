@@ -202,6 +202,13 @@ export class KnowledgeNoteCommitService {
         commitSha: null,
         errorCode: null,
         errorMessage: null,
+        projectionStatus: 'Pending',
+        projectionErrorCode: null,
+        projectionErrorMessage: null,
+        projectionAttempts: 0,
+        projectedAt: null,
+        blobSha: null,
+        markdownContent: null,
         updatedAt: now,
         completedAt: null,
       };
@@ -217,6 +224,13 @@ export class KnowledgeNoteCommitService {
         commitSha: null,
         errorCode: null,
         errorMessage: null,
+        projectionStatus: 'Pending',
+        projectionErrorCode: null,
+        projectionErrorMessage: null,
+        projectionAttempts: 0,
+        projectedAt: null,
+        blobSha: null,
+        markdownContent: null,
         createdAt: now,
         updatedAt: now,
         completedAt: null,
@@ -267,6 +281,13 @@ export class KnowledgeNoteCommitService {
 
     await guard.ensureHeld();
     await this.options.writeRequestRepository.markCommitted(identityId, record.id, committed.commitSha);
+    // Bind the projection operation to this exact Git commit and store the
+    // rebuildable source so a delayed/failed projection can be replayed locally.
+    await guard.ensureHeld();
+    await this.options.writeRequestRepository.bindProjectionSource(identityId, record.id, {
+      blobSha: committed.blobSha,
+      markdownContent,
+    });
     const projection: KnowledgeNoteProjectionUpsert = {
       id: `knowledge-note-${createHash('sha256').update(`${connection.id}:${request.proposedPath}`).digest('hex')}`,
       connectionId: connection.id,
@@ -286,6 +307,12 @@ export class KnowledgeNoteCommitService {
         [projection],
         [],
       );
+      await guard.ensureHeld();
+      await this.options.writeRequestRepository.markProjectionSucceeded(
+        identityId,
+        record.id,
+        this.now(),
+      );
       this.publishMutation({
         identityId: connection.identityId as IdentityId,
         repositoryId: connection.id as RepositoryId,
@@ -294,6 +321,7 @@ export class KnowledgeNoteCommitService {
         mutation: RepositoryNoteMutationType.Created,
       });
     } catch (error) {
+      if (error instanceof KnowledgeRepositoryLeaseLostError) throw error;
       logger.warn('Knowledge note committed but immediate projection update failed', {
         error,
         identityId,
@@ -301,6 +329,14 @@ export class KnowledgeNoteCommitService {
         requestId: request.requestId,
         commitSha: committed.commitSha,
       });
+      await guard.ensureHeld();
+      await this.options.writeRequestRepository.markProjectionFailed(
+        identityId,
+        record.id,
+        'PROJECTION_FAILED',
+        error instanceof Error ? error.message : 'Knowledge note projection failed',
+        this.now(),
+      );
     }
     return ok({
       requestId: request.requestId,

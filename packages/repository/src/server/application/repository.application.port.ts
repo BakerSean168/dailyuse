@@ -24,6 +24,9 @@ import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
+  ListKnowledgeWriteRequestsReq,
+  ListKnowledgeWriteRequestsRes,
+  KnowledgeWriteRequestReplayResponse,
 } from '@memoflow/contracts/repository';
 
 /**
@@ -107,4 +110,12 @@ export interface RepositoryApplicationPort {
     signature: string;
     rawBody: string;
   }): Promise<Result<{ accepted: boolean; duplicate: boolean; reason?: string }>>;
+  listKnowledgeWriteRequests(
+    ctx: Context,
+    request: ListKnowledgeWriteRequestsReq,
+  ): Promise<Result<ListKnowledgeWriteRequestsRes>>;
+  replayKnowledgeWriteRequestProjection(
+    ctx: Context,
+    writeRequestId: string,
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>>;
 }

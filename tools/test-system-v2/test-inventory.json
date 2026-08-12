@@ -2985,6 +2985,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/account/components/CloudPasswordSection.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/account/components/account-logout-locale.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3172,6 +3180,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/authentication/composables/password-toast-only-keep-boundary.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/authentication/composables/usePassword.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -3461,6 +3477,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/repository/components/KnowledgeWriteRequestLedger.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/repository/composables/useRecentKnowledgeNotes.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3583,6 +3607,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/setting/components/SettingsResetSection.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/setting/components/ai-provider-default-policy.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3660,6 +3692,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/setting/views/UserSettingsView.contract.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/setting/views/UserSettingsView.defaults.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -7026,6 +7066,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/repository/src/application-client/knowledge-write-request-ledger-contract.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/repository/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/repository/src/application-client/repository-client-port-dual.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -7182,6 +7230,14 @@
       "primarySuite": "unit",
       "collectors": [
         "packages/repository/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/repository/src/server/infrastructure/adapters/prisma/__tests__/knowledge-write-request-projection-ledger.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/repository/vitest.integration.config.ts"
       ],
       "measurementCollectors": []
     },
@@ -7744,6 +7800,14 @@
       "measurementCollectors": [
         "packages/setting/vitest.config.ts"
       ]
+    },
+    {
+      "path": "packages/setting/src/server/application/use-cases/commands/__tests__/reset-user-setting.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/setting/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
     },
     {
       "path": "packages/setting/src/server/application/use-cases/commands/__tests__/reset-user-setting.test.ts",
@@ -9076,7 +9140,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 165
+      "fileCount": 170
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -9286,7 +9350,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 28
+      "fileCount": 29
+    },
+    {
+      "id": "packages/repository/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 1
     },
     {
       "id": "packages/schedule-orchestration/vitest.config.ts",
@@ -9343,6 +9414,13 @@
       "suite": "coverage",
       "runner": "vitest",
       "fileCount": 14
+    },
+    {
+      "id": "packages/setting/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 1
     },
     {
       "id": "packages/task/vitest.config.ts",
@@ -10034,8 +10112,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 849,
-    "integration": 20,
+    "unit": 855,
+    "integration": 22,
     "smoke": 2,
     "boundary-ipc": 9,
     "boundary-main": 5,

@@ -26,10 +26,14 @@ describe('ResetUserSetting', () => {
     useCase = new ResetUserSetting(repo);
   });
 
-  it('should throw when setting not found', async () => {
+  it('should materialize defaults when the user has no setting record', async () => {
     vi.mocked(repo.findByIdentityId).mockResolvedValue(null);
 
-    await expect(useCase.execute(identityId)).rejects.toThrow('User setting not found');
+    const result = await useCase.execute(identityId);
+
+    const defaults = getDefaultPreferences();
+    expect(result.preferences).toEqual(defaults);
+    expect(repo.save).toHaveBeenCalledTimes(2);
   });
 
   it('should reset a specific category to defaults', async () => {

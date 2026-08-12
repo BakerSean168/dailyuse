@@ -54,7 +54,7 @@ function makeInstance(overrides: Partial<TaskInstanceClientDTO> = {}): TaskInsta
     id: 'inst-1' as TaskInstanceId,
     templateId: 'tpl-1' as TaskTemplateId,
     identityId: 'acc-1' as IdentityId,
-    instanceDate: new Date('2026-03-18T00:00:00+08:00').getTime(),
+    instanceDate: new Date(2026, 2, 18, 0, 0, 0, 0).getTime(),
     timeConfig: {
       timeType: 'AllDay',
       startDate: null,

@@ -21,6 +21,7 @@ const i18n = createI18n({
       setting: {
         errors: {
           loadFailed: 'Load failed',
+          loadDefaultsFailed: 'Load defaults failed',
           updateFailed: 'Update failed',
           resetFailed: 'Reset failed',
           exportFailed: 'Export failed',
@@ -65,6 +66,7 @@ function createSetting(
 function mountComposable(
   serviceOverrides: Partial<{
     getUserSettings: () => Promise<unknown>;
+    getUserSettingDefaults: () => Promise<unknown>;
     patchCategory: (category: string, patch: Record<string, unknown>) => Promise<unknown>;
     resetUserSettings: () => Promise<unknown>;
     exportSettings: () => Promise<unknown>;
@@ -74,6 +76,7 @@ function mountComposable(
   let composable!: ReturnType<typeof useUserSetting>;
   const service = {
     getUserSettings: vi.fn(),
+    getUserSettingDefaults: vi.fn(),
     patchCategory: vi.fn(),
     resetUserSettings: vi.fn(),
     exportSettings: vi.fn(),
@@ -168,5 +171,44 @@ describe('useUserSetting', () => {
     expect(result).toEqual(updated);
     expect(useUserSettingStore().userSetting).toEqual(updated);
     expect(composable.getCategory('notification')?.useCustomNotification).toBe(false);
+  });
+
+  it('hydrates the defaults from the service and exposes them through the store', async () => {
+    const defaults = createSetting({
+      id: 'setting-defaults' as UserSettingClientDTO['id'],
+      preferences: {
+        ...createSetting().preferences,
+        appearance: { theme: 'auto' },
+      } as UserSettingPreferences,
+    });
+    const { composable, service } = mountComposable({
+      getUserSettingDefaults: vi.fn().mockResolvedValue(ok(defaults)),
+    });
+
+    await composable.loadDefaults();
+
+    expect(service.getUserSettingDefaults).toHaveBeenCalledTimes(1);
+    expect(useUserSettingStore().defaults).toEqual(defaults);
+  });
+
+  it('falls back to defaults for unset preference keys', async () => {
+    const defaults = createSetting({
+      id: 'setting-defaults' as UserSettingClientDTO['id'],
+      preferences: {
+        ...createSetting().preferences,
+        appearance: { theme: 'auto' },
+      } as UserSettingPreferences,
+    });
+    const { composable, service } = mountComposable({
+      getUserSettingDefaults: vi.fn().mockResolvedValue(ok(defaults)),
+    });
+
+    await composable.loadDefaults();
+    // Simulate a user with no persisted setting record.
+    useUserSettingStore().setUserSetting(null);
+
+    expect(useUserSettingStore().userSetting).toBeNull();
+    expect(composable.getValue('appearance.theme')).toBe('auto');
+    expect(composable.getCategory('appearance')).toEqual({ theme: 'auto' });
   });
 });

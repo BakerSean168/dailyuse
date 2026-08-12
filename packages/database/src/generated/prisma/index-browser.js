@@ -1209,6 +1209,13 @@ exports.Prisma.KnowledgeWriteRequestScalarFieldEnum = {
   commitSha: 'commitSha',
   errorCode: 'errorCode',
   errorMessage: 'errorMessage',
+  projectionStatus: 'projectionStatus',
+  projectionErrorCode: 'projectionErrorCode',
+  projectionErrorMessage: 'projectionErrorMessage',
+  projectionAttempts: 'projectionAttempts',
+  projectedAt: 'projectedAt',
+  blobSha: 'blobSha',
+  markdownContent: 'markdownContent',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   completedAt: 'completedAt'

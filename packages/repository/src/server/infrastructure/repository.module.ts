@@ -144,6 +144,12 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
         : unavailable(),
     ingestGithubWebhook: async (request) =>
       projectionService ? projectionService.ingest(request) : unavailable(),
+    listKnowledgeWriteRequests: async (ctx, request) =>
+      projectionService ? projectionService.listWriteRequests(ctx.identityId, request) : unavailable(),
+    replayKnowledgeWriteRequestProjection: async (ctx, writeRequestId) =>
+      projectionService
+        ? projectionService.replayWriteRequestProjection(ctx.identityId, writeRequestId)
+        : unavailable(),
   };
 }
 

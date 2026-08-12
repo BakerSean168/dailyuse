@@ -94,6 +94,9 @@ export function createRepositoryPrismaModule(
           cloudDataPurger: options.knowledgeRepositoryCloudDataPurger,
         })
       : null;
+  const writeRequestRepository = options.githubApp
+    ? new KnowledgeWriteRequestPrismaRepository(db)
+    : null;
   const knowledgeRepositoryProjectionService =
     options.githubApp &&
     connectionRepository &&
@@ -107,6 +110,7 @@ export function createRepositoryPrismaModule(
           projectionRepository,
           attachmentRepository,
           attachmentContentCache: attachmentContentCache ?? undefined,
+          writeRequestRepository: writeRequestRepository ?? undefined,
           leaseRepository: leaseRepository ?? undefined,
           githubAppClient,
         })
@@ -116,7 +120,7 @@ export function createRepositoryPrismaModule(
       ? new KnowledgeNoteCommitService({
           connectionRepository,
           projectionRepository,
-          writeRequestRepository: new KnowledgeWriteRequestPrismaRepository(db),
+          writeRequestRepository: writeRequestRepository ?? new KnowledgeWriteRequestPrismaRepository(db),
           leaseRepository: leaseRepository ?? undefined,
           githubAppClient,
           closureChecker: options.closureChecker,

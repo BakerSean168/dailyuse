@@ -65,6 +65,23 @@ export default {
     "removeFailed": "本地 PIN 移除失败",
     "removed": "本地 PIN 已关闭"
   },
+  "password": {
+    "title": "云端密码",
+    "description": "修改 MemoFlow 云端密码，或向账户邮箱发送密码重置邮件。",
+    "changeTitle": "修改密码",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "passwordMismatch": "两次输入的新密码不一致",
+    "changePassword": "修改密码",
+    "forgotTitle": "无法登录？",
+    "forgotDescription": "向账户邮箱发送密码重置链接。",
+    "resetEmail": "邮箱",
+    "sendResetEmail": "发送重置邮件",
+    "retry": "重试",
+    "dismiss": "关闭",
+    "requestId": "请求 ID"
+  },
   "profile": {
     "editTitle": "编辑个人资料",
     "changeAvatar": "更换头像",

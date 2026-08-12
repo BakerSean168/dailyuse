@@ -331,6 +331,7 @@
               </Button>
             </div>
           </div>
+          <KnowledgeWriteRequestLedger />
         </div>
 
         <div
@@ -503,6 +504,7 @@ import {
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { readDesktopAccessSnapshot } from '../../../shared/utils/desktop-profile-access';
+import { KnowledgeWriteRequestLedger } from '../../repository/components';
 
 const { t } = useI18n();
 const route = useRoute();

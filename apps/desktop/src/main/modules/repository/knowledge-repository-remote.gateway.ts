@@ -9,6 +9,9 @@ import type {
   KnowledgeRepositoryContentState,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
+  ListKnowledgeWriteRequestsReq,
+  ListKnowledgeWriteRequestsRes,
+  KnowledgeWriteRequestReplayResponse,
   StartKnowledgeRepositoryInstallationReq,
   StartKnowledgeRepositoryInstallationRes,
 } from '@memoflow/contracts/repository';
@@ -128,6 +131,27 @@ export class KnowledgeRepositoryRemoteGateway {
     return this.request(
       `/repositories/knowledge-connections/${encodeURIComponent(connectionId)}/head-confirmation`,
       { method: 'POST', body: request },
+    );
+  }
+
+  async listKnowledgeWriteRequests(
+    request: ListKnowledgeWriteRequestsReq = { limit: 50 },
+  ): Promise<Result<ListKnowledgeWriteRequestsRes>> {
+    const query = new URLSearchParams();
+    if (request.connectionId) query.set('connectionId', request.connectionId);
+    query.set('limit', String(request.limit ?? 50));
+    return this.request(
+      `/repositories/knowledge-write-requests${query.size ? `?${query.toString()}` : ''}`,
+      { method: 'GET' },
+    );
+  }
+
+  async replayKnowledgeWriteRequestProjection(
+    writeRequestId: string,
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>> {
+    return this.request(
+      `/repositories/knowledge-write-requests/${encodeURIComponent(writeRequestId)}/replay`,
+      { method: 'POST', body: {} },
     );
   }
 

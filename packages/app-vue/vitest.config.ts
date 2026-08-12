@@ -27,6 +27,13 @@ export default mergeConfig(
       include: ['src/**/*.{test,spec}.{ts,tsx}'],
       environment: 'happy-dom',
       setupFiles: ['./src/test/setup.ts'],
+      execArgv: [
+        // Node >= 22 exposes a globalThis.localStorage that is unusable without
+        // --localstorage-file and emits a per-worker ExperimentalWarning whenever
+        // the happy-dom environment touches it. The shared setup installs a
+        // functional Storage; this flag silences that noise.
+        '--disable-warning=ExperimentalWarning',
+      ],
     },
   }),
 );

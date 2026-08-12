@@ -19,6 +19,7 @@ import type {
   IKnowledgeNoteProjectionRepository,
   IKnowledgeWriteRequestRepository,
   KnowledgeNoteProjectionUpsert,
+  KnowledgeWriteRequestProjectionSource,
   KnowledgeWriteRequestRecord,
 } from '../../../../../../packages/repository/src/server/application/ports/knowledge-note-projection.repository';
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -201,9 +202,9 @@ class LiveWriteRequestRepository implements IKnowledgeWriteRequestRepository {
     return false;
   }
 
-  async markCommitted(id: string, commitSha: string): Promise<void> {
+  async markCommitted(identityId: string, id: string, commitSha: string): Promise<void> {
     for (const [key, record] of this.records) {
-      if (record.id !== id) continue;
+      if (record.identityId !== identityId || record.id !== id) continue;
       this.records.set(key, {
         ...record,
         status: 'Committed',
@@ -214,9 +215,14 @@ class LiveWriteRequestRepository implements IKnowledgeWriteRequestRepository {
     }
   }
 
-  async markFailed(id: string, code: string, message: string): Promise<void> {
+  async markFailed(
+    identityId: string,
+    id: string,
+    code: string,
+    message: string,
+  ): Promise<void> {
     for (const [key, record] of this.records) {
-      if (record.id !== id) continue;
+      if (record.identityId !== identityId || record.id !== id) continue;
       this.records.set(key, {
         ...record,
         status: 'Failed',
@@ -225,6 +231,134 @@ class LiveWriteRequestRepository implements IKnowledgeWriteRequestRepository {
         updatedAt: Date.now(),
       });
     }
+  }
+
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<KnowledgeWriteRequestRecord | null> {
+    for (const record of this.records.values()) {
+      if (record.identityId === identityId && record.id === id) {
+        return record;
+      }
+    }
+    return null;
+  }
+
+  async bindProjectionSource(
+    identityId: string,
+    id: string,
+    source: KnowledgeWriteRequestProjectionSource,
+  ): Promise<boolean> {
+    for (const [key, record] of this.records) {
+      if (record.identityId !== identityId || record.id !== id) continue;
+      if (record.projectionStatus === 'Succeeded') return false;
+      this.records.set(key, {
+        ...record,
+        blobSha: source.blobSha,
+        markdownContent: source.markdownContent,
+        projectionStatus: 'Pending',
+        updatedAt: Date.now(),
+      });
+      return true;
+    }
+    return false;
+  }
+
+  async markProjectionSucceeded(identityId: string, id: string, now: number): Promise<boolean> {
+    for (const [key, record] of this.records) {
+      if (record.identityId !== identityId || record.id !== id) continue;
+      if (record.projectionStatus === 'Succeeded') return false;
+      this.records.set(key, {
+        ...record,
+        projectionStatus: 'Succeeded',
+        projectionErrorCode: null,
+        projectionErrorMessage: null,
+        projectionAttempts: record.projectionAttempts + 1,
+        projectedAt: now,
+        updatedAt: now,
+      });
+      return true;
+    }
+    return false;
+  }
+
+  async markProjectionFailed(
+    identityId: string,
+    id: string,
+    code: string,
+    message: string,
+    now: number,
+  ): Promise<boolean> {
+    for (const [key, record] of this.records) {
+      if (record.identityId !== identityId || record.id !== id) continue;
+      if (record.projectionStatus === 'Succeeded') return false;
+      this.records.set(key, {
+        ...record,
+        projectionStatus: 'Failed',
+        projectionErrorCode: code,
+        projectionErrorMessage: message,
+        projectionAttempts: record.projectionAttempts + 1,
+        projectedAt: null,
+        updatedAt: now,
+      });
+      return true;
+    }
+    return false;
+  }
+
+  async markProjectionSucceededByCommit(
+    connectionId: string,
+    commitSha: string,
+    now: number,
+  ): Promise<number> {
+    let updated = 0;
+    for (const [key, record] of this.records) {
+      if (
+        record.connectionId !== connectionId ||
+        record.commitSha !== commitSha ||
+        record.projectionStatus === 'Succeeded'
+      ) {
+        continue;
+      }
+      this.records.set(key, {
+        ...record,
+        projectionStatus: 'Succeeded',
+        projectionErrorCode: null,
+        projectionErrorMessage: null,
+        projectionAttempts: record.projectionAttempts + 1,
+        projectedAt: now,
+        updatedAt: now,
+      });
+      updated += 1;
+    }
+    return updated;
+  }
+
+  async listProjectionPendingOrFailedForConnection(
+    connectionId: string,
+    limit: number,
+  ): Promise<KnowledgeWriteRequestRecord[]> {
+    return [...this.records.values()]
+      .filter(
+        (record) =>
+          record.connectionId === connectionId &&
+          (record.projectionStatus === 'Pending' || record.projectionStatus === 'Failed'),
+      )
+      .slice(0, limit);
+  }
+
+  async listForIdentity(
+    identityId: string,
+    options: { connectionId?: string; limit: number },
+  ): Promise<KnowledgeWriteRequestRecord[]> {
+    return [...this.records.values()]
+      .filter(
+        (record) =>
+          record.identityId === identityId &&
+          (options.connectionId ? record.connectionId === options.connectionId : true),
+      )
+      .slice(0, options.limit);
   }
 }
 
