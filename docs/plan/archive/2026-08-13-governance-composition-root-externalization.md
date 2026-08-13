@@ -335,12 +335,12 @@ apps 不能深导入 `@memoflow/governance/server/infrastructure`：`tools/gover
 
 ## 7. 成功标准
 
-- [ ] 新增 `apps/api/src/runtime/compose-governance.ts`，其接口只接受 `db: PrismaClient`，并明确按“adapter → repository set → application instance → API module”顺序组装。
-- [ ] `packages/governance/src/api/module.ts` 不再 import `PrismaClient`、不再读取 `context.db`、不再创建 repository/use case/runtime；只接受 `GovernanceModuleInstance`，注册 routes 并拥有该 instance 的 dispose。
-- [ ] API `main.ts` 使用 `composeGovernance({ db: prisma })`，Governance 仍保持原注册顺序和双 API 前缀行为；`bootstrap.ts` 不承担 governance assembly。
-- [ ] Electron 通过 PowerSync composer 复用同一 `createGovernanceModule()`/`GovernanceApplicationPort`；HTTP 与 IPC 只替换 persistence adapter，不复制业务逻辑。
-- [ ] `GovernanceApplicationPort`、controller、route、DTO/schema、event names、SQL/mapper、错误语义和 lifecycle observable behavior 零变化。
-- [ ] 具体 `RulePrismaRepository`/`PowerSyncRuleRepository` class 没有泄漏到 apps public import；仅公开命名清晰的 `create*Repositories` ingredient factory，所有 public surface/export audit 通过。
-- [ ] governance 相关新增/修改文件包含详细 English-first + 中文 JSDoc，公开 factory 有 `@param`/`@returns`，具体 adapter 仍标记 `@internal`；README/Quick Reference/Decision 与实现一致。
-- [ ] `pnpm nx run governance:typecheck`、`governance:lint`、`governance:test`、`api:typecheck`、`api:lint`、`api:test`、`api:test:smoke`、`desktop:lint`、`desktop:test:main`、`desktop:test:ipc`、`pnpm nx run memoflow:governance-check` 和 `pnpm nx run memoflow:docs-check` 全部通过；desktop 当前没有独立 `typecheck` target，治理共享源码类型由 `governance:typecheck` 覆盖。
-- [ ] 只有上述标准全部满足，才把本计划从 `docs/plan/active` 移入 archive，并开始 `goal、task` 的下一阶段迁移。
+- [x] 新增 `apps/api/src/runtime/compose-governance.ts`，其接口只接受 `db: PrismaClient`，并明确按“adapter → repository set → application instance → API module”顺序组装。
+- [x] `packages/governance/src/api/module.ts` 不再 import `PrismaClient`、不再读取 `context.db`、不再创建 repository/use case/runtime；只接受 `GovernanceModuleInstance`，注册 routes 并拥有该 instance 的 dispose。
+- [x] API `main.ts` 使用 `composeGovernance({ db: prisma })`，Governance 仍保持原注册顺序和双 API 前缀行为；`bootstrap.ts` 不承担 governance assembly。
+- [x] Electron 通过 PowerSync composer 复用同一 `createGovernanceModule()`/`GovernanceApplicationPort`；HTTP 与 IPC 只替换 persistence adapter，不复制业务逻辑。
+- [x] `GovernanceApplicationPort`、controller、route、DTO/schema、event names、SQL/mapper、错误语义和 lifecycle observable behavior 零变化。
+- [x] 具体 `RulePrismaRepository`/`PowerSyncRuleRepository` class 没有泄漏到 apps public import；仅公开命名清晰的 `create*Repositories` ingredient factory，所有 public surface/export audit 通过。
+- [x] governance 相关新增/修改文件包含详细 English-first + 中文 JSDoc，公开 factory 有 `@param`/`@returns`，具体 adapter 仍标记 `@internal`；README/Quick Reference/Decision 与实现一致。
+- [x] `pnpm nx run governance:typecheck`、`governance:lint`、`governance:test`、`api:typecheck`、`api:lint`、`api:test`、`api:test:smoke`、`desktop:lint`、`desktop:test:main`、`desktop:test:ipc`、`pnpm nx run memoflow:governance-check` 和 `pnpm nx run memoflow:docs-check` 全部通过；desktop 当前没有独立 `typecheck` target，治理共享源码类型由 `governance:typecheck` 覆盖。
+- [x] 只有上述标准全部满足，才把本计划从 `docs/plan/active` 移入 archive，并开始 `goal、task` 的下一阶段迁移。
