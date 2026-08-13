@@ -156,6 +156,9 @@ describe('DesktopProfileRuntimeManager', () => {
     await expect(runtime.activatePreparedProfile()).rejects.toThrow('init failed');
 
     expect(beforeDeactivation).toHaveBeenCalledOnce();
+    expect(beforeDeactivation.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.shutdownPowerSync.mock.invocationCallOrder[0]!,
+    );
   });
 
   it('keeps local access active when cloud restore fails', async () => {
