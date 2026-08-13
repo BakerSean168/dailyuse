@@ -30,35 +30,54 @@
  * API 传输层（本模块）与 Electron IPC 传输层消费同一个 port，
  * 从而从构造上保证跨宿主行为一致。
  *
- * Lifecycle ownership:
- * - register(): builds routes from `instance.api`, mounts them at
- *   `/governance/rules`, then calls `instance.start()`. Route wiring happens
- *   BEFORE start, so a route-build failure leaves no runtime side effects.
- *   If route building or start throws, this factory best-effort disposes the
- *   instance before rethrowing, preventing listener leaks (plan §6.1).
- * - destroy(): calls `instance.dispose()` exactly once. It is idempotent and
- *   tolerates repeated calls; later calls are no-ops.
+ * Per-handle state machine (`created -> registered | failed`, then any state
+ * -> `disposed`):
+ * - register(): only allowed from `created`. Builds routes from `instance.api`
+ *   and mounts them at `/governance/rules`, then calls `instance.start()` —
+ *   route wiring happens BEFORE start, so a route-build failure leaves no
+ *   runtime side effects. On success the handle moves to `registered`; a second
+ *   register() throws. On any failure it cleans up (best-effort dispose,
+ *   logged if dispose itself throws), moves to `failed`, and rethrows the
+ *   ORIGINAL error. A failed handle must not be re-registered.
+ * - destroy(): always allowed and always idempotent. The state is set to
+ *   `disposed` BEFORE `instance.dispose()` runs, so a reentrant/retry destroy
+ *   stays a no-op even if dispose throws (destroy may propagate that error).
  *
- * 生命周期归属：
- * - register()：用 `instance.api` 构建路由并挂载到 `/governance/rules`，
- *   然后调用 `instance.start()`。路由先于 start 挂载，因此路由构建失败不会
- *   留下任何 runtime 副作用；若路由构建或 start 抛错，本工厂会在重新抛出前
- *   尽力 dispose 实例，避免 listener 泄漏（计划 §6.1）。
- * - destroy()：恰好调用一次 `instance.dispose()`，幂等，可安全重复调用；
- *   重复调用为 no-op。
+ * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
+ * `disposed`）：
+ * - register()：仅允许从 `created` 进入。用 `instance.api` 构建路由并挂载到
+ *   `/governance/rules`，然后调用 `instance.start()`——路由先于 start 挂载，
+ *   因此路由构建失败不会留下任何 runtime 副作用。成功则进入 `registered`，
+ *   重复 register() 抛错；任何失败先清理（best-effort dispose，若 dispose
+ *   自身抛错则记录日志），进入 `failed` 并重新抛出原始错误。
+ *   failed 的 handle 不得再次注册。
+ * - destroy()：任何状态都允许，且始终幂等。在 `instance.dispose()` 执行前
+ *   先把状态置为 `disposed`，因此即使 dispose 抛错（该错误可向外传播），
+ *   重入/重试 destroy 仍为 no-op。
  *
- * Repeated-call semantics: the instance is owned by the factory closure, not
- * by a package-level singleton. Re-registering the returned module handle does
- * not create a second instance; `started`/`disposed` flags are per-handle state.
+ * The instance is owned by the factory closure, not by a package-level
+ * singleton. Re-registering the returned module handle does not create a second
+ * instance; the explicit state machine above is per-handle state.
  *
- * 重复调用语义：实例由工厂闭包持有，而不是包级 singleton。重复注册返回的
- * module handle 不会创建第二个实例；`started`/`disposed` 是每个 handle
- * 自己的状态。
+ * 实例由工厂闭包持有，而不是包级 singleton。重复注册返回的 module handle
+ * 不会创建第二个实例；上述显式状态机即每个 handle 自己的状态。
  */
 
 import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import { createLogger } from '@memoflow/utils/logger';
 import type { GovernanceModuleInstance } from '../server/infrastructure';
 import { registerGovernanceRoutes } from './routes';
+
+const logger = createLogger('GovernanceApi');
+
+/**
+ * Per-handle lifecycle state. Only 'created' may enter 'registered' (or
+ * 'failed' on a registration error); any state may end in 'disposed'.
+ *
+ * 每个 handle 的生命周期状态。只有 'created' 可以进入 'registered'
+ * （或注册失败时进入 'failed'）；任意状态都可以结束于 'disposed'。
+ */
+type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
 /**
  * Transport-only context for governance registration.
@@ -100,13 +119,18 @@ export interface GovernanceApiModuleOptions {
 export function createGovernanceApiModule(
   options: GovernanceApiModuleOptions,
 ): GovernanceApiModuleDef {
-  let started = false;
-  let disposed = false;
+  let state: ModuleHandleState = 'created';
 
   return {
     name: 'Governance',
 
     register(context) {
+      if (state !== 'created') {
+        throw new Error(
+          `GovernanceApiModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
+        );
+      }
+
       const { router, middleware, openApiRegistry } = context;
 
       try {
@@ -118,21 +142,27 @@ export function createGovernanceApiModule(
 
         router.use('/governance/rules', governanceRoutes);
 
-        if (!started) {
-          options.instance.start();
-          started = true;
-        }
+        options.instance.start();
+        state = 'registered';
       } catch (error) {
-        options.instance.dispose();
+        state = 'failed';
+        try {
+          options.instance.dispose();
+        } catch (disposeError) {
+          logger.error(
+            'GovernanceApiModule: instance dispose failed during failed registration',
+            disposeError,
+          );
+        }
         throw error;
       }
     },
 
     destroy() {
-      if (disposed) {
+      if (state === 'disposed') {
         return;
       }
-      disposed = true;
+      state = 'disposed';
       options.instance.dispose();
     },
   };

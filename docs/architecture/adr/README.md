@@ -40,13 +40,13 @@ updated: 2026-08-04T00:00:00+08:00
 | [ADR-022](./ADR-022-api-module-routing-refactor.md)                 | API 模块路由重构                                         | 已采纳 | 2025-01-19 |
 | [ADR-023](./ADR-023-server-side-clean-architecture-refactor.md)     | Server-Side Layer Decoupling & Pure Dependency Injection | 已采纳 | 2026-01-21 |
 | [ADR-024](./ADR-024-application-service-framework-decoupling.md)    | ApplicationService 框架解耦方案                          | 已采纳 | 2025-01-18 |
-| [ADR-025](./ADR-025-module-composition-pattern.md)                  | Module Composition Pattern                               | 已采纳 | 2026-01-21 |
+| [ADR-025](./ADR-025-module-composition-pattern.md)                  | Module Composition Pattern                               | 已采纳 | 2026-08-13 |
 | [ADR-026](./ADR-026-server-side-adapter-pattern.md)                 | Server-Side Adapter Pattern                              | 已采纳 | 2026-02-19 |
 | [ADR-027](./ADR-027-zod-to-openapi-documentation.md)                | API Documentation with Zod-to-OpenAPI                    | 已采纳 | 2026-02-19 |
 | [ADR-028](./ADR-028-workspace-package-resolution-strategy.md)       | Workspace Package Resolution Strategy                    | 已采纳 | 2026-03-09 |
 | [ADR-029](./ADR-029-main-process-sqlite-access.md)                  | 主进程 SQLite 直接访问策略                               | 已过时 | 2025-12-06 |
 | [ADR-030](./ADR-030-standard-result-pattern.md)                     | Unifying API Responses with Result Pattern               | 已采纳 | 2026-01-16 |
-| [ADR-031](./ADR-031-server-feature-standard-shape.md)               | Server Feature Standard Shape                            | 已采纳 | 2026-05-25 |
+| [ADR-031](./ADR-031-server-feature-standard-shape.md)               | Server Feature Standard Shape                            | 已采纳 | 2026-08-13 |
 | [ADR-032](./ADR-032-support-package-import-conventions.md)          | Support Package Import Conventions                       | 已采纳 | 2026-05-25 |
 | [ADR-033](./ADR-033-cross-module-communication-patterns.md)         | Cross-Module Communication Patterns                      | 已采纳 | 2026-07-10 |
 | [ADR-034](./ADR-034-obsidian-vault-repository.md)                   | 本地 Obsidian Vault 与可选 GitHub 知识仓库               | 已采纳 | 2026-07-16 |

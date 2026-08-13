@@ -6,12 +6,15 @@
  * adapter: it registers the 7 governance channels, starts the already-assembled
  * instance once, routes IPC calls through GovernanceController to the same
  * instance api, removes all channels on destroy, disposes exactly once, and
- * cleans up on start failure.
+ * cleans up on start failure. It also locks the per-handle state machine:
+ * double register() throws, register-after-destroy throws, and a failed
+ * registration reverses exactly the channels installed by that call.
  *
  * 验证 createGovernanceElectronModule 是纯传输/生命周期适配器：
  * 注册 7 个治理通道、启动已装配实例一次、通过 GovernanceController 把 IPC
  * 调用路由到同一实例 api、destroy 时移除全部通道、恰好 dispose 一次，
- * 且 start 失败时执行清理。
+ * 且 start 失败时执行清理。同时固定每个 handle 的状态机：重复 register()
+ * 抛错、destroy 后 register() 抛错、失败注册会逆向移除本次已安装的通道。
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -24,6 +27,9 @@ import type { GovernanceModuleInstance } from '../server/infrastructure';
 const mocks = vi.hoisted(() => {
   const handlers = new Map<string, (...args: unknown[]) => unknown>();
   const handle = vi.fn((channel: string, handler: (...args: unknown[]) => unknown) => {
+    if (handlers.has(channel)) {
+      throw new Error(`Attempted to register a second handler for '${channel}'`);
+    }
     handlers.set(channel, handler);
   });
   const removeHandler = vi.fn((channel: string) => {
@@ -92,7 +98,11 @@ describe('createGovernanceElectronModule IPC lifecycle', () => {
   });
 
   afterEach(() => {
-    moduleDef.destroy?.();
+    try {
+      moduleDef.destroy?.();
+    } catch {
+      // destroy() may propagate a dispose error by design; don't leak it into unrelated tests.
+    }
     vi.clearAllMocks();
     mocks.handlers.clear();
   });
@@ -107,10 +117,18 @@ describe('createGovernanceElectronModule IPC lifecycle', () => {
     expect(fake.start).toHaveBeenCalledTimes(1);
   });
 
-  it('starts only once across repeated register calls (per-handle state, no second instance)', () => {
-    moduleDef.register(context);
+  it('throws on a second register() call (single registration per handle)', () => {
     moduleDef.register(context);
 
+    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    expect(fake.start).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws on register() after destroy()', () => {
+    moduleDef.register(context);
+    moduleDef.destroy?.();
+
+    expect(() => moduleDef.register(context)).toThrow(/only register once/);
     expect(fake.start).toHaveBeenCalledTimes(1);
   });
 
@@ -147,12 +165,54 @@ describe('createGovernanceElectronModule IPC lifecycle', () => {
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('disposes and rethrows when start() throws', () => {
+  it('disposes, removes all channels, and rethrows when start() throws, leaving a handle that cannot be re-registered', () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');
     });
 
     expect(() => moduleDef.register(context)).toThrow('start failed');
     expect(fake.dispose).toHaveBeenCalledTimes(1);
+    expect(mocks.handlers.size).toBe(0);
+
+    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    expect(fake.start).toHaveBeenCalledTimes(1);
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes the channels installed before ipcMain.handle() throws mid-registration', () => {
+    const allChannels = Object.values(GovernanceChannels);
+    mocks.handle
+      .mockImplementationOnce((channel: string, handler: (...args: unknown[]) => unknown) => {
+        mocks.handlers.set(channel, handler);
+      })
+      .mockImplementationOnce((channel: string, handler: (...args: unknown[]) => unknown) => {
+        mocks.handlers.set(channel, handler);
+      })
+      .mockImplementationOnce((channel: string) => {
+        throw new Error(`Attempted to register a second handler for '${channel}'`);
+      });
+
+    expect(() => moduleDef.register(context)).toThrow('second handler');
+
+    expect(mocks.handlers.size).toBe(0);
+    expect(mocks.removeHandler).toHaveBeenCalledWith(allChannels[0]);
+    expect(mocks.removeHandler).toHaveBeenCalledWith(allChannels[1]);
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+    expect(fake.start).not.toHaveBeenCalled();
+
+    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+  });
+
+  it('rethrows the original registration error even if dispose also throws', () => {
+    fake.start.mockImplementation(() => {
+      throw new Error('start failed');
+    });
+    fake.dispose.mockImplementation(() => {
+      throw new Error('dispose failed');
+    });
+
+    expect(() => moduleDef.register(context)).toThrow('start failed');
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+    expect(mocks.handlers.size).toBe(0);
   });
 });

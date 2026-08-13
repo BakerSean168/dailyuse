@@ -41,7 +41,9 @@ export class ElectronBootstrapper {
 
   /**
    * Execute all queued module registrations sequentially.
-   * Each module receives the shared context and performs its own Composition Root.
+   * Host runtimes assemble feature modules (see apps/desktop/src/main/runtime),
+   * then register the already-bound handles here; each module only wires its
+   * transport (IPC) and lifecycle (start/dispose) against the shared context.
    */
   public async init(authProvider: IElectronModuleContext['auth']): Promise<void> {
     const context: IElectronModuleContext = {

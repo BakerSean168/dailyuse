@@ -30,31 +30,39 @@
  * Express API 传输层与本 Electron IPC 传输层消费同一个 port，
  * 从而从构造上保证跨宿主行为一致。
  *
- * Lifecycle ownership:
- * - register(): builds the controller from `instance.api`, registers all IPC
- *   handlers, then calls `instance.start()`. Channel registration happens
- *   BEFORE start, so a handler-build failure leaves no runtime side effects.
- *   If channel registration or start throws, this factory best-effort disposes
- *   the instance before rethrowing, preventing listener leaks (plan §6.1).
- * - destroy(): removes all IPC handlers, then calls `instance.dispose()`
- *   exactly once. It is idempotent and tolerates repeated calls; later calls
- *   are no-ops.
+ * Per-handle state machine (`created -> registered | failed`, then any state
+ * -> `disposed`):
+ * - register(): only allowed from `created`. Builds the controller from
+ *   `instance.api`, registers all IPC handlers, then calls `instance.start()`
+ *   — channel registration happens BEFORE start, so a handler-build failure
+ *   leaves no runtime side effects. On success the handle moves to
+ *   `registered`; a second register() throws. On any failure it reverses
+ *   exactly the channels installed by THIS call, best-effort disposes the
+ *   instance (logged if dispose itself throws), moves to `failed`, and
+ *   rethrows the ORIGINAL error. A failed handle must not be re-registered.
+ * - destroy(): always allowed and always idempotent. It first removes all
+ *   governance channels, then sets the state to `disposed` BEFORE
+ *   `instance.dispose()` runs, so a reentrant/retry destroy stays a no-op even
+ *   if dispose throws (destroy may propagate that error).
  *
- * 生命周期归属：
- * - register()：用 `instance.api` 构建 controller、注册全部 IPC handler，
- *   然后调用 `instance.start()`。handler 先于 start 注册，因此 handler
- *   注册失败不会留下任何 runtime 副作用；若 handler 注册或 start 抛错，
- *   本工厂会在重新抛出前尽力 dispose 实例，避免 listener 泄漏（计划 §6.1）。
- * - destroy()：移除全部 IPC handler，然后恰好调用一次 `instance.dispose()`，
- *   幂等，可安全重复调用；重复调用为 no-op。
+ * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
+ * `disposed`）：
+ * - register()：仅允许从 `created` 进入。用 `instance.api` 构建 controller、
+ *   注册全部 IPC handler，然后调用 `instance.start()`——handler 先于 start
+ *   注册，因此 handler 注册失败不会留下任何 runtime 副作用。成功则进入
+ *   `registered`，重复 register() 抛错；任何失败会逆向移除本次调用已安装的
+ *   通道、best-effort dispose 实例（若 dispose 自身抛错则记录日志）、进入
+ *   `failed` 并重新抛出原始错误。failed 的 handle 不得再次注册。
+ * - destroy()：任何状态都允许，且始终幂等。它先移除全部治理通道，再把状态
+ *   置为 `disposed` 之后再调用 `instance.dispose()`，因此即使 dispose 抛错
+ *   （该错误可向外传播），重入/重试 destroy 仍为 no-op。
  *
- * Repeated-call semantics: the instance is owned by the factory closure, not
- * by a package-level singleton. Re-registering the returned module handle does
- * not create a second instance; `started`/`disposed` flags are per-handle state.
+ * The instance is owned by the factory closure, not by a package-level
+ * singleton. Re-registering the returned module handle does not create a second
+ * instance; the explicit state machine above is per-handle state.
  *
- * 重复调用语义：实例由工厂闭包持有，而不是包级 singleton。重复注册返回的
- * module handle 不会创建第二个实例；`started`/`disposed` 是每个 handle
- * 自己的状态。
+ * 实例由工厂闭包持有，而不是包级 singleton。重复注册返回的 module handle
+ * 不会创建第二个实例；上述显式状态机即每个 handle 自己的状态。
  */
 
 import { ipcMain } from 'electron';
@@ -77,6 +85,15 @@ import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('GovernanceElectron');
 const channels = Object.values(GovernanceChannels);
+
+/**
+ * Per-handle lifecycle state. Only 'created' may enter 'registered' (or
+ * 'failed' on a registration error); any state may end in 'disposed'.
+ *
+ * 每个 handle 的生命周期状态。只有 'created' 可以进入 'registered'
+ * （或注册失败时进入 'failed'）；任意状态都可以结束于 'disposed'。
+ */
+type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
 /**
  * Governance Electron module handle.
@@ -124,36 +141,47 @@ export interface GovernanceElectronModuleOptions {
 export function createGovernanceElectronModule(
   options: GovernanceElectronModuleOptions,
 ): GovernanceElectronModuleDef {
-  let started = false;
-  let disposed = false;
+  let state: ModuleHandleState = 'created';
 
   return {
     name: 'Governance',
 
     register(ctx) {
-      const controller = new GovernanceController(options.instance.api);
+      if (state !== 'created') {
+        throw new Error(
+          `GovernanceElectronModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
+        );
+      }
+
+      const installed: string[] = [];
 
       try {
+        const controller = new GovernanceController(options.instance.api);
+
         ipcMain.handle(
           GovernanceChannels.RULE_LIST,
           (_event, query: ListRulesQueryInput = {}) => controller.listRules(query),
         );
+        installed.push(GovernanceChannels.RULE_LIST);
 
         ipcMain.handle(GovernanceChannels.RULE_GET, (_event, req: GetRuleReq) =>
           controller.getRule(req),
         );
+        installed.push(GovernanceChannels.RULE_GET);
 
         ipcMain.handle(GovernanceChannels.RULE_SEARCH, (_event, query: SearchRulesQueryInput) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
             controller.searchRules(query, requestContext),
           ),
         );
+        installed.push(GovernanceChannels.RULE_SEARCH);
 
         ipcMain.handle(GovernanceChannels.RULE_CREATE, (_event, req: CreateRuleReq) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
             controller.createRule(req, requestContext),
           ),
         );
+        installed.push(GovernanceChannels.RULE_CREATE);
 
         ipcMain.handle(
           GovernanceChannels.RULE_UPDATE,
@@ -162,6 +190,7 @@ export function createGovernanceElectronModule(
               controller.updateRule(payload, requestContext),
             ),
         );
+        installed.push(GovernanceChannels.RULE_UPDATE);
 
         ipcMain.handle(GovernanceChannels.RULE_DELETE, (_event, payload: DeleteRuleReq) =>
           withAuthenticatedValue(ctx, async (requestContext) => {
@@ -170,33 +199,44 @@ export function createGovernanceElectronModule(
             return ok(null);
           }),
         );
+        installed.push(GovernanceChannels.RULE_DELETE);
 
         ipcMain.handle(
           GovernanceChannels.RULE_REVISIONS,
           (_event, payload: GetRuleRevisionsQueryInput) => controller.getRevisions(payload),
         );
+        installed.push(GovernanceChannels.RULE_REVISIONS);
 
-        if (!started) {
-          options.instance.start();
-          started = true;
-        }
+        options.instance.start();
+        state = 'registered';
 
         logger.info('Governance module registered');
       } catch (error) {
-        options.instance.dispose();
+        state = 'failed';
+        for (const channel of installed) {
+          ipcMain.removeHandler(channel);
+        }
+        try {
+          options.instance.dispose();
+        } catch (disposeError) {
+          logger.error(
+            'GovernanceElectron: instance dispose failed during failed registration',
+            disposeError,
+          );
+        }
         throw error;
       }
     },
 
     destroy() {
-      if (disposed) {
+      if (state === 'disposed') {
         return;
       }
-      disposed = true;
 
       for (const channel of channels) {
         ipcMain.removeHandler(channel);
       }
+      state = 'disposed';
 
       options.instance.dispose();
       logger.info('Governance module destroyed');

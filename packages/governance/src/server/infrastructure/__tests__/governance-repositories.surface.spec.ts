@@ -63,15 +63,31 @@ describe('governance repository factories surface', () => {
     expect(typeof powerSyncInstance.dispose).toBe('function');
   });
 
-  it('does not leak concrete adapter classes through the root barrel', () => {
-    const root = readFileSync(resolve(__dirname, '../../../index.ts'), 'utf8');
-    for (const name of [
+  it('does not leak forbidden module factories or concrete adapters through the root barrel', async () => {
+    const forbidden = [
       'RulePrismaRepository',
       'RuleRevisionPrismaRepository',
       'PowerSyncRuleRepository',
       'PowerSyncRuleRevisionRepository',
-    ]) {
+      'createGovernancePrismaModule',
+      'createGovernancePowerSyncModule',
+    ];
+
+    const root = readFileSync(resolve(__dirname, '../../../index.ts'), 'utf8');
+    for (const name of forbidden) {
       expect(root).not.toMatch(new RegExp(`\\b${name}\\b`));
     }
+
+    const rootModule = await import('../../../../src');
+    const exportedNames = Object.keys(rootModule).sort();
+    for (const name of forbidden) {
+      expect(exportedNames).not.toContain(name);
+    }
+    expect(exportedNames).toEqual([
+      'createGovernanceEventLogRuntime',
+      'createGovernanceModule',
+      'createGovernancePowerSyncRepositories',
+      'createGovernancePrismaRepositories',
+    ]);
   });
 });
