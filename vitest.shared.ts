@@ -256,6 +256,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'app-vue',
     'assets',
     'authentication',
+    'cloud-auth',
     'dashboard',
     'editor',
     'goal',
