@@ -1,18 +1,24 @@
 /**
- * Governance API Module
+ * Governance API Transport Module
+ * 治理 API 传输模块
  *
- * 自治的 API 模块入口 — 通过 register() 暴露给 ApiBootstrapper：
- * - 内部完成 Composition Root 组装
- * - 通过 context.middleware 使用平台级中间件（auth, rbac）
- * - 通过 context.router 挂载路由
+ * Public seam for the governance HTTP transport. Exposes the
+ * `createGovernanceApiModule` factory, which turns an already-assembled
+ * `GovernanceModuleInstance` into an `IApiModule`-compatible handle:
+ * route registration + lifecycle only. Composition lives in the host
+ * (apps/api/src/runtime), not in this package.
  *
- * apps/api 只需一行代码：
- * ```typescript
- * .register(GovernanceApiModule)
- * ```
+ * 治理 HTTP 传输的公开 seam。暴露 `createGovernanceApiModule` 工厂，
+ * 把已装配的 `GovernanceModuleInstance` 变成兼容 `IApiModule` 的 handle：
+ * 只负责路由注册与生命周期。组合发生在宿主（apps/api/src/runtime），
+ * 不在本包。
  *
- * 路由前缀：
- * - /governance/rules
+ * Route prefix: /governance/rules
  */
 
-export { GovernanceApiModule } from './module';
+export {
+  createGovernanceApiModule,
+  type GovernanceApiModuleContext,
+  type GovernanceApiModuleDef,
+  type GovernanceApiModuleOptions,
+} from './module';
