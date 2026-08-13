@@ -263,6 +263,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'http-client',
     'notification',
     'patterns',
+    'powersync-schema',
     'reminder',
     'repository',
     'schedule',
