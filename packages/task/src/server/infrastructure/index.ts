@@ -50,6 +50,7 @@ export {
 export type { TaskApplicationPort } from '../application';
 export {
   createTaskPowerSyncModule,
+  createTaskPowerSyncRepositories,
   createTaskPowerSyncScheduleExecutionSource,
   createTaskPowerSyncScheduleProjectionSource,
 } from './powersync';
@@ -59,6 +60,7 @@ export {
   createTaskPrismaScheduleExecutionSource,
   createTaskPrismaScheduleProjectionSource,
   type CreateTaskPrismaModuleOptions,
+  type TaskRepositorySet,
 } from './prisma';
 export { createTaskRuntimeContribution } from './runtime';
 export {

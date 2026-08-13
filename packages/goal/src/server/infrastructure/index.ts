@@ -43,12 +43,16 @@ export {
   createGoalTaskProgressPrismaHandler,
   createGoalPrismaScheduleExecutionSource,
   createGoalPrismaScheduleProjectionSource,
+  type GoalRepositorySet,
 } from './prisma';
 export {
   createGoalRuntimeContribution,
+  createGoalEventListenersRuntime,
+  type GoalEventListenersRuntime,
 } from './runtime';
 export {
   createGoalPowerSyncModule,
+  createGoalPowerSyncRepositories,
   createGoalTaskProgressPowerSyncHandler,
   createGoalPowerSyncScheduleExecutionSource,
   createGoalPowerSyncScheduleProjectionSource,

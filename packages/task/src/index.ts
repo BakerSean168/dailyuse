@@ -14,6 +14,7 @@
 export {
   createTaskModule,
   createTaskPowerSyncModule,
+  createTaskPowerSyncRepositories,
   createTaskPrismaModule,
   createTaskPrismaRepositories,
   createTaskRuntimeContribution,
@@ -25,5 +26,6 @@ export {
   type TaskModuleRuntimeContribution,
   type TaskModuleUseCases,
   type TaskRuntimeContributionsInput,
+  type TaskRepositorySet,
   type CreateTaskPrismaModuleOptions,
 } from './server';

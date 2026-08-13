@@ -22,6 +22,11 @@ import { createTaskScheduleExecutionSource } from './schedule-execution-source';
 import { createTaskScheduleProjectionSource } from './schedule-projection-source';
 import type { TaskScheduleExecutionSource } from '../../schedule-execution';
 import type { TaskScheduleProjectionSource } from '../../schedule-projection';
+import type { ITaskDependencyRepository } from '../domain/repositories/i-task-dependency-repository';
+import type { ITaskFolderRepository } from '../domain/repositories/i-task-folder-repository';
+import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
+import type { ITaskTemplateRepository } from '../domain/repositories/i-task-template-repository';
+import type { TaskWriteTransactionRunner } from '../application/use-cases/commands/task-write-support';
 
 export interface CreateTaskPrismaModuleOptions {
   readonly runtimeContributions?:
@@ -30,35 +35,88 @@ export interface CreateTaskPrismaModuleOptions {
 }
 
 /**
+ * Host-facing task repository set.
+ * 面向宿主暴露的任务仓储集合。
+ *
+ * Represents the repository Ports that persistence adapters must satisfy.
+ * Concrete adapter classes never cross this seam — hosts consume repositories
+ * only through these interfaces.
+ *
+ * 表示持久化适配器必须满足的仓储 Port。
+ * 具体适配器类从不越过该 seam——宿主只能通过这些接口使用仓储。
+ *
+ * `taskFolderRepository` is required in the set because both the Prisma and
+ * PowerSync factories always supply it; `TaskModuleDependencies` keeps it
+ * optional so the module tolerates its absence.
+ * `taskFolderRepository` 在集合中为必需，因为 Prisma 与 PowerSync 两个工厂都会提供它；
+ * `TaskModuleDependencies` 仍保持可选，以便模块容忍其缺失。
+ */
+export interface TaskRepositorySet {
+  readonly taskTemplateRepository: ITaskTemplateRepository;
+  readonly taskInstanceRepository: ITaskInstanceRepository;
+  readonly taskDependencyRepository: ITaskDependencyRepository;
+  readonly taskFolderRepository: ITaskFolderRepository;
+  readonly taskWriteTransactionRunner: TaskWriteTransactionRunner;
+}
+
+/**
  * Create a fully-wired task module backed by Prisma repositories.
+ * 创建基于 Prisma 仓储的完整任务模块。
+ *
+ * Convenience root kept for in-package reuse / rollback; delegates to
+ * createTaskPrismaRepositories() plus the canonical module assembly.
+ *
+ * 便捷组合根，保留用于包内复用与回滚；委托给
+ * createTaskPrismaRepositories() 与规范化模块装配。
+ *
+ * @param db - Prisma client owned by the host runtime. 宿主运行时持有的 Prisma client。
+ * @param options - Optional runtime contributions. 可选的运行时贡献。
+ * @returns TaskModuleInstance with Prisma-backed repositories attached.
+ *          返回挂载 Prisma 仓储的任务模块实例。
  */
 export function createTaskPrismaModule(
   db: PrismaClient,
   options: CreateTaskPrismaModuleOptions = {},
 ): TaskModuleInstance {
-  const taskTemplateRepository = new TaskTemplatePrismaRepository(db);
-  const taskInstanceRepository = new TaskInstancePrismaRepository(db);
+  const {
+    taskTemplateRepository,
+    taskInstanceRepository,
+    taskDependencyRepository,
+    taskFolderRepository,
+    taskWriteTransactionRunner,
+  } = createTaskPrismaRepositories(db);
 
   return createTaskModule({
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository: new TaskDependencyPrismaRepository(db),
-    taskFolderRepository: new TaskFolderPrismaRepository(db),
-    taskWriteTransactionRunner: new PrismaTaskWriteTransactionRunner(db),
+    taskDependencyRepository,
+    taskFolderRepository,
+    taskWriteTransactionRunner,
     runtimeContributions: options.runtimeContributions,
   });
 }
 
 /**
- * Create standalone task Prisma repositories.
- * Useful when consumers need individual repositories for cross-module wiring.
+ * Creates Prisma-backed task repositories.
+ * 创建基于 Prisma 的任务仓储。
+ *
+ * Host-level composition ingredient: selects the Prisma adapters and returns the
+ * repository Port shape. Includes the transaction runner, completing the full
+ * TaskRepositorySet.
+ *
+ * 宿主级组合原料：选择 Prisma 适配器并返回仓储 Port 形状。
+ * 包含事务运行器，补全完整的 TaskRepositorySet。
+ *
+ * @param db - Prisma client owned by the host runtime. 宿主运行时持有的 Prisma client。
+ * @returns Repository set backed by the Prisma adapters. 基于 Prisma 适配器的仓储集合。
  */
-export function createTaskPrismaRepositories(db: PrismaClient) {
+export function createTaskPrismaRepositories(db: PrismaClient): TaskRepositorySet {
   return {
     taskTemplateRepository: new TaskTemplatePrismaRepository(db),
     taskInstanceRepository: new TaskInstancePrismaRepository(db),
     taskDependencyRepository: new TaskDependencyPrismaRepository(db),
     taskFolderRepository: new TaskFolderPrismaRepository(db),
+    taskWriteTransactionRunner: new PrismaTaskWriteTransactionRunner(db),
   };
 }
 

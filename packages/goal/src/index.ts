@@ -17,8 +17,10 @@ export {
   createGoalPrismaRepositories,
   createGoalTaskProgressPrismaHandler,
   createGoalPowerSyncModule,
+  createGoalPowerSyncRepositories,
   createGoalTaskProgressPowerSyncHandler,
   createGoalRuntimeContribution,
+  createGoalEventListenersRuntime,
   createGoalUseCases,
   type GoalApplicationPort,
   type GoalModuleDependencies,
@@ -26,6 +28,8 @@ export {
   type GoalModuleRuntimeContribution,
   type GoalModuleUseCases,
   type GoalRuntimeContributionsInput,
+  type GoalRepositorySet,
+  type GoalEventListenersRuntime,
 } from './server';
 
 export {
