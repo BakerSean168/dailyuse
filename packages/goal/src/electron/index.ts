@@ -71,7 +71,6 @@ import { ok } from '@memoflow/contracts/result';
 import { GoalChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
 import { createLogger } from '@memoflow/utils/logger';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import type { IGoalRecordRepository, IGoalRepository } from '../server/domain';
 import type { GoalModuleInstance } from '../server/infrastructure';
 import { GoalController } from '../server/transport/goal.controller';
 import { GoalFolderController } from '../server/transport/goal-folder.controller';
@@ -83,35 +82,6 @@ import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('GoalElectron');
 const allChannels = Object.values(GoalChannels);
-
-/**
- * @deprecated Migration shim (GT Step 2). The goal Electron transport no longer
- * composes or owns repositories; repository access moved to the desktop
- * composition root, which injects the repository view into consumers directly
- * (GT Step 4). These accessors exist only so that in-flight desktop consumers
- * keep type-checking until Step 4 removes them. They are never populated and
- * always throw.
- *
- * 已废弃的迁移 shim（GT Step 2）。Goal Electron 传输层不再组装或持有 repository；
- * repository 访问已移入 desktop 组合根，由组合根直接把 repository view 注入到
- * 消费者（GT Step 4）。这些 accessor 仅用于让尚未迁移的 desktop 消费者在 Step 4
- * 移除它们之前保持类型检查通过。它们永不被赋值，且始终抛错。
- */
-export function getGoalRepository(): IGoalRepository {
-  throw new Error(
-    'getGoalRepository() is deprecated (GT Step 2): repository access moved to the desktop composition root. Inject the repository view instead.',
-  );
-}
-
-/**
- * @deprecated Migration shim — see {@link getGoalRepository}.
- * 已废弃的迁移 shim — 见 {@link getGoalRepository}。
- */
-export function getGoalRecordRepository(): IGoalRecordRepository {
-  throw new Error(
-    'getGoalRecordRepository() is deprecated (GT Step 2): repository access moved to the desktop composition root. Inject the repository view instead.',
-  );
-}
 
 /**
  * Per-handle lifecycle state. Only 'created' may enter 'registered' (or

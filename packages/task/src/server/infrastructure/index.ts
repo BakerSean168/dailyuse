@@ -51,6 +51,7 @@ export type { TaskApplicationPort } from '../application';
 export {
   createTaskPowerSyncModule,
   createTaskPowerSyncRepositories,
+  createTaskPowerSyncGoalOutboxRuntime,
   createTaskPowerSyncScheduleExecutionSource,
   createTaskPowerSyncScheduleProjectionSource,
 } from './powersync';

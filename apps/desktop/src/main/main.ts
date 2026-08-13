@@ -22,10 +22,8 @@ import { ElectronBootstrapper } from './bootstrap';
 import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
-import { createGoalElectronModule } from '@memoflow/goal/electron';
 import { PowerSyncTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
-import { createTaskElectronModule } from '@memoflow/task/electron';
 import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import {
@@ -51,10 +49,16 @@ import {
 import { createAccountElectronModule } from '@memoflow/account/electron';
 import { DataPortabilityElectronModule } from '@memoflow/data-portability/electron';
 import { composeGovernance } from './runtime/compose-governance';
+import { composeGoal } from './runtime/compose-goal';
+import { composeTask } from './runtime/compose-task';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
+import {
+  getDesktopDashboardData,
+  type DashboardRepositoryDependencies,
+} from './services/dashboard-read-service';
 import { configureDesktopShellIdentity } from './utils/app-icon';
 import { getApiBaseUrl } from './utils/api-config';
 import { createLogger } from '@memoflow/utils/logger';
@@ -83,6 +87,14 @@ configureDesktopShellIdentity();
 const logger = createLogger('DesktopMain');
 let mainRuntime: DesktopMainRuntime | null = null;
 const windowManager = new WindowManager();
+
+// Composed Goal/Task repository view for the active profile. The dashboard IPC
+// handler is registered once at shell init, but the repositories only exist
+// after a profile activates (registerBusinessModules); bridge them here.
+// 当前激活 profile 的组合 Goal/Task repository view。dashboard IPC handler 在
+// shell 初始化时只注册一次，而仓储要等 profile 激活（registerBusinessModules）
+// 之后才存在，因此在这里做桥接。
+let activeProfileDashboardRepositories: DashboardRepositoryDependencies | null = null;
 
 /**
  * Register all business modules on a bootstrapper for the active profile.
@@ -128,16 +140,39 @@ async function registerBusinessModules(
       notificationPort: createNotificationPowerSyncScheduleNotificationPort(db),
     },
   });
-  const taskElectronModule = createTaskElectronModule({
+  const taskComposed = composeTask({
+    db,
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPowerSyncHandler(db),
   });
+  const taskElectronModule = taskComposed.module;
+
+  const goalComposed = composeGoal({
+    db,
+    taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
+  });
+
+  activeProfileDashboardRepositories = {
+    goalRepository: goalComposed.repositories.goalRepository,
+    taskTemplateRepository: taskComposed.repositories.taskTemplateRepository,
+    taskInstanceRepository: taskComposed.repositories.taskInstanceRepository,
+  };
 
   const AIElectronModule = createAIElectronModule({
     createKnowledgeNotePersistence: () =>
       new DesktopKnowledgeNotePersistenceAdapter(localVaultRuntime),
     createKnowledgeSourcePort: () => new DesktopKnowledgeSourceAdapter(localVaultRuntime),
-    createAnalyticsReadPort: () => new DesktopAnalyticsReadAdapter(),
+    createAnalyticsReadPort: () =>
+      new DesktopAnalyticsReadAdapter({
+        goalRepository: goalComposed.repositories.goalRepository,
+        taskTemplateRepository: taskComposed.repositories.taskTemplateRepository,
+        dashboardDataLoader: (identityId) =>
+          getDesktopDashboardData(identityId, {
+            goalRepository: goalComposed.repositories.goalRepository,
+            taskTemplateRepository: taskComposed.repositories.taskTemplateRepository,
+            taskInstanceRepository: taskComposed.repositories.taskInstanceRepository,
+          }),
+      }),
     createAutomationToolExecutor: (context: IElectronModuleContext) =>
       new DesktopAutomationToolExecutorAdapter(context.db, localVaultRuntime),
   });
@@ -280,9 +315,7 @@ async function registerBusinessModules(
     .register(NotificationElectronModule)
     .register(DataPortabilityElectronModule)
     // Feature modules
-    .register(createGoalElectronModule({
-      taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
-    }))
+    .register(goalComposed.module)
     .register(taskElectronModule)
     .register(scheduleElectronModule)
     .register(ReminderElectronModule)
@@ -372,7 +405,16 @@ async function initializeShellRuntime(): Promise<void> {
   // Ancillary
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
-  registerDashboardIpcHandler(() => mainRuntime?.profileRuntimeManager.getActiveProfileAccessContext() ?? null);
+  registerDashboardIpcHandler(
+    () => mainRuntime?.profileRuntimeManager.getActiveProfileAccessContext() ?? null,
+    () => {
+      const repositories = activeProfileDashboardRepositories;
+      if (!repositories) {
+        throw new Error('Dashboard IPC invoked before profile business modules were composed');
+      }
+      return repositories;
+    },
+  );
 
   const initTime = performance.now() - startTime;
   console.log(`[Shell] Shell runtime initialized in ${initTime.toFixed(2)}ms`);

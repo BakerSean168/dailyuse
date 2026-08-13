@@ -73,8 +73,6 @@ import { ok } from '@memoflow/contracts/result';
 import { TaskChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
 import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
 import { createLogger } from '@memoflow/utils/logger';
-import type { ITaskInstanceRepository } from '../server/domain/repositories/i-task-instance-repository';
-import type { ITaskTemplateRepository } from '../server/domain/repositories/i-task-template-repository';
 import type { TaskModuleInstance } from '../server/infrastructure';
 import { createTaskTransportHandlers } from '../server/transport';
 import { TaskDependencyController } from '../server/transport/task-dependency.controller';
@@ -84,35 +82,6 @@ import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('TaskElectron');
 const allChannels = Object.values(TaskChannels);
-
-/**
- * @deprecated Migration shim (GT Step 2). The task Electron transport no longer
- * composes or owns repositories; repository access moved to the desktop
- * composition root, which injects the repository view into consumers directly
- * (GT Step 4). These accessors exist only so that in-flight desktop consumers
- * keep type-checking until Step 4 removes them. They are never populated and
- * always throw.
- *
- * 已废弃的迁移 shim（GT Step 2）。Task Electron 传输层不再组装或持有 repository；
- * repository 访问已移入 desktop 组合根，由组合根直接把 repository view 注入到
- * 消费者（GT Step 4）。这些 accessor 仅用于让尚未迁移的 desktop 消费者在 Step 4
- * 移除它们之前保持类型检查通过。它们永不被赋值，且始终抛错。
- */
-export function getTaskTemplateRepository(): ITaskTemplateRepository {
-  throw new Error(
-    'getTaskTemplateRepository() is deprecated (GT Step 2): repository access moved to the desktop composition root. Inject the repository view instead.',
-  );
-}
-
-/**
- * @deprecated Migration shim — see {@link getTaskTemplateRepository}.
- * 已废弃的迁移 shim — 见 {@link getTaskTemplateRepository}。
- */
-export function getTaskInstanceRepository(): ITaskInstanceRepository {
-  throw new Error(
-    'getTaskInstanceRepository() is deprecated (GT Step 2): repository access moved to the desktop composition root. Inject the repository view instead.',
-  );
-}
 
 function normalizeTemplateListParams(
   requestContext: { identityId: string },

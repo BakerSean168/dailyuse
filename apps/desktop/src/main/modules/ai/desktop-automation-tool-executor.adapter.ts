@@ -26,6 +26,7 @@ import {
 
 import { DesktopAnalyticsReadAdapter } from './desktop-analytics-read.adapter';
 import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapter';
+import { getDesktopDashboardData } from '../../services/dashboard-read-service';
 
 const logger = createLogger('DesktopAutomationToolExecutor');
 // Residual 1015: buildRecurrenceRule elevated to @memoflow/utils/shared.
@@ -45,7 +46,16 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
     this.taskModule = createTaskPowerSyncModule(db);
     this.reminderModule = createReminderPowerSyncModule(db);
     this.knowledgeSource = new DesktopKnowledgeSourceAdapter(localVault);
-    this.analyticsRead = new DesktopAnalyticsReadAdapter();
+    this.analyticsRead = new DesktopAnalyticsReadAdapter({
+      goalRepository: this.goalModule.goalRepository,
+      taskTemplateRepository: this.taskModule.taskTemplateRepository,
+      dashboardDataLoader: (identityId) =>
+        getDesktopDashboardData(identityId, {
+          goalRepository: this.goalModule.goalRepository,
+          taskTemplateRepository: this.taskModule.taskTemplateRepository,
+          taskInstanceRepository: this.taskModule.taskInstanceRepository,
+        }),
+    });
   }
 
   async executeGoalAutomation(

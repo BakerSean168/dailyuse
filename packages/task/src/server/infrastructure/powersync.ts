@@ -13,6 +13,7 @@ import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/
 import {
   createTaskModule,
   type TaskModuleInstance,
+  type TaskModuleRuntimeContribution,
   type TaskRuntimeContributionsInput,
 } from './task.module';
 import {
@@ -21,7 +22,13 @@ import {
   PowerSyncTaskDependencyRepository,
   PowerSyncTaskFolderRepository,
   PowerSyncTaskWriteTransactionRunner,
+  PowerSyncTaskGoalOutboxDispatchStore,
 } from './adapters/powersync';
+import { createTaskGoalOutboxRuntime } from './task-goal-outbox-runtime';
+import {
+  TaskGoalOutboxDispatcher,
+  type TaskGoalProgressHandler,
+} from '../application/outbox';
 import {
   createTaskScheduleProjectionSource,
 } from './schedule-projection-source';
@@ -92,6 +99,36 @@ export function createTaskPowerSyncRepositories(db: IElectronDatabase): TaskRepo
     taskFolderRepository: new PowerSyncTaskFolderRepository(db),
     taskWriteTransactionRunner: new PowerSyncTaskWriteTransactionRunner(db),
   };
+}
+
+/**
+ * Creates the durable Task→Goal outbox runtime backed by the PowerSync dispatch store.
+ * 创建基于 PowerSync dispatch store 的可靠 Task→Goal outbox runtime。
+ *
+ * Host-level composition ingredient: wraps the PowerSync store, the
+ * TaskGoalOutboxDispatcher and the Goal progress handler into the module-owned
+ * runtime contribution, so hosts never import concrete PowerSync adapter classes
+ * or the dispatcher directly — the Electron counterpart of
+ * createTaskPrismaGoalOutboxRuntime().
+ *
+ * 宿主级组合原料：把 PowerSync store、TaskGoalOutboxDispatcher 与 Goal progress
+ * handler 包装成模块自有运行时贡献，宿主无需直接导入具体 PowerSync 适配器类或
+ * dispatcher——与 createTaskPrismaGoalOutboxRuntime() 对应的 Electron 版本。
+ *
+ * @param db - Electron database adapter owned by the desktop main runtime. 桌面主进程持有的 Electron 数据库适配器。
+ * @param goalProgressHandler - Goal's durable Task→Goal progress handler. 目标侧可靠 Task→Goal 进度处理器。
+ * @returns A module-owned TaskGoalOutbox runtime contribution. 模块自有的 outbox 运行时贡献。
+ */
+export function createTaskPowerSyncGoalOutboxRuntime(
+  db: IElectronDatabase,
+  goalProgressHandler: TaskGoalProgressHandler,
+): TaskModuleRuntimeContribution {
+  return createTaskGoalOutboxRuntime(
+    new TaskGoalOutboxDispatcher(
+      new PowerSyncTaskGoalOutboxDispatchStore(db),
+      goalProgressHandler,
+    ),
+  );
 }
 
 export function createTaskPowerSyncScheduleProjectionSource(

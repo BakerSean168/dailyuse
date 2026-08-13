@@ -19,6 +19,7 @@ export {
   createTaskPrismaRepositories,
   createTaskRuntimeContribution,
   createTaskPrismaGoalOutboxRuntime,
+  createTaskPowerSyncGoalOutboxRuntime,
   PrismaTaskBindingReadPort,
   PowerSyncTaskBindingReadPort,
   type TaskApplicationPort,
@@ -29,4 +30,6 @@ export {
   type TaskRuntimeContributionsInput,
   type TaskRepositorySet,
   type CreateTaskPrismaModuleOptions,
+  type ITaskTemplateRepository,
+  type ITaskInstanceRepository,
 } from './server';

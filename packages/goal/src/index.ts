@@ -30,6 +30,8 @@ export {
   type GoalRuntimeContributionsInput,
   type GoalRepositorySet,
   type GoalEventListenersRuntime,
+  type IGoalRepository,
+  type IGoalRecordRepository,
 } from './server';
 
 export {

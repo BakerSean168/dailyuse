@@ -18,3 +18,36 @@ describe('dashboard-handler channel surface', () => {
     expect(DashboardChannels.GET_STATS).toBe('dashboard:get-stats');
   });
 });
+
+/**
+ * Step 4 repository-accessor retirement surface:
+ * after the desktop composers inject instance-bound repository views, no
+ * `@memoflow/goal/electron` / `@memoflow/task/electron` repository accessor
+ * imports may remain anywhere in apps/desktop/src (the shims were removed from
+ * the package electron seams in Step 4).
+ *
+ * Step 4 repository-accessor 退役表面契约：desktop composer 注入 instance-bound
+ * repository view 后，apps/desktop/src 中不得再残留任何
+ * `@memoflow/goal/electron` / `@memoflow/task/electron` repository accessor
+ * 导入（Step 4 已从包 electron seam 移除这些 shim）。
+ */
+describe('desktop goal/task repository accessor retirement surface', () => {
+  const mainDir = resolve(__dirname, '..');
+  const files = [
+    'main.ts',
+    'ipc/dashboard-handler.ts',
+    'services/dashboard-read-service.ts',
+    'modules/ai/desktop-analytics-read.adapter.ts',
+    'modules/ai/desktop-automation-tool-executor.adapter.ts',
+  ];
+
+  for (const file of files) {
+    it(`${file} does not import goal/task electron repository accessors`, () => {
+      const source = readFileSync(resolve(mainDir, file), 'utf8');
+      expect(source).not.toMatch(/\bgetGoalRepository\b/);
+      expect(source).not.toMatch(/\bgetGoalRecordRepository\b/);
+      expect(source).not.toMatch(/\bgetTaskTemplateRepository\b/);
+      expect(source).not.toMatch(/\bgetTaskInstanceRepository\b/);
+    });
+  }
+});
