@@ -86,7 +86,9 @@ test.describe('Authentication - password recovery', () => {
     await page.locator('#new-password').fill(`${newPassword}X`);
     await page.locator('#confirm-new-password').fill(`${newPassword}X`);
     await page.getByTestId('reset-submit-button').click();
-    await expect(page.getByTestId('auth-error-banner')).toBeVisible({
+    // The consumed token replay fails via the unified password-mutation
+    // receipt (W6): a structured, localized error banner with retry.
+    await expect(page.getByTestId('web-auth-password-receipt')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
   });
