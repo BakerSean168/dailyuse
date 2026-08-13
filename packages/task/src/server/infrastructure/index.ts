@@ -57,6 +57,7 @@ export {
 export {
   createTaskPrismaModule,
   createTaskPrismaRepositories,
+  createTaskPrismaGoalOutboxRuntime,
   createTaskPrismaScheduleExecutionSource,
   createTaskPrismaScheduleProjectionSource,
   type CreateTaskPrismaModuleOptions,

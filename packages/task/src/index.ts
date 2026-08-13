@@ -18,6 +18,7 @@ export {
   createTaskPrismaModule,
   createTaskPrismaRepositories,
   createTaskRuntimeContribution,
+  createTaskPrismaGoalOutboxRuntime,
   PrismaTaskBindingReadPort,
   PowerSyncTaskBindingReadPort,
   type TaskApplicationPort,

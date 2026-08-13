@@ -43,7 +43,7 @@ import {
   createCloudAuthEmailDelivery,
   createCloudAuthEmailLinkCapture,
 } from '@memoflow/cloud-auth/server';
-import { createGoalApiModule } from '@memoflow/goal/api';
+import { composeGoal } from './runtime/compose-goal';
 import { PrismaTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
 import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
@@ -64,7 +64,7 @@ import { DataPortabilityApiModule } from '@memoflow/data-portability/api';
 import { createTaskPrismaScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPrismaScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import { createAIApiModule, type AIApiModuleContext } from '@memoflow/ai/api';
-import { createTaskApiModule } from '@memoflow/task/api';
+import { composeTask } from './runtime/compose-task';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
@@ -172,7 +172,8 @@ async function bootstrap(): Promise<void> {
       notificationPort: createNotificationPrismaScheduleNotificationPort(prisma, accountActiveChecker),
     },
   });
-  const taskApiModule = createTaskApiModule({
+  const taskApiModule = composeTask({
+    db: prisma,
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
   });
@@ -208,6 +209,10 @@ async function bootstrap(): Promise<void> {
       new BackendAutomationToolExecutorAdapter(context.db, repositoryStorageBaseDir),
   });
   const governanceApiModule = composeGovernance({ db: prisma });
+  const goalApiModule = composeGoal({
+    db: prisma,
+    taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
+  });
   const app = await bootstrapper
     // === 核心：白名单注册 ===
     .register(governanceApiModule) // ✅ 治理模块 (runtime composer)
@@ -232,7 +237,7 @@ async function bootstrap(): Promise<void> {
     .register(SettingApiModule) // ✅ 设置模块
     .register(taskApiModule) // ✅ 任务模块
     .register(AIApiModule) // ✅ AI 模块
-    .register(createGoalApiModule({ taskBindingReadPort: new PrismaTaskBindingReadPort(prisma) })) // ✅ 目标模块
+    .register(goalApiModule) // ✅ 目标模块
     .register(DataPortabilityApiModule) // ✅ 数据导入导出模块
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块
     .register(DashboardApiModule) // ✅ 仪表盘聚合模块

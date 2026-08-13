@@ -18,6 +18,12 @@ import {
   TaskInstancePrismaRepository,
   TaskTemplatePrismaRepository,
 } from './adapters/prisma';
+import { PrismaTaskGoalOutboxDispatchStore } from './adapters/prisma/prisma-task-goal-outbox-dispatch-store';
+import {
+  TaskGoalOutboxDispatcher,
+  type TaskGoalProgressHandler,
+} from '../application/outbox';
+import { createTaskGoalOutboxRuntime } from './task-goal-outbox-runtime';
 import { createTaskScheduleExecutionSource } from './schedule-execution-source';
 import { createTaskScheduleProjectionSource } from './schedule-projection-source';
 import type { TaskScheduleExecutionSource } from '../../schedule-execution';
@@ -118,6 +124,33 @@ export function createTaskPrismaRepositories(db: PrismaClient): TaskRepositorySe
     taskFolderRepository: new TaskFolderPrismaRepository(db),
     taskWriteTransactionRunner: new PrismaTaskWriteTransactionRunner(db),
   };
+}
+
+/**
+ * Creates the durable Task→Goal outbox runtime backed by the Prisma dispatch store.
+ * 创建基于 Prisma dispatch store 的可靠 Task→Goal outbox runtime。
+ *
+ * Host-level composition ingredient: wraps the Prisma store, the TaskGoalOutboxDispatcher
+ * and the Goal progress handler into the module-owned runtime contribution, so hosts
+ * never import concrete Prisma adapter classes or the dispatcher directly.
+ *
+ * 宿主级组合原料：把 Prisma store、TaskGoalOutboxDispatcher 与 Goal progress handler
+ * 包装成模块自有运行时贡献，宿主无需直接导入具体 Prisma 适配器类或 dispatcher。
+ *
+ * @param db - Prisma client owned by the host runtime. 宿主运行时持有的 Prisma client。
+ * @param goalProgressHandler - Goal's durable Task→Goal progress handler. 目标侧可靠 Task→Goal 进度处理器。
+ * @returns A module-owned TaskGoalOutbox runtime contribution. 模块自有的 outbox 运行时贡献。
+ */
+export function createTaskPrismaGoalOutboxRuntime(
+  db: PrismaClient,
+  goalProgressHandler: TaskGoalProgressHandler,
+): TaskModuleRuntimeContribution {
+  return createTaskGoalOutboxRuntime(
+    new TaskGoalOutboxDispatcher(
+      new PrismaTaskGoalOutboxDispatchStore(db),
+      goalProgressHandler,
+    ),
+  );
 }
 
 export function createTaskPrismaScheduleProjectionSource(
