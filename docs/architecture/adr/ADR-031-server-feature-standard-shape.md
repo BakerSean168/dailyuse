@@ -56,7 +56,7 @@ packages/<feature>/
 │   │   │   └── index.ts
 │   │   ├── transport/          # Controllers and transport translation
 │   │   │   └── index.ts
-│   │   ├── infrastructure/     # Adapters and composition root
+│   │   ├── infrastructure/     # Adapters, transport-neutral deep module, ingredient factories
 │   │   │   ├── adapters/
 │   │   │   ├── runtime/
 │   │   │   ├── <feature>.module.ts
@@ -80,7 +80,7 @@ longer the architectural standard for new work.
 | `server/domain` | Entities, VOs, domain services, repo interfaces | `contracts` |
 | `server/application` | Use cases, command/query handlers, app port | `server/domain` |
 | `server/transport` | Request/response handling, transport translation | `server/application` |
-| `server/infrastructure` | Prisma repos, PowerSync repos, runtime adapters, deep module assembly (`<feature>.module.ts`), ingredient factories (`create*Repositories`) | `server/domain`, `server/application` |
+| `server/infrastructure` | Prisma repos, PowerSync repos, runtime adapters, transport-neutral deep module (`<feature>.module.ts`), ingredient factories (`create*Repositories`); host composers select adapters | `server/domain`, `server/application` |
 | `api` | Express route + lifecycle adapter (transport only, host-composed instance) | `server/infrastructure`, `server/application` |
 | `client` | Client service interface, factory functions | `contracts` |
 | `electron` | Desktop main seam: IPC + lifecycle adapter (transport only, host-composed instance) | `client`, `contracts` |
