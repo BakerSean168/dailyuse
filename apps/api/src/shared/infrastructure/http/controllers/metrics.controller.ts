@@ -10,13 +10,7 @@
 import type { Request, Response } from 'express';
 import type { MetricsStore } from '../middlewares/performance.middleware';
 import { createApiResponseBuilder } from '../response-builder.js';
-import {
-  getUnifiedOperationMetricsSnapshot,
-  outboxMetricKey,
-  workerMetricKey,
-  OPERATION_OUTBOX_METRIC_KEYS,
-  OPERATION_WORKER_METRIC_KEYS,
-} from '@memoflow/patterns/operations';
+import { getUnifiedOperationMetricsSnapshot } from '@memoflow/patterns/operations';
 
 export type MetricsJsonPayload = {
   summary: {

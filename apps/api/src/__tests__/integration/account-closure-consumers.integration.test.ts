@@ -28,7 +28,7 @@ describe('API host account-closed consumer chain', () => {
 
   it('closure saga publishes account-closed; worker with real consumers cancels reminder/notification/repository pending work', async () => {
     const identityId = IdentityId.generate().toString();
-    const idempotencyKey = `chain-${Date.now()}`;
+    const _idempotencyKey = `chain-${Date.now()}`;
 
     await prisma.cloudAuthUser.create({
       data: {
