@@ -11,6 +11,7 @@ import {
 } from '../../vite.workspace-aliases';
 
 const webDevWorkspaceEntries = [
+  ['@memoflow/app-vue/modules/authentication', 'packages/app-vue/src/modules/authentication/index.ts'],
   ['@memoflow/app-vue/web-core', 'packages/app-vue/src/web-core.ts'],
   ['@memoflow/app-vue/web-shell-core', 'packages/app-vue/src/web-shell-core.ts'],
   ['@memoflow/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
