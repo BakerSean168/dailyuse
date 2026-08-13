@@ -412,16 +412,16 @@ Before marking this plan complete, attach raw command results and the final `rg`
 
 ## 7. 成功标准
 
-- [ ] `apps/api/src/runtime/compose-goal.ts` and `compose-task.ts` own Prisma adapter selection and return instance-bound API transport modules.
-- [ ] `apps/desktop/src/main/runtime/compose-goal.ts` and `compose-task.ts` own PowerSync adapter selection and return instance-bound Electron transport modules plus explicit repository views.
-- [ ] Goal and Task repository factories return complete port-shaped `GoalRepositorySet` / `TaskRepositorySet`; transaction runners are present; Goal habit remains correctly optional on PowerSync.
-- [ ] `createGoalModule` / `createTaskModule` remain the single transport-neutral deep module factories; domain/application/use-case behavior is unchanged.
-- [ ] Goal listener lifecycle is a package-owned runtime contribution passed by both host composers; no API/Electron transport module calls `registerGoalEventListeners` directly.
-- [ ] API/Electron module factories accept `{ instance }`, never compose from DB, have explicit lifecycle state, failure cleanup, handler removal, and idempotent destroy.
-- [ ] API main passes `PrismaTaskBindingReadPort(prisma)` and `createGoalTaskProgressPrismaHandler(prisma)` through composers; Desktop passes PowerSync equivalents; no port is inferred from transport context.
-- [ ] Goal routes, Task fixed mounts (`/task-templates`, `/task-instances`, `/tasks`), IPC channels, auth wrappers, controllers, envelopes and `/api` + `/api/v1` behavior are unchanged; the unused `routePrefix?` option is removed rather than propagated.
-- [ ] Dashboard and AI consumers use instance-bound repository ports; package-level Electron repository globals/accessors are removed or explicitly deprecated only as a temporary migration shim, never as hidden composition ownership.
-- [ ] Package root barrels export only ingredient factories, module factories, runtime contribution factories and types; concrete adapter classes do not leak through app-facing seams; package.json exports remain unchanged.
-- [ ] English-first + 中文 JSDoc explains composer/transport/deep-module ownership; docs and surface specs match implementation; test inventory is regenerated.
-- [ ] `goal:typecheck`, `task:typecheck`, `api:typecheck`, `desktop:typecheck`, touched-project lint, direct Goal/Task/API/Desktop Vitest lanes, `pnpm nx run memoflow:governance-check`, and `pnpm nx run memoflow:docs-check` all pass. `pnpm nx run <pkg>:test` is intentionally not used because it hangs.
-- [ ] Only after every checkbox is satisfied may this file move from `docs/plan/active` to `docs/plan/archive`.
+- [x] `apps/api/src/runtime/compose-goal.ts` and `compose-task.ts` own Prisma adapter selection and return instance-bound API transport modules.
+- [x] `apps/desktop/src/main/runtime/compose-goal.ts` and `compose-task.ts` own PowerSync adapter selection and return instance-bound Electron transport modules plus explicit repository views.
+- [x] Goal and Task repository factories return complete port-shaped `GoalRepositorySet` / `TaskRepositorySet`; transaction runners are present; Goal habit remains correctly optional on PowerSync.
+- [x] `createGoalModule` / `createTaskModule` remain the single transport-neutral deep module factories; domain/application/use-case behavior is unchanged.
+- [x] Goal listener lifecycle is a package-owned runtime contribution passed by both host composers; no API/Electron transport module calls `registerGoalEventListeners` directly.
+- [x] API/Electron module factories accept `{ instance }`, never compose from DB, have explicit lifecycle state, failure cleanup, handler removal, and idempotent destroy.
+- [x] API main passes `PrismaTaskBindingReadPort(prisma)` and `createGoalTaskProgressPrismaHandler(prisma)` through composers; Desktop passes PowerSync equivalents; no port is inferred from transport context.
+- [x] Goal routes, Task fixed mounts (`/task-templates`, `/task-instances`, `/tasks`), IPC channels, auth wrappers, controllers, envelopes and `/api` + `/api/v1` behavior are unchanged; the unused `routePrefix?` option is removed rather than propagated.
+- [x] Dashboard and AI consumers use instance-bound repository ports; package-level Electron repository globals/accessors are removed or explicitly deprecated only as a temporary migration shim, never as hidden composition ownership.
+- [x] Package root barrels export only ingredient factories, module factories, runtime contribution factories and types; concrete adapter classes do not leak through app-facing seams; package.json exports remain unchanged.
+- [x] English-first + 中文 JSDoc explains composer/transport/deep-module ownership; docs and surface specs match implementation; test inventory is regenerated.
+- [x] `goal:typecheck`, `task:typecheck`, `api:typecheck`, `desktop:typecheck`, touched-project lint, direct Goal/Task/API/Desktop Vitest lanes, `pnpm nx run memoflow:governance-check`, and `pnpm nx run memoflow:docs-check` all pass. `pnpm nx run <pkg>:test` is intentionally not used because it hangs.
+- [x] Only after every checkbox is satisfied may this file move from `docs/plan/active` to `docs/plan/archive`.
