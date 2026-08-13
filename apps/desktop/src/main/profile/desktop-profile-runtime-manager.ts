@@ -63,6 +63,7 @@ export class DesktopProfileRuntimeManager {
   private activationLock: Promise<void> | null = null;
   private registerModules: ProfileModuleRegistration | null = null;
   private afterActivation: ProfileActivationHook | null = null;
+  private beforeDeactivation: (() => void) | null = null;
   private readonly keyStore: ElectronProfileKeyStore;
   private readonly pinStore: ProfilePinStore;
   private readonly cloudSessionStore: CloudSessionStore;
@@ -86,6 +87,10 @@ export class DesktopProfileRuntimeManager {
 
   setAfterActivation(fn: ProfileActivationHook): void {
     this.afterActivation = fn;
+  }
+
+  setBeforeDeactivation(fn: () => void): void {
+    this.beforeDeactivation = fn;
   }
 
   getSharedResolver(): SharedPathResolver {
@@ -326,6 +331,10 @@ export class DesktopProfileRuntimeManager {
     const profileId = this.activeRuntime.descriptor.profileId;
     try { await stopScheduleRuntime(); } catch (error) { logger.warn('Failed to stop schedule runtime', { error }); }
     await this.activeRuntime.bootstrapper.destroy().catch((error) => logger.error('Failed to destroy profile modules', { error }));
+    // Modules are disposed: clear any shell-held references to the destroyed
+    // module instances (e.g. the dashboard repository view) so stale disposed
+    // repositories are never served after deactivation.
+    this.beforeDeactivation?.();
     // NOTE: the closure-request marker is intentionally NOT cleared here —
     // deactivateProfile also runs on profile switch/lock where the profile can
     // be reactivated; clearing the marker there would reopen the local

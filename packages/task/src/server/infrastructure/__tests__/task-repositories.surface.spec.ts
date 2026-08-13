@@ -7,6 +7,11 @@ import {
   createTaskPrismaRepositories,
   createTaskPowerSyncRepositories,
   type TaskRepositorySet,
+  type TaskWriteTransactionRunner,
+  type ITaskDependencyRepository,
+  type ITaskFolderRepository,
+  type ITaskInstanceRepository,
+  type ITaskTemplateRepository,
   type TaskModuleInstance,
 } from '../../../../src';
 import { createTaskPrismaModule } from '../prisma';
@@ -85,13 +90,67 @@ describe('task repository factories surface', () => {
     ];
 
     const root = readFileSync(resolve(__dirname, '../../../index.ts'), 'utf8');
+    const infrastructure = readFileSync(resolve(__dirname, '../index.ts'), 'utf8');
     for (const name of forbidden) {
       expect(root).not.toMatch(new RegExp(`\\b${name}\\b`));
+      expect(infrastructure).not.toMatch(new RegExp(`\\b${name}\\b`));
     }
 
     const rootModule = await import('../../../../src');
     const exportedNames = Object.keys(rootModule).sort();
     for (const name of forbidden) {
+      expect(exportedNames).not.toContain(name);
+    }
+  });
+
+  it('root barrel type-exports every TaskRepositorySet field type (compile-time lock)', () => {
+    // These type-only imports from the root barrel prove the set field types are
+    // reachable from @memoflow/task; the following value-level assertions pin the
+    // field names so a renamed/removed port fails loudly.
+    const run = (_t: TaskWriteTransactionRunner) => undefined;
+    const dep = (_t: ITaskDependencyRepository) => undefined;
+    const folder = (_t: ITaskFolderRepository) => undefined;
+    const instance = (_t: ITaskInstanceRepository) => undefined;
+    const template = (_t: ITaskTemplateRepository) => undefined;
+
+    expect(typeof run).toBe('function');
+    expect(typeof dep).toBe('function');
+    expect(typeof folder).toBe('function');
+    expect(typeof instance).toBe('function');
+    expect(typeof template).toBe('function');
+  });
+
+  it('infrastructure public barrel keeps ingredient factories, set types, port types and cross-module read ports only', async () => {
+    const infrastructure = readFileSync(resolve(__dirname, '../index.ts'), 'utf8');
+
+    expect(infrastructure).toContain('createTaskModule');
+    expect(infrastructure).toContain('createTaskPrismaRepositories');
+    expect(infrastructure).toContain('createTaskPowerSyncRepositories');
+    expect(infrastructure).toContain('createTaskRuntimeContribution');
+    expect(infrastructure).toContain('createTaskPrismaScheduleProjectionSource');
+    expect(infrastructure).toContain('createTaskPowerSyncScheduleExecutionSource');
+    expect(infrastructure).toContain('TaskRepositorySet');
+    expect(infrastructure).toContain('TaskModuleInstance');
+    // Cross-module read ports stay reachable for host composition.
+    expect(infrastructure).toContain('PrismaTaskBindingReadPort');
+    expect(infrastructure).toContain('PowerSyncTaskBindingReadPort');
+
+    const infraModule = await import('../index');
+    const exportedNames = Object.keys(infraModule);
+    for (const name of [
+      'TaskTemplatePrismaRepository',
+      'TaskInstancePrismaRepository',
+      'TaskDependencyPrismaRepository',
+      'TaskFolderPrismaRepository',
+      'PrismaTaskWriteTransactionRunner',
+      'PrismaTaskGoalOutboxDispatchStore',
+      'PowerSyncTaskTemplateRepository',
+      'PowerSyncTaskInstanceRepository',
+      'PowerSyncTaskDependencyRepository',
+      'PowerSyncTaskFolderRepository',
+      'PowerSyncTaskWriteTransactionRunner',
+      'PowerSyncTaskGoalOutboxDispatchStore',
+    ]) {
       expect(exportedNames).not.toContain(name);
     }
   });

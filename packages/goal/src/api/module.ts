@@ -32,10 +32,11 @@
  *
  * Per-handle state machine (`created -> registered | failed`, then any state
  * -> `disposed`):
- * - register(): only allowed from `created`. Builds routes from `instance.api`
- *   and mounts them at `/goals` and `/goal-folders`, then calls
- *   `instance.start()` — route wiring happens BEFORE start, so a route-build
- *   failure leaves no runtime side effects. On success the handle moves to
+ * - register(): only allowed from `created`. Builds routes from `instance.api`,
+ *   calls `instance.start()`, and ONLY THEN mounts them at `/goals` and
+ *   `/goal-folders` — a failed start happens before any `router.use(...)` call,
+ *   so the host router never observes a route for a handle that did not start
+ *   (no rollback/unmount is needed). On success the handle moves to
  *   `registered`; a second register() throws. On any failure it cleans up
  *   (best-effort dispose, logged if dispose itself throws), moves to `failed`,
  *   and rethrows the ORIGINAL error. A failed handle must not be re-registered.
@@ -45,10 +46,11 @@
  *
  * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
  * `disposed`）：
- * - register()：仅允许从 `created` 进入。用 `instance.api` 构建路由并挂载到
- *   `/goals` 与 `/goal-folders`，然后调用 `instance.start()`——路由先于 start
- *   挂载，因此路由构建失败不会留下任何 runtime 副作用。成功则进入
- *   `registered`，重复 register() 抛错；任何失败先清理（best-effort dispose，
+ * - register()：仅允许从 `created` 进入。用 `instance.api` 构建路由、调用
+ *   `instance.start()`，之后才挂载到 `/goals` 与 `/goal-folders`——start 失败
+ *   发生在任何 `router.use(...)` 之前，因此宿主 router 永远不会看到一个
+ *   未启动成功 handle 的路由（无需回滚/卸载）。成功则进入 `registered`，
+ *   重复 register() 抛错；任何失败先清理（best-effort dispose，
  *   若 dispose 自身抛错则记录日志），进入 `failed` 并重新抛出原始错误。
  *   failed 的 handle 不得再次注册。
  * - destroy()：任何状态都允许，且始终幂等。在 `instance.dispose()` 执行前
@@ -142,17 +144,22 @@ export function createGoalApiModule(options: GoalApiModuleOptions): GoalApiModul
         const goalHandlers = createGoalTransportHandlers(options.instance.api);
         const folderHandlers = createGoalFolderTransportHandlers(options.instance.api);
 
+        // Build the routes BEFORE starting the instance and BEFORE mounting:
+        // a failed start must not leave any route installed on the host router.
         const goalRoutes = registerGoalRoutes(goalHandlers, middleware, openApiRegistry);
-        router.use('/goals', goalRoutes);
-
         const folderRoutes = registerGoalFolderRoutes(
           folderHandlers,
           middleware,
           openApiRegistry,
         );
-        router.use('/goal-folders', folderRoutes);
 
         options.instance.start();
+
+        // Mount only after a successful start, so a start failure needs no
+        // rollback: the host router never observes this handle's routes.
+        router.use('/goals', goalRoutes);
+        router.use('/goal-folders', folderRoutes);
+
         state = 'registered';
       } catch (error) {
         state = 'failed';

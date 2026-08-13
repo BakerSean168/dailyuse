@@ -161,6 +161,18 @@ describe('createTaskApiModule lifecycle', () => {
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
+  it('does not mount the combined task router when start() rejects', async () => {
+    fake.start.mockRejectedValue(new Error('start failed'));
+
+    const routerUse = context.router.use as ReturnType<typeof vi.fn>;
+    const moduleDef = createTaskApiModule({ instance: fake.instance });
+
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
+    expect(routerUse).not.toHaveBeenCalled();
+    expect(fake.start).toHaveBeenCalledTimes(1);
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+  });
+
   it('rethrows the original registration error even if dispose also rejects', async () => {
     fake.start.mockRejectedValue(new Error('start failed'));
     fake.dispose.mockRejectedValue(new Error('dispose failed'));

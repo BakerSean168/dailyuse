@@ -36,14 +36,15 @@
  * Per-handle state machine (`created -> registered | failed`, then any state
  * -> `disposed`):
  * - register(): only allowed from `created`. Builds controllers from
- *   `instance.api` and mounts the fixed routes (`/task-templates`,
- *   `/task-instances`, `/tasks`) via `registerTaskRoutes`, then AWAITS
- *   `instance.start()` — route wiring happens BEFORE start, so a route-build
- *   failure leaves no runtime side effects. On success the handle moves to
- *   `registered`; a second register() throws. On any failure it cleans up
- *   (best-effort await of dispose, logged if dispose itself throws), moves to
- *   `failed`, and rethrows the ORIGINAL error. A failed handle must not be
- *   re-registered.
+ *   `instance.api` and the fixed routes (`/task-templates`,
+ *   `/task-instances`, `/tasks`) via `registerTaskRoutes`, AWAITS
+ *   `instance.start()`, and ONLY THEN mounts the combined router — a failed
+ *   start happens before any `router.use(...)` call, so the host router never
+ *   observes a route for a handle that did not start (no rollback/unmount is
+ *   needed). On success the handle moves to `registered`; a second register()
+ *   throws. On any failure it cleans up (best-effort await of dispose, logged
+ *   if dispose itself throws), moves to `failed`, and rethrows the ORIGINAL
+ *   error. A failed handle must not be re-registered.
  * - destroy(): always allowed and always idempotent. The state is set to
  *   `disposed` BEFORE `await instance.dispose()` runs, so a reentrant/retry
  *   destroy stays a no-op even if dispose throws (destroy may propagate that
@@ -53,8 +54,9 @@
  * `disposed`）：
  * - register()：仅允许从 `created` 进入。用 `instance.api` 构建控制器并通过
  *   `registerTaskRoutes` 挂载固定路由（`/task-templates`、`/task-instances`、
- *   `/tasks`），然后 await `instance.start()`——路由先于 start 挂载，
- *   因此路由构建失败不会留下任何 runtime 副作用。成功则进入 `registered`，
+ *   `/tasks`），await `instance.start()`，之后才挂载组合 router——start 失败
+ *   发生在任何 `router.use(...)` 之前，因此宿主 router 永远不会看到一个
+ *   未启动成功 handle 的路由（无需回滚/卸载）。成功则进入 `registered`，
  *   重复 register() 抛错；任何失败先清理（best-effort await dispose，
  *   若 dispose 自身抛错则记录日志），进入 `failed` 并重新抛出原始错误。
  *   failed 的 handle 不得再次注册。
@@ -162,9 +164,12 @@ export function createTaskApiModule(options: TaskApiModuleOptions): TaskApiModul
           openApiRegistry,
         );
 
+        await options.instance.start();
+
+        // Mount only after a successful start, so a start failure needs no
+        // rollback: the host router never observes this handle's routes.
         router.use(taskRoutes);
 
-        await options.instance.start();
         state = 'registered';
       } catch (error) {
         state = 'failed';

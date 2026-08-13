@@ -27,10 +27,18 @@ import type { GoalModuleRuntimeContribution } from '../goal.module';
  * Runtime contribution surface for Goal event listeners.
  * 目标事件监听器的运行时贡献表面。
  *
- * Structurally identical to `GoalModuleRuntimeContribution`; declared as its own
- * type so the factory seam stays port-shaped and testable.
- * 与 `GoalModuleRuntimeContribution` 结构一致；独立声明以便工厂 seam 保持
- * Port 形状且可测试。
+ * This interface adds NO members — it is a **nominal / semantic marker type**
+ * that inherits the full `GoalModuleRuntimeContribution` shape (start/stop).
+ * It exists so the factory return type carries intent: consumers reading the
+ * seam see "a Goal event-listeners runtime" rather than a generic contribution,
+ * and a rename/refactor of the factory's purpose shows up in the type name
+ * instead of being lost in a structural alias.
+ *
+ * 该接口不新增任何成员——它是一个**名义 / 语义标记类型**，完整继承
+ * `GoalModuleRuntimeContribution`（start/stop）的形状。它存在的意义是让工厂
+ * 返回类型携带意图：阅读 seam 的人看到的是“Goal 事件监听器运行时”而不是一个
+ * 泛化的 contribution；工厂语义发生改名/重构时，意图保留在类型名上，而不是
+ * 消失在结构化别名中。
  */
 export interface GoalEventListenersRuntime extends GoalModuleRuntimeContribution {}
 

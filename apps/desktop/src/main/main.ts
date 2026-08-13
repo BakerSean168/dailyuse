@@ -397,10 +397,14 @@ async function initializeShellRuntime(): Promise<void> {
     );
   });
   profileRuntimeManager.setAfterActivation((profile) => cloudConnectionManager.restore(profile).then(() => undefined));
+  profileRuntimeManager.setBeforeDeactivation(() => {
+    activeProfileDashboardRepositories = null;
+  });
 
-  // Cross-module event listeners (task→goal 联动) 现由各模块 electron-entry 在
-  // profile 激活时自行挂载（见 GoalElectronModule.register → registerGoalEventListeners），
-  // 不再由 shell 层集中初始化。
+  // Cross-module event listeners (task→goal 联动) 现由 composeGoal 把
+  // createGoalEventListenersRuntime 作为模块自有运行时贡献注入 GoalModuleInstance
+  // （见 packages/goal/src/server/infrastructure/runtime/goal-event-listeners.runtime.ts），
+  // 在 profile 激活、module start() 时随模块一起启动；不再由 shell 层集中初始化。
 
   // Ancillary
   initMemoryMonitorForDev();

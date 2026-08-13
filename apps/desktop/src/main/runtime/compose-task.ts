@@ -68,9 +68,9 @@ import {
   createTaskPowerSyncGoalOutboxRuntime,
   createTaskPowerSyncRepositories,
   createTaskRuntimeContribution,
+  normalizeTaskRuntimeContributions,
   type ITaskInstanceRepository,
   type ITaskTemplateRepository,
-  type TaskModuleRuntimeContribution,
   type TaskRuntimeContributionsInput,
 } from '@memoflow/task';
 import {
@@ -193,19 +193,4 @@ export function composeTask(dependencies: ComposeTaskDependencies): ComposeTaskR
       taskInstanceRepository,
     },
   };
-}
-
-/**
- * Normalizes a single-or-array runtime contributions input into an array.
- * 将单个或数组形式的运行时贡献输入规范化为数组。
- */
-function normalizeTaskRuntimeContributions(
-  input?: TaskRuntimeContributionsInput,
-): readonly TaskModuleRuntimeContribution[] {
-  if (!input) {
-    return [];
-  }
-  return Array.isArray(input)
-    ? Array.from(input)
-    : [input as TaskModuleRuntimeContribution];
 }

@@ -60,7 +60,7 @@ import {
   createGoalModule,
   createGoalPowerSyncRepositories,
   createGoalRuntimeContribution,
-  type GoalModuleRuntimeContribution,
+  normalizeGoalRuntimeContributions,
   type GoalRuntimeContributionsInput,
   type IGoalRecordRepository,
   type IGoalRepository,
@@ -114,8 +114,8 @@ export interface ComposeGoalResult {
  * Wire order:
  * 1. createGoalPowerSyncRepositories(db) — select the PowerSync adapters.
  * 2. createGoalEventListenersRuntime(...) + createGoalRuntimeContribution()
- *    — build the module-owned runtime contributions (listener wrapper first,
- *    then base contribution, then host contributions).
+ *    — build the module-owned runtime contributions (base contribution first,
+ *    then the listener wrapper, then host contributions).
  * 3. createGoalModule({ ...repositories, taskBindingReadPort, runtimeContributions })
  *    — assemble the transport-neutral goal instance.
  * 4. createGoalElectronModule({ instance }) — bind the instance to an
@@ -124,7 +124,7 @@ export interface ComposeGoalResult {
  * 接线顺序：
  * 1. createGoalPowerSyncRepositories(db) —— 选择 PowerSync 适配器。
  * 2. createGoalEventListenersRuntime(...) 与 createGoalRuntimeContribution()
- *    —— 构建模块自有运行时贡献（先 listener 包装，再基础贡献，再宿主贡献）。
+ *    —— 构建模块自有运行时贡献（先基础贡献，再 listener 包装，再宿主贡献）。
  * 3. createGoalModule({ ...repositories, taskBindingReadPort, runtimeContributions })
  *    —— 装配与传输无关的目标实例。
  * 4. createGoalElectronModule({ instance }) —— 把实例绑定到 IElectronModule
@@ -179,19 +179,4 @@ export function composeGoal(dependencies: ComposeGoalDependencies): ComposeGoalR
       goalRecordRepository,
     },
   };
-}
-
-/**
- * Normalizes a single-or-array runtime contributions input into an array.
- * 将单个或数组形式的运行时贡献输入规范化为数组。
- */
-function normalizeGoalRuntimeContributions(
-  input?: GoalRuntimeContributionsInput,
-): readonly GoalModuleRuntimeContribution[] {
-  if (!input) {
-    return [];
-  }
-  return Array.isArray(input)
-    ? Array.from(input)
-    : [input as GoalModuleRuntimeContribution];
 }

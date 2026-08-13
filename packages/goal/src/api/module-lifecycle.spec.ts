@@ -190,6 +190,20 @@ describe('createGoalApiModule lifecycle', () => {
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
+  it('does not mount any route on the host router when start() throws', () => {
+    fake.start.mockImplementation(() => {
+      throw new Error('start failed');
+    });
+
+    const routerUse = context.router.use as ReturnType<typeof vi.fn>;
+    const moduleDef = createGoalApiModule({ instance: fake.instance });
+
+    expect(() => moduleDef.register(context)).toThrow('start failed');
+    expect(routerUse).not.toHaveBeenCalled();
+    expect(fake.start).toHaveBeenCalledTimes(1);
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+  });
+
   it('rethrows the original registration error even if dispose also throws', () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');

@@ -9,6 +9,12 @@ import {
   createGoalPowerSyncRepositories,
   createGoalEventListenersRuntime,
   type GoalRepositorySet,
+  type GoalWriteTransactionRunner,
+  type IFocusModeRepository,
+  type IGoalFolderRepository,
+  type IGoalRecordRepository,
+  type IGoalRepository,
+  type IHabitRepository,
   type GoalModuleInstance,
 } from '../../../../src';
 import { createGoalPrismaModule } from '../prisma';
@@ -121,13 +127,61 @@ describe('goal repository factories surface', () => {
     ];
 
     const root = readFileSync(resolve(__dirname, '../../../index.ts'), 'utf8');
+    const infrastructure = readFileSync(resolve(__dirname, '../index.ts'), 'utf8');
     for (const name of forbidden) {
       expect(root).not.toMatch(new RegExp(`\\b${name}\\b`));
+      expect(infrastructure).not.toMatch(new RegExp(`\\b${name}\\b`));
     }
 
     const rootModule = await import('../../../../src');
     const exportedNames = Object.keys(rootModule).sort();
     for (const name of forbidden) {
+      expect(exportedNames).not.toContain(name);
+    }
+  });
+
+  it('root barrel type-exports every GoalRepositorySet field type (compile-time lock)', () => {
+    // These type-only imports from the root barrel prove the set field types are
+    // reachable from @memoflow/goal; the following value-level assertions pin the
+    // field names so a renamed/removed port fails loudly.
+    const run = (_t: GoalWriteTransactionRunner) => undefined;
+    const folder = (_t: IGoalFolderRepository) => undefined;
+    const focus = (_t: IFocusModeRepository) => undefined;
+    const habit = (_t: IHabitRepository) => undefined;
+    const goal = (_t: IGoalRepository) => undefined;
+    const record = (_t: IGoalRecordRepository) => undefined;
+
+    expect(typeof run).toBe('function');
+    expect(typeof folder).toBe('function');
+    expect(typeof focus).toBe('function');
+    expect(typeof habit).toBe('function');
+    expect(typeof goal).toBe('function');
+    expect(typeof record).toBe('function');
+  });
+
+  it('infrastructure public barrel keeps ingredient factories, set types and port types only', async () => {
+    const infrastructure = readFileSync(resolve(__dirname, '../index.ts'), 'utf8');
+
+    expect(infrastructure).toContain('createGoalModule');
+    expect(infrastructure).toContain('createGoalPrismaRepositories');
+    expect(infrastructure).toContain('createGoalPowerSyncRepositories');
+    expect(infrastructure).toContain('createGoalEventListenersRuntime');
+    expect(infrastructure).toContain('createGoalPrismaScheduleProjectionSource');
+    expect(infrastructure).toContain('createGoalPowerSyncScheduleExecutionSource');
+    expect(infrastructure).toContain('GoalRepositorySet');
+    expect(infrastructure).toContain('GoalModuleInstance');
+
+    const infraModule = await import('../index');
+    const exportedNames = Object.keys(infraModule);
+    for (const name of [
+      'GoalPrismaRepository',
+      'GoalFolderPrismaRepository',
+      'FocusModePrismaRepository',
+      'GoalRecordPrismaRepository',
+      'PrismaGoalWriteTransactionRunner',
+      'GoalPowerSyncRepository',
+      'PowerSyncGoalWriteTransactionRunner',
+    ]) {
       expect(exportedNames).not.toContain(name);
     }
   });

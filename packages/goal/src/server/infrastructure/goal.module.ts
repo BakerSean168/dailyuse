@@ -60,6 +60,7 @@ import {
   BatchUpdateKeyResultWeightsUseCase,
 } from '../application';
 import type { GoalSystemView } from '@memoflow/contracts/goal';
+import { createLogger } from '@memoflow/utils/logger';
 import type { GoalApplicationPort } from '../application';
 import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
 import type { GoalWriteTransactionRunner } from '../application/use-cases/commands/goal-write-support';
@@ -69,6 +70,8 @@ import {
   ListHabitUseCase,
   type IHabitRepository,
 } from '../application/use-cases/commands/habit.use-cases';
+
+const logger = createLogger('GoalModule');
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the goal server runtime needs from the outside.
@@ -310,8 +313,20 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
 // 运行时贡献规范化辅助函数。
 // ---------------------------------------------------------------------------
 
-function normalizeRuntimeContributions(
-  input?: GoalModuleRuntimeContribution | ReadonlyArray<GoalModuleRuntimeContribution>,
+/**
+ * Normalizes a single-or-array runtime contributions input into an array.
+ * 将单个或数组形式的运行时贡献输入规范化为数组。
+ *
+ * Exported so both host composers (apps/api + apps/desktop) reuse the same
+ * normalization instead of carrying private copies; `createGoalModule` accepts
+ * the same single-or-array input and normalizes internally.
+ *
+ * 从包根导出，供两个宿主 composer（apps/api 与 apps/desktop）复用同一份
+ * 规范化逻辑，避免各自维护私有副本；`createGoalModule` 本身也接受
+ * 单个或数组输入并在内部规范化。
+ */
+export function normalizeGoalRuntimeContributions(
+  input?: GoalRuntimeContributionsInput,
 ): readonly GoalModuleRuntimeContribution[] {
   if (!input) return [];
   if (Array.isArray(input)) return Array.from(input);
@@ -343,7 +358,7 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     goalRecordRepository,
     goalWriteTransactionRunner,
   } = deps;
-  const runtimeContributions = normalizeRuntimeContributions(deps.runtimeContributions);
+  const runtimeContributions = normalizeGoalRuntimeContributions(deps.runtimeContributions);
   const useCases = createGoalUseCases(deps);
   let started = false;
 
@@ -442,8 +457,28 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
 
     start(): void {
       if (started) return;
+      const startedContributions: GoalModuleRuntimeContribution[] = [];
       for (const runtime of runtimeContributions) {
-        runtime.start();
+        try {
+          runtime.start();
+          startedContributions.push(runtime);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedRuntime of [...startedContributions].reverse()) {
+            try {
+              startedRuntime.stop();
+            } catch (stopError) {
+              logger.error(
+                'GoalModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
       started = true;
     },

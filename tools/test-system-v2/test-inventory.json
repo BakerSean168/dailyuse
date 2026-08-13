@@ -5793,6 +5793,16 @@
       ]
     },
     {
+      "path": "packages/goal/src/server/infrastructure/__tests__/goal-module-partial-start.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/goal/src/server/infrastructure/__tests__/goal-repositories.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8612,6 +8622,16 @@
       ]
     },
     {
+      "path": "packages/task/src/server/infrastructure/__tests__/task-module-partial-start.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/task/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/task/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/task/src/server/infrastructure/__tests__/task-repositories.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -9455,7 +9475,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 89
+      "fileCount": 90
     },
     {
       "id": "packages/goal/vitest.integration.config.ts",
@@ -9469,7 +9489,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 89
+      "fileCount": 90
     },
     {
       "id": "packages/goal/vitest.use-cases.config.ts",
@@ -9665,7 +9685,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 72
+      "fileCount": 73
     },
     {
       "id": "packages/task/vitest.integration.config.ts",
@@ -9693,7 +9713,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 72
+      "fileCount": 73
     },
     {
       "id": "packages/task/vitest.use-cases.config.ts",
@@ -10109,6 +10129,7 @@
       "packages/goal/src/server/domain/value-objects/__tests__/goal-value-objects.spec.ts",
       "packages/goal/src/server/domain/value-objects/__tests__/key-result-weight-snapshot-impl.spec.ts",
       "packages/goal/src/server/domain/value-objects/goal-domain-errors-and-focus-mode.spec.ts",
+      "packages/goal/src/server/infrastructure/__tests__/goal-module-partial-start.spec.ts",
       "packages/goal/src/server/infrastructure/__tests__/goal-repositories.surface.spec.ts",
       "packages/goal/src/server/infrastructure/__tests__/schedule-source-ownership.surface.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/goal-write-buffered-event-bus.spec.ts",
@@ -10337,6 +10358,7 @@
       "packages/task/src/server/domain/value-objects/__tests__/task-server-value-objects.spec.ts",
       "packages/task/src/server/domain/value-objects/__tests__/task-template-id.spec.ts",
       "packages/task/src/server/domain/value-objects/__tests__/task-time-config-ymd.spec.ts",
+      "packages/task/src/server/infrastructure/__tests__/task-module-partial-start.spec.ts",
       "packages/task/src/server/infrastructure/__tests__/task-repositories.surface.spec.ts",
       "packages/task/src/server/infrastructure/adapters/powersync/powersync-task-binding-read-port.spec.ts",
       "packages/task/src/server/infrastructure/adapters/powersync/powersync-task-goal-outbox-dispatch-store.test.ts",
@@ -10369,7 +10391,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 879,
+    "unit": 881,
     "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,

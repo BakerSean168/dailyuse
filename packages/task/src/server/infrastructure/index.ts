@@ -12,31 +12,6 @@
  *   显式组合根与运行时组装
  */
 
-// ============ Adapters - Prisma ============
-/** @internal Concrete Prisma implementation — use ITaskTemplateRepository interface instead. Prisma 具体实现 — 请使用 ITaskTemplateRepository 接口。 */
-export { TaskTemplatePrismaRepository } from './adapters/prisma/task-template-prisma.repository';
-/** @internal Concrete Prisma implementation — use ITaskInstanceRepository interface instead. Prisma 具体实现 — 请使用 ITaskInstanceRepository 接口。 */
-export { TaskInstancePrismaRepository } from './adapters/prisma/task-instance-prisma.repository';
-/** @internal Concrete Prisma implementation — use ITaskDependencyRepository interface instead. Prisma 具体实现 — 请使用 ITaskDependencyRepository 接口。 */
-export { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependency-prisma.repository';
-/** @internal Concrete Prisma implementation — use ITaskFolderRepository interface instead. Prisma 具体实现 — 请使用 ITaskFolderRepository 接口。 */
-export { TaskFolderPrismaRepository } from './adapters/prisma/task-folder-prisma.repository';
-export { PrismaTaskWriteTransactionRunner } from './adapters/prisma/prisma-task-write-transaction-runner';
-export { PrismaTaskGoalOutboxDispatchStore } from './adapters/prisma/prisma-task-goal-outbox-dispatch-store';
-export { PrismaTaskBindingReadPort } from './adapters/prisma/prisma-task-binding-read-port';
-
-// ============ Adapters - PowerSync ============
-/** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-export {
-  PowerSyncTaskTemplateRepository,
-  PowerSyncTaskInstanceRepository,
-  PowerSyncTaskDependencyRepository,
-  PowerSyncTaskFolderRepository,
-  PowerSyncTaskWriteTransactionRunner,
-  PowerSyncTaskGoalOutboxDispatchStore,
-  PowerSyncTaskBindingReadPort,
-} from './adapters/powersync';
-
 // ============ Composition Root ============
 export {
   createTaskModule,
@@ -48,6 +23,18 @@ export {
   type TaskRuntimeContributionsInput,
 } from './task.module';
 export type { TaskApplicationPort } from '../application';
+
+// ============ Repository Ports referenced by TaskRepositorySet ============
+export type {
+  ITaskDependencyRepository,
+  ITaskFolderRepository,
+  ITaskInstanceRepository,
+  ITaskTemplateRepository,
+} from '../domain/repositories';
+export type { TaskWriteTransactionRunner } from '../application/use-cases/commands/task-write-support';
+
+export { PrismaTaskBindingReadPort } from './adapters/prisma/prisma-task-binding-read-port';
+export { PowerSyncTaskBindingReadPort } from './adapters/powersync/powersync-task-binding-read-port';
 export {
   createTaskPowerSyncModule,
   createTaskPowerSyncRepositories,
@@ -65,6 +52,9 @@ export {
   type TaskRepositorySet,
 } from './prisma';
 export { createTaskRuntimeContribution } from './runtime';
+export {
+  normalizeTaskRuntimeContributions,
+} from './normalize-runtime-contributions';
 export {
   createTaskGoalOutboxRuntime,
   type TaskGoalOutboxRuntimeOptions,

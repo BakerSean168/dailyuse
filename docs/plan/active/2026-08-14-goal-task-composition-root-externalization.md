@@ -102,12 +102,14 @@ export interface TaskRepositorySet {
   readonly taskTemplateRepository: ITaskTemplateRepository;
   readonly taskInstanceRepository: ITaskInstanceRepository;
   readonly taskDependencyRepository: ITaskDependencyRepository;
-  readonly taskFolderRepository?: ITaskFolderRepository;
+  readonly taskFolderRepository: ITaskFolderRepository;
   readonly taskWriteTransactionRunner: TaskWriteTransactionRunner;
 }
 ```
 
-其中 `GoalRepositorySet` 的 `habitRepository` 必须保持 optional，原因是当前 `GoalModuleDependencies.habitRepository` 也是 optional（`goal.module.ts:94-95`），且 PowerSync 没有对应 adapter；不得因为“接口完整”而扩展领域模型。`TaskRepositorySet.taskFolderRepository` 继续 optional 以匹配 `TaskModuleDependencies:91`，但当前 Prisma/PowerSync factory 都返回它。
+其中 `GoalRepositorySet` 的 `habitRepository` 必须保持 optional，原因是当前 `GoalModuleDependencies.habitRepository` 也是 optional（`goal.module.ts:94-95`），且 PowerSync 没有对应 adapter；不得因为“接口完整”而扩展领域模型。
+
+> **Deviation note（相对 §3.1 初稿）**：`TaskRepositorySet.taskFolderRepository` 从初稿的 optional 调整为 **required**。原因：Step 1 实施时 Prisma 与 PowerSync 两个 factory 都始终返回该字段，且 data-portability 消费者依赖它；保持 required 让 set 与 `TaskModuleDependencies` 的差异显式化（`TaskModuleDependencies.taskFolderRepository` 仍为 optional 以容忍其缺失）。该偏差已记录在 `packages/task/src/server/infrastructure/prisma.ts` 的 `TaskRepositorySet` JSDoc 中（"required because both factories always supply it"）。
 
 新增/调整：
 
