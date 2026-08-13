@@ -50,7 +50,7 @@ import {
 } from '@memoflow/repository/electron';
 import { createAccountElectronModule } from '@memoflow/account/electron';
 import { DataPortabilityElectronModule } from '@memoflow/data-portability/electron';
-import { GovernanceElectronModule } from '@memoflow/governance/electron';
+import { composeGovernance } from './runtime/compose-governance';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
@@ -271,6 +271,8 @@ async function registerBusinessModules(
     },
   });
 
+  const governanceElectronModule = composeGovernance({ db });
+
   await bootstrapper
     // Core services
     .register(accountElectronModule)
@@ -285,7 +287,7 @@ async function registerBusinessModules(
     .register(scheduleElectronModule)
     .register(ReminderElectronModule)
     .register(AIElectronModule)
-    .register(GovernanceElectronModule)
+    .register(governanceElectronModule)
     .register(repositoryElectronModule);
 
   const initTime = performance.now() - startTime;
