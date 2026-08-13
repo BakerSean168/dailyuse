@@ -213,8 +213,8 @@ export function createGovernanceElectronModule(
         logger.info('Governance module registered');
       } catch (error) {
         state = 'failed';
-        for (const channel of installed) {
-          ipcMain.removeHandler(channel);
+        for (let i = installed.length - 1; i >= 0; i--) {
+          ipcMain.removeHandler(installed[i]);
         }
         try {
           options.instance.dispose();

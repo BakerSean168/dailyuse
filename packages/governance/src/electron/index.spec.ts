@@ -197,6 +197,10 @@ describe('createGovernanceElectronModule IPC lifecycle', () => {
     expect(mocks.handlers.size).toBe(0);
     expect(mocks.removeHandler).toHaveBeenCalledWith(allChannels[0]);
     expect(mocks.removeHandler).toHaveBeenCalledWith(allChannels[1]);
+    expect(mocks.removeHandler.mock.calls.map(([channel]) => channel)).toEqual([
+      allChannels[1],
+      allChannels[0],
+    ]);
     expect(fake.dispose).toHaveBeenCalledTimes(1);
     expect(fake.start).not.toHaveBeenCalled();
 

@@ -87,10 +87,17 @@ longer the architectural standard for new work.
 
 ### Composition Root Pattern
 
-The `server/infrastructure/<feature>.module.ts` composition root wires concrete
-repository implementations to domain interfaces. This is allowed within a
-`layer:domain` tagged package because:
-- The composition root is infrastructure assembly code, not domain logic
+The composition root lives in the **host runtime composers**, not in the
+feature package: `apps/api/src/runtime` and `apps/desktop/src/main/runtime`
+select the concrete adapters (Prisma / PowerSync), build repositories via the
+package ingredient factories (`create*Repositories`), and assemble the
+transport-neutral feature instance (see "Composition Ownership" below). The
+feature package's module factory (`server/infrastructure/<feature>.module.ts`)
+is a transport/lifecycle adapter, not the composition path; package-internal
+convenience roots may remain for rollback during migration, but they are not
+the composition root. Keeping ingredient factories and adapters inside a
+`layer:domain` tagged package is allowed because:
+- They are infrastructure assembly code, not domain logic
 - The ESLint `layer:domain -> layer:infra` rule exists specifically for this pattern
 - Package-internal boundary enforcement is now implemented as a repo-level governance audit
   (`tools/governance/package-internal-boundary-audit.mjs`) and runs via
