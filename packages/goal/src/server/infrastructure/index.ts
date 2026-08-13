@@ -7,7 +7,8 @@
  *
  * 遵循 Governance 模块架构：
  * - 此层只包含仓储实现、映射器、端口定义
- * - DI 组装在 api/module.ts 中完成
+ * - 宿主装配（组合根）由 apps 的 runtime composer 完成（apps/api 与
+ *   apps/desktop/src/main/runtime）；api/electron module 只做 transport + lifecycle。
  */
 
 // ============ Adapters - Prisma ============

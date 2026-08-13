@@ -1,6 +1,6 @@
 /**
- * createTaskPowerSyncModule — PowerSync composition root for the task module.
- * createTaskPowerSyncModule —— 任务模块的 PowerSync 组合根。
+ * Convenience factory — PowerSync-backed task module for Electron.
+ * 便捷工厂 — 基于 PowerSync 的 Electron 任务模块。
  *
  * Thin factory that selects PowerSync adapters and delegates to the canonical
  * composition root. Used exclusively in Electron main process.
