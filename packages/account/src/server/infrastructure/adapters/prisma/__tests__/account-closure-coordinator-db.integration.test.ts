@@ -119,7 +119,7 @@ describe('Account Closure Coordinator & Worker Real DB Concurrency Integration T
       closureOperationRepository: closureOpRepo,
       revocationPort: slowRevocationPortA,
       eventPublisher,
-      leaseDurationMs: 1500,
+      leaseDurationMs: 3000,
       enableHeartbeat: true,
     });
 
@@ -128,7 +128,7 @@ describe('Account Closure Coordinator & Worker Real DB Concurrency Integration T
       closureOperationRepository: closureOpRepo,
       revocationPort: trackingRevocationPort,
       eventPublisher,
-      leaseDurationMs: 1500,
+      leaseDurationMs: 3000,
       enableHeartbeat: true,
     });
 
