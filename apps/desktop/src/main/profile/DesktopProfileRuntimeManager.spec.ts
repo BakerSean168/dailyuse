@@ -133,6 +133,31 @@ describe('DesktopProfileRuntimeManager', () => {
     expect(mocks.shutdownPowerSync).toHaveBeenCalledOnce();
   });
 
+  it('clears shell-held references before the bootstrapper destroys modules', async () => {
+    const beforeDeactivation = vi.fn();
+    runtime.setBeforeDeactivation(beforeDeactivation);
+
+    await runtime.prepareGuestProfile();
+    await runtime.activatePreparedProfile();
+    await runtime.deactivateProfile();
+
+    expect(beforeDeactivation).toHaveBeenCalledOnce();
+    expect(beforeDeactivation.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.bootstrapDestroy.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it('fires the deactivation hook when activation fails so stale repositories are cleared', async () => {
+    const beforeDeactivation = vi.fn();
+    runtime.setBeforeDeactivation(beforeDeactivation);
+    mocks.bootstrapInit.mockRejectedValueOnce(new Error('init failed'));
+
+    await runtime.prepareGuestProfile();
+    await expect(runtime.activatePreparedProfile()).rejects.toThrow('init failed');
+
+    expect(beforeDeactivation).toHaveBeenCalledOnce();
+  });
+
   it('keeps local access active when cloud restore fails', async () => {
     runtime.setAfterActivation(async () => { throw new Error('offline'); });
     const prepared = await runtime.prepareGuestProfile();

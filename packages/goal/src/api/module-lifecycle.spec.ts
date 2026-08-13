@@ -100,7 +100,7 @@ function createFakeInstance() {
 function createFakeContext(): GoalApiModuleContext {
   return {
     app: {} as Express,
-    router: { use: vi.fn() } as unknown as Router,
+    router: { use: vi.fn(), stack: [] } as unknown as Router,
     middleware: {
       auth: vi.fn(),
       requireRole: vi.fn(() => vi.fn()),
@@ -201,6 +201,47 @@ describe('createGoalApiModule lifecycle', () => {
     expect(() => moduleDef.register(context)).toThrow('start failed');
     expect(routerUse).not.toHaveBeenCalled();
     expect(fake.start).toHaveBeenCalledTimes(1);
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('destroy() after a failed registration does not dispose a second time', () => {
+    fake.start.mockImplementation(() => {
+      throw new Error('start failed');
+    });
+
+    const moduleDef = createGoalApiModule({ instance: fake.instance });
+
+    expect(() => moduleDef.register(context)).toThrow('start failed');
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+
+    moduleDef.destroy?.();
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('rolls back both mounts on the host router when the second router.use() throws', () => {
+    const preExisting = { name: '<pre-existing>' };
+    const routerStub = {
+      stack: [preExisting],
+      use: vi
+        .fn()
+        .mockImplementationOnce(() => {
+          routerStub.stack.push({ name: '/goals layer' });
+        })
+        .mockImplementationOnce(() => {
+          throw new Error('mount failed');
+        }),
+    } as unknown as Router;
+
+    const mountContext = { ...context, router: routerStub } as GoalApiModuleContext;
+    const moduleDef = createGoalApiModule({ instance: fake.instance });
+
+    expect(() => moduleDef.register(mountContext)).toThrow('mount failed');
+    expect(fake.start).toHaveBeenCalledTimes(1);
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+    expect((routerStub as unknown as { stack: unknown[] }).stack).toEqual([preExisting]);
+
+    // The handle is now 'failed': destroy() must no-op (dispose already ran once).
+    moduleDef.destroy?.();
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 

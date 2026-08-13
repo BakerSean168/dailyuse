@@ -173,6 +173,18 @@ describe('createTaskApiModule lifecycle', () => {
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
+  it('destroy() after a failed registration does not dispose a second time', async () => {
+    fake.start.mockRejectedValue(new Error('start failed'));
+
+    const moduleDef = createTaskApiModule({ instance: fake.instance });
+
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+
+    await moduleDef.destroy?.();
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+  });
+
   it('rethrows the original registration error even if dispose also rejects', async () => {
     fake.start.mockRejectedValue(new Error('start failed'));
     fake.dispose.mockRejectedValue(new Error('dispose failed'));

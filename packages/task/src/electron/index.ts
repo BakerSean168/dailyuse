@@ -43,10 +43,12 @@
  *   exactly the channels installed by THIS call, best-effort awaits the
  *   instance dispose (logged if dispose itself throws), moves to `failed`, and
  *   rethrows the ORIGINAL error. A failed handle must not be re-registered.
- * - destroy(): always allowed and always idempotent. It first removes all
- *   task channels, then sets the state to `disposed` BEFORE
- *   `await instance.dispose()` runs, so a reentrant/retry destroy stays a no-op
- *   even if dispose throws (destroy may propagate that error).
+ * - destroy(): always allowed and always idempotent. A handle in `failed` is
+ *   a terminal no-op too: the instance was already disposed and the installed
+ *   channels already removed by the register() failure path. For a live handle
+ *   it first removes all task channels, then sets the state to `disposed`
+ *   BEFORE `await instance.dispose()` runs, so a reentrant/retry destroy stays
+ *   a no-op even if dispose throws (destroy may propagate that error).
  *
  * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
  * `disposed`）：
@@ -56,9 +58,11 @@
  *   `registered`，重复 register() 抛错；任何失败会逆向移除本次调用已安装的
  *   通道、best-effort await 实例 dispose（若 dispose 自身抛错则记录日志）、
  *   进入 `failed` 并重新抛出原始错误。failed 的 handle 不得再次注册。
- * - destroy()：任何状态都允许，且始终幂等。它先移除全部任务通道，再把状态
- *   置为 `disposed` 之后再 `await instance.dispose()`，因此即使 dispose 抛错
- *   （该错误可向外传播），重入/重试 destroy 仍为 no-op。
+ * - destroy()：任何状态都允许，且始终幂等。处于 `failed` 的 handle 也是
+ *   终态 no-op——其实例已 dispose、已安装通道也已在 register() 的失败路径中
+ *   移除。对存活 handle，先移除全部任务通道，再把状态置为 `disposed` 之后再
+ *   `await instance.dispose()`，因此即使 dispose 抛错（该错误可向外传播），
+ *   重入/重试 destroy 仍为 no-op。
  *
  * The instance is owned by the factory closure, not by a package-level
  * singleton. Re-registering the returned module handle does not create a second
@@ -464,7 +468,7 @@ export function createTaskElectronModule(
     },
 
     async destroy() {
-      if (state === 'disposed') {
+      if (state === 'disposed' || state === 'failed') {
         return;
       }
 

@@ -241,4 +241,20 @@ describe('createGoalElectronModule IPC lifecycle', () => {
     expect(fake.dispose).toHaveBeenCalledTimes(1);
     expect(mocks.handlers.size).toBe(0);
   });
+
+  it('destroy() after a failed registration neither disposes again nor re-removes channels', () => {
+    fake.start.mockImplementation(() => {
+      throw new Error('start failed');
+    });
+
+    expect(() => moduleDef.register(context)).toThrow('start failed');
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+    expect(mocks.handlers.size).toBe(0);
+    const removeHandlerCallsAfterFailedRegister = mocks.removeHandler.mock.calls.length;
+
+    moduleDef.destroy?.();
+
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+    expect(mocks.removeHandler.mock.calls.length).toBe(removeHandlerCallsAfterFailedRegister);
+  });
 });

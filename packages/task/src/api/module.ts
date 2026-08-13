@@ -45,10 +45,11 @@
  *   throws. On any failure it cleans up (best-effort await of dispose, logged
  *   if dispose itself throws), moves to `failed`, and rethrows the ORIGINAL
  *   error. A failed handle must not be re-registered.
- * - destroy(): always allowed and always idempotent. The state is set to
- *   `disposed` BEFORE `await instance.dispose()` runs, so a reentrant/retry
- *   destroy stays a no-op even if dispose throws (destroy may propagate that
- *   error).
+ * - destroy(): always allowed and always idempotent. A handle in `failed` is
+ *   a terminal no-op too: the instance was already disposed in the register()
+ *   failure path. For a live handle the state is set to `disposed` BEFORE
+ *   `await instance.dispose()` runs, so a reentrant/retry destroy stays a no-op
+ *   even if dispose throws (destroy may propagate that error).
  *
  * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
  * `disposed`）：
@@ -60,9 +61,10 @@
  *   重复 register() 抛错；任何失败先清理（best-effort await dispose，
  *   若 dispose 自身抛错则记录日志），进入 `failed` 并重新抛出原始错误。
  *   failed 的 handle 不得再次注册。
- * - destroy()：任何状态都允许，且始终幂等。在 `await instance.dispose()`
- *   执行前先把状态置为 `disposed`，因此即使 dispose 抛错（该错误可向外
- *   传播），重入/重试 destroy 仍为 no-op。
+ * - destroy()：任何状态都允许，且始终幂等。处于 `failed` 的 handle 也是
+ *   终态 no-op——其实例已在 register() 的失败路径中 dispose。对存活 handle，
+ *   在 `await instance.dispose()` 执行前先把状态置为 `disposed`，因此即使
+ *   dispose 抛错（该错误可向外传播），重入/重试 destroy 仍为 no-op。
  *
  * The instance is owned by the factory closure, not by a package-level
  * singleton. Re-registering the returned module handle does not create a second
@@ -186,7 +188,7 @@ export function createTaskApiModule(options: TaskApiModuleOptions): TaskApiModul
     },
 
     async destroy() {
-      if (state === 'disposed') {
+      if (state === 'disposed' || state === 'failed') {
         return;
       }
       state = 'disposed';

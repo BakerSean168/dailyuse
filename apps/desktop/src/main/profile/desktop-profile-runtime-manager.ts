@@ -318,6 +318,10 @@ export class DesktopProfileRuntimeManager {
     try {
       await activation;
     } catch (error) {
+      // A failed activation may still have composed business modules (and so
+      // published their repositories to the shell bridge); clear those
+      // references here so the failed attempt never leaves stale repos.
+      this.beforeDeactivation?.();
       await this.profileRegistry.markError(preparedProfileId).catch(() => undefined);
       await this.disposePreparedRuntime();
       throw error;
@@ -330,11 +334,13 @@ export class DesktopProfileRuntimeManager {
     if (!this.activeRuntime) return;
     const profileId = this.activeRuntime.descriptor.profileId;
     try { await stopScheduleRuntime(); } catch (error) { logger.warn('Failed to stop schedule runtime', { error }); }
-    await this.activeRuntime.bootstrapper.destroy().catch((error) => logger.error('Failed to destroy profile modules', { error }));
-    // Modules are disposed: clear any shell-held references to the destroyed
-    // module instances (e.g. the dashboard repository view) so stale disposed
-    // repositories are never served after deactivation.
+    // Clear any shell-held references to the active module instances (e.g. the
+    // dashboard repository view) BEFORE tearing the modules down: a concurrent
+    // IPC request that resolves the lazy getter during destruction then sees
+    // null (the auth gate already guards it), never a half-destroyed
+    // repository. Once the modules are gone there is nothing left to null out.
     this.beforeDeactivation?.();
+    await this.activeRuntime.bootstrapper.destroy().catch((error) => logger.error('Failed to destroy profile modules', { error }));
     // NOTE: the closure-request marker is intentionally NOT cleared here —
     // deactivateProfile also runs on profile switch/lock where the profile can
     // be reactivated; clearing the marker there would reopen the local

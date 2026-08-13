@@ -36,13 +36,17 @@
  *   calls `instance.start()`, and ONLY THEN mounts them at `/goals` and
  *   `/goal-folders` — a failed start happens before any `router.use(...)` call,
  *   so the host router never observes a route for a handle that did not start
- *   (no rollback/unmount is needed). On success the handle moves to
- *   `registered`; a second register() throws. On any failure it cleans up
+ *   (no rollback/unmount is needed). A mid-mount failure truncates the router
+ *   stack back to its pre-mount length so this call never leaves a partial
+ *   mount behind. On success the handle moves to `registered`; a second
+ *   register() throws. On any failure it cleans up
  *   (best-effort dispose, logged if dispose itself throws), moves to `failed`,
  *   and rethrows the ORIGINAL error. A failed handle must not be re-registered.
- * - destroy(): always allowed and always idempotent. The state is set to
- *   `disposed` BEFORE `instance.dispose()` runs, so a reentrant/retry destroy
- *   stays a no-op even if dispose throws (destroy may propagate that error).
+ * - destroy(): always allowed and always idempotent. A handle in `failed` is
+ *   a terminal no-op too: the instance was already disposed in the register()
+ *   failure path. For a live handle the state is set to `disposed` BEFORE
+ *   `instance.dispose()` runs, so a reentrant/retry destroy stays a no-op even
+ *   if dispose throws (destroy may propagate that error).
  *
  * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
  * `disposed`）：
@@ -53,9 +57,10 @@
  *   重复 register() 抛错；任何失败先清理（best-effort dispose，
  *   若 dispose 自身抛错则记录日志），进入 `failed` 并重新抛出原始错误。
  *   failed 的 handle 不得再次注册。
- * - destroy()：任何状态都允许，且始终幂等。在 `instance.dispose()` 执行前
- *   先把状态置为 `disposed`，因此即使 dispose 抛错（该错误可向外传播），
- *   重入/重试 destroy 仍为 no-op。
+ * - destroy()：任何状态都允许，且始终幂等。处于 `failed` 的 handle 也是
+ *   终态 no-op——其实例已在 register() 的失败路径中 dispose。对存活 handle，
+ *   在 `instance.dispose()` 执行前先把状态置为 `disposed`，因此即使 dispose
+ *   抛错（该错误可向外传播），重入/重试 destroy 仍为 no-op。
  *
  * The instance is owned by the factory closure, not by a package-level
  * singleton. Re-registering the returned module handle does not create a second
@@ -157,8 +162,20 @@ export function createGoalApiModule(options: GoalApiModuleOptions): GoalApiModul
 
         // Mount only after a successful start, so a start failure needs no
         // rollback: the host router never observes this handle's routes.
-        router.use('/goals', goalRoutes);
-        router.use('/goal-folders', folderRoutes);
+        // `router.use()` is not expected to throw in practice, but if the
+        // second mount fails the first would stay on the private root router.
+        // Capture the pre-mount stack length and truncate on any mount error,
+        // so this call's mounts are rolled back together. Safe because
+        // ApiBootstrapper does not expose the router until all registrations
+        // succeed.
+        const stackLen = router.stack.length;
+        try {
+          router.use('/goals', goalRoutes);
+          router.use('/goal-folders', folderRoutes);
+        } catch (mountError) {
+          router.stack.length = stackLen;
+          throw mountError;
+        }
 
         state = 'registered';
       } catch (error) {
@@ -176,7 +193,7 @@ export function createGoalApiModule(options: GoalApiModuleOptions): GoalApiModul
     },
 
     destroy() {
-      if (state === 'disposed') {
+      if (state === 'disposed' || state === 'failed') {
         return;
       }
       state = 'disposed';

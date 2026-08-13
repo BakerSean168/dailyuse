@@ -160,7 +160,7 @@ describe('composeGoal structural registration', () => {
 
     const context: GoalApiModuleContext = {
       app: {} as Express,
-      router: { use: routerUse } as unknown as Router,
+      router: { use: routerUse, stack: [] } as unknown as Router,
       middleware: {
         auth: vi.fn(),
         requireRole: vi.fn(() => vi.fn()),
