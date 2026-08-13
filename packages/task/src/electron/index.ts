@@ -1,77 +1,117 @@
 /**
- * Task Module — Electron Entry Point.
- * 任务模块 — Electron 入口点。
+ * Task Electron Transport Module Factory
+ * 任务 Electron 传输模块工厂
  *
- * Self-contained task runtime assembly for Electron main process.
- * 任务模块在 Electron 主进程中的自包含运行时组装。
- * Instantiates PowerSync repositories through the module factory,
- * and registers IPC handlers using transport handlers.
- * 通过模块工厂实例化 PowerSync 仓储，并使用传输层处理器注册 IPC 处理器。
+ * This module is a transport adapter, NOT a composition root:
+ * it only wires an already-assembled `TaskModuleInstance` onto Electron's
+ * `ipcMain` and owns that instance's start/dispose lifecycle.
  *
- * @module task/electron
+ * 本模块是传输适配器，而不是组合根：
+ * 它只负责把已装配好的 `TaskModuleInstance` 挂到 Electron 的 `ipcMain` 上，
+ * 并托管该实例的 start/dispose 生命周期。
+ *
+ * The host (apps/desktop) is responsible for composition: it selects the
+ * PowerSync adapters, builds repositories, runtime contributions (including the
+ * outbox runtime when a goal-progress handler is supplied) and the schedule
+ * projection runtime, calls `createTaskModule(...)`, and passes the resulting
+ * instance in through `TaskElectronModuleOptions`. This factory never reads
+ * `context.db`, never constructs repositories/use cases, and never starts a
+ * runtime adapter.
+ *
+ * 宿主（apps/desktop）负责组合：选择 PowerSync 适配器、构建 repository、
+ * runtime contribution（提供 goal-progress handler 时含 outbox runtime）
+ * 与 schedule projection runtime、调用 `createTaskModule(...)`，再把组装结果
+ * 通过 `TaskElectronModuleOptions` 传入。本工厂不读取 `context.db`，
+ * 不创建 repository/use case，也不启动任何 runtime adapter。
+ *
+ * `instance.api` is the HTTP/IPC-shared application seam
+ * (`TaskApplicationPort`). Both the Express API transport and this Electron IPC
+ * transport consume the same port, so behaviour parity across hosts is
+ * guaranteed by construction.
+ *
+ * `instance.api` 是 HTTP/IPC 共用的应用 seam（`TaskApplicationPort`）。
+ * Express API 传输层与本 Electron IPC 传输层消费同一个 port，
+ * 从而从构造上保证跨宿主行为一致。
+ *
+ * Per-handle state machine (`created -> registered | failed`, then any state
+ * -> `disposed`):
+ * - register(): only allowed from `created`. Builds the controllers from
+ *   `instance.api`, registers all IPC handlers, then AWAITS `instance.start()`
+ *   — channel registration happens BEFORE start, so a handler-build failure
+ *   leaves no runtime side effects. On success the handle moves to
+ *   `registered`; a second register() throws. On any failure it reverses
+ *   exactly the channels installed by THIS call, best-effort awaits the
+ *   instance dispose (logged if dispose itself throws), moves to `failed`, and
+ *   rethrows the ORIGINAL error. A failed handle must not be re-registered.
+ * - destroy(): always allowed and always idempotent. It first removes all
+ *   task channels, then sets the state to `disposed` BEFORE
+ *   `await instance.dispose()` runs, so a reentrant/retry destroy stays a no-op
+ *   even if dispose throws (destroy may propagate that error).
+ *
+ * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
+ * `disposed`）：
+ * - register()：仅允许从 `created` 进入。用 `instance.api` 构建 controller、
+ *   注册全部 IPC handler，然后 await `instance.start()`——handler 先于 start
+ *   注册，因此 handler 注册失败不会留下任何 runtime 副作用。成功则进入
+ *   `registered`，重复 register() 抛错；任何失败会逆向移除本次调用已安装的
+ *   通道、best-effort await 实例 dispose（若 dispose 自身抛错则记录日志）、
+ *   进入 `failed` 并重新抛出原始错误。failed 的 handle 不得再次注册。
+ * - destroy()：任何状态都允许，且始终幂等。它先移除全部任务通道，再把状态
+ *   置为 `disposed` 之后再 `await instance.dispose()`，因此即使 dispose 抛错
+ *   （该错误可向外传播），重入/重试 destroy 仍为 no-op。
+ *
+ * The instance is owned by the factory closure, not by a package-level
+ * singleton. Re-registering the returned module handle does not create a second
+ * instance; the explicit state machine above is per-handle state.
+ *
+ * 实例由工厂闭包持有，而不是包级 singleton。重复注册返回的 module handle
+ * 不会创建第二个实例；上述显式状态机即每个 handle 自己的状态。
  */
 
 import { ipcMain } from 'electron';
 import { ok } from '@memoflow/contracts/result';
-import {
-  TaskChannels,
-  type IElectronDatabase,
-  type IElectronModule,
-  type IElectronModuleContext,
-} from '@memoflow/contracts/electron';
+import { TaskChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
 import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
-import {
-  createTaskPowerSyncModule,
-  createTaskGoalOutboxRuntime,
-  PowerSyncTaskGoalOutboxDispatchStore,
-  type TaskModuleInstance,
-  type TaskModuleRuntimeContribution,
-} from '../server/infrastructure';
-import {
-  TaskGoalOutboxDispatcher,
-  type TaskGoalProgressHandler,
-} from '../server/application/outbox';
-import { createTaskTransportHandlers } from '../server/transport';
-import { createTaskRuntimeContribution } from '../server/infrastructure/runtime';
-import { TaskTemplateController } from '../server/transport/task-template.controller';
-import { TaskInstanceController } from '../server/transport/task-instance.controller';
-import { TaskDependencyController } from '../server/transport/task-dependency.controller';
 import { createLogger } from '@memoflow/utils/logger';
-import type { ITaskTemplateRepository } from '../server/domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../server/domain/repositories/i-task-instance-repository';
+import type { ITaskTemplateRepository } from '../server/domain/repositories/i-task-template-repository';
+import type { TaskModuleInstance } from '../server/infrastructure';
+import { createTaskTransportHandlers } from '../server/transport';
+import { TaskDependencyController } from '../server/transport/task-dependency.controller';
+import { TaskInstanceController } from '../server/transport/task-instance.controller';
+import { TaskTemplateController } from '../server/transport/task-template.controller';
 import { withAuthenticatedValue } from './authenticated-ipc';
-// Residual 987: sole runtime-contribution normalize helpers (local dual retired).
-import { normalizeRuntimeContributions } from '../server/infrastructure/normalize-runtime-contributions';
 
 const logger = createLogger('TaskElectron');
-
-
 const allChannels = Object.values(TaskChannels);
-let activeTaskModule: TaskModuleInstance | null = null;
-let taskTemplateRepository: ITaskTemplateRepository | null = null;
-let taskInstanceRepository: ITaskInstanceRepository | null = null;
 
-export interface CreateTaskElectronModuleOptions {
-  readonly runtimeContributions?:
-    | TaskModuleRuntimeContribution
-    | readonly TaskModuleRuntimeContribution[];
-  readonly goalProgressHandler?: TaskGoalProgressHandler;
-}
-
+/**
+ * @deprecated Migration shim (GT Step 2). The task Electron transport no longer
+ * composes or owns repositories; repository access moved to the desktop
+ * composition root, which injects the repository view into consumers directly
+ * (GT Step 4). These accessors exist only so that in-flight desktop consumers
+ * keep type-checking until Step 4 removes them. They are never populated and
+ * always throw.
+ *
+ * 已废弃的迁移 shim（GT Step 2）。Task Electron 传输层不再组装或持有 repository；
+ * repository 访问已移入 desktop 组合根，由组合根直接把 repository view 注入到
+ * 消费者（GT Step 4）。这些 accessor 仅用于让尚未迁移的 desktop 消费者在 Step 4
+ * 移除它们之前保持类型检查通过。它们永不被赋值，且始终抛错。
+ */
 export function getTaskTemplateRepository(): ITaskTemplateRepository {
-  if (!taskTemplateRepository) {
-    throw new Error('Task module not registered yet');
-  }
-
-  return taskTemplateRepository;
+  throw new Error(
+    'getTaskTemplateRepository() is deprecated (GT Step 2): repository access moved to the desktop composition root. Inject the repository view instead.',
+  );
 }
 
+/**
+ * @deprecated Migration shim — see {@link getTaskTemplateRepository}.
+ * 已废弃的迁移 shim — 见 {@link getTaskTemplateRepository}。
+ */
 export function getTaskInstanceRepository(): ITaskInstanceRepository {
-  if (!taskInstanceRepository) {
-    throw new Error('Task module not registered yet');
-  }
-
-  return taskInstanceRepository;
+  throw new Error(
+    'getTaskInstanceRepository() is deprecated (GT Step 2): repository access moved to the desktop composition root. Inject the repository view instead.',
+  );
 }
 
 function normalizeTemplateListParams(
@@ -86,297 +126,390 @@ function normalizeTemplateListParams(
   };
 }
 
+/**
+ * Per-handle lifecycle state. Only 'created' may enter 'registered' (or
+ * 'failed' on a registration error); any state may end in 'disposed'.
+ *
+ * 每个 handle 的生命周期状态。只有 'created' 可以进入 'registered'
+ * （或注册失败时进入 'failed'）；任意状态都可以结束于 'disposed'。
+ */
+type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
+
+/**
+ * Task Electron module handle.
+ * 任务 Electron 模块 handle。
+ *
+ * Structurally compatible with `IElectronModule` from
+ * `@memoflow/contracts/electron`, but defined locally so this seam stays
+ * host-shaped: the factory returns it already bound to one instance.
+ *
+ * 与 `@memoflow/contracts/electron` 的 `IElectronModule` 结构兼容，
+ * 但在本地定义，使该 seam 保持宿主形状：工厂返回时已绑定到单个实例。
+ */
+export interface TaskElectronModuleDef {
+  readonly name: string;
+  register(context: IElectronModuleContext): Promise<void>;
+  destroy?(): Promise<void>;
+}
+
+/**
+ * Options carrying the already-assembled task instance.
+ * 携带已装配任务实例的选项。
+ */
+export interface TaskElectronModuleOptions {
+  readonly instance: TaskModuleInstance;
+}
+
+/**
+ * Creates the task Electron transport module handle.
+ * 创建任务 Electron 传输模块 handle。
+ *
+ * Turns an already-assembled `TaskModuleInstance` into an
+ * `IElectronModule`-compatible handle. The handle is a transport adapter, not a
+ * composition root: it only registers IPC channels and owns start/dispose
+ * lifecycle. IPC channel names, payload schemas, controller methods and
+ * response envelopes are unchanged — see the handler registrations below.
+ *
+ * 把已装配的 `TaskModuleInstance` 变成兼容 `IElectronModule` 的 handle。
+ * 该 handle 是传输适配器而非组合根：只注册 IPC 通道并托管 start/dispose
+ * 生命周期。IPC 通道名、payload schema、controller 方法与响应信封均保持不变——
+ * 见下方各 handler 注册。
+ *
+ * @param options - Options carrying the assembled task instance.
+ * @returns An IElectronModule-compatible handle bound to the instance.
+ */
 export function createTaskElectronModule(
-  options: CreateTaskElectronModuleOptions = {},
-): IElectronModule {
+  options: TaskElectronModuleOptions,
+): TaskElectronModuleDef {
+  if (!options?.instance) {
+    throw new Error('[FAIL-CLOSED] createTaskElectronModule requires options.instance');
+  }
+  let state: ModuleHandleState = 'created';
+
   return {
     name: 'Task',
 
-    register(ctx: IElectronModuleContext): void {
-      const { db: electronDb } = ctx;
-      const db: IElectronDatabase = electronDb;
+    async register(ctx) {
+      if (state !== 'created') {
+        throw new Error(
+          `TaskElectronModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
+        );
+      }
 
-      const taskModule = createTaskPowerSyncModule(db, [
-        createTaskRuntimeContribution(),
-        ...(options.goalProgressHandler
-          ? [
-              createTaskGoalOutboxRuntime(
-                new TaskGoalOutboxDispatcher(
-                  new PowerSyncTaskGoalOutboxDispatchStore(db),
-                  options.goalProgressHandler,
-                ),
+      const installed: string[] = [];
+
+      try {
+        const handlers = createTaskTransportHandlers(options.instance.api);
+        const templateController = new TaskTemplateController(handlers.template);
+        const instanceController = new TaskInstanceController(handlers.instance);
+        const dependencyController = new TaskDependencyController(handlers.dependency);
+
+        // --- Template channels ---
+        ipcMain.handle(TaskChannels.TEMPLATE_LIST, (_, params) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.listTemplates(
+              normalizeTemplateListParams(
+                requestContext,
+                params && typeof params === 'object'
+                  ? (params as Record<string, unknown>)
+                  : undefined,
               ),
-            ]
-          : []),
-        ...normalizeRuntimeContributions(options.runtimeContributions),
-      ]);
-      activeTaskModule = taskModule;
-      taskTemplateRepository = taskModule.taskTemplateRepository;
-      taskInstanceRepository = taskModule.taskInstanceRepository;
-      taskModule.start();
-
-      // 2. Transport handlers — map flat API to controller-specific interfaces
-      //    传输层处理器 — 将扁平 API 映射到控制器专用接口
-      const handlers = createTaskTransportHandlers(taskModule.api);
-      const templateController = new TaskTemplateController(handlers.template);
-      const instanceController = new TaskInstanceController(handlers.instance);
-      const dependencyController = new TaskDependencyController(handlers.dependency);
-
-      // 3. IPC Handlers — delegate to use cases via transport handlers
-      //    IPC 处理器 — 通过传输层处理器委托给用例
-
-      // --- Template channels ---
-      ipcMain.handle(TaskChannels.TEMPLATE_LIST, (_, params) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.listTemplates(
-            normalizeTemplateListParams(
               requestContext,
-              params && typeof params === 'object' ? (params as Record<string, unknown>) : undefined,
             ),
-            requestContext,
           ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_GET, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.getTemplate(
-            payload?.id ?? payload,
-            requestContext,
-            payload?.includeChildren ?? false,
-          ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_GRAPH, (_, params) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.getTaskGraph(
-            normalizeTemplateListParams(
+        );
+        installed.push(TaskChannels.TEMPLATE_LIST);
+        ipcMain.handle(TaskChannels.TEMPLATE_GET, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.getTemplate(
+              payload?.id ?? payload,
               requestContext,
-              params && typeof params === 'object' ? (params as Record<string, unknown>) : undefined,
+              payload?.includeChildren ?? false,
             ),
-            requestContext,
           ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_CREATE, (_, dto) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          return templateController.createTemplate(dto, requestContext);
-        }),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_UPDATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.updateTemplate(payload?.id, payload?.request, requestContext),
-        ),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await templateController.deleteTemplate(
-            payload?.id ?? payload,
-            requestContext,
+        );
+        installed.push(TaskChannels.TEMPLATE_GET);
+        ipcMain.handle(TaskChannels.TEMPLATE_GRAPH, (_, params) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.getTaskGraph(
+              normalizeTemplateListParams(
+                requestContext,
+                params && typeof params === 'object'
+                  ? (params as Record<string, unknown>)
+                  : undefined,
+              ),
+              requestContext,
+            ),
+          ),
+        );
+        installed.push(TaskChannels.TEMPLATE_GRAPH);
+        ipcMain.handle(TaskChannels.TEMPLATE_CREATE, (_, dto) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            return templateController.createTemplate(dto, requestContext);
+          }),
+        );
+        installed.push(TaskChannels.TEMPLATE_CREATE);
+        ipcMain.handle(TaskChannels.TEMPLATE_UPDATE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.updateTemplate(payload?.id, payload?.request, requestContext),
+          ),
+        );
+        installed.push(TaskChannels.TEMPLATE_UPDATE);
+        ipcMain.handle(TaskChannels.TEMPLATE_DELETE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            const result = await templateController.deleteTemplate(
+              payload?.id ?? payload,
+              requestContext,
+            );
+            if (!result.ok) return result;
+            return ok(null);
+          }),
+        );
+        installed.push(TaskChannels.TEMPLATE_DELETE);
+        ipcMain.handle(TaskChannels.TEMPLATE_ARCHIVE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.archiveTemplate(payload?.id ?? payload, requestContext),
+          ),
+        );
+        installed.push(TaskChannels.TEMPLATE_ARCHIVE);
+        ipcMain.handle(TaskChannels.TEMPLATE_RESTORE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            return templateController.activateTemplate(payload?.id ?? payload, requestContext);
+          }),
+        );
+        installed.push(TaskChannels.TEMPLATE_RESTORE);
+        ipcMain.handle(TaskChannels.TEMPLATE_PAUSE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            return templateController.pauseTemplate(payload?.id ?? payload, requestContext);
+          }),
+        );
+        installed.push(TaskChannels.TEMPLATE_PAUSE);
+        ipcMain.handle(TaskChannels.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.generateInstances(
+              payload?.templateId,
+              payload?.request,
+              requestContext,
+            ),
+          ),
+        );
+        installed.push(TaskChannels.TEMPLATE_GENERATE_INSTANCES);
+        ipcMain.handle(TaskChannels.TEMPLATE_GET_INSTANCES, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            return templateController.getInstancesByTemplate(
+              payload?.templateId,
+              requestContext,
+              {
+                from: payload?.from,
+                to: payload?.to,
+              },
+            );
+          }),
+        );
+        installed.push(TaskChannels.TEMPLATE_GET_INSTANCES);
+        ipcMain.handle(TaskChannels.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.listByPriority(requestContext, payload?.params?.limit),
+          ),
+        );
+        installed.push(TaskChannels.TEMPLATE_GET_BY_PRIORITY);
+        ipcMain.handle(TaskChannels.TEMPLATE_BIND_GOAL, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.bindToGoal(
+              payload?.templateId,
+              payload?.request,
+              requestContext,
+            ),
+          ),
+        );
+        installed.push(TaskChannels.TEMPLATE_BIND_GOAL);
+        ipcMain.handle(TaskChannels.TEMPLATE_UNBIND_GOAL, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            templateController.unbindFromGoal(payload?.templateId, requestContext),
+          ),
+        );
+        installed.push(TaskChannels.TEMPLATE_UNBIND_GOAL);
+
+        // --- Instance channels ---
+        ipcMain.handle(TaskChannels.INSTANCE_LIST, (_, params) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            if (params?.templateId) {
+              return handlers.instance.listByTemplate(params.templateId, requestContext.identityId);
+            }
+
+            if (params?.status) {
+              return handlers.instance.listByStatus(requestContext.identityId, params.status);
+            }
+
+            return handlers.instance.listByAccount(requestContext.identityId);
+          }),
+        );
+        installed.push(TaskChannels.INSTANCE_LIST);
+        ipcMain.handle(TaskChannels.INSTANCE_LIST_BY_DATE_RANGE, (_, params) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            return instanceController.getInstancesByDateRange(requestContext.identityId, {
+              startDate: params?.startDate ?? Date.now(),
+              endDate: params?.endDate ?? Date.now() + 86400000 * 7,
+            });
+          }),
+        );
+        installed.push(TaskChannels.INSTANCE_LIST_BY_DATE_RANGE);
+        ipcMain.handle(TaskChannels.INSTANCE_GET, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            instanceController.getInstance(payload?.id ?? payload, requestContext),
+          ),
+        );
+        installed.push(TaskChannels.INSTANCE_GET);
+        ipcMain.handle(TaskChannels.INSTANCE_CREATE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            instanceController.startInstance(payload?.id ?? payload, requestContext),
+          ),
+        );
+        installed.push(TaskChannels.INSTANCE_CREATE);
+        ipcMain.handle(TaskChannels.INSTANCE_DELETE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            const result = await instanceController.deleteInstance(
+              payload?.id ?? payload,
+              requestContext,
+            );
+            if (!result.ok) return result;
+            return ok(null);
+          }),
+        );
+        installed.push(TaskChannels.INSTANCE_DELETE);
+        ipcMain.handle(TaskChannels.INSTANCE_COMPLETE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            instanceController.completeInstance(
+              payload?.id ?? payload,
+              payload?.request,
+              requestContext,
+            ),
+          ),
+        );
+        installed.push(TaskChannels.INSTANCE_COMPLETE);
+        ipcMain.handle(TaskChannels.INSTANCE_UNCOMPLETE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            instanceController.uncompleteInstance(payload?.id ?? payload, requestContext),
+          ),
+        );
+        installed.push(TaskChannels.INSTANCE_UNCOMPLETE);
+        ipcMain.handle(TaskChannels.INSTANCE_SKIP, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            instanceController.skipInstance(
+              payload?.id ?? payload,
+              payload?.request,
+              requestContext,
+            ),
+          ),
+        );
+        installed.push(TaskChannels.INSTANCE_SKIP);
+        ipcMain.handle(TaskChannels.INSTANCE_CHECK_EXPIRED, () =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            instanceController.checkExpired(requestContext.identityId),
+          ),
+        );
+        installed.push(TaskChannels.INSTANCE_CHECK_EXPIRED);
+
+        // --- Dependency channels ---
+        ipcMain.handle(TaskChannels.DEPENDENCY_CREATE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            dependencyController.createDependency(
+              payload?.taskId,
+              payload?.request,
+              requestContext.identityId,
+            ),
+          ),
+        );
+        installed.push(TaskChannels.DEPENDENCY_CREATE);
+        ipcMain.handle(TaskChannels.DEPENDENCY_LIST, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            dependencyController.getDependencies(payload?.taskId, requestContext.identityId),
+          ),
+        );
+        installed.push(TaskChannels.DEPENDENCY_LIST);
+        ipcMain.handle(TaskChannels.DEPENDENCY_DEPENDENTS, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            dependencyController.getDependents(payload?.taskId, requestContext.identityId),
+          ),
+        );
+        installed.push(TaskChannels.DEPENDENCY_DEPENDENTS);
+        ipcMain.handle(TaskChannels.DEPENDENCY_CHAIN, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            dependencyController.getDependencyChain(payload?.taskId, requestContext.identityId),
+          ),
+        );
+        installed.push(TaskChannels.DEPENDENCY_CHAIN);
+        ipcMain.handle(TaskChannels.DEPENDENCY_VALIDATE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            dependencyController.validateDependency(
+              {
+                predecessorTaskId: payload?.predecessorTaskId,
+                successorTaskId: payload?.successorTaskId,
+              },
+              requestContext.identityId,
+            ),
+          ),
+        );
+        installed.push(TaskChannels.DEPENDENCY_VALIDATE);
+        ipcMain.handle(TaskChannels.DEPENDENCY_DELETE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            const result = await dependencyController.deleteDependency(
+              payload?.id ?? payload,
+              requestContext.identityId,
+            );
+            if (!result.ok) return result;
+            return ok(null);
+          }),
+        );
+        installed.push(TaskChannels.DEPENDENCY_DELETE);
+        ipcMain.handle(TaskChannels.DEPENDENCY_UPDATE, (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            dependencyController.updateDependency(
+              payload?.id,
+              payload?.request,
+              requestContext.identityId,
+            ),
+          ),
+        );
+        installed.push(TaskChannels.DEPENDENCY_UPDATE);
+
+        await options.instance.start();
+        state = 'registered';
+
+        logger.info('Task module registered');
+      } catch (error) {
+        state = 'failed';
+        for (let i = installed.length - 1; i >= 0; i--) {
+          ipcMain.removeHandler(installed[i]);
+        }
+        try {
+          await options.instance.dispose();
+        } catch (disposeError) {
+          logger.error(
+            'TaskElectron: instance dispose failed during failed registration',
+            disposeError,
           );
-          if (!result.ok) return result;
-          return ok(null);
-        }),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_ARCHIVE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.archiveTemplate(payload?.id ?? payload, requestContext),
-        ),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_RESTORE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          return templateController.activateTemplate(payload?.id ?? payload, requestContext);
-        }),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_PAUSE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          return templateController.pauseTemplate(payload?.id ?? payload, requestContext);
-        }),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.generateInstances(
-            payload?.templateId,
-            payload?.request,
-            requestContext,
-          ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_GET_INSTANCES, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          return templateController.getInstancesByTemplate(
-            payload?.templateId,
-            requestContext,
-            {
-              from: payload?.from,
-              to: payload?.to,
-            },
-          );
-        }),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.listByPriority(requestContext, payload?.params?.limit),
-        ),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_BIND_GOAL, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.bindToGoal(
-            payload?.templateId,
-            payload?.request,
-            requestContext,
-          ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.TEMPLATE_UNBIND_GOAL, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          templateController.unbindFromGoal(payload?.templateId, requestContext),
-        ),
-      );
-
-      // --- Instance channels ---
-      ipcMain.handle(TaskChannels.INSTANCE_LIST, (_, params) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          if (params?.templateId) {
-            return handlers.instance.listByTemplate(params.templateId, requestContext.identityId);
-          }
-
-          if (params?.status) {
-            return handlers.instance.listByStatus(requestContext.identityId, params.status);
-          }
-
-          return handlers.instance.listByAccount(requestContext.identityId);
-        }),
-      );
-      ipcMain.handle(TaskChannels.INSTANCE_LIST_BY_DATE_RANGE, (_, params) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          return instanceController.getInstancesByDateRange(requestContext.identityId, {
-            startDate: params?.startDate ?? Date.now(),
-            endDate: params?.endDate ?? Date.now() + 86400000 * 7,
-          });
-        }),
-      );
-      ipcMain.handle(TaskChannels.INSTANCE_GET, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          instanceController.getInstance(payload?.id ?? payload, requestContext),
-        ),
-      );
-      ipcMain.handle(TaskChannels.INSTANCE_CREATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          instanceController.startInstance(payload?.id ?? payload, requestContext),
-        ),
-      );
-      ipcMain.handle(TaskChannels.INSTANCE_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await instanceController.deleteInstance(
-            payload?.id ?? payload,
-            requestContext,
-          );
-          if (!result.ok) return result;
-          return ok(null);
-        }),
-      );
-      ipcMain.handle(TaskChannels.INSTANCE_COMPLETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          instanceController.completeInstance(
-            payload?.id ?? payload,
-            payload?.request,
-            requestContext,
-          ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.INSTANCE_UNCOMPLETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          instanceController.uncompleteInstance(payload?.id ?? payload, requestContext),
-        ),
-      );
-      ipcMain.handle(TaskChannels.INSTANCE_SKIP, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          instanceController.skipInstance(
-            payload?.id ?? payload,
-            payload?.request,
-            requestContext,
-          ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.INSTANCE_CHECK_EXPIRED, () =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          instanceController.checkExpired(requestContext.identityId),
-        ),
-      );
-
-      // --- Dependency channels ---
-      ipcMain.handle(TaskChannels.DEPENDENCY_CREATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          dependencyController.createDependency(
-            payload?.taskId,
-            payload?.request,
-            requestContext.identityId,
-          ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.DEPENDENCY_LIST, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          dependencyController.getDependencies(payload?.taskId, requestContext.identityId),
-        ),
-      );
-      ipcMain.handle(TaskChannels.DEPENDENCY_DEPENDENTS, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          dependencyController.getDependents(payload?.taskId, requestContext.identityId),
-        ),
-      );
-      ipcMain.handle(TaskChannels.DEPENDENCY_CHAIN, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          dependencyController.getDependencyChain(payload?.taskId, requestContext.identityId),
-        ),
-      );
-      ipcMain.handle(TaskChannels.DEPENDENCY_VALIDATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          dependencyController.validateDependency(
-            {
-              predecessorTaskId: payload?.predecessorTaskId,
-              successorTaskId: payload?.successorTaskId,
-            },
-            requestContext.identityId,
-          ),
-        ),
-      );
-      ipcMain.handle(TaskChannels.DEPENDENCY_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await dependencyController.deleteDependency(
-            payload?.id ?? payload,
-            requestContext.identityId,
-          );
-          if (!result.ok) return result;
-          return ok(null);
-        }),
-      );
-      ipcMain.handle(TaskChannels.DEPENDENCY_UPDATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          dependencyController.updateDependency(
-            payload?.id,
-            payload?.request,
-            requestContext.identityId,
-          ),
-        ),
-      );
-
-      logger.info('Task module registered');
+        }
+        throw error;
+      }
     },
 
-    destroy(): void {
-      for (const ch of allChannels) {
-        ipcMain.removeHandler(ch);
+    async destroy() {
+      if (state === 'disposed') {
+        return;
       }
-      activeTaskModule?.dispose();
-      activeTaskModule = null;
-      taskTemplateRepository = null;
-      taskInstanceRepository = null;
+
+      for (const channel of allChannels) {
+        ipcMain.removeHandler(channel);
+      }
+      state = 'disposed';
+
+      await options.instance.dispose();
       logger.info('Task module destroyed');
     },
   };
 }
 
-export const TaskElectronModule: IElectronModule = createTaskElectronModule();
 export {
   createTaskPowerSyncScheduleExecutionSource,
   createTaskPowerSyncScheduleProjectionSource,

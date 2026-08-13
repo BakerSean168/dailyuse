@@ -1,56 +1,107 @@
 /**
- * Task API Module Definition
- * 任务 API 模块定义
+ * Task API Transport Module Factory
+ * 任务 API 传输模块工厂
  *
- * Implements IApiModule standard interface, self-contained:
- * 实现 IApiModule 标准接口，内部自治完成：
- * 1. Composition Root (creates Repo -> UseCase -> Handler)
- *    组合根（创建 Repo → UseCase → Handler）
- * 2. Route definition and mounting
- *    路由定义与挂载
- * 3. Runtime contribution lifecycle
- *    运行时贡献生命周期
+ * This module is a transport adapter, NOT a composition root:
+ * it only wires an already-assembled `TaskModuleInstance` onto the Express
+ * router and owns that instance's start/dispose lifecycle.
  *
- * Middleware from context.middleware, no dependency on apps/api internals.
- * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
+ * 本模块是传输适配器，而不是组合根：
+ * 它只负责把已装配好的 `TaskModuleInstance` 挂到 Express 路由上，
+ * 并托管该实例的 start/dispose 生命周期。
+ *
+ * The host (apps/api) is responsible for composition: it selects the Prisma
+ * adapters, builds repositories, runtime contributions (including the outbox
+ * runtime when a goal-progress handler is supplied) and the schedule
+ * projection runtime, calls `createTaskModule(...)`, and passes the resulting
+ * instance in through `TaskApiModuleOptions`. This factory never reads
+ * `context.db`, never constructs repositories/use cases, and never starts a
+ * runtime adapter.
+ *
+ * 宿主（apps/api）负责组合：选择 Prisma 适配器、构建 repository、
+ * runtime contribution（提供 goal-progress handler 时含 outbox runtime）
+ * 与 schedule projection runtime、调用 `createTaskModule(...)`，再把组装结果
+ * 通过 `TaskApiModuleOptions` 传入。本工厂不读取 `context.db`，
+ * 不创建 repository/use case，也不启动任何 runtime adapter。
+ *
+ * `instance.api` is the HTTP/IPC-shared application seam
+ * (`TaskApplicationPort`). Both the API transport (this module) and the
+ * Electron IPC transport consume the same port, so behaviour parity across
+ * hosts is guaranteed by construction.
+ *
+ * `instance.api` 是 HTTP/IPC 共用的应用 seam（`TaskApplicationPort`）。
+ * API 传输层（本模块）与 Electron IPC 传输层消费同一个 port，
+ * 从而从构造上保证跨宿主行为一致。
+ *
+ * Per-handle state machine (`created -> registered | failed`, then any state
+ * -> `disposed`):
+ * - register(): only allowed from `created`. Builds controllers from
+ *   `instance.api` and mounts the fixed routes (`/task-templates`,
+ *   `/task-instances`, `/tasks`) via `registerTaskRoutes`, then AWAITS
+ *   `instance.start()` — route wiring happens BEFORE start, so a route-build
+ *   failure leaves no runtime side effects. On success the handle moves to
+ *   `registered`; a second register() throws. On any failure it cleans up
+ *   (best-effort await of dispose, logged if dispose itself throws), moves to
+ *   `failed`, and rethrows the ORIGINAL error. A failed handle must not be
+ *   re-registered.
+ * - destroy(): always allowed and always idempotent. The state is set to
+ *   `disposed` BEFORE `await instance.dispose()` runs, so a reentrant/retry
+ *   destroy stays a no-op even if dispose throws (destroy may propagate that
+ *   error).
+ *
+ * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
+ * `disposed`）：
+ * - register()：仅允许从 `created` 进入。用 `instance.api` 构建控制器并通过
+ *   `registerTaskRoutes` 挂载固定路由（`/task-templates`、`/task-instances`、
+ *   `/tasks`），然后 await `instance.start()`——路由先于 start 挂载，
+ *   因此路由构建失败不会留下任何 runtime 副作用。成功则进入 `registered`，
+ *   重复 register() 抛错；任何失败先清理（best-effort await dispose，
+ *   若 dispose 自身抛错则记录日志），进入 `failed` 并重新抛出原始错误。
+ *   failed 的 handle 不得再次注册。
+ * - destroy()：任何状态都允许，且始终幂等。在 `await instance.dispose()`
+ *   执行前先把状态置为 `disposed`，因此即使 dispose 抛错（该错误可向外
+ *   传播），重入/重试 destroy 仍为 no-op。
+ *
+ * The instance is owned by the factory closure, not by a package-level
+ * singleton. Re-registering the returned module handle does not create a second
+ * instance; the explicit state machine above is per-handle state.
+ *
+ * 实例由工厂闭包持有，而不是包级 singleton。重复注册返回的 module handle
+ * 不会创建第二个实例；上述显式状态机即每个 handle 自己的状态。
  */
 
-import type { PrismaClient } from '@memoflow/database';
 import type { ServerModuleContext } from '@memoflow/contracts/shared';
-import {
-  createTaskPrismaModule,
-  createTaskRuntimeContribution,
-  createTaskGoalOutboxRuntime,
-  PrismaTaskGoalOutboxDispatchStore,
-  type TaskModuleInstance,
-  type TaskModuleRuntimeContribution,
-} from '../server/infrastructure';
-import {
-  TaskGoalOutboxDispatcher,
-  type TaskGoalProgressHandler,
-} from '../server/application/outbox';
-import { TaskTemplateController } from '../server/transport/task-template.controller';
-import { TaskInstanceController } from '../server/transport/task-instance.controller';
-import { TaskDependencyController } from '../server/transport/task-dependency.controller';
-import { registerTaskRoutes } from './routes';
+import { createLogger } from '@memoflow/utils/logger';
+import type { TaskModuleInstance } from '../server/infrastructure';
 import { createTaskTransportHandlers } from '../server/transport';
-// Residual 987: sole runtime-contribution normalize helpers (local dual retired).
-import { normalizeRuntimeContributions } from '../server/infrastructure/normalize-runtime-contributions';
+import { TaskDependencyController } from '../server/transport/task-dependency.controller';
+import { TaskInstanceController } from '../server/transport/task-instance.controller';
+import { TaskTemplateController } from '../server/transport/task-template.controller';
+import { registerTaskRoutes } from './routes';
+
+const logger = createLogger('TaskApi');
 
 /**
- * Typed module context for task registration.
- * Extends the shared ServerModuleContext with PrismaClient as the db type.
+ * Per-handle lifecycle state. Only 'created' may enter 'registered' (or
+ * 'failed' on a registration error); any state may end in 'disposed'.
+ *
+ * 每个 handle 的生命周期状态。只有 'created' 可以进入 'registered'
+ * （或注册失败时进入 'failed'）；任意状态都可以结束于 'disposed'。
  */
-export type TaskApiModuleContext = ServerModuleContext<PrismaClient>;
+type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
-export interface TaskApiModuleOptions {
-  /** Custom route prefix (default '/tasks'). 自定义路由前缀（默认 '/tasks'）。 */
-  routePrefix?: string;
-  readonly runtimeContributions?:
-    | TaskModuleRuntimeContribution
-    | readonly TaskModuleRuntimeContribution[];
-  readonly goalProgressHandler?: TaskGoalProgressHandler;
-}
+/**
+ * Transport-only context for task registration.
+ * Deliberately picks no `db`: the api module never needs persistence, and this
+ * keeps the seam from becoming a second composition root.
+ *
+ * 任务注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
+ * 这也避免该 seam 变成第二个组合根。
+ */
+export type TaskApiModuleContext = Pick<
+  ServerModuleContext<unknown>,
+  'app' | 'router' | 'middleware' | 'openApiRegistry'
+>;
 
 export interface TaskApiModuleDef {
   readonly name: string;
@@ -58,64 +109,83 @@ export interface TaskApiModuleDef {
   destroy?(): Promise<void>;
 }
 
-let activeTaskModule: TaskModuleInstance | null = null;
+export interface TaskApiModuleOptions {
+  readonly instance: TaskModuleInstance;
+}
 
-export function createTaskApiModule(
-  options: TaskApiModuleOptions = {},
-): TaskApiModuleDef {
+/**
+ * Creates the task API transport module handle.
+ * 创建任务 API 传输模块 handle。
+ *
+ * Turns an already-assembled `TaskModuleInstance` into an
+ * `IApiModule`-compatible handle. The handle is a transport adapter, not a
+ * composition root: it only registers routes and owns start/dispose lifecycle.
+ *
+ * 把已装配的 `TaskModuleInstance` 变成兼容 `IApiModule` 的 handle。
+ * 该 handle 是传输适配器而非组合根：只注册路由并托管 start/dispose 生命周期。
+ *
+ * @param options - Options carrying the assembled task instance.
+ * @returns An IApiModule-compatible handle bound to the instance.
+ */
+export function createTaskApiModule(options: TaskApiModuleOptions): TaskApiModuleDef {
+  if (!options?.instance) {
+    throw new Error('[FAIL-CLOSED] createTaskApiModule requires options.instance');
+  }
+  let state: ModuleHandleState = 'created';
+
   return {
     name: 'Task',
 
     async register(context) {
-      const { router, middleware, db } = context;
+      if (state !== 'created') {
+        throw new Error(
+          `TaskApiModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
+        );
+      }
 
-      const taskModule = createTaskPrismaModule(db, {
-        runtimeContributions: [
-          createTaskRuntimeContribution(),
-          ...(options.goalProgressHandler
-            ? [
-                createTaskGoalOutboxRuntime(
-                  new TaskGoalOutboxDispatcher(
-                    new PrismaTaskGoalOutboxDispatchStore(db),
-                    options.goalProgressHandler,
-                  ),
-                ),
-              ]
-            : []),
-          ...normalizeRuntimeContributions(options.runtimeContributions),
-        ],
-      });
-      activeTaskModule = taskModule;
-      await taskModule.start();
+      const { router, middleware, openApiRegistry } = context;
 
-      // 2. Create transport handlers then controllers
-      //    创建传输层处理器然后创建控制器
-      const handlers = createTaskTransportHandlers(taskModule.api);
+      try {
+        const handlers = createTaskTransportHandlers(options.instance.api);
 
-      const templateController = new TaskTemplateController(handlers.template);
-      const instanceController = new TaskInstanceController(handlers.instance);
-      const dependencyController = new TaskDependencyController(handlers.dependency);
+        const templateController = new TaskTemplateController(handlers.template);
+        const instanceController = new TaskInstanceController(handlers.instance);
+        const dependencyController = new TaskDependencyController(handlers.dependency);
 
-      // 3. Register routes (inject platform middleware)
-      //    注册路由（注入平台中间件）
-      const taskRoutes = registerTaskRoutes(
-        {
-          templateController,
-          instanceController,
-          dependencyController,
-        },
-        middleware,
-        context.openApiRegistry,
-      );
+        const taskRoutes = registerTaskRoutes(
+          {
+            templateController,
+            instanceController,
+            dependencyController,
+          },
+          middleware,
+          openApiRegistry,
+        );
 
-      router.use(taskRoutes);
+        router.use(taskRoutes);
+
+        await options.instance.start();
+        state = 'registered';
+      } catch (error) {
+        state = 'failed';
+        try {
+          await options.instance.dispose();
+        } catch (disposeError) {
+          logger.error(
+            'TaskApiModule: instance dispose failed during failed registration',
+            disposeError,
+          );
+        }
+        throw error;
+      }
     },
 
     async destroy() {
-      await activeTaskModule?.dispose();
-      activeTaskModule = null;
+      if (state === 'disposed') {
+        return;
+      }
+      state = 'disposed';
+      await options.instance.dispose();
     },
   };
 }
-
-export const TaskApiModule: TaskApiModuleDef = createTaskApiModule();
