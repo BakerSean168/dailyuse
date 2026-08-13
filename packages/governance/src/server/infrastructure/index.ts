@@ -41,3 +41,4 @@ export {
   createGovernancePowerSyncModule,
   createGovernancePowerSyncRepositories,
 } from './powersync';
+export { createGovernanceEventLogRuntime } from './runtime';

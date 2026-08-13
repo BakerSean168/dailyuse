@@ -83,6 +83,20 @@ export interface GovernanceApiModuleOptions {
   readonly instance: GovernanceModuleInstance;
 }
 
+/**
+ * Creates the governance API transport module handle.
+ * 创建治理 API 传输模块 handle。
+ *
+ * Turns an already-assembled `GovernanceModuleInstance` into an
+ * `IApiModule`-compatible handle. The handle is a transport adapter, not a
+ * composition root: it only registers routes and owns start/dispose lifecycle.
+ *
+ * 把已装配的 `GovernanceModuleInstance` 变成兼容 `IApiModule` 的 handle。
+ * 该 handle 是传输适配器而非组合根：只注册路由并托管 start/dispose 生命周期。
+ *
+ * @param options - Options carrying the assembled governance instance.
+ * @returns An IApiModule-compatible handle bound to the instance.
+ */
 export function createGovernanceApiModule(
   options: GovernanceApiModuleOptions,
 ): GovernanceApiModuleDef {

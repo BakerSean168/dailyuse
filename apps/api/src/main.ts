@@ -2,11 +2,13 @@
  * API Server Entry Point
  *
  * 使用 ApiBootstrapper 的白名单注册机制启动服务，
- * 每个模块实现 IApiModule 接口，自治管理依赖和路由。
+ * 每个模块实现 IApiModule 接口。
  *
  * 模块注册策略：
- * - 每个模块实现 IApiModule 接口（如 GovernanceApiModule）
- * - 模块内部自行管理数据库访问（通过 @memoflow/database）
+ * - 每个模块实现 IApiModule 接口
+ * - 宿主（本文件 runtime 层）负责 feature 装配：治理的 adapter/application
+ *   组装由 apps/api/src/runtime/compose-governance.ts 完成（选择 Prisma repository
+ *   → event-log runtime → createGovernanceModule），模块只注册 transport 与生命周期
  * - 故障模块：注释掉即可，不影响其他模块启动
  */
 
@@ -26,7 +28,7 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
-import { GovernanceApiModule } from '@memoflow/governance/api';
+import { composeGovernance } from './runtime/compose-governance';
 import { createAccountApiModule } from '@memoflow/account/api';
 import {
   AccountClosedWorker,
@@ -205,9 +207,10 @@ async function bootstrap(): Promise<void> {
     createAutomationToolExecutor: (context: AIApiModuleContext) =>
       new BackendAutomationToolExecutorAdapter(context.db, repositoryStorageBaseDir),
   });
+  const governanceApiModule = composeGovernance({ db: prisma });
   const app = await bootstrapper
     // === 核心：白名单注册 ===
-    .register(GovernanceApiModule) // ✅ 治理模块
+    .register(governanceApiModule) // ✅ 治理模块 (runtime composer)
     .register(createAccountApiModule({ cloudAuth })) // ✅ 账户模块
     // 架构决策 A：apps/api（API lane）显式声明其自治掌控的 InApp 渠道 capability。
     // Desktop/Push 渠道 capability 归属于桌面 Desktop lane，单机 API lane 不处理跨进程 Native Notification。

@@ -6,8 +6,13 @@
  *
  * @example
  * ```typescript
- * const app = await new ApiBootstrapper()
- *   .register(GovernanceApiModule)
+ * // Host runtime composes feature modules before registration (see
+ * // apps/api/src/runtime/compose-governance.ts); register() only wires
+ * // transport + lifecycle. 宿主 runtime 先完成 feature 装配，register 只注册 transport。
+ * const governanceApiModule = composeGovernance({ db });
+ *
+ * const app = await new ApiBootstrapper(db)
+ *   .register(governanceApiModule)
  *   .register(AccountApiModule)
  *   .init();
  *

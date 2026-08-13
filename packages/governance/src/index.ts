@@ -23,6 +23,7 @@ export {
   createGovernanceModule,
   createGovernancePrismaRepositories,
   createGovernancePowerSyncRepositories,
+  createGovernanceEventLogRuntime,
   type GovernanceModuleDependencies,
   type GovernanceModuleInstance,
   type GovernanceRepositorySet,

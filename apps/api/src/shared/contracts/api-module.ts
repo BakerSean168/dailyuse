@@ -64,8 +64,14 @@ export interface IApiModuleContext extends ServerModuleContext<DatabaseClient> {
  * API 模块标准接口
  *
  * 所有业务模块必须实现此接口才能被 ApiBootstrapper 加载。
- * 模块在 register() 内完成 Composition Root 组装（创建 Repo → Service → Controller）
- * 并将路由挂载到 context.router 上。
+ *
+ * 目标方向（target direction）：runtime-first 装配 —— 宿主（apps/api/src/runtime）
+ * 在 register() 之前完成 feature 模块的 Composition Root 组装（选择 adapter →
+ * repository → application instance），register() 只负责 transport 注册与模块生命周期
+ * （start/dispose）。参见 apps/api/src/runtime/compose-governance.ts 的治理示范。
+ *
+ * 尚未迁移的 sibling 模块仍可暂时从 context.db 组装（db 字段本步保留），
+ * 后续 Goal/Task 阶段再统一移除。
  */
 export interface IApiModule {
   /** 模块名称，用于日志和调试 */
@@ -75,9 +81,11 @@ export interface IApiModule {
    * 注册模块
    *
    * 在此方法内完成：
-   * 1. 依赖注入（Composition Root）
-   * 2. 路由创建与挂载
-   * 3. 事件监听器注册（可选）
+   * 1. transport 注册（路由挂载）
+   * 2. 模块生命周期启动（可选）
+   *
+   * feature 组装（Repository/UseCase/Application）已由宿主 runtime composer
+   * 在 register() 之前完成；尚未迁移的 sibling 仍可在本方法内从 context.db 组装。
    *
    * @param context - ApiBootstrapper 提供的上下文
    */
