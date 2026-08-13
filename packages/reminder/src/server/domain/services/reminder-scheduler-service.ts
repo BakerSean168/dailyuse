@@ -13,11 +13,25 @@
  * - 定期更新统计数据
  */
 
+import { randomUUID } from 'crypto';
 import type { ReminderTemplate } from '../aggregates/reminder-template';
 import type { IReminderTemplateRepository } from '../repositories/i-reminder-template-repository';
 import type { ReminderTriggerService, ITriggerReminderResult } from './reminder-trigger-service';
+import type { ReminderTemplateControlService } from './reminder-template-control-service';
 import { TriggerResult } from '@memoflow/contracts/reminder';
+import {
+  buildIdempotencyKeyString,
+  type BusinessOperationReceipt,
+  type BusinessOperationStatus,
+  type DeliveryAttempt,
+  type LeaseClaim,
+  type ReminderHeartbeatInput,
+  type ReminderReliableOperationPort,
+  type ReminderReplayDeadLetterInput,
+} from '@memoflow/contracts/reliable-messaging';
 import { createLogger } from '@memoflow/utils/logger';
+import { ReminderMetricsCollector, globalReminderMetrics } from './reminder-metrics-service';
+import type { ReminderTransactionRunner } from '../ports/reminder-transaction-runner.port';
 
 const logger = createLogger('ReminderSchedulerService');
 
@@ -51,16 +65,38 @@ export interface IScheduleOptions {
   maxCount?: number;
   /** 并发数量（默认 10） */
   concurrency?: number;
+  /** Worker/Scheduler 实例标识（用于 Lease Claim） */
+  ownerToken?: string;
 }
 
 /**
  * ReminderSchedulerService
  */
 export class ReminderSchedulerService {
+  private readonly defaultOwnerToken: string;
+
   constructor(
     private readonly templateRepository: IReminderTemplateRepository,
     private readonly triggerService: ReminderTriggerService,
-  ) {}
+    private readonly reliablePort: ReminderReliableOperationPort,
+    private readonly transactionRunner: ReminderTransactionRunner,
+    private readonly controlService: ReminderTemplateControlService,
+    private readonly metricsCollector: ReminderMetricsCollector = globalReminderMetrics,
+    private readonly accountTimezonePort?: import('../ports/account-timezone.port').AccountTimezonePort,
+  ) {
+    if (
+      !templateRepository ||
+      !triggerService ||
+      !reliablePort ||
+      !transactionRunner ||
+      !controlService
+    ) {
+      throw new Error(
+        '[REMINDER_SCHEDULER] Mandatory dependencies missing: reliablePort, transactionRunner, and controlService are required. Fallback path is strictly forbidden.',
+      );
+    }
+    this.defaultOwnerToken = `scheduler-${randomUUID()}`;
+  }
 
   /**
    * 执行调度任务
@@ -82,8 +118,8 @@ export class ReminderSchedulerService {
 
     if (totalCount > 0) {
       logger.info(`Found ${totalCount} pending reminders to process`, {
-        ids: remindersToProcess.map(r => r.id),
-        titles: remindersToProcess.map(r => r.title)
+        ids: remindersToProcess.map((r) => r.id),
+        titles: remindersToProcess.map((r) => r.title),
       });
     } else {
       logger.debug('No pending reminders found');
@@ -102,13 +138,147 @@ export class ReminderSchedulerService {
 
     // 批量触发（控制并发）
     const results: ITriggerReminderResult[] = [];
+    const ownerToken = options.ownerToken ?? this.defaultOwnerToken;
+
     for (let i = 0; i < remindersToProcess.length; i += concurrency) {
       const batch = remindersToProcess.slice(i, i + concurrency);
-      const batchParams = batch.map((template) => ({
-        template,
-        triggerTime: beforeTime,
-      }));
-      const batchResults = await this.triggerService.triggerRemindersBatch(batchParams);
+      const batchPromises = batch.map(async (template): Promise<ITriggerReminderResult> => {
+        const triggerTime = template.getNextTriggerTime() ?? beforeTime;
+        const rawTimeIso = new Date(triggerTime).toISOString();
+        const occurrenceKey = `${template.id}:${rawTimeIso}`;
+        const idempotencyKey = buildIdempotencyKeyString({
+          identityId: template.identityId,
+          source: 'reminder',
+          occurrenceKey,
+        });
+
+        let claimResult:
+          | {
+              claimed: boolean;
+              lease: LeaseClaim | null;
+              receipt: BusinessOperationReceipt;
+            }
+          | undefined;
+
+        try {
+          claimResult = await this.reliablePort.claimOccurrence({
+            identityId: template.identityId,
+            source: 'reminder',
+            templateId: template.id,
+            occurrenceKey,
+            ownerToken,
+            leaseDurationMs: 30000,
+            idempotencyKey,
+          });
+
+          if (!claimResult.claimed) {
+            const isTerminal = ['succeeded', 'skipped', 'failed', 'cancelled'].includes(
+              claimResult.receipt.status,
+            );
+            return {
+              ok: isTerminal,
+              result: TriggerResult.Skipped,
+              triggerTime,
+              nextTriggerTime: template.getNextTriggerTime(),
+              message: isTerminal
+                ? 'Duplicate claim (already processed)'
+                : 'Lease claim rejected (held by active owner)',
+            };
+          }
+
+          this.metricsCollector.recordPersisted();
+          this.metricsCollector.recordClaimed();
+          this.metricsCollector.recordDueLatency(Date.now() - triggerTime);
+
+          let heartbeatTimer: NodeJS.Timeout | null = null;
+          let heartbeatFailed = false;
+
+          if (claimResult.lease && claimResult.lease.claimId) {
+            const intervalMs = Math.max(50, claimResult.lease.heartbeatIntervalMs ?? 10000);
+            heartbeatTimer = setInterval(async () => {
+              try {
+                const hbRes = await this.heartbeatLease({
+                  identityId: template.identityId,
+                  source: 'reminder',
+                  templateId: template.id,
+                  occurrenceKey,
+                  ownerToken,
+                  claimId: claimResult!.lease!.claimId,
+                  fencingToken: claimResult!.lease!.fencingToken,
+                  leaseDurationMs: 30000,
+                });
+                if (!hbRes.renewed) {
+                  heartbeatFailed = true;
+                  logger.warn('Heartbeat renewal failed: lease lost or preempted', {
+                    templateId: template.id,
+                    claimId: claimResult!.lease!.claimId,
+                  });
+                }
+              } catch (err) {
+                heartbeatFailed = true;
+                logger.warn('Heartbeat error during occurrence processing', { error: err });
+              }
+            }, intervalMs);
+          }
+
+          try {
+            const isEnabled = await this.controlService.isTemplateEffectivelyEnabled(template);
+
+            if (heartbeatFailed) {
+              throw new Error('Lease heartbeat failed or lease preempted before transaction execution.');
+            }
+
+            const receipt = await this.transactionRunner.executeClaimedOccurrenceTransaction({
+              template,
+              occurrence: {
+                id: claimResult.receipt.operationId,
+                identityId: template.identityId,
+                templateId: template.id,
+                occurrenceKey,
+                idempotencyKey,
+                fencingToken: claimResult.lease!.fencingToken,
+                ownerToken,
+              },
+              isEnabled,
+              skipReason: isEnabled ? undefined : '模板未启用或被分组禁用',
+              triggerTime,
+            });
+
+            if (receipt.status === 'succeeded') {
+              this.metricsCollector.recordSucceeded();
+              return {
+                ok: true,
+                result: TriggerResult.Success,
+                triggerTime,
+                nextTriggerTime: template.getNextTriggerTime(),
+                message: '触发成功',
+                historyId: receipt.operationId,
+              };
+            } else {
+              return {
+                ok: true,
+                result: TriggerResult.Skipped,
+                triggerTime,
+                nextTriggerTime: template.getNextTriggerTime(),
+                message: '模板未启用或被分组禁用',
+              };
+            }
+          } finally {
+            if (heartbeatTimer) {
+              clearInterval(heartbeatTimer);
+            }
+          }
+        } catch (error) {
+          return this.recordOccurrenceFailure({
+            receipt: claimResult?.receipt,
+            error,
+            triggerTime,
+            template,
+          });
+        }
+      });
+
+      const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
     }
 
@@ -130,6 +300,16 @@ export class ReminderSchedulerService {
       duration: Date.now() - startTime
     });
 
+    if (successCount > 0) {
+      this.metricsCollector.recordWorkerOutcome('completed');
+    }
+    if (failedCount > 0) {
+      this.metricsCollector.recordWorkerOutcome('failed');
+    }
+    if (skippedCount > 0) {
+      this.metricsCollector.recordWorkerOutcome('skipped');
+    }
+
     return {
       successCount,
       failedCount,
@@ -138,6 +318,99 @@ export class ReminderSchedulerService {
       details: results,
       duration: Date.now() - startTime,
     };
+  }
+
+  /**
+   * 记录触发失败（重试 / 死信状态流转与指标记录）
+   */
+  async recordOccurrenceFailure(params: {
+    receipt?: BusinessOperationReceipt;
+    error: unknown;
+    triggerTime?: number;
+    template?: ReminderTemplate;
+    maxRetries?: number;
+  }): Promise<ITriggerReminderResult> {
+    const { receipt, error, triggerTime = Date.now(), template, maxRetries = 3 } = params;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const attempt = receipt?.attempt ?? 1;
+    const isDeadLetter = attempt >= maxRetries;
+    const status: BusinessOperationStatus = isDeadLetter ? 'dead_letter' : 'retryable';
+
+    // W7 互斥语义：失败分叉为 retryable/dead_letter，不再累计终态 outbox.failed
+    if (isDeadLetter) {
+      this.metricsCollector.recordDeadLetter();
+    } else {
+      this.metricsCollector.recordRetry();
+    }
+
+    if (receipt && this.reliablePort) {
+      const nowIso = new Date().toISOString();
+      const nextRetryAt = isDeadLetter
+        ? null
+        : new Date(Date.now() + 5000 * Math.pow(2, attempt - 1)).toISOString();
+      const deadLetterAt = isDeadLetter ? nowIso : null;
+
+      const existingHistory = receipt.attemptsHistory ?? [];
+      const newAttemptEntry: DeliveryAttempt = {
+        schemaVersion: 1,
+        attempt,
+        attemptedAt: nowIso,
+        result: isDeadLetter ? 'failed' : 'retryable',
+        error: errorMessage,
+        durationMs: null,
+        channel: null,
+      };
+
+      const failureReceipt: BusinessOperationReceipt = {
+        ...receipt,
+        status,
+        attempt,
+        lastError: errorMessage,
+        nextRetryAt,
+        deadLetterAt,
+        lease: receipt.lease,
+        attemptsHistory: [...existingHistory, newAttemptEntry],
+        updatedAt: nowIso,
+        finishedAt: null,
+      };
+
+      await this.reliablePort.recordDeliveryIntent(failureReceipt);
+    }
+
+    return {
+      ok: false,
+      result: TriggerResult.Failed,
+      triggerTime,
+      nextTriggerTime: template ? template.getNextTriggerTime() : null,
+      message: errorMessage,
+    };
+  }
+
+  /**
+   * 续租 / 心跳 Lease
+   */
+  async heartbeatLease(input: ReminderHeartbeatInput): Promise<{
+    renewed: boolean;
+    lease: LeaseClaim | null;
+    receipt: BusinessOperationReceipt;
+  }> {
+    return this.reliablePort.heartbeatLease(input);
+  }
+
+  /**
+   * 查询死信队列
+   */
+  async queryDeadLetters(identityId: string): Promise<BusinessOperationReceipt[]> {
+    return this.reliablePort.queryDeadLetters(identityId);
+  }
+
+  /**
+   * 人工/运维 重发死信 Reminder occurrence
+   */
+  async replayDeadLetter(
+    input: ReminderReplayDeadLetterInput,
+  ): Promise<BusinessOperationReceipt> {
+    return this.reliablePort.replayDeadLetter(input);
   }
 
   /**

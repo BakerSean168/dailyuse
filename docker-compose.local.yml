@@ -265,7 +265,14 @@ services:
       start_period: 40s
 
   powersync:
-    image: journeyapps/powersync-service:latest
+    image: memoflow-powersync:local
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: docker/powersync/Dockerfile.bake
+      args:
+        VERSION: local
+        PNPM_REGISTRY: ${PNPM_REGISTRY:-https://registry.npmmirror.com}
     restart: unless-stopped
     depends_on:
       api:
@@ -290,9 +297,6 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
     ports:
       - '${POWERSYNC_HOST_PORT:-58081}:${POWERSYNC_PORT:-8080}'
-    volumes:
-      - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
-      - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
     networks:
       - memoflow-local-network
     healthcheck:

@@ -64,11 +64,12 @@ describe('account ownership surface', () => {
     );
     expect(updateProfile).toMatch(/findById\(cx\.identityId(?:, tx)?\)/);
     expect(closeAccount).toContain(
-      'const account = await this.accountRepository.findById(cx.identityId);',
+      'this.coordinator.execute(cx.identityId',
     );
     // Never introduce a dual-method ownership fence on account PK.
     expect(getProfile).not.toMatch(/findByIdForIdentity/);
     expect(updateProfile).not.toMatch(/findByIdForIdentity/);
     expect(closeAccount).not.toMatch(/findByIdForIdentity/);
   });
+
 });

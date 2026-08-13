@@ -10,6 +10,7 @@
 import type { Request, Response } from 'express';
 import type { MetricsStore } from '../middlewares/performance.middleware';
 import { createApiResponseBuilder } from '../response-builder.js';
+import { getUnifiedOperationMetricsSnapshot } from '@memoflow/patterns/operations';
 
 export type MetricsJsonPayload = {
   summary: {
@@ -34,6 +35,7 @@ export type MetricsJsonPayload = {
     };
   };
   allMetrics: ReturnType<MetricsStore['getAllStats']>;
+  operationMetrics: Readonly<Record<string, number>>;
 };
 
 /**
@@ -94,6 +96,15 @@ export function createMetricsController(metricsStore: MetricsStore) {
       lines.push('# TYPE process_uptime_seconds gauge');
       lines.push(`process_uptime_seconds ${Math.floor(process.uptime())}`);
 
+      lines.push('');
+      lines.push('# HELP memoflow_operation_metrics Unified operation outbox/worker counters (P1-5)');
+      lines.push('# TYPE memoflow_operation_metrics counter');
+      const operationMetrics = getUnifiedOperationMetricsSnapshot();
+      for (const [key, value] of Object.entries(operationMetrics)) {
+        lines.push(`memoflow_operation_metrics{metric="${key}"} ${value}`);
+      }
+      lines.push('');
+
       res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
       res.status(200).send(lines.join('\n'));
     },
@@ -143,6 +154,7 @@ export function createMetricsController(metricsStore: MetricsStore) {
           },
         },
         allMetrics: metrics,
+        operationMetrics: getUnifiedOperationMetricsSnapshot(),
       };
 
       res.status(200).json(responseBuilder.success(payload));

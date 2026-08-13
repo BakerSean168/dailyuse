@@ -85,17 +85,18 @@ describe('UpcomingReminderCalculationService.calculateTodaySchedule', () => {
           name: '吃午饭',
           trigger: {
             type: TriggerType.FixedTime,
-            fixedTime: { time: '11:40', timezone: null },
+            fixedTime: { time: '11:40', timezone: 'Asia/Shanghai' },
             interval: null,
           },
         }),
       ],
-      { includeExpired: true },
+      { includeExpired: true, timezone: 'UTC' },
     );
 
     expect(schedule.map((item) => item.title)).toEqual([
       '起来走走',
       '吃午饭',
+      '起来走走',
       '起来走走',
       '起来走走',
       '起来走走',
@@ -106,6 +107,7 @@ describe('UpcomingReminderCalculationService.calculateTodaySchedule', () => {
       Date.parse('2026-03-29T06:20:00.000Z'),
       Date.parse('2026-03-29T11:00:00.000Z'),
       Date.parse('2026-03-29T15:40:00.000Z'),
+      Date.parse('2026-03-29T20:20:00.000Z'),
     ]);
   });
 
@@ -134,18 +136,25 @@ describe('UpcomingReminderCalculationService.calculateTodaySchedule', () => {
           name: '吃午饭',
           trigger: {
             type: TriggerType.FixedTime,
-            fixedTime: { time: '11:40', timezone: null },
+            fixedTime: { time: '11:40', timezone: 'Asia/Shanghai' },
             interval: null,
           },
         }),
       ],
+      { timezone: 'UTC' },
     );
 
-    expect(schedule.map((item) => item.title)).toEqual(['起来走走', '起来走走', '起来走走']);
+    expect(schedule.map((item) => item.title)).toEqual([
+      '起来走走',
+      '起来走走',
+      '起来走走',
+      '起来走走',
+    ]);
     expect(schedule.map((item) => item.nextTriggerAt)).toEqual([
       Date.parse('2026-03-29T06:20:00.000Z'),
       Date.parse('2026-03-29T11:00:00.000Z'),
       Date.parse('2026-03-29T15:40:00.000Z'),
+      Date.parse('2026-03-29T20:20:00.000Z'),
     ]);
   });
 
@@ -163,9 +172,143 @@ describe('UpcomingReminderCalculationService.calculateTodaySchedule', () => {
       afterTime,
     );
 
-    const expectedNextCycle = new Date(afterTime);
-    expectedNextCycle.setDate(expectedNextCycle.getDate() + 1);
-    expectedNextCycle.setHours(9, 0, 0, 0);
-    expect(nextTrigger).toBe(expectedNextCycle.getTime());
+    expect(nextTrigger).toBe(Date.parse('2026-03-30T09:00:00.000Z'));
+  });
+
+  it('correctly converts fixed-time triggers across timezone boundary (e.g., Asia/Tokyo UTC+9)', () => {
+    const afterTime = Date.parse('2026-08-09T08:00:00.000Z');
+    const nextTrigger = UpcomingReminderCalculationService.calculateNextTriggerTime(
+      createReminder({
+        trigger: {
+          type: TriggerType.FixedTime,
+          fixedTime: { time: '09:00', timezone: 'Asia/Tokyo' },
+          interval: null,
+        },
+      }),
+      afterTime,
+    );
+
+    expect(nextTrigger).not.toBeNull();
+    const dateUtc = new Date(nextTrigger!);
+    expect(dateUtc.getUTCHours()).toBe(0);
+    expect(dateUtc.getUTCMinutes()).toBe(0);
+  });
+
+  it('throws fail-fast error when invalid timezone is specified in calculateNextTriggerTime', () => {
+    const afterTime = Date.parse('2026-08-09T08:00:00.000Z');
+    expect(() =>
+      UpcomingReminderCalculationService.calculateNextTriggerTime(
+        createReminder({
+          trigger: {
+            type: TriggerType.FixedTime,
+            fixedTime: { time: '09:00', timezone: 'Invalid/Unknown_Timezone' },
+            interval: null,
+          },
+        }),
+        afterTime,
+      ),
+    ).toThrow(/Invalid or unknown timezone/);
+  });
+
+  it('calculateTodaySchedule calculates correct trigger timestamp for non-UTC+8 timezone (Asia/Tokyo UTC+9)', () => {
+    vi.setSystemTime(new Date('2026-08-10T00:00:00.000Z'));
+    const schedule = UpcomingReminderCalculationService.calculateTodaySchedule(
+      [
+        createReminder({
+          id: 'tokyo-lunch' as ReminderTemplateServerDTO['id'],
+          name: 'Tokyo Lunch',
+          trigger: {
+            type: TriggerType.FixedTime,
+            fixedTime: { time: '12:00', timezone: 'Asia/Tokyo' },
+            interval: null,
+          },
+          activeTime: { activatedAt: Date.parse('2026-08-01T00:00:00.000Z') },
+        }),
+      ],
+      { includeExpired: true, timezone: 'Asia/Tokyo', now: Date.parse('2026-08-10T00:00:00.000Z') },
+    );
+
+    expect(schedule).toHaveLength(1);
+    // 12:00 Tokyo (UTC+9) on 2026-08-10 is 03:00 UTC on 2026-08-10
+    expect(schedule[0].nextTriggerAt).toBe(Date.parse('2026-08-10T03:00:00.000Z'));
+  });
+
+  it('calculateTodaySchedule throws fail-fast error when invalid timezone is specified in template or options', () => {
+    vi.setSystemTime(new Date('2026-08-10T00:00:00.000Z'));
+    expect(() =>
+      UpcomingReminderCalculationService.calculateTodaySchedule(
+        [
+          createReminder({
+            id: 'invalid-tz-template' as ReminderTemplateServerDTO['id'],
+            name: 'Invalid TZ',
+            trigger: {
+              type: TriggerType.FixedTime,
+              fixedTime: { time: '09:00', timezone: 'Invalid/Unknown_Timezone' },
+              interval: null,
+            },
+          }),
+        ],
+        { includeExpired: true },
+      ),
+    ).toThrow(/Invalid or unknown timezone/);
+
+    expect(() =>
+      UpcomingReminderCalculationService.calculateTodaySchedule(
+        [
+          createReminder({
+            id: 'valid-template' as ReminderTemplateServerDTO['id'],
+            name: 'Valid Template',
+            trigger: {
+              type: TriggerType.FixedTime,
+              fixedTime: { time: '09:00', timezone: null },
+              interval: null,
+            },
+          }),
+        ],
+        { includeExpired: true, timezone: 'Bad/Timezone' },
+      ),
+    ).toThrow(/Invalid or unknown timezone/);
+  });
+
+  it('ensures dual-path consistency between calculateTodaySchedule and calculateNextTriggerTime when template.timezone is null', () => {
+    const baseTime = Date.parse('2026-08-10T00:00:00.000Z');
+    vi.setSystemTime(new Date(baseTime));
+
+    const nullTzReminder = createReminder({
+      id: 'null-tz-template' as ReminderTemplateServerDTO['id'],
+      name: 'Null Timezone Template',
+      trigger: {
+        type: TriggerType.FixedTime,
+        fixedTime: { time: '09:00', timezone: null },
+        interval: null,
+      },
+      activeTime: { activatedAt: Date.parse('2026-08-01T00:00:00.000Z') },
+    });
+
+    const tokYoReminder = createReminder({
+      id: 'tokyo-template' as ReminderTemplateServerDTO['id'],
+      name: 'Tokyo Template',
+      trigger: {
+        type: TriggerType.FixedTime,
+        fixedTime: { time: '12:00', timezone: 'Asia/Tokyo' },
+        interval: null,
+      },
+      activeTime: { activatedAt: Date.parse('2026-08-01T00:00:00.000Z') },
+    });
+
+    // Path A: Scheduler trigger calculation for null timezone template
+    const pathATriggerAt = UpcomingReminderCalculationService.calculateNextTriggerTime(nullTzReminder, baseTime);
+
+    // Path B: Today Schedule calculation (mixed templates, with query timezone options)
+    const scheduleB = UpcomingReminderCalculationService.calculateTodaySchedule(
+      [nullTzReminder, tokYoReminder],
+      { includeExpired: true, timezone: 'Asia/Tokyo', now: baseTime },
+    );
+
+    const pathBItem = scheduleB.find((item) => item.templateId === nullTzReminder.id);
+
+    expect(pathATriggerAt).toBe(Date.parse('2026-08-10T09:00:00.000Z'));
+    expect(pathBItem).toBeDefined();
+    expect(pathBItem?.nextTriggerAt).toBe(pathATriggerAt);
   });
 });

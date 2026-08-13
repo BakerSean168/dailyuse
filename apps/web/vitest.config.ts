@@ -12,6 +12,8 @@ const sharedConfig = createSharedConfig({
   aliasEntries: createUiVueSourceAliasEntries(workspaceRoot),
   aliases: {
     '@memoflow/app-vue': '../../packages/app-vue/src/index.ts',
+    '@memoflow/app-vue/modules/authentication':
+      '../../packages/app-vue/src/modules/authentication/index.ts',
     '@memoflow/app-vue/web-core': '../../packages/app-vue/src/web-core.ts',
     '@memoflow/app-vue/web-shell-core': '../../packages/app-vue/src/web-shell-core.ts',
     '@memoflow/app-vue/web-overlays': '../../packages/app-vue/src/web-overlays.ts',
@@ -48,6 +50,13 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
+    execArgv: [
+      // Node >= 22 exposes a globalThis.localStorage that is unusable without
+      // --localstorage-file and emits a per-worker ExperimentalWarning whenever
+      // the happy-dom environment touches it. The shared setup installs a
+      // functional Storage; this flag silences that noise.
+      '--disable-warning=ExperimentalWarning',
+    ],
     include: ['src/**/__tests__/**/*.test.ts', 'src/**/*.spec.ts'],
     exclude: ['node_modules', 'dist', '.git', '.cache'],
     passWithNoTests: false,

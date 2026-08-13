@@ -326,6 +326,11 @@ export class DesktopProfileRuntimeManager {
     const profileId = this.activeRuntime.descriptor.profileId;
     try { await stopScheduleRuntime(); } catch (error) { logger.warn('Failed to stop schedule runtime', { error }); }
     await this.activeRuntime.bootstrapper.destroy().catch((error) => logger.error('Failed to destroy profile modules', { error }));
+    // NOTE: the closure-request marker is intentionally NOT cleared here —
+    // deactivateProfile also runs on profile switch/lock where the profile can
+    // be reactivated; clearing the marker there would reopen the local
+    // new-work gate while the account is still closed. The marker is cleared
+    // ONLY when the cloud close FAILS (close handler catch path).
     await shutdownPowerSync();
     this.activeRuntime = null;
     this.activeProfileKey?.fill(0);

@@ -31,6 +31,10 @@ export const SettingElectronModule: IElectronModule = {
       withAuthenticatedIdentity(ctx, (identityId) => mod.api.getUserSetting(identityId)),
     );
 
+    ipcMain.handle(SettingChannels.GET_DEFAULTS, () =>
+      Promise.resolve(mod.api.getDefaultSettings()),
+    );
+
     ipcMain.handle(SettingChannels.PATCH, (_event, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
       const category = payload.category as string;

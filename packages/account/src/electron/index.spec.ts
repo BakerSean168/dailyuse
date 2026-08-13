@@ -137,14 +137,30 @@ describe('AccountElectronModule', () => {
   });
 
   it('closes cloud first, updates the local projection, then disconnects sync', async () => {
-    mocks.closeAccount.mockResolvedValue(ok(undefined));
-    const closeCloudAccount = vi.fn().mockResolvedValue(undefined);
+    const mockReceipt = {
+      operationId: 'op-1',
+      identityId: 'cloud-1',
+      idempotencyKey: 'key-1',
+      phase: 'closed',
+      status: 'succeeded',
+      retryable: false,
+      signedOut: true,
+      attempts: 1,
+      lastError: null,
+      createdAt: 100,
+      finishedAt: 200,
+    };
+    const closeCloudAccount = vi.fn().mockResolvedValue(mockReceipt);
+    const markAccountClosing = vi.fn().mockResolvedValue(undefined);
+    const clearAccountClosingMarker = vi.fn().mockResolvedValue(undefined);
     const afterCloudAccountClosed = vi.fn().mockResolvedValue(undefined);
     const module = createAccountElectronModule({
       getCloudAccountId: () => 'cloud-1',
       getCloudAccessToken: async () => 'token',
       pushCloudProfile: vi.fn(),
       closeCloudAccount,
+      markAccountClosing,
+      clearAccountClosingMarker,
       afterCloudAccountClosed,
     });
     const context = {
@@ -160,13 +176,144 @@ describe('AccountElectronModule', () => {
 
     const result = await registration?.[1](undefined, { reason: 'No longer needed' });
 
-    expect(result).toEqual(ok(null));
+    expect(result).toEqual(ok(mockReceipt));
     expect(closeCloudAccount).toHaveBeenCalledWith('token', { reason: 'No longer needed' });
-    expect(mocks.closeAccount).toHaveBeenCalledWith(
-      { reason: 'No longer needed' },
-      { identityId: 'cloud-1' },
-    );
     expect(afterCloudAccountClosed).toHaveBeenCalledOnce();
+    await module.destroy?.();
+  });
+
+  it('marks account closing locally BEFORE the cloud close call (fail-closed window), clears after success', async () => {
+    const mockReceipt = {
+      operationId: 'op-2',
+      identityId: 'cloud-1',
+      idempotencyKey: 'key-2',
+      phase: 'closed',
+      status: 'succeeded',
+      retryable: false,
+      signedOut: true,
+      attempts: 1,
+      lastError: null,
+      createdAt: 100,
+      finishedAt: 200,
+    };
+    const closeCloudAccount = vi.fn().mockResolvedValue(mockReceipt);
+    const markAccountClosing = vi.fn().mockResolvedValue(undefined);
+    const clearAccountClosingMarker = vi.fn().mockResolvedValue(undefined);
+    const afterCloudAccountClosed = vi.fn().mockResolvedValue(undefined);
+    const module = createAccountElectronModule({
+      getCloudAccountId: () => 'cloud-1',
+      getCloudAccessToken: async () => 'token',
+      pushCloudProfile: vi.fn(),
+      closeCloudAccount,
+      markAccountClosing,
+      clearAccountClosingMarker,
+      afterCloudAccountClosed,
+    });
+    const context = {
+      db: { getOptional: vi.fn().mockResolvedValue(null) },
+      auth: {
+        requireRequestContext: vi.fn().mockResolvedValue({ identityId: 'cloud-1' }),
+      },
+    } as unknown as IElectronModuleContext;
+    module.register(context);
+    const registration = mocks.handle.mock.calls.find(
+      ([channel]) => channel === AccountChannels.CLOSE,
+    );
+
+    const result = await registration?.[1](undefined, { reason: 'No longer needed' });
+
+    expect(result).toEqual(ok(mockReceipt));
+    // fail-closed ordering: local marker set BEFORE the cloud call begins
+    const markOrder = markAccountClosing.mock.invocationCallOrder[0];
+    const closeOrder = closeCloudAccount.mock.invocationCallOrder[0];
+    expect(markOrder).toBeLessThan(closeOrder);
+    expect(afterCloudAccountClosed).toHaveBeenCalledOnce();
+    await module.destroy?.();
+  });
+
+  it('clears the closure marker when the cloud close FAILS (no permanent local lock)', async () => {
+    const closeCloudAccount = vi.fn().mockRejectedValue(new Error('cloud unavailable'));
+    const markAccountClosing = vi.fn().mockResolvedValue(undefined);
+    const clearAccountClosingMarker = vi.fn().mockResolvedValue(undefined);
+    const afterCloudAccountClosed = vi.fn().mockResolvedValue(undefined);
+    const module = createAccountElectronModule({
+      getCloudAccountId: () => 'cloud-1',
+      getCloudAccessToken: async () => 'token',
+      pushCloudProfile: vi.fn(),
+      closeCloudAccount,
+      markAccountClosing,
+      clearAccountClosingMarker,
+      afterCloudAccountClosed,
+    });
+    const context = {
+      db: { getOptional: vi.fn().mockResolvedValue(null) },
+      auth: {
+        requireRequestContext: vi.fn().mockResolvedValue({ identityId: 'cloud-1' }),
+      },
+    } as unknown as IElectronModuleContext;
+    module.register(context);
+    const registration = mocks.handle.mock.calls.find(
+      ([channel]) => channel === AccountChannels.CLOSE,
+    );
+
+    const result = await registration?.[1](undefined, { reason: 'No longer needed' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('CLOUD_ACCOUNT_CLOSE_FAILED');
+    }
+    expect(markAccountClosing).toHaveBeenCalledOnce();
+    expect(clearAccountClosingMarker).toHaveBeenCalledWith('cloud-1');
+    expect(afterCloudAccountClosed).not.toHaveBeenCalled();
+    await module.destroy?.();
+  });
+
+  it('keeps the closure marker when cloud close SUCCEEDS but local teardown callback fails (fail-closed)', async () => {
+    const mockReceipt = {
+      operationId: 'op-3',
+      identityId: 'cloud-1',
+      idempotencyKey: 'key-3',
+      phase: 'closed',
+      status: 'succeeded',
+      retryable: false,
+      signedOut: true,
+      attempts: 1,
+      lastError: null,
+      createdAt: 100,
+      finishedAt: 200,
+    };
+    const closeCloudAccount = vi.fn().mockResolvedValue(mockReceipt);
+    const markAccountClosing = vi.fn().mockResolvedValue(undefined);
+    const clearAccountClosingMarker = vi.fn().mockResolvedValue(undefined);
+    const afterCloudAccountClosed = vi.fn().mockRejectedValue(new Error('session store failure'));
+    const module = createAccountElectronModule({
+      getCloudAccountId: () => 'cloud-1',
+      getCloudAccessToken: async () => 'token',
+      pushCloudProfile: vi.fn(),
+      closeCloudAccount,
+      markAccountClosing,
+      clearAccountClosingMarker,
+      afterCloudAccountClosed,
+    });
+    const context = {
+      db: { getOptional: vi.fn().mockResolvedValue(null) },
+      auth: {
+        requireRequestContext: vi.fn().mockResolvedValue({ identityId: 'cloud-1' }),
+      },
+    } as unknown as IElectronModuleContext;
+    module.register(context);
+    const registration = mocks.handle.mock.calls.find(
+      ([channel]) => channel === AccountChannels.CLOSE,
+    );
+
+    const result = await registration?.[1](undefined, { reason: 'No longer needed' });
+
+    // Cloud close succeeded — the marker MUST NOT be cleared (local new-work stays blocked)
+    expect(clearAccountClosingMarker).not.toHaveBeenCalled();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('CLOUD_ACCOUNT_CLOSE_TEARDOWN_FAILED');
+    }
     await module.destroy?.();
   });
 });

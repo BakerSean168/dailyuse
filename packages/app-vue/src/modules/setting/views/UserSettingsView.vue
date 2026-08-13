@@ -13,7 +13,7 @@
  * 作为 AppShell STATE D 独立场景渲染，不进 BusinessPanel。
  */
 
-import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Loader2 } from '@lucide/vue';
@@ -29,8 +29,9 @@ import ShortcutSettings from '../components/ShortcutSettings.vue';
 import NotificationSettings from '../components/NotificationSettings.vue';
 import ExperimentalSettings from '../components/ExperimentalSettings.vue';
 import SettingAdvancedActions from '../components/SettingAdvancedActions.vue';
+import SettingsResetSection from '../components/SettingsResetSection.vue';
 import UserFilesSettings from '../components/UserFilesSettings.vue';
-import { AccountProfileSection } from '../../account/components';
+import { AccountProfileSection, CloudPasswordSection } from '../../account/components';
 
 import { useUserSetting } from '../composables/useUserSetting';
 import { useDataPortability } from '../composables/useDataPortability';
@@ -57,6 +58,7 @@ let settingsResizeObserver: ResizeObserver | null = null;
 
 const {
   userSetting,
+  defaults,
   isLoading,
   getCategory,
   loadSettings,
@@ -328,11 +330,23 @@ function hydrateFromStore() {
     const exp = getCategory('experimental');
     if (exp) Object.assign(experimental.value, exp);
   } finally {
-    isHydratingAppearance.value = false;
+    // Keep the hydration guard active until the appearance watcher has run in
+    // the reactive flush. Resetting synchronously would let the watcher see the
+    // hydrated theme and echo a redundant updateCategory write to the server
+    // (and, on a failed write, pollute the store error with a spurious message).
+    void nextTick(() => {
+      isHydratingAppearance.value = false;
+    });
   }
 }
 
 watch(userSetting, () => hydrateFromStore());
+
+// The root presentation bootstrap loads defaults concurrently with the
+// settings record. When defaults land after the settings record, re-hydrate
+// so a brand-new user (no persisted appearance/locale) still sees the server
+// defaults in the UI instead of the view's initial literals.
+watch(defaults, () => hydrateFromStore());
 
 watch(
   () => appearance.value.theme,
@@ -444,6 +458,7 @@ onBeforeUnmount(() => {
 
           <template v-else-if="activeTab === 'account'">
             <AccountProfileSection />
+            <CloudPasswordSection />
             <PrivacySettings v-model="privacy" />
           </template>
 
@@ -473,6 +488,7 @@ onBeforeUnmount(() => {
               :editing-shortcut="editingShortcut"
               :editing-key="editingKey"
             />
+            <SettingsResetSection />
             <ExperimentalSettings v-model="experimental" />
           </template>
         </div>

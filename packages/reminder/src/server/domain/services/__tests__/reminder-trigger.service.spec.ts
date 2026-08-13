@@ -142,6 +142,6 @@ describe('ReminderTriggerService', () => {
 
     consoleErrorSpy.mockRestore();
     expect(templateRepository.findByNextTriggerBefore).toHaveBeenCalledWith(789, 'identity-1');
-    expect(results).toEqual([enabled]);
+    expect(results).toEqual([enabled, disabled, broken]);
   });
 });

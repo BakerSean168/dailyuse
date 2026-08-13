@@ -9,4 +9,11 @@ export interface IDomainEvent<P = unknown> {
   // 元数据
   aggregateId: string;
   occurredAt: Date;
+
+  /**
+   * 幂等键（at-least-once 语义下随事件 envelope 传递）。
+   * 消费者若产生副作用，必须用该键在 durable receipt/inbox 中原子去重，
+   * 不能假定只投递一次。
+   */
+  idempotencyKey?: string;
 }

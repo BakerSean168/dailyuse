@@ -14,6 +14,7 @@ import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
+  CloseAccountRes,
   UpdateAccountSettingsReq,
   UpdateAccountSettingsRes,
 } from '@memoflow/contracts/account';
@@ -39,7 +40,7 @@ export class AccountIpcAdapter implements IAccountApiClient {
     return this.ipcClient.invoke(AccountChannels.CHECK_AVAILABILITY, request);
   }
 
-  async closeAccount(request: CloseAccountReq): Promise<Result<void>> {
+  async closeAccount(request: CloseAccountReq): Promise<Result<CloseAccountRes>> {
     return this.ipcClient.invoke(AccountChannels.CLOSE, request);
   }
 }

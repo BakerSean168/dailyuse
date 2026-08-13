@@ -19,11 +19,15 @@ import {
   ReminderGroupPrismaRepository,
   ReminderResponsePrismaRepository,
   UserReminderPreferencePrismaRepository,
+  ReminderReliableOperationPrismaAdapter,
+  PrismaReminderWriteTransactionRunner,
 } from './adapters/prisma';
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 import type { ReminderScheduleProjectionSource } from '../../schedule-projection';
+import { PrismaOperationAuditRepository } from '@memoflow/patterns/operations';
 
 export interface CreateReminderPrismaModuleOptions {
+  readonly closureChecker: (identityId: string) => Promise<boolean>;
   readonly runtimeContributions?:
     | ReminderModuleRuntimeContribution
     | readonly ReminderModuleRuntimeContribution[];
@@ -34,16 +38,24 @@ export interface CreateReminderPrismaModuleOptions {
  */
 export function createReminderPrismaModule(
   db: PrismaClient,
-  options: CreateReminderPrismaModuleOptions = {},
+  options: CreateReminderPrismaModuleOptions,
 ): ReminderModuleInstance {
+  if (!options?.closureChecker) {
+    throw new Error('[FAIL-CLOSED] createReminderPrismaModule requires options.closureChecker');
+  }
+
   return createReminderModule({
     reminderTemplateRepository: new ReminderTemplatePrismaRepository(db),
     reminderGroupRepository: new ReminderGroupPrismaRepository(db),
     reminderResponseRepository: new ReminderResponsePrismaRepository(db),
     userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(db),
+    closureChecker: options.closureChecker,
     runtimeContributions: options.runtimeContributions,
     // R3c：snooze 作为真 command——推迟 reminder 对应 schedule task 的下次触发。
     snoozeRescheduler: createReminderSnoozeReschedulerPrisma(db),
+    // W7：统一 operation timeline / replay / audit。
+    reliablePort: new ReminderReliableOperationPrismaAdapter(db),
+    auditRepository: new PrismaOperationAuditRepository(db),
   });
 }
 
@@ -57,6 +69,8 @@ export function createReminderPrismaRepositories(db: PrismaClient) {
     reminderGroupRepository: new ReminderGroupPrismaRepository(db),
     reminderResponseRepository: new ReminderResponsePrismaRepository(db),
     userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(db),
+    reliablePort: new ReminderReliableOperationPrismaAdapter(db),
+    transactionRunner: new PrismaReminderWriteTransactionRunner(db),
   };
 }
 

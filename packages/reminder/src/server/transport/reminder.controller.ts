@@ -271,4 +271,18 @@ export class ReminderController {
     }
     return this.useCases.updatePreferences(parsed.data, ctx);
   }
+
+  // ==================== W7 Operation Timeline / Replay / Audit ====================
+
+  async queryOperationTimeline(ctx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.queryOperationTimeline(ctx);
+  }
+
+  async replayOperation(operationId: string, ctx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.replayOperation(operationId, ctx);
+  }
+
+  async getOperationAudit(ctx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.getOperationAudit(ctx);
+  }
 }

@@ -14,6 +14,8 @@ import {
 import { PowerSyncScheduleRepository } from './adapters/powersync/schedule-powersync.repository';
 import { PowerSyncScheduleExecutionRepository } from './adapters/powersync/schedule-execution-powersync.repository';
 import { PowerSyncScheduleTaskRepository } from './adapters/powersync/schedule-task-powersync.repository';
+import { createScheduleLeasePowerSyncRepository } from './lease/schedule-lease.repository';
+import { ScheduleLeaseCoordinator } from './lease/schedule-lease-coordinator';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
 
 type Queryable = IElectronDatabase;
@@ -43,11 +45,16 @@ export function createSchedulePowerSyncModule(
   runtimeContributions?:
     | ScheduleModuleRuntimeContribution
     | readonly ScheduleModuleRuntimeContribution[],
+  leaseCoordinatorInput?: ScheduleLeaseCoordinator,
 ): ScheduleModuleInstance {
   const repositories = createSchedulePowerSyncRepositories(dbConnection);
+  const leaseCoordinator =
+    leaseCoordinatorInput ??
+    new ScheduleLeaseCoordinator(createScheduleLeasePowerSyncRepository(dbConnection));
 
   return createScheduleModule({
     ...repositories,
+    leaseCoordinator,
     runtimeContributions,
   });
 }

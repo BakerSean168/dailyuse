@@ -56,3 +56,10 @@ export {
   type ScheduleTaskExecutionResult,
   type ScheduleTaskSourceExecutor,
 } from './runtime';
+
+// ============ P1-1 Reliable consumer ============
+export {
+  ScheduleEventDeliveryLogConsumer,
+  SCHEDULE_DELIVERY_LOG_EVENT_TYPES,
+  type ScheduleEventDeliveryLogEventBus,
+} from './consumers/schedule-event-delivery-log.consumer';

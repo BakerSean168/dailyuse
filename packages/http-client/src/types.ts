@@ -26,7 +26,10 @@ export interface IResultHttpClient {
   post<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<import('@memoflow/contracts/result').Result<T>>;
   put<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<import('@memoflow/contracts/result').Result<T>>;
   patch<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<import('@memoflow/contracts/result').Result<T>>;
-  delete<T = unknown>(url: string, config?: { params?: Record<string, unknown> }): Promise<import('@memoflow/contracts/result').Result<T>>;
+  delete<T = unknown>(
+    url: string,
+    config?: { params?: Record<string, unknown>; data?: unknown },
+  ): Promise<import('@memoflow/contracts/result').Result<T>>;
   stream(
     url: string,
     config?: {

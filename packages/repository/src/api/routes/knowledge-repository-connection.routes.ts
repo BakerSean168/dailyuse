@@ -19,7 +19,13 @@ import {
   KnowledgeNoteLinkGraphResponseSchema,
   KnowledgeAttachmentContentResponseSchema,
   KnowledgeAttachmentProjectionListResponseSchema,
+  ListKnowledgeWriteRequestsResSchema,
+  KnowledgeWriteRequestReplayResponseSchema,
 } from '@memoflow/contracts/repository';
+import {
+  OperationTimelineEntrySchema,
+  OperationAuditRecordSchema,
+} from '@memoflow/contracts/operations';
 import { successResponse, errorResponse, RouteRegistrar } from '@memoflow/utils/result';
 import type { RepositoryApplicationPort } from '../../server/application';
 import { KnowledgeRepositoryConnectionController } from '../../server/transport/knowledge-repository-connection.controller';
@@ -95,7 +101,7 @@ export function registerKnowledgeRepositoryConnectionRoutes(
         rawBody,
       });
     },
-    { successStatus: 202 },
+    { successStatus: 202, requireAuth: false },
   );
 
   r.route(
@@ -414,6 +420,84 @@ export function registerKnowledgeRepositoryConnectionRoutes(
     },
     auth,
     (req, ctx) => controller.confirmHead(ctx, req.params, req.body),
+  );
+
+  r.route(
+    {
+      method: 'get',
+      path: '/knowledge-write-requests',
+      summary: '列出 Git commit 的 projection 操作状态',
+      description:
+        '返回 write-request 账本；Git commit 状态（status/commitSha）与 projection 操作状态（projectionStatus/投影错误/重试次数）分开，Committed 但投影 Pending/Failed 的写入仍可见。',
+      request: {
+        query: z.object({
+          connectionId: z.string().min(1).optional(),
+          limit: z.coerce.number().int().min(1).max(100).optional(),
+        }),
+      },
+      responses: {
+        200: successResponse(ListKnowledgeWriteRequestsResSchema, '获取成功'),
+        401: errorResponse('未授权，请登录'),
+        503: errorResponse('知识写请求暂不可用'),
+      },
+    },
+    auth,
+    (req, ctx) => controller.listWriteRequests(ctx, req.query),
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/knowledge-write-requests/:writeRequestId/replay',
+      summary: '重放一个 Committed 且投影 Pending/Failed 的 projection 操作',
+      description:
+        '在连接 lease 下重放投影；重复重放幂等，已 Succeeded 的投影不会倒退。W7：重放写审计。',
+      request: { params: z.object({ writeRequestId: z.string().min(1) }) },
+      responses: {
+        200: successResponse(KnowledgeWriteRequestReplayResponseSchema, '重放完成'),
+        401: errorResponse('未授权，请登录'),
+        404: errorResponse('写请求不存在'),
+        409: errorResponse('写请求未提交或仓库正忙'),
+        503: errorResponse('知识投影服务不可用'),
+      },
+    },
+    auth,
+    (req, ctx) => controller.replayWriteRequestProjection(ctx, req.params?.writeRequestId ?? ''),
+  );
+
+  // GET /operations/timeline — W7 unified knowledge projection timeline (identity-scoped)
+  r.route(
+    {
+      method: 'get',
+      path: '/operations/timeline',
+      summary: '查询统一投影 operation timeline（W7）',
+      responses: {
+        200: successResponse(z.array(OperationTimelineEntrySchema), '获取成功'),
+      },
+    },
+    auth,
+    (_req, ctx) => controller.queryKnowledgeTimeline(ctx),
+  );
+
+  // GET /operations/audit — W7 actor-scoped audit trail
+  r.route(
+    {
+      method: 'get',
+      path: '/operations/audit',
+      summary: '查询投影操作审计记录（W7，最小权限）',
+      request: {
+        query: z.object({
+          source: z.string().optional(),
+          operationId: z.string().optional(),
+          limit: z.coerce.number().int().min(1).max(200).optional(),
+        }),
+      },
+      responses: {
+        200: successResponse(z.array(OperationAuditRecordSchema), '获取成功'),
+      },
+    },
+    auth,
+    (req, ctx) => controller.getOperationAudit(ctx, req.query),
   );
 
   return router;

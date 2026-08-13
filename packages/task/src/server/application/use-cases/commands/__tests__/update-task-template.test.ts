@@ -13,7 +13,10 @@ import { UpdateTaskTemplateUseCase } from '../update-task-template.use-case';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
 import { RecurrenceRule } from '../../../../domain/value-objects/recurrence-rule';
-import type { TaskWriteTransactionRunner } from '../task-write-support';
+import {
+  createInlineTaskWriteTransactionRunner,
+  type TaskWriteTransactionRunner,
+} from '../task-write-support';
 
 describe('UpdateTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
@@ -30,7 +33,20 @@ describe('UpdateTaskTemplateUseCase', () => {
       saveMany: vi.fn().mockResolvedValue(undefined),
       deleteMany: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new UpdateTaskTemplateUseCase(templateRepo, instanceRepo);
+    useCase = new UpdateTaskTemplateUseCase(
+      templateRepo,
+      instanceRepo,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
+    );
+  });
+
+  it('throws an error if transactionRunner is missing', () => {
+    expect(
+      () => new UpdateTaskTemplateUseCase(templateRepo, instanceRepo, undefined as any),
+    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to UpdateTaskTemplateUseCase');
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {
@@ -287,7 +303,10 @@ describe('UpdateTaskTemplateUseCase', () => {
     useCase = new UpdateTaskTemplateUseCase(
       templateRepo,
       instanceRepo,
-      undefined,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
       () => effectiveFrom,
     );
 
@@ -318,7 +337,10 @@ describe('UpdateTaskTemplateUseCase', () => {
     useCase = new UpdateTaskTemplateUseCase(
       templateRepo,
       instanceRepo,
-      undefined,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
       () => effectiveFrom,
     );
 
@@ -366,7 +388,10 @@ describe('UpdateTaskTemplateUseCase', () => {
     useCase = new UpdateTaskTemplateUseCase(
       templateRepo,
       instanceRepo,
-      undefined,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
       () => effectiveFrom,
     );
     const newTimeConfig = aTimePointConfig(600, new Date(effectiveFrom - day));
@@ -402,7 +427,10 @@ describe('UpdateTaskTemplateUseCase', () => {
     useCase = new UpdateTaskTemplateUseCase(
       templateRepo,
       instanceRepo,
-      undefined,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
       () => effectiveFrom,
     );
 

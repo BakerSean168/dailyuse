@@ -43,6 +43,8 @@ export interface KnowledgeNoteCommitServiceOptions {
   leaseRepository?: IKnowledgeRepositoryLeaseRepository;
   leaseTtlMs?: number;
   leaseRenewalIntervalMs?: number;
+  closureChecker?: (identityId: string) => Promise<boolean>;
+  metrics?: import('@memoflow/patterns/operations').UnifiedOperationMetricsRecorder;
 }
 
 /**
@@ -64,6 +66,9 @@ export class KnowledgeNoteCommitService {
   private readonly leaseCoordinator: KnowledgeRepositoryLeaseCoordinator;
 
   constructor(private readonly options: KnowledgeNoteCommitServiceOptions) {
+    if (!options.closureChecker) {
+      throw new Error('[FAIL-CLOSED] KnowledgeNoteCommitService requires options.closureChecker');
+    }
     this.now = options.now ?? Date.now;
     this.publishMutation = options.publishMutation ?? publishRepositoryNoteMutation;
     this.leaseCoordinator = new KnowledgeRepositoryLeaseCoordinator(options.leaseRepository, {
@@ -130,6 +135,12 @@ export class KnowledgeNoteCommitService {
     requestHash: string,
     guard: KnowledgeRepositoryLeaseGuard,
   ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>> {
+    if (this.options.closureChecker && (await this.options.closureChecker(identityId))) {
+      return fail({
+        code: 'FORBIDDEN',
+        message: 'Account is closed or closure in progress',
+      });
+    }
     const existing = await this.options.writeRequestRepository.findByIdentityAndRequestId(
       identityId,
       request.requestId,
@@ -192,6 +203,13 @@ export class KnowledgeNoteCommitService {
         commitSha: null,
         errorCode: null,
         errorMessage: null,
+        projectionStatus: 'Pending',
+        projectionErrorCode: null,
+        projectionErrorMessage: null,
+        projectionAttempts: 0,
+        projectedAt: null,
+        blobSha: null,
+        markdownContent: null,
         updatedAt: now,
         completedAt: null,
       };
@@ -207,6 +225,13 @@ export class KnowledgeNoteCommitService {
         commitSha: null,
         errorCode: null,
         errorMessage: null,
+        projectionStatus: 'Pending',
+        projectionErrorCode: null,
+        projectionErrorMessage: null,
+        projectionAttempts: 0,
+        projectedAt: null,
+        blobSha: null,
+        markdownContent: null,
         createdAt: now,
         updatedAt: now,
         completedAt: null,
@@ -228,6 +253,8 @@ export class KnowledgeNoteCommitService {
       }
       return fail({ code: 'CONFLICT', message: 'Knowledge note commit is already in progress' });
     }
+    // P1-5：write request 落库（persistence 分支）发射 persisted 指标。
+    this.options.metrics?.recordOutbox('knowledge', 'persisted');
 
     const frontmatter = { ...request.frontmatter, title: request.title };
     const markdownContent = matter.stringify(request.content, frontmatter);
@@ -257,6 +284,13 @@ export class KnowledgeNoteCommitService {
 
     await guard.ensureHeld();
     await this.options.writeRequestRepository.markCommitted(identityId, record.id, committed.commitSha);
+    // Bind the projection operation to this exact Git commit and store the
+    // rebuildable source so a delayed/failed projection can be replayed locally.
+    await guard.ensureHeld();
+    await this.options.writeRequestRepository.bindProjectionSource(identityId, record.id, {
+      blobSha: committed.blobSha,
+      markdownContent,
+    });
     const projection: KnowledgeNoteProjectionUpsert = {
       id: `knowledge-note-${createHash('sha256').update(`${connection.id}:${request.proposedPath}`).digest('hex')}`,
       connectionId: connection.id,
@@ -276,6 +310,12 @@ export class KnowledgeNoteCommitService {
         [projection],
         [],
       );
+      await guard.ensureHeld();
+      await this.options.writeRequestRepository.markProjectionSucceeded(
+        identityId,
+        record.id,
+        this.now(),
+      );
       this.publishMutation({
         identityId: connection.identityId as IdentityId,
         repositoryId: connection.id as RepositoryId,
@@ -284,6 +324,7 @@ export class KnowledgeNoteCommitService {
         mutation: RepositoryNoteMutationType.Created,
       });
     } catch (error) {
+      if (error instanceof KnowledgeRepositoryLeaseLostError) throw error;
       logger.warn('Knowledge note committed but immediate projection update failed', {
         error,
         identityId,
@@ -291,6 +332,14 @@ export class KnowledgeNoteCommitService {
         requestId: request.requestId,
         commitSha: committed.commitSha,
       });
+      await guard.ensureHeld();
+      await this.options.writeRequestRepository.markProjectionFailed(
+        identityId,
+        record.id,
+        'PROJECTION_FAILED',
+        error instanceof Error ? error.message : 'Knowledge note projection failed',
+        this.now(),
+      );
     }
     return ok({
       requestId: request.requestId,

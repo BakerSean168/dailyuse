@@ -330,6 +330,8 @@ exports.Prisma.CloudAuthUserScalarFieldEnum = {
   email: 'email',
   emailVerified: 'emailVerified',
   image: 'image',
+  status: 'status',
+  disabledAt: 'disabledAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -741,6 +743,34 @@ exports.Prisma.NotificationTemplateScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.NotificationDispatchOutboxScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  notificationId: 'notificationId',
+  source: 'source',
+  occurrenceKey: 'occurrenceKey',
+  channel: 'channel',
+  payloadJson: 'payloadJson',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  attempt: 'attempt',
+  ownerToken: 'ownerToken',
+  claimId: 'claimId',
+  fencingToken: 'fencingToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastHeartbeatAt: 'lastHeartbeatAt',
+  heartbeatIntervalMs: 'heartbeatIntervalMs',
+  lastError: 'lastError',
+  nextRetryAt: 'nextRetryAt',
+  deadLetterAt: 'deadLetterAt',
+  correlationId: 'correlationId',
+  causationId: 'causationId',
+  attemptsHistoryJson: 'attemptsHistoryJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  finishedAt: 'finishedAt'
+};
+
 exports.Prisma.RelationScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -761,12 +791,18 @@ exports.Prisma.OutboxMessageScalarFieldEnum = {
   correlationId: 'correlationId',
   causationId: 'causationId',
   payloadJson: 'payloadJson',
+  idempotencyKey: 'idempotencyKey',
   status: 'status',
   attempts: 'attempts',
   availableAt: 'availableAt',
   lastError: 'lastError',
   dispatchedAt: 'dispatchedAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  ownerToken: 'ownerToken',
+  claimId: 'claimId',
+  fencingToken: 'fencingToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastHeartbeatAt: 'lastHeartbeatAt'
 };
 
 exports.Prisma.InboxReceiptScalarFieldEnum = {
@@ -784,6 +820,41 @@ exports.Prisma.ProjectionCursorScalarFieldEnum = {
   lastProcessedAt: 'lastProcessedAt',
   version: 'version',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountClosureOperationScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  idempotencyKey: 'idempotencyKey',
+  phase: 'phase',
+  status: 'status',
+  attempts: 'attempts',
+  version: 'version',
+  ownerToken: 'ownerToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastHeartbeatAt: 'lastHeartbeatAt',
+  nextRetryAt: 'nextRetryAt',
+  deadLetterAt: 'deadLetterAt',
+  eventId: 'eventId',
+  reason: 'reason',
+  revokedSessions: 'revokedSessions',
+  piiCleanupStatus: 'piiCleanupStatus',
+  piiReason: 'piiReason',
+  lastError: 'lastError',
+  receiptJson: 'receiptJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  finishedAt: 'finishedAt'
+};
+
+exports.Prisma.OperationAuditLogScalarFieldEnum = {
+  id: 'id',
+  actorIdentityId: 'actorIdentityId',
+  source: 'source',
+  operationId: 'operationId',
+  action: 'action',
+  details: 'details',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.ReminderTemplateScalarFieldEnum = {
@@ -898,6 +969,32 @@ exports.Prisma.UserReminderPreferenceScalarFieldEnum = {
   globalSmartFrequency: 'globalSmartFrequency',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ReminderOccurrenceScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  templateId: 'templateId',
+  source: 'source',
+  occurrenceKey: 'occurrenceKey',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  attempt: 'attempt',
+  ownerToken: 'ownerToken',
+  claimId: 'claimId',
+  fencingToken: 'fencingToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastHeartbeatAt: 'lastHeartbeatAt',
+  heartbeatIntervalMs: 'heartbeatIntervalMs',
+  lastError: 'lastError',
+  nextRetryAt: 'nextRetryAt',
+  deadLetterAt: 'deadLetterAt',
+  correlationId: 'correlationId',
+  causationId: 'causationId',
+  attemptsHistoryJson: 'attemptsHistoryJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  finishedAt: 'finishedAt'
 };
 
 exports.Prisma.RepositoryScalarFieldEnum = {
@@ -1122,6 +1219,13 @@ exports.Prisma.KnowledgeWriteRequestScalarFieldEnum = {
   commitSha: 'commitSha',
   errorCode: 'errorCode',
   errorMessage: 'errorMessage',
+  projectionStatus: 'projectionStatus',
+  projectionErrorCode: 'projectionErrorCode',
+  projectionErrorMessage: 'projectionErrorMessage',
+  projectionAttempts: 'projectionAttempts',
+  projectedAt: 'projectedAt',
+  blobSha: 'blobSha',
+  markdownContent: 'markdownContent',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   completedAt: 'completedAt'
@@ -1150,6 +1254,7 @@ exports.Prisma.ScheduleScalarFieldEnum = {
   location: 'location',
   attendees: 'attendees',
   createdAt: 'createdAt',
+  version: 'version',
   updatedAt: 'updatedAt'
 };
 
@@ -1230,6 +1335,58 @@ exports.Prisma.ScheduleLeaseScalarFieldEnum = {
   expiresAt: 'expiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ScheduleRebuildOutboxScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  scheduleId: 'scheduleId',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  sourceRevision: 'sourceRevision',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  attempts: 'attempts',
+  claimToken: 'claimToken',
+  claimedAt: 'claimedAt',
+  nextAttemptAt: 'nextAttemptAt',
+  lastError: 'lastError',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ScheduleDomainEventOutboxScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  scheduleId: 'scheduleId',
+  eventType: 'eventType',
+  payload: 'payload',
+  status: 'status',
+  attempts: 'attempts',
+  claimToken: 'claimToken',
+  claimedAt: 'claimedAt',
+  nextAttemptAt: 'nextAttemptAt',
+  publishedAt: 'publishedAt',
+  lastError: 'lastError',
+  idempotencyKey: 'idempotencyKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ScheduleEventConsumerReceiptScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  effectCount: 'effectCount',
+  consumedAt: 'consumedAt'
+};
+
+exports.Prisma.ScheduleEventDeliveryLogScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  eventType: 'eventType',
+  aggregateId: 'aggregateId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.UserSettingScalarFieldEnum = {
@@ -1491,10 +1648,13 @@ exports.Prisma.ModelName = {
   NotificationHistory: 'NotificationHistory',
   NotificationPreference: 'NotificationPreference',
   NotificationTemplate: 'NotificationTemplate',
+  NotificationDispatchOutbox: 'NotificationDispatchOutbox',
   Relation: 'Relation',
   OutboxMessage: 'OutboxMessage',
   InboxReceipt: 'InboxReceipt',
   ProjectionCursor: 'ProjectionCursor',
+  AccountClosureOperation: 'AccountClosureOperation',
+  OperationAuditLog: 'OperationAuditLog',
   ReminderTemplate: 'ReminderTemplate',
   ReminderGroup: 'ReminderGroup',
   ReminderInstance: 'ReminderInstance',
@@ -1502,6 +1662,7 @@ exports.Prisma.ModelName = {
   ReminderStatistic: 'ReminderStatistic',
   ReminderResponse: 'ReminderResponse',
   UserReminderPreference: 'UserReminderPreference',
+  ReminderOccurrence: 'ReminderOccurrence',
   Repository: 'Repository',
   Folder: 'Folder',
   Resource: 'Resource',
@@ -1522,6 +1683,10 @@ exports.Prisma.ModelName = {
   ScheduleExecution: 'ScheduleExecution',
   ScheduleStatistic: 'ScheduleStatistic',
   ScheduleLease: 'ScheduleLease',
+  ScheduleRebuildOutbox: 'ScheduleRebuildOutbox',
+  ScheduleDomainEventOutbox: 'ScheduleDomainEventOutbox',
+  ScheduleEventConsumerReceipt: 'ScheduleEventConsumerReceipt',
+  ScheduleEventDeliveryLog: 'ScheduleEventDeliveryLog',
   UserSetting: 'UserSetting',
   TaskFolder: 'TaskFolder',
   TaskTemplate: 'TaskTemplate',

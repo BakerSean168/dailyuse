@@ -25,6 +25,7 @@ export interface CalendarEntryState {
   priority: number | null;
   location: string | null;
   attendees: string[] | null;
+  version: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +36,14 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
   private constructor(state: CalendarEntryState) {
     super(state.id);
     this._props = state;
+  }
+
+  public get version(): number {
+    return this._props.version;
+  }
+
+  public incrementVersion(): void {
+    this._props.version += 1;
   }
 
   public get identityId(): IdentityId {
@@ -122,6 +131,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
       priority: params.priority ?? null,
       location: params.location ?? null,
       attendees: params.attendees ? [...params.attendees] : null,
+      version: 1,
       createdAt: now,
       updatedAt: now,
     });
@@ -140,7 +150,10 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
   }
 
   public static load(state: CalendarEntryState): CalendarEntry {
-    return new CalendarEntry(state);
+    return new CalendarEntry({
+      ...state,
+      version: state.version ?? 1,
+    });
   }
 
   public detectConflicts(otherEntries: CalendarEntry[]): ConflictDetectionResult {
@@ -242,6 +255,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
       priority: this._props.priority ?? undefined,
       location: this._props.location ?? undefined,
       attendees: this._props.attendees ?? undefined,
+      version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
     };
@@ -252,18 +266,21 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
   }
 
   public markAsConflicting(conflictingIds: string[]): void {
+    this._props.version += 1;
     this._props.hasConflict = true;
     this._props.conflictingEntries = [...conflictingIds];
     this._props.updatedAt = new Date();
   }
 
   public clearConflicts(): void {
+    this._props.version += 1;
     this._props.hasConflict = false;
     this._props.conflictingEntries = null;
     this._props.updatedAt = new Date();
   }
 
   public delete(): void {
+    this._props.version += 1;
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-deleted']>(
@@ -272,84 +289,122 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     );
   }
 
-  public reschedule(newStartTime: number, newEndTime: number): void {
-    if (newStartTime >= newEndTime) {
-      throw new Error('Invalid time range: startTime must be before endTime');
+  public update(params: {
+    title?: string;
+    description?: string | null;
+    startTime?: number;
+    endTime?: number;
+    location?: string | null;
+    priority?: number | null;
+    attendees?: string[] | null;
+  }): void {
+    let changed = false;
+    const changedFields: string[] = [];
+
+    if (params.title !== undefined && params.title !== this._props.title) {
+      if (!params.title || params.title.trim().length === 0) {
+        throw new Error('Title cannot be empty');
+      }
+      this._props.title = params.title;
+      changedFields.push('title');
+      changed = true;
     }
 
-    const oldStartTime = this._props.startTime;
-    const oldEndTime = this._props.endTime;
+    if (params.description !== undefined && params.description !== this._props.description) {
+      this._props.description = params.description;
+      changedFields.push('description');
+      changed = true;
+    }
 
-    this._props.startTime = newStartTime;
-    this._props.endTime = newEndTime;
-    this._props.duration = this.calculateDuration(newStartTime, newEndTime);
-    this._props.updatedAt = new Date();
+    if (params.location !== undefined && params.location !== this._props.location) {
+      this._props.location = params.location;
+      changedFields.push('location');
+      changed = true;
+    }
 
-    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-rescheduled']>(
-      'schedule:calendar-entry-rescheduled',
-      {
-        entryId: this.id as ScheduleId,
-        oldStartTime,
-        oldEndTime,
-        newStartTime,
-        newEndTime,
-      },
-    );
+    if (params.priority !== undefined && params.priority !== this._props.priority) {
+      if (params.priority !== null && (params.priority < 1 || params.priority > 5)) {
+        throw new Error('Priority must be between 1 and 5');
+      }
+      this._props.priority = params.priority;
+      changedFields.push('priority');
+      changed = true;
+    }
+
+    if (params.attendees !== undefined) {
+      const newAttendees = params.attendees ? [...params.attendees] : null;
+      this._props.attendees = newAttendees;
+      changedFields.push('attendees');
+      changed = true;
+    }
+
+    let isRescheduled = false;
+    let oldStart = this._props.startTime;
+    let oldEnd = this._props.endTime;
+    if (params.startTime !== undefined || params.endTime !== undefined) {
+      const newStart = params.startTime ?? this._props.startTime;
+      const newEnd = params.endTime ?? this._props.endTime;
+      if (newStart >= newEnd) {
+        throw new Error('Invalid time range: startTime must be before endTime');
+      }
+      if (newStart !== this._props.startTime || newEnd !== this._props.endTime) {
+        oldStart = this._props.startTime;
+        oldEnd = this._props.endTime;
+        this._props.startTime = newStart;
+        this._props.endTime = newEnd;
+        this._props.duration = this.calculateDuration(newStart, newEnd);
+        isRescheduled = true;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      this._props.version += 1;
+      this._props.updatedAt = new Date();
+
+      if (isRescheduled) {
+        this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-rescheduled']>(
+          'schedule:calendar-entry-rescheduled',
+          {
+            entryId: this.id as ScheduleId,
+            oldStartTime: oldStart,
+            oldEndTime: oldEnd,
+            newStartTime: this._props.startTime,
+            newEndTime: this._props.endTime,
+          },
+        );
+      }
+
+      if (changedFields.length > 0) {
+        this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
+          'schedule:calendar-entry-updated',
+          { entryId: this.id as ScheduleId, changedFields },
+        );
+      }
+    }
+  }
+
+  public reschedule(newStartTime: number, newEndTime: number): void {
+    this.update({ startTime: newStartTime, endTime: newEndTime });
   }
 
   public updateTitle(title: string): void {
-    if (!title || title.trim().length === 0) {
-      throw new Error('Title cannot be empty');
-    }
-    this._props.title = title;
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
-      'schedule:calendar-entry-updated',
-      { entryId: this.id as ScheduleId, changedFields: ['title'] },
-    );
+    this.update({ title });
   }
 
   public updateDescription(description: string | null): void {
-    this._props.description = description;
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
-      'schedule:calendar-entry-updated',
-      { entryId: this.id as ScheduleId, changedFields: ['description'] },
-    );
+    this.update({ description });
   }
 
   public updatePriority(priority: number | null): void {
-    if (priority !== null && (priority < 1 || priority > 5)) {
-      throw new Error('Priority must be between 1 and 5');
-    }
-    this._props.priority = priority;
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
-      'schedule:calendar-entry-updated',
-      { entryId: this.id as ScheduleId, changedFields: ['priority'] },
-    );
+    this.update({ priority });
   }
 
   public updateLocation(location: string | null): void {
-    this._props.location = location;
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
-      'schedule:calendar-entry-updated',
-      { entryId: this.id as ScheduleId, changedFields: ['location'] },
-    );
+    this.update({ location });
   }
 
   public updateAttendees(attendees: string[] | null): void {
-    this._props.attendees = attendees ? [...attendees] : null;
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
-      'schedule:calendar-entry-updated',
-      { entryId: this.id as ScheduleId, changedFields: ['attendees'] },
-    );
+    this.update({ attendees });
   }
 }

@@ -51,4 +51,26 @@ describe('useUserSettingStore', () => {
     expect(store.defaults).toBeNull();
     expect(store.isInitialized).toBe(false);
   });
+
+  it('falls back to defaults for unset categories and dot-notation values', () => {
+    const store = useUserSettingStore();
+    const defaults = createSetting({
+      id: 'setting-defaults' as UserSettingClientDTO['id'],
+      preferences: {
+        appearance: { theme: 'auto' },
+        locale: { language: 'en-US' } as LocalePreferences,
+      } as UserSettingPreferences,
+    });
+
+    store.setDefaults(defaults);
+    expect(store.userSetting).toBeNull();
+    expect(store.getCategory('appearance')).toEqual({ theme: 'auto' });
+    expect(store.getValue('appearance.theme')).toBe('auto');
+    expect(store.getValue('locale.language')).toBe('en-US');
+
+    // Explicit user value wins over the default.
+    store.setUserSetting(createSetting());
+    expect(store.getValue('appearance.theme')).toBe('dark');
+    expect(store.getValue('locale.language')).toBe('zh-CN');
+  });
 });

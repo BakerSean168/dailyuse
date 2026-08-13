@@ -137,8 +137,8 @@ export class ScheduleClientService implements ScheduleClientPort {
     return this.eventApi.updateSchedule(id, data);
   }
 
-  async deleteSchedule(id: string): Promise<Result<void>> {
-    return this.eventApi.deleteSchedule(id);
+  async deleteSchedule(id: string, expectedVersion: number): Promise<Result<void>> {
+    return this.eventApi.deleteSchedule(id, expectedVersion);
   }
 
   // ===== Schedule Conflict Detection =====

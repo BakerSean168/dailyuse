@@ -5,6 +5,7 @@ import { aOneTimeTask } from '../../../../../testing';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { DeleteTaskTemplateUseCase } from '../delete-task-template.use-case';
+import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
 describe('DeleteTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
@@ -22,11 +23,24 @@ describe('DeleteTaskTemplateUseCase', () => {
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       deleteByTemplateId: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new DeleteTaskTemplateUseCase(templateRepo, instanceRepo);
+    useCase = new DeleteTaskTemplateUseCase(
+      templateRepo,
+      instanceRepo,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
+    );
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('throws an error if transactionRunner is missing', () => {
+    expect(
+      () => new DeleteTaskTemplateUseCase(templateRepo, instanceRepo, undefined as any),
+    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to DeleteTaskTemplateUseCase');
   });
 
   it('should return ok(void) when template not found (idempotent)', async () => {

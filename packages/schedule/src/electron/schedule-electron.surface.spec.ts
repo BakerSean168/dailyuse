@@ -29,4 +29,15 @@ describe('ScheduleElectronModule channel surface', () => {
     expect(Object.values(ScheduleChannels)).not.toContain('schedule:cancel');
     expect(Object.values(ScheduleChannels)).not.toContain('schedule:reschedule');
   });
+
+  it('DELETE IPC handler forwards expectedVersion payload to the controller', () => {
+    const source = readFileSync(
+      resolve(__dirname, 'index.ts'),
+      'utf8',
+    );
+    // The Electron handler must parse the numeric expectedVersion into a payload
+    // and pass it to controller.delete(id, payload, requestContext) — no fabrication.
+    expect(source).toMatch(/ScheduleChannels\.DELETE[\s\S]*eventController\.delete\(id, payload, requestContext\)/);
+    expect(source).toMatch(/typeof input === 'number' \? \{ expectedVersion: input \} : input/);
+  });
 });

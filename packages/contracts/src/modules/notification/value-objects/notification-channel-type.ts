@@ -5,6 +5,7 @@ export const NotificationChannelType = {
   InApp: 'InApp',
   Email: 'Email',
   Push: 'Push',
+  Desktop: 'Desktop',
   Sms: 'Sms',
   Webhook: 'Webhook',
 } as const;

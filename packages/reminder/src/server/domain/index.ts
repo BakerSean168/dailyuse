@@ -41,8 +41,9 @@ export * from './entities';
 // 聚合根
 export * from './aggregates';
 
-// 仓储接口
+// 仓储与端口接口
 export * from './repositories';
+export * from './ports';
 
 // 领域服务
 export * from './services';

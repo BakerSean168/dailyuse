@@ -227,4 +227,79 @@ describe('schedule event route contracts', () => {
     expect(querySchema.safeParse({ startTime: '1000' }).success).toBe(false);
     expect(querySchema.safeParse({}).success).toBe(false);
   });
+
+  it('delete endpoint body schema requires expectedVersion (rejects missing)', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerScheduleEventRoutes(
+      createScheduleControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const deleteRoute = getRegisteredRoute(registry, 'delete', `${BASE}/{id}`);
+    const bodySchema = getJsonBodySchema(deleteRoute);
+
+    // Missing expectedVersion must fail validation (contract: cannot fabricate)
+    expect(bodySchema.safeParse({}).success).toBe(false);
+    expect(bodySchema.safeParse({ expectedVersion: undefined }).success).toBe(false);
+    // Valid expectedVersion passes
+    expect(bodySchema.safeParse({ expectedVersion: 3 }).success).toBe(true);
+  });
+
+  it('delete endpoint declares 409 CONFLICT response', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerScheduleEventRoutes(
+      createScheduleControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const deleteRoute = getRegisteredRoute(registry, 'delete', `${BASE}/{id}`);
+    const responseSchema = getResponseSchema(deleteRoute, 409);
+
+    expect(
+      responseSchema.safeParse({
+        ok: false,
+        code: 409,
+        message: '版本冲突',
+        error: {
+          code: 'CONFLICT',
+          message: '版本冲突',
+          context: { currentVersion: 2, expectedVersion: 1 },
+        },
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(true);
+    // 409 is not a success envelope (data must not be present)
+    expect(
+      responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: null,
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(false);
+  });
+
+  it('delete endpoint passes the parsed body (expectedVersion) to controller.delete', () => {
+    const registry = new TestOpenApiRegistry();
+    const controller = createScheduleControllerStub();
+
+    registerScheduleEventRoutes(
+      controller,
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const route = registry.paths.find((c) => c.method === 'delete' && c.path === `${BASE}/{id}`);
+    expect(route).toBeDefined();
+    // The route's declared body schema must carry a required expectedVersion (safeint number),
+    // so a caller cannot delete without an explicit version (no fabrication on the wire).
+    const bodySchema = getJsonBodySchema(route!);
+    expect(bodySchema.safeParse({}).success).toBe(false);
+    expect(bodySchema.safeParse({ expectedVersion: 4 }).success).toBe(true);
+  });
 });

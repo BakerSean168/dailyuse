@@ -1,8 +1,18 @@
 import { defineComponent, h, nextTick } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fail } from '@memoflow/contracts/result';
+import { AUTH_SERVICE_KEY } from '@memoflow/app-vue';
 import WebAuthView from './WebAuthView.vue';
 import { createAuthI18n } from './i18n';
+
+vi.mock('vue-sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
 
 const webAuthMocks = vi.hoisted(() => ({
   loginByEmail: vi.fn(async () => true as const),
@@ -90,10 +100,26 @@ const PassthroughStub = defineComponent({
   },
 });
 
-function mountView() {
+function createService(overrides: Record<string, unknown> = {}) {
+  return {
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+    getSession: vi.fn(),
+    forgotPassword: vi.fn(),
+    resetPassword: vi.fn(),
+    changePassword: vi.fn(),
+    ...overrides,
+  };
+}
+
+function mountView(service = createService(), pinia = createPinia()) {
   return mount(WebAuthView, {
     global: {
-      plugins: [createAuthI18n('en-US')],
+      plugins: [pinia, createAuthI18n('en-US')],
+      provide: {
+        [AUTH_SERVICE_KEY as symbol]: service,
+      },
       stubs: {
         Button: ButtonStub,
         Input: InputStub,
@@ -118,6 +144,11 @@ describe('WebAuthView three-login surface contract', () => {
     webAuthMocks.startGithubLogin.mockResolvedValue(true);
     webAuthMocks.loginByEmail.mockResolvedValue(true as const);
     window.history.replaceState({}, '', '/auth');
+    try {
+      localStorage.clear();
+    } catch {
+      // storage unavailable in the test host
+    }
   });
 
   afterEach(() => {
@@ -170,5 +201,76 @@ describe('WebAuthView three-login surface contract', () => {
     expect(webAuthMocks.loginByEmail).not.toHaveBeenCalled();
 
     wrapper.unmount();
+  });
+
+  it('reset-password failure persists a safe receipt (never the token/password) and recovers after unmount/remount with a retry action', async () => {
+    const TOKEN = 'reset-token-abc-123';
+    const SUBMITTED_PASSWORD = 'NewPass123!';
+    window.history.replaceState({}, '', `/auth?scene=reset&token=${TOKEN}`);
+
+    const service = createService({
+      resetPassword: vi.fn().mockResolvedValue(
+        fail(
+          {
+            code: 'SERVICE_UNAVAILABLE',
+            message: `raw server text ${TOKEN} ${SUBMITTED_PASSWORD}`,
+            context: { requestId: 'req-reset-1' },
+          },
+          { traceId: 'trace-reset-1' },
+        ),
+      ),
+    });
+
+    const firstPinia = createPinia();
+    const first = mountView(service, firstPinia);
+    await first.get('#new-password').setValue(SUBMITTED_PASSWORD);
+    await first.get('#confirm-new-password').setValue(SUBMITTED_PASSWORD);
+    const resetForm = first.get('[data-testid="reset-form"]').element as HTMLFormElement;
+    resetForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await flushPromises();
+
+    // The receipt renders the safe allowlisted message + request id + retry.
+    expect(
+      first.get('[data-testid="web-auth-password-receipt-message"]').text(),
+    ).toContain('temporarily unavailable');
+    expect(first.get('[data-testid="web-auth-password-receipt-request-id"]').text()).toContain(
+      'trace-reset-1',
+    );
+    expect(first.get('[data-testid="web-auth-password-receipt-retry"]').exists()).toBe(true);
+    // The raw server message (which echoes token + password) is never rendered.
+    expect(first.get('[data-testid="web-auth-password-receipt-message"]').text()).not.toContain(
+      TOKEN,
+    );
+    expect(first.get('[data-testid="web-auth-password-receipt-message"]').text()).not.toContain(
+      SUBMITTED_PASSWORD,
+    );
+
+    // The receipt is durable, but never contains the token or the password.
+    const persisted = localStorage.getItem('memoflow:auth:password-mutation-error');
+    expect(persisted).not.toBeNull();
+    expect(persisted).not.toContain(TOKEN);
+    expect(persisted).not.toContain(SUBMITTED_PASSWORD);
+    expect(JSON.stringify(localStorage)).not.toContain(TOKEN);
+    expect(JSON.stringify(localStorage)).not.toContain(SUBMITTED_PASSWORD);
+    first.unmount();
+
+    // Reload: a fresh pinia + remounted real page restores the receipt from
+    // durable storage and renders it again.
+    const secondPinia = createPinia();
+    const second = mountView(service, secondPinia);
+    await flushPromises();
+    expect(second.get('[data-testid="web-auth-password-receipt-message"]').text()).toContain(
+      'temporarily unavailable',
+    );
+    expect(second.get('[data-testid="web-auth-password-receipt-request-id"]').text()).toContain(
+      'trace-reset-1',
+    );
+    expect(second.get('[data-testid="web-auth-password-receipt-retry"]').exists()).toBe(true);
+    // The recovery action is executable: a reset-password receipt re-issues a
+    // fresh reset link via the forgot flow (the token itself is never reused).
+    await second.get('[data-testid="web-auth-password-receipt-retry"]').trigger('click');
+    await flushPromises();
+    expect(second.get('[data-testid="forgot-form"]').exists()).toBe(true);
+    second.unmount();
   });
 });

@@ -131,6 +131,9 @@ export function createTaskSmokeApp(): TaskSmokeApp {
     taskTemplateRepository: templateRepo,
     taskInstanceRepository: instanceRepo,
     taskDependencyRepository: dependencyRepo,
+    taskWriteTransactionRunner: {
+      run: (work) => work({ templateRepository: templateRepo, instanceRepository: instanceRepo }),
+    },
   } satisfies TaskModuleDependencies);
   const handlers = createTaskTransportHandlers(taskModule.api);
 

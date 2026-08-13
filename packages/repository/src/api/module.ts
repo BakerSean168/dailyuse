@@ -42,7 +42,9 @@ import { registerRepositoryRoutes } from './routes/index';
  * Typed module context for repository registration.
  * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export type RepositoryApiModuleContext = ServerModuleContext<PrismaClient>;
+export type RepositoryApiModuleContext = ServerModuleContext<PrismaClient> & {
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
+};
 
 export interface RepositoryApiModuleDef {
   readonly name: string;
@@ -54,6 +56,7 @@ export interface RepositoryApiModuleDef {
 
 export interface CreateRepositoryApiModuleOptions {
   readonly storageBaseDir?: string;
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
   readonly githubApp?: {
     readonly appId: string;
     readonly appSlug: string;
@@ -87,8 +90,14 @@ export function createRepositoryApiModule(
       const storageBaseDir = resolveRepositoryStorageBaseDir({
         storageBaseDir: options.storageBaseDir,
       });
+      const closureChecker = options.closureChecker ?? context.closureChecker;
+      if (!closureChecker) {
+        throw new Error('[FAIL-CLOSED] RepositoryApiModule requires options.closureChecker or context.closureChecker');
+      }
+
       repositoryModule = createRepositoryPrismaModule(prismaClient, {
         storageBaseDir,
+        closureChecker,
         githubApp: options.githubApp,
         knowledgeRepositoryCloudDataPurger: options.knowledgeRepositoryCloudDataPurger,
         runtimeContributions: createRepositoryRuntimeContribution(),
@@ -109,5 +118,3 @@ export function createRepositoryApiModule(
     },
   };
 }
-
-export const RepositoryApiModule: RepositoryApiModuleDef = createRepositoryApiModule();

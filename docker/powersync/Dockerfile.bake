@@ -1,0 +1,3 @@
+FROM journeyapps/powersync-service:latest
+COPY docker/powersync/powersync.yaml /config/powersync.yaml
+COPY docker/powersync/sync-config.yaml /config/sync-config.yaml

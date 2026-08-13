@@ -107,6 +107,10 @@ export const GetUpcomingRemindersSchema = z.object({
   limit: z.number().int().min(1).max(100).optional(),
   importanceLevel: z.enum(ImportanceLevel).optional(),
   type: z.enum(ReminderType).optional(),
+  /**
+   * 查询/计算时区，未传时按兜底链取值：请求时区 → 账号时区 → 显式默认('UTC')。无静默服务器时区
+   */
+  timezone: z.string().optional(),
 });
 
 export type GetUpcomingRemindersReq = z.infer<typeof GetUpcomingRemindersSchema>;
@@ -141,6 +145,10 @@ export type GetUpcomingRemindersRes = z.infer<typeof GetUpcomingRemindersResSche
 export const GetReminderTodayScheduleSchema = z.object({
   limit: z.number().int().min(1).max(200).optional(),
   includeExpired: z.boolean().optional(),
+  /**
+   * 查询/计算时区，未传时按兜底链取值：请求时区 → 账号时区 → 显式默认('UTC')。无静默服务器时区
+   */
+  timezone: z.string().optional(),
 });
 
 export type GetReminderTodayScheduleReq = z.infer<typeof GetReminderTodayScheduleSchema>;

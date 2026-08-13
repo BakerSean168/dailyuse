@@ -6,6 +6,8 @@ import type { IdentityId, NotificationId } from '../../../primitives';
 
 export interface NotificationDispatchBase {
   id: NotificationId;
+  operationId?: string;
+  updatedAt?: string;
   identityId: IdentityId;
   title: string;
   body?: string | null;

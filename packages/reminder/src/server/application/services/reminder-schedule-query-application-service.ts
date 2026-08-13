@@ -8,17 +8,44 @@ import type {
   GetUpcomingRemindersRes,
 } from '@memoflow/contracts/reminder';
 import type { IReminderTemplateRepository } from '../../domain/repositories/i-reminder-template-repository';
+import type { AccountTimezonePort } from '../../domain/ports/account-timezone.port';
 import { UpcomingReminderCalculationService } from '../../domain/services/upcoming-reminder-calculation-service';
 
 export interface ReminderScheduleQueryApplicationServiceDependencies {
   readonly reminderTemplateRepository: IReminderTemplateRepository;
+  readonly accountTimezonePort?: AccountTimezonePort;
 }
 
 export class ReminderScheduleQueryApplicationService {
   private readonly reminderTemplateRepository: IReminderTemplateRepository;
+  private readonly accountTimezonePort?: AccountTimezonePort;
 
   constructor(dependencies: ReminderScheduleQueryApplicationServiceDependencies) {
     this.reminderTemplateRepository = dependencies.reminderTemplateRepository;
+    this.accountTimezonePort = dependencies.accountTimezonePort;
+  }
+
+  /**
+   * 兜底链解析时区：请求时区 → 账号时区 → 显式默认('UTC')。无静默服务器时区。
+   */
+  private async resolveTimezone(
+    requestTimezone: string | undefined | null,
+    identityId: string,
+  ): Promise<string> {
+    if (requestTimezone && requestTimezone.trim().length > 0) {
+      return requestTimezone;
+    }
+    if (this.accountTimezonePort && identityId) {
+      try {
+        const accountTz = await this.accountTimezonePort.getUserTimezone(identityId);
+        if (accountTz && accountTz.trim().length > 0) {
+          return accountTz;
+        }
+      } catch {
+        // Fall back to explicit default on port error
+      }
+    }
+    return 'UTC';
   }
 
   async getUpcomingReminders(
@@ -35,11 +62,14 @@ export class ReminderScheduleQueryApplicationService {
         params.importanceLevel ? template.importanceLevel === params.importanceLevel : true,
       );
 
+    const effectiveTimezone = await this.resolveTimezone(params.timezone, ctx.identityId);
+
     const upcoming = UpcomingReminderCalculationService.calculateUpcomingReminders(
       filteredTemplates,
       {
         days: params.days,
         limit: Number.MAX_SAFE_INTEGER,
+        timezone: effectiveTimezone,
       },
     );
     const limited = typeof params.limit === 'number' ? upcoming.slice(0, params.limit) : upcoming;
@@ -57,10 +87,14 @@ export class ReminderScheduleQueryApplicationService {
     const templates = await this.reminderTemplateRepository.findByIdentityId(ctx.identityId, {
       includeDeleted: false,
     });
+
+    const effectiveTimezone = await this.resolveTimezone(params.timezone, ctx.identityId);
+
     const schedule = UpcomingReminderCalculationService.calculateTodaySchedule(
       templates.map((template) => template.toServerDTO()),
       {
         includeExpired: Boolean(params.includeExpired),
+        timezone: effectiveTimezone,
       },
     );
     const limited = typeof params.limit === 'number' ? schedule.slice(0, params.limit) : schedule;

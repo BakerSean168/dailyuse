@@ -214,9 +214,11 @@ describe('Reminder Use Cases', () => {
     responseRepository = new MockReminderResponseRepository();
   });
 
+  const mockClosureChecker = async () => false;
+
   describe('CreateReminderTemplateUseCase', () => {
     it('creates a new reminder template with valid input', async () => {
-      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
+      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository, undefined, undefined, mockClosureChecker);
       const request = createValidCreateRequest();
 
       const result = await useCase.execute(request, { identityId: TEST_IDENTITY });
@@ -229,7 +231,7 @@ describe('Reminder Use Cases', () => {
     });
 
     it('persists the created template to repository', async () => {
-      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
+      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository, undefined, undefined, mockClosureChecker);
       const request = createValidCreateRequest();
 
       const result = await useCase.execute(request, { identityId: TEST_IDENTITY });
@@ -242,7 +244,7 @@ describe('Reminder Use Cases', () => {
     });
 
     it('assigns unique ID to each created template', async () => {
-      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
+      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository, undefined, undefined, mockClosureChecker);
       const request1 = createValidCreateRequest();
       const request2 = {
         ...createValidCreateRequest(),
@@ -260,7 +262,7 @@ describe('Reminder Use Cases', () => {
     });
 
     it('returns NOT_FOUND when group ID is invalid', async () => {
-      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
+      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository, undefined, undefined, mockClosureChecker);
       const request = {
         ...createValidCreateRequest(),
         groupId: 'invalid-group-id',
@@ -273,11 +275,31 @@ describe('Reminder Use Cases', () => {
         expect(result.error.code).toBe('NOT_FOUND');
       }
     });
+
+    it('returns FORBIDDEN when account is closed or closure in progress', async () => {
+      const closureChecker = async (id: string) => id === TEST_IDENTITY;
+      const useCase = new CreateReminderTemplateUseCase(
+        templateRepository,
+        groupRepository,
+        undefined,
+        undefined,
+        closureChecker,
+      );
+      const request = createValidCreateRequest();
+
+      const result = await useCase.execute(request, { identityId: TEST_IDENTITY });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('FORBIDDEN');
+        expect(result.error.message).toContain('Account is closed');
+      }
+    });
   });
 
   describe('DeleteReminderTemplateUseCase', () => {
     it('deletes an existing reminder template', async () => {
-      const createUseCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
+      const createUseCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository, undefined, undefined, mockClosureChecker);
       const request = createValidCreateRequest();
       const created = await createUseCase.execute(request, { identityId: TEST_IDENTITY });
       expect(created.ok).toBe(true);
@@ -297,7 +319,7 @@ describe('Reminder Use Cases', () => {
 
   describe('Repository Integration', () => {
     it('supports finding templates by identity', async () => {
-      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
+      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository, undefined, undefined, mockClosureChecker);
       const request = createValidCreateRequest();
       await useCase.execute(request, { identityId: TEST_IDENTITY });
 
@@ -308,7 +330,7 @@ describe('Reminder Use Cases', () => {
     });
 
     it('supports batch finding templates', async () => {
-      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
+      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository, undefined, undefined, mockClosureChecker);
       const request = createValidCreateRequest();
 
       const template1 = await useCase.execute(request, { identityId: TEST_IDENTITY });
@@ -329,7 +351,7 @@ describe('Reminder Use Cases', () => {
     });
 
     it('supports finding active templates', async () => {
-      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
+      const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository, undefined, undefined, mockClosureChecker);
       const request = createValidCreateRequest();
       const created = await useCase.execute(request, { identityId: TEST_IDENTITY });
       expect(created.ok).toBe(true);

@@ -8,6 +8,7 @@ import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { LocalVaultElectronPort } from '@memoflow/repository/electron';
 import type { GoalId, KeyResultId } from '@memoflow/contracts/goal';
 import { createGoalPowerSyncModule } from '@memoflow/goal';
+import { PowerSyncTaskBindingReadPort } from '@memoflow/task';
 import { createReminderPowerSyncModule } from '@memoflow/reminder';
 import { createTaskPowerSyncModule } from '@memoflow/task';
 import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
@@ -38,7 +39,9 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
   private readonly analyticsRead;
 
   constructor(db: IElectronDatabase, localVault: LocalVaultElectronPort) {
-    this.goalModule = createGoalPowerSyncModule(db);
+    this.goalModule = createGoalPowerSyncModule(db, {
+      taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
+    });
     this.taskModule = createTaskPowerSyncModule(db);
     this.reminderModule = createReminderPowerSyncModule(db);
     this.knowledgeSource = new DesktopKnowledgeSourceAdapter(localVault);

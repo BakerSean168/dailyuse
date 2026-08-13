@@ -22,6 +22,7 @@ RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 WORKDIR /app
 
+COPY tools/build/normalize-generated-prisma.mjs ./tools/build/normalize-generated-prisma.mjs
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.base.json tsconfig.workspace-src.json tsconfig.workspace-dist.json tsconfig.json nx.json vitest.shared.ts vite.workspace-aliases.ts ./
 
 # Copy only the package manifests in the API/migrator build closure so source

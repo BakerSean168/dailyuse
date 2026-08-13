@@ -20,6 +20,7 @@ export function createAccountPowerSyncModule(
 
   return createAccountModule({
     accountRepository,
+    laneCapability: 'desktop',
     runtimeContributions: createAccountRuntimeContributions(
       accountRepository,
       options.runtimeContributions,

@@ -22,6 +22,7 @@ import {
 import {
   CreateScheduleRequestSchema,
   UpdateScheduleRequestSchema,
+  DeleteScheduleRequestSchema,
   DetectConflictsRequestSchema,
   ResolveConflictRequestSchema,
   CalendarEntryResponseSchema,
@@ -156,14 +157,18 @@ export function registerScheduleEventRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除日程事件',
-      request: { params: z.object({ id: brandedId<ScheduleId>() }) },
+      request: {
+        params: z.object({ id: brandedId<ScheduleId>() }),
+        body: { content: { 'application/json': { schema: DeleteScheduleRequestSchema } } },
+      },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('日程不存在'),
+        409: errorResponse('版本冲突'),
       },
     },
     [auth],
-    (req, ctx) => controller.delete(req.params!.id, ctx),
+    (req, ctx) => controller.delete(req.params!.id, req.body, ctx),
   );
 
   // ==================== Conflict Detection Routes ====================

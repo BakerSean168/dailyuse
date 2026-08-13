@@ -3,6 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: [
     'src/index.ts',
+    'src/server/index.ts',
     'src/schedule-execution/index.ts',
     'src/schedule-projection/index.ts',
     'src/api/index.ts',

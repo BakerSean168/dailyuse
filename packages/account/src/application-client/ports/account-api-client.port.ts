@@ -9,6 +9,7 @@ import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
+  CloseAccountRes,
   UpdateAccountSettingsReq,
   UpdateAccountSettingsRes,
 } from '@memoflow/contracts/account';
@@ -18,5 +19,5 @@ export interface IAccountApiClient {
   updateMyProfile(request: UpdateAccountReq): Promise<Result<AccountClientDTO>>;
   updateSettings(request: UpdateAccountSettingsReq): Promise<Result<UpdateAccountSettingsRes>>;
   checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>>;
-  closeAccount(request: CloseAccountReq): Promise<Result<void>>;
+  closeAccount(request: CloseAccountReq): Promise<Result<CloseAccountRes>>;
 }

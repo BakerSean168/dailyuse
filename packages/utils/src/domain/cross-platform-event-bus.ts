@@ -1,3 +1,10 @@
+/** 随事件 envelope 传递的投递元数据（at-least-once 幂等去重键等）。 */
+export interface EventDeliveryMetadata {
+  aggregateId?: string;
+  occurredAt?: Date;
+  idempotencyKey?: string;
+}
+
 import mitt, { type Emitter, type Handler } from 'mitt';
 import { createLogger } from '../logger';
 
@@ -19,9 +26,39 @@ const logger = createLogger('CrossPlatformEventBus');
 export class CrossPlatformEventBus<TEvents extends EventMap = EventMap> {
   private emitter: Emitter<any>;
   private debugEnabled = false;
+  private inFlight = new Set<Promise<unknown>>();
+  /** 同步抛出的 handler 错误（仅在最近的 send() 期间累积，send 前清空）。 */
+  private pendingErrors: unknown[] = [];
 
   constructor() {
     this.emitter = mitt();
+  }
+
+  /**
+   * 等待当前 in-flight 的 handler 完成（at-least-once 投递边界）。
+   * 发布方可在 ack durable outbox 前调用，确保消费方事务先于 ack。
+   *
+   * 与通知式 `send`（fire-and-forget、错误隔离）不同，`awaitDrain` 面向可靠
+   * 发布者：若任一 handler 同步抛出或异步 reject，这里会抛出第一个错误，
+   * 使可靠 publisher 能阻止 completed 并进入 retry/failed。默认 send 仍保持
+   * 通知式隔离语义（ADR-033 不变）。
+   */
+  async awaitDrain(): Promise<void> {
+    const errors: unknown[] = this.pendingErrors.slice();
+    this.pendingErrors = [];
+    while (this.inFlight.size > 0) {
+      const pending = Array.from(this.inFlight);
+      const settled = await Promise.allSettled(pending);
+      for (const outcome of settled) {
+        if (outcome.status === 'rejected') {
+          errors.push(outcome.reason);
+        }
+      }
+    }
+    if (errors.length > 0) {
+      const first = errors[0];
+      throw first instanceof Error ? first : new Error(String(first));
+    }
   }
 
   /**
@@ -33,9 +70,17 @@ export class CrossPlatformEventBus<TEvents extends EventMap = EventMap> {
    * @param eventType 事件类型
    * @param payload 事件负载
    */
-  send<K extends keyof TEvents>(eventType: K, payload: TEvents[K]): void {
+  send<K extends keyof TEvents>(
+    eventType: K,
+    payload: TEvents[K],
+    metadata?: EventDeliveryMetadata,
+  ): void {
     const type = eventType as string;
     if (this.debugEnabled) logger.debug(`📤 Send: ${type}`, payload);
+
+    // send 是通知式入口：清掉上一次 fire-and-forget send 遗留的同步错误，
+    // 这样紧随其后的 awaitDrain() 只会看到本次 send 期间的错误。
+    this.pendingErrors = [];
 
     // mitt 内部对同一 key 的 handler 是同步顺序调用；这里取出快照逐个隔离执行，
     // 避免某个订阅者抛错中断后续订阅者（mitt.emit 本身无 per-handler 隔离）。
@@ -43,20 +88,42 @@ export class CrossPlatformEventBus<TEvents extends EventMap = EventMap> {
     if (!handlers || handlers.length === 0) return;
 
     for (const handler of [...handlers]) {
-      this.invokeHandler(type, handler, payload);
+      this.invokeHandler(type, handler, payload, metadata);
     }
   }
 
-  private invokeHandler(type: string, handler: Handler<any>, payload: unknown): void {
+  private invokeHandler(
+    type: string,
+    handler: Handler<any>,
+    payload: unknown,
+    metadata?: EventDeliveryMetadata,
+  ): void {
+    let result: unknown;
     try {
-      const result = (handler as (event: unknown) => unknown)(payload);
-      if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
-        void Promise.resolve(result).catch((error) => {
-          logger.error(`❌ Async event handler failed: ${type}`, error);
-        });
-      }
+      result =
+        metadata === undefined
+          ? (handler as (event: unknown) => unknown)(payload)
+          : (handler as (event: unknown, metadata: EventDeliveryMetadata) => unknown)(payload, metadata);
     } catch (error) {
+      // 同步抛出：send 本身仍不冒泡（H3 隔离），但记录给 awaitDrain()，
+      // 让可靠发布者能感知该 handler 失败（阻止错误 ack）。
       logger.error(`❌ Event handler failed: ${type}`, error);
+      this.pendingErrors.push(error);
+      return;
+    }
+    if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
+      const tracked = Promise.resolve(result);
+      this.inFlight.add(tracked);
+      void tracked
+        .then(
+          () => undefined,
+          (error) => {
+            logger.error(`❌ Async event handler failed: ${type}`, error);
+          },
+        )
+        .finally(() => {
+          this.inFlight.delete(tracked);
+        });
     }
   }
 

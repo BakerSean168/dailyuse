@@ -26,6 +26,9 @@ import type { ReminderModuleRuntimeContribution } from '../reminder.module';
 
 const logger = createLogger('ReminderTriggerCronJob');
 
+import type { ReminderReliableOperationPort } from '@memoflow/contracts/reliable-messaging';
+import type { PrismaReminderWriteTransactionRunner } from '../adapters/prisma/prisma-reminder-write-transaction-runner';
+
 // ---------------------------------------------------------------------------
 // Dependencies — what the cron job needs from the outside world.
 // 依赖 —— 定时任务向外部索取的全部依赖。
@@ -34,6 +37,10 @@ const logger = createLogger('ReminderTriggerCronJob');
 export interface ReminderTriggerCronJobDependencies {
   readonly reminderTemplateRepository: IReminderTemplateRepository;
   readonly reminderGroupRepository: IReminderGroupRepository;
+  readonly reliablePort: ReminderReliableOperationPort;
+  readonly transactionRunner: PrismaReminderWriteTransactionRunner;
+  readonly schedulerService?: ReminderSchedulerService;
+  readonly drainTimeoutMs?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -51,7 +58,13 @@ export interface ReminderTriggerCronJobDependencies {
 export function createReminderTriggerCronJob(
   deps: ReminderTriggerCronJobDependencies,
 ): ReminderModuleRuntimeContribution {
-  const { reminderTemplateRepository, reminderGroupRepository } = deps;
+  const { reminderTemplateRepository, reminderGroupRepository, reliablePort, transactionRunner } = deps;
+
+  if (!deps.schedulerService && (!reliablePort || !transactionRunner)) {
+    throw new Error(
+      '[REMINDER_CRON_JOB] Mandatory dependencies missing: reliablePort and transactionRunner are required.',
+    );
+  }
 
   // Assemble domain services once / 一次性组装领域服务
   const controlService = new ReminderTemplateControlService(
@@ -59,14 +72,24 @@ export function createReminderTriggerCronJob(
     reminderGroupRepository,
   );
   const triggerService = new ReminderTriggerService(reminderTemplateRepository, controlService);
-  const schedulerService = new ReminderSchedulerService(reminderTemplateRepository, triggerService);
+  const schedulerService =
+    deps.schedulerService ??
+    new ReminderSchedulerService(
+      reminderTemplateRepository,
+      triggerService,
+      reliablePort,
+      transactionRunner,
+      controlService,
+    );
 
   let cronTask: cron.ScheduledTask | null = null;
   let isRunning = false;
+  let isStopping = false;
+  let currentExecutionPromise: Promise<void> | null = null;
 
-  async function execute(): Promise<void> {
-    if (isRunning) {
-      logger.debug('Previous job still running, skipping this execution');
+  async function executeInternal(): Promise<void> {
+    if (isRunning || isStopping) {
+      logger.debug('Previous job still running or cron stopping, skipping this execution');
       return;
     }
 
@@ -103,26 +126,69 @@ export function createReminderTriggerCronJob(
     }
   }
 
+  function runScan(): Promise<void> {
+    if (isRunning || isStopping) {
+      logger.debug('Previous job still running or cron stopping, skipping this execution');
+      return currentExecutionPromise ?? Promise.resolve();
+    }
+
+    const promise = executeInternal().finally(() => {
+      if (currentExecutionPromise === promise) {
+        currentExecutionPromise = null;
+      }
+    });
+
+    currentExecutionPromise = promise;
+    return promise;
+  }
+
   return {
     start() {
       if (cronTask) {
         logger.warn('Cron job already started');
         return;
       }
+      isStopping = false;
 
-      cronTask = cron.schedule('* * * * *', async () => {
-        await execute();
+      cronTask = cron.schedule('* * * * *', () => {
+        runScan();
       });
       cronTask.start();
       logger.info('Reminder trigger cron job started (runs every minute)');
     },
 
-    stop() {
+    async stop(timeoutMs?: number): Promise<void> {
+      const effectiveTimeout = timeoutMs ?? deps.drainTimeoutMs ?? 10000;
+      isStopping = true;
       if (cronTask) {
         cronTask.stop();
         cronTask = null;
-        logger.info('Reminder trigger cron job stopped');
       }
+
+      if (currentExecutionPromise) {
+        logger.info('Waiting for active reminder trigger scan batch to drain...');
+        let timeoutHandle: NodeJS.Timeout | null = null;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutHandle = setTimeout(() => {
+            logger.error(`Cron drain timed out after ${effectiveTimeout}ms: active execution did not finish`);
+            reject(new Error(`Cron drain timed out after ${effectiveTimeout}ms: in-flight execution did not finish`));
+          }, effectiveTimeout);
+        });
+
+        try {
+          await Promise.race([currentExecutionPromise, timeoutPromise]);
+        } finally {
+          if (timeoutHandle) {
+            clearTimeout(timeoutHandle);
+          }
+        }
+      }
+
+      logger.info('Reminder trigger cron job stopped');
+    },
+
+    execute(): Promise<void> {
+      return runScan();
     },
   };
 }

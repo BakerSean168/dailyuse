@@ -36,6 +36,10 @@ const coverageConfigsByProject = new Map([
   ['task', ['vitest.config.ts', 'vitest.use-cases.config.ts', 'vitest.mappers.config.ts']],
 ]);
 
+// P2：contracts/patterns 的 unit test 包含 operations dist surface 门禁，
+// 因此 `test` target 必须在自身 `build` 之后运行（clean checkout 自洽）。
+const buildFirstVitestProjects = new Set(['contracts', 'patterns']);
+
 function createVitestCommand(cwd, args) {
   const executable = cwd
     ? `${relativeWorkspaceRoot(cwd)}/node_modules/vitest/vitest.mjs`
@@ -233,6 +237,7 @@ function createLocalVitestTargetTemplates(projectRoot, includeCoverage = false, 
       executor: 'nx:run-commands',
       outputs: ['{workspaceRoot}/coverage/{projectRoot}'],
       inputs: ['default', '^production'],
+      ...(buildFirstVitestProjects.has(projectName) ? { dependsOn: ['build'] } : {}),
       cache: true,
       options: {
         command: createVitestCommand(projectRoot, 'run --config vitest.config.ts'),

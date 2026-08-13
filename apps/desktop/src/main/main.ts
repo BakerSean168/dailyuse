@@ -22,7 +22,8 @@ import { ElectronBootstrapper } from './bootstrap';
 import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
-import { GoalElectronModule } from '@memoflow/goal/electron';
+import { createGoalElectronModule } from '@memoflow/goal/electron';
+import { PowerSyncTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
 import { createTaskElectronModule } from '@memoflow/task/electron';
 import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
@@ -238,13 +239,34 @@ async function registerBusinessModules(
       });
       const envelope = (await response.json().catch(() => null)) as {
         ok?: boolean;
+        data?: any;
         error?: { message?: string };
       } | null;
       if (!response.ok || envelope?.ok !== true) {
         throw new Error(envelope?.error?.message ?? '云端账号关闭失败');
       }
+      return envelope.data;
+    },
+    async markAccountClosing() {
+      const identityId =
+        mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding?.cloudAccountId;
+      if (!identityId) {
+        throw new Error('Cannot mark account closing: active profile has no cloud binding');
+      }
+      await db.execute(
+        'INSERT OR IGNORE INTO account_closure_requested (identity_id, requested_at) VALUES (?, ?)',
+        [identityId, Date.now()],
+      );
+    },
+    async clearAccountClosingMarker(identityId: string) {
+      await db.execute('DELETE FROM account_closure_requested WHERE identity_id = ?', [identityId]);
     },
     async afterCloudAccountClosed() {
+      // NOTE: the closure-request marker is intentionally NOT cleared here.
+      // Token/sync are revoked below, but the active local Profile runtime stays
+      // alive — the marker keeps local new-work blocked until the cloud account
+      // row syncs to a non-Active status (status check then covers it). It is
+      // cleared only when the cloud close FAILS (close handler catch path).
       await closeCurrentCloudConnection();
     },
   });
@@ -256,7 +278,9 @@ async function registerBusinessModules(
     .register(NotificationElectronModule)
     .register(DataPortabilityElectronModule)
     // Feature modules
-    .register(GoalElectronModule)
+    .register(createGoalElectronModule({
+      taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
+    }))
     .register(taskElectronModule)
     .register(scheduleElectronModule)
     .register(ReminderElectronModule)

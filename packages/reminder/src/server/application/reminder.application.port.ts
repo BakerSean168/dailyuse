@@ -1,5 +1,6 @@
 import type { Result } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { OperationTimelineEntry, OperationAuditRecord } from '@memoflow/contracts/operations';
 import type {
   BatchGroupTemplatesReq,
   BatchGroupTemplatesRes,
@@ -96,4 +97,7 @@ export interface ReminderApplicationPort {
     data: UpdateReminderPreferencesReq,
     ctx: ExecutionContext,
   ): Promise<Result<UserReminderPreferencesClientDTO>>;
+  queryOperationTimeline(ctx: ExecutionContext): Promise<Result<OperationTimelineEntry[]>>;
+  replayOperation(operationId: string, ctx: ExecutionContext): Promise<Result<unknown>>;
+  getOperationAudit(ctx: ExecutionContext): Promise<Result<OperationAuditRecord[]>>;
 }

@@ -30,13 +30,22 @@ import {
   GetUnreadNotificationsUseCase,
   GetNotificationPreferenceUseCase,
 } from '../application';
-import { ok } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   NotificationMaintenanceApplicationService,
   NotificationQueryApplicationService,
 } from '../application';
-import type { NotificationApplicationPort } from '../application';
-
+import type {
+  NotificationApplicationPort,
+  NotificationSseDeliveryEvent,
+} from '../application';
+import type { NotificationDurableRuntimePort } from './runtime/notification.runtime';
+import { mapReceiptToTimelineEntry } from '@memoflow/patterns/operations';
+import type {
+  OperationAuditRepository,
+  OperationAuditRecord,
+} from '@memoflow/patterns/operations';
+import { runTimelineQueryWithAudit } from '@memoflow/patterns/operations';
 export interface NotificationModuleRuntimeContribution {
   start(): void;
   stop(): void;
@@ -50,8 +59,11 @@ export interface NotificationModuleDependencies {
   readonly notificationRepository: INotificationRepository;
   readonly preferenceRepository: INotificationPreferenceRepository;
   readonly templateRepository: INotificationTemplateRepository;
+  readonly closureChecker: (identityId: string) => Promise<boolean>;
   readonly db?: IElectronDatabase;
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
+  readonly durableRuntime: NotificationDurableRuntimePort;
+  readonly auditRepository?: OperationAuditRepository;
 }
 
 export interface NotificationModuleUseCases {
@@ -70,6 +82,7 @@ export interface NotificationModuleInstance {
   readonly templateRepository: INotificationTemplateRepository;
   readonly useCases: NotificationModuleUseCases;
   readonly api: NotificationApplicationPort;
+  readonly durableRuntime: NotificationDurableRuntimePort;
   start(): void;
   dispose(): void;
 }
@@ -77,6 +90,10 @@ export interface NotificationModuleInstance {
 export function createNotificationUseCases(
   deps: NotificationModuleDependencies,
 ): NotificationModuleUseCases {
+  if (!deps.closureChecker) {
+    throw new Error('[FAIL-CLOSED] NotificationModule requires closureChecker dependency');
+  }
+
   const { notificationRepository, preferenceRepository, templateRepository } = deps;
 
   return {
@@ -84,6 +101,7 @@ export function createNotificationUseCases(
       notificationRepository,
       templateRepository,
       preferenceRepository,
+      deps.closureChecker,
     ),
     updateNotification: new UpdateNotificationUseCase(notificationRepository),
     markAsRead: new MarkNotificationAsReadUseCase(notificationRepository),
@@ -113,8 +131,22 @@ function normalizeRuntimeContributions(
 export function createNotificationModule(
   dependencies: NotificationModuleDependencies,
 ): NotificationModuleInstance {
-  const { notificationRepository, preferenceRepository, templateRepository } = dependencies;
+  const { notificationRepository, preferenceRepository, templateRepository, durableRuntime } = dependencies;
+  const auditRepository = dependencies.auditRepository;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
+
+  if (!dependencies.closureChecker) {
+    throw new Error(
+      '[FAIL-CLOSED] NotificationModule requires an explicit closureChecker dependency.',
+    );
+  }
+
+  if (!durableRuntime) {
+    throw new Error(
+      '[FAIL-CLOSED] NotificationModule requires an explicit durableRuntime dependency providing dead-letter, receipt, and SSE capabilities.',
+    );
+  }
+
   const useCases = createNotificationUseCases(dependencies);
   const notificationQueryApplicationService = new NotificationQueryApplicationService(
     notificationRepository,
@@ -203,6 +235,80 @@ export function createNotificationModule(
         dto as Parameters<UpdateNotificationPreferenceUseCase['execute']>[1],
       );
     },
+
+    queryDeadLetters: async (identityId) => {
+      const res = await durableRuntime.queryDeadLetters(identityId);
+      return ok(res);
+    },
+
+    replayDeadLetter: async (operationId, identityId) => {
+      try {
+        if (!auditRepository) {
+          throw new Error(
+            '[FAIL-CLOSED] notification replay requires an explicit auditRepository dependency.',
+          );
+        }
+        const res = await durableRuntime.replayDeadLetter({ identityId, operationId }, {
+          actorIdentityId: identityId,
+          source: 'notification',
+          operationId,
+          action: 'replay',
+        }, auditRepository);
+        return ok(res);
+      } catch (err) {
+        return fail({
+          code: 'NOT_FOUND',
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+
+    getDeliveryReceipts: async (identityId, query) => {
+      const res = await durableRuntime.queryReceipts(identityId, query);
+      return ok(res);
+    },
+
+    getOperationTimeline: async (identityId, query) => {
+      if (!auditRepository) {
+        throw new Error(
+          '[FAIL-CLOSED] notification operation timeline requires an explicit auditRepository dependency (timeline_query audit is mandatory).',
+        );
+      }
+      const { entries } = await runTimelineQueryWithAudit({
+        repository: auditRepository,
+        source: 'notification',
+        actorIdentityId: identityId,
+        filters: { status: query?.status ?? null, limit: query?.limit ?? null },
+        query: async () => {
+          const receipts = await durableRuntime.queryReceipts(identityId, {
+            limit: query?.limit,
+            status: query?.status,
+          });
+          return receipts.map((r) => mapReceiptToTimelineEntry(r, 'notification'));
+        },
+      });
+      return ok(entries);
+    },
+
+    getOperationAudit: async (identityId, query) => {
+      if (!auditRepository) {
+        throw new Error(
+          '[FAIL-CLOSED] notification operation audit requires an explicit auditRepository dependency.',
+        );
+      }
+      const records: OperationAuditRecord[] = await auditRepository.listByActor({
+        identityId,
+        source: query?.source,
+        operationId: query?.operationId,
+        limit: query?.limit,
+      });
+      return ok(records);
+    },
+
+    subscribeSseEvents: (handler: (payload: NotificationSseDeliveryEvent) => void) => {
+      const sseAdapter = durableRuntime.getSseAdapter();
+      return sseAdapter.subscribe(handler);
+    },
   };
 
   return {
@@ -211,6 +317,7 @@ export function createNotificationModule(
     templateRepository,
     useCases,
     api,
+    durableRuntime,
     start(): void {
       if (started) {
         return;

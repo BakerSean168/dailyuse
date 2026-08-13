@@ -1,5 +1,6 @@
 import type { Result } from '@memoflow/contracts/result';
 import type { Context } from '@memoflow/contracts/shared';
+import type { OperationTimelineEntry, OperationAuditRecord } from '@memoflow/contracts/operations';
 import type {
   CompleteKnowledgeRepositoryInstallationReq,
   CompleteKnowledgeRepositoryInstallationRes,
@@ -24,6 +25,9 @@ import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
+  ListKnowledgeWriteRequestsReq,
+  ListKnowledgeWriteRequestsRes,
+  KnowledgeWriteRequestReplayResponse,
 } from '@memoflow/contracts/repository';
 
 /**
@@ -107,4 +111,19 @@ export interface RepositoryApplicationPort {
     signature: string;
     rawBody: string;
   }): Promise<Result<{ accepted: boolean; duplicate: boolean; reason?: string }>>;
+  listKnowledgeWriteRequests(
+    ctx: Context,
+    request: ListKnowledgeWriteRequestsReq,
+  ): Promise<Result<ListKnowledgeWriteRequestsRes>>;
+  replayKnowledgeWriteRequestProjection(
+    ctx: Context,
+    writeRequestId: string,
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>>;
+  /** W7: 按 identity 查询 knowledge projection operation timeline */
+  queryKnowledgeTimeline(ctx: Context): Promise<Result<OperationTimelineEntry[]>>;
+  /** W7: 查询操作审计记录（actor 最小权限） */
+  getOperationAudit(
+    ctx: Context,
+    request?: { source?: string; operationId?: string; limit?: number },
+  ): Promise<Result<OperationAuditRecord[]>>;
 }

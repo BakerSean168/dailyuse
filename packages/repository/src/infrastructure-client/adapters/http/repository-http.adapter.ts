@@ -45,6 +45,9 @@ import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
+  ListKnowledgeWriteRequestsReq,
+  ListKnowledgeWriteRequestsRes,
+  KnowledgeWriteRequestReplayResponse,
 } from '@memoflow/contracts/repository';
 
 
@@ -177,6 +180,26 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
     request: CreateConfirmedKnowledgeNoteReq,
   ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>> {
     return this.httpClient.post(`${this.baseUrl}/knowledge-notes`, request);
+  }
+
+  async listKnowledgeWriteRequests(
+    request: ListKnowledgeWriteRequestsReq = { limit: 50 },
+  ): Promise<Result<ListKnowledgeWriteRequestsRes>> {
+    return this.httpClient.get(`${this.baseUrl}/knowledge-write-requests`, {
+      params: {
+        ...(request.connectionId ? { connectionId: request.connectionId } : {}),
+        limit: String(request.limit ?? 50),
+      },
+    });
+  }
+
+  async replayKnowledgeWriteRequestProjection(
+    writeRequestId: string,
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>> {
+    return this.httpClient.post(
+      `${this.baseUrl}/knowledge-write-requests/${encodeURIComponent(writeRequestId)}/replay`,
+      {},
+    );
   }
 
 

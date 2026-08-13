@@ -94,6 +94,7 @@ export function ScheduleEventEditorScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState<number | null>(null);
   const [conflicts, setConflicts] = useState<ConflictDetectionResult | null>(null);
   const [conflictError, setConflictError] = useState<string | null>(null);
 
@@ -132,6 +133,7 @@ export function ScheduleEventEditorScreen() {
       setLocation(item.location ?? '');
       setAttendees(item.attendees?.join(', ') ?? '');
       setPriority(String(item.priority ?? 5));
+      setCurrentVersion(item.version);
 
       const conflictResult = await service.getScheduleConflicts(scheduleId);
       if (conflictResult.ok) {
@@ -227,7 +229,10 @@ export function ScheduleEventEditorScreen() {
     };
 
     const result = scheduleId
-      ? await service.updateSchedule(scheduleId, payload satisfies UpdateScheduleRequest)
+      ? await service.updateSchedule(scheduleId, {
+          ...payload,
+          expectedVersion: currentVersion ?? 1,
+        } satisfies UpdateScheduleRequest)
       : await service.createScheduleWithConflictDetection({
           ...payload,
           autoDetectConflicts: true,
@@ -255,7 +260,7 @@ export function ScheduleEventEditorScreen() {
     setIsDeleting(true);
     setError(null);
 
-    const result = await service.deleteSchedule(scheduleId);
+    const result = await service.deleteSchedule(scheduleId, currentVersion ?? 1);
     setIsDeleting(false);
 
     if (!result.ok) {

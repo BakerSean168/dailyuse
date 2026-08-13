@@ -9,6 +9,7 @@ import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
+import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
 
 /**
  * Delete Goal Use Case
@@ -19,7 +20,12 @@ export class DeleteGoalUseCase {
   constructor(
     private readonly goalRepository: IGoalRepository,
     private readonly goalPolicy: GoalPolicy,
-  ) {}
+    private readonly taskBindingReadPort: GoalDependencyReadPort,
+  ) {
+    if (!taskBindingReadPort) {
+      throw new Error('ITaskBindingReadPort must be explicitly provided to DeleteGoalUseCase');
+    }
+  }
 
   /**
    * 检查目标依赖项
@@ -34,6 +40,7 @@ export class DeleteGoalUseCase {
       hasReviews: boolean;
       reviewCount: number;
       hasTaskLinks: boolean;
+      taskBindingCount: number;
       canDelete: boolean;
       warnings: string[];
     }>
@@ -50,6 +57,9 @@ export class DeleteGoalUseCase {
     const keyResultCount = keyResults.length;
     const reviewCount = goalReviews.length;
 
+    const bindingCheck = await this.taskBindingReadPort.checkActiveTaskBindings({ identityId, goalId: id });
+    const taskBindingCount = bindingCheck.activeCount;
+
     const warnings: string[] = [];
 
     if (keyResultCount > 0) {
@@ -60,13 +70,18 @@ export class DeleteGoalUseCase {
       warnings.push(`该目标包含 ${reviewCount} 条复盘记录`);
     }
 
+    if (taskBindingCount > 0) {
+      warnings.push(`该目标包含 ${taskBindingCount} 个关联任务`);
+    }
+
     return ok({
       hasKeyResults: keyResultCount > 0,
       keyResultCount,
       hasReviews: reviewCount > 0,
       reviewCount,
-      hasTaskLinks: false,
-      canDelete: true,
+      hasTaskLinks: taskBindingCount > 0,
+      taskBindingCount,
+      canDelete: taskBindingCount === 0,
       warnings,
     });
   }
@@ -87,6 +102,14 @@ export class DeleteGoalUseCase {
     }
     if (expectedVersion !== goal.version) {
       return error('CONFLICT', 'Goal has been modified by another client');
+    }
+
+    const bindingCheck = await this.taskBindingReadPort.checkActiveTaskBindings({ identityId, goalId: id });
+    if (bindingCheck.activeCount > 0) {
+      return error(
+        'CONFLICT',
+        `Goal has ${bindingCheck.activeCount} active task binding(s); delete rejected`,
+      );
     }
 
     goal.softDelete();

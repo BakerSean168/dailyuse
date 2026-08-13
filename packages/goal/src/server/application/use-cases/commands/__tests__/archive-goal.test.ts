@@ -4,6 +4,8 @@ import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '../../../../domain';
 import { ArchiveGoalUseCase } from '../archive-goal.use-case';
+import { createInlineGoalWriteTransactionRunner } from '../goal-write-support';
+import { InMemoryGoalReliableOperationAdapter } from '../../../../infrastructure/adapters/in-memory/in-memory-goal-reliable-operation.adapter';
 
 // ============================================================
 // Helpers
@@ -45,7 +47,17 @@ describe('ArchiveGoalUseCase', () => {
       save: vi.fn().mockResolvedValue(undefined),
       saveRootWithExpectedVersion: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new ArchiveGoalUseCase(goalRepo, new GoalPolicy());
+    useCase = new ArchiveGoalUseCase(
+      goalRepo,
+      new GoalPolicy(),
+      createInlineGoalWriteTransactionRunner(
+        {
+          goalRepository: goalRepo,
+          goalRecordRepository: null as any,
+        },
+        new InMemoryGoalReliableOperationAdapter(),
+      ),
+    );
   });
 
   it('should return NOT_FOUND when goal does not exist', async () => {
@@ -57,11 +69,16 @@ describe('ArchiveGoalUseCase', () => {
     expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should reject archiving a completed goal again', async () => {
+  it('should be idempotent when archiving a completed goal again', async () => {
     const goal = createCompletedGoal();
+    const initialVersion = goal.version;
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id, 'identity-1', goal.version)).rejects.toThrow();
+    const result = await useCase.execute(goal.id, 'identity-1', initialVersion);
+
+    expect(result).toBeOk();
+    expect(goal.version).toBe(initialVersion);
+    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
   });
 
   it('should archive an active goal', async () => {
@@ -79,12 +96,17 @@ describe('ArchiveGoalUseCase', () => {
     expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
   });
 
-  it('should throw when goal is already archived', async () => {
-    const goal = createCompletedGoal();
+  it('should be idempotent when goal is already archived', async () => {
+    const goal = createTestGoal();
     goal.archive();
+    const initialVersion = goal.version;
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id, 'identity-1', goal.version)).rejects.toThrow();
+    const result = await useCase.execute(goal.id, 'identity-1', initialVersion);
+
+    expect(result).toBeOk();
+    expect(goal.version).toBe(initialVersion);
+    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
   });
 
   it('should return the goal DTO on success', async () => {
@@ -101,7 +123,7 @@ describe('ArchiveGoalUseCase', () => {
     }
   });
 
-  it('rejects a stale version before archiving', async () => {
+  it('rejects a stale version before archiving an active goal', async () => {
     const goal = createTestGoal();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 

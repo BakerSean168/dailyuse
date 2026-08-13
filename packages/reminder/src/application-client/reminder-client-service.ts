@@ -95,6 +95,7 @@ export class ReminderClientService implements IReminderApiClient {
     limit?: number;
     importanceLevel?: string;
     type?: string;
+    timezone?: string;
   }): Promise<Result<GetUpcomingRemindersRes>> {
     return this.reminderApi.getUpcomingReminders(params);
   }
@@ -102,6 +103,7 @@ export class ReminderClientService implements IReminderApiClient {
   async getTodaySchedule(params?: {
     limit?: number;
     includeExpired?: boolean;
+    timezone?: string;
   }): Promise<Result<GetReminderTodayScheduleRes>> {
     return this.reminderApi.getTodaySchedule(params);
   }

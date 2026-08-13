@@ -57,6 +57,27 @@ export function usePresentationBootstrap() {
     presentationStore.syncFromUserSetting(userSettingStore.userSetting.preferences);
   }
 
+  /**
+   * Load the defaults eagerly (best-effort) so the store getter fallback
+   * (getCategory/getValue) can resolve for a brand-new user before their
+   * settings record exists. A defaults failure never blocks the settings load
+   * nor surfaces an error — it only disables the fallback for that boot.
+   */
+  async function loadDefaultsIfNeeded(): Promise<void> {
+    if (userSettingStore.defaults) {
+      return;
+    }
+    try {
+      const data = unwrapOrThrowError<UserSettingClientDTO>(
+        await settingService.getUserSettingDefaults(),
+      );
+      userSettingStore.setDefaults(data);
+    } catch {
+      // Best-effort: keep the defaults fallback unavailable rather than failing
+      // the whole presentation bootstrap.
+    }
+  }
+
   async function loadUserSettings(): Promise<void> {
     if (loadingPromise) {
       return loadingPromise;
@@ -67,10 +88,14 @@ export function usePresentationBootstrap() {
       userSettingStore.setError(null);
 
       try {
+        // Kick off defaults concurrently with the settings request. Defaults
+        // are best-effort; only the settings load can fail the bootstrap.
+        const defaultsPromise = loadDefaultsIfNeeded();
         const data = unwrapOrThrowError<UserSettingClientDTO>(await settingService.getUserSettings());
         userSettingStore.setUserSetting(data);
         userSettingStore.setInitialized(true);
         presentationStore.syncFromUserSetting(data.preferences);
+        await defaultsPromise;
       } catch (error) {
         const t = getI18nGlobal()?.t;
         userSettingStore.setError(

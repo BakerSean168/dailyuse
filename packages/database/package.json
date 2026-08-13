@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "postinstall": "prisma generate --config ./prisma/prisma.config.ts"
+    "postinstall": "prisma generate --config ./prisma/prisma.config.ts && node ../../tools/build/normalize-generated-prisma.mjs"
   },
   "dependencies": {
     "@memoflow/utils": "workspace:*",

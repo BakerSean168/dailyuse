@@ -99,6 +99,12 @@ function createApiStub(): RepositoryApplicationPort {
         contentBase64: 'AQIDBA==',
       }),
     ),
+    listKnowledgeWriteRequests: vi.fn(async () =>
+      ok({ writeRequests: [] }),
+    ),
+    replayKnowledgeWriteRequestProjection: vi.fn(async () =>
+      ok({ writeRequestId: 'write-request-1', commitSha: 'a'.repeat(40), status: 'Succeeded' }),
+    ),
   } as unknown as RepositoryApplicationPort;
 }
 
@@ -383,6 +389,72 @@ describe('knowledge repository connection routes', () => {
       expect.objectContaining({
         ok: true,
         data: expect.objectContaining({ contentBase64: 'AQIDBA==' }),
+      }),
+    );
+  });
+
+  it('lists write requests with identity scope and forwards optional filters', async () => {
+    const api = createApiStub();
+    const router = registerKnowledgeRepositoryConnectionRoutes(api, { auth: passThrough });
+    const handler = getRouteHandler(router, 'get', '/knowledge-write-requests');
+    const res = createResponse();
+
+    await handler(
+      {
+        query: { connectionId: 'connection-1', limit: '20' },
+        headers: { 'user-agent': 'Mozilla/5.0' },
+        user: { identityId: 'identity-route' },
+      },
+      res,
+    );
+
+    expect(api.listKnowledgeWriteRequests).toHaveBeenCalledWith(
+      expect.objectContaining({ identityId: 'identity-route' }),
+      { connectionId: 'connection-1', limit: 20 },
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('requires auth before listing write requests', async () => {
+    const api = createApiStub();
+    const router = registerKnowledgeRepositoryConnectionRoutes(api, { auth: passThrough });
+    const handler = getRouteHandler(router, 'get', '/knowledge-write-requests');
+    const res = createResponse();
+
+    await handler({ query: {}, headers: {} }, res);
+
+    expect(api.listKnowledgeWriteRequests).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  it('forwards an authenticated replay of a write request projection', async () => {
+    const api = createApiStub();
+    const router = registerKnowledgeRepositoryConnectionRoutes(api, { auth: passThrough });
+    const handler = getRouteHandler(
+      router,
+      'post',
+      '/knowledge-write-requests/:writeRequestId/replay',
+    );
+    const res = createResponse();
+
+    await handler(
+      {
+        params: { writeRequestId: 'write-request-1' },
+        headers: { 'user-agent': 'Mozilla/5.0' },
+        user: { identityId: 'identity-route' },
+      },
+      res,
+    );
+
+    expect(api.replayKnowledgeWriteRequestProjection).toHaveBeenCalledWith(
+      expect.objectContaining({ identityId: 'identity-route' }),
+      'write-request-1',
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({ writeRequestId: 'write-request-1', status: 'Succeeded' }),
       }),
     );
   });

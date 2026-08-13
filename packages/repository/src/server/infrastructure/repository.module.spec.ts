@@ -135,4 +135,19 @@ describe('repository module GitHub credential boundary', () => {
       headSha: 'a'.repeat(40),
     });
   });
+
+  it('reports write-request list/replay as unavailable when the GitHub App is not configured', async () => {
+    const module = createRepositoryModule({});
+
+    await expect(
+      module.api.listKnowledgeWriteRequests({ identityId: 'identity-without-github-app' }, { limit: 20 }),
+    ).resolves.toMatchObject({ ok: false, error: { code: 'SERVICE_UNAVAILABLE' } });
+
+    await expect(
+      module.api.replayKnowledgeWriteRequestProjection(
+        { identityId: 'identity-without-github-app' },
+        'write-request-1',
+      ),
+    ).resolves.toMatchObject({ ok: false, error: { code: 'SERVICE_UNAVAILABLE' } });
+  });
 });

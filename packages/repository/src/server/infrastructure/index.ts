@@ -44,3 +44,6 @@ export { KnowledgeRepositoryLeasePrismaRepository } from './adapters/prisma/know
 // GitHub App client
 export { GitHubAppClient } from './services/github-app-client';
 export { InMemoryKnowledgeRepositoryInstallationStateStore } from './services/in-memory-knowledge-repository-installation-state-store';
+
+// Consumers
+export { RepositoryAccountClosedConsumer } from './consumers/repository-account-closed.consumer';

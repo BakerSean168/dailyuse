@@ -6,6 +6,7 @@ import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { TaskTemplateStatus } from '@memoflow/contracts/task';
 import { PauseTaskTemplateUseCase } from '../pause-task-template.use-case';
+import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
 describe('PauseTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
@@ -22,11 +23,24 @@ describe('PauseTaskTemplateUseCase', () => {
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       deleteIncompleteInstancesFrom: vi.fn().mockResolvedValue(0),
     });
-    useCase = new PauseTaskTemplateUseCase(templateRepo, instanceRepo);
+    useCase = new PauseTaskTemplateUseCase(
+      templateRepo,
+      instanceRepo,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
+    );
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('throws an error if transactionRunner is missing', () => {
+    expect(
+      () => new PauseTaskTemplateUseCase(templateRepo, instanceRepo, undefined as any),
+    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to PauseTaskTemplateUseCase');
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {

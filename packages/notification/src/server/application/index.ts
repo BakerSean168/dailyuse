@@ -6,5 +6,6 @@
 
 // ===== Services =====
 export type { NotificationApplicationPort } from './notification.application.port';
+export type { NotificationSseDeliveryEvent } from './notification.application.port';
 export * from './use-cases';
 export * from './services';

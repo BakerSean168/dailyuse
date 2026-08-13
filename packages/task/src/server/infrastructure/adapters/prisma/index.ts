@@ -4,4 +4,5 @@ export { TaskDependencyPrismaRepository } from './task-dependency-prisma.reposit
 export { TaskFolderPrismaRepository } from './task-folder-prisma.repository';
 export { PrismaTaskWriteTransactionRunner } from './prisma-task-write-transaction-runner';
 export { PrismaTaskGoalOutboxDispatchStore } from './prisma-task-goal-outbox-dispatch-store';
+export { PrismaTaskBindingReadPort } from './prisma-task-binding-read-port';
 export * from './mappers';

@@ -381,6 +381,22 @@ export default {
     "lastSynced": "上次同步",
     "version": "版本"
   },
+  "resetPreferences": {
+    "title": "重置偏好设置",
+    "description": "将外观、区域、通知等偏好恢复到默认值。只重置单个分类时，其他分类不受影响。",
+    "categoryLabel": "分类",
+    "categoryAll": "全部分类",
+    "categoryAppearance": "外观",
+    "categoryLocale": "区域",
+    "categoryNotification": "通知",
+    "categoryPrivacy": "隐私",
+    "categoryExperimental": "实验性",
+    "resetButton": "重置",
+    "resetting": "正在重置…",
+    "currentTheme": "当前主题",
+    "currentNotification": "通知已开启",
+    "themeUnknown": "未知"
+  },
   "time": {
     "justNow": "刚刚",
     "minutesAgo": "{n}分钟前",

@@ -105,5 +105,10 @@ export default {
     "passwordReset": "密码已重置",
     "loginWithNew": "请使用新密码登录",
     "resetPasswordFailed": "重置密码失败"
+  },
+  "receipt": {
+    "requestId": "请求 ID",
+    "retry": "重试",
+    "dismiss": "关闭"
   }
 } as const;

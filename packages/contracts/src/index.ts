@@ -41,6 +41,10 @@ export { brandedId } from './primitives';
 export type { IdentityId } from './primitives';
 
 // ============================================================
+// Operations (W7 统一 operation timeline / replay / audit)
+// ============================================================
+export * from './modules/operations';
+// ============================================================
 // Result Pattern（Protocol Agnostic 统一结果类型，推荐）
 // ============================================================
 export {

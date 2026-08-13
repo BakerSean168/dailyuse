@@ -29,6 +29,7 @@ model Notification {
 
   channels NotificationChannel[]
   history  NotificationHistory[]
+  dispatchOutboxes NotificationDispatchOutbox[]
   account  Account               @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   @@index([status])
@@ -111,3 +112,41 @@ model NotificationTemplate {
   @@index([name])
   @@map("notification_templates")
 }
+
+/// NotificationDispatchOutbox 投递意图/Outbox（W2: LeaseClaim 与 durable receipt）
+model NotificationDispatchOutbox {
+  id                  String    @id
+  identityId          String    @map("identity_id")
+  notificationId      String    @map("notification_id")
+  source              String    @default("notification")
+  occurrenceKey       String    @map("occurrence_key")
+  channel             String
+  payloadJson         String    @map("payload_json")
+  idempotencyKey      String    @unique @map("idempotency_key")
+  status              String
+  attempt             Int       @default(0)
+  ownerToken          String?   @map("owner_token")
+  claimId             String?   @map("claim_id")
+  fencingToken        Int       @default(0) @map("fencing_token")
+  leaseExpiresAt      DateTime? @map("lease_expires_at")
+  lastHeartbeatAt     DateTime? @map("last_heartbeat_at")
+  heartbeatIntervalMs Int?      @map("heartbeat_interval_ms")
+  lastError           String?   @map("last_error")
+  nextRetryAt         DateTime? @map("next_retry_at")
+  deadLetterAt        DateTime? @map("dead_letter_at")
+  correlationId       String?   @map("correlation_id")
+  causationId         String?   @map("causation_id")
+  attemptsHistoryJson String?   @map("attempts_history_json")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  finishedAt          DateTime? @map("finished_at")
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  account      Account      @relation("AccountNotificationDispatchOutboxes", fields: [identityId], references: [id])
+
+  @@index([identityId])
+  @@index([status])
+  @@index([leaseExpiresAt])
+  @@map("notification_dispatch_outbox")
+}
+

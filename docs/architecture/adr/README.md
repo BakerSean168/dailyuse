@@ -57,6 +57,9 @@ updated: 2026-08-04T00:00:00+08:00
 | [ADR-039](./ADR-039-cloud-auth-and-local-profile-access.md) | Cloud Auth 与 Local Profile Access 分离 | 已采纳 | 2026-08-02 |
 | [ADR-040](./ADR-040-test-system-v2.md) | Test System V2 单一归属与稳定门禁 | 已采纳 | 2026-08-04 |
 | [ADR-041](./ADR-041-ci-cd-platform-v2.md) | CI/CD Platform V2 解耦与可扩展交付平台 | 已接受 | 2026-08-05 |
+| [ADR-042](./ADR-042-unified-business-operation-and-delivery-contracts.md) | 统一业务操作、可靠交付与 Fail-Fast 能力契约 | 已采纳 | 2026-08-09 |
+| [ADR-043](./ADR-043-unified-operation-timeline-replay-audit.md) | 统一 Operation Timeline、最小权限 Replay 与审计、统一指标命名 | 已采纳 | 2026-08-12 |
+| [ADR-044](./ADR-044-w0-w6-fault-matrix.md) | W0-W6 关键故障矩阵（ADR-043 附属：故障、注入层、durable fact、恢复动作、禁止状态、测试文件） | 已采纳 | 2026-08-12 |
 
 ## 维护规则
 

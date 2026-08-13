@@ -29,19 +29,20 @@ export const useUserSettingStore = defineStore('user-setting', {
   }),
 
   getters: {
-    /** 获取指定分类的偏好设置 */
+    /** 获取指定分类的偏好设置（未设置时回退默认值） */
     getCategory:
       (state) =>
       <K extends PreferenceCategory>(category: K): UserSettingPreferences[K] | undefined =>
-        state.userSetting?.preferences?.[category],
+        state.userSetting?.preferences?.[category] ?? state.defaults?.preferences?.[category],
 
-    /** 按 dot-notation key 获取值 (e.g., 'appearance.theme') */
+    /** 按 dot-notation key 获取值 (e.g., 'appearance.theme')，未设置时回退默认值 */
     getValue:
       (state) =>
       (key: string): unknown => {
-        if (!state.userSetting?.preferences) return undefined;
+        const source = state.userSetting?.preferences ?? state.defaults?.preferences;
+        if (!source) return undefined;
         const [category, field] = key.split('.', 2);
-        const cat = state.userSetting.preferences[category as PreferenceCategory];
+        const cat = source[category as PreferenceCategory];
         return cat ? (cat as Record<string, unknown>)[field] : undefined;
       },
   },
@@ -58,7 +59,7 @@ export const useUserSettingStore = defineStore('user-setting', {
       // Stub — composable fills this via API
     },
     async loadDefaults() {
-      // Stub — composable fills this via API
+      // Stub — composable fills this via API; store only hydrates defaults.
     },
 
     setLoading(v: boolean) {

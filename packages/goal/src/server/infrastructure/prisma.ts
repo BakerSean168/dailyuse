@@ -22,19 +22,26 @@ import { createGoalScheduleProjectionSource } from './schedule-projection-source
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
 import type { GoalScheduleProjectionSource } from '../../schedule-projection';
 import { createGoalTaskProgressHandler } from '../application/event-handlers';
+import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
 
 export function createGoalPrismaModule(
   db: PrismaClient,
-  options?: {
+  options: {
     runtimeContributions?: GoalRuntimeContributionsInput;
+    /** Required: W0 GoalDependencyReadPort implementation (provided by the Task package). */
+    taskBindingReadPort: GoalDependencyReadPort;
   },
 ): GoalModuleInstance {
+  if (!options?.taskBindingReadPort) {
+    throw new Error('[FAIL-CLOSED] createGoalPrismaModule requires options.taskBindingReadPort');
+  }
   return createGoalModule({
     goalRepository: new GoalPrismaRepository(db),
     goalFolderRepository: new GoalFolderPrismaRepository(db),
     goalRecordRepository: new GoalRecordPrismaRepository(db),
     focusModeRepository: new FocusModePrismaRepository(db),
     goalWriteTransactionRunner: new PrismaGoalWriteTransactionRunner(db),
+    taskBindingReadPort: options.taskBindingReadPort,
     runtimeContributions: options?.runtimeContributions,
     // R4：习惯仓储（Habit 模块）
     habitRepository: new PrismaHabitRepository(db),

@@ -27,9 +27,11 @@ import { KnowledgeWriteRequestPrismaRepository } from './adapters/prisma/knowled
 import { KnowledgeRepositoryLeasePrismaRepository } from './adapters/prisma/knowledge-repository-lease-prisma.repository';
 import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
 import { KnowledgeNoteCommitService } from '../application/services/knowledge-note-commit.service';
+import { PrismaOperationAuditRepository, globalUnifiedOperationMetrics } from '@memoflow/patterns/operations';
 
 export interface CreateRepositoryPrismaModuleOptions {
   readonly storageBaseDir?: string;
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
   readonly runtimeContributions?:
     RepositoryModuleRuntimeContribution | readonly RepositoryModuleRuntimeContribution[];
   readonly githubApp?: {
@@ -55,6 +57,10 @@ export function createRepositoryPrismaModule(
   db: PrismaClient,
   options: CreateRepositoryPrismaModuleOptions = {},
 ): RepositoryModuleInstance {
+  if (options.githubApp && !options.closureChecker) {
+    throw new Error('[FAIL-CLOSED] createRepositoryPrismaModule requires options.closureChecker dependency');
+  }
+
   const connectionRepository = options.githubApp
     ? new KnowledgeRepositoryConnectionPrismaRepository(db)
     : null;
@@ -89,6 +95,9 @@ export function createRepositoryPrismaModule(
           cloudDataPurger: options.knowledgeRepositoryCloudDataPurger,
         })
       : null;
+  const writeRequestRepository = options.githubApp
+    ? new KnowledgeWriteRequestPrismaRepository(db)
+    : null;
   const knowledgeRepositoryProjectionService =
     options.githubApp &&
     connectionRepository &&
@@ -102,18 +111,22 @@ export function createRepositoryPrismaModule(
           projectionRepository,
           attachmentRepository,
           attachmentContentCache: attachmentContentCache ?? undefined,
+          writeRequestRepository: writeRequestRepository ?? undefined,
           leaseRepository: leaseRepository ?? undefined,
           githubAppClient,
+          metrics: globalUnifiedOperationMetrics,
         })
       : null;
   const knowledgeNoteCommitService =
-    options.githubApp && connectionRepository && githubAppClient && projectionRepository
+    options.githubApp && connectionRepository && githubAppClient && projectionRepository && options.closureChecker
       ? new KnowledgeNoteCommitService({
           connectionRepository,
           projectionRepository,
-          writeRequestRepository: new KnowledgeWriteRequestPrismaRepository(db),
+          writeRequestRepository: writeRequestRepository ?? new KnowledgeWriteRequestPrismaRepository(db),
           leaseRepository: leaseRepository ?? undefined,
           githubAppClient,
+          closureChecker: options.closureChecker,
+          metrics: globalUnifiedOperationMetrics,
         })
       : null;
 
@@ -131,5 +144,6 @@ export function createRepositoryPrismaModule(
       ...configuredRuntimeContributions,
       ...(knowledgeRepositoryProjectionService ? [knowledgeRepositoryProjectionService] : []),
     ],
+    auditRepository: new PrismaOperationAuditRepository(db),
   });
 }

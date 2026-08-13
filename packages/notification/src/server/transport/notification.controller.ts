@@ -162,4 +162,35 @@ export class NotificationController {
     // identityId always from auth context — never from client body dual-track.
     return this.useCases.updatePreferences(parsed.data, ctx.identityId);
   }
+
+  // ==================== Dead-Letter & Receipt Operations ====================
+
+  async queryDeadLetters(ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.queryDeadLetters(ctx.identityId);
+  }
+
+  async replayDeadLetter(operationId: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.replayDeadLetter(operationId, ctx.identityId);
+  }
+
+  async getDeliveryReceipts(
+    ctx: Context,
+    query?: { limit?: number; lastCursor?: string; since?: string; status?: string },
+  ): Promise<Result<unknown>> {
+    return this.useCases.getDeliveryReceipts(ctx.identityId, query);
+  }
+
+  async getOperationTimeline(
+    ctx: Context,
+    query?: { status?: string; limit?: number },
+  ): Promise<Result<unknown>> {
+    return this.useCases.getOperationTimeline(ctx.identityId, query);
+  }
+
+  async getOperationAudit(
+    ctx: Context,
+    query?: { source?: string; operationId?: string; limit?: number },
+  ): Promise<Result<unknown>> {
+    return this.useCases.getOperationAudit(ctx.identityId, query);
+  }
 }

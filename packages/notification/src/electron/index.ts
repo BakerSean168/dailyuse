@@ -18,6 +18,7 @@ import {
   type IElectronModuleContext,
 } from '@memoflow/contracts/electron';
 import { fail, ok } from '@memoflow/contracts/result';
+import { createPowerSyncClosureChecker } from '../server/infrastructure/powersync';
 import { CreateNotificationUseCase } from '../commands';
 import type { ScheduleNotificationPort } from '../schedule-execution';
 import {
@@ -28,7 +29,6 @@ import {
 } from '../server/infrastructure';
 import { createLogger } from '@memoflow/utils/logger';
 import {
-  createNotificationRuntimeContribution,
   type NotificationModuleInstance,
 } from '../server/infrastructure';
 import type { INotificationRepository } from '../server/domain/repositories';
@@ -76,6 +76,7 @@ export function createNotificationPowerSyncScheduleNotificationPort(
     new PowerSyncNotificationRepository(db),
     new PowerSyncNotificationTemplateRepository(db),
     new PowerSyncNotificationPreferenceRepository(db),
+    createPowerSyncClosureChecker(db),
   );
 
   return {
@@ -102,8 +103,7 @@ export const NotificationElectronModule: IElectronModule = {
     // 组合根 — 使用 PowerSync 仓储 + 运行时贡献创建模块。
     // 运行时贡献传入模块工厂，由模块的 start()/dispose() 生命周期
     // 正确管理事件监听器。重复注册/销毁不会泄漏监听器。
-    const runtimeContribution = createNotificationRuntimeContribution();
-    const notificationModule = createNotificationPowerSyncModule(db, runtimeContribution);
+    const notificationModule = createNotificationPowerSyncModule(db);
 
     activeNotificationModule = notificationModule;
     notificationModule.start();

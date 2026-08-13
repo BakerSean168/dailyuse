@@ -1,6 +1,10 @@
 import type { Result } from '@memoflow/contracts/result';
 import type { Context } from '@memoflow/contracts/shared';
 import type {
+  OperationTimelineEntry,
+  OperationAuditRecord,
+} from '@memoflow/contracts/operations';
+import type {
   BatchScheduleTaskOperationRequest,
   CreateScheduleRequest,
   CreateScheduleTaskRequest,
@@ -30,6 +34,12 @@ export interface ScheduleApplicationPort {
   batchOperateTasks(data: BatchScheduleTaskOperationRequest, ctx: Context): Promise<Result<unknown>>;
   batchDeleteTasks(ids: string[], ctx: Context): Promise<Result<unknown>>;
   updateTaskMetadata(id: string, metadata: UpdateTaskMetadataRequest, ctx: Context): Promise<Result<unknown>>;
+  /** W7: 按 identity 查询 conflict-rebuild operation timeline */
+  queryRebuildTimeline(ctx: Context): Promise<Result<OperationTimelineEntry[]>>;
+  /** W7: 重放失败的 rebuild outbox 并记录审计 */
+  replayRebuildOutbox(operationId: string, ctx: Context): Promise<Result<unknown>>;
+  /** W7: 查询操作审计记录（actor 最小权限） */
+  getOperationAudit(ctx: Context): Promise<Result<OperationAuditRecord[]>>;
 }
 
 /**
@@ -40,7 +50,7 @@ export interface ScheduleEventApplicationPort {
   getEvent(id: string, ctx: Context): Promise<Result<unknown>>;
   listEvents(query: GetSchedulesByTimeRangeInternalQuery, ctx: Context): Promise<Result<unknown>>;
   updateEvent(id: string, data: UpdateScheduleRequest, ctx: Context): Promise<Result<unknown>>;
-  deleteEvent(id: string, ctx: Context): Promise<Result<unknown>>;
+  deleteEvent(id: string, ctx: Context, expectedVersion: number): Promise<Result<unknown>>;
   getConflicts(id: string, ctx: Context): Promise<Result<unknown>>;
   detectConflicts(data: DetectConflictsInternalQuery): Promise<Result<unknown>>;
   createEventWithConflictDetection(

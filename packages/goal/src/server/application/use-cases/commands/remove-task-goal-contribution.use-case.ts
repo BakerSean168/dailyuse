@@ -4,7 +4,6 @@ import { error, ok } from '@memoflow/contracts/result';
 import type { IGoalRecordRepository, IGoalRepository } from '../../../domain';
 import { GoalVersionConflictError, KeyResultProgress } from '../../../domain';
 import {
-  createInlineGoalWriteTransactionRunner,
   type GoalWriteTransactionRunner,
 } from './goal-write-support';
 
@@ -12,8 +11,7 @@ export class RemoveTaskGoalContributionUseCase {
   constructor(
     goalRepository: IGoalRepository,
     goalRecordRepository: IGoalRecordRepository,
-    private readonly transactionRunner: GoalWriteTransactionRunner =
-      createInlineGoalWriteTransactionRunner({ goalRepository, goalRecordRepository }),
+    private readonly transactionRunner: GoalWriteTransactionRunner,
   ) {}
 
   async execute(

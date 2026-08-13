@@ -1262,7 +1262,7 @@ describe('AIChatView', () => {
       listConversations: vi.fn(),
       listMessages: vi.fn(),
       createConversation: vi.fn(),
-      updateConversation: vi.fn(),
+      updateConversation: vi.fn(async () => ok({})),
       deleteConversation: vi.fn(),
       generateGoal: vi.fn(),
       queryKnowledge: vi.fn(),

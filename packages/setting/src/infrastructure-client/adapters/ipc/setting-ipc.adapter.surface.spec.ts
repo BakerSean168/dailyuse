@@ -24,6 +24,7 @@ describe('SettingIpcAdapter channel surface', () => {
   it('keeps live SettingChannels names stable', () => {
     expect(Object.values(SettingChannels)).toEqual([
       'setting:all',
+      'setting:defaults',
       'setting:patch',
       'setting:reset',
       'setting:import',

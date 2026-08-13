@@ -67,6 +67,26 @@ export default {
       "Unknown": "未知状态"
     }
   },
+  "writeRequestLedger": {
+    "title": "写入请求账本",
+    "description": "每次已提交的写入都有独立的 Git commit 状态与投影状态；投影 Pending 或 Failed 的记录可以重放。",
+    "refresh": "刷新",
+    "empty": "暂无写入请求",
+    "emptyUnavailable": "当前运行环境下写入请求账本不可用",
+    "columnPath": "路径",
+    "columnCommit": "Commit",
+    "columnProjection": "投影",
+    "commitStatus": "Commit：{status}",
+    "projectionStatus": "投影：{status}",
+    "commitUncommitted": "未提交",
+    "commitSha": "{sha}",
+    "projectionAttempts": "{count} 次尝试",
+    "replay": "重放",
+    "replaying": "重放中…",
+    "replayed": "重放完成 → {status}",
+    "errorTitle": "账本错误",
+    "loadFailed": "加载写入请求失败"
+  },
   "localVault": {
     "selectTitle": "选择本地 Obsidian Vault",
     "selectDescription": "笔记直接保留在你选择的文件夹中；未连接 GitHub 时不会上传到云端。",

@@ -6,6 +6,7 @@ import { aLoadedTaskTemplate, aTaskInstance } from '../../../../../testing';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import { CompleteTaskInstanceUseCase } from '../complete-task-instance.use-case';
+import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
 describe('CompleteTaskInstanceUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
@@ -24,11 +25,24 @@ describe('CompleteTaskInstanceUseCase', () => {
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
-    useCase = new CompleteTaskInstanceUseCase(instanceRepo, templateRepo);
+    useCase = new CompleteTaskInstanceUseCase(
+      instanceRepo,
+      templateRepo,
+      createInlineTaskWriteTransactionRunner({
+        instanceRepository: instanceRepo,
+        templateRepository: templateRepo,
+      }),
+    );
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('throws an error if transactionRunner is missing', () => {
+    expect(
+      () => new CompleteTaskInstanceUseCase(instanceRepo, templateRepo, undefined as any),
+    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to CompleteTaskInstanceUseCase');
   });
 
   it('should return NOT_FOUND when instance does not exist', async () => {

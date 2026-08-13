@@ -22,6 +22,7 @@ export interface CalendarEntryServerDTO {
   priority?: number;
   location?: string;
   attendees?: string[];
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
 }

@@ -69,3 +69,4 @@ export {
 export {
   createReminderRuntimeContribution,
 } from './runtime';
+export { ReminderAccountClosedConsumer } from './consumers/reminder-account-closed.consumer';

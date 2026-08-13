@@ -4,6 +4,7 @@ import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { aTaskInstance } from '../../../../../testing';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { UncompleteTaskInstanceUseCase } from '../uncomplete-task-instance.use-case';
+import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
 describe('UncompleteTaskInstanceUseCase', () => {
   let instanceRepository: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
@@ -14,7 +15,16 @@ describe('UncompleteTaskInstanceUseCase', () => {
       findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new UncompleteTaskInstanceUseCase(instanceRepository);
+    useCase = new UncompleteTaskInstanceUseCase(
+      instanceRepository,
+      createInlineTaskWriteTransactionRunner({ instanceRepository }),
+    );
+  });
+
+  it('throws an error if transactionRunner is missing', () => {
+    expect(
+      () => new UncompleteTaskInstanceUseCase(instanceRepository, undefined as any),
+    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to UncompleteTaskInstanceUseCase');
   });
 
   it('returns a completed instance to Pending and saves it', async () => {

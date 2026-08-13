@@ -6,6 +6,7 @@ import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { TaskTemplateStatus } from '@memoflow/contracts/task';
 import { ActivateTaskTemplateUseCase } from '../activate-task-template.use-case';
+import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
 const mockGenerateInstances = vi.fn().mockReturnValue([]);
 vi.mock('../../../../domain/services', () => {
@@ -36,11 +37,24 @@ describe('ActivateTaskTemplateUseCase', () => {
       saveMany: vi.fn().mockResolvedValue(undefined),
     });
 
-    useCase = new ActivateTaskTemplateUseCase(templateRepo, instanceRepo);
+    useCase = new ActivateTaskTemplateUseCase(
+      templateRepo,
+      instanceRepo,
+      createInlineTaskWriteTransactionRunner({
+        templateRepository: templateRepo,
+        instanceRepository: instanceRepo,
+      }),
+    );
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('throws an error if transactionRunner is missing', () => {
+    expect(
+      () => new ActivateTaskTemplateUseCase(templateRepo, instanceRepo, undefined as any),
+    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to ActivateTaskTemplateUseCase');
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {

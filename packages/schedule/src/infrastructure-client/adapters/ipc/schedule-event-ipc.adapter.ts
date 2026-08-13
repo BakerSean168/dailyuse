@@ -47,8 +47,8 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
     return this.ipcClient.invoke(ScheduleChannels.UPDATE, id, data);
   }
 
-  async deleteSchedule(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(ScheduleChannels.DELETE, id);
+  async deleteSchedule(id: string, expectedVersion: number): Promise<Result<void>> {
+    return this.ipcClient.invoke(ScheduleChannels.DELETE, id, { expectedVersion });
   }
 
   // ===== Schedule Conflict Detection =====

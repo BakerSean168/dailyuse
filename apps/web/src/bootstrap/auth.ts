@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import { APP_TITLE_NAME } from '@memoflow/assets';
 
 import AuthApp from '../AuthApp.vue';
@@ -18,6 +19,9 @@ export async function bootstrapAuthApp() {
   applyAuthTheme();
   applyAuthLocale(presentation.locale);
 
+  // Pinia drives the shared authentication store, which persists the structured
+  // password-mutation receipt across page reloads.
+  app.use(createPinia());
   app.use(createAuthI18n(presentation.locale));
   app.use(installAuthServices);
   app.mount('#app');

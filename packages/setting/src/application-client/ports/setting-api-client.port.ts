@@ -13,6 +13,7 @@ import type { UserSettingClientDTO, PreferenceCategory } from '@memoflow/contrac
  */
 export interface ISettingApiClient {
   getUserSettings(): Promise<Result<UserSettingClientDTO>>;
+  getUserSettingDefaults(): Promise<Result<UserSettingClientDTO>>;
   patchCategory(
     category: PreferenceCategory,
     patch: Record<string, unknown>,

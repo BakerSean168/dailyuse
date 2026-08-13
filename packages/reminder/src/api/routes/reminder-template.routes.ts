@@ -124,6 +124,7 @@ export function registerReminderTemplateRoutes(
           limit: parseNumber(req.query?.limit),
           importanceLevel: parseString(req.query?.importanceLevel),
           type: parseString(req.query?.type),
+          timezone: parseString(req.query?.timezone),
         },
         ctx,
       ),
@@ -151,6 +152,7 @@ export function registerReminderTemplateRoutes(
             typeof req.query?.includeExpired === 'string'
               ? req.query.includeExpired === 'true'
               : undefined,
+          timezone: parseString(req.query?.timezone),
         },
         ctx,
       ),

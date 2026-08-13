@@ -7,6 +7,7 @@ import type {
   UpdateReminderTemplateReq,
 } from '@memoflow/contracts/reminder';
 import type { ReminderContext } from './useReminderContext';
+import { getUserTimezone } from '../utils/user-timezone';
 
 export function useReminderTemplates(ctx: ReminderContext) {
   const { store, service, savingId, executeReminderOperation } = ctx;
@@ -34,10 +35,13 @@ export function useReminderTemplates(ctx: ReminderContext) {
   async function getTodaySchedule(params?: {
     limit?: number;
     includeExpired?: boolean;
+    timezone?: string;
   }): Promise<GetReminderTodayScheduleRes | null> {
     store.setError(null);
+    const userTz = params?.timezone ?? getUserTimezone() ?? undefined;
+    const requestParams = userTz ? { ...params, timezone: userTz } : params;
     const result = await executeReminderOperation<GetReminderTodayScheduleRes>(
-      () => service.getTodaySchedule(params),
+      () => service.getTodaySchedule(requestParams),
       'reminder.error.loadTemplatesFailed',
     );
     if (result.ok) {

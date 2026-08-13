@@ -40,6 +40,9 @@ import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
+  ListKnowledgeWriteRequestsReq,
+  ListKnowledgeWriteRequestsRes,
+  KnowledgeWriteRequestReplayResponse,
 } from '@memoflow/contracts/repository';
 import type { IRepositoryApiClient } from './ports/repository-api-client.port';
 
@@ -134,6 +137,18 @@ export class RepositoryClientService implements IRepositoryApiClient {
     request: CreateConfirmedKnowledgeNoteReq,
   ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>> {
     return this.repositoryApi.createConfirmedKnowledgeNote(request);
+  }
+
+  listKnowledgeWriteRequests(
+    request?: ListKnowledgeWriteRequestsReq,
+  ): Promise<Result<ListKnowledgeWriteRequestsRes>> {
+    return this.repositoryApi.listKnowledgeWriteRequests(request);
+  }
+
+  replayKnowledgeWriteRequestProjection(
+    writeRequestId: string,
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>> {
+    return this.repositoryApi.replayKnowledgeWriteRequestProjection(writeRequestId);
   }
 
   getLocalVaultBinding(): Promise<Result<LocalVaultBindingClientDTO | null>> {

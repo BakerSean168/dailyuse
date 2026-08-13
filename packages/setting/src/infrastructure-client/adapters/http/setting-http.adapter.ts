@@ -15,6 +15,10 @@ export class SettingHttpAdapter implements ISettingApiClient {
     return this.httpClient.get(this.baseUrl);
   }
 
+  async getUserSettingDefaults(): Promise<Result<UserSettingClientDTO>> {
+    return this.httpClient.get(`${this.baseUrl}/defaults`);
+  }
+
   async patchCategory(
     category: PreferenceCategory,
     patch: Record<string, unknown>,

@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "仓库模块 - 文件/文档仓库管理",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -23,6 +25,10 @@
     "./electron": {
       "types": "./dist/electron/index.d.ts",
       "import": "./dist/electron/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
     }
   },
   "scripts": {},

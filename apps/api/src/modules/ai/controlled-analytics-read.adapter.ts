@@ -2,6 +2,7 @@ import type { IAnalyticsReadPort } from '@memoflow/ai/ports';
 import type { PrismaClient } from '@memoflow/database';
 import { SearchGoalsUseCase } from '@memoflow/goal/analytics';
 import { createGoalPrismaModule } from '@memoflow/goal';
+import { PrismaTaskBindingReadPort } from '@memoflow/task';
 import { GetTaskDashboardUseCase } from '@memoflow/task/analytics';
 import { createTaskPrismaRepositories } from '@memoflow/task';
 
@@ -11,7 +12,9 @@ export class ControlledAnalyticsReadAdapter implements IAnalyticsReadPort {
   constructor(private readonly db: PrismaClient) {}
 
   async buildContext(identityId: string, question: string) {
-    const goalModule = createGoalPrismaModule(this.db);
+    const goalModule = createGoalPrismaModule(this.db, {
+      taskBindingReadPort: new PrismaTaskBindingReadPort(this.db),
+    });
     const taskRepos = createTaskPrismaRepositories(this.db);
     const dashboard = await getApiDashboardData(this.db, identityId);
     const taskDashboard = await new GetTaskDashboardUseCase(taskRepos.taskTemplateRepository).execute(

@@ -9,7 +9,13 @@ export class ScheduleConflictCacheService {
     this.conflictDetectionService = new ScheduleConflictDetectionService(scheduleRepository);
   }
 
-  async refreshForTimeRange(identityId: string, startTime: number, endTime: number): Promise<void> {
+  async refreshForTimeRange(
+    identityId: string,
+    startTime: number,
+    endTime: number,
+    targetScheduleId?: string,
+    sourceRevision?: number,
+  ): Promise<void> {
     const impactedSchedules = await this.scheduleRepository.findByTimeRange(
       identityId,
       startTime,
@@ -17,19 +23,26 @@ export class ScheduleConflictCacheService {
     );
 
     for (const schedule of impactedSchedules) {
-      await this.refreshSchedule(schedule);
+      const explicitRev =
+        targetScheduleId && schedule.id === targetScheduleId && sourceRevision !== undefined
+          ? sourceRevision
+          : schedule.version;
+      await this.refreshSchedule(schedule, explicitRev);
     }
   }
 
-  async refreshSchedule(schedule: CalendarEntry): Promise<void> {
+  async refreshSchedule(schedule: CalendarEntry, sourceRevision?: number): Promise<void> {
     const result = await this.conflictDetectionService.detectConflictsForEntry(schedule);
+    const conflictingIds = result.hasConflict
+      ? result.conflicts.map((conflict) => conflict.scheduleId)
+      : null;
 
-    if (result.hasConflict) {
-      schedule.markAsConflicting(result.conflicts.map((conflict) => conflict.scheduleId));
-    } else if (schedule.hasConflict) {
-      schedule.clearConflicts();
-    }
-
-    await this.scheduleRepository.save(schedule);
+    await this.scheduleRepository.updateConflictProjection(
+      schedule.identityId,
+      schedule.id,
+      result.hasConflict,
+      conflictingIds,
+      sourceRevision ?? schedule.version,
+    );
   }
 }

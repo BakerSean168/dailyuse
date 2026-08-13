@@ -1,7 +1,7 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import type { IEventBus } from '@memoflow/patterns';
 import type {
-  GoalWriteRepositories,
+  GoalWriteTransactionContext,
   GoalWriteTransactionRunner,
 } from '../../../application/use-cases/commands/goal-write-support';
 import {
@@ -10,6 +10,7 @@ import {
 } from '../goal-write-buffered-event-bus';
 import { GoalPowerSyncRepository } from './goal-powersync.repository';
 import { GoalRecordPowerSyncRepository } from './goal-record-powersync.repository';
+import { PowerSyncGoalReliableOperationAdapter } from './powersync-goal-reliable-operation.adapter';
 
 export class PowerSyncGoalWriteTransactionRunner implements GoalWriteTransactionRunner {
   constructor(
@@ -17,14 +18,16 @@ export class PowerSyncGoalWriteTransactionRunner implements GoalWriteTransaction
     private readonly eventPublisher: IEventBus = committedGoalWriteEventBus,
   ) {}
 
-  async run<T>(work: (repositories: GoalWriteRepositories) => Promise<T>): Promise<T> {
+  async run<T>(work: (context: GoalWriteTransactionContext) => Promise<T>): Promise<T> {
     const bufferedEventBus = new BufferedGoalWriteEventBus();
-    const result = await this.db.writeTransaction((tx: IElectronDatabaseTransaction) =>
-      work({
+    const result = await this.db.writeTransaction(async (tx: IElectronDatabaseTransaction) => {
+      const receiptAdapter = new PowerSyncGoalReliableOperationAdapter(tx);
+      return work({
         goalRepository: new GoalPowerSyncRepository(tx, bufferedEventBus, true),
         goalRecordRepository: new GoalRecordPowerSyncRepository(tx),
-      }),
-    );
+        recordGoalCompletionReceipt: (input) => receiptAdapter.recordGoalCompletionReceipt(input),
+      });
+    });
     await bufferedEventBus.flush(this.eventPublisher);
     return result;
   }

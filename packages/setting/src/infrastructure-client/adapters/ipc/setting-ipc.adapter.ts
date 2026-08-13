@@ -14,6 +14,10 @@ export class SettingIpcAdapter implements ISettingApiClient {
     return this.ipcClient.invoke(SettingChannels.GET_ALL);
   }
 
+  async getUserSettingDefaults(): Promise<Result<UserSettingClientDTO>> {
+    return this.ipcClient.invoke(SettingChannels.GET_DEFAULTS);
+  }
+
   async patchCategory(
     category: PreferenceCategory,
     patch: Record<string, unknown>,

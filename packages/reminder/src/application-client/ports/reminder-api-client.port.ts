@@ -55,10 +55,12 @@ export interface IReminderApiClient {
     limit?: number;
     importanceLevel?: string;
     type?: string;
+    timezone?: string;
   }): Promise<Result<GetUpcomingRemindersRes>>;
   getTodaySchedule(params?: {
     limit?: number;
     includeExpired?: boolean;
+    timezone?: string;
   }): Promise<Result<GetReminderTodayScheduleRes>>;
 
   // ===== 分组 CRUD =====

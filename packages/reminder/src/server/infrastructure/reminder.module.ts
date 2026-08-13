@@ -8,8 +8,15 @@ import type { IReminderGroupRepository } from '../domain/repositories/i-reminder
 import type { IReminderResponseRepository } from '../domain/repositories/i-reminder-response-repository';
 import type { IUserReminderPreferenceRepository } from '../domain/repositories/i-user-reminder-preference-repository';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import { fail } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import type { ReminderResponseAction } from '@memoflow/contracts/reminder';
+import type {
+  BusinessOperationReceipt,
+  ReminderReliableOperationPort,
+  ReminderReplayDeadLetterInput,
+} from '@memoflow/contracts/reliable-messaging';
+import type { OperationAuditRecordInput, OperationAuditRepository } from '@memoflow/patterns/operations';
+import { runTimelineQueryWithAudit } from '@memoflow/patterns/operations';
 import type { ReminderTemplate } from '../domain/aggregates/reminder-template';
 import { ReminderDomainService } from '../domain/services/reminder-domain-service';
 import type { ReminderApplicationPort } from '../application';
@@ -38,14 +45,21 @@ export interface ReminderModuleDependencies {
   readonly reminderGroupRepository: IReminderGroupRepository;
   readonly reminderResponseRepository: IReminderResponseRepository;
   readonly userReminderPreferenceRepository: IUserReminderPreferenceRepository;
+  readonly closureChecker: (identityId: string) => Promise<boolean>;
+  readonly accountTimezonePort?: import('../domain/ports/account-timezone.port').AccountTimezonePort;
   readonly runtimeContributions?: ReminderRuntimeContributionsInput;
   /** R3c：snooze 副作用（可选）——推迟提醒的下次触发。 */
   readonly snoozeRescheduler?: import('../application/use-cases/commands/record-reminder-response.use-case').ReminderSnoozeRescheduler;
+  /** W7：可靠操作端口（timeline/replay 查询） */
+  readonly reliablePort?: ReminderReliableOperationPort;
+  /** W7：审计仓库（最小权限 + 审计） */
+  readonly auditRepository?: OperationAuditRepository;
 }
 
 export interface ReminderModuleRuntimeContribution {
   start(): void | Promise<void>;
   stop(): void | Promise<void>;
+  execute?(): Promise<void>;
 }
 
 export interface ReminderModuleInstance {
@@ -77,6 +91,10 @@ export function createReminderUseCases(
     templateMapper?: ReminderTemplateClientMapper;
   },
 ): ReminderModuleUseCases {
+  if (!dependencies.closureChecker) {
+    throw new Error('[FAIL-CLOSED] ReminderModule requires closureChecker dependency');
+  }
+
   const { reminderTemplateRepository, reminderGroupRepository, reminderResponseRepository } = dependencies;
 
   const reminderDomainService =
@@ -96,6 +114,7 @@ export function createReminderUseCases(
       reminderGroupRepository,
       reminderDomainService,
       templateMapper,
+      dependencies.closureChecker,
     ),
     listReminderTemplates: new ListReminderTemplatesUseCase(
       reminderTemplateRepository,
@@ -183,6 +202,7 @@ export function createReminderModule(
   });
   const reminderScheduleQueryApplicationService = new ReminderScheduleQueryApplicationService({
     reminderTemplateRepository,
+    accountTimezonePort: dependencies.accountTimezonePort,
   });
   const reminderTemplateActionApplicationService = new ReminderTemplateActionApplicationService({
     reminderTemplateRepository,
@@ -326,6 +346,69 @@ export function createReminderModule(
 
     async updatePreferences(data, ctx) {
       return reminderPreferencesApplicationService.updatePreferences(data, ctx);
+    },
+
+    async queryOperationTimeline(ctx) {
+      if (!dependencies.reliablePort || !dependencies.auditRepository) {
+        throw new Error(
+          '[FAIL-CLOSED] reminder operation timeline requires explicit reliablePort and auditRepository dependencies (timeline_query audit is mandatory).',
+        );
+      }
+      const { entries } = await runTimelineQueryWithAudit({
+        repository: dependencies.auditRepository,
+        source: 'reminder',
+        actorIdentityId: ctx.identityId,
+        filters: { limit: 100 },
+        query: () => dependencies.reliablePort!.queryOperationTimeline(ctx.identityId),
+      });
+      return ok(entries);
+    },
+
+    async replayOperation(operationId, ctx) {
+      if (!dependencies.reliablePort || !dependencies.auditRepository) {
+        throw new Error(
+          '[FAIL-CLOSED] reminder operation replay requires reliablePort and auditRepository dependencies.',
+        );
+      }
+      try {
+        const port = dependencies.reliablePort as unknown as {
+          replayDeadLetterWithAudit?: (
+            input: ReminderReplayDeadLetterInput,
+            audit: OperationAuditRecordInput,
+            auditRepository: OperationAuditRepository,
+          ) => Promise<BusinessOperationReceipt>;
+        };
+        if (!port.replayDeadLetterWithAudit) {
+          throw new Error(
+            '[FAIL-CLOSED] reminder replay requires a port implementing atomic replayDeadLetterWithAudit (state + audit in one transaction).',
+          );
+        }
+        const receipt = await port.replayDeadLetterWithAudit(
+          { identityId: ctx.identityId, operationId },
+          {
+            actorIdentityId: ctx.identityId,
+            source: 'reminder',
+            operationId,
+            action: 'replay',
+          },
+          dependencies.auditRepository,
+        );
+        return ok(receipt);
+      } catch (err) {
+        return fail({
+          code: 'NOT_FOUND',
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+
+    async getOperationAudit(ctx) {
+      if (!dependencies.auditRepository) {
+        throw new Error(
+          '[FAIL-CLOSED] reminder operation audit requires an explicit auditRepository dependency.',
+        );
+      }
+      return ok(await dependencies.auditRepository.listByActor({ identityId: ctx.identityId }));
     },
   };
 

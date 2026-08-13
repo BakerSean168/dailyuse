@@ -28,6 +28,10 @@
       "types": "./dist/schedule-projection/index.d.ts",
       "import": "./dist/schedule-projection/index.js"
     },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    },
     "./electron": {
       "types": "./dist/electron/index.d.ts",
       "import": "./dist/electron/index.js"

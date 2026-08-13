@@ -84,6 +84,7 @@ export class ScheduleConflictDetectionService {
       priority: scheduleDto.priority ?? null,
       location: scheduleDto.location ?? null,
       attendees: scheduleDto.attendees ? [...scheduleDto.attendees] : null,
+      version: scheduleDto.version ?? 0,
       createdAt: new Date(scheduleDto.createdAt),
       updatedAt: new Date(scheduleDto.updatedAt),
     });
@@ -109,6 +110,7 @@ export class ScheduleConflictDetectionService {
       priority: null,
       location: null,
       attendees: null,
+      version: 0,
       createdAt: now,
       updatedAt: now,
     };

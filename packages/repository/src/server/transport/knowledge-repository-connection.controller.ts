@@ -24,6 +24,7 @@ import {
   ListKnowledgeProjectionsSchema,
   CreateConfirmedKnowledgeNoteSchema,
   GetKnowledgeNoteLinkGraphSchema,
+  ListKnowledgeWriteRequestsSchema,
   type CreateConfirmedKnowledgeNoteReq,
   type CreateConfirmedKnowledgeNoteResponse,
   type KnowledgeNoteProjectionClientDTO,
@@ -34,7 +35,11 @@ import {
   type KnowledgeAttachmentContentResponse,
   type KnowledgeAttachmentProjectionListResponse,
   type ListKnowledgeAttachmentProjectionsReq,
+  type ListKnowledgeWriteRequestsReq,
+  type ListKnowledgeWriteRequestsRes,
+  type KnowledgeWriteRequestReplayResponse,
 } from '@memoflow/contracts/repository';
+import { OperationAuditQuerySchema } from '@memoflow/contracts/operations';
 import { formatZodErrors } from '@memoflow/utils/result';
 
 export interface KnowledgeRepositoryConnectionUseCases {
@@ -97,6 +102,19 @@ export interface KnowledgeRepositoryConnectionUseCases {
     ctx: Context,
     request: CreateConfirmedKnowledgeNoteReq,
   ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>>;
+  listKnowledgeWriteRequests(
+    ctx: Context,
+    request: ListKnowledgeWriteRequestsReq,
+  ): Promise<Result<ListKnowledgeWriteRequestsRes>>;
+  replayKnowledgeWriteRequestProjection(
+    ctx: Context,
+    writeRequestId: string,
+  ): Promise<Result<KnowledgeWriteRequestReplayResponse>>;
+  queryKnowledgeTimeline(ctx: Context): Promise<Result<unknown>>;
+  getOperationAudit(
+    ctx: Context,
+    request?: { source?: string; operationId?: string; limit?: number },
+  ): Promise<Result<unknown>>;
 }
 
 export class KnowledgeRepositoryConnectionController {
@@ -270,4 +288,55 @@ export class KnowledgeRepositoryConnectionController {
     }
     return this.useCases.createConfirmedKnowledgeNote(ctx, parsed.data);
   }
+
+  async listWriteRequests(ctx: Context, input: unknown) {
+    const parsed = ListKnowledgeWriteRequestsSchema.safeParse(input ?? {});
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid knowledge write request query',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.listKnowledgeWriteRequests(ctx, parsed.data);
+  }
+
+  async replayWriteRequestProjection(ctx: Context, writeRequestId: string) {
+    if (!writeRequestId) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'writeRequestId is required' });
+    }
+    return this.useCases.replayKnowledgeWriteRequestProjection(ctx, writeRequestId);
+  }
+
+  async queryKnowledgeTimeline(ctx: Context) {
+    return this.useCases.queryKnowledgeTimeline(ctx);
+  }
+
+  async getOperationAudit(ctx: Context, input: unknown) {
+    const parsed = OperationAuditQuerySchema.safeParse({
+      identityId: ctx.identityId,
+      ...(typeof input === 'object' && input !== null ? input : {}),
+      limit: parseAuditLimit(input),
+    });
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid audit query',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.getOperationAudit(ctx, {
+      source: parsed.data.source,
+      operationId: parsed.data.operationId,
+      limit: parsed.data.limit,
+    });
+  }
+}
+
+function parseAuditLimit(input: unknown): number | undefined {
+  if (typeof input === 'object' && input !== null && 'limit' in input) {
+    const raw = Number((input as { limit: unknown }).limit);
+    if (Number.isFinite(raw)) return Math.min(200, Math.max(1, Math.floor(raw)));
+  }
+  return 50;
 }

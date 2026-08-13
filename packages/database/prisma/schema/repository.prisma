@@ -329,20 +329,31 @@ model KnowledgeAttachmentContentCache {
 }
 
 /// Idempotency ledger for confirmed Web note creation requests.
+/// The Git commit state (`status`/`commitSha`) and the projection operation
+/// state (`projectionStatus`/`projectionError*`/`projectedAt`) are tracked
+/// separately so a Committed note whose projection is pending/failed stays
+/// visible and replayable instead of being conflated with the commit result.
 model KnowledgeWriteRequest {
-  id           String    @id
-  identityId   String    @map("identity_id")
-  connectionId String    @map("connection_id")
-  requestId    String    @map("request_id")
-  requestHash  String    @map("request_hash")
-  relativePath String    @map("relative_path")
-  status       String    @default("PENDING")
-  commitSha    String?   @map("commit_sha")
-  errorCode    String?   @map("error_code")
-  errorMessage String?   @map("error_message")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  completedAt  DateTime? @map("completed_at")
+  id                    String    @id
+  identityId            String    @map("identity_id")
+  connectionId          String    @map("connection_id")
+  requestId             String    @map("request_id")
+  requestHash           String    @map("request_hash")
+  relativePath          String    @map("relative_path")
+  status                String    @default("PENDING")
+  commitSha             String?   @map("commit_sha")
+  errorCode             String?   @map("error_code")
+  errorMessage          String?   @map("error_message")
+  projectionStatus      String    @default("PENDING") @map("projection_status")
+  projectionErrorCode   String?   @map("projection_error_code")
+  projectionErrorMessage String?  @map("projection_error_message")
+  projectionAttempts    Int       @default(0) @map("projection_attempts")
+  projectedAt           DateTime? @map("projected_at")
+  blobSha               String?   @map("blob_sha")
+  markdownContent       String?   @map("markdown_content") @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  completedAt           DateTime? @map("completed_at")
 
   account    Account                       @relation(fields: [identityId], references: [id], onDelete: Cascade)
   connection KnowledgeRepositoryConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)

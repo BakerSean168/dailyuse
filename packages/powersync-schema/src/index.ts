@@ -73,6 +73,21 @@ const account_profile_sync_outbox = new Table(
   { localOnly: true },
 );
 
+/**
+ * Local-only marker set BEFORE a cloud account-close request starts (the
+ * requested/revoking window where the remote Account row is still Active).
+ * Local new-work entrypoints (AI / scheduler / use-cases) fail-closed against
+ * this marker so the device stops creating work the moment the user initiates
+ * close, not only after the cloud saga completes.
+ */
+const account_closure_requested = new Table(
+  {
+    identity_id: column.text,
+    requested_at: column.integer,
+  },
+  { localOnly: true },
+);
+
 // ──────────────────────────────────────────────
 // Settings
 // ──────────────────────────────────────────────
@@ -371,6 +386,7 @@ const schedules = new Table({
   priority: column.integer,
   location: column.text,
   attendees: column.text, // JSON
+  version: column.integer,
   created_at: column.text,
   updated_at: column.text,
 });
@@ -441,6 +457,26 @@ const schedule_statistics = new Table({
   last_updated_at: column.text,
   created_at: column.text,
 });
+
+const schedule_domain_event_outbox = new Table(
+  {
+    identity_id: column.text,
+    schedule_id: column.text,
+    event_type: column.text,
+    payload: column.text,
+    status: column.text,
+    attempts: column.integer,
+    claim_token: column.text,
+    claimed_at: column.text,
+    next_attempt_at: column.text,
+    published_at: column.text,
+    last_error: column.text,
+    idempotency_key: column.text,
+    created_at: column.text,
+    updated_at: column.text,
+  },
+  { localOnly: true },
+);
 
 // ──────────────────────────────────────────────
 // Reminder
@@ -590,7 +626,72 @@ const notification_channels = new Table({
   error: column.text,
   response: column.text,
   retry_count: column.integer,
+  attempts: column.integer,
+  sent_at: column.text,
+  failed_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
 });
+
+// Durable dispatch outbox (desktop durable worker; consumed with W0 lease semantics)
+const notification_dispatch_outbox = new Table({
+  identity_id: column.text,
+  notification_id: column.text, // FK
+  source: column.text,
+  occurrence_key: column.text,
+  channel: column.text,
+  payload_json: column.text, // JSON
+  idempotency_key: column.text,
+  status: column.text,
+  attempt: column.integer,
+  owner_token: column.text,
+  claim_id: column.text,
+  fencing_token: column.integer,
+  lease_expires_at: column.text,
+  last_heartbeat_at: column.text,
+  heartbeat_interval_ms: column.integer,
+  last_error: column.text,
+  next_retry_at: column.text,
+  dead_letter_at: column.text,
+  correlation_id: column.text,
+  causation_id: column.text,
+  attempts_history_json: column.text, // JSON
+  created_at: column.text,
+  updated_at: column.text,
+  finished_at: column.text,
+});
+
+// Durable desktop transport delivery receipts / acknowledgments
+const desktop_delivery_acks = new Table(
+  {
+    idempotency_key: column.text,
+    status: column.text,
+    ack_id: column.text,
+    payload_json: column.text,
+    error: column.text,
+    created_at: column.text,
+    updated_at: column.text,
+  },
+  { localOnly: true },
+);
+
+/**
+ * Local-only durable operation receipts for Goal mutations (completion / archive).
+ * Persisted in SQLite to guarantee idempotency across process restarts.
+ */
+const goal_operation_receipts = new Table(
+  {
+    idempotency_key: column.text,
+    operation_id: column.text,
+    identity_id: column.text,
+    source: column.text,
+    occurrence_key: column.text,
+    status: column.text,
+    created_at: column.text,
+  },
+  { localOnly: true },
+);
+
 
 const notification_history = new Table({
   identity_id: column.text,
@@ -988,6 +1089,7 @@ export const PowerSyncAppSchema = new Schema({
   accounts,
   profile_adoption_journal,
   account_profile_sync_outbox,
+  account_closure_requested,
   user_settings,
   // Goal
   goals,
@@ -998,6 +1100,7 @@ export const PowerSyncAppSchema = new Schema({
   key_result_weight_snapshots,
   focus_sessions,
   focus_modes,
+  goal_operation_receipts,
   // Task
   task_folders,
   task_templates,
@@ -1010,6 +1113,7 @@ export const PowerSyncAppSchema = new Schema({
   schedule_tasks,
   schedule_executions,
   schedule_statistics,
+  schedule_domain_event_outbox,
   // Reminder
   reminder_templates,
   reminder_groups,
@@ -1021,6 +1125,8 @@ export const PowerSyncAppSchema = new Schema({
   // Notification
   notifications,
   notification_channels,
+  notification_dispatch_outbox,
+  desktop_delivery_acks,
   notification_history,
   notification_preferences,
   notification_templates,

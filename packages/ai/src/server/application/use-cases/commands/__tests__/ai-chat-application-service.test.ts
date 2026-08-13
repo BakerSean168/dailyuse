@@ -245,9 +245,15 @@ describe('StreamAIMessageUseCase', () => {
 
     expect(executionPort.stream).toHaveBeenCalledWith(
       expect.objectContaining({
-        signal: streamAbortController.signal,
+        signal: expect.any(AbortSignal),
       }),
     );
+    // The engine bridges the caller signal to its own controller; the
+    // behavioural contract is that the port receives an already-aborted signal.
+    const streamCall = executionPort.stream.mock.calls[0]?.[0] as
+      | { signal?: AbortSignal }
+      | undefined;
+    expect(streamCall?.signal?.aborted).toBe(true);
 
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({

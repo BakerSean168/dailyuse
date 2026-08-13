@@ -102,6 +102,7 @@ export const CalendarEntryResponseSchema = z.object({
   priority: z.number().optional(),
   location: z.string().optional(),
   attendees: z.array(z.string()).optional(),
+  version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });

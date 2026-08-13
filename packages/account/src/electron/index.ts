@@ -118,12 +118,47 @@ export function createAccountElectronModule(
           if (!syncOptions.closeCloudAccount) {
             return fail({ code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE', message: '云端账号关闭能力不可用' });
           }
-          await syncOptions.closeCloudAccount(token, parsed.data);
+          if (!syncOptions.markAccountClosing) {
+            return fail({ code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE', message: '账号关闭前阻断能力未配置' });
+          }
+          if (!syncOptions.afterCloudAccountClosed) {
+            return fail({ code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE', message: '账号关闭收尾能力未配置' });
+          }
+          if (!syncOptions.clearAccountClosingMarker) {
+            return fail({ code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE', message: '账号关闭回滚能力未配置' });
+          }
+          // Phase 1 — fail-closed gate: block local new-work (AI/scheduler) the
+          // moment the user initiates close, before the cloud saga starts. If
+          // this write fails, nothing was marked and the close must NOT proceed;
+          // we also do NOT clear (could erase a pre-existing marker).
+          try {
+            await syncOptions.markAccountClosing();
+          } catch (markErr: unknown) {
+            const markMsg = markErr instanceof Error ? markErr.message : String(markErr);
+            return fail({ code: 'CLOUD_ACCOUNT_CLOSE_FAILED', message: `本地阻断写入失败: ${markMsg}` });
+          }
+          try {
+            const receipt = await syncOptions.closeCloudAccount(token, parsed.data);
+            // Phase 3 — cloud close SUCCEEDED. Keep the marker (fail-closed):
+            // the local Profile may still be active, so local new-work must stay
+            // blocked. A teardown-callback failure is surfaced but must NOT
+            // clear the marker.
+            try {
+              await syncOptions.afterCloudAccountClosed();
+            } catch (afterErr: unknown) {
+              const afterMsg = afterErr instanceof Error ? afterErr.message : String(afterErr);
+              return fail({ code: 'CLOUD_ACCOUNT_CLOSE_TEARDOWN_FAILED', message: afterMsg });
+            }
+            return ok(receipt);
+          } catch (err: unknown) {
+            // Phase 2 — cloud close FAILED: the account is NOT closed. Clear the
+            // marker (identity-scoped) so local new-work is restored.
+            await syncOptions.clearAccountClosingMarker(identityId).catch(() => undefined);
+            const msg = err instanceof Error ? err.message : String(err);
+            return fail({ code: 'CLOUD_ACCOUNT_CLOSE_FAILED', message: msg });
+          }
         }
-        const result = await accountModule.api.closeAccount(payload, { identityId });
-        if (syncOptions) await syncOptions.afterCloudAccountClosed?.();
-        if (!result.ok) return result;
-        return ok(null);
+        return accountModule.api.closeAccount(payload, { identityId });
       });
     });
 

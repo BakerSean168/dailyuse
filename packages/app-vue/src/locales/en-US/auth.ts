@@ -105,5 +105,10 @@ export default {
     "passwordReset": "Password reset",
     "loginWithNew": "Sign in with your new password",
     "resetPasswordFailed": "Failed to reset password"
+  },
+  "receipt": {
+    "requestId": "Request ID",
+    "retry": "Try again",
+    "dismiss": "Dismiss"
   }
 } as const;

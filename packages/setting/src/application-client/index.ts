@@ -31,6 +31,7 @@ export type SettingClientPort = ISettingApiClient;
 export class SettingClientService implements ISettingApiClient {
   constructor(private readonly apiClient: ISettingApiClient) {
     this.getUserSettings = this.getUserSettings.bind(this);
+    this.getUserSettingDefaults = this.getUserSettingDefaults.bind(this);
     this.patchCategory = this.patchCategory.bind(this);
     this.resetUserSettings = this.resetUserSettings.bind(this);
     this.exportSettings = this.exportSettings.bind(this);
@@ -39,6 +40,10 @@ export class SettingClientService implements ISettingApiClient {
 
   getUserSettings(): Promise<Result<UserSettingClientDTO>> {
     return this.apiClient.getUserSettings();
+  }
+
+  getUserSettingDefaults(): Promise<Result<UserSettingClientDTO>> {
+    return this.apiClient.getUserSettingDefaults();
   }
 
   patchCategory(

@@ -78,8 +78,14 @@ export interface IPersistenceMapper<TDomain, TRecord, TPersistence = Record<stri
  * 
  * 与 GlobalEventBus.send() 匹配，但不依赖具体实现
  */
+import type { EventDeliveryMetadata } from '@memoflow/utils/domain';
+
+export type { EventDeliveryMetadata };
+
 export interface IEventSender {
-  send(eventType: string, payload: unknown): void;
+  send(eventType: string, payload: unknown, metadata?: EventDeliveryMetadata): void;
+  /** 等待当前 in-flight 异步 handler 完成（at-least-once 交付边界）。 */
+  awaitDrain?(): Promise<void>;
 }
 
 /**
@@ -106,10 +112,20 @@ export interface IEventSender {
 export function createEventBusAdapter(sender: IEventSender): IEventBus {
   return {
     async publish(event) {
-      sender.send(event.eventType, event.payload);
+      sender.send(event.eventType, event.payload, {
+        aggregateId: event.aggregateId,
+        occurredAt: event.occurredAt,
+        idempotencyKey: event.idempotencyKey,
+      });
+      if (sender.awaitDrain) {
+        await sender.awaitDrain();
+      }
     },
     async send(eventType, payload) {
       sender.send(eventType, payload);
+      if (sender.awaitDrain) {
+        await sender.awaitDrain();
+      }
     },
   };
 }

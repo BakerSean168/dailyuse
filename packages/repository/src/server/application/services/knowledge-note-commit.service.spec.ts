@@ -19,6 +19,7 @@ import type {
 import type { IGitHubAppClient } from '../ports/github-app-client.port';
 import { GitHubAppClientError } from '../ports/github-app-client.port';
 import { KnowledgeNoteCommitService } from './knowledge-note-commit.service';
+import { createUnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
 function connection(): KnowledgeRepositoryConnectionServerDTO {
   return {
@@ -206,6 +207,108 @@ class MemoryWriteRequestRepository implements IKnowledgeWriteRequestRepository {
       completedAt: 1_750_000_000_000,
     });
   }
+
+  async findByIdForIdentity(identityId: string, id: string) {
+    const row = this.rows.get(id);
+    return row && row.identityId === identityId ? row : null;
+  }
+
+  async bindProjectionSource(
+    identityId: string,
+    id: string,
+    source: { blobSha: string; markdownContent: string },
+  ) {
+    const row = this.rows.get(id);
+    if (!row || row.identityId !== identityId || row.projectionStatus === 'Succeeded') return false;
+    this.rows.set(id, {
+      ...row,
+      blobSha: source.blobSha,
+      markdownContent: source.markdownContent,
+      projectionStatus: 'Pending',
+      projectionErrorCode: null,
+      projectionErrorMessage: null,
+      projectionAttempts: 0,
+      projectedAt: null,
+    });
+    return true;
+  }
+
+  async markProjectionSucceeded(identityId: string, id: string, now: number) {
+    const row = this.rows.get(id);
+    if (!row || row.identityId !== identityId || row.projectionStatus === 'Succeeded') return false;
+    this.rows.set(id, {
+      ...row,
+      projectionStatus: 'Succeeded',
+      projectionErrorCode: null,
+      projectionErrorMessage: null,
+      projectionAttempts: row.projectionAttempts + 1,
+      projectedAt: now,
+    });
+    return true;
+  }
+
+  async markProjectionFailed(
+    identityId: string,
+    id: string,
+    code: string,
+    message: string,
+    _now: number,
+  ) {
+    const row = this.rows.get(id);
+    if (!row || row.identityId !== identityId || row.projectionStatus === 'Succeeded') return false;
+    this.rows.set(id, {
+      ...row,
+      projectionStatus: 'Failed',
+      projectionErrorCode: code,
+      projectionErrorMessage: message,
+      projectionAttempts: row.projectionAttempts + 1,
+      projectedAt: null,
+    });
+    return true;
+  }
+
+  async markProjectionSucceededByCommit(connectionId: string, commitSha: string, now: number) {
+    let count = 0;
+    for (const [id, row] of this.rows) {
+      if (row.connectionId !== connectionId || row.commitSha !== commitSha) continue;
+      if (row.projectionStatus === 'Succeeded') continue;
+      this.rows.set(id, {
+        ...row,
+        projectionStatus: 'Succeeded',
+        projectionErrorCode: null,
+        projectionErrorMessage: null,
+        projectionAttempts: row.projectionAttempts + 1,
+        projectedAt: now,
+      });
+      count += 1;
+    }
+    return count;
+  }
+
+  async listProjectionPendingOrFailedForConnection(connectionId: string, limit: number) {
+    return [...this.rows.values()]
+      .filter(
+        (row) =>
+          row.connectionId === connectionId &&
+          row.status === 'Committed' &&
+          (row.projectionStatus === 'Pending' || row.projectionStatus === 'Failed'),
+      )
+      .slice(0, limit);
+  }
+
+  async listForIdentity(
+    identityId: string,
+    options: { connectionId?: string; limit: number },
+  ) {
+    return [...this.rows.values()]
+      .filter(
+        (row) =>
+          row.identityId === identityId &&
+          (!options.connectionId || row.connectionId === options.connectionId),
+      )
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, options.limit);
+  }
 }
 
 class MemoryLeaseRepository implements IKnowledgeRepositoryLeaseRepository {
@@ -267,6 +370,8 @@ function createService(
     now?: () => number;
     leaseTtlMs?: number;
     leaseRenewalIntervalMs?: number;
+    closureChecker?: (identityId: string) => Promise<boolean>;
+    metrics?: import('@memoflow/patterns/operations').UnifiedOperationMetricsRecorder;
   } = {},
 ) {
   const projectionRepository = overrides.projectionRepository ?? new MemoryProjectionRepository();
@@ -289,6 +394,8 @@ function createService(
       now: overrides.now ?? (() => 1_750_000_000_000),
       leaseTtlMs: overrides.leaseTtlMs,
       leaseRenewalIntervalMs: overrides.leaseRenewalIntervalMs,
+      closureChecker: overrides.closureChecker ?? (async () => false),
+      metrics: overrides.metrics,
     }),
   };
 }
@@ -337,6 +444,20 @@ describe('KnowledgeNoteCommitService', () => {
         mutation: 'created',
       }),
     );
+  });
+
+  it('P1-5: write request persistence emits the unified knowledge persisted metric', async () => {
+    const recorder = createUnifiedOperationMetricsRecorder();
+    const { service, writeRequestRepository } = createService(githubClient(), {
+      metrics: recorder,
+    });
+
+    const result = await service.create('identity-1', request());
+    expect(result.ok).toBe(true);
+    expect(writeRequestRepository.rows.size).toBe(1);
+
+    const snap = recorder.snapshot();
+    expect(snap['memoflow.knowledge.outbox.persisted']).toBe(1);
   });
 
   it('rejects request-id reuse with a different immutable proposal', async () => {
@@ -592,6 +713,19 @@ describe('KnowledgeNoteCommitService', () => {
     expect(createFileCommit).not.toHaveBeenCalled();
     expect(state.writeRequestRepository.rows.size).toBe(0);
   });
+
+  it('rejects commit request when account is closed or closure in progress', async () => {
+    const closureChecker = vi.fn().mockResolvedValue(true);
+    const { service, github } = createService(githubClient(), { closureChecker });
+
+    const result = await service.create('identity-1', request());
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN', message: 'Account is closed or closure in progress' },
+    });
+    expect(github.createFileCommit).not.toHaveBeenCalled();
+  });
 });
 
 describe('Knowledge write request status ownership (residual 109)', () => {
@@ -608,6 +742,13 @@ describe('Knowledge write request status ownership (residual 109)', () => {
       commitSha: null,
       errorCode: null,
       errorMessage: null,
+      projectionStatus: 'Pending' as const,
+      projectionErrorCode: null,
+      projectionErrorMessage: null,
+      projectionAttempts: 0,
+      projectedAt: null,
+      blobSha: null,
+      markdownContent: null,
       createdAt: 1,
       updatedAt: 1,
       completedAt: null,

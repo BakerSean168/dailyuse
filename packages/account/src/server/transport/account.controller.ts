@@ -76,7 +76,7 @@ export class AccountController {
     return this.api.updateSettings(parsed.data, cx);
   }
 
-  async closeAccount(input: unknown, cx: ExecutionContext): Promise<Result<null>> {
+  async closeAccount(input: unknown, cx: ExecutionContext): Promise<Result<import('@memoflow/contracts/account').CloseAccountRes>> {
     const parsed = CloseAccountSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -85,9 +85,20 @@ export class AccountController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const result = await this.api.closeAccount(parsed.data, cx);
-    if (!result.ok) return result as Result<null>;
-    // Serialize as data:null (no Result.void / undefined dual-track).
-    return ok(null);
+    return this.api.closeAccount(parsed.data, cx);
+  }
+
+  // ==================== W7 Operation Timeline / Replay / Audit ====================
+
+  async queryClosureTimeline(cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.api.queryClosureTimeline(cx);
+  }
+
+  async replayClosure(operationId: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.api.replayClosure(operationId, cx);
+  }
+
+  async getOperationAudit(cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.api.getOperationAudit(cx);
   }
 }

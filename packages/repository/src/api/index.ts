@@ -11,7 +11,7 @@
  *   Resource CRUD route builders have been removed.
  */
 
-export { RepositoryApiModule, createRepositoryApiModule } from './module';
+export { createRepositoryApiModule } from './module';
 export type {
   CreateRepositoryApiModuleOptions,
   RepositoryApiModuleContext,

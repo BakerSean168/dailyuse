@@ -17,5 +17,5 @@
  * - /goal-folders (文件夹 CRUD)
  */
 
-export { GoalApiModule } from './module';
+export { createGoalApiModule } from './module';
 export type { GoalApiModuleContext, GoalApiModuleDef } from './module';

@@ -58,16 +58,21 @@ const allChannels = Object.values(GoalChannels);
 let activeGoalModule: GoalModuleInstance | null = null;
 let goalEventListeners: { start(): void; stop(): void } | null = null;
 
-export const GoalElectronModule: IElectronModule = {
-  name: 'Goal',
+export function createGoalElectronModule(options: {
+  /** W0 GoalDependencyReadPort implementation provided by the host (Task package adapter). */
+  taskBindingReadPort: import('@memoflow/contracts/reliable-messaging').GoalDependencyReadPort;
+}): IElectronModule {
+  return {
+    name: 'Goal',
 
-  register(ctx: IElectronModuleContext): void {
-    const { db } = ctx;
+    register(ctx: IElectronModuleContext): void {
+      const { db } = ctx;
 
-    // 1. Composition Root — PowerSync 适配器 + 运行时贡献
-    const goalModule = createGoalPowerSyncModule(db, {
-      runtimeContributions: [createGoalRuntimeContribution()],
-    });
+      // 1. Composition Root — PowerSync 适配器 + 运行时贡献
+      const goalModule = createGoalPowerSyncModule(db, {
+        runtimeContributions: [createGoalRuntimeContribution()],
+        taskBindingReadPort: options.taskBindingReadPort,
+      });
     activeGoalModule = goalModule;
     goalModule.start();
 
@@ -314,11 +319,12 @@ export const GoalElectronModule: IElectronModule = {
     goalEventListeners = null;
     activeGoalModule?.dispose();
     activeGoalModule = null;
-    _goalRepository = null;
-    _goalRecordRepository = null;
-    logger.info('Goal module destroyed');
-  },
-};
+      _goalRepository = null;
+      _goalRecordRepository = null;
+      logger.info('Goal module destroyed');
+    },
+  };
+}
 
 export {
   createGoalPowerSyncScheduleExecutionSource,

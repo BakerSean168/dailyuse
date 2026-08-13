@@ -14,20 +14,14 @@ import {
   UpdateScheduleRequestSchema,
   DetectConflictsRequestSchema,
   ResolveConflictRequestSchema,
+  DeleteScheduleRequestSchema,
   type GetSchedulesByTimeRangeInternalQuery,
   type DetectConflictsInternalQuery,
 } from '@memoflow/contracts/schedule';
 import { formatZodErrors } from '@memoflow/utils/result';
 
-/**
- * Schedule Event Controller
- *
- * Provides validated use-case calls for CalendarEntry (schedule events).
- */
 export class ScheduleEventController {
   constructor(private readonly api: ScheduleEventApplicationPort) {}
-
-  // ==================== Event CRUD ====================
 
   async create(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateScheduleRequestSchema.safeParse(input);
@@ -61,7 +55,6 @@ export class ScheduleEventController {
       });
     }
 
-    // Use ONLY ctx.identityId - never accept identityId from query params
     const internalQuery: GetSchedulesByTimeRangeInternalQuery = {
       startTime,
       endTime,
@@ -76,21 +69,26 @@ export class ScheduleEventController {
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
+        message: '参数验证失败: 缺失 expectedVersion 或参数非法',
         details: formatZodErrors(parsed.error.issues),
       });
     }
     return this.api.updateEvent(id, parsed.data, ctx);
   }
 
-  async delete(id: string, ctx: Context): Promise<Result<null>> {
-    const result = await this.api.deleteEvent(id, ctx);
+  async delete(id: string, input: unknown, ctx: Context): Promise<Result<null>> {
+    const parsed = DeleteScheduleRequestSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败: 缺失 expectedVersion 或参数非法',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    const result = await this.api.deleteEvent(id, ctx, parsed.data.expectedVersion);
     if (!result.ok) return result as Result<null>;
-    // Serialize as data:null (no Result.void / undefined dual-track).
     return ok(null);
   }
-
-  // ==================== Conflict Detection ====================
 
   async getConflicts(id: string, ctx: Context): Promise<Result<unknown>> {
     return this.api.getConflicts(id, ctx);
@@ -106,7 +104,6 @@ export class ScheduleEventController {
       });
     }
 
-    // Inject identityId from context - never from request
     const internalQuery: DetectConflictsInternalQuery = {
       startTime: parsed.data.startTime,
       endTime: parsed.data.endTime,
