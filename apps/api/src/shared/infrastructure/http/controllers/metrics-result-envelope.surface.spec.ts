@@ -25,7 +25,7 @@ describe('API metrics JSON Result envelope (residual 623)', () => {
     // getJson body is success(payload), not raw dual-track object keys at top level.
     const getJsonIdx = source.indexOf('getJson:');
     expect(getJsonIdx).toBeGreaterThan(-1);
-    const getJsonSlice = source.slice(getJsonIdx, getJsonIdx + 1600);
+    const getJsonSlice = source.slice(getJsonIdx, getJsonIdx + 2000);
     expect(getJsonSlice).toContain('responseBuilder.success(payload)');
     expect(getJsonSlice).not.toMatch(/res\.status\(200\)\.json\(\s*\{/);
   });
