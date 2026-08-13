@@ -32,5 +32,12 @@ export {
   type GovernanceModuleDependencies,
   type GovernanceModuleInstance,
 } from './governance.module';
-export { createGovernancePrismaModule } from './prisma';
-export { createGovernancePowerSyncModule } from './powersync';
+export {
+  createGovernancePrismaModule,
+  createGovernancePrismaRepositories,
+  type GovernanceRepositorySet,
+} from './prisma';
+export {
+  createGovernancePowerSyncModule,
+  createGovernancePowerSyncRepositories,
+} from './powersync';
