@@ -182,6 +182,26 @@
       ]
     },
     {
+      "path": "apps/api/src/runtime/compose-governance.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "apps/api/src/runtime/compose-governance.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
       "path": "apps/api/src/scripts/database-startup-chain.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5924,6 +5944,16 @@
       ]
     },
     {
+      "path": "packages/governance/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/governance/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/governance/src/api/routes/governance-parse-string-array-keep-boundary.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5975,6 +6005,16 @@
     },
     {
       "path": "packages/governance/src/dual-registry-path.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/governance/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/governance/src/electron/index.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/governance/vitest.config.ts"
@@ -6095,6 +6135,26 @@
     },
     {
       "path": "packages/governance/src/server/domain/value-objects/__tests__/rule-id.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/governance/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/governance/src/server/infrastructure/__tests__/governance-composition-root.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/governance/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/governance/src/server/infrastructure/__tests__/governance-repositories.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/governance/vitest.config.ts"
@@ -9104,7 +9164,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 30
+      "fileCount": 32
     },
     {
       "id": "apps/api/vitest.smoke.config.ts",
@@ -9125,7 +9185,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 30
+      "fileCount": 32
     },
     {
       "id": "apps/desktop/vitest.config.ts",
@@ -9314,14 +9374,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 19
+      "fileCount": 23
     },
     {
       "id": "packages/governance/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 19
+      "fileCount": 23
     },
     {
       "id": "packages/http-client/vitest.config.ts",
@@ -9669,6 +9729,8 @@
       "apps/api/src/modules/powersync/snapshot-builder.spec.ts",
       "apps/api/src/modules/powersync/snapshot-storage.spec.ts",
       "apps/api/src/outbox/prisma-outbox-writer.spec.ts",
+      "apps/api/src/runtime/compose-governance.spec.ts",
+      "apps/api/src/runtime/compose-governance.surface.spec.ts",
       "apps/api/src/scripts/database-startup-chain.test.ts",
       "apps/api/src/shared/infrastructure/config/env.schema.spec.ts",
       "apps/api/src/shared/infrastructure/config/get-cors-origins-keep-boundary.surface.spec.ts",
@@ -9946,12 +10008,14 @@
       "packages/goal/src/server/infrastructure/build-task-name-keep-boundary.surface.spec.ts",
       "packages/goal/src/server/infrastructure/schedule-execution-source.spec.ts",
       "packages/goal/src/server/infrastructure/schedule-projection-source.spec.ts",
+      "packages/governance/src/api/module-lifecycle.spec.ts",
       "packages/governance/src/api/routes/governance-parse-string-array-keep-boundary.surface.spec.ts",
       "packages/governance/src/api/routes/governance-response-schema-name-dual.surface.spec.ts",
       "packages/governance/src/api/routes/governance-void-success-envelope.surface.spec.ts",
       "packages/governance/src/api/routes/governance.routes.spec.ts",
       "packages/governance/src/client/governance-ipc-transport-dual.surface.spec.ts",
       "packages/governance/src/dual-registry-path.surface.spec.ts",
+      "packages/governance/src/electron/index.spec.ts",
       "packages/governance/src/server/application/use-cases/commands/__tests__/create-rule.use-case.test.ts",
       "packages/governance/src/server/application/use-cases/commands/__tests__/delete-rule.use-case.test.ts",
       "packages/governance/src/server/application/use-cases/commands/__tests__/update-rule.use-case.test.ts",
@@ -9964,6 +10028,8 @@
       "packages/governance/src/server/domain/value-objects/__tests__/governance-enums.spec.ts",
       "packages/governance/src/server/domain/value-objects/__tests__/governance-rich-value-objects.spec.ts",
       "packages/governance/src/server/domain/value-objects/__tests__/rule-id.spec.ts",
+      "packages/governance/src/server/infrastructure/__tests__/governance-composition-root.surface.spec.ts",
+      "packages/governance/src/server/infrastructure/__tests__/governance-repositories.surface.spec.ts",
       "packages/governance/src/server/infrastructure/adapters/prisma/__tests__/governance-rule-ownership.surface.spec.ts",
       "packages/notification/src/api/__tests__/notification-lane-bootstrap.spec.ts",
       "packages/notification/src/api/notification-void-success-envelope.surface.spec.ts",
@@ -10177,7 +10243,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 861,
+    "unit": 867,
     "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,

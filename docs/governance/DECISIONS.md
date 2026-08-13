@@ -34,6 +34,12 @@ updated: 2026-07-06T00:00:00+08:00
 - 不再对外暴露 layer-named seam
 - 不再从根入口暴露 `createGovernancePowerSyncModule` 这类技术命名工厂
 
+补充（参考 plan §3.5：公开 seam 与导出约束）：
+
+- `createGovernancePrismaRepositories` / `createGovernancePowerSyncRepositories` / `createGovernanceEventLogRuntime` 是宿主装配所需的 **abstract ingredient factory**，不是 concrete adapter surface，也不是 layer-named seam；它们由 apps 的 runtime composer 调用，用来选择 adapter 并组装 instance。
+- 具体 `*Repository` class（`RulePrismaRepository`、`PowerSyncRuleRepository` 等）仍不通过根入口导出。
+- 宿主装配在 apps 完成（`apps/api/src/runtime/compose-governance.ts`、`apps/desktop/src/main/runtime/compose-governance.ts`）；`api` / `electron` module 只做 transport + lifecycle。
+
 ## 5. 前端不再消费 governance 包内 `domain-client`
 
 - governance 负责返回 DTO
