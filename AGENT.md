@@ -52,6 +52,21 @@
 - 如果更干净的结构性重构可行，优先于局部修补。
 - 保持实现直接、明确、易读。
 
+## 治理模块（试点示范）
+
+`packages/governance` 是仓库的**治理模块（reference module）**：
+
+- 它的业务功能是**虚构的**，并不是项目真实需要的业务需求。不要因为它看起来有业务含义就去扩展它的领域模型。
+- 它更根本的作用，是作为仓库业务模块的**"活文档" / 严格参考实现**：完整展示业务 feature 包应有的统一公开结构（`contracts → api / client / electron → server(domain/application/infrastructure/transport)`），是所有业务模块遵循 ADR-031 标准形态的样板。相关决策依据见归档计划 `docs/plan/archive/2026-07-06-governance-reference-module-rebuild.md` 与 ADR-031。
+
+**试点铁律**：进行较大的重构 / 架构优化时，**必须先把 `packages/governance` 作为最先的试点模块**跑通，确认新模式可行后再推广。若 governance 目前过于简单、不足以承担试点功能，可以给它增加必要的复杂业务（领域规则、事件、跨模块 Port 等），确保它能真实覆盖目标重构的全部形态。
+
+**试点推进顺序**（一次一个大阶段，每阶段独立验证）：
+
+1. **governance 模块先行**：跑通目标重构 + 添加详细注释，作为优雅示范（reference module）。
+2. **goal、task 模块**：在 governance 验证的模式上迁移（这两个模块组合最深：Prisma/PowerSync 双 adapter、event listener、schedule contribution、HTTP/IPC parity、AI executor 耦合）。
+3. **批量推广**：其余模块（reminder、schedule、notification、account、repository、data-portability 等）按相同模式批量套用。
+
 ## 配置与文档边界
 
 - 规则入口看 [`docs/standards/README.md`](docs/standards/README.md)。
