@@ -1,7 +1,7 @@
 import { DOMWrapper, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { nextTick } from 'vue';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import enUS from '../../../locales/en-US';
 import CreateScheduleDialog from './CreateScheduleDialog.vue';
 
@@ -13,8 +13,28 @@ const i18n = createI18n({
   messages: { 'en-US': enUS },
 });
 
+beforeAll(() => {
+  // jsdom has no alert; the dialog's endBeforeStart guard calls it when
+  // startTimestamp >= endTimestamp, which would throw and kill handleSubmit
+  // before props.onSubmit is invoked.
+  vi.stubGlobal('alert', vi.fn());
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('CreateScheduleDialog submission lifecycle', () => {
+  beforeEach(() => {
+    // Freeze the clock at mid-day UTC so nowDateStr()/nowTimeStr()/
+    // oneHourLaterTimeStr() can never straddle a date/TZ boundary, keeping
+    // startTimestamp < endTimestamp deterministic regardless of when CI runs.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-14T12:00:00Z'));
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     document.body.innerHTML = '';
   });
 
