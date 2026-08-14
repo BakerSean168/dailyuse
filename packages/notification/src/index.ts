@@ -26,6 +26,7 @@ export {
   createNotificationRuntimeContribution,
   createNotificationDurableRuntime,
   createPowerSyncClosureChecker,
+  createDefaultElectronDesktopTransport,
   type NotificationApplicationPort,
   type NotificationModuleDependencies,
   type NotificationModuleInstance,

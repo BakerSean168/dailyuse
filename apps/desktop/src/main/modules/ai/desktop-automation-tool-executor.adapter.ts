@@ -1,5 +1,6 @@
 import {
   type GoalAutomationExecutionInput,
+  type IAnalyticsReadPort,
   type IAIAutomationToolExecutorPort,
 } from '@memoflow/ai/ports';
 import type { IdentityId } from '@memoflow/contracts';
@@ -24,9 +25,7 @@ import {
   readNestedNumber,
 } from '@memoflow/utils/shared';
 
-import { DesktopAnalyticsReadAdapter } from './desktop-analytics-read.adapter';
 import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapter';
-import { getDesktopDashboardData } from '../../services/dashboard-read-service';
 
 const logger = createLogger('DesktopAutomationToolExecutor');
 // Residual 1015: buildRecurrenceRule elevated to @memoflow/utils/shared.
@@ -39,23 +38,18 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
   private readonly knowledgeSource;
   private readonly analyticsRead;
 
-  constructor(db: IElectronDatabase, localVault: LocalVaultElectronPort) {
+  constructor(
+    db: IElectronDatabase,
+    localVault: LocalVaultElectronPort,
+    analyticsRead: IAnalyticsReadPort,
+  ) {
     this.goalModule = createGoalPowerSyncModule(db, {
       taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
     });
     this.taskModule = createTaskPowerSyncModule(db);
     this.reminderModule = createReminderPowerSyncModule(db);
     this.knowledgeSource = new DesktopKnowledgeSourceAdapter(localVault);
-    this.analyticsRead = new DesktopAnalyticsReadAdapter({
-      goalRepository: this.goalModule.goalRepository,
-      taskTemplateRepository: this.taskModule.taskTemplateRepository,
-      dashboardDataLoader: (identityId) =>
-        getDesktopDashboardData(identityId, {
-          goalRepository: this.goalModule.goalRepository,
-          taskTemplateRepository: this.taskModule.taskTemplateRepository,
-          taskInstanceRepository: this.taskModule.taskInstanceRepository,
-        }),
-    });
+    this.analyticsRead = analyticsRead;
   }
 
   async executeGoalAutomation(

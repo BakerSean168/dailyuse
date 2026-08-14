@@ -30,3 +30,18 @@ export {
   type IAIConversationRepository,
   type IAIProviderConfigRepository,
 } from './server';
+export { getAIServiceRuntimeConfig, type AIServiceRuntimeConfig } from './shared/config/env';
+export {
+  AIEvaluationReportFileAdapter,
+  AIServiceAgentRuntimeAdapter,
+  AIServiceAnalyticsQueryAdapter,
+  AIServiceChatExecutionAdapter,
+  AIServiceGoalAutomationAdapter,
+  AIServiceGoalPlanningAdapter,
+  AIServiceKnowledgeIngestionAdapter,
+  AIServiceKnowledgeNoteGenerationAdapter,
+  AIServiceKnowledgeQueryAdapter,
+  DirectProviderChatExecutionAdapter,
+  DirectProviderGoalPlanningAdapter,
+  DirectProviderKnowledgeNoteGenerationAdapter,
+} from './server/infrastructure';

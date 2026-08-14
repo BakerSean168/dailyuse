@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import type { PowerSyncDatabase } from '@powersync/node';
 import { createLogger } from '@memoflow/utils/logger';
-import { stopScheduleRuntime } from '@memoflow/schedule/electron';
+import { createAccountPowerSyncRepositories } from '@memoflow/account';
+import type { ScheduleRuntimeController } from '../runtime/compose-schedule';
 import {
   type SharedPathResolver,
   type ProfilePathResolver,
@@ -14,7 +15,7 @@ import { DesktopProfileAccessContext } from './profile-access-context';
 import { ElectronBootstrapper } from '../bootstrap';
 import type { IElectronAuthContext } from '@memoflow/contracts/electron';
 import type { WindowManager } from '../lifecycle/window-manager';
-import { Account, PowerSyncAccountRepository } from '@memoflow/account/electron';
+import { Account } from '@memoflow/account/electron';
 import type { AccountClientDTO } from '@memoflow/contracts/account';
 import { ElectronProfileKeyStore } from './profile-key-store';
 import { ProfilePinStore } from './profile-pin-store';
@@ -64,6 +65,7 @@ export class DesktopProfileRuntimeManager {
   private registerModules: ProfileModuleRegistration | null = null;
   private afterActivation: ProfileActivationHook | null = null;
   private beforeDeactivation: (() => void) | null = null;
+  private scheduleRuntimeController: ScheduleRuntimeController | null = null;
   private readonly keyStore: ElectronProfileKeyStore;
   private readonly pinStore: ProfilePinStore;
   private readonly cloudSessionStore: CloudSessionStore;
@@ -91,6 +93,21 @@ export class DesktopProfileRuntimeManager {
 
   setBeforeDeactivation(fn: () => void): void {
     this.beforeDeactivation = fn;
+  }
+
+  /**
+   * Set the bound schedule runtime controller for the active profile.
+   * 为当前激活 profile 设置绑定的 schedule runtime controller。
+   *
+   * The controller is the ONLY schedule start/stop owner in the desktop lane;
+   * profile deactivation stops the same instance that the profile's module
+   * handle owns, then clears the reference before teardown.
+   *
+   * controller 是桌面 lane 中 schedule 启停的唯一所有者；profile 停用会停止同一
+   * profile 的 module handle 所持有的同一实例，随后在拆除前清除引用。
+   */
+  setScheduleRuntimeController(controller: ScheduleRuntimeController | null): void {
+    this.scheduleRuntimeController = controller;
   }
 
   getSharedResolver(): SharedPathResolver {
@@ -174,7 +191,8 @@ export class DesktopProfileRuntimeManager {
   async getCurrentLocalAccount(): Promise<AccountClientDTO> {
     const current = this.activeRuntime ?? this.preparedRuntime;
     if (!current) throw new Error('No active Profile');
-    const account = await new PowerSyncAccountRepository(current.db as never)
+    const account = await createAccountPowerSyncRepositories(current.db)
+      .accountRepository
       .findById(current.descriptor.localOwnerId);
     if (!account) throw new Error('Current Profile Account is missing');
     return account.toClientDTO();
@@ -333,7 +351,14 @@ export class DesktopProfileRuntimeManager {
   async deactivateProfile(options: { preserveSelection?: boolean } = {}): Promise<void> {
     if (!this.activeRuntime) return;
     const profileId = this.activeRuntime.descriptor.profileId;
-    try { await stopScheduleRuntime(); } catch (error) { logger.warn('Failed to stop schedule runtime', { error }); }
+    // Stop the bound schedule runtime controller (idempotent; the SAME instance
+    // the profile's module handle owns), then clear the reference BEFORE the
+    // modules are torn down so no stale controller outlives its instance.
+    // 先停止绑定的 schedule runtime controller（幂等；与 profile 的 module handle
+    // 所持实例是同一实例），再在模块拆除前清除引用，避免过期 controller 越过其实例存活。
+    const scheduleController = this.scheduleRuntimeController;
+    this.scheduleRuntimeController = null;
+    try { await scheduleController?.stop(); } catch (error) { logger.warn('Failed to stop schedule runtime', { error }); }
     // Clear any shell-held references to the active module instances (e.g. the
     // dashboard repository view) BEFORE tearing the modules down: a concurrent
     // IPC request that resolves the lazy getter during destruction then sees
@@ -446,7 +471,7 @@ export class DesktopProfileRuntimeManager {
     db: PowerSyncDatabase,
     descriptor: ProfileDescriptor,
   ): Promise<void> {
-    const repository = new PowerSyncAccountRepository(db as never);
+    const repository = createAccountPowerSyncRepositories(db).accountRepository;
     const existing = await repository.findById(descriptor.localOwnerId);
     if (existing) return;
     const account = Account.create({

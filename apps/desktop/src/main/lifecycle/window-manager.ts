@@ -18,7 +18,7 @@ import { fileURLToPath } from 'url';
 import { RendererEventChannels, WindowChannels } from '@memoflow/contracts/electron';
 import { fail, ok } from '@memoflow/contracts/result';
 import { createLogger } from '@memoflow/utils/logger';
-import { startScheduleRuntime, stopScheduleRuntime } from '@memoflow/schedule/electron';
+import type { ScheduleRuntimeController } from '../runtime/compose-schedule';
 import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './desktop-chrome';
 import type { DesktopChromeTheme } from './desktop-chrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
@@ -72,6 +72,7 @@ export class WindowManager {
   private mainWindowStateManager: WindowStateManager | null = null;
   private runtimeManager: DesktopProfileRuntimeManager | null = null;
   private desktopFeaturesRuntime: DesktopFeaturesRuntime | null = null;
+  private scheduleRuntimeController: ScheduleRuntimeController | null = null;
 
   constructor(config: WindowManagerConfig = {}) {
     const preloadPath = config.preloadPath || resolvePreloadPath(__dirname);
@@ -104,6 +105,23 @@ export class WindowManager {
 
   setDesktopFeaturesRuntime(runtime: DesktopFeaturesRuntime | null): void {
     this.desktopFeaturesRuntime = runtime;
+  }
+
+  /**
+   * Set the bound schedule runtime controller for the active profile.
+   * 为当前激活 profile 设置绑定的 schedule runtime controller。
+   *
+   * The controller is the ONLY schedule start/stop owner in the desktop lane
+   * (composed per profile activation and cleared before profile teardown).
+   * Delayed start/stop timing is preserved: the main-window transition starts
+   * the runtime, the profile-access transition and profile deactivation stop it.
+   *
+   * controller 是桌面 lane 中 schedule 启停的唯一所有者（按 profile 激活组装，并在
+   * profile 拆除前清除）。保留延迟启停时序：主窗口切换时启动 runtime，profile-access
+   * 切换与 profile 停用时停止它。
+   */
+  setScheduleRuntimeController(controller: ScheduleRuntimeController | null): void {
+    this.scheduleRuntimeController = controller;
   }
 
   // ============ Window Creation ============
@@ -283,7 +301,7 @@ export class WindowManager {
       // 3. 显示主窗口
       mainWin.show();
       this.desktopFeaturesRuntime?.bindWindow(mainWin);
-      await startScheduleRuntime();
+      await this.scheduleRuntimeController?.start();
 
       // 4. 关闭 Profile Access 窗口（稍微延迟，让过渡更平滑）
       setTimeout(() => {
@@ -311,7 +329,7 @@ export class WindowManager {
     logger.info('Transitioning from main to Profile Access window');
 
     try {
-      await stopScheduleRuntime();
+      await this.scheduleRuntimeController?.stop();
       const profileAccessWindow = this.createProfileAccessWindow();
 
       // 2. 等待 Profile Access 窗口准备好

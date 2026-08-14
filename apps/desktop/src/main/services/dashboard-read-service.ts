@@ -9,10 +9,10 @@ import {
 import type { DashboardData } from '@memoflow/contracts/dashboard';
 import type { IGoalRepository } from '@memoflow/goal';
 import type { ITaskInstanceRepository, ITaskTemplateRepository } from '@memoflow/task';
+import type { IScheduleRepository, IScheduleTaskRepository } from '@memoflow/schedule';
+import type { IReminderTemplateRepository } from '@memoflow/reminder';
+import type { INotificationRepository } from '@memoflow/notification';
 import { createLogger } from '@memoflow/utils/logger';
-import { getScheduleRepository } from '@memoflow/schedule/electron';
-import { getReminderTemplateRepository } from '@memoflow/reminder/electron';
-import { getNotificationRepository } from '@memoflow/notification/electron';
 
 const logger = createLogger('DashboardReadService');
 
@@ -20,19 +20,24 @@ const logger = createLogger('DashboardReadService');
  * Instance-bound repository dependencies the dashboard read service needs.
  * dashboard 读取服务所需的 instance-bound 仓储依赖。
  *
- * These are the exact Goal/Task repository instances owned by the desktop
- * composition root, injected explicitly instead of read through package-level
- * globals. Schedule/reminder/notification accessors remain as their electron
- * accessor shims are out of scope for this migration.
+ * These are the exact Goal/Task/Schedule/Reminder/Notification repository
+ * instances owned by the desktop composition root, injected explicitly instead
+ * of read through package-level globals. `scheduleTaskRepository` is part of the
+ * view so sibling consumers (analytics) share the same instance-bound schedule
+ * task repository.
  *
- * 这些是 desktop 组合根拥有的确切 Goal/Task 仓储实例，通过显式注入而非包级
- * 全局读取。schedule/reminder/notification 仍走其 electron accessor（不在本次
- * 迁移范围内）。
+ * 这些是 desktop 组合根拥有的确切 Goal/Task/Schedule/Reminder/Notification 仓储
+ * 实例，通过显式注入而非包级全局读取。`scheduleTaskRepository` 属于该视图，使
+ * 兄弟消费者（analytics）共享同一个 instance-bound schedule task 仓储。
  */
 export interface DashboardRepositoryDependencies {
   readonly goalRepository: IGoalRepository;
   readonly taskTemplateRepository: ITaskTemplateRepository;
   readonly taskInstanceRepository: ITaskInstanceRepository;
+  readonly scheduleRepository: IScheduleRepository;
+  readonly scheduleTaskRepository: IScheduleTaskRepository;
+  readonly reminderTemplateRepository: IReminderTemplateRepository;
+  readonly notificationRepository: INotificationRepository;
 }
 
 /** Soft residual 1156: dual toDashboardTaskInstanceRecord retired onto @memoflow/dashboard sole. */
@@ -116,10 +121,14 @@ export async function getDesktopDashboardData(
   identityId: string,
   dependencies: DashboardRepositoryDependencies,
 ): Promise<DashboardData> {
-  const { goalRepository, taskTemplateRepository, taskInstanceRepository } = dependencies;
-  const scheduleRepository = getScheduleRepository();
-  const reminderTemplateRepository = getReminderTemplateRepository();
-  const notificationRepository = getNotificationRepository();
+  const {
+    goalRepository,
+    taskTemplateRepository,
+    taskInstanceRepository,
+    scheduleRepository,
+    reminderTemplateRepository,
+    notificationRepository,
+  } = dependencies;
 
   const data = await getDashboardData(identityId, {
     listGoals: async (id) =>

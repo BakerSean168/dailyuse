@@ -263,4 +263,41 @@ describe('createAIElectronModule lifecycle', () => {
     expect(() => moduleDef.register(contextWithoutDb)).not.toThrow();
     expect(fake.start).toHaveBeenCalledTimes(1);
   });
+
+  it('MESSAGE_STREAM_CANCEL aborts the active stream for the same sender', async () => {
+    moduleDef.register(context);
+
+    let capturedSignal: AbortSignal | undefined;
+    fake.api.streamMessage.mockImplementation(
+      async (
+        _conversationId: string,
+        _content: string,
+        _onChunk: () => void,
+        _context: unknown,
+        _providerId?: string,
+        _model?: string,
+        signal?: AbortSignal,
+      ) => {
+        capturedSignal = signal;
+        return new Promise((resolve) => {
+          signal?.addEventListener('abort', () => resolve(ok(null as never)));
+        });
+      },
+    );
+
+    const sender = { sender: { id: 42, isDestroyed: () => false, send: vi.fn() } };
+    const startResult = await registered(AIChannels.MESSAGE_STREAM_START)(sender, {
+      streamId: 's1',
+      conversationId: 'c1',
+      content: 'hello',
+    });
+    expect(startResult).toMatchObject({ ok: true });
+
+    await vi.waitFor(() => expect(capturedSignal).toBeDefined());
+    expect(capturedSignal?.aborted).toBe(false);
+
+    const cancelResult = await registered(AIChannels.MESSAGE_STREAM_CANCEL)(sender, 's1');
+    expect(cancelResult).toMatchObject({ ok: true });
+    expect(capturedSignal?.aborted).toBe(true);
+  });
 });

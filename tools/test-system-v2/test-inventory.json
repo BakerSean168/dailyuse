@@ -846,6 +846,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/main/runtime/compose-modules.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/desktop/src/main/runtime/compose-task.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -855,6 +863,14 @@
     },
     {
       "path": "apps/desktop/src/main/services/custom-notification.manager.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/services/dashboard-read-service.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/desktop/vitest.config.ts"
@@ -9682,7 +9698,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 34
+      "fileCount": 36
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -10778,7 +10794,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 917,
+    "unit": 919,
     "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,

@@ -1,15 +1,18 @@
 /**
  * Data Portability — IPC Handler Integration Test
  *
- * Verifies that DataPortabilityElectronModule.register() installs handlers
- * that can be invoked through the mock ipcMain, and that the full
- * handler → use case → PowerSync path works end-to-end.
+ * Verifies that the composed DataPortabilityElectronModule.register() installs
+ * handlers that can be invoked through the mock ipcMain, and that the full
+ * handler → use case → PowerSync path works end-to-end. The module handle is
+ * built through the desktop runtime composer (instance-bound), never through a
+ * retired package-global constant.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IElectronDatabase, IElectronModuleContext } from '@memoflow/contracts/electron';
 import { DataPortabilityChannels } from '@memoflow/contracts/electron';
-import { DataPortabilityElectronModule } from '@memoflow/data-portability/electron';
+import type { DataPortabilityElectronModuleDef } from '@memoflow/data-portability/electron';
+import { composeDataPortability } from '../../runtime/compose-data-portability';
 
 const electronMock = vi.hoisted(() => ({
   handle: vi.fn(),
@@ -70,6 +73,12 @@ function getHandler(channel: string): IpcHandler {
   return call![1] as IpcHandler;
 }
 
+function registerModule(context: IElectronModuleContext): DataPortabilityElectronModuleDef {
+  const module = composeDataPortability({ db: context.db });
+  module.register(context);
+  return module;
+}
+
 describe('DataPortabilityElectronModule IPC handler integration', () => {
   beforeEach(() => {
     electronMock.handle.mockClear();
@@ -77,7 +86,7 @@ describe('DataPortabilityElectronModule IPC handler integration', () => {
   });
 
   it('registers export and import handlers with shared channel constants', () => {
-    DataPortabilityElectronModule.register(createContext());
+    registerModule(createContext());
 
     const registeredChannels = electronMock.handle.mock.calls.map(([ch]) => ch);
     expect(registeredChannels).toContain(DataPortabilityChannels.EXPORT);
@@ -86,7 +95,7 @@ describe('DataPortabilityElectronModule IPC handler integration', () => {
   });
 
   it('export handler returns a valid envelope with fileName, content, and summary', async () => {
-    DataPortabilityElectronModule.register(createContext());
+    registerModule(createContext());
     const handler = getHandler(DataPortabilityChannels.EXPORT);
     const result = (await handler({}, { include: ['settings'] })) as {
       ok: boolean;
@@ -112,7 +121,7 @@ describe('DataPortabilityElectronModule IPC handler integration', () => {
   });
 
   it('import handler succeeds with valid export content', async () => {
-    DataPortabilityElectronModule.register(createContext());
+    registerModule(createContext());
 
     // First export to get valid content
     const exportHandler = getHandler(DataPortabilityChannels.EXPORT);
@@ -142,7 +151,7 @@ describe('DataPortabilityElectronModule IPC handler integration', () => {
   });
 
   it('import handler rejects content with banned identity fields', async () => {
-    DataPortabilityElectronModule.register(createContext());
+    registerModule(createContext());
 
     // Export first to get a valid envelope, then inject a banned field
     const exportHandler = getHandler(DataPortabilityChannels.EXPORT);
@@ -165,8 +174,8 @@ describe('DataPortabilityElectronModule IPC handler integration', () => {
   });
 
   it('destroy removes all registered handlers', () => {
-    DataPortabilityElectronModule.register(createContext());
-    DataPortabilityElectronModule.destroy?.();
+    const module = registerModule(createContext());
+    module.destroy?.();
 
     expect(electronMock.removeHandler).toHaveBeenCalledWith(DataPortabilityChannels.EXPORT);
     expect(electronMock.removeHandler).toHaveBeenCalledWith(DataPortabilityChannels.IMPORT);
