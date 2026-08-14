@@ -41,14 +41,15 @@ import {
   createNotificationDurableRuntime,
   createNotificationModule,
   createNotificationPrismaRepositories,
+  createNotificationScheduleNotificationPort,
   type ChannelCapabilitySpec,
+  type INotificationRepository,
+  type ScheduleNotificationPort,
 } from '@memoflow/notification';
 import {
   createNotificationApiModule,
   type NotificationApiModuleDef,
 } from '@memoflow/notification/api';
-import { CreateNotificationUseCase } from '@memoflow/notification/commands';
-import type { ScheduleNotificationPort } from '@memoflow/notification/schedule-execution';
 
 /**
  * Dependencies the notification composer needs from the API host runtime.
@@ -70,6 +71,8 @@ export interface ComposeNotificationDependencies {
 export interface ComposedNotification {
   /** Already-bound IApiModule-compatible handle. 已绑定的 IApiModule 兼容 handle。 */
   readonly module: NotificationApiModuleDef;
+  /** Instance-bound repository view for sibling modules. 暴露给兄弟模块的 instance-bound 仓储视图。 */
+  readonly repositories: { readonly notificationRepository: INotificationRepository };
   /** Schedule notification port built from the SAME repository set. 从同一仓储集合构建的 schedule notification port。 */
   readonly scheduleNotificationPort: ScheduleNotificationPort;
 }
@@ -86,7 +89,8 @@ export interface ComposedNotification {
  * 3. createNotificationModule({ ...repositories, closureChecker, durableRuntime,
  *    runtimeContributions: [durableRuntime], auditRepository }) — assemble the
  *    transport-neutral notification instance.
- * 4. Build the ScheduleNotificationPort from the SAME repository set (so schedule
+ * 4. createNotificationScheduleNotificationPort({ ...repositories, closureChecker })
+ *    — build the ScheduleNotificationPort from the SAME repository set (so schedule
  *    orchestration shares one set).
  * 5. createNotificationApiModule({ instance }) — bind the instance to an
  *    IApiModule handle (transport + lifecycle only).
@@ -98,7 +102,8 @@ export interface ComposedNotification {
  * 3. createNotificationModule({ ...repositories, closureChecker, durableRuntime,
  *    runtimeContributions: [durableRuntime], auditRepository }) —— 装配与传输无关的
  *    通知实例。
- * 4. 从同一仓储集合构建 ScheduleNotificationPort（使 schedule 编排共享一套集合）。
+ * 4. createNotificationScheduleNotificationPort({ ...repositories, closureChecker })
+ *    —— 从同一仓储集合构建 ScheduleNotificationPort（使 schedule 编排共享一套集合）。
  * 5. createNotificationApiModule({ instance }) —— 把实例绑定到 IApiModule handle
  *    （只负责 transport 与生命周期）。
  *
@@ -132,23 +137,18 @@ export function composeNotification(
     auditRepository: repositories.auditRepository,
   });
 
-  const createNotification = new CreateNotificationUseCase(
-    repositories.notificationRepository,
-    repositories.notificationTemplateRepository,
-    repositories.notificationPreferenceRepository,
-    dependencies.closureChecker,
-  );
-  const scheduleNotificationPort: ScheduleNotificationPort = {
-    createNotification(request) {
-      return createNotification.execute({
-        ...request,
-        channels: request.channels ? Array.from(request.channels) : undefined,
-      });
-    },
-  };
+  const createNotificationPort = createNotificationScheduleNotificationPort({
+    notificationRepository: repositories.notificationRepository,
+    notificationTemplateRepository: repositories.notificationTemplateRepository,
+    notificationPreferenceRepository: repositories.notificationPreferenceRepository,
+    closureChecker: dependencies.closureChecker,
+  });
 
   return {
     module: createNotificationApiModule({ instance }),
-    scheduleNotificationPort,
+    repositories: {
+      notificationRepository: repositories.notificationRepository,
+    },
+    scheduleNotificationPort: createNotificationPort,
   };
 }

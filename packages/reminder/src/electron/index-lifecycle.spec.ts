@@ -4,17 +4,19 @@
  *
  * Verifies that createReminderElectronModule is a pure transport/lifecycle
  * adapter: it registers all reminder channels, starts the already-assembled
- * instance once, routes IPC calls through ReminderController to the same
- * instance api, removes all channels on destroy, disposes exactly once, and
- * cleans up on start failure. It also locks the per-handle state machine:
- * double register() throws, register-after-destroy throws, and a failed
- * registration reverses exactly the channels installed by that call.
+ * instance once (AWAITING the async start), routes IPC calls through
+ * ReminderController to the same instance api, removes all channels on destroy,
+ * disposes exactly once, and cleans up on start failure. It also locks the
+ * per-handle state machine: double register() throws, register-after-destroy
+ * throws, and a failed registration reverses exactly the channels installed by
+ * that call.
  *
  * 验证 createReminderElectronModule 是纯传输/生命周期适配器：
- * 注册全部提醒通道、启动已装配实例一次、通过 ReminderController 把 IPC 调用
- * 路由到同一实例 api、destroy 时移除全部通道、恰好 dispose 一次，且 start
- * 失败时执行清理。同时固定每个 handle 的状态机：重复 register() 抛错、
- * destroy 后 register() 抛错、失败注册会逆向移除本次已安装的通道。
+ * 注册全部提醒通道、启动已装配实例一次（await 异步 start）、通过
+ * ReminderController 把 IPC 调用路由到同一实例 api、destroy 时移除全部通道、
+ * 恰好 dispose 一次，且 start 失败时执行清理。同时固定每个 handle 的状态机：
+ * 重复 register() 抛错、destroy 后 register() 抛错、失败注册会逆向移除本次已安装
+ * 的通道。
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -109,9 +111,9 @@ describe('createReminderElectronModule lifecycle', () => {
     moduleDef = createReminderElectronModule({ instance: fake.instance });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     try {
-      moduleDef.destroy?.();
+      await moduleDef.destroy?.();
     } catch {
       // destroy() may propagate a dispose error by design; don't leak it into unrelated tests.
     }
@@ -119,8 +121,8 @@ describe('createReminderElectronModule lifecycle', () => {
     mocks.handlers.clear();
   });
 
-  it('registers all reminder channels and starts the instance once', () => {
-    moduleDef.register(context);
+  it('registers all reminder channels and starts the instance once', async () => {
+    await moduleDef.register(context);
 
     for (const channel of Object.values(ReminderChannels)) {
       expect(mocks.handlers.has(channel), `Expected ${channel} to be registered`).toBe(true);
@@ -129,59 +131,71 @@ describe('createReminderElectronModule lifecycle', () => {
     expect(fake.start).toHaveBeenCalledTimes(1);
   });
 
-  it('throws on a second register() call (single registration per handle)', () => {
-    moduleDef.register(context);
+  it('throws on a second register() call (single registration per handle)', async () => {
+    await moduleDef.register(context);
 
-    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    await expect(moduleDef.register(context)).rejects.toThrow(/only register once/);
     expect(fake.start).toHaveBeenCalledTimes(1);
   });
 
-  it('throws on register() after destroy()', () => {
-    moduleDef.register(context);
-    moduleDef.destroy?.();
+  it('throws on register() after destroy()', async () => {
+    await moduleDef.register(context);
+    await moduleDef.destroy?.();
 
-    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    await expect(moduleDef.register(context)).rejects.toThrow(/only register once/);
   });
 
   it('routes IPC calls through the controller to the same instance api', async () => {
     fake.api.listTemplates.mockResolvedValue(ok([] as never));
-    moduleDef.register(context);
+    await moduleDef.register(context);
 
     const listResult = await registered(ReminderChannels.TEMPLATE_LIST)(undefined, undefined);
     expect(listResult).toMatchObject({ ok: true });
     expect(fake.api.listTemplates).toHaveBeenCalledTimes(1);
   });
 
-  it('destroy removes all channels and disposes exactly once (second call no-ops)', () => {
-    moduleDef.register(context);
+  it('destroy removes all channels and disposes exactly once (second call no-ops)', async () => {
+    await moduleDef.register(context);
 
-    moduleDef.destroy?.();
+    await moduleDef.destroy?.();
     for (const channel of Object.values(ReminderChannels)) {
       expect(mocks.handlers.has(channel)).toBe(false);
     }
     expect(mocks.removeHandler).toHaveBeenCalledTimes(Object.values(ReminderChannels).length);
     expect(fake.dispose).toHaveBeenCalledTimes(1);
 
-    moduleDef.destroy?.();
-    moduleDef.destroy?.();
+    await moduleDef.destroy?.();
+    await moduleDef.destroy?.();
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('disposes, removes all channels, and rethrows when start() throws, leaving a handle that cannot be re-registered', () => {
+  it('disposes, removes all channels, and rethrows when start() throws, leaving a handle that cannot be re-registered', async () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');
     });
 
-    expect(() => moduleDef.register(context)).toThrow('start failed');
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
     expect(fake.dispose).toHaveBeenCalledTimes(1);
     expect(mocks.handlers.size).toBe(0);
 
-    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    await expect(moduleDef.register(context)).rejects.toThrow(/only register once/);
     expect(fake.start).toHaveBeenCalledTimes(1);
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('removes the channels installed before ipcMain.handle() throws mid-registration', () => {
+  it('disposes, removes all channels, and rethrows when an async-rejected start() occurs', async () => {
+    fake.start.mockRejectedValue(new Error('async start rejected'));
+
+    await expect(moduleDef.register(context)).rejects.toThrow('async start rejected');
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+    expect(mocks.handlers.size).toBe(0);
+
+    await expect(moduleDef.register(context)).rejects.toThrow(/only register once/);
+    expect(fake.start).toHaveBeenCalledTimes(1);
+    expect(fake.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes the channels installed before ipcMain.handle() throws mid-registration', async () => {
     // The first two handle() calls are the channels installed before the third
     // throws; assert reverse removal of exactly those.
     const registeredFirst: string[] = [];
@@ -198,7 +212,7 @@ describe('createReminderElectronModule lifecycle', () => {
         throw new Error(`Attempted to register a second handler for '${channel}'`);
       });
 
-    expect(() => moduleDef.register(context)).toThrow('second handler');
+    await expect(moduleDef.register(context)).rejects.toThrow('second handler');
 
     expect(mocks.handlers.size).toBe(0);
     expect(mocks.removeHandler.mock.calls.map(([channel]) => channel)).toEqual([
@@ -208,10 +222,10 @@ describe('createReminderElectronModule lifecycle', () => {
     expect(fake.dispose).toHaveBeenCalledTimes(1);
     expect(fake.start).not.toHaveBeenCalled();
 
-    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    await expect(moduleDef.register(context)).rejects.toThrow(/only register once/);
   });
 
-  it('rethrows the original registration error even if dispose also throws', () => {
+  it('rethrows the original registration error even if dispose also throws', async () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');
     });
@@ -219,32 +233,32 @@ describe('createReminderElectronModule lifecycle', () => {
       throw new Error('dispose failed');
     });
 
-    expect(() => moduleDef.register(context)).toThrow('start failed');
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
     expect(fake.dispose).toHaveBeenCalledTimes(1);
     expect(mocks.handlers.size).toBe(0);
   });
 
-  it('destroy() after a failed registration neither disposes again nor re-removes channels', () => {
+  it('destroy() after a failed registration neither disposes again nor re-removes channels', async () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');
     });
 
-    expect(() => moduleDef.register(context)).toThrow('start failed');
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
     expect(fake.dispose).toHaveBeenCalledTimes(1);
     expect(mocks.handlers.size).toBe(0);
     const removeHandlerCallsAfterFailedRegister = mocks.removeHandler.mock.calls.length;
 
-    moduleDef.destroy?.();
+    await moduleDef.destroy?.();
 
     expect(fake.dispose).toHaveBeenCalledTimes(1);
     expect(mocks.removeHandler.mock.calls.length).toBe(removeHandlerCallsAfterFailedRegister);
   });
 
-  it('register works with a context that has no db property (no db read for assembly)', () => {
+  it('register works with a context that has no db property (no db read for assembly)', async () => {
     const contextWithoutDb = { ...context } as IElectronModuleContext;
     delete (contextWithoutDb as Record<string, unknown>).db;
 
-    expect(() => moduleDef.register(contextWithoutDb)).not.toThrow();
+    await expect(moduleDef.register(contextWithoutDb)).resolves.toBeUndefined();
     expect(fake.start).toHaveBeenCalledTimes(1);
   });
 });

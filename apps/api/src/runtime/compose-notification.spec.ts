@@ -38,6 +38,7 @@ vi.mock('@memoflow/notification', async (importOriginal) => {
     createNotificationDurableRuntime: vi.fn(actual.createNotificationDurableRuntime),
     createNotificationModule: vi.fn(actual.createNotificationModule),
     createNotificationPrismaRepositories: vi.fn(actual.createNotificationPrismaRepositories),
+    createNotificationScheduleNotificationPort: vi.fn(actual.createNotificationScheduleNotificationPort),
   };
 });
 
@@ -54,9 +55,10 @@ import {
   createNotificationDurableRuntime,
   createNotificationModule,
   createNotificationPrismaRepositories,
+  createNotificationScheduleNotificationPort,
 } from '@memoflow/notification';
 import { createNotificationApiModule } from '@memoflow/notification/api';
-import type { ScheduleNotificationPort } from '@memoflow/notification/schedule-execution';
+import type { ScheduleNotificationPort } from '@memoflow/notification';
 
 const fakeDb = {} as unknown as PrismaClient;
 const closureChecker = async (_identityId: string): Promise<boolean> => false;
@@ -130,8 +132,28 @@ describe('composeNotification assembly order', () => {
     const port: ScheduleNotificationPort = composed.scheduleNotificationPort;
     expect(typeof port.createNotification).toBe('function');
 
+    expect(createNotificationScheduleNotificationPort).toHaveBeenCalledWith({
+      notificationRepository: repoSet.notificationRepository,
+      notificationTemplateRepository: repoSet.notificationTemplateRepository,
+      notificationPreferenceRepository: repoSet.notificationPreferenceRepository,
+      closureChecker,
+    });
+
     const notificationRepository = repoSet.notificationRepository;
     expect(notificationRepository).toBeDefined();
+  });
+
+  it('returns the instance-bound repository view (ComposedNotificationApi shape)', () => {
+    const composed = composeNotification({
+      db: fakeDb,
+      closureChecker,
+      channelCapabilities,
+    });
+
+    const repoSet = createNotificationPrismaRepositories.mock.results[0].value;
+    expect(composed.repositories.notificationRepository).toBe(
+      repoSet.notificationRepository,
+    );
   });
 
   it('returns a module handle with name Notification plus register and destroy', () => {

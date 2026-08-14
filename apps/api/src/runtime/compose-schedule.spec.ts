@@ -114,6 +114,20 @@ describe('composeSchedule assembly order', () => {
     expect(createScheduleApiModule).toHaveBeenCalledWith({ instance });
   });
 
+  it('wires the Prisma delivery-log consumer through to the schedule module (merge-base P1-1)', () => {
+    const deliveryLogConsumer = { start: vi.fn(), stop: vi.fn() };
+    const setWithConsumer = {
+      ...fakeSet,
+      eventDeliveryLogConsumer: deliveryLogConsumer,
+    } as unknown as ScheduleRepositorySet;
+
+    composeSchedule({ repositories: setWithConsumer, sourceExecutor });
+
+    expect(createScheduleModule).toHaveBeenCalledWith(
+      expect.objectContaining({ eventDeliveryLogConsumer: deliveryLogConsumer }),
+    );
+  });
+
   it('appends host runtime contributions after the module-owned queue runtime', () => {
     composeSchedule({ repositories: fakeSet, sourceExecutor, runtimeContributions: hostRuntime });
 

@@ -43,20 +43,16 @@ import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import {
   createReminderModule,
   createReminderPowerSyncRepositories,
+  createReminderScheduleExecutionSource,
+  createReminderScheduleProjectionSource,
   type IReminderTemplateRepository,
+  type ReminderScheduleExecutionSource,
+  type ReminderScheduleProjectionSource,
 } from '@memoflow/reminder';
 import {
   createReminderElectronModule,
   type ReminderElectronModuleDef,
 } from '@memoflow/reminder/electron';
-import {
-  createReminderScheduleExecutionSource,
-  type ReminderScheduleExecutionSource,
-} from '@memoflow/reminder/schedule-execution';
-import {
-  createReminderScheduleProjectionSource,
-  type ReminderScheduleProjectionSource,
-} from '@memoflow/reminder/schedule-projection';
 
 /**
  * Dependencies the reminder composer needs from the desktop host runtime.

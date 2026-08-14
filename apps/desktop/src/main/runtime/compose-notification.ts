@@ -44,16 +44,16 @@ import {
   createNotificationDurableRuntime,
   createNotificationModule,
   createNotificationPowerSyncRepositories,
+  createNotificationScheduleNotificationPort,
   createPowerSyncClosureChecker,
   type ChannelCapabilitySpec,
   type INotificationRepository,
+  type ScheduleNotificationPort,
 } from '@memoflow/notification';
 import {
   createNotificationElectronModule,
   type NotificationElectronModuleDef,
 } from '@memoflow/notification/electron';
-import { CreateNotificationUseCase } from '@memoflow/notification/commands';
-import type { ScheduleNotificationPort } from '@memoflow/notification/schedule-execution';
 
 /**
  * Dependencies the notification composer needs from the desktop host runtime.
@@ -144,23 +144,14 @@ export function composeNotification(
     closureChecker,
     durableRuntime,
     runtimeContributions: [durableRuntime],
-    db: dependencies.db,
   });
 
-  const createNotification = new CreateNotificationUseCase(
-    repositories.notificationRepository,
-    repositories.notificationTemplateRepository,
-    repositories.notificationPreferenceRepository,
+  const scheduleNotificationPort = createNotificationScheduleNotificationPort({
+    notificationRepository: repositories.notificationRepository,
+    notificationTemplateRepository: repositories.notificationTemplateRepository,
+    notificationPreferenceRepository: repositories.notificationPreferenceRepository,
     closureChecker,
-  );
-  const scheduleNotificationPort: ScheduleNotificationPort = {
-    createNotification(request) {
-      return createNotification.execute({
-        ...request,
-        channels: request.channels ? Array.from(request.channels) : undefined,
-      });
-    },
-  };
+  });
 
   return {
     module: createNotificationElectronModule({ instance }),

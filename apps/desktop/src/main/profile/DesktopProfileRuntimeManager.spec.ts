@@ -8,7 +8,6 @@ import { DesktopProfileRuntimeManager } from './desktop-profile-runtime-manager'
 
 const mocks = vi.hoisted(() => ({
   shutdownPowerSync: vi.fn(),
-  stopScheduleRuntime: vi.fn(),
   moduleRegistration: vi.fn(),
   bootstrapInit: vi.fn(),
   bootstrapDestroy: vi.fn(),
@@ -41,8 +40,6 @@ vi.mock('../bootstrap', () => ({
     destroy = mocks.bootstrapDestroy;
   },
 }));
-
-vi.mock('@memoflow/schedule/electron', () => ({ stopScheduleRuntime: mocks.stopScheduleRuntime }));
 
 function sharedResolver(rootDir: string): SharedPathResolver {
   return {

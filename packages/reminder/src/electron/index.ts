@@ -96,8 +96,8 @@ type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
  */
 export interface ReminderElectronModuleDef {
   readonly name: string;
-  register(context: IElectronModuleContext): void;
-  destroy?(): void;
+  register(context: IElectronModuleContext): Promise<void>;
+  destroy?(): Promise<void>;
 }
 
 /**
@@ -137,7 +137,7 @@ export function createReminderElectronModule(
   return {
     name: 'Reminder',
 
-    register(ctx: IElectronModuleContext): void {
+    async register(ctx: IElectronModuleContext): Promise<void> {
       if (state !== 'created') {
         throw new Error(
           `ReminderElectronModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
@@ -283,7 +283,7 @@ export function createReminderElectronModule(
         );
         installed.push(ReminderChannels.PREFERENCES_UPDATE);
 
-        options.instance.start();
+        await options.instance.start();
         state = 'registered';
 
         logger.info('Reminder module registered');
@@ -293,7 +293,7 @@ export function createReminderElectronModule(
           ipcMain.removeHandler(installed[i]);
         }
         try {
-          options.instance.dispose();
+          await options.instance.dispose();
         } catch (disposeError) {
           logger.error(
             'ReminderElectron: instance dispose failed during failed registration',
@@ -304,7 +304,7 @@ export function createReminderElectronModule(
       }
     },
 
-    destroy(): void {
+    async destroy(): Promise<void> {
       if (state === 'disposed' || state === 'failed') {
         return;
       }
@@ -314,7 +314,7 @@ export function createReminderElectronModule(
       }
       state = 'disposed';
 
-      options.instance.dispose();
+      await options.instance.dispose();
       logger.info('Reminder module destroyed');
     },
   };

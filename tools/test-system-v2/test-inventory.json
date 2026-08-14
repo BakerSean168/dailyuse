@@ -7524,6 +7524,16 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/reminder/src/server/infrastructure/runtime/reminder-trigger-cron.runtime.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/reminder/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/reminder/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/reminder/src/server/infrastructure/schedule-execution-source.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -9943,7 +9953,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 52
+      "fileCount": 53
     },
     {
       "id": "packages/reminder/vitest.integration.config.ts",
@@ -9957,7 +9967,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 52
+      "fileCount": 53
     },
     {
       "id": "packages/reminder/vitest.use-cases.config.ts",
@@ -10654,6 +10664,7 @@
       "packages/reminder/src/server/infrastructure/adapters/prisma/mappers/prisma-reminder-response-mapper.spec.ts",
       "packages/reminder/src/server/infrastructure/adapters/prisma/mappers/prisma-reminder-template-mapper.spec.ts",
       "packages/reminder/src/server/infrastructure/adapters/prisma/mappers/prisma-user-reminder-preference-mapper.spec.ts",
+      "packages/reminder/src/server/infrastructure/runtime/reminder-trigger-cron.runtime.spec.ts",
       "packages/reminder/src/server/infrastructure/schedule-execution-source.spec.ts",
       "packages/reminder/src/server/infrastructure/schedule-projection-source.spec.ts",
       "packages/reminder/src/server/transport/reminder-usecases-export.surface.spec.ts",
@@ -10794,7 +10805,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 919,
+    "unit": 920,
     "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,

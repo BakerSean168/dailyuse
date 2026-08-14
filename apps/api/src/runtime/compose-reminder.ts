@@ -5,26 +5,37 @@
  * This is the API-lane composition root for reminder. The API runtime owns the
  * shared Prisma connection (created in main.ts by connectDatabase()) and passes
  * the host-owned closure checker, so it selects the Prisma persistence adapters,
- * assembles the transport-neutral `ReminderModuleInstance` (module-owned
+ * assembles the transport-neutral `ReminderModuleInstance` (module-owned cron /
  * snooze / reliable / audit runtime included), and turns it into an
  * already-bound `IApiModule`-compatible handle via `createReminderApiModule`.
  *
  * 这是提醒在 API lane 的组合根。API runtime 拥有共享的 Prisma 连接
  * （由 main.ts 的 connectDatabase() 创建），并传入宿主持有的 closure checker，
  * 因此由它选择 Prisma 持久化适配器、装配与传输无关的 `ReminderModuleInstance`
- * （含模块自有 snooze / reliable / audit runtime），再通过 `createReminderApiModule`
+ * （含模块自有 cron / snooze / reliable / audit runtime），再通过 `createReminderApiModule`
  * 变成已绑定 instance 的、兼容 `IApiModule` 的 module handle。
  *
- * Assembly order (plan §3.3) — MUST be: runtime db → reminder Prisma module
- * (repository set + snooze/reliable/audit assembly) → schedule execution /
- * projection sources built from the SAME repository set → reminder instance →
- * API module. Schedule orchestration consumes the returned sources instead of
- * constructing a second Prisma repository set.
+ * Assembly order (plan §3.3) — MUST be: runtime db → reminder Prisma repository
+ * set → module-owned trigger cron runtime (from the SAME set) → reminder
+ * instance → schedule execution / projection sources built from the SAME
+ * repository set → API module. Schedule orchestration consumes the returned
+ * sources instead of constructing a second Prisma repository set.
  *
- * 组装顺序（计划 §3.3）必须为：runtime db → 提醒 Prisma module（仓储集合 +
- * snooze/reliable/audit 装配）→ 从同一仓储集合构建的 schedule execution /
- * projection sources → reminder instance → API module。schedule 编排消费返回的
+ * 组装顺序（计划 §3.3）必须为：runtime db → 提醒 Prisma 仓储集合 → 模块自有触发
+ * cron runtime（来自同一集合）→ reminder instance → 从同一仓储集合构建的
+ * schedule execution / projection sources → API module。schedule 编排消费返回的
  * sources，而不再构造第二套 Prisma 仓储集合。
+ *
+ * The reminder trigger cron is a module-owned runtime contribution restored to
+ * merge-base behavior (the API lane started `createReminderTriggerCronJob` on
+ * module start): it starts with `instance.start()` and stops on dispose. The
+ * desktop PowerSync lane intentionally does NOT wire the cron — it has no
+ * Prisma reliable/transaction ports and never had the cron at merge-base.
+ *
+ * 提醒触发 cron 是恢复到 merge-base 行为的模块自有运行时贡献（API lane 在模块启动时
+ * 启动 `createReminderTriggerCronJob`）：随 `instance.start()` 启动、dispose 停止。
+ * desktop PowerSync lane 刻意不接 cron——它没有 Prisma reliable/transaction ports，
+ * 且 merge-base 时代就从未有过该 cron。
  *
  * Deliberately narrow interface: the host supplies the shared Prisma client and
  * the required closure checker (fail-closed) plus optional extra runtime
@@ -36,7 +47,12 @@
 
 import type { PrismaClient } from '@memoflow/database';
 import {
-  createReminderPrismaModule,
+  createReminderModule,
+  createReminderPrismaRepositories,
+  createReminderTriggerCronRuntime,
+  createReminderScheduleExecutionSource,
+  createReminderScheduleProjectionSource,
+  type ReminderModuleRuntimeContribution,
   type ReminderRuntimeContributionsInput,
   type IReminderTemplateRepository,
 } from '@memoflow/reminder';
@@ -44,14 +60,8 @@ import {
   createReminderApiModule,
   type ReminderApiModuleDef,
 } from '@memoflow/reminder/api';
-import {
-  createReminderScheduleExecutionSource,
-  type ReminderScheduleExecutionSource,
-} from '@memoflow/reminder/schedule-execution';
-import {
-  createReminderScheduleProjectionSource,
-  type ReminderScheduleProjectionSource,
-} from '@memoflow/reminder/schedule-projection';
+import type { ReminderScheduleExecutionSource } from '@memoflow/reminder';
+import type { ReminderScheduleProjectionSource } from '@memoflow/reminder';
 
 /**
  * Dependencies the reminder composer needs from the API host runtime.
@@ -81,32 +91,47 @@ export interface ComposedReminder {
   readonly scheduleProjectionSource: ReminderScheduleProjectionSource;
 }
 
+function normalizeRuntimeContributions(
+  runtimeContributions?: ReminderRuntimeContributionsInput,
+): readonly ReminderModuleRuntimeContribution[] {
+  if (!runtimeContributions) {
+    return [];
+  }
+  return Array.isArray(runtimeContributions)
+    ? Array.from(runtimeContributions)
+    : [runtimeContributions as ReminderModuleRuntimeContribution];
+}
+
 /**
  * Composes the reminder API module handle from the API runtime's Prisma client.
  * 用 API runtime 的 Prisma client 组装提醒 API module handle。
  *
  * Wire order:
- * 1. createReminderPrismaModule(db, { closureChecker, runtimeContributions })
- *    — select the Prisma adapters and assemble the transport-neutral reminder
- *    instance (module-owned snooze/reliable/audit runtime included). The
- *    repository set lives inside this convenience root, so the schedule sources
- *    below share the exact same repositories.
- * 2. createReminderScheduleExecutionSource({ reminderTemplateRepository }) and
- *    createReminderScheduleProjectionSource({ reminderTemplateRepository }) —
- *    build the schedule sources from the SAME repository set (consumed by
+ * 1. createReminderPrismaRepositories(db) — select the Prisma adapters and the
+ *    module-owned snooze / reliable / audit ingredients.
+ * 2. createReminderTriggerCronRuntime({ reminderTemplateRepository,
+ *    reminderGroupRepository, reliablePort, transactionRunner }) — the module-owned
+ *    every-minute trigger cron (merge-base behavior), built from the SAME set.
+ * 3. createReminderModule({ ...set, closureChecker,
+ *    runtimeContributions: [cronRuntime, ...host] }) — assemble the
+ *    transport-neutral reminder instance.
+ * 4. createReminderScheduleExecutionSource / createReminderScheduleProjectionSource
+ *    — build the schedule sources from the SAME repository set (consumed by
  *    schedule orchestration).
- * 3. createReminderApiModule({ instance }) — bind the instance to an IApiModule
+ * 5. createReminderApiModule({ instance }) — bind the instance to an IApiModule
  *    handle (transport + lifecycle only).
  *
  * 接线顺序：
- * 1. createReminderPrismaModule(db, { closureChecker, runtimeContributions })
- *    —— 选择 Prisma 适配器并装配与传输无关的提醒实例（含模块自有 snooze/reliable/
- *    audit runtime）。仓储集合位于该便捷组合根内部，因此下方 schedule sources
- *    与它共享完全相同的仓储。
- * 2. createReminderScheduleExecutionSource({ reminderTemplateRepository }) 与
- *    createReminderScheduleProjectionSource({ reminderTemplateRepository })
+ * 1. createReminderPrismaRepositories(db) —— 选择 Prisma 适配器与模块自有 snooze /
+ *    reliable / audit 原料。
+ * 2. createReminderTriggerCronRuntime({ reminderTemplateRepository,
+ *    reminderGroupRepository, reliablePort, transactionRunner }) —— 模块自有每分钟
+ *    触发 cron（merge-base 行为），由同一集合构建。
+ * 3. createReminderModule({ ...set, closureChecker,
+ *    runtimeContributions: [cronRuntime, ...host] }) —— 装配与传输无关的提醒实例。
+ * 4. createReminderScheduleExecutionSource / createReminderScheduleProjectionSource
  *    —— 从同一仓储集合构建 schedule sources（供 schedule 编排消费）。
- * 3. createReminderApiModule({ instance }) —— 把实例绑定到 IApiModule handle
+ * 5. createReminderApiModule({ instance }) —— 把实例绑定到 IApiModule handle
  *    （只负责 transport 与生命周期）。
  *
  * The returned handle is already fully bound: ApiBootstrapper.register() must
@@ -122,9 +147,28 @@ export interface ComposedReminder {
 export function composeReminder(
   dependencies: ComposeReminderDependencies,
 ): ComposedReminder {
-  const instance = createReminderPrismaModule(dependencies.db, {
+  const repositories = createReminderPrismaRepositories(dependencies.db);
+
+  const cronRuntime = createReminderTriggerCronRuntime({
+    reminderTemplateRepository: repositories.reminderTemplateRepository,
+    reminderGroupRepository: repositories.reminderGroupRepository,
+    reliablePort: repositories.reliablePort,
+    transactionRunner: repositories.transactionRunner,
+  });
+
+  const instance = createReminderModule({
+    reminderTemplateRepository: repositories.reminderTemplateRepository,
+    reminderGroupRepository: repositories.reminderGroupRepository,
+    reminderResponseRepository: repositories.reminderResponseRepository,
+    userReminderPreferenceRepository: repositories.userReminderPreferenceRepository,
     closureChecker: dependencies.closureChecker,
-    runtimeContributions: dependencies.runtimeContributions,
+    reliablePort: repositories.reliablePort,
+    snoozeRescheduler: repositories.snoozeRescheduler,
+    auditRepository: repositories.auditRepository,
+    runtimeContributions: [
+      cronRuntime,
+      ...normalizeRuntimeContributions(dependencies.runtimeContributions),
+    ],
   });
 
   const reminderTemplateRepository = instance.reminderTemplateRepository;

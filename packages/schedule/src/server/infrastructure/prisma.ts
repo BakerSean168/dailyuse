@@ -8,7 +8,10 @@ import {
 } from './adapters/prisma';
 import { createScheduleLeasePrismaRepository } from './lease/schedule-lease.repository';
 import { ScheduleLeaseCoordinator } from './lease/schedule-lease-coordinator';
-import type { ScheduleRuntimeContributionsInput } from './schedule.module';
+import type {
+  ScheduleRuntimeContributionsInput,
+  ScheduleModuleRuntimeContribution,
+} from './schedule.module';
 import { eventBus } from '@memoflow/utils/domain';
 import { PrismaOperationAuditRepository, globalUnifiedOperationMetrics } from '@memoflow/patterns/operations';
 import type { OperationAuditRepository } from '@memoflow/patterns/operations';
@@ -29,6 +32,18 @@ export interface CreateSchedulePrismaModuleOptions {
 }
 
 /**
+ * Options accepted by the Prisma schedule ingredient factory.
+ * Prisma schedule 原料工厂接受的选项。
+ */
+export interface CreateSchedulePrismaRepositoriesOptions {
+  /**
+   * R1-2：事件总线失败时的 durable outbox 兜底（merge-base `createScheduleTaskPrismaRepository(db, outboxWriter)` 行为）。
+   * 提供时调度任务仓储的事件发布失败会落入可靠 outbox（可重试/对账）。
+   */
+  readonly outboxWriter?: import('@memoflow/patterns').IOutboxWriter;
+}
+
+/**
  * Host-facing schedule repository set.
  * 面向宿主暴露的调度仓储集合。
  *
@@ -46,6 +61,12 @@ export interface ScheduleRepositorySet {
   readonly scheduleTaskRepository: IScheduleTaskRepository;
   readonly leaseCoordinator: ScheduleLeaseCoordinator;
   readonly auditRepository?: OperationAuditRepository;
+  /**
+   * Prisma-lane production consumer（P1-1）。由 `createSchedulePrismaRepositories`
+   * 构建并随模块 start()/dispose() 启停；结构化运行时贡献形状，具体 consumer 类
+   * 保持在包内。
+   */
+  readonly eventDeliveryLogConsumer?: ScheduleModuleRuntimeContribution;
 }
 
 export function createSchedulePrismaRepository(db: PrismaClient) {
@@ -80,13 +101,18 @@ export function createScheduleExecutionPrismaRepository(db: PrismaClient) {
  * @returns Repository set backed by the Prisma adapters.
  *          返回基于 Prisma 适配器的仓储集合。
  */
-export function createSchedulePrismaRepositories(db: PrismaClient): ScheduleRepositorySet {
+export function createSchedulePrismaRepositories(
+  db: PrismaClient,
+  options: CreateSchedulePrismaRepositoriesOptions = {},
+): ScheduleRepositorySet {
+  const eventDeliveryLogConsumer = new ScheduleEventDeliveryLogConsumer(db, eventBus);
   return {
     scheduleRepository: createSchedulePrismaRepository(db),
     scheduleExecutionRepository: createScheduleExecutionPrismaRepository(db),
-    scheduleTaskRepository: createScheduleTaskPrismaRepository(db),
+    scheduleTaskRepository: createScheduleTaskPrismaRepository(db, options.outboxWriter),
     leaseCoordinator: new ScheduleLeaseCoordinator(createScheduleLeasePrismaRepository(db)),
     auditRepository: new PrismaOperationAuditRepository(db),
+    eventDeliveryLogConsumer,
   };
 }
 
@@ -98,7 +124,7 @@ export function createSchedulePrismaModule(
 
   const wireDeliveryLogConsumer = options.wireDeliveryLogConsumer ?? true;
   const eventDeliveryLogConsumer = wireDeliveryLogConsumer
-    ? new ScheduleEventDeliveryLogConsumer(db, eventBus)
+    ? repositories.eventDeliveryLogConsumer
     : undefined;
 
   return createScheduleModule({

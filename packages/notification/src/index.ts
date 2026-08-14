@@ -25,6 +25,7 @@ export {
   createNotificationPowerSyncRepositories,
   createNotificationRuntimeContribution,
   createNotificationDurableRuntime,
+  createNotificationScheduleNotificationPort,
   createPowerSyncClosureChecker,
   createDefaultElectronDesktopTransport,
   type NotificationApplicationPort,
@@ -34,6 +35,7 @@ export {
   type NotificationModuleUseCases,
   type NotificationPrismaRepositorySet,
   type NotificationPowerSyncRepositorySet,
+  type NotificationReliableOperationPort,
   type ChannelCapabilitySpec,
   type NotificationChannelDeliverer,
   type NotificationDurableRuntimePort,
@@ -41,3 +43,10 @@ export {
   type INotificationPreferenceRepository,
   type INotificationTemplateRepository,
 } from './server';
+// Host composers import only `@memoflow/notification`; the command / schedule
+// seams are re-exported through the root so no `/commands` or
+// `/schedule-execution` subpath import is needed in apps.
+// 宿主 composer 只导入 `@memoflow/notification`；命令 / schedule seam 通过根重新
+// 导出，apps 无需导入 `/commands` 或 `/schedule-execution` 子路径。
+export { CreateNotificationUseCase } from './server/application/use-cases/commands/create-notification.use-case';
+export type { ScheduleNotificationPort } from './schedule-execution';

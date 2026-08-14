@@ -31,8 +31,10 @@ import {
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 import type { ReminderScheduleProjectionSource } from '../../schedule-projection';
 import { PrismaOperationAuditRepository } from '@memoflow/patterns/operations';
+import type { OperationAuditRepository } from '@memoflow/patterns/operations';
 import type { ReminderReliableOperationPort } from '@memoflow/contracts/reliable-messaging';
 import type { ReminderTransactionRunner } from '../domain/ports/reminder-transaction-runner.port';
+import type { ReminderSnoozeRescheduler } from '../application/use-cases/commands/record-reminder-response.use-case';
 import type {
   IReminderTemplateRepository,
   IReminderGroupRepository,
@@ -56,9 +58,9 @@ export interface CreateReminderPrismaModuleOptions {
  * `closureChecker` is intentionally NOT part of the set: it is a host-owned
  * port passed explicitly to `createReminderPrismaModule`.
  *
- * 包含四个领域仓储，以及模块自有 cron/snooze runtime 使用的可靠操作端口与事务运行器。
- * `closureChecker` 刻意不在此列：它是宿主持有的 Port，由调用方显式传给
- * `createReminderPrismaModule`。
+ * 包含四个领域仓储，以及模块自有 cron/snooze runtime 使用的可靠操作端口、事务运行器、
+ * snooze rescheduler 与操作审计仓储。`closureChecker` 刻意不在此列：它是宿主持有的
+ * Port，由调用方显式传给 `createReminderPrismaModule`。
  */
 export interface ReminderPrismaRepositorySet {
   readonly reminderTemplateRepository: IReminderTemplateRepository;
@@ -67,6 +69,10 @@ export interface ReminderPrismaRepositorySet {
   readonly userReminderPreferenceRepository: IUserReminderPreferenceRepository;
   readonly reliablePort: ReminderReliableOperationPort;
   readonly transactionRunner: ReminderTransactionRunner;
+  /** R3c：snooze 作为真 command——推迟 reminder 对应 schedule task 的下次触发。 */
+  readonly snoozeRescheduler: ReminderSnoozeRescheduler;
+  /** W7：统一 operation timeline / replay / audit。 */
+  readonly auditRepository: OperationAuditRepository;
 }
 
 /**
@@ -102,11 +108,9 @@ export function createReminderPrismaModule(
     userReminderPreferenceRepository: repositories.userReminderPreferenceRepository,
     closureChecker: options.closureChecker,
     runtimeContributions: options.runtimeContributions,
-    // R3c：snooze 作为真 command——推迟 reminder 对应 schedule task 的下次触发。
-    snoozeRescheduler: createReminderSnoozeReschedulerPrisma(db),
-    // W7：统一 operation timeline / replay / audit。
+    snoozeRescheduler: repositories.snoozeRescheduler,
     reliablePort: repositories.reliablePort,
-    auditRepository: new PrismaOperationAuditRepository(db),
+    auditRepository: repositories.auditRepository,
   });
 }
 
@@ -133,6 +137,8 @@ export function createReminderPrismaRepositories(db: PrismaClient): ReminderPris
     userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(db),
     reliablePort: new ReminderReliableOperationPrismaAdapter(db),
     transactionRunner: new PrismaReminderWriteTransactionRunner(db),
+    snoozeRescheduler: createReminderSnoozeReschedulerPrisma(db),
+    auditRepository: new PrismaOperationAuditRepository(db),
   };
 }
 

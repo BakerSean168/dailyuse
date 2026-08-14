@@ -72,6 +72,7 @@ import { RepositoryKnowledgeIndexStatusAdapter } from './modules/ai/repository-k
 import { RepositoryKnowledgeCloudDataPurgerAdapter } from './modules/ai/repository-knowledge-cloud-data-purger.adapter';
 import { createCronScheduler } from './shared/infrastructure/cron/index.js';
 import type { CronSchedulerManager } from './shared/infrastructure/cron/index.js';
+import { PrismaOutboxWriter } from './outbox/prisma-outbox-writer';
 
 // 初始化日志系统
 initializeLogger();
@@ -179,7 +180,10 @@ async function bootstrap(): Promise<void> {
   // Schedule 两阶段装配：先创建一次 schedule 仓储集合，把其中的
   // scheduleTaskRepository 交给 schedule orchestration（产出 sourceExecutor），
   // 再把同一集合与 sourceExecutor 交给 composeSchedule —— 全程只有一个集合。
-  const scheduleRepositorySet = createSchedulePrismaRepositories(prisma);
+  // 事件总线失败时兜底到 durable outbox（R1-2 merge-base 行为）。
+  const scheduleRepositorySet = createSchedulePrismaRepositories(prisma, {
+    outboxWriter: new PrismaOutboxWriter(prisma),
+  });
   const scheduleOrchestrationModule = createScheduleOrchestrationModule({
     taskProjection: {
       source: createTaskPrismaScheduleProjectionSource(prisma),

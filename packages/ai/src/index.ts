@@ -41,7 +41,13 @@ export {
   AIServiceKnowledgeIngestionAdapter,
   AIServiceKnowledgeNoteGenerationAdapter,
   AIServiceKnowledgeQueryAdapter,
-  DirectProviderChatExecutionAdapter,
-  DirectProviderGoalPlanningAdapter,
-  DirectProviderKnowledgeNoteGenerationAdapter,
 } from './server/infrastructure';
+// Host capability ports are re-exported through the package root so desktop
+// composers import only `@memoflow/ai` (no `/ports` subpath).
+// 宿主能力 Ports 通过包根重新导出，使 desktop composer 只导入 `@memoflow/ai`。
+export type {
+  IAnalyticsReadPort,
+  IKnowledgeSourcePort,
+  IKnowledgeNotePersistencePort,
+  IAIAutomationToolExecutorPort,
+} from './ports';

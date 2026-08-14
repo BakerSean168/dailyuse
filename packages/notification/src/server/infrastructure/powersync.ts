@@ -19,7 +19,7 @@ import {
   createNotificationDurableRuntime,
   type NotificationDurableRuntimePort,
   type ChannelCapabilitySpec,
-  type NotificationReliableOperationAdapter,
+  type NotificationReliableOperationPort,
 } from './runtime/notification.runtime';
 import {
   PowerSyncNotificationRepository,
@@ -56,7 +56,7 @@ export interface NotificationPowerSyncRepositorySet {
   readonly notificationRepository: INotificationRepository;
   readonly notificationPreferenceRepository: INotificationPreferenceRepository;
   readonly notificationTemplateRepository: INotificationTemplateRepository;
-  readonly reliableAdapter: NotificationReliableOperationAdapter;
+  readonly reliableAdapter: NotificationReliableOperationPort;
 }
 
 /**
@@ -415,7 +415,6 @@ export function createNotificationPowerSyncModule(
   const closureChecker = createPowerSyncClosureChecker(db);
 
   return createNotificationModule({
-    db,
     notificationRepository,
     preferenceRepository: repositories.notificationPreferenceRepository,
     templateRepository: repositories.notificationTemplateRepository,

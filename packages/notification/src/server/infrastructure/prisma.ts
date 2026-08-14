@@ -13,7 +13,7 @@
 
 import type { PrismaClient } from '@memoflow/database';
 import type { ScheduleNotificationPort } from '../../schedule-execution';
-import { CreateNotificationUseCase } from '../application/use-cases/commands/create-notification.use-case';
+import { createNotificationScheduleNotificationPort } from './schedule-notification-port';
 import {
   NotificationPreferencePrismaRepository,
   NotificationPrismaRepository,
@@ -22,7 +22,7 @@ import {
 } from './adapters/prisma';
 import {
   createNotificationRuntimeContribution,
-  type NotificationReliableOperationAdapter,
+  type NotificationReliableOperationPort,
 } from './runtime/notification.runtime';
 import {
   createNotificationModule,
@@ -70,7 +70,7 @@ export interface NotificationPrismaRepositorySet {
   readonly notificationRepository: INotificationRepository;
   readonly notificationPreferenceRepository: INotificationPreferenceRepository;
   readonly notificationTemplateRepository: INotificationTemplateRepository;
-  readonly reliableAdapter: NotificationReliableOperationAdapter;
+  readonly reliableAdapter: NotificationReliableOperationPort;
   readonly auditRepository: OperationAuditRepository;
 }
 
@@ -151,23 +151,12 @@ export function createNotificationPrismaScheduleNotificationPort(
   db: PrismaClient,
   closureChecker: (identityId: string) => Promise<boolean>,
 ): ScheduleNotificationPort {
-  if (!closureChecker) {
-    throw new Error('[FAIL-CLOSED] createNotificationPrismaScheduleNotificationPort requires closureChecker');
-  }
   const repositories = createNotificationPrismaRepositories(db);
-  const createNotification = new CreateNotificationUseCase(
-    repositories.notificationRepository,
-    repositories.notificationTemplateRepository,
-    repositories.notificationPreferenceRepository,
-    closureChecker,
-  );
 
-  return {
-    createNotification(request) {
-      return createNotification.execute({
-        ...request,
-        channels: request.channels ? Array.from(request.channels) : undefined,
-      });
-    },
-  };
+  return createNotificationScheduleNotificationPort({
+    notificationRepository: repositories.notificationRepository,
+    notificationTemplateRepository: repositories.notificationTemplateRepository,
+    notificationPreferenceRepository: repositories.notificationPreferenceRepository,
+    closureChecker,
+  });
 }

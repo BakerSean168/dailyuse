@@ -56,13 +56,11 @@ import {
   createAIModule,
   createAIPowerSyncRepositories,
   type AIServiceRuntimeConfig,
+  type IAnalyticsReadPort,
+  type IAIAutomationToolExecutorPort,
+  type IKnowledgeNotePersistencePort,
+  type IKnowledgeSourcePort,
 } from '@memoflow/ai';
-import type {
-  IAnalyticsReadPort,
-  IAIAutomationToolExecutorPort,
-  IKnowledgeNotePersistencePort,
-  IKnowledgeSourcePort,
-} from '@memoflow/ai/ports';
 import {
   createAIElectronModule,
   type AIElectronModuleDef,

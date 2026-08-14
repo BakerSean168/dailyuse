@@ -130,6 +130,7 @@ export function composeSchedule(
     scheduleExecutionRepository: repositories.scheduleExecutionRepository,
     scheduleTaskRepository: repositories.scheduleTaskRepository,
     leaseCoordinator: repositories.leaseCoordinator,
+    eventDeliveryLogConsumer: repositories.eventDeliveryLogConsumer,
     runtimeContributions: [
       queueRuntime,
       ...normalizeRuntimeContributions(dependencies.runtimeContributions),

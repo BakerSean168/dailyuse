@@ -20,7 +20,6 @@ import type {
   INotificationPreferenceRepository,
   INotificationTemplateRepository,
 } from '../domain/repositories';
-import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import {
   CreateNotificationUseCase,
   MarkNotificationAsReadUseCase,
@@ -60,7 +59,6 @@ export interface NotificationModuleDependencies {
   readonly preferenceRepository: INotificationPreferenceRepository;
   readonly templateRepository: INotificationTemplateRepository;
   readonly closureChecker: (identityId: string) => Promise<boolean>;
-  readonly db?: IElectronDatabase;
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
   readonly durableRuntime: NotificationDurableRuntimePort;
   readonly auditRepository?: OperationAuditRepository;

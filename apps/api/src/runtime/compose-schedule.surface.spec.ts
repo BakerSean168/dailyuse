@@ -32,7 +32,7 @@ describe('schedule API runtime composer surface', () => {
   });
 
   it('main.ts creates the schedule repository set exactly once and shares it with orchestration', () => {
-    const matches = main.match(/createSchedulePrismaRepositories\(prisma\)/g) ?? [];
+    const matches = main.match(/createSchedulePrismaRepositories\(prisma/g) ?? [];
     expect(matches.length).toBe(1);
     expect(main).toContain('scheduleRepositorySet.scheduleTaskRepository');
   });
@@ -44,7 +44,11 @@ describe('schedule API runtime composer surface', () => {
 
   it('main.ts no longer creates a standalone schedule task repository for orchestration', () => {
     expect(main).not.toMatch(/\bcreateScheduleTaskPrismaRepository\b/);
-    expect(main).not.toContain('PrismaOutboxWriter');
+  });
+
+  it('main.ts restores the durable PrismaOutboxWriter on the schedule task repository (merge-base R1-2)', () => {
+    expect(main).toMatch(/createSchedulePrismaRepositories\(\s*prisma,\s*\{\s*outboxWriter: new PrismaOutboxWriter\(prisma\),?\s*\}\)/);
+    expect(main).toContain("import { PrismaOutboxWriter } from './outbox/prisma-outbox-writer'");
   });
 
   it('composer only touches the narrow seams (no deep server import)', () => {

@@ -28,7 +28,6 @@ export type {
   INotificationPreferenceRepository,
   INotificationTemplateRepository,
 } from '../domain/repositories';
-export type { NotificationReliableOperationPort } from '@memoflow/contracts/reliable-messaging';
 
 export { createNotificationPowerSyncModule } from './powersync';
 export {
@@ -48,11 +47,16 @@ export {
   type NotificationPrismaRepositorySet,
 } from './prisma';
 export {
+  createNotificationScheduleNotificationPort,
+  type CreateNotificationScheduleNotificationPortDeps,
+} from './schedule-notification-port';
+export {
   createNotificationRuntimeContribution,
   createNotificationDurableRuntime,
   type ChannelCapabilitySpec,
   type NotificationChannelDeliverer,
   type NotificationDurableRuntimePort,
+  type NotificationReliableOperationPort,
 } from './runtime';
 
 // ============ Adapters still consumed by apps ============
