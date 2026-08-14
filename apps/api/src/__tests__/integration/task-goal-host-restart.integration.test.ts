@@ -8,8 +8,15 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { prisma } from '@memoflow/database';
 import { IdentityId } from '@memoflow/domain-shared';
 import { createGoalPrismaModule, createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
-import { createTaskPrismaModule, PrismaTaskBindingReadPort } from '@memoflow/task';
-import { createTaskApiModule } from '@memoflow/task/api';
+import {
+  PrismaTaskBindingReadPort,
+  createTaskModule,
+  createTaskPrismaGoalOutboxRuntime,
+  createTaskPrismaModule,
+  createTaskPrismaRepositories,
+  createTaskRuntimeContribution,
+} from '@memoflow/task';
+import { createTaskApiModule, type TaskApiModuleDef } from '@memoflow/task/api';
 import {
   cleanAll,
   disconnectPrisma,
@@ -17,6 +24,23 @@ import {
 } from '@memoflow/test-utils/setup/integration-helpers';
 
 const execFileAsync = promisify(execFile);
+
+function composeRestartedTaskHost(): TaskApiModuleDef {
+  const taskRepositories = createTaskPrismaRepositories(prisma);
+  const runtimeContributions = [
+    createTaskRuntimeContribution(),
+    createTaskPrismaGoalOutboxRuntime(
+      prisma,
+      createGoalTaskProgressPrismaHandler(prisma),
+    ),
+  ];
+  const instance = createTaskModule({
+    ...taskRepositories,
+    runtimeContributions,
+  });
+
+  return createTaskApiModule({ instance });
+}
 
 describe('API host Task -> Goal restart recovery', () => {
   beforeEach(async () => {
@@ -117,14 +141,11 @@ describe('API host Task -> Goal restart recovery', () => {
     ).resolves.toMatchObject({ status: 'PENDING' });
     await expect(prisma.goalRecord.count({ where: { keyResultId } })).resolves.toBe(0);
 
-    const restartedHost = createTaskApiModule({
-      goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
-    });
+    const restartedHost = composeRestartedTaskHost();
     const app = express();
-    restartedHost.register({
+    await restartedHost.register({
       app,
       router: express.Router(),
-      db: prisma,
       middleware: {
         auth: (_request, _response, next) => next(),
         requireRole: () => (_request, _response, next) => next(),
@@ -149,15 +170,12 @@ describe('API host Task -> Goal restart recovery', () => {
       prisma.keyResult.findUniqueOrThrow({ where: { id: keyResultId } }),
     ).resolves.toMatchObject({ currentValue: 2 });
 
-    restartedHost.destroy?.();
+    await restartedHost.destroy?.();
 
-    const secondRestart = createTaskApiModule({
-      goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
-    });
-    secondRestart.register({
+    const secondRestart = composeRestartedTaskHost();
+    await secondRestart.register({
       app,
       router: express.Router(),
-      db: prisma,
       middleware: {
         auth: (_request, _response, next) => next(),
         requireRole: () => (_request, _response, next) => next(),
@@ -166,6 +184,6 @@ describe('API host Task -> Goal restart recovery', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50));
     await expect(prisma.goalRecord.count({ where: { keyResultId } })).resolves.toBe(1);
-    secondRestart.destroy?.();
+    await secondRestart.destroy?.();
   });
 });
