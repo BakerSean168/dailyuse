@@ -35,6 +35,9 @@ import { GetReminderTemplateUseCase } from '../application/use-cases/queries/get
 import { ListReminderTemplatesUseCase } from '../application/use-cases/queries/list-reminder-templates.use-case';
 import { AnalyzeReminderFrequencyUseCase } from '../application/use-cases/queries/analyze-reminder-frequency.use-case';
 import { AdjustReminderFrequencyUseCase } from '../application/use-cases/commands/adjust-reminder-frequency.use-case';
+import { createLogger } from '@memoflow/utils/logger';
+
+const logger = createLogger('ReminderModule');
 
 export type ReminderRuntimeContributionsInput =
   | ReminderModuleRuntimeContribution
@@ -422,8 +425,28 @@ export function createReminderModule(
 
     async start() {
       if (started) return;
+      const startedContributions: ReminderModuleRuntimeContribution[] = [];
       for (const runtime of runtimeContributions) {
-        await runtime.start();
+        try {
+          await runtime.start();
+          startedContributions.push(runtime);
+        } catch (error) {
+          // Partial-start rollback: await the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedRuntime of [...startedContributions].reverse()) {
+            try {
+              await startedRuntime.stop();
+            } catch (stopError) {
+              logger.error(
+                'ReminderModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
       started = true;
     },

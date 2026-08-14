@@ -45,6 +45,10 @@ import type {
   OperationAuditRecord,
 } from '@memoflow/patterns/operations';
 import { runTimelineQueryWithAudit } from '@memoflow/patterns/operations';
+import { createLogger } from '@memoflow/utils/logger';
+
+const logger = createLogger('NotificationModule');
+
 export interface NotificationModuleRuntimeContribution {
   start(): void;
   stop(): void;
@@ -321,8 +325,28 @@ export function createNotificationModule(
         return;
       }
 
+      const startedContributions: NotificationModuleRuntimeContribution[] = [];
       for (const runtime of runtimeContributions) {
-        runtime.start();
+        try {
+          runtime.start();
+          startedContributions.push(runtime);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedRuntime of [...startedContributions].reverse()) {
+            try {
+              startedRuntime.stop();
+            } catch (stopError) {
+              logger.error(
+                'NotificationModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
 
       started = true;

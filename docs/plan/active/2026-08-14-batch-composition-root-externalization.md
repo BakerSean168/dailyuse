@@ -388,13 +388,17 @@ precise:
 
 1. **AI service adapters stay on `@memoflow/ai` root.** The desktop composer
    (`apps/desktop/src/main/runtime/compose-ai.ts`) constructs the service
-   runtime adapters (`AIService*Adapter`, `AIEvaluationReportFileAdapter`,
-   `DirectProvider*Adapter`) from the host-owned runtime config. These concrete
-   classes are therefore exported from the package root — an intentional
-   exception to the "factories + port types only" rule. The AI infra barrel
-   keeps its concrete Prisma/engine classes too because `@memoflow/ai` has no
-   `./server` export map entry (infra barrel is package-internal) and the
-   residual API-AI module still composes them inside `register()`.
+   runtime adapters (`AIService*Adapter`, `AIEvaluationReportFileAdapter`)
+   from the host-owned runtime config. These concrete classes are therefore
+   exported from the package root — an intentional exception to the
+   "factories + port types only" rule. The `DirectProvider*Adapter` legacy
+   classes have been REMOVED from the root barrel (they live only in the
+   package-internal infra barrel); the governance guard whitelist no longer
+   admits them, so any reintroduction fails `package-export-audit`. The AI
+   infra barrel keeps its concrete Prisma/engine classes too because
+   `@memoflow/ai` has no `./server` export map entry (infra barrel is
+   package-internal) and the residual API-AI module still composes them inside
+   `register()`.
 2. **API AI remains a follow-up residual.** `createAIApiModule()` in
    `packages/ai/src/api/module.ts` still composes Prisma and concrete service
    adapters inside `register()` and reads `context.db`. Not marked done in this
@@ -412,11 +416,25 @@ precise:
    `composeSchedule`. No second repository set or hidden DB composition root.
    Desktop returns a bound `ScheduleRuntimeController` as the sole start/stop
    owner (delayed until window-ready).
-5. **Reminder cron / schedule event-delivery-log consumer residuals.**
-   `createReminderTriggerCronJob` is not on any public seam (reminder desktop
-   has no cron runtime — the Prisma lane's snooze rescheduler has no PowerSync
-   counterpart), and the schedule `eventDeliveryLogConsumer` is not wired
-   (no public seam). Both are recorded residuals, not silently omitted.
+5. **Reminder cron / schedule event-delivery-log consumer — API lane restored,
+   desktop-lane deviations.** Both are wired as module-owned runtime
+   contributions on the API lane only:
+   - The reminder trigger cron is RESTORED to merge-base behavior via
+     `createReminderTriggerCronRuntime` (wraps `createReminderTriggerCronJob`
+     with start/stop idempotency), prepended in the reminder runtime
+     contributions by `apps/api/src/runtime/compose-reminder.ts:168-170`.
+   - The schedule `eventDeliveryLogConsumer` is wired through the API lane:
+     `createSchedulePrismaRepositories` constructs the
+     `ScheduleEventDeliveryLogConsumer` (Prisma `$transaction` idempotent
+     consumption) and returns it on `ScheduleRepositorySet`; the API composer
+     passes it into `createScheduleModule` (`apps/api/src/runtime/compose-schedule.ts:133`).
+   - Desktop deviations (recorded, not silently omitted): the desktop PowerSync
+     lane has no cron runtime (its snooze rescheduler has no PowerSync
+     counterpart, and merge-base never wired the cron) and never had the
+     delivery-log consumer (a Prisma-only consumer; the PowerSync set has no
+     such field at merge-base or today). See the explanatory comments in
+     `apps/desktop/src/main/runtime/compose-reminder.ts` and
+     `apps/desktop/src/main/runtime/compose-schedule.ts`.
 6. **Host-used concrete classes remain in root/infra barrels.** apps/api still
    constructs the account closure saga from Prisma: `PrismaAccountClosureOperationRepository`
    (closure checker, `main.ts:122`) and `AccountClosedWorker` (`main.ts:265`)

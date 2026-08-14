@@ -16,6 +16,9 @@ import { runTimelineQueryWithAudit } from '@memoflow/patterns/operations';
 import { OperationTimelineEntrySchema } from '@memoflow/contracts/operations';
 import type { OperationTimelineEntry } from '@memoflow/contracts/operations';
 import type { KnowledgeWriteRequestClientDTO } from '@memoflow/contracts/repository';
+import { createLogger } from '@memoflow/utils/logger';
+
+const logger = createLogger('RepositoryModule');
 
 export type RepositoryRuntimeContributionsInput =
   | RepositoryModuleRuntimeContribution
@@ -258,8 +261,28 @@ export function createRepositoryModule(
     api,
     start() {
       if (started) return;
+      const startedContributions: RepositoryModuleRuntimeContribution[] = [];
       for (const contribution of runtimeContributions) {
-        contribution.start();
+        try {
+          contribution.start();
+          startedContributions.push(contribution);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedContribution of [...startedContributions].reverse()) {
+            try {
+              startedContribution.stop();
+            } catch (stopError) {
+              logger.error(
+                'RepositoryModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
       started = true;
     },

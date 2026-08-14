@@ -164,6 +164,21 @@ export function composeSchedule(
     shouldScheduleTask: dependencies.shouldScheduleTask,
   });
 
+  // Delivery-log consumer is intentionally NOT wired in the desktop lane.
+  // `eventDeliveryLogConsumer` is a Prisma-only module-owned runtime produced by
+  // `createSchedulePrismaRepositories` (the API lane) — it consumes
+  // `ScheduleEventDeliveryLog` via a Prisma `$transaction`. The desktop
+  // PowerSync lane has no such DB composition root, and merge-base
+  // (ec0a7f965) never wired it here; see plan §3.5 residual #5. Wiring it on
+  // desktop would require a Prisma transaction seam that does not exist in the
+  // offline-first lane.
+  //
+  // delivery-log consumer 刻意不接桌面 lane。`eventDeliveryLogConsumer` 是仅
+  // Prisma 的模块自有运行时，由 `createSchedulePrismaRepositories`（API lane）
+  // 生产——它通过 Prisma `$transaction` 消费 `ScheduleEventDeliveryLog`。
+  // desktop PowerSync lane 没有这样的 DB 组合根，且 merge-base（ec0a7f965）
+  // 从未在此接线；见计划 §3.5 残余 #5。在 desktop 接线需要一条离线优先 lane
+  // 中不存在的 Prisma 事务 seam。
   const instance = createScheduleModule({
     scheduleRepository: repositories.scheduleRepository,
     scheduleExecutionRepository: repositories.scheduleExecutionRepository,

@@ -18,8 +18,9 @@ const infraForbiddenNameRegex = /(Prisma|PowerSync|Adapter|Repository)$/;
  * The desktop AI composer (`apps/desktop/src/main/runtime/compose-ai.ts`) must
  * construct the service runtime adapters from the host-owned runtime config, so
  * those concrete `AIService*Adapter` classes are intentionally exported from
- * `@memoflow/ai` root. `DirectProvider*Adapter` are documented legacy adapters
- * kept on the root for parity with the residual API-AI module.
+ * `@memoflow/ai` root. `DirectProvider*Adapter` were removed from the root
+ * barrel during the batch (the leak is fixed); they are deliberately NOT
+ * whitelisted here so any reintroduction fails this audit.
  */
 const DOCUMENTED_ROOT_CONCRETE_EXPORTS = {
   ai: new Set([
@@ -32,9 +33,6 @@ const DOCUMENTED_ROOT_CONCRETE_EXPORTS = {
     'AIServiceKnowledgeIngestionAdapter',
     'AIServiceKnowledgeNoteGenerationAdapter',
     'AIServiceKnowledgeQueryAdapter',
-    'DirectProviderChatExecutionAdapter',
-    'DirectProviderGoalPlanningAdapter',
-    'DirectProviderKnowledgeNoteGenerationAdapter',
   ]),
 };
 

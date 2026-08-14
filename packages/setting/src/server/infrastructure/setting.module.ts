@@ -9,6 +9,10 @@ import {
   GetDefaultSettings,
 } from '../application';
 import type { SettingApplicationPort } from '../application';
+import { createLogger } from '@memoflow/utils/logger';
+
+const logger = createLogger('SettingModule');
+
 /** Setting runtime side effects. Setting 模块拥有的运行时副作用。 */
 export interface SettingModuleRuntimeContribution {
   start(): void;
@@ -101,8 +105,28 @@ export function createSettingModule(
     },
     start(): void {
       if (started) return;
+      const startedContributions: SettingModuleRuntimeContribution[] = [];
       for (const runtime of runtimeContributions) {
-        runtime.start();
+        try {
+          runtime.start();
+          startedContributions.push(runtime);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedRuntime of [...startedContributions].reverse()) {
+            try {
+              startedRuntime.stop();
+            } catch (stopError) {
+              logger.error(
+                'SettingModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
       started = true;
     },
