@@ -129,8 +129,20 @@ export interface ComposeAIDependencies {
  * The returned handle is already fully bound: ApiBootstrapper.register() must
  * be called with it once, and its destroy() disposes the owned instance.
  *
+ * Failure behavior: this composer is synchronous and throws on invalid input —
+ * `createAIPrismaRepositories` requires a live Prisma client, and
+ * `createAIApiModule({ instance })` fail-closed on a missing instance or the
+ * missing internal checkpoint application surface. A registration failure
+ * later disposes the instance via the module handle's rollback path; the
+ * composer itself never leaves partial state behind.
+ *
  * 返回的 handle 已完全绑定：ApiBootstrapper.register() 必须恰好注册一次，
  * 其 destroy() 会 dispose 所属实例。
+ *
+ * 失败行为：本 composer 为同步且输入非法即抛错——`createAIPrismaRepositories`
+ * 要求可用的 Prisma client，`createAIApiModule({ instance })` 对缺失 instance
+ * 或缺失的内部 checkpoint application surface fail-closed。后续注册失败由模块
+ * handle 的回滚路径 dispose 实例；composer 自身不会遗留任何部分状态。
  *
  * @param dependencies - ComposeAIDependencies with the runtime Prisma client, repository port and host storage directory.
  * @returns AIApiModuleDef — an already-bound IApiModule-compatible handle.

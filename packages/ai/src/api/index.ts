@@ -2,22 +2,19 @@
  * AI API Module
  * AI API 模块
  *
- * Exposes the AI API transport factory for apps/api.
- * 为 apps/api 暴露 AI API 传输工厂。
+ * Transport-only seam for apps/api: exposes `createAIApiModule`, the factory
+ * that binds an already-assembled `AIModuleInstance` to an `IApiModule`-
+ * compatible handle (transport + lifecycle only). The host composition root
+ * (`apps/api/src/runtime/compose-ai.ts`) owns every ingredient — Prisma
+ * repository set, service runtime adapters and host capability ports — and
+ * hands the assembled instance to this seam. This file never reads the
+ * database or environment config and never constructs concrete adapters.
  *
- * IMPORTANT (documented residual): the API AI module is NOT yet transport-only.
- * `createAIApiModule()` still composes the Prisma repositories and service
- * runtime adapters inside `register()` and reads the database from context.
- * It is outside the batch composition-root externalization scope and is tracked
- * as a follow-up; the desktop lane is already host-composed via
- * `apps/desktop/src/main/runtime/compose-ai.ts`. Do not read this file as an
- * example of the host-composer ownership model.
- *
- * 重要（已记录 residual）：API AI 模块目前还不是纯传输层。`createAIApiModule()`
- * 仍在 `register()` 内组装 Prisma repository 与服务 runtime 适配器，并从 context
- * 读取数据库。它不在本批 composition-root 外移范围内，已记录为后续 follow-up；
- * desktop lane 已通过 `apps/desktop/src/main/runtime/compose-ai.ts` 由宿主组装。
- * 请不要把该文件当作 host-composer 归属模型的示例。
+ * 供 apps/api 使用的纯传输层 seam：导出 `createAIApiModule`，该工厂把已装配好的
+ * `AIModuleInstance` 绑定为兼容 `IApiModule` 的 handle（仅传输与生命周期）。宿主
+ * 组合根（`apps/api/src/runtime/compose-ai.ts`）持有全部原料——Prisma 仓储集合、
+ * 服务 runtime 适配器与宿主能力 port——并把装配好的实例交给本 seam。本文件不读取
+ * 数据库或环境配置，也不构造任何具体适配器。
  *
  * Route prefix: /ai
  * 路由前缀：/ai

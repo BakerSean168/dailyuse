@@ -1,4 +1,17 @@
 /**
+ * AgentCheckpoint Prisma Adapter
+ *
+ * Prisma implementation of IAgentCheckpointPort (API / Prisma lane only).
+ * Owns the agentRunCheckpoint table; the API transport consumes it through
+ * the application seam, never directly.
+ *
+ * AgentCheckpoint Prisma 适配器
+ *
+ * IAgentCheckpointPort 的 Prisma 实现（仅 API / Prisma lane）。
+ * 持有 agentRunCheckpoint 表；API transport 通过应用 seam 消费，绝不直接使用。
+ */
+
+/**
  * Residual 979: toPrismaJson sole import (./to-prisma-json.ts).
  */
 import type { PrismaClient } from '@memoflow/database';

@@ -33,7 +33,7 @@ describe('repository API runtime composer surface', () => {
     expect(main).not.toContain("from '@memoflow/repository/api'");
   });
 
-  it('keeps getApplicationPort() consumed by API AI (residual per plan)', () => {
+  it('keeps getApplicationPort() as an explicit dependency of composeAI', () => {
     expect(main).toContain('repositoryApiModule.getApplicationPort()');
   });
 

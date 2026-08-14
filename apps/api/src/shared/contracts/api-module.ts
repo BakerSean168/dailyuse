@@ -70,8 +70,9 @@ export interface IApiModuleContext extends ServerModuleContext<DatabaseClient> {
  * repository → application instance），register() 只负责 transport 注册与模块生命周期
  * （start/dispose）。参见 apps/api/src/runtime/compose-governance.ts 的治理示范。
  *
- * 尚未迁移的 sibling 模块仍可暂时从 context.db 组装（db 字段本步保留），
- * 后续 Goal/Task 阶段再统一移除。
+ * 当前全部 feature 模块（含 AI）均已由宿主 runtime composer 在 register() 之前完成
+ * 组装；`context.db` 字段保留用于 platform adapter（如 app-local host adapter）与
+ * 兼容既有代码，transport 层不再从 context 组装 feature。
  */
 export interface IApiModule {
   /** 模块名称，用于日志和调试 */
@@ -85,7 +86,7 @@ export interface IApiModule {
    * 2. 模块生命周期启动（可选）
    *
    * feature 组装（Repository/UseCase/Application）已由宿主 runtime composer
-   * 在 register() 之前完成；尚未迁移的 sibling 仍可在本方法内从 context.db 组装。
+   * 在 register() 之前完成。
    *
    * @param context - ApiBootstrapper 提供的上下文
    */

@@ -44,17 +44,6 @@ export { type IAIConversationRepository, type AIConversationQueryOptions } from 
 export { type IAIProviderConfigRepository } from '../domain';
 
 // ---------------------------------------------------------------------------
-// Prisma Adapters
-// ---------------------------------------------------------------------------
-export {
-  AIConversationPrismaRepository,
-  AIProviderConfigPrismaRepository,
-  AIKnowledgeIndexPrismaRepository,
-  AIExecutionLogPrismaAdapter,
-  LangGraphCheckpointPrismaAdapter,
-} from './adapters/prisma';
-
-// ---------------------------------------------------------------------------
 // Filesystem Adapters
 // ---------------------------------------------------------------------------
 export {

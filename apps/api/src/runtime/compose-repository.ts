@@ -21,11 +21,13 @@
  * Assembly order (plan §3.3) — MUST be: runtime db → repository Prisma repository
  * set → repository Prisma runtime contributions (services + module-owned runtime)
  * → repository instance → API module. The application port stays reachable through
- * the returned handle's `getApplicationPort()` so API AI can consume it.
+ * the returned handle's `getApplicationPort()` as an explicit dependency for
+ * `composeAI` (API lane AI composition consumes it as `repositoryApiPort`).
  *
  * 组装顺序（计划 §3.3）必须为：runtime db → 仓库 Prisma 仓储集合 → 仓库 Prisma
  * 运行时贡献（服务 + 模块自有运行时）→ repository instance → API module。
- * 应用 port 仍可通过返回 handle 的 `getApplicationPort()` 获取，供 API AI 消费。
+ * 应用 port 仍可通过返回 handle 的 `getApplicationPort()` 获取，作为 `composeAI`
+ * 的明确依赖（API lane 的 AI 组装以 `repositoryApiPort` 消费它）。
  *
  * Deliberately narrow interface: the host supplies the shared Prisma client and
  * exactly the repository host ports it owns. The fail-closed

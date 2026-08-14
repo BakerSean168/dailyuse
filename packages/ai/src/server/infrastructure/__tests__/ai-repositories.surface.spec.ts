@@ -121,12 +121,14 @@ describe('ai repository factories surface', () => {
     expect(typeof instance.dispose).toBe('function');
   });
 
-  it('does not leak concrete adapter classes through the root barrel', async () => {
-    // The AI infra barrel intentionally still exports concrete Prisma / service
-    // / engine classes: `@memoflow/ai` has no `./server` export map entry, so
-    // the infra barrel is package-internal, and the residual API-AI module
-    // (`packages/ai/src/api/module.ts`) still composes them inside register().
-    // This is the documented API-AI follow-up residual, not a new seam leak.
+  it('does not leak concrete adapter classes through the root or infra barrels', async () => {
+    // The AI infra barrel keeps concrete service / engine / filesystem
+    // adapters (`AIService*Adapter`, `AIEvaluationReportFileAdapter`): those
+    // are the documented host-composer exception exported from `@memoflow/ai`
+    // root for the desktop/API composers. Concrete Prisma classes must NOT
+    // leave the package: `@memoflow/ai` has no `./server` export map entry, so
+    // the infra barrel is package-internal, and the transport modules consume
+    // the checkpoint pair only through the application seam.
     // The ROOT barrel must never re-export those concrete classes.
     const forbidden = [
       'PowerSyncAIConversationRepository',
@@ -142,8 +144,10 @@ describe('ai repository factories surface', () => {
     ];
 
     const root = readFileSync(resolve(__dirname, '../../../index.ts'), 'utf8');
+    const infraBarrel = readFileSync(resolve(__dirname, '../index.ts'), 'utf8');
     for (const name of forbidden) {
       expect(root).not.toMatch(new RegExp(`\\b${name}\\b`));
+      expect(infraBarrel).not.toMatch(new RegExp(`\\b${name}\\b`));
     }
 
     const rootModule = await import('../../../../src');

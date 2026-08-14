@@ -41,7 +41,8 @@ infrastructure -> domain (通过 port/adapter 接口)
 - `domain-server`：纯业务逻辑，不得依赖 infra 或 framework。
 - `application-server`：编排 use case，依赖 domain-server。
 - `infrastructure-server`：技术实现（Prisma、外部 API），依赖 domain-server 接口。
-- `api/module.ts`：传输与生命周期适配器，不再承担组合根职责。feature 组装（选择 adapter → repository → application instance）由宿主 runtime composer 在 `register()` 之前完成（示范：`apps/api/src/runtime/compose-governance.ts`、`apps/desktop/src/main/runtime/compose-governance.ts`），`register()` 只做 transport 注册与模块生命周期（start/dispose）。Governance、Goal、Task 以及本批 batch 模块（account、data-portability、notification、reminder、repository、schedule、setting、AI-Desktop）都已迁移到 host composer；API AI 是唯一明确的 follow-up residual：`packages/ai/src/api/module.ts` 仍在 `register()` 内从 `context.db` 组装 Prisma 适配器（见 batch plan Step E）。lint 规则允许 `layer:domain -> layer:infra` 以支持适配器选择。
+- `api/module.ts`：传输与生命周期适配器，不再承担组合根职责。feature 组装（选择 adapter → repository → application instance）由宿主 runtime composer 在 `register()` 之前完成（示范：`apps/api/src/runtime/compose-governance.ts`、`apps/desktop/src/main/runtime/compose-governance.ts`），`register()` 只做 transport 注册与模块生命周期（start/dispose）。Governance、Goal、Task 以及全部 batch 模块（account、data-portability、notification、reminder、repository、schedule、setting、AI）都已迁移到 host composer；API AI 最后一个 composition residual 已由 `2026-08-14-api-ai-composition-root-externalization.md` 关闭，`apps/api/src/runtime/compose-ai.ts` 在 API lane 拥有 Prisma 集合、服务 runtime 适配器与宿主能力 port。lint 规则允许 `layer:domain -> layer:infra` 以支持适配器选择。
+- **App-local DB context users（允许的平台适配器）**：API lane 的 app-local host 适配器（如 `apps/api/src/modules/ai/*.adapter.ts`，直接持有 `db`/`repositoryStorageBaseDir`）是记录在案的允许平台适配器；同理 `@memoflow/ai` root 的 `AIService*Adapter` + `AIEvaluationReportFileAdapter` 作为宿主 composer 例外继续导出。它们不属于 transport seam，不参与 feature 组合。
 - `controllers`：传输层适配器，依赖 application-server。
 
 当前已经由 `tools/governance/package-internal-boundary-audit.mjs` 在 repo 级别执行第一层包内分层治理，并接入 `pnpm nx run memoflow:governance-check`。
