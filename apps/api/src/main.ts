@@ -36,6 +36,7 @@ import { composeRepository } from './runtime/compose-repository';
 import { composeSchedule } from './runtime/compose-schedule';
 import { composeSetting } from './runtime/compose-setting';
 import { composeDataPortability } from './runtime/compose-data-portability';
+import { composeAI } from './runtime/compose-ai';
 import {
   AccountClosedWorker,
   PrismaAccountClosureOperationRepository,
@@ -59,16 +60,10 @@ import { createSchedulePrismaRepositories } from '@memoflow/schedule';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
 import { createTaskPrismaScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPrismaScheduleProjectionSource } from '@memoflow/task/schedule-projection';
-import { createAIApiModule, type AIApiModuleContext } from '@memoflow/ai/api';
 import { composeTask } from './runtime/compose-task';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
-import { ControlledAnalyticsReadAdapter } from './modules/ai/controlled-analytics-read.adapter';
-import { BackendAutomationToolExecutorAdapter } from './modules/ai/backend-automation-tool-executor.adapter';
-import { RepositoryKnowledgeNotePersistenceAdapter } from './modules/ai/repository-knowledge-note-persistence.adapter';
-import { RepositoryKnowledgeSourceAdapter } from './modules/ai/repository-knowledge-source.adapter';
-import { RepositoryKnowledgeIndexStatusAdapter } from './modules/ai/repository-knowledge-index-status.adapter';
 import { RepositoryKnowledgeCloudDataPurgerAdapter } from './modules/ai/repository-knowledge-cloud-data-purger.adapter';
 import { createCronScheduler } from './shared/infrastructure/cron/index.js';
 import type { CronSchedulerManager } from './shared/infrastructure/cron/index.js';
@@ -213,27 +208,10 @@ async function bootstrap(): Promise<void> {
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
   });
-  const AIApiModule = createAIApiModule({
-    createKnowledgeNotePersistence: (_context: AIApiModuleContext) => {
-      const repositoryApi = repositoryApiModule.getApplicationPort();
-      if (!repositoryApi) {
-        throw new Error('Repository application port is unavailable while composing AI');
-      }
-      return new RepositoryKnowledgeNotePersistenceAdapter(repositoryApi);
-    },
-    createKnowledgeSourcePort: (context: AIApiModuleContext) =>
-      new RepositoryKnowledgeSourceAdapter(context.db, repositoryStorageBaseDir),
-    createKnowledgeIndexStatusPort: () => {
-      const repositoryApi = repositoryApiModule.getApplicationPort();
-      if (!repositoryApi) {
-        throw new Error('Repository application port is unavailable while composing AI indexing');
-      }
-      return new RepositoryKnowledgeIndexStatusAdapter(repositoryApi);
-    },
-    createAnalyticsReadPort: (context: AIApiModuleContext) =>
-      new ControlledAnalyticsReadAdapter(context.db),
-    createAutomationToolExecutor: (context: AIApiModuleContext) =>
-      new BackendAutomationToolExecutorAdapter(context.db, repositoryStorageBaseDir),
+  const aiApiModule = composeAI({
+    db: prisma,
+    repositoryApiPort: repositoryApiModule.getApplicationPort(),
+    repositoryStorageBaseDir,
   });
   const governanceApiModule = composeGovernance({ db: prisma });
   const goalApiModule = composeGoal({
@@ -250,7 +228,7 @@ async function bootstrap(): Promise<void> {
     .register(scheduleApiModule.module) // ✅ 日程模块 (runtime composer)
     .register(settingApiModule) // ✅ 设置模块 (runtime composer)
     .register(taskApiModule) // ✅ 任务模块
-    .register(AIApiModule) // ✅ AI 模块
+    .register(aiApiModule) // ✅ AI 模块 (runtime composer)
     .register(goalApiModule) // ✅ 目标模块
     .register(dataPortabilityApiModule.module) // ✅ 数据导入导出模块 (runtime composer)
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块

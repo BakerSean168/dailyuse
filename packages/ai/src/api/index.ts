@@ -24,4 +24,4 @@
  */
 
 export { createAIApiModule } from './module';
-export type { AIApiModuleContext, AIApiModuleDef } from './module';
+export type { AIApiModuleContext, AIApiModuleDef, AIApiModuleOptions } from './module';

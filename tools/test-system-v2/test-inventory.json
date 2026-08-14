@@ -202,6 +202,26 @@
       ]
     },
     {
+      "path": "apps/api/src/runtime/compose-ai.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "apps/api/src/runtime/compose-ai.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
       "path": "apps/api/src/runtime/compose-data-portability.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -1885,6 +1905,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/api/routes/ai-agent-runtime.routes.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -2346,6 +2376,16 @@
     },
     {
       "path": "packages/ai/src/server/domain/value-objects/__tests__/token-usage.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/infrastructure/__tests__/ai-module-checkpoint-pair.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -9738,7 +9778,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 50
+      "fileCount": 52
     },
     {
       "id": "apps/api/vitest.smoke.config.ts",
@@ -9759,7 +9799,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 50
+      "fileCount": 52
     },
     {
       "id": "apps/desktop/vitest.config.ts",
@@ -9822,14 +9862,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 116
+      "fileCount": 118
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 116
+      "fileCount": 118
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
@@ -10305,6 +10345,8 @@
       "apps/api/src/outbox/prisma-outbox-writer.spec.ts",
       "apps/api/src/runtime/compose-account.spec.ts",
       "apps/api/src/runtime/compose-account.surface.spec.ts",
+      "apps/api/src/runtime/compose-ai.spec.ts",
+      "apps/api/src/runtime/compose-ai.surface.spec.ts",
       "apps/api/src/runtime/compose-data-portability.spec.ts",
       "apps/api/src/runtime/compose-data-portability.surface.spec.ts",
       "apps/api/src/runtime/compose-goal.spec.ts",
@@ -10366,6 +10408,7 @@
       "packages/account/src/server/infrastructure/adapters/prisma/__tests__/account-ownership.surface.spec.ts",
       "packages/account/src/server/infrastructure/cloud-account-provisioner.spec.ts",
       "packages/account/src/server/transport/__tests__/account.controller.test.ts",
+      "packages/ai/src/api/module-lifecycle.spec.ts",
       "packages/ai/src/api/routes/ai-agent-runtime.routes.test.ts",
       "packages/ai/src/api/routes/ai-chat.routes.spec.ts",
       "packages/ai/src/api/routes/ai-chat.routes.test.ts",
@@ -10413,6 +10456,7 @@
       "packages/ai/src/server/domain/services/__tests__/validation.keyresults-tasks.test.ts",
       "packages/ai/src/server/domain/value-objects/__tests__/ai-value-objects.spec.ts",
       "packages/ai/src/server/domain/value-objects/__tests__/token-usage.spec.ts",
+      "packages/ai/src/server/infrastructure/__tests__/ai-module-checkpoint-pair.spec.ts",
       "packages/ai/src/server/infrastructure/__tests__/ai-repositories.surface.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/__tests__/ai-conversation-domain-events.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/__tests__/ai-conversation-repository.surface.spec.ts",
@@ -10868,7 +10912,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 926,
+    "unit": 930,
     "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,
