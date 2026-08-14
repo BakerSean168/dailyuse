@@ -1,12 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import type { PrismaClient } from '@memoflow/database';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { IAgentCheckpointPort, ILangGraphCheckpointPort } from '../../application/ports';
 import {
   createAIPowerSyncRepositories,
   createAIPowerSyncModule,
   createAIModule,
+  createAIPrismaRepositories,
   type AIPowerSyncRepositorySet,
+  type AIPrismaRepositorySet,
   type AIModuleInstance,
   type IAIConversationRepository,
   type IAIProviderConfigRepository,
@@ -18,16 +22,22 @@ import {
  *
  * `createAIPowerSyncRepositories` returns the four persistence ports
  * (conversation, provider config, knowledge index, execution log) while host
- * capability ports stay out of the set. The convenience module factory keeps
- * the api/start/dispose surface, and no concrete adapter class leaks through
- * the root barrel.
+ * capability ports stay out of the set. `createAIPrismaRepositories` returns
+ * those same four ports plus the API-only checkpoint pair (agent checkpoint,
+ * LangGraph checkpoint) — the PowerSync set stays deliberately asymmetric. The
+ * convenience module factory keeps the api/start/dispose surface, and no
+ * concrete adapter class leaks through the root barrel.
  *
  * `createAIPowerSyncRepositories` 返回四个持久化 Port（conversation、provider
  * config、knowledge index、execution log），宿主能力 Port 保持在集合之外。
- * 便捷模块工厂保留 api/start/dispose 表面，具体适配器类绝不通过根 barrel 泄漏。
+ * `createAIPrismaRepositories` 返回同样的四个 Port，外加仅 API 使用的
+ * checkpoint pair（agent checkpoint、LangGraph checkpoint）——PowerSync 集合
+ * 刻意保持不对称。便捷模块工厂保留 api/start/dispose 表面，具体适配器类绝不通过
+ * 根 barrel 泄漏。
  */
 describe('ai repository factories surface', () => {
   const fakeElectronDb = {} as unknown as IElectronDatabase;
+  const fakePrisma = {} as unknown as PrismaClient;
 
   it('createAIPowerSyncRepositories returns the four persistence ports', () => {
     const set = createAIPowerSyncRepositories(fakeElectronDb);
@@ -40,13 +50,54 @@ describe('ai repository factories surface', () => {
     expect(typeof typed.executionLogPort.record).toBe('function');
   });
 
-  it('host capability ports stay out of the set', () => {
+  it('createAIPrismaRepositories returns the six persistence ports', () => {
+    const set = createAIPrismaRepositories(fakePrisma);
+    expect(set).toHaveProperty('conversationRepository');
+    expect(set).toHaveProperty('providerConfigRepository');
+    expect(set).toHaveProperty('knowledgeIndexRepository');
+    expect(set).toHaveProperty('executionLogPort');
+    expect(set).toHaveProperty('agentCheckpointPort');
+    expect(set).toHaveProperty('langGraphCheckpointPort');
+    const typed: AIPrismaRepositorySet = set;
+    expect(typeof typed.conversationRepository.findByIdForIdentity).toBe('function');
+    expect(typeof typed.executionLogPort.record).toBe('function');
+    const agentCheckpoint: IAgentCheckpointPort = typed.agentCheckpointPort;
+    const langGraphCheckpoint: ILangGraphCheckpointPort = typed.langGraphCheckpointPort;
+    expect(typeof agentCheckpoint.upsert).toBe('function');
+    expect(typeof langGraphCheckpoint.putCheckpoint).toBe('function');
+  });
+
+  it('PowerSync set stays four-field with no checkpoint ports', () => {
     const set = createAIPowerSyncRepositories(fakeElectronDb);
-    expect(set).not.toHaveProperty('chatExecutionPort');
-    expect(set).not.toHaveProperty('goalPlanningPort');
-    expect(set).not.toHaveProperty('knowledgeIngestionPort');
-    expect(set).not.toHaveProperty('analyticsReadPort');
-    expect(set).not.toHaveProperty('agentRuntimePort');
+    expect(Object.keys(set).sort()).toEqual([
+      'conversationRepository',
+      'executionLogPort',
+      'knowledgeIndexRepository',
+      'providerConfigRepository',
+    ]);
+    const typed: AIPowerSyncRepositorySet = set;
+    const extra = (typed as AIPowerSyncRepositorySet & {
+      agentCheckpointPort?: unknown;
+      langGraphCheckpointPort?: unknown;
+    });
+    expect(extra.agentCheckpointPort).toBeUndefined();
+    expect(extra.langGraphCheckpointPort).toBeUndefined();
+  });
+
+  it('host capability ports stay out of both sets', () => {
+    const powerSyncSet = createAIPowerSyncRepositories(fakeElectronDb);
+    expect(powerSyncSet).not.toHaveProperty('chatExecutionPort');
+    expect(powerSyncSet).not.toHaveProperty('goalPlanningPort');
+    expect(powerSyncSet).not.toHaveProperty('knowledgeIngestionPort');
+    expect(powerSyncSet).not.toHaveProperty('analyticsReadPort');
+    expect(powerSyncSet).not.toHaveProperty('agentRuntimePort');
+
+    const prismaSet = createAIPrismaRepositories(fakePrisma);
+    expect(prismaSet).not.toHaveProperty('chatExecutionPort');
+    expect(prismaSet).not.toHaveProperty('goalPlanningPort');
+    expect(prismaSet).not.toHaveProperty('knowledgeIngestionPort');
+    expect(prismaSet).not.toHaveProperty('analyticsReadPort');
+    expect(prismaSet).not.toHaveProperty('agentRuntimePort');
   });
 
   it('convenience module factory preserves api/start/dispose', () => {
@@ -84,6 +135,10 @@ describe('ai repository factories surface', () => {
       'AIExecutionLogPowerSyncAdapter',
       'AIConversationPrismaRepository',
       'AIExecutionLogPrismaAdapter',
+      'AIProviderConfigPrismaRepository',
+      'AIKnowledgeIndexPrismaRepository',
+      'AgentCheckpointPrismaAdapter',
+      'LangGraphCheckpointPrismaAdapter',
     ];
 
     const root = readFileSync(resolve(__dirname, '../../../index.ts'), 'utf8');
@@ -96,6 +151,13 @@ describe('ai repository factories surface', () => {
     for (const name of forbidden) {
       expect(exportedNames).not.toContain(name);
     }
+  });
+
+  it('root barrel exports the Prisma factory and set type', async () => {
+    const rootModule = await import('../../../../src');
+    expect(typeof rootModule.createAIPrismaRepositories).toBe('function');
+    expect(typeof rootModule.createAIPowerSyncRepositories).toBe('function');
+    expect(typeof rootModule.createAIModule).toBe('function');
   });
 
   it('root barrel type-exports every set field type (compile-time lock)', () => {

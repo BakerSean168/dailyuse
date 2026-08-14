@@ -32,6 +32,12 @@ export {
 } from './powersync';
 
 // ---------------------------------------------------------------------------
+// Prisma convenience factory
+// Prisma 便捷工厂
+// ---------------------------------------------------------------------------
+export { createAIPrismaRepositories, type AIPrismaRepositorySet } from './prisma';
+
+// ---------------------------------------------------------------------------
 // Ports (Interfaces)
 // ---------------------------------------------------------------------------
 export { type IAIConversationRepository, type AIConversationQueryOptions } from '../domain';

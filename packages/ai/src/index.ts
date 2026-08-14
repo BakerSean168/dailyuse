@@ -19,6 +19,7 @@ export {
   createAIModule,
   createAIPowerSyncModule,
   createAIPowerSyncRepositories,
+  createAIPrismaRepositories,
   type AIModuleDependencies,
   type AIModuleInstance,
   type AIModuleServices,
@@ -27,6 +28,7 @@ export {
   type AIRuntimeContributionsInput,
   type AIModulePowerSyncOptions,
   type AIPowerSyncRepositorySet,
+  type AIPrismaRepositorySet,
   type IAIConversationRepository,
   type IAIProviderConfigRepository,
 } from './server';
