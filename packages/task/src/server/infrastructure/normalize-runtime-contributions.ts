@@ -30,3 +30,14 @@ export function normalizeRuntimeContributions(
 
   return [runtimeContributions];
 }
+
+/**
+ * Host-facing alias of `normalizeRuntimeContributions`, exported from the
+ * package root so both host composers (apps/api + apps/desktop) reuse the same
+ * normalization instead of carrying private copies.
+ *
+ * 面向宿主导出的 `normalizeRuntimeContributions` 别名，从包根导出，供两个宿主
+ * composer（apps/api 与 apps/desktop）复用同一份规范化逻辑，避免各自维护
+ * 私有副本。
+ */
+export const normalizeTaskRuntimeContributions = normalizeRuntimeContributions;

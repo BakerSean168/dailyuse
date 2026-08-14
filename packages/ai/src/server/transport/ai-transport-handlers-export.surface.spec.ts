@@ -18,8 +18,8 @@ describe('AI transport handlers single-track surface', () => {
     expect(index).not.toContain('ai.transport-handlers');
   });
 
-  it('API module wires controllers from aiModule.api only', () => {
-    expect(apiModule).toContain('const handlers = aiModule.api');
+  it('API module wires controllers from options.instance.api only', () => {
+    expect(apiModule).toContain('const handlers = options.instance.api');
     expect(apiModule).not.toContain('createAITransportHandlers');
   });
 

@@ -258,6 +258,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'authentication',
     'cloud-auth',
     'dashboard',
+    'data-portability',
     'editor',
     'goal',
     'governance',

@@ -24,7 +24,18 @@ export type { AIApplicationPort } from '../application';
 // PowerSync convenience factory
 // PowerSync 便捷工厂
 // ---------------------------------------------------------------------------
-export { createAIPowerSyncModule, type AIModulePowerSyncOptions } from './powersync';
+export {
+  createAIPowerSyncModule,
+  createAIPowerSyncRepositories,
+  type AIModulePowerSyncOptions,
+  type AIPowerSyncRepositorySet,
+} from './powersync';
+
+// ---------------------------------------------------------------------------
+// Prisma convenience factory
+// Prisma 便捷工厂
+// ---------------------------------------------------------------------------
+export { createAIPrismaRepositories, type AIPrismaRepositorySet } from './prisma';
 
 // ---------------------------------------------------------------------------
 // Ports (Interfaces)
@@ -33,33 +44,12 @@ export { type IAIConversationRepository, type AIConversationQueryOptions } from 
 export { type IAIProviderConfigRepository } from '../domain';
 
 // ---------------------------------------------------------------------------
-// Prisma Adapters
-// ---------------------------------------------------------------------------
-export {
-  AIConversationPrismaRepository,
-  AIProviderConfigPrismaRepository,
-  AIKnowledgeIndexPrismaRepository,
-  AIExecutionLogPrismaAdapter,
-  LangGraphCheckpointPrismaAdapter,
-} from './adapters/prisma';
-
-// ---------------------------------------------------------------------------
 // Filesystem Adapters
 // ---------------------------------------------------------------------------
 export {
   AIEvaluationReportFileAdapter,
   type AIEvaluationReportFileAdapterOptions,
 } from './adapters/fs';
-
-// ---------------------------------------------------------------------------
-// PowerSync Adapters
-// ---------------------------------------------------------------------------
-export {
-  PowerSyncAIConversationRepository,
-  PowerSyncAIProviderConfigRepository,
-  AIKnowledgeIndexPowerSyncRepository,
-  AIExecutionLogPowerSyncAdapter,
-} from './adapters/powersync';
 
 // ---------------------------------------------------------------------------
 // Chat Execution Adapters

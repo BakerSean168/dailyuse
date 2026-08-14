@@ -10,20 +10,90 @@ import {
   type BusinessOperationReceipt,
   type CapabilityRequirementContract,
   type CapabilityStatus,
+  type LeaseClaim,
+  type NotificationOutboxDispatchInput,
 } from '@memoflow/contracts/reliable-messaging';
-import type { NotificationReliableOperationPrismaAdapter } from '../adapters/prisma/notification-reliable-operation-prisma.adapter';
-import type { InMemoryNotificationReliableAdapter } from '../adapters/in-memory/in-memory-notification-reliable.adapter';
-import type { PowerSyncNotificationReliableAdapter } from '../adapters/powersync/power-sync-notification-reliable.adapter';
 import type { OperationAuditRecordInput, OperationAuditRepository } from '@memoflow/patterns/operations';
-import type { NotificationDispatchOutbox, OutboxMessage } from '@memoflow/database';
 
-export type NotificationReliableOperationAdapter =
-  | NotificationReliableOperationPrismaAdapter
-  | InMemoryNotificationReliableAdapter
-  | PowerSyncNotificationReliableAdapter;
-import { NotificationMetricsService, type NotificationMetricsSnapshot } from '../../domain/services/notification-metrics-service';
+/**
+ * Structural reliable-operation port consumed by the notification durable
+ * runtime. The concrete Prisma / InMemory / PowerSync adapters stay
+ * implementation-private — ingredient factories construct them and sets only
+ * expose this port shape.
+ *
+ * 通知 durable runtime 消费的结构化可靠操作端口。具体 Prisma / InMemory / PowerSync
+ * 适配器保持实现私有——原料工厂构造它们，集合只暴露此端口形状。
+ */
+export interface NotificationDispatchOutboxRow {
+  readonly id: string;
+  readonly identityId: string;
+  readonly notificationId: string;
+  readonly channel: string;
+  readonly payloadJson: string;
+  readonly idempotencyKey: string;
+  readonly ownerToken: string | null;
+  readonly fencingToken: number;
+}
+
+/** Structural cross-module shared-outbox row consumed by the durable runtime. */
+export interface NotificationSharedOutboxMessageRow {
+  readonly id: string;
+  readonly identityId: string | null;
+  readonly payloadJson: string;
+  readonly idempotencyKey: string | null;
+  readonly ownerToken: string | null;
+  readonly claimId: string | null;
+  readonly fencingToken: number | null;
+  readonly attempts: number;
+}
+
+export interface NotificationReliableOperationPort {
+  dispatchOutbox(
+    input: NotificationOutboxDispatchInput,
+    options?: { txClient?: unknown; notificationId?: string },
+  ): Promise<BusinessOperationReceipt>;
+  claimOutboxDispatch(input: {
+    ownerToken: string;
+    leaseDurationMs?: number;
+    limit?: number;
+  }): Promise<
+    Array<{
+      claimed: boolean;
+      lease: LeaseClaim | null;
+      receipt: BusinessOperationReceipt;
+      outbox: NotificationDispatchOutboxRow;
+    }>
+  >;
+  claimSharedOutboxIntents(input: {
+    ownerToken: string;
+    limit?: number;
+    leaseDurationMs?: number;
+  }): Promise<NotificationSharedOutboxMessageRow[]>;
+  updateSharedOutboxStatus(
+    id: string,
+    status: 'succeeded' | 'retryable' | 'dead_letter',
+    errorMsg?: string | null,
+    nextAvailableAt?: Date | null,
+    lease?: { ownerToken: string; claimId: string; fencingToken: number } | null,
+  ): Promise<'ok' | 'conflict'>;
+  recordDeliveryReceipt(
+    receipt: BusinessOperationReceipt,
+    claimContext?: { ownerToken?: string; fencingToken?: number },
+  ): Promise<BusinessOperationReceipt>;
+  queryReceipts(
+    identityId: string,
+    options?: number | { limit?: number; lastCursor?: string; since?: string; status?: string },
+  ): Promise<BusinessOperationReceipt[]>;
+  queryDeadLetters(identityId: string): Promise<BusinessOperationReceipt[]>;
+  replayDeadLetter(params: { identityId: string; operationId: string }): Promise<BusinessOperationReceipt>;
+}
+import { NotificationMetricsService, globalNotificationMetrics, type NotificationMetricsSnapshot } from '../../domain/services/notification-metrics-service';
 import { NotificationSseAdapter } from '../adapters/sse/notification-sse.adapter';
 import { randomUUID } from 'crypto';
+import {
+  RealDesktopChannelDeliverer,
+  RealInAppChannelDeliverer,
+} from '../adapters/deliverers/real-channel-deliverers';
 
 const logger = createLogger('NotificationRuntime');
 
@@ -65,7 +135,7 @@ export interface ChannelCapabilitySpec {
 
 export interface NotificationRuntimeDeps {
   readonly repository?: INotificationRepository;
-  readonly reliableAdapter?: NotificationReliableOperationAdapter;
+  readonly reliableAdapter?: NotificationReliableOperationPort;
   readonly sseAdapter?: NotificationSseAdapter;
   readonly deliverer?: NotificationChannelDeliverer;
   readonly delivererRegistry?: Record<string, NotificationChannelDeliverer>;
@@ -305,7 +375,7 @@ export function createNotificationRuntimeContribution(
   const processClaimedDispatch = async (entry: {
     claimed: boolean;
     receipt: BusinessOperationReceipt;
-    outbox: NotificationDispatchOutbox;
+    outbox: NotificationDispatchOutboxRow;
     notification?: Notification | null;
   }): Promise<BusinessOperationReceipt> => {
     const { receipt, outbox } = entry;
@@ -565,7 +635,7 @@ export function createNotificationRuntimeContribution(
       const pendingSharedById = new Map<
         string,
         {
-          sharedMsg: OutboxMessage;
+          sharedMsg: NotificationSharedOutboxMessageRow;
           notification: Notification;
           leaseContext: { ownerToken: string; claimId: string; fencingToken: number };
         }
@@ -978,4 +1048,48 @@ export function createNotificationRuntimeContribution(
       return sseAdapter;
     },
   };
+}
+
+/**
+ * Creates the notification durable runtime from a host-provided repository set.
+ * 从宿主持有的仓储集合创建通知 durable runtime。
+ *
+ * Module-owned composition ingredient: builds the default InApp/Desktop channel
+ * deliverers from the host transport and the expressed `channelCapabilities`,
+ * then wires them with the set's reliable adapter into the module-owned runtime
+ * contribution. Host capability selection stays explicit — the default
+ * InApp/Desktop capability list is never silently decided here.
+ *
+ * 模块自有组合原料：根据宿主 transport 与显式 `channelCapabilities` 构建默认的
+ * InApp/Desktop 渠道投递器，再与集合中的可靠适配器装配成模块自有运行时贡献。
+ * 宿主能力选择保持显式——此处绝不会静默决定默认 InApp/Desktop 能力列表。
+ *
+ * @param deps - The repository set (notification repository + reliable adapter), host channel
+ *               capabilities and the native transport.
+ *               仓储集合（通知仓储 + 可靠适配器）、宿主渠道能力与原生 transport。
+ * @returns A reversible notification durable runtime contribution.
+ *          返回可逆的通知 durable runtime 贡献。
+ */
+export function createNotificationDurableRuntime(deps: {
+  readonly notificationRepository: INotificationRepository;
+  readonly reliableAdapter: NotificationReliableOperationPort;
+  readonly channelCapabilities: ChannelCapabilitySpec[];
+  readonly transport?: unknown;
+  readonly metricsService?: NotificationMetricsService;
+}): NotificationDurableRuntimePort {
+  const metricsService = deps.metricsService ?? globalNotificationMetrics;
+  const defaultDeliverers: Record<string, NotificationChannelDeliverer> = {
+    InApp: new RealInAppChannelDeliverer(deps.notificationRepository),
+    'in-app': new RealInAppChannelDeliverer(deps.notificationRepository),
+    Desktop: new RealDesktopChannelDeliverer(deps.transport),
+    desktop: new RealDesktopChannelDeliverer(deps.transport),
+  };
+
+  return createNotificationRuntimeContribution({
+    repository: deps.notificationRepository,
+    reliableAdapter: deps.reliableAdapter,
+    delivererRegistry: defaultDeliverers,
+    channelCapabilities: deps.channelCapabilities,
+    metricsService,
+  });
 }

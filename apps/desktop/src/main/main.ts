@@ -15,49 +15,45 @@
 
 import './runtime-init';
 import { powerMonitor } from 'electron';
-import type { IElectronModuleContext } from '@memoflow/contracts/electron';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { ElectronBootstrapper } from './bootstrap';
 import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
-import { createGoalElectronModule } from '@memoflow/goal/electron';
 import { PowerSyncTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
-import { createTaskElectronModule } from '@memoflow/task/electron';
 import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
-import {
-  createScheduleElectronModule,
-  PowerSyncScheduleTaskRepository,
-} from '@memoflow/schedule/electron';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
 import { createGoalPowerSyncScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
 import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
-import { ReminderElectronModule } from '@memoflow/reminder/electron';
-import { createReminderPowerSyncScheduleExecutionSource } from '@memoflow/reminder/schedule-execution';
-import { createReminderPowerSyncScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
-import {
-  NotificationElectronModule,
-  createNotificationPowerSyncScheduleNotificationPort,
-} from '@memoflow/notification/electron';
-import { SettingElectronModule } from '@memoflow/setting/electron';
-import { createAIElectronModule } from '@memoflow/ai/electron';
-import {
-  createRepositoryElectronModule,
-  createLocalVaultRuntime,
-} from '@memoflow/repository/electron';
-import { createAccountElectronModule } from '@memoflow/account/electron';
-import { DataPortabilityElectronModule } from '@memoflow/data-portability/electron';
-import { GovernanceElectronModule } from '@memoflow/governance/electron';
+import { createLocalVaultRuntime } from '@memoflow/repository/electron';
+import { getAIServiceRuntimeConfig } from '@memoflow/ai';
+import { createSchedulePowerSyncRepositories } from '@memoflow/schedule';
+import { composeGovernance } from './runtime/compose-governance';
+import { composeGoal } from './runtime/compose-goal';
+import { composeTask } from './runtime/compose-task';
+import { composeAccount } from './runtime/compose-account';
+import { composeNotification } from './runtime/compose-notification';
+import { composeReminder } from './runtime/compose-reminder';
+import { composeSchedule } from './runtime/compose-schedule';
+import { composeSetting } from './runtime/compose-setting';
+import { composeDataPortability } from './runtime/compose-data-portability';
+import { composeAI } from './runtime/compose-ai';
+import { composeRepository } from './runtime/compose-repository';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
+import {
+  getDesktopDashboardData,
+  type DashboardRepositoryDependencies,
+} from './services/dashboard-read-service';
 import { configureDesktopShellIdentity } from './utils/app-icon';
 import { getApiBaseUrl } from './utils/api-config';
 import { createLogger } from '@memoflow/utils/logger';
+import type { AccountClosureReceiptDTO } from '@memoflow/contracts/account';
 import { createRuntimeOwnership } from '@memoflow/contracts/primitives';
 import { getSharedPathResolver } from './runtime-init';
 import { WindowManager } from './lifecycle/window-manager';
@@ -84,6 +80,14 @@ const logger = createLogger('DesktopMain');
 let mainRuntime: DesktopMainRuntime | null = null;
 const windowManager = new WindowManager();
 
+// Composed Goal/Task repository view for the active profile. The dashboard IPC
+// handler is registered once at shell init, but the repositories only exist
+// after a profile activates (registerBusinessModules); bridge them here.
+// 当前激活 profile 的组合 Goal/Task repository view。dashboard IPC handler 在
+// shell 初始化时只注册一次，而仓储要等 profile 激活（registerBusinessModules）
+// 之后才存在，因此在这里做桥接。
+let activeProfileDashboardRepositories: DashboardRepositoryDependencies | null = null;
+
 /**
  * Register all business modules on a bootstrapper for the active profile.
  * Called by DesktopProfileRuntimeManager during profile activation.
@@ -107,40 +111,192 @@ async function registerBusinessModules(
     bindingFilePath: profilePaths.localVaultBindingPath,
     writeLedgerFilePath: profilePaths.localVaultWriteLedgerPath,
   });
-  const scheduleTaskRepository = new PowerSyncScheduleTaskRepository(db);
+
+  // Step D：宿主 runtime 负责 feature 装配。通知/提醒 composer 先于 schedule
+  // 编排（编排消费它们返回的 source/notification ports），schedule 采用两阶段
+  // 装配（单一 PowerSync 集合，scheduleTaskRepository 与编排共享，不建第二套）。
+  // 1. Raw schedule ingredient set — the ONE two-phase schedule repository set.
+  //    原始 schedule 原料集合 —— 唯一的、两阶段的 schedule 仓储集合。
+  const scheduleRepositorySet = createSchedulePowerSyncRepositories(db);
+
+  // 2. Notification/reminder composers FIRST — schedule orchestration consumes
+  //    their returned source/notification ports. Desktop channel capabilities are
+  //    explicit (InApp + Desktop) so no package default decides host policy.
+  //    先组装通知/提醒 composer —— schedule 编排消费它们返回的 source/notification
+  //    ports。桌面 channel capabilities 显式声明（InApp + Desktop），杜绝包默认值
+  //    替宿主决定策略。
+  const notificationComposed = composeNotification({
+    db,
+    channelCapabilities: [
+      { channelType: 'InApp', status: 'available' },
+      { channelType: 'Desktop', status: 'available' },
+    ],
+  });
+  const reminderComposed = composeReminder({ db });
+
+  // 3. Schedule orchestration using the single schedule-task repository, then the
+  //    two-phase schedule composer. The runtime controller is the ONLY schedule
+  //    start/stop owner in the desktop lane (replaces the retired schedule
+  //    runtime package globals).
+  //    schedule 编排使用同一个 schedule-task 仓储，随后进行两阶段 schedule 组装。
+  //    runtime controller 是桌面 lane 中 schedule 启停的唯一所有者（取代已退役的
+  //    schedule runtime 包级全局）。
   const scheduleOrchestrationModule = createScheduleOrchestrationModule({
     taskProjection: {
       source: createTaskPowerSyncScheduleProjectionSource(db),
-      scheduleTaskRepository,
+      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     goalProjection: {
       source: createGoalPowerSyncScheduleProjectionSource(db),
-      scheduleTaskRepository,
+      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     reminderProjection: {
-      source: createReminderPowerSyncScheduleProjectionSource(db),
-      scheduleTaskRepository,
+      source: reminderComposed.scheduleProjectionSource,
+      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     execution: {
       taskSource: createTaskPowerSyncScheduleExecutionSource(db),
       goalSource: createGoalPowerSyncScheduleExecutionSource(db),
-      reminderSource: createReminderPowerSyncScheduleExecutionSource(db),
-      notificationPort: createNotificationPowerSyncScheduleNotificationPort(db),
+      reminderSource: reminderComposed.scheduleExecutionSource,
+      notificationPort: notificationComposed.scheduleNotificationPort,
     },
   });
-  const taskElectronModule = createTaskElectronModule({
+  const scheduleComposed = composeSchedule({
+    repositories: scheduleRepositorySet,
+    sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
+    shouldScheduleTask: (task) => {
+      const identityId = mainRuntime?.profileRuntimeManager.getCurrentIdentityId() ?? null;
+      return identityId !== null && String(task.identityId) === identityId;
+    },
+  });
+
+  // 4. Goal/task composers (existing reference), then the expanded dashboard
+  //    repository view (schedule/reminder/notification ports included).
+  //    goal/task composer（既有参考），随后是扩展后的 dashboard 仓储视图（含
+  //    schedule/reminder/notification ports）。
+  const taskComposed = composeTask({
+    db,
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPowerSyncHandler(db),
   });
+  const taskElectronModule = taskComposed.module;
 
-  const AIElectronModule = createAIElectronModule({
-    createKnowledgeNotePersistence: () =>
-      new DesktopKnowledgeNotePersistenceAdapter(localVaultRuntime),
-    createKnowledgeSourcePort: () => new DesktopKnowledgeSourceAdapter(localVaultRuntime),
-    createAnalyticsReadPort: () => new DesktopAnalyticsReadAdapter(),
-    createAutomationToolExecutor: (context: IElectronModuleContext) =>
-      new DesktopAutomationToolExecutorAdapter(context.db, localVaultRuntime),
+  const goalComposed = composeGoal({
+    db,
+    taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
   });
+
+  const dashboardRepositories: DashboardRepositoryDependencies = {
+    goalRepository: goalComposed.repositories.goalRepository,
+    taskTemplateRepository: taskComposed.repositories.taskTemplateRepository,
+    taskInstanceRepository: taskComposed.repositories.taskInstanceRepository,
+    scheduleRepository: scheduleComposed.repositories.scheduleRepository,
+    scheduleTaskRepository: scheduleComposed.repositories.scheduleTaskRepository,
+    reminderTemplateRepository: reminderComposed.repositories.reminderTemplateRepository,
+    notificationRepository: notificationComposed.repositories.notificationRepository,
+  };
+  activeProfileDashboardRepositories = dashboardRepositories;
+
+  // 5. Account/data-portability/setting/AI/repository with explicit instances.
+  //    account/data-portability/setting/AI/repository 均以显式实例组装。
+  const accountComposed = composeAccount({
+    db,
+    syncOptions: {
+      getCloudAccountId: () =>
+        mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding?.cloudAccountId
+        ?? null,
+      getCloudAccessToken,
+      async updateLocalProfileMetadata(request) {
+        if (request.nickname === undefined) return;
+        const profileId = mainRuntime?.profileRuntimeManager.getActiveProfileId();
+        if (!profileId) return;
+        await mainRuntime?.profileRuntimeManager.updateProfileDisplayName(
+          profileId,
+          request.nickname,
+        );
+      },
+      async pushCloudProfile(token, request) {
+        const response = await fetch(`${getApiBaseUrl()}/accounts/me`, {
+          method: 'PUT',
+          headers: {
+            authorization: `Bearer ${token}`,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify(request),
+        });
+        const envelope = (await response.json().catch(() => null)) as {
+          ok?: boolean;
+          error?: { message?: string };
+        } | null;
+        if (!response.ok || envelope?.ok !== true) {
+          throw new Error(envelope?.error?.message ?? '云端账户资料同步失败');
+        }
+      },
+      async closeCloudAccount(token, request) {
+        const response = await fetch(`${getApiBaseUrl()}/accounts/me/close`, {
+          method: 'POST',
+          headers: {
+            authorization: `Bearer ${token}`,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify(request),
+        });
+        const envelope = (await response.json().catch(() => null)) as {
+          ok?: boolean;
+          data?: unknown;
+          error?: { message?: string };
+        } | null;
+        if (!response.ok || envelope?.ok !== true) {
+          throw new Error(envelope?.error?.message ?? '云端账号关闭失败');
+        }
+        return envelope.data as AccountClosureReceiptDTO;
+      },
+      async markAccountClosing() {
+        const identityId =
+          mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding?.cloudAccountId;
+        if (!identityId) {
+          throw new Error('Cannot mark account closing: active profile has no cloud binding');
+        }
+        await db.execute(
+          'INSERT OR IGNORE INTO account_closure_requested (identity_id, requested_at) VALUES (?, ?)',
+          [identityId, Date.now()],
+        );
+      },
+      async clearAccountClosingMarker(identityId: string) {
+        await db.execute('DELETE FROM account_closure_requested WHERE identity_id = ?', [identityId]);
+      },
+      async afterCloudAccountClosed() {
+        // NOTE: the closure-request marker is intentionally NOT cleared here.
+        // Token/sync are revoked below, but the active local Profile runtime stays
+        // alive — the marker keeps local new-work blocked until the cloud account
+        // row syncs to a non-Active status (status check then covers it). It is
+        // cleared only when the cloud close FAILS (close handler catch path).
+        await closeCurrentCloudConnection();
+      },
+    },
+  });
+
+  const analyticsReadAdapter = new DesktopAnalyticsReadAdapter({
+    goalRepository: goalComposed.repositories.goalRepository,
+    taskTemplateRepository: taskComposed.repositories.taskTemplateRepository,
+    dashboardDataLoader: (identityId) => getDesktopDashboardData(identityId, dashboardRepositories),
+  });
+
+  const AIElectronModule = composeAI({
+    db,
+    knowledgeNotePersistence: new DesktopKnowledgeNotePersistenceAdapter(localVaultRuntime),
+    knowledgeSourcePort: new DesktopKnowledgeSourceAdapter(localVaultRuntime),
+    analyticsReadPort: analyticsReadAdapter,
+    automationToolExecutor: new DesktopAutomationToolExecutorAdapter(
+      db,
+      localVaultRuntime,
+      analyticsReadAdapter,
+    ),
+    aiServiceRuntimeConfig: getAIServiceRuntimeConfig() ?? undefined,
+  });
+
+  const dataPortabilityElectronModule = composeDataPortability({ db });
+  const settingElectronModule = composeSetting({ db });
 
   const knowledgeRepositoryRemoteGateway = new KnowledgeRepositoryRemoteGateway({
     getAccessToken: getCloudAccessToken,
@@ -182,7 +338,7 @@ async function registerBusinessModules(
     },
     stateFilePath: profilePaths.knowledgeRepositoryAutoSyncStatePath,
   });
-  const repositoryElectronModule = createRepositoryElectronModule({
+  const repositoryElectronModule = composeRepository({
     localVaultPort: localVaultRuntime,
     knowledgeRepositoryConnectionPort: knowledgeRepositoryRemoteGateway,
     knowledgeRepositoryReconciliationPort: knowledgeRepositoryReconciliationService,
@@ -190,102 +346,30 @@ async function registerBusinessModules(
     knowledgeRepositoryAutoSyncScheduler,
   });
 
-  const scheduleElectronModule = createScheduleElectronModule({
-    shouldScheduleTask: (task) => {
-      const identityId = mainRuntime?.profileRuntimeManager.getCurrentIdentityId() ?? null;
-      return identityId !== null && String(task.identityId) === identityId;
-    },
-    sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
-  });
-  const accountElectronModule = createAccountElectronModule({
-    getCloudAccountId: () =>
-      mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding?.cloudAccountId
-      ?? null,
-    getCloudAccessToken,
-    async updateLocalProfileMetadata(request) {
-      if (request.nickname === undefined) return;
-      const profileId = mainRuntime?.profileRuntimeManager.getActiveProfileId();
-      if (!profileId) return;
-      await mainRuntime?.profileRuntimeManager.updateProfileDisplayName(
-        profileId,
-        request.nickname,
-      );
-    },
-    async pushCloudProfile(token, request) {
-      const response = await fetch(`${getApiBaseUrl()}/accounts/me`, {
-        method: 'PUT',
-        headers: {
-          authorization: `Bearer ${token}`,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      });
-      const envelope = (await response.json().catch(() => null)) as {
-        ok?: boolean;
-        error?: { message?: string };
-      } | null;
-      if (!response.ok || envelope?.ok !== true) {
-        throw new Error(envelope?.error?.message ?? '云端账户资料同步失败');
-      }
-    },
-    async closeCloudAccount(token, request) {
-      const response = await fetch(`${getApiBaseUrl()}/accounts/me/close`, {
-        method: 'POST',
-        headers: {
-          authorization: `Bearer ${token}`,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      });
-      const envelope = (await response.json().catch(() => null)) as {
-        ok?: boolean;
-        data?: any;
-        error?: { message?: string };
-      } | null;
-      if (!response.ok || envelope?.ok !== true) {
-        throw new Error(envelope?.error?.message ?? '云端账号关闭失败');
-      }
-      return envelope.data;
-    },
-    async markAccountClosing() {
-      const identityId =
-        mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding?.cloudAccountId;
-      if (!identityId) {
-        throw new Error('Cannot mark account closing: active profile has no cloud binding');
-      }
-      await db.execute(
-        'INSERT OR IGNORE INTO account_closure_requested (identity_id, requested_at) VALUES (?, ?)',
-        [identityId, Date.now()],
-      );
-    },
-    async clearAccountClosingMarker(identityId: string) {
-      await db.execute('DELETE FROM account_closure_requested WHERE identity_id = ?', [identityId]);
-    },
-    async afterCloudAccountClosed() {
-      // NOTE: the closure-request marker is intentionally NOT cleared here.
-      // Token/sync are revoked below, but the active local Profile runtime stays
-      // alive — the marker keeps local new-work blocked until the cloud account
-      // row syncs to a non-Active status (status check then covers it). It is
-      // cleared only when the cloud close FAILS (close handler catch path).
-      await closeCurrentCloudConnection();
-    },
-  });
+  const governanceElectronModule = composeGovernance({ db });
+
+  // Schedule runtime controller wiring: the SAME composed controller is handed
+  // to both lifecycle owners (WindowManager drives delayed start/stop on window
+  // transitions; the profile manager stops it on deactivation before teardown).
+  // schedule runtime controller 接线：同一组装 controller 同时交给两个生命周期
+  // 所有者（WindowManager 在窗口切换时驱动延迟启停；profile manager 在停用拆除前
+  // 停止它）。
+  windowManager.setScheduleRuntimeController(scheduleComposed.runtimeController);
+  mainRuntime?.profileRuntimeManager.setScheduleRuntimeController(scheduleComposed.runtimeController);
 
   await bootstrapper
     // Core services
-    .register(accountElectronModule)
-    .register(SettingElectronModule)
-    .register(NotificationElectronModule)
-    .register(DataPortabilityElectronModule)
+    .register(accountComposed.module)
+    .register(settingElectronModule)
+    .register(notificationComposed.module)
+    .register(dataPortabilityElectronModule)
     // Feature modules
-    .register(createGoalElectronModule({
-      taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
-    }))
+    .register(goalComposed.module)
     .register(taskElectronModule)
-    .register(scheduleElectronModule)
-    .register(ReminderElectronModule)
+    .register(scheduleComposed.module)
+    .register(reminderComposed.module)
     .register(AIElectronModule)
-    .register(GovernanceElectronModule)
+    .register(governanceElectronModule)
     .register(repositoryElectronModule);
 
   const initTime = performance.now() - startTime;
@@ -362,15 +446,33 @@ async function initializeShellRuntime(): Promise<void> {
     );
   });
   profileRuntimeManager.setAfterActivation((profile) => cloudConnectionManager.restore(profile).then(() => undefined));
+  profileRuntimeManager.setBeforeDeactivation(() => {
+    activeProfileDashboardRepositories = null;
+    // Clear the WindowManager's bound schedule runtime controller BEFORE the
+    // modules are torn down so no stale controller outlives its instance.
+    // 在模块拆除前清除 WindowManager 绑定的 schedule runtime controller，
+    // 避免过期 controller 越过其实例存活。
+    windowManager.setScheduleRuntimeController(null);
+  });
 
-  // Cross-module event listeners (task→goal 联动) 现由各模块 electron-entry 在
-  // profile 激活时自行挂载（见 GoalElectronModule.register → registerGoalEventListeners），
-  // 不再由 shell 层集中初始化。
+  // Cross-module event listeners (task→goal 联动) 现由 composeGoal 把
+  // createGoalEventListenersRuntime 作为模块自有运行时贡献注入 GoalModuleInstance
+  // （见 packages/goal/src/server/infrastructure/runtime/goal-event-listeners.runtime.ts），
+  // 在 profile 激活、module start() 时随模块一起启动；不再由 shell 层集中初始化。
 
   // Ancillary
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
-  registerDashboardIpcHandler(() => mainRuntime?.profileRuntimeManager.getActiveProfileAccessContext() ?? null);
+  registerDashboardIpcHandler(
+    () => mainRuntime?.profileRuntimeManager.getActiveProfileAccessContext() ?? null,
+    () => {
+      const repositories = activeProfileDashboardRepositories;
+      if (!repositories) {
+        throw new Error('Dashboard IPC invoked before profile business modules were composed');
+      }
+      return repositories;
+    },
+  );
 
   const initTime = performance.now() - startTime;
   console.log(`[Shell] Shell runtime initialized in ${initTime.toFixed(2)}ms`);

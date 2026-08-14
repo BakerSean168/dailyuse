@@ -27,7 +27,7 @@ import type { ReminderModuleRuntimeContribution } from '../reminder.module';
 const logger = createLogger('ReminderTriggerCronJob');
 
 import type { ReminderReliableOperationPort } from '@memoflow/contracts/reliable-messaging';
-import type { PrismaReminderWriteTransactionRunner } from '../adapters/prisma/prisma-reminder-write-transaction-runner';
+import type { ReminderTransactionRunner } from '../../domain/ports/reminder-transaction-runner.port';
 
 // ---------------------------------------------------------------------------
 // Dependencies — what the cron job needs from the outside world.
@@ -38,7 +38,7 @@ export interface ReminderTriggerCronJobDependencies {
   readonly reminderTemplateRepository: IReminderTemplateRepository;
   readonly reminderGroupRepository: IReminderGroupRepository;
   readonly reliablePort: ReminderReliableOperationPort;
-  readonly transactionRunner: PrismaReminderWriteTransactionRunner;
+  readonly transactionRunner: ReminderTransactionRunner;
   readonly schedulerService?: ReminderSchedulerService;
   readonly drainTimeoutMs?: number;
 }

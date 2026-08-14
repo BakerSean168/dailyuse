@@ -13,6 +13,8 @@ import type { TaskModuleRuntimeContribution } from './task.module';
  * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
  * Soft residual: server task.module.ts local normalizeRuntimeContributions remains keep-boundary
  * (composition-root + TaskRuntimeContributionsInput host; avoid circular import).
+ * GT Step 2: transport entrypoints no longer compose runtime contributions — the dual is fully
+ * retired; neither API nor Electron imports the helper.
  * Does not flip §13.2 checkboxes.
  */
 describe('normalizeRuntimeContributions dual retired (residual 987)', () => {
@@ -30,16 +32,17 @@ describe('normalizeRuntimeContributions dual retired (residual 987)', () => {
     expect(sole).toContain('Array.from(runtimeContributions)');
   });
 
-  it('API + Electron entrypoints import sole without local dual bodies', () => {
+  it('API + Electron entrypoints are transport-only and do NOT import the helper (GT Step 2)', () => {
     for (const [label, source] of [
       ['api', api],
       ['electron', electron],
     ] as const) {
-      expect(source, label).toContain('Residual 987');
-      expect(source, label).toContain("from '../server/infrastructure/normalize-runtime-contributions'");
+      expect(source, label).not.toContain(
+        "from '../server/infrastructure/normalize-runtime-contributions'",
+      );
       expect(source, label).not.toMatch(/function isRuntimeContributionArray\b/);
       expect(source, label).not.toMatch(/function normalizeRuntimeContributions\b/);
-      expect(source, label).toContain('normalizeRuntimeContributions(');
+      expect(source, label).not.toContain('normalizeRuntimeContributions(');
     }
   });
 

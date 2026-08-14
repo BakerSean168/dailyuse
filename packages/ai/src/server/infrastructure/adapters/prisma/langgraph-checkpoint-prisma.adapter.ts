@@ -1,3 +1,15 @@
+/**
+ * LangGraphCheckpoint Prisma Adapter
+ *
+ * Prisma implementation of ILangGraphCheckpointPort (API / Prisma lane only).
+ * Owns the LangGraph checkpoint tables; the API transport consumes it through
+ * the application seam, never directly.
+ *
+ * LangGraphCheckpoint Prisma 适配器
+ *
+ * ILangGraphCheckpointPort 的 Prisma 实现（仅 API / Prisma lane）。
+ * 持有 LangGraph checkpoint 表；API transport 通过应用 seam 消费，绝不直接使用。
+ */
 import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@memoflow/database';
 import { Prisma } from '@memoflow/database/prisma';
@@ -61,6 +73,10 @@ function rowToPendingWrite(row: LangGraphCheckpointWriteRow): LangGraphCheckpoin
   };
 }
 
+/**
+ * @internal Concrete Prisma implementation — consumers should use ILangGraphCheckpointPort.
+ * @internal Prisma 具体实现 —— 消费方应使用 ILangGraphCheckpointPort 接口。
+ */
 export class LangGraphCheckpointPrismaAdapter implements ILangGraphCheckpointPort {
   constructor(private readonly prisma: PrismaClient) {}
 

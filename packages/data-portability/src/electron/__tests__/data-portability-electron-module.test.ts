@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IElectronDatabase, IElectronModuleContext } from '@memoflow/contracts/electron';
-import { DataPortabilityElectronModule } from '../index';
+import { createPowerSyncDataPortabilityModule } from '../../server/infrastructure/data-portability.module';
+import { createDataPortabilityRuntimeContribution } from '../../server/infrastructure/runtime';
+import { createDataPortabilityElectronModule } from '../index';
 
 const electronMock = vi.hoisted(() => ({
   handle: vi.fn(),
@@ -51,6 +53,13 @@ function createContext(): IElectronModuleContext {
   } as unknown as IElectronModuleContext;
 }
 
+function createModule(context: IElectronModuleContext) {
+  const instance = createPowerSyncDataPortabilityModule(context.db, {
+    runtimeContributions: createDataPortabilityRuntimeContribution(),
+  });
+  return createDataPortabilityElectronModule({ instance });
+}
+
 describe('DataPortabilityElectronModule', () => {
   beforeEach(() => {
     electronMock.handle.mockClear();
@@ -58,8 +67,9 @@ describe('DataPortabilityElectronModule', () => {
   });
 
   it('registers export and import IPC handlers and removes them on destroy', async () => {
-    DataPortabilityElectronModule.register(createContext());
-    DataPortabilityElectronModule.destroy?.();
+    const module = createModule(createContext());
+    module.register(createContext());
+    module.destroy?.();
 
     expect(electronMock.handle).toHaveBeenCalledWith('data-portability:export', expect.any(Function));
     expect(electronMock.handle).toHaveBeenCalledWith('data-portability:import', expect.any(Function));
@@ -68,7 +78,8 @@ describe('DataPortabilityElectronModule', () => {
   });
 
   it('returns Result-wrapped export data through the authenticated handler', async () => {
-    DataPortabilityElectronModule.register(createContext());
+    const module = createModule(createContext());
+    module.register(createContext());
     const exportHandler = electronMock.handle.mock.calls.find(
       ([channel]) => channel === 'data-portability:export',
     )?.[1] as (_event: unknown, dto: unknown) => Promise<unknown>;
@@ -85,7 +96,8 @@ describe('DataPortabilityElectronModule', () => {
   });
 
   it('returns structured validation errors for invalid import content', async () => {
-    DataPortabilityElectronModule.register(createContext());
+    const module = createModule(createContext());
+    module.register(createContext());
     const importHandler = electronMock.handle.mock.calls.find(
       ([channel]) => channel === 'data-portability:import',
     )?.[1] as (_event: unknown, dto: unknown) => Promise<unknown>;
@@ -104,7 +116,8 @@ describe('DataPortabilityElectronModule', () => {
   });
 
   it('validates export IPC payloads with the shared contract schema', async () => {
-    DataPortabilityElectronModule.register(createContext());
+    const module = createModule(createContext());
+    module.register(createContext());
     const exportHandler = electronMock.handle.mock.calls.find(
       ([channel]) => channel === 'data-portability:export',
     )?.[1] as (_event: unknown, dto: unknown) => Promise<unknown>;
@@ -121,7 +134,8 @@ describe('DataPortabilityElectronModule', () => {
   });
 
   it('validates import IPC payloads with the shared contract schema', async () => {
-    DataPortabilityElectronModule.register(createContext());
+    const module = createModule(createContext());
+    module.register(createContext());
     const importHandler = electronMock.handle.mock.calls.find(
       ([channel]) => channel === 'data-portability:import',
     )?.[1] as (_event: unknown, dto: unknown) => Promise<unknown>;

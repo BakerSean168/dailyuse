@@ -77,9 +77,23 @@ function createFakeContext() {
   };
 }
 
+function createModule() {
+  const instance = {
+    api: {} as never,
+    eventApi: {} as never,
+    scheduleRepository: {} as never,
+    scheduleExecutionRepository: {} as never,
+    scheduleTaskRepository: {} as never,
+    useCases: {} as never,
+    start: vi.fn(async () => undefined),
+    dispose: vi.fn(async () => undefined),
+  };
+  return createScheduleElectronModule({ instance: instance as never });
+}
+
 describe('Schedule DELETE IPC handler round-trip contract', () => {
   it('forwards (event, id, expectedVersion) to controller.delete(id, { expectedVersion }, requestContext)', async () => {
-    const module = createScheduleElectronModule();
+    const module = createModule();
     module.register(createFakeContext() as never);
 
     const deleteHandler = getRegisteredHandler(ScheduleChannels.DELETE);
@@ -96,7 +110,7 @@ describe('Schedule DELETE IPC handler round-trip contract', () => {
   });
 
   it('accepts a payload object and forwards it unchanged', async () => {
-    const module = createScheduleElectronModule();
+    const module = createModule();
     module.register(createFakeContext() as never);
 
     const deleteHandler = getRegisteredHandler(ScheduleChannels.DELETE);

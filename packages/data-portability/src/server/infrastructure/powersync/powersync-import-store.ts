@@ -362,3 +362,22 @@ export class PowerSyncDataPortabilityImportStore implements DataPortabilityImpor
     });
   }
 }
+
+/**
+ * Creates a PowerSync-backed data portability import store.
+ * 创建基于 PowerSync 的 data portability import store。
+ *
+ * Host-level composition ingredient: returns the `DataPortabilityImportStore`
+ * port backed by the PowerSync adapter, so hosts never import the concrete class.
+ *
+ * 宿主级组合原料：返回由 PowerSync 适配器支撑的 `DataPortabilityImportStore` Port，
+ * 宿主无需导入具体类。
+ *
+ * @param db - Electron database adapter owned by the desktop main runtime. 桌面主进程持有的 Electron 数据库适配器。
+ * @returns A PowerSync-backed import store port. 基于 PowerSync 的 import store Port。
+ */
+export function createPowerSyncDataPortabilityImportStore(
+  db: IElectronDatabase,
+): DataPortabilityImportStore {
+  return new PowerSyncDataPortabilityImportStore(db);
+}

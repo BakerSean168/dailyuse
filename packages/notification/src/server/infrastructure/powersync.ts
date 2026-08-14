@@ -16,10 +16,11 @@ import {
   type NotificationRuntimeContributionsInput,
 } from './notification.module';
 import {
-  createNotificationRuntimeContribution,
+  createNotificationDurableRuntime,
   type NotificationDurableRuntimePort,
+  type ChannelCapabilitySpec,
+  type NotificationReliableOperationPort,
 } from './runtime/notification.runtime';
-import { RealDesktopChannelDeliverer, RealInAppChannelDeliverer } from './adapters/deliverers/real-channel-deliverers';
 import {
   PowerSyncNotificationRepository,
   PowerSyncNotificationPreferenceRepository,
@@ -28,12 +29,61 @@ import {
 } from './adapters/powersync';
 import type { NotificationMetricsService } from '../domain/services/notification-metrics-service';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { INotificationRepository, INotificationPreferenceRepository, INotificationTemplateRepository } from '../domain/repositories';
 
 export interface CreateNotificationPowerSyncModuleOptions {
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
   readonly durableRuntime?: NotificationDurableRuntimePort;
   readonly transport?: unknown;
+  readonly channelCapabilities?: ChannelCapabilitySpec[];
   readonly metricsService?: NotificationMetricsService;
+}
+
+/**
+ * Host-facing notification repository set for the PowerSync lane.
+ * 面向宿主暴露的 PowerSync lane 通知仓储集合。
+ *
+ * Contains the three domain repositories and the reliable-operation adapter
+ * (the durable-runtime ingredient). `closureChecker` is intentionally NOT part
+ * of the set: it is a host-owned port that desktop composers build from the
+ * profile DB via `createPowerSyncClosureChecker` and pass explicitly.
+ *
+ * 包含三个领域仓储与可靠操作适配器（durable-runtime 原料）。
+ * `closureChecker` 刻意不在此列：它是宿主持有的 Port，桌面 composer 通过
+ * `createPowerSyncClosureChecker` 基于 profile DB 构建后显式传入。
+ */
+export interface NotificationPowerSyncRepositorySet {
+  readonly notificationRepository: INotificationRepository;
+  readonly notificationPreferenceRepository: INotificationPreferenceRepository;
+  readonly notificationTemplateRepository: INotificationTemplateRepository;
+  readonly reliableAdapter: NotificationReliableOperationPort;
+}
+
+/**
+ * Creates PowerSync-backed notification repositories.
+ * 创建基于 PowerSync 的通知仓储。
+ *
+ * Electron counterpart of createNotificationPrismaRepositories(): selects the
+ * PowerSync adapters and returns the repository Port shape.
+ *
+ * 与 createNotificationPrismaRepositories() 对应的 Electron 版本：选择 PowerSync
+ * 适配器并返回仓储 Port 形状。
+ *
+ * @param db - Electron database adapter owned by the desktop main runtime. 桌面主进程持有的 Electron 数据库适配器。
+ * @param metricsService - Optional metrics service; defaults to the global instance. 可选指标服务；默认使用全局实例。
+ * @returns Repository set backed by the PowerSync adapters.
+ *          返回基于 PowerSync 适配器的仓储集合。
+ */
+export function createNotificationPowerSyncRepositories(
+  db: IElectronDatabase,
+  metricsService?: NotificationMetricsService,
+): NotificationPowerSyncRepositorySet {
+  return {
+    notificationRepository: new PowerSyncNotificationRepository(db, metricsService),
+    notificationPreferenceRepository: new PowerSyncNotificationPreferenceRepository(db),
+    notificationTemplateRepository: new PowerSyncNotificationTemplateRepository(db),
+    reliableAdapter: new PowerSyncNotificationReliableAdapter(db, metricsService),
+  };
 }
 
 export interface DesktopTransportAckRecord {
@@ -319,6 +369,7 @@ export function createNotificationPowerSyncModule(
   let runtimeContributions: NotificationRuntimeContributionsInput | undefined;
   let durableRuntime: NotificationDurableRuntimePort | undefined;
   let transport: unknown | undefined;
+  let channelCapabilities: ChannelCapabilitySpec[] | undefined;
   let metricsService: NotificationMetricsService | undefined;
 
   if (options) {
@@ -326,37 +377,37 @@ export function createNotificationPowerSyncModule(
       'durableRuntime' in options ||
       'runtimeContributions' in options ||
       'transport' in options ||
+      'channelCapabilities' in options ||
       'metricsService' in options
     ) {
       const opts = options as CreateNotificationPowerSyncModuleOptions;
       durableRuntime = opts.durableRuntime;
       runtimeContributions = opts.runtimeContributions;
       transport = opts.transport;
+      channelCapabilities = opts.channelCapabilities;
       metricsService = opts.metricsService;
     } else if (Array.isArray(options)) {
       runtimeContributions = options as NotificationRuntimeContributionsInput;
     }
   }
 
-  const notificationRepository = new PowerSyncNotificationRepository(db, metricsService);
+  const repositories = createNotificationPowerSyncRepositories(db, metricsService);
+  const notificationRepository = repositories.notificationRepository;
 
   if (!durableRuntime) {
-    const powerSyncReliableAdapter = new PowerSyncNotificationReliableAdapter(db, metricsService);
+    // Preserve the historical desktop default: InApp + Desktop capabilities
+    // and a fail-closed PowerSync closure checker. Hosts may override both by
+    // passing explicit `channelCapabilities` / `transport` / `durableRuntime`.
+    const powerSyncReliableAdapter = repositories.reliableAdapter;
     const desktopTransport = transport ?? createDefaultElectronDesktopTransport(db);
-    const defaultDeliverers = {
-      Desktop: new RealDesktopChannelDeliverer(desktopTransport),
-      desktop: new RealDesktopChannelDeliverer(desktopTransport),
-      InApp: new RealInAppChannelDeliverer(notificationRepository),
-      'in-app': new RealInAppChannelDeliverer(notificationRepository),
-    };
-    durableRuntime = createNotificationRuntimeContribution({
-      repository: notificationRepository,
+    durableRuntime = createNotificationDurableRuntime({
+      notificationRepository,
       reliableAdapter: powerSyncReliableAdapter,
-      delivererRegistry: defaultDeliverers,
-      channelCapabilities: [
+      channelCapabilities: channelCapabilities ?? [
         { channelType: 'InApp', status: 'available' },
         { channelType: 'Desktop', status: 'available' },
       ],
+      transport: desktopTransport,
       metricsService,
     });
   }
@@ -364,10 +415,9 @@ export function createNotificationPowerSyncModule(
   const closureChecker = createPowerSyncClosureChecker(db);
 
   return createNotificationModule({
-    db,
     notificationRepository,
-    preferenceRepository: new PowerSyncNotificationPreferenceRepository(db),
-    templateRepository: new PowerSyncNotificationTemplateRepository(db),
+    preferenceRepository: repositories.notificationPreferenceRepository,
+    templateRepository: repositories.notificationTemplateRepository,
     durableRuntime,
     runtimeContributions: runtimeContributions ?? [durableRuntime],
     closureChecker,

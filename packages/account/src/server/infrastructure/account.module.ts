@@ -20,7 +20,10 @@ import type {
 } from '@memoflow/contracts/operations';
 import { OperationTimelineEntrySchema } from '@memoflow/contracts/operations';
 import { ok, fail } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import type { AccountClosureOperationRecord } from '../domain/repositories/i-account-closure-operation-repository';
+
+const logger = createLogger('AccountModule');
 
 /** Explicit dependencies required by the account runtime. */
 export interface AccountModuleDependencies {
@@ -224,8 +227,28 @@ export function createAccountModule(
     },
     start(): void {
       if (started) return;
+      const startedContributions: AccountModuleRuntimeContribution[] = [];
       for (const runtime of runtimeContributions) {
-        runtime.start();
+        try {
+          runtime.start();
+          startedContributions.push(runtime);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedRuntime of [...startedContributions].reverse()) {
+            try {
+              startedRuntime.stop();
+            } catch (stopError) {
+              logger.error(
+                'AccountModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
       started = true;
     },

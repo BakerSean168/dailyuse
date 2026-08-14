@@ -14,9 +14,13 @@
 export {
   createTaskModule,
   createTaskPowerSyncModule,
+  createTaskPowerSyncRepositories,
   createTaskPrismaModule,
   createTaskPrismaRepositories,
   createTaskRuntimeContribution,
+  normalizeTaskRuntimeContributions,
+  createTaskPrismaGoalOutboxRuntime,
+  createTaskPowerSyncGoalOutboxRuntime,
   PrismaTaskBindingReadPort,
   PowerSyncTaskBindingReadPort,
   type TaskApplicationPort,
@@ -25,5 +29,11 @@ export {
   type TaskModuleRuntimeContribution,
   type TaskModuleUseCases,
   type TaskRuntimeContributionsInput,
+  type TaskRepositorySet,
   type CreateTaskPrismaModuleOptions,
+  type ITaskTemplateRepository,
+  type ITaskInstanceRepository,
+  type ITaskDependencyRepository,
+  type ITaskFolderRepository,
 } from './server';
+export type { TaskWriteTransactionRunner } from './server/application/use-cases/commands/task-write-support';

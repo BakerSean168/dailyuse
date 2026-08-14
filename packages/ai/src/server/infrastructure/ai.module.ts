@@ -22,6 +22,7 @@ import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../domain';
 import type { AIApplicationPort } from '../application';
 import type {
+  IAgentCheckpointPort,
   IAIExecutionLogPort,
   IAIEvaluationReportPort,
   IAIAutomationToolExecutorPort,
@@ -38,8 +39,10 @@ import type {
   IKnowledgeNoteGenerationPort,
   IKnowledgeNotePersistencePort,
   IKnowledgeSourcePort,
+  ILangGraphCheckpointPort,
 } from '../application/ports';
 
+import { createLogger } from '@memoflow/utils/logger';
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
 import type { IAssistantFacadePort, ICapabilityResolverPort, IModelGatewayPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@memoflow/contracts/ai';
@@ -92,6 +95,8 @@ import type {
   RemoveKnowledgeIndexNoteUseCase,
 } from '../application/use-cases';
 
+const logger = createLogger('AIModule');
+
 // ---------------------------------------------------------------------------
 // Dependencies — AI 模块服务端运行时向外部索取的全部依赖
 // ---------------------------------------------------------------------------
@@ -123,6 +128,31 @@ export interface AIModuleDependencies {
   readonly executionLogPort?: IAIExecutionLogPort;
   readonly evaluationReportPort?: IAIEvaluationReportPort;
   readonly agentRuntimePort?: IAgentRuntimePort;
+
+  /**
+   * Agent checkpoint persistence is an external collaborator (API / Prisma only).
+   * Agent checkpoint 持久化是一个外部协作者（仅 API / Prisma）。
+   *
+   * Supplied together with `langGraphCheckpointPort` or not at all — the
+   * all-or-none invariant is enforced by `createAIModule()`. Desktop supplies
+   * neither port.
+   *
+   * 必须与 `langGraphCheckpointPort` 同时提供或同时缺省——all-or-none invariant
+   * 由 `createAIModule()` 强制。Desktop 两者都不提供。
+   */
+  readonly agentCheckpointPort?: IAgentCheckpointPort;
+
+  /**
+   * LangGraph checkpoint persistence is an external collaborator (API / Prisma only).
+   * LangGraph checkpoint 持久化是一个外部协作者（仅 API / Prisma）。
+   *
+   * Supplied together with `agentCheckpointPort` or not at all — the all-or-none
+   * invariant is enforced by `createAIModule()`. Desktop supplies neither port.
+   *
+   * 必须与 `agentCheckpointPort` 同时提供或同时缺省——all-or-none invariant
+   * 由 `createAIModule()` 强制。Desktop 两者都不提供。
+   */
+  readonly langGraphCheckpointPort?: ILangGraphCheckpointPort;
 
   /**
    * Knowledge-note persistence is an external collaborator.
@@ -393,6 +423,19 @@ function normalizeRuntimeContributions(
  */
 export function createAIModule(dependencies: AIModuleDependencies): AIModuleInstance {
   const { conversationRepository, providerConfigRepository } = dependencies;
+
+  // All-or-none checkpoint invariant: the two internal checkpoint ports must be
+  // supplied together or not at all. Fail closed on a half-wired pair so a host
+  // can never mount only one internal checkpoint surface.
+  // checkpoint 对 all-or-none invariant：两个内部 checkpoint port 必须同时提供或
+  // 同时缺省。半套 pair 直接 fail closed，避免宿主只挂载一半内部 checkpoint surface。
+  if (Boolean(dependencies.agentCheckpointPort) !== Boolean(dependencies.langGraphCheckpointPort)) {
+    throw new Error(
+      'createAIModule: agentCheckpointPort and langGraphCheckpointPort must be supplied together ' +
+        '(all-or-none invariant).',
+    );
+  }
+
   // --- Runtime selection: delegate to the appropriate runtime ---
 
   const isRemoteMode = Boolean(
@@ -431,6 +474,18 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
   let started = false;
 
   const api: AIApplicationPort = {
+    // Internal checkpoint surface, present only when the host supplies the
+    // all-or-none checkpoint pair. Desktop supplies neither.
+    // 内部 checkpoint surface：仅当宿主提供完整的 checkpoint pair 时存在。Desktop
+    // 两者都不提供。
+    checkpoints:
+      dependencies.agentCheckpointPort && dependencies.langGraphCheckpointPort
+        ? {
+            agent: dependencies.agentCheckpointPort,
+            langGraph: dependencies.langGraphCheckpointPort,
+          }
+        : undefined,
+
     getCapabilities: async () =>
       ok({
         ...baseCapabilities,
@@ -538,8 +593,28 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
         return;
       }
 
+      const startedContributions: AIModuleRuntimeContribution[] = [];
       for (const runtime of runtimeContributions) {
-        runtime.start();
+        try {
+          runtime.start();
+          startedContributions.push(runtime);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedRuntime of [...startedContributions].reverse()) {
+            try {
+              startedRuntime.stop();
+            } catch (stopError) {
+              logger.error(
+                'AIModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
 
       started = true;

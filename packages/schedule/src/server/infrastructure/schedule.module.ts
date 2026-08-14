@@ -46,7 +46,6 @@ import { ScheduleConflictDetectionService } from '../application/services/schedu
 import { ScheduleConflictResolutionService } from '../application/services/schedule-conflict-resolution-service';
 import { ScheduleRebuildWorkerService, ScheduleRebuildWorkerRuntime } from '../application/services/schedule-rebuild-worker-service';
 import { ScheduleDomainEventPublisherService, ScheduleDomainEventPublisherRuntime } from '../application/services/schedule-domain-event-publisher';
-import { ScheduleEventDeliveryLogConsumer } from './consumers/schedule-event-delivery-log.consumer';
 import { ScheduleLeaseCoordinator } from './lease/schedule-lease-coordinator';
 import { ok, fail, toResultErrorException } from '@memoflow/contracts/result';
 import { createEventBusAdapter } from '@memoflow/patterns';
@@ -88,8 +87,10 @@ export interface ScheduleModuleDependencies {
   /**
    * P1-1 production consumer：可靠、幂等消费 schedule domain events。
    * 提供时作为 module-owned runtime 随 start()/dispose() 启停。
+   * Structural shape: only start/stop are consumed by the module, so the
+   * concrete consumer class stays implementation-private.
    */
-  readonly eventDeliveryLogConsumer?: ScheduleEventDeliveryLogConsumer;
+  readonly eventDeliveryLogConsumer?: ScheduleModuleRuntimeContribution;
   readonly runtimeContributions?: ScheduleRuntimeContributionsInput;
   /** W7：审计仓库（最小权限 + 审计） */
   readonly auditRepository?: OperationAuditRepository;
@@ -151,7 +152,7 @@ export interface ScheduleModuleInstance {
   readonly useCases: ScheduleModuleUseCases;
   readonly api: ScheduleApplicationPort;
   readonly eventApi: ScheduleEventApplicationPort;
-  readonly eventDeliveryLogConsumer?: ScheduleEventDeliveryLogConsumer;
+  readonly eventDeliveryLogConsumer?: ScheduleModuleRuntimeContribution;
   start(): Promise<void>;
   dispose(): Promise<void>;
 }

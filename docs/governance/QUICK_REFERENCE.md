@@ -19,11 +19,11 @@ updated: 2026-07-06T00:00:00+08:00
 | Server Domain | `src/server/domain/` | 聚合根、实体、仓储接口、值对象 |
 | Server Application | `src/server/application/` | Commands / Queries / `GovernanceApplicationPort` |
 | Server Transport | `src/server/transport/` | 校验、控制器、transport 翻译 |
-| Server Infrastructure | `src/server/infrastructure/` | Prisma / PowerSync / runtime / 组合根 / seed |
-| API | `@memoflow/governance/api` / `src/api/` | HTTP 模块与路由注册 |
+| Server Infrastructure | `src/server/infrastructure/` | Prisma / PowerSync / runtime / 规范化组合根（`createGovernanceModule`）/ seed |
+| API | `@memoflow/governance/api` / `src/api/` | HTTP 传输与生命周期适配器（不含组合） |
 | Client | `@memoflow/governance/client` / `src/client/` | Web / Desktop renderer 客户端 seam |
-| Electron | `@memoflow/governance/electron` / `src/electron/` | Desktop main 注册入口 |
-| Server Root | `@memoflow/governance` | 规范化服务端组合根 |
+| Electron | `@memoflow/governance/electron` / `src/electron/` | IPC 传输与生命周期适配器（不含组合） |
+| Server Root | `@memoflow/governance` | 规范化服务端组合根 + 宿主装配 ingredient factory |
 
 治理模块公共契约已经外提到 `packages/contracts`，`packages/governance/src/` 内不再维护第二份 contracts，也不再对外暴露 `domain-client`、`application-client`、`infrastructure-client` 这类 layer-named seam。
 
@@ -50,7 +50,8 @@ updated: 2026-07-06T00:00:00+08:00
 | 新增 HTTP 端点 | `src/api/routes/*.routes.ts` |
 | 新增 transport 共享逻辑 | `src/server/transport/` |
 | 新增模块运行时副作用 | `src/server/infrastructure/runtime/` |
-| 新增桌面主进程治理接线 | `src/electron/index.ts` |
+| 新增宿主装配（组合根） | `apps/api/src/runtime/compose-governance.ts`（Prisma）/ `apps/desktop/src/main/runtime/compose-governance.ts`（PowerSync） |
+| 新增桌面主进程治理 IPC 接线 | `src/electron/index.ts`（仅传输 + 生命周期） |
 | 新增 Web / Renderer 调用 | `src/client/index.ts` |
 | 新增 UI 展示派生 | `packages/app-vue/src/modules/governance/display-rule.ts` |
 | 新增持久化字段 | `src/server/infrastructure/adapters/*/mappers/` |
@@ -68,7 +69,13 @@ updated: 2026-07-06T00:00:00+08:00
 - `server/domain` 看业务模型与不变量
 - `server/application` 看用例与调用门面
 - `server/transport` 看控制器与 transport 翻译
-- `server/infrastructure` 看适配器、runtime 与组合根
+- `server/infrastructure` 看适配器、runtime 与规范化组合根
+
+> **组合归属：** `createGovernanceModule` 是规范化组合根，但宿主装配在 apps 完成——
+> `apps/api/src/runtime/compose-governance.ts`（Prisma）与
+> `apps/desktop/src/main/runtime/compose-governance.ts`（PowerSync）
+> 调用 `create*Repositories` + `createGovernanceEventLogRuntime` + `createGovernanceModule`
+> 后把 instance 传给 `api` / `electron` transport module。不要在 register 内再组合。
 
 ## 常见反模式
 

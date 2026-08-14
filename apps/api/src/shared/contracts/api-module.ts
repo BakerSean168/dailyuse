@@ -7,16 +7,15 @@
  * @example
  * ```typescript
  * import type { IApiModule } from './api-module';
+ * import { createMyModule } from '@memoflow/my-pkg';
+ * import { createMyApiModule } from '@memoflow/my-pkg/api';
  *
- * export const MyModule: IApiModule = {
- *   name: 'MyModule',
- *   register({ router, db }) {
- *     const repo = new MyRepo(db);
- *     const r = Router();
- *     r.get('/', ...);
- *     router.use('/my', r);
- *   },
- * };
+ * // Host composition root (apps/api/src/runtime/compose-my.ts): the runtime
+ * // selects adapters, assembles the transport-neutral instance, and binds it
+ * // into an already-bound IApiModule-compatible handle BEFORE registration.
+ * export const MyModule: IApiModule = createMyApiModule({
+ *   instance: createMyModule({ repository, servicePort }),
+ * });
  * ```
  */
 
@@ -64,8 +63,15 @@ export interface IApiModuleContext extends ServerModuleContext<DatabaseClient> {
  * API 模块标准接口
  *
  * 所有业务模块必须实现此接口才能被 ApiBootstrapper 加载。
- * 模块在 register() 内完成 Composition Root 组装（创建 Repo → Service → Controller）
- * 并将路由挂载到 context.router 上。
+ *
+ * 目标方向（target direction）：runtime-first 装配 —— 宿主（apps/api/src/runtime）
+ * 在 register() 之前完成 feature 模块的 Composition Root 组装（选择 adapter →
+ * repository → application instance），register() 只负责 transport 注册与模块生命周期
+ * （start/dispose）。参见 apps/api/src/runtime/compose-governance.ts 的治理示范。
+ *
+ * 当前全部 feature 模块（含 AI）均已由宿主 runtime composer 在 register() 之前完成
+ * 组装；`context.db` 字段保留用于 platform adapter（如 app-local host adapter）与
+ * 兼容既有代码，transport 层不再从 context 组装 feature。
  */
 export interface IApiModule {
   /** 模块名称，用于日志和调试 */
@@ -75,9 +81,11 @@ export interface IApiModule {
    * 注册模块
    *
    * 在此方法内完成：
-   * 1. 依赖注入（Composition Root）
-   * 2. 路由创建与挂载
-   * 3. 事件监听器注册（可选）
+   * 1. transport 注册（路由挂载）
+   * 2. 模块生命周期启动（可选）
+   *
+   * feature 组装（Repository/UseCase/Application）已由宿主 runtime composer
+   * 在 register() 之前完成。
    *
    * @param context - ApiBootstrapper 提供的上下文
    */

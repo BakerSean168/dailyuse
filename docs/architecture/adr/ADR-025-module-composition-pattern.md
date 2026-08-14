@@ -53,3 +53,29 @@ const goalRouter = createGoalRouter(goalModule.archiveGoal);
 -   **Explicit Wiring:** No hidden dependencies.
 -   **Multi-App Support:** Easy to reuse the same `GoalModule` in CLI or Worker apps.
 -   **Testing:** Easy to swap `GoalModule` with `MockGoalModule` in integration tests.
+
+## Update: Host Runtime Composers Own Assembly (2026-08-13)
+
+Since this ADR, the composition responsibility has narrowed from module classes
+to dedicated **host runtime composers** (reference: `apps/api/src/runtime/compose-governance.ts`
+and `apps/desktop/src/main/runtime/compose-governance.ts`):
+
+- Host runtimes (`apps/api/src/runtime`, `apps/desktop/src/main/runtime`) select the
+  concrete adapters (Prisma / PowerSync), build repositories and runtime adapters,
+  assemble the transport-neutral feature instance, and bind it into a module handle
+  before `register()` is ever called.
+- Package `api` / `electron` modules are **transport + lifecycle adapters**, not
+  composition roots: `register()` wires routes / IPC handlers against the pre-assembled
+  instance and starts it; `destroy()` disposes it. They no longer read `context.db` or
+  construct repositories/use cases.
+- Packages expose **ingredient factories** (`create*Repositories`) through the package
+  root so hosts can pick adapters without importing concrete adapter classes; concrete
+  `*PrismaRepository` / `*PowerSyncRepository` classes remain internal.
+- Sibling modules not yet migrated may temporarily keep composing inside `register()`
+  from `context.db`; the governance migration converges them onto host composers before
+  removing that fallback.
+
+This keeps the original ADR-025 intent (explicit wiring, multi-app reuse, testability)
+while moving the wiring seam to the outermost runtime, so feature packages expose
+stable ingredient factories and transport adapters instead of performing assembly
+themselves.

@@ -56,7 +56,7 @@ packages/<feature>/
 │   │   │   └── index.ts
 │   │   ├── transport/          # Controllers and transport translation
 │   │   │   └── index.ts
-│   │   ├── infrastructure/     # Adapters and composition root
+│   │   ├── infrastructure/     # Adapters, transport-neutral deep module, ingredient factories
 │   │   │   ├── adapters/
 │   │   │   ├── runtime/
 │   │   │   ├── <feature>.module.ts
@@ -80,23 +80,50 @@ longer the architectural standard for new work.
 | `server/domain` | Entities, VOs, domain services, repo interfaces | `contracts` |
 | `server/application` | Use cases, command/query handlers, app port | `server/domain` |
 | `server/transport` | Request/response handling, transport translation | `server/application` |
-| `server/infrastructure` | Prisma repos, PowerSync repos, runtime adapters, composition root | `server/domain`, `server/application` |
-| `api` | Express routes, module registration | `server/infrastructure`, `server/application` |
+| `server/infrastructure` | Prisma repos, PowerSync repos, runtime adapters, transport-neutral deep module (`<feature>.module.ts`), ingredient factories (`create*Repositories`); host composers select adapters | `server/domain`, `server/application` |
+| `api` | Express route + lifecycle adapter (transport only, host-composed instance) | `server/infrastructure`, `server/application` |
 | `client` | Client service interface, factory functions | `contracts` |
-| `electron` | Desktop main seam | `client`, `contracts` |
+| `electron` | Desktop main seam: IPC + lifecycle adapter (transport only, host-composed instance) | `client`, `contracts` |
 
 ### Composition Root Pattern
 
-The `server/infrastructure/<feature>.module.ts` composition root wires concrete
-repository implementations to domain interfaces. This is allowed within a
-`layer:domain` tagged package because:
-- The composition root is infrastructure assembly code, not domain logic
+The composition root lives in the **host runtime composers**, not in the
+feature package: `apps/api/src/runtime` and `apps/desktop/src/main/runtime`
+select the concrete adapters (Prisma / PowerSync), build repositories via the
+package ingredient factories (`create*Repositories`), and assemble the
+transport-neutral feature instance (see "Composition Ownership" below). The
+feature package's module factory (`server/infrastructure/<feature>.module.ts`)
+is a transport/lifecycle adapter, not the composition path; package-internal
+convenience roots may remain for rollback during migration, but they are not
+the composition root. Keeping ingredient factories and adapters inside a
+`layer:domain` tagged package is allowed because:
+- They are infrastructure assembly code, not domain logic
 - The ESLint `layer:domain -> layer:infra` rule exists specifically for this pattern
 - Package-internal boundary enforcement is now implemented as a repo-level governance audit
   (`tools/governance/package-internal-boundary-audit.mjs`) and runs via
   `pnpm nx run memoflow:governance-check`
 - Some tracked known violations may still exist temporarily, but they are treated as
   explicit technical debt to remove, not as absence of the rule
+
+### Composition Ownership
+
+Long-term composition ownership lives in the **host runtime composers**, not in
+the package transport modules:
+- `apps/api/src/runtime` and `apps/desktop/src/main/runtime` select the concrete
+  adapters (Prisma / PowerSync), build repositories and runtime adapters, assemble
+  the transport-neutral feature instance, and turn it into an already-bound module
+  handle (reference: `compose-governance.ts` in both lanes).
+- Package `api` / `electron` modules are transport + lifecycle adapters only:
+  `register()` wires routes/IPC handlers and starts the pre-assembled instance,
+  `destroy()` disposes it. They never read `context.db` and never construct
+  repositories/use cases.
+- Packages expose **ingredient factories** (`create*Repositories`) through the
+  package root so hosts can select adapters without importing concrete adapter
+  classes; concrete `*PrismaRepository` / `*PowerSyncRepository` classes stay
+  internal to the package.
+- Sibling modules not yet migrated may temporarily keep composing inside
+  `register()` from `context.db`; the governance plan migration will converge
+  them onto host composers before removing that fallback.
 
 ### Client Creation Language
 

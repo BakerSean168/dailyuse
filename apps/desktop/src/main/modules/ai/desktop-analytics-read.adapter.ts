@@ -1,16 +1,35 @@
 import type { IAnalyticsReadPort } from '@memoflow/ai/ports';
 import { SearchGoalsUseCase } from '@memoflow/goal/analytics';
-import { getGoalRepository } from '@memoflow/goal/electron';
+import type { IGoalRepository } from '@memoflow/goal';
 import { GetTaskDashboardUseCase } from '@memoflow/task/analytics';
-import { getTaskTemplateRepository } from '@memoflow/task/electron';
+import type { ITaskTemplateRepository } from '@memoflow/task';
+import type { DashboardData } from '@memoflow/contracts/dashboard';
 
-import { getDesktopDashboardData } from '../../services/dashboard-read-service';
+/**
+ * Instance-bound dependencies for the desktop analytics read adapter.
+ * desktop analytics read adapter 的 instance-bound 依赖。
+ *
+ * The Goal/Task repositories are the exact instances owned by the desktop
+ * composition root, injected explicitly instead of read through package-level
+ * globals; the dashboard loader composes them with the task instance repository
+ * for the aggregation.
+ *
+ * Goal/Task 仓储是 desktop 组合根拥有的确切实例，通过显式注入而非包级全局读取；
+ * dashboard loader 在聚合时把它们与 task instance 仓储组合起来。
+ */
+export interface DesktopAnalyticsReadAdapterDependencies {
+  readonly goalRepository: IGoalRepository;
+  readonly taskTemplateRepository: ITaskTemplateRepository;
+  /** Loads the dashboard aggregation for an identity through injected repositories. 通过注入的仓储为某个 identity 加载 dashboard 聚合。 */
+  readonly dashboardDataLoader: (identityId: string) => Promise<DashboardData>;
+}
 
 export class DesktopAnalyticsReadAdapter implements IAnalyticsReadPort {
+  constructor(private readonly dependencies: DesktopAnalyticsReadAdapterDependencies) {}
+
   async buildContext(identityId: string, question: string) {
-    const goalRepository = getGoalRepository();
-    const taskTemplateRepository = getTaskTemplateRepository();
-    const dashboard = await getDesktopDashboardData(identityId);
+    const { goalRepository, taskTemplateRepository } = this.dependencies;
+    const dashboard = await this.dependencies.dashboardDataLoader(identityId);
     const taskDashboard = await new GetTaskDashboardUseCase(taskTemplateRepository).execute(
       identityId,
     );

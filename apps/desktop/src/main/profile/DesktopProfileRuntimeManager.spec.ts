@@ -8,7 +8,6 @@ import { DesktopProfileRuntimeManager } from './desktop-profile-runtime-manager'
 
 const mocks = vi.hoisted(() => ({
   shutdownPowerSync: vi.fn(),
-  stopScheduleRuntime: vi.fn(),
   moduleRegistration: vi.fn(),
   bootstrapInit: vi.fn(),
   bootstrapDestroy: vi.fn(),
@@ -41,8 +40,6 @@ vi.mock('../bootstrap', () => ({
     destroy = mocks.bootstrapDestroy;
   },
 }));
-
-vi.mock('@memoflow/schedule/electron', () => ({ stopScheduleRuntime: mocks.stopScheduleRuntime }));
 
 function sharedResolver(rootDir: string): SharedPathResolver {
   return {
@@ -131,6 +128,34 @@ describe('DesktopProfileRuntimeManager', () => {
     expect(runtime.getActiveProfileId()).toBeNull();
     expect(await registry.getActiveProfileId()).toBe(prepared.descriptor.profileId);
     expect(mocks.shutdownPowerSync).toHaveBeenCalledOnce();
+  });
+
+  it('clears shell-held references before the bootstrapper destroys modules', async () => {
+    const beforeDeactivation = vi.fn();
+    runtime.setBeforeDeactivation(beforeDeactivation);
+
+    await runtime.prepareGuestProfile();
+    await runtime.activatePreparedProfile();
+    await runtime.deactivateProfile();
+
+    expect(beforeDeactivation).toHaveBeenCalledOnce();
+    expect(beforeDeactivation.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.bootstrapDestroy.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it('fires the deactivation hook when activation fails so stale repositories are cleared', async () => {
+    const beforeDeactivation = vi.fn();
+    runtime.setBeforeDeactivation(beforeDeactivation);
+    mocks.bootstrapInit.mockRejectedValueOnce(new Error('init failed'));
+
+    await runtime.prepareGuestProfile();
+    await expect(runtime.activatePreparedProfile()).rejects.toThrow('init failed');
+
+    expect(beforeDeactivation).toHaveBeenCalledOnce();
+    expect(beforeDeactivation.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.shutdownPowerSync.mock.invocationCallOrder[0]!,
+    );
   });
 
   it('keeps local access active when cloud restore fails', async () => {

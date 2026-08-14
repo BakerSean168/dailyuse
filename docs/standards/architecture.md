@@ -41,7 +41,8 @@ infrastructure -> domain (通过 port/adapter 接口)
 - `domain-server`：纯业务逻辑，不得依赖 infra 或 framework。
 - `application-server`：编排 use case，依赖 domain-server。
 - `infrastructure-server`：技术实现（Prisma、外部 API），依赖 domain-server 接口。
-- `api/module.ts`：组合根（composition root），负责将 infra 实现注入 domain 接口。组合根位于领域包内是当前架构的务实选择，lint 规则允许 `layer:domain -> layer:infra` 以支持此模式。
+- `api/module.ts`：传输与生命周期适配器，不再承担组合根职责。feature 组装（选择 adapter → repository → application instance）由宿主 runtime composer 在 `register()` 之前完成（示范：`apps/api/src/runtime/compose-governance.ts`、`apps/desktop/src/main/runtime/compose-governance.ts`），`register()` 只做 transport 注册与模块生命周期（start/dispose）。Governance、Goal、Task 以及全部 batch 模块（account、data-portability、notification、reminder、repository、schedule、setting、AI）都已迁移到 host composer；API AI 最后一个 composition residual 已由 `2026-08-14-api-ai-composition-root-externalization.md` 关闭，`apps/api/src/runtime/compose-ai.ts` 在 API lane 拥有 Prisma 集合、服务 runtime 适配器与宿主能力 port。lint 规则允许 `layer:domain -> layer:infra` 以支持适配器选择。
+- **App-local DB context users（允许的 bootstrap context 消费者）**：API lane 只有 app-local 基础设施模块直接消费 bootstrap `context.db` —— PowerSync（`apps/api/src/modules/powersync/module.ts`）与 Dashboard（`apps/api/src/modules/dashboard/module.ts`）。feature 包 host 适配器（如 `apps/api/src/modules/ai/*.adapter.ts`）不消费 bootstrap context，其 `db`/`repositoryStorageBaseDir` 由宿主 composer（`apps/api/src/runtime/compose-ai.ts`）显式注入；同理 `@memoflow/ai` root 的 `AIService*Adapter` + `AIEvaluationReportFileAdapter` 作为宿主 composer 例外继续导出。它们不属于 transport seam，不参与 feature 组合。
 - `controllers`：传输层适配器，依赖 application-server。
 
 当前已经由 `tools/governance/package-internal-boundary-audit.mjs` 在 repo 级别执行第一层包内分层治理，并接入 `pnpm nx run memoflow:governance-check`。

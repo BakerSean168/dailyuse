@@ -17,7 +17,7 @@
 ## 模块职责
 
 - `@memoflow/contracts/governance`：治理公共契约唯一真值源
-- `@memoflow/governance`：规范化服务端组合根
+- `@memoflow/governance`：规范化服务端组合根 + 宿主装配 ingredient factory（create*Repositories / createGovernanceEventLogRuntime）
 - `@memoflow/governance/api`：HTTP API 模块
 - `@memoflow/governance/client`：Web / Desktop renderer 客户端 seam
 - `@memoflow/governance/electron`：Desktop main 入口
@@ -53,9 +53,18 @@ packages/governance/src/
 - former `domain-shared` + `domain-server` 合并为 `server/domain`
 - former `controllers` 收敛为 `server/transport`
 - 模块运行时副作用归位到 `server/infrastructure/runtime`
-- root 只暴露 `createGovernanceModule()`，不暴露技术命名工厂
+- root 暴露规范化组合根工厂 `createGovernanceModule()` 与宿主装配所需的 ingredient factory（`createGovernancePrismaRepositories` / `createGovernancePowerSyncRepositories` / `createGovernanceEventLogRuntime`）；具体 adapter class 与技术命名模块工厂（`createGovernancePrismaModule` / `createGovernancePowerSyncModule`）仍留在包内
 - governance IPC channel / payload 统一收口到 `@memoflow/contracts/governance/protocol`
 - UI display logic 不放在治理包内，app 层自行派生展示模型
+
+## Composition ownership
+
+治理的宿主装配（composition）由两个 runtime composer 完成，而不是由 `api`/`electron` module 在 register 内隐式组合：
+
+- **API lane composer**：`apps/api/src/runtime/compose-governance.ts`（Prisma）。选择 Prisma adapter → `createGovernancePrismaRepositories(db)` → `createGovernanceEventLogRuntime()` → `createGovernanceModule(...)` → `createGovernanceApiModule({ instance })`。
+- **Desktop lane composer**：`apps/desktop/src/main/runtime/compose-governance.ts`（PowerSync）。选择 PowerSync adapter → `createGovernancePowerSyncRepositories(db)` → `createGovernanceEventLogRuntime()` → `createGovernanceModule(...)` → `createGovernanceElectronModule({ instance })`。
+- 两个宿主复用同一个 transport-neutral 的 `createGovernanceModule()` / `GovernanceApplicationPort`，只替换持久化 adapter，从而从构造上保证 HTTP/IPC 行为一致。
+- `api` / `electron` module 只是 transport + lifecycle 适配器：只做路由 / IPC handler 注册与 instance 的 start/dispose，不创建 Repository、use case 或 runtime adapter。
 
 ## 活文档定位
 

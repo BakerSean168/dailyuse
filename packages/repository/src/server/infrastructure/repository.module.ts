@@ -8,14 +8,17 @@
 
 import { fail, ok, type Result } from '@memoflow/contracts/result';
 import type { RepositoryApplicationPort } from '../application';
-import { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
-import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
-import { KnowledgeNoteCommitService } from '../application/services/knowledge-note-commit.service';
+import type { IKnowledgeRepositoryConnectionService } from '../application/ports/knowledge-repository-connection.service.port';
+import type { IKnowledgeRepositoryProjectionService } from '../application/ports/knowledge-repository-projection.service.port';
+import type { IKnowledgeNoteCommitService } from '../application/ports/knowledge-note-commit.service.port';
 import type { OperationAuditRepository } from '@memoflow/patterns/operations';
 import { runTimelineQueryWithAudit } from '@memoflow/patterns/operations';
 import { OperationTimelineEntrySchema } from '@memoflow/contracts/operations';
 import type { OperationTimelineEntry } from '@memoflow/contracts/operations';
 import type { KnowledgeWriteRequestClientDTO } from '@memoflow/contracts/repository';
+import { createLogger } from '@memoflow/utils/logger';
+
+const logger = createLogger('RepositoryModule');
 
 export type RepositoryRuntimeContributionsInput =
   | RepositoryModuleRuntimeContribution
@@ -23,9 +26,9 @@ export type RepositoryRuntimeContributionsInput =
 
 export interface RepositoryModuleDependencies {
   readonly runtimeContributions?: RepositoryRuntimeContributionsInput;
-  readonly knowledgeRepositoryConnectionService?: KnowledgeRepositoryConnectionService | null;
-  readonly knowledgeRepositoryProjectionService?: KnowledgeRepositoryProjectionService | null;
-  readonly knowledgeNoteCommitService?: KnowledgeNoteCommitService | null;
+  readonly knowledgeRepositoryConnectionService?: IKnowledgeRepositoryConnectionService | null;
+  readonly knowledgeRepositoryProjectionService?: IKnowledgeRepositoryProjectionService | null;
+  readonly knowledgeNoteCommitService?: IKnowledgeNoteCommitService | null;
   /** W7：审计仓库（最小权限 + 审计） */
   readonly auditRepository?: OperationAuditRepository;
 }
@@ -36,9 +39,9 @@ export interface RepositoryModuleRuntimeContribution {
 }
 
 export interface RepositoryModuleInstance {
-  readonly knowledgeRepositoryConnectionService: KnowledgeRepositoryConnectionService | null;
-  readonly knowledgeRepositoryProjectionService: KnowledgeRepositoryProjectionService | null;
-  readonly knowledgeNoteCommitService: KnowledgeNoteCommitService | null;
+  readonly knowledgeRepositoryConnectionService: IKnowledgeRepositoryConnectionService | null;
+  readonly knowledgeRepositoryProjectionService: IKnowledgeRepositoryProjectionService | null;
+  readonly knowledgeNoteCommitService: IKnowledgeNoteCommitService | null;
   readonly api: RepositoryApplicationPort;
   start(): void;
   dispose(): void;
@@ -258,8 +261,28 @@ export function createRepositoryModule(
     api,
     start() {
       if (started) return;
+      const startedContributions: RepositoryModuleRuntimeContribution[] = [];
       for (const contribution of runtimeContributions) {
-        contribution.start();
+        try {
+          contribution.start();
+          startedContributions.push(contribution);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedContribution of [...startedContributions].reverse()) {
+            try {
+              startedContribution.stop();
+            } catch (stopError) {
+              logger.error(
+                'RepositoryModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
       started = true;
     },

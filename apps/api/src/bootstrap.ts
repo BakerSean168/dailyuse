@@ -6,16 +6,22 @@
  *
  * @example
  * ```typescript
- * const app = await new ApiBootstrapper()
- *   .register(GovernanceApiModule)
- *   .register(AccountApiModule)
+ * // Host runtime composes feature modules before registration (see
+ * // apps/api/src/runtime/compose-governance.ts and compose-account.ts);
+ * // register() only wires transport + lifecycle. 宿主 runtime 先完成 feature 装配，register 只注册 transport。
+ * const governanceApiModule = composeGovernance({ db });
+ * const accountApiModule = composeAccount({ db, cloudAuth });
+ *
+ * const app = await new ApiBootstrapper(db)
+ *   .register(governanceApiModule)
+ *   .register(accountApiModule)
  *   .init();
  *
  * app.listen(3000);
  * ```
  *
  * Residual E5b (elegance): example must name real modules registered from
- * `main.ts` (e.g. `AccountApiModule`). Do not document retired account module aliases.
+ * `main.ts` (e.g. `composeAccount`). Do not document retired account module aliases.
  */
 
 import express, { type Express, Router } from 'express';

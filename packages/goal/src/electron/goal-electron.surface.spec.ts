@@ -84,25 +84,25 @@ describe('GoalElectronModule.register() startup (W4 P2-1)', () => {
 });
 
 describe('GoalElectronModule.register() lifecycle (W4 P2-1)', () => {
-  it('actually registers IPC handlers and starts the module', async () => {
+  it('registers IPC handlers and starts the bound instance (transport-only)', async () => {
     const { createGoalElectronModule } = await import('./index');
-    const db = createPowerSyncDb();
-    const module = createGoalElectronModule({
-      taskBindingReadPort: {
-        checkActiveTaskBindings: async () => ({ hasActiveBindings: false, activeCount: 0 }),
-      },
-    });
+    const start = vi.fn();
+    const dispose = vi.fn();
+    const instance = { api: {}, start, dispose } as never;
+    const module = createGoalElectronModule({ instance });
 
     const ctx = {
-      db,
-      ipc: {},
+      db: {},
+      auth: { requireRequestContext: async () => ({ identityId: 'identity-1' }) },
     };
     expect(() => module.register(ctx as never)).not.toThrow();
+    expect(start).toHaveBeenCalledTimes(1);
 
     // IPC handlers were actually registered on the (mocked) ipcMain
     const { ipcMain } = await import('electron');
     expect((ipcMain.handle as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(0);
 
     module.destroy?.();
+    expect(dispose).toHaveBeenCalledTimes(1);
   });
 });

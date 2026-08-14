@@ -9,7 +9,10 @@ import type { DataPortabilityImportStore } from '../application/import-store/dat
 import { ExportUserDataUseCase } from '../application/use-cases/export-user-data.use-case';
 import { ImportUserDataUseCase } from '../application/use-cases/import-user-data.use-case';
 import { createPowerSyncDataPortabilityDependencies } from './powersync/powersync-export-dependencies';
-import { PowerSyncDataPortabilityImportStore } from './powersync/powersync-import-store';
+import { createPowerSyncDataPortabilityImportStore } from './powersync/powersync-import-store';
+import { createLogger } from '@memoflow/utils/logger';
+
+const logger = createLogger('DataPortabilityModule');
 
 export interface DataPortabilityModuleDependencies {
   readonly exportDependencies: DataPortabilityDependencies;
@@ -84,8 +87,28 @@ export function createDataPortabilityModule(
     },
     start(): void {
       if (started) return;
+      const startedContributions: DataPortabilityModuleRuntimeContribution[] = [];
       for (const runtime of runtimeContributions) {
-        runtime.start();
+        try {
+          runtime.start();
+          startedContributions.push(runtime);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedRuntime of [...startedContributions].reverse()) {
+            try {
+              startedRuntime.stop();
+            } catch (stopError) {
+              logger.error(
+                'DataPortabilityModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
       started = true;
     },
@@ -109,7 +132,7 @@ export function createPowerSyncDataPortabilityModule(
 ): DataPortabilityModuleInstance {
   return createDataPortabilityModule({
     exportDependencies: createPowerSyncDataPortabilityDependencies(db),
-    importStore: new PowerSyncDataPortabilityImportStore(db),
+    importStore: createPowerSyncDataPortabilityImportStore(db),
     runtimeContributions: options.runtimeContributions,
   });
 }

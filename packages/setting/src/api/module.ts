@@ -1,28 +1,90 @@
 /**
- * Setting API Module Definition
+ * Setting API Transport Module Factory
+ * 设置 API 传输模块工厂
  *
- * 实现 IApiModule 标准接口，内部自治完成：
- * 1. Composition Root（创建 Repo → UseCase → Handler）
- * 2. 路由定义与挂载
- * 3. 初始化任务注册
+ * This module is a transport adapter, NOT a composition root:
+ * it only wires an already-assembled `SettingModuleInstance` onto the Express
+ * router and owns that instance's start/dispose lifecycle.
  *
- * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
+ * 本模块是传输适配器，而不是组合根：
+ * 它只负责把已装配好的 `SettingModuleInstance` 挂到 Express 路由上，
+ * 并托管该实例的 start/dispose 生命周期。
+ *
+ * The host (apps/api) is responsible for composition: it selects the Prisma
+ * adapters, builds the repository set and runtime contributions, calls
+ * `createSettingModule(...)`, and passes the resulting instance in through
+ * `SettingApiModuleOptions`. This factory never reads `context.db`, never
+ * constructs repositories/use cases, and never starts a runtime adapter.
+ *
+ * 宿主（apps/api）负责组合：选择 Prisma 适配器、构建 repository set 与
+ * runtime contribution、调用 `createSettingModule(...)`，再把组装结果通过
+ * `SettingApiModuleOptions` 传入。本工厂不读取 `context.db`，不创建
+ * repository/use case，也不启动任何 runtime adapter。
+ *
+ * `instance.api` is the HTTP/IPC-shared application seam
+ * (`SettingApplicationPort`). Both the API transport (this module) and the
+ * Electron IPC transport consume the same port, so behaviour parity across
+ * hosts is guaranteed by construction.
+ *
+ * `instance.api` 是 HTTP/IPC 共用的应用 seam（`SettingApplicationPort`）。
+ * API 传输层（本模块）与 Electron IPC 传输层消费同一个 port，
+ * 从而从构造上保证跨宿主行为一致。
+ *
+ * Per-handle state machine (`created -> registered | failed`, then any state
+ * -> `disposed`):
+ * - register(): only allowed from `created`. Builds the routes from
+ *   `instance.api`, calls `instance.start()`, and ONLY THEN mounts them at
+ *   `/settings` — a failed start happens before any `router.use(...)` call,
+ *   so the host router never observes a route for a handle that did not start.
+ *   On success the handle moves to `registered`; a second register() throws.
+ *   On any failure it cleans up (best-effort dispose, logged if dispose itself
+ *   throws), moves to `failed`, and rethrows the ORIGINAL error.
+ * - destroy(): always allowed and always idempotent. A handle in `failed` is a
+ *   terminal no-op too. For a live handle the state is set to `disposed`
+ *   BEFORE `instance.dispose()` runs, so a reentrant/retry destroy stays a
+ *   no-op even if dispose throws (destroy may propagate that error).
+ *
+ * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
+ * `disposed`）：
+ * - register()：仅允许从 `created` 进入。用 `instance.api` 构建路由、调用
+ *   `instance.start()`，之后才挂载到 `/settings`——start 失败发生在任何
+ *   `router.use(...)` 之前。成功则进入 `registered`，重复 register() 抛错；
+ *   任何失败先清理（best-effort dispose，若 dispose 自身抛错则记录日志），
+ *   进入 `failed` 并重新抛出原始错误。
+ * - destroy()：任何状态都允许，且始终幂等。处于 `failed` 的 handle 也是
+ *   终态 no-op。对存活 handle，在 `instance.dispose()` 执行前先把状态置为
+ *   `disposed`，因此即使 dispose 抛错（该错误可向外传播），重入/重试 destroy
+ *   仍为 no-op。
  */
 
-import type { PrismaClient } from '@memoflow/database';
 import type { ServerModuleContext } from '@memoflow/contracts/shared';
-import {
-  createSettingPrismaModule,
-  type SettingModuleInstance,
-} from '../server/infrastructure';
+import { createLogger } from '@memoflow/utils/logger';
+import type { SettingModuleInstance } from '../server/infrastructure';
 import { registerSettingRoutes } from './routes';
-import { createSettingRuntimeContribution } from '../server/infrastructure/runtime';
+
+const logger = createLogger('SettingApi');
 
 /**
- * Typed module context for setting registration.
- * Extends the shared ServerModuleContext with PrismaClient as the db type.
+ * Per-handle lifecycle state. Only 'created' may enter 'registered' (or
+ * 'failed' on a registration error); any state may end in 'disposed'.
+ *
+ * 每个 handle 的生命周期状态。只有 'created' 可以进入 'registered'
+ * （或注册失败时进入 'failed'）；任意状态都可以结束于 'disposed'。
  */
-export type SettingApiModuleContext = ServerModuleContext<PrismaClient>;
+type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
+
+/**
+ * Transport-only context for setting registration.
+ * Deliberately picks no `db`: the api module never needs persistence, and this
+ * keeps the seam from becoming a second composition root.
+ *
+ * 设置注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
+ * 这也避免该 seam 变成第二个组合根。
+ */
+export type SettingApiModuleContext = Pick<
+  ServerModuleContext<unknown>,
+  'app' | 'router' | 'middleware' | 'openApiRegistry'
+>;
 
 export interface SettingApiModuleDef {
   readonly name: string;
@@ -30,31 +92,86 @@ export interface SettingApiModuleDef {
   destroy?(): void;
 }
 
-let activeSettingModule: SettingModuleInstance | null = null;
+/**
+ * Options carrying the already-assembled setting instance.
+ * 携带已装配设置实例的选项。
+ */
+export interface SettingApiModuleOptions {
+  readonly instance: SettingModuleInstance;
+}
 
-export const SettingApiModule: SettingApiModuleDef = {
-  name: 'Setting',
+/**
+ * Creates the setting API transport module handle.
+ * 创建设置 API 传输模块 handle。
+ *
+ * Turns an already-assembled `SettingModuleInstance` into an
+ * `IApiModule`-compatible handle. The handle is a transport adapter, not a
+ * composition root: it only registers routes and owns start/dispose lifecycle.
+ *
+ * 把已装配的 `SettingModuleInstance` 变成兼容 `IApiModule` 的 handle。
+ * 该 handle 是传输适配器而非组合根：只注册路由并托管 start/dispose 生命周期。
+ *
+ * @param options - Options carrying the assembled setting instance.
+ * @returns An IApiModule-compatible handle bound to the instance.
+ */
+export function createSettingApiModule(options: SettingApiModuleOptions): SettingApiModuleDef {
+  if (!options?.instance) {
+    throw new Error('[FAIL-CLOSED] createSettingApiModule requires options.instance');
+  }
+  let state: ModuleHandleState = 'created';
 
-  register(context) {
-    const { router, middleware, db } = context;
+  return {
+    name: 'Setting',
 
-    const settingModule = createSettingPrismaModule(db, {
-      runtimeContributions: createSettingRuntimeContribution(),
-    });
-    activeSettingModule = settingModule;
-    settingModule.start();
+    register(context) {
+      if (state !== 'created') {
+        throw new Error(
+          `SettingApiModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
+        );
+      }
 
-    const settingRoutes = registerSettingRoutes(
-      settingModule.api,
-      middleware,
-      context.openApiRegistry,
-    );
+      const { router, middleware, openApiRegistry } = context;
 
-    router.use('/settings', settingRoutes);
-  },
+      try {
+        // Build the routes BEFORE starting the instance and BEFORE mounting:
+        // a failed start must not leave any route installed on the host router.
+        const settingRoutes = registerSettingRoutes(
+          options.instance.api,
+          middleware,
+          openApiRegistry,
+        );
 
-  destroy() {
-    activeSettingModule?.dispose();
-    activeSettingModule = null;
-  },
-};
+        options.instance.start();
+
+        const stackLen = router.stack.length;
+        try {
+          router.use('/settings', settingRoutes);
+        } catch (mountError) {
+          router.stack.length = stackLen;
+          throw mountError;
+        }
+
+        state = 'registered';
+      } catch (error) {
+        state = 'failed';
+        try {
+          options.instance.dispose();
+        } catch (disposeError) {
+          logger.error(
+            'SettingApiModule: instance dispose failed during failed registration',
+            disposeError,
+          );
+        }
+        throw error;
+      }
+    },
+
+    destroy() {
+      if (state === 'disposed' || state === 'failed') {
+        return;
+      }
+      state = 'disposed';
+      options.instance.dispose();
+    },
+  };
+}

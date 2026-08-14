@@ -2,20 +2,17 @@
  * Task API Module Exports.
  * 任务 API 模块导出。
  *
- * Public API surface for task module integration.
- * 任务模块集成的公开 API 表面。
+ * Transport-only API module surface — composition happens in the apps/api
+ * runtime composer; this seam only exposes the instance-bound factory.
+ * 传输专用 API 模块表面 — 组装发生在 apps/api runtime composer；
+ * 本 seam 只暴露绑定实例的工厂。
  *
- * apps/api only needs one line:
- * apps/api 只需一行代码：
- * ```typescript
- * .register(TaskApiModule)
- * ```
- *
- * Route prefixes:
- * 路由前缀：
- * - /tasks (primary 主路径)
+ * Route prefixes (fixed, set by registerTaskRoutes):
+ * 路由前缀（固定，由 registerTaskRoutes 设定）：
+ * - /task-templates
+ * - /task-instances
+ * - /tasks
  */
 
-export { TaskApiModule, createTaskApiModule } from './module';
-export type { TaskApiModuleContext, TaskApiModuleOptions } from './module';
-export type { TaskApiModuleDef } from './module';
+export { createTaskApiModule } from './module';
+export type { TaskApiModuleContext, TaskApiModuleDef, TaskApiModuleOptions } from './module';

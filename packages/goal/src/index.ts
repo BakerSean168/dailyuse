@@ -17,16 +17,27 @@ export {
   createGoalPrismaRepositories,
   createGoalTaskProgressPrismaHandler,
   createGoalPowerSyncModule,
+  createGoalPowerSyncRepositories,
   createGoalTaskProgressPowerSyncHandler,
   createGoalRuntimeContribution,
+  createGoalEventListenersRuntime,
   createGoalUseCases,
+  normalizeGoalRuntimeContributions,
   type GoalApplicationPort,
   type GoalModuleDependencies,
   type GoalModuleInstance,
   type GoalModuleRuntimeContribution,
   type GoalModuleUseCases,
   type GoalRuntimeContributionsInput,
+  type GoalRepositorySet,
+  type GoalEventListenersRuntime,
+  type IGoalRepository,
+  type IGoalRecordRepository,
+  type IGoalFolderRepository,
+  type IFocusModeRepository,
 } from './server';
+export type { IHabitRepository } from './server/application/use-cases/commands/habit.use-cases';
+export type { GoalWriteTransactionRunner } from './server/application/use-cases/commands/goal-write-support';
 
 export {
   GoalTaskProgressHandler,

@@ -1,8 +1,14 @@
 /**
  * Account API Module
+ * 账户 API 模块
  *
- * Entry point for the Account API module. Exposes an ApiBootstrapper via register().
+ * Exposes the instance-bound account API transport factory for apps/api.
+ * 为 apps/api 暴露实例绑定的账户 API 传输工厂。
  */
 
-export { AccountApiModule, createAccountApiModule } from './module';
-export type { AccountApiModuleContext, AccountApiModuleDef } from './module';
+export { createAccountApiModule } from './module';
+export type {
+  AccountApiModuleContext,
+  AccountApiModuleDef,
+  AccountApiModuleOptions,
+} from './module';

@@ -4,10 +4,8 @@ import type { Result } from '@memoflow/contracts/result';
 import { fail } from '@memoflow/contracts/result';
 import { formatZodErrors } from '@memoflow/utils/result';
 import type { UpdateAccountProfileUseCase } from '../server/application';
-import type {
-  PowerSyncAccountRepository,
-  Transactional,
-} from '../server/infrastructure';
+import type { IAccountRepository } from '../server/domain';
+import type { Transactional } from '../server/infrastructure';
 
 interface PendingProfileSyncRow {
   owner_id: string;
@@ -34,7 +32,7 @@ export interface DesktopAccountProfileSyncOptions {
 export class DesktopAccountProfileSync {
   constructor(
     private readonly db: Transactional,
-    private readonly repository: PowerSyncAccountRepository,
+    private readonly repository: IAccountRepository,
     private readonly updateProfileUseCase: UpdateAccountProfileUseCase,
     private readonly options: DesktopAccountProfileSyncOptions,
   ) {}

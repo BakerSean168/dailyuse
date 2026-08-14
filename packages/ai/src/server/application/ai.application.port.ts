@@ -37,10 +37,32 @@ import type {
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
 } from '@memoflow/contracts/ai';
+import type { IAgentCheckpointPort, ILangGraphCheckpointPort } from './ports';
 
-/** Transport-neutral callable application surface. */
+/**
+ * Transport-neutral callable application surface.
+ * 传输无关的可调用应用表面。
+ */
 export interface AIApplicationPort {
   getCapabilities(): Promise<Result<AICapabilities>>;
+
+  /**
+   * Optional internal checkpoint surface (API / Prisma lane only).
+   * 可选内部 checkpoint surface（仅 API / Prisma lane）。
+   *
+   * Present only when the host supplies the all-or-none checkpoint pair.
+   * Desktop supplies neither port, so this stays `undefined` there. The API
+   * transport wires both internal checkpoint controllers from this nested
+   * surface instead of constructing database adapters directly.
+   *
+   * 仅当宿主提供完整的 checkpoint pair 时存在。Desktop 两者都不提供，因此这里为
+   * `undefined`。API transport 从此嵌套 surface 接线两个内部 checkpoint
+   * controller，而不是直接构造数据库适配器。
+   */
+  readonly checkpoints?: {
+    readonly agent: IAgentCheckpointPort;
+    readonly langGraph: ILangGraphCheckpointPort;
+  };
 
   // Provider config
   createProvider(

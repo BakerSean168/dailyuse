@@ -2,11 +2,13 @@
  * API Server Entry Point
  *
  * 使用 ApiBootstrapper 的白名单注册机制启动服务，
- * 每个模块实现 IApiModule 接口，自治管理依赖和路由。
+ * 每个模块实现 IApiModule 接口。
  *
  * 模块注册策略：
- * - 每个模块实现 IApiModule 接口（如 GovernanceApiModule）
- * - 模块内部自行管理数据库访问（通过 @memoflow/database）
+ * - 每个模块实现 IApiModule 接口
+ * - 宿主（本文件 runtime 层）负责 feature 装配：治理的 adapter/application
+ *   组装由 apps/api/src/runtime/compose-governance.ts 完成（选择 Prisma repository
+ *   → event-log runtime → createGovernanceModule），模块只注册 transport 与生命周期
  * - 故障模块：注释掉即可，不影响其他模块启动
  */
 
@@ -26,8 +28,15 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
-import { GovernanceApiModule } from '@memoflow/governance/api';
-import { createAccountApiModule } from '@memoflow/account/api';
+import { composeGovernance } from './runtime/compose-governance';
+import { composeAccount } from './runtime/compose-account';
+import { composeNotification } from './runtime/compose-notification';
+import { composeReminder } from './runtime/compose-reminder';
+import { composeRepository } from './runtime/compose-repository';
+import { composeSchedule } from './runtime/compose-schedule';
+import { composeSetting } from './runtime/compose-setting';
+import { composeDataPortability } from './runtime/compose-data-portability';
+import { composeAI } from './runtime/compose-ai';
 import {
   AccountClosedWorker,
   PrismaAccountClosureOperationRepository,
@@ -41,39 +50,24 @@ import {
   createCloudAuthEmailDelivery,
   createCloudAuthEmailLinkCapture,
 } from '@memoflow/cloud-auth/server';
-import { createGoalApiModule } from '@memoflow/goal/api';
+import { composeGoal } from './runtime/compose-goal';
 import { PrismaTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
 import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
-import { createNotificationApiModule } from '@memoflow/notification/api';
-import { createNotificationPrismaScheduleNotificationPort } from '@memoflow/notification/schedule-execution';
-import { createReminderApiModule } from '@memoflow/reminder/api';
-import { createReminderPrismaScheduleExecutionSource } from '@memoflow/reminder/schedule-execution';
-import { createReminderPrismaScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
-import { createRepositoryApiModule } from '@memoflow/repository/api';
 import { resolveRepositoryStorageBaseDir } from '@memoflow/repository';
-import { createScheduleTaskPrismaRepository } from '@memoflow/schedule';
-import { PrismaOutboxWriter } from './outbox/prisma-outbox-writer';
-import { createScheduleApiModule } from '@memoflow/schedule/api';
+import { createSchedulePrismaRepositories } from '@memoflow/schedule';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
-import { SettingApiModule } from '@memoflow/setting/api';
-import { DataPortabilityApiModule } from '@memoflow/data-portability/api';
 import { createTaskPrismaScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPrismaScheduleProjectionSource } from '@memoflow/task/schedule-projection';
-import { createAIApiModule, type AIApiModuleContext } from '@memoflow/ai/api';
-import { createTaskApiModule } from '@memoflow/task/api';
+import { composeTask } from './runtime/compose-task';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
-import { ControlledAnalyticsReadAdapter } from './modules/ai/controlled-analytics-read.adapter';
-import { BackendAutomationToolExecutorAdapter } from './modules/ai/backend-automation-tool-executor.adapter';
-import { RepositoryKnowledgeNotePersistenceAdapter } from './modules/ai/repository-knowledge-note-persistence.adapter';
-import { RepositoryKnowledgeSourceAdapter } from './modules/ai/repository-knowledge-source.adapter';
-import { RepositoryKnowledgeIndexStatusAdapter } from './modules/ai/repository-knowledge-index-status.adapter';
 import { RepositoryKnowledgeCloudDataPurgerAdapter } from './modules/ai/repository-knowledge-cloud-data-purger.adapter';
 import { createCronScheduler } from './shared/infrastructure/cron/index.js';
 import type { CronSchedulerManager } from './shared/infrastructure/cron/index.js';
+import { PrismaOutboxWriter } from './outbox/prisma-outbox-writer';
 
 // 初始化日志系统
 initializeLogger();
@@ -145,92 +139,98 @@ async function bootstrap(): Promise<void> {
 
   // 2. 白名单注册 & 启动
   bootstrapper = new ApiBootstrapper(prisma, cloudAuth, testEmailLinks);
-  const scheduleTaskRepository = createScheduleTaskPrismaRepository(
-    prisma,
-    // R1-2：事件总线失败时兜底到 durable outbox（重试/对账）。
-    new PrismaOutboxWriter(prisma),
-  );
-  const scheduleOrchestrationModule = createScheduleOrchestrationModule({
-    taskProjection: {
-      source: createTaskPrismaScheduleProjectionSource(prisma),
-      scheduleTaskRepository,
-    },
-    goalProjection: {
-      source: createGoalPrismaScheduleProjectionSource(prisma),
-      scheduleTaskRepository,
-    },
-    reminderProjection: {
-      source: createReminderPrismaScheduleProjectionSource(prisma),
-      scheduleTaskRepository,
-    },
-    execution: {
-      taskSource: createTaskPrismaScheduleExecutionSource(prisma),
-      goalSource: createGoalPrismaScheduleExecutionSource(prisma),
-      reminderSource: createReminderPrismaScheduleExecutionSource(prisma),
-      notificationPort: createNotificationPrismaScheduleNotificationPort(prisma, accountActiveChecker),
-    },
+
+  // Step C：宿主 runtime 负责 feature 装配。所有 remaining 模块（account /
+  // notification / reminder / repository / schedule / setting / data-portability）
+  // 都通过 runtime composer 组装成已绑定实例的 module handle，再按原注册顺序注册。
+  const accountApiModule = composeAccount({
+    db: prisma,
+    cloudAuth,
   });
-  const taskApiModule = createTaskApiModule({
-    runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
-    goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
+  const notificationApiModule = composeNotification({
+    db: prisma,
+    closureChecker: accountActiveChecker,
+    channelCapabilities: [
+      {
+        channelType: 'InApp',
+        status: 'available',
+        requiredInProduction: true,
+      },
+    ],
   });
-  const scheduleApiModule = createScheduleApiModule({
-    sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
+  const reminderApiModule = composeReminder({
+    db: prisma,
+    closureChecker: accountActiveChecker,
   });
-  const repositoryApiModule = createRepositoryApiModule({
+  const repositoryApiModule = composeRepository({
+    db: prisma,
     storageBaseDir: repositoryStorageBaseDir,
     closureChecker: accountActiveChecker,
     githubApp: getGithubAppConfig() ?? undefined,
     knowledgeRepositoryCloudDataPurger: new RepositoryKnowledgeCloudDataPurgerAdapter(prisma),
   });
-  const AIApiModule = createAIApiModule({
-    createKnowledgeNotePersistence: (_context: AIApiModuleContext) => {
-      const repositoryApi = repositoryApiModule.getApplicationPort();
-      if (!repositoryApi) {
-        throw new Error('Repository application port is unavailable while composing AI');
-      }
-      return new RepositoryKnowledgeNotePersistenceAdapter(repositoryApi);
+  const settingApiModule = composeSetting({ db: prisma });
+  const dataPortabilityApiModule = composeDataPortability({ db: prisma });
+
+  // Schedule 两阶段装配：先创建一次 schedule 仓储集合，把其中的
+  // scheduleTaskRepository 交给 schedule orchestration（产出 sourceExecutor），
+  // 再把同一集合与 sourceExecutor 交给 composeSchedule —— 全程只有一个集合。
+  // 事件总线失败时兜底到 durable outbox（R1-2 merge-base 行为）。
+  const scheduleRepositorySet = createSchedulePrismaRepositories(prisma, {
+    outboxWriter: new PrismaOutboxWriter(prisma),
+  });
+  const scheduleOrchestrationModule = createScheduleOrchestrationModule({
+    taskProjection: {
+      source: createTaskPrismaScheduleProjectionSource(prisma),
+      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
-    createKnowledgeSourcePort: (context: AIApiModuleContext) =>
-      new RepositoryKnowledgeSourceAdapter(context.db, repositoryStorageBaseDir),
-    createKnowledgeIndexStatusPort: () => {
-      const repositoryApi = repositoryApiModule.getApplicationPort();
-      if (!repositoryApi) {
-        throw new Error('Repository application port is unavailable while composing AI indexing');
-      }
-      return new RepositoryKnowledgeIndexStatusAdapter(repositoryApi);
+    goalProjection: {
+      source: createGoalPrismaScheduleProjectionSource(prisma),
+      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
-    createAnalyticsReadPort: (context: AIApiModuleContext) =>
-      new ControlledAnalyticsReadAdapter(context.db),
-    createAutomationToolExecutor: (context: AIApiModuleContext) =>
-      new BackendAutomationToolExecutorAdapter(context.db, repositoryStorageBaseDir),
+    reminderProjection: {
+      source: reminderApiModule.scheduleProjectionSource,
+      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
+    },
+    execution: {
+      taskSource: createTaskPrismaScheduleExecutionSource(prisma),
+      goalSource: createGoalPrismaScheduleExecutionSource(prisma),
+      reminderSource: reminderApiModule.scheduleExecutionSource,
+      notificationPort: notificationApiModule.scheduleNotificationPort,
+    },
+  });
+  const scheduleApiModule = composeSchedule({
+    repositories: scheduleRepositorySet,
+    sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
+  });
+  const taskApiModule = composeTask({
+    db: prisma,
+    runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
+    goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
+  });
+  const aiApiModule = composeAI({
+    db: prisma,
+    repositoryApiPort: repositoryApiModule.getApplicationPort(),
+    repositoryStorageBaseDir,
+  });
+  const governanceApiModule = composeGovernance({ db: prisma });
+  const goalApiModule = composeGoal({
+    db: prisma,
+    taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
   });
   const app = await bootstrapper
     // === 核心：白名单注册 ===
-    .register(GovernanceApiModule) // ✅ 治理模块
-    .register(createAccountApiModule({ cloudAuth })) // ✅ 账户模块
-    // 架构决策 A：apps/api（API lane）显式声明其自治掌控的 InApp 渠道 capability。
-    // Desktop/Push 渠道 capability 归属于桌面 Desktop lane，单机 API lane 不处理跨进程 Native Notification。
-    .register(
-      createNotificationApiModule({
-        closureChecker: accountActiveChecker,
-        channelCapabilities: [
-          {
-            channelType: 'InApp',
-            status: 'available',
-            requiredInProduction: true,
-          },
-        ],
-      }),
-    ) // ✅ 通知模块
-    .register(createReminderApiModule({ closureChecker: accountActiveChecker })) // ✅ 提醒模块
-    .register(repositoryApiModule) // ✅ 仓库模块
-    .register(scheduleApiModule) // ✅ 日程模块
-    .register(SettingApiModule) // ✅ 设置模块
+    .register(governanceApiModule) // ✅ 治理模块 (runtime composer)
+    .register(accountApiModule) // ✅ 账户模块 (runtime composer)
+    .register(notificationApiModule.module) // ✅ 通知模块 (runtime composer)
+    .register(reminderApiModule.module) // ✅ 提醒模块 (runtime composer)
+    .register(repositoryApiModule) // ✅ 仓库模块 (runtime composer)
+    .register(scheduleApiModule.module) // ✅ 日程模块 (runtime composer)
+    .register(settingApiModule) // ✅ 设置模块 (runtime composer)
     .register(taskApiModule) // ✅ 任务模块
-    .register(AIApiModule) // ✅ AI 模块
-    .register(createGoalApiModule({ taskBindingReadPort: new PrismaTaskBindingReadPort(prisma) })) // ✅ 目标模块
-    .register(DataPortabilityApiModule) // ✅ 数据导入导出模块
+    .register(aiApiModule) // ✅ AI 模块 (runtime composer)
+    .register(goalApiModule) // ✅ 目标模块
+    .register(dataPortabilityApiModule.module) // ✅ 数据导入导出模块 (runtime composer)
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块
     .register(DashboardApiModule) // ✅ 仪表盘聚合模块
     .init();

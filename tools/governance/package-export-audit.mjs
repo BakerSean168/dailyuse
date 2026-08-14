@@ -11,6 +11,31 @@ import path from 'node:path';
 const ROOT = path.join(import.meta.dirname, '..', '..');
 const PACKAGES = path.join(ROOT, 'packages');
 const infraForbiddenNameRegex = /(Prisma|PowerSync|Adapter|Repository)$/;
+
+/**
+ * Documented root-export exceptions (batch composition-root externalization,
+ * docs/plan/active/2026-08-14-batch-composition-root-externalization.md §3.5.1).
+ * The desktop AI composer (`apps/desktop/src/main/runtime/compose-ai.ts`) must
+ * construct the service runtime adapters from the host-owned runtime config, so
+ * those concrete `AIService*Adapter` classes are intentionally exported from
+ * `@memoflow/ai` root. `DirectProvider*Adapter` were removed from the root
+ * barrel during the batch (the leak is fixed); they are deliberately NOT
+ * whitelisted here so any reintroduction fails this audit.
+ */
+const DOCUMENTED_ROOT_CONCRETE_EXPORTS = {
+  ai: new Set([
+    'AIEvaluationReportFileAdapter',
+    'AIServiceAgentRuntimeAdapter',
+    'AIServiceAnalyticsQueryAdapter',
+    'AIServiceChatExecutionAdapter',
+    'AIServiceGoalAutomationAdapter',
+    'AIServiceGoalPlanningAdapter',
+    'AIServiceKnowledgeIngestionAdapter',
+    'AIServiceKnowledgeNoteGenerationAdapter',
+    'AIServiceKnowledgeQueryAdapter',
+  ]),
+};
+
 const APPLICATION_BARREL_SPECIFIERS = ['./application-server', './server/application'];
 const INFRA_BARREL_SPECIFIERS = ['./infrastructure-server', './server/infrastructure'];
 const API_BARREL_FORBIDDEN_SERVER_SPECIFIER_REGEX =
@@ -119,8 +144,9 @@ function auditRootBarrel(pkg, violations) {
     let match;
     while ((match = namedExportPattern.exec(content)) !== null) {
       const names = match[1].split(',').map((name) => name.trim());
+      const documented = DOCUMENTED_ROOT_CONCRETE_EXPORTS[pkg] ?? new Set();
       for (const name of names) {
-        if (infraForbiddenNameRegex.test(name) && !/^create/i.test(name)) {
+        if (infraForbiddenNameRegex.test(name) && !/^create/i.test(name) && !documented.has(name)) {
           violations.push(`${rel} re-exports infra concrete '${name}' from ${specifier} (forbidden)`);
         }
       }
