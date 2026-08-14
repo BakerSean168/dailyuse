@@ -1,46 +1,112 @@
 /**
- * Notification Module — Electron Entry Point.
- * 通知模块 — Electron 入口点。
+ * Notification Electron Transport Module Factory
+ * 通知 Electron 传输模块工厂
  *
- * Self-contained notification runtime assembly for Electron main process.
- * 通知模块在 Electron 主进程中的自包含运行时组装。
- * Instantiates PowerSync repositories through the module factory,
- * and registers IPC handlers using the NotificationController.
- * 通过模块工厂实例化 PowerSync 仓储，并使用 NotificationController 注册 IPC 处理器。
+ * This module is a transport adapter, NOT a composition root:
+ * it only wires an already-assembled `NotificationModuleInstance` onto
+ * Electron's `ipcMain` and owns that instance's start/dispose lifecycle.
  *
- * @module notification/electron
+ * 本模块是传输适配器，而不是组合根：
+ * 它只负责把已装配好的 `NotificationModuleInstance` 挂到 Electron 的
+ * `ipcMain` 上，并托管该实例的 start/dispose 生命周期。
+ *
+ * The host (apps/desktop) is responsible for composition: it selects the
+ * PowerSync adapters, builds repositories, the closure checker, channel
+ * capabilities and the native desktop transport, and calls
+ * `createNotificationModule(...)`. Those host capabilities are already encoded
+ * in the instance — this factory never reads them from context, never reads
+ * `ctx.db`, never constructs repositories/use cases, and never starts a runtime
+ * adapter.
+ *
+ * 宿主（apps/desktop）负责组合：选择 PowerSync 适配器、构建 repository、
+ * closure checker、channel capabilities 与原生 desktop transport，并调用
+ * `createNotificationModule(...)`。这些宿主能力已编码在实例中——本工厂绝不
+ * 从 context 读取它们、绝不读取 `ctx.db`、不创建 repository/use case，也不
+ * 启动任何 runtime adapter。
+ *
+ * `instance.api` is the HTTP/IPC-shared application seam
+ * (`NotificationApplicationPort`). Both the Express API transport and this
+ * Electron IPC transport consume the same port, so behaviour parity across
+ * hosts is guaranteed by construction.
+ *
+ * `instance.api` 是 HTTP/IPC 共用的应用 seam（`NotificationApplicationPort`）。
+ * Express API 传输层与本 Electron IPC 传输层消费同一个 port，
+ * 从而从构造上保证跨宿主行为一致。
+ *
+ * Channel ownership: this handle installs and cleans up ONLY the core CRUD /
+ * preferences channels below. The custom-renderer channels
+ * (`CUSTOM_RECEIVE`/`CUSTOM_CLICK`/`CUSTOM_CLOSE`/`CUSTOM_RESIZE`/
+ * `CUSTOM_MOUSE_ENTER`/`CUSTOM_MOUSE_LEAVE`/`CUSTOM_RENDERER_READY`) are
+ * installed by the desktop `custom-notification.manager`, which remains their
+ * owner — this module must never remove channels it did not install. `destroy`
+ * therefore removes exactly the core channels this handle registered.
+ *
+ * 通道归属：本 handle 只安装并清理下列核心 CRUD / preferences 通道。
+ * custom-renderer 通道（`CUSTOM_RECEIVE`/`CUSTOM_CLICK`/`CUSTOM_CLOSE`/
+ * `CUSTOM_RESIZE`/`CUSTOM_MOUSE_ENTER`/`CUSTOM_MOUSE_LEAVE`/
+ * `CUSTOM_RENDERER_READY`）由桌面 `custom-notification.manager` 安装，其归属
+ * 仍是该 manager——本模块绝不能移除未由本模块安装的通道。因此 `destroy`
+ * 只移除本 handle 注册的核心通道。
+ *
+ * Per-handle state machine (`created -> registered | failed`, then any state
+ * -> `disposed`):
+ * - register(): only allowed from `created`. Builds the controller from
+ *   `instance.api`, registers all core IPC handlers, then calls
+ *   `instance.start()` — channel registration happens BEFORE start, so a
+ *   handler-build failure leaves no runtime side effects. On success the handle
+ *   moves to `registered`; a second register() throws. On any failure it
+ *   reverses exactly the channels installed by THIS call, best-effort disposes
+ *   the instance (logged if dispose itself throws), moves to `failed`, and
+ *   rethrows the ORIGINAL error. A failed handle must not be re-registered.
+ * - destroy(): always allowed and always idempotent. A handle in `failed` is a
+ *   terminal no-op too. For a live handle it first removes all core
+ *   notification channels, then sets the state to `disposed` BEFORE
+ *   `instance.dispose()` runs, so a reentrant/retry destroy stays a no-op even
+ *   if dispose throws (destroy may propagate that error).
+ *
+ * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
+ * `disposed`）：
+ * - register()：仅允许从 `created` 进入。用 `instance.api` 构建 controller、
+ *   注册全部核心 IPC handler，然后调用 `instance.start()`——handler 先于
+ *   start 注册，因此 handler 注册失败不会留下任何 runtime 副作用。成功则进入
+ *   `registered`，重复 register() 抛错；任何失败会逆向移除本次调用已安装的
+ *   通道、best-effort dispose 实例（若 dispose 自身抛错则记录日志）、进入
+ *   `failed` 并重新抛出原始错误。failed 的 handle 不得再次注册。
+ * - destroy()：任何状态都允许，且始终幂等。处于 `failed` 的 handle 也是
+ *   终态 no-op。对存活 handle，先移除全部核心通知通道，再把状态置为
+ *   `disposed` 之后再调用 `instance.dispose()`，因此即使 dispose 抛错（该错误
+ *   可向外传播），重入/重试 destroy 仍为 no-op。
  */
 
 import { ipcMain } from 'electron';
 import {
   NotificationChannels,
-  type IElectronModule,
   type IElectronModuleContext,
 } from '@memoflow/contracts/electron';
 import { fail, ok } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import { createPowerSyncClosureChecker } from '../server/infrastructure/powersync';
 import { CreateNotificationUseCase } from '../commands';
 import type { ScheduleNotificationPort } from '../schedule-execution';
 import {
-  createNotificationPowerSyncModule,
   PowerSyncNotificationPreferenceRepository,
   PowerSyncNotificationRepository,
   PowerSyncNotificationTemplateRepository,
 } from '../server/infrastructure';
-import { createLogger } from '@memoflow/utils/logger';
-import {
-  type NotificationModuleInstance,
-} from '../server/infrastructure';
-import type { INotificationRepository } from '../server/domain/repositories';
+import type { NotificationModuleInstance } from '../server/infrastructure';
 import { NotificationController } from '../server/transport';
 import { withAuthenticatedIdentity, withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('NotificationElectron');
 
-// Destroy tears down the full NotificationChannels surface.
-// Core CRUD handlers are registered here; custom renderer channels are registered by
-// desktop custom-notification.manager but share this cleanup set.
-const allChannels = [
+/**
+ * Core channels installed by this handle. Custom-renderer channels are owned by
+ * the desktop `custom-notification.manager` and deliberately excluded.
+ *
+ * 本 handle 安装的核心通道。custom-renderer 通道归属桌面
+ * `custom-notification.manager`，刻意不在此列。
+ */
+const coreChannels = [
   NotificationChannels.LIST,
   NotificationChannels.GET,
   NotificationChannels.CREATE,
@@ -51,6 +117,17 @@ const allChannels = [
   NotificationChannels.GET_UNREAD_COUNT,
   NotificationChannels.PREFERENCES_GET,
   NotificationChannels.PREFERENCES_UPDATE,
+] as const;
+
+/**
+ * Custom-renderer channels owned by the desktop custom-notification.manager.
+ * Referenced here to document ownership; this handle never installs or removes
+ * them. Kept as a single source of truth for the surface spec.
+ *
+ * custom-renderer 通道归属桌面 custom-notification.manager。在此引用仅为记录
+ * 归属；本 handle 绝不安装或移除它们。作为 surface spec 的唯一事实来源保留。
+ */
+export const notificationCustomRendererChannels = [
   NotificationChannels.CUSTOM_RECEIVE,
   NotificationChannels.CUSTOM_CLICK,
   NotificationChannels.CUSTOM_CLOSE,
@@ -59,16 +136,28 @@ const allChannels = [
   NotificationChannels.CUSTOM_MOUSE_LEAVE,
   NotificationChannels.CUSTOM_RENDERER_READY,
 ] as const;
-let activeNotificationModule: NotificationModuleInstance | null = null;
 
-export function getNotificationRepository(): INotificationRepository {
-  if (!activeNotificationModule) {
-    throw new Error('Notification module not registered yet');
-  }
+/**
+ * Per-handle lifecycle state. Only 'created' may enter 'registered' (or
+ * 'failed' on a registration error); any state may end in 'disposed'.
+ *
+ * 每个 handle 的生命周期状态。只有 'created' 可以进入 'registered'
+ * （或注册失败时进入 'failed'）；任意状态都可以结束于 'disposed'。
+ */
+type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
-  return activeNotificationModule.notificationRepository;
-}
-
+/**
+ * Builds the schedule-notification host port for schedule orchestration.
+ * This is a host composition seam (the desktop composer passes the result to
+ * schedule orchestration), NOT part of the electron transport module's own
+ * composition. Kept here so apps/desktop can keep importing it until Step D
+ * moves the call into compose-notification.
+ *
+ * 为 schedule orchestration 构建 schedule-notification 宿主 port。这是宿主组合
+ * seam（desktop composer 把结果传给 schedule orchestration），不属于 electron
+ * 传输模块自身的组合。保留在此以便 apps/desktop 在 Step D 把调用移入
+ * compose-notification 之前继续使用。
+ */
 export function createNotificationPowerSyncScheduleNotificationPort(
   db: IElectronModuleContext['db'],
 ): ScheduleNotificationPort {
@@ -89,85 +178,169 @@ export function createNotificationPowerSyncScheduleNotificationPort(
   };
 }
 
-export const NotificationElectronModule: IElectronModule = {
-  name: 'Notification',
+/**
+ * Notification Electron module handle.
+ * 通知 Electron 模块 handle。
+ *
+ * Structurally compatible with `IElectronModule` from
+ * `@memoflow/contracts/electron`, but defined locally so this seam stays
+ * host-shaped: the factory returns it already bound to one instance.
+ *
+ * 与 `@memoflow/contracts/electron` 的 `IElectronModule` 结构兼容，
+ * 但在本地定义，使该 seam 保持宿主形状：工厂返回时已绑定到单个实例。
+ */
+export interface NotificationElectronModuleDef {
+  readonly name: string;
+  register(context: IElectronModuleContext): void;
+  destroy?(): void;
+}
 
-  register(ctx: IElectronModuleContext): void {
-    const { db } = ctx;
+/**
+ * Options carrying the already-assembled notification instance.
+ * 携带已装配通知实例的选项。
+ */
+export interface NotificationElectronModuleOptions {
+  readonly instance: NotificationModuleInstance;
+}
 
-    // 1. Composition Root — create module with PowerSync repositories + runtime contributions.
-    //    Runtime contributions are passed INTO the module factory so the module's
-    //    start()/dispose() lifecycle properly manages event listeners.
-    //    No leaked listeners on repeated register/destroy cycles.
-    //
-    // 组合根 — 使用 PowerSync 仓储 + 运行时贡献创建模块。
-    // 运行时贡献传入模块工厂，由模块的 start()/dispose() 生命周期
-    // 正确管理事件监听器。重复注册/销毁不会泄漏监听器。
-    const notificationModule = createNotificationPowerSyncModule(db);
+/**
+ * Creates the notification Electron transport module handle.
+ * 创建通知 Electron 传输模块 handle。
+ *
+ * Turns an already-assembled `NotificationModuleInstance` into an
+ * `IElectronModule`-compatible handle. The handle is a transport adapter, not a
+ * composition root: it only registers IPC channels and owns start/dispose
+ * lifecycle. IPC channel names, payload schemas, controller methods and
+ * response envelopes are unchanged — see the handler registrations below.
+ *
+ * 把已装配的 `NotificationModuleInstance` 变成兼容 `IElectronModule` 的 handle。
+ * 该 handle 是传输适配器而非组合根：只注册 IPC 通道并托管 start/dispose
+ * 生命周期。IPC 通道名、payload schema、controller 方法与响应信封均保持不变——
+ * 见下方各 handler 注册。
+ *
+ * @param options - Options carrying the assembled notification instance.
+ * @returns An IElectronModule-compatible handle bound to the instance.
+ */
+export function createNotificationElectronModule(
+  options: NotificationElectronModuleOptions,
+): NotificationElectronModuleDef {
+  if (!options?.instance) {
+    throw new Error('[FAIL-CLOSED] createNotificationElectronModule requires options.instance');
+  }
+  let state: ModuleHandleState = 'created';
 
-    activeNotificationModule = notificationModule;
-    notificationModule.start();
+  return {
+    name: 'Notification',
 
-    const controller = new NotificationController(notificationModule.api);
-
-    // 2. IPC Handlers — preserve all existing channels.
-    // IPC 处理器 — 保留所有现有通道。
-    ipcMain.handle(NotificationChannels.LIST, async (_, params) => {
-      return withAuthenticatedValue(ctx, (requestContext) =>
-        controller.list({
-          ...(params ?? {}),
-        }, requestContext),
-      );
-    });
-    ipcMain.handle(NotificationChannels.GET, (_, id) =>
-      withAuthenticatedValue(ctx, (requestContext) => controller.get(id, requestContext)),
-    );
-    ipcMain.handle(NotificationChannels.CREATE, async (_, dto) =>
-      withAuthenticatedValue(ctx, (requestContext) => controller.create(dto, requestContext)),
-    );
-    ipcMain.handle(NotificationChannels.MARK_READ, (_, id) =>
-      withAuthenticatedValue(ctx, (requestContext) => controller.markAsRead(id, requestContext)),
-    );
-    ipcMain.handle(NotificationChannels.MARK_ALL_READ, async () => {
-      return withAuthenticatedIdentity(ctx, (identityId) => controller.markAllAsRead(identityId));
-    });
-    ipcMain.handle(NotificationChannels.DELETE, async (_, id) =>
-      withAuthenticatedValue(ctx, async (requestContext) => {
-        const result = await controller.delete(id, requestContext);
-        if (!result.ok) return result;
-        return ok(null);
-      }),
-    );
-    ipcMain.handle(NotificationChannels.CLEAR_ALL, async (_, ids) => {
-      if (Array.isArray(ids) && ids.length > 0) {
-        return withAuthenticatedValue(ctx, (requestContext) =>
-          controller.batchDelete({ notificationIds: ids }, requestContext),
+    register(ctx: IElectronModuleContext): void {
+      if (state !== 'created') {
+        throw new Error(
+          `NotificationElectronModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
         );
       }
-      return fail({ code: 'VALIDATION_ERROR', message: 'notification ids are required' });
-    });
-    ipcMain.handle(NotificationChannels.GET_UNREAD_COUNT, async () => {
-      return withAuthenticatedIdentity(ctx, (identityId) => controller.getUnreadCount(identityId));
-    });
-    ipcMain.handle(NotificationChannels.PREFERENCES_GET, async () => {
-      return withAuthenticatedValue(ctx, (requestContext) =>
-        controller.getPreferences(requestContext),
-      );
-    });
-    ipcMain.handle(NotificationChannels.PREFERENCES_UPDATE, async (_, dto) => {
-      return withAuthenticatedValue(ctx, (requestContext) =>
-        controller.updatePreferences(dto ?? {}, requestContext),
-      );
-    });
-    logger.info('Notification module registered');
-  },
 
-  destroy(): void {
-    for (const ch of allChannels) {
-      ipcMain.removeHandler(ch);
-    }
-    activeNotificationModule?.dispose();
-    activeNotificationModule = null;
-    logger.info('Notification module destroyed');
-  },
-};
+      const installed: string[] = [];
+
+      try {
+        const controller = new NotificationController(options.instance.api);
+
+        // 1. Core IPC Handlers — preserve all existing core channels.
+        //    核心 IPC 处理器 — 保留所有现有核心通道。
+        ipcMain.handle(NotificationChannels.LIST, async (_, params) => {
+          return withAuthenticatedValue(ctx, (requestContext) =>
+            controller.list({
+              ...(params ?? {}),
+            }, requestContext),
+          );
+        });
+        installed.push(NotificationChannels.LIST);
+        ipcMain.handle(NotificationChannels.GET, (_, id) =>
+          withAuthenticatedValue(ctx, (requestContext) => controller.get(id, requestContext)),
+        );
+        installed.push(NotificationChannels.GET);
+        ipcMain.handle(NotificationChannels.CREATE, async (_, dto) =>
+          withAuthenticatedValue(ctx, (requestContext) => controller.create(dto, requestContext)),
+        );
+        installed.push(NotificationChannels.CREATE);
+        ipcMain.handle(NotificationChannels.MARK_READ, (_, id) =>
+          withAuthenticatedValue(ctx, (requestContext) => controller.markAsRead(id, requestContext)),
+        );
+        installed.push(NotificationChannels.MARK_READ);
+        ipcMain.handle(NotificationChannels.MARK_ALL_READ, async () => {
+          return withAuthenticatedIdentity(ctx, (identityId) => controller.markAllAsRead(identityId));
+        });
+        installed.push(NotificationChannels.MARK_ALL_READ);
+        ipcMain.handle(NotificationChannels.DELETE, async (_, id) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            const result = await controller.delete(id, requestContext);
+            if (!result.ok) return result;
+            return ok(null);
+          }),
+        );
+        installed.push(NotificationChannels.DELETE);
+        ipcMain.handle(NotificationChannels.CLEAR_ALL, async (_, ids) => {
+          if (Array.isArray(ids) && ids.length > 0) {
+            return withAuthenticatedValue(ctx, (requestContext) =>
+              controller.batchDelete({ notificationIds: ids }, requestContext),
+            );
+          }
+          return fail({ code: 'VALIDATION_ERROR', message: 'notification ids are required' });
+        });
+        installed.push(NotificationChannels.CLEAR_ALL);
+        ipcMain.handle(NotificationChannels.GET_UNREAD_COUNT, async () => {
+          return withAuthenticatedIdentity(ctx, (identityId) => controller.getUnreadCount(identityId));
+        });
+        installed.push(NotificationChannels.GET_UNREAD_COUNT);
+        ipcMain.handle(NotificationChannels.PREFERENCES_GET, async () => {
+          return withAuthenticatedValue(ctx, (requestContext) =>
+            controller.getPreferences(requestContext),
+          );
+        });
+        installed.push(NotificationChannels.PREFERENCES_GET);
+        ipcMain.handle(NotificationChannels.PREFERENCES_UPDATE, async (_, dto) => {
+          return withAuthenticatedValue(ctx, (requestContext) =>
+            controller.updatePreferences(dto ?? {}, requestContext),
+          );
+        });
+        installed.push(NotificationChannels.PREFERENCES_UPDATE);
+
+        options.instance.start();
+        state = 'registered';
+
+        logger.info('Notification module registered');
+      } catch (error) {
+        state = 'failed';
+        for (let i = installed.length - 1; i >= 0; i--) {
+          ipcMain.removeHandler(installed[i]);
+        }
+        try {
+          options.instance.dispose();
+        } catch (disposeError) {
+          logger.error(
+            'NotificationElectron: instance dispose failed during failed registration',
+            disposeError,
+          );
+        }
+        throw error;
+      }
+    },
+
+    destroy(): void {
+      if (state === 'disposed' || state === 'failed') {
+        return;
+      }
+
+      // Only remove the core channels this handle installed. Custom-renderer
+      // channels remain owned by the desktop custom-notification.manager.
+      // 只移除本 handle 安装的核心通道。custom-renderer 通道仍归属桌面
+      // custom-notification.manager。
+      for (const ch of coreChannels) {
+        ipcMain.removeHandler(ch);
+      }
+      state = 'disposed';
+
+      options.instance.dispose();
+      logger.info('Notification module destroyed');
+    },
+  };
+}

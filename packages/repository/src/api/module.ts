@@ -1,120 +1,187 @@
 /**
- * Repository API Module Definition
- * 仓库 API 模块定义
+ * Repository API Transport Module Factory
+ * 仓库 API 传输模块工厂
  *
- * Implements IApiModule standard interface with the 3-step pattern:
- * 实现 IApiModule 标准接口的三步模式：
+ * This module is a transport adapter, NOT a composition root:
+ * it only wires an already-assembled `RepositoryModuleInstance` onto the
+ * Express router and owns that instance's start/dispose lifecycle.
  *
- * 1. Composition Root — assemble dependencies → module instance
- *    组合根 — 组装依赖 → 模块实例
- * 2. Transport handler wiring (thin mapping)
- *    传输层处理器接线（简单映射）
- * 3. Route mounting
- *    路由挂载
+ * 本模块是传输适配器，而不是组合根：
+ * 它只负责把已装配好的 `RepositoryModuleInstance` 挂到 Express 路由上，
+ * 并托管该实例的 start/dispose 生命周期。
  *
- * All use case instantiation lives in the composition root
- * (`createRepositoryModule`), NOT here.
+ * The host (apps/api) is responsible for composition: it selects the Prisma
+ * adapters, builds repositories, resolves the storage base directory, and
+ * passes the closure checker / GitHub App config / cloud purger ports through
+ * `createRepositoryModule(...)`. This factory never reads `context.db`, never
+ * constructs repositories/use cases, and never starts a runtime adapter.
  *
- * 所有 use case 的实例化都在组合根 (`createRepositoryModule`) 中完成，
- * 不在此文件中。
+ * 宿主（apps/api）负责组合：选择 Prisma 适配器、构建 repository、解析存储
+ * 基础目录，并通过 `createRepositoryModule(...)` 传入 closure checker /
+ * GitHub App 配置 / cloud purger ports。本工厂不读取 `context.db`，不创建
+ * repository/use case，也不启动任何 runtime adapter。
  *
- * Middleware comes from context.middleware, no dependency on apps/api internals.
- * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
+ * `instance.api` is the HTTP/IPC-shared application seam
+ * (`RepositoryApplicationPort`). It is exposed to sibling modules in the same
+ * host through `getApplicationPort()`, which returns the bound instance's api —
+ * never a package-global and never a fresh composition. API AI consumes this
+ * port to build its knowledge persistence / index adapters.
+ *
+ * `instance.api` 是 HTTP/IPC 共用的应用 seam（`RepositoryApplicationPort`）。
+ * 通过 `getApplicationPort()` 暴露给同一宿主内的兄弟模块——它返回已绑定实例的
+ * api，绝不是包级全局、也绝不重新组合。API AI 用它构建知识持久化 / 索引适配器。
+ *
+ * Per-handle state machine (`created -> registered | failed`, then any state
+ * -> `disposed`):
+ * - register(): only allowed from `created`. Builds the routes from
+ *   `instance.api`, calls `instance.start()`, and ONLY THEN mounts them at
+ *   `/repositories` — a failed start happens before any `router.use(...)` call,
+ *   so the host router never observes a route for a handle that did not start.
+ *   On success the handle moves to `registered`; a second register() throws.
+ *   On any failure it cleans up (best-effort dispose, logged if dispose itself
+ *   throws), moves to `failed`, and rethrows the ORIGINAL error.
+ * - destroy(): always allowed and always idempotent. A handle in `failed` is a
+ *   terminal no-op too. For a live handle the state is set to `disposed`
+ *   BEFORE `instance.dispose()` runs, so a reentrant/retry destroy stays a
+ *   no-op even if dispose throws (destroy may propagate that error).
+ *
+ * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
+ * `disposed`）：
+ * - register()：仅允许从 `created` 进入。用 `instance.api` 构建路由、调用
+ *   `instance.start()`，之后才挂载到 `/repositories`——start 失败发生在任何
+ *   `router.use(...)` 之前。成功则进入 `registered`，重复 register() 抛错；
+ *   任何失败先清理（best-effort dispose，若 dispose 自身抛错则记录日志），
+ *   进入 `failed` 并重新抛出原始错误。
+ * - destroy()：任何状态都允许，且始终幂等。处于 `failed` 的 handle 也是
+ *   终态 no-op。对存活 handle，在 `instance.dispose()` 执行前先把状态置为
+ *   `disposed`，因此即使 dispose 抛错（该错误可向外传播），重入/重试 destroy
+ *   仍为 no-op。
  */
 
-import type { PrismaClient } from '@memoflow/database';
 import type { ServerModuleContext } from '@memoflow/contracts/shared';
-import {
-  createRepositoryPrismaModule,
-  resolveRepositoryStorageBaseDir,
-  type RepositoryModuleInstance,
-} from '../server/infrastructure';
-import { createRepositoryRuntimeContribution } from '../server/infrastructure/runtime';
+import { createLogger } from '@memoflow/utils/logger';
+import type { RepositoryModuleInstance } from '../server/infrastructure';
 import type { RepositoryApplicationPort } from '../server/application';
-import type { IKnowledgeRepositoryCloudDataPurger } from '../server/application';
 import { registerRepositoryRoutes } from './routes/index';
 
-// ---------------------------------------------------------------------------
-// Module context — 模块注册上下文
-// ---------------------------------------------------------------------------
+const logger = createLogger('RepositoryApi');
 
 /**
- * Typed module context for repository registration.
- * Extends the shared ServerModuleContext with PrismaClient as the db type.
+ * Per-handle lifecycle state. Only 'created' may enter 'registered' (or
+ * 'failed' on a registration error); any state may end in 'disposed'.
+ *
+ * 每个 handle 的生命周期状态。只有 'created' 可以进入 'registered'
+ * （或注册失败时进入 'failed'）；任意状态都可以结束于 'disposed'。
  */
-export type RepositoryApiModuleContext = ServerModuleContext<PrismaClient> & {
-  readonly closureChecker?: (identityId: string) => Promise<boolean>;
-};
+type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
+
+/**
+ * Transport-only context for repository registration.
+ * Deliberately picks no `db`: the api module never needs persistence, and this
+ * keeps the seam from becoming a second composition root.
+ *
+ * 仓库注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
+ * 这也避免该 seam 变成第二个组合根。
+ */
+export type RepositoryApiModuleContext = Pick<
+  ServerModuleContext<unknown>,
+  'app' | 'router' | 'middleware' | 'openApiRegistry'
+>;
 
 export interface RepositoryApiModuleDef {
   readonly name: string;
   /** The composed application surface for sibling modules in the same host. */
-  readonly getApplicationPort: () => RepositoryApplicationPort | null;
-  register(context: RepositoryApiModuleContext): Promise<void> | void;
-  destroy?(): Promise<void> | void;
+  readonly getApplicationPort: () => RepositoryApplicationPort;
+  register(context: RepositoryApiModuleContext): void;
+  destroy?(): void;
 }
 
-export interface CreateRepositoryApiModuleOptions {
-  readonly storageBaseDir?: string;
-  readonly closureChecker?: (identityId: string) => Promise<boolean>;
-  readonly githubApp?: {
-    readonly appId: string;
-    readonly appSlug: string;
-    readonly privateKey: string;
-    readonly webhookSecret: string;
-  };
-  readonly knowledgeRepositoryCloudDataPurger?: IKnowledgeRepositoryCloudDataPurger;
+/**
+ * Options carrying the already-assembled repository instance.
+ * 携带已装配仓库实例的选项。
+ */
+export interface RepositoryApiModuleOptions {
+  readonly instance: RepositoryModuleInstance;
 }
 
-// ---------------------------------------------------------------------------
-// Module singleton — 模块单例
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// API Module — API 模块
-// ---------------------------------------------------------------------------
-
+/**
+ * Creates the repository API transport module handle.
+ * 创建仓库 API 传输模块 handle。
+ *
+ * Turns an already-assembled `RepositoryModuleInstance` into an
+ * `IApiModule`-compatible handle. The handle is a transport adapter, not a
+ * composition root: it only registers routes and owns start/dispose lifecycle.
+ * `getApplicationPort()` returns the bound instance's api.
+ *
+ * 把已装配的 `RepositoryModuleInstance` 变成兼容 `IApiModule` 的 handle。
+ * 该 handle 是传输适配器而非组合根：只注册路由并托管 start/dispose 生命周期。
+ * `getApplicationPort()` 返回已绑定实例的 api。
+ *
+ * @param options - Options carrying the assembled repository instance.
+ * @returns An IApiModule-compatible handle bound to the instance.
+ */
 export function createRepositoryApiModule(
-  options: CreateRepositoryApiModuleOptions = {},
+  options: RepositoryApiModuleOptions,
 ): RepositoryApiModuleDef {
-  let repositoryModule: RepositoryModuleInstance | null = null;
+  if (!options?.instance) {
+    throw new Error('[FAIL-CLOSED] createRepositoryApiModule requires options.instance');
+  }
+  let state: ModuleHandleState = 'created';
 
   return {
     name: 'Repository',
-    getApplicationPort: () => repositoryModule?.api ?? null,
+
+    getApplicationPort: () => options.instance.api,
 
     register(context) {
-      const { router, middleware, db } = context;
-
-      const prismaClient = db;
-      const storageBaseDir = resolveRepositoryStorageBaseDir({
-        storageBaseDir: options.storageBaseDir,
-      });
-      const closureChecker = options.closureChecker ?? context.closureChecker;
-      if (!closureChecker) {
-        throw new Error('[FAIL-CLOSED] RepositoryApiModule requires options.closureChecker or context.closureChecker');
+      if (state !== 'created') {
+        throw new Error(
+          `RepositoryApiModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
+        );
       }
 
-      repositoryModule = createRepositoryPrismaModule(prismaClient, {
-        storageBaseDir,
-        closureChecker,
-        githubApp: options.githubApp,
-        knowledgeRepositoryCloudDataPurger: options.knowledgeRepositoryCloudDataPurger,
-        runtimeContributions: createRepositoryRuntimeContribution(),
-      });
-      repositoryModule.start();
+      const { router, middleware, openApiRegistry } = context;
 
-      const repositoryRoutes = registerRepositoryRoutes(
-        repositoryModule.api,
-        middleware,
-        context.openApiRegistry,
-      );
-      router.use('/repositories', repositoryRoutes);
+      try {
+        // Build the routes BEFORE starting the instance and BEFORE mounting:
+        // a failed start must not leave any route installed on the host router.
+        const repositoryRoutes = registerRepositoryRoutes(
+          options.instance.api,
+          middleware,
+          openApiRegistry,
+        );
+
+        options.instance.start();
+
+        const stackLen = router.stack.length;
+        try {
+          router.use('/repositories', repositoryRoutes);
+        } catch (mountError) {
+          router.stack.length = stackLen;
+          throw mountError;
+        }
+
+        state = 'registered';
+      } catch (error) {
+        state = 'failed';
+        try {
+          options.instance.dispose();
+        } catch (disposeError) {
+          logger.error(
+            'RepositoryApiModule: instance dispose failed during failed registration',
+            disposeError,
+          );
+        }
+        throw error;
+      }
     },
 
     destroy() {
-      repositoryModule?.dispose();
-      repositoryModule = null;
+      if (state === 'disposed' || state === 'failed') {
+        return;
+      }
+      state = 'disposed';
+      options.instance.dispose();
     },
   };
 }

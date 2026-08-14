@@ -2,18 +2,24 @@
  * Repository API Module
  * 仓库 API 模块
  *
- * Self-contained API module entry point, exposed to ApiBootstrapper via register().
- * 自治的 API 模块入口 — 通过 register() 暴露给 ApiBootstrapper。
+ * Exposes the instance-bound repository API transport factory for apps/api.
+ * The host composer assembles the Prisma adapters and host ports and passes
+ * the instance in via `RepositoryApiModuleOptions`.
  *
- * Route prefix:
- * - /repositories — GitHub knowledge repository connections, projections,
- *   attachments, and confirmed create only. Legacy database Repository/Folder/
- *   Resource CRUD route builders have been removed.
+ * 为 apps/api 暴露实例绑定的仓库 API 传输工厂。宿主 composer 组装 Prisma
+ * 适配器与宿主 ports，并通过 `RepositoryApiModuleOptions` 传入实例。
+ *
+ * Route prefix: /repositories — GitHub knowledge repository connections,
+ * projections, attachments, and confirmed create only. Legacy database Repository/Folder/
+ * Resource CRUD route builders have been removed.
+ * 路由前缀：/repositories — 仅保留 GitHub knowledge repository connections、
+ * projections、attachments 与 confirmed create。遗留的数据库
+ * Repository/Folder/Resource CRUD 路由构建器已移除。
  */
 
 export { createRepositoryApiModule } from './module';
 export type {
-  CreateRepositoryApiModuleOptions,
   RepositoryApiModuleContext,
   RepositoryApiModuleDef,
+  RepositoryApiModuleOptions,
 } from './module';

@@ -1437,6 +1437,16 @@
       ]
     },
     {
+      "path": "packages/account/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/account/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/account/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/account/src/api/routes.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -1790,6 +1800,16 @@
     },
     {
       "path": "packages/ai/src/electron/ai-electron.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/electron/index-lifecycle.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -4791,6 +4811,16 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/data-portability/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/data-portability/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/data-portability/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/data-portability/src/application-client/data-portability-client-port-dual.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4812,6 +4842,16 @@
     },
     {
       "path": "packages/data-portability/src/electron/__tests__/data-portability-electron-module.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/data-portability/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/data-portability/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/data-portability/src/electron/index-lifecycle.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/data-portability/vitest.config.ts"
@@ -6366,6 +6406,16 @@
       ]
     },
     {
+      "path": "packages/notification/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/notification/src/api/notification-void-success-envelope.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6387,6 +6437,16 @@
     },
     {
       "path": "packages/notification/src/application-client/notification-client-port-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/notification/src/electron/index-lifecycle.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/notification/vitest.config.ts"
@@ -6790,6 +6850,16 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/reminder/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/reminder/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/reminder/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/reminder/src/api/routes/reminder-group.routes.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6821,6 +6891,16 @@
     },
     {
       "path": "packages/reminder/src/application-client/reminder-client-port-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/reminder/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/reminder/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/reminder/src/electron/index-lifecycle.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/reminder/vitest.config.ts"
@@ -7318,6 +7398,14 @@
       ]
     },
     {
+      "path": "packages/repository/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/repository/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/repository/src/api/routes/knowledge-disconnect-void-envelope.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -7351,6 +7439,14 @@
     },
     {
       "path": "packages/repository/src/application-client/repository-client-service.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/repository/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/repository/src/electron/index-lifecycle.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/repository/vitest.config.ts"
@@ -7606,6 +7702,16 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/schedule/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/schedule/src/api/routes.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -7657,6 +7763,16 @@
     },
     {
       "path": "packages/schedule/src/application-client/schedule-client-port-facade-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/schedule/src/electron/index-lifecycle.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/schedule/vitest.config.ts"
@@ -8018,6 +8134,16 @@
       ]
     },
     {
+      "path": "packages/setting/src/api/module-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/setting/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/setting/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/setting/src/api/routes.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8039,6 +8165,16 @@
     },
     {
       "path": "packages/setting/src/application-client/setting-client-port-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/setting/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/setting/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/setting/src/electron/index-lifecycle.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/setting/vitest.config.ts"
@@ -9441,14 +9577,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 25
+      "fileCount": 26
     },
     {
       "id": "packages/account/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 25
+      "fileCount": 26
     },
     {
       "id": "packages/account/vitest.integration.config.ts",
@@ -9462,14 +9598,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 115
+      "fileCount": 116
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 115
+      "fileCount": 116
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
@@ -9518,14 +9654,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 27
+      "fileCount": 29
     },
     {
       "id": "packages/data-portability/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 27
+      "fileCount": 29
     },
     {
       "id": "packages/database/vitest.config.ts",
@@ -9616,7 +9752,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 37
+      "fileCount": 39
     },
     {
       "id": "packages/notification/vitest.integration.config.ts",
@@ -9630,7 +9766,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 37
+      "fileCount": 39
     },
     {
       "id": "packages/patterns/vitest.config.ts",
@@ -9651,7 +9787,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 50
+      "fileCount": 52
     },
     {
       "id": "packages/reminder/vitest.integration.config.ts",
@@ -9665,7 +9801,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 50
+      "fileCount": 52
     },
     {
       "id": "packages/reminder/vitest.use-cases.config.ts",
@@ -9686,7 +9822,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 30
+      "fileCount": 32
     },
     {
       "id": "packages/repository/vitest.integration.config.ts",
@@ -9707,7 +9843,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 38
+      "fileCount": 40
     },
     {
       "id": "packages/schedule/vitest.integration.config.ts",
@@ -9721,7 +9857,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 38
+      "fileCount": 40
     },
     {
       "id": "packages/schedule/vitest.use-cases.config.ts",
@@ -9742,14 +9878,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 15
+      "fileCount": 17
     },
     {
       "id": "packages/setting/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 15
+      "fileCount": 17
     },
     {
       "id": "packages/setting/vitest.integration.config.ts",
@@ -9966,6 +10102,7 @@
       "apps/api/src/shared/infrastructure/middleware/error-result-envelope.surface.spec.ts",
       "apps/api/src/shared/infrastructure/middleware/error.spec.ts",
       "packages/account/src/api/account-void-success-envelope.surface.spec.ts",
+      "packages/account/src/api/module-lifecycle.spec.ts",
       "packages/account/src/api/routes.spec.ts",
       "packages/account/src/application-client/services/account-client-port-mapping-dual.surface.spec.ts",
       "packages/account/src/application-client/services/account-client-service.spec.ts",
@@ -9999,6 +10136,7 @@
       "packages/ai/src/api/routes/ai-void-success-envelope.surface.spec.ts",
       "packages/ai/src/application-client/ai-client-port-facade-dual.surface.spec.ts",
       "packages/ai/src/electron/ai-electron.surface.spec.ts",
+      "packages/ai/src/electron/index-lifecycle.spec.ts",
       "packages/ai/src/infrastructure-client/adapters/__tests__/ai-agent-runtime-result-port.surface.spec.ts",
       "packages/ai/src/infrastructure-client/adapters/__tests__/ai-capabilities-conversation-result-port.surface.spec.ts",
       "packages/ai/src/infrastructure-client/adapters/__tests__/ai-client-result-port-surface.surface.spec.ts",
@@ -10115,9 +10253,11 @@
       "packages/app-vue/src/modules/setting/stores/presentationPreferenceStore.spec.ts",
       "packages/app-vue/src/modules/setting/stores/userSettingStore.spec.ts",
       "packages/app-vue/src/modules/task/stores/taskStore.spec.ts",
+      "packages/data-portability/src/api/module-lifecycle.spec.ts",
       "packages/data-portability/src/application-client/data-portability-client-port-dual.surface.spec.ts",
       "packages/data-portability/src/application-client/ports/data-portability-api-client-port.surface.spec.ts",
       "packages/data-portability/src/electron/__tests__/data-portability-electron-module.test.ts",
+      "packages/data-portability/src/electron/index-lifecycle.spec.ts",
       "packages/data-portability/src/infrastructure-client/adapters/http/data-portability-http.adapter.test.ts",
       "packages/data-portability/src/infrastructure-client/adapters/ipc/__tests__/data-portability-ipc-adapter.test.ts",
       "packages/data-portability/src/server/application/use-cases/__tests__/export-server-held-data-disclosure.use-case.test.ts",
@@ -10257,9 +10397,11 @@
       "packages/governance/src/server/infrastructure/__tests__/governance-repositories.surface.spec.ts",
       "packages/governance/src/server/infrastructure/adapters/prisma/__tests__/governance-rule-ownership.surface.spec.ts",
       "packages/notification/src/api/__tests__/notification-lane-bootstrap.spec.ts",
+      "packages/notification/src/api/module-lifecycle.spec.ts",
       "packages/notification/src/api/notification-void-success-envelope.surface.spec.ts",
       "packages/notification/src/api/routes.spec.ts",
       "packages/notification/src/application-client/notification-client-port-dual.surface.spec.ts",
+      "packages/notification/src/electron/index-lifecycle.spec.ts",
       "packages/notification/src/electron/notification-electron.surface.spec.ts",
       "packages/notification/src/infrastructure-client/adapters/ipc/notification-ipc.adapter.surface.spec.ts",
       "packages/notification/src/server/application/services/notification-maintenance-application-service.test.ts",
@@ -10293,10 +10435,12 @@
       "packages/notification/src/server/infrastructure/runtime/__tests__/notification-durable-dispatch.spec.ts",
       "packages/notification/src/server/infrastructure/runtime/notification.runtime.spec.ts",
       "packages/notification/src/server/transport/notification-usecases-export.surface.spec.ts",
+      "packages/reminder/src/api/module-lifecycle.spec.ts",
       "packages/reminder/src/api/routes/reminder-group.routes.spec.ts",
       "packages/reminder/src/api/routes/reminder-template.routes.spec.ts",
       "packages/reminder/src/api/routes/reminder-void-success-envelope.surface.spec.ts",
       "packages/reminder/src/application-client/reminder-client-port-dual.surface.spec.ts",
+      "packages/reminder/src/electron/index-lifecycle.spec.ts",
       "packages/reminder/src/electron/reminder-electron.surface.spec.ts",
       "packages/reminder/src/infrastructure-client/adapters/http/reminder-http.adapter.test.ts",
       "packages/reminder/src/infrastructure-client/adapters/ipc/reminder-ipc.adapter.surface.spec.ts",
@@ -10343,12 +10487,14 @@
       "packages/reminder/src/server/infrastructure/schedule-execution-source.spec.ts",
       "packages/reminder/src/server/infrastructure/schedule-projection-source.spec.ts",
       "packages/reminder/src/server/transport/reminder-usecases-export.surface.spec.ts",
+      "packages/schedule/src/api/module-lifecycle.spec.ts",
       "packages/schedule/src/api/routes.spec.ts",
       "packages/schedule/src/api/schedule-event-routes-roundtrip.spec.ts",
       "packages/schedule/src/api/schedule-event.routes.spec.ts",
       "packages/schedule/src/api/schedule-route-parsers-keep-boundary.surface.spec.ts",
       "packages/schedule/src/api/schedule-void-success-envelope.surface.spec.ts",
       "packages/schedule/src/application-client/schedule-client-port-facade-dual.surface.spec.ts",
+      "packages/schedule/src/electron/index-lifecycle.spec.ts",
       "packages/schedule/src/electron/schedule-electron-delete-contract.spec.ts",
       "packages/schedule/src/electron/schedule-electron.surface.spec.ts",
       "packages/schedule/src/infrastructure-client/adapters/ipc/schedule-ipc.adapter.surface.spec.ts",
@@ -10381,9 +10527,11 @@
       "packages/schedule/src/server/infrastructure/lease/schedule-lease-coordinator.spec.ts",
       "packages/schedule/src/server/infrastructure/runtime/schedule-runtime-ownership.surface.spec.ts",
       "packages/schedule/src/server/infrastructure/runtime/schedule.runtime.spec.ts",
+      "packages/setting/src/api/module-lifecycle.spec.ts",
       "packages/setting/src/api/routes.spec.ts",
       "packages/setting/src/application-client/ports/setting-api-client-port.surface.spec.ts",
       "packages/setting/src/application-client/setting-client-port-dual.surface.spec.ts",
+      "packages/setting/src/electron/index-lifecycle.spec.ts",
       "packages/setting/src/electron/setting-electron.surface.spec.ts",
       "packages/setting/src/infrastructure-client/adapters/ipc/setting-ipc.adapter.surface.spec.ts",
       "packages/setting/src/server/application/use-cases/commands/__tests__/import-settings.test.ts",
@@ -10476,7 +10624,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 889,
+    "unit": 903,
     "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,
