@@ -82,6 +82,10 @@ export default defineConfig({
         find: '@memoflow/data-portability/electron',
         replacement: resolve(__dirname, '../../packages/data-portability/src/electron/index.ts'),
       },
+      {
+        find: '@memoflow/data-portability',
+        replacement: resolve(__dirname, '../../packages/data-portability/src/index.ts'),
+      },
     ],
   },
 });
