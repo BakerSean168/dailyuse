@@ -24,7 +24,12 @@ export type { AIApplicationPort } from '../application';
 // PowerSync convenience factory
 // PowerSync 便捷工厂
 // ---------------------------------------------------------------------------
-export { createAIPowerSyncModule, type AIModulePowerSyncOptions } from './powersync';
+export {
+  createAIPowerSyncModule,
+  createAIPowerSyncRepositories,
+  type AIModulePowerSyncOptions,
+  type AIPowerSyncRepositorySet,
+} from './powersync';
 
 // ---------------------------------------------------------------------------
 // Ports (Interfaces)
@@ -50,16 +55,6 @@ export {
   AIEvaluationReportFileAdapter,
   type AIEvaluationReportFileAdapterOptions,
 } from './adapters/fs';
-
-// ---------------------------------------------------------------------------
-// PowerSync Adapters
-// ---------------------------------------------------------------------------
-export {
-  PowerSyncAIConversationRepository,
-  PowerSyncAIProviderConfigRepository,
-  AIKnowledgeIndexPowerSyncRepository,
-  AIExecutionLogPowerSyncAdapter,
-} from './adapters/powersync';
 
 // ---------------------------------------------------------------------------
 // Chat Execution Adapters

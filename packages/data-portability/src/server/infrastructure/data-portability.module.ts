@@ -9,7 +9,7 @@ import type { DataPortabilityImportStore } from '../application/import-store/dat
 import { ExportUserDataUseCase } from '../application/use-cases/export-user-data.use-case';
 import { ImportUserDataUseCase } from '../application/use-cases/import-user-data.use-case';
 import { createPowerSyncDataPortabilityDependencies } from './powersync/powersync-export-dependencies';
-import { PowerSyncDataPortabilityImportStore } from './powersync/powersync-import-store';
+import { createPowerSyncDataPortabilityImportStore } from './powersync/powersync-import-store';
 
 export interface DataPortabilityModuleDependencies {
   readonly exportDependencies: DataPortabilityDependencies;
@@ -109,7 +109,7 @@ export function createPowerSyncDataPortabilityModule(
 ): DataPortabilityModuleInstance {
   return createDataPortabilityModule({
     exportDependencies: createPowerSyncDataPortabilityDependencies(db),
-    importStore: new PowerSyncDataPortabilityImportStore(db),
+    importStore: createPowerSyncDataPortabilityImportStore(db),
     runtimeContributions: options.runtimeContributions,
   });
 }

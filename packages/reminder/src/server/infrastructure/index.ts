@@ -2,12 +2,13 @@
  * Reminder Module - Infrastructure Server Layer.
  * 提醒模块 - 基础设施服务端层。
  *
- * Server-side infrastructure:
- * 服务端基础设施：
- * - Repository implementations (Prisma, PowerSync)
- *   仓储实现（Prisma、PowerSync）
- * - Explicit composition root and runtime assembly
- *   显式组合根与运行时组装
+ * Public seam: ingredient factories, set types, module factory, runtime
+ * contribution factories and port types. Concrete Prisma / PowerSync adapter
+ * classes do not leak through this barrel — the R1 lesson applied to the
+ * goal/task migration.
+ *
+ * 公共 seam：仅导出原料工厂、集合类型、模块工厂、运行时贡献工厂与 Port 类型。
+ * 具体 Prisma / PowerSync 适配器类不通过该 barrel 泄漏——目标/任务迁移的 R1 教训。
  */
 
 // ============ Composition Root / 组合根 ============
@@ -21,31 +22,23 @@ export {
   type ReminderRuntimeContributionsInput,
 } from './reminder.module';
 export type { ReminderApplicationPort } from '../application';
-
-// ============ Adapters - Prisma ============
-/** @internal Concrete Prisma implementation — use repository interfaces instead. Prisma 具体实现 — 请使用仓储接口。 */
-export { ReminderGroupPrismaRepository } from './adapters/prisma/reminder-group-prisma.repository';
-/** @internal Concrete Prisma implementation — use repository interfaces instead. Prisma 具体实现 — 请使用仓储接口。 */
-export { ReminderTemplatePrismaRepository } from './adapters/prisma/reminder-template-prisma.repository';
-/** @internal Concrete Prisma implementation — use repository interfaces instead. Prisma 具体实现 — 请使用仓储接口。 */
-export { ReminderResponsePrismaRepository } from './adapters/prisma/reminder-response-prisma.repository';
-/** @internal Concrete Prisma implementation — use repository interfaces instead. Prisma 具体实现 — 请使用仓储接口。 */
-export { UserReminderPreferencePrismaRepository } from './adapters/prisma/user-reminder-preference-prisma.repository';
-
-// ============ Adapters - PowerSync ============
-/** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-export { ReminderGroupPowerSyncRepository } from './adapters/powersync/reminder-group-powersync.repository';
-/** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-export { ReminderTemplatePowerSyncRepository } from './adapters/powersync/reminder-template-powersync.repository';
-/** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-export { ReminderResponsePowerSyncRepository } from './adapters/powersync/reminder-response-powersync.repository';
-/** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-export { UserReminderPreferencePowerSyncRepository } from './adapters/powersync/user-reminder-preference-powersync.repository';
+export type {
+  IReminderTemplateRepository,
+  IReminderGroupRepository,
+  IReminderResponseRepository,
+  IUserReminderPreferenceRepository,
+} from '../domain/repositories';
+export type { ReminderTransactionRunner } from '../domain/ports/reminder-transaction-runner.port';
 
 // ============ PowerSync Module Factory / PowerSync 模块工厂 ============
 export { createReminderPowerSyncModule } from './powersync';
 export { createReminderPowerSyncScheduleExecutionSource } from './powersync';
 export { createReminderPowerSyncScheduleProjectionSource } from './powersync';
+export {
+  createReminderPowerSyncRepositories,
+  createPowerSyncClosureChecker,
+  type ReminderPowerSyncRepositorySet,
+} from './powersync';
 export {
   createReminderScheduleExecutionSource,
   type CreateReminderScheduleExecutionSourceDeps,
@@ -65,8 +58,12 @@ export {
   createReminderPrismaScheduleExecutionSource,
   createReminderPrismaScheduleProjectionSource,
   type CreateReminderPrismaModuleOptions,
+  type ReminderPrismaRepositorySet,
 } from './prisma';
 export {
   createReminderRuntimeContribution,
 } from './runtime';
+
+// ============ Adapters still consumed by frozen transports/apps ============
+/** @internal 仍被 apps/api 直接消费的具体 consumer 类 — Step E 移除。 */
 export { ReminderAccountClosedConsumer } from './consumers/reminder-account-closed.consumer';

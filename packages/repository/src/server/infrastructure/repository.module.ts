@@ -8,9 +8,9 @@
 
 import { fail, ok, type Result } from '@memoflow/contracts/result';
 import type { RepositoryApplicationPort } from '../application';
-import { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
-import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
-import { KnowledgeNoteCommitService } from '../application/services/knowledge-note-commit.service';
+import type { IKnowledgeRepositoryConnectionService } from '../application/ports/knowledge-repository-connection.service.port';
+import type { IKnowledgeRepositoryProjectionService } from '../application/ports/knowledge-repository-projection.service.port';
+import type { IKnowledgeNoteCommitService } from '../application/ports/knowledge-note-commit.service.port';
 import type { OperationAuditRepository } from '@memoflow/patterns/operations';
 import { runTimelineQueryWithAudit } from '@memoflow/patterns/operations';
 import { OperationTimelineEntrySchema } from '@memoflow/contracts/operations';
@@ -23,9 +23,9 @@ export type RepositoryRuntimeContributionsInput =
 
 export interface RepositoryModuleDependencies {
   readonly runtimeContributions?: RepositoryRuntimeContributionsInput;
-  readonly knowledgeRepositoryConnectionService?: KnowledgeRepositoryConnectionService | null;
-  readonly knowledgeRepositoryProjectionService?: KnowledgeRepositoryProjectionService | null;
-  readonly knowledgeNoteCommitService?: KnowledgeNoteCommitService | null;
+  readonly knowledgeRepositoryConnectionService?: IKnowledgeRepositoryConnectionService | null;
+  readonly knowledgeRepositoryProjectionService?: IKnowledgeRepositoryProjectionService | null;
+  readonly knowledgeNoteCommitService?: IKnowledgeNoteCommitService | null;
   /** W7：审计仓库（最小权限 + 审计） */
   readonly auditRepository?: OperationAuditRepository;
 }
@@ -36,9 +36,9 @@ export interface RepositoryModuleRuntimeContribution {
 }
 
 export interface RepositoryModuleInstance {
-  readonly knowledgeRepositoryConnectionService: KnowledgeRepositoryConnectionService | null;
-  readonly knowledgeRepositoryProjectionService: KnowledgeRepositoryProjectionService | null;
-  readonly knowledgeNoteCommitService: KnowledgeNoteCommitService | null;
+  readonly knowledgeRepositoryConnectionService: IKnowledgeRepositoryConnectionService | null;
+  readonly knowledgeRepositoryProjectionService: IKnowledgeRepositoryProjectionService | null;
+  readonly knowledgeNoteCommitService: IKnowledgeNoteCommitService | null;
   readonly api: RepositoryApplicationPort;
   start(): void;
   dispose(): void;

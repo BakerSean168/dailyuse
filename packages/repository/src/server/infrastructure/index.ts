@@ -1,9 +1,14 @@
 /**
  * Repository Module - Infrastructure Server
+ * 知识仓储模块 - 基础设施服务端层
  *
- * Knowledge-repository composition roots and adapters. Legacy database
- * Folder/Resource/Bookmark repository adapters were removed with the Obsidian
- * vault migration; portable backup remains in data-portability.
+ * Public seam: ingredient factories, set types, module factory, runtime
+ * contribution factories and port types. Concrete Prisma / GitHub / Fs adapter
+ * classes stay implementation-private — the R1 lesson applied to the goal/task
+ * migration.
+ *
+ * 公共 seam：仅导出原料工厂、集合类型、模块工厂、运行时贡献工厂与 Port 类型。
+ * 具体 Prisma / GitHub / Fs 适配器类保持实现私有——目标/任务迁移的 R1 教训。
  */
 
 // Composition Root
@@ -19,8 +24,14 @@ export type { RepositoryApplicationPort } from '../application';
 // Convenience factories
 export {
   createRepositoryPrismaModule,
+  createRepositoryPrismaRepositories,
+  createRepositoryPrismaRuntimeContributions,
   createFsStorageAdapter,
   type CreateRepositoryPrismaModuleOptions,
+  type CreateRepositoryPrismaRuntimeContributionsInput,
+  type RepositoryPrismaRepositorySet,
+  type RepositoryPrismaRuntimeContributions,
+  type GithubAppConfig,
 } from './prisma';
 export {
   DEFAULT_REPOSITORY_STORAGE_BASE_DIR,
@@ -29,21 +40,25 @@ export {
 } from './storage-config';
 export { createRepositoryRuntimeContribution } from './runtime';
 
-// Storage
-export { FsStorageAdapter } from './adapters/fs/fs-storage.adapter';
-
-// Knowledge Prisma adapters
-export { KnowledgeRepositoryConnectionPrismaRepository } from './adapters/prisma/knowledge-repository-connection-prisma.repository';
-export { GithubWebhookDeliveryPrismaRepository } from './adapters/prisma/github-webhook-delivery-prisma.repository';
-export { KnowledgeNoteProjectionPrismaRepository } from './adapters/prisma/knowledge-note-projection-prisma.repository';
-export { KnowledgeAttachmentProjectionPrismaRepository } from './adapters/prisma/knowledge-attachment-projection-prisma.repository';
-export { KnowledgeAttachmentContentCachePrismaRepository } from './adapters/prisma/knowledge-attachment-content-cache-prisma.repository';
-export { KnowledgeWriteRequestPrismaRepository } from './adapters/prisma/knowledge-write-request-prisma.repository';
-export { KnowledgeRepositoryLeasePrismaRepository } from './adapters/prisma/knowledge-repository-lease-prisma.repository';
-
-// GitHub App client
-export { GitHubAppClient } from './services/github-app-client';
-export { InMemoryKnowledgeRepositoryInstallationStateStore } from './services/in-memory-knowledge-repository-installation-state-store';
+// Repository / service ports referenced by the set and module dependencies
+export type { IKnowledgeRepositoryConnectionRepository } from '../application/ports/knowledge-repository-connection.repository';
+export type {
+  IGithubWebhookDeliveryRepository,
+  IKnowledgeNoteProjectionRepository,
+  IKnowledgeWriteRequestRepository,
+} from '../application/ports/knowledge-note-projection.repository';
+export type { IKnowledgeAttachmentProjectionRepository } from '../application/ports/knowledge-attachment-projection.repository';
+export type { IKnowledgeAttachmentContentCache } from '../application/ports/knowledge-attachment-content-cache.port';
+export type { IKnowledgeRepositoryLeaseRepository } from '../application/ports/knowledge-repository-lease.repository';
+export type { IKnowledgeRepositoryCloudDataPurger } from '../application/ports/knowledge-repository-cloud-data-purger.port';
+export type {
+  IGitHubAppClient,
+  IKnowledgeRepositoryInstallationStateStore,
+} from '../application/ports/github-app-client.port';
+export type { IKnowledgeRepositoryConnectionService } from '../application/ports/knowledge-repository-connection.service.port';
+export type { IKnowledgeRepositoryProjectionService } from '../application/ports/knowledge-repository-projection.service.port';
+export type { IKnowledgeNoteCommitService } from '../application/ports/knowledge-note-commit.service.port';
 
 // Consumers
+/** @internal 仍被 apps/api 直接消费的具体 consumer 类 — Step E 移除。 */
 export { RepositoryAccountClosedConsumer } from './consumers/repository-account-closed.consumer';

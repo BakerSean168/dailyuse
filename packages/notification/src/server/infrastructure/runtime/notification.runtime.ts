@@ -21,9 +21,13 @@ export type NotificationReliableOperationAdapter =
   | NotificationReliableOperationPrismaAdapter
   | InMemoryNotificationReliableAdapter
   | PowerSyncNotificationReliableAdapter;
-import { NotificationMetricsService, type NotificationMetricsSnapshot } from '../../domain/services/notification-metrics-service';
+import { NotificationMetricsService, globalNotificationMetrics, type NotificationMetricsSnapshot } from '../../domain/services/notification-metrics-service';
 import { NotificationSseAdapter } from '../adapters/sse/notification-sse.adapter';
 import { randomUUID } from 'crypto';
+import {
+  RealDesktopChannelDeliverer,
+  RealInAppChannelDeliverer,
+} from '../adapters/deliverers/real-channel-deliverers';
 
 const logger = createLogger('NotificationRuntime');
 
@@ -978,4 +982,48 @@ export function createNotificationRuntimeContribution(
       return sseAdapter;
     },
   };
+}
+
+/**
+ * Creates the notification durable runtime from a host-provided repository set.
+ * 从宿主持有的仓储集合创建通知 durable runtime。
+ *
+ * Module-owned composition ingredient: builds the default InApp/Desktop channel
+ * deliverers from the host transport and the expressed `channelCapabilities`,
+ * then wires them with the set's reliable adapter into the module-owned runtime
+ * contribution. Host capability selection stays explicit — the default
+ * InApp/Desktop capability list is never silently decided here.
+ *
+ * 模块自有组合原料：根据宿主 transport 与显式 `channelCapabilities` 构建默认的
+ * InApp/Desktop 渠道投递器，再与集合中的可靠适配器装配成模块自有运行时贡献。
+ * 宿主能力选择保持显式——此处绝不会静默决定默认 InApp/Desktop 能力列表。
+ *
+ * @param deps - The repository set (notification repository + reliable adapter), host channel
+ *               capabilities and the native transport.
+ *               仓储集合（通知仓储 + 可靠适配器）、宿主渠道能力与原生 transport。
+ * @returns A reversible notification durable runtime contribution.
+ *          返回可逆的通知 durable runtime 贡献。
+ */
+export function createNotificationDurableRuntime(deps: {
+  readonly notificationRepository: INotificationRepository;
+  readonly reliableAdapter: NotificationReliableOperationAdapter;
+  readonly channelCapabilities: ChannelCapabilitySpec[];
+  readonly transport?: unknown;
+  readonly metricsService?: NotificationMetricsService;
+}): NotificationDurableRuntimePort {
+  const metricsService = deps.metricsService ?? globalNotificationMetrics;
+  const defaultDeliverers: Record<string, NotificationChannelDeliverer> = {
+    InApp: new RealInAppChannelDeliverer(deps.notificationRepository),
+    'in-app': new RealInAppChannelDeliverer(deps.notificationRepository),
+    Desktop: new RealDesktopChannelDeliverer(deps.transport),
+    desktop: new RealDesktopChannelDeliverer(deps.transport),
+  };
+
+  return createNotificationRuntimeContribution({
+    repository: deps.notificationRepository,
+    reliableAdapter: deps.reliableAdapter,
+    delivererRegistry: defaultDeliverers,
+    channelCapabilities: deps.channelCapabilities,
+    metricsService,
+  });
 }
