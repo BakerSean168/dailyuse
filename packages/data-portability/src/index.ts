@@ -25,6 +25,7 @@ export {
   createPowerSyncDataPortabilityDependencies,
   createPowerSyncDataPortabilityImportStore,
   createDataPortabilityRuntimeContribution,
+  createPrismaServerHeldDataDisclosureApplicationPort,
   type DataPortabilityModuleDependencies,
   type DataPortabilityModuleInstance,
   type DataPortabilityRepositorySet,
@@ -32,3 +33,4 @@ export {
 export type { DataPortabilityApplicationPort } from './server';
 export type { DataPortabilityDependencies } from './server';
 export type { DataPortabilityImportStore } from './server';
+export type { ServerHeldDataDisclosureApplicationPort } from './server';

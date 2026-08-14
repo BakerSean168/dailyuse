@@ -89,9 +89,10 @@ describe('legacy editor/repository runtime surface', () => {
     expect(desktopMain).not.toContain('createEditorModule');
   });
 
-  it('API host mounts createRepositoryApiModule without editor module (residual 167)', () => {
-    expect(apiMain).toContain('createRepositoryApiModule');
+  it('API host composes repository module without editor module (residual 167)', () => {
+    expect(apiMain).toContain('composeRepository');
     expect(apiMain).toContain('.register(repositoryApiModule)');
+    expect(apiMain).not.toContain('createRepositoryApiModule');
     expect(apiMain).not.toContain('createEditorApiModule');
     expect(apiMain).not.toContain('EditorApiModule');
   });
