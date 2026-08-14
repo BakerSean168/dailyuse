@@ -764,15 +764,15 @@ Expected result: no migrated transport-side composition, no remaining Electron a
 
 ## 7. 成功标准（checklist）
 
-- [ ] API composers for account, data-portability, notification, reminder, repository, schedule and setting own Prisma selection and return instance-bound API handles.
-- [ ] Desktop composers for account, ai, data-portability, notification, reminder, schedule and setting own PowerSync selection; repository has an explicit host-port composer with no invented DB adapter.
-- [ ] Every migrated API/Electron module factory accepts an already-bound instance and never composes from `context.db`/`ctx.db`.
-- [ ] Each deep module has forward/reverse runtime lifecycle and partial-start cleanup; original start errors are preserved.
-- [ ] Account `cloudAuth`, notification `channelCapabilities`, closure checkers, repository host ports, reminder sources and schedule source executor are explicit composer inputs.
-- [ ] Schedule two-phase ingredient/composer assembly preserves one repository identity, lease ownership and delayed Desktop runtime start.
-- [ ] Dashboard, analytics, WindowManager and DesktopProfileRuntimeManager consume instance-bound repository/runtime views; all Electron accessor imports and exports are removed.
-- [ ] Root and infrastructure barrels expose only factories, runtime contribution factories, port/set types and application surfaces; concrete adapter classes do not leak.
-- [ ] Route/channel, OpenAPI, auth, payload, result envelope and registration-order behavior is unchanged.
-- [ ] English-first + 中文 JSDoc, package docs, surface specs and test inventory describe the host-composer ownership model.
-- [ ] All direct Vitest commands, touched-project typecheck/lint, `pnpm nx run memoflow:governance-check`, and `pnpm nx run memoflow:docs-check` are green.
-- [ ] Final residual report explicitly names API AI composition as out of this batch; no other unverified residual remains.
+- [x] API composers for account, data-portability, notification, reminder, repository, schedule and setting own Prisma selection and return instance-bound API handles.
+- [x] Desktop composers for account, ai, data-portability, notification, reminder, schedule and setting own PowerSync selection; repository has an explicit host-port composer with no invented DB adapter.
+- [x] Every migrated API/Electron module factory accepts an already-bound instance and never composes from `context.db`/`ctx.db`.
+- [x] Each deep module has forward/reverse runtime lifecycle and partial-start cleanup; original start errors are preserved.
+- [x] Account `cloudAuth`, notification `channelCapabilities`, closure checkers, repository host ports, reminder sources and schedule source executor are explicit composer inputs.
+- [x] Schedule two-phase ingredient/composer assembly preserves one repository identity, lease ownership and delayed Desktop runtime start.
+- [x] Dashboard, analytics, WindowManager and DesktopProfileRuntimeManager consume instance-bound repository/runtime views; all Electron accessor imports and exports are removed.
+- [x] Root and infrastructure barrels expose only factories, runtime contribution factories, port/set types and application surfaces; concrete adapter classes do not leak.
+- [x] Route/channel, OpenAPI, auth, payload, result envelope and registration-order behavior is unchanged.
+- [x] English-first + 中文 JSDoc, package docs, surface specs and test inventory describe the host-composer ownership model.
+- [x] All direct Vitest commands, touched-project typecheck/lint, `pnpm nx run memoflow:governance-check`, and `pnpm nx run memoflow:docs-check` are green.
+- [x] Final residual report explicitly names API AI composition as out of this batch; no other unverified residual remains.
