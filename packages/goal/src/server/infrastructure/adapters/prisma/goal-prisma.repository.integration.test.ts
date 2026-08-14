@@ -300,13 +300,29 @@ describe('GoalApiModule.register() lifecycle (W4 P2-1)', () => {
   it('registers routes and starts the module with the host-injected Task binding port', async () => {
     const { Router } = await import('express');
     const { createGoalApiModule } = await import('../../../../api/module');
+    const { createGoalPrismaRepositories } = await import('../../prisma');
+    const { createGoalModule } = await import('../../goal.module');
+    const {
+      createGoalEventListenersRuntime,
+      createGoalRuntimeContribution,
+    } = await import('../../runtime');
 
-    const router = Router();
-    const module = createGoalApiModule({
+    const repositories = createGoalPrismaRepositories(prisma);
+    const listenerRuntime = createGoalEventListenersRuntime({
+      goalRepository: repositories.goalRepository,
+      goalRecordRepository: repositories.goalRecordRepository,
+      goalWriteTransactionRunner: repositories.goalWriteTransactionRunner,
+    });
+    const instance = createGoalModule({
+      ...repositories,
       taskBindingReadPort: {
         checkActiveTaskBindings: async () => ({ hasActiveBindings: false, activeCount: 0 }),
       },
+      runtimeContributions: [createGoalRuntimeContribution(), listenerRuntime],
     });
+    const module = createGoalApiModule({ instance });
+
+    const router = Router();
 
     expect(() =>
       module.register({
@@ -315,7 +331,6 @@ describe('GoalApiModule.register() lifecycle (W4 P2-1)', () => {
           auth: (() => undefined) as never,
           requireRole: () => (() => undefined) as never,
         },
-        db: prisma,
       } as never),
     ).not.toThrow();
 
