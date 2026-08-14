@@ -85,8 +85,6 @@ import type { ScheduleModuleInstance } from '../server/infrastructure';
 import { ScheduleController, ScheduleEventController } from '../server/transport';
 import { withAuthenticatedValue } from './authenticated-ipc';
 
-export { PowerSyncScheduleTaskRepository } from '../server/infrastructure';
-
 const logger = createLogger('ScheduleElectron');
 
 const allChannels = Object.values(ScheduleChannels);

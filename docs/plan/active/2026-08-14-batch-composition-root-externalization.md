@@ -380,6 +380,61 @@ Add `createAIPowerSyncRepositories(db)` with conversation/provider/index/executi
 | schedule runtime lifecycle | API starts with module | Desktop returns bound `start/stop` controller to window/profile owners | remove `startScheduleRuntime`/`stopScheduleRuntime` globals and preserve delayed start |
 | dashboard/analytics | n/a | extend existing Goal/Task repository view (`apps/desktop/src/main/main.ts:155-178`) with schedule/reminder/notification ports | consumers use instance-bound injection only |
 
+### 3.5 Step E documented deviations & residuals
+
+Step E locks the final surface. The following are deliberate, documented
+deviations / residuals — recorded here so the batch completion claim stays
+precise:
+
+1. **AI service adapters stay on `@memoflow/ai` root.** The desktop composer
+   (`apps/desktop/src/main/runtime/compose-ai.ts`) constructs the service
+   runtime adapters (`AIService*Adapter`, `AIEvaluationReportFileAdapter`,
+   `DirectProvider*Adapter`) from the host-owned runtime config. These concrete
+   classes are therefore exported from the package root — an intentional
+   exception to the "factories + port types only" rule. The AI infra barrel
+   keeps its concrete Prisma/engine classes too because `@memoflow/ai` has no
+   `./server` export map entry (infra barrel is package-internal) and the
+   residual API-AI module still composes them inside `register()`.
+2. **API AI remains a follow-up residual.** `createAIApiModule()` in
+   `packages/ai/src/api/module.ts` still composes Prisma and concrete service
+   adapters inside `register()` and reads `context.db`. Not marked done in this
+   batch; documented in the file header and in `docs/standards/architecture.md`.
+3. **Repository desktop composer is a host-port composer.** `compose-repository.ts`
+   carries the five existing host ports (local vault, remote, reconciliation,
+   sync, auto-sync scheduler) and returns `createRepositoryElectronModule`.
+   There is deliberately no `createRepositoryPowerSyncModule` / PowerSync infra
+   file — do not invent one. Repository has no DB composition in the Electron
+   lane.
+4. **Schedule is an explicit two-phase composer.** The host calls
+   `createSchedule{Prisma,PowerSync}Repositories(db)` once, feeds
+   `scheduleTaskRepository` into `createScheduleOrchestrationModule`, then
+   passes the SAME set plus the orchestration `sourceExecutor` into
+   `composeSchedule`. No second repository set or hidden DB composition root.
+   Desktop returns a bound `ScheduleRuntimeController` as the sole start/stop
+   owner (delayed until window-ready).
+5. **Reminder cron / schedule event-delivery-log consumer residuals.**
+   `createReminderTriggerCronJob` is not on any public seam (reminder desktop
+   has no cron runtime — the Prisma lane's snooze rescheduler has no PowerSync
+   counterpart), and the schedule `eventDeliveryLogConsumer` is not wired
+   (no public seam). Both are recorded residuals, not silently omitted.
+6. **Host-used concrete classes remain in root/infra barrels.** apps/api still
+   constructs the account closure saga from Prisma: `PrismaAccountClosureOperationRepository`
+   (closure checker, `main.ts:122`) and `AccountClosedWorker` (`main.ts:265`)
+   on `@memoflow/account` root; `NotificationAccountClosedConsumer` /
+   `ReminderAccountClosedConsumer` / `RepositoryAccountClosedConsumer` on the
+   `/server` seams. These are documented host-used exports, not new seam leaks.
+   Surface specs keep them out of the forbidden-name lists while asserting the
+   removed concrete classes (PowerSync repos, notification/schedule PowerSync
+   repos, `PowerSyncScheduleTaskRepository`) are gone from root AND infra
+   barrels.
+7. **Compose-repository imports only the `/electron` seam** (host-port types);
+   it never touches the package root — a deliberate exception to the
+   "package root + electron seam" composer rule.
+8. **`DashboardRepositoryDependencies.scheduleTaskRepository` is carried but
+   not consumed.** It remains in the dependency shape for dashboard parity;
+   dashboard reads schedule/reminder/notification repos through instance-bound
+   injection. Kept as-is to avoid churn; noted for a later cleanup.
+
 ## 4. 分步实施步骤
 
 ### Step 0 — Baseline, inventory, and no-code gate

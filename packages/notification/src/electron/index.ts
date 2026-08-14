@@ -85,14 +85,6 @@ import {
 } from '@memoflow/contracts/electron';
 import { fail, ok } from '@memoflow/contracts/result';
 import { createLogger } from '@memoflow/utils/logger';
-import { createPowerSyncClosureChecker } from '../server/infrastructure/powersync';
-import { CreateNotificationUseCase } from '../commands';
-import type { ScheduleNotificationPort } from '../schedule-execution';
-import {
-  PowerSyncNotificationPreferenceRepository,
-  PowerSyncNotificationRepository,
-  PowerSyncNotificationTemplateRepository,
-} from '../server/infrastructure';
 import type { NotificationModuleInstance } from '../server/infrastructure';
 import { NotificationController } from '../server/transport';
 import { withAuthenticatedIdentity, withAuthenticatedValue } from './authenticated-ipc';
@@ -145,38 +137,6 @@ export const notificationCustomRendererChannels = [
  * （或注册失败时进入 'failed'）；任意状态都可以结束于 'disposed'。
  */
 type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
-
-/**
- * Builds the schedule-notification host port for schedule orchestration.
- * This is a host composition seam (the desktop composer passes the result to
- * schedule orchestration), NOT part of the electron transport module's own
- * composition. Kept here so apps/desktop can keep importing it until Step D
- * moves the call into compose-notification.
- *
- * 为 schedule orchestration 构建 schedule-notification 宿主 port。这是宿主组合
- * seam（desktop composer 把结果传给 schedule orchestration），不属于 electron
- * 传输模块自身的组合。保留在此以便 apps/desktop 在 Step D 把调用移入
- * compose-notification 之前继续使用。
- */
-export function createNotificationPowerSyncScheduleNotificationPort(
-  db: IElectronModuleContext['db'],
-): ScheduleNotificationPort {
-  const createNotification = new CreateNotificationUseCase(
-    new PowerSyncNotificationRepository(db),
-    new PowerSyncNotificationTemplateRepository(db),
-    new PowerSyncNotificationPreferenceRepository(db),
-    createPowerSyncClosureChecker(db),
-  );
-
-  return {
-    createNotification(request) {
-      return createNotification.execute({
-        ...request,
-        channels: request.channels ? Array.from(request.channels) : undefined,
-      });
-    },
-  };
-}
 
 /**
  * Notification Electron module handle.

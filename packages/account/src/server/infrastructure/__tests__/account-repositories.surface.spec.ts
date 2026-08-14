@@ -36,11 +36,14 @@ import {
  * 绝不能通过根 barrel 泄漏。
  *
  * Note: `PrismaAccountClosureOperationRepository` and `AccountClosedWorker`
- * remain in the root barrel until Step E replaces the apps/api consumers with
- * composer injection; they are the documented deferral, not a new leak.
- * 注：`PrismaAccountClosureOperationRepository` 与 `AccountClosedWorker` 在
- * Step E 用 composer 注入替换 apps/api 消费者前仍保留在根 barrel；这是已记录
- * 的延期项，而非新泄漏。
+ * remain in the root/infra barrels as documented host-used classes — apps/api
+ * builds the closure saga directly from Prisma (closure checker at
+ * `apps/api/src/main.ts:122`, closure worker at `:265`). They are the
+ * documented host-used remainder, not a new leak.
+ * 注：`PrismaAccountClosureOperationRepository` 与 `AccountClosedWorker` 作为
+ * 已记录的 host-used 类保留在根/infra barrel——apps/api 直接基于 Prisma 构建
+ * 关闭 saga（closure checker 在 `apps/api/src/main.ts:122`，关闭 worker 在
+ * `:265`）。它们是有记录的 host-used 遗留，而非新泄漏。
  */
 describe('account repository factories surface', () => {
   const fakePrisma = {} as unknown as PrismaClient;
@@ -110,6 +113,11 @@ describe('account repository factories surface', () => {
     const root = readFileSync(resolve(__dirname, '../../../index.ts'), 'utf8');
     for (const name of forbidden) {
       expect(root).not.toMatch(new RegExp(`\\b${name}\\b`));
+    }
+
+    const infra = readFileSync(resolve(__dirname, '../index.ts'), 'utf8');
+    for (const name of forbidden) {
+      expect(infra).not.toMatch(new RegExp(`\\b${name}\\b`));
     }
 
     const rootModule = await import('../../../../src');

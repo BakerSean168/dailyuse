@@ -2,18 +2,28 @@
  * AI API Module Definition
  * AI API 模块定义
  *
- * 实现 IApiModule 标准接口，内部自治完成：
- * 1. Composition Root（创建 Repo → UseCase → Service → Handler）
- * 2. 路由定义与挂载
- * 3. 初始化任务注册
+ * DOCUMENTED RESIDUAL: unlike the other API transport modules in this batch,
+ * this factory is NOT transport-only. It still composes the Prisma
+ * repositories and service runtime adapters inside `register()` and reads the
+ * database from `context.db` (see `createAIApiModule` body). API AI is outside
+ * the batch composition-root externalization scope and is tracked as a
+ * follow-up. The desktop lane already composes AI in
+ * `apps/desktop/src/main/runtime/compose-ai.ts`; do not use this file as the
+ * host-composer ownership example.
  *
- * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
+ * 已记录 RESIDUAL：与本批其它 API 传输模块不同，本工厂还不是纯传输层。它仍在
+ * `register()` 内组装 Prisma repository 与服务 runtime 适配器，并从 `context.db`
+ * 读取数据库。API AI 不在本批 composition-root 外移范围内，已记录为后续
+ * follow-up。desktop lane 已在 `apps/desktop/src/main/runtime/compose-ai.ts`
+ * 由宿主组装；请不要把该文件当作 host-composer 归属模型的示例。
  *
- * Follows the governance reference pattern:
- * 1. Composition Root via `createAIModule(deps)`
- * 2. Controllers wired to `aiModule.api` (ApplicationPort single track)
- * 3. Route registration
- * + `destroy()` for cleanup
+ * Route registration and lifecycle follow the governance reference pattern:
+ * 1. Controllers wired to `aiModule.api` (ApplicationPort single track)
+ * 2. Route registration
+ * 3. `destroy()` for cleanup
+ *
+ * 路由注册与生命周期遵循 governance 参考模式：controllers 绑定 `aiModule.api`、
+ * 路由注册、`destroy()` 清理。
  */
 
 import type { PrismaClient } from '@memoflow/database';

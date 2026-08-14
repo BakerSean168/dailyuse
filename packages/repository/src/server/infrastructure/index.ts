@@ -59,6 +59,6 @@ export type { IKnowledgeRepositoryConnectionService } from '../application/ports
 export type { IKnowledgeRepositoryProjectionService } from '../application/ports/knowledge-repository-projection.service.port';
 export type { IKnowledgeNoteCommitService } from '../application/ports/knowledge-note-commit.service.port';
 
-// Consumers
-/** @internal 仍被 apps/api 直接消费的具体 consumer 类 — Step E 移除。 */
+// ============ Host-used concrete consumer ============
+/** Host-used by apps/api: closure worker consumer. 宿主使用：apps/api 的账户关闭 consumer。 */
 export { RepositoryAccountClosedConsumer } from './consumers/repository-account-closed.consumer';

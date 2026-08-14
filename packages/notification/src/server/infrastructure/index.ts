@@ -4,12 +4,12 @@
  *
  * Public seam: ingredient factories, set types, module factory, runtime
  * contribution factories and port types. Concrete adapter classes do not leak
- * through this barrel unless a transport/app still consumes them directly
- * (marked @internal, removed in Step E).
+ * through this barrel. The single host-used closure consumer remains exported
+ * for apps/api; it is documented, not a new leak.
  *
  * 公共 seam：仅导出原料工厂、集合类型、模块工厂、运行时贡献工厂与 Port 类型。
- * 除非 transport/app 仍直接消费（以 @internal 标记，Step E 移除），
- * 具体适配器类不通过该 barrel 泄漏。
+ * 具体适配器类不通过该 barrel 泄漏。仅保留供 apps/api 使用的 host-used 关闭
+ * consumer；它是有记录的条目，而非新泄漏。
  */
 
 // ============ Composition Root ============
@@ -55,12 +55,6 @@ export {
   type NotificationDurableRuntimePort,
 } from './runtime';
 
-// ============ Adapters still consumed by frozen transports/apps ============
-/** @internal 仍被 electron 模块直接消费的具体 PowerSync 实现 — Step E 移除。 */
-export {
-  PowerSyncNotificationRepository,
-  PowerSyncNotificationPreferenceRepository,
-  PowerSyncNotificationTemplateRepository,
-} from './adapters/powersync';
-/** @internal 仍被 apps/api 直接消费的具体 consumer 类 — Step E 移除。 */
+// ============ Adapters still consumed by apps ============
+/** @internal 仍被 apps/api 直接消费的 host-used 具体 consumer 类（closure worker 注入）。 */
 export { NotificationAccountClosedConsumer } from './consumers/notification-account-closed.consumer';

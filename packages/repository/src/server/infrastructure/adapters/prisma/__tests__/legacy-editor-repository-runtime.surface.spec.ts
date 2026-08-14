@@ -81,9 +81,11 @@ describe('legacy editor/repository runtime surface', () => {
     expect(repositoryRpcMap).toContain('Legacy database Repository/Resource/Folder/Bookmark');
   });
 
-  it('Desktop main registers knowledge repository electron only, never Editor module (residual 167)', () => {
-    expect(desktopMain).toContain('createRepositoryElectronModule');
+  it('Desktop main composes knowledge repository via composer, never Editor module (residual 167)', () => {
+    expect(desktopMain).toContain("from './runtime/compose-repository'");
+    expect(desktopMain).toContain('composeRepository({');
     expect(desktopMain).toContain('.register(repositoryElectronModule)');
+    expect(desktopMain).not.toContain('createRepositoryElectronModule');
     expect(desktopMain).not.toContain('createEditorElectronModule');
     expect(desktopMain).not.toContain('EditorElectronModule');
     expect(desktopMain).not.toContain('createEditorModule');

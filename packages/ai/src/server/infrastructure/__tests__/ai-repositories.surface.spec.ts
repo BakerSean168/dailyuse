@@ -71,6 +71,12 @@ describe('ai repository factories surface', () => {
   });
 
   it('does not leak concrete adapter classes through the root barrel', async () => {
+    // The AI infra barrel intentionally still exports concrete Prisma / service
+    // / engine classes: `@memoflow/ai` has no `./server` export map entry, so
+    // the infra barrel is package-internal, and the residual API-AI module
+    // (`packages/ai/src/api/module.ts`) still composes them inside register().
+    // This is the documented API-AI follow-up residual, not a new seam leak.
+    // The ROOT barrel must never re-export those concrete classes.
     const forbidden = [
       'PowerSyncAIConversationRepository',
       'PowerSyncAIProviderConfigRepository',

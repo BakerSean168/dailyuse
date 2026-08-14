@@ -14,16 +14,13 @@
  * Step E 消费者注入完成后移除。
  */
 
-/** @internal 仍被 apps/api 与 apps/desktop 直接消费的具体类，Step E 移除。 */
+/** Host-used by apps/api: builds the closure-checker/closure-worker from Prisma. 宿主使用：apps/api 用它构建 closure checker/worker。 */
 export { PrismaAccountClosureOperationRepository } from './adapters/prisma/account-closure-operation-prisma.repository';
-/** @internal 仍被 apps/api 直接消费的具体 worker 类，Step E 移除。 */
+/** Host-used by apps/api: closure saga worker. 宿主使用：apps/api 的账户关闭 saga worker。 */
 export { AccountClosedWorker } from './workers/account-closed.worker';
 
-/** @internal 仍被 electron 模块直接消费的具体 PowerSync 实现 — 使用 IAccountRepository 接口代替。 */
-export {
-  PowerSyncAccountRepository,
-  type Transactional,
-} from './adapters/powersync/account-powersync.repository';
+/** `Transactional` 是 Electron seam（desktop-account-profile-sync）使用的会话类型。 */
+export type { Transactional } from './adapters/powersync/account-powersync.repository';
 
 export {
   createAccountModule,

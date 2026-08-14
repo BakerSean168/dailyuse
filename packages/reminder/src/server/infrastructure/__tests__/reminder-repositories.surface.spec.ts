@@ -117,6 +117,11 @@ describe('reminder repository factories surface', () => {
       expect(root).not.toMatch(new RegExp(`\\b${name}\\b`));
     }
 
+    const infra = readFileSync(resolve(__dirname, '../index.ts'), 'utf8');
+    for (const name of forbidden) {
+      expect(infra).not.toMatch(new RegExp(`\\b${name}\\b`));
+    }
+
     const rootModule = await import('../../../../src');
     const exportedNames = Object.keys(rootModule).sort();
     for (const name of forbidden) {
