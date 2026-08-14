@@ -871,7 +871,7 @@ factory for diagnosis; rerun direct tests before attempting the cutover again.
 | Step A ingredients  | six-field Prisma set; unchanged four-field PowerSync set; checkpoint pair invariant; no concrete root export / 六字段 Prisma set、四字段 PowerSync set 不变、checkpoint pair invariant、root 不导出 concrete class                |
 | Step B cutover      | mocked order/object-identity specs; main uses `composeAI`; transport accepts only `{ instance }`; lifecycle and twelve mounts pass / mock 顺序与 identity、main 使用 composer、transport 只收 instance、生命周期与十二 mount 通过 |
 | Step C surface/docs | residual prose closed without falsifying archive history; no transport composition import; governance/docs/inventory green / residual 正确关闭且不篡改历史、transport 无组合 import、治理/文档/inventory 通过                     |
-| Step D final        | full direct AI/API Vitest, touched typecheck/lint, API smoke, local Docker health and final `rg` inventory / 全量 direct test、受影响检查、API smoke、本地 Docker health 与最终搜索清单                                           |
+| Step D final        | full direct AI/API Vitest, touched typecheck/lint, API smoke, local Docker health and final `rg` inventory / 全量 direct test、受影响检查、API smoke、本地 Docker health 与最终搜索清单（已验证：`pnpm docker:local:ps` 显示 6 个服务全部 healthy —— api/web/ai-service/powersync/redis/postgres；API `GET /healthz` 200、ai-service `GET /healthz` 200；API 日志 0 条 error/AI 注册失败；AI 路由挂载正常返回 401 auth） |
 
 ### 4.2 Behavior invariance matrix / 行为不变矩阵
 
@@ -976,6 +976,14 @@ mount。最后一个搜索是 review 清单，不要求绝对为空；归档历�
 - [ ] Composer/order/surface/lifecycle/route tests, full AI/API direct Vitest,
       AI/API typecheck/lint, Desktop typecheck, API smoke, test inventory,
       governance-check, docs-check, and local Docker health verification are green.
+- [ ] Local Docker lane verified (2026-08-14, revision
+      `7d7407c2169bf6f3dd3bc5d0c3e02a0495d53cfd-dirty`): `pnpm docker:local:ps`
+      shows all six services `(healthy)` — `memoflow-api-1`, `memoflow-web-1`,
+      `memoflow-ai-service-1`, `memoflow-powersync-1`, `memoflow-postgres-1`,
+      `memoflow-redis-1`; API `GET /healthz` → 200 `{"status":"ok"}`; ai-service
+      `GET /healthz` → 200 `{"status":"healthy",...}`; API logs contain 0 error /
+      no AI registration or config failure lines; AI routes mount normally
+      (`/api/ai/*`, `/api/internal/agents/checkpoints` return 401 auth, not 404).
 - [ ] Final `rg` inventory finds no feature-package API transport that composes
       from `context.db`; API AI is no longer listed as an open residual.
 

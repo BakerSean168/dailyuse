@@ -73,6 +73,10 @@ function rowToPendingWrite(row: LangGraphCheckpointWriteRow): LangGraphCheckpoin
   };
 }
 
+/**
+ * @internal Concrete Prisma implementation — consumers should use ILangGraphCheckpointPort.
+ * @internal Prisma 具体实现 —— 消费方应使用 ILangGraphCheckpointPort 接口。
+ */
 export class LangGraphCheckpointPrismaAdapter implements ILangGraphCheckpointPort {
   constructor(private readonly prisma: PrismaClient) {}
 

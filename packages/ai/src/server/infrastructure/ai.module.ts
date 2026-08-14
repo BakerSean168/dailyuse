@@ -42,6 +42,7 @@ import type {
   ILangGraphCheckpointPort,
 } from '../application/ports';
 
+import { createLogger } from '@memoflow/utils/logger';
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
 import type { IAssistantFacadePort, ICapabilityResolverPort, IModelGatewayPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@memoflow/contracts/ai';
@@ -93,6 +94,8 @@ import type {
   SyncNoteByIdUseCase,
   RemoveKnowledgeIndexNoteUseCase,
 } from '../application/use-cases';
+
+const logger = createLogger('AIModule');
 
 // ---------------------------------------------------------------------------
 // Dependencies — AI 模块服务端运行时向外部索取的全部依赖
@@ -590,8 +593,28 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
         return;
       }
 
+      const startedContributions: AIModuleRuntimeContribution[] = [];
       for (const runtime of runtimeContributions) {
-        runtime.start();
+        try {
+          runtime.start();
+          startedContributions.push(runtime);
+        } catch (error) {
+          // Partial-start rollback: stop the already-started contributions in
+          // REVERSE order (best-effort, logged), then rethrow the ORIGINAL
+          // error. `started` stays false, so a later dispose() is a no-op —
+          // start() owns its partial-start cleanup.
+          for (const startedRuntime of [...startedContributions].reverse()) {
+            try {
+              startedRuntime.stop();
+            } catch (stopError) {
+              logger.error(
+                'AIModule: contribution stop failed during partial-start rollback',
+                stopError,
+              );
+            }
+          }
+          throw error;
+        }
       }
 
       started = true;

@@ -39,6 +39,10 @@ function toNullablePrismaJson(
   return value == null ? Prisma.NullableJsonNullValueInput.DbNull : toPrismaJson(value);
 }
 
+/**
+ * @internal Concrete Prisma implementation — consumers should use IAgentCheckpointPort.
+ * @internal Prisma 具体实现 —— 消费方应使用 IAgentCheckpointPort 接口。
+ */
 export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
   constructor(private readonly prisma: PrismaClient) {}
 

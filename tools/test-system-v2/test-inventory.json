@@ -2395,6 +2395,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/server/infrastructure/__tests__/ai-module-partial-start.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/server/infrastructure/__tests__/ai-repositories.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -9862,14 +9872,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 118
+      "fileCount": 119
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 118
+      "fileCount": 119
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
@@ -10457,6 +10467,7 @@
       "packages/ai/src/server/domain/value-objects/__tests__/ai-value-objects.spec.ts",
       "packages/ai/src/server/domain/value-objects/__tests__/token-usage.spec.ts",
       "packages/ai/src/server/infrastructure/__tests__/ai-module-checkpoint-pair.spec.ts",
+      "packages/ai/src/server/infrastructure/__tests__/ai-module-partial-start.spec.ts",
       "packages/ai/src/server/infrastructure/__tests__/ai-repositories.surface.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/__tests__/ai-conversation-domain-events.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/__tests__/ai-conversation-repository.surface.spec.ts",
@@ -10912,7 +10923,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 930,
+    "unit": 931,
     "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,

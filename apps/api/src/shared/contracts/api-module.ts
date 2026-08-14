@@ -7,16 +7,15 @@
  * @example
  * ```typescript
  * import type { IApiModule } from './api-module';
+ * import { createMyModule } from '@memoflow/my-pkg';
+ * import { createMyApiModule } from '@memoflow/my-pkg/api';
  *
- * export const MyModule: IApiModule = {
- *   name: 'MyModule',
- *   register({ router, db }) {
- *     const repo = new MyRepo(db);
- *     const r = Router();
- *     r.get('/', ...);
- *     router.use('/my', r);
- *   },
- * };
+ * // Host composition root (apps/api/src/runtime/compose-my.ts): the runtime
+ * // selects adapters, assembles the transport-neutral instance, and binds it
+ * // into an already-bound IApiModule-compatible handle BEFORE registration.
+ * export const MyModule: IApiModule = createMyApiModule({
+ *   instance: createMyModule({ repository, servicePort }),
+ * });
  * ```
  */
 
