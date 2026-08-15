@@ -1,9 +1,5 @@
 {
   "extends": "./tsconfig.typecheck.json",
-  "compilerOptions": {
-    "rootDir": "../..",
-    "baseUrl": "../.."
-  },
   "include": ["src/shared/**/*.spec.ts", "src/shared/**/*.test.ts"],
   "exclude": ["node_modules", "dist", "src/shared/**/__tests__/smoke/**/*"]
 }
