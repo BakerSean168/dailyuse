@@ -4,9 +4,7 @@ import type { TaskInstanceId, TaskTemplateId } from '@memoflow/contracts/primiti
 import { createTestPinia } from '@memoflow/test-utils';
 import { useTaskStore } from './task-store';
 
-function createInstance(
-  overrides: Partial<TaskInstanceClientDTO> = {},
-): TaskInstanceClientDTO {
+function createInstance(overrides: Partial<TaskInstanceClientDTO> = {}): TaskInstanceClientDTO {
   return {
     id: 'instance-1' as TaskInstanceId,
     templateId: 'template-1' as TaskTemplateId,

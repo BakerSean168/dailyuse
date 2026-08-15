@@ -6,9 +6,7 @@ import { useNotificationStore } from '../stores/notification-store';
 import { mountNotificationComposable } from './notificationQueryTestUtils';
 import { useNotificationListQuery } from './useNotificationListQuery';
 
-function createNotification(
-  overrides: Partial<NotificationClientDTO> = {},
-): NotificationClientDTO {
+function createNotification(overrides: Partial<NotificationClientDTO> = {}): NotificationClientDTO {
   return {
     id: 'n-1' as NotificationClientDTO['id'],
     identityId: 'identity-1' as NotificationClientDTO['identityId'],
@@ -56,10 +54,9 @@ describe('useNotificationListQuery (Query Cache authority pilot)', () => {
     const service = makeService(
       vi.fn().mockResolvedValue(ok(listResponse([createNotification()]))),
     );
-    const { api: first, runtime } = mountNotificationComposable(
-      () => useNotificationListQuery(),
-      { service },
-    );
+    const { api: first, runtime } = mountNotificationComposable(() => useNotificationListQuery(), {
+      service,
+    });
     const { api: second } = mountNotificationComposable(() => useNotificationListQuery(), {
       service,
       runtime,
@@ -78,10 +75,9 @@ describe('useNotificationListQuery (Query Cache authority pilot)', () => {
     const service = makeService(
       vi.fn().mockResolvedValue(ok(listResponse([createNotification()]))),
     );
-    const { api: page, runtime } = mountNotificationComposable(
-      () => useNotificationListQuery(),
-      { service },
-    );
+    const { api: page, runtime } = mountNotificationComposable(() => useNotificationListQuery(), {
+      service,
+    });
     const { api: capsule } = mountNotificationComposable(
       () => useNotificationListQuery({ page: 1, limit: 10 }),
       { service, runtime },
@@ -131,10 +127,10 @@ describe('useNotificationListQuery (Query Cache authority pilot)', () => {
     const service = makeService(
       vi.fn().mockResolvedValue(ok(listResponse([createNotification()]))),
     );
-    const { api: a, runtime } = mountNotificationComposable(
-      () => useNotificationListQuery(),
-      { service, identityScope: 'identity-a' },
-    );
+    const { api: a, runtime } = mountNotificationComposable(() => useNotificationListQuery(), {
+      service,
+      identityScope: 'identity-a',
+    });
     const { api: b } = mountNotificationComposable(() => useNotificationListQuery(), {
       service,
       runtime,
@@ -151,9 +147,7 @@ describe('useNotificationListQuery (Query Cache authority pilot)', () => {
     const findNotifications = vi
       .fn()
       .mockResolvedValueOnce(ok(listResponse([createNotification()])))
-      .mockResolvedValueOnce(
-        fail({ code: 'VALIDATION_ERROR', message: 'Backend failure' }),
-      );
+      .mockResolvedValueOnce(fail({ code: 'VALIDATION_ERROR', message: 'Backend failure' }));
     const service = makeService(findNotifications);
     const { api } = mountNotificationComposable(() => useNotificationListQuery(), {
       service,

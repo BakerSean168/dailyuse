@@ -56,7 +56,11 @@
     </ModuleHeader>
 
     <!-- 信箱是读列表：max-w-4xl（§11-3） -->
-    <div class="min-h-0 flex-1 overflow-y-auto p-3" data-testid="notification-scroll-host" data-scroll-host="notification">
+    <div
+      class="min-h-0 flex-1 overflow-y-auto p-3"
+      data-testid="notification-scroll-host"
+      data-scroll-host="notification"
+    >
       <div class="mx-auto max-w-4xl">
         <!-- 加载 = 行骨架（§0.3 禁整页 spinner） -->
         <div v-if="isLoading" class="space-y-3 py-2" data-testid="notification-list-skeleton">

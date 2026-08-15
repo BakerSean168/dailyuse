@@ -12,10 +12,7 @@ import type { CompleteTaskInstanceReq, TaskTemplateClientDTO } from '@memoflow/c
 import type { Result } from '@memoflow/contracts/result';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
-import {
-  useServerStateIdentityScope,
-  useServerStateRuntime,
-} from '../../../platform/server-state';
+import { useServerStateIdentityScope, useServerStateRuntime } from '../../../platform/server-state';
 import { patchTaskTemplateEverywhere } from './taskTemplateCache';
 
 type TaskInstanceDTO = ReturnType<typeof useTaskStore>['instances'][number];
@@ -69,7 +66,9 @@ export function useTaskInstances() {
     }
   }
 
-  async function updateInstanceProjection(entity: TaskInstanceEntityLike): Promise<TaskInstanceDTO> {
+  async function updateInstanceProjection(
+    entity: TaskInstanceEntityLike,
+  ): Promise<TaskInstanceDTO> {
     const dto = entity.toDTO();
     store.updateInstance(dto);
     await refreshTemplateProjection(String(dto.templateId));
@@ -116,7 +115,10 @@ export function useTaskInstances() {
   }
 
   async function startInstance(id: string) {
-    const result = await executeTaskOperation(() => service.startInstance(id), 'task.error.startFailed');
+    const result = await executeTaskOperation(
+      () => service.startInstance(id),
+      'task.error.startFailed',
+    );
     if (result.ok) {
       return updateInstanceProjection(result.data);
     }
@@ -150,7 +152,10 @@ export function useTaskInstances() {
   }
 
   async function skipInstance(id: string) {
-    const result = await executeTaskOperation(() => service.skipInstance(id), 'task.error.skipFailed');
+    const result = await executeTaskOperation(
+      () => service.skipInstance(id),
+      'task.error.skipFailed',
+    );
     if (result.ok) {
       const dto = await updateInstanceProjection(result.data);
       toast.success(t('task.error.skipSuccess'));

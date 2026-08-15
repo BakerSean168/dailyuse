@@ -14,14 +14,19 @@ import { type App, inject, type InjectionKey } from 'vue';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import type { QueryClient } from '@tanstack/vue-query';
 import { createServerQueryClient, createTestServerQueryClient } from './query-client';
-import { createServerStateRuntimePolicy, type RuntimeLane, type ServerStateRuntimePolicy } from './query-policy';
+import {
+  createServerStateRuntimePolicy,
+  type RuntimeLane,
+  type ServerStateRuntimePolicy,
+} from './query-policy';
 import {
   createServerStateInvalidationDispatcher,
   type ServerStateInvalidationDispatcher,
 } from './invalidation-dispatcher';
 
 /** DI key for the renderer server-state runtime. renderer server-state 运行时 DI key。 */
-export const SERVER_STATE_RUNTIME_KEY: InjectionKey<ServerStateRuntime> = Symbol('ServerStateRuntime');
+export const SERVER_STATE_RUNTIME_KEY: InjectionKey<ServerStateRuntime> =
+  Symbol('ServerStateRuntime');
 
 /**
  * DI key for the effective identity-scope resolver (plan §3.1: keys must carry the

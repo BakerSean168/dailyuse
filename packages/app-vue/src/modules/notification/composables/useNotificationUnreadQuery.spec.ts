@@ -50,10 +50,10 @@ describe('useNotificationUnreadQuery (shared unread key)', () => {
 
   it('isolates the unread cache by identity scope', async () => {
     const service = makeService(vi.fn().mockResolvedValue(ok({ count: 3 })));
-    const { api: a, runtime } = mountNotificationComposable(
-      () => useNotificationUnreadQuery(),
-      { service, identityScope: 'identity-a' },
-    );
+    const { api: a, runtime } = mountNotificationComposable(() => useNotificationUnreadQuery(), {
+      service,
+      identityScope: 'identity-a',
+    });
     const { api: b } = mountNotificationComposable(() => useNotificationUnreadQuery(), {
       service,
       runtime,

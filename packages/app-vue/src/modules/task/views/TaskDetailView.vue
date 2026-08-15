@@ -368,7 +368,9 @@ const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const { templates, dependencies } = useTaskTemplateGraphQuery();
-const { currentTemplate, isLoading } = useTaskTemplateDetailQuery(() => route.params.id as string | undefined);
+const { currentTemplate, isLoading } = useTaskTemplateDetailQuery(
+  () => route.params.id as string | undefined,
+);
 const { isSaving, updateTemplateSafe } = useTaskTemplateMutations();
 const { createDependency, deleteDependency } = useTaskDependencies();
 const { loadGoalBinding, resolveGoalBinding } = useTaskGoalBindingOptions();
@@ -379,7 +381,8 @@ const templateViewModels = computed(() =>
 );
 const graphData = computed(() => buildTaskGraphData(templates.value, dependencies.value));
 
-const detailViewModel = computed<TaskTemplateViewModel | null>(() => {  if (!currentTemplate.value) return null;
+const detailViewModel = computed<TaskTemplateViewModel | null>(() => {
+  if (!currentTemplate.value) return null;
   return mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
 });
 

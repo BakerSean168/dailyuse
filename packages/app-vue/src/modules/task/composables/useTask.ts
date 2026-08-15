@@ -47,13 +47,18 @@ export function useTask() {
       tags: query?.tags,
     };
     listRequested.value = true;
-    await waitForTaskTemplateQuery(
-      runtime.queryClient,
-      taskTemplateQueryKeys.list(
-        resolveIdentityScope(),
-        canonicalizeTaskTemplateListQuery(listParams.value),
-      ),
+    const queryKey = taskTemplateQueryKeys.list(
+      resolveIdentityScope(),
+      canonicalizeTaskTemplateListQuery(listParams.value),
     );
+    // An errored query makes the waiter settle instantly without re-requesting; force a
+    // refetch so a consumer's retry actually retries (P2-2). Fresh/pending keys still wait.
+    // error 态 query 会让 waiter 立即 settle 而不重新请求；这里显式 refetch，让 retry 真正生效（P2-2）。
+    if (runtime.queryClient.getQueryState(queryKey)?.status === 'error') {
+      await templateList.refetch();
+    } else {
+      await waitForTaskTemplateQuery(runtime.queryClient, queryKey);
+    }
   }
 
   function setPage(p: number) {
@@ -66,7 +71,10 @@ export function useTask() {
     templates: templateList.templates,
     instances: computed(() => store.instances),
     isLoading: computed(() => templateList.isLoading.value || store.isLoading),
-    error: computed(() => store.error),
+    // Surface the template list query error so legacy consumers (e.g. TaskCapsulePreview)
+    // see failed template fetches instead of treating them as success (P2-2).
+    // 暴露 template list query 的 error，让 legacy consumer（如 TaskCapsulePreview）能看到失败而非当作成功（P2-2）。
+    error: computed(() => store.error ?? templateList.error.value),
     pagination: computed(() => store.pagination),
     // Template operations (list key)
     fetchTemplates,

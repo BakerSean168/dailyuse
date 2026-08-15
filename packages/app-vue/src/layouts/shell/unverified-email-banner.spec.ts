@@ -29,9 +29,7 @@ describe('unverified email banner', () => {
     expect(shellSource).toContain("t('shell.auth.unverifiedBanner')");
     expect(shellSource).toContain("t('shell.auth.unverifiedAction')");
     // No second-arg English hardcode on those calls
-    expect(shellSource).not.toMatch(
-      /t\(\s*['"]shell\.auth\.unverifiedBanner['"]\s*,\s*['"]Verify/,
-    );
+    expect(shellSource).not.toMatch(/t\(\s*['"]shell\.auth\.unverifiedBanner['"]\s*,\s*['"]Verify/);
   });
 
   it('uses high-contrast warning token classes (amber-100 / amber-950)', () => {

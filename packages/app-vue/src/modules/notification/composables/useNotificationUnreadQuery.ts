@@ -9,9 +9,7 @@ import { useQuery } from '@tanstack/vue-query';
 import { useI18n } from 'vue-i18n';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
-import {
-  useServerStateIdentityScope,
-} from '../../../platform/server-state';
+import { useServerStateIdentityScope } from '../../../platform/server-state';
 import { notificationQueryKeys } from '../../../platform/server-state/query-keys';
 import { NOTIFICATION_STALE_TIME_MS } from '../../../platform/server-state/query-policy';
 import { resultQueryFn } from '../../../platform/server-state/result-query';

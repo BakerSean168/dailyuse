@@ -257,4 +257,41 @@ describe('useTaskTemplateMutations (plan §3.4)', () => {
     expect(runtime.queryClient.getQueryData(detailKey)?.name).toBe('Confirmed');
     expect(runtime.queryClient.getQueryData(listKey)?.templates?.[0].name).toBe('Confirmed');
   });
+
+  it('batch delete patches the mutation-begin identity cache, not the execution-time identity (P1-2)', async () => {
+    const tpl = template();
+    const service = makeService({
+      deleteTemplate: vi.fn().mockResolvedValue(ok(undefined)),
+    });
+    // Model an identity switch between mutation begin (onMutate) and execution (mutationFn):
+    // the resolver flips to a new identity on its second call. A mutationFn that re-resolves
+    // the scope would remove from the execution-time identity (B) and leave A stale.
+    let calls = 0;
+    let currentIdentity = 'identity-a';
+    const { api, runtime } = mountTaskComposable(() => useTaskTemplateMutations(), {
+      service,
+      identityScope: () => {
+        calls += 1;
+        if (calls > 1) currentIdentity = 'identity-b';
+        return currentIdentity;
+      },
+    });
+
+    const listKeyA = taskTemplateQueryKeys.list('identity-a', { page: 1, limit: 20 });
+    const listKeyB = taskTemplateQueryKeys.list('identity-b', { page: 1, limit: 20 });
+    runtime.queryClient.setQueryData(listKeyA, { templates: [tpl], total: 1 });
+    runtime.queryClient.setQueryData(listKeyB, { templates: [tpl], total: 1 });
+
+    await api.deleteTemplatesSafe([tpl.id]);
+
+    // The begin-scope identity (A) cache is patched; the execution-time identity (B) is untouched.
+    const remainingA = runtime.queryClient.getQueryData(listKeyA) as {
+      templates: TaskTemplateClientDTO[];
+    };
+    expect(remainingA.templates.some((t) => t.id === tpl.id)).toBe(false);
+    const remainingB = runtime.queryClient.getQueryData(listKeyB) as {
+      templates: TaskTemplateClientDTO[];
+    };
+    expect(remainingB.templates.some((t) => t.id === tpl.id)).toBe(true);
+  });
 });

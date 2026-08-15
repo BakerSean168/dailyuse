@@ -8,11 +8,12 @@ import type {
 import { createTestServerStateRuntime } from '../../../platform/server-state';
 import { createNotificationStartupHook } from './index';
 
-const publisher = createTypedEventPublisher<
-  Pick<NotificationEventMap, 'notification:dispatch_in_app'>
->(eventBus);
+const publisher =
+  createTypedEventPublisher<Pick<NotificationEventMap, 'notification:dispatch_in_app'>>(eventBus);
 
-function makeEvent(overrides: Partial<NotificationDispatchInAppEvent> = {}): NotificationDispatchInAppEvent {
+function makeEvent(
+  overrides: Partial<NotificationDispatchInAppEvent> = {},
+): NotificationDispatchInAppEvent {
   return {
     id: 'n-1' as NotificationDispatchInAppEvent['id'],
     identityId: 'identity-1' as NotificationDispatchInAppEvent['identityId'],
@@ -69,9 +70,7 @@ describe('createNotificationStartupHook (Step 3: eventBus → dispatcher only)',
     publisher.send('notification:dispatch_in_app', makeEvent({ operationId: undefined }));
     await Promise.resolve();
 
-    expect(invalidate).toHaveBeenCalledWith(
-      expect.objectContaining({ dedupeKey: 'n-1' }),
-    );
+    expect(invalidate).toHaveBeenCalledWith(expect.objectContaining({ dedupeKey: 'n-1' }));
     hook.stop();
   });
 

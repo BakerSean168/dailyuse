@@ -12,10 +12,7 @@ import type { TaskTemplateId } from '@memoflow/contracts/primitives';
 import type { Result } from '@memoflow/contracts/result';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
-import {
-  useServerStateIdentityScope,
-  useServerStateRuntime,
-} from '../../../platform/server-state';
+import { useServerStateIdentityScope, useServerStateRuntime } from '../../../platform/server-state';
 
 export function useTaskDependencies() {
   const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');

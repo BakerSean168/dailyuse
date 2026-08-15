@@ -21,9 +21,7 @@ import { translateResultError } from '../../../shared/utils/translate-result-err
  * Create the identity-scoped Task template detail query for a (reactive) id.
  * 为（响应式）id 创建 identity-scoped 任务模板详情查询。
  */
-export function useTaskTemplateDetailQuery(
-  id: MaybeRefOrGetter<string | undefined | null>,
-) {
+export function useTaskTemplateDetailQuery(id: MaybeRefOrGetter<string | undefined | null>) {
   const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');
   const resolveIdentityScope = useServerStateIdentityScope();
   const { t } = useI18n();
@@ -48,7 +46,9 @@ export function useTaskTemplateDetailQuery(
   const isError = computed(() => query.isError.value);
   const error = computed(() =>
     query.error.value
-      ? translateResultError(query.error.value, t, { fallbackKey: 'task.error.loadTemplatesFailed' })
+      ? translateResultError(query.error.value, t, {
+          fallbackKey: 'task.error.loadTemplatesFailed',
+        })
       : null,
   );
 

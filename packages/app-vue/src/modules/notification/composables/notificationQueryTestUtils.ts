@@ -64,11 +64,7 @@ export function mountNotificationComposable<T>(
 
   mount(Host, {
     global: {
-      plugins: [
-        [VueQueryPlugin, { queryClient: runtime.queryClient }],
-        pinia,
-        i18n,
-      ],
+      plugins: [[VueQueryPlugin, { queryClient: runtime.queryClient }], pinia, i18n],
       provide: {
         [NOTIFICATION_SERVICE_KEY as symbol]: options.service,
         [SERVER_STATE_RUNTIME_KEY]: runtime,

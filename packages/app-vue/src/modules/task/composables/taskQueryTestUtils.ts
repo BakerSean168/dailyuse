@@ -54,7 +54,8 @@ const i18n = createI18n({
 export interface MountTaskComposableOptions {
   service: Record<string, unknown>;
   runtime?: ServerStateRuntime;
-  identityScope?: string;
+  /** Static identity scope, or a live resolver (tests that switch identity mid-mutation). */
+  identityScope?: string | (() => string);
 }
 
 export function mountTaskComposable<T>(
@@ -65,6 +66,12 @@ export function mountTaskComposable<T>(
   const runtime = options.runtime ?? createTestServerStateRuntime();
   const pinia = createPinia();
   setActivePinia(pinia);
+
+  const providedIdentityScope = options.identityScope;
+  const resolveIdentityScope: () => string =
+    typeof providedIdentityScope === 'function'
+      ? providedIdentityScope
+      : () => providedIdentityScope ?? 'identity-1';
 
   const Host = defineComponent({
     setup() {
@@ -79,7 +86,7 @@ export function mountTaskComposable<T>(
       provide: {
         [TASK_SERVICE_KEY as symbol]: options.service,
         [SERVER_STATE_RUNTIME_KEY]: runtime,
-        [SERVER_STATE_IDENTITY_SCOPE_KEY]: () => options.identityScope ?? 'identity-1',
+        [SERVER_STATE_IDENTITY_SCOPE_KEY]: resolveIdentityScope,
       },
     },
   });

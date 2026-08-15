@@ -23,6 +23,7 @@ import {
   type GovernanceListQueryInput,
 } from '../../../platform/server-state/query-keys';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { GOVERNANCE_STALE_TIME_MS } from '../../../platform/server-state/query-policy';
 
 /** Options for the Governance rule list query composable. 治理规则列表查询选项。 */
 export interface UseGovernanceListQueryOptions {
@@ -58,6 +59,7 @@ export function useGovernanceListQuery(options: UseGovernanceListQueryOptions = 
           total: data.total ?? 0,
         };
       },
+      staleTime: GOVERNANCE_STALE_TIME_MS,
     };
   });
 

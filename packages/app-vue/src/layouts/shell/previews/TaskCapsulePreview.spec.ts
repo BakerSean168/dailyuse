@@ -75,4 +75,24 @@ describe('TaskCapsulePreview', () => {
     expect(wrapper.find('[data-testid="task-capsule-empty"]').exists()).toBe(true);
     wrapper.unmount();
   });
+
+  it('shows the retry state when the template list fetch fails (P2-2)', async () => {
+    errorRef.value = 'Could not load task templates';
+    const wrapper = mountPreview();
+    await flushPromises();
+    expect(wrapper.find('[data-testid="task-capsule-error"]').exists()).toBe(true);
+    expect(wrapper.get('[data-testid="task-capsule-retry"]').exists()).toBe(true);
+    wrapper.unmount();
+  });
+
+  it('re-runs the load when retry is clicked (P2-2)', async () => {
+    errorRef.value = 'Could not load task templates';
+    const wrapper = mountPreview();
+    await flushPromises();
+    await wrapper.get('[data-testid="task-capsule-retry"]').trigger('click');
+    await flushPromises();
+    expect(fetchInstancesByDateRange).toHaveBeenCalledTimes(2);
+    expect(fetchTemplates).toHaveBeenCalledTimes(2);
+    wrapper.unmount();
+  });
 });

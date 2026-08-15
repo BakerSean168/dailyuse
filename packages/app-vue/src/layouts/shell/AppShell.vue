@@ -688,19 +688,13 @@ function panelCacheKey(
       </template>
       <template #capsule-preview-reminder="{ closePreview }">
         <ReminderCapsulePreview
-          @view-all="
-            openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })
-          "
-          @select="
-            openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })
-          "
+          @view-all="openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })"
+          @select="openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })"
         />
       </template>
       <template #capsule-preview-schedule="{ closePreview }">
         <ScheduleCapsulePreview
-          @view-all="
-            openHeaderPreviewModule(closePreview, { id: 'schedule', route: '/schedule' })
-          "
+          @view-all="openHeaderPreviewModule(closePreview, { id: 'schedule', route: '/schedule' })"
         />
       </template>
       <template #capsule-preview-notification="{ closePreview }">

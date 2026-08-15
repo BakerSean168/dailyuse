@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fail, ok } from '@memoflow/contracts/result';
 import type { RuleClientDTO } from '@memoflow/contracts/governance';
+import { createServerStateRuntime } from '../../../platform/server-state';
 import { governanceQueryKeys } from '../../../platform/server-state/query-keys';
 import { mountGovernanceComposable } from './governanceQueryTestUtils';
 import { useGovernanceListQuery } from './useGovernanceListQuery';
@@ -105,6 +106,33 @@ describe('useGovernanceListQuery (pilot authority)', () => {
 
     expect(service.listRules).toHaveBeenCalledTimes(2);
   });
+
+  it('does not refetch within the 30s governance stale window on remount', async () => {
+    vi.useFakeTimers();
+    const service = makeService({
+      listRules: vi.fn().mockResolvedValue(ok({ items: [], total: 0, page: 1, pageSize: 20 })),
+    });
+    const runtime = createServerStateRuntime('web');
+
+    const first = mountGovernanceComposable(() => useGovernanceListQuery(), { service, runtime });
+    await vi.waitFor(() => expect(first.api.isLoading.value).toBe(false));
+    expect(service.listRules).toHaveBeenCalledTimes(1);
+
+    const second = mountGovernanceComposable(() => useGovernanceListQuery(), {
+      service,
+      runtime,
+    });
+    await vi.waitFor(() => expect(second.api.isLoading.value).toBe(false));
+    expect(service.listRules).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(31_000);
+    const third = mountGovernanceComposable(() => useGovernanceListQuery(), {
+      service,
+      runtime,
+    });
+    await vi.waitFor(() => expect(third.api.isLoading.value).toBe(false));
+    expect(service.listRules).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('useGovernanceDetailQuery', () => {
@@ -126,6 +154,34 @@ describe('useGovernanceDetailQuery', () => {
     expect(service.getRule).toHaveBeenCalledTimes(1);
     expect(detail.currentRule.value?.id).toBe(rule().id);
   });
+
+  it('does not refetch the detail within the 30s governance stale window on remount', async () => {
+    vi.useFakeTimers();
+    const service = makeService({ getRule: vi.fn().mockResolvedValue(ok(rule())) });
+    const runtime = createServerStateRuntime('web');
+
+    const first = mountGovernanceComposable(() => useGovernanceDetailQuery(() => rule().id), {
+      service,
+      runtime,
+    });
+    await vi.waitFor(() => expect(first.api.isLoading.value).toBe(false));
+    expect(service.getRule).toHaveBeenCalledTimes(1);
+
+    const second = mountGovernanceComposable(() => useGovernanceDetailQuery(() => rule().id), {
+      service,
+      runtime,
+    });
+    await vi.waitFor(() => expect(second.api.isLoading.value).toBe(false));
+    expect(service.getRule).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(31_000);
+    const third = mountGovernanceComposable(() => useGovernanceDetailQuery(() => rule().id), {
+      service,
+      runtime,
+    });
+    await vi.waitFor(() => expect(third.api.isLoading.value).toBe(false));
+    expect(service.getRule).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('useGovernanceRevisionsQuery', () => {
@@ -144,6 +200,40 @@ describe('useGovernanceRevisionsQuery', () => {
     await vi.waitFor(() => expect(api.isLoading.value).toBe(false));
     expect(service.getRevisions).toHaveBeenCalledTimes(1);
     expect(api.revisions.value).toHaveLength(1);
+  });
+
+  it('does not refetch revisions within the 30s governance stale window on remount', async () => {
+    vi.useFakeTimers();
+    const service = makeService({
+      getRevisions: vi
+        .fn()
+        .mockResolvedValue(
+          ok({ items: [{ id: 'rev-1', ruleId: rule().id }], total: 1, page: 1, pageSize: 50 }),
+        ),
+    });
+    const runtime = createServerStateRuntime('web');
+
+    const first = mountGovernanceComposable(() => useGovernanceRevisionsQuery(() => rule().id), {
+      service,
+      runtime,
+    });
+    await vi.waitFor(() => expect(first.api.isLoading.value).toBe(false));
+    expect(service.getRevisions).toHaveBeenCalledTimes(1);
+
+    const second = mountGovernanceComposable(() => useGovernanceRevisionsQuery(() => rule().id), {
+      service,
+      runtime,
+    });
+    await vi.waitFor(() => expect(second.api.isLoading.value).toBe(false));
+    expect(service.getRevisions).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(31_000);
+    const third = mountGovernanceComposable(() => useGovernanceRevisionsQuery(() => rule().id), {
+      service,
+      runtime,
+    });
+    await vi.waitFor(() => expect(third.api.isLoading.value).toBe(false));
+    expect(service.getRevisions).toHaveBeenCalledTimes(2);
   });
 });
 

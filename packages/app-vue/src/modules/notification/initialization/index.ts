@@ -18,9 +18,8 @@ import { createLogger } from '@memoflow/utils/logger';
 import type { ServerStateInvalidationDispatcher } from '../../../platform/server-state';
 
 const logger = createLogger('notification:init');
-const notificationEvents = createTypedEventSubscriber<
-  Pick<NotificationEventMap, 'notification:dispatch_in_app'>
->(eventBus);
+const notificationEvents =
+  createTypedEventSubscriber<Pick<NotificationEventMap, 'notification:dispatch_in_app'>>(eventBus);
 
 /** Startup hook dependencies. startup hook 依赖（Step 3）。 */
 export interface NotificationStartupHookOptions {
@@ -36,9 +35,10 @@ export interface NotificationStartupHookOptions {
  * 创建 Notification startup hook：把 `notification:dispatch_in_app` 事件转成 typed
  * invalidation intent 交给 dispatcher。
  */
-export function createNotificationStartupHook(
-  options: NotificationStartupHookOptions,
-): { start(): void; stop(): void } {
+export function createNotificationStartupHook(options: NotificationStartupHookOptions): {
+  start(): void;
+  stop(): void;
+} {
   let started = false;
 
   const handleNotificationDispatch = (event: NotificationDispatchInAppEvent): void => {

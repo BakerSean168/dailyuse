@@ -14,6 +14,7 @@ import { RULE_SERVICE_KEY } from '../../../di/keys';
 import { useServerStateIdentityScope } from '../../../platform/server-state';
 import { governanceQueryKeys } from '../../../platform/server-state/query-keys';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { GOVERNANCE_STALE_TIME_MS } from '../../../platform/server-state/query-policy';
 
 /**
  * Create the identity-scoped Governance rule revisions query for a (reactive) rule id.
@@ -42,6 +43,7 @@ export function useGovernanceRevisionsQuery(ruleId: MaybeRefOrGetter<string | un
         };
       },
       enabled,
+      staleTime: GOVERNANCE_STALE_TIME_MS,
     };
   });
 

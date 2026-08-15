@@ -68,7 +68,11 @@
       </template>
     </ModuleHeader>
 
-    <div id="task-template-management" class="min-h-0 flex-1 overflow-y-auto p-3" data-scroll-host="task-management">
+    <div
+      id="task-template-management"
+      class="min-h-0 flex-1 overflow-y-auto p-3"
+      data-scroll-host="task-management"
+    >
       <template v-if="viewMode === 'card'">
         <TaskTemplateGrid
           :templates="filteredViewModels"
@@ -277,9 +281,7 @@ const { loadGoalBindings, resolveGoalBinding } = useTaskGoalBindingOptions();
 
 function resolveTaskGoalBindingName(binding: TaskGoalBindingViewModel): string {
   const display = resolveGoalBinding(binding);
-  return display
-    ? `${display.goalName} · ${display.keyResultName}`
-    : t('common.unavailable');
+  return display ? `${display.goalName} · ${display.keyResultName}` : t('common.unavailable');
 }
 
 // ── 过滤 / 视图状态（从 TaskTemplateManagement 上移） ──
@@ -696,5 +698,4 @@ async function handleGraphNodeClick(task: TaskForDAG) {
   const target = document.querySelector(`[data-task-id="${task.id}"]`) as HTMLElement | null;
   target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
-
 </script>

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mapTablesToInvalidationIntents } from './server-state';
 
 describe('mapTablesToInvalidationIntents (plan §3.3 pilot table mapping)', () => {
@@ -55,5 +55,44 @@ describe('mapTablesToInvalidationIntents (plan §3.3 pilot table mapping)', () =
   it('carries the identityScope through for cache isolation', () => {
     const [intent] = mapTablesToInvalidationIntents(['notifications'], 'profile-9');
     expect(intent.identityScope).toBe('profile-9');
+  });
+});
+
+describe('desktop server-state lifecycle (P2-3)', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('registers and fires the pending startup cancel on clearDesktopServerStateIdentity', async () => {
+    const { registerDesktopServerStateStartupCancel, clearDesktopServerStateIdentity } =
+      await import('./server-state');
+    const cancel = vi.fn();
+    registerDesktopServerStateStartupCancel(cancel);
+
+    clearDesktopServerStateIdentity('id-1');
+    expect(cancel).toHaveBeenCalledTimes(1);
+
+    // The cancel is drained after firing: a later clear must not double-fire it.
+    clearDesktopServerStateIdentity('id-1');
+    expect(cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops registered realtime sources before clearing the identity', async () => {
+    const { registerDesktopServerStateSource, clearDesktopServerStateIdentity } =
+      await import('./server-state');
+    const source = { stop: vi.fn() };
+    registerDesktopServerStateSource(source);
+
+    clearDesktopServerStateIdentity('id-1');
+    expect(source.stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('flags the runtime disposed so deferred startup is skipped after logout/lock', async () => {
+    const { isDesktopServerStateDisposed, clearDesktopServerStateIdentity } =
+      await import('./server-state');
+    expect(isDesktopServerStateDisposed()).toBe(false);
+
+    clearDesktopServerStateIdentity('id-1');
+    expect(isDesktopServerStateDisposed()).toBe(true);
   });
 });

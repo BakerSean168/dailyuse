@@ -188,9 +188,14 @@ export function useTaskTemplateMutations() {
     },
   });
 
+  // P1-2: batch delete resolves identityScope once at mutation begin (onMutate) and shares it
+  // with mutationFn via this closure. mutationFn never re-resolves it at execution time — an
+  // identity change while the batch is in flight would patch the wrong identity's cache.
+  let batchDeleteIdentityScope = '';
+
   const deleteTemplates = useMutation({
     mutationFn: async (ids: readonly string[]) => {
-      const identityScope = resolveIdentityScope();
+      const identityScope = batchDeleteIdentityScope;
       let deleted = 0;
       for (const id of ids) {
         const result = await executeTaskOperation(
@@ -203,7 +208,10 @@ export function useTaskTemplateMutations() {
       }
       return deleted;
     },
-    onMutate: () => ({ identityScope: resolveIdentityScope() }),
+    onMutate: () => {
+      batchDeleteIdentityScope = resolveIdentityScope();
+      return { identityScope: batchDeleteIdentityScope };
+    },
     onSettled: (_data, _error, _ids, context) => {
       void runtime.dispatcher.invalidate({
         target: 'task-template',

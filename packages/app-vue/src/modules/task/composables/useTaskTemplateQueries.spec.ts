@@ -47,7 +47,10 @@ describe('useTaskTemplateGraphQuery (management projection)', () => {
     const { api: graph, runtime } = mountTaskComposable(() => useTaskTemplateGraphQuery(), {
       service,
     });
-    const { api: list } = mountTaskComposable(() => useTaskTemplateListQuery(), { service, runtime });
+    const { api: list } = mountTaskComposable(() => useTaskTemplateListQuery(), {
+      service,
+      runtime,
+    });
     const { api: detail } = mountTaskComposable(
       () => useTaskTemplateDetailQuery(() => 'template-1'),
       { service, runtime },
@@ -89,9 +92,7 @@ describe('useTaskTemplateGraphQuery (management projection)', () => {
     const tpl = template();
     service.getTaskGraph
       .mockResolvedValueOnce(ok({ templates: [entity(tpl)], dependencies: [], total: 1 }))
-      .mockResolvedValueOnce(
-        fail({ code: 'VALIDATION_ERROR', message: 'Backend failure' }),
-      );
+      .mockResolvedValueOnce(fail({ code: 'VALIDATION_ERROR', message: 'Backend failure' }));
     const { api } = mountTaskComposable(() => useTaskTemplateGraphQuery(), { service });
 
     await vi.waitFor(() => expect(api.isLoading.value).toBe(false));
@@ -146,14 +147,12 @@ describe('useTaskTemplateDetailQuery', () => {
   it('stays disabled (currentTemplate null) when the id is missing or "new"', async () => {
     const service = makeService();
     service.getTemplate.mockResolvedValue(ok(entity(template())));
-    const { api: missing } = mountTaskComposable(
-      () => useTaskTemplateDetailQuery(() => null),
-      { service },
-    );
-    const { api: creating } = mountTaskComposable(
-      () => useTaskTemplateDetailQuery(() => 'new'),
-      { service },
-    );
+    const { api: missing } = mountTaskComposable(() => useTaskTemplateDetailQuery(() => null), {
+      service,
+    });
+    const { api: creating } = mountTaskComposable(() => useTaskTemplateDetailQuery(() => 'new'), {
+      service,
+    });
 
     await Promise.resolve();
     expect(missing.currentTemplate.value).toBeNull();
@@ -173,10 +172,10 @@ describe('useTaskTemplateDetailQuery', () => {
     expect(service.getTemplate).toHaveBeenCalledTimes(1);
     expect(api.currentTemplate.value?.id).toBe('template-1');
 
-    const second = mountTaskComposable(
-      () => useTaskTemplateDetailQuery(() => 'template-2'),
-      { service, runtime },
-    );
+    const second = mountTaskComposable(() => useTaskTemplateDetailQuery(() => 'template-2'), {
+      service,
+      runtime,
+    });
     await vi.waitFor(() => expect(second.api.isLoading.value).toBe(false));
     expect(service.getTemplate).toHaveBeenCalledTimes(2);
   });

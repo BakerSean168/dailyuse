@@ -8,9 +8,7 @@
  */
 
 import { defineStore } from 'pinia';
-import type {
-  TaskInstanceClientDTO,
-} from '@memoflow/contracts/task';
+import type { TaskInstanceClientDTO } from '@memoflow/contracts/task';
 
 export interface TaskState {
   instances: TaskInstanceClientDTO[];

@@ -28,8 +28,7 @@ import type { TaskTemplateClientDTO } from '@memoflow/contracts/task';
 export interface UseTaskTemplateGraphQueryOptions extends TaskTemplateListQueryInput {}
 
 /** Params input: static object, ref, or getter. 参数输入：静态对象 / ref / getter。 */
-export type TaskTemplateQueryParamsInput =
-  MaybeRefOrGetter<UseTaskTemplateGraphQueryOptions>;
+export type TaskTemplateQueryParamsInput = MaybeRefOrGetter<UseTaskTemplateGraphQueryOptions>;
 
 /**
  * Create the identity-scoped Task template graph query (templates + dependencies projection).
@@ -71,13 +70,17 @@ export function useTaskTemplateGraphQuery(params: TaskTemplateQueryParamsInput =
   });
 
   const templates = computed<TaskTemplateClientDTO[]>(() => query.data.value?.templates ?? []);
-  const dependencies = computed<TaskGraphDependencyDTO[]>(() => query.data.value?.dependencies ?? []);
+  const dependencies = computed<TaskGraphDependencyDTO[]>(
+    () => query.data.value?.dependencies ?? [],
+  );
   const total = computed(() => query.data.value?.total ?? 0);
   const isLoading = computed(() => query.isPending.value);
   const isError = computed(() => query.isError.value);
   const error = computed(() =>
     query.error.value
-      ? translateResultError(query.error.value, t, { fallbackKey: 'task.error.loadTemplatesFailed' })
+      ? translateResultError(query.error.value, t, {
+          fallbackKey: 'task.error.loadTemplatesFailed',
+        })
       : null,
   );
 

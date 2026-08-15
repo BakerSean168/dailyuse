@@ -10,7 +10,11 @@ describe('resultQueryFn (plan §3.4)', () => {
 
   it('throws a typed ResultErrorException carrying the original code/message on fail', async () => {
     const fn = resultQueryFn(async () =>
-      fail({ code: 'VALIDATION_ERROR', message: 'Cannot load', details: [{ field: 'x', code: 'E', message: 'm' }] }),
+      fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Cannot load',
+        details: [{ field: 'x', code: 'E', message: 'm' }],
+      }),
     );
 
     const error = await fn().then(

@@ -22,7 +22,9 @@ function code(source: string): string {
 }
 
 const storeSource = code(readFileSync(resolve(taskRoot, 'stores/task-store.ts'), 'utf8'));
-const managementView = code(readFileSync(resolve(taskRoot, 'views/TaskManagementView.vue'), 'utf8'));
+const managementView = code(
+  readFileSync(resolve(taskRoot, 'views/TaskManagementView.vue'), 'utf8'),
+);
 const detailView = code(readFileSync(resolve(taskRoot, 'views/TaskDetailView.vue'), 'utf8'));
 
 describe('Task pilot authority surface (fail closed)', () => {

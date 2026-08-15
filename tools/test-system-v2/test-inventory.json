@@ -4233,6 +4233,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/task/composables/useTask.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/task/composables/useTaskGoalBindingOptions.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10099,7 +10107,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 185
+      "fileCount": 186
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11141,7 +11149,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 953,
+    "unit": 954,
     "integration": 25,
     "smoke": 2,
     "boundary-ipc": 9,

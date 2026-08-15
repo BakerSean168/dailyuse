@@ -64,7 +64,9 @@ describe('createNotificationSseInvalidationSource (Step 3)', () => {
     vi.restoreAllMocks();
   });
 
-  function makeSource(overrides: Partial<Parameters<typeof createNotificationSseInvalidationSource>[0]> = {}) {
+  function makeSource(
+    overrides: Partial<Parameters<typeof createNotificationSseInvalidationSource>[0]> = {},
+  ) {
     return createNotificationSseInvalidationSource({
       dispatcher: runtime.dispatcher,
       identityScope: () => 'identity-1',
@@ -171,10 +173,7 @@ describe('createNotificationSseInvalidationSource (Step 3)', () => {
     source.stop();
     source.stop();
     expect(FakeEventSource.instances[0].close).toHaveBeenCalledTimes(1);
-    expect(window.removeEventListener).toHaveBeenCalledWith(
-      'online',
-      expect.any(Function),
-    );
+    expect(window.removeEventListener).toHaveBeenCalledWith('online', expect.any(Function));
 
     // No dispatches after stop.
     FakeEventSource.instances[0].emit('notification', {

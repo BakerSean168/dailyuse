@@ -16,6 +16,8 @@ import {
 
 let currentRuntime: ServerStateRuntime | null = null;
 let sources: Array<{ stop: () => void }> = [];
+let disposed = false;
+let pendingStartupCancel: (() => void) | null = null;
 
 /** Create + install the desktop server-state runtime and remember it. */
 export function installDesktopServerStateRuntime(app: App): ServerStateRuntime {
@@ -24,12 +26,31 @@ export function installDesktopServerStateRuntime(app: App): ServerStateRuntime {
     identityScope: () => accountStore.getCurrentAccountId ?? '',
   });
   currentRuntime = runtime;
+  disposed = false;
   return runtime;
 }
 
 /** Read the installed runtime (null before install). */
 export function getDesktopServerStateRuntime(): ServerStateRuntime | null {
   return currentRuntime;
+}
+
+/**
+ * Whether the runtime/sources were disposed (logout / profile lock). Deferred startup must
+ * not start realtime sources after a logout/lock ran first (plan §3.1 ordering; P2-3).
+ * runtime/sources 是否已被 dispose（登出/锁屏）；延迟启动不得在登出/锁屏后继续启动实时源（P2-3）。
+ */
+export function isDesktopServerStateDisposed(): boolean {
+  return disposed;
+}
+
+/**
+ * Register a cancellation for the deferred startup (requestIdleCallback / setTimeout) so a
+ * logout/profile lock that runs before it fires can cancel it (P2-3).
+ * 注册延迟启动（requestIdleCallback / setTimeout）的取消器：若登出/锁屏先于它执行则取消（P2-3）。
+ */
+export function registerDesktopServerStateStartupCancel(cancel: () => void): void {
+  pendingStartupCancel = cancel;
 }
 
 /** Register a realtime source so logout/profile lock stops it before clearing the cache. */
@@ -39,6 +60,9 @@ export function registerDesktopServerStateSource(source: { stop: () => void }): 
 
 /** Stop realtime sources, then clear the cache for an identity (logout / profile lock / switch). */
 export function clearDesktopServerStateIdentity(identityScope: string): void {
+  disposed = true;
+  pendingStartupCancel?.();
+  pendingStartupCancel = null;
   for (const source of sources) source.stop();
   sources = [];
   currentRuntime?.clearIdentity(identityScope);

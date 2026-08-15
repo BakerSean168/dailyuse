@@ -41,7 +41,10 @@ export { useDesktopWindowControls } from './shared/composables/useDesktopWindowC
 export { createAppRouter } from './router';
 
 // ── Dashboard adapters ──
-export { createDashboardIpcAdapter, createDashboardHttpAdapter } from './modules/dashboard/adapters';
+export {
+  createDashboardIpcAdapter,
+  createDashboardHttpAdapter,
+} from './modules/dashboard/adapters';
 
 // ── Stores (consumed by app containers for DI/provide) ──
 export { useAuthenticationStore } from './modules/authentication';
@@ -77,7 +80,6 @@ export {
   type ServerStateRuntime,
   type ServerStateRuntimePolicy,
 } from './platform/server-state';
-
 
 // ── Theme / presentation ──
 export { useLocaleSync, usePresentationBootstrap, useThemeSync } from './modules/setting';

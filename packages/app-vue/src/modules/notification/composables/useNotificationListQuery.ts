@@ -14,9 +14,7 @@ import { useI18n } from 'vue-i18n';
 import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
-import {
-  useServerStateIdentityScope,
-} from '../../../platform/server-state';
+import { useServerStateIdentityScope } from '../../../platform/server-state';
 import {
   canonicalizeNotificationListQuery,
   notificationQueryKeys,
@@ -76,13 +74,17 @@ export function useNotificationListQuery(options: UseNotificationListQueryOption
     };
   });
 
-  const notifications = computed<NotificationClientDTO[]>(() => query.data.value?.notifications ?? []);
+  const notifications = computed<NotificationClientDTO[]>(
+    () => query.data.value?.notifications ?? [],
+  );
   const total = computed(() => query.data.value?.total ?? 0);
   const isLoading = computed(() => query.isPending.value);
   const isError = computed(() => query.isError.value);
   const error = computed(() =>
     query.error.value
-      ? translateResultError(query.error.value, t, { fallbackKey: 'notification.error.fetchFailed' })
+      ? translateResultError(query.error.value, t, {
+          fallbackKey: 'notification.error.fetchFailed',
+        })
       : null,
   );
 
