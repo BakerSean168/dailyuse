@@ -8,7 +8,8 @@
  */
 
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
-import { join, relative, extname } from 'node:path';
+import { join, relative } from 'node:path';
+import { findBoundaryViolations, shouldSkipSourceFile } from './lib/package-internal-boundary.mjs';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const PACKAGES_DIR = join(ROOT, 'packages');
@@ -22,6 +23,8 @@ const FORBIDDEN_LEGACY_LAYERS = [
   'electron-entry',
 ];
 
+const FORBIDDEN_DB_SPECIFIERS = ['@memoflow/database'];
+
 const GOVERNANCE_LAYER_RULES = [
   {
     layer: 'server/domain',
@@ -34,6 +37,7 @@ const GOVERNANCE_LAYER_RULES = [
       'api',
       ...FORBIDDEN_LEGACY_LAYERS,
     ],
+    forbiddenExternalSpecifiers: FORBIDDEN_DB_SPECIFIERS,
   },
   {
     layer: 'server/application',
@@ -45,6 +49,7 @@ const GOVERNANCE_LAYER_RULES = [
       'api',
       ...FORBIDDEN_LEGACY_LAYERS,
     ],
+    forbiddenExternalSpecifiers: FORBIDDEN_DB_SPECIFIERS,
   },
   {
     layer: 'server/transport',
@@ -83,24 +88,6 @@ const EXCEPTIONS = new Set([
 ]);
 
 const KNOWN_VIOLATIONS = new Set();
-const SOURCE_EXTENSIONS = new Set(['.ts', '.mts', '.cts']);
-const SERVER_SUBLAYERS = new Set(['domain', 'application', 'transport', 'infrastructure']);
-const LEGACY_LAYER_NAMES = new Set([
-  'domain-server',
-  'domain-client',
-  'domain-shared',
-  'application-server',
-  'application-client',
-  'client',
-  'electron',
-  'infrastructure-server',
-  'infrastructure-client',
-  'controllers',
-  'api',
-  'contracts',
-  'mocks',
-  'electron-entry',
-]);
 
 function main() {
   const packages = readdirSync(PACKAGES_DIR, { withFileTypes: true })
@@ -128,7 +115,7 @@ function main() {
   const uniqueViolations = [];
   const seen = new Set();
   for (const violation of violations) {
-    const key = `${violation.file}: ${violation.message}`;
+    const key = `${violation.file}:${violation.line}: ${violation.message}`;
     if (seen.has(key)) continue;
     seen.add(key);
 
@@ -142,7 +129,7 @@ function main() {
   if (uniqueViolations.length > 0) {
     console.error(`❌ Package-Internal Boundary Audit FAILED — ${uniqueViolations.length} new violation(s):\n`);
     for (const violation of uniqueViolations) {
-      console.error(`  ${violation.file}: ${violation.message}`);
+      console.error(`  ${violation.file}:${violation.line}: ${violation.message}`);
     }
     console.error('\nSee docs/standards/architecture.md for package-internal layering rules.');
     process.exit(1);
@@ -163,65 +150,21 @@ function walkLayer(dir, rule, violations, countFile) {
     }
     if (!entry.isFile()) continue;
 
-    const ext = extname(entry.name);
-    if (!SOURCE_EXTENSIONS.has(ext)) continue;
-    if (entry.name.endsWith('.test.ts') || entry.name.endsWith('.spec.ts')) continue;
-    if (fullPath.includes('__tests__')) continue;
+    if (shouldSkipSourceFile(entry.name, fullPath)) continue;
 
     countFile();
     const content = readFileSync(fullPath, 'utf8').replace(/^﻿/, '');
     const relPath = relative(ROOT, fullPath).replaceAll('\\', '/');
-    checkImports(content, relPath, rule, violations);
+    violations.push(
+      ...findBoundaryViolations({
+        content,
+        relPath,
+        layer: rule.layer,
+        forbidden: rule.forbidden,
+        forbiddenExternalSpecifiers: rule.forbiddenExternalSpecifiers,
+      }),
+    );
   }
-}
-
-function checkImports(content, relPath, rule, violations) {
-  const importPattern = /(?:from\s+['"]|import\s*\(\s*['"])([^'"]+)['"]/g;
-
-  let match;
-  while ((match = importPattern.exec(content)) !== null) {
-    const specifier = match[1];
-    const withinPackageTarget = getWithinPackageLayer(specifier);
-    if (!withinPackageTarget) continue;
-
-    if (rule.forbidden.includes(withinPackageTarget)) {
-      violations.push({
-        file: relPath,
-        message: `${rule.layer} must not import from ${withinPackageTarget} (found: '${specifier}')`,
-      });
-    }
-  }
-}
-
-function getWithinPackageLayer(specifier) {
-  if (specifier.startsWith('@/')) {
-    return getLayerFromParts(specifier.slice(2).split('/'));
-  }
-
-  if (specifier.startsWith('../') || specifier.startsWith('./')) {
-    const parts = specifier.split('/').filter((part) => part !== '.' && part !== '..');
-    return getLayerFromParts(parts);
-  }
-
-  return null;
-}
-
-function getLayerFromParts(parts) {
-  if (parts.length === 0) return null;
-
-  if (parts[0] === 'server' && SERVER_SUBLAYERS.has(parts[1])) {
-    return `server/${parts[1]}`;
-  }
-
-  if (SERVER_SUBLAYERS.has(parts[0])) {
-    return `server/${parts[0]}`;
-  }
-
-  if (LEGACY_LAYER_NAMES.has(parts[0])) {
-    return parts[0];
-  }
-
-  return null;
 }
 
 main();

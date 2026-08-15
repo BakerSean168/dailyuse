@@ -9763,6 +9763,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/governance/__tests__/package-internal-boundary.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "tools/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/governance/__tests__/scope-constraint.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -10326,7 +10334,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "vitest",
-      "fileCount": 5
+      "fileCount": 6
     },
     {
       "id": "test-system-v2:test",
@@ -11004,6 +11012,6 @@
     "boundary-main": 5,
     "e2e": 63,
     "perf": 4,
-    "governance": 30
+    "governance": 31
   }
 }

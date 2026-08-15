@@ -1,5 +1,21 @@
 # Governance tools
 
+## Package-Internal Boundary: `@memoflow/database`
+
+`package-internal-boundary-audit.mjs` is the fail-closed gate: `server/domain` and
+`server/application` production code must not import `@memoflow/database` (or any other
+Prisma concrete code). Application/Domain consume Port only; Prisma concrete code belongs
+to Infrastructure. DB deps are allowed only in `server/infrastructure`, host runtime
+composers (`apps/*/src/runtime`) and test fixtures (`.spec.ts` / `.test.ts` / `__tests__`).
+
+`server/domain` 与 `server/application` 的生产代码禁止 import `@memoflow/database`（及其它
+Prisma 具体实现）。Application/Domain 只消费 Port；Prisma 具体实现属于 Infrastructure。
+DB 依赖只允许出现在 `server/infrastructure`、宿主 runtime composer
+（`apps/*/src/runtime`）与测试 fixture（`.spec.ts` / `.test.ts` / `__tests__`）中。
+
+The check lives in `lib/package-internal-boundary.mjs` (pure function, shared with the
+CLI and unit tests); the rule set is defined in `package-internal-boundary-audit.mjs`.
+
 ## Dual Registry
 
 - **Machine source of truth**: [`dual-registry.json`](./dual-registry.json)
