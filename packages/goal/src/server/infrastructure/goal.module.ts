@@ -20,6 +20,8 @@ import type {
   IGoalFolderRepository,
   IGoalRecordRepository,
   IFocusModeRepository,
+  IRelationRepository,
+  IWalletRepository,
 } from '../domain';
 import { GoalPolicy, FocusSessionPolicy } from '../domain';
 import {
@@ -70,6 +72,15 @@ import {
   ListHabitUseCase,
   type IHabitRepository,
 } from '../application/use-cases/commands/habit.use-cases';
+import {
+  CreateRelationUseCase,
+  ListRelationsUseCase,
+} from '../application/use-cases/commands/relation.use-cases';
+import {
+  CreateWalletAccountUseCase,
+  ListWalletUseCase,
+  RecordWalletTransactionUseCase,
+} from '../application/use-cases/commands/wallet.use-cases';
 
 const logger = createLogger('GoalModule');
 
@@ -96,6 +107,10 @@ export interface GoalModuleDependencies {
   readonly runtimeContributions?: GoalRuntimeContributionsInput;
   /** R4：习惯仓储（可选；提供时启用 habit use cases）。 */
   readonly habitRepository?: IHabitRepository;
+  /** R5：关系仓储（可选；提供时启用 relation use cases）。 */
+  readonly relationRepository?: IRelationRepository;
+  /** R7：钱包仓储（可选；提供时启用 wallet use cases）。 */
+  readonly walletRepository?: IWalletRepository;
 }
 
 /**
@@ -127,6 +142,17 @@ export interface GoalModuleUseCases {
     readonly create: CreateHabitUseCase;
     readonly checkIn: RecordHabitCheckInUseCase;
     readonly list: ListHabitUseCase;
+  };
+  // R5 Relation / 关系
+  readonly relation?: {
+    readonly create: CreateRelationUseCase;
+    readonly list: ListRelationsUseCase;
+  };
+  // R7 Wallet / 钱包
+  readonly wallet?: {
+    readonly createAccount: CreateWalletAccountUseCase;
+    readonly recordTransaction: RecordWalletTransactionUseCase;
+    readonly list: ListWalletUseCase;
   };
   // Goal CRUD / 目标增删改查
   readonly createGoal: CreateGoalUseCase;
@@ -226,6 +252,8 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
   const focusSessionPolicy = new FocusSessionPolicy();
 
   const habitRepository: IHabitRepository | undefined = deps.habitRepository;
+  const relationRepository: IRelationRepository | undefined = deps.relationRepository;
+  const walletRepository: IWalletRepository | undefined = deps.walletRepository;
 
   return {
     // R4 Habit（可选：未注入仓储时不启用）
@@ -235,6 +263,25 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
             create: new CreateHabitUseCase(habitRepository),
             checkIn: new RecordHabitCheckInUseCase(habitRepository),
             list: new ListHabitUseCase(habitRepository),
+          },
+        }
+      : {}),
+    // R5 Relation（可选：未注入仓储时不启用）
+    ...(relationRepository
+      ? {
+          relation: {
+            create: new CreateRelationUseCase(relationRepository),
+            list: new ListRelationsUseCase(relationRepository),
+          },
+        }
+      : {}),
+    // R7 Wallet（可选：未注入仓储时不启用）
+    ...(walletRepository
+      ? {
+          wallet: {
+            createAccount: new CreateWalletAccountUseCase(walletRepository),
+            recordTransaction: new RecordWalletTransactionUseCase(walletRepository),
+            list: new ListWalletUseCase(walletRepository),
           },
         }
       : {}),

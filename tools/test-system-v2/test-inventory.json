@@ -5798,6 +5798,17 @@
       ]
     },
     {
+      "path": "packages/goal/src/server/application/use-cases/commands/__tests__/wallet.use-cases.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts",
+        "packages/goal/vitest.use-cases.config.ts"
+      ]
+    },
+    {
       "path": "packages/goal/src/server/application/use-cases/queries/__tests__/get-current-focus-mode.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6284,6 +6295,28 @@
       ]
     },
     {
+      "path": "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-relation.mapper.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts",
+        "packages/goal/vitest.mappers.config.ts"
+      ]
+    },
+    {
+      "path": "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-wallet.mapper.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts",
+        "packages/goal/vitest.mappers.config.ts"
+      ]
+    },
+    {
       "path": "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-weight-snapshot-mapper.additional.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6304,6 +6337,22 @@
         "packages/goal/vitest.config.ts",
         "packages/goal/vitest.mappers.config.ts"
       ]
+    },
+    {
+      "path": "packages/goal/src/server/infrastructure/adapters/prisma/relation-prisma.repository.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/goal/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/goal/src/server/infrastructure/adapters/prisma/wallet-prisma.repository.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/goal/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
     },
     {
       "path": "packages/goal/src/server/infrastructure/build-task-name-keep-boundary.surface.spec.ts",
@@ -9963,35 +10012,35 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 90
+      "fileCount": 93
     },
     {
       "id": "packages/goal/vitest.integration.config.ts",
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 2
+      "fileCount": 4
     },
     {
       "id": "packages/goal/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 90
+      "fileCount": 93
     },
     {
       "id": "packages/goal/vitest.use-cases.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "id": "packages/goal/vitest.mappers.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 9
+      "fileCount": 11
     },
     {
       "id": "packages/governance/vitest.config.ts",
@@ -10617,6 +10666,7 @@
       "packages/goal/src/server/application/use-cases/commands/__tests__/update-goal-key-result.test.ts",
       "packages/goal/src/server/application/use-cases/commands/__tests__/update-goal-review.test.ts",
       "packages/goal/src/server/application/use-cases/commands/__tests__/update-goal.test.ts",
+      "packages/goal/src/server/application/use-cases/commands/__tests__/wallet.use-cases.spec.ts",
       "packages/goal/src/server/application/use-cases/queries/__tests__/get-current-focus-mode.test.ts",
       "packages/goal/src/server/application/use-cases/queries/__tests__/get-goal-aggregate.test.ts",
       "packages/goal/src/server/application/use-cases/queries/__tests__/get-goal-folder.test.ts",
@@ -10663,6 +10713,8 @@
       "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-goal-mapper.additional.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-goal-mapper.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-goal-record-mapper.spec.ts",
+      "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-relation.mapper.spec.ts",
+      "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-wallet.mapper.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-weight-snapshot-mapper.additional.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/mappers/prisma-weight-snapshot-mapper.spec.ts",
       "packages/goal/src/server/infrastructure/build-task-name-keep-boundary.surface.spec.ts",
@@ -10923,8 +10975,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 931,
-    "integration": 23,
+    "unit": 934,
+    "integration": 25,
     "smoke": 2,
     "boundary-ipc": 9,
     "boundary-main": 5,

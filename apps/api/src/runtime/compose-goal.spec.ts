@@ -108,6 +108,8 @@ describe('composeGoal assembly order', () => {
       focusModeRepository: repoSet.focusModeRepository,
       goalWriteTransactionRunner: repoSet.goalWriteTransactionRunner,
       habitRepository: repoSet.habitRepository,
+      relationRepository: repoSet.relationRepository,
+      walletRepository: repoSet.walletRepository,
       taskBindingReadPort: fakeReadPort,
     });
     expect(moduleCall.runtimeContributions).toContain(

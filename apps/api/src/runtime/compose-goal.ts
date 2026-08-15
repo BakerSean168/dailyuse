@@ -106,6 +106,8 @@ export function composeGoal(
     focusModeRepository,
     goalWriteTransactionRunner,
     habitRepository,
+    relationRepository,
+    walletRepository,
   } = createGoalPrismaRepositories(dependencies.db);
 
   const listenerRuntime = createGoalEventListenersRuntime({
@@ -127,6 +129,8 @@ export function composeGoal(
     focusModeRepository,
     goalWriteTransactionRunner,
     habitRepository,
+    relationRepository,
+    walletRepository,
     taskBindingReadPort: dependencies.taskBindingReadPort,
     runtimeContributions,
   });
