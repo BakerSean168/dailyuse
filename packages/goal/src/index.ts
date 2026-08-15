@@ -35,6 +35,8 @@ export {
   type IGoalRecordRepository,
   type IGoalFolderRepository,
   type IFocusModeRepository,
+  type IRelationRepository,
+  type IWalletRepository,
 } from './server';
 export type { IHabitRepository } from './server/application/use-cases/commands/habit.use-cases';
 export type { GoalWriteTransactionRunner } from './server/application/use-cases/commands/goal-write-support';

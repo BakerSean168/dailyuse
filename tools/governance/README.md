@@ -1,5 +1,33 @@
 # Governance tools
 
+## Package-Internal Boundary: `@memoflow/database` & `@prisma/client`
+
+`package-internal-boundary-audit.mjs` is the fail-closed gate: `server/domain` and
+`server/application` production code must not import `@memoflow/database` or any of its
+exported subpaths (e.g. `@memoflow/database/prisma`), nor `@prisma/client` directly.
+Application/Domain consume Port only; Prisma concrete code (exposed through
+`@memoflow/database`, backed by `@prisma/client`) belongs to Infrastructure. DB
+deps are allowed only in `server/infrastructure`, host runtime composers
+(`apps/*/src/runtime`) and test fixtures (`.spec.ts` / `.test.ts` / `__tests__`).
+
+`server/domain` 与 `server/application` 的生产代码禁止 import `@memoflow/database` 及其所有
+导出的子路径（如 `@memoflow/database/prisma`），也禁止直接 import `@prisma/client`。
+Application/Domain 只消费 Port；Prisma 具体实现（经 `@memoflow/database` 暴露、由
+`@prisma/client` 支撑）属于 Infrastructure。DB 依赖只允许出现在
+`server/infrastructure`、宿主 runtime composer（`apps/*/src/runtime`）与测试
+fixture（`.spec.ts` / `.test.ts` / `__tests__`）中。
+
+The check lives in `lib/package-internal-boundary.mjs` (pure function, shared with the
+CLI and unit tests); the rule set is defined in `package-internal-boundary-audit.mjs`.
+
+The matcher covers `from '…'`, bare side-effect `import '…'`, `import type … from '…'` and
+dynamic `import('…')`. Comment-interleaved forms (e.g. `import /* x */ '@memoflow/database'`)
+are not matched — keep imports in the canonical forms above.
+
+匹配器覆盖 `from '…'`、裸副作用 `import '…'`、`import type … from '…'` 与动态
+`import('…')`。注释穿插形式（如 `import /* x */ '@memoflow/database'`）不会被匹配——请保持
+导入使用上述规范形式。
+
 ## Dual Registry
 
 - **Machine source of truth**: [`dual-registry.json`](./dual-registry.json)

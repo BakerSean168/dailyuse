@@ -164,12 +164,15 @@ describe('composeTask assembly without goalProgressHandler', () => {
     expect(createTaskApiModule).toHaveBeenCalledWith({ instance });
   });
 
-  it('returns a module handle with name Task plus register and destroy', () => {
-    const handle = composeTask({ db: fakeDb });
+  it('returns a module handle with name Task plus register and destroy, and the same instance.api as applicationPort', () => {
+    const composed = composeTask({ db: fakeDb });
 
-    expect(handle).toMatchObject({ name: 'Task' });
-    expect(typeof handle.register).toBe('function');
-    expect(typeof handle.destroy).toBe('function');
+    expect(composed.module).toMatchObject({ name: 'Task' });
+    expect(typeof composed.module.register).toBe('function');
+    expect(typeof composed.module.destroy).toBe('function');
+
+    const instance = createTaskModule.mock.results[0].value;
+    expect(composed.applicationPort).toBe(instance.api);
   });
 });
 
@@ -195,7 +198,7 @@ describe('composeTask structural registration', () => {
   });
 
   it('mounts task routes on the router and starts the owned instance', async () => {
-    const handle = composeTask({ db: fakeDb });
+    const composed = composeTask({ db: fakeDb });
 
     const instance = createTaskModule.mock.results[0].value;
     const startSpy = vi.spyOn(instance, 'start');
@@ -211,11 +214,11 @@ describe('composeTask structural registration', () => {
       openApiRegistry: undefined,
     };
 
-    await expect(handle.register(context)).resolves.toBeUndefined();
+    await expect(composed.module.register(context)).resolves.toBeUndefined();
     expect(routerUse).toHaveBeenCalledWith(expect.anything());
     expect(startSpy).toHaveBeenCalledTimes(1);
 
-    await handle.destroy?.();
+    await composed.module.destroy?.();
     expect(disposeSpy).toHaveBeenCalledTimes(1);
   });
 });

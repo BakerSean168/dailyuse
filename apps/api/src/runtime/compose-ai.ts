@@ -53,6 +53,9 @@ import {
   type AIApiModuleDef,
 } from '@memoflow/ai/api';
 import type { RepositoryApplicationPort } from '@memoflow/repository';
+import type { GoalApplicationPort } from '@memoflow/goal';
+import type { TaskApplicationPort } from '@memoflow/task';
+import type { ReminderApplicationPort } from '@memoflow/reminder';
 import { BackendAutomationToolExecutorAdapter } from '../modules/ai/backend-automation-tool-executor.adapter';
 import { ControlledAnalyticsReadAdapter } from '../modules/ai/controlled-analytics-read.adapter';
 import { RepositoryKnowledgeIndexStatusAdapter } from '../modules/ai/repository-knowledge-index-status.adapter';
@@ -70,6 +73,20 @@ export interface ComposeAIDependencies {
   readonly repositoryApiPort: RepositoryApplicationPort;
   /** Host-resolved repository storage base directory. 宿主导出的仓库存储基础目录。 */
   readonly repositoryStorageBaseDir: string;
+  /** The shared Goal application port composed once by the API runtime (`composeGoal(...).applicationPort`). API runtime 只组装一次并共享的 Goal application port（`composeGoal(...).applicationPort`）。 */
+  readonly goalApplicationPort: GoalApplicationPort;
+  /** The shared Task application port composed once by the API runtime (`composeTask(...).applicationPort`). API runtime 只组装一次并共享的 Task application port（`composeTask(...).applicationPort`）。 */
+  readonly taskApplicationPort: TaskApplicationPort;
+  /**
+   * The Reminder application port wired for the AI executor — the host's
+   * executor-facing port (`composeReminder(...).executorReminderPort`), whose
+   * `createTemplate` uses the frozen merge-base closure predicate rather than
+   * the module's account-active checker.
+   *
+   * 为 AI executor 预留的 Reminder application port（`composeReminder(...).executorReminderPort`），
+   * 其 `createTemplate` 使用冻结的 merge-base 闭户谓词，而非模块的账户激活检查器。
+   */
+  readonly reminderApplicationPort: ReminderApplicationPort;
   /**
    * Optional ai-service runtime config override. When omitted or `undefined`,
    * the composer reads the config lazily via `getAIServiceRuntimeConfig()`;
@@ -97,8 +114,10 @@ export interface ComposeAIDependencies {
  *    lazily when it is omitted; an explicit `null` disables the remote
  *    ai-service adapters without an environment read.
  * 3. Build the five app-local host adapters from db + repositoryApiPort +
- *    repositoryStorageBaseDir (knowledge-note persistence, knowledge source,
- *    knowledge index status, analytics read, automation tool executor).
+ *    repositoryStorageBaseDir + the injected Goal/Task/Reminder application
+ *    ports (knowledge-note persistence, knowledge source, knowledge index
+ *    status, analytics read, automation tool executor). The executor only
+ *    orchestrates the injected ports; it never constructs a feature module.
  * 4. Build the eight config-backed AIService adapters when a config exists
  *    (chat execution, goal planning, goal automation, knowledge ingestion /
  *    query / note generation, analytics query, agent runtime); always the
@@ -114,9 +133,11 @@ export interface ComposeAIDependencies {
  *    API-only 的 agent + LangGraph checkpoint pair）。
  * 2. 解析 ai-service runtime config：优先使用注入的覆盖；省略时延迟读取；
  *    显式 `null` 禁用远端 ai-service adapter 且不做环境读取。
- * 3. 用 db + repositoryApiPort + repositoryStorageBaseDir 构建五个 app-local
- *    宿主 adapter（knowledge-note persistence、knowledge source、knowledge
- *    index status、analytics read、automation tool executor）。
+ * 3. 用 db + repositoryApiPort + repositoryStorageBaseDir + 注入的
+ *    Goal/Task/Reminder application port 构建五个 app-local 宿主 adapter
+ *    （knowledge-note persistence、knowledge source、knowledge index status、
+ *    analytics read、automation tool executor）。executor 只编排注入的 port，
+ *    绝不构造 feature module。
  * 4. 存在 config 时构建八个 config-backed AIService adapter（chat execution、
  *    goal planning、goal automation、knowledge ingestion/query/note
  *    generation、analytics query、agent runtime）；evaluation-report 文件
@@ -166,10 +187,13 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
     dependencies.repositoryApiPort,
   );
   const analyticsReadPort = new ControlledAnalyticsReadAdapter(dependencies.db);
-  const automationToolExecutorPort = new BackendAutomationToolExecutorAdapter(
-    dependencies.db,
-    dependencies.repositoryStorageBaseDir,
-  );
+  const automationToolExecutorPort = new BackendAutomationToolExecutorAdapter({
+    goalApplicationPort: dependencies.goalApplicationPort,
+    taskApplicationPort: dependencies.taskApplicationPort,
+    reminderApplicationPort: dependencies.reminderApplicationPort,
+    knowledgeSource: knowledgeSourcePort,
+    analyticsRead: analyticsReadPort,
+  });
 
   const chatExecutionPort = config ? new AIServiceChatExecutionAdapter(config) : undefined;
   const goalPlanningPort = config ? new AIServiceGoalPlanningAdapter(config) : undefined;

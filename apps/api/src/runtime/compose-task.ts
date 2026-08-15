@@ -55,6 +55,7 @@ import {
   createTaskPrismaRepositories,
   createTaskRuntimeContribution,
   normalizeTaskRuntimeContributions,
+  type TaskApplicationPort,
   type TaskRuntimeContributionsInput,
 } from '@memoflow/task';
 import {
@@ -74,6 +75,17 @@ export interface ComposeTaskDependencies {
   readonly runtimeContributions?: TaskRuntimeContributionsInput;
   /** Goal's durable Task→Goal progress handler; enables the outbox runtime when present. 目标侧持久 Task→Goal 进度处理器；提供时启用 outbox runtime。 */
   readonly goalProgressHandler?: TaskGoalProgressHandler;
+}
+
+/**
+ * Composed task surface for the API host.
+ * 任务在 API 宿主的组装结果。
+ */
+export interface ComposedTask {
+  /** Already-bound IApiModule-compatible handle (transport + lifecycle only). 已绑定的 IApiModule 兼容 handle（只负责 transport 与生命周期）。 */
+  readonly module: TaskApiModuleDef;
+  /** The transport-neutral application port (`instance.api`) for sibling modules to orchestrate. 供兄弟模块编排的与传输无关 application port（`instance.api`）。 */
+  readonly applicationPort: TaskApplicationPort;
 }
 
 /**
@@ -112,11 +124,11 @@ export interface ComposeTaskDependencies {
  * （Task register 是异步的并会被 await），其 destroy() 会 dispose 所属实例。
  *
  * @param dependencies - ComposeTaskDependencies with the runtime Prisma client.
- * @returns TaskApiModuleDef — an already-bound IApiModule-compatible handle.
+ * @returns ComposedTask — the bound module handle and the shared application port.
  */
 export function composeTask(
   dependencies: ComposeTaskDependencies,
-): TaskApiModuleDef {
+): ComposedTask {
   const {
     taskTemplateRepository,
     taskInstanceRepository,
@@ -147,5 +159,8 @@ export function composeTask(
     runtimeContributions,
   });
 
-  return createTaskApiModule({ instance });
+  return {
+    module: createTaskApiModule({ instance }),
+    applicationPort: instance.api,
+  };
 }

@@ -25,7 +25,7 @@ describe('goal API runtime composer surface', () => {
     expect(main).toMatch(
       /composeGoal\(\{\s*db: prisma,\s*taskBindingReadPort: new PrismaTaskBindingReadPort\(prisma\),?\s*\}/,
     );
-    expect(main).toContain('.register(goalApiModule)');
+    expect(main).toContain('.register(goalComposed.module)');
   });
 
   it('main.ts no longer references createGoalApiModule or the goal/api seam', () => {

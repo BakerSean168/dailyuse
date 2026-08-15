@@ -11,7 +11,9 @@
  *   and treats explicit `null` as disabled without an environment read
  * - forwards the six-field repository set (incl. the checkpoint pair) and the
  *   five host ports into createAIModule with exact object identity
- * - passes the assembled instance into createAIApiModule({ instance })
+ * - constructs the executor with the injected Goal/Task/Reminder application
+ *   ports plus the SAME knowledge-source / analytics-read adapters used by the
+ *   AI module (single module instance set)
  *
  * 验证 composeAI()：
  * - 按计划 §2.3 顺序装配 AI（Prisma 集合 → config 解析 → 宿主 adapter →
@@ -21,7 +23,8 @@
  *   视为禁用且不做环境读取
  * - 把六字段仓储集合（含 checkpoint pair）与五个宿主 port 以精确对象 identity
  *   传入 createAIModule
- * - 把装配好的 instance 传入 createAIApiModule({ instance })
+ * - 用注入的 Goal/Task/Reminder application port 加上与 AI 模块相同的
+ *   knowledge-source / analytics-read adapter（单套 module instance）构造 executor
  *
  * All package factories/classes and the app-local host adapters are mocked with
  * vi.fn() so the spec can assert invocation order and constructor arguments.
@@ -33,6 +36,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PrismaClient } from '@memoflow/database';
 import type { RepositoryApplicationPort } from '@memoflow/repository';
+import type { GoalApplicationPort } from '@memoflow/goal';
+import type { TaskApplicationPort } from '@memoflow/task';
+import type { ReminderApplicationPort } from '@memoflow/reminder';
 
 vi.mock('@memoflow/ai', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@memoflow/ai')>();
@@ -102,7 +108,21 @@ import { RepositoryKnowledgeSourceAdapter } from '../modules/ai/repository-knowl
 
 const fakeDb = { tag: 'fake-db' } as unknown as PrismaClient;
 const fakeRepositoryApiPort = { tag: 'fake-repository-port' } as unknown as RepositoryApplicationPort;
+const fakeGoalApplicationPort = { tag: 'fake-goal-port' } as unknown as GoalApplicationPort;
+const fakeTaskApplicationPort = { tag: 'fake-task-port' } as unknown as TaskApplicationPort;
+const fakeReminderApplicationPort = {
+  tag: 'fake-reminder-port',
+} as unknown as ReminderApplicationPort;
 const fakeStorageBaseDir = '/tmp/fake-repository-storage';
+
+const aiDependencies = {
+  db: fakeDb,
+  repositoryApiPort: fakeRepositoryApiPort,
+  repositoryStorageBaseDir: fakeStorageBaseDir,
+  goalApplicationPort: fakeGoalApplicationPort,
+  taskApplicationPort: fakeTaskApplicationPort,
+  reminderApplicationPort: fakeReminderApplicationPort,
+};
 
 const mockRepositorySet = {
   conversationRepository: { tag: 'conversation' },
@@ -162,7 +182,7 @@ beforeEach(() => {
 
 describe('composeAI assembly order', () => {
   it('assembles in plan §2.3 order and returns an IApiModule-compatible handle', () => {
-    composeAI({ db: fakeDb, repositoryApiPort: fakeRepositoryApiPort, repositoryStorageBaseDir: fakeStorageBaseDir });
+    composeAI(aiDependencies);
 
     const prismaOrder = vi.mocked(createAIPrismaRepositories).mock.invocationCallOrder[0];
     const configOrder = vi.mocked(getAIServiceRuntimeConfig).mock.invocationCallOrder[0];
@@ -185,7 +205,7 @@ describe('composeAI assembly order', () => {
   });
 
   it('constructs the five app-local host adapters from the exact db / repository port / storage dir identities', () => {
-    composeAI({ db: fakeDb, repositoryApiPort: fakeRepositoryApiPort, repositoryStorageBaseDir: fakeStorageBaseDir });
+    composeAI(aiDependencies);
 
     expect(RepositoryKnowledgeNotePersistenceAdapter).toHaveBeenCalledTimes(1);
     expect(RepositoryKnowledgeNotePersistenceAdapter).toHaveBeenCalledWith(fakeRepositoryApiPort);
@@ -200,18 +220,24 @@ describe('composeAI assembly order', () => {
     expect(ControlledAnalyticsReadAdapter).toHaveBeenCalledWith(fakeDb);
 
     expect(BackendAutomationToolExecutorAdapter).toHaveBeenCalledTimes(1);
-    expect(BackendAutomationToolExecutorAdapter).toHaveBeenCalledWith(fakeDb, fakeStorageBaseDir);
+    expect(BackendAutomationToolExecutorAdapter).toHaveBeenCalledWith({
+      goalApplicationPort: fakeGoalApplicationPort,
+      taskApplicationPort: fakeTaskApplicationPort,
+      reminderApplicationPort: fakeReminderApplicationPort,
+      knowledgeSource: vi.mocked(RepositoryKnowledgeSourceAdapter).mock.results[0].value,
+      analyticsRead: vi.mocked(ControlledAnalyticsReadAdapter).mock.results[0].value,
+    });
   });
 
   it('creates the Prisma repository set exactly once with the exact db identity', () => {
-    composeAI({ db: fakeDb, repositoryApiPort: fakeRepositoryApiPort, repositoryStorageBaseDir: fakeStorageBaseDir });
+    composeAI(aiDependencies);
 
     expect(createAIPrismaRepositories).toHaveBeenCalledTimes(1);
     expect(createAIPrismaRepositories).toHaveBeenCalledWith(fakeDb);
   });
 
   it('forwards the six-field repository set (incl. checkpoint pair) and host ports into createAIModule', () => {
-    composeAI({ db: fakeDb, repositoryApiPort: fakeRepositoryApiPort, repositoryStorageBaseDir: fakeStorageBaseDir });
+    composeAI(aiDependencies);
 
     const moduleCall = vi.mocked(createAIModule).mock.calls[0][0];
     expect(moduleCall.conversationRepository).toBe(mockRepositorySet.conversationRepository);
@@ -230,7 +256,7 @@ describe('composeAI assembly order', () => {
   });
 
   it('passes the assembled instance into createAIApiModule({ instance })', () => {
-    composeAI({ db: fakeDb, repositoryApiPort: fakeRepositoryApiPort, repositoryStorageBaseDir: fakeStorageBaseDir });
+    composeAI(aiDependencies);
 
     const instance = vi.mocked(createAIModule).mock.results[0].value;
     expect(createAIApiModule).toHaveBeenCalledTimes(1);
@@ -247,12 +273,7 @@ describe('composeAI config branches', () => {
       timeoutMs: 1000,
     };
 
-    composeAI({
-      db: fakeDb,
-      repositoryApiPort: fakeRepositoryApiPort,
-      repositoryStorageBaseDir: fakeStorageBaseDir,
-      aiServiceRuntimeConfig: config,
-    });
+    composeAI({ ...aiDependencies, aiServiceRuntimeConfig: config });
 
     expect(getAIServiceRuntimeConfig).not.toHaveBeenCalled();
 
@@ -277,12 +298,7 @@ describe('composeAI config branches', () => {
       timeoutMs: 1000,
     };
 
-    composeAI({
-      db: fakeDb,
-      repositoryApiPort: fakeRepositoryApiPort,
-      repositoryStorageBaseDir: fakeStorageBaseDir,
-      aiServiceRuntimeConfig: config,
-    });
+    composeAI({ ...aiDependencies, aiServiceRuntimeConfig: config });
 
     const hostOrder = hostAdapterMocks
       .map((adapter) => vi.mocked(adapter).mock.invocationCallOrder[0])
@@ -302,7 +318,7 @@ describe('composeAI config branches', () => {
     };
     vi.mocked(getAIServiceRuntimeConfig).mockReturnValue(resolvedConfig);
 
-    composeAI({ db: fakeDb, repositoryApiPort: fakeRepositoryApiPort, repositoryStorageBaseDir: fakeStorageBaseDir });
+    composeAI(aiDependencies);
 
     expect(getAIServiceRuntimeConfig).toHaveBeenCalledTimes(1);
     for (const adapter of serviceAdapterMocks) {
@@ -312,12 +328,7 @@ describe('composeAI config branches', () => {
   });
 
   it('treats explicit null as disabled: no env read and every optional service port stays undefined', () => {
-    composeAI({
-      db: fakeDb,
-      repositoryApiPort: fakeRepositoryApiPort,
-      repositoryStorageBaseDir: fakeStorageBaseDir,
-      aiServiceRuntimeConfig: null,
-    });
+    composeAI({ ...aiDependencies, aiServiceRuntimeConfig: null });
 
     expect(getAIServiceRuntimeConfig).not.toHaveBeenCalled();
     for (const adapter of serviceAdapterMocks) {
@@ -333,7 +344,7 @@ describe('composeAI config branches', () => {
   it('treats a missing config as disabled: no service adapter and every optional service port stays undefined', () => {
     vi.mocked(getAIServiceRuntimeConfig).mockReturnValue(null);
 
-    composeAI({ db: fakeDb, repositoryApiPort: fakeRepositoryApiPort, repositoryStorageBaseDir: fakeStorageBaseDir });
+    composeAI(aiDependencies);
 
     expect(getAIServiceRuntimeConfig).toHaveBeenCalledTimes(1);
     for (const adapter of serviceAdapterMocks) {
@@ -347,7 +358,7 @@ describe('composeAI config branches', () => {
   });
 
   it('always constructs the evaluation-report file adapter in both branches', () => {
-    composeAI({ db: fakeDb, repositoryApiPort: fakeRepositoryApiPort, repositoryStorageBaseDir: fakeStorageBaseDir });
+    composeAI(aiDependencies);
     expect(AIEvaluationReportFileAdapter).toHaveBeenCalledTimes(1);
     expect(vi.mocked(createAIModule).mock.calls[0][0].evaluationReportPort).toBe(
       vi.mocked(AIEvaluationReportFileAdapter).mock.results[0].value,
@@ -370,12 +381,7 @@ describe('composeAI config branches', () => {
       serviceName: 'memoflow-api-test',
       timeoutMs: 1000,
     };
-    composeAI({
-      db: fakeDb,
-      repositoryApiPort: fakeRepositoryApiPort,
-      repositoryStorageBaseDir: fakeStorageBaseDir,
-      aiServiceRuntimeConfig: config,
-    });
+    composeAI({ ...aiDependencies, aiServiceRuntimeConfig: config });
     expect(AIEvaluationReportFileAdapter).toHaveBeenCalledTimes(1);
   });
 });

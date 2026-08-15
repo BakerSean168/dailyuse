@@ -27,6 +27,8 @@
 
 import type { Express, Router } from 'express';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { PrismaClient } from '@memoflow/database';
 import type { DataPortabilityApiModuleContext } from '@memoflow/data-portability/api';
 
@@ -168,5 +170,18 @@ describe('composeDataPortability structural registration', () => {
 
     composed.module.destroy?.();
     expect(disposeSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('composeDataPortability layering boundary', () => {
+  it('imports Prisma ingredients from the public package surface only', () => {
+    const composer = readFileSync(resolve(__dirname, './compose-data-portability.ts'), 'utf8');
+
+    expect(composer).toContain("from '@memoflow/data-portability'");
+    expect(composer).toContain("from '@memoflow/data-portability/api'");
+    expect(composer).not.toMatch(/from '.*server\/application\/prisma-adapters'/);
+    expect(composer).not.toMatch(/from '.*server\/application\/import-store\/prisma-data-portability-import-store'/);
+    expect(composer).not.toContain('new PrismaDataPortabilityImportStore');
+    expect(composer).not.toContain('new PrismaFocusSessionAdapter');
   });
 });

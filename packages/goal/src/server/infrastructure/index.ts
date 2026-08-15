@@ -30,6 +30,8 @@ export type {
   IGoalFolderRepository,
   IGoalRecordRepository,
   IGoalRepository,
+  IRelationRepository,
+  IWalletRepository,
 } from '../domain';
 export type { GoalWriteTransactionRunner } from '../application/use-cases/commands/goal-write-support';
 export type { IHabitRepository } from '../application/use-cases/commands/habit.use-cases';

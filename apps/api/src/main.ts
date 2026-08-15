@@ -31,7 +31,7 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 import { composeGovernance } from './runtime/compose-governance';
 import { composeAccount } from './runtime/compose-account';
 import { composeNotification } from './runtime/compose-notification';
-import { composeReminder } from './runtime/compose-reminder';
+import { composeReminder, createExecutorClosureChecker } from './runtime/compose-reminder';
 import { composeRepository } from './runtime/compose-repository';
 import { composeSchedule } from './runtime/compose-schedule';
 import { composeSetting } from './runtime/compose-setting';
@@ -118,6 +118,14 @@ async function bootstrap(): Promise<void> {
   const closureRepo = new PrismaAccountClosureOperationRepository(prisma);
   const accountActiveChecker = async (identityId: string) =>
     (await closureRepo.findActiveByIdentityId(identityId)) !== null;
+  // Executor-visible closure predicate frozen from merge-base: block when the
+  // account is missing / Deactivated / Closed, or an active closure operation
+  // exists in requested|revoking|closing. The AI executor MUST see this
+  // predicate, not the shared account-active checker.
+  // 从 merge-base 冻结的 executor 可见闭户谓词：账户缺失 / Deactivated / Closed
+  // 或存在 requested|revoking|closing 阶段的有效闭户操作时阻断。AI executor
+  // 必须看到该谓词，而不是共享的账户激活检查器。
+  const executorClosureChecker = createExecutorClosureChecker(prisma);
   const cloudAuth = createCloudAuth({
     database: prisma,
     secret: jwtConfig.secret,
@@ -158,9 +166,10 @@ async function bootstrap(): Promise<void> {
       },
     ],
   });
-  const reminderApiModule = composeReminder({
+  const reminderComposed = composeReminder({
     db: prisma,
     closureChecker: accountActiveChecker,
+    executorClosureChecker,
   });
   const repositoryApiModule = composeRepository({
     db: prisma,
@@ -189,13 +198,13 @@ async function bootstrap(): Promise<void> {
       scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     reminderProjection: {
-      source: reminderApiModule.scheduleProjectionSource,
+      source: reminderComposed.scheduleProjectionSource,
       scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     execution: {
       taskSource: createTaskPrismaScheduleExecutionSource(prisma),
       goalSource: createGoalPrismaScheduleExecutionSource(prisma),
-      reminderSource: reminderApiModule.scheduleExecutionSource,
+      reminderSource: reminderComposed.scheduleExecutionSource,
       notificationPort: notificationApiModule.scheduleNotificationPort,
     },
   });
@@ -203,33 +212,36 @@ async function bootstrap(): Promise<void> {
     repositories: scheduleRepositorySet,
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
   });
-  const taskApiModule = composeTask({
+  const taskComposed = composeTask({
     db: prisma,
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
+  });
+  const goalComposed = composeGoal({
+    db: prisma,
+    taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
   });
   const aiApiModule = composeAI({
     db: prisma,
     repositoryApiPort: repositoryApiModule.getApplicationPort(),
     repositoryStorageBaseDir,
+    goalApplicationPort: goalComposed.applicationPort,
+    taskApplicationPort: taskComposed.applicationPort,
+    reminderApplicationPort: reminderComposed.executorReminderPort,
   });
   const governanceApiModule = composeGovernance({ db: prisma });
-  const goalApiModule = composeGoal({
-    db: prisma,
-    taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
-  });
   const app = await bootstrapper
     // === 核心：白名单注册 ===
     .register(governanceApiModule) // ✅ 治理模块 (runtime composer)
     .register(accountApiModule) // ✅ 账户模块 (runtime composer)
     .register(notificationApiModule.module) // ✅ 通知模块 (runtime composer)
-    .register(reminderApiModule.module) // ✅ 提醒模块 (runtime composer)
+    .register(reminderComposed.module) // ✅ 提醒模块 (runtime composer)
     .register(repositoryApiModule) // ✅ 仓库模块 (runtime composer)
     .register(scheduleApiModule.module) // ✅ 日程模块 (runtime composer)
     .register(settingApiModule) // ✅ 设置模块 (runtime composer)
-    .register(taskApiModule) // ✅ 任务模块
+    .register(taskComposed.module) // ✅ 任务模块
     .register(aiApiModule) // ✅ AI 模块 (runtime composer)
-    .register(goalApiModule) // ✅ 目标模块
+    .register(goalComposed.module) // ✅ 目标模块
     .register(dataPortabilityApiModule.module) // ✅ 数据导入导出模块 (runtime composer)
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块
     .register(DashboardApiModule) // ✅ 仪表盘聚合模块

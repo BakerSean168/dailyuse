@@ -29,23 +29,32 @@ describe('AI API runtime composer surface', () => {
   const composer = readFileSync(resolve(apiDir, 'runtime/compose-ai.ts'), 'utf8');
   const transportModule = readFileSync(aiPackageApiModule, 'utf8');
 
-  it('main.ts composes AI via composeAI({ db: prisma, repositoryApiPort, repositoryStorageBaseDir })', () => {
+  it('main.ts composes AI via composeAI({ db: prisma, repositoryApiPort, repositoryStorageBaseDir, goal/task/reminder applicationPorts })', () => {
     expect(main).toContain("from './runtime/compose-ai'");
     expect(main).toMatch(
-      /composeAI\(\{\s*db: prisma,\s*repositoryApiPort: repositoryApiModule\.getApplicationPort\(\),\s*repositoryStorageBaseDir,\s*\}/,
+      /composeAI\(\{\s*db: prisma,\s*repositoryApiPort: repositoryApiModule\.getApplicationPort\(\),\s*repositoryStorageBaseDir,\s*goalApplicationPort: goalComposed\.applicationPort,\s*taskApplicationPort: taskComposed\.applicationPort,\s*reminderApplicationPort: reminderComposed\.executorReminderPort,\s*\}/,
     );
     expect(main).toContain('.register(aiApiModule)');
   });
 
-  it('keeps the AI registration between Task and Goal (taskApiModule → aiApiModule → goalApiModule)', () => {
-    const taskIndex = main.indexOf('.register(taskApiModule)');
+  it('keeps the AI registration between Task and Goal (taskComposed.module → aiApiModule → goalComposed.module)', () => {
+    const taskIndex = main.indexOf('.register(taskComposed.module)');
     const aiIndex = main.indexOf('.register(aiApiModule)');
-    const goalIndex = main.indexOf('.register(goalApiModule)');
+    const goalIndex = main.indexOf('.register(goalComposed.module)');
     expect(taskIndex).toBeGreaterThan(-1);
     expect(aiIndex).toBeGreaterThan(-1);
     expect(goalIndex).toBeGreaterThan(-1);
     expect(taskIndex).toBeLessThan(aiIndex);
     expect(aiIndex).toBeLessThan(goalIndex);
+  });
+
+  it('main.ts feeds the composed goal/task/reminder application ports into composeAI and registers their .module handles', () => {
+    expect(main).toContain('goalComposed.applicationPort');
+    expect(main).toContain('taskComposed.applicationPort');
+    expect(main).toContain('reminderComposed.executorReminderPort');
+    expect(main).toContain('.register(taskComposed.module)');
+    expect(main).toContain('.register(goalComposed.module)');
+    expect(main).not.toMatch(/create(Goal|Task|Reminder)PrismaModule/);
   });
 
   it('main.ts no longer names createAIApiModule/AIApiModuleContext or imports the ai/api seam', () => {
@@ -94,6 +103,20 @@ describe('AI API runtime composer surface', () => {
         expect(transportModule).not.toContain(pattern);
       }
     }
+  });
+
+  it('automation tool executor adapter is DB/module-free: no PrismaClient, create*PrismaModule or feature /server deep import', () => {
+    const executor = readFileSync(
+      resolve(apiDir, 'modules/ai/backend-automation-tool-executor.adapter.ts'),
+      'utf8',
+    );
+    expect(executor).not.toContain('PrismaClient');
+    expect(executor).not.toContain('createGoalPrismaModule');
+    expect(executor).not.toContain('createTaskPrismaModule');
+    expect(executor).not.toContain('createReminderPrismaModule');
+    expect(executor).not.toContain('PrismaTaskBindingReadPort');
+    expect(executor).not.toMatch(/@memoflow\/(goal|task|reminder)\/server/);
+    expect(executor).toContain('interface BackendAutomationToolExecutorDependencies');
   });
 
   it('AI transport module.ts keeps the twelve exact relative mounts in order', () => {

@@ -43,6 +43,7 @@ import {
   createGoalPrismaRepositories,
   createGoalRuntimeContribution,
   normalizeGoalRuntimeContributions,
+  type GoalApplicationPort,
   type GoalRuntimeContributionsInput,
 } from '@memoflow/goal';
 import {
@@ -62,6 +63,17 @@ export interface ComposeGoalDependencies {
   readonly taskBindingReadPort: GoalDependencyReadPort;
   /** Extra runtime contributions from the host (e.g. schedule projection). 宿主提供的额外运行时贡献。 */
   readonly runtimeContributions?: GoalRuntimeContributionsInput;
+}
+
+/**
+ * Composed goal surface for the API host.
+ * 目标在 API 宿主的组装结果。
+ */
+export interface ComposedGoal {
+  /** Already-bound IApiModule-compatible handle (transport + lifecycle only). 已绑定的 IApiModule 兼容 handle（只负责 transport 与生命周期）。 */
+  readonly module: GoalApiModuleDef;
+  /** The transport-neutral application port (`instance.api`) for sibling modules to orchestrate. 供兄弟模块编排的与传输无关 application port（`instance.api`）。 */
+  readonly applicationPort: GoalApplicationPort;
 }
 
 /**
@@ -94,11 +106,11 @@ export interface ComposeGoalDependencies {
  * 其 destroy() 会 dispose 所属实例。
  *
  * @param dependencies - ComposeGoalDependencies with the runtime Prisma client.
- * @returns GoalApiModuleDef — an already-bound IApiModule-compatible handle.
+ * @returns ComposedGoal — the bound module handle and the shared application port.
  */
 export function composeGoal(
   dependencies: ComposeGoalDependencies,
-): GoalApiModuleDef {
+): ComposedGoal {
   const {
     goalRepository,
     goalFolderRepository,
@@ -106,6 +118,8 @@ export function composeGoal(
     focusModeRepository,
     goalWriteTransactionRunner,
     habitRepository,
+    relationRepository,
+    walletRepository,
   } = createGoalPrismaRepositories(dependencies.db);
 
   const listenerRuntime = createGoalEventListenersRuntime({
@@ -127,9 +141,14 @@ export function composeGoal(
     focusModeRepository,
     goalWriteTransactionRunner,
     habitRepository,
+    relationRepository,
+    walletRepository,
     taskBindingReadPort: dependencies.taskBindingReadPort,
     runtimeContributions,
   });
 
-  return createGoalApiModule({ instance });
+  return {
+    module: createGoalApiModule({ instance }),
+    applicationPort: instance.api,
+  };
 }
