@@ -6,9 +6,11 @@
  *
  * RefArch Phase 2: the adapter is a pure consumer of the producer-owned
  * `req.requestContext` carrier. It composes the canonical `ExecutionContext`
- * (carrier + Principal + device metadata) at the adapter seam and fails closed
- * when the global RequestContext middleware was not mounted — it never mints a
- * second request ID.
+ * (carrier + Principal + device metadata) at the adapter seam. When the global
+ * RequestContext middleware was NOT mounted (standalone route mounts in tests /
+ * second hosts), the default extractor mints a canonical-shaped fallback carrier
+ * so unrelated routes keep working; the explicit identity-scoped paths (auth
+ * middleware, SSE scoping) still fail closed on their own.
  *
  * Two variants:
  *   - `expressAdapter`                 — Controller receives raw (req, ctx)
@@ -43,6 +45,7 @@ import {
 } from '@memoflow/contracts/result';
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { mapPrismaError } from '../errors/prisma-error-mapper';
+import { generateUUID } from '../shared/uuid';
 // Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
 import { formatZodErrors } from './format-zod-errors';
 export { formatZodErrors };
@@ -68,11 +71,22 @@ export interface ExpressLikeRequest {
   };
   /**
    * Producer-owned canonical request metadata set by the RequestContext
-   * middleware. Required — the adapter fails closed without it.
-   * 由 RequestContext middleware 写入的 producer-owned 请求元数据；缺失时
-   * adapter 直接 fail closed。
+   * middleware. When present it is used as-is. When absent (standalone route
+   * mounts) the default extractor mints a canonical-shaped fallback.
+   * 由 RequestContext middleware 写入的 producer-owned 请求元数据；存在时直接
+   * 使用，缺失时（独立挂载路由）默认 extractor 生成 canonical-shaped 回退值。
    */
   requestContext?: RequestContext;
+  /**
+   * Legacy fallbacks, read ONLY when `requestContext` is absent. Kept so
+   * standalone mounts without the global middleware keep the same traceId /
+   * startedAt they previously relied on.
+   * 仅当 `requestContext` 缺失时才读取的 legacy 回退值；用于未挂载全局
+   * middleware 的独立挂载，保持原有 traceId / startedAt。
+   */
+  id?: string;
+  traceId?: string;
+  startTime?: number;
 }
 
 /**
@@ -94,11 +108,11 @@ export interface ExpressAdapterOptions {
   /**
    * Custom context extractor. Must return a full `ExecutionContext`; partial
    * shapes are rejected by the type system. When omitted, the default extractor
-   * composes the carrier + Principal + device metadata and fails closed if the
-   * carrier is missing.
+   * composes the carrier + Principal + device metadata, minting a fallback
+   * carrier when the global middleware was not mounted.
    * 自定义 context extractor，必须返回完整 `ExecutionContext`；省略时默认
-   * extractor 合成 carrier + Principal + device 元数据，缺失 carrier 则
-   * fail closed。
+   * extractor 合成 carrier + Principal + device 元数据，缺失 carrier 时
+   * 生成 fallback carrier。
    */
   extractContext?: (req: ExpressLikeRequest) => ExecutionContext;
   /** Whether to require authentication (default: true) */
@@ -110,21 +124,27 @@ export interface ExpressAdapterOptions {
 // ============================================================================
 
 /**
- * Reads the producer-owned carrier, failing closed when the global RequestContext
- * middleware was not mounted. The adapter never generates a second request ID.
- * 读取 producer-owned carrier；未挂载 RequestContext middleware 时 fail closed。
- * adapter 绝不生成第二个 request ID。
- *
- * @throws Error when `req.requestContext` is missing.
+ * Reads the producer-owned carrier. When present it is returned as-is. When the
+ * global RequestContext middleware was not mounted (standalone route mounts in
+ * tests / second hosts), a canonical-shaped fallback carrier is minted so
+ * unrelated routes do not crash; identity scoping still fails closed on its own
+ * (missing `req.user.identityId` → 401).
+ * 读取 producer-owned carrier。存在时原样返回；未挂载全局 RequestContext
+ * middleware（独立挂载路由）时生成 canonical-shaped fallback carrier，避免
+ * 无关路由崩溃；identity 作用域仍然自行 fail closed（缺失 identity → 401）。
  */
 export function readExpressRequestContext(req: ExpressLikeRequest): RequestContext {
   const requestContext = req.requestContext;
-  if (!requestContext) {
-    throw new Error(
-      'Missing RequestContext carrier: mount the global request-context middleware or pass a custom extractContext',
-    );
+  if (requestContext) {
+    return requestContext;
   }
-  return requestContext;
+  const requestId = req.traceId ?? req.id ?? generateUUID();
+  return {
+    requestId,
+    traceId: requestId,
+    startedAt: req.startTime ?? Date.now(),
+    source: 'http',
+  };
 }
 
 /**

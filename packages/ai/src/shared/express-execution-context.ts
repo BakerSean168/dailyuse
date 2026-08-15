@@ -5,12 +5,15 @@
  * Express execution-context extractor。
  *
  * It composes the producer-owned `req.requestContext` carrier with the
- * auth-resolved `req.user.identityId`. It NEVER mints a request ID — if the
- * global RequestContext middleware did not run, it fails closed.
+ * auth-resolved `req.user.identityId`. When the global RequestContext
+ * middleware did not run (standalone mounts), the shared reader mints a
+ * canonical-shaped fallback carrier; identity scoping still fails closed on its
+ * own (missing identity → 401).
  *
  * 该 extractor 把 producer-owned `req.requestContext` carrier 与
- * auth-resolved `req.user.identityId` 合成完整 context。它绝不生成 request ID —
- * 若全局 RequestContext middleware 未运行，则 fail closed。
+ * auth-resolved `req.user.identityId` 合成完整 context。全局 RequestContext
+ * middleware 未运行时（独立挂载），共享 reader 生成 canonical-shaped fallback
+ * carrier；identity 作用域仍然自行 fail closed（缺失 identity → 401）。
  *
  * The composer is the SAME `defaultExtractContext` exported by
  * `@memoflow/utils/result` — custom AI routes reuse the canonical extractor
@@ -18,7 +21,7 @@
  */
 
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
-import { defaultExtractContext } from '@memoflow/utils/result';
+import { defaultExtractContext, readExpressRequestContext } from '@memoflow/utils/result';
 
 /**
  * Express-like request shape consumed by the shared extractor.
@@ -36,22 +39,18 @@ function asRequestLike(req: unknown): AiExpressRequestLike {
 }
 
 /**
- * Reads the producer-owned carrier, failing closed when the global
- * RequestContext middleware was not mounted. Never generates a second ID.
- * 读取 producer-owned carrier；缺失时 fail closed，绝不生成第二个 ID。
+ * Reads the producer-owned carrier via the shared Express reader
+ * (`readExpressRequestContext`), which mints a canonical-shaped fallback when
+ * the global RequestContext middleware was not mounted.
+ * 通过共享 Express reader（`readExpressRequestContext`）读取 producer-owned
+ * carrier；未挂载全局 RequestContext middleware 时生成 canonical-shaped 回退值。
  *
  * Accepts a real Express `Request` (or a structural equivalent in tests).
- *
- * @throws Error when `req.requestContext` is missing.
  */
 export function readAiExpressRequestContext(req: unknown): RequestContext {
-  const requestContext = asRequestLike(req).requestContext;
-  if (!requestContext) {
-    throw new Error(
-      'Missing RequestContext carrier: mount the global request-context middleware before custom AI routes',
-    );
-  }
-  return requestContext;
+  return readExpressRequestContext(
+    asRequestLike(req) as Parameters<typeof readExpressRequestContext>[0],
+  );
 }
 
 /**

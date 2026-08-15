@@ -252,16 +252,44 @@ describe('expressAdapter', () => {
     });
   });
 
-  it('should fail closed when the global RequestContext carrier is missing', async () => {
+  it('mints a canonical fallback carrier when the global RequestContext middleware was not mounted', async () => {
     const controllerFn = vi.fn().mockResolvedValue(ok('ok'));
     const handler = expressAdapter(controllerFn);
 
-    const req = createMockReq({ requestContext: undefined, traceId: undefined });
+    const req = createMockReq({ requestContext: undefined, traceId: undefined, id: undefined });
     const res = createMockRes();
 
-    await expect(handler(req, res)).rejects.toThrow(/Missing RequestContext carrier/);
-    expect(controllerFn).not.toHaveBeenCalled();
-    expect(res.body).toBeNull();
+    await handler(req, res);
+
+    const received = controllerFn.mock.calls[0][1] as ExecutionContext;
+    expect(received.identityId).toBe('user-1');
+    expect(received.requestId).toEqual(expect.any(String));
+    expect(received.traceId).toBe(received.requestId);
+    expect(received.startedAt).toEqual(expect.any(Number));
+    expect(received.source).toBe('http');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.traceId).toBe(received.requestId);
+  });
+
+  it('reuses legacy req.id as the fallback requestId when the carrier is missing', async () => {
+    const controllerFn = vi.fn().mockResolvedValue(ok('ok'));
+    const handler = expressAdapter(controllerFn);
+
+    const req = createMockReq({
+      requestContext: undefined,
+      traceId: undefined,
+      id: 'legacy-id',
+      startTime: 1_600_000_000_000,
+    });
+    const res = createMockRes();
+
+    await handler(req, res);
+
+    const received = controllerFn.mock.calls[0][1] as ExecutionContext;
+    expect(received.requestId).toBe('legacy-id');
+    expect(received.traceId).toBe('legacy-id');
+    expect(received.startedAt).toBe(1_600_000_000_000);
   });
 
   it('should preserve domain error context in error responses', async () => {

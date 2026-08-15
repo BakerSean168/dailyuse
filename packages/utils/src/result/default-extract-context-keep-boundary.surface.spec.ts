@@ -7,7 +7,8 @@ import { describe, expect, it } from 'vitest';
  *
  * RefArch Phase 2 update: the IPC desktop-stub is retired. Both adapters are
  * now pure consumers of the canonical `ExecutionContext`:
- * - express-adapter: composes the producer-owned carrier + header/body device
+ * - express-adapter: composes the producer-owned carrier (or a canonical-shaped
+ *   fallback when the global middleware was not mounted) + header/body device
  *   mining + req.user.identityId → full ExecutionContext
  * - ipc-adapter: default extractor fails closed (no carrier on IPC events);
  *   desktop auth context produces the full context once per invocation
@@ -46,7 +47,7 @@ describe('defaultExtractContext keep-boundary (residual 1183)', () => {
     expect(ipc).not.toContain('x-forwarded-for');
   });
 
-  it('runtime: documents Express compose vs IPC fail-closed contracts', () => {
+  it('runtime: documents Express lenient-carrier compose vs IPC fail-closed contracts', () => {
     function ipcDefaultExtractContext(): never {
       throw new Error('Missing ExecutionContext carrier');
     }
@@ -55,10 +56,9 @@ describe('defaultExtractContext keep-boundary (residual 1183)', () => {
       user?: { identityId?: string };
       headers?: Record<string, string | string[] | undefined>;
       body?: { deviceId?: string };
+      id?: string;
     }): { identityId: string; requestId: string } {
-      if (!req.requestContext) {
-        throw new Error('Missing RequestContext carrier');
-      }
+      const requestId = req.requestContext?.requestId ?? req.id ?? 'fallback-id';
       const headers = req.headers ?? {};
       const body = req.body ?? {};
       const deviceId =
@@ -68,7 +68,7 @@ describe('defaultExtractContext keep-boundary (residual 1183)', () => {
       void deviceId;
       return {
         identityId: req.user?.identityId ?? '',
-        requestId: req.requestContext.requestId,
+        requestId,
       };
     }
     expect(() => ipcDefaultExtractContext()).toThrow(/Missing ExecutionContext carrier/);
@@ -79,7 +79,14 @@ describe('defaultExtractContext keep-boundary (residual 1183)', () => {
         headers: { 'x-device-id': 'web-1' },
       }),
     ).toEqual({ identityId: 'id-1', requestId: 'req-1' });
-    expect(() => expressDefaultExtractContext({})).toThrow(/Missing RequestContext carrier/);
+    // Standalone mount without the global middleware: lenient fallback, no throw.
+    expect(
+      expressDefaultExtractContext({
+        user: { identityId: 'id-1' },
+        headers: { 'x-device-id': 'web-1' },
+        id: 'fallback-id',
+      }),
+    ).toEqual({ identityId: 'id-1', requestId: 'fallback-id' });
   });
 
   it('documents residual 1183 lock intent without claiming §13.2 complete', () => {

@@ -73,6 +73,7 @@ export type {
 export {
   expressAdapter,
   defaultExtractContext,
+  readExpressRequestContext,
   type ExpressAdapterOptions,
 } from './express-adapter';
 
