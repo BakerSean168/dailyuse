@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@memoflow/database';
-import { PrismaDataPortabilityImportStore } from '../application/import-store/prisma-data-portability-import-store';
+import { PrismaDataPortabilityImportStore } from './import-store/prisma-data-portability-import-store';
 import type { DataPortabilityImportStore } from '../application/import-store/data-portability-import-store';
 import type { DataPortabilityDependencies } from '../application/data-portability.dependencies';
 import {
@@ -15,7 +15,7 @@ import {
   PrismaEditorGroupAdapter,
   PrismaEditorTabAdapter,
   PrismaAIConversationAdapter,
-} from '../application/prisma-adapters';
+} from './adapters/prisma-adapters';
 import {
   createDataPortabilityModule,
   type DataPortabilityModuleInstance,

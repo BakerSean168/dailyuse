@@ -5277,6 +5277,26 @@
       ]
     },
     {
+      "path": "packages/data-portability/src/server/infrastructure/__tests__/prisma-adapters.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/data-portability/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/data-portability/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/data-portability/src/server/infrastructure/__tests__/prisma-data-portability-import-store.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/data-portability/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/data-portability/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/data-portability/src/server/infrastructure/powersync/__tests__/powersync-export-dependencies.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -9977,14 +9997,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 30
+      "fileCount": 32
     },
     {
       "id": "packages/data-portability/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 30
+      "fileCount": 32
     },
     {
       "id": "packages/database/vitest.config.ts",
@@ -10621,6 +10641,8 @@
       "packages/data-portability/src/server/application/use-cases/projections/to-timestamp-keep-boundary.surface.spec.ts",
       "packages/data-portability/src/server/infrastructure/__tests__/data-portability-module-partial-start.spec.ts",
       "packages/data-portability/src/server/infrastructure/__tests__/data-portability-repositories.surface.spec.ts",
+      "packages/data-portability/src/server/infrastructure/__tests__/prisma-adapters.surface.spec.ts",
+      "packages/data-portability/src/server/infrastructure/__tests__/prisma-data-portability-import-store.test.ts",
       "packages/data-portability/src/server/infrastructure/powersync/__tests__/powersync-export-dependencies.test.ts",
       "packages/data-portability/src/server/infrastructure/powersync/__tests__/powersync-import-store.test.ts",
       "packages/data-portability/src/server/infrastructure/powersync/__tests__/powersync-round-trip.test.ts",
@@ -10975,7 +10997,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 934,
+    "unit": 936,
     "integration": 25,
     "smoke": 2,
     "boundary-ipc": 9,

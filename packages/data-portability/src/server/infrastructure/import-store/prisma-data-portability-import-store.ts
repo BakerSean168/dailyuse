@@ -1,8 +1,12 @@
 /**
  * Prisma implementation of DataPortabilityImportStore.
+ * DataPortabilityImportStore 的 Prisma 实现。
  *
  * Wraps prisma.$transaction() and delegates each create/upsert
  * to the corresponding Prisma model.
+ *
+ * 将整个 import callback 包装在 prisma.$transaction() 内，
+ * 并把每个 create/upsert 委托给对应的 Prisma model。
  */
 
 import type { PrismaClient, Prisma } from '@memoflow/database';
@@ -37,7 +41,7 @@ import type {
   CreateEditorTabInput,
   CreateAIConversationInput,
   CreateAIMessageInput,
-} from './data-portability-import-store';
+} from '../../application/import-store/data-portability-import-store';
 
 class PrismaDataPortabilityImportTx implements DataPortabilityImportTx {
   constructor(private readonly tx: Prisma.TransactionClient) {}
