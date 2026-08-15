@@ -47,6 +47,24 @@ describe('useGovernanceStore (UI state only after Query Cache authority pilot)',
     expect(store.pagination).not.toHaveProperty('total');
   });
 
+  it('toggles filter tags on and off and resets pagination', () => {
+    const store = useGovernanceStore();
+
+    store.toggleFilterTag('architecture');
+    expect(store.filter.tags).toEqual(['architecture']);
+    expect(store.pagination.page).toBe(1);
+
+    store.setPage(4);
+    store.toggleFilterTag('architecture');
+    expect(store.filter.tags).toEqual([]);
+    expect(store.pagination.page).toBe(1);
+
+    store.toggleFilterTag('quality');
+    store.toggleFilterTag('architecture');
+    expect(store.filter.tags).toEqual(['quality', 'architecture']);
+    expect(store.hasActiveFilter).toBe(true);
+  });
+
   it('resets to defaults via reset()', () => {
     const store = useGovernanceStore();
     store.setFilterStatus('Deprecated');
