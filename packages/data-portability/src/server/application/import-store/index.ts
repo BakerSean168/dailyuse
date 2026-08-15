@@ -30,4 +30,3 @@ export type {
   CreateAIConversationInput,
   CreateAIMessageInput,
 } from './data-portability-import-store';
-export { PrismaDataPortabilityImportStore } from './prisma-data-portability-import-store';

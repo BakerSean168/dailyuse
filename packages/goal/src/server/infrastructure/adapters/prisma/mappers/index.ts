@@ -11,3 +11,5 @@ export { PrismaGoalRecordMapper } from './prisma-goal-record-mapper';
 export { PrismaFocusSessionMapper } from './prisma-focus-session-mapper';
 export { PrismaFocusModeMapper } from './prisma-focus-mode-mapper';
 export { PrismaWeightSnapshotMapper } from './prisma-weight-snapshot-mapper';
+export { PrismaRelationMapper } from './prisma-relation.mapper';
+export { PrismaWalletMapper } from './prisma-wallet.mapper';

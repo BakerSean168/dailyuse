@@ -1,8 +1,12 @@
 /**
  * Prisma Adapters for Data Portability
+ * 数据可移植性 Prisma 适配器。
  *
  * Direct Prisma queries for modules that don't export repository factories.
  * These implement the dependency interfaces used by the export use case.
+ *
+ * 对未提供仓储工厂的模块执行直接 Prisma 查询，
+ * 实现导出 use case 所需的依赖接口。
  */
 
 import type { PrismaClient } from '@memoflow/database';
@@ -19,7 +23,7 @@ import type {
   EditorGroupRepoPort,
   EditorTabRepoPort,
   AIConversationRepoPort,
-} from './data-portability.dependencies';
+} from '../../application/data-portability.dependencies';
 
 export class PrismaFocusSessionAdapter implements FocusSessionRepoPort {
   constructor(private readonly prisma: PrismaClient) {}

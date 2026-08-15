@@ -15,17 +15,17 @@
  */
 import {
   type GoalAutomationExecutionInput,
+  type IAnalyticsReadPort,
   type IAIAutomationToolExecutorPort,
+  type IKnowledgeSourcePort,
 } from '@memoflow/ai/ports';
 import type { IdentityId } from '@memoflow/contracts';
 import type { GoalAutomationExecutedAction } from '@memoflow/contracts/ai';
 import type { GoalId, KeyResultId } from '@memoflow/contracts/goal';
-import type { PrismaClient } from '@memoflow/database';
-import { createGoalPrismaModule } from '@memoflow/goal';
-import { PrismaTaskBindingReadPort } from '@memoflow/task';
-import { createReminderPrismaModule } from '@memoflow/reminder';
-import { createTaskPrismaModule } from '@memoflow/task';
+import type { GoalApplicationPort } from '@memoflow/goal';
+import type { ReminderApplicationPort } from '@memoflow/reminder';
 import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
+import type { TaskApplicationPort } from '@memoflow/task';
 import { unwrapOrThrowError } from '@memoflow/contracts/result';
 import { createLogger } from '@memoflow/utils/logger';
 // Residual 1007: sole reminder time helpers (local dual retired).
@@ -40,45 +40,49 @@ import {
   readNestedNumber,
 } from '@memoflow/utils/shared';
 
-import { ControlledAnalyticsReadAdapter } from './controlled-analytics-read.adapter';
-import { RepositoryKnowledgeSourceAdapter } from './repository-knowledge-source.adapter';
-
 const logger = createLogger('BackendAutomationToolExecutor');
 // Residual 1015: buildRecurrenceRule elevated to @memoflow/utils/shared.
 // Residual 1013/1011/1009/1007: related helpers elevated to @memoflow/utils/shared.
 
+/**
+ * Dependencies the AI automation tool executor needs from the API host runtime.
+ * AI 自动化工具执行器需要从 API 宿主运行时拿到的依赖。
+ *
+ * The executor only orchestrates these already-composed application ports and
+ * read adapters. It never constructs a feature module, never reads Prisma, and
+ * owns no module lifecycle — the API runtime composes Goal/Task/Reminder once
+ * and injects the same `instance.api` object identities here.
+ *
+ * 执行器只编排这些已组装好的 application port 与读取 adapter。它不构造任何
+ * feature module、不读取 Prisma、也不拥有 module 生命周期——API runtime 只组装
+ * Goal/Task/Reminder 一次，并把同一个 `instance.api` 对象 identity 注入此处。
+ */
+export interface BackendAutomationToolExecutorDependencies {
+  /** Already-composed Goal application port (`composeGoal(...).applicationPort`). 已组装的 Goal application port（`composeGoal(...).applicationPort`）。 */
+  readonly goalApplicationPort: GoalApplicationPort;
+  /** Already-composed Task application port (`composeTask(...).applicationPort`). 已组装的 Task application port（`composeTask(...).applicationPort`）。 */
+  readonly taskApplicationPort: TaskApplicationPort;
+  /** Already-composed Reminder application port (`composeReminder(...).applicationPort`). 已组装的 Reminder application port（`composeReminder(...).applicationPort`）。 */
+  readonly reminderApplicationPort: ReminderApplicationPort;
+  /** Knowledge source read port built by the AI composer. 由 AI composer 构建的知识源读取 port。 */
+  readonly knowledgeSource: IKnowledgeSourcePort;
+  /** Analytics read port built by the AI composer. 由 AI composer 构建的分析读取 port。 */
+  readonly analyticsRead: IAnalyticsReadPort;
+}
+
 export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolExecutorPort {
-  private readonly goalModule;
-  private readonly taskModule;
-  private readonly reminderModule;
+  private readonly goalApplicationPort;
+  private readonly taskApplicationPort;
+  private readonly reminderApplicationPort;
   private readonly knowledgeSource;
   private readonly analyticsRead;
 
-  constructor(db: PrismaClient, storageBaseDir: string) {
-    this.goalModule = createGoalPrismaModule(db, {
-      taskBindingReadPort: new PrismaTaskBindingReadPort(db),
-    });
-    this.taskModule = createTaskPrismaModule(db);
-    this.reminderModule = createReminderPrismaModule(db, {
-      closureChecker: async (identityId: string) => {
-        const account = await db.account.findUnique({
-          where: { id: identityId },
-          select: { status: true },
-        });
-        if (!account || account.status === 'Deactivated' || account.status === 'Closed') {
-          return true;
-        }
-        const pendingClosure = await db.accountClosureOperation.findFirst({
-          where: {
-            identityId,
-            phase: { in: ['requested', 'revoking', 'closing'] },
-          },
-        });
-        return pendingClosure !== null;
-      },
-    });
-    this.knowledgeSource = new RepositoryKnowledgeSourceAdapter(db, storageBaseDir);
-    this.analyticsRead = new ControlledAnalyticsReadAdapter(db);
+  constructor(dependencies: BackendAutomationToolExecutorDependencies) {
+    this.goalApplicationPort = dependencies.goalApplicationPort;
+    this.taskApplicationPort = dependencies.taskApplicationPort;
+    this.reminderApplicationPort = dependencies.reminderApplicationPort;
+    this.knowledgeSource = dependencies.knowledgeSource;
+    this.analyticsRead = dependencies.analyticsRead;
   }
 
   async executeGoalAutomation(
@@ -127,7 +131,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
           hasCreatedGoal: Boolean(createdGoalId),
         });
         if (action.tool === 'create_goal') {
-          const result = await this.goalModule.api.createGoal(
+          const result = await this.goalApplicationPort.createGoal(
             {
               name: input.plan.goal.title,
               description: input.plan.goal.description,
@@ -221,7 +225,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             throw new Error(`Missing task template draft for index ${action.index ?? -1}`);
           }
 
-          const result = await this.taskModule.api.createTaskTemplate({
+          const result = await this.taskApplicationPort.createTaskTemplate({
             identityId: input.identityId as IdentityId,
             name: taskTemplate.name,
             description: taskTemplate.description ?? null,
@@ -276,7 +280,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             throw new Error(`Missing reminder draft for index ${action.index ?? -1}`);
           }
 
-          const result = await this.reminderModule.api.createTemplate(
+          const result = await this.reminderApplicationPort.createTemplate(
             buildReminderTemplateInput(reminder),
             {
               identityId: input.identityId,

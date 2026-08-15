@@ -53,6 +53,23 @@ export type {
   SnapshotQueryResult,
 } from './repositories';
 
+// R5 关系 / R7 钱包 仓储 Port（domain-owned）
+export {
+  SubjectTypes,
+  RelationTypes,
+  type SubjectType,
+  type RelationType,
+  type SubjectRef,
+  type RelationDTO,
+  type IRelationRepository,
+} from './repositories';
+
+export type {
+  IWalletRepository,
+  WalletAccountDTO,
+  WalletTransactionDTO,
+} from './repositories';
+
 // 领域服务（只保留真正的领域服务）
 export {
   FocusSessionPolicy,

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { IRelationRepository } from '../../../../domain';
 import {
   CreateRelationUseCase,
   ListRelationsUseCase,
-  type IRelationRepository,
 } from '../relation.use-cases';
 
 function mockRepo(): IRelationRepository {

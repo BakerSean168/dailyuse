@@ -1,60 +1,42 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ok } from '@memoflow/contracts/result';
-import type { GoalAutomationExecutionInput } from '@memoflow/ai/ports';
+import { error, ok } from '@memoflow/contracts/result';
+import type {
+  GoalAutomationExecutionInput,
+  IAnalyticsReadPort,
+  IKnowledgeSourcePort,
+} from '@memoflow/ai/ports';
+import type { GoalApplicationPort } from '@memoflow/goal';
+import type { TaskApplicationPort } from '@memoflow/task';
+import type { ReminderApplicationPort } from '@memoflow/reminder';
 
-import { BackendAutomationToolExecutorAdapter } from './backend-automation-tool-executor.adapter';
+import {
+  BackendAutomationToolExecutorAdapter,
+  type BackendAutomationToolExecutorDependencies,
+} from './backend-automation-tool-executor.adapter';
 
 const mocks = vi.hoisted(() => ({
   createGoal: vi.fn(),
   createTaskTemplate: vi.fn(),
-  createReminderTemplate: vi.fn(),
-  createReminderPrismaModule: vi.fn(),
+  createTemplate: vi.fn(),
   listRelevantNotes: vi.fn(),
   buildContext: vi.fn(),
 }));
 
-vi.mock('@memoflow/goal', () => ({
-  createGoalPrismaModule: vi.fn(() => ({
-    api: {
-      createGoal: mocks.createGoal,
-    },
-  })),
-}));
-
-vi.mock('@memoflow/task', () => ({
-  createTaskPrismaModule: vi.fn(() => ({
-    api: {
+function createDependencies(): BackendAutomationToolExecutorDependencies {
+  return {
+    goalApplicationPort: { createGoal: mocks.createGoal } as unknown as GoalApplicationPort,
+    taskApplicationPort: {
       createTaskTemplate: mocks.createTaskTemplate,
-    },
-  })),
-  PrismaTaskBindingReadPort: class {
-    constructor() {}
-    checkActiveTaskBindings = vi.fn().mockResolvedValue({ hasActiveBindings: false, activeCount: 0 });
-  },
-}));
-
-// Historical W4-baseline note: this test hoists the module mock so the adapter test
-// never statically imports the reminder package (keeps the api project free of a
-// lazy-load boundary violation); W5 does not refactor the test semantics.
-vi.mock('@memoflow/reminder', () => ({
-  createReminderPrismaModule: mocks.createReminderPrismaModule,
-}));
-
-vi.mock('./repository-knowledge-source.adapter', () => ({
-  RepositoryKnowledgeSourceAdapter: vi.fn(function RepositoryKnowledgeSourceAdapter() {
-    return {
+    } as unknown as TaskApplicationPort,
+    reminderApplicationPort: {
+      createTemplate: mocks.createTemplate,
+    } as unknown as ReminderApplicationPort,
+    knowledgeSource: {
       listRelevantNotes: mocks.listRelevantNotes,
-    };
-  }),
-}));
-
-vi.mock('./controlled-analytics-read.adapter', () => ({
-  ControlledAnalyticsReadAdapter: vi.fn(function ControlledAnalyticsReadAdapter() {
-    return {
-      buildContext: mocks.buildContext,
-    };
-  }),
-}));
+    } as unknown as IKnowledgeSourcePort,
+    analyticsRead: { buildContext: mocks.buildContext } as unknown as IAnalyticsReadPort,
+  };
+}
 
 function createExecutionInput(): GoalAutomationExecutionInput {
   return {
@@ -115,11 +97,6 @@ function createExecutionInput(): GoalAutomationExecutionInput {
 describe('BackendAutomationToolExecutorAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.createReminderPrismaModule.mockImplementation(() => ({
-      api: {
-        createTemplate: mocks.createReminderTemplate,
-      },
-    }));
     mocks.createGoal.mockResolvedValue(
       ok({
         goalId: 'goal-1',
@@ -142,7 +119,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
         todayInstanceCreated: false,
       }),
     );
-    mocks.createReminderTemplate.mockResolvedValue(
+    mocks.createTemplate.mockResolvedValue(
       ok({
         id: 'reminder-template-1',
         name: 'Weekly Agent review',
@@ -151,10 +128,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
   });
 
   it('executes approved goal, key result, task template, and reminder drafts with their reviewed fields', async () => {
-    const adapter = new BackendAutomationToolExecutorAdapter(
-      {} as ConstructorParameters<typeof BackendAutomationToolExecutorAdapter>[0],
-      'storage',
-    );
+    const adapter = new BackendAutomationToolExecutorAdapter(createDependencies());
     const now = new Date('2026-06-10T01:00:00.000Z').getTime();
     const expectedReminderStart = new Date(now);
     expectedReminderStart.setHours(10, 30, 0, 0);
@@ -201,7 +175,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
           }),
         }),
       );
-      expect(mocks.createReminderTemplate).toHaveBeenCalledWith(
+      expect(mocks.createTemplate).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Weekly Agent review',
           description: 'Review goal progress and choose the next focus.',
@@ -234,10 +208,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
 
   it('skips dependent actions when goal creation fails', async () => {
     mocks.createGoal.mockRejectedValueOnce(new Error('Goal service unavailable'));
-    const adapter = new BackendAutomationToolExecutorAdapter(
-      {} as ConstructorParameters<typeof BackendAutomationToolExecutorAdapter>[0],
-      'storage',
-    );
+    const adapter = new BackendAutomationToolExecutorAdapter(createDependencies());
 
     const result = await adapter.executeGoalAutomation(createExecutionInput());
 
@@ -264,44 +235,39 @@ describe('BackendAutomationToolExecutorAdapter', () => {
       },
     ]);
     expect(mocks.createTaskTemplate).not.toHaveBeenCalled();
-    expect(mocks.createReminderTemplate).not.toHaveBeenCalled();
+    expect(mocks.createTemplate).not.toHaveBeenCalled();
   });
 
-  it('closureChecker blocks when account closure operation is requested or revoking or closing', async () => {
-    let passedClosureChecker: ((identityId: string) => Promise<boolean>) | undefined;
-    mocks.createReminderPrismaModule.mockImplementationOnce(
-      (
-        _db: unknown,
-        options: { closureChecker?: (identityId: string) => Promise<boolean> },
-      ) => {
-        passedClosureChecker = options?.closureChecker;
-        return {
-          api: {
-            createTemplate: mocks.createReminderTemplate,
-          },
-        };
+  it('skips unsupported tools with a skipped receipt without touching any port', async () => {
+    const adapter = new BackendAutomationToolExecutorAdapter(createDependencies());
+    const input = createExecutionInput();
+    input.actions = [{ tool: 'unsupported_tool', index: 0 }] as unknown as GoalAutomationExecutionInput['actions'];
+
+    const result = await adapter.executeGoalAutomation(input);
+
+    expect(result).toEqual([
+      {
+        tool: 'unsupported_tool',
+        status: 'skipped',
+        message: 'Skipped unsupported tool unsupported_tool',
       },
+    ]);
+    expect(mocks.createGoal).not.toHaveBeenCalled();
+  });
+
+  it('marks create_reminder as failed when the reminder port blocks on closure (merge-base receipt semantics)', async () => {
+    mocks.createTemplate.mockResolvedValue(
+      error('FORBIDDEN', 'Account is closed or closure in progress'),
     );
+    const adapter = new BackendAutomationToolExecutorAdapter(createDependencies());
 
-    const mockDb = {
-      account: {
-        findUnique: vi.fn().mockResolvedValue({ status: 'Active' }),
-      },
-      accountClosureOperation: {
-        findFirst: vi.fn().mockResolvedValue({ id: 'op-1', phase: 'requested' }),
-      },
-    } as unknown as ConstructorParameters<typeof BackendAutomationToolExecutorAdapter>[0];
+    const result = await adapter.executeGoalAutomation(createExecutionInput());
 
-    new BackendAutomationToolExecutorAdapter(mockDb, 'storage');
-    expect(passedClosureChecker).toBeDefined();
-
-    const isBlocked = await passedClosureChecker!('identity-closing');
-    expect(isBlocked).toBe(true);
-    expect(mockDb.accountClosureOperation.findFirst).toHaveBeenCalledWith({
-      where: {
-        identityId: 'identity-closing',
-        phase: { in: ['requested', 'revoking', 'closing'] },
-      },
+    expect(result.find((action) => action.tool === 'create_reminder')).toEqual({
+      tool: 'create_reminder',
+      status: 'failed',
+      message: 'Account is closed or closure in progress',
     });
+    expect(mocks.createTemplate).toHaveBeenCalledTimes(1);
   });
 });
