@@ -251,12 +251,12 @@ export interface IWalletRepository {
 
 ### 5.2 最终阶段门禁
 
-- [ ] `pnpm nx run memoflow:docs-check --skip-nx-cache` 通过；计划 frontmatter、Markdown links、标题/编码与仓库 docs config 一致。
-- [ ] `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过；没有为本阶段新增生产 allowlist 或 baseline exception。
-- [ ] Goal/DP/API direct Vitest 集合、typecheck、lint、API smoke 全部通过；不得运行已知会 hang 的 `pnpm nx run <pkg>:test`。
-- [ ] `rg` inventory 与 package export/surface audit 证明：所有新增 public Port/composed interface 都有中英双语 JSDoc，所有 concrete Prisma class 留在 Infrastructure。
-- [ ] Bootstrap smoke 对比：Goal/Task/Reminder/AI 注册顺序、路由 mounts、destroy reverse order、AI service config-null/unavailable 分支均与 baseline 相同。
-- [ ] 变更 diff 只包含四个步骤所列的 production/test/governance 文件；本计划之外的 ExecutionContext、Query Cache、Transport parity 和 action loop 变更视为 gate failure。
+- [x] `pnpm nx run memoflow:docs-check --skip-nx-cache` 通过；计划 frontmatter、Markdown links、标题/编码与仓库 docs config 一致。
+- [x] `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过；没有为本阶段新增生产 allowlist 或 baseline exception。
+- [x] Goal/DP/API direct Vitest 集合、typecheck、lint、API smoke 全部通过；不得运行已知会 hang 的 `pnpm nx run <pkg>:test`。
+- [x] `rg` inventory 与 package export/surface audit 证明：所有新增 public Port/composed interface 都有中英双语 JSDoc，所有 concrete Prisma class 留在 Infrastructure。
+- [x] Bootstrap smoke 对比：Goal/Task/Reminder/AI 注册顺序、路由 mounts、destroy reverse order、AI service config-null/unavailable 分支均与 baseline 相同。
+- [x] 变更 diff 只包含四个步骤所列的 production/test/governance 文件；本计划之外的 ExecutionContext、Query Cache、Transport parity 和 action loop 变更视为 gate failure。
 
 ## 6. 风险与回滚
 
@@ -271,8 +271,8 @@ export interface IWalletRepository {
 
 ## 7. 完成定义
 
-- [ ] 四个 Steps 均以独立 PR-able diff 完成，且每一步在合并前有自己的 direct Vitest/typecheck/lint/surface 证据。
-- [ ] Goal Application/Domain 不 import `@memoflow/database`；Data Portability Application 不包含 Prisma implementation；AI executor 不包含 Prisma/module construction。
-- [ ] `IRelationRepository`、`IWalletRepository`、`DataPortabilityImportStore`、Goal/Task/Reminder/AI Application Port 的冻结 shape 与错误、事务、Decimal、receipt/event 语义保持不变。
-- [ ] `pnpm nx run memoflow:docs-check --skip-nx-cache` 与 `pnpm nx run memoflow:governance-check --skip-nx-cache` 均通过。
-- [ ] 本阶段不宣称阶段 2（Request/Execution Context）、阶段 4（Transport parity）、阶段 5（Query Cache）或阶段 6（长期可观测性）完成。
+- [x] 四个 Steps 均以独立 PR-able diff 完成，且每一步在合并前有自己的 direct Vitest/typecheck/lint/surface 证据。
+- [x] Goal Application/Domain 不 import `@memoflow/database`；Data Portability Application 不包含 Prisma implementation；AI executor 不包含 Prisma/module construction。
+- [x] `IRelationRepository`、`IWalletRepository`、`DataPortabilityImportStore`、Goal/Task/Reminder/AI Application Port 的冻结 shape 与错误、事务、Decimal、receipt/event 语义保持不变。
+- [x] `pnpm nx run memoflow:docs-check --skip-nx-cache` 与 `pnpm nx run memoflow:governance-check --skip-nx-cache` 均通过。
+- [x] 本阶段不宣称阶段 2（Request/Execution Context）、阶段 4（Transport parity）、阶段 5（Query Cache）或阶段 6（长期可观测性）完成。
