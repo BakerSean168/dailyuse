@@ -74,13 +74,11 @@ export interface AIAssistantFacadeControllerService {
     command: AssistantCommand,
     onEvent: (event: AssistantEvent) => void,
     signal?: AbortSignal,
+    requestId?: string,
   ): Promise<Result<{ eventCount: number }>>;
 }
 
-function toHostCommand(
-  client: AssistantClientCommand,
-  identityId: string,
-): AssistantCommand {
+function toHostCommand(client: AssistantClientCommand, identityId: string): AssistantCommand {
   switch (client.type) {
     case 'message':
       return {
@@ -157,6 +155,6 @@ export class AIAssistantFacadeController {
 
     // Never accept identityId from body — always ExecutionContext.
     const command = toHostCommand(parsed.data, cx.identityId);
-    return this.service.dispatchAssistant(command, onEvent, signal);
+    return this.service.dispatchAssistant(command, onEvent, signal, cx.requestId);
   }
 }

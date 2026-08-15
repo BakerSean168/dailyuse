@@ -3,21 +3,69 @@
  *
  * Locks the producer-owned request metadata across the real global middleware
  * pipeline: client-supplied/generated request IDs, response header echo,
- * envelope `traceId`, auth/404 failures, and SSE header-before-flush.
+ * envelope `traceId`, auth/404 failures, and the real AI AssistantFacade SSE
+ * route (header-before-flush, done/error framing, disconnect cancellation and
+ * entry → Python correlation).
+ *
+ * The Python-side assertion is the boundary contract: the entry `requestId`
+ * captured by the AI dispatch service is the exact value the internal client
+ * forwards as `X-Request-Id`, which the Python `RequestContextMiddleware`
+ * stores in `request.state.request_id` and echoes in the `X-Request-Id`
+ * response header (see apps/ai-service/.../middleware/request_context.py).
  */
 import express, { type Express } from 'express';
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import http from 'node:http';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { applyGlobalMiddleware } from '../../../shared/infrastructure/middleware/global';
 import { applyErrorHandlers } from '../../../shared/infrastructure/middleware/error';
 import { createAuthMiddleware } from '../../../shared/infrastructure/http/middlewares/auth-middleware';
 import { MetricsStore } from '../../../shared/infrastructure/http/middlewares/performance.middleware';
 import { expressAdapter } from '@memoflow/utils/result';
-import { ok } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import { registerAIAssistantRoutes } from '@memoflow/ai/api/routes/ai-assistant.routes';
+import { AIAssistantFacadeController } from '@memoflow/ai/server/transport/ai-assistant-facade.controller';
+import { AIServiceInternalClient } from '@memoflow/ai/server/infrastructure/chat-execution/ai-service-internal-client';
+import type { AssistantCommand } from '@memoflow/contracts/ai';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function createApp(): Express {
+const AI_DISPATCH_PATH = '/api/v1/ai/assistant/dispatch/sse';
+
+interface CapturedDispatch {
+  requestId?: string;
+  signal?: AbortSignal;
+}
+
+function createAssistantService(captured: CapturedDispatch) {
+  return {
+    dispatchAssistant: vi.fn(
+      async (
+        _command: AssistantCommand,
+        onEvent: (event: unknown) => void,
+        signal?: AbortSignal,
+        requestId?: string,
+      ) => {
+        captured.requestId = requestId;
+        captured.signal = signal;
+        onEvent({
+          type: 'run.started',
+          runId: 'run-1',
+          engineId: 'engine.direct_turn',
+          profile: 'direct_turn',
+        });
+        onEvent({ type: 'message.delta', runId: 'run-1', content: 'hello' });
+        return ok({ eventCount: 2 });
+      },
+    ),
+  };
+}
+
+function createApp(options: { dispatchService?: ReturnType<typeof createAssistantService> } = {}): {
+  app: Express;
+  captured: CapturedDispatch;
+  dispatchService: ReturnType<typeof createAssistantService>;
+} {
   const app = express();
   applyGlobalMiddleware(app, new MetricsStore());
 
@@ -36,25 +84,42 @@ function createApp(): Express {
     },
   } as never);
 
-  app.get('/api/echo', auth, expressAdapter(() => Promise.resolve(ok({ message: 'echo' }))));
+  app.get(
+    '/api/echo',
+    auth,
+    expressAdapter(() => Promise.resolve(ok({ message: 'echo' }))),
+  );
 
-  app.get('/api/sse', auth, (_req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-    res.flushHeaders?.();
-    res.write('event: message\ndata: hello\n\n');
-    res.end();
-  });
+  const captured: CapturedDispatch = {};
+  const dispatchService = options.dispatchService ?? createAssistantService(captured);
+  const assistantController = new AIAssistantFacadeController(dispatchService);
+  app.use(
+    '/api/v1/ai/assistant',
+    registerAIAssistantRoutes(assistantController, {
+      auth,
+      requireRole: () => auth,
+    }),
+  );
 
   applyErrorHandlers(app);
-  return app;
+  return { app, captured, dispatchService };
 }
 
+const ASSISTANT_BODY = {
+  type: 'message',
+  conversationId: 'conv-1',
+  content: 'hi',
+  surface: 'web',
+};
+
 describe('Request Context smoke (RefArch Phase 2)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('echoes a client-supplied X-Request-Id on a JSON route and in the envelope traceId', async () => {
-    const res = await request(createApp())
+    const { app } = createApp();
+    const res = await request(app)
       .get('/api/echo')
       .set('Authorization', 'Bearer valid-token')
       .set('X-Request-Id', 'client-abc-123');
@@ -66,9 +131,8 @@ describe('Request Context smoke (RefArch Phase 2)', () => {
   });
 
   it('generates a UUID when no X-Request-Id is sent and uses it everywhere', async () => {
-    const res = await request(createApp())
-      .get('/api/echo')
-      .set('Authorization', 'Bearer valid-token');
+    const { app } = createApp();
+    const res = await request(app).get('/api/echo').set('Authorization', 'Bearer valid-token');
 
     expect(res.status).toBe(200);
     expect(res.headers['x-request-id']).toMatch(UUID_PATTERN);
@@ -76,7 +140,8 @@ describe('Request Context smoke (RefArch Phase 2)', () => {
   });
 
   it('falls back to a UUID (not 400) for an invalid X-Request-Id', async () => {
-    const res = await request(createApp())
+    const { app } = createApp();
+    const res = await request(app)
       .get('/api/echo')
       .set('Authorization', 'Bearer valid-token')
       .set('X-Request-Id', 'bad header value with spaces');
@@ -87,7 +152,8 @@ describe('Request Context smoke (RefArch Phase 2)', () => {
   });
 
   it('auth failure (401) echoes the same X-Request-Id and traceId', async () => {
-    const res = await request(createApp()).get('/api/echo').set('X-Request-Id', 'client-auth-fail');
+    const { app } = createApp();
+    const res = await request(app).get('/api/echo').set('X-Request-Id', 'client-auth-fail');
 
     expect(res.status).toBe(401);
     expect(res.headers['x-request-id']).toBe('client-auth-fail');
@@ -96,26 +162,136 @@ describe('Request Context smoke (RefArch Phase 2)', () => {
   });
 
   it('404 echoes the X-Request-Id with the generated traceId', async () => {
-    const res = await request(createApp()).get('/api/not-a-route');
+    const { app } = createApp();
+    const res = await request(app).get('/api/not-a-route');
 
     expect(res.status).toBe(404);
     expect(res.headers['x-request-id']).toMatch(UUID_PATTERN);
     expect(res.body.traceId).toBe(res.headers['x-request-id']);
   });
 
-  it('SSE response carries X-Request-Id before the first chunk with framing preserved', async () => {
-    const res = await request(createApp())
-      .get('/api/sse')
+  it('real AI SSE route: header-before-first-chunk, done framing, and entry requestId reaches the AI service (Python request.state correlation)', async () => {
+    const { app, captured } = createApp();
+    const res = await request(app)
+      .post(AI_DISPATCH_PATH)
       .set('Authorization', 'Bearer valid-token')
-      .set('X-Request-Id', 'client-sse-1');
+      .set('X-Request-Id', 'client-sse-ai-1')
+      .set('Content-Type', 'application/json')
+      .send(ASSISTANT_BODY);
 
     expect(res.status).toBe(200);
-    expect(res.headers['x-request-id']).toBe('client-sse-1');
+    expect(res.headers['x-request-id']).toBe('client-sse-ai-1');
     expect(res.headers['content-type']).toContain('text/event-stream');
     expect(res.headers['cache-control']).toBe('no-cache, no-transform');
     expect(res.headers['connection']).toBe('keep-alive');
     expect(res.headers['x-accel-buffering']).toBe('no');
-    expect(res.text).toContain('event: message');
-    expect(res.text).toContain('data: hello');
+    expect(res.text).toContain('event: assistant');
+    expect(res.text).toContain('"type":"run.started"');
+    expect(res.text).toContain('"type":"message.delta"');
+    expect(res.text).toContain('event: done');
+    // The exact entry requestId reaches the AI service, where it becomes the
+    // `X-Request-Id` that Python stores in request.state.request_id.
+    expect(captured.requestId).toBe('client-sse-ai-1');
+
+    // TS → Python boundary: the same entry requestId is forwarded verbatim as
+    // `X-Request-Id` by the real internal client (Python echoes it back in the
+    // response header and completion log).
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ content: 'ok' }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const client = new AIServiceInternalClient({
+      baseUrl: 'http://127.0.0.1:8100',
+      serviceSecret: 'shared-secret',
+      serviceName: 'memoflow-api',
+    });
+    await client.postJson({
+      path: '/internal/chat/complete',
+      identityId: 'identity-smoke-1',
+      requestId: captured.requestId,
+      body: {},
+    });
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Record<string, string>;
+    expect(headers['X-Request-Id']).toBe('client-sse-ai-1');
+    vi.unstubAllGlobals();
+  });
+
+  it('real AI SSE route: structured error event carries the result error', async () => {
+    const dispatchService = {
+      dispatchAssistant: vi.fn(async () => error('RATE_LIMITED', '请求过于频繁')),
+    } as ReturnType<typeof createAssistantService>;
+    const { app } = createApp({ dispatchService });
+    const res = await request(app)
+      .post(AI_DISPATCH_PATH)
+      .set('Authorization', 'Bearer valid-token')
+      .set('X-Request-Id', 'client-sse-ai-error')
+      .set('Content-Type', 'application/json')
+      .send(ASSISTANT_BODY);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['x-request-id']).toBe('client-sse-ai-error');
+    expect(res.text).toContain('event: error');
+    expect(res.text).toContain('"code":"RATE_LIMITED"');
+    expect(res.text).toContain('"message":"请求过于频繁"');
+  });
+
+  it('real AI SSE route: disconnect cancels the in-flight dispatch (abort signal)', async () => {
+    const captured: CapturedDispatch = {};
+    const dispatchService = {
+      dispatchAssistant: vi.fn(
+        async (
+          _command: AssistantCommand,
+          _onEvent: (event: unknown) => void,
+          signal?: AbortSignal,
+          requestId?: string,
+        ) => {
+          captured.requestId = requestId;
+          captured.signal = signal;
+          // Hold the dispatch in flight until the SSE connection closes.
+          await new Promise<void>((resolve) => {
+            if (!signal || signal.aborted) {
+              resolve();
+              return;
+            }
+            signal.addEventListener('abort', () => resolve(), { once: true });
+          });
+          return ok({ eventCount: 0 });
+        },
+      ),
+    } as ReturnType<typeof createAssistantService>;
+    const { app } = createApp({ dispatchService });
+    const server = http.createServer(app);
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const port = (server.address() as { port: number }).port;
+
+    try {
+      const socket = http.request(
+        {
+          host: '127.0.0.1',
+          port,
+          path: AI_DISPATCH_PATH,
+          method: 'POST',
+          headers: {
+            authorization: 'Bearer valid-token',
+            'x-request-id': 'client-sse-ai-abort',
+            'content-type': 'application/json',
+          },
+        },
+        () => undefined,
+      );
+      socket.write(JSON.stringify(ASSISTANT_BODY));
+      socket.end();
+
+      // Wait until the AI service observed the dispatch (signal + requestId).
+      await vi.waitFor(() => expect(captured.signal).toBeDefined());
+      expect(captured.requestId).toBe('client-sse-ai-abort');
+      expect(captured.signal?.aborted).toBe(false);
+
+      socket.destroy();
+      await vi.waitFor(() => expect(captured.signal?.aborted).toBe(true));
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
   });
 });

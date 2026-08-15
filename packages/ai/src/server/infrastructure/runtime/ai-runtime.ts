@@ -277,7 +277,6 @@ export function assertAgentStartCapabilityPlan(
   return ok(undefined);
 }
 
-
 /**
  * Residual 503/517: ownership compare uses trimmed non-empty identity
  * (matchesHostTaskCreateIdentity — process-local store + list merge symmetry).
@@ -288,10 +287,7 @@ function ensureAgentRunOwnedByIdentity(
   identityId: string,
 ): Result<AgentRunResult> {
   if (!matchesHostTaskCreateIdentity(result.run.identityId, identityId)) {
-    return error(
-      'FORBIDDEN',
-      'Agent run is not owned by the current identity.',
-    );
+    return error('FORBIDDEN', 'Agent run is not owned by the current identity.');
   }
   return ok(result);
 }
@@ -555,6 +551,7 @@ async function withKnowledgeQaAnswer(
   req: AgentStartRunRequest,
   identityId: string,
   knowledgeQueryUseCase?: QueryKnowledgeUseCase,
+  requestId?: string,
 ): Promise<Result<AgentStartRunRequest>> {
   if (req.agentType !== 'knowledge.qa' || !knowledgeQueryUseCase) {
     return ok(req);
@@ -576,7 +573,10 @@ async function withKnowledgeQaAnswer(
     ...(providerId ? { providerId: providerId as QueryKnowledgeReq['providerId'] } : {}),
     ...(maxResources ? { maxResources } : {}),
   };
-  const queryResult = await knowledgeQueryUseCase.execute(queryRequest, createSystemExecutionContext(identityId));
+  const queryResult = await knowledgeQueryUseCase.execute(
+    queryRequest,
+    createSystemExecutionContext(identityId, requestId),
+  );
   if (!queryResult.ok) {
     return queryResult;
   }
@@ -962,7 +962,10 @@ export function createAgentRuntimeService(
         continue;
       }
 
-      const result = await knowledgeNoteUseCase.createKnowledgeNote(parsed.data, createSystemExecutionContext(identityId));
+      const result = await knowledgeNoteUseCase.createKnowledgeNote(
+        parsed.data,
+        createSystemExecutionContext(identityId, requestId),
+      );
       if (!result.ok) {
         executedActions.push({
           tool: action.tool,
@@ -1172,6 +1175,7 @@ export function createAgentRuntimeService(
         requestWithContext,
         cx.identityId,
         knowledgeQueryUseCase,
+        cx.requestId,
       );
       if (!requestWithKnowledge.ok) {
         return requestWithKnowledge;
@@ -1184,38 +1188,23 @@ export function createAgentRuntimeService(
         // Residual 493: ExecutionContext identity fail-closed (builder also throws; no silent empty).
         const taskCreateIdentityId = resolveTaskCreateIdentityId(cx.identityId);
         if (!taskCreateIdentityId) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE);
         }
         // Residual 497: process-local runId fail-closed (builder also throws; no silent empty).
         if (!resolveTaskCreateRunId(requestWithKnowledge.data.runId)) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE);
         }
         // Residual 479: title fail-closed (builder also throws; no silent 'New task').
         if (!resolveTaskCreateTitle(requestWithKnowledge.data.input)) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE);
         }
         // Residual 461/483: session-bound product path — conversationId required (builder also throws).
         if (!resolveTaskCreateConversationId(requestWithKnowledge.data.conversationId)) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE);
         }
         // Residual 485: process-local thread binding — blank/whitespace threadId fail-closed.
         if (!resolveTaskCreateThreadId(requestWithKnowledge.data.threadId)) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE);
         }
         const startedAt = Date.now();
         try {
@@ -1529,9 +1518,7 @@ export function createAgentRuntimeService(
       }
       const merged = [...byId.values()].sort((left, right) => right.updatedAt - left.updatedAt);
       const limited =
-        typeof listLimit === 'number' && listLimit > 0
-          ? merged.slice(0, listLimit)
-          : merged;
+        typeof listLimit === 'number' && listLimit > 0 ? merged.slice(0, listLimit) : merged;
       return ok(limited);
     },
     async getEvents(

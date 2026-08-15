@@ -6,10 +6,7 @@ import { AIAssistantFacadeController } from '../ai-assistant-facade.controller';
 describe('AIAssistantFacadeController', () => {
   it('injects identityId from ExecutionContext and never trusts body identityId', async () => {
     const dispatchAssistant = vi.fn(
-      async (
-        command: AssistantCommand,
-        onEvent: (event: AssistantEvent) => void,
-      ) => {
+      async (command: AssistantCommand, onEvent: (event: AssistantEvent) => void) => {
         onEvent({
           type: 'run.started',
           runId: 'run-1',
@@ -159,7 +156,6 @@ describe('AIAssistantFacadeController', () => {
     expect(events[0]).toMatchObject({ type: 'proposal.revised', revision: 2 });
   });
 
-
   it('forwards executionProfileId pi_readonly with context identity only (residual 377)', async () => {
     const dispatchAssistant = vi.fn(
       async (command: AssistantCommand, onEvent: (event: AssistantEvent) => void) => {
@@ -229,4 +225,19 @@ describe('AIAssistantFacadeController', () => {
     expect(dispatchAssistant).not.toHaveBeenCalled();
   });
 
+  it('forwards the entry correlation requestId to the dispatch service', async () => {
+    const dispatchAssistant = vi.fn(async () => ok({ eventCount: 0 }));
+    const controller = new AIAssistantFacadeController({ dispatchAssistant });
+    const cx = {
+      requestId: 'entry-req-facade-1',
+      traceId: 'entry-req-facade-1',
+      startedAt: 1_700_000_000_000,
+      source: 'http',
+      identityId: 'user-1',
+    } as never;
+    await controller.dispatch({ type: 'cancel_run', runId: 'run-1' }, cx, () => undefined);
+    expect(dispatchAssistant).toHaveBeenCalledOnce();
+    const [, , , requestId] = dispatchAssistant.mock.calls[0];
+    expect(requestId).toBe('entry-req-facade-1');
+  });
 });

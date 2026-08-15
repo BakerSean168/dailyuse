@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type {
-  AgentProposal,
-  IProposalKernelPort,
-  ITurnEnginePort,
-} from '@memoflow/contracts/ai';
+import type { AgentProposal, IProposalKernelPort, ITurnEnginePort } from '@memoflow/contracts/ai';
 import type { IOpenChatTurnPort } from '../../../application/ports';
 import { AssistantFacade } from '../assistant.facade';
 
@@ -21,9 +17,7 @@ function proposal(overrides: Partial<AgentProposal> = {}): AgentProposal {
   } as AgentProposal;
 }
 
-function createOpenChat(
-  overrides: Partial<IOpenChatTurnPort> = {},
-): IOpenChatTurnPort {
+function createOpenChat(overrides: Partial<IOpenChatTurnPort> = {}): IOpenChatTurnPort {
   return {
     engineId: 'engine.direct_turn',
     executeConversationTurn: vi.fn().mockResolvedValue({
@@ -40,9 +34,7 @@ function createOpenChat(
   };
 }
 
-function createReadonlyEngine(
-  overrides: Partial<ITurnEnginePort> = {},
-): ITurnEnginePort {
+function createReadonlyEngine(overrides: Partial<ITurnEnginePort> = {}): ITurnEnginePort {
   return {
     engineId: 'engine.pi_readonly',
     abort: vi.fn().mockResolvedValue(undefined),
@@ -51,9 +43,7 @@ function createReadonlyEngine(
   };
 }
 
-function createKernel(
-  overrides: Partial<IProposalKernelPort> = {},
-): IProposalKernelPort {
+function createKernel(overrides: Partial<IProposalKernelPort> = {}): IProposalKernelPort {
   return {
     create: vi.fn(),
     revise: vi.fn(),
@@ -123,16 +113,45 @@ describe('AssistantFacade', () => {
     expect(kernel.executeApproved).not.toHaveBeenCalled();
   });
 
+  it('propagates the entry correlation requestId into the Turn Engine stream input', async () => {
+    const openChat = createOpenChat();
+    const readonlyEngine = createReadonlyEngine();
+    const primary = createReadonlyEngine({ engineId: 'engine.direct_turn' });
+    const kernel = createKernel();
+    const facade = new AssistantFacade(openChat, readonlyEngine, kernel, primary);
+
+    const events = [];
+    for await (const event of facade.dispatch(
+      {
+        type: 'message',
+        identityId: 'user-1',
+        conversationId: 'conv-1',
+        content: 'hi',
+        surface: 'web',
+        runId: 'run-1',
+      },
+      undefined,
+      'entry-req-assistant-1',
+    )) {
+      events.push(event);
+    }
+
+    expect(events.at(-1)).toMatchObject({ type: 'message.completed', status: 'completed' });
+    expect(openChat.streamConversationTurn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runId: 'run-1',
+        requestId: 'entry-req-assistant-1',
+      }),
+      expect.any(Function),
+    );
+    expect(kernel.executeApproved).not.toHaveBeenCalled();
+  });
+
   it('routes pi_readonly profile to ReadonlyAnalysisTurnEngine', async () => {
     const openChat = createOpenChat();
     const readonlyEngine = createReadonlyEngine();
     const primary = createReadonlyEngine({ engineId: 'engine.direct_turn' });
-    const facade = new AssistantFacade(
-      openChat,
-      readonlyEngine,
-      createKernel(),
-      primary,
-    );
+    const facade = new AssistantFacade(openChat, readonlyEngine, createKernel(), primary);
 
     const events = await collect(facade, {
       type: 'message',
@@ -174,9 +193,7 @@ describe('AssistantFacade', () => {
       profile: 'direct_turn',
     });
     expect(events[0]).not.toHaveProperty('conversationId');
-    expect(events.some((e) => e.type === 'error' && e.code === 'CONVERSATION_REQUIRED')).toBe(
-      true,
-    );
+    expect(events.some((e) => e.type === 'error' && e.code === 'CONVERSATION_REQUIRED')).toBe(true);
     expect(openChat.streamConversationTurn).not.toHaveBeenCalled();
   });
 
@@ -307,7 +324,6 @@ describe('AssistantFacade', () => {
     expect(kernel.executeApproved).not.toHaveBeenCalled();
   });
 
-
   it('revises agent-run bridge proposals without executeApproved', async () => {
     const store = new Map<string, any>();
     const kernel = createKernel({
@@ -357,6 +373,4 @@ describe('AssistantFacade', () => {
       title: 'Edited Host Goal',
     });
   });
-
-
 });

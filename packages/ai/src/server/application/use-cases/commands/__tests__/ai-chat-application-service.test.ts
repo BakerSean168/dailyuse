@@ -22,10 +22,7 @@ class InMemoryConversationRepository {
     this.conversation = conversation;
   }
 
-  async findByIdForIdentity(
-    identityId: string,
-    _id: string,
-  ): Promise<AIConversation | null> {
+  async findByIdForIdentity(identityId: string, _id: string): Promise<AIConversation | null> {
     return String(this.conversation.identityId) === identityId ? this.conversation : null;
   }
 }
@@ -168,7 +165,7 @@ describe('SendAIMessageUseCase', () => {
           baseUrl: 'https://api.openai.com/v1',
           temperature: 0.7,
         }),
-        requestId: expect.any(String),
+        requestId: 'req-chat-app-1',
         signal: expect.any(AbortSignal),
       }),
     );
@@ -183,7 +180,7 @@ describe('SendAIMessageUseCase', () => {
         providerId: 'provider-1',
         providerName: 'Main provider',
         model: 'gpt-4o-mini',
-        requestId: expect.any(String),
+        requestId: 'req-chat-app-1',
         costEstimate: expect.objectContaining({
           pricingModel: 'gpt-4o-mini',
           totalCostUsd: expect.any(Number),
@@ -262,8 +259,7 @@ describe('StreamAIMessageUseCase', () => {
     // The engine bridges the caller signal to its own controller; the
     // behavioural contract is that the port receives an already-aborted signal.
     const streamCall = executionPort.stream.mock.calls[0]?.[0] as
-      | { signal?: AbortSignal }
-      | undefined;
+      { signal?: AbortSignal } | undefined;
     expect(streamCall?.signal?.aborted).toBe(true);
 
     expect(executionLogPort.record).toHaveBeenCalledWith(

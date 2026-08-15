@@ -20,7 +20,11 @@ export interface IProposalKernelPort {
   markStale(proposalId: string, reason: string): Promise<AgentProposal>;
   approve(proposalId: string, revision: number): Promise<AgentProposal>;
   reject(proposalId: string, revision: number, reason?: string): Promise<AgentProposal>;
-  executeApproved(proposalId: string, revision: number, requestId: string): Promise<ExecutionReceipt>;
+  executeApproved(
+    proposalId: string,
+    revision: number,
+    requestId: string,
+  ): Promise<ExecutionReceipt>;
 }
 
 /**
@@ -294,10 +298,16 @@ export interface IAssistantFacadePort {
   /**
    * Dispatch one assistant command and stream Host-normalized events.
    * Business mutations still require separate executors after proposal approval.
+   *
+   * @param command - The authenticated Host command (identityId already injected).
+   * @param signal - Optional cancellation signal for the dispatch stream.
+   * @param requestId - Optional entry correlation request ID propagated into Turn
+   *                    Engines so open chat reaches the Python AI service with the
+   *                    same correlation ID as the entry request.
    */
   dispatch(
     command: AssistantCommand,
     signal?: AbortSignal,
+    requestId?: string,
   ): AsyncIterable<AssistantEvent>;
 }
-

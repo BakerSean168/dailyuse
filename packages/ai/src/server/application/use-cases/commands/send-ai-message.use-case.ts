@@ -46,6 +46,7 @@ export class SendAIMessageUseCase {
     try {
       const turn = await this.openChatTurn.executeConversationTurn({
         runId,
+        requestId,
         identityId: cx.identityId,
         conversationId,
         message: content,

@@ -45,7 +45,14 @@ import type {
 import { createLogger } from '@memoflow/utils/logger';
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
-import type { IAssistantFacadePort, ICapabilityResolverPort, IModelGatewayPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@memoflow/contracts/ai';
+import type {
+  IAssistantFacadePort,
+  ICapabilityResolverPort,
+  IModelGatewayPort,
+  IProposalKernelPort,
+  ITurnEnginePort,
+  IWorkflowAdapterPort,
+} from '@memoflow/contracts/ai';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
 
 import type { Result } from '@memoflow/contracts/result';
@@ -565,9 +572,9 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       services.agentRuntimeService.getEvents(runId, cx, requestId, signal),
 
     // Residual 345: AssistantFacade transport surface (identity must already be set on command).
-    dispatchAssistant: async (command, onEvent, signal) => {
+    dispatchAssistant: async (command, onEvent, signal, requestId) => {
       let eventCount = 0;
-      for await (const event of runtime.assistantFacade.dispatch(command, signal)) {
+      for await (const event of runtime.assistantFacade.dispatch(command, signal, requestId)) {
         eventCount += 1;
         onEvent(event);
       }

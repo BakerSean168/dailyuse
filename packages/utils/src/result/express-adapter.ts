@@ -41,7 +41,7 @@ import {
   errorCodeToHttpStatus,
   createHttpResponseBuilder,
 } from '@memoflow/contracts/result';
-import type { Context, ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
+import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { mapPrismaError } from '../errors/prisma-error-mapper';
 // Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
 import { formatZodErrors } from './format-zod-errors';
@@ -137,8 +137,11 @@ export function readExpressRequestContext(req: ExpressLikeRequest): RequestConte
  * Residual 1183 keep-boundary: Express defaultExtractContext — canonical carrier
  * composer. Reads the producer-owned requestContext + header/body device info +
  * req.user.identityId into a full ExecutionContext. No identity-only stub.
+ *
+ * Exported so custom-AI SSE routes and other second-host transports reuse the
+ * exact same composer instead of defining a second one.
  */
-function defaultExtractContext(req: ExpressLikeRequest): ExecutionContext {
+export function defaultExtractContext(req: ExpressLikeRequest): ExecutionContext {
   const requestContext = readExpressRequestContext(req);
   const headers = req.headers ?? {};
   const userAgentHeader = headers['user-agent'];
@@ -249,10 +252,14 @@ export function expressAdapter<T>(
   } = options;
 
   return async (req: ExpressLikeRequest, res: ExpressLikeResponse) => {
-    const requestContext = readExpressRequestContext(req);
+    // Resolve the context through the (possibly custom) extractor FIRST so a
+    // second-host path without the global carrier still works. Envelope
+    // metadata comes from the resulting canonical context — never from a
+    // separate read that bypasses a custom extractor.
+    const context = extractContext(req);
     const responseBuilder = createHttpResponseBuilder({
-      traceId: requestContext.traceId,
-      startTime: requestContext.startedAt,
+      traceId: context.traceId,
+      startTime: context.startedAt,
     });
 
     try {
@@ -262,7 +269,6 @@ export function expressAdapter<T>(
         return;
       }
 
-      const context = extractContext(req);
       const result = await controllerFn(req, context);
 
       if (isOk(result)) {
@@ -361,10 +367,14 @@ export function expressAdapterWithValidation<TInput, TOutput>(
   } = options;
 
   return async (req: ExpressLikeRequest, res: ExpressLikeResponse) => {
-    const requestContext = readExpressRequestContext(req);
+    // Resolve the context through the (possibly custom) extractor FIRST so a
+    // second-host path without the global carrier still works. Envelope
+    // metadata comes from the resulting canonical context — never from a
+    // separate read that bypasses a custom extractor.
+    const context = extractContext(req);
     const responseBuilder = createHttpResponseBuilder({
-      traceId: requestContext.traceId,
-      startTime: requestContext.startedAt,
+      traceId: context.traceId,
+      startTime: context.startedAt,
     });
 
     try {
@@ -382,7 +392,6 @@ export function expressAdapterWithValidation<TInput, TOutput>(
         return;
       }
 
-      const context = extractContext(req);
       const result = await controllerFn(parsed.data, context, req);
 
       if (isOk(result)) {

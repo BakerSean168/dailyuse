@@ -85,10 +85,7 @@ export interface AIApplicationPort {
   ): Promise<Result<AIProviderConfigClientDTO>>;
 
   // Conversations
-  createConversation(
-    cx: ExecutionContext,
-    name?: string,
-  ): Promise<Result<AIConversationClientDTO>>;
+  createConversation(cx: ExecutionContext, name?: string): Promise<Result<AIConversationClientDTO>>;
   updateConversation(
     id: string,
     req: UpdateConversationReq,
@@ -133,14 +130,19 @@ export interface AIApplicationPort {
   >;
 
   // Goal generation
-  generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<Result<GenerateGoalsRes>>;
+  generateGoal(
+    params: GenerateGoalsReq & { identityId: string; requestId?: string },
+  ): Promise<Result<GenerateGoalsRes>>;
 
   // Knowledge, analytics, and agent runtime
   createKnowledgeNote(
     req: CreateKnowledgeNoteReq,
     cx: ExecutionContext,
   ): Promise<Result<CreateKnowledgeNoteRes>>;
-  expandKnowledge(req: ExpandKnowledgeReq, cx: ExecutionContext): Promise<Result<ExpandKnowledgeRes>>;
+  expandKnowledge(
+    req: ExpandKnowledgeReq,
+    cx: ExecutionContext,
+  ): Promise<Result<ExpandKnowledgeRes>>;
   queryKnowledge(req: QueryKnowledgeReq, cx: ExecutionContext): Promise<Result<QueryKnowledgeRes>>;
   reindexKnowledge(
     req: ReindexKnowledgeReq,
@@ -185,10 +187,14 @@ export interface AIApplicationPort {
   /**
    * AssistantFacade dispatch (residual 345). Streams Host-normalized AssistantEvent.
    * Callers must set identityId from trusted ExecutionContext before invoking.
+   *
+   * @param requestId - Optional entry correlation request ID to propagate into the
+   *                    Turn Engine (open chat reaches Python with the same ID).
    */
   dispatchAssistant(
     command: AssistantCommand,
     onEvent: (event: AssistantEvent) => void,
     signal?: AbortSignal,
+    requestId?: string,
   ): Promise<Result<{ eventCount: number }>>;
 }

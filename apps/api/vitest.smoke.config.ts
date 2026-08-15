@@ -16,6 +16,12 @@ export default defineConfig({
         find: /^@\/(.+)/,
         replacement: path.resolve(__dirname, '../../packages/task/src/$1'),
       },
+      {
+        // Real AI router smoke (RefArch Phase 2): resolve the AI transport
+        // source so the smoke exercises the actual route/controller, not dist.
+        find: /^@memoflow\/ai\/(.+)/,
+        replacement: path.resolve(__dirname, '../../packages/ai/src/$1'),
+      },
       ...taskResolveAliases,
     ],
   },

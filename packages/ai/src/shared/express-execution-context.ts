@@ -11,9 +11,14 @@
  * 该 extractor 把 producer-owned `req.requestContext` carrier 与
  * auth-resolved `req.user.identityId` 合成完整 context。它绝不生成 request ID —
  * 若全局 RequestContext middleware 未运行，则 fail closed。
+ *
+ * The composer is the SAME `defaultExtractContext` exported by
+ * `@memoflow/utils/result` — custom AI routes reuse the canonical extractor
+ * instead of defining a second one.
  */
 
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
+import { defaultExtractContext } from '@memoflow/utils/result';
 
 /**
  * Express-like request shape consumed by the shared extractor.
@@ -53,18 +58,16 @@ export function readAiExpressRequestContext(req: unknown): RequestContext {
  * Composes the canonical `ExecutionContext` for a custom AI route.
  * 为自定义 AI 路由合成 canonical `ExecutionContext`。
  *
- * The principal identity comes from `req.user` (parsed once by the auth
- * middleware); when absent the route is expected to reject with 401 itself.
+ * Delegates to the single shared Express composer (`defaultExtractContext` from
+ * `@memoflow/utils/result`); the principal identity comes from `req.user`
+ * (parsed once by the auth middleware). When absent the route is expected to
+ * reject with 401 itself.
  *
  * @param req - The Express request (or a structural equivalent in tests).
- * @returns A full `ExecutionContext` (carrier + identity).
+ * @returns A full `ExecutionContext` (carrier + identity + device metadata).
  */
 export function extractAiExpressExecutionContext(req: unknown): ExecutionContext {
-  const requestContext = readAiExpressRequestContext(req);
-  return {
-    ...requestContext,
-    identityId: asRequestLike(req).user?.identityId ?? '',
-  };
+  return defaultExtractContext(req as Parameters<typeof defaultExtractContext>[0]);
 }
 
 /**

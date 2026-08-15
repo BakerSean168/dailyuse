@@ -6,7 +6,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AIServiceInternalClient,
-  AIServiceInternalRequestError,
   INTERNAL_CONTENT_HASH_HEADER,
   INTERNAL_SERVICE_HEADER,
   INTERNAL_SIGNATURE_HEADER,
@@ -15,7 +14,9 @@ import {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function createClient(options: Partial<ConstructorParameters<typeof AIServiceInternalClient>[0]> = {}) {
+function createClient(
+  options: Partial<ConstructorParameters<typeof AIServiceInternalClient>[0]> = {},
+) {
   return new AIServiceInternalClient({
     baseUrl: 'http://127.0.0.1:8100',
     serviceSecret: 'shared-secret',
@@ -42,7 +43,12 @@ describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () 
     vi.stubGlobal('fetch', fetchMock);
 
     const client = createClient();
-    await client.postJson({ path: '/internal/chat', identityId: 'identity-1', body: { q: 'x' }, requestId: 'entry-req-123' });
+    await client.postJson({
+      path: '/internal/chat',
+      identityId: 'identity-1',
+      body: { q: 'x' },
+      requestId: 'entry-req-123',
+    });
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
@@ -54,7 +60,11 @@ describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () 
     vi.stubGlobal('fetch', fetchMock);
 
     const client = createClient();
-    await client.getJson({ path: '/internal/status', identityId: 'identity-1', requestId: 'entry-req-456' });
+    await client.getJson({
+      path: '/internal/status',
+      identityId: 'identity-1',
+      requestId: 'entry-req-456',
+    });
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
@@ -79,7 +89,12 @@ describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () 
 
     const client = createClient();
     const body = JSON.stringify({ q: 'x' });
-    await client.postJson({ path: '/internal/chat', identityId: 'identity-1', body: JSON.parse(body), requestId: 'entry-req-1' });
+    await client.postJson({
+      path: '/internal/chat',
+      identityId: 'identity-1',
+      body: JSON.parse(body),
+      requestId: 'entry-req-1',
+    });
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
@@ -97,7 +112,12 @@ describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () 
 
     const client = createClient();
     await expect(
-      client.postJson({ path: '/internal/chat', identityId: 'identity-1', body: {}, requestId: 'entry-req-500' }),
+      client.postJson({
+        path: '/internal/chat',
+        identityId: 'identity-1',
+        body: {},
+        requestId: 'entry-req-500',
+      }),
     ).rejects.toMatchObject({
       name: 'AIServiceInternalRequestError',
       requestId: 'entry-req-500',
@@ -107,12 +127,19 @@ describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () 
   });
 
   it('uses the resolved requestId in the structured error for aborted/timeout requests', async () => {
-    const fetchMock = vi.fn().mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
     vi.stubGlobal('fetch', fetchMock);
 
     const client = createClient();
     await expect(
-      client.postJson({ path: '/internal/chat', identityId: 'identity-1', body: {}, requestId: 'entry-req-abort' }),
+      client.postJson({
+        path: '/internal/chat',
+        identityId: 'identity-1',
+        body: {},
+        requestId: 'entry-req-abort',
+      }),
     ).rejects.toMatchObject({
       name: 'AIServiceInternalRequestError',
       requestId: 'entry-req-abort',
@@ -121,12 +148,25 @@ describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () 
 
   it('supports SSE streaming via postStream with the same requestId header', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode('event: message\ndata: hi\n\n')); c.close(); } }), { status: 200 }),
+      new Response(
+        new ReadableStream({
+          start(c) {
+            c.enqueue(new TextEncoder().encode('event: message\ndata: hi\n\n'));
+            c.close();
+          },
+        }),
+        { status: 200 },
+      ),
     );
     vi.stubGlobal('fetch', fetchMock);
 
     const client = createClient();
-    const response = await client.postStream({ path: '/internal/chat/stream', identityId: 'identity-1', body: {}, requestId: 'entry-req-sse' });
+    const response = await client.postStream({
+      path: '/internal/chat/stream',
+      identityId: 'identity-1',
+      body: {},
+      requestId: 'entry-req-sse',
+    });
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;

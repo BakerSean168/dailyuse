@@ -72,6 +72,7 @@ export type {
 
 export {
   expressAdapter,
+  defaultExtractContext,
   type ExpressAdapterOptions,
 } from './express-adapter';
 
@@ -82,10 +83,7 @@ export { formatZodErrors } from './format-zod-errors';
 // IPC Adapter
 // ============================================================================
 
-export {
-  ipcAdapter,
-  type IpcAdapterOptions,
-} from './ipc-adapter';
+export { ipcAdapter, type IpcAdapterOptions } from './ipc-adapter';
 
 export { resultify } from './resultify';
 
@@ -105,8 +103,4 @@ export {
 // OpenAPI Response Helpers
 // ============================================================================
 
-export {
-  successResponse,
-  errorResponse,
-  OpenApiErrorResponseSchema,
-} from './openapi-helpers';
+export { successResponse, errorResponse, OpenApiErrorResponseSchema } from './openapi-helpers';

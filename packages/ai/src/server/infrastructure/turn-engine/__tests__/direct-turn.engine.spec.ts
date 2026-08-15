@@ -8,9 +8,7 @@ const IDENTITY = 'identity-direct-turn-1';
 const FOREIGN = 'identity-direct-turn-foreign';
 const RUN = 'run-direct-turn-1';
 
-function createChatPort(
-  overrides: Partial<IAIChatExecutionPort> = {},
-): IAIChatExecutionPort {
+function createChatPort(overrides: Partial<IAIChatExecutionPort> = {}): IAIChatExecutionPort {
   return {
     complete: vi.fn().mockResolvedValue({
       content: 'hello from direct turn',
@@ -164,5 +162,38 @@ describe('DirectTurnEngine', () => {
     });
     expect(result.status).not.toBe('waiting_approval');
     expect(result.status).toBe('completed');
+  });
+
+  it('forwards the entry correlation requestId (not runId) as the internal requestId', async () => {
+    const { AIConversation } = await import('../../../domain/aggregates/ai-conversation');
+    const conversation = AIConversation.create({ identityId: IDENTITY, name: 'Test' });
+    conversations = createConversationRepo({
+      findByIdForIdentity: vi.fn().mockResolvedValue(conversation),
+    });
+    engine = new DirectTurnEngine(conversations, providers, chat);
+
+    const result = await engine.executeConversationTurn({
+      runId: RUN,
+      requestId: 'entry-req-direct-turn-1',
+      identityId: IDENTITY,
+      conversationId: 'conv-1',
+      message: 'ping',
+    });
+    expect(result.status).toBe('completed');
+    const arg = vi.mocked(chat.complete).mock.calls[0]?.[0];
+    expect(arg?.requestId).toBe('entry-req-direct-turn-1');
+    // runId stays the durable ownership key — never the correlation ID.
+    expect(arg?.requestId).not.toBe(RUN);
+  });
+
+  it('falls back to runId as the internal requestId when no entry correlation ID exists', async () => {
+    const result = await engine.startTurn({
+      runId: RUN,
+      identityId: IDENTITY,
+      message: 'ping',
+    });
+    expect(result.status).toBe('completed');
+    const arg = vi.mocked(chat.complete).mock.calls[0]?.[0];
+    expect(arg?.requestId).toBe(RUN);
   });
 });

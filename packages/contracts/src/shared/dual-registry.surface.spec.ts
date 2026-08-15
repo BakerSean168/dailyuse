@@ -93,6 +93,30 @@ import { describe, expect, it } from 'vitest';
    */
   const here = dirname(fileURLToPath(import.meta.url));
 
+  /**
+   * Forbidden-field inventory, matched case-insensitively against the stripped
+   * type body so camelCase tokens (`emailVerified`, `sessionId`) can never hide
+   * a false negative. Shared by the real check and the mutation fixtures.
+   */
+  const forbiddenContextFieldTokens = [
+    'prisma',
+    'repository',
+    'authorization',
+    'emailverified',
+    'sessionid',
+    'approval',
+    'aggregate',
+  ];
+
+  function stripContextSource(source: string): string {
+    // Strip block and line comments so prose about the forbidden tokens does
+    // not fail the type-body inventory.
+    return source
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/[^\n]*/g, '')
+      .toLowerCase();
+  }
+
   describe('RefArch Phase 2 canonical Request/Execution Context (unique body)', () => {
     it('execution-context.ts owns the single ExecutionContext interface body', () => {
       const source = readFileSync(join(here, 'execution-context.ts'), 'utf8');
@@ -118,29 +142,42 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('metadata-only forbidden inventory: no transport/auth/business fields', () => {
-      const source = readFileSync(join(here, 'execution-context.ts'), 'utf8');
-      // Strip block and line comments so prose about the forbidden tokens does
-      // not fail the type-body inventory.
-      const body = source
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/\/\/[^\n]*/g, '')
-        .toLowerCase();
-      for (const forbidden of [
-        'prisma',
-        'repository',
-        'authorization',
-        'emailVerified',
-        'sessionId',
-        'approval',
-        'aggregate',
-      ]) {
+      const body = stripContextSource(readFileSync(join(here, 'execution-context.ts'), 'utf8'));
+      for (const forbidden of forbiddenContextFieldTokens) {
         expect(body).not.toContain(forbidden);
+      }
+    });
+
+    it('mutation fixtures: every forbidden field (including camelCase spellings) is caught', () => {
+      const original = readFileSync(join(here, 'execution-context.ts'), 'utf8');
+      // One mutation per forbidden field, spelled as it would appear in a real
+      // type body. Each must be detected by the case-insensitive inventory —
+      // proving `emailVerified`/`sessionId` etc. are not false negatives.
+      const fixtures: Record<string, string> = {
+        prisma: 'readonly prisma: unknown;',
+        repository: 'readonly repository: unknown;',
+        authorization: 'readonly authorization: unknown;',
+        emailVerified: 'readonly emailVerified: boolean;',
+        sessionId: 'readonly sessionId?: string;',
+        approval: 'readonly approvalState?: unknown;',
+        aggregate: 'readonly aggregate: unknown;',
+      };
+      const originalBody = stripContextSource(original);
+      for (const [field, declaration] of Object.entries(fixtures)) {
+        const mutated = stripContextSource(
+          `${original}\nexport interface ForbiddenProbeFixture { ${declaration} }`,
+        );
+        expect(mutated).toContain(field.toLowerCase());
+        // The real type body must stay free of the field.
+        expect(originalBody).not.toContain(field.toLowerCase());
       }
     });
 
     it('shared barrel re-exports the canonical types once', () => {
       const index = readFileSync(join(here, 'index.ts'), 'utf8');
-      expect(index).toContain("export type { ExecutionContext, ExecutionSource, RequestContext } from './execution-context'");
+      expect(index).toContain(
+        "export type { ExecutionContext, ExecutionSource, RequestContext } from './execution-context'",
+      );
       expect(index).toContain("export type { Context } from './context'");
     });
   });

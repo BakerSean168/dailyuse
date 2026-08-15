@@ -860,6 +860,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/main/profile/profile-access-context.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/desktop/src/main/profile/profile-access-ipc.spec.ts",
       "primarySuite": "boundary-ipc",
       "collectors": [
@@ -9921,7 +9929,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 36
+      "fileCount": 37
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -11035,7 +11043,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 938,
+    "unit": 939,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

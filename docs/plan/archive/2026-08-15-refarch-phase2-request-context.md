@@ -394,3 +394,52 @@ export type Context = ExecutionContext;
 - 唯一 `ExecutionContext` interface body 位于 `packages/contracts/src/shared/execution-context.ts`；`Context` 为 deprecated alias；governance 私有 body 已删除。
 - HTTP/IPC/system 均有真实 producer；AI outbound `requestId` 优先级 = entry `cx.requestId` → explicit caller ID → internal client fallback。
 - 最终验证见下方命令结果；因“required fields blast radius”，Step 1/2 的 `api:typecheck`/`desktop:typecheck` 只能在 Step 3/4 迁移下游 partial casts 后通过（一次会话内连续实施，未按 step 逐条独立提交）。
+
+## 最终门禁验证（review round 回填，2026-08-15）
+
+### Direct Vitest（不跑 `pnpm nx run <pkg>:test`）
+
+```text
+node node_modules/vitest/vitest.mjs run --config packages/contracts/vitest.config.ts   # 60 files, 530 tests passed
+node node_modules/vitest/vitest.mjs run --config packages/utils/vitest.config.ts       # 13 files, 128 tests passed
+node node_modules/vitest/vitest.mjs run --config packages/ai/vitest.config.ts          # 120 files, 812 tests passed
+node node_modules/vitest/vitest.mjs run --config packages/governance/vitest.config.ts  # 23 files, 176 tests passed
+node node_modules/vitest/vitest.mjs run --config packages/data-portability/vitest.config.ts # 32 files, 139 tests passed
+node node_modules/vitest/vitest.mjs run --config apps/api/vitest.config.ts             # 53 files, 224 tests passed
+node node_modules/vitest/vitest.mjs run --config apps/api/vitest.smoke.config.ts       # 3 files, 69 tests passed
+node node_modules/vitest/vitest.mjs run --config apps/desktop/vitest.config.ts apps/desktop/src/main/profile/profile-access-context.spec.ts # 1 file, 4 tests passed
+node --test tools/test-system-v2/__tests__/inventory.test.mjs                          # 3 tests passed
+```
+
+### Typecheck / Lint（`--skip-nx-cache`）
+
+```text
+pnpm nx run contracts:typecheck --skip-nx-cache   # Successfully ran target typecheck for project contracts
+pnpm nx run api:typecheck --skip-nx-cache         # Successfully ran target typecheck for project api and 25 tasks it depends on
+pnpm nx run ai:typecheck --skip-nx-cache          # Successfully ran target typecheck for project ai
+pnpm nx run desktop:typecheck --skip-nx-cache     # Successfully ran target typecheck for project desktop（retry；contracts:build 一次 flaky 后通过）
+pnpm nx run api:lint --skip-nx-cache              # All files pass linting
+pnpm nx run contracts:lint --skip-nx-cache        # Successfully ran target lint for project contracts
+pnpm nx run utils:lint --skip-nx-cache            # Successfully ran target lint for project utils
+pnpm nx run ai:lint --skip-nx-cache               # Successfully ran target lint for project ai
+pnpm nx run data-portability:lint --skip-nx-cache # Successfully ran target lint for project data-portability
+pnpm nx run desktop:lint --skip-nx-cache          # Successfully ran target lint for project desktop
+```
+
+### Governance / Docs / Inventory
+
+```text
+pnpm nx run memoflow:governance-check --skip-nx-cache  # Successfully ran target governance-check（Scope Constraint Audit / inventory / boundary 全绿）
+pnpm nx run memoflow:docs-check --skip-nx-cache        # [governance-check] passed；docs-check passed
+node tools/test-system-v2/inventory.mjs --check         # 1079 files; {"unit":939,"integration":25,"smoke":3,"boundary-ipc":9,"boundary-main":5,"e2e":63,"perf":4,"governance":31}
+```
+
+### Review round 修复（review-out.log FAIL 后的 P1/P2 修复）
+
+- **P1-1（Spec）**：`OpenChatTurnInput` 新增独立 correlation `requestId`；`send/stream-ai-message` use cases 透传 `cx.requestId`；`direct-turn.engine` 以 `requestId ?? runId` 作为 outbound request ID；Desktop Electron（goal generate、agent start/resume/get/list/events、assistant dispatch）透传 `requestContext.requestId`；AssistantFacade 经 `dispatch(command, signal, requestId)` 传播；嵌套 agent 工具调用（`withKnowledgeQaAnswer`、`executeKnowledgeGenerateInterrupt`）复用 `cx.requestId` 而非 mint 新 ID。固定 ID 端到端断言：`ai-chat-application-service.test.ts`、`direct-turn.engine.spec.ts`、`assistant.facade.spec.ts`、`ai-assistant-facade.controller.spec.ts`、`request-context.smoke.test.ts`（entry → AI service requestId → `AIServiceInternalClient` 的 `X-Request-Id`，即 Python `request.state` 值）。
+- **P1-2（Standards）**：`dual-registry.surface.spec.ts` 的 forbidden-field inventory 改为大小写不敏感（`emailVerified`/`sessionId` 等 token 转小写匹配），并为每个 forbidden 字段新增 mutation fixture（一个字段一个 mutation，证明检测无 false negative）。
+- **P2-1**：`defaultExtractContext` 从 `express-adapter.ts` 导出并在 `@memoflow/utils/result` 复用；AI `express-execution-context.ts` 委托给同一 composer；两个 adapter variant 先经（可能自定义的）extractor 解析 context，envelope metadata 来自结果 context（second-host 无需全局 carrier）。
+- **P2-2**：`request-context.smoke.test.ts` 以真实 AI AssistantFacade SSE 路由替换合成 `/api/sse`；覆盖 header-before-first-chunk、done/error framing、disconnect cancellation（abort signal）、entry→Python `request.state`/`X-Request-Id` 断言。
+- **P2-3**：`data-portability.controller.test.ts` 的 identity-only cast 替换为完整 `ExecutionContext` fixture；新增 `apps/desktop/src/main/profile/profile-access-context.spec.ts`（每 invocation 全新 ID、owner 只解析一次、完整 shape、AUTH_REQUIRED fail-closed）。
+- **P2-4**：ADR-045 修正 `identityId` 为必填；本计划回填真实 gate 证据（本段）。
+- **P2-5**：移除 `express-adapter.ts` 未使用的 `Context` import 与 `ai-service-internal-client.spec.ts` 未使用的 `AIServiceInternalRequestError`；对全部改动文件执行 `prettier --write`。

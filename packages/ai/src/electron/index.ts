@@ -228,6 +228,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
           withAuthenticatedValue(ctx, async (requestContext) =>
             aiModule.api.generateGoal({
               identityId: requestContext.identityId,
+              requestId: requestContext.requestId,
               ...dto,
             }),
           ),
@@ -265,11 +266,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.CONVERSATION_LIST);
         ipcMain.handle(AIChannels.CONVERSATION_GET, async (_, id) =>
           withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await aiModule.api.getConversation(
-              String(id),
-              requestContext,
-              true,
-            );
+            const result = await aiModule.api.getConversation(String(id), requestContext, true);
             if (!result.ok) return result;
             return result.data ?? null;
           }),
@@ -419,6 +416,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
                     }
                   },
                   abortController.signal,
+                  requestContext.requestId,
                 );
 
                 if (!event.sender.isDestroyed()) {
@@ -519,7 +517,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.ANALYTICS_QUERY);
         ipcMain.handle(AIChannels.AGENT_RUN_LIST, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.listAgentRuns(dto ?? {}, requestContext),
+            aiModule.api.listAgentRuns(dto ?? {}, requestContext, requestContext.requestId),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_LIST);
@@ -531,25 +529,31 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
                 identityId: requestContext.identityId,
               },
               requestContext,
+              requestContext.requestId,
             ),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_START);
         ipcMain.handle(AIChannels.AGENT_RUN_RESUME, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.resumeAgentRun(String(dto.runId), dto.payload, requestContext),
+            aiModule.api.resumeAgentRun(
+              String(dto.runId),
+              dto.payload,
+              requestContext,
+              requestContext.requestId,
+            ),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_RESUME);
         ipcMain.handle(AIChannels.AGENT_RUN_GET, async (_, runId) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getAgentRun(String(runId), requestContext),
+            aiModule.api.getAgentRun(String(runId), requestContext, requestContext.requestId),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_GET);
         ipcMain.handle(AIChannels.AGENT_EVENTS_GET, async (_, runId) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getAgentEvents(String(runId), requestContext),
+            aiModule.api.getAgentEvents(String(runId), requestContext, requestContext.requestId),
           ),
         );
         installed.push(AIChannels.AGENT_EVENTS_GET);

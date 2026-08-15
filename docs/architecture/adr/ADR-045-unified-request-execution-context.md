@@ -32,7 +32,7 @@ API、Electron IPC 与 system 入口各自构造“上下文”，但字段重�
 ### 1. 唯一 canonical 类型
 
 - `packages/contracts/src/shared/execution-context.ts` 冻结唯一 `ExecutionContext` interface body：
-  `RequestContext { requestId, traceId, startedAt, source }` 为必填，外加可选 `identityId`、`deviceId?`、`device?`、`agentRunId?`、`threadId?`、`checkpointId?`。
+  `RequestContext { requestId, traceId, startedAt, source }` 为必填，`ExecutionContext` 再必填 `identityId`，外加可选 `deviceId?`、`device?`、`agentRunId?`、`threadId?`、`checkpointId?`。
 - `Context` 只是 `ExecutionContext` 的 deprecated alias；governance 不再维护私有 body。
 - `requestId`/`traceId`/`startedAt`/`source` 必须 required；禁止用 optional 字段维持 identity-only 调用。
 - `startedAt` 是 entry 创建的 Unix epoch 毫秒；`source` 是 `http | ipc | system`，向下游传播不得改成 `internal`。

@@ -63,6 +63,7 @@ export class StreamAIMessageUseCase {
       const turn = await this.openChatTurn.streamConversationTurn(
         {
           runId,
+          requestId,
           identityId: cx.identityId,
           conversationId,
           message: content,
@@ -166,7 +167,10 @@ export class StreamAIMessageUseCase {
     } catch (err) {
       if (signal?.aborted || isAbortLikeError(err)) {
         const enriched = attachRequestIdToError(err, requestId);
-        return error('INTERNAL_ERROR', enriched instanceof Error ? enriched.message : String(enriched));
+        return error(
+          'INTERNAL_ERROR',
+          enriched instanceof Error ? enriched.message : String(enriched),
+        );
       }
       await this.recordExecution({
         identityId: cx.identityId,
