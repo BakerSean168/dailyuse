@@ -19,6 +19,18 @@ import type {
 } from '../../../ports';
 import type { IAIProviderConfigRepository } from '../../../../domain/repositories/i-ai-provider-config-repository';
 import { GenerateAIGoalUseCase } from '../generate-ai-goal.use-case';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+
+function createCx(overrides: Partial<ExecutionContext> = {}): ExecutionContext {
+  return {
+    requestId: 'trace-goal-application-1',
+    traceId: 'trace-goal-application-1',
+    startedAt: 1_700_000_000_000,
+    source: 'http',
+    identityId: 'identity-1',
+    ...overrides,
+  };
+}
 
 class StubProviderConfigRepository {
   constructor(
@@ -44,7 +56,10 @@ class StubProviderConfigRepository {
   }
 
   async findDefaultByIdentityId(identityId: string) {
-    return this.providers.find((provider) => provider.identityId === identityId && provider.isDefault) ?? null;
+    return (
+      this.providers.find((provider) => provider.identityId === identityId && provider.isDefault) ??
+      null
+    );
   }
 
   async findByIdentityId(identityId: string) {
@@ -82,9 +97,9 @@ class StubGoalPlanningPort implements IGoalPlanningPort {
         },
       ],
       usage: {
-      promptTokens: 40,
-      completionTokens: 25,
-      totalTokens: 65,
+        promptTokens: 40,
+        completionTokens: 25,
+        totalTokens: 65,
       },
     }),
   );
@@ -147,7 +162,6 @@ class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
     (identityId: string, query: string, limit: number) => Promise<KnowledgeSourceNote[]>
   >(async () => [
     {
-      identityId: 'identity-1',
       repositoryId: 'repo-1',
       resourceId: 'resource-1',
       resourcePath: 'notes/ai-goals.md',
@@ -207,13 +221,15 @@ describe('GoalGenerationApplicationService', () => {
       executionLogPort,
     );
 
-    const result = await service.generateGoal({
-      identityId: 'identity-1',
-      idea: 'Use Python engineering best practices to improve the internal ai-service module.',
-      providerId: 'provider-foreign',
-      timeframe: 'three weeks',
-      includeKeyResults: true,
-    });
+    const result = await service.generateGoal(
+      {
+        idea: 'Use Python engineering best practices to improve the internal ai-service module.',
+        providerId: 'provider-foreign',
+        timeframe: 'three weeks',
+        includeKeyResults: true,
+      },
+      createCx(),
+    );
 
     expect(executionPort.plan).toHaveBeenCalledWith({
       identityId: 'identity-1',
@@ -297,12 +313,14 @@ describe('GoalGenerationApplicationService', () => {
       executionLogPort,
     );
 
-    const result = await service.generateGoal({
-      identityId: 'identity-1',
-      idea: 'Use Python engineering best practices to improve the internal ai-service module.',
-      timeframe: 'three weeks',
-      includeKeyResults: true,
-    });
+    const result = await service.generateGoal(
+      {
+        idea: 'Use Python engineering best practices to improve the internal ai-service module.',
+        timeframe: 'three weeks',
+        includeKeyResults: true,
+      },
+      createCx(),
+    );
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -367,11 +385,13 @@ describe('GoalGenerationApplicationService', () => {
       executionLogPort,
     );
 
-    const result = await service.generateGoal({
-      identityId: 'identity-1',
-      idea: 'I want to get better at AI.',
-      clarificationAnswers: ['Python backend', 'within 3 months'],
-    });
+    const result = await service.generateGoal(
+      {
+        idea: 'I want to get better at AI.',
+        clarificationAnswers: ['Python backend', 'within 3 months'],
+      },
+      createCx(),
+    );
 
     expect(executionPort.plan).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -426,34 +446,36 @@ describe('GoalGenerationApplicationService', () => {
       analyticsReadPort,
     );
 
-    const result = await service.generateGoal({
-      identityId: 'identity-1',
-      command: 'prepare',
-      idea: 'Plan automation for this goal workflow.',
-      draftContext: {
-        goal: {
-          title: 'Ship AI automation',
-          description: 'Unify chat and goal automation.',
-          category: 'work',
-          importance: 'Important',
-          tags: ['ai'],
-        },
-        keyResults: [
-          {
-            title: 'Expose confirmation UX',
-            description: 'Users can approve the action plan.',
-            valueType: 'Incremental',
-            calculationMethod: 'Sum',
-            startValue: 0,
-            currentValue: 0,
-            targetValue: 1,
-            unit: 'milestone',
-            weight: 1,
+    const result = await service.generateGoal(
+      {
+        command: 'prepare',
+        idea: 'Plan automation for this goal workflow.',
+        draftContext: {
+          goal: {
+            title: 'Ship AI automation',
+            description: 'Unify chat and goal automation.',
+            category: 'work',
+            importance: 'Important',
+            tags: ['ai'],
           },
-        ],
+          keyResults: [
+            {
+              title: 'Expose confirmation UX',
+              description: 'Users can approve the action plan.',
+              valueType: 'Incremental',
+              calculationMethod: 'Sum',
+              startValue: 0,
+              currentValue: 0,
+              targetValue: 1,
+              unit: 'milestone',
+              weight: 1,
+            },
+          ],
+        },
+        includeTaskTemplates: true,
       },
-      includeTaskTemplates: true,
-    });
+      createCx(),
+    );
 
     expect(automationPlanningPort.plan).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -518,29 +540,31 @@ describe('GoalGenerationApplicationService', () => {
       executionLogPort,
     );
 
-    const result = await service.generateGoal({
-      identityId: 'identity-1',
-      command: 'execute',
-      idea: 'Execute the approved plan.',
-      approvedSummary: 'Approved plan from review.',
-      approvedPlan: {
-        goal: {
-          title: 'Ship AI automation',
-          description: 'Wire explicit tool calls into the product.',
-          motivation: 'Reduce manual setup work.',
-          category: 'work',
-          importance: 'Important',
-          tags: ['ai', 'automation'],
-          feasibilityAnalysis: 'Fits the current iteration.',
-          aiInsights: 'Start with auditable tool execution.',
-          suggestedStartDate: 1,
-          suggestedEndDate: 2,
+    const result = await service.generateGoal(
+      {
+        command: 'execute',
+        idea: 'Execute the approved plan.',
+        approvedSummary: 'Approved plan from review.',
+        approvedPlan: {
+          goal: {
+            title: 'Ship AI automation',
+            description: 'Wire explicit tool calls into the product.',
+            motivation: 'Reduce manual setup work.',
+            category: 'work',
+            importance: 'Important',
+            tags: ['ai', 'automation'],
+            feasibilityAnalysis: 'Fits the current iteration.',
+            aiInsights: 'Start with auditable tool execution.',
+            suggestedStartDate: 1,
+            suggestedEndDate: 2,
+          },
+          keyResults: [],
+          taskTemplates: [],
         },
-        keyResults: [],
-        taskTemplates: [],
+        approvedActions: [{ tool: 'create_goal', rationale: 'Create the target goal first.' }],
       },
-      approvedActions: [{ tool: 'create_goal', rationale: 'Create the target goal first.' }],
-    });
+      createCx(),
+    );
 
     expect(automationPlanningPort.plan).not.toHaveBeenCalled();
     expect(automationExecutorPort.executeGoalAutomation).toHaveBeenCalledTimes(1);
@@ -601,32 +625,34 @@ describe('GoalGenerationApplicationService', () => {
       executionLogPort,
     );
 
-    const result = await service.generateGoal({
-      identityId: 'identity-1',
-      command: 'execute',
-      idea: 'Execute the approved plan with a recoverable failure.',
-      approvedSummary: 'Approved plan from review.',
-      approvedPlan: {
-        goal: {
-          title: 'Ship AI automation',
-          description: 'Wire explicit tool calls into the product.',
-          motivation: 'Reduce manual setup work.',
-          category: 'work',
-          importance: 'Important',
-          tags: ['ai', 'automation'],
-          feasibilityAnalysis: 'Fits the current iteration.',
-          aiInsights: 'Start with auditable tool execution.',
-          suggestedStartDate: 1,
-          suggestedEndDate: 2,
+    const result = await service.generateGoal(
+      {
+        command: 'execute',
+        idea: 'Execute the approved plan with a recoverable failure.',
+        approvedSummary: 'Approved plan from review.',
+        approvedPlan: {
+          goal: {
+            title: 'Ship AI automation',
+            description: 'Wire explicit tool calls into the product.',
+            motivation: 'Reduce manual setup work.',
+            category: 'work',
+            importance: 'Important',
+            tags: ['ai', 'automation'],
+            feasibilityAnalysis: 'Fits the current iteration.',
+            aiInsights: 'Start with auditable tool execution.',
+            suggestedStartDate: 1,
+            suggestedEndDate: 2,
+          },
+          keyResults: [],
+          taskTemplates: [],
         },
-        keyResults: [],
-        taskTemplates: [],
+        approvedActions: [
+          { tool: 'create_goal', rationale: 'Create the target goal first.' },
+          { tool: 'create_key_result', index: 0, rationale: 'Create the key result next.' },
+        ],
       },
-      approvedActions: [
-        { tool: 'create_goal', rationale: 'Create the target goal first.' },
-        { tool: 'create_key_result', index: 0, rationale: 'Create the key result next.' },
-      ],
-    });
+      createCx(),
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected ok');
@@ -652,7 +678,7 @@ describe('GoalGenerationApplicationService', () => {
     );
   });
 
-  it('reuses a caller-provided request id for downstream goal planning calls', async () => {
+  it('propagates the canonical cx.requestId to downstream goal planning calls', async () => {
     const executionPort = new StubGoalPlanningPort();
     const executionLogPort = new StubExecutionLogPort();
     const service = new GenerateAIGoalUseCase(
@@ -675,13 +701,14 @@ describe('GoalGenerationApplicationService', () => {
       executionLogPort,
     );
 
-    await service.generateGoal({
-      identityId: 'identity-1',
-      requestId: 'trace-goal-application-1',
-      idea: 'Use Python engineering best practices to improve the internal ai-service module.',
-      timeframe: 'three weeks',
-      includeKeyResults: true,
-    });
+    await service.generateGoal(
+      {
+        idea: 'Use Python engineering best practices to improve the internal ai-service module.',
+        timeframe: 'three weeks',
+        includeKeyResults: true,
+      },
+      createCx(),
+    );
 
     expect(executionPort.plan).toHaveBeenCalledWith(
       expect.objectContaining({

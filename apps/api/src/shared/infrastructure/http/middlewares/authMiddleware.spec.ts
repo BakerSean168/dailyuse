@@ -1,6 +1,7 @@
 import type { CloudAuth } from '@memoflow/cloud-auth/server';
 import type { NextFunction, Response } from 'express';
 import { describe, expect, it, vi } from 'vitest';
+import type { ILogger } from '@memoflow/utils/logger';
 import { createAuthMiddleware, type AuthenticatedRequest } from './auth-middleware';
 import type { RequestContext } from '@memoflow/contracts/shared';
 
@@ -82,7 +83,9 @@ describe('cloud auth middleware', () => {
 
     await createAuthMiddleware(cloudAuth)(req, res, next);
 
-    expect(req.requestContext.requestId).toBe('req-auth-1');
+    expect(
+      (req as unknown as { requestContext?: { requestId?: string } }).requestContext?.requestId,
+    ).toBe('req-auth-1');
     expect(cloudAuth.resolveNodePrincipal).toHaveBeenCalledTimes(1);
     expect(req.user?.identityId).toBe('user-id');
   });
@@ -136,12 +139,12 @@ describe('cloud auth middleware', () => {
     } as unknown as CloudAuth;
     const logger = {
       error: vi.fn(),
-    } as never;
+    };
     const req = requestStub();
     const res = responseStub();
     const next = vi.fn() as unknown as NextFunction;
 
-    await createAuthMiddleware(cloudAuth, undefined, logger)(req, res, next);
+    await createAuthMiddleware(cloudAuth, undefined, logger as unknown as ILogger)(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(logger.error).toHaveBeenCalledWith(

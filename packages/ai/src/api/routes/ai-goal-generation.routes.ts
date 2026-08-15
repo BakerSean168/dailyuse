@@ -43,7 +43,7 @@ export function registerAIGoalGenerationRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.generateGoal(req.body, ctx.identityId, ctx.requestId),
+    (req, ctx) => controller.generateGoal(req.body, ctx),
   );
 
   return router;

@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { AgentRunResult } from '@memoflow/contracts/ai';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../../../domain';
 import type { AIModuleDependencies } from '../../ai.module';
 import type {
@@ -25,6 +28,22 @@ import { createRemoteAIServiceRuntime } from '../remote-ai-service.runtime';
 // ============================================================
 // Helpers
 // ============================================================
+
+/**
+ * A full parent ExecutionContext as produced at an HTTP/IPC entry — nested agent
+ * operations must receive THIS context unchanged (not a rebuilt `system` one).
+ * P2-1 (RefArch R3): `source`/`startedAt`/`traceId` must be preserved downstream.
+ */
+function createParentCx(overrides: Partial<ExecutionContext> = {}): ExecutionContext {
+  return {
+    requestId: 'request-parent',
+    traceId: 'request-parent',
+    startedAt: 1_700_000_000_000,
+    source: 'http',
+    identityId: 'identity-1',
+    ...overrides,
+  };
+}
 
 function createMockDeps(overrides?: Partial<AIModuleDependencies>): AIModuleDependencies {
   return {
@@ -735,7 +754,7 @@ describe('createRemoteAIServiceRuntime', () => {
           maxResources: 8,
         },
       },
-      { identityId: 'identity-1', requestId: 'request-knowledge-query' },
+      createParentCx({ requestId: 'request-knowledge-query', traceId: 'request-knowledge-query' }),
     );
 
     expect(result.ok).toBe(true);
@@ -748,6 +767,7 @@ describe('createRemoteAIServiceRuntime', () => {
         identityId: 'identity-1',
         question: 'How should knowledge answers be grounded?',
         maxCitations: 3,
+        requestId: 'request-knowledge-query',
         providerConfig: expect.objectContaining({
           model: 'gpt-4o-mini',
         }),
@@ -824,7 +844,7 @@ describe('createRemoteAIServiceRuntime', () => {
           citations: [suppliedCitation],
         },
       },
-      { identityId: 'identity-1', requestId: 'request-supplied-answer' },
+      createParentCx({ requestId: 'request-supplied-answer', traceId: 'request-supplied-answer' }),
     );
 
     expect(result.ok).toBe(true);
@@ -977,7 +997,7 @@ describe('createRemoteAIServiceRuntime', () => {
         userDecision: 'confirm',
         approvedActions: [pendingAction],
       },
-      { identityId: 'identity-1', requestId: 'request-note-save' },
+      createParentCx({ requestId: 'request-note-save', traceId: 'request-note-save' }),
     );
 
     expect(result.ok).toBe(true);
@@ -2704,5 +2724,27 @@ describe('createRemoteAIServiceRuntime', () => {
     expect(capabilities.supportsEvaluationReports).toBe(
       services.evaluationReportService.isAvailable,
     );
+  });
+});
+
+// RefArch Phase 2 review R3 (P2-1): nested agent operations pass the FULL parent
+// ExecutionContext instead of rebuilding a `system` context. `ai-runtime.ts` must
+// no longer mint `system` contexts for nested ops; genuine background entries
+// (`knowledge-auto-index.runtime.ts`) legitimately keep the system composer.
+describe('nested agent operations propagate the parent ExecutionContext (R3 P2-1)', () => {
+  it('ai-runtime.ts no longer references createSystemExecutionContext for nested ops', () => {
+    const runtime = readFileSync(resolve(__dirname, '../ai-runtime.ts'), 'utf8');
+    expect(runtime).not.toContain('createSystemExecutionContext');
+    // The nested ops forward the canonical context instead.
+    expect(runtime).toContain('knowledgeQueryUseCase.execute(queryRequest, cx)');
+    expect(runtime).toContain('knowledgeNoteUseCase.createKnowledgeNote(parsed.data, cx)');
+  });
+
+  it('keeps the system composer only for genuine background entries', () => {
+    const autoIndex = readFileSync(
+      resolve(__dirname, '../knowledge-auto-index.runtime.ts'),
+      'utf8',
+    );
+    expect(autoIndex).toContain('createSystemExecutionContext');
   });
 });

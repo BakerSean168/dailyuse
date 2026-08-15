@@ -32,8 +32,9 @@
  */
 
 import type { Result } from '@memoflow/contracts/result';
-import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { expressAdapter, type ExpressAdapterOptions } from './express-adapter';
+import type { ExpressLikeRequest } from './express-adapter';
 
 // ============================================================================
 // Minimal Interfaces (avoid hard dependencies on Express / zod-to-openapi)
@@ -56,25 +57,6 @@ export interface OpenApiRegistryLike {
 
 /** Supported HTTP methods */
 export type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
-
-/** Express-like request (mirrors the one from express-adapter) */
-interface ExpressLikeRequest {
-  body?: unknown;
-  params?: Record<string, string>;
-  query?: Record<string, unknown>;
-  headers?: Record<string, string | string[] | undefined>;
-  user?: { identityId?: string; sessionId?: string; tokenType?: string; exp?: number };
-  /**
-   * Producer-owned canonical request metadata set by the RequestContext
-   * middleware. Required — the adapter fails closed without it.
-   * 由 RequestContext middleware 写入的 producer-owned 请求元数据；缺失时
-   * adapter 直接 fail closed。
-   */
-  requestContext?: RequestContext;
-  id?: string;
-  traceId?: string;
-  startTime?: number;
-}
 
 // ============================================================================
 // Route Definition

@@ -25,6 +25,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
+  defaultExtractContext,
 } from '@memoflow/utils/result';
 // Residual 989: sole parseString/parseNumber (local dual retired).
 // Residual 1021: sole parseBoolean (local dual retired).
@@ -130,7 +131,9 @@ export function registerNotificationRoutes(
       method: 'post',
       path: '/batch-read',
       summary: '批量标记为已读',
-      request: { body: { content: { 'application/json': { schema: NotificationIdsBatchSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: NotificationIdsBatchSchema } } },
+      },
       responses: {
         200: successResponse(NotificationBatchResultSchema, '操作成功'),
         400: errorResponse('参数错误'),
@@ -203,7 +206,6 @@ export function registerNotificationRoutes(
     [auth],
     (_req, ctx) => controller.markAllAsRead(ctx.identityId),
   );
-
 
   // GET /preferences — must register before /:id (residual 196)
   r.route(
@@ -326,6 +328,24 @@ export function registerNotificationRoutes(
 
   // GET /sse — Real-time SSE Stream with Last-Event-ID / lastCursor reconnection catch-up
   router.get('/sse', auth, async (req, res) => {
+    // RefArch Phase 2: compose the canonical ExecutionContext through the shared
+    // Express extractor (producer-owned carrier + auth-resolved principal). The
+    // stream is scoped EXCLUSIVELY by `cx.identityId` — no `req.user.id`,
+    // request-field or query override can select another identity.
+    let identityId: string;
+    try {
+      identityId = defaultExtractContext(
+        req as Parameters<typeof defaultExtractContext>[0],
+      ).identityId;
+    } catch {
+      res.status(500).end();
+      return;
+    }
+    if (!identityId) {
+      res.status(401).end();
+      return;
+    }
+
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -334,10 +354,10 @@ export function registerNotificationRoutes(
       resWithFlush.flushHeaders();
     }
 
-    const reqRecord = req as unknown as Record<string, unknown>;
-    const userObj = reqRecord.user as { id?: string } | undefined;
-    const identityId = userObj?.id ?? (reqRecord.identityId as string | undefined) ?? (req.query?.identityId as string);
-    const lastEventId = (req.headers['last-event-id'] as string) || (req.query?.lastCursor as string) || (req.query?.since as string);
+    const lastEventId =
+      (req.headers['last-event-id'] as string) ||
+      (req.query?.lastCursor as string) ||
+      (req.query?.since as string);
 
     const seenOperationIds = new Set<string>();
     const bufferedLiveEvents: import('../server/application').NotificationSseDeliveryEvent[] = [];
@@ -345,9 +365,11 @@ export function registerNotificationRoutes(
 
     // Subscribe via the SSE application port (typed event seam) BEFORE query to eliminate window loss.
     const unsubscribe = api.subscribeSseEvents((event) => {
-      if (identityId && event.identityId !== identityId) return;
+      if (event.identityId !== identityId) return;
 
-      const opId = (event as unknown as { operationId?: string; id?: string }).operationId ?? (event as unknown as { id?: string }).id;
+      const opId =
+        (event as unknown as { operationId?: string; id?: string }).operationId ??
+        (event as unknown as { id?: string }).id;
       if (opId && seenOperationIds.has(opId)) {
         return; // Skip duplicate event already covered in query
       }
@@ -356,7 +378,8 @@ export function registerNotificationRoutes(
         bufferedLiveEvents.push(event);
       } else {
         if (opId) seenOperationIds.add(opId);
-        const cursor = event.updatedAt && opId ? `${event.updatedAt}|${opId}` : new Date().toISOString();
+        const cursor =
+          event.updatedAt && opId ? `${event.updatedAt}|${opId}` : new Date().toISOString();
         res.write(`id: ${cursor}\nevent: notification\ndata: ${JSON.stringify(event)}\n\n`);
       }
     });
@@ -395,7 +418,9 @@ export function registerNotificationRoutes(
             }
           } else {
             hasMore = false;
-            res.write(`event: error\ndata: ${JSON.stringify({ message: receiptsResult.error.message })}\n\n`);
+            res.write(
+              `event: error\ndata: ${JSON.stringify({ message: receiptsResult.error.message })}\n\n`,
+            );
             res.end();
             return;
           }
@@ -416,7 +441,8 @@ export function registerNotificationRoutes(
       const opId = event.operationId ?? event.id;
       if (!opId || !seenOperationIds.has(opId)) {
         if (opId) seenOperationIds.add(opId);
-        const cursor = event.updatedAt && opId ? `${event.updatedAt}|${opId}` : new Date().toISOString();
+        const cursor =
+          event.updatedAt && opId ? `${event.updatedAt}|${opId}` : new Date().toISOString();
         res.write(`id: ${cursor}\nevent: notification\ndata: ${JSON.stringify(event)}\n\n`);
       }
     }

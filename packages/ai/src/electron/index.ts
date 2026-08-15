@@ -72,6 +72,7 @@ import {
   type IElectronModuleContext,
 } from '@memoflow/contracts/electron';
 import { fail, ok } from '@memoflow/contracts/result';
+import type { GenerateGoalsReq } from '@memoflow/contracts/ai';
 import { createLogger } from '@memoflow/utils/logger';
 import type { AIModuleInstance } from '../server/infrastructure';
 import { withAuthenticatedValue } from './authenticated-ipc';
@@ -226,11 +227,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         // -- Goal Generation --
         ipcMain.handle(AIChannels.GOAL_GENERATE, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.generateGoal({
-              identityId: requestContext.identityId,
-              requestId: requestContext.requestId,
-              ...dto,
-            }),
+            aiModule.api.generateGoal(dto as GenerateGoalsReq, requestContext),
           ),
         );
         installed.push(AIChannels.GOAL_GENERATE);

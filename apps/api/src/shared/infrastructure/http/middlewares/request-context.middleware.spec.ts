@@ -65,7 +65,7 @@ function invoke(
   req: Record<string, unknown>,
   res: MockResponse,
 ): InvokeResult {
-  const request = req as RequestContextCarrierRequest;
+  const request = req as unknown as RequestContextCarrierRequest;
   let nextCalled = false;
   middleware(
     request as Request,
@@ -106,8 +106,28 @@ describe('createRequestContextMiddleware (producer)', () => {
     expect(request.requestContext.requestId).toBe('client-123');
     expect(request.requestContext.traceId).toBe('client-123');
     expect(response.getHeader('X-Request-Id')).toBe('client-123');
-    expect(request.requestContext.id).toBeUndefined();
     expect(nextCalled).toBe(true);
+  });
+
+  it('never writes deprecated root-level request.id/traceId/startTime projections', () => {
+    const { request, response } = invoke(
+      createRequestContextMiddleware(),
+      createMockReq(),
+      new MockResponse(),
+    );
+
+    // The middleware's only producer-owned carrier is `requestContext`; the
+    // root request object must stay clean (no parallel `id`/`traceId`/
+    // `startTime` projections). RefArch R3 P2-4.
+    const root = request as unknown as Record<string, unknown>;
+    expect(root.id).toBeUndefined();
+    expect(root.traceId).toBeUndefined();
+    expect(root.startTime).toBeUndefined();
+    // The nested requestContext.id property never exists either — the carrier
+    // exposes `requestId`, not `id`.
+    expect((request.requestContext as unknown as Record<string, unknown>).id).toBeUndefined();
+    expect(request.requestContext.requestId).toMatch(UUID_PATTERN);
+    expect(response.getHeader('X-Request-Id')).toBe(request.requestContext.requestId);
   });
 
   it('generates a UUID when the header is missing (traceId === requestId)', () => {
@@ -166,7 +186,7 @@ describe('createRequestContextMiddleware (producer)', () => {
 
   it('sets X-Request-Id before calling next()', () => {
     const middleware = createRequestContextMiddleware();
-    const request = createMockReq() as RequestContextCarrierRequest;
+    const request = createMockReq() as unknown as RequestContextCarrierRequest;
     const response = new MockResponse();
     let observed: string | undefined;
 

@@ -546,7 +546,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       ),
 
     // -- Goal Generation --
-    generateGoal: (params) => services.goalGenerationService.generateGoal(params),
+    generateGoal: (params, cx) => services.goalGenerationService.generateGoal(params, cx),
 
     // -- Knowledge Notes --
     createKnowledgeNote: (req, cx) => services.knowledgeNoteService.createKnowledgeNote(req, cx),

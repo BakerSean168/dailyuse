@@ -130,9 +130,7 @@ export interface AIApplicationPort {
   >;
 
   // Goal generation
-  generateGoal(
-    params: GenerateGoalsReq & { identityId: string; requestId?: string },
-  ): Promise<Result<GenerateGoalsRes>>;
+  generateGoal(params: GenerateGoalsReq, cx: ExecutionContext): Promise<Result<GenerateGoalsRes>>;
 
   // Knowledge, analytics, and agent runtime
   createKnowledgeNote(

@@ -33,7 +33,6 @@ import type { Result } from '@memoflow/contracts/result';
 // Residual 1121: asNonEmptyString sole (shared/as-non-empty-string).
 import { asNonEmptyString } from '../../../shared/as-non-empty-string';
 import { CapabilityResolver } from '../capability-resolver';
-import { createSystemExecutionContext } from '../../../shared/system-execution-context';
 import {
   buildHostTaskCreateStartResult,
   resolveTaskCreateTitle,
@@ -549,9 +548,8 @@ async function withGoalAgentReadOnlyContext(
 
 async function withKnowledgeQaAnswer(
   req: AgentStartRunRequest,
-  identityId: string,
+  cx: ExecutionContext,
   knowledgeQueryUseCase?: QueryKnowledgeUseCase,
-  requestId?: string,
 ): Promise<Result<AgentStartRunRequest>> {
   if (req.agentType !== 'knowledge.qa' || !knowledgeQueryUseCase) {
     return ok(req);
@@ -573,10 +571,7 @@ async function withKnowledgeQaAnswer(
     ...(providerId ? { providerId: providerId as QueryKnowledgeReq['providerId'] } : {}),
     ...(maxResources ? { maxResources } : {}),
   };
-  const queryResult = await knowledgeQueryUseCase.execute(
-    queryRequest,
-    createSystemExecutionContext(identityId, requestId),
-  );
+  const queryResult = await knowledgeQueryUseCase.execute(queryRequest, cx);
   if (!queryResult.ok) {
     return queryResult;
   }
@@ -841,8 +836,7 @@ export function createAgentRuntimeService(
     result: AgentRunResult,
     input: {
       runId: string;
-      identityId: string;
-      requestId?: string;
+      cx: ExecutionContext;
       signal?: AbortSignal;
     },
   ): Promise<AgentRunResult> {
@@ -856,18 +850,18 @@ export function createAgentRuntimeService(
 
     const executedActions = await executeGoalAgentInterrupt(
       interrupt,
-      input.identityId,
+      input.cx.identityId,
       automationToolExecutorPort,
     );
 
     return port.resumeRun({
-      identityId: input.identityId,
+      identityId: input.cx.identityId,
       runId: input.runId,
       payload: {
         userDecision: 'confirm',
         executedActions,
       },
-      requestId: input.requestId,
+      requestId: input.cx.requestId,
       signal: input.signal,
     });
   }
@@ -915,8 +909,7 @@ export function createAgentRuntimeService(
 
   async function executeKnowledgeGenerateInterrupt(
     interrupt: z.infer<typeof KnowledgeGenerateExecutionRequiredInterruptSchema>,
-    identityId: string,
-    requestId?: string,
+    cx: ExecutionContext,
   ): Promise<AgentExecutedAction[]> {
     if (!knowledgeNoteUseCase) {
       throw new Error('Knowledge Generation execution requires the knowledge-note use case.');
@@ -935,7 +928,7 @@ export function createAgentRuntimeService(
 
       const contentArtifactId = getPayloadString(action.payload, 'contentArtifactId');
       const confirmationRequestId =
-        requestId ?? `${interrupt.runId}:knowledge-note:${action.index ?? 0}`;
+        cx.requestId ?? `${interrupt.runId}:knowledge-note:${action.index ?? 0}`;
       const parsed = CreateKnowledgeNoteSchema.safeParse({
         topic: getPayloadString(action.payload, 'topic'),
         title: getPayloadString(action.payload, 'title'),
@@ -962,10 +955,7 @@ export function createAgentRuntimeService(
         continue;
       }
 
-      const result = await knowledgeNoteUseCase.createKnowledgeNote(
-        parsed.data,
-        createSystemExecutionContext(identityId, requestId),
-      );
+      const result = await knowledgeNoteUseCase.createKnowledgeNote(parsed.data, cx);
       if (!result.ok) {
         executedActions.push({
           tool: action.tool,
@@ -999,8 +989,7 @@ export function createAgentRuntimeService(
     result: AgentRunResult,
     input: {
       runId: string;
-      identityId: string;
-      requestId?: string;
+      cx: ExecutionContext;
       signal?: AbortSignal;
     },
   ): Promise<AgentRunResult> {
@@ -1012,19 +1001,15 @@ export function createAgentRuntimeService(
       throw new Error('Agent runtime execution requires the Agent runtime port.');
     }
 
-    const executedActions = await executeKnowledgeGenerateInterrupt(
-      interrupt,
-      input.identityId,
-      input.requestId,
-    );
+    const executedActions = await executeKnowledgeGenerateInterrupt(interrupt, input.cx);
     return port.resumeRun({
-      identityId: input.identityId,
+      identityId: input.cx.identityId,
       runId: input.runId,
       payload: {
         userDecision: 'confirm',
         executedActions,
       },
-      requestId: input.requestId,
+      requestId: input.cx.requestId,
       signal: input.signal,
     });
   }
@@ -1033,8 +1018,7 @@ export function createAgentRuntimeService(
     result: AgentRunResult,
     input: {
       runId: string;
-      identityId: string;
-      requestId?: string;
+      cx: ExecutionContext;
       signal?: AbortSignal;
     },
   ): Promise<AgentRunResult> {
@@ -1175,9 +1159,8 @@ export function createAgentRuntimeService(
       );
       const requestWithKnowledge = await withKnowledgeQaAnswer(
         requestWithContext,
-        cx.identityId,
+        cx,
         knowledgeQueryUseCase,
-        cx.requestId,
       );
       if (!requestWithKnowledge.ok) {
         return requestWithKnowledge;
@@ -1284,8 +1267,7 @@ export function createAgentRuntimeService(
         }
         const resolvedResult = await resolveRuntimeExecutionInterrupt(result, {
           runId: req.runId,
-          identityId: cx.identityId,
-          requestId,
+          cx,
           signal,
         });
         await recordAgentRuntimeExecution({
@@ -1390,8 +1372,7 @@ export function createAgentRuntimeService(
           if (hasResolvableExecutionInterrupt(snapshot)) {
             const resolvedSnapshot = await resolveRuntimeExecutionInterrupt(snapshot, {
               runId,
-              identityId: cx.identityId,
-              requestId,
+              cx,
               signal,
             });
             await recordAgentRuntimeExecution({
@@ -1425,8 +1406,7 @@ export function createAgentRuntimeService(
           payload.userDecision === 'confirm'
             ? await resolveRuntimeExecutionInterrupt(result, {
                 runId,
-                identityId: cx.identityId,
-                requestId,
+                cx,
                 signal,
               })
             : result;

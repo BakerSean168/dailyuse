@@ -7,6 +7,7 @@ export default defineConfig({
     'src/api/index.ts',
     'src/client/index.ts',
     'src/electron/index.ts',
+    'src/testing/index.ts',
   ],
   format: ['esm'],
   dts: false,

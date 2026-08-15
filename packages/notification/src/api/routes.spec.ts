@@ -1,4 +1,5 @@
 import type { RequestHandler } from 'express';
+import { EventEmitter } from 'node:events';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import type { NotificationApplicationPort } from '../server/application';
@@ -334,21 +335,9 @@ describe('notification route contracts', () => {
 });
 
 describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () => {
-  it('keeps SSE headers/framing and exposes X-Request-Id before the first chunk', async () => {
-    const { EventEmitter } = await import('node:events');
-    const api = {
-      subscribeSseEvents: vi.fn(() => () => undefined),
-      getDeliveryReceipts: vi.fn(async () => ({ ok: true, data: [] })),
-    } as unknown as NotificationApplicationPort;
-
-    const router = registerNotificationRoutes(api, {
-      auth: ((req, _res, next) => {
-        (req as Record<string, unknown>).user = { id: 'identity-1' };
-        next();
-      }) as RequestHandler,
-      requireRole: () => authMiddleware,
-    });
-
+  function getSseHandler(
+    router: ReturnType<typeof registerNotificationRoutes>,
+  ): (req: unknown, res: unknown) => Promise<unknown> {
     const layer = (
       router as unknown as {
         stack: Array<{
@@ -363,8 +352,11 @@ describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () 
       (candidate) => candidate.route?.path === '/sse' && candidate.route.methods.get === true,
     );
     const handler = layer!.route!.stack.at(-1)!.handle;
+    return handler as (req: unknown, res: unknown) => Promise<unknown>;
+  }
 
-    const req = Object.assign(new EventEmitter(), {
+  function createSseReq(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
       headers: {},
       query: {},
       // Simulate the global RequestContext middleware (owned by apps/api).
@@ -374,10 +366,14 @@ describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () 
         startedAt: 1_700_000_000_000,
         source: 'http',
       },
-      user: { id: 'identity-1' },
-    });
+      ...overrides,
+    };
+  }
+
+  function createSseRes() {
     const writes: string[] = [];
     const res = Object.assign(new EventEmitter(), {
+      statusCode: 200,
       writableEnded: false,
       setHeader: vi.fn(),
       flushHeaders: vi.fn(),
@@ -389,6 +385,31 @@ describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () 
         this.writableEnded = true;
       }),
     });
+    return { res, writes };
+  }
+
+  it('keeps SSE headers/framing and exposes X-Request-Id before the first chunk', async () => {
+    const api = {
+      subscribeSseEvents: vi.fn(() => () => undefined),
+      getDeliveryReceipts: vi.fn(async () => ({ ok: true, data: [] })),
+    } as unknown as NotificationApplicationPort;
+
+    const router = registerNotificationRoutes(api, {
+      // Real auth shape: the Cloud Auth middleware writes req.user.identityId.
+      auth: ((req, _res, next) => {
+        (req as Record<string, unknown>).user = { identityId: 'identity-1' };
+        next();
+      }) as RequestHandler,
+      requireRole: () => authMiddleware,
+    });
+
+    const handler = getSseHandler(router);
+
+    const req = Object.assign(
+      new EventEmitter(),
+      createSseReq({ user: { identityId: 'identity-1' } }),
+    );
+    const { res, writes } = createSseRes();
 
     const pending = handler(req, res);
     await Promise.resolve();
@@ -411,5 +432,83 @@ describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () 
       'req-notification-sse',
     );
     expect(writes.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it('fails closed without an authenticated identity — never subscribes or streams', async () => {
+    const subscribe = vi.fn(() => () => undefined);
+    const api = {
+      subscribeSseEvents: subscribe,
+      getDeliveryReceipts: vi.fn(async () => ({ ok: true, data: [] })),
+    } as unknown as NotificationApplicationPort;
+
+    const router = registerNotificationRoutes(api, {
+      // Auth passed but the principal is absent (e.g. optional auth path).
+      auth: ((_req, _res, next) => next()) as RequestHandler,
+      requireRole: () => authMiddleware,
+    });
+
+    const handler = getSseHandler(router);
+    const req = Object.assign(
+      new EventEmitter(),
+      createSseReq({
+        // No user → defaultExtractContext resolves an empty identity.
+        user: undefined,
+        query: { identityId: 'identity-B' },
+      }),
+    );
+    const { res } = createSseRes();
+    const statusSpy = vi.fn((code: number) => {
+      (res as unknown as { statusCode: number }).statusCode = code;
+      return res;
+    });
+    (res as unknown as { status: (code: number) => unknown }).status = statusSpy;
+
+    await handler(req, res);
+
+    expect(statusSpy).toHaveBeenCalledWith(401);
+    expect(subscribe).not.toHaveBeenCalled();
+  });
+
+  it('scopes the stream exclusively by cx.identityId — a query param cannot select another tenant', async () => {
+    let sseHandler:
+      ((event: { identityId: string; id: string; updatedAt: number }) => void) | undefined;
+    const api = {
+      subscribeSseEvents: vi.fn((handler: typeof sseHandler) => {
+        sseHandler = handler;
+        return () => undefined;
+      }),
+      getDeliveryReceipts: vi.fn(async () => ({ ok: true, data: [] })),
+    } as unknown as NotificationApplicationPort;
+
+    const router = registerNotificationRoutes(api, {
+      auth: ((req, _res, next) => {
+        (req as Record<string, unknown>).user = { identityId: 'identity-A' };
+        next();
+      }) as RequestHandler,
+      requireRole: () => authMiddleware,
+    });
+
+    const handler = getSseHandler(router);
+    const req = Object.assign(
+      new EventEmitter(),
+      createSseReq({
+        user: { identityId: 'identity-A' },
+        // Attacker attempts to select identity B through the query.
+        query: { identityId: 'identity-B' },
+      }),
+    );
+    const { res, writes } = createSseRes();
+
+    await handler(req, res);
+
+    expect(sseHandler).toBeDefined();
+
+    // identity B's event must never be delivered to identity A's stream.
+    sseHandler!({ identityId: 'identity-B', id: 'op-B', updatedAt: 1 });
+    sseHandler!({ identityId: 'identity-A', id: 'op-A', updatedAt: 2 });
+
+    const stream = writes.join('');
+    expect(stream).toContain('identity-A');
+    expect(stream).not.toContain('identity-B');
   });
 });

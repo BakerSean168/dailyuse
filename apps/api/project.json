@@ -72,7 +72,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["prisma:generate", "^build"],
       "options": {
-        "command": "tsc --noEmit -p tsconfig.typecheck.json",
+        "command": "tsc --noEmit -p tsconfig.typecheck.json && tsc --noEmit -p tsconfig.typecheck.spec.json",
         "cwd": "apps/api"
       }
     },
