@@ -5,7 +5,8 @@
  * Enforces in-package layering (e.g. `server/application` must not import
  * `server/infrastructure`) plus forbidden external specifier roots
  * (`server/domain` / `server/application` must not import `@memoflow/database`
- * or any of its exported subpaths like `@memoflow/database/prisma`:
+ * or any of its exported subpaths like `@memoflow/database/prisma`, nor
+ * `@prisma/client` directly:
  * Application/Domain consume Port only; Prisma concrete code belongs to
  * Infrastructure — Application/Domain 只消费 Port；Prisma 具体实现属于 Infrastructure).
  */

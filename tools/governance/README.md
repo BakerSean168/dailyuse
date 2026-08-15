@@ -1,17 +1,19 @@
 # Governance tools
 
-## Package-Internal Boundary: `@memoflow/database`
+## Package-Internal Boundary: `@memoflow/database` & `@prisma/client`
 
 `package-internal-boundary-audit.mjs` is the fail-closed gate: `server/domain` and
 `server/application` production code must not import `@memoflow/database` or any of its
-exported subpaths (e.g. `@memoflow/database/prisma`). Application/Domain consume Port only;
-Prisma concrete code (exposed through `@memoflow/database`) belongs to Infrastructure. DB
+exported subpaths (e.g. `@memoflow/database/prisma`), nor `@prisma/client` directly.
+Application/Domain consume Port only; Prisma concrete code (exposed through
+`@memoflow/database`, backed by `@prisma/client`) belongs to Infrastructure. DB
 deps are allowed only in `server/infrastructure`, host runtime composers
 (`apps/*/src/runtime`) and test fixtures (`.spec.ts` / `.test.ts` / `__tests__`).
 
 `server/domain` 与 `server/application` 的生产代码禁止 import `@memoflow/database` 及其所有
-导出的子路径（如 `@memoflow/database/prisma`）。Application/Domain 只消费 Port；Prisma
-具体实现（经 `@memoflow/database` 暴露）属于 Infrastructure。DB 依赖只允许出现在
+导出的子路径（如 `@memoflow/database/prisma`），也禁止直接 import `@prisma/client`。
+Application/Domain 只消费 Port；Prisma 具体实现（经 `@memoflow/database` 暴露、由
+`@prisma/client` 支撑）属于 Infrastructure。DB 依赖只允许出现在
 `server/infrastructure`、宿主 runtime composer（`apps/*/src/runtime`）与测试
 fixture（`.spec.ts` / `.test.ts` / `__tests__`）中。
 

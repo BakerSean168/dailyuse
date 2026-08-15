@@ -23,7 +23,7 @@ const FORBIDDEN_LEGACY_LAYERS = [
   'electron-entry',
 ];
 
-const FORBIDDEN_DB_SPECIFIERS = ['@memoflow/database'];
+const FORBIDDEN_DB_SPECIFIERS = ['@memoflow/database', '@prisma/client'];
 
 const GOVERNANCE_LAYER_RULES = [
   {

@@ -8,13 +8,13 @@ import {
 const APPLICATION_RULE = {
   layer: 'server/application',
   forbidden: ['server/transport', 'server/infrastructure', 'client', 'electron', 'api'],
-  forbiddenExternalSpecifiers: ['@memoflow/database'],
+  forbiddenExternalSpecifiers: ['@memoflow/database', '@prisma/client'],
 };
 
 const DOMAIN_RULE = {
   layer: 'server/domain',
   forbidden: ['server/application', 'server/transport', 'server/infrastructure', 'client', 'electron', 'api'],
-  forbiddenExternalSpecifiers: ['@memoflow/database'],
+  forbiddenExternalSpecifiers: ['@memoflow/database', '@prisma/client'],
 };
 
 describe('findBoundaryViolations — forbidden external @memoflow/database', () => {
@@ -127,6 +127,37 @@ describe('findBoundaryViolations — forbidden external @memoflow/database', () 
     expect(violations).toHaveLength(1);
     expect(violations[0].specifier).toBe('@memoflow/database/prisma');
   });
+
+  it('flags `import { PrismaClient } from "@prisma/client"` in server/application', () => {
+    const content = "import { PrismaClient } from '@prisma/client';\n\nexport const create = async (db: PrismaClient) => db.user.findMany();\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/goal/src/server/application/use-cases/commands/relation.use-cases.ts',
+      ...APPLICATION_RULE,
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({
+      file: 'packages/goal/src/server/application/use-cases/commands/relation.use-cases.ts',
+      line: 1,
+      layer: 'server/application',
+      specifier: '@prisma/client',
+    });
+    expect(violations[0].message).toContain("forbidden external specifier '@prisma/client'");
+  });
+
+  it('flags `import { PrismaClient } from "@prisma/client"` in server/domain', () => {
+    const content = "import { PrismaClient } from '@prisma/client';\n\nexport const x: PrismaClient | null = null;\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/domain/repositories/i-repository.ts',
+      ...DOMAIN_RULE,
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({
+      layer: 'server/domain',
+      specifier: '@prisma/client',
+    });
+  });
 });
 
 describe('findBoundaryViolations — positive cases', () => {
@@ -180,6 +211,18 @@ describe('findBoundaryViolations — positive cases', () => {
 
   it('allows `@memoflow/database` in server/infrastructure (rule has no forbidden external specifiers)', () => {
     const content = "import { prisma } from '@memoflow/database';\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/infrastructure/adapters/prisma.ts',
+      layer: 'server/infrastructure',
+      forbidden: ['client', 'electron', 'api'],
+      forbiddenExternalSpecifiers: [],
+    });
+    expect(violations).toEqual([]);
+  });
+
+  it('allows `@prisma/client` in server/infrastructure (rule has no forbidden external specifiers)', () => {
+    const content = "import { PrismaClient } from '@prisma/client';\n";
     const violations = findBoundaryViolations({
       content,
       relPath: 'packages/foo/src/server/infrastructure/adapters/prisma.ts',
