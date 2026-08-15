@@ -34,4 +34,12 @@ describe('PowerSyncAppSchema', () => {
     expect(getColumnType('repositories', 'config')).toBe('TEXT');
     expect(getColumnType('repository_statistics', 'total_size_bytes')).toBe('INTEGER');
   });
+
+  it('excludes phantom tables that do not exist in the Prisma schema', () => {
+    expect(PowerSyncAppSchema.props).not.toHaveProperty('documents');
+    expect(PowerSyncAppSchema.props).not.toHaveProperty('document_versions');
+    expect(PowerSyncAppSchema.props).not.toHaveProperty('document_links');
+    expect(PowerSyncAppSchema.props).not.toHaveProperty('goal_statistics');
+    expect(PowerSyncAppSchema.props).not.toHaveProperty('schedule_jobs');
+  });
 });
