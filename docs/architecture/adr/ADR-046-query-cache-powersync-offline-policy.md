@@ -10,7 +10,7 @@ created: 2026-08-15T00:00:00+08:00
 updated: 2026-08-15T00:00:00+08:00
 ---
 
-# ADR-045: Query Cache Pilot — Offline / Freshness / PowerSync 策略（试点范围）
+# ADR-046: Query Cache Pilot — Offline / Freshness / PowerSync 策略（试点范围）
 
 > 状态：**已接受（试点范围）**。适用于 Governance、Notification 与 Task templates 三个 pilot 模块
 > （governance 按 AGENT.md「治理模块先行」铁律作为第一个试点）；
