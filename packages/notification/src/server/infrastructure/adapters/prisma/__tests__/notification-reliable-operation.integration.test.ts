@@ -1,7 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { randomUUID } from 'crypto';
 import { buildIdempotencyKeyString } from '@memoflow/contracts/reliable-messaging';
-import { NotificationType, NotificationCategory, NotificationChannelType } from '@memoflow/contracts/notification';
+import {
+  NotificationType,
+  NotificationCategory,
+  NotificationChannelType,
+} from '@memoflow/contracts/notification';
 import { ReminderType } from '@memoflow/contracts/reminder';
 import { NotificationReliableOperationPrismaAdapter } from '../notification-reliable-operation-prisma.adapter';
 import { NotificationPrismaRepository } from '../notification-prisma.repository';
@@ -888,8 +892,13 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     });
 
     const mockAuth = (_req: any, _res: any, next: any) => {
-      _req.identityId = identityId;
-      _req.user = { id: identityId };
+      _req.user = { identityId };
+      _req.requestContext = {
+        requestId: `req-sse-${identityId}`,
+        traceId: `req-sse-${identityId}`,
+        startedAt: Date.now(),
+        source: 'http',
+      };
       next();
     };
 
@@ -935,7 +944,11 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
         occurrenceKey: `${notifId1}:${NotificationChannelType.InApp}`,
         channel: NotificationChannelType.InApp,
         payloadJson: JSON.stringify({ title: 'SSE Live Event 1', notificationId: notifId1 }),
-        idempotencyKey: buildIdempotencyKeyString({ identityId, source: 'notification', occurrenceKey: `${notifId1}:${NotificationChannelType.InApp}` }),
+        idempotencyKey: buildIdempotencyKeyString({
+          identityId,
+          source: 'notification',
+          occurrenceKey: `${notifId1}:${NotificationChannelType.InApp}`,
+        }),
       },
       { notificationId: notifId1 },
     );
@@ -960,8 +973,15 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
         source: 'notification',
         occurrenceKey: `${notifId2}:${NotificationChannelType.InApp}`,
         channel: NotificationChannelType.InApp,
-        payloadJson: JSON.stringify({ title: 'SSE Reconnection Event 2', notificationId: notifId2 }),
-        idempotencyKey: buildIdempotencyKeyString({ identityId, source: 'notification', occurrenceKey: `${notifId2}:${NotificationChannelType.InApp}` }),
+        payloadJson: JSON.stringify({
+          title: 'SSE Reconnection Event 2',
+          notificationId: notifId2,
+        }),
+        idempotencyKey: buildIdempotencyKeyString({
+          identityId,
+          source: 'notification',
+          occurrenceKey: `${notifId2}:${NotificationChannelType.InApp}`,
+        }),
       },
       { notificationId: notifId2 },
     );
@@ -1008,13 +1028,11 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
 
   it('12. Cross-module W1 Reminder Outbox intent is consumed, FK/id created correctly and persisted', async () => {
     // eslint-disable-next-line @nx/enforce-module-boundaries
-    const { PrismaReminderWriteTransactionRunner } = await import(
-      '../../../../../../../reminder/src/server/infrastructure/adapters/prisma/prisma-reminder-write-transaction-runner'
-    );
+    const { PrismaReminderWriteTransactionRunner } =
+      await import('../../../../../../../reminder/src/server/infrastructure/adapters/prisma/prisma-reminder-write-transaction-runner');
     // eslint-disable-next-line @nx/enforce-module-boundaries
-    const { ReminderTemplate } = await import(
-      '../../../../../../../reminder/src/server/domain/aggregates/reminder-template'
-    );
+    const { ReminderTemplate } =
+      await import('../../../../../../../reminder/src/server/domain/aggregates/reminder-template');
 
     // W1 cron trigger intent (0 9 * * *) is expressed via FixedTime trigger in the current contract
     const template = ReminderTemplate.create({
@@ -1278,7 +1296,11 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     // Worker 1 executes deliverer (side effect succeeds, channel response updated & saved to DB)
     const notifObj = await notificationRepo.findByIdForIdentity(identityId, notifId);
     const ch = notifObj!.notificationChannels!.find((c) => c.channelType === 'InApp')!;
-    await countingDeliverer.deliver(notifObj!, ch, { deliveryId: opId, idempotencyKey, identityId });
+    await countingDeliverer.deliver(notifObj!, ch, {
+      deliveryId: opId,
+      idempotencyKey,
+      identityId,
+    });
     expect(delivererCount).toBe(1);
 
     // Worker 1 crashes BEFORE calling recordDeliveryReceipt.
@@ -1291,7 +1313,9 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     // Deliverer call count must STILL be 1 (worker 2 recognized side effect was completed and skipped deliverer)
     expect(delivererCount).toBe(1);
 
-    const receipt = (await reliableAdapter.queryReceipts(identityId)).find((r) => r.operationId === opId);
+    const receipt = (await reliableAdapter.queryReceipts(identityId)).find(
+      (r) => r.operationId === opId,
+    );
     expect(receipt?.status).toBe('succeeded');
   });
 
@@ -1395,8 +1419,13 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     });
 
     const mockAuth = (_req: any, _res: any, next: any) => {
-      _req.identityId = identityId;
-      _req.user = { id: identityId };
+      _req.user = { identityId };
+      _req.requestContext = {
+        requestId: `req-sse-${identityId}`,
+        traceId: `req-sse-${identityId}`,
+        startedAt: Date.now(),
+        source: 'http',
+      };
       next();
     };
 
@@ -1423,7 +1452,11 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
         occurrenceKey: `${notifId1}:${NotificationChannelType.InApp}`,
         channel: NotificationChannelType.InApp,
         payloadJson: JSON.stringify({ title: 'Race Event 1', notificationId: notifId1 }),
-        idempotencyKey: buildIdempotencyKeyString({ identityId, source: 'notification', occurrenceKey: `${notifId1}:${NotificationChannelType.InApp}` }),
+        idempotencyKey: buildIdempotencyKeyString({
+          identityId,
+          source: 'notification',
+          occurrenceKey: `${notifId1}:${NotificationChannelType.InApp}`,
+        }),
       },
       { notificationId: notifId1 },
     );
@@ -1446,7 +1479,11 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
         occurrenceKey: `${notifId2}:${NotificationChannelType.InApp}`,
         channel: NotificationChannelType.InApp,
         payloadJson: JSON.stringify({ title: 'Race Event 2', notificationId: notifId2 }),
-        idempotencyKey: buildIdempotencyKeyString({ identityId, source: 'notification', occurrenceKey: `${notifId2}:${NotificationChannelType.InApp}` }),
+        idempotencyKey: buildIdempotencyKeyString({
+          identityId,
+          source: 'notification',
+          occurrenceKey: `${notifId2}:${NotificationChannelType.InApp}`,
+        }),
       },
       { notificationId: notifId2 },
     );
@@ -1501,8 +1538,13 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
       closureChecker: async () => false,
     });
     const mockAuth = (_req: any, _res: any, next: any) => {
-      _req.identityId = identityId;
-      _req.user = { id: identityId };
+      _req.user = { identityId };
+      _req.requestContext = {
+        requestId: `req-sse-${identityId}`,
+        traceId: `req-sse-${identityId}`,
+        startedAt: Date.now(),
+        source: 'http',
+      };
       next();
     };
 
@@ -1560,7 +1602,10 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
           channel: 'InApp',
           notificationId: notifId,
           status: 'succeeded',
-          payloadJson: JSON.stringify({ title: `Batch Notification ${i}`, notificationId: notifId }),
+          payloadJson: JSON.stringify({
+            title: `Batch Notification ${i}`,
+            notificationId: notifId,
+          }),
           idempotencyKey,
           attempt: 1,
           createdAt: sharedTime,
@@ -1576,9 +1621,12 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
       const initialCursor = new Date(0).toISOString();
 
       await new Promise<void>((resolve) => {
-        req = http.get(`http://127.0.0.1:${port}/api/v1/notifications/sse?lastCursor=${initialCursor}`, {
-          headers: { Authorization: 'Bearer test' },
-        });
+        req = http.get(
+          `http://127.0.0.1:${port}/api/v1/notifications/sse?lastCursor=${initialCursor}`,
+          {
+            headers: { Authorization: 'Bearer test' },
+          },
+        );
 
         let buffer = '';
         req.on('response', (res: any) => {
@@ -1661,7 +1709,9 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     await runtime.tick();
 
     // Outbox receipt must NOT be succeeded (it failed during deliverer save)
-    const receipt = (await reliableAdapter.queryReceipts(identityId)).find((r) => r.operationId === opId);
+    const receipt = (await reliableAdapter.queryReceipts(identityId)).find(
+      (r) => r.operationId === opId,
+    );
     expect(receipt?.status).not.toBe('succeeded');
     expect(receipt?.status).toBe('retryable');
 
