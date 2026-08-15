@@ -11,14 +11,15 @@ import type { Result } from '@memoflow/contracts/result';
 import { toResultErrorException, unwrapOrThrowError } from '@memoflow/contracts/result';
 import { resultify } from '@memoflow/utils/result';
 import type { UpdateRuleReq, UpdateRuleRes } from '@memoflow/contracts/governance';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 import type { RuleId } from '@memoflow/contracts/governance';
 import type { ExecutionContext } from '../execution-context';
 
 /**
  * Update Rule Use Case.
  * 更新规则用例。
-  * @param private readonly ruleRepository - 
-  * @param private readonly revisionRepository - 
+ * @param private readonly ruleRepository -
+ * @param private readonly revisionRepository -
  */
 export class UpdateRuleUseCase {
   constructor(
@@ -96,7 +97,7 @@ export class UpdateRuleUseCase {
           RuleRevision.create({
             ruleId: rule.id,
             revisionNumber: revisionCount + 1,
-            authorId: cx.identityId,
+            authorId: cx.identityId as IdentityId,
             changedFields,
             previousValues,
             newValues,
@@ -113,4 +114,3 @@ export class UpdateRuleUseCase {
     }, 'Failed to update rule');
   }
 }
-

@@ -41,55 +41,96 @@ const INFRA_BARREL_SPECIFIERS = ['./infrastructure-server', './server/infrastruc
 const API_BARREL_FORBIDDEN_SERVER_SPECIFIER_REGEX =
   /export\s+(?:type\s+)?(?:\{[^}]*\}|\*)\s+from\s+['"]\.\.\/server\/(?:domain|application|transport|infrastructure)(?:\/[^'"]*)?['"]/gm;
 
-const DEFAULT_ALLOWED_SUBPATHS = [
-  '.',
-  './api',
-  './client',
-  './electron',
-];
+const DEFAULT_ALLOWED_SUBPATHS = ['.', './api', './client', './electron'];
 
 const STRICT_ALLOWED_SUBPATHS = {};
 
 const PACKAGE_SPECIFIC_SUBPATHS = {
   goal: ['./analytics', './events', './schedule-execution', './schedule-projection'],
   task: ['./analytics', './testing', './schema', './schedule-execution', './schedule-projection'],
-  ai: ['./ports', './schema'],
+  ai: ['./ports', './schema', './testing'],
   repository: ['./schema', './server'],
   'cloud-auth': ['./server'],
   notification: ['./commands', './schedule-execution', './server'],
   reminder: ['./schema', './schedule-execution', './schedule-projection', './server'],
   contracts: [
-    './task', './goal', './governance', './reminder', './repository',
-    './account', './schedule', './setting',
-    './notification', './ai', './dashboard', './response', './result',
-    './data-portability', './shared', './primitives', './primitives/*',
-    './reliable-messaging', './operations', './electron', './mocks',
+    './task',
+    './goal',
+    './governance',
+    './reminder',
+    './repository',
+    './account',
+    './schedule',
+    './setting',
+    './notification',
+    './ai',
+    './dashboard',
+    './response',
+    './result',
+    './data-portability',
+    './shared',
+    './primitives',
+    './primitives/*',
+    './reliable-messaging',
+    './operations',
+    './electron',
+    './mocks',
   ],
   database: ['./prisma'],
   'domain-shared': ['./shared'],
   patterns: ['./scheduler', './repository', './cache', './events', './operations'],
   utils: [
-    './domain', './errors', './frontend', './lifecycle',
-    './logger', './result', './shared', './validation', './winston',
+    './domain',
+    './errors',
+    './frontend',
+    './lifecycle',
+    './logger',
+    './result',
+    './shared',
+    './validation',
+    './winston',
   ],
   'test-utils': [
-    './helpers', './helpers/*', './mocks', './fixtures',
-    './fixtures/*', './setup', './setup/*',
+    './helpers',
+    './helpers/*',
+    './mocks',
+    './fixtures',
+    './fixtures/*',
+    './setup',
+    './setup/*',
   ],
   assets: ['./images', './audio'],
   'ui-core': ['./styles/globals.css', './styles/theme.css'],
   'ui-vue-shadcn': [
-    './components/ui/button', './components/ui/card', './components/ui/input',
-    './components/ui/label', './components/ui/sonner', './components/ui/tabs',
-    './components/ui/tooltip', './composables/useProgressBar', './globals.css',
+    './components/ui/button',
+    './components/ui/card',
+    './components/ui/input',
+    './components/ui/label',
+    './components/ui/sonner',
+    './components/ui/tabs',
+    './components/ui/tooltip',
+    './composables/useProgressBar',
+    './globals.css',
   ],
   'app-vue': [
-    './web-overlays', './di', './desktop', './shared/utils/desktop-profile-access',
-    './plugins/i18n', './router',
-    './modules/authentication', './modules/account', './modules/goal',
-    './modules/task', './modules/schedule', './modules/reminder',
-    './modules/notification', './modules/repository', './modules/setting',
-    './modules/governance', './modules/dashboard/adapters',    './modules/ai',
+    './web-overlays',
+    './di',
+    './desktop',
+    './shared/utils/desktop-profile-access',
+    './plugins/i18n',
+    './router',
+    './modules/authentication',
+    './modules/account',
+    './modules/goal',
+    './modules/task',
+    './modules/schedule',
+    './modules/reminder',
+    './modules/notification',
+    './modules/repository',
+    './modules/setting',
+    './modules/governance',
+    './modules/dashboard/adapters',
+    './modules/ai',
   ],
 };
 
@@ -124,14 +165,20 @@ function auditRootBarrel(pkg, violations) {
   const rel = path.relative(ROOT, indexPath).replaceAll('\\', '/');
 
   for (const specifier of APPLICATION_BARREL_SPECIFIERS) {
-    const exportAll = new RegExp(`export\\s*\\*\\s*from\\s+['\"]${escapeRegExp(specifier)}['\"]`, 'm');
+    const exportAll = new RegExp(
+      `export\\s*\\*\\s*from\\s+['\"]${escapeRegExp(specifier)}['\"]`,
+      'm',
+    );
     if (exportAll.test(content)) {
       violations.push(`${rel} root barrel must not use "export * from '${specifier}'"`);
     }
   }
 
   for (const specifier of INFRA_BARREL_SPECIFIERS) {
-    const exportAll = new RegExp(`export\\s*\\*\\s*from\\s+['\"]${escapeRegExp(specifier)}['\"]`, 'm');
+    const exportAll = new RegExp(
+      `export\\s*\\*\\s*from\\s+['\"]${escapeRegExp(specifier)}['\"]`,
+      'm',
+    );
     if (exportAll.test(content)) {
       violations.push(`${rel} root barrel must not use "export * from '${specifier}'"`);
     }
@@ -147,7 +194,9 @@ function auditRootBarrel(pkg, violations) {
       const documented = DOCUMENTED_ROOT_CONCRETE_EXPORTS[pkg] ?? new Set();
       for (const name of names) {
         if (infraForbiddenNameRegex.test(name) && !/^create/i.test(name) && !documented.has(name)) {
-          violations.push(`${rel} re-exports infra concrete '${name}' from ${specifier} (forbidden)`);
+          violations.push(
+            `${rel} re-exports infra concrete '${name}' from ${specifier} (forbidden)`,
+          );
         }
       }
     }
@@ -176,7 +225,9 @@ function auditExportMap(pkg, violations) {
   const rel = path.relative(ROOT, pkgJsonPath).replaceAll('\\', '/');
   for (const key of Object.keys(pkgJson.exports)) {
     if (!isSubpathAllowed(pkg, key)) {
-      violations.push(`${rel} exports "${key}" which is not in the allowed whitelist for this package`);
+      violations.push(
+        `${rel} exports "${key}" which is not in the allowed whitelist for this package`,
+      );
     }
   }
 }

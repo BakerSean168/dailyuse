@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { Router, type Request, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -8,6 +7,10 @@ import {
   successResponse,
   errorResponse,
 } from '@memoflow/utils/result';
+import {
+  extractAiExpressExecutionContext,
+  readAiExpressEnvelopeMeta,
+} from '../../shared/express-execution-context';
 import {
   ConversationNameSchema,
   SendMessageSchema,
@@ -53,7 +56,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.createConversation(req.body, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.createConversation(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -76,7 +79,7 @@ export function registerAIChatRoutes(
     [auth],
     (req, ctx) =>
       controller.listConversations(
-        { identityId: ctx.identityId } as ExecutionContext,
+        ctx,
         Number(req.query?.page ?? 1),
         Number(req.query?.pageSize ?? 20),
       ),
@@ -97,7 +100,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.getConversation(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.getConversation(req.params!.id, ctx),
   );
 
   // PATCH /conversations/:id — Update conversation
@@ -117,7 +120,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.updateConversation(req.params!.id, req.body, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.updateConversation(req.params!.id, req.body, ctx),
   );
 
   // DELETE /conversations/:id — Delete conversation
@@ -135,7 +138,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.deleteConversation(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.deleteConversation(req.params!.id, ctx),
   );
 
   // POST /messages — Send message
@@ -151,7 +154,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.sendMessage(req.body, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.sendMessage(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -169,15 +172,11 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listMessages(req.query, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.listMessages(req.query, ctx),
   );
 
   router.post('/messages/sse', auth, async (req, res) => {
-    const requestWithMeta = req as Request & { traceId?: string; id?: string };
-    const responseBuilder = createHttpResponseBuilder({
-      traceId: requestWithMeta.traceId ?? requestWithMeta.id,
-      startTime: Date.now(),
-    });
+    const responseBuilder = createHttpResponseBuilder(readAiExpressEnvelopeMeta(req));
     const identityId = (req as Request & { user?: { identityId?: string } }).user?.identityId;
     if (!identityId) {
       res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
@@ -200,10 +199,7 @@ export function registerAIChatRoutes(
     req.on('aborted', handleConnectionClosed);
     res.on('close', handleConnectionClosed);
 
-    const writeSseEvent = (
-      event: 'message' | 'error' | 'done',
-      data: unknown,
-    ): boolean => {
+    const writeSseEvent = (event: 'message' | 'error' | 'done', data: unknown): boolean => {
       if (connectionClosed || res.writableEnded) {
         return false;
       }
@@ -221,7 +217,7 @@ export function registerAIChatRoutes(
     try {
       const result = await controller.streamMessage(
         req.body,
-        { identityId } as ExecutionContext,
+        extractAiExpressExecutionContext(req),
         (chunk) => {
           writeSseEvent('message', {
             role: chunk.role,

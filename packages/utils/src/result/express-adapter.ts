@@ -4,6 +4,14 @@
  * 将 Controller 函数适配为 Express 路由处理器。
  * 统一处理上下文提取、错误处理和响应格式化。
  *
+ * RefArch Phase 2: the adapter is a pure consumer of the producer-owned
+ * `req.requestContext` carrier. It composes the canonical `ExecutionContext`
+ * (carrier + Principal + device metadata) at the adapter seam. When the global
+ * RequestContext middleware was NOT mounted (standalone route mounts in tests /
+ * second hosts), the default extractor mints a canonical-shaped fallback carrier
+ * so unrelated routes keep working; the explicit identity-scoped paths (auth
+ * middleware, SSE scoping) still fail closed on their own.
+ *
  * Two variants:
  *   - `expressAdapter`                 — Controller receives raw (req, ctx)
  *   - `expressAdapterWithValidation`  — Validates req.body via Zod schema first
@@ -35,8 +43,9 @@ import {
   errorCodeToHttpStatus,
   createHttpResponseBuilder,
 } from '@memoflow/contracts/result';
-import type { Context } from '@memoflow/contracts/shared';
+import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { mapPrismaError } from '../errors/prisma-error-mapper';
+import { generateUUID } from '../shared/uuid';
 // Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
 import { formatZodErrors } from './format-zod-errors';
 export { formatZodErrors };
@@ -46,9 +55,10 @@ export { formatZodErrors };
 // ============================================================================
 
 /**
- * Express-like Request interface (avoid hard Express dependency)
+ * Express-like Request interface (avoid hard Express dependency).
+ * 与 Express Request 兼容的接口（避免硬依赖 Express）。
  */
-interface ExpressLikeRequest {
+export interface ExpressLikeRequest {
   body?: unknown;
   params?: Record<string, string>;
   query?: Record<string, unknown>;
@@ -59,6 +69,21 @@ interface ExpressLikeRequest {
     tokenType?: string;
     exp?: number;
   };
+  /**
+   * Producer-owned canonical request metadata set by the RequestContext
+   * middleware. When present it is used as-is. When absent (standalone route
+   * mounts) the default extractor mints a canonical-shaped fallback.
+   * 由 RequestContext middleware 写入的 producer-owned 请求元数据；存在时直接
+   * 使用，缺失时（独立挂载路由）默认 extractor 生成 canonical-shaped 回退值。
+   */
+  requestContext?: RequestContext;
+  /**
+   * Legacy fallbacks, read ONLY when `requestContext` is absent. Kept so
+   * standalone mounts without the global middleware keep the same traceId /
+   * startedAt they previously relied on.
+   * 仅当 `requestContext` 缺失时才读取的 legacy 回退值；用于未挂载全局
+   * middleware 的独立挂载，保持原有 traceId / startedAt。
+   */
   id?: string;
   traceId?: string;
   startTime?: number;
@@ -80,8 +105,16 @@ interface ExpressLikeResponse {
 export interface ExpressAdapterOptions {
   /** HTTP status code for successful responses (default: 200) */
   successStatus?: number;
-  /** Custom context extractor */
-  extractContext?: (req: ExpressLikeRequest) => Context;
+  /**
+   * Custom context extractor. Must return a full `ExecutionContext`; partial
+   * shapes are rejected by the type system. When omitted, the default extractor
+   * composes the carrier + Principal + device metadata, minting a fallback
+   * carrier when the global middleware was not mounted.
+   * 自定义 context extractor，必须返回完整 `ExecutionContext`；省略时默认
+   * extractor 合成 carrier + Principal + device 元数据，缺失 carrier 时
+   * 生成 fallback carrier。
+   */
+  extractContext?: (req: ExpressLikeRequest) => ExecutionContext;
   /** Whether to require authentication (default: true) */
   requireAuth?: boolean;
 }
@@ -91,13 +124,39 @@ export interface ExpressAdapterOptions {
 // ============================================================================
 
 /**
- * Residual 1183 keep-boundary: Express defaultExtractContext — HTTP request-rich Context.
- * Reads headers/body for deviceId, IP, UA, platform; identityId from req.user.
- * Soft residual 1183: IPC defaultExtractContext is desktop stub (identity '', deviceId 'desktop').
- *
- * Default context extractor from Express request
+ * Reads the producer-owned carrier. When present it is returned as-is. When the
+ * global RequestContext middleware was not mounted (standalone route mounts in
+ * tests / second hosts), a canonical-shaped fallback carrier is minted so
+ * unrelated routes do not crash; identity scoping still fails closed on its own
+ * (missing `req.user.identityId` → 401).
+ * 读取 producer-owned carrier。存在时原样返回；未挂载全局 RequestContext
+ * middleware（独立挂载路由）时生成 canonical-shaped fallback carrier，避免
+ * 无关路由崩溃；identity 作用域仍然自行 fail closed（缺失 identity → 401）。
  */
-function defaultExtractContext(req: ExpressLikeRequest): Context {
+export function readExpressRequestContext(req: ExpressLikeRequest): RequestContext {
+  const requestContext = req.requestContext;
+  if (requestContext) {
+    return requestContext;
+  }
+  const requestId = req.traceId ?? req.id ?? generateUUID();
+  return {
+    requestId,
+    traceId: requestId,
+    startedAt: req.startTime ?? Date.now(),
+    source: 'http',
+  };
+}
+
+/**
+ * Residual 1183 keep-boundary: Express defaultExtractContext — canonical carrier
+ * composer. Reads the producer-owned requestContext + header/body device info +
+ * req.user.identityId into a full ExecutionContext. No identity-only stub.
+ *
+ * Exported so custom-AI SSE routes and other second-host transports reuse the
+ * exact same composer instead of defining a second one.
+ */
+export function defaultExtractContext(req: ExpressLikeRequest): ExecutionContext {
+  const requestContext = readExpressRequestContext(req);
   const headers = req.headers ?? {};
   const userAgentHeader = headers['user-agent'];
   const userAgent = Array.isArray(userAgentHeader)
@@ -149,6 +208,7 @@ function defaultExtractContext(req: ExpressLikeRequest): Context {
     (platform || browser ? `${platform ?? 'Unknown'} - ${browser ?? 'Unknown'}` : null);
 
   return {
+    ...requestContext,
     identityId: req.user?.identityId ?? '',
     deviceId,
     device: {
@@ -196,7 +256,7 @@ function inferDeviceType(userAgent: string | null | undefined): string {
  * ```
  */
 export function expressAdapter<T>(
-  controllerFn: (req: ExpressLikeRequest, context: Context) => Promise<Result<T>>,
+  controllerFn: (req: ExpressLikeRequest, context: ExecutionContext) => Promise<Result<T>>,
   options: ExpressAdapterOptions = {},
 ): (req: ExpressLikeRequest, res: ExpressLikeResponse) => Promise<void> {
   const {
@@ -206,9 +266,15 @@ export function expressAdapter<T>(
   } = options;
 
   return async (req: ExpressLikeRequest, res: ExpressLikeResponse) => {
-    const traceId = req.traceId ?? req.id;
-    const startTime = req.startTime ?? Date.now();
-    const responseBuilder = createHttpResponseBuilder({ traceId, startTime });
+    // Resolve the context through the (possibly custom) extractor FIRST so a
+    // second-host path without the global carrier still works. Envelope
+    // metadata comes from the resulting canonical context — never from a
+    // separate read that bypasses a custom extractor.
+    const context = extractContext(req);
+    const responseBuilder = createHttpResponseBuilder({
+      traceId: context.traceId,
+      startTime: context.startedAt,
+    });
 
     try {
       // Auth check
@@ -217,7 +283,6 @@ export function expressAdapter<T>(
         return;
       }
 
-      const context = extractContext(req);
       const result = await controllerFn(req, context);
 
       if (isOk(result)) {
@@ -304,7 +369,7 @@ export function expressAdapterWithValidation<TInput, TOutput>(
   schema: ZodLikeSchema<TInput>,
   controllerFn: (
     data: TInput,
-    context: Context,
+    context: ExecutionContext,
     req: ExpressLikeRequest,
   ) => Promise<Result<TOutput>>,
   options: ExpressAdapterOptions = {},
@@ -316,9 +381,15 @@ export function expressAdapterWithValidation<TInput, TOutput>(
   } = options;
 
   return async (req: ExpressLikeRequest, res: ExpressLikeResponse) => {
-    const traceId = req.traceId ?? req.id;
-    const startTime = req.startTime ?? Date.now();
-    const responseBuilder = createHttpResponseBuilder({ traceId, startTime });
+    // Resolve the context through the (possibly custom) extractor FIRST so a
+    // second-host path without the global carrier still works. Envelope
+    // metadata comes from the resulting canonical context — never from a
+    // separate read that bypasses a custom extractor.
+    const context = extractContext(req);
+    const responseBuilder = createHttpResponseBuilder({
+      traceId: context.traceId,
+      startTime: context.startedAt,
+    });
 
     try {
       // Auth check
@@ -335,7 +406,6 @@ export function expressAdapterWithValidation<TInput, TOutput>(
         return;
       }
 
-      const context = extractContext(req);
       const result = await controllerFn(parsed.data, context, req);
 
       if (isOk(result)) {

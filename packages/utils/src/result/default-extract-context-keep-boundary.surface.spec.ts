@@ -3,9 +3,16 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 1183: defaultExtractContext keep-boundary (Express HTTP vs IPC desktop stub).
- * - express-adapter: header/body device mining + req.user.identityId → rich Context
- * - ipc-adapter: fixed { identityId: '', deviceId: 'desktop' } stub
+ * Residual 1183 keep-boundary: defaultExtractContext (Express HTTP vs IPC).
+ *
+ * RefArch Phase 2 update: the IPC desktop-stub is retired. Both adapters are
+ * now pure consumers of the canonical `ExecutionContext`:
+ * - express-adapter: composes the producer-owned carrier (or a canonical-shaped
+ *   fallback when the global middleware was not mounted) + header/body device
+ *   mining + req.user.identityId → full ExecutionContext
+ * - ipc-adapter: default extractor fails closed (no carrier on IPC events);
+ *   desktop auth context produces the full context once per invocation
+ *
  * Soft residual 1180: comparePriority keep-boundary remains separate.
  * Soft residual 1177: buildTaskName keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
@@ -15,68 +22,71 @@ describe('defaultExtractContext keep-boundary (residual 1183)', () => {
   const express = readFileSync(resolve(dir, 'express-adapter.ts'), 'utf8');
   const ipc = readFileSync(resolve(dir, 'ipc-adapter.ts'), 'utf8');
 
-  it('owns Residual 1183 keep-boundary markers on Express rich defaultExtractContext', () => {
+  it('owns Residual 1183 keep-boundary markers on Express carrier composer', () => {
     expect(express).toContain('Residual 1183 keep-boundary');
     expect(express).toMatch(/function defaultExtractContext\b/);
     expect(express).toContain('ExpressLikeRequest');
+    expect(express).toContain('readExpressRequestContext');
     expect(express).toContain('x-forwarded-for');
     expect(express).toContain('req.user?.identityId');
     expect(express).toContain('deviceFingerprint');
-    const body = express.match(/function defaultExtractContext\([\s\S]*?\n\}/)?.[0] ?? '';
-    // multi-line function — match until first top-level closing may be too short; use markers
     expect(express).toContain("headers['x-device-id']");
     expect(express).toContain('inferDeviceType');
     expect(express).not.toContain("deviceId: 'desktop'");
+    expect(express).toContain('requestContext?: RequestContext');
   });
 
-  it('differs from IPC desktop-stub defaultExtractContext (no force-merge)', () => {
+  it('IPC default extractor fails closed — no identity-only desktop stub', () => {
     expect(ipc).toContain('Residual 1183 keep-boundary');
     expect(ipc).toMatch(/function defaultExtractContext\b/);
-    expect(ipc).toContain('Soft residual 1183');
     expect(ipc).toContain('IpcInvokeEvent');
-    expect(ipc).toContain("deviceId: 'desktop'");
-    expect(ipc).toContain("identityId: ''");
-    const body = ipc.match(/function defaultExtractContext\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(body).toContain("deviceId: 'desktop'");
-    expect(body).not.toContain('x-forwarded-for');
-    expect(body).not.toContain('req.user');
-    expect(body).not.toContain('inferDeviceType');
-    expect(body).not.toContain('deviceFingerprint');
+    expect(ipc).toContain('requireRequestContext');
+    expect(ipc).toContain('throw new Error(');
+    expect(ipc).not.toContain("deviceId: 'desktop'");
+    expect(ipc).not.toContain("identityId: ''");
+    expect(ipc).not.toContain('x-forwarded-for');
   });
 
-  it('runtime: documents Express rich vs IPC stub contracts via body shape', () => {
-    function ipcDefaultExtractContext(): { identityId: string; deviceId: string } {
-      return { identityId: '', deviceId: 'desktop' };
+  it('runtime: documents Express lenient-carrier compose vs IPC fail-closed contracts', () => {
+    function ipcDefaultExtractContext(): never {
+      throw new Error('Missing ExecutionContext carrier');
     }
     function expressDefaultExtractContext(req: {
+      requestContext?: { requestId: string; traceId: string };
       user?: { identityId?: string };
       headers?: Record<string, string | string[] | undefined>;
       body?: { deviceId?: string };
-    }): { identityId: string; deviceId: string; hasDevice?: boolean } {
+      id?: string;
+    }): { identityId: string; requestId: string } {
+      const requestId = req.requestContext?.requestId ?? req.id ?? 'fallback-id';
       const headers = req.headers ?? {};
       const body = req.body ?? {};
       const deviceId =
         (typeof headers['x-device-id'] === 'string' && headers['x-device-id']) ||
         body.deviceId ||
         'unknown';
+      void deviceId;
       return {
         identityId: req.user?.identityId ?? '',
-        deviceId,
-        hasDevice: true,
+        requestId,
       };
     }
-    expect(ipcDefaultExtractContext()).toEqual({ identityId: '', deviceId: 'desktop' });
+    expect(() => ipcDefaultExtractContext()).toThrow(/Missing ExecutionContext carrier/);
+    expect(
+      expressDefaultExtractContext({
+        requestContext: { requestId: 'req-1', traceId: 'req-1' },
+        user: { identityId: 'id-1' },
+        headers: { 'x-device-id': 'web-1' },
+      }),
+    ).toEqual({ identityId: 'id-1', requestId: 'req-1' });
+    // Standalone mount without the global middleware: lenient fallback, no throw.
     expect(
       expressDefaultExtractContext({
         user: { identityId: 'id-1' },
         headers: { 'x-device-id': 'web-1' },
+        id: 'fallback-id',
       }),
-    ).toEqual({ identityId: 'id-1', deviceId: 'web-1', hasDevice: true });
-    expect(expressDefaultExtractContext({})).toEqual({
-      identityId: '',
-      deviceId: 'unknown',
-      hasDevice: true,
-    });
+    ).toEqual({ identityId: 'id-1', requestId: 'fallback-id' });
   });
 
   it('documents residual 1183 lock intent without claiming §13.2 complete', () => {

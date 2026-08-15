@@ -24,6 +24,15 @@ type LayerWithRoute = {
 
 const passThrough = ((_, __, next) => next()) as RequestHandler;
 
+function carrier() {
+  return {
+    requestId: 'req-repo-route',
+    traceId: 'req-repo-route',
+    startedAt: 1_700_000_000_000,
+    source: 'http',
+  };
+}
+
 function createApiStub(): RepositoryApplicationPort {
   return {
     startKnowledgeRepositoryInstallation: vi.fn(async () =>
@@ -99,9 +108,7 @@ function createApiStub(): RepositoryApplicationPort {
         contentBase64: 'AQIDBA==',
       }),
     ),
-    listKnowledgeWriteRequests: vi.fn(async () =>
-      ok({ writeRequests: [] }),
-    ),
+    listKnowledgeWriteRequests: vi.fn(async () => ok({ writeRequests: [] })),
     replayKnowledgeWriteRequestProjection: vi.fn(async () =>
       ok({ writeRequestId: 'write-request-1', commitSha: 'a'.repeat(40), status: 'Succeeded' }),
     ),
@@ -151,6 +158,7 @@ describe('knowledge repository connection routes', () => {
         query: { purgeCloudData: 'true' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
+        requestContext: carrier(),
       },
       res,
     );
@@ -174,7 +182,7 @@ describe('knowledge repository connection routes', () => {
       body: { returnUrl: 'https://app.example.test/settings/repository' },
       headers: { 'user-agent': 'Mozilla/5.0' },
       user: { identityId: 'identity-route' },
-      traceId: 'trace-installation-start',
+      requestContext: carrier(),
     };
     const res = createResponse();
 
@@ -211,6 +219,7 @@ describe('knowledge repository connection routes', () => {
         body: { state: 'short', installationId: '' },
         headers: {},
         user: { identityId: 'identity-route' },
+        requestContext: carrier(),
       },
       res,
     );
@@ -243,6 +252,7 @@ describe('knowledge repository connection routes', () => {
           'x-device-id': 'desktop-device-1',
         },
         user: { identityId: 'identity-desktop' },
+        requestContext: carrier(),
       },
       res,
     );
@@ -274,6 +284,7 @@ describe('knowledge repository connection routes', () => {
         body: { localState: 'NonEmpty' },
         headers: { 'user-agent': 'MemoFlow/1.0 Electron/43.0.0' },
         user: { identityId: 'identity-desktop' },
+        requestContext: carrier(),
       },
       res,
     );
@@ -305,6 +316,7 @@ describe('knowledge repository connection routes', () => {
         body: { headSha: 'a'.repeat(40) },
         headers: { 'user-agent': 'MemoFlow/1.0 Electron/43.0.0' },
         user: { identityId: 'identity-desktop' },
+        requestContext: carrier(),
       },
       res,
     );
@@ -326,7 +338,7 @@ describe('knowledge repository connection routes', () => {
     const handler = getRouteHandler(router, 'get', '/knowledge-connections');
     const res = createResponse();
 
-    await handler({ headers: {} }, res);
+    await handler({ headers: {}, requestContext: carrier() }, res);
 
     expect(api.listKnowledgeRepositoryConnections).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(401);
@@ -344,6 +356,7 @@ describe('knowledge repository connection routes', () => {
         query: { depth: '2', maxNodes: '30' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
+        requestContext: carrier(),
       },
       res,
     );
@@ -363,7 +376,11 @@ describe('knowledge repository connection routes', () => {
     const unauthorized = createResponse();
 
     await handler(
-      { params: { projectionId: 'attachment-1' }, headers: { 'user-agent': 'Mozilla/5.0' } },
+      {
+        params: { projectionId: 'attachment-1' },
+        headers: { 'user-agent': 'Mozilla/5.0' },
+        requestContext: carrier(),
+      },
       unauthorized,
     );
 
@@ -376,6 +393,7 @@ describe('knowledge repository connection routes', () => {
         params: { projectionId: 'attachment-1' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
+        requestContext: carrier(),
       },
       authorized,
     );
@@ -404,6 +422,7 @@ describe('knowledge repository connection routes', () => {
         query: { connectionId: 'connection-1', limit: '20' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
+        requestContext: carrier(),
       },
       res,
     );
@@ -421,7 +440,7 @@ describe('knowledge repository connection routes', () => {
     const handler = getRouteHandler(router, 'get', '/knowledge-write-requests');
     const res = createResponse();
 
-    await handler({ query: {}, headers: {} }, res);
+    await handler({ query: {}, headers: {}, requestContext: carrier() }, res);
 
     expect(api.listKnowledgeWriteRequests).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(401);
@@ -442,6 +461,7 @@ describe('knowledge repository connection routes', () => {
         params: { writeRequestId: 'write-request-1' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
+        requestContext: carrier(),
       },
       res,
     );

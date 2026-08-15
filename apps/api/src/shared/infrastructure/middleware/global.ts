@@ -14,12 +14,15 @@ import {
   createPerformanceMiddleware,
   type MetricsStore,
 } from '../http/middlewares/performance.middleware';
+import { createRequestContextMiddleware } from '../http/middlewares/request-context.middleware';
 import { getCorsOrigins, isAllCorsOriginsAllowed } from '../config/env.js';
 
 /**
  * 应用所有全局中间件
  *
- * 包含：Helmet、JSON 解析、Cookie 解析、CORS、Compression、性能监控
+ * 包含：RequestContext、Helmet、JSON 解析、Cookie 解析、CORS、Compression、性能监控。
+ * RequestContext 必须位于第一个 `app.use`：它在 auth/route/error handler 之前
+ * 建立 requestId/traceId/startedAt/source，并先写 `X-Request-Id` 响应头。
  */
 export function applyGlobalMiddleware(
   app: Express,
@@ -28,6 +31,10 @@ export function applyGlobalMiddleware(
 ): void {
   const allowedOrigins = getCorsOrigins();
   const allowAllOrigins = isAllCorsOriginsAllowed();
+
+  // Request metadata producer — must be the very first middleware so JSON,
+  // 204, auth failures, 404, 500 and SSE responses share one X-Request-Id.
+  app.use(createRequestContextMiddleware());
 
   // Security
   app.use(helmet());
@@ -46,7 +53,15 @@ export function applyGlobalMiddleware(
       },
       credentials: !allowAllOrigins,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Skip-Auth', 'Cache-Control'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Skip-Auth',
+        'Cache-Control',
+        'X-Request-Id',
+      ],
+      // Expose the correlation header (never auth/internal HMAC headers).
+      exposedHeaders: ['X-Request-Id'],
       maxAge: 86400,
     }),
   );

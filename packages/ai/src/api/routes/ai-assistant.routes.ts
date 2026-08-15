@@ -2,6 +2,10 @@
  * AssistantFacade HTTP routes (residual 345).
  * POST /api/v1/ai/assistant/dispatch/sse — stream AssistantEvent over SSE.
  *
+ * RefArch Phase 2: the SSE route composes the canonical `ExecutionContext` via
+ * the shared Express extractor (carrier + principal) and reads the envelope
+ * trace/start from the same carrier — no route-local request-ID reconstruction.
+ *
  * Framing is frozen in plan §4.4:
  * - `event: assistant` + `data: AssistantEvent` per Host event
  * - `event: error` + `data: { code, message, details? }` exactly once on failure
@@ -28,8 +32,11 @@
  *   之前直接返回 401 JSON。
  */
 import { Router, type Request, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { createHttpResponseBuilder } from '@memoflow/utils/result';
+import {
+  extractAiExpressExecutionContext,
+  readAiExpressEnvelopeMeta,
+} from '../../shared/express-execution-context';
 import type { AIAssistantFacadeController } from '../../server/transport/ai-assistant-facade.controller';
 
 interface PlatformMiddleware {
@@ -45,11 +52,7 @@ export function registerAIAssistantRoutes(
   const { auth } = middleware;
 
   router.post('/dispatch/sse', auth, async (req, res) => {
-    const requestWithMeta = req as Request & { traceId?: string; id?: string };
-    const responseBuilder = createHttpResponseBuilder({
-      traceId: requestWithMeta.traceId ?? requestWithMeta.id,
-      startTime: Date.now(),
-    });
+    const responseBuilder = createHttpResponseBuilder(readAiExpressEnvelopeMeta(req));
     const identityId = (req as Request & { user?: { identityId?: string } }).user?.identityId;
     if (!identityId) {
       res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
@@ -89,7 +92,7 @@ export function registerAIAssistantRoutes(
     try {
       const result = await controller.dispatch(
         req.body,
-        { identityId } as ExecutionContext,
+        extractAiExpressExecutionContext(req),
         {
           onEvent: (assistantEvent) => {
             if (!writeSseEvent('assistant', assistantEvent)) {

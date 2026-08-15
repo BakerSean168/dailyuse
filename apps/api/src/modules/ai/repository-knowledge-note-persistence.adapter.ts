@@ -36,10 +36,7 @@ export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNote
       throw new Error('A confirmed knowledge-note proposal is required for GitHub writes');
     }
 
-    const listed = await this.repositoryApi.listKnowledgeRepositoryConnections({
-      identityId: input.identityId,
-      deviceId: 'api-server',
-    });
+    const listed = await this.repositoryApi.listKnowledgeRepositoryConnections(input.context);
     if (!listed.ok) {
       throw new Error(listed.error.message);
     }
@@ -61,20 +58,17 @@ export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNote
       );
     }
 
-    const committed = await this.repositoryApi.createConfirmedKnowledgeNote(
-      { identityId: input.identityId, deviceId: 'api-server' },
-      {
-        connectionId: connection.id,
-        proposalId: input.proposalId,
-        revision: input.proposalRevision,
-        requestId: input.requestId,
-        proposedPath: input.path,
-        title: input.fileName.replace(/\.md$/i, ''),
-        frontmatter: {},
-        content: input.content,
-        reason: 'AI knowledge note approved by the user',
-      },
-    );
+    const committed = await this.repositoryApi.createConfirmedKnowledgeNote(input.context, {
+      connectionId: connection.id,
+      proposalId: input.proposalId,
+      revision: input.proposalRevision,
+      requestId: input.requestId,
+      proposedPath: input.path,
+      title: input.fileName.replace(/\.md$/i, ''),
+      frontmatter: {},
+      content: input.content,
+      reason: 'AI knowledge note approved by the user',
+    });
     if (!committed.ok) {
       throw new Error(committed.error.message);
     }

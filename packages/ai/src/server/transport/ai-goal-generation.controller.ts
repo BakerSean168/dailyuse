@@ -6,24 +6,19 @@
 
 import type { Result } from '@memoflow/contracts/result';
 import { fail } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { GenerateGoalsSchema } from '@memoflow/contracts/ai';
 import type { GenerateGoalsReq, GenerateGoalsRes } from '@memoflow/contracts/ai';
 import { formatZodErrors } from '@memoflow/utils/result';
 
 interface AIGoalGenerationControllerService {
-  generateGoal(
-    params: GenerateGoalsReq & { identityId: string; requestId?: string },
-  ): Promise<Result<GenerateGoalsRes>>;
+  generateGoal(params: GenerateGoalsReq, cx: ExecutionContext): Promise<Result<GenerateGoalsRes>>;
 }
 
 export class AIGoalGenerationController {
   constructor(private readonly service: AIGoalGenerationControllerService) {}
 
-  async generateGoal(
-    input: unknown,
-    identityId: string,
-    requestId?: string,
-  ): Promise<Result<GenerateGoalsRes>> {
+  async generateGoal(input: unknown, cx: ExecutionContext): Promise<Result<GenerateGoalsRes>> {
     const parsed = GenerateGoalsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -33,22 +28,23 @@ export class AIGoalGenerationController {
       });
     }
 
-    return this.service.generateGoal({
-      identityId,
-      ...(requestId ? { requestId } : {}),
-      idea: parsed.data.idea,
-      providerId: parsed.data.providerId,
-      model: parsed.data.model,
-      category: parsed.data.category,
-      timeframe: parsed.data.timeframe,
-      includeKeyResults: parsed.data.includeKeyResults,
-      includeTaskTemplates: parsed.data.includeTaskTemplates,
-      command: parsed.data.command,
-      clarificationAnswers: parsed.data.clarificationAnswers,
-      draftContext: parsed.data.draftContext,
-      approvedSummary: parsed.data.approvedSummary,
-      approvedPlan: parsed.data.approvedPlan,
-      approvedActions: parsed.data.approvedActions,
-    });
+    return this.service.generateGoal(
+      {
+        idea: parsed.data.idea,
+        providerId: parsed.data.providerId,
+        model: parsed.data.model,
+        category: parsed.data.category,
+        timeframe: parsed.data.timeframe,
+        includeKeyResults: parsed.data.includeKeyResults,
+        includeTaskTemplates: parsed.data.includeTaskTemplates,
+        command: parsed.data.command,
+        clarificationAnswers: parsed.data.clarificationAnswers,
+        draftContext: parsed.data.draftContext,
+        approvedSummary: parsed.data.approvedSummary,
+        approvedPlan: parsed.data.approvedPlan,
+        approvedActions: parsed.data.approvedActions,
+      },
+      cx,
+    );
   }
 }

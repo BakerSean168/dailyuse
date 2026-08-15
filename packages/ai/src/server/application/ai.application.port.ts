@@ -86,10 +86,7 @@ export interface AIApplicationPort {
   ): Promise<Result<AIProviderConfigClientDTO>>;
 
   // Conversations
-  createConversation(
-    cx: ExecutionContext,
-    name?: string,
-  ): Promise<Result<AIConversationClientDTO>>;
+  createConversation(cx: ExecutionContext, name?: string): Promise<Result<AIConversationClientDTO>>;
   updateConversation(
     id: string,
     req: UpdateConversationReq,
@@ -134,14 +131,17 @@ export interface AIApplicationPort {
   >;
 
   // Goal generation
-  generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<Result<GenerateGoalsRes>>;
+  generateGoal(params: GenerateGoalsReq, cx: ExecutionContext): Promise<Result<GenerateGoalsRes>>;
 
   // Knowledge, analytics, and agent runtime
   createKnowledgeNote(
     req: CreateKnowledgeNoteReq,
     cx: ExecutionContext,
   ): Promise<Result<CreateKnowledgeNoteRes>>;
-  expandKnowledge(req: ExpandKnowledgeReq, cx: ExecutionContext): Promise<Result<ExpandKnowledgeRes>>;
+  expandKnowledge(
+    req: ExpandKnowledgeReq,
+    cx: ExecutionContext,
+  ): Promise<Result<ExpandKnowledgeRes>>;
   queryKnowledge(req: QueryKnowledgeReq, cx: ExecutionContext): Promise<Result<QueryKnowledgeRes>>;
   reindexKnowledge(
     req: ReindexKnowledgeReq,
@@ -154,38 +154,37 @@ export interface AIApplicationPort {
   startAgentRun(
     req: AgentStartRunRequest,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   resumeAgentRun(
     runId: string,
     payload: AgentResumePayload,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   getAgentRun(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   listAgentRuns(
     params: AgentRunListParams,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRun[]>>;
   getAgentEvents(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentEvent[]>>;
 
   /**
    * AssistantFacade dispatch (residual 345). Streams Host-normalized AssistantEvent.
    * Callers must set identityId from trusted ExecutionContext before invoking.
+   *
+   * @param requestId - Optional entry correlation request ID to propagate into the
+   *                    Turn Engine (open chat reaches Python with the same ID).
+   *
    * Handlers use the frozen `AssistantDispatchHandlers`; the result is the named
    * `AssistantDispatchResult` ({ eventCount }). Never trusts client-supplied
    * identityId — the transport injects it from the authenticated context.
@@ -200,5 +199,6 @@ export interface AIApplicationPort {
     command: AssistantCommand,
     handlers: AssistantDispatchHandlers,
     signal?: AbortSignal,
+    requestId?: string,
   ): Promise<Result<AssistantDispatchResult>>;
 }

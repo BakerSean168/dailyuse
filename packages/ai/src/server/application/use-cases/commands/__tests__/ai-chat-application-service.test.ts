@@ -22,10 +22,7 @@ class InMemoryConversationRepository {
     this.conversation = conversation;
   }
 
-  async findByIdForIdentity(
-    identityId: string,
-    _id: string,
-  ): Promise<AIConversation | null> {
+  async findByIdForIdentity(identityId: string, _id: string): Promise<AIConversation | null> {
     return String(this.conversation.identityId) === identityId ? this.conversation : null;
   }
 }
@@ -97,6 +94,17 @@ class StubExecutionLogPort implements IAIExecutionLogPort {
   public readonly record = vi.fn<(input: AIExecutionLogInput) => Promise<void>>(async () => {});
 }
 
+function executionContext(identityId: string) {
+  return {
+    requestId: 'req-chat-app-1',
+    traceId: 'req-chat-app-1',
+    startedAt: 1_700_000_000_000,
+    source: 'http',
+    identityId,
+    deviceId: 'test-device',
+  };
+}
+
 describe('SendAIMessageUseCase', () => {
   it('routes chat execution through the execution port with structured messages', async () => {
     const identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440000';
@@ -129,7 +137,7 @@ describe('SendAIMessageUseCase', () => {
     const result = await useCase.execute(
       String(conversation.id),
       'Hello from user',
-      { identityId },
+      executionContext(identityId),
       'provider-1',
     );
 
@@ -157,7 +165,7 @@ describe('SendAIMessageUseCase', () => {
           baseUrl: 'https://api.openai.com/v1',
           temperature: 0.7,
         }),
-        requestId: expect.any(String),
+        requestId: 'req-chat-app-1',
         signal: expect.any(AbortSignal),
       }),
     );
@@ -172,7 +180,7 @@ describe('SendAIMessageUseCase', () => {
         providerId: 'provider-1',
         providerName: 'Main provider',
         model: 'gpt-4o-mini',
-        requestId: expect.any(String),
+        requestId: 'req-chat-app-1',
         costEstimate: expect.objectContaining({
           pricingModel: 'gpt-4o-mini',
           totalCostUsd: expect.any(Number),
@@ -232,7 +240,7 @@ describe('StreamAIMessageUseCase', () => {
       String(conversation.id),
       'Hello from user',
       vi.fn(),
-      { identityId },
+      executionContext(identityId),
       'provider-1',
       undefined,
       streamAbortController.signal,
@@ -251,8 +259,7 @@ describe('StreamAIMessageUseCase', () => {
     // The engine bridges the caller signal to its own controller; the
     // behavioural contract is that the port receives an already-aborted signal.
     const streamCall = executionPort.stream.mock.calls[0]?.[0] as
-      | { signal?: AbortSignal }
-      | undefined;
+      { signal?: AbortSignal } | undefined;
     expect(streamCall?.signal?.aborted).toBe(true);
 
     expect(executionLogPort.record).toHaveBeenCalledWith(

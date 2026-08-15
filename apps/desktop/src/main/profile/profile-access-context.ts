@@ -1,15 +1,23 @@
-import type { Context } from '@memoflow/contracts/shared';
+import { randomUUID } from 'node:crypto';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { ElectronAuthResolutionError } from '@memoflow/contracts/electron';
 import type { IElectronAuthContext } from '@memoflow/contracts/electron';
 
 /**
  * Electron business modules need a local owner, not a cloud session.
  * Cloud availability is intentionally absent from this seam.
+ *
+ * RefArch Phase 2: every `requireRequestContext()` invocation resolves the
+ * owner exactly once and produces a fresh `ExecutionContext` with a new
+ * requestId, an identical traceId (equal to the requestId in this phase),
+ * `startedAt` from the injected clock and `source: 'ipc'`.
  */
 export class DesktopProfileAccessContext implements IElectronAuthContext {
   constructor(
     private readonly resolveOwner: () => string | null,
     private readonly deviceId: string = 'desktop-app',
+    private readonly idFactory: () => string = randomUUID,
+    private readonly now: () => number = Date.now,
   ) {}
 
   async getIdentityId(): Promise<string | null> {
@@ -26,12 +34,22 @@ export class DesktopProfileAccessContext implements IElectronAuthContext {
     return null;
   }
 
-  async getRequestContext(): Promise<Context | null> {
+  async getRequestContext(): Promise<ExecutionContext | null> {
     const identityId = this.resolveOwner();
-    return identityId ? { identityId, deviceId: this.deviceId } : null;
+    if (!identityId) return null;
+
+    const requestId = this.idFactory();
+    return {
+      requestId,
+      traceId: requestId,
+      startedAt: this.now(),
+      source: 'ipc',
+      identityId,
+      deviceId: this.deviceId,
+    };
   }
 
-  async requireRequestContext(): Promise<Context> {
+  async requireRequestContext(): Promise<ExecutionContext> {
     const context = await this.getRequestContext();
     if (!context) throw new ElectronAuthResolutionError('AUTH_REQUIRED');
     return context;

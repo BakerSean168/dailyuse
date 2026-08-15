@@ -17,7 +17,6 @@ import {
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
-  createAIRequestId,
   withAICostEstimate,
 } from './ai-observability';
 
@@ -47,7 +46,7 @@ export class ManageAIKnowledgeNoteUseCase {
     cx: ExecutionContext,
   ): Promise<Result<CreateKnowledgeNoteRes>> {
     const startedAt = Date.now();
-    const requestId = createAIRequestId();
+    const requestId = cx.requestId;
     let providerMetadata: {
       providerId?: string;
       providerName?: string;
@@ -93,6 +92,7 @@ export class ManageAIKnowledgeNoteUseCase {
 
       const persistenceInput = {
         identityId: cx.identityId,
+        context: cx,
         path: pathInfo.path,
         fileName: pathInfo.fileName,
         content: completion.content,

@@ -39,6 +39,11 @@ export type DatabaseClient = PrismaClient;
  * ApiBootstrapper 提供给模块的中间件接口，
  * 模块无需直接引用 apps/api 的内部实现，
  * 实现真正的"物理隔离"。
+ *
+ * 说明（RefArch Phase 2）：RequestContext 属于全局 platform middleware，由
+ * `applyGlobalMiddleware()` 作为第一个 `app.use` 挂载，模块不得重复挂载；
+ * 默认 Express adapter（expressAdapter/expressAdapterWithValidation）会从全局
+ * request carrier（`req.requestContext`）读取 requestId/traceId/startedAt。
  */
 export interface IApiMiddleware {
   /** Cloud session authentication middleware. */

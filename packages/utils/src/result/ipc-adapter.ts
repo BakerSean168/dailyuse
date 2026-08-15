@@ -4,6 +4,15 @@
  * 将 Controller 函数适配为 Electron IPC 处理器。
  * 统一处理上下文提取、错误处理和 IpcResult 序列化。
  *
+ * RefArch Phase 2: all callbacks/options consume the canonical
+ * `ExecutionContext`. The default extractor no longer returns an identity-only
+ * desktop stub — it fails closed when no carrier is provided. Desktop handlers
+ * obtain the full context from the profile auth context
+ * (`IElectronAuthContext.requireRequestContext()`) and hand it to the
+ * controller directly (e.g. via `withAuthenticatedValue`); the custom
+ * `extractContext` option exists for second hosts/tests that supply a complete
+ * context.
+ *
  * Two variants:
  *   - `ipcAdapter`                 — Controller receives raw (args, ctx)
  *   - `ipcAdapterWithValidation`  — Validates args via Zod schema first
@@ -33,7 +42,7 @@ import {
   toIpcResult,
   fail,
 } from '@memoflow/contracts/result';
-import type { Context } from '@memoflow/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 // Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
 import { formatZodErrors } from './format-zod-errors';
 
@@ -53,8 +62,15 @@ interface IpcInvokeEvent {
  * Options for the IPC adapter
  */
 export interface IpcAdapterOptions {
-  /** Custom context extractor */
-  extractContext?: (event: IpcInvokeEvent) => Context;
+  /**
+   * Custom context extractor. Must return a full `ExecutionContext`; the
+   * default extractor fails closed (no identity-only desktop stub). Desktop
+   * runtime passes the context produced by the profile auth context.
+   * 自定义 context extractor，必须返回完整 `ExecutionContext`；默认 extractor
+   * fail closed（不再返回 identity-only desktop stub）。Desktop 运行时通过
+   * profile auth context 提供完整 context。
+   */
+  extractContext?: (event: IpcInvokeEvent) => ExecutionContext;
 }
 
 // ============================================================================
@@ -62,17 +78,16 @@ export interface IpcAdapterOptions {
 // ============================================================================
 
 /**
- * Residual 1183 keep-boundary: IPC defaultExtractContext — desktop stub Context.
- * Always returns identityId '' and deviceId 'desktop' (no HTTP header/body mining).
- * Soft residual 1183: Express defaultExtractContext builds rich device Context (no force-merge).
- *
- * Default context extractor from IPC event
+ * Residual 1183 keep-boundary: IPC defaultExtractContext — fails closed.
+ * No identity-only desktop stub is returned. IPC events carry no
+ * producer-owned carrier, so the default extractor throws; the desktop auth
+ * context resolves the canonical context once per invocation and the handler
+ * consumes it directly.
  */
-function defaultExtractContext(_event: IpcInvokeEvent): Context {
-  return {
-    identityId: '',
-    deviceId: 'desktop',
-  };
+function defaultExtractContext(_event: IpcInvokeEvent): ExecutionContext {
+  throw new Error(
+    'Missing ExecutionContext carrier: desktop IPC must resolve the context via the profile auth context (requireRequestContext) or pass a custom extractContext',
+  );
 }
 
 // ============================================================================
@@ -92,7 +107,7 @@ function defaultExtractContext(_event: IpcInvokeEvent): Context {
  * ```
  */
 export function ipcAdapter<T>(
-  controllerFn: (args: unknown, context: Context) => Promise<Result<T>>,
+  controllerFn: (args: unknown, context: ExecutionContext) => Promise<Result<T>>,
   options: IpcAdapterOptions = {},
 ): (event: IpcInvokeEvent, args: unknown) => Promise<IpcResult<T>> {
   const { extractContext = defaultExtractContext } = options;
@@ -156,7 +171,7 @@ interface ZodLikeSchema<T> {
  */
 export function ipcAdapterWithValidation<TInput, TOutput>(
   schema: ZodLikeSchema<TInput>,
-  controllerFn: (data: TInput, context: Context) => Promise<Result<TOutput>>,
+  controllerFn: (data: TInput, context: ExecutionContext) => Promise<Result<TOutput>>,
   options: IpcAdapterOptions = {},
 ): (event: IpcInvokeEvent, args: unknown) => Promise<IpcResult<TOutput>> {
   const { extractContext = defaultExtractContext } = options;

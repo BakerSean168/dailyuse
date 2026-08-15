@@ -8,15 +8,15 @@
  * Shared by both Express (HTTP) and IPC transport layers.
  * 供 Express（HTTP）和 IPC 传输层共用。
  *
- * Accepts standard Context from the adapter and converts to
- * ExecutionContext internally for the application layer.
- * 接受适配器的标准 Context，内部转换为应用层的 ExecutionContext。
+ * RefArch Phase 2: the canonical shared `ExecutionContext` flows straight from
+ * the adapters into the application port — no identity-only conversion here.
+ * 接受适配器传入的 canonical `ExecutionContext`，原样交给应用层，不做
+ * identity-only 转换。
  */
 
 import type { Result } from '@memoflow/contracts/result';
 import { error, ok } from '@memoflow/contracts/result';
-import type { Context } from '@memoflow/contracts/shared';
-import type { IdentityId } from '@memoflow/contracts/primitives';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   CreateRuleSchema,
   DeleteRuleSchema,
@@ -41,7 +41,7 @@ import type {
   UpdateRuleRes,
 } from '@memoflow/contracts/governance';
 import { formatZodErrors } from '@memoflow/utils/result';
-import type { ExecutionContext, GovernanceApplicationPort } from '../application';
+import type { GovernanceApplicationPort } from '../application';
 
 /**
  * Thin controller that validates input with Zod schemas and delegates to the
@@ -53,50 +53,45 @@ import type { ExecutionContext, GovernanceApplicationPort } from '../application
 export class GovernanceController {
   constructor(private readonly useCases: GovernanceApplicationPort) {}
 
-  /** Convert standard Context to Governance ExecutionContext */
-  private toExecutionContext(ctx: Context): ExecutionContext {
-    return { identityId: ctx.identityId as IdentityId };
-  }
-
-  async createRule(input: unknown, ctx: Context): Promise<Result<CreateRuleRes>> {
+  async createRule(input: unknown, ctx: ExecutionContext): Promise<Result<CreateRuleRes>> {
     const parsed = CreateRuleSchema.safeParse(input);
     if (!parsed.success) {
       return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
-    return this.useCases.createRule(parsed.data, this.toExecutionContext(ctx));
+    return this.useCases.createRule(parsed.data, ctx);
   }
 
   async updateRule(
     input: GovernanceUpdateRuleRpcRequest,
-    ctx: Context,
+    ctx: ExecutionContext,
   ): Promise<Result<UpdateRuleRes>> {
     const parsed = UpdateRuleSchema.safeParse(input.body);
     if (!parsed.success) {
       return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
-    return this.useCases.updateRule(input.ruleId, parsed.data, this.toExecutionContext(ctx));
+    return this.useCases.updateRule(input.ruleId, parsed.data, ctx);
   }
 
   async updateRuleById(
     ruleId: string,
     input: unknown,
-    ctx: Context,
+    ctx: ExecutionContext,
   ): Promise<Result<UpdateRuleRes>> {
     return this.updateRule({ ruleId, body: input } as GovernanceUpdateRuleRpcRequest, ctx);
   }
 
-  async deleteRule(input: DeleteRuleReq, ctx: Context): Promise<Result<null>> {
+  async deleteRule(input: DeleteRuleReq, ctx: ExecutionContext): Promise<Result<null>> {
     const parsed = DeleteRuleSchema.safeParse(input);
     if (!parsed.success) {
       return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
-    const result = await this.useCases.deleteRule(parsed.data, this.toExecutionContext(ctx));
+    const result = await this.useCases.deleteRule(parsed.data, ctx);
     if (!result.ok) return result;
     // Serialize as data:null (no { success: boolean } dual-track body).
     return ok(null);
   }
 
-  async deleteRuleById(id: string, ctx: Context): Promise<Result<null>> {
+  async deleteRuleById(id: string, ctx: ExecutionContext): Promise<Result<null>> {
     return this.deleteRule({ id } as DeleteRuleReq, ctx);
   }
 
@@ -124,14 +119,16 @@ export class GovernanceController {
     return this.useCases.listRules(parsed.data);
   }
 
-  async searchRules(query: SearchRulesQueryInput, ctx?: Context): Promise<Result<SearchRulesRes>> {
+  async searchRules(
+    query: SearchRulesQueryInput,
+    ctx?: ExecutionContext,
+  ): Promise<Result<SearchRulesRes>> {
     const parsed = SearchRulesQuerySchema.safeParse(query);
     if (!parsed.success) {
       return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
 
-    const executionContext = ctx ? this.toExecutionContext(ctx) : undefined;
-    return this.useCases.searchRules(parsed.data, executionContext);
+    return this.useCases.searchRules(parsed.data, ctx);
   }
 
   async getRevisions(query: GetRuleRevisionsQueryInput): Promise<Result<GetRuleRevisionsRes>> {

@@ -32,8 +32,9 @@
  */
 
 import type { Result } from '@memoflow/contracts/result';
-import type { Context } from '@memoflow/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { expressAdapter, type ExpressAdapterOptions } from './express-adapter';
+import type { ExpressLikeRequest } from './express-adapter';
 
 // ============================================================================
 // Minimal Interfaces (avoid hard dependencies on Express / zod-to-openapi)
@@ -56,18 +57,6 @@ export interface OpenApiRegistryLike {
 
 /** Supported HTTP methods */
 export type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
-
-/** Express-like request (mirrors the one from express-adapter) */
-interface ExpressLikeRequest {
-  body?: unknown;
-  params?: Record<string, string>;
-  query?: Record<string, unknown>;
-  headers?: Record<string, string | string[] | undefined>;
-  user?: { identityId?: string; sessionId?: string; tokenType?: string; exp?: number };
-  id?: string;
-  traceId?: string;
-  startTime?: number;
-}
 
 // ============================================================================
 // Route Definition
@@ -150,15 +139,14 @@ export class RouteRegistrar {
   route<T>(
     def: ApiRouteDefinition,
     middleware: unknown[],
-    handler: (req: ExpressLikeRequest, context: Context) => Promise<Result<T>>,
+    handler: (req: ExpressLikeRequest, context: ExecutionContext) => Promise<Result<T>>,
     adapterOptions?: ExpressAdapterOptions,
   ): this {
     // 1. Register OpenAPI path (if registry provided and not skipped)
     if (this.registry && !def.skipOpenApi) {
       const openApiPath = this.toOpenApiPath(def.path);
-      const fullPath = openApiPath === '/'
-        ? this.config.basePath
-        : `${this.config.basePath}${openApiPath}`;
+      const fullPath =
+        openApiPath === '/' ? this.config.basePath : `${this.config.basePath}${openApiPath}`;
 
       this.registry.registerPath({
         method: def.method,

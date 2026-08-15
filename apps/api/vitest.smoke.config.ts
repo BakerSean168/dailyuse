@@ -16,6 +16,13 @@ export default defineConfig({
         find: /^@\/(.+)/,
         replacement: path.resolve(__dirname, '../../packages/task/src/$1'),
       },
+      {
+        // Intentional testing export only (RefArch Phase 2): resolve the AI
+        // smoke surface to source so the smoke exercises the actual router,
+        // controller and dispatch chain — no catch-all private-path bypass.
+        find: /^@memoflow\/ai\/testing$/,
+        replacement: path.resolve(__dirname, '../../packages/ai/src/testing/index.ts'),
+      },
       ...taskResolveAliases,
     ],
   },

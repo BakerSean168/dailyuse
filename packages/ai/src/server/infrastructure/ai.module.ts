@@ -45,7 +45,14 @@ import type {
 import { createLogger } from '@memoflow/utils/logger';
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
-import type { IAssistantFacadePort, ICapabilityResolverPort, IModelGatewayPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@memoflow/contracts/ai';
+import type {
+  IAssistantFacadePort,
+  ICapabilityResolverPort,
+  IModelGatewayPort,
+  IProposalKernelPort,
+  ITurnEnginePort,
+  IWorkflowAdapterPort,
+} from '@memoflow/contracts/ai';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
 
 import type { Result } from '@memoflow/contracts/result';
@@ -272,32 +279,27 @@ export interface AIAgentRuntimeService {
   startRun(
     req: AgentStartRunRequest,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   resumeRun(
     runId: string,
     payload: AgentResumePayload,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   getRun(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   listRuns(
     params: AgentRunListParams,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRun[]>>;
   getEvents(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentEvent[]>>;
 }
@@ -544,7 +546,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       ),
 
     // -- Goal Generation --
-    generateGoal: (params) => services.goalGenerationService.generateGoal(params),
+    generateGoal: (params, cx) => services.goalGenerationService.generateGoal(params, cx),
 
     // -- Knowledge Notes --
     createKnowledgeNote: (req, cx) => services.knowledgeNoteService.createKnowledgeNote(req, cx),
@@ -553,22 +555,20 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     reindexKnowledge: (req, cx) => services.knowledgeQueryServices.reindex.execute(req, cx),
     queryAnalytics: (req, cx) => services.analyticsQueryService.queryAnalytics(req, cx),
     getEvaluationOverview: (req = {}) => services.evaluationReportService.getOverview(req),
-    startAgentRun: (req, cx, requestId, signal) =>
-      services.agentRuntimeService.startRun(req, cx, requestId, signal),
-    resumeAgentRun: (runId, payload, cx, requestId, signal) =>
-      services.agentRuntimeService.resumeRun(runId, payload, cx, requestId, signal),
-    getAgentRun: (runId, cx, requestId, signal) =>
-      services.agentRuntimeService.getRun(runId, cx, requestId, signal),
-    listAgentRuns: (params, cx, requestId, signal) =>
-      services.agentRuntimeService.listRuns(params, cx, requestId, signal),
-    getAgentEvents: (runId, cx, requestId, signal) =>
-      services.agentRuntimeService.getEvents(runId, cx, requestId, signal),
+    startAgentRun: (req, cx, signal) => services.agentRuntimeService.startRun(req, cx, signal),
+    resumeAgentRun: (runId, payload, cx, signal) =>
+      services.agentRuntimeService.resumeRun(runId, payload, cx, signal),
+    getAgentRun: (runId, cx, signal) => services.agentRuntimeService.getRun(runId, cx, signal),
+    listAgentRuns: (params, cx, signal) =>
+      services.agentRuntimeService.listRuns(params, cx, signal),
+    getAgentEvents: (runId, cx, signal) =>
+      services.agentRuntimeService.getEvents(runId, cx, signal),
 
     // Residual 345: AssistantFacade transport surface (identity must already be set on command).
     // dispatchAssistant —— AssistantFacade 传输面（command 上必须先注入 identity）。
-    dispatchAssistant: async (command, handlers, signal) => {
+    dispatchAssistant: async (command, handlers, signal, requestId) => {
       let eventCount = 0;
-      for await (const event of runtime.assistantFacade.dispatch(command, signal)) {
+      for await (const event of runtime.assistantFacade.dispatch(command, signal, requestId)) {
         eventCount += 1;
         handlers.onEvent?.(event);
       }

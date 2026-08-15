@@ -1,5 +1,6 @@
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   type GenerateGoalsReq,
   type GenerateGoalsRes,
@@ -24,7 +25,6 @@ import {
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
-  createAIRequestId,
   withAICostEstimate,
 } from './ai-observability';
 // Residual 995: sole previewText (local dual retired).
@@ -37,7 +37,6 @@ const SIDE_EFFECT_TOOLS = new Set<GoalAutomationAction['tool']>([
   'create_task_template',
   'create_reminder',
 ]);
-
 
 function summarizeProviderConfig(providerConfig: {
   provider: string;
@@ -82,10 +81,15 @@ export class GenerateAIGoalUseCase {
   ) {}
 
   async generateGoal(
-    params: GenerateGoalsReq & { identityId: string; requestId?: string },
+    params: GenerateGoalsReq,
+    cx: ExecutionContext,
   ): Promise<Result<GenerateGoalsRes>> {
     const startedAt = Date.now();
-    const requestId = params.requestId ?? createAIRequestId();
+    // Correlation comes exclusively from the canonical entry context — the use
+    // case never mints a fallback request ID (ADR-045). ID generation is
+    // reserved for explicit background entries or AIServiceInternalClient.
+    const identityId = cx.identityId;
+    const requestId = cx.requestId;
     let providerMetadata: {
       providerId?: string;
       providerName?: string;
@@ -94,7 +98,7 @@ export class GenerateAIGoalUseCase {
 
     try {
       logger.info('Goal flow request started', {
-        identityId: params.identityId,
+        identityId,
         requestId,
         command: params.command ?? 'draft',
         ideaPreview: previewText(params.idea),
@@ -109,7 +113,7 @@ export class GenerateAIGoalUseCase {
       });
       const provider = await resolveActiveProviderConfig(
         this.providerConfigRepository,
-        params.identityId,
+        identityId,
         params.providerId,
       );
       const executionProviderConfig = toChatExecutionProviderConfig(provider, {
@@ -122,7 +126,7 @@ export class GenerateAIGoalUseCase {
         model: executionProviderConfig.model,
       };
       logger.info('Goal flow provider resolved', {
-        identityId: params.identityId,
+        identityId,
         requestId,
         providerId: provider.id,
         providerName: provider.name,
@@ -132,7 +136,7 @@ export class GenerateAIGoalUseCase {
       const result =
         params.command === 'prepare' || params.command === 'execute'
           ? await this.runGoalAutomationWorkflow({
-              params,
+              params: { ...params, identityId },
               providerId: provider.id,
               providerName: provider.name,
               providerConfig: executionProviderConfig,
@@ -141,7 +145,7 @@ export class GenerateAIGoalUseCase {
               startedAt,
             })
           : await this.runGoalDraftWorkflow({
-              params,
+              params: { ...params, identityId },
               providerId: provider.id,
               providerName: provider.name,
               providerConfig: executionProviderConfig,
@@ -151,7 +155,7 @@ export class GenerateAIGoalUseCase {
             });
 
       logger.info('Goal flow request completed', {
-        identityId: params.identityId,
+        identityId,
         requestId,
         state: result.state,
         processingTimeMs: result.processingTimeMs,
@@ -166,9 +170,9 @@ export class GenerateAIGoalUseCase {
               : undefined,
         keyResultCount:
           result.state === 'draft'
-            ? result.keyResults?.length ?? 0
+            ? (result.keyResults?.length ?? 0)
             : result.state === 'confirm' || result.state === 'result'
-              ? result.plan.keyResults?.length ?? 0
+              ? (result.plan.keyResults?.length ?? 0)
               : undefined,
         actionCount:
           result.state === 'confirm' || result.state === 'result'
@@ -178,7 +182,7 @@ export class GenerateAIGoalUseCase {
       });
 
       await this.recordExecution({
-        identityId: params.identityId,
+        identityId,
         taskType:
           result.state === 'confirm'
             ? 'GOAL_AUTOMATION_PLAN'
@@ -220,8 +224,7 @@ export class GenerateAIGoalUseCase {
                   summary: result.summary,
                   actionCount: result.actions.length,
                   requiresConfirmation: result.state === 'confirm',
-                  executedCount:
-                    result.state === 'result' ? result.executedActions.length : 0,
+                  executedCount: result.state === 'result' ? result.executedActions.length : 0,
                   executionStatus:
                     result.state === 'result' ? result.executionSummary.status : undefined,
                   failedCount:
@@ -234,7 +237,7 @@ export class GenerateAIGoalUseCase {
       return ok(result);
     } catch (err) {
       await this.recordExecution({
-        identityId: params.identityId,
+        identityId,
         taskType:
           params.command === 'prepare'
             ? 'GOAL_AUTOMATION_PLAN'
@@ -265,7 +268,7 @@ export class GenerateAIGoalUseCase {
       });
       logger.error('Goal generation failed', {
         error: err,
-        identityId: params.identityId,
+        identityId,
         requestId,
       });
       const enriched = attachRequestIdToError(err, requestId);
@@ -310,7 +313,7 @@ export class GenerateAIGoalUseCase {
       clarificationQuestionCount:
         planning.state === 'clarification' ? planning.clarification.questions.length : 0,
       goalTitle: planning.state === 'draft' ? planning.goal.title : undefined,
-      keyResultCount: planning.state === 'draft' ? planning.keyResults?.length ?? 0 : undefined,
+      keyResultCount: planning.state === 'draft' ? (planning.keyResults?.length ?? 0) : undefined,
       usage: planning.usage,
     });
 
@@ -585,10 +588,7 @@ export class GenerateAIGoalUseCase {
     }
   }
 
-  private async loadRelatedKnowledgeNotes(
-    identityId: string,
-    query: string,
-  ) {
+  private async loadRelatedKnowledgeNotes(identityId: string, query: string) {
     if (!this.knowledgeSourcePort) {
       logger.info('Goal automation knowledge source unavailable', {
         identityId,

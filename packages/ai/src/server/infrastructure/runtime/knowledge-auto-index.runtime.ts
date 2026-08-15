@@ -7,6 +7,7 @@ import {
 import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
 import { createLogger } from '@memoflow/utils/logger';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
+import { createSystemExecutionContext } from '../../../shared/system-execution-context';
 
 import type { AIModuleRuntimeContribution } from '../ai.module';
 import type { AIKnowledgeIndexServices } from '../ai.module';
@@ -16,13 +17,9 @@ import {
 } from '../../application/use-cases/commands/ai-provider-resolution';
 
 const logger = createLogger('AIKnowledgeAutoIndexRuntime');
-type RepositoryNoteMutationEvents = Pick<
-  RepositoryEventMap,
-  typeof REPOSITORY_NOTE_MUTATED_EVENT
->;
+type RepositoryNoteMutationEvents = Pick<RepositoryEventMap, typeof REPOSITORY_NOTE_MUTATED_EVENT>;
 
-const runtimeEventSubscriber =
-  createTypedEventSubscriber<RepositoryNoteMutationEvents>(eventBus);
+const runtimeEventSubscriber = createTypedEventSubscriber<RepositoryNoteMutationEvents>(eventBus);
 
 export function createKnowledgeAutoIndexRuntimeContribution(
   knowledgeIndexServices: AIKnowledgeIndexServices,
@@ -33,7 +30,7 @@ export function createKnowledgeAutoIndexRuntimeContribution(
   const handleNoteMutation = (event: RepositoryNoteMutatedEvent): void => {
     if (event.mutation === RepositoryNoteMutationType.Deleted) {
       void knowledgeIndexServices.removeById
-        .execute(event.resourceId, { identityId: event.identityId })
+        .execute(event.resourceId, createSystemExecutionContext(event.identityId))
         .catch((error) => {
           logger.warn('Automatic knowledge index deletion failed after repository mutation', {
             error,
@@ -60,7 +57,7 @@ export function createKnowledgeAutoIndexRuntimeContribution(
 
       await knowledgeIndexServices.syncById.execute(
         event.resourceId,
-        { identityId: event.identityId },
+        createSystemExecutionContext(event.identityId),
         {
           force: true,
           providerConfig,

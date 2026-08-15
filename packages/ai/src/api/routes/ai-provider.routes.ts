@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -53,7 +52,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.create(req.body, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.create(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -68,7 +67,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (_req, ctx) => controller.list({ identityId: ctx.identityId } as ExecutionContext),
+    (_req, ctx) => controller.list(ctx),
   );
 
   // GET /:id — Get provider
@@ -86,7 +85,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.get(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.get(req.params!.id, ctx),
   );
 
   // PATCH /:id — Update provider
@@ -106,7 +105,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.update(req.params!.id, req.body, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // DELETE /:id — Delete provider
@@ -124,7 +123,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.delete(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.delete(req.params!.id, ctx),
   );
 
   // POST /test — Test provider connection
@@ -140,7 +139,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.test(req.body, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.test(req.body, ctx),
   );
 
   // POST /:id/set-default — Set default provider
@@ -158,7 +157,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.setDefault(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.setDefault(req.params!.id, ctx),
   );
 
   // POST /:id/refresh-models — Refresh provider models
@@ -176,7 +175,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.refreshModels(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.refreshModels(req.params!.id, ctx),
   );
 
   return router;

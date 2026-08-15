@@ -19,24 +19,15 @@ describe('governance rule ownership surface', () => {
     'utf8',
   );
   const getRule = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/queries/get-rule.use-case.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/queries/get-rule.use-case.ts'),
     'utf8',
   );
   const updateRule = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/commands/update-rule.use-case.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/commands/update-rule.use-case.ts'),
     'utf8',
   );
   const deleteRule = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/commands/delete-rule.use-case.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/commands/delete-rule.use-case.ts'),
     'utf8',
   );
   const routes = readFileSync(
@@ -74,7 +65,7 @@ describe('governance rule ownership surface', () => {
     );
     expect(updateRule).not.toMatch(/findByIdForIdentity/);
     // authorId is attribution for revisions, not a load fence.
-    expect(updateRule).toContain('authorId: cx.identityId,');
+    expect(updateRule).toContain('authorId: cx.identityId as IdentityId,');
     expect(deleteRule).toContain(
       'const rule = await this.ruleRepository.findById(req.id as RuleId);',
     );

@@ -19,32 +19,27 @@ interface AIAgentRuntimeControllerService {
   startAgentRun(
     request: AgentStartRunRequest,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   resumeAgentRun(
     runId: string,
     payload: AgentResumePayload,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   getAgentRun(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   listAgentRuns(
     params: AgentRunListParams,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRun[]>>;
   getAgentEvents(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentEvent[]>>;
 }
@@ -82,7 +77,6 @@ export class AIAgentRuntimeController {
   async startRun(
     input: unknown,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>> {
     const parsed = AgentStartRunClientRequestSchema.safeParse(input);
@@ -100,7 +94,6 @@ export class AIAgentRuntimeController {
         identityId: cx.identityId,
       },
       cx,
-      requestId,
       signal,
     );
   }
@@ -109,7 +102,6 @@ export class AIAgentRuntimeController {
     runId: string,
     input: unknown,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>> {
     const parsedRunId = RunIdSchema.safeParse(runId);
@@ -130,13 +122,12 @@ export class AIAgentRuntimeController {
       });
     }
 
-    return this.service.resumeAgentRun(parsedRunId.data, parsed.data, cx, requestId, signal);
+    return this.service.resumeAgentRun(parsedRunId.data, parsed.data, cx, signal);
   }
 
   async getRun(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>> {
     const parsed = RunIdSchema.safeParse(runId);
@@ -148,13 +139,12 @@ export class AIAgentRuntimeController {
       });
     }
 
-    return this.service.getAgentRun(parsed.data, cx, requestId, signal);
+    return this.service.getAgentRun(parsed.data, cx, signal);
   }
 
   async listRuns(
     input: unknown,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRun[]>> {
     const parsed = AgentRunListQuerySchema.safeParse(input ?? {});
@@ -166,13 +156,12 @@ export class AIAgentRuntimeController {
       });
     }
 
-    return this.service.listAgentRuns(parsed.data, cx, requestId, signal);
+    return this.service.listAgentRuns(parsed.data, cx, signal);
   }
 
   async getEvents(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentEvent[]>> {
     const parsed = RunIdSchema.safeParse(runId);
@@ -184,6 +173,6 @@ export class AIAgentRuntimeController {
       });
     }
 
-    return this.service.getAgentEvents(parsed.data, cx, requestId, signal);
+    return this.service.getAgentEvents(parsed.data, cx, signal);
   }
 }

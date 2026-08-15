@@ -4,13 +4,12 @@
  * Behavior/assertions preserved; individual *-dual.surface.spec.ts removed.
  * Sources: as-non-empty-string-dual.surface.spec.ts, create-stream-id-dual.surface.spec.ts, find-sse-boundary-dual.surface.spec.ts, get-request-id-dual.surface.spec.ts, is-abort-like-error-dual.surface.spec.ts, last-arg-dual.surface.spec.ts, parse-sse-dual.surface.spec.ts, preview-text-dual.surface.spec.ts
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { asNonEmptyString } from './as-non-empty-string';
 import { createStreamId } from './create-stream-id';
 import { findSSEBoundary } from './find-sse-boundary';
-import { getRequestId } from './get-request-id';
 import { isAbortLikeError } from './is-abort-like-error';
 import { lastArg } from './last-arg';
 import { parseSSE } from './parse-sse';
@@ -190,17 +189,11 @@ import { previewText } from './preview-text';
     const sole = readFileSync(resolve(sharedDir, 'find-sse-boundary.ts'), 'utf8');
     const parseSse = readFileSync(resolve(sharedDir, 'parse-sse.ts'), 'utf8');
     const assistant = readFileSync(
-      resolve(
-        sharedDir,
-        '../infrastructure-client/adapters/http/ai-assistant-http.adapter.ts',
-      ),
+      resolve(sharedDir, '../infrastructure-client/adapters/http/ai-assistant-http.adapter.ts'),
       'utf8',
     );
     const message = readFileSync(
-      resolve(
-        sharedDir,
-        '../infrastructure-client/adapters/http/ai-message-http.adapter.ts',
-      ),
+      resolve(sharedDir, '../infrastructure-client/adapters/http/ai-message-http.adapter.ts'),
       'utf8',
     );
     const chatExecution = readFileSync(
@@ -248,17 +241,17 @@ import { previewText } from './preview-text';
 // --- merged from get-request-id-dual.surface.spec.ts ---
 {
   /**
-   * Residual 965: getRequestId dual retired.
-   * Sole body in get-request-id.ts; agent-checkpoint / agent-runtime /
-   * langgraph-checkpoint routes import it.
+   * Residual 965: getRequestId retired (RefArch Phase 2).
+   * The helper minted/re-read route-local request IDs; all AI routes now read
+   * the canonical entry context (`ctx.requestId`), so the helper file is deleted
+   * and no route imports it.
    * Soft residual 963: findSSEBoundary dual retired (find-sse-boundary-dual.surface.spec.ts).
    * Soft residual 974: tip focused suite numbers track Residual 974 evidence tip (278/1223).
    * Soft residual 967: isAbortLikeError dual retired (is-abort-like-error-dual.surface.spec.ts).
    * Does not flip §13.2 checkboxes.
    */
-  describe('getRequestId dual retired (residual 965)', () => {
+  describe('getRequestId retired (residual 965 / RefArch Phase 2)', () => {
     const sharedDir = __dirname;
-    const sole = readFileSync(resolve(sharedDir, 'get-request-id.ts'), 'utf8');
     const routes = {
       agentCheckpoint: readFileSync(
         resolve(sharedDir, '../api/routes/ai-agent-checkpoint.routes.ts'),
@@ -274,28 +267,16 @@ import { previewText } from './preview-text';
       ),
     } as const;
 
-    it('owns sole getRequestId helper body', () => {
-      expect(sole).toContain('Residual 965');
-      expect(sole).toMatch(/export function getRequestId\b/);
-      expect(sole).toContain('req.traceId ?? req.id');
+    it('deletes the route-local request-ID helper', () => {
+      expect(existsSync(resolve(sharedDir, 'get-request-id.ts'))).toBe(false);
     });
 
-    it('agent/langgraph route modules import sole without local dual bodies', () => {
+    it('AI routes read the canonical entry requestId (ctx.requestId), no getRequestId import', () => {
       for (const [label, source] of Object.entries(routes)) {
-        expect(source, label).toContain('Residual 965');
-        expect(source, label).toContain(
-          "import { getRequestId } from '../../shared/get-request-id'",
-        );
+        expect(source, label).toContain('ctx.requestId');
+        expect(source, label).not.toContain('getRequestId');
         expect(source, label).not.toMatch(/function getRequestId\b/);
-        expect(source, label).toContain('getRequestId(req)');
       }
-    });
-
-    it('prefers traceId then falls back to id', () => {
-      expect(getRequestId({ traceId: 't-1', id: 'i-1' })).toBe('t-1');
-      expect(getRequestId({ id: 'i-2' })).toBe('i-2');
-      expect(getRequestId({ traceId: 't-3' })).toBe('t-3');
-      expect(getRequestId({})).toBeUndefined();
     });
   });
 }
@@ -317,24 +298,15 @@ import { previewText } from './preview-text';
     const sharedDir = __dirname;
     const sole = readFileSync(resolve(sharedDir, 'is-abort-like-error.ts'), 'utf8');
     const assistant = readFileSync(
-      resolve(
-        sharedDir,
-        '../infrastructure-client/adapters/http/ai-assistant-http.adapter.ts',
-      ),
+      resolve(sharedDir, '../infrastructure-client/adapters/http/ai-assistant-http.adapter.ts'),
       'utf8',
     );
     const message = readFileSync(
-      resolve(
-        sharedDir,
-        '../infrastructure-client/adapters/http/ai-message-http.adapter.ts',
-      ),
+      resolve(sharedDir, '../infrastructure-client/adapters/http/ai-message-http.adapter.ts'),
       'utf8',
     );
     const serverHelpers = readFileSync(
-      resolve(
-        sharedDir,
-        '../server/application/use-cases/commands/ai-chat-helpers.ts',
-      ),
+      resolve(sharedDir, '../server/application/use-cases/commands/ai-chat-helpers.ts'),
       'utf8',
     );
 
@@ -514,26 +486,17 @@ import { previewText } from './preview-text';
   describe('previewText dual retired (residual 995 / elevated residual 1011)', () => {
     const dir = __dirname;
     const reexport = readFileSync(resolve(dir, 'preview-text.ts'), 'utf8');
-    const sole = readFileSync(
-      resolve(dir, '../../../utils/src/shared/preview-text.ts'),
-      'utf8',
-    );
+    const sole = readFileSync(resolve(dir, '../../../utils/src/shared/preview-text.ts'), 'utf8');
     const generateGoal = readFileSync(
       resolve(dir, '../server/application/use-cases/commands/generate-ai-goal.use-case.ts'),
       'utf8',
     );
     const automation = readFileSync(
-      resolve(
-        dir,
-        '../server/infrastructure/chat-execution/ai-service-goal-automation.adapter.ts',
-      ),
+      resolve(dir, '../server/infrastructure/chat-execution/ai-service-goal-automation.adapter.ts'),
       'utf8',
     );
     const planning = readFileSync(
-      resolve(
-        dir,
-        '../server/infrastructure/chat-execution/ai-service-goal-planning.adapter.ts',
-      ),
+      resolve(dir, '../server/infrastructure/chat-execution/ai-service-goal-planning.adapter.ts'),
       'utf8',
     );
     const internal = readFileSync(
@@ -561,21 +524,9 @@ import { previewText } from './preview-text';
           generateGoal,
           "import { previewText } from '../../../../shared/preview-text'",
         ],
-        [
-          'automation',
-          automation,
-          "import { previewText } from '../../../shared/preview-text'",
-        ],
-        [
-          'planning',
-          planning,
-          "import { previewText } from '../../../shared/preview-text'",
-        ],
-        [
-          'internal',
-          internal,
-          "import { previewText } from '../../../shared/preview-text'",
-        ],
+        ['automation', automation, "import { previewText } from '../../../shared/preview-text'"],
+        ['planning', planning, "import { previewText } from '../../../shared/preview-text'"],
+        ['internal', internal, "import { previewText } from '../../../shared/preview-text'"],
       ] as const) {
         expect(source, label).toContain('Residual 995');
         expect(source, label).toContain(importPath);

@@ -36,7 +36,12 @@ describe('registerAIGoalGenerationRoutes', () => {
     const req = {
       body: { idea: 'Build a unified AI workflow for goal creation.' },
       user: { identityId: 'identity-1' },
-      traceId: 'trace-goal-route-1',
+      requestContext: {
+        requestId: 'trace-goal-route-1',
+        traceId: 'trace-goal-route-1',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -46,8 +51,13 @@ describe('registerAIGoalGenerationRoutes', () => {
 
     expect(controller.generateGoal).toHaveBeenCalledWith(
       req.body,
-      'identity-1',
-      'trace-goal-route-1',
+      expect.objectContaining({
+        identityId: 'identity-1',
+        requestId: 'trace-goal-route-1',
+        traceId: 'trace-goal-route-1',
+        source: 'http',
+        startedAt: 1_700_000_000_000,
+      }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(

@@ -162,7 +162,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
             },
           ],
         }),
-        { identityId: 'identity-1' },
+        expect.objectContaining({ identityId: 'identity-1', source: 'system' }),
       );
       expect(mocks.createTaskTemplate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -199,7 +199,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
           importanceLevel: 'Moderate',
           tags: ['goal-agent'],
         }),
-        { identityId: 'identity-1' },
+        expect.objectContaining({ identityId: 'identity-1', source: 'system' }),
       );
     } finally {
       dateNowSpy.mockRestore();
@@ -241,7 +241,9 @@ describe('BackendAutomationToolExecutorAdapter', () => {
   it('skips unsupported tools with a skipped receipt without touching any port', async () => {
     const adapter = new BackendAutomationToolExecutorAdapter(createDependencies());
     const input = createExecutionInput();
-    input.actions = [{ tool: 'unsupported_tool', index: 0 }] as unknown as GoalAutomationExecutionInput['actions'];
+    input.actions = [
+      { tool: 'unsupported_tool', index: 0 },
+    ] as unknown as GoalAutomationExecutionInput['actions'];
 
     const result = await adapter.executeGoalAutomation(input);
 

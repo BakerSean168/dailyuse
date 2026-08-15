@@ -3,6 +3,8 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { ResultErrorException } from '@memoflow/contracts/result';
 import { applyErrorHandlers } from './error';
+import { createRequestContextMiddleware } from '../http/middlewares/request-context.middleware';
+import { createAuthMiddleware } from '../http/middlewares/auth-middleware';
 
 function createAppWithError(error: Error) {
   const app = express();
@@ -112,5 +114,62 @@ describe('applyErrorHandlers (residual 627)', () => {
         timestamp: expect.any(Number),
       }),
     );
+  });
+});
+
+describe('applyErrorHandlers + RequestContext (RefArch Phase 2 header echo)', () => {
+  function createAppWithRequestContext() {
+    const app = express();
+    app.use(createRequestContextMiddleware());
+
+    // Simulated auth failure: Cloud Auth resolves no principal → 401.
+    const auth = createAuthMiddleware({
+      resolveNodePrincipal: async () => null,
+    } as never);
+    app.get('/protected', auth, (_req, res) => res.json({ ok: true }));
+
+    app.get('/no-content', (_req, res) => {
+      res.status(204).end();
+    });
+
+    app.get('/boom', (_req, _res, next) => {
+      next(new Error('boom'));
+    });
+
+    applyErrorHandlers(app);
+    return app;
+  }
+
+  it('echoes the same X-Request-Id header and traceId body across auth 401, 404 and global 500', async () => {
+    const app = createAppWithRequestContext();
+    const clientRequestId = 'client-abc-123';
+
+    for (const path of ['/protected', '/missing', '/boom']) {
+      const res = await request(app).get(path).set('X-Request-Id', clientRequestId);
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBeLessThan(600);
+      expect(res.headers['x-request-id']).toBe(clientRequestId);
+      expect(res.body.traceId).toBe(clientRequestId);
+      expect(res.body.ok).toBe(false);
+    }
+  });
+
+  it('echoes a generated request ID for responses that never passed auth/route', async () => {
+    const app = createAppWithRequestContext();
+    const res = await request(app).get('/missing');
+
+    expect(res.status).toBe(404);
+    expect(res.headers['x-request-id']).toMatch(/^[0-9a-f]{8}-/);
+    expect(res.body.traceId).toBe(res.headers['x-request-id']);
+  });
+
+  it('keeps 204 responses empty while echoing X-Request-Id', async () => {
+    const app = createAppWithRequestContext();
+    const res = await request(app).get('/no-content');
+
+    expect(res.status).toBe(204);
+    expect(res.headers['x-request-id']).toMatch(/^[0-9a-f]{8}-/);
+    expect(res.text).toBe('');
+    expect(res.body).toEqual({});
   });
 });

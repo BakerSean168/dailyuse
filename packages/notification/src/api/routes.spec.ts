@@ -1,4 +1,5 @@
 import type { RequestHandler } from 'express';
+import { EventEmitter } from 'node:events';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import type { NotificationApplicationPort } from '../server/application';
@@ -45,7 +46,9 @@ function getRegisteredRoute(
   method: string,
   path: string,
 ): RegisteredRoute {
-  const route = registry.paths.find((candidate) => candidate.method === method && candidate.path === path);
+  const route = registry.paths.find(
+    (candidate) => candidate.method === method && candidate.path === path,
+  );
 
   expect(route).toBeDefined();
   return route!;
@@ -54,9 +57,12 @@ function getRegisteredRoute(
 function getJsonBodySchema(route: RegisteredRoute): {
   safeParse: (value: unknown) => { success: boolean };
 } {
-  return (((route.request?.body as Record<string, unknown> | undefined)?.content as
-    | Record<string, unknown>
-    | undefined)?.['application/json'] as Record<string, unknown> | undefined)?.schema as {
+  return (
+    (
+      (route.request?.body as Record<string, unknown> | undefined)?.content as
+        Record<string, unknown> | undefined
+    )?.['application/json'] as Record<string, unknown> | undefined
+  )?.schema as {
     safeParse: (value: unknown) => { success: boolean };
   };
 }
@@ -68,12 +74,23 @@ function getResponseSchema(
   safeParse: (value: unknown) => { success: boolean };
   _def?: { typeName?: string };
 } {
-  const responses = route.responses as Record<string, { content?: Record<string, unknown> }> | undefined;
+  const responses = route.responses as
+    Record<string, { content?: Record<string, unknown> }> | undefined;
   const response = responses?.[String(status)];
   const schema = (response?.content as Record<string, unknown> | undefined)?.[
     'application/json'
-  ] as { schema?: { safeParse: (value: unknown) => { success: boolean }; _def?: { typeName?: string } } } | undefined;
-  return schema?.schema ?? (response as unknown as { safeParse: (value: unknown) => { success: boolean } });
+  ] as
+    | {
+        schema?: {
+          safeParse: (value: unknown) => { success: boolean };
+          _def?: { typeName?: string };
+        };
+      }
+    | undefined;
+  return (
+    schema?.schema ??
+    (response as unknown as { safeParse: (value: unknown) => { success: boolean } })
+  );
 }
 
 function getParamsSchema(route: RegisteredRoute): {
@@ -315,5 +332,183 @@ describe('notification route contracts', () => {
     expect(idIdx).toBeGreaterThanOrEqual(0);
     expect(getIdx).toBeLessThan(idIdx);
   });
+});
 
+describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () => {
+  function getSseHandler(
+    router: ReturnType<typeof registerNotificationRoutes>,
+  ): (req: unknown, res: unknown) => Promise<unknown> {
+    const layer = (
+      router as unknown as {
+        stack: Array<{
+          route?: {
+            path: string;
+            methods: Record<string, boolean>;
+            stack: Array<{ handle: (r: unknown, s: unknown) => unknown }>;
+          };
+        }>;
+      }
+    ).stack.find(
+      (candidate) => candidate.route?.path === '/sse' && candidate.route.methods.get === true,
+    );
+    const handler = layer!.route!.stack.at(-1)!.handle;
+    return handler as (req: unknown, res: unknown) => Promise<unknown>;
+  }
+
+  function createSseReq(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      headers: {},
+      query: {},
+      // Simulate the global RequestContext middleware (owned by apps/api).
+      requestContext: {
+        requestId: 'req-notification-sse',
+        traceId: 'req-notification-sse',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
+      ...overrides,
+    };
+  }
+
+  function createSseRes() {
+    const writes: string[] = [];
+    const res = Object.assign(new EventEmitter(), {
+      statusCode: 200,
+      writableEnded: false,
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        return true;
+      }),
+      end: vi.fn(function (this: { writableEnded: boolean }) {
+        this.writableEnded = true;
+      }),
+    });
+    return { res, writes };
+  }
+
+  it('keeps SSE headers/framing and exposes X-Request-Id before the first chunk', async () => {
+    const api = {
+      subscribeSseEvents: vi.fn(() => () => undefined),
+      getDeliveryReceipts: vi.fn(async () => ({ ok: true, data: [] })),
+    } as unknown as NotificationApplicationPort;
+
+    const router = registerNotificationRoutes(api, {
+      // Real auth shape: the Cloud Auth middleware writes req.user.identityId.
+      auth: ((req, _res, next) => {
+        (req as Record<string, unknown>).user = { identityId: 'identity-1' };
+        next();
+      }) as RequestHandler,
+      requireRole: () => authMiddleware,
+    });
+
+    const handler = getSseHandler(router);
+
+    const req = Object.assign(
+      new EventEmitter(),
+      createSseReq({ user: { identityId: 'identity-1' } }),
+    );
+    const { res, writes } = createSseRes();
+
+    const pending = handler(req, res);
+    await Promise.resolve();
+    res.emit('close');
+    await pending;
+
+    const setHeaders = Object.fromEntries(
+      (res.setHeader as ReturnType<typeof vi.fn>).mock.calls.map(([k, v]: [string, string]) => [
+        k.toLowerCase(),
+        v,
+      ]),
+    );
+    expect(setHeaders['content-type']).toBe('text/event-stream');
+    expect(setHeaders['cache-control']).toBe('no-cache');
+    expect(setHeaders['connection']).toBe('keep-alive');
+    expect(res.flushHeaders).toHaveBeenCalled();
+    // The route does not own X-Request-Id (global middleware does), but the
+    // carrier it read carries the entry requestId for correlation.
+    expect((req as { requestContext?: { requestId?: string } }).requestContext?.requestId).toBe(
+      'req-notification-sse',
+    );
+    expect(writes.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it('fails closed without an authenticated identity — never subscribes or streams', async () => {
+    const subscribe = vi.fn(() => () => undefined);
+    const api = {
+      subscribeSseEvents: subscribe,
+      getDeliveryReceipts: vi.fn(async () => ({ ok: true, data: [] })),
+    } as unknown as NotificationApplicationPort;
+
+    const router = registerNotificationRoutes(api, {
+      // Auth passed but the principal is absent (e.g. optional auth path).
+      auth: ((_req, _res, next) => next()) as RequestHandler,
+      requireRole: () => authMiddleware,
+    });
+
+    const handler = getSseHandler(router);
+    const req = Object.assign(
+      new EventEmitter(),
+      createSseReq({
+        // No user → defaultExtractContext resolves an empty identity.
+        user: undefined,
+        query: { identityId: 'identity-B' },
+      }),
+    );
+    const { res } = createSseRes();
+    const statusSpy = vi.fn((code: number) => {
+      (res as unknown as { statusCode: number }).statusCode = code;
+      return res;
+    });
+    (res as unknown as { status: (code: number) => unknown }).status = statusSpy;
+
+    await handler(req, res);
+
+    expect(statusSpy).toHaveBeenCalledWith(401);
+    expect(subscribe).not.toHaveBeenCalled();
+  });
+
+  it('scopes the stream exclusively by cx.identityId — a query param cannot select another tenant', async () => {
+    let sseHandler:
+      ((event: { identityId: string; id: string; updatedAt: number }) => void) | undefined;
+    const api = {
+      subscribeSseEvents: vi.fn((handler: typeof sseHandler) => {
+        sseHandler = handler;
+        return () => undefined;
+      }),
+      getDeliveryReceipts: vi.fn(async () => ({ ok: true, data: [] })),
+    } as unknown as NotificationApplicationPort;
+
+    const router = registerNotificationRoutes(api, {
+      auth: ((req, _res, next) => {
+        (req as Record<string, unknown>).user = { identityId: 'identity-A' };
+        next();
+      }) as RequestHandler,
+      requireRole: () => authMiddleware,
+    });
+
+    const handler = getSseHandler(router);
+    const req = Object.assign(
+      new EventEmitter(),
+      createSseReq({
+        user: { identityId: 'identity-A' },
+        // Attacker attempts to select identity B through the query.
+        query: { identityId: 'identity-B' },
+      }),
+    );
+    const { res, writes } = createSseRes();
+
+    await handler(req, res);
+
+    expect(sseHandler).toBeDefined();
+
+    // identity B's event must never be delivered to identity A's stream.
+    sseHandler!({ identityId: 'identity-B', id: 'op-B', updatedAt: 1 });
+    sseHandler!({ identityId: 'identity-A', id: 'op-A', updatedAt: 2 });
+
+    const stream = writes.join('');
+    expect(stream).toContain('identity-A');
+    expect(stream).not.toContain('identity-B');
+  });
 });

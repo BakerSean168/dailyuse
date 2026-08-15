@@ -64,11 +64,13 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
     identityId: string;
     conversationId?: string;
     message: string;
+    requestId?: string;
     signal?: AbortSignal;
   }): Promise<{ status: 'completed' | 'aborted' | 'failed' | 'waiting_approval'; error?: string }> {
     if (input.conversationId) {
       const result = await this.executeConversationTurn({
         runId: input.runId,
+        requestId: input.requestId,
         identityId: input.identityId,
         conversationId: input.conversationId,
         message: input.message,
@@ -95,6 +97,7 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
     runId: string;
     identityId: string;
     message: string;
+    requestId?: string;
     signal?: AbortSignal;
   }): Promise<{ status: 'completed' | 'aborted' | 'failed' | 'waiting_approval'; error?: string }> {
     const ownership = this.beginRun(input.runId, input.identityId, input.signal);
@@ -123,7 +126,7 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
           { role: 'user', content: input.message },
         ],
         providerConfig: executionProviderConfig,
-        requestId: input.runId,
+        requestId: input.requestId,
         signal: controller.signal,
       });
 
@@ -193,7 +196,7 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
           identityId: input.identityId,
           messages,
           providerConfig: executionProviderConfig,
-          requestId: input.runId,
+          requestId: input.requestId,
           signal: controller.signal,
         });
         content = completion.content;
@@ -205,7 +208,7 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
             identityId: input.identityId,
             messages,
             providerConfig: executionProviderConfig,
-            requestId: input.runId,
+            requestId: input.requestId,
             signal: controller.signal,
           })) {
             if (controller.signal.aborted || input.signal?.aborted) {
@@ -325,6 +328,9 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
 
   private mapOpenChatFailure(error: unknown, controller: AbortController): OpenChatTurnResult {
     const mapped = this.mapFailure(error, controller);
-    return { status: mapped.status === 'waiting_approval' ? 'failed' : mapped.status, error: mapped.error };
+    return {
+      status: mapped.status === 'waiting_approval' ? 'failed' : mapped.status,
+      error: mapped.error,
+    };
   }
 }

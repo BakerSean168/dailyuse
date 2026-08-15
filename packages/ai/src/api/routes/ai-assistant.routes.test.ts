@@ -82,7 +82,12 @@ function createMockReq(body: unknown, identityId?: string) {
   const req = {
     body,
     user: identityId ? { identityId } : undefined,
-    traceId: 'trace-assistant-1',
+    requestContext: {
+      requestId: 'req-assistant-1',
+      traceId: 'trace-assistant-1',
+      startedAt: 1_700_000_000_000,
+      source: 'http',
+    },
     on: vi.fn((event: string, cb: () => void) => {
       (listeners[event] ??= []).push(cb);
     }),
@@ -218,9 +223,7 @@ describe('registerAIAssistantRoutes', () => {
 
     await handler(req as never, res as never);
 
-    expect(res.written).toEqual([
-      sseFrame('error', { code: 'INTERNAL_ERROR', message: 'boom' }),
-    ]);
+    expect(res.written).toEqual([sseFrame('error', { code: 'INTERNAL_ERROR', message: 'boom' })]);
     expect(res.end).toHaveBeenCalledTimes(1);
   });
 
@@ -337,12 +340,7 @@ describe('registerAIAssistantRoutes', () => {
   it('forwards the body, trusted identity and an abortable signal to the controller', async () => {
     const controller = createControllerStub();
     controller.dispatch.mockImplementation(
-      async (
-        input: unknown,
-        cx: unknown,
-        handlers: unknown,
-        signal: unknown,
-      ) => {
+      async (input: unknown, cx: unknown, handlers: unknown, signal: unknown) => {
         expect(input).toEqual(messageBody);
         expect(cx).toMatchObject({ identityId: 'user-1' });
         expect(handlers).toMatchObject({
