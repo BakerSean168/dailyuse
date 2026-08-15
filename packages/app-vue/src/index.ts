@@ -56,8 +56,27 @@ export { useGovernanceStore } from './modules/governance';
 export { usePresentationPreferenceStore } from './modules/setting';
 
 // ── Startup hooks ──
-export { createNotificationStartupHook } from './modules/notification';
+export {
+  createNotificationStartupHook,
+  createNotificationSseInvalidationSource,
+  type NotificationStartupHookOptions,
+  type NotificationSseInvalidationSourceOptions,
+} from './modules/notification';
 export { createGoalStartupHook } from './modules/goal';
+
+// ── Server-state (RefArch Phase 5 Query Cache pilots) ──
+// Host composition surface only (§3.6): feature query keys and cache-patch helpers stay
+// internal; TanStack internals are not part of the package public contract.
+export {
+  createServerStateRuntime,
+  createServerStateRuntimePolicy,
+  installServerStateRuntime,
+  type RuntimeLane,
+  type ServerStateInvalidation,
+  type ServerStateInvalidationDispatcher,
+  type ServerStateRuntime,
+  type ServerStateRuntimePolicy,
+} from './platform/server-state';
 
 
 // ── Theme / presentation ──

@@ -11,20 +11,28 @@ const notificationsRef = ref<NotificationClientDTO[]>([]);
 const unreadCountRef = ref(0);
 const isLoadingRef = ref(false);
 
-const fetchNotifications = vi.fn().mockResolvedValue(undefined);
 const markAsRead = vi.fn().mockResolvedValue(undefined);
 const markAllAsRead = vi.fn().mockResolvedValue(undefined);
-const refreshStats = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('../composables/useNotification', () => ({
-  useNotification: () => ({
+vi.mock('../composables/useNotificationListQuery', () => ({
+  useNotificationListQuery: () => ({
     notifications: computed(() => notificationsRef.value),
-    hasUnread: computed(() => unreadCountRef.value > 0),
     isLoading: computed(() => isLoadingRef.value),
-    fetchNotifications,
-    markAsRead,
-    markAllAsRead,
-    refreshStats,
+    refetch: vi.fn(),
+  }),
+}));
+
+vi.mock('../composables/useNotificationUnreadQuery', () => ({
+  useNotificationUnreadQuery: () => ({
+    unreadCount: computed(() => unreadCountRef.value),
+    hasUnread: computed(() => unreadCountRef.value > 0),
+  }),
+}));
+
+vi.mock('../composables/useNotificationMutations', () => ({
+  useNotificationMutations: () => ({
+    markAsRead: { mutateAsync: markAsRead, isPending: { value: false } },
+    markAllAsRead: { mutateAsync: markAllAsRead, isPending: { value: false } },
   }),
 }));
 
@@ -136,8 +144,6 @@ describe('NotificationCapsulePreview (V2 §6.5)', () => {
     await nextTick();
     await nextTick();
 
-    expect(fetchNotifications).toHaveBeenCalled();
-    expect(refreshStats).toHaveBeenCalled();
     expect(wrapper.find('[data-testid="notification-capsule-preview"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="notification-capsule-mark-all-read"]').exists()).toBe(true);
     expect(wrapper.get('[data-testid="notification-capsule-view-all"]').text()).toContain(

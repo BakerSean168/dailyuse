@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import enUS from './en-US';
 import zhCN from './zh-CN';
@@ -15,7 +16,10 @@ const localeAwareSurfaces = [
 
 describe('locale-aware date presentation', () => {
   it.each(localeAwareSurfaces)('%s binds date formatting to the active locale', (relativePath) => {
-    const source = readFileSync(resolve(process.cwd(), relativePath), 'utf8');
+    const source = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), '../..', relativePath),
+      'utf8',
+    );
 
     expect(source).not.toMatch(/\.toLocale(?:Date|Time)?String\(\s*(?:\)|undefined\s*,)/);
     if (source.includes("'yyyy-MM-dd EEEE'")) {

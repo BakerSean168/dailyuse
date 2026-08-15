@@ -11,12 +11,13 @@ import AppShell from './AppShell.vue';
 import BusinessPanel from './BusinessPanel.vue';
 import { useAppShellStore } from './useAppShellStore';
 
-vi.mock('../../modules/notification/composables/useNotification', async () => {
+vi.mock('../../modules/notification/composables/useNotificationUnreadQuery', async () => {
   const { ref: vueRef } = await import('vue');
   return {
-    useNotification: () => ({
+    useNotificationUnreadQuery: () => ({
       unreadCount: vueRef(0),
-      refreshStats: vi.fn(async () => undefined),
+      hasUnread: vueRef(false),
+      refetch: vi.fn(async () => undefined),
     }),
   };
 });

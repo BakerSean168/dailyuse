@@ -20,6 +20,11 @@ import { installDesktopAppServices } from '../platform/di-app';
 // Residual 941: host bridge via getElectronBridge sole helper.
 import { requireElectronBridge } from '../platform/electron-bridge';
 import { initElectronFeatures } from '../platform/electron';
+import {
+  getDesktopServerStateRuntime,
+  installDesktopServerStateRuntime,
+  registerDesktopServerStateSource,
+} from '../platform/server-state';
 import { shouldRedirectAuthenticatedDesktopEntry } from './route-entry';
 import { createCloudAuthIpcClient } from '@memoflow/cloud-auth';
 import { createResultIpcClient } from '@memoflow/ipc-client';
@@ -77,6 +82,9 @@ export async function bootstrapMainApp() {
     document.title = title ? `${title} - ${APP_TITLE_NAME}` : APP_TITLE_NAME;
   });
 
+  // 已认证 renderer：mount 前创建/安装 server-state runtime（§3.1；desktop lane 走 PowerSync/IPC）。
+  installDesktopServerStateRuntime(app);
+
   app.use(router);
   app.use(installDesktopAppServices);
   initElectronFeatures(app);
@@ -84,8 +92,17 @@ export async function bootstrapMainApp() {
 
   const runStartupPhase = () => {
     try {
-      const notificationHook = createNotificationStartupHook();
-      notificationHook.start();
+      // 实时源只向 dispatcher 发 invalidation intent（Step 3）；Desktop 不启用 cloud SSE。
+      const runtime = getDesktopServerStateRuntime();
+      const identityScope = () => accountStore.getCurrentAccountId ?? '';
+      if (runtime) {
+        const notificationHook = createNotificationStartupHook({
+          dispatcher: runtime.dispatcher,
+          identityScope,
+        });
+        notificationHook.start();
+        registerDesktopServerStateSource(notificationHook);
+      }
       // R3 收尾：桌面通知点击 → 稳定导航（navigationIntent / category landing）。
       createNotificationClickNavigation(router, () => bridge).start();
     } catch (error) {

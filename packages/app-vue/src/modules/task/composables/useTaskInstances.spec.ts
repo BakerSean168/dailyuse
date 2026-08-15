@@ -1,11 +1,18 @@
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
+import { VueQueryPlugin } from '@tanstack/vue-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ok } from '@memoflow/contracts/result';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@memoflow/contracts/task';
 import { createTestPinia } from '@memoflow/test-utils';
 import { TASK_SERVICE_KEY } from '../../../di/keys';
+import {
+  createTestServerStateRuntime,
+  SERVER_STATE_IDENTITY_SCOPE_KEY,
+  SERVER_STATE_RUNTIME_KEY,
+} from '../../../platform/server-state';
+import { taskTemplateQueryKeys } from '../../../platform/server-state/query-keys';
 import { useTaskStore } from '../stores/task-store';
 import { useTaskInstances } from './useTaskInstances';
 
@@ -64,6 +71,7 @@ function mountComposable() {
       .mockResolvedValueOnce(ok(entity(template(100))))
       .mockResolvedValueOnce(ok(entity(template(0)))),
   };
+  const runtime = createTestServerStateRuntime();
   const pinia = createTestPinia();
   let composable!: ReturnType<typeof useTaskInstances>;
 
@@ -76,29 +84,45 @@ function mountComposable() {
     }),
     {
       global: {
-        plugins: [pinia, i18n],
-        provide: { [TASK_SERVICE_KEY as symbol]: service },
+        plugins: [[VueQueryPlugin, { queryClient: runtime.queryClient }], pinia, i18n],
+        provide: {
+          [TASK_SERVICE_KEY as symbol]: service,
+          [SERVER_STATE_RUNTIME_KEY]: runtime,
+          [SERVER_STATE_IDENTITY_SCOPE_KEY]: () => 'identity-1',
+        },
       },
     },
   );
 
-  useTaskStore().setTemplates([template(0)]);
   useTaskStore().setInstances([instance('Pending')]);
-  return { composable, service };
+  // 模板投影属于 Query Cache authority：预置 detail key。
+  runtime.queryClient.setQueryData(
+    taskTemplateQueryKeys.detail('identity-1', 'template-a'),
+    template(0),
+  );
+  return { composable, service, runtime };
 }
 
 describe('useTaskInstances template projection refresh', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('refreshes the canonical template after complete and uncomplete', async () => {
-    const { composable, service } = mountComposable();
+  it('refreshes the canonical template projection in the query cache after complete and uncomplete', async () => {
+    const { composable, service, runtime } = mountComposable();
 
     await composable.completeInstance('instance-a');
     expect(service.getTemplate).toHaveBeenNthCalledWith(1, 'template-a');
-    expect(useTaskStore().getTemplateById('template-a')?.completionRate).toBe(100);
+    expect(
+      runtime.queryClient.getQueryData<TaskTemplateClientDTO>(
+        taskTemplateQueryKeys.detail('identity-1', 'template-a'),
+      )?.completionRate,
+    ).toBe(100);
 
     await composable.uncompleteInstance('instance-a');
     expect(service.getTemplate).toHaveBeenNthCalledWith(2, 'template-a');
-    expect(useTaskStore().getTemplateById('template-a')?.completionRate).toBe(0);
+    expect(
+      runtime.queryClient.getQueryData<TaskTemplateClientDTO>(
+        taskTemplateQueryKeys.detail('identity-1', 'template-a'),
+      )?.completionRate,
+    ).toBe(0);
   });
 });

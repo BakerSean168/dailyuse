@@ -5,14 +5,17 @@
  * Failures mean users would see bare dotted keys (PM-journey P0).
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { extname, join, resolve } from 'node:path';
+import { dirname, extname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import zhCN from './zh-CN';
 import enUS from './en-US';
 
-const WORKSPACE_ROOT = resolve(process.cwd(), '../..');
+// Resolve relative to this spec file so the gate works from any cwd.
+const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const WORKSPACE_ROOT = resolve(PKG_ROOT, '../..');
 const SCAN_ROOTS = [
-  resolve(process.cwd(), 'src'),
+  resolve(PKG_ROOT, 'src'),
   resolve(WORKSPACE_ROOT, 'apps/web/src'),
 ];
 const SOURCE_EXTS = new Set(['.vue', '.ts', '.tsx']);

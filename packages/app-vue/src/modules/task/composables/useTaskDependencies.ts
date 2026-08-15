@@ -12,11 +12,17 @@ import type { TaskTemplateId } from '@memoflow/contracts/primitives';
 import type { Result } from '@memoflow/contracts/result';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
+import {
+  useServerStateIdentityScope,
+  useServerStateRuntime,
+} from '../../../platform/server-state';
 
 export function useTaskDependencies() {
   const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');
   const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
   const store = useTaskStore();
+  const runtime = useServerStateRuntime();
+  const resolveIdentityScope = useServerStateIdentityScope();
   const { t } = useI18n();
 
   const handleError = createComposableHandleError({
@@ -61,6 +67,13 @@ export function useTaskDependencies() {
 
     if (result.ok) {
       toast.success(t('common.success'));
+      // dependency 变更只影响 graph projection；经 dispatcher 失效 graph key（Step 4）。
+      void runtime.dispatcher.invalidate({
+        target: 'task-template',
+        identityScope: resolveIdentityScope(),
+        source: 'mutation',
+        projection: 'graphs',
+      });
       return result.data;
     }
 
@@ -76,6 +89,12 @@ export function useTaskDependencies() {
 
     if (result.ok) {
       toast.success(t('common.success'));
+      void runtime.dispatcher.invalidate({
+        target: 'task-template',
+        identityScope: resolveIdentityScope(),
+        source: 'mutation',
+        projection: 'graphs',
+      });
       return true;
     }
 

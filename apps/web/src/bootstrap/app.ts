@@ -9,12 +9,20 @@ import {
   applyThemeMode,
   usePresentationPreferenceStore,
 } from '@memoflow/app-vue/web-bootstrap';
-import { createNotificationStartupHook } from '@memoflow/app-vue';
+import {
+  createNotificationStartupHook,
+  createNotificationSseInvalidationSource,
+} from '@memoflow/app-vue';
 import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@memoflow/app-vue/web-i18n';
 import { progressStart, progressDone } from '@memoflow/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
 import { installAppServices } from '../platform/di-app';
+import {
+  getWebServerStateRuntime,
+  installWebServerStateRuntime,
+  registerWebServerStateSource,
+} from '../platform/server-state';
 import { createCloudAuthHttpClient } from '@memoflow/cloud-auth';
 
 export async function bootstrapMainApp() {
@@ -31,6 +39,8 @@ export async function bootstrapMainApp() {
   }).getSession();
   if (cloudSession.ok) {
     authStore.hydrateCloudSession(cloudSession.data);
+    // 认证完成并取得 identity 后创建/安装 server-state runtime（§3.1：每个 renderer 恰好一个）。
+    installWebServerStateRuntime(app);
   } else {
     authStore.reset();
     window.location.replace('/auth');
@@ -61,10 +71,42 @@ export async function bootstrapMainApp() {
   app.mount('#app');
 
   // Startup hooks — explicit composition, no global phase registry
-  const notificationHook = createNotificationStartupHook();
-
-  const runStartupPhase = async () => {
+  // 实时源只向 dispatcher 发 invalidation intent（Step 3）；Web 额外启用 SSE 源，Desktop 不启用。
+  const runStartupPhase = () => {
+    const runtime = getWebServerStateRuntime();
+    if (!runtime) return;
+    const identityScope = () => authStore.getIdentityId ?? '';
+    const notificationHook = createNotificationStartupHook({
+      dispatcher: runtime.dispatcher,
+      identityScope,
+    });
     notificationHook.start();
+    registerWebServerStateSource(notificationHook);
+
+    const sseCursorKey = 'memoflow:notifications:sse-cursor';
+    const sseSource = createNotificationSseInvalidationSource({
+      dispatcher: runtime.dispatcher,
+      identityScope,
+      url: `${window.location.origin}/api/v1/notifications/sse`,
+      cursorStore: {
+        get: () => {
+          try {
+            return localStorage.getItem(sseCursorKey) ?? undefined;
+          } catch {
+            return undefined;
+          }
+        },
+        set: (cursor) => {
+          try {
+            localStorage.setItem(sseCursorKey, cursor);
+          } catch {
+            // Best-effort cursor persistence.
+          }
+        },
+      },
+    });
+    sseSource.start();
+    registerWebServerStateSource(sseSource);
   };
 
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {

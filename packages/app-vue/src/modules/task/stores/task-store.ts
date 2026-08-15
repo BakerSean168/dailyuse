@@ -1,76 +1,43 @@
 /**
- * Task Store - Pinia 状态管理
- * 纯状态容器 — API 调用由 composables 执行。
+ * Task Store - Pinia 状态管理（pilot 迁移后）
+ *
+ * RefArch Phase 5（Task templates Query Cache authority pilot）后，Task templates 的
+ * server state（list/graph/detail/count/loading/error）由 TanStack Vue Query 承载；
+ * 本 store 保留 instances/currentInstance（非 pilot，维持现状）与明确的 UI pagination
+ * state。Graph consumer 不把 query data 写回 `dependencies`。
  */
 
 import { defineStore } from 'pinia';
 import type {
-  TaskTemplateClientDTO,
   TaskInstanceClientDTO,
-  TaskGraphDependencyDTO,
 } from '@memoflow/contracts/task';
 
 export interface TaskState {
-  templates: TaskTemplateClientDTO[];
   instances: TaskInstanceClientDTO[];
-  dependencies: TaskGraphDependencyDTO[];
-  currentTemplate: TaskTemplateClientDTO | null;
   currentInstance: TaskInstanceClientDTO | null;
   isLoading: boolean;
   error: string | null;
-  pagination: { page: number; pageSize: number; total: number };
+  pagination: { page: number; pageSize: number };
   isInitialized: boolean;
 }
 
 export const useTaskStore = defineStore('task', {
   state: (): TaskState => ({
-    templates: [],
     instances: [],
-    dependencies: [],
-    currentTemplate: null,
     currentInstance: null,
     isLoading: false,
     error: null,
-    pagination: { page: 1, pageSize: 20, total: 0 },
+    pagination: { page: 1, pageSize: 20 },
     isInitialized: false,
   }),
 
   getters: {
-    getTemplateById: (state) => (id: string) => state.templates.find((t) => t.id === id),
     getInstanceById: (state) => (id: string) => state.instances.find((i) => i.id === id),
-    activeTemplateCount: (state): number =>
-      state.templates.filter((t) => t.status === 'Active').length,
-    totalPages: (state): number => Math.ceil(state.pagination.total / state.pagination.pageSize),
   },
 
   actions: {
-    setTemplates(t: TaskTemplateClientDTO[], total?: number) {
-      this.templates = t;
-      if (total !== undefined) this.pagination.total = total;
-    },
-    addTemplate(t: TaskTemplateClientDTO) {
-      this.templates.unshift(t);
-      this.pagination.total++;
-    },
-    updateTemplate(t: TaskTemplateClientDTO) {
-      const i = this.templates.findIndex((x) => x.id === t.id);
-      if (i !== -1) this.templates[i] = t;
-      if (this.currentTemplate?.id === t.id) this.currentTemplate = t;
-    },
-    removeTemplate(id: string) {
-      this.templates = this.templates.filter((t) => t.id !== id);
-      this.pagination.total--;
-      if (this.currentTemplate?.id === id) this.currentTemplate = null;
-    },
-    setCurrentTemplate(t: TaskTemplateClientDTO | null) {
-      this.currentTemplate = t;
-    },
-
     setInstances(i: TaskInstanceClientDTO[]) {
       this.instances = i;
-    },
-    setDependencies(d: TaskGraphDependencyDTO[]) {
-      this.dependencies = d;
     },
     addInstance(i: TaskInstanceClientDTO) {
       this.instances.push(i);

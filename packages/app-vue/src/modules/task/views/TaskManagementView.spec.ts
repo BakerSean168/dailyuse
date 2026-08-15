@@ -13,7 +13,6 @@ import { useAppShellStore } from '../../../layouts/shell/useAppShellStore';
 const templates = ref<Record<string, unknown>[]>([]);
 const dependencies = ref([]);
 const createTemplate = vi.fn();
-const fetchTaskGraph = vi.fn().mockResolvedValue(undefined);
 const loadGoalBindings = vi.fn().mockResolvedValue(undefined);
 const routerPush = vi.fn();
 const routerReplace = vi.fn().mockResolvedValue(undefined);
@@ -27,19 +26,29 @@ const mappedTemplate: TaskTemplateViewModel = {
   recurrenceRule: null,
 };
 
-vi.mock('../composables/useTask', () => ({
-  useTask: () => ({
+vi.mock('../composables/useTaskTemplateGraphQuery', () => ({
+  useTaskTemplateGraphQuery: () => ({
     templates,
     dependencies,
     isLoading: ref(false),
+    refetch: vi.fn(),
+  }),
+}));
+
+vi.mock('../composables/useTaskTemplateMutations', () => ({
+  useTaskTemplateMutations: () => ({
     isSaving: ref(false),
-    fetchTaskGraph,
-    createTemplate,
-    updateTemplate: vi.fn(),
-    deleteTemplate: vi.fn(),
-    deleteTemplates: vi.fn(),
-    activateTemplate: vi.fn(),
-    pauseTemplate: vi.fn(),
+    createTemplateSafe: createTemplate,
+    updateTemplateSafe: vi.fn(),
+    deleteTemplateSafe: vi.fn(),
+    deleteTemplatesSafe: vi.fn(),
+    activateTemplateSafe: vi.fn(),
+    pauseTemplateSafe: vi.fn(),
+  }),
+}));
+
+vi.mock('../composables/useTaskDependencies', () => ({
+  useTaskDependencies: () => ({
     createDependency: vi.fn(),
     deleteDependency: vi.fn(),
   }),
@@ -175,7 +184,6 @@ describe('TaskManagementView task creation semantics', () => {
     setActivePinia(createPinia());
     templates.value = [];
     createTemplate.mockReset().mockResolvedValue({ template: mappedTemplate });
-    fetchTaskGraph.mockClear();
     loadGoalBindings.mockClear();
     routerPush.mockClear();
     routerReplace.mockClear();

@@ -970,6 +970,22 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/renderer/platform/electron.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/renderer/platform/server-state.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/migrator/src/main.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3703,6 +3719,22 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/notification/composables/useNotificationListQuery.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/notification/composables/useNotificationMutations.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/notification/composables/useNotificationPreferences.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3711,7 +3743,39 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/notification/composables/useNotificationUnreadQuery.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/notification/desktop/notification-click-navigation.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/notification/initialization/index.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/notification/initialization/notification-sse-invalidation-source.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/notification/notification-authority.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -4161,7 +4225,15 @@
       "measurementCollectors": []
     },
     {
-      "path": "packages/app-vue/src/modules/task/composables/useTaskTemplates.spec.ts",
+      "path": "packages/app-vue/src/modules/task/composables/useTaskTemplateMutations.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/task/composables/useTaskTemplateQueries.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -4177,6 +4249,14 @@
       "measurementCollectors": [
         "packages/app-vue/vitest.store-coverage.config.ts"
       ]
+    },
+    {
+      "path": "packages/app-vue/src/modules/task/task-authority.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
     },
     {
       "path": "packages/app-vue/src/modules/task/utils/format-task-duration.spec.ts",
@@ -4204,6 +4284,38 @@
     },
     {
       "path": "packages/app-vue/src/modules/task/views/taskPanelAdaptation.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/platform/server-state/invalidation-dispatcher.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/platform/server-state/query-keys.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/platform/server-state/result-query.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/platform/server-state/runtime.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -9893,7 +10005,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 36
+      "fileCount": 38
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -9963,7 +10075,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 170
+      "fileCount": 182
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11005,7 +11117,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 936,
+    "unit": 950,
     "integration": 25,
     "smoke": 2,
     "boundary-ipc": 9,

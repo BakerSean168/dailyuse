@@ -397,7 +397,7 @@ import {
   type HostProposalPanelItem,
   type HostTimelineArtifactItem,
 } from '../composables/hostProposalLifecycle';
-import { useTaskTemplates } from '../../task/composables/useTaskTemplates';
+import { useTaskTemplateMutations } from '../../task/composables/useTaskTemplateMutations';
 import type { CreateTaskTemplateReq } from '@memoflow/contracts/task';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
 import { useAI } from '../composables/useAI';
@@ -406,7 +406,7 @@ const { t } = useI18n();
 const router = useRouter();
 const { service: aiHostService } = useAI();
 /** Residual 423: domain Task template create fallback for Host task approve. */
-const { createTemplate: createTaskTemplate } = useTaskTemplates();
+const { createTemplateSafe: createTaskTemplate } = useTaskTemplateMutations();
 /** Residual 425: client domain createTemplate settled proposalIds (session-only). */
 const clientSettledHostProposalIds = ref<string[]>([]);
 /** Residual 425: client domain task Host execution receipts (session-only). */

@@ -60,6 +60,7 @@ updated: 2026-08-04T00:00:00+08:00
 | [ADR-042](./ADR-042-unified-business-operation-and-delivery-contracts.md) | 统一业务操作、可靠交付与 Fail-Fast 能力契约 | 已采纳 | 2026-08-09 |
 | [ADR-043](./ADR-043-unified-operation-timeline-replay-audit.md) | 统一 Operation Timeline、最小权限 Replay 与审计、统一指标命名 | 已采纳 | 2026-08-12 |
 | [ADR-044](./ADR-044-w0-w6-fault-matrix.md) | W0-W6 关键故障矩阵（ADR-043 附属：故障、注入层、durable fact、恢复动作、禁止状态、测试文件） | 已采纳 | 2026-08-12 |
+| [ADR-045](./ADR-045-query-cache-powersync-offline-policy.md) | Query Cache Pilot — Offline / Freshness / PowerSync 策略（试点范围：Desktop networkMode、freshness、reconnect ordering、profile isolation、拒绝 cache 持久化） | 已接受（试点范围） | 2026-08-15 |
 
 ## 维护规则
 

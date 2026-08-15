@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 function vueFiles(directory: string): string[] {
@@ -13,7 +14,7 @@ function vueFiles(directory: string): string[] {
 describe('icon button accessibility contract', () => {
   // Residual 1332: full-suite filesystem walk can exceed default 5s under load.
   it('gives every icon-only Button an explicit accessible name', () => {
-    const sourceRoot = resolve(process.cwd(), 'src');
+    const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
     const violations: string[] = [];
 
     for (const file of vueFiles(sourceRoot)) {

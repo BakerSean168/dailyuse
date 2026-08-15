@@ -2,13 +2,14 @@
  * Structural + locale checks for the unverified-email shell banner (P2).
  */
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import zhCN from '../../locales/zh-CN';
 import enUS from '../../locales/en-US';
 
 const shellSource = readFileSync(
-  resolve(process.cwd(), 'src/layouts/shell/AppShell.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), 'AppShell.vue'),
   'utf8',
 );
 

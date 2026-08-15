@@ -1,7 +1,8 @@
 /** @vitest-environment happy-dom */
 
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { describe, expect, it } from 'vitest';
@@ -18,19 +19,19 @@ const i18n = createI18n({
 });
 
 const projectionSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/repository/views/KnowledgeProjectionWorkspaceView.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), 'KnowledgeProjectionWorkspaceView.vue'),
   'utf8',
 );
 const localVaultSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/repository/views/LocalVaultWorkspaceView.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), 'LocalVaultWorkspaceView.vue'),
   'utf8',
 );
 const entrySource = readFileSync(
-  resolve(process.cwd(), 'src/modules/repository/views/RepositoryEntryView.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), 'RepositoryEntryView.vue'),
   'utf8',
 );
 const routerSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/repository/router/index.ts'),
+  resolve(dirname(fileURLToPath(import.meta.url)), '../router/index.ts'),
   'utf8',
 );
 

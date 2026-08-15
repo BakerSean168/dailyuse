@@ -1,59 +1,44 @@
 /**
- * Notification Store - Pinia 状态管理
- * 纯状态容器 — API 调用由 composables 执行。
+ * Notification Store - Pinia 状态管理（UI state only）
+ *
+ * RefArch Phase 5（Query Cache authority pilot）后，Notification 的 server state
+ * （list/count/loading/error/total）由 TanStack Vue Query 承载；本 store 只保留
+ * page/pageSize 与 read filter 等 UI state 及其持久化。
  */
 
 import { defineStore } from 'pinia';
-import type { NotificationClientDTO } from '@memoflow/contracts/notification';
+
+/** Notification UI read filter（全部/未读）。 */
+export type NotificationReadFilter = 'all' | 'unread';
 
 export interface NotificationState {
-  notifications: NotificationClientDTO[];
-  isLoading: boolean;
-  error: string | null;
-  unreadCount: number;
-  pagination: { page: number; pageSize: number; total: number };
-  isInitialized: boolean;
+  pagination: { page: number; pageSize: number };
+  readFilter: NotificationReadFilter;
 }
 
 export const useNotificationStore = defineStore('notification', {
   state: (): NotificationState => ({
-    notifications: [],
-    isLoading: false,
-    error: null,
-    unreadCount: 0,
-    pagination: { page: 1, pageSize: 20, total: 0 },
-    isInitialized: false,
+    pagination: { page: 1, pageSize: 20 },
+    readFilter: 'all',
   }),
 
   actions: {
-    setNotifications(items: NotificationClientDTO[], total?: number) {
-      this.notifications = items;
-      if (total !== undefined) this.pagination.total = total;
+    setPage(p: number) {
+      this.pagination.page = p;
     },
-    addNotification(n: NotificationClientDTO) { this.notifications.unshift(n); },
-    updateNotification(n: NotificationClientDTO) {
-      const idx = this.notifications.findIndex((x) => x.id === n.id);
-      if (idx >= 0) this.notifications[idx] = n;
+    setPageSize(size: number) {
+      this.pagination.pageSize = size;
     },
-    removeNotification(id: string) {
-      this.notifications = this.notifications.filter((n) => n.id !== id);
+    setReadFilter(filter: NotificationReadFilter) {
+      this.readFilter = filter;
     },
-    clearAll() { this.notifications = []; },
-
-    setUnreadCount(c: number) { this.unreadCount = c; },
-    incrementUnread() { this.unreadCount++; },
-    decrementUnread() { if (this.unreadCount > 0) this.unreadCount--; },
-
-    setLoading(v: boolean) { this.isLoading = v; },
-    setError(e: string | null) { this.error = e; },
-    setPage(p: number) { this.pagination.page = p; },
-    setInitialized(v: boolean) { this.isInitialized = v; },
-
-    reset() { this.$reset(); },
+    reset() {
+      this.$reset();
+    },
   },
 
   persist: {
-    pick: ['pagination'] as string[],
+    pick: ['pagination', 'readFilter'] as string[],
   },
 });
 

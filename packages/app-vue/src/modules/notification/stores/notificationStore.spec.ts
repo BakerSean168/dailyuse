@@ -1,60 +1,36 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 import { createTestPinia } from '@memoflow/test-utils';
 import { useNotificationStore } from './notification-store';
 
-function createNotification(
-  overrides: Partial<NotificationClientDTO> = {},
-): NotificationClientDTO {
-  return {
-    id: 'notification-1' as NotificationClientDTO['id'],
-    title: 'Tests passed',
-    ...overrides,
-  } as NotificationClientDTO;
-}
-
-describe('useNotificationStore', () => {
+describe('useNotificationStore (UI state only after Query Cache authority pilot)', () => {
   beforeEach(() => {
     createTestPinia();
   });
 
-  it('manages list order, unread counters, pagination, and reset state', () => {
+  it('manages pagination page/pageSize and read filter UI state', () => {
     const store = useNotificationStore();
-    const first = createNotification();
-    const second = createNotification({
-      id: 'notification-2' as NotificationClientDTO['id'],
-      title: 'Coverage improved',
-    });
+    expect(store.pagination).toEqual({ page: 1, pageSize: 20 });
+    expect(store.readFilter).toBe('all');
 
-    store.setNotifications([first], 21);
-    store.addNotification(second);
-    store.updateNotification(createNotification({ id: first.id, title: 'Tests stable' }));
-    store.setUnreadCount(1);
-    store.incrementUnread();
-    store.decrementUnread();
-    store.decrementUnread();
-    store.decrementUnread();
-    store.setLoading(true);
-    store.setError('failed');
     store.setPage(4);
-    store.setInitialized(true);
+    store.setPageSize(50);
+    store.setReadFilter('unread');
 
-    expect(store.notifications.map((item) => item.title)).toEqual([
-      'Coverage improved',
-      'Tests stable',
-    ]);
-    expect(store.unreadCount).toBe(0);
-    expect(store.pagination.total).toBe(21);
-    expect(store.pagination.page).toBe(4);
-    expect(store.isLoading).toBe(true);
-    expect(store.error).toBe('failed');
-
-    store.removeNotification(first.id);
-    store.clearAll();
-    expect(store.notifications).toEqual([]);
+    expect(store.pagination).toEqual({ page: 4, pageSize: 50 });
+    expect(store.readFilter).toBe('unread');
 
     store.reset();
-    expect(store.unreadCount).toBe(0);
-    expect(store.isInitialized).toBe(false);
+    expect(store.pagination).toEqual({ page: 1, pageSize: 20 });
+    expect(store.readFilter).toBe('all');
+  });
+
+  it('holds no server DTO / count / loading / error / initialized fields', () => {
+    const store = useNotificationStore();
+    expect(store).not.toHaveProperty('notifications');
+    expect(store).not.toHaveProperty('unreadCount');
+    expect(store).not.toHaveProperty('isLoading');
+    expect(store).not.toHaveProperty('error');
+    expect(store).not.toHaveProperty('isInitialized');
+    expect(store.pagination).not.toHaveProperty('total');
   });
 });

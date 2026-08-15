@@ -45,6 +45,12 @@ vi.mock('../../setting/composables/useUserSetting', () => ({
 
 import AIChatView from './AIChatView.vue';
 import { DASHBOARD_SERVICE_KEY, TASK_SERVICE_KEY } from '../../../di/keys';
+import { VueQueryPlugin } from '@tanstack/vue-query';
+import {
+  createTestServerStateRuntime,
+  SERVER_STATE_IDENTITY_SCOPE_KEY,
+  SERVER_STATE_RUNTIME_KEY,
+} from '../../../platform/server-state';
 import { formatLangGraphVendorDiagnosticEventLabel } from '../composables/hostLangGraphUiBoundary';
 
 const i18n = createI18n({
@@ -1205,13 +1211,16 @@ const taskServiceFake = {
 };
 
 function mountView() {
+  const runtime = createTestServerStateRuntime();
   return shallowMount(AIChatView, {
     global: {
-      plugins: [i18n],
+      plugins: [[VueQueryPlugin, { queryClient: runtime.queryClient }], i18n],
       provide: {
         [DASHBOARD_SERVICE_KEY as symbol]: dashboardServiceFake,
-        // Residual 1332: AIChatView mounts useTaskTemplates() for Host task.create settlement.
+        // Residual 1332: AIChatView mounts useTaskTemplateMutations() for Host task.create settlement.
         [TASK_SERVICE_KEY as symbol]: taskServiceFake,
+        [SERVER_STATE_RUNTIME_KEY]: runtime,
+        [SERVER_STATE_IDENTITY_SCOPE_KEY]: () => 'identity-1',
       },
       stubs: {
         Teleport: false,
