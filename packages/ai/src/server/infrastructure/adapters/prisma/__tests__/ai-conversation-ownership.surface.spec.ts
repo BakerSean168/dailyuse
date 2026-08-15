@@ -22,24 +22,17 @@ describe('ai conversation ownership surface', () => {
     'utf8',
   );
   const helpers = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/commands/ai-chat-helpers.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/commands/ai-chat-helpers.ts'),
     'utf8',
   );
 
   it('port findByIdForIdentity and delete require identityId', () => {
-    expect(port).toMatch(
-      /findByIdForIdentity\(\s*identityId: string,\s*id: string/,
-    );
+    expect(port).toMatch(/findByIdForIdentity\(\s*identityId: string,\s*id: string/);
     expect(port).toMatch(/delete\(identityId: string, id: string\)/);
   });
 
   it('port drops bare findById dual method (residual 169)', () => {
-    expect(port).not.toMatch(
-      /findById\(id: string, options\?: AIConversationQueryOptions\)/,
-    );
+    expect(port).not.toMatch(/findById\(id: string, options\?: AIConversationQueryOptions\)/);
     expect(prisma).not.toMatch(
       /async findById\(id: string, options\?: AIConversationQueryOptions\)/,
     );
@@ -54,21 +47,13 @@ describe('ai conversation ownership surface', () => {
   });
 
   it('HTTP routes pass the full canonical context into get/update/delete', () => {
-    expect(routes).toMatch(
-      /getConversation\(req\.params!\.id,\s*ctx\)/,
-    );
-    expect(routes).toMatch(
-      /updateConversation\(req\.params!\.id,\s*req\.body,\s*ctx\)/,
-    );
-    expect(routes).toMatch(
-      /deleteConversation\(req\.params!\.id,\s*ctx\)/,
-    );
+    expect(routes).toMatch(/getConversation\(req\.params!\.id,\s*ctx\)/);
+    expect(routes).toMatch(/updateConversation\(req\.params!\.id,\s*req\.body,\s*ctx\)/);
+    expect(routes).toMatch(/deleteConversation\(req\.params!\.id,\s*ctx\)/);
   });
 
   it('chat helpers load conversations via findByIdForIdentity', () => {
     expect(helpers).toContain('findByIdForIdentity(');
-    expect(helpers).not.toMatch(
-      /conversationRepository\.findById\(\s*conversationId/,
-    );
+    expect(helpers).not.toMatch(/conversationRepository\.findById\(\s*conversationId/);
   });
 });

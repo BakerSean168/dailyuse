@@ -170,4 +170,3 @@ describe('CreateRuleUseCase', () => {
     expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 });
-

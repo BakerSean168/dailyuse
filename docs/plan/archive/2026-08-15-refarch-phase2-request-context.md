@@ -436,10 +436,55 @@ node tools/test-system-v2/inventory.mjs --check         # 1079 files; {"unit":93
 
 ### Review round 修复（review-out.log FAIL 后的 P1/P2 修复）
 
-- **P1-1（Spec）**：`OpenChatTurnInput` 新增独立 correlation `requestId`；`send/stream-ai-message` use cases 透传 `cx.requestId`；`direct-turn.engine` 以 `requestId ?? runId` 作为 outbound request ID；Desktop Electron（goal generate、agent start/resume/get/list/events、assistant dispatch）透传 `requestContext.requestId`；AssistantFacade 经 `dispatch(command, signal, requestId)` 传播；嵌套 agent 工具调用（`withKnowledgeQaAnswer`、`executeKnowledgeGenerateInterrupt`）复用 `cx.requestId` 而非 mint 新 ID。固定 ID 端到端断言：`ai-chat-application-service.test.ts`、`direct-turn.engine.spec.ts`、`assistant.facade.spec.ts`、`ai-assistant-facade.controller.spec.ts`、`request-context.smoke.test.ts`（entry → AI service requestId → `AIServiceInternalClient` 的 `X-Request-Id`，即 Python `request.state` 值）。
+- **P1-1（Spec）**：`OpenChatTurnInput` 新增独立 correlation `requestId`；`send/stream-ai-message` use cases 透传 `cx.requestId`；Desktop Electron（goal generate、agent start/resume/get/list/events、assistant dispatch）从 `requestContext` 读取 `requestId`；AssistantFacade 经 `dispatch(command, signal, requestId)` 传播；嵌套 agent 工具调用（`withKnowledgeQaAnswer`、`executeKnowledgeGenerateInterrupt`）复用 `cx.requestId` 而非 mint 新 ID。固定 ID 端到端断言：`ai-chat-application-service.test.ts`、`direct-turn.engine.spec.ts`、`assistant.facade.spec.ts`、`ai-assistant-facade.controller.spec.ts`、`request-context.smoke.test.ts`（entry → AI service requestId → `AIServiceInternalClient` 的 `X-Request-Id`，即 Python `request.state` 值）。
 - **P1-2（Standards）**：`dual-registry.surface.spec.ts` 的 forbidden-field inventory 改为大小写不敏感（`emailVerified`/`sessionId` 等 token 转小写匹配），并为每个 forbidden 字段新增 mutation fixture（一个字段一个 mutation，证明检测无 false negative）。
 - **P2-1**：`defaultExtractContext` 从 `express-adapter.ts` 导出并在 `@memoflow/utils/result` 复用；AI `express-execution-context.ts` 委托给同一 composer；两个 adapter variant 先经（可能自定义的）extractor 解析 context，envelope metadata 来自结果 context（second-host 无需全局 carrier）。
 - **P2-2**：`request-context.smoke.test.ts` 以真实 AI AssistantFacade SSE 路由替换合成 `/api/sse`；覆盖 header-before-first-chunk、done/error framing、disconnect cancellation（abort signal）、entry→Python `request.state`/`X-Request-Id` 断言。
 - **P2-3**：`data-portability.controller.test.ts` 的 identity-only cast 替换为完整 `ExecutionContext` fixture；新增 `apps/desktop/src/main/profile/profile-access-context.spec.ts`（每 invocation 全新 ID、owner 只解析一次、完整 shape、AUTH_REQUIRED fail-closed）。
 - **P2-4**：ADR-045 修正 `identityId` 为必填；本计划回填真实 gate 证据（本段）。
 - **P2-5**：移除 `express-adapter.ts` 未使用的 `Context` import 与 `ai-service-internal-client.spec.ts` 未使用的 `AIServiceInternalRequestError`；对全部改动文件执行 `prettier --write`。
+
+### Review round 2 修复（review2-out.log FAIL 后关闭，2026-08-15）
+
+R2（closure check）FAIL：P1-1 的 `runId` fallback 与可绕过的运行时 requestId 传播未关闭；P1-2 的 mutation fixture 自引用（移除真实 inventory 的 token 后套件仍绿）；Python SSE 断言合成；smoke 绕过包 exports；临时双轨兼容残留；prettier 49 文件不干净。以下逐项关闭（提交为 R2 修复 diff）：
+
+- **P1-1（Spec，关闭）**：`direct-turn.engine.ts` 删除 `requestId ?? runId` fallback，仅透传 `input.requestId`，缺失时由 `AIServiceInternalClient` 生成 UUID fallback；`direct-turn.engine.spec.ts` 改为断言「永不 fallback 到 runId」。`createAgentRuntimeService` 的 `startRun/resumeRun/getRun/listRuns/getEvents` 删除独立的 `requestId?` 参数，统一从 `cx.requestId` 派生（不可旁路）；`AIApplicationPort`/`ai.module.ts` wiring、`ai-agent-runtime.controller.ts`、`ai-agent-runtime.routes.ts`（不再传 `ctx.requestId`）、`electron/index.ts` 同步删除重复参数。
+- **P1-2（Standards，关闭）**：`dual-registry.surface.spec.ts` 提取唯一真实检测器 `detectForbiddenContextFields`（负向 inventory 检查与 mutation fixtures 共用同一 `forbiddenContextFieldTokens`）；mutation 测试断言每个 fixture 字段必须仍存在于真实 inventory（移除 token 即失败），且被真实检测器检出、真实 type body 不含该字段。
+- **P2（Python SSE 断言，关闭）**：`request-context.smoke.test.ts` 的 dispatch 改为真实链：真实 `registerAIAssistantRoutes` → `AIAssistantFacadeController` → `AssistantFacade` → `DirectTurnEngine` → `AIServiceChatExecutionAdapter` → 真实 `AIServiceInternalClient`；仅 fetch 边界用 Python 等价的 fake（捕获 `X-Request-Id` = `request.state.request_id`、记录 completion log、回传 `X-Request-Id` 响应头），并断言三者与 entry ID 一致。删除手工构造 internal client 的合成断言。
+- **P2（包 exports，关闭）**：新增 `@memoflow/ai/testing` 显式 testing 导出（`packages/ai/src/testing/index.ts` + `package.json#exports`）；`vitest.smoke.config.ts` 的 catch-all `@memoflow/ai/*` alias 收窄为 `@memoflow/ai/testing` 单项。
+- **P2（临时双轨，关闭）**：`request-context.middleware.ts` 删除 deprecated `id/traceId/startTime` 投影写入与 `RequestContextCarrierRequest` 字段；`response-builder.ts` 删除 `req.traceId/req.id/req.startTime` fallback 读取；`express-adapter.ts` 的 `ExpressLikeRequest` 同步删除同款 deprecated 字段；相关 spec 断言同步移除。
+- **P2（prettier，关闭）**：对分支全部改动文件执行 `prettier --write`（含 R2 前 49 个不干净文件），`prettier --check` 全绿；本节修正上一条「P2-5 已 prettier 干净」的不实声明。
+
+R2 修复后门禁（直接 Vitest / typecheck / lint / prettier / governance / docs / inventory 均绿）见下方「R2 修复验证」。
+
+### R2 修复验证（2026-08-15，review2-out.log FAIL 关闭后的真实门禁）
+
+```text
+# Direct Vitest（不跑 pnpm nx run <pkg>:test）
+node node_modules/vitest/vitest.mjs run --config packages/contracts/vitest.config.ts   # 60 files, 530 tests passed
+node node_modules/vitest/vitest.mjs run --config packages/ai/vitest.config.ts          # 120 files, 812 tests passed
+node node_modules/vitest/vitest.mjs run --config packages/utils/vitest.config.ts       # 13 files, 128 tests passed
+node node_modules/vitest/vitest.mjs run --config apps/api/vitest.config.ts             # 53 files, 224 tests passed
+node node_modules/vitest/vitest.mjs run --config apps/api/vitest.smoke.config.ts       # 3 files, 69 tests passed
+node node_modules/vitest/vitest.mjs run --config apps/desktop/vitest.config.ts apps/desktop/src/main/profile/profile-access-context.spec.ts # 1 file, 4 tests passed
+
+# Typecheck / Lint（--skip-nx-cache）
+pnpm nx run contracts:typecheck --skip-nx-cache   # passed
+pnpm nx run api:typecheck --skip-nx-cache         # passed（含 25 个依赖任务）
+pnpm nx run ai:typecheck --skip-nx-cache          # passed
+pnpm nx run utils:typecheck --skip-nx-cache       # passed
+pnpm nx run api:lint --skip-nx-cache              # passed
+pnpm nx run contracts:lint --skip-nx-cache        # passed
+pnpm nx run ai:lint --skip-nx-cache               # passed（0 errors）
+pnpm nx run utils:lint --skip-nx-cache            # passed
+
+# Format / Governance / Docs / Inventory
+prettier --check <branch + worktree 全部改动文件>        # All matched files use Prettier code style!
+pnpm nx run memoflow:governance-check --skip-nx-cache  # passed（package-export-audit 放行 ai ./testing）
+pnpm nx run memoflow:docs-check --skip-nx-cache        # passed
+node tools/test-system-v2/inventory.mjs --check         # 1079 files; {"unit":939,"integration":25,"smoke":3,"boundary-ipc":9,"boundary-main":5,"e2e":63,"perf":4,"governance":31}
+
+# Mutation 复核（P1-2 不再自引用）
+# 临时从 forbiddenContextFieldTokens 移除 'emailverified' → mutation fixtures 立即 FAIL（1 failed / 12 passed），
+# 证明真实 inventory 的 token 被移除时套件会失败；恢复后 13/13 绿。
+```

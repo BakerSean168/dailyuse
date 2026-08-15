@@ -279,32 +279,27 @@ export interface AIAgentRuntimeService {
   startRun(
     req: AgentStartRunRequest,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   resumeRun(
     runId: string,
     payload: AgentResumePayload,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   getRun(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   listRuns(
     params: AgentRunListParams,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRun[]>>;
   getEvents(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentEvent[]>>;
 }
@@ -560,16 +555,14 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     reindexKnowledge: (req, cx) => services.knowledgeQueryServices.reindex.execute(req, cx),
     queryAnalytics: (req, cx) => services.analyticsQueryService.queryAnalytics(req, cx),
     getEvaluationOverview: (req = {}) => services.evaluationReportService.getOverview(req),
-    startAgentRun: (req, cx, requestId, signal) =>
-      services.agentRuntimeService.startRun(req, cx, requestId, signal),
-    resumeAgentRun: (runId, payload, cx, requestId, signal) =>
-      services.agentRuntimeService.resumeRun(runId, payload, cx, requestId, signal),
-    getAgentRun: (runId, cx, requestId, signal) =>
-      services.agentRuntimeService.getRun(runId, cx, requestId, signal),
-    listAgentRuns: (params, cx, requestId, signal) =>
-      services.agentRuntimeService.listRuns(params, cx, requestId, signal),
-    getAgentEvents: (runId, cx, requestId, signal) =>
-      services.agentRuntimeService.getEvents(runId, cx, requestId, signal),
+    startAgentRun: (req, cx, signal) => services.agentRuntimeService.startRun(req, cx, signal),
+    resumeAgentRun: (runId, payload, cx, signal) =>
+      services.agentRuntimeService.resumeRun(runId, payload, cx, signal),
+    getAgentRun: (runId, cx, signal) => services.agentRuntimeService.getRun(runId, cx, signal),
+    listAgentRuns: (params, cx, signal) =>
+      services.agentRuntimeService.listRuns(params, cx, signal),
+    getAgentEvents: (runId, cx, signal) =>
+      services.agentRuntimeService.getEvents(runId, cx, signal),
 
     // Residual 345: AssistantFacade transport surface (identity must already be set on command).
     dispatchAssistant: async (command, onEvent, signal, requestId) => {

@@ -17,13 +17,9 @@ import {
 } from '../../application/use-cases/commands/ai-provider-resolution';
 
 const logger = createLogger('AIKnowledgeAutoIndexRuntime');
-type RepositoryNoteMutationEvents = Pick<
-  RepositoryEventMap,
-  typeof REPOSITORY_NOTE_MUTATED_EVENT
->;
+type RepositoryNoteMutationEvents = Pick<RepositoryEventMap, typeof REPOSITORY_NOTE_MUTATED_EVENT>;
 
-const runtimeEventSubscriber =
-  createTypedEventSubscriber<RepositoryNoteMutationEvents>(eventBus);
+const runtimeEventSubscriber = createTypedEventSubscriber<RepositoryNoteMutationEvents>(eventBus);
 
 export function createKnowledgeAutoIndexRuntimeContribution(
   knowledgeIndexServices: AIKnowledgeIndexServices,

@@ -27,8 +27,7 @@ export type { ExecutionContext, ExecutionSource, RequestContext } from './execut
 export type { ServerModuleContext } from './server-module-context';
 export * from './account-active-checker';
 
-
-export * from './value-objects'
-export * from './dtos'
+export * from './value-objects';
+export * from './dtos';
 
 export * from './module-manifest';

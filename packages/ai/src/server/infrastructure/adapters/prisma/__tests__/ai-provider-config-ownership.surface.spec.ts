@@ -21,17 +21,12 @@ describe('ai provider config ownership surface', () => {
     'utf8',
   );
   const resolution = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/commands/ai-provider-resolution.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/commands/ai-provider-resolution.ts'),
     'utf8',
   );
 
   it('port findByIdForIdentity and delete require identityId', () => {
-    expect(port).toMatch(
-      /findByIdForIdentity\(\s*identityId: string,\s*id: string/,
-    );
+    expect(port).toMatch(/findByIdForIdentity\(\s*identityId: string,\s*id: string/);
     expect(port).toMatch(/delete\(identityId: string, id: string\)/);
   });
 
@@ -49,21 +44,13 @@ describe('ai provider config ownership surface', () => {
   });
 
   it('HTTP routes pass the full canonical context into get/update/delete', () => {
-    expect(routes).toMatch(
-      /controller\.get\(req\.params!\.id,\s*ctx\)/,
-    );
-    expect(routes).toMatch(
-      /controller\.update\(req\.params!\.id,\s*req\.body,\s*ctx\)/,
-    );
-    expect(routes).toMatch(
-      /controller\.delete\(req\.params!\.id,\s*ctx\)/,
-    );
+    expect(routes).toMatch(/controller\.get\(req\.params!\.id,\s*ctx\)/);
+    expect(routes).toMatch(/controller\.update\(req\.params!\.id,\s*req\.body,\s*ctx\)/);
+    expect(routes).toMatch(/controller\.delete\(req\.params!\.id,\s*ctx\)/);
   });
 
   it('provider resolution loads explicit providers via findByIdForIdentity', () => {
     expect(resolution).toContain('findByIdForIdentity(');
-    expect(resolution).not.toMatch(
-      /providerConfigRepository\.findById\(\s*providerId\s*\)/,
-    );
+    expect(resolution).not.toMatch(/providerConfigRepository\.findById\(\s*providerId\s*\)/);
   });
 });

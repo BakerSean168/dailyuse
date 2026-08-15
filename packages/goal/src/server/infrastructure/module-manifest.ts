@@ -49,16 +49,12 @@ export function createGoalModuleManifest(deps: GoalManifestDeps): ModuleManifest
         name: 'goal.create',
         module: 'goal',
         execute: (identityId, payload) =>
-          deps.createGoal.execute(
-            payload as never,
-            createSystemExecutionContext(identityId),
-          ),
+          deps.createGoal.execute(payload as never, createSystemExecutionContext(identityId)),
       },
       {
         name: 'relation.create',
         module: 'goal',
-        execute: (identityId, payload) =>
-          deps.createRelation.execute(identityId, payload as never),
+        execute: (identityId, payload) => deps.createRelation.execute(identityId, payload as never),
       },
       {
         name: 'wallet.account.create',

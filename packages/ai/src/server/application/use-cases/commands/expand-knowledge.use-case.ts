@@ -1,10 +1,7 @@
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import type {
-  ExpandKnowledgeReq,
-  ExpandKnowledgeRes,
-} from '@memoflow/contracts/ai';
+import type { ExpandKnowledgeReq, ExpandKnowledgeRes } from '@memoflow/contracts/ai';
 import { createLogger } from '@memoflow/utils/logger';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
@@ -17,7 +14,7 @@ import type { SyncRelevantKnowledgeUseCase } from './sync-relevant-knowledge.use
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
-    withAICostEstimate,
+  withAICostEstimate,
 } from './ai-observability';
 import {
   resolveActiveProviderConfig,

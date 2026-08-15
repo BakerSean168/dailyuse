@@ -17,7 +17,7 @@ import {
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
-    withAICostEstimate,
+  withAICostEstimate,
 } from './ai-observability';
 
 const logger = createLogger('ManageAIKnowledgeNoteUseCase');

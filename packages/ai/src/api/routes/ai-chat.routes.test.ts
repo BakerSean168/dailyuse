@@ -107,21 +107,23 @@ describe('registerAIChatRoutes', () => {
     const controller = createControllerStub();
     let capturedSignal: AbortSignal | undefined;
 
-    vi.mocked(controller.streamMessage).mockImplementation(async (_input, _identityId, onChunk, signal) => {
-      capturedSignal = signal;
-      await Promise.resolve();
-      onChunk({ role: 'assistant', content: 'hello' });
-      return {
-        ok: true,
-        data: {
-          userMessage: { id: 'user-1', content: 'hi' },
-          assistantMessage: { id: 'assistant-1', content: 'hello' },
-          tokenUsage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
-          providerId: 'provider-1',
-          processingTimeMs: 123,
-        },
-      } as Awaited<ReturnType<AIChatController['streamMessage']>>;
-    });
+    vi.mocked(controller.streamMessage).mockImplementation(
+      async (_input, _identityId, onChunk, signal) => {
+        capturedSignal = signal;
+        await Promise.resolve();
+        onChunk({ role: 'assistant', content: 'hello' });
+        return {
+          ok: true,
+          data: {
+            userMessage: { id: 'user-1', content: 'hi' },
+            assistantMessage: { id: 'assistant-1', content: 'hello' },
+            tokenUsage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+            providerId: 'provider-1',
+            processingTimeMs: 123,
+          },
+        } as Awaited<ReturnType<AIChatController['streamMessage']>>;
+      },
+    );
 
     const router = registerAIChatRoutes(controller, {
       auth: ((_, __, next) => next()) as any,
@@ -161,24 +163,26 @@ describe('registerAIChatRoutes', () => {
     const controller = createControllerStub();
     let capturedSignal: AbortSignal | undefined;
 
-    vi.mocked(controller.streamMessage).mockImplementation(async (_input, _identityId, _onChunk, signal) => {
-      capturedSignal = signal;
-      await new Promise<void>((resolve) => {
-        if (!signal || signal.aborted) {
-          resolve();
-          return;
-        }
-        signal.addEventListener('abort', () => resolve(), { once: true });
-      });
+    vi.mocked(controller.streamMessage).mockImplementation(
+      async (_input, _identityId, _onChunk, signal) => {
+        capturedSignal = signal;
+        await new Promise<void>((resolve) => {
+          if (!signal || signal.aborted) {
+            resolve();
+            return;
+          }
+          signal.addEventListener('abort', () => resolve(), { once: true });
+        });
 
-      return {
-        ok: false,
-        error: {
-          code: 'ABORTED',
-          message: 'aborted by client',
-        },
-      } as Awaited<ReturnType<AIChatController['streamMessage']>>;
-    });
+        return {
+          ok: false,
+          error: {
+            code: 'ABORTED',
+            message: 'aborted by client',
+          },
+        } as Awaited<ReturnType<AIChatController['streamMessage']>>;
+      },
+    );
 
     const router = registerAIChatRoutes(controller, {
       auth: ((_, __, next) => next()) as any,

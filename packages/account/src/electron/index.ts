@@ -75,10 +75,7 @@
 
 import { ipcMain } from 'electron';
 import { ok } from '@memoflow/contracts/result';
-import {
-  AccountChannels,
-  type IElectronModuleContext,
-} from '@memoflow/contracts/electron';
+import { AccountChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
 import type {
   CheckAvailabilityReq,
   CloseAccountReq,
@@ -206,18 +203,26 @@ export function createAccountElectronModule(
         });
         installed.push(AccountChannels.GET_ME);
 
-        ipcMain.handle(AccountChannels.UPDATE_PROFILE, async (_event, payload: UpdateAccountReq) => {
-          return withAuthenticatedValue(ctx, (requestContext) => profileSync
-            ? profileSync.update(payload, requestContext)
-            : controller.updateProfile(payload, requestContext));
-        });
+        ipcMain.handle(
+          AccountChannels.UPDATE_PROFILE,
+          async (_event, payload: UpdateAccountReq) => {
+            return withAuthenticatedValue(ctx, (requestContext) =>
+              profileSync
+                ? profileSync.update(payload, requestContext)
+                : controller.updateProfile(payload, requestContext),
+            );
+          },
+        );
         installed.push(AccountChannels.UPDATE_PROFILE);
 
-        ipcMain.handle(AccountChannels.UPDATE_SETTINGS, async (_event, payload: UpdateAccountSettingsReq) => {
-          return withAuthenticatedValue(ctx, (requestContext) =>
-            options.instance.api.updateSettings(payload, requestContext),
-          );
-        });
+        ipcMain.handle(
+          AccountChannels.UPDATE_SETTINGS,
+          async (_event, payload: UpdateAccountSettingsReq) => {
+            return withAuthenticatedValue(ctx, (requestContext) =>
+              options.instance.api.updateSettings(payload, requestContext),
+            );
+          },
+        );
         installed.push(AccountChannels.UPDATE_SETTINGS);
 
         ipcMain.handle(AccountChannels.CHECK_AVAILABILITY, (_event, data: CheckAvailabilityReq) =>
@@ -238,23 +243,38 @@ export function createAccountElectronModule(
                 });
               }
               if (syncOptions.getCloudAccountId() !== identityId) {
-                return fail({ code: 'CLOUD_ACCOUNT_REQUIRED', message: '访客 Profile 无法关闭云端账号' });
+                return fail({
+                  code: 'CLOUD_ACCOUNT_REQUIRED',
+                  message: '访客 Profile 无法关闭云端账号',
+                });
               }
               const token = await syncOptions.getCloudAccessToken();
               if (!token) {
                 return fail({ code: 'REAUTH_REQUIRED', message: '关闭云端账号前需要重新认证' });
               }
               if (!syncOptions.closeCloudAccount) {
-                return fail({ code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE', message: '云端账号关闭能力不可用' });
+                return fail({
+                  code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE',
+                  message: '云端账号关闭能力不可用',
+                });
               }
               if (!syncOptions.markAccountClosing) {
-                return fail({ code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE', message: '账号关闭前阻断能力未配置' });
+                return fail({
+                  code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE',
+                  message: '账号关闭前阻断能力未配置',
+                });
               }
               if (!syncOptions.afterCloudAccountClosed) {
-                return fail({ code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE', message: '账号关闭收尾能力未配置' });
+                return fail({
+                  code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE',
+                  message: '账号关闭收尾能力未配置',
+                });
               }
               if (!syncOptions.clearAccountClosingMarker) {
-                return fail({ code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE', message: '账号关闭回滚能力未配置' });
+                return fail({
+                  code: 'CLOUD_ACCOUNT_CLOSE_UNAVAILABLE',
+                  message: '账号关闭回滚能力未配置',
+                });
               }
               // Phase 1 — fail-closed gate: block local new-work (AI/scheduler) the
               // moment the user initiates close, before the cloud saga starts. If
@@ -264,7 +284,10 @@ export function createAccountElectronModule(
                 await syncOptions.markAccountClosing();
               } catch (markErr: unknown) {
                 const markMsg = markErr instanceof Error ? markErr.message : String(markErr);
-                return fail({ code: 'CLOUD_ACCOUNT_CLOSE_FAILED', message: `本地阻断写入失败: ${markMsg}` });
+                return fail({
+                  code: 'CLOUD_ACCOUNT_CLOSE_FAILED',
+                  message: `本地阻断写入失败: ${markMsg}`,
+                });
               }
               try {
                 const receipt = await syncOptions.closeCloudAccount(token, parsed.data);

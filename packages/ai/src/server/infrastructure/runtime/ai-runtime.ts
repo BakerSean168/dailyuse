@@ -1139,9 +1139,11 @@ export function createAgentRuntimeService(
     async startRun(
       req: AgentStartRunRequest,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      // Correlation comes exclusively from the entry context — never a caller
+      // bypass, never a durable runId. ADR-045.
+      const requestId = cx.requestId;
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
@@ -1311,9 +1313,10 @@ export function createAgentRuntimeService(
       runId: string,
       payload: AgentResumePayload,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      // Correlation comes exclusively from the entry context. ADR-045.
+      const requestId = cx.requestId;
       const startedAt = Date.now();
       const request = { runId, payload };
 
@@ -1451,9 +1454,10 @@ export function createAgentRuntimeService(
     async getRun(
       runId: string,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      // Correlation comes exclusively from the entry context. ADR-045.
+      const requestId = cx.requestId;
       // Residual 435: process-local task.create store before remote port lookup.
       const stored = taskCreateRunStore.get(runId, cx.identityId);
       if (stored) {
@@ -1475,9 +1479,10 @@ export function createAgentRuntimeService(
     async listRuns(
       params: AgentRunListParams,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRun[]>> {
+      // Correlation comes exclusively from the entry context. ADR-045.
+      const requestId = cx.requestId;
       // Residual 435: load unscoped-by-limit local runs, merge, then apply limit once.
       const { limit: listLimit, ...listFilters } = params;
       const localTaskRuns = taskCreateRunStore.list(cx.identityId, listFilters);
@@ -1524,9 +1529,10 @@ export function createAgentRuntimeService(
     async getEvents(
       runId: string,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentEvent[]>> {
+      // Correlation comes exclusively from the entry context. ADR-045.
+      const requestId = cx.requestId;
       // Residual 435: process-local task.create events.
       const storedEvents = taskCreateRunStore.getEvents(runId, cx.identityId);
       if (storedEvents) {

@@ -285,15 +285,17 @@ describe('expressAdapter', () => {
   });
 
   it('should preserve structured result errors thrown by the controller', async () => {
-    const controllerFn = vi.fn().mockRejectedValue(
-      new ResultErrorException(
-        'Access denied',
-        'FORBIDDEN',
-        [{ code: 'MISSING_ROLE', message: 'admin required' }],
-        { source: 'express-spec' },
-        403,
-      ),
-    );
+    const controllerFn = vi
+      .fn()
+      .mockRejectedValue(
+        new ResultErrorException(
+          'Access denied',
+          'FORBIDDEN',
+          [{ code: 'MISSING_ROLE', message: 'admin required' }],
+          { source: 'express-spec' },
+          403,
+        ),
+      );
     const handler = expressAdapter(controllerFn);
 
     const req = createMockReq();

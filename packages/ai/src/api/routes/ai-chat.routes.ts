@@ -199,10 +199,7 @@ export function registerAIChatRoutes(
     req.on('aborted', handleConnectionClosed);
     res.on('close', handleConnectionClosed);
 
-    const writeSseEvent = (
-      event: 'message' | 'error' | 'done',
-      data: unknown,
-    ): boolean => {
+    const writeSseEvent = (event: 'message' | 'error' | 'done', data: unknown): boolean => {
       if (connectionClosed || res.writableEnded) {
         return false;
       }

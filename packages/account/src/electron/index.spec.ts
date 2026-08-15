@@ -151,8 +151,8 @@ describe('createAccountElectronModule lifecycle', () => {
     const meResult = await registered(AccountChannels.GET_ME)(undefined, undefined);
     expect(meResult).toMatchObject({ ok: true });
     expect(fake.api.getProfile).toHaveBeenCalledWith(
-        expect.objectContaining({ identityId: 'identity-1', source: 'ipc' }),
-      );
+      expect.objectContaining({ identityId: 'identity-1', source: 'ipc' }),
+    );
   });
 
   it('destroy removes all channels and disposes exactly once (second call no-ops)', () => {
@@ -268,13 +268,13 @@ describe('AccountElectronModule cloud-close behavior', () => {
       },
       auth: {
         requireRequestContext: vi.fn().mockResolvedValue({
-        requestId: 'req-account-cloud',
-        traceId: 'req-account-cloud',
-        startedAt: 1_700_000_000_000,
-        source: 'ipc',
-        identityId: 'cloud-1',
-        deviceId: 'desktop-app',
-      }),
+          requestId: 'req-account-cloud',
+          traceId: 'req-account-cloud',
+          startedAt: 1_700_000_000_000,
+          source: 'ipc',
+          identityId: 'cloud-1',
+          deviceId: 'desktop-app',
+        }),
       },
     } as unknown as IElectronModuleContext;
   }
@@ -287,13 +287,13 @@ describe('AccountElectronModule cloud-close behavior', () => {
       db: {},
       auth: {
         requireRequestContext: vi.fn().mockResolvedValue({
-        requestId: 'req-account-ipc',
-        traceId: 'req-account-ipc',
-        startedAt: 1_700_000_000_000,
-        source: 'ipc',
-        identityId: 'identity-1',
-        deviceId: 'desktop-app',
-      }),
+          requestId: 'req-account-ipc',
+          traceId: 'req-account-ipc',
+          startedAt: 1_700_000_000_000,
+          source: 'ipc',
+          identityId: 'identity-1',
+          deviceId: 'desktop-app',
+        }),
       },
     } as unknown as IElectronModuleContext;
 
@@ -301,8 +301,8 @@ describe('AccountElectronModule cloud-close behavior', () => {
     const result = await registered(AccountChannels.GET_ME)(undefined, undefined);
 
     expect(fake.api.getProfile).toHaveBeenCalledWith(
-        expect.objectContaining({ identityId: 'identity-1', source: 'ipc' }),
-      );
+      expect.objectContaining({ identityId: 'identity-1', source: 'ipc' }),
+    );
     expect(result).toMatchObject({
       ok: false,
       error: { code: 'NOT_FOUND' },
@@ -328,18 +328,20 @@ describe('AccountElectronModule cloud-close behavior', () => {
       },
       auth: {
         requireRequestContext: vi.fn().mockResolvedValue({
-        requestId: 'req-account-guest',
-        traceId: 'req-account-guest',
-        startedAt: 1_700_000_000_000,
-        source: 'ipc',
-        identityId: 'guest-1',
-        deviceId: 'desktop-app',
-      }),
+          requestId: 'req-account-guest',
+          traceId: 'req-account-guest',
+          startedAt: 1_700_000_000_000,
+          source: 'ipc',
+          identityId: 'guest-1',
+          deviceId: 'desktop-app',
+        }),
       },
     } as unknown as IElectronModuleContext;
     module.register(context);
 
-    const result = await registered(AccountChannels.CLOSE)(undefined, { reason: 'No longer needed' });
+    const result = await registered(AccountChannels.CLOSE)(undefined, {
+      reason: 'No longer needed',
+    });
 
     expect(result).toMatchObject({ ok: false, error: { code: 'CLOUD_ACCOUNT_REQUIRED' } });
     expect(closeCloudAccount).not.toHaveBeenCalled();
@@ -361,7 +363,9 @@ describe('AccountElectronModule cloud-close behavior', () => {
     const context = createContextWithDbGetOptional();
     module.register(context);
 
-    const result = await registered(AccountChannels.CLOSE)(undefined, { reason: 'No longer needed' });
+    const result = await registered(AccountChannels.CLOSE)(undefined, {
+      reason: 'No longer needed',
+    });
 
     expect(result).toMatchObject({ ok: false, error: { code: 'REAUTH_REQUIRED' } });
     expect(closeCloudAccount).not.toHaveBeenCalled();
@@ -402,7 +406,9 @@ describe('AccountElectronModule cloud-close behavior', () => {
     const context = createContextWithDbGetOptional();
     module.register(context);
 
-    const result = await registered(AccountChannels.CLOSE)(undefined, { reason: 'No longer needed' });
+    const result = await registered(AccountChannels.CLOSE)(undefined, {
+      reason: 'No longer needed',
+    });
 
     expect(result).toEqual(ok(mockReceipt));
     expect(closeCloudAccount).toHaveBeenCalledWith('token', { reason: 'No longer needed' });
@@ -444,7 +450,9 @@ describe('AccountElectronModule cloud-close behavior', () => {
     const context = createContextWithDbGetOptional();
     module.register(context);
 
-    const result = await registered(AccountChannels.CLOSE)(undefined, { reason: 'No longer needed' });
+    const result = await registered(AccountChannels.CLOSE)(undefined, {
+      reason: 'No longer needed',
+    });
 
     expect(result).toEqual(ok(mockReceipt));
     // fail-closed ordering: local marker set BEFORE the cloud call begins
@@ -476,7 +484,9 @@ describe('AccountElectronModule cloud-close behavior', () => {
     const context = createContextWithDbGetOptional();
     module.register(context);
 
-    const result = await registered(AccountChannels.CLOSE)(undefined, { reason: 'No longer needed' });
+    const result = await registered(AccountChannels.CLOSE)(undefined, {
+      reason: 'No longer needed',
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -522,7 +532,9 @@ describe('AccountElectronModule cloud-close behavior', () => {
     const context = createContextWithDbGetOptional();
     module.register(context);
 
-    const result = await registered(AccountChannels.CLOSE)(undefined, { reason: 'No longer needed' });
+    const result = await registered(AccountChannels.CLOSE)(undefined, {
+      reason: 'No longer needed',
+    });
 
     // Cloud close succeeded — the marker MUST NOT be cleared (local new-work stays blocked)
     expect(clearAccountClosingMarker).not.toHaveBeenCalled();

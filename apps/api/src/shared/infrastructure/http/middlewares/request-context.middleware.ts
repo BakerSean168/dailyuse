@@ -40,12 +40,12 @@ const CLIENT_REQUEST_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
  * Express Request augmented with the producer-owned carrier.
  * 携带 producer-owned carrier 的 Express Request 类型。
  *
- * `requestContext` is the single producer-owned carrier; `id`/`traceId`/
- * `startTime` are deprecated compatibility projections that still exist so the
- * envelope/legacy callers keep working during the migration.
+ * `requestContext` is the single producer-owned carrier; downstream callers
+ * (envelope, error handler, SSE routes) read `requestContext.*` only — there are
+ * no deprecated projections.
  *
- * `requestContext` 是唯一 producer-owned carrier；`id`/`traceId`/`startTime`
- * 是带 deprecated 标记的兼容投影，迁移期间仍供 envelope/旧调用方读取。
+ * `requestContext` 是唯一 producer-owned carrier；下游调用方（envelope、error
+ * handler、SSE 路由）只读取 `requestContext.*`，没有 deprecated 投影。
  */
 export interface RequestContextCarrierRequest extends Request {
   /**
@@ -54,12 +54,6 @@ export interface RequestContextCarrierRequest extends Request {
    * 由 `createRequestContextMiddleware` 生成一次的规范请求元数据。
    */
   requestContext: RequestContext;
-  /** @deprecated Use `requestContext.requestId`. 请改用 `requestContext.requestId`。 */
-  id?: string;
-  /** @deprecated Use `requestContext.traceId`. 请改用 `requestContext.traceId`。 */
-  traceId?: string;
-  /** @deprecated Use `requestContext.startedAt`. 请改用 `requestContext.startedAt`。 */
-  startTime?: number;
 }
 
 /**
@@ -132,10 +126,6 @@ export function createRequestContextMiddleware(
 
     const request = req as RequestContextCarrierRequest;
     request.requestContext = requestContext;
-    // Deprecated compatibility projections (producer-owned carrier is above).
-    request.id = requestId;
-    request.traceId = requestId;
-    request.startTime = startedAt;
 
     // Set before next() so every downstream response type echoes the same ID.
     res.setHeader('X-Request-Id', requestId);

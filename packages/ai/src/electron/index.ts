@@ -517,7 +517,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.ANALYTICS_QUERY);
         ipcMain.handle(AIChannels.AGENT_RUN_LIST, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.listAgentRuns(dto ?? {}, requestContext, requestContext.requestId),
+            aiModule.api.listAgentRuns(dto ?? {}, requestContext),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_LIST);
@@ -529,31 +529,25 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
                 identityId: requestContext.identityId,
               },
               requestContext,
-              requestContext.requestId,
             ),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_START);
         ipcMain.handle(AIChannels.AGENT_RUN_RESUME, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.resumeAgentRun(
-              String(dto.runId),
-              dto.payload,
-              requestContext,
-              requestContext.requestId,
-            ),
+            aiModule.api.resumeAgentRun(String(dto.runId), dto.payload, requestContext),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_RESUME);
         ipcMain.handle(AIChannels.AGENT_RUN_GET, async (_, runId) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getAgentRun(String(runId), requestContext, requestContext.requestId),
+            aiModule.api.getAgentRun(String(runId), requestContext),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_GET);
         ipcMain.handle(AIChannels.AGENT_EVENTS_GET, async (_, runId) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getAgentEvents(String(runId), requestContext, requestContext.requestId),
+            aiModule.api.getAgentEvents(String(runId), requestContext),
           ),
         );
         installed.push(AIChannels.AGENT_EVENTS_GET);

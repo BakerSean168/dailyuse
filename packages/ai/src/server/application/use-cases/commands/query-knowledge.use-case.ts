@@ -1,22 +1,16 @@
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import type {
-  QueryKnowledgeReq,
-  QueryKnowledgeRes,
-} from '@memoflow/contracts/ai';
+import type { QueryKnowledgeReq, QueryKnowledgeRes } from '@memoflow/contracts/ai';
 import { createLogger } from '@memoflow/utils/logger';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
-import type {
-  IAIExecutionLogPort,
-  IKnowledgeQueryPort,
-} from '../../ports';
+import type { IAIExecutionLogPort, IKnowledgeQueryPort } from '../../ports';
 import type { SyncRelevantKnowledgeUseCase } from './sync-relevant-knowledge.use-case';
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
-    withAICostEstimate,
+  withAICostEstimate,
 } from './ai-observability';
 import {
   resolveActiveProviderConfig,

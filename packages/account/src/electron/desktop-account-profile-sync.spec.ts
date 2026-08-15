@@ -32,7 +32,9 @@ function createHarness(options?: {
   const execute = vi.fn().mockResolvedValue({ rowsAffected: 1 });
   const tx = { execute };
   const db = {
-    writeTransaction: vi.fn(async (callback: (value: typeof tx) => Promise<unknown>) => callback(tx)),
+    writeTransaction: vi.fn(async (callback: (value: typeof tx) => Promise<unknown>) =>
+      callback(tx),
+    ),
     getOptional: vi.fn().mockResolvedValue(options?.pending ?? null),
     execute: vi.fn().mockResolvedValue({ rowsAffected: 1 }),
   };
@@ -127,10 +129,7 @@ describe('DesktopAccountProfileSync', () => {
       avatar: 'https://example.com/avatar.png',
       bio: 'Local bio',
     });
-    expect(harness.db.execute).toHaveBeenCalledWith(
-      expect.stringContaining("revision = ?"),
-      [4],
-    );
+    expect(harness.db.execute).toHaveBeenCalledWith(expect.stringContaining('revision = ?'), [4]);
   });
 
   it('preserves the outbox when cloud delivery fails', async () => {

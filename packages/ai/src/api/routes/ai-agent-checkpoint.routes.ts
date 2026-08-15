@@ -11,7 +11,12 @@ import {
   ok,
   fail,
 } from '@memoflow/utils/result';
-import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema, AgentEventSchema } from '@memoflow/contracts/ai';
+import {
+  AgentRunSchema,
+  AgentStateSchema,
+  AgentRunResultSchema,
+  AgentEventSchema,
+} from '@memoflow/contracts/ai';
 import type { AIAgentCheckpointController } from '../../server/transport/ai-agent-checkpoint.controller';
 
 interface PlatformMiddleware {

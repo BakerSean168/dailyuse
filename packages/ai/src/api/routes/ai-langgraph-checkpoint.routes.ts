@@ -210,7 +210,10 @@ export function registerAILangGraphCheckpointRoutes(
         query: ListCheckpointsQuerySchema,
       },
       responses: {
-        200: successResponse(z.array(LangGraphCheckpointTupleRecordSchema), 'Checkpoints retrieved'),
+        200: successResponse(
+          z.array(LangGraphCheckpointTupleRecordSchema),
+          'Checkpoints retrieved',
+        ),
       },
     },
     [auth],

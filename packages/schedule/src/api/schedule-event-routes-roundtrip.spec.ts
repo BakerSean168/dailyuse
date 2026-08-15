@@ -69,7 +69,9 @@ describe('Schedule event DELETE HTTP round-trip contract (real Express handler)'
     const port = createStubPort({ deleteEvent: deleteSpy });
     const app = createApp(port);
 
-    const res = await request(app).delete('/schedules/events/schedule-1').send({ expectedVersion: 4 });
+    const res = await request(app)
+      .delete('/schedules/events/schedule-1')
+      .send({ expectedVersion: 4 });
 
     expect(res.status).toBe(200);
     expect(deleteSpy).toHaveBeenCalledWith('schedule-1', expect.anything(), 4);
@@ -87,7 +89,9 @@ describe('Schedule event DELETE HTTP round-trip contract (real Express handler)'
     });
     const app = createApp(port);
 
-    const res = await request(app).delete('/schedules/events/schedule-1').send({ expectedVersion: 1 });
+    const res = await request(app)
+      .delete('/schedules/events/schedule-1')
+      .send({ expectedVersion: 1 });
 
     expect(res.status).toBe(409);
     expect(res.body).toMatchObject({

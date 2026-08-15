@@ -146,10 +146,9 @@ describe('createGovernanceElectronModule IPC lifecycle', () => {
     expect(listResult).toMatchObject({ ok: true });
     expect(fake.api.listRules).toHaveBeenCalledTimes(1);
 
-    const searchResult = await registered(GovernanceChannels.RULE_SEARCH)(
-      undefined,
-      { query: 'architecture' },
-    );
+    const searchResult = await registered(GovernanceChannels.RULE_SEARCH)(undefined, {
+      query: 'architecture',
+    });
     expect(searchResult).toMatchObject({ ok: true });
     expect(fake.api.searchRules).toHaveBeenCalledWith(
       expect.anything(),

@@ -131,7 +131,13 @@ describe('AIKnowledgeNoteService', () => {
           requestId: 'request-generated',
         },
       },
-      { requestId: 'req-knowledge-1', traceId: 'req-knowledge-1', startedAt: 1_700_000_000_000, source: 'system', identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(executionPort.generate).toHaveBeenCalledWith({
@@ -211,7 +217,13 @@ describe('AIKnowledgeNoteService', () => {
           requestId: 'request-reviewed',
         },
       },
-      { requestId: 'req-knowledge-1', traceId: 'req-knowledge-1', startedAt: 1_700_000_000_000, source: 'system', identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(executionPort.generate).not.toHaveBeenCalled();

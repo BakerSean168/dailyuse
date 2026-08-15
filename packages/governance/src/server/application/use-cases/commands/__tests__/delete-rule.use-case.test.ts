@@ -141,4 +141,3 @@ describe('DeleteRuleUseCase', () => {
     expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 });
-

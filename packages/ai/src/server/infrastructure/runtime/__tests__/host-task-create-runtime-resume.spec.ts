@@ -42,7 +42,6 @@ describe('host task.create process-local resume runtime wire (residual 437/439)'
       'run-task-resume-1',
       { userDecision: 'cancel' },
       cx as any,
-      'req-cancel',
     );
     expect(cancelled.ok).toBe(true);
     if (!cancelled.ok) return;
@@ -196,7 +195,8 @@ describe('host task.create process-local resume runtime wire (residual 437/439)'
     expect(cancelledAgain.ok).toBe(true);
     if (!cancelledAgain.ok) return;
     expect(cancelledAgain.data.run.status).toBe('cancelled');
-    expect(cancelledAgain.data.events.filter((e) => e.data?.['userDecision'] === 'cancel')).toHaveLength(1);
+    expect(
+      cancelledAgain.data.events.filter((e) => e.data?.['userDecision'] === 'cancel'),
+    ).toHaveLength(1);
   });
-
 });

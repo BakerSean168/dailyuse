@@ -1,4 +1,10 @@
-import { extractStructuredResultError, fail, isIpcResultEnvelope, ok, type IpcResult } from '../result';
+import {
+  extractStructuredResultError,
+  fail,
+  isIpcResultEnvelope,
+  ok,
+  type IpcResult,
+} from '../result';
 import type { IElectronModuleContext } from './index';
 import type { ExecutionContext } from '../shared';
 import { isElectronAuthResolutionError } from './auth-context';

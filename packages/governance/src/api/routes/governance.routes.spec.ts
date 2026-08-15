@@ -5,7 +5,10 @@ import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import { registerGovernanceRoutes } from './index';
 import { expressAdapter } from '@memoflow/utils/result';
 import { ok } from '@memoflow/contracts/result';
-import { createAuthenticatedIpcWrapper, type IElectronModuleContext } from '@memoflow/contracts/electron';
+import {
+  createAuthenticatedIpcWrapper,
+  type IElectronModuleContext,
+} from '@memoflow/contracts/electron';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { GovernanceController } from '../../server/transport/governance.controller';
 
@@ -57,8 +60,7 @@ function getJsonBodySchema(route: RegisteredRoute): {
   return (
     (
       (route.request?.body as Record<string, unknown> | undefined)?.content as
-        | Record<string, unknown>
-        | undefined
+        Record<string, unknown> | undefined
     )?.['application/json'] as Record<string, unknown> | undefined
   )?.schema as {
     safeParse: (value: unknown) => { success: boolean };
@@ -172,10 +174,10 @@ describe('governance context parity — HTTP adapter vs IPC wrapper (RefArch Pha
   it('HTTP: the full fixture context reaches the GovernanceApplicationPort untruncated', async () => {
     const port = createUseCaseStub();
     const controller = new GovernanceController(port);
-    const handler = expressAdapter(
-      (req, ctx) => controller.createRule(req.body, ctx),
-      { successStatus: 201, extractContext: () => fixture },
-    );
+    const handler = expressAdapter((req, ctx) => controller.createRule(req.body, ctx), {
+      successStatus: 201,
+      extractContext: () => fixture,
+    });
 
     const res = {
       statusCode: 0,

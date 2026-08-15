@@ -23,9 +23,13 @@ import { createAuthMiddleware } from '../../../shared/infrastructure/http/middle
 import { MetricsStore } from '../../../shared/infrastructure/http/middlewares/performance.middleware';
 import { expressAdapter } from '@memoflow/utils/result';
 import { ok, error } from '@memoflow/contracts/result';
-import { registerAIAssistantRoutes } from '@memoflow/ai/api/routes/ai-assistant.routes';
-import { AIAssistantFacadeController } from '@memoflow/ai/server/transport/ai-assistant-facade.controller';
-import { AIServiceInternalClient } from '@memoflow/ai/server/infrastructure/chat-execution/ai-service-internal-client';
+import {
+  registerAIAssistantRoutes,
+  AIAssistantFacadeController,
+  AIServiceChatExecutionAdapter,
+  createRealAssistantDispatchService,
+  type AIAssistantFacadeControllerService,
+} from '@memoflow/ai/testing';
 import type { AssistantCommand } from '@memoflow/contracts/ai';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -37,7 +41,7 @@ interface CapturedDispatch {
   signal?: AbortSignal;
 }
 
-function createAssistantService(captured: CapturedDispatch) {
+function createAssistantService(captured: CapturedDispatch): AIAssistantFacadeControllerService {
   return {
     dispatchAssistant: vi.fn(
       async (
@@ -61,10 +65,10 @@ function createAssistantService(captured: CapturedDispatch) {
   };
 }
 
-function createApp(options: { dispatchService?: ReturnType<typeof createAssistantService> } = {}): {
+function createApp(options: { dispatchService?: AIAssistantFacadeControllerService } = {}): {
   app: Express;
   captured: CapturedDispatch;
-  dispatchService: ReturnType<typeof createAssistantService>;
+  dispatchService: AIAssistantFacadeControllerService;
 } {
   const app = express();
   applyGlobalMiddleware(app, new MetricsStore());
@@ -170,14 +174,67 @@ describe('Request Context smoke (RefArch Phase 2)', () => {
     expect(res.body.traceId).toBe(res.headers['x-request-id']);
   });
 
-  it('real AI SSE route: header-before-first-chunk, done framing, and entry requestId reaches the AI service (Python request.state correlation)', async () => {
-    const { app, captured } = createApp();
+  it('real AI SSE route: header-before-first-chunk, done framing, and entry requestId reaches the Python AI service (request.state / completion log / echo header)', async () => {
+    // Fake only the Python boundary: capture the `X-Request-Id` the real
+    // AIServiceInternalClient forwards (== Python request.state.request_id),
+    // record a completion log entry, and echo the same ID back in the response
+    // header exactly like `RequestContextMiddleware` does.
+    interface PythonSideState {
+      requestStateRequestId?: string;
+      completionLog: Array<{ requestId: string; path: string; statusCode: number }>;
+      responseHeaderRequestId?: string;
+    }
+    const pySide: PythonSideState = { completionLog: [] };
+    const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const headers = (init?.headers ?? {}) as Record<string, string>;
+      const requestId = headers['X-Request-Id'];
+      const url = new URL(String(input));
+      pySide.requestStateRequestId = requestId;
+      pySide.completionLog.push({ requestId, path: url.pathname, statusCode: 200 });
+      pySide.responseHeaderRequestId = requestId;
+      const echoHeaders = { 'X-Request-Id': requestId };
+      if (url.pathname.endsWith('/internal/chat/stream')) {
+        const sseBody = [
+          'event: message',
+          `data: ${JSON.stringify({ content: 'hello from python', finish_reason: 'stop' })}`,
+          '',
+          'event: done',
+          'data: {}',
+          '',
+          '',
+        ].join('\n');
+        return new Response(sseBody, {
+          status: 200,
+          headers: { ...echoHeaders, 'Content-Type': 'text/event-stream' },
+        });
+      }
+      return new Response(JSON.stringify({ content: 'hello from python', finish_reason: 'stop' }), {
+        status: 200,
+        headers: { ...echoHeaders, 'Content-Type': 'application/json' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    // Real dispatch chain: route → controller → AssistantFacade → DirectTurnEngine
+    // → AIServiceChatExecutionAdapter → real AIServiceInternalClient (fetch above).
+    const chatPort = new AIServiceChatExecutionAdapter({
+      baseUrl: 'http://127.0.0.1:8100',
+      serviceSecret: 'shared-secret',
+      serviceName: 'memoflow-api',
+    });
+    const { service, conversationId } = createRealAssistantDispatchService({
+      identityId: 'identity-smoke-1',
+      chatPort,
+    });
+    const { app } = createApp({ dispatchService: service });
+    const body = { ...ASSISTANT_BODY, conversationId };
+
     const res = await request(app)
       .post(AI_DISPATCH_PATH)
       .set('Authorization', 'Bearer valid-token')
       .set('X-Request-Id', 'client-sse-ai-1')
       .set('Content-Type', 'application/json')
-      .send(ASSISTANT_BODY);
+      .send(body);
 
     expect(res.status).toBe(200);
     expect(res.headers['x-request-id']).toBe('client-sse-ai-1');
@@ -189,31 +246,19 @@ describe('Request Context smoke (RefArch Phase 2)', () => {
     expect(res.text).toContain('"type":"run.started"');
     expect(res.text).toContain('"type":"message.delta"');
     expect(res.text).toContain('event: done');
-    // The exact entry requestId reaches the AI service, where it becomes the
-    // `X-Request-Id` that Python stores in request.state.request_id.
-    expect(captured.requestId).toBe('client-sse-ai-1');
-
-    // TS → Python boundary: the same entry requestId is forwarded verbatim as
-    // `X-Request-Id` by the real internal client (Python echoes it back in the
-    // response header and completion log).
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ content: 'ok' }), { status: 200 }));
-    vi.stubGlobal('fetch', fetchMock);
-    const client = new AIServiceInternalClient({
-      baseUrl: 'http://127.0.0.1:8100',
-      serviceSecret: 'shared-secret',
-      serviceName: 'memoflow-api',
-    });
-    await client.postJson({
-      path: '/internal/chat/complete',
-      identityId: 'identity-smoke-1',
-      requestId: captured.requestId,
-      body: {},
-    });
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    const headers = init.headers as Record<string, string>;
-    expect(headers['X-Request-Id']).toBe('client-sse-ai-1');
+    // The exact entry requestId reached the real internal client and was
+    // forwarded verbatim as `X-Request-Id` — Python's request.state.request_id.
+    expect(pySide.requestStateRequestId).toBe('client-sse-ai-1');
+    // The Python completion log carries the same ID on the stream path.
+    expect(pySide.completionLog).toContainEqual(
+      expect.objectContaining({
+        requestId: 'client-sse-ai-1',
+        path: '/internal/chat/stream',
+        statusCode: 200,
+      }),
+    );
+    // Python echoes the same X-Request-Id back on the response header.
+    expect(pySide.responseHeaderRequestId).toBe('client-sse-ai-1');
     vi.unstubAllGlobals();
   });
 

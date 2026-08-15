@@ -82,7 +82,10 @@ describe('DirectTurnEngine', () => {
     expect(chat.complete).toHaveBeenCalledTimes(1);
     const arg = vi.mocked(chat.complete).mock.calls[0]?.[0];
     expect(arg?.identityId).toBe(IDENTITY);
-    expect(arg?.requestId).toBe(RUN);
+    // No entry correlation ID: the engine must NOT reuse runId; the internal
+    // client mints the UUID fallback instead.
+    expect(arg?.requestId).toBeUndefined();
+    expect(arg?.requestId).not.toBe(RUN);
     expect(arg?.messages.some((m) => m.role === 'user' && m.content === 'ping')).toBe(true);
     expect(conversations.save).not.toHaveBeenCalled();
   });
@@ -186,7 +189,7 @@ describe('DirectTurnEngine', () => {
     expect(arg?.requestId).not.toBe(RUN);
   });
 
-  it('falls back to runId as the internal requestId when no entry correlation ID exists', async () => {
+  it('never falls back to runId when no entry correlation ID exists (client mints the UUID fallback)', async () => {
     const result = await engine.startTurn({
       runId: RUN,
       identityId: IDENTITY,
@@ -194,6 +197,9 @@ describe('DirectTurnEngine', () => {
     });
     expect(result.status).toBe('completed');
     const arg = vi.mocked(chat.complete).mock.calls[0]?.[0];
-    expect(arg?.requestId).toBe(RUN);
+    // runId stays the durable ownership key only — it must never become the
+    // correlation ID; AIServiceInternalClient generates the final UUID fallback.
+    expect(arg?.requestId).toBeUndefined();
+    expect(arg?.requestId).not.toBe(RUN);
   });
 });

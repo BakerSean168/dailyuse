@@ -31,23 +31,20 @@ describe('readString keep-boundary (residual 1171)', () => {
     expect(body).not.toContain('Record<string, unknown>');
   });
 
-  it('differs from API single-key allow-empty readString (no force-merge)', () => {
-    expect(api).toContain('Residual 1171 keep-boundary');
-    expect(api).toMatch(/function readString\b/);
-    expect(api).toContain('Soft residual 1171');
-    expect(api).toContain('record: Record<string, unknown>');
-    expect(api).toContain('key: string');
-    const body = api.match(/function readString\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(body).toContain('record[key]');
-    expect(body).toContain("typeof value === 'string'");
-    expect(body).not.toContain('readPath');
-    expect(body).not.toContain('length > 0');
-    expect(body).not.toContain('path: string');
+  it('differs from API response-builder (no force-merge): API dropped the temp readString fallback', () => {
+    // RefArch review R2 (P2-3): the API response-builder removed the temporary
+    // `readString`/`readNumber` fallback for `req.traceId`/`req.id`/`req.startTime`
+    // (AGENT.md: no temp dual-track). The residual 1171 boundary is now "AI keeps
+    // the dotted non-empty readString; the API keeps none".
+    expect(api).not.toMatch(/function readString\b/);
+    expect(api).not.toMatch(/function readNumber\b/);
+    expect(api).not.toContain('Soft residual 1171');
+    expect(api).toContain('requestContext');
   });
 
-  it('runtime: documents AI non-empty vs API empty-allowed contracts via body shape', () => {
-    // AI rejects empty; API accepts empty — enforced by body markers above.
-    // Reimplement minimal contracts to assert intent without exporting privates.
+  it('runtime: documents AI non-empty readString vs API correlation via requestContext only', () => {
+    // AI rejects empty dotted values; the API envelope reads the producer-owned
+    // `req.requestContext` carrier instead of a string/number fallback pair.
     function aiReadString(value: unknown, path: string): string | undefined {
       const result = path.split('.').reduce<unknown>((current, segment) => {
         if (!current || typeof current !== 'object') return undefined;
@@ -55,15 +52,10 @@ describe('readString keep-boundary (residual 1171)', () => {
       }, value);
       return typeof result === 'string' && result.length > 0 ? result : undefined;
     }
-    function apiReadString(record: Record<string, unknown>, key: string): string | undefined {
-      const value = record[key];
-      return typeof value === 'string' ? value : undefined;
-    }
     expect(aiReadString({ error: { message: 'x' } }, 'error.message')).toBe('x');
     expect(aiReadString({ error: { message: '' } }, 'error.message')).toBeUndefined();
-    expect(apiReadString({ message: '' }, 'message')).toBe('');
-    expect(apiReadString({ message: 'ok' }, 'message')).toBe('ok');
-    expect(apiReadString({ message: 1 }, 'message')).toBeUndefined();
+    expect(api).toContain('requestContext?.traceId');
+    expect(api).toContain('requestContext?.startedAt');
   });
 
   it('documents residual 1171 lock intent without claiming §13.2 complete', () => {

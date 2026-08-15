@@ -5,7 +5,14 @@
  * without exposing the full application-server public surface.
  */
 
-import express, { Router, type Express, type NextFunction, type Request, type RequestHandler, type Response } from 'express';
+import express, {
+  Router,
+  type Express,
+  type NextFunction,
+  type Request,
+  type RequestHandler,
+  type Response,
+} from 'express';
 import { randomUUID } from 'node:crypto';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { vi } from 'vitest';
@@ -18,9 +25,7 @@ import {
 } from '../server/infrastructure/task.module';
 import { createTaskTransportHandlers } from '../server/transport';
 import { registerTaskRoutes } from '../api/routes';
-import type {
-  ITaskTemplateRepository,
-} from '../server/domain/repositories/i-task-template-repository';
+import type { ITaskTemplateRepository } from '../server/domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../server/domain/repositories/i-task-instance-repository';
 import type { ITaskDependencyRepository } from '../server/domain/repositories/i-task-dependency-repository';
 

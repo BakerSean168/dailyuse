@@ -5,15 +5,11 @@ import type { QueryAnalyticsReq, QueryAnalyticsRes } from '@memoflow/contracts/a
 import { createLogger } from '@memoflow/utils/logger';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
-import type {
-  IAIExecutionLogPort,
-  IAnalyticsQueryPort,
-  IAnalyticsReadPort,
-} from '../../ports';
+import type { IAIExecutionLogPort, IAnalyticsQueryPort, IAnalyticsReadPort } from '../../ports';
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
-    withAICostEstimate,
+  withAICostEstimate,
 } from './ai-observability';
 import {
   resolveActiveProviderConfig,

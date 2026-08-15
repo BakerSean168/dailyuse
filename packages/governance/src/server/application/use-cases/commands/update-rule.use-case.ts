@@ -18,8 +18,8 @@ import type { ExecutionContext } from '../execution-context';
 /**
  * Update Rule Use Case.
  * 更新规则用例。
-  * @param private readonly ruleRepository - 
-  * @param private readonly revisionRepository - 
+ * @param private readonly ruleRepository -
+ * @param private readonly revisionRepository -
  */
 export class UpdateRuleUseCase {
   constructor(
@@ -114,4 +114,3 @@ export class UpdateRuleUseCase {
     }, 'Failed to update rule');
   }
 }
-

@@ -155,32 +155,27 @@ export interface AIApplicationPort {
   startAgentRun(
     req: AgentStartRunRequest,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   resumeAgentRun(
     runId: string,
     payload: AgentResumePayload,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   getAgentRun(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRunResult>>;
   listAgentRuns(
     params: AgentRunListParams,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentRun[]>>;
   getAgentEvents(
     runId: string,
     cx: ExecutionContext,
-    requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentEvent[]>>;
 

@@ -67,9 +67,13 @@ function invoke(
 ): InvokeResult {
   const request = req as RequestContextCarrierRequest;
   let nextCalled = false;
-  middleware(request as Request, res as unknown as Response, (() => {
-    nextCalled = true;
-  }) as NextFunction);
+  middleware(
+    request as Request,
+    res as unknown as Response,
+    (() => {
+      nextCalled = true;
+    }) as NextFunction,
+  );
   return { nextCalled, request, response: res };
 }
 
@@ -102,8 +106,7 @@ describe('createRequestContextMiddleware (producer)', () => {
     expect(request.requestContext.requestId).toBe('client-123');
     expect(request.requestContext.traceId).toBe('client-123');
     expect(response.getHeader('X-Request-Id')).toBe('client-123');
-    expect(request.id).toBe('client-123');
-    expect(request.traceId).toBe('client-123');
+    expect(request.requestContext.id).toBeUndefined();
     expect(nextCalled).toBe(true);
   });
 
@@ -120,7 +123,7 @@ describe('createRequestContextMiddleware (producer)', () => {
   });
 
   it('falls back to a UUID for invalid/duplicate/overlong headers — never a 400', () => {
-    for (const header of ['ab cd', 'x'.repeat(129), ''] ) {
+    for (const header of ['ab cd', 'x'.repeat(129), '']) {
       const { request } = invoke(
         createRequestContextMiddleware(),
         createMockReq({ headers: { 'x-request-id': header } }),
@@ -159,7 +162,6 @@ describe('createRequestContextMiddleware (producer)', () => {
 
     expect(request.requestContext.startedAt).toBe(1_700_000_000_123);
     expect(request.requestContext.source).toBe('http');
-    expect(request.startTime).toBe(1_700_000_000_123);
   });
 
   it('sets X-Request-Id before calling next()', () => {

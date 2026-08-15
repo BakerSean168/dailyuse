@@ -45,7 +45,9 @@ function getRegisteredRoute(
   method: string,
   path: string,
 ): RegisteredRoute {
-  const route = registry.paths.find((candidate) => candidate.method === method && candidate.path === path);
+  const route = registry.paths.find(
+    (candidate) => candidate.method === method && candidate.path === path,
+  );
 
   expect(route).toBeDefined();
   return route!;
@@ -54,9 +56,12 @@ function getRegisteredRoute(
 function getJsonBodySchema(route: RegisteredRoute): {
   safeParse: (value: unknown) => { success: boolean };
 } {
-  return (((route.request?.body as Record<string, unknown> | undefined)?.content as
-    | Record<string, unknown>
-    | undefined)?.['application/json'] as Record<string, unknown> | undefined)?.schema as {
+  return (
+    (
+      (route.request?.body as Record<string, unknown> | undefined)?.content as
+        Record<string, unknown> | undefined
+    )?.['application/json'] as Record<string, unknown> | undefined
+  )?.schema as {
     safeParse: (value: unknown) => { success: boolean };
   };
 }
@@ -68,12 +73,23 @@ function getResponseSchema(
   safeParse: (value: unknown) => { success: boolean };
   _def?: { typeName?: string };
 } {
-  const responses = route.responses as Record<string, { content?: Record<string, unknown> }> | undefined;
+  const responses = route.responses as
+    Record<string, { content?: Record<string, unknown> }> | undefined;
   const response = responses?.[String(status)];
   const schema = (response?.content as Record<string, unknown> | undefined)?.[
     'application/json'
-  ] as { schema?: { safeParse: (value: unknown) => { success: boolean }; _def?: { typeName?: string } } } | undefined;
-  return schema?.schema ?? (response as unknown as { safeParse: (value: unknown) => { success: boolean } });
+  ] as
+    | {
+        schema?: {
+          safeParse: (value: unknown) => { success: boolean };
+          _def?: { typeName?: string };
+        };
+      }
+    | undefined;
+  return (
+    schema?.schema ??
+    (response as unknown as { safeParse: (value: unknown) => { success: boolean } })
+  );
 }
 
 function getParamsSchema(route: RegisteredRoute): {
@@ -333,7 +349,17 @@ describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () 
       requireRole: () => authMiddleware,
     });
 
-    const layer = (router as unknown as { stack: Array<{ route?: { path: string; methods: Record<string, boolean>; stack: Array<{ handle: (r: unknown, s: unknown) => unknown }> } }> }).stack.find(
+    const layer = (
+      router as unknown as {
+        stack: Array<{
+          route?: {
+            path: string;
+            methods: Record<string, boolean>;
+            stack: Array<{ handle: (r: unknown, s: unknown) => unknown }>;
+          };
+        }>;
+      }
+    ).stack.find(
       (candidate) => candidate.route?.path === '/sse' && candidate.route.methods.get === true,
     );
     const handler = layer!.route!.stack.at(-1)!.handle;

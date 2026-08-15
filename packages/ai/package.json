@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "AI 模块 - 对话管理、内容生成、配额管理、提供商配置",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -27,6 +29,10 @@
     "./electron": {
       "types": "./dist/electron/index.d.ts",
       "import": "./dist/electron/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
     }
   },
   "scripts": {},

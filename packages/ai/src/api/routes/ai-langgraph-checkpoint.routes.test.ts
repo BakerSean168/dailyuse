@@ -24,16 +24,16 @@ function createControllerStub(): AILangGraphCheckpointController {
   return {
     putCheckpoint: vi.fn(async () => undefined),
     getCheckpoint: vi.fn(async () => ({
-        identityId: 'identity-1',
-        agentType: 'goal.create',
-        threadId: 'thread-1',
-        checkpointNs: '',
-        checkpointId: 'checkpoint-1',
-        checkpoint: { type: 'json', data: 'YQ==' },
-        metadata: { type: 'json', data: 'Yg==' },
-        createdAt: '2026-06-13T00:00:00.000Z',
-        pendingWrites: [],
-      })),
+      identityId: 'identity-1',
+      agentType: 'goal.create',
+      threadId: 'thread-1',
+      checkpointNs: '',
+      checkpointId: 'checkpoint-1',
+      checkpoint: { type: 'json', data: 'YQ==' },
+      metadata: { type: 'json', data: 'Yg==' },
+      createdAt: '2026-06-13T00:00:00.000Z',
+      pendingWrites: [],
+    })),
     listCheckpoints: vi.fn(async () => []),
     putWrites: vi.fn(async () => undefined),
     deleteThread: vi.fn(async () => undefined),
@@ -69,7 +69,12 @@ describe('registerAILangGraphCheckpointRoutes', () => {
     const req = {
       body,
       user: { identityId: 'identity-route' },
-      requestContext: { requestId: 'trace-langgraph-route-writes', traceId: 'trace-langgraph-route-writes', startedAt: 1_700_000_000_000, source: 'http' },
+      requestContext: {
+        requestId: 'trace-langgraph-route-writes',
+        traceId: 'trace-langgraph-route-writes',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -106,7 +111,12 @@ describe('registerAILangGraphCheckpointRoutes', () => {
         checkpointId: 'checkpoint-9',
       },
       user: { identityId: 'identity-route' },
-      requestContext: { requestId: 'request-langgraph-head', traceId: 'request-langgraph-head', startedAt: 1_700_000_000_000, source: 'http' },
+      requestContext: {
+        requestId: 'request-langgraph-head',
+        traceId: 'request-langgraph-head',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -139,7 +149,12 @@ describe('registerAILangGraphCheckpointRoutes', () => {
         threadId: 'thread-missing',
       },
       user: { identityId: 'identity-route' },
-      requestContext: { requestId: 'request-langgraph-missing', traceId: 'request-langgraph-missing', startedAt: 1_700_000_000_000, source: 'http' },
+      requestContext: {
+        requestId: 'request-langgraph-missing',
+        traceId: 'request-langgraph-missing',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),

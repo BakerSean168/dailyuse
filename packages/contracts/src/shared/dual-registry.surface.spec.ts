@@ -117,6 +117,20 @@ import { describe, expect, it } from 'vitest';
       .toLowerCase();
   }
 
+  /**
+   * The single real detector used by BOTH the negative inventory check and the
+   * mutation fixtures: it scans a source body with the real
+   * `forbiddenContextFieldTokens` inventory. The mutation fixtures must fail
+   * whenever a forbidden field is removed from that inventory.
+   * 唯一的真实检测器，负向 inventory 检查与 mutation fixtures 共用：用真实的
+   * `forbiddenContextFieldTokens` 扫描源码正文。任一 forbidden field 从该
+   * inventory 中移除时，mutation fixtures 必须失败。
+   */
+  function detectForbiddenContextFields(source: string): string[] {
+    const body = stripContextSource(source);
+    return forbiddenContextFieldTokens.filter((token) => body.includes(token));
+  }
+
   describe('RefArch Phase 2 canonical Request/Execution Context (unique body)', () => {
     it('execution-context.ts owns the single ExecutionContext interface body', () => {
       const source = readFileSync(join(here, 'execution-context.ts'), 'utf8');
@@ -142,17 +156,16 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('metadata-only forbidden inventory: no transport/auth/business fields', () => {
-      const body = stripContextSource(readFileSync(join(here, 'execution-context.ts'), 'utf8'));
-      for (const forbidden of forbiddenContextFieldTokens) {
-        expect(body).not.toContain(forbidden);
-      }
+      const source = readFileSync(join(here, 'execution-context.ts'), 'utf8');
+      expect(detectForbiddenContextFields(source)).toEqual([]);
     });
 
-    it('mutation fixtures: every forbidden field (including camelCase spellings) is caught', () => {
+    it('mutation fixtures: every forbidden field (including camelCase spellings) is caught by the REAL inventory', () => {
       const original = readFileSync(join(here, 'execution-context.ts'), 'utf8');
       // One mutation per forbidden field, spelled as it would appear in a real
-      // type body. Each must be detected by the case-insensitive inventory —
-      // proving `emailVerified`/`sessionId` etc. are not false negatives.
+      // type body. Each must be detected by the real case-insensitive inventory
+      // (the same detector the negative check above uses) — proving
+      // `emailVerified`/`sessionId` etc. are not false negatives.
       const fixtures: Record<string, string> = {
         prisma: 'readonly prisma: unknown;',
         repository: 'readonly repository: unknown;',
@@ -162,14 +175,17 @@ import { describe, expect, it } from 'vitest';
         approval: 'readonly approvalState?: unknown;',
         aggregate: 'readonly aggregate: unknown;',
       };
-      const originalBody = stripContextSource(original);
       for (const [field, declaration] of Object.entries(fixtures)) {
-        const mutated = stripContextSource(
-          `${original}\nexport interface ForbiddenProbeFixture { ${declaration} }`,
-        );
-        expect(mutated).toContain(field.toLowerCase());
-        // The real type body must stay free of the field.
-        expect(originalBody).not.toContain(field.toLowerCase());
+        // The fixture field must still be part of the REAL forbidden inventory:
+        // removing a token from `forbiddenContextFieldTokens` must fail this
+        // suite, never silently shrink coverage.
+        expect(forbiddenContextFieldTokens).toContain(field.toLowerCase());
+        // The real detector must flag the injected forbidden field in a mutated
+        // source (mutation-of-source assertion against the real inventory).
+        const mutated = `${original}\nexport interface ForbiddenProbeFixture { ${declaration} }`;
+        expect(detectForbiddenContextFields(mutated)).toContain(field.toLowerCase());
+        // And the real type body must stay free of the field.
+        expect(detectForbiddenContextFields(original)).not.toContain(field.toLowerCase());
       }
     });
 

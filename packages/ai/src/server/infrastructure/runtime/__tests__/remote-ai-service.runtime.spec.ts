@@ -383,7 +383,11 @@ describe('createRemoteAIServiceRuntime', () => {
   it('enables knowledge query when all 4 dependencies are present', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
+        knowledgeSourcePort: {
+          listRelevantNotes: vi.fn(),
+          listIndexableNotes: vi.fn(),
+          getNoteById: vi.fn(),
+        } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
@@ -399,7 +403,11 @@ describe('createRemoteAIServiceRuntime', () => {
     // Missing knowledgeQueryPort
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
+        knowledgeSourcePort: {
+          listRelevantNotes: vi.fn(),
+          listIndexableNotes: vi.fn(),
+          getNoteById: vi.fn(),
+        } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
       }),
@@ -483,8 +491,7 @@ describe('createRemoteAIServiceRuntime', () => {
         activeOnly: true,
         limit: 5,
       },
-      { identityId: 'identity-1' },
-      'request-list-runs',
+      { identityId: 'identity-1', requestId: 'request-list-runs' },
     );
 
     expect(result.ok).toBe(true);
@@ -549,8 +556,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'knowledge.qa',
         input: { question: 'How should knowledge answers be grounded?' },
       },
-      { identityId: 'identity-1' },
-      'request-knowledge-qa',
+      { identityId: 'identity-1', requestId: 'request-knowledge-qa' },
     );
 
     expect(result.ok).toBe(true);
@@ -623,8 +629,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: { idea: 'Ship the AI Agent workspace' },
       },
-      { identityId: 'identity-1' },
-      'request-agent-start-log',
+      { identityId: 'identity-1', requestId: 'request-agent-start-log' },
     );
 
     expect(result.ok).toBe(true);
@@ -686,8 +691,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: { idea: 'Ship the AI Agent workspace' },
       },
-      { identityId: 'identity-1' },
-      'request-agent-log-failure',
+      { identityId: 'identity-1', requestId: 'request-agent-log-failure' },
     );
 
     expect(result.ok).toBe(true);
@@ -731,8 +735,7 @@ describe('createRemoteAIServiceRuntime', () => {
           maxResources: 8,
         },
       },
-      { identityId: 'identity-1' },
-      'request-knowledge-query',
+      { identityId: 'identity-1', requestId: 'request-knowledge-query' },
     );
 
     expect(result.ok).toBe(true);
@@ -821,8 +824,7 @@ describe('createRemoteAIServiceRuntime', () => {
           citations: [suppliedCitation],
         },
       },
-      { identityId: 'identity-1' },
-      'request-supplied-answer',
+      { identityId: 'identity-1', requestId: 'request-supplied-answer' },
     );
 
     expect(result.ok).toBe(true);
@@ -975,8 +977,7 @@ describe('createRemoteAIServiceRuntime', () => {
         userDecision: 'confirm',
         approvedActions: [pendingAction],
       },
-      { identityId: 'identity-1' },
-      'request-note-save',
+      { identityId: 'identity-1', requestId: 'request-note-save' },
     );
 
     expect(result.ok).toBe(true);
@@ -1119,8 +1120,7 @@ describe('createRemoteAIServiceRuntime', () => {
     const result = await runtime.services.agentRuntimeService.resumeRun(
       'run-note-1',
       { userDecision: 'cancel' },
-      { identityId: 'identity-1' },
-      'request-note-cancel',
+      { identityId: 'identity-1', requestId: 'request-note-cancel' },
     );
 
     expect(result.ok).toBe(true);
@@ -1199,7 +1199,8 @@ describe('createRemoteAIServiceRuntime', () => {
           {
             tool: 'create_knowledge_note',
             status: 'failed',
-            message: 'Knowledge note action payload is invalid: Knowledge note path cannot contain . or .. segments',
+            message:
+              'Knowledge note action payload is invalid: Knowledge note path cannot contain . or .. segments',
           },
         ],
       },
@@ -1223,8 +1224,7 @@ describe('createRemoteAIServiceRuntime', () => {
         userDecision: 'confirm',
         approvedActions: [pendingAction],
       },
-      { identityId: 'identity-1' },
-      'request-note-escape',
+      { identityId: 'identity-1', requestId: 'request-note-escape' },
     );
 
     expect(result.ok).toBe(true);
@@ -1317,8 +1317,7 @@ describe('createRemoteAIServiceRuntime', () => {
         userDecision: 'confirm',
         approvedActions: [pendingAction],
       },
-      { identityId: 'identity-1' },
-      'request-note-cross-cap',
+      { identityId: 'identity-1', requestId: 'request-note-cross-cap' },
     );
 
     expect(result.ok).toBe(true);
@@ -1413,8 +1412,7 @@ describe('createRemoteAIServiceRuntime', () => {
         userDecision: 'confirm',
         approvedActions: [pendingAction],
       },
-      { identityId: 'identity-1' },
-      'request-goal-cross-cap',
+      { identityId: 'identity-1', requestId: 'request-goal-cross-cap' },
     );
 
     expect(result.ok).toBe(true);
@@ -1454,11 +1452,10 @@ describe('createRemoteAIServiceRuntime', () => {
       }),
     );
 
-    const result = await runtime.services.agentRuntimeService.getRun(
-      'run-1',
-      { identityId: 'identity-1' },
-      'request-identity-isolation',
-    );
+    const result = await runtime.services.agentRuntimeService.getRun('run-1', {
+      identityId: 'identity-1',
+      requestId: 'request-identity-isolation',
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -1544,8 +1541,7 @@ describe('createRemoteAIServiceRuntime', () => {
         userDecision: 'confirm',
         approvedActions: [pendingAction],
       },
-      { identityId: 'identity-1' },
-      'request-foreign-resume-approve',
+      { identityId: 'identity-1', requestId: 'request-foreign-resume-approve' },
     );
     expect(withApprovals.ok).toBe(false);
     if (!withApprovals.ok) {
@@ -1556,8 +1552,7 @@ describe('createRemoteAIServiceRuntime', () => {
     const shortcut = await runtime.services.agentRuntimeService.resumeRun(
       'run-1',
       { userDecision: 'confirm' },
-      { identityId: 'identity-1' },
-      'request-foreign-resume-shortcut',
+      { identityId: 'identity-1', requestId: 'request-foreign-resume-shortcut' },
     );
     expect(shortcut.ok).toBe(false);
     if (!shortcut.ok) {
@@ -1593,11 +1588,10 @@ describe('createRemoteAIServiceRuntime', () => {
       }),
     );
 
-    const result = await runtime.services.agentRuntimeService.getEvents(
-      'run-1',
-      { identityId: 'identity-1' },
-      'request-foreign-events',
-    );
+    const result = await runtime.services.agentRuntimeService.getEvents('run-1', {
+      identityId: 'identity-1',
+      requestId: 'request-foreign-events',
+    });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe('FORBIDDEN');
@@ -1633,11 +1627,10 @@ describe('createRemoteAIServiceRuntime', () => {
       }),
     );
 
-    const result = await runtime.services.agentRuntimeService.getEvents(
-      'run-1',
-      { identityId: 'identity-1' },
-      'request-owned-events',
-    );
+    const result = await runtime.services.agentRuntimeService.getEvents('run-1', {
+      identityId: 'identity-1',
+      requestId: 'request-owned-events',
+    });
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data).toEqual(events);
@@ -1690,8 +1683,7 @@ describe('createRemoteAIServiceRuntime', () => {
 
     const result = await runtime.services.agentRuntimeService.listRuns(
       {},
-      { identityId: 'identity-1' },
-      'request-list-isolation',
+      { identityId: 'identity-1', requestId: 'request-list-isolation' },
     );
 
     expect(result.ok).toBe(true);
@@ -1701,7 +1693,6 @@ describe('createRemoteAIServiceRuntime', () => {
       ]);
     }
   });
-
 
   it('does not execute goal automation when the user cancels, even if execution.required remains', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
@@ -1741,8 +1732,7 @@ describe('createRemoteAIServiceRuntime', () => {
     const result = await runtime.services.agentRuntimeService.resumeRun(
       'run-1',
       { userDecision: 'cancel' },
-      { identityId: 'identity-1' },
-      'request-goal-cancel',
+      { identityId: 'identity-1', requestId: 'request-goal-cancel' },
     );
 
     expect(result.ok).toBe(true);
@@ -1804,8 +1794,7 @@ describe('createRemoteAIServiceRuntime', () => {
         userDecision: 'clarify',
         clarificationAnswers: ['Focus on the workspace recovery path.'],
       },
-      { identityId: 'identity-1' },
-      'request-agent-resume-log',
+      { identityId: 'identity-1', requestId: 'request-agent-resume-log' },
     );
 
     expect(result.ok).toBe(true);
@@ -1860,7 +1849,7 @@ describe('createRemoteAIServiceRuntime', () => {
       }),
       findDefaultByIdentityId: vi.fn(),
       findByIdentityId: vi.fn(),
-        delete: vi.fn(),
+      delete: vi.fn(),
       setDefaultForIdentity: vi.fn(async () => 'NOT_FOUND' as const),
     } as unknown as IAIProviderConfigRepository;
     vi.mocked(agentRuntimePort.startRun).mockResolvedValueOnce(
@@ -1887,8 +1876,7 @@ describe('createRemoteAIServiceRuntime', () => {
           model: 'gpt-4o',
         },
       },
-      { identityId: 'identity-1' },
-      'request-provider',
+      { identityId: 'identity-1', requestId: 'request-provider' },
     );
 
     expect(result.ok).toBe(true);
@@ -1970,8 +1958,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: { idea: 'Ship the AI Agent workspace' },
       },
-      { identityId: 'identity-1' },
-      'request-context',
+      { identityId: 'identity-1', requestId: 'request-context' },
     );
 
     expect(result.ok).toBe(true);
@@ -2056,8 +2043,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: { idea: 'Ship the AI Agent workspace' },
       },
-      { identityId: 'identity-1' },
-      'request-1',
+      { identityId: 'identity-1', requestId: 'request-1' },
     );
 
     expect(result.ok).toBe(true);
@@ -2118,8 +2104,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: { idea: 'Get fit' },
       },
-      { identityId: 'identity-1' },
-      'request-clarify',
+      { identityId: 'identity-1', requestId: 'request-clarify' },
     );
 
     expect(result.ok).toBe(true);
@@ -2254,8 +2239,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: { idea: 'Ship the AI Agent workspace' },
       },
-      { identityId: 'identity-1' },
-      'request-start-execute',
+      { identityId: 'identity-1', requestId: 'request-start-execute' },
     );
 
     expect(result.ok).toBe(true);
@@ -2446,8 +2430,7 @@ describe('createRemoteAIServiceRuntime', () => {
         userDecision: 'confirm',
         approvedActions: goalAgentApprovedActions,
       },
-      { identityId: 'identity-1' },
-      'request-2',
+      { identityId: 'identity-1', requestId: 'request-2' },
     );
 
     expect(result.ok).toBe(true);
@@ -2576,8 +2559,7 @@ describe('createRemoteAIServiceRuntime', () => {
     const result = await runtime.services.agentRuntimeService.resumeRun(
       'run-1',
       { userDecision: 'confirm' },
-      { identityId: 'identity-1' },
-      'request-restored-execute',
+      { identityId: 'identity-1', requestId: 'request-restored-execute' },
     );
 
     expect(result.ok).toBe(true);
@@ -2662,7 +2644,11 @@ describe('createRemoteAIServiceRuntime', () => {
   it('clears advancedFeaturesReason when all advanced features are available', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
+        knowledgeSourcePort: {
+          listRelevantNotes: vi.fn(),
+          listIndexableNotes: vi.fn(),
+          getNoteById: vi.fn(),
+        } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
@@ -2688,7 +2674,11 @@ describe('createRemoteAIServiceRuntime', () => {
   it('capability flags match actual service availability', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
+        knowledgeSourcePort: {
+          listRelevantNotes: vi.fn(),
+          listIndexableNotes: vi.fn(),
+          getNoteById: vi.fn(),
+        } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,

@@ -73,12 +73,6 @@ export interface ExpressLikeRequest {
    * adapter 直接 fail closed。
    */
   requestContext?: RequestContext;
-  /** @deprecated Use `requestContext.requestId`. 请改用 `requestContext.requestId`。 */
-  id?: string;
-  /** @deprecated Use `requestContext.traceId`. 请改用 `requestContext.traceId`。 */
-  traceId?: string;
-  /** @deprecated Use `requestContext.startedAt`. 请改用 `requestContext.startedAt`。 */
-  startTime?: number;
 }
 
 /**

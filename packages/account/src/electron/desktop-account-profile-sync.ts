@@ -38,10 +38,7 @@ export class DesktopAccountProfileSync {
     private readonly options: DesktopAccountProfileSyncOptions,
   ) {}
 
-  async update(
-    input: unknown,
-    cx: ExecutionContext,
-  ): Promise<Result<UpdateAccountRes>> {
+  async update(input: unknown, cx: ExecutionContext): Promise<Result<UpdateAccountRes>> {
     const parsed = UpdateAccountSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -52,11 +49,7 @@ export class DesktopAccountProfileSync {
     }
 
     const result = await this.db.writeTransaction(async (tx) => {
-      const updated = await this.updateProfileUseCase.execute(
-        parsed.data,
-        cx,
-        tx,
-      );
+      const updated = await this.updateProfileUseCase.execute(parsed.data, cx, tx);
       if (!updated.ok || this.options.getCloudAccountId() !== cx.identityId) {
         return updated;
       }

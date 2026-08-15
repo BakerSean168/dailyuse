@@ -53,12 +53,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.startRun(
-        req.body,
-        ctx,
-        ctx.requestId,
-      ),
+    (req, ctx) => controller.startRun(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -81,12 +76,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.listRuns(
-        req.query,
-        ctx,
-        ctx.requestId,
-      ),
+    (req, ctx) => controller.listRuns(req.query, ctx),
   );
 
   r.route(
@@ -104,13 +94,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.resumeRun(
-        req.params?.runId ?? '',
-        req.body,
-        ctx,
-        ctx.requestId,
-      ),
+    (req, ctx) => controller.resumeRun(req.params?.runId ?? '', req.body, ctx),
   );
 
   r.route(
@@ -127,12 +111,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.getRun(
-        req.params?.runId ?? '',
-        ctx,
-        ctx.requestId,
-      ),
+    (req, ctx) => controller.getRun(req.params?.runId ?? '', ctx),
   );
 
   r.route(
@@ -149,12 +128,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.getEvents(
-        req.params?.runId ?? '',
-        ctx,
-        ctx.requestId,
-      ),
+    (req, ctx) => controller.getEvents(req.params?.runId ?? '', ctx),
   );
 
   return router;

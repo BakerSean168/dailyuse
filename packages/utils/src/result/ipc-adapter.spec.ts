@@ -38,9 +38,7 @@ function createMockSchema(data: unknown, shouldFail = false) {
         return {
           success: false as const,
           error: {
-            issues: [
-              { path: ['title'], message: 'Required' },
-            ],
+            issues: [{ path: ['title'], message: 'Required' }],
           },
         };
       }
@@ -135,9 +133,11 @@ describe('ipcAdapter', () => {
   });
 
   it('should preserve domain error context when controller throws', async () => {
-    const controllerFn = vi.fn().mockRejectedValue(
-      new ConflictError('Multiple repositories found', { count: 2, repositoryIds: ['repo-1'] }),
-    );
+    const controllerFn = vi
+      .fn()
+      .mockRejectedValue(
+        new ConflictError('Multiple repositories found', { count: 2, repositoryIds: ['repo-1'] }),
+      );
     const handler = ipcAdapter(controllerFn, { extractContext: () => fullContext() });
 
     const result = await handler(createMockEvent(), {});
@@ -151,15 +151,17 @@ describe('ipcAdapter', () => {
   });
 
   it('should preserve structured result errors thrown by the controller', async () => {
-    const controllerFn = vi.fn().mockRejectedValue(
-      new ResultErrorException(
-        'Forbidden',
-        'FORBIDDEN',
-        [{ code: 'MISSING_ROLE', message: 'admin required' }],
-        { source: 'ipc-spec' },
-        403,
-      ),
-    );
+    const controllerFn = vi
+      .fn()
+      .mockRejectedValue(
+        new ResultErrorException(
+          'Forbidden',
+          'FORBIDDEN',
+          [{ code: 'MISSING_ROLE', message: 'admin required' }],
+          { source: 'ipc-spec' },
+          403,
+        ),
+      );
     const handler = ipcAdapter(controllerFn, { extractContext: () => fullContext() });
 
     const result = await handler(createMockEvent(), {});
@@ -219,9 +221,9 @@ describe('ipcAdapterWithValidation', () => {
 
   it('should handle controller failure result', async () => {
     const schema = createMockSchema({ title: 'Test' });
-    const controllerFn = vi.fn().mockResolvedValue(
-      fail({ code: 'CONFLICT', message: 'Already exists' }),
-    );
+    const controllerFn = vi
+      .fn()
+      .mockResolvedValue(fail({ code: 'CONFLICT', message: 'Already exists' }));
 
     const handler = ipcAdapterWithValidation(schema, controllerFn, {
       extractContext: () => fullContext(),

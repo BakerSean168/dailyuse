@@ -163,9 +163,8 @@ export class RouteRegistrar {
     // 1. Register OpenAPI path (if registry provided and not skipped)
     if (this.registry && !def.skipOpenApi) {
       const openApiPath = this.toOpenApiPath(def.path);
-      const fullPath = openApiPath === '/'
-        ? this.config.basePath
-        : `${this.config.basePath}${openApiPath}`;
+      const fullPath =
+        openApiPath === '/' ? this.config.basePath : `${this.config.basePath}${openApiPath}`;
 
       this.registry.registerPath({
         method: def.method,

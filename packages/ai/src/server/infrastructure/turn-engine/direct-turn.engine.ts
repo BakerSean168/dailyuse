@@ -126,7 +126,7 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
           { role: 'user', content: input.message },
         ],
         providerConfig: executionProviderConfig,
-        requestId: input.requestId ?? input.runId,
+        requestId: input.requestId,
         signal: controller.signal,
       });
 
@@ -196,7 +196,7 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
           identityId: input.identityId,
           messages,
           providerConfig: executionProviderConfig,
-          requestId: input.requestId ?? input.runId,
+          requestId: input.requestId,
           signal: controller.signal,
         });
         content = completion.content;
@@ -208,7 +208,7 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
             identityId: input.identityId,
             messages,
             providerConfig: executionProviderConfig,
-            requestId: input.requestId ?? input.runId,
+            requestId: input.requestId,
             signal: controller.signal,
           })) {
             if (controller.signal.aborted || input.signal?.aborted) {

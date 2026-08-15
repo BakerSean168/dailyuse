@@ -108,9 +108,7 @@ function createApiStub(): RepositoryApplicationPort {
         contentBase64: 'AQIDBA==',
       }),
     ),
-    listKnowledgeWriteRequests: vi.fn(async () =>
-      ok({ writeRequests: [] }),
-    ),
+    listKnowledgeWriteRequests: vi.fn(async () => ok({ writeRequests: [] })),
     replayKnowledgeWriteRequestProjection: vi.fn(async () =>
       ok({ writeRequestId: 'write-request-1', commitSha: 'a'.repeat(40), status: 'Succeeded' }),
     ),
@@ -160,7 +158,7 @@ describe('knowledge repository connection routes', () => {
         query: { purgeCloudData: 'true' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
-      requestContext: carrier(),
+        requestContext: carrier(),
       },
       res,
     );
@@ -221,7 +219,7 @@ describe('knowledge repository connection routes', () => {
         body: { state: 'short', installationId: '' },
         headers: {},
         user: { identityId: 'identity-route' },
-      requestContext: carrier(),
+        requestContext: carrier(),
       },
       res,
     );
@@ -254,7 +252,7 @@ describe('knowledge repository connection routes', () => {
           'x-device-id': 'desktop-device-1',
         },
         user: { identityId: 'identity-desktop' },
-      requestContext: carrier(),
+        requestContext: carrier(),
       },
       res,
     );
@@ -286,7 +284,7 @@ describe('knowledge repository connection routes', () => {
         body: { localState: 'NonEmpty' },
         headers: { 'user-agent': 'MemoFlow/1.0 Electron/43.0.0' },
         user: { identityId: 'identity-desktop' },
-      requestContext: carrier(),
+        requestContext: carrier(),
       },
       res,
     );
@@ -318,7 +316,7 @@ describe('knowledge repository connection routes', () => {
         body: { headSha: 'a'.repeat(40) },
         headers: { 'user-agent': 'MemoFlow/1.0 Electron/43.0.0' },
         user: { identityId: 'identity-desktop' },
-      requestContext: carrier(),
+        requestContext: carrier(),
       },
       res,
     );
@@ -358,7 +356,7 @@ describe('knowledge repository connection routes', () => {
         query: { depth: '2', maxNodes: '30' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
-      requestContext: carrier(),
+        requestContext: carrier(),
       },
       res,
     );
@@ -424,7 +422,7 @@ describe('knowledge repository connection routes', () => {
         query: { connectionId: 'connection-1', limit: '20' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
-      requestContext: carrier(),
+        requestContext: carrier(),
       },
       res,
     );
@@ -463,7 +461,7 @@ describe('knowledge repository connection routes', () => {
         params: { writeRequestId: 'write-request-1' },
         headers: { 'user-agent': 'Mozilla/5.0' },
         user: { identityId: 'identity-route' },
-      requestContext: carrier(),
+        requestContext: carrier(),
       },
       res,
     );

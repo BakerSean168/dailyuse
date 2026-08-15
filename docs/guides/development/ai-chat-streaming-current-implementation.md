@@ -289,10 +289,10 @@ updated: 2026-04-14T00:00:00
 
 ```ts
 type ChatItem = {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-}
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+};
 ```
 
 这代表当前消息模型还比较轻：
@@ -526,15 +526,15 @@ type ChatItem = {
 先改 `ChatItem`，把消息状态明确下来，例如：
 
 ```ts
-type MessageStatus = 'generating' | 'success' | 'error' | 'aborted'
+type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
 
 type ChatItem = {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  status: MessageStatus
-  errorMessage?: string
-}
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  status: MessageStatus;
+  errorMessage?: string;
+};
 ```
 
 这一层补完后，再做取消、重试、重新生成会顺很多。

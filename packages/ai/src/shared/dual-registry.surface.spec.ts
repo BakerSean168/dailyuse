@@ -189,17 +189,11 @@ import { previewText } from './preview-text';
     const sole = readFileSync(resolve(sharedDir, 'find-sse-boundary.ts'), 'utf8');
     const parseSse = readFileSync(resolve(sharedDir, 'parse-sse.ts'), 'utf8');
     const assistant = readFileSync(
-      resolve(
-        sharedDir,
-        '../infrastructure-client/adapters/http/ai-assistant-http.adapter.ts',
-      ),
+      resolve(sharedDir, '../infrastructure-client/adapters/http/ai-assistant-http.adapter.ts'),
       'utf8',
     );
     const message = readFileSync(
-      resolve(
-        sharedDir,
-        '../infrastructure-client/adapters/http/ai-message-http.adapter.ts',
-      ),
+      resolve(sharedDir, '../infrastructure-client/adapters/http/ai-message-http.adapter.ts'),
       'utf8',
     );
     const chatExecution = readFileSync(
@@ -304,24 +298,15 @@ import { previewText } from './preview-text';
     const sharedDir = __dirname;
     const sole = readFileSync(resolve(sharedDir, 'is-abort-like-error.ts'), 'utf8');
     const assistant = readFileSync(
-      resolve(
-        sharedDir,
-        '../infrastructure-client/adapters/http/ai-assistant-http.adapter.ts',
-      ),
+      resolve(sharedDir, '../infrastructure-client/adapters/http/ai-assistant-http.adapter.ts'),
       'utf8',
     );
     const message = readFileSync(
-      resolve(
-        sharedDir,
-        '../infrastructure-client/adapters/http/ai-message-http.adapter.ts',
-      ),
+      resolve(sharedDir, '../infrastructure-client/adapters/http/ai-message-http.adapter.ts'),
       'utf8',
     );
     const serverHelpers = readFileSync(
-      resolve(
-        sharedDir,
-        '../server/application/use-cases/commands/ai-chat-helpers.ts',
-      ),
+      resolve(sharedDir, '../server/application/use-cases/commands/ai-chat-helpers.ts'),
       'utf8',
     );
 
@@ -501,26 +486,17 @@ import { previewText } from './preview-text';
   describe('previewText dual retired (residual 995 / elevated residual 1011)', () => {
     const dir = __dirname;
     const reexport = readFileSync(resolve(dir, 'preview-text.ts'), 'utf8');
-    const sole = readFileSync(
-      resolve(dir, '../../../utils/src/shared/preview-text.ts'),
-      'utf8',
-    );
+    const sole = readFileSync(resolve(dir, '../../../utils/src/shared/preview-text.ts'), 'utf8');
     const generateGoal = readFileSync(
       resolve(dir, '../server/application/use-cases/commands/generate-ai-goal.use-case.ts'),
       'utf8',
     );
     const automation = readFileSync(
-      resolve(
-        dir,
-        '../server/infrastructure/chat-execution/ai-service-goal-automation.adapter.ts',
-      ),
+      resolve(dir, '../server/infrastructure/chat-execution/ai-service-goal-automation.adapter.ts'),
       'utf8',
     );
     const planning = readFileSync(
-      resolve(
-        dir,
-        '../server/infrastructure/chat-execution/ai-service-goal-planning.adapter.ts',
-      ),
+      resolve(dir, '../server/infrastructure/chat-execution/ai-service-goal-planning.adapter.ts'),
       'utf8',
     );
     const internal = readFileSync(
@@ -548,21 +524,9 @@ import { previewText } from './preview-text';
           generateGoal,
           "import { previewText } from '../../../../shared/preview-text'",
         ],
-        [
-          'automation',
-          automation,
-          "import { previewText } from '../../../shared/preview-text'",
-        ],
-        [
-          'planning',
-          planning,
-          "import { previewText } from '../../../shared/preview-text'",
-        ],
-        [
-          'internal',
-          internal,
-          "import { previewText } from '../../../shared/preview-text'",
-        ],
+        ['automation', automation, "import { previewText } from '../../../shared/preview-text'"],
+        ['planning', planning, "import { previewText } from '../../../shared/preview-text'"],
+        ['internal', internal, "import { previewText } from '../../../shared/preview-text'"],
       ] as const) {
         expect(source, label).toContain('Residual 995');
         expect(source, label).toContain(importPath);

@@ -1,10 +1,7 @@
 import type { CloudAuth } from '@memoflow/cloud-auth/server';
 import type { NextFunction, Response } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  createAuthMiddleware,
-  type AuthenticatedRequest,
-} from './auth-middleware';
+import { createAuthMiddleware, type AuthenticatedRequest } from './auth-middleware';
 import type { RequestContext } from '@memoflow/contracts/shared';
 
 function responseStub(): Response {
