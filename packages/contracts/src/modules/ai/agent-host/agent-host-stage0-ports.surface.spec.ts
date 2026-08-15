@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 describe('agent-host stage-0 ports freeze surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../');
   const ports = readFileSync(resolve(__dirname, 'ports.ts'), 'utf8');
+  const dispatch = readFileSync(resolve(__dirname, 'assistant-dispatch.ts'), 'utf8');
   const capabilities = readFileSync(resolve(__dirname, 'capabilities.ts'), 'utf8');
 
   it('freezes Turn Engine / Capability / Workflow adapter port shapes', () => {
@@ -28,7 +29,11 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(ports).toContain('export interface IModelGatewayPort');
     expect(ports).toContain('export interface IAssistantFacadePort');
     expect(ports).toContain('export type AssistantCommand');
-    expect(ports).toContain('export type AssistantClientCommand');
+    // Client command / event shapes now live in the shared wire schemas and are
+    // type re-exported from ports for backward compatibility.
+    expect(dispatch).toContain('export type AssistantClientCommand');
+    expect(dispatch).toContain('export type AssistantEvent');
+    expect(ports).toContain("export type { AssistantClientCommand, AssistantEvent }");
     expect(ports).toContain('export interface IProposalKernelPort');
     expect(ports).toContain('Stage 0 freezes shapes only');
     expect(ports).toContain('startTurn(input: {');
@@ -38,9 +43,9 @@ describe('agent-host stage-0 ports freeze surface', () => {
   it('Residual N1: run.started may carry conversationId for Conversation↔Host association', () => {
     // Multi-run per conversation; conversationId is optional on the event for
     // backward-compatible clients, while direct_turn still requires it before stream.
-    expect(ports).toContain("type: 'run.started'");
-    expect(ports).toContain('conversationId?: string');
-    expect(ports).toContain('Residual N1');
+    expect(dispatch).toContain("type: z.literal('run.started')");
+    expect(dispatch).toContain('conversationId: z.string().optional()');
+    expect(dispatch).toContain('Residual N1');
   });
 
   it('declares multi-engine capability kinds without silent expansion', () => {

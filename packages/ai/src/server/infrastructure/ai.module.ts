@@ -565,13 +565,16 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       services.agentRuntimeService.getEvents(runId, cx, requestId, signal),
 
     // Residual 345: AssistantFacade transport surface (identity must already be set on command).
-    dispatchAssistant: async (command, onEvent, signal) => {
+    // dispatchAssistant —— AssistantFacade 传输面（command 上必须先注入 identity）。
+    dispatchAssistant: async (command, handlers, signal) => {
       let eventCount = 0;
       for await (const event of runtime.assistantFacade.dispatch(command, signal)) {
         eventCount += 1;
-        onEvent(event);
+        handlers.onEvent?.(event);
       }
-      return ok({ eventCount });
+      const result = ok({ eventCount });
+      handlers.onDone?.(result.data);
+      return result;
     },
   };
 

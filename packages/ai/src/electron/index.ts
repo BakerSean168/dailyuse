@@ -71,10 +71,13 @@ import {
   AIStreamChannels,
   type IElectronModuleContext,
 } from '@memoflow/contracts/electron';
+import { AssistantClientCommandSchema } from '@memoflow/contracts/ai';
 import { fail, ok } from '@memoflow/contracts/result';
+import { formatZodErrors } from '@memoflow/utils/result';
 import { createLogger } from '@memoflow/utils/logger';
 import type { AIModuleInstance } from '../server/infrastructure';
 import { withAuthenticatedValue } from './authenticated-ipc';
+import { toHostCommand } from '../server/transport/ai-assistant-facade.controller';
 
 const logger = createLogger('AIElectron');
 
@@ -387,6 +390,11 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.MESSAGE_STREAM_CANCEL);
 
         // Residual 353: AssistantFacade Host dispatch stream (open chat / approve / cancel).
+        // Hardened (plan Step B §5.2): shared AssistantClientCommandSchema validation
+        // rejects a renderer identityId; identity is injected from the authenticated
+        // context; the session is bound to the sender webContentsId; every
+        // success/error/catch/abort path deletes the session exactly once and never
+        // emits a second DONE/ERROR frame.
         ipcMain.handle(AIChannels.ASSISTANT_DISPATCH_START, async (event, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) => {
             const payload = dto as {
@@ -397,13 +405,13 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
             if (!streamId) {
               return fail({ code: 'VALIDATION_ERROR', message: 'Missing streamId' });
             }
-            if (!payload.command || typeof payload.command !== 'object') {
-              return fail({ code: 'VALIDATION_ERROR', message: 'Missing assistant command' });
-            }
-            if ('identityId' in (payload.command as object)) {
+
+            const parsed = AssistantClientCommandSchema.safeParse(payload.command);
+            if (!parsed.success) {
               return fail({
                 code: 'VALIDATION_ERROR',
-                message: 'identityId must not be sent in assistant client commands',
+                message: 'Invalid assistant command',
+                details: formatZodErrors(parsed.error.issues),
               });
             }
 
@@ -413,49 +421,71 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
               webContentsId: event.sender.id,
             });
 
+            let settled = false;
+            const settle = (frame: 'done' | 'error', data: unknown) => {
+              if (settled) {
+                return;
+              }
+              settled = true;
+              activeStreamSessions.delete(streamId);
+              if (event.sender.isDestroyed()) {
+                return;
+              }
+              event.sender.send(
+                frame === 'done'
+                  ? AIStreamChannels.ASSISTANT_DISPATCH_DONE
+                  : AIStreamChannels.ASSISTANT_DISPATCH_ERROR,
+                {
+                  streamId,
+                  ...(data as object),
+                },
+              );
+            };
+
             void (async () => {
               try {
                 const result = await aiModule.api.dispatchAssistant(
+                  toHostCommand(parsed.data, requestContext.identityId),
                   {
-                    ...(payload.command as object),
-                    identityId: requestContext.identityId,
-                  } as Parameters<typeof aiModule.api.dispatchAssistant>[0],
-                  (assistantEvent) => {
-                    if (!event.sender.isDestroyed()) {
+                    onEvent: (assistantEvent) => {
+                      if (event.sender.isDestroyed()) {
+                        return;
+                      }
                       event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_EVENT, {
                         streamId,
                         event: assistantEvent,
                       });
-                    }
+                    },
                   },
                   abortController.signal,
                 );
 
-                if (!event.sender.isDestroyed()) {
-                  if (!result.ok) {
-                    event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_ERROR, {
-                      streamId,
-                      code: result.error.code,
-                      message: result.error.message,
-                      details: result.error.details,
-                    });
-                  } else {
-                    event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_DONE, {
-                      streamId,
-                      result: result.data,
-                    });
-                  }
+                if (abortController.signal.aborted) {
+                  // Renderer already initiated CANCEL; no terminal frame after abort.
+                  settled = true;
+                  activeStreamSessions.delete(streamId);
+                  return;
                 }
-              } catch (error) {
-                if (!event.sender.isDestroyed()) {
-                  event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_ERROR, {
-                    streamId,
-                    code: 'INTERNAL_ERROR',
-                    message: error instanceof Error ? error.message : 'Assistant dispatch failed',
+
+                if (!result.ok) {
+                  settle('error', {
+                    code: result.error.code,
+                    message: result.error.message,
+                    details: result.error.details,
                   });
+                  return;
                 }
-              } finally {
-                activeStreamSessions.delete(streamId);
+                settle('done', { result: result.data });
+              } catch (error) {
+                if (abortController.signal.aborted) {
+                  settled = true;
+                  activeStreamSessions.delete(streamId);
+                  return;
+                }
+                settle('error', {
+                  code: 'INTERNAL_ERROR',
+                  message: error instanceof Error ? error.message : 'Assistant dispatch failed',
+                });
               }
             })();
 

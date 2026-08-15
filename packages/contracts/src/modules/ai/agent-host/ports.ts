@@ -8,6 +8,19 @@
 
 import type { CapabilityOffer, CapabilityRequirement, ResolvedRunPlan } from './capabilities';
 import type { AgentProposal, ExecutionReceipt } from './proposal';
+import type { AssistantClientCommand, AssistantEvent } from './assistant-dispatch';
+
+/**
+ * `AssistantClientCommand` / `AssistantEvent` are derived from the shared wire
+ * schemas in `./assistant-dispatch` (the single derivation source) and
+ * re-exported here for backward-compatible imports. This file never copies the
+ * unions.
+ *
+ * `AssistantClientCommand` / `AssistantEvent` 由 `./assistant-dispatch` 的共享
+ * wire schema（唯一推导源）推导，并在此 re-export 以保持导入兼容。本文件不复制
+ * 这些 union。
+ */
+export type { AssistantClientCommand, AssistantEvent };
 
 export interface ICapabilityResolverPort {
   listOffers(surface: CapabilityOffer['surface']): Promise<CapabilityOffer[]>;
@@ -233,62 +246,6 @@ export type AssistantCommand =
       identityId: string;
       runId: string;
     };
-
-export type AssistantEvent =
-  /**
-   * Residual N1 (nightly AH-1): optional conversationId binds Host open-chat runs
-   * to the product Conversation (multi-run per conversation; nullish when command
-   * omitted it — direct_turn still fail-closed CONVERSATION_REQUIRED before stream).
-   */
-  | {
-      type: 'run.started';
-      runId: string;
-      engineId: string;
-      profile: AssistantExecutionProfileId;
-      conversationId?: string;
-    }
-  | { type: 'message.delta'; runId: string; content: string }
-  | {
-      type: 'message.completed';
-      runId: string;
-      status: 'completed' | 'aborted' | 'failed' | 'waiting_approval';
-      error?: string;
-      content?: string;
-      /** Optional persisted message ids/content from open chat (residual 351). */
-      userMessage?: { id: string; content: string };
-      assistantMessage?: { id: string; content: string };
-    }
-  | { type: 'proposal.approved'; runId: string; proposalId: string; revision: number }
-  | {
-      type: 'proposal.revised';
-      runId: string;
-      proposalId: string;
-      revision: number;
-      kind: AgentProposal['kind'];
-      title?: string;
-      targetPath?: string;
-    }
-  | {
-      type: 'proposal.rejected';
-      runId: string;
-      proposalId: string;
-      revision: number;
-      reason?: string;
-    }
-  | { type: 'run.cancelled'; runId: string }
-  | { type: 'error'; code: string; message: string; runId?: string };
-
-/**
- * Client-facing Assistant command body. identityId is never accepted from the client;
- * HTTP/IPC transport injects it from the authenticated ExecutionContext.
- * 客户端 Assistant 命令体；永不接受 body 中的 identityId，由传输层从认证上下文注入。
- */
-export type AssistantClientCommand =
-  | Omit<Extract<AssistantCommand, { type: 'message' }>, 'identityId'>
-  | Omit<Extract<AssistantCommand, { type: 'approve_proposal' }>, 'identityId'>
-  | Omit<Extract<AssistantCommand, { type: 'revise_proposal' }>, 'identityId'>
-  | Omit<Extract<AssistantCommand, { type: 'reject_proposal' }>, 'identityId'>
-  | Omit<Extract<AssistantCommand, { type: 'cancel_run' }>, 'identityId'>;
 
 export interface IAssistantFacadePort {
   /**

@@ -63,6 +63,9 @@ describe('ADR-035 cross-end multi-engine product E2E scaffold (residual 405)', (
     const controller = read(
       'packages/ai/src/server/transport/ai-assistant-facade.controller.ts',
     );
+    const contract = read(
+      'packages/contracts/src/modules/ai/agent-host/assistant-dispatch.ts',
+    );
 
     expect(http).toContain('/ai/assistant/dispatch/sse');
     expect(http).toContain('dispatchAssistant');
@@ -70,7 +73,10 @@ describe('ADR-035 cross-end multi-engine product E2E scaffold (residual 405)', (
     expect(httpTest).toContain('pi_readonly');
     expect(httpTest).toContain("type: 'cancel_run'");
     expect(httpTest).toContain('without identityId');
-    expect(controller).toContain("z.enum(['direct_turn', 'pi_readonly'])");
+    // The two Host open-chat profiles now live in the shared contracts schema,
+    // and the controller consumes that schema instead of redefining it.
+    expect(contract).toContain("z.enum(['direct_turn', 'pi_readonly'])");
+    expect(controller).toContain('AssistantClientCommandSchema');
     expect(controller).not.toContain('process.pi_readonly_spike');
   });
 

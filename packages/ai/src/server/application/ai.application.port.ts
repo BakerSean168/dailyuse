@@ -9,7 +9,8 @@ import type {
   AgentRunResult,
   AgentStartRunRequest,
   AssistantCommand,
-  AssistantEvent,
+  AssistantDispatchHandlers,
+  AssistantDispatchResult,
   AIConversationClientDTO,
   ConversationListRes,
   SendMessageRes,
@@ -185,10 +186,19 @@ export interface AIApplicationPort {
   /**
    * AssistantFacade dispatch (residual 345). Streams Host-normalized AssistantEvent.
    * Callers must set identityId from trusted ExecutionContext before invoking.
+   * Handlers use the frozen `AssistantDispatchHandlers`; the result is the named
+   * `AssistantDispatchResult` ({ eventCount }). Never trusts client-supplied
+   * identityId — the transport injects it from the authenticated context.
+   *
+   * AssistantFacade dispatch（residual 345）。流式返回 Host 归一化
+   * AssistantEvent。调用方必须在调用前从可信 ExecutionContext 注入 identityId。
+   * handlers 使用冻结的 `AssistantDispatchHandlers`；结果为命名类型
+   * `AssistantDispatchResult`（{ eventCount }）。绝不信任客户端提供的
+   * identityId——由传输层从认证上下文注入。
    */
   dispatchAssistant(
     command: AssistantCommand,
-    onEvent: (event: AssistantEvent) => void,
+    handlers: AssistantDispatchHandlers,
     signal?: AbortSignal,
-  ): Promise<Result<{ eventCount: number }>>;
+  ): Promise<Result<AssistantDispatchResult>>;
 }
