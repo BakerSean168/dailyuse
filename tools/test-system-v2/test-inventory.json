@@ -26,6 +26,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/api/src/__tests__/smoke/request-context/request-context.smoke.test.ts",
+      "primarySuite": "smoke",
+      "collectors": [
+        "apps/api/vitest.smoke.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/api/src/__tests__/smoke/task/task-instance.smoke.test.ts",
       "primarySuite": "smoke",
       "collectors": [
@@ -523,6 +531,16 @@
     },
     {
       "path": "apps/api/src/shared/infrastructure/http/middlewares/authMiddleware.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "apps/api/src/shared/infrastructure/http/middlewares/request-context.middleware.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/api/vitest.config.ts"
@@ -2646,6 +2664,16 @@
     },
     {
       "path": "packages/ai/src/server/infrastructure/chat-execution/__tests__/ai-service-chat-execution.adapter.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/infrastructure/chat-execution/__tests__/ai-service-internal-client.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -9865,14 +9893,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 52
+      "fileCount": 53
     },
     {
       "id": "apps/api/vitest.smoke.config.ts",
       "type": "primary",
       "suite": "smoke",
       "runner": "vitest",
-      "fileCount": 2
+      "fileCount": 3
     },
     {
       "id": "apps/api/vitest.integration.config.ts",
@@ -9886,7 +9914,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 52
+      "fileCount": 53
     },
     {
       "id": "apps/desktop/vitest.config.ts",
@@ -9949,14 +9977,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 119
+      "fileCount": 120
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 119
+      "fileCount": 120
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
@@ -10465,6 +10493,7 @@
       "apps/api/src/shared/infrastructure/http/controllers/metrics-result-envelope.surface.spec.ts",
       "apps/api/src/shared/infrastructure/http/controllers/metrics.controller.spec.ts",
       "apps/api/src/shared/infrastructure/http/middlewares/authMiddleware.spec.ts",
+      "apps/api/src/shared/infrastructure/http/middlewares/request-context.middleware.spec.ts",
       "apps/api/src/shared/infrastructure/load-workspace-env-keep-boundary.surface.spec.ts",
       "apps/api/src/shared/infrastructure/middleware/error-result-envelope.surface.spec.ts",
       "apps/api/src/shared/infrastructure/middleware/error.spec.ts",
@@ -10570,6 +10599,7 @@
       "packages/ai/src/server/infrastructure/capability-resolver/__tests__/capability.resolver.spec.ts",
       "packages/ai/src/server/infrastructure/chat-execution/__tests__/ai-service-agent-runtime.adapter.test.ts",
       "packages/ai/src/server/infrastructure/chat-execution/__tests__/ai-service-chat-execution.adapter.test.ts",
+      "packages/ai/src/server/infrastructure/chat-execution/__tests__/ai-service-internal-client.spec.ts",
       "packages/ai/src/server/infrastructure/chat-execution/as-record-keep-boundary.surface.spec.ts",
       "packages/ai/src/server/infrastructure/chat-execution/optional-string-keep-boundary.surface.spec.ts",
       "packages/ai/src/server/infrastructure/chat-execution/to-number-keep-boundary.surface.spec.ts",
@@ -11005,9 +11035,9 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 936,
+    "unit": 938,
     "integration": 25,
-    "smoke": 2,
+    "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 5,
     "e2e": 63,

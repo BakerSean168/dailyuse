@@ -8,7 +8,7 @@ import type { IAIProviderConfigRepository } from '../../../domain/repositories/i
 import type { ReindexAllKnowledgeUseCase } from './reindex-all-knowledge.use-case';
 import type { SyncNoteByIdUseCase } from './sync-note-by-id.use-case';
 import type { SyncKnowledgeNotesResult } from './ai-knowledge-index-helpers';
-import { attachRequestIdToError, createAIRequestId } from './ai-observability';
+import { attachRequestIdToError } from './ai-observability';
 import {
   resolveActiveProviderConfig,
   toChatExecutionProviderConfig,
@@ -30,7 +30,7 @@ export class ReindexKnowledgeUseCase {
     request: ReindexKnowledgeReq,
     cx: ExecutionContext,
   ): Promise<Result<ReindexKnowledgeRes>> {
-    const requestId = createAIRequestId();
+    const requestId = cx.requestId;
 
     try {
       let executionProviderConfig;

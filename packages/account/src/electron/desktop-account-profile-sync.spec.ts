@@ -1,7 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ok } from '@memoflow/contracts/result';
 import type { AccountClientDTO } from '@memoflow/contracts/account';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { DesktopAccountProfileSync } from './desktop-account-profile-sync';
+
+function ipcContext(identityId: string): ExecutionContext {
+  return {
+    requestId: `req-profile-${identityId}`,
+    traceId: `req-profile-${identityId}`,
+    startedAt: 1_700_000_000_000,
+    source: 'ipc',
+    identityId,
+    deviceId: 'desktop-app',
+  };
+}
 
 const ACCOUNT = {
   id: 'cloud-1',
@@ -65,12 +77,12 @@ describe('DesktopAccountProfileSync', () => {
   it('updates a guest locally without creating cloud sync intent', async () => {
     const harness = createHarness();
 
-    const result = await harness.sync.update({ nickname: 'Guest Name' }, 'guest-1');
+    const result = await harness.sync.update({ nickname: 'Guest Name' }, ipcContext('guest-1'));
 
     expect(result.ok).toBe(true);
     expect(harness.updateProfileUseCase.execute).toHaveBeenCalledWith(
       { nickname: 'Guest Name' },
-      { identityId: 'guest-1' },
+      expect.objectContaining({ identityId: 'guest-1', source: 'ipc' }),
       harness.tx,
     );
     expect(harness.tx.execute).not.toHaveBeenCalled();
@@ -80,7 +92,7 @@ describe('DesktopAccountProfileSync', () => {
   it('commits a registered local update and coalesced sync intent together', async () => {
     const harness = createHarness({ cloudAccountId: 'cloud-1' });
 
-    const result = await harness.sync.update({ nickname: 'Next Name' }, 'cloud-1');
+    const result = await harness.sync.update({ nickname: 'Next Name' }, ipcContext('cloud-1'));
 
     expect(result.ok).toBe(true);
     expect(harness.tx.execute).toHaveBeenCalledWith(

@@ -53,15 +53,15 @@ describe('ai conversation ownership surface', () => {
     );
   });
 
-  it('HTTP routes pass identity into get/update/delete', () => {
+  it('HTTP routes pass the full canonical context into get/update/delete', () => {
     expect(routes).toMatch(
-      /getConversation\(req\.params!\.id,\s*\{\s*identityId:\s*ctx\.identityId/,
+      /getConversation\(req\.params!\.id,\s*ctx\)/,
     );
     expect(routes).toMatch(
-      /updateConversation\(req\.params!\.id,\s*req\.body,\s*\{\s*identityId:\s*ctx\.identityId/,
+      /updateConversation\(req\.params!\.id,\s*req\.body,\s*ctx\)/,
     );
     expect(routes).toMatch(
-      /deleteConversation\(req\.params!\.id,\s*\{\s*identityId:\s*ctx\.identityId/,
+      /deleteConversation\(req\.params!\.id,\s*ctx\)/,
     );
   });
 

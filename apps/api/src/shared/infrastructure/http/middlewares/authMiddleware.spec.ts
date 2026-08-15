@@ -1,7 +1,11 @@
 import type { CloudAuth } from '@memoflow/cloud-auth/server';
 import type { NextFunction, Response } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import { createAuthMiddleware, type AuthenticatedRequest } from './auth-middleware';
+import {
+  createAuthMiddleware,
+  type AuthenticatedRequest,
+} from './auth-middleware';
+import type { RequestContext } from '@memoflow/contracts/shared';
 
 function responseStub(): Response {
   const status = vi.fn().mockReturnThis();
@@ -9,12 +13,22 @@ function responseStub(): Response {
   return { status, json } as unknown as Response;
 }
 
+function requestStub(overrides: Record<string, unknown> = {}) {
+  const requestContext: RequestContext = {
+    requestId: 'req-auth-1',
+    traceId: 'req-auth-1',
+    startedAt: 1_700_000_000_000,
+    source: 'http',
+  };
+  return { headers: {}, requestContext, ...overrides } as unknown as AuthenticatedRequest;
+}
+
 describe('cloud auth middleware', () => {
   it('returns a structured unauthorized response when no cloud session resolves', async () => {
     const cloudAuth = {
       resolveNodePrincipal: vi.fn().mockResolvedValue(null),
     } as unknown as CloudAuth;
-    const req = { headers: {} } as AuthenticatedRequest;
+    const req = requestStub();
     const res = responseStub();
     const next = vi.fn() as unknown as NextFunction;
 
@@ -25,6 +39,7 @@ describe('cloud auth middleware', () => {
       expect.objectContaining({
         ok: false,
         error: expect.objectContaining({ code: 'UNAUTHORIZED' }),
+        traceId: 'req-auth-1',
       }),
     );
     expect(next).not.toHaveBeenCalled();
@@ -39,7 +54,7 @@ describe('cloud auth middleware', () => {
         emailVerified: true,
       }),
     } as unknown as CloudAuth;
-    const req = { headers: {} } as AuthenticatedRequest;
+    const req = requestStub();
     const res = responseStub();
     const next = vi.fn() as unknown as NextFunction;
 
@@ -51,7 +66,28 @@ describe('cloud auth middleware', () => {
       email: 'user@example.com',
       emailVerified: true,
     });
+    expect(cloudAuth.resolveNodePrincipal).toHaveBeenCalledTimes(1);
     expect(next).toHaveBeenCalledOnce();
+  });
+
+  it('resolves the Principal only once on success (request carrier already exists)', async () => {
+    const cloudAuth = {
+      resolveNodePrincipal: vi.fn().mockResolvedValue({
+        identityId: 'user-id',
+        sessionId: 'session-id',
+        email: 'user@example.com',
+        emailVerified: true,
+      }),
+    } as unknown as CloudAuth;
+    const req = requestStub();
+    const res = responseStub();
+    const next = vi.fn() as unknown as NextFunction;
+
+    await createAuthMiddleware(cloudAuth)(req, res, next);
+
+    expect(req.requestContext.requestId).toBe('req-auth-1');
+    expect(cloudAuth.resolveNodePrincipal).toHaveBeenCalledTimes(1);
+    expect(req.user?.identityId).toBe('user-id');
   });
 
   it('rejects a valid Better Auth session when the cloud Account is closed', async () => {
@@ -66,7 +102,7 @@ describe('cloud auth middleware', () => {
     const database = {
       account: { findUnique: vi.fn().mockResolvedValue({ status: 'Deactivated' }) },
     };
-    const req = { headers: {} } as AuthenticatedRequest;
+    const req = requestStub();
     const res = responseStub();
     const next = vi.fn() as unknown as NextFunction;
 
@@ -88,12 +124,42 @@ describe('cloud auth middleware', () => {
     const database = {
       account: { findUnique: vi.fn().mockResolvedValue({ status: 'Active' }) },
     };
-    const req = { headers: {} } as AuthenticatedRequest;
+    const req = requestStub();
     const res = responseStub();
     const next = vi.fn() as unknown as NextFunction;
 
     await createAuthMiddleware(cloudAuth, database as never)(req, res, next);
 
     expect(next).toHaveBeenCalledOnce();
+  });
+
+  it('uses the shared structured logger with correlation metadata on unexpected failures', async () => {
+    const cloudAuth = {
+      resolveNodePrincipal: vi.fn().mockRejectedValue(new Error('cloud down')),
+    } as unknown as CloudAuth;
+    const logger = {
+      error: vi.fn(),
+    } as never;
+    const req = requestStub();
+    const res = responseStub();
+    const next = vi.fn() as unknown as NextFunction;
+
+    await createAuthMiddleware(cloudAuth, undefined, logger)(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Cloud authentication middleware failed',
+      expect.any(Error),
+      expect.objectContaining({ requestId: 'req-auth-1', traceId: 'req-auth-1' }),
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ok: false,
+        code: 500,
+        error: expect.objectContaining({ code: 'INTERNAL_ERROR' }),
+        traceId: 'req-auth-1',
+      }),
+    );
+    expect(next).not.toHaveBeenCalled();
   });
 });

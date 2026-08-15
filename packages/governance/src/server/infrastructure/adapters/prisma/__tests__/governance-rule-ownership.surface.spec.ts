@@ -74,7 +74,7 @@ describe('governance rule ownership surface', () => {
     );
     expect(updateRule).not.toMatch(/findByIdForIdentity/);
     // authorId is attribution for revisions, not a load fence.
-    expect(updateRule).toContain('authorId: cx.identityId,');
+    expect(updateRule).toContain('authorId: cx.identityId as IdentityId,');
     expect(deleteRule).toContain(
       'const rule = await this.ruleRepository.findById(req.id as RuleId);',
     );

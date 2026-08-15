@@ -36,8 +36,18 @@ function createApi(connections: ReturnType<typeof connection>[]) {
   } as unknown as RepositoryApplicationPort;
 }
 
+const confirmedContext = {
+  requestId: 'req-knp-test',
+  traceId: 'req-knp-test',
+  startedAt: 1_700_000_000_000,
+  source: 'system',
+  identityId: 'identity-1',
+  deviceId: 'api-server',
+};
+
 const confirmedInput = {
   identityId: 'identity-1',
+  context: confirmedContext,
   path: 'notes/Approved.md',
   fileName: 'Approved.md',
   content: '# Approved\n\nReviewed body',
@@ -68,12 +78,9 @@ describe('RepositoryKnowledgeNotePersistenceAdapter', () => {
 
     const result = await adapter.createKnowledgeNote(confirmedInput);
 
-    expect(api.listKnowledgeRepositoryConnections).toHaveBeenCalledWith({
-      identityId: 'identity-1',
-      deviceId: 'api-server',
-    });
+    expect(api.listKnowledgeRepositoryConnections).toHaveBeenCalledWith(confirmedContext);
     expect(api.createConfirmedKnowledgeNote).toHaveBeenCalledWith(
-      { identityId: 'identity-1', deviceId: 'api-server' },
+      confirmedContext,
       expect.objectContaining({
         connectionId: 'connection-1',
         proposalId: 'proposal-1',
@@ -110,7 +117,7 @@ describe('RepositoryKnowledgeNotePersistenceAdapter', () => {
     await adapter.createKnowledgeNote({ ...confirmedInput, connectionId: 'connection-2' });
 
     expect(api.createConfirmedKnowledgeNote).toHaveBeenCalledWith(
-      { identityId: 'identity-1', deviceId: 'api-server' },
+      confirmedContext,
       expect.objectContaining({ connectionId: 'connection-2' }),
     );
   });

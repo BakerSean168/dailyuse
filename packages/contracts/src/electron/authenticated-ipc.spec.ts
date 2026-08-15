@@ -3,16 +3,28 @@ import type { IElectronModuleContext } from './index';
 import { createAuthenticatedIpcWrapper } from './authenticated-ipc';
 import { ElectronAuthResolutionError } from './auth-context';
 import { ResultErrorException } from '../result';
+import type { ExecutionContext } from '../shared';
+
+function executionContext(identityId: string): ExecutionContext {
+  return {
+    requestId: 'req-ipc-test',
+    traceId: 'req-ipc-test',
+    startedAt: 1_700_000_000_000,
+    source: 'ipc',
+    identityId,
+    deviceId: 'desktop-app',
+  };
+}
 
 function createContext(overrides?: {
-  requireRequestContext?: () => Promise<{ identityId: string; deviceId: string }>;
+  requireRequestContext?: () => Promise<ExecutionContext>;
 }): IElectronModuleContext {
   return {
     db: {} as IElectronModuleContext['db'],
     auth: {
       requireRequestContext:
         overrides?.requireRequestContext ??
-        vi.fn().mockResolvedValue({ identityId: 'IdentityId_test', deviceId: 'desktop-app' }),
+        vi.fn().mockResolvedValue(executionContext('IdentityId_test')),
     },
   } as IElectronModuleContext;
 }

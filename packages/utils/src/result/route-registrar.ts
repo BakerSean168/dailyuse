@@ -32,7 +32,7 @@
  */
 
 import type { Result } from '@memoflow/contracts/result';
-import type { Context } from '@memoflow/contracts/shared';
+import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { expressAdapter, type ExpressAdapterOptions } from './express-adapter';
 
 // ============================================================================
@@ -64,6 +64,13 @@ interface ExpressLikeRequest {
   query?: Record<string, unknown>;
   headers?: Record<string, string | string[] | undefined>;
   user?: { identityId?: string; sessionId?: string; tokenType?: string; exp?: number };
+  /**
+   * Producer-owned canonical request metadata set by the RequestContext
+   * middleware. Required — the adapter fails closed without it.
+   * 由 RequestContext middleware 写入的 producer-owned 请求元数据；缺失时
+   * adapter 直接 fail closed。
+   */
+  requestContext?: RequestContext;
   id?: string;
   traceId?: string;
   startTime?: number;
@@ -150,7 +157,7 @@ export class RouteRegistrar {
   route<T>(
     def: ApiRouteDefinition,
     middleware: unknown[],
-    handler: (req: ExpressLikeRequest, context: Context) => Promise<Result<T>>,
+    handler: (req: ExpressLikeRequest, context: ExecutionContext) => Promise<Result<T>>,
     adapterOptions?: ExpressAdapterOptions,
   ): this {
     // 1. Register OpenAPI path (if registry provided and not skipped)

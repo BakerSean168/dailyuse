@@ -4,6 +4,12 @@
  * 将 Controller 函数适配为 Express 路由处理器。
  * 统一处理上下文提取、错误处理和响应格式化。
  *
+ * RefArch Phase 2: the adapter is a pure consumer of the producer-owned
+ * `req.requestContext` carrier. It composes the canonical `ExecutionContext`
+ * (carrier + Principal + device metadata) at the adapter seam and fails closed
+ * when the global RequestContext middleware was not mounted — it never mints a
+ * second request ID.
+ *
  * Two variants:
  *   - `expressAdapter`                 — Controller receives raw (req, ctx)
  *   - `expressAdapterWithValidation`  — Validates req.body via Zod schema first
@@ -35,7 +41,7 @@ import {
   errorCodeToHttpStatus,
   createHttpResponseBuilder,
 } from '@memoflow/contracts/result';
-import type { Context } from '@memoflow/contracts/shared';
+import type { Context, ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { mapPrismaError } from '../errors/prisma-error-mapper';
 // Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
 import { formatZodErrors } from './format-zod-errors';
@@ -46,9 +52,10 @@ export { formatZodErrors };
 // ============================================================================
 
 /**
- * Express-like Request interface (avoid hard Express dependency)
+ * Express-like Request interface (avoid hard Express dependency).
+ * 与 Express Request 兼容的接口（避免硬依赖 Express）。
  */
-interface ExpressLikeRequest {
+export interface ExpressLikeRequest {
   body?: unknown;
   params?: Record<string, string>;
   query?: Record<string, unknown>;
@@ -59,8 +66,18 @@ interface ExpressLikeRequest {
     tokenType?: string;
     exp?: number;
   };
+  /**
+   * Producer-owned canonical request metadata set by the RequestContext
+   * middleware. Required — the adapter fails closed without it.
+   * 由 RequestContext middleware 写入的 producer-owned 请求元数据；缺失时
+   * adapter 直接 fail closed。
+   */
+  requestContext?: RequestContext;
+  /** @deprecated Use `requestContext.requestId`. 请改用 `requestContext.requestId`。 */
   id?: string;
+  /** @deprecated Use `requestContext.traceId`. 请改用 `requestContext.traceId`。 */
   traceId?: string;
+  /** @deprecated Use `requestContext.startedAt`. 请改用 `requestContext.startedAt`。 */
   startTime?: number;
 }
 
@@ -80,8 +97,16 @@ interface ExpressLikeResponse {
 export interface ExpressAdapterOptions {
   /** HTTP status code for successful responses (default: 200) */
   successStatus?: number;
-  /** Custom context extractor */
-  extractContext?: (req: ExpressLikeRequest) => Context;
+  /**
+   * Custom context extractor. Must return a full `ExecutionContext`; partial
+   * shapes are rejected by the type system. When omitted, the default extractor
+   * composes the carrier + Principal + device metadata and fails closed if the
+   * carrier is missing.
+   * 自定义 context extractor，必须返回完整 `ExecutionContext`；省略时默认
+   * extractor 合成 carrier + Principal + device 元数据，缺失 carrier 则
+   * fail closed。
+   */
+  extractContext?: (req: ExpressLikeRequest) => ExecutionContext;
   /** Whether to require authentication (default: true) */
   requireAuth?: boolean;
 }
@@ -91,13 +116,30 @@ export interface ExpressAdapterOptions {
 // ============================================================================
 
 /**
- * Residual 1183 keep-boundary: Express defaultExtractContext — HTTP request-rich Context.
- * Reads headers/body for deviceId, IP, UA, platform; identityId from req.user.
- * Soft residual 1183: IPC defaultExtractContext is desktop stub (identity '', deviceId 'desktop').
+ * Reads the producer-owned carrier, failing closed when the global RequestContext
+ * middleware was not mounted. The adapter never generates a second request ID.
+ * 读取 producer-owned carrier；未挂载 RequestContext middleware 时 fail closed。
+ * adapter 绝不生成第二个 request ID。
  *
- * Default context extractor from Express request
+ * @throws Error when `req.requestContext` is missing.
  */
-function defaultExtractContext(req: ExpressLikeRequest): Context {
+export function readExpressRequestContext(req: ExpressLikeRequest): RequestContext {
+  const requestContext = req.requestContext;
+  if (!requestContext) {
+    throw new Error(
+      'Missing RequestContext carrier: mount the global request-context middleware or pass a custom extractContext',
+    );
+  }
+  return requestContext;
+}
+
+/**
+ * Residual 1183 keep-boundary: Express defaultExtractContext — canonical carrier
+ * composer. Reads the producer-owned requestContext + header/body device info +
+ * req.user.identityId into a full ExecutionContext. No identity-only stub.
+ */
+function defaultExtractContext(req: ExpressLikeRequest): ExecutionContext {
+  const requestContext = readExpressRequestContext(req);
   const headers = req.headers ?? {};
   const userAgentHeader = headers['user-agent'];
   const userAgent = Array.isArray(userAgentHeader)
@@ -149,6 +191,7 @@ function defaultExtractContext(req: ExpressLikeRequest): Context {
     (platform || browser ? `${platform ?? 'Unknown'} - ${browser ?? 'Unknown'}` : null);
 
   return {
+    ...requestContext,
     identityId: req.user?.identityId ?? '',
     deviceId,
     device: {
@@ -196,7 +239,7 @@ function inferDeviceType(userAgent: string | null | undefined): string {
  * ```
  */
 export function expressAdapter<T>(
-  controllerFn: (req: ExpressLikeRequest, context: Context) => Promise<Result<T>>,
+  controllerFn: (req: ExpressLikeRequest, context: ExecutionContext) => Promise<Result<T>>,
   options: ExpressAdapterOptions = {},
 ): (req: ExpressLikeRequest, res: ExpressLikeResponse) => Promise<void> {
   const {
@@ -206,9 +249,11 @@ export function expressAdapter<T>(
   } = options;
 
   return async (req: ExpressLikeRequest, res: ExpressLikeResponse) => {
-    const traceId = req.traceId ?? req.id;
-    const startTime = req.startTime ?? Date.now();
-    const responseBuilder = createHttpResponseBuilder({ traceId, startTime });
+    const requestContext = readExpressRequestContext(req);
+    const responseBuilder = createHttpResponseBuilder({
+      traceId: requestContext.traceId,
+      startTime: requestContext.startedAt,
+    });
 
     try {
       // Auth check
@@ -304,7 +349,7 @@ export function expressAdapterWithValidation<TInput, TOutput>(
   schema: ZodLikeSchema<TInput>,
   controllerFn: (
     data: TInput,
-    context: Context,
+    context: ExecutionContext,
     req: ExpressLikeRequest,
   ) => Promise<Result<TOutput>>,
   options: ExpressAdapterOptions = {},
@@ -316,9 +361,11 @@ export function expressAdapterWithValidation<TInput, TOutput>(
   } = options;
 
   return async (req: ExpressLikeRequest, res: ExpressLikeResponse) => {
-    const traceId = req.traceId ?? req.id;
-    const startTime = req.startTime ?? Date.now();
-    const responseBuilder = createHttpResponseBuilder({ traceId, startTime });
+    const requestContext = readExpressRequestContext(req);
+    const responseBuilder = createHttpResponseBuilder({
+      traceId: requestContext.traceId,
+      startTime: requestContext.startedAt,
+    });
 
     try {
       // Auth check

@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ipcAdapter, ipcAdapterWithValidation } from './ipc-adapter';
 import { ok, fail, ResultErrorException } from '@memoflow/contracts/result';
+import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { ConflictError } from '../errors/domain-error';
 
 // ============================================================================
@@ -12,6 +13,22 @@ import { ConflictError } from '../errors/domain-error';
 
 function createMockEvent() {
   return { sender: {}, senderFrame: {} };
+}
+
+const CARRIER: RequestContext = {
+  requestId: 'req-ipc-1',
+  traceId: 'req-ipc-1',
+  startedAt: 1_700_000_000_000,
+  source: 'ipc',
+};
+
+function fullContext(overrides: Partial<ExecutionContext> = {}): ExecutionContext {
+  return {
+    ...CARRIER,
+    identityId: 'desktop-user',
+    deviceId: 'desktop-mac',
+    ...overrides,
+  };
 }
 
 function createMockSchema(data: unknown, shouldFail = false) {
@@ -37,17 +54,24 @@ function createMockSchema(data: unknown, shouldFail = false) {
 // ============================================================================
 
 describe('ipcAdapter', () => {
-  it('should call controller and return IpcResult on success', async () => {
+  it('should call controller with the full canonical context and return IpcResult on success', async () => {
     const controllerFn = vi.fn().mockResolvedValue(ok({ id: '1', name: 'Test' }));
-    const handler = ipcAdapter(controllerFn);
+    const handler = ipcAdapter(controllerFn, {
+      extractContext: () => fullContext(),
+    });
 
     const event = createMockEvent();
     const result = await handler(event, { id: '1' });
 
-    expect(controllerFn).toHaveBeenCalledWith(
-      { id: '1' },
-      { identityId: '', deviceId: 'desktop' },
-    );
+    const received = controllerFn.mock.calls[0][1] as ExecutionContext;
+    expect(received).toMatchObject({
+      identityId: 'desktop-user',
+      deviceId: 'desktop-mac',
+      requestId: 'req-ipc-1',
+      traceId: 'req-ipc-1',
+      startedAt: 1_700_000_000_000,
+      source: 'ipc',
+    });
     expect(result.ok).toBe(true);
     expect(result.data).toEqual({ id: '1', name: 'Test' });
   });
@@ -60,7 +84,7 @@ describe('ipcAdapter', () => {
         context: { entity: 'repository', id: 'repo-1' },
       }),
     );
-    const handler = ipcAdapter(controllerFn);
+    const handler = ipcAdapter(controllerFn, { extractContext: () => fullContext() });
 
     const result = await handler(createMockEvent(), { id: '999' });
 
@@ -72,7 +96,7 @@ describe('ipcAdapter', () => {
 
   it('should handle thrown errors', async () => {
     const controllerFn = vi.fn().mockRejectedValue(new Error('DB connection lost'));
-    const handler = ipcAdapter(controllerFn);
+    const handler = ipcAdapter(controllerFn, { extractContext: () => fullContext() });
 
     const result = await handler(createMockEvent(), {});
 
@@ -81,25 +105,40 @@ describe('ipcAdapter', () => {
     expect(result.error?.message).toBe('DB connection lost');
   });
 
-  it('should use custom context extractor', async () => {
+  it('should use custom context extractor returning the full shape', async () => {
     const controllerFn = vi.fn().mockResolvedValue(ok('ok'));
     const handler = ipcAdapter(controllerFn, {
-      extractContext: () => ({ identityId: 'desktop-user', deviceId: 'desktop-mac' }),
+      extractContext: () => fullContext({ identityId: 'desktop-user', deviceId: 'desktop-mac' }),
     });
 
     await handler(createMockEvent(), {});
 
-    expect(controllerFn).toHaveBeenCalledWith(
-      {},
-      { identityId: 'desktop-user', deviceId: 'desktop-mac' },
-    );
+    const received = controllerFn.mock.calls[0][1] as ExecutionContext;
+    expect(received).toMatchObject({
+      identityId: 'desktop-user',
+      deviceId: 'desktop-mac',
+      requestId: 'req-ipc-1',
+      traceId: 'req-ipc-1',
+      source: 'ipc',
+    });
+  });
+
+  it('should fail closed with no context producer (no identity-only stub)', async () => {
+    const controllerFn = vi.fn().mockResolvedValue(ok('ok'));
+    const handler = ipcAdapter(controllerFn);
+
+    const result = await handler(createMockEvent(), {});
+
+    expect(controllerFn).not.toHaveBeenCalled();
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('INTERNAL_ERROR');
   });
 
   it('should preserve domain error context when controller throws', async () => {
     const controllerFn = vi.fn().mockRejectedValue(
       new ConflictError('Multiple repositories found', { count: 2, repositoryIds: ['repo-1'] }),
     );
-    const handler = ipcAdapter(controllerFn);
+    const handler = ipcAdapter(controllerFn, { extractContext: () => fullContext() });
 
     const result = await handler(createMockEvent(), {});
 
@@ -121,7 +160,7 @@ describe('ipcAdapter', () => {
         403,
       ),
     );
-    const handler = ipcAdapter(controllerFn);
+    const handler = ipcAdapter(controllerFn, { extractContext: () => fullContext() });
 
     const result = await handler(createMockEvent(), {});
 
@@ -143,13 +182,17 @@ describe('ipcAdapterWithValidation', () => {
     const schema = createMockSchema(inputData);
     const controllerFn = vi.fn().mockResolvedValue(ok({ id: '1', title: 'New Goal' }));
 
-    const handler = ipcAdapterWithValidation(schema, controllerFn);
+    const handler = ipcAdapterWithValidation(schema, controllerFn, {
+      extractContext: () => fullContext(),
+    });
     const result = await handler(createMockEvent(), inputData);
 
-    expect(controllerFn).toHaveBeenCalledWith(
-      inputData,
-      { identityId: '', deviceId: 'desktop' },
-    );
+    const received = controllerFn.mock.calls[0][1] as ExecutionContext;
+    expect(received).toMatchObject({
+      identityId: 'desktop-user',
+      requestId: 'req-ipc-1',
+      source: 'ipc',
+    });
     expect(result.ok).toBe(true);
     expect(result.data).toEqual({ id: '1', title: 'New Goal' });
   });
@@ -158,7 +201,9 @@ describe('ipcAdapterWithValidation', () => {
     const schema = createMockSchema(null, true);
     const controllerFn = vi.fn();
 
-    const handler = ipcAdapterWithValidation(schema, controllerFn);
+    const handler = ipcAdapterWithValidation(schema, controllerFn, {
+      extractContext: () => fullContext(),
+    });
     const result = await handler(createMockEvent(), {});
 
     expect(controllerFn).not.toHaveBeenCalled();
@@ -178,7 +223,9 @@ describe('ipcAdapterWithValidation', () => {
       fail({ code: 'CONFLICT', message: 'Already exists' }),
     );
 
-    const handler = ipcAdapterWithValidation(schema, controllerFn);
+    const handler = ipcAdapterWithValidation(schema, controllerFn, {
+      extractContext: () => fullContext(),
+    });
     const result = await handler(createMockEvent(), { title: 'Test' });
 
     expect(result.ok).toBe(false);
@@ -189,7 +236,9 @@ describe('ipcAdapterWithValidation', () => {
     const schema = createMockSchema({ title: 'Test' });
     const controllerFn = vi.fn().mockRejectedValue(new Error('Crash'));
 
-    const handler = ipcAdapterWithValidation(schema, controllerFn);
+    const handler = ipcAdapterWithValidation(schema, controllerFn, {
+      extractContext: () => fullContext(),
+    });
     const result = await handler(createMockEvent(), { title: 'Test' });
 
     expect(result.ok).toBe(false);

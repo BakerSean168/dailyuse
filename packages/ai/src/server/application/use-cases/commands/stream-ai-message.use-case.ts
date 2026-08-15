@@ -49,7 +49,10 @@ export class StreamAIMessageUseCase {
     }>
   > {
     const startedAt = Date.now();
-    const requestId = createAIRequestId();
+    // Correlation request ID comes from the entry context; the durable run ID is
+    // minted separately and is never the reusable proxy request ID.
+    const requestId = cx.requestId;
+    const runId = createAIRequestId();
     let providerMetadata: {
       providerId?: string;
       providerName?: string;
@@ -59,7 +62,7 @@ export class StreamAIMessageUseCase {
     try {
       const turn = await this.openChatTurn.streamConversationTurn(
         {
-          runId: requestId,
+          runId,
           identityId: cx.identityId,
           conversationId,
           message: content,

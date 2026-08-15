@@ -81,7 +81,14 @@ function createFakeContext(): IElectronModuleContext {
   return {
     db: {},
     auth: {
-      requireRequestContext: vi.fn().mockResolvedValue({ identityId: 'identity-1' }),
+      requireRequestContext: vi.fn().mockResolvedValue({
+        requestId: 'req-account-ipc',
+        traceId: 'req-account-ipc',
+        startedAt: 1_700_000_000_000,
+        source: 'ipc',
+        identityId: 'identity-1',
+        deviceId: 'desktop-app',
+      }),
     },
   } as unknown as IElectronModuleContext;
 }
@@ -143,7 +150,9 @@ describe('createAccountElectronModule lifecycle', () => {
 
     const meResult = await registered(AccountChannels.GET_ME)(undefined, undefined);
     expect(meResult).toMatchObject({ ok: true });
-    expect(fake.api.getProfile).toHaveBeenCalledWith({ identityId: 'identity-1' });
+    expect(fake.api.getProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ identityId: 'identity-1', source: 'ipc' }),
+      );
   });
 
   it('destroy removes all channels and disposes exactly once (second call no-ops)', () => {
@@ -258,7 +267,14 @@ describe('AccountElectronModule cloud-close behavior', () => {
         getOptional: vi.fn().mockResolvedValue(null),
       },
       auth: {
-        requireRequestContext: vi.fn().mockResolvedValue({ identityId: 'cloud-1' }),
+        requireRequestContext: vi.fn().mockResolvedValue({
+        requestId: 'req-account-cloud',
+        traceId: 'req-account-cloud',
+        startedAt: 1_700_000_000_000,
+        source: 'ipc',
+        identityId: 'cloud-1',
+        deviceId: 'desktop-app',
+      }),
       },
     } as unknown as IElectronModuleContext;
   }
@@ -270,14 +286,23 @@ describe('AccountElectronModule cloud-close behavior', () => {
     const context = {
       db: {},
       auth: {
-        requireRequestContext: vi.fn().mockResolvedValue({ identityId: 'identity-1' }),
+        requireRequestContext: vi.fn().mockResolvedValue({
+        requestId: 'req-account-ipc',
+        traceId: 'req-account-ipc',
+        startedAt: 1_700_000_000_000,
+        source: 'ipc',
+        identityId: 'identity-1',
+        deviceId: 'desktop-app',
+      }),
       },
     } as unknown as IElectronModuleContext;
 
     module.register(context);
     const result = await registered(AccountChannels.GET_ME)(undefined, undefined);
 
-    expect(fake.api.getProfile).toHaveBeenCalledWith({ identityId: 'identity-1' });
+    expect(fake.api.getProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ identityId: 'identity-1', source: 'ipc' }),
+      );
     expect(result).toMatchObject({
       ok: false,
       error: { code: 'NOT_FOUND' },
@@ -302,7 +327,14 @@ describe('AccountElectronModule cloud-close behavior', () => {
         getOptional: vi.fn().mockResolvedValue(null),
       },
       auth: {
-        requireRequestContext: vi.fn().mockResolvedValue({ identityId: 'guest-1' }),
+        requireRequestContext: vi.fn().mockResolvedValue({
+        requestId: 'req-account-guest',
+        traceId: 'req-account-guest',
+        startedAt: 1_700_000_000_000,
+        source: 'ipc',
+        identityId: 'guest-1',
+        deviceId: 'desktop-app',
+      }),
       },
     } as unknown as IElectronModuleContext;
     module.register(context);

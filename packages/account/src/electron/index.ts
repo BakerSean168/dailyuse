@@ -91,7 +91,7 @@ import { formatZodErrors } from '@memoflow/utils/result';
 import { createLogger } from '@memoflow/utils/logger';
 import type { AccountModuleInstance } from '../server/infrastructure';
 import { AccountController } from '../server/transport';
-import { withAuthenticatedIdentity } from './authenticated-ipc';
+import { withAuthenticatedValue } from './authenticated-ipc';
 import {
   DesktopAccountProfileSync,
   type DesktopAccountProfileSyncOptions,
@@ -200,22 +200,22 @@ export function createAccountElectronModule(
         const controller = new AccountController(options.instance.api);
 
         ipcMain.handle(AccountChannels.GET_ME, async () => {
-          return withAuthenticatedIdentity(ctx, (identityId) =>
-            controller.getProfile({ identityId }),
+          return withAuthenticatedValue(ctx, (requestContext) =>
+            controller.getProfile(requestContext),
           );
         });
         installed.push(AccountChannels.GET_ME);
 
         ipcMain.handle(AccountChannels.UPDATE_PROFILE, async (_event, payload: UpdateAccountReq) => {
-          return withAuthenticatedIdentity(ctx, (identityId) => profileSync
-            ? profileSync.update(payload, identityId)
-            : controller.updateProfile(payload, { identityId }));
+          return withAuthenticatedValue(ctx, (requestContext) => profileSync
+            ? profileSync.update(payload, requestContext)
+            : controller.updateProfile(payload, requestContext));
         });
         installed.push(AccountChannels.UPDATE_PROFILE);
 
         ipcMain.handle(AccountChannels.UPDATE_SETTINGS, async (_event, payload: UpdateAccountSettingsReq) => {
-          return withAuthenticatedIdentity(ctx, (identityId) =>
-            options.instance.api.updateSettings(payload, { identityId }),
+          return withAuthenticatedValue(ctx, (requestContext) =>
+            options.instance.api.updateSettings(payload, requestContext),
           );
         });
         installed.push(AccountChannels.UPDATE_SETTINGS);
@@ -226,7 +226,8 @@ export function createAccountElectronModule(
         installed.push(AccountChannels.CHECK_AVAILABILITY);
 
         ipcMain.handle(AccountChannels.CLOSE, async (_event, payload: CloseAccountReq) => {
-          return withAuthenticatedIdentity(ctx, async (identityId) => {
+          return withAuthenticatedValue(ctx, async (requestContext) => {
+            const identityId = requestContext.identityId;
             if (syncOptions) {
               const parsed = CloseAccountSchema.safeParse(payload);
               if (!parsed.success) {
@@ -286,7 +287,7 @@ export function createAccountElectronModule(
                 return fail({ code: 'CLOUD_ACCOUNT_CLOSE_FAILED', message: msg });
               }
             }
-            return options.instance.api.closeAccount(payload, { identityId });
+            return options.instance.api.closeAccount(payload, requestContext);
           });
         });
         installed.push(AccountChannels.CLOSE);

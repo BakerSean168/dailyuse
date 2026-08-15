@@ -162,7 +162,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
             },
           ],
         }),
-        { identityId: 'identity-1' },
+        expect.objectContaining({ identityId: 'identity-1', source: 'system' }),
       );
       expect(mocks.createTaskTemplate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -199,7 +199,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
           importanceLevel: 'Moderate',
           tags: ['goal-agent'],
         }),
-        { identityId: 'identity-1' },
+        expect.objectContaining({ identityId: 'identity-1', source: 'system' }),
       );
     } finally {
       dateNowSpy.mockRestore();

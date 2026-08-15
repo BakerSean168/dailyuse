@@ -69,7 +69,7 @@ describe('registerAILangGraphCheckpointRoutes', () => {
     const req = {
       body,
       user: { identityId: 'identity-route' },
-      traceId: 'trace-langgraph-route-writes',
+      requestContext: { requestId: 'trace-langgraph-route-writes', traceId: 'trace-langgraph-route-writes', startedAt: 1_700_000_000_000, source: 'http' },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -106,7 +106,7 @@ describe('registerAILangGraphCheckpointRoutes', () => {
         checkpointId: 'checkpoint-9',
       },
       user: { identityId: 'identity-route' },
-      id: 'request-langgraph-head',
+      requestContext: { requestId: 'request-langgraph-head', traceId: 'request-langgraph-head', startedAt: 1_700_000_000_000, source: 'http' },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -139,7 +139,7 @@ describe('registerAILangGraphCheckpointRoutes', () => {
         threadId: 'thread-missing',
       },
       user: { identityId: 'identity-route' },
-      id: 'request-langgraph-missing',
+      requestContext: { requestId: 'request-langgraph-missing', traceId: 'request-langgraph-missing', startedAt: 1_700_000_000_000, source: 'http' },
     };
     const res = {
       status: vi.fn().mockReturnThis(),

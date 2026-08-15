@@ -1,6 +1,6 @@
 import { extractStructuredResultError, fail, isIpcResultEnvelope, ok, type IpcResult } from '../result';
 import type { IElectronModuleContext } from './index';
-import type { Context } from '../shared';
+import type { ExecutionContext } from '../shared';
 import { isElectronAuthResolutionError } from './auth-context';
 
 type UnexpectedErrorCode = 'INTERNAL_ERROR';
@@ -22,7 +22,7 @@ export function createAuthenticatedIpcWrapper(options: AuthenticatedIpcWrapperOp
 
   return async function withAuthenticatedValue<T>(
     ctx: IElectronModuleContext,
-    handler: (requestContext: Context) => Promise<IpcResult<T> | T>,
+    handler: (requestContext: ExecutionContext) => Promise<IpcResult<T> | T>,
   ): Promise<IpcResult<T>> {
     try {
       console.info('[contracts:authenticated-ipc] 开始执行鉴权 IPC 包装', {

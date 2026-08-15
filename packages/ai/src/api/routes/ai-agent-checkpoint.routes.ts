@@ -1,5 +1,5 @@
 /**
- * Residual 965: getRequestId sole import (packages/ai/src/shared/get-request-id.ts).
+ * RefArch Phase 2: correlation requestId comes from the canonical entry context (`ctx.requestId`).
  */
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
@@ -13,7 +13,6 @@ import {
 } from '@memoflow/utils/result';
 import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema, AgentEventSchema } from '@memoflow/contracts/ai';
 import type { AIAgentCheckpointController } from '../../server/transport/ai-agent-checkpoint.controller';
-import { getRequestId } from '../../shared/get-request-id';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -74,7 +73,7 @@ export function registerAIAgentCheckpointRoutes(
         threadId: body.threadId,
         events: body.events,
         interrupts: body.interrupts,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
       return ok(null);
     },
@@ -100,7 +99,7 @@ export function registerAIAgentCheckpointRoutes(
       const result = await controller.getCheckpoint({
         identityId: ctx.identityId,
         runId: params.runId,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
 
       if (!result) {
@@ -138,7 +137,7 @@ export function registerAIAgentCheckpointRoutes(
         statuses,
         activeOnly,
         limit,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
 
       return ok(runs);
@@ -164,7 +163,7 @@ export function registerAIAgentCheckpointRoutes(
       await controller.deleteCheckpoint({
         identityId: ctx.identityId,
         runId: params.runId,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
       return ok(null);
     },

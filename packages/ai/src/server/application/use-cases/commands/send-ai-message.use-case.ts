@@ -33,7 +33,10 @@ export class SendAIMessageUseCase {
     model?: string,
   ): Promise<Result<SendMessageRes>> {
     const startedAt = Date.now();
-    const requestId = createAIRequestId();
+    // Correlation request ID comes from the entry context; the durable run ID is
+    // minted separately and is never the reusable proxy request ID.
+    const requestId = cx.requestId;
+    const runId = createAIRequestId();
     let providerMetadata: {
       providerId?: string;
       providerName?: string;
@@ -42,7 +45,7 @@ export class SendAIMessageUseCase {
 
     try {
       const turn = await this.openChatTurn.executeConversationTurn({
-        runId: requestId,
+        runId,
         identityId: cx.identityId,
         conversationId,
         message: content,

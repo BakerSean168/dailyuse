@@ -5,7 +5,8 @@
  * Sources: shared-dual-config.surface.spec.ts, ui-components-dual.surface.spec.ts
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { readdir, readFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -78,6 +79,149 @@ import { describe, expect, it } from 'vitest';
       expect(index).not.toContain("from './ui-components'");
       expect(index).not.toContain('SimpleEditorTab');
       expect(index).not.toContain('ContextMenuItem');
+    });
+  });
+}
+
+// --- RefArch Phase 2: canonical Request/Execution Context contracts ---
+{
+  /**
+   * Phase 2 freezes `packages/contracts/src/shared/execution-context.ts` as the
+   * only `ExecutionContext` body. `context.ts` keeps a deprecated alias only;
+   * governance's private copy is retired in the adapter rollout. The context
+   * stays metadata-only — no Prisma/repository/business-aggregate fields.
+   */
+  const here = dirname(fileURLToPath(import.meta.url));
+
+  describe('RefArch Phase 2 canonical Request/Execution Context (unique body)', () => {
+    it('execution-context.ts owns the single ExecutionContext interface body', () => {
+      const source = readFileSync(join(here, 'execution-context.ts'), 'utf8');
+      expect(source).toContain('ExecutionSource');
+      expect(source).toContain('RequestContext');
+      expect(source).toContain('interface ExecutionContext extends RequestContext');
+      expect(source).toContain('requestId: string;');
+      expect(source).toContain('traceId: string;');
+      expect(source).toContain('startedAt: number;');
+      expect(source).toContain('source: ExecutionSource;');
+      expect(source).toContain('agentRunId?: string');
+      expect(source).toContain('threadId?: string');
+      expect(source).toContain('checkpointId?: string');
+      expect(source).toMatch(/export type Context = ExecutionContext;/);
+    });
+
+    it('context.ts declares no duplicate interface body — alias only', () => {
+      const source = readFileSync(join(here, 'context.ts'), 'utf8');
+      expect(source).toMatch(/export type Context = ExecutionContext;/);
+      expect(source).not.toMatch(/interface Context\b/);
+      expect(source).not.toMatch(/interface ExecutionContext\b/);
+      expect(source).toContain('@deprecated');
+    });
+
+    it('metadata-only forbidden inventory: no transport/auth/business fields', () => {
+      const source = readFileSync(join(here, 'execution-context.ts'), 'utf8');
+      // Strip block and line comments so prose about the forbidden tokens does
+      // not fail the type-body inventory.
+      const body = source
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\/\/[^\n]*/g, '')
+        .toLowerCase();
+      for (const forbidden of [
+        'prisma',
+        'repository',
+        'authorization',
+        'emailVerified',
+        'sessionId',
+        'approval',
+        'aggregate',
+      ]) {
+        expect(body).not.toContain(forbidden);
+      }
+    });
+
+    it('shared barrel re-exports the canonical types once', () => {
+      const index = readFileSync(join(here, 'index.ts'), 'utf8');
+      expect(index).toContain("export type { ExecutionContext, ExecutionSource, RequestContext } from './execution-context'");
+      expect(index).toContain("export type { Context } from './context'");
+    });
+  });
+}
+
+// --- RefArch Phase 2: repo-wide fail-closed context inventory ---
+{
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
+
+  async function productionTypeScriptFiles(dir: string): Promise<string[]> {
+    const out: string[] = [];
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.git') {
+        continue;
+      }
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (
+          entry.name === 'generated' ||
+          entry.name === '__tests__' ||
+          entry.name === '__fixtures__'
+        ) {
+          continue;
+        }
+        out.push(...(await productionTypeScriptFiles(full)));
+      } else if (
+        /\.(ts|tsx)$/.test(entry.name) &&
+        !/\.(spec|test|surface)\.tsx?$/.test(entry.name)
+      ) {
+        out.push(full);
+      }
+    }
+    return out;
+  }
+
+  describe('RefArch Phase 2 fail-closed context inventory (repo-wide)', () => {
+    it('has no second ExecutionContext/Context interface body outside the canonical file', async () => {
+      const files = await productionTypeScriptFiles(root);
+      const violators: string[] = [];
+      for (const file of files) {
+        if (file.endsWith('/packages/contracts/src/shared/execution-context.ts')) {
+          continue;
+        }
+        const source = await readFile(file, 'utf8');
+        if (/interface\s+ExecutionContext\b/.test(source) || /interface\s+Context\b/.test(source)) {
+          violators.push(file);
+        }
+      }
+      expect(violators).toEqual([]);
+    });
+
+    it('has no identity-only `as ExecutionContext` / `as Context` casts in production code', async () => {
+      const files = await productionTypeScriptFiles(root);
+      const violators: string[] = [];
+      for (const file of files) {
+        const source = await readFile(file, 'utf8');
+        if (
+          /as\s+ExecutionContext\b/.test(source) ||
+          /as\s+Context\b/.test(source) ||
+          /\{\s*identityId:[\s\S]{0,60}\}\s*as\s+ExecutionContext/.test(source)
+        ) {
+          violators.push(file);
+        }
+      }
+      expect(violators).toEqual([]);
+    });
+
+    it('has no adapter-local request-ID correlation producers (routes mint IDs instead of reading cx.requestId)', async () => {
+      const files = await productionTypeScriptFiles(root);
+      const violators: string[] = [];
+      for (const file of files) {
+        if (!/\/api\/routes\//.test(file)) {
+          continue;
+        }
+        const source = await readFile(file, 'utf8');
+        if (/const\s+requestId\s*=\s*(randomUUID|createAIRequestId)\s*\(/.test(source)) {
+          violators.push(file);
+        }
+      }
+      expect(violators).toEqual([]);
     });
   });
 }

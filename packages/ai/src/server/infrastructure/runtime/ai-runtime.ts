@@ -33,6 +33,7 @@ import type { Result } from '@memoflow/contracts/result';
 // Residual 1121: asNonEmptyString sole (shared/as-non-empty-string).
 import { asNonEmptyString } from '../../../shared/as-non-empty-string';
 import { CapabilityResolver } from '../capability-resolver';
+import { createSystemExecutionContext } from '../../../shared/system-execution-context';
 import {
   buildHostTaskCreateStartResult,
   resolveTaskCreateTitle,
@@ -575,7 +576,7 @@ async function withKnowledgeQaAnswer(
     ...(providerId ? { providerId: providerId as QueryKnowledgeReq['providerId'] } : {}),
     ...(maxResources ? { maxResources } : {}),
   };
-  const queryResult = await knowledgeQueryUseCase.execute(queryRequest, { identityId });
+  const queryResult = await knowledgeQueryUseCase.execute(queryRequest, createSystemExecutionContext(identityId));
   if (!queryResult.ok) {
     return queryResult;
   }
@@ -961,7 +962,7 @@ export function createAgentRuntimeService(
         continue;
       }
 
-      const result = await knowledgeNoteUseCase.createKnowledgeNote(parsed.data, { identityId });
+      const result = await knowledgeNoteUseCase.createKnowledgeNote(parsed.data, createSystemExecutionContext(identityId));
       if (!result.ok) {
         executedActions.push({
           tool: action.tool,

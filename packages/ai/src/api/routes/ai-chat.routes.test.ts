@@ -26,6 +26,15 @@ function createControllerStub(): AIChatController {
   } as unknown as AIChatController;
 }
 
+function requestContext() {
+  return {
+    requestId: 'req-chat-sse-1',
+    traceId: 'req-chat-sse-1',
+    startedAt: 1_700_000_000_000,
+    source: 'http',
+  };
+}
+
 function getRouteHandler(router: Router, method: string, path: string) {
   const layer = (router as unknown as { stack: LayerWithRoute[] }).stack.find(
     (candidate) =>
@@ -57,6 +66,7 @@ describe('registerAIChatRoutes', () => {
     const req = Object.assign(new EventEmitter(), {
       body: { conversationId: 'conv-1', content: 'hi' },
       user: { identityId: 'identity-1' },
+      requestContext: requestContext(),
     });
     const res = Object.assign(new EventEmitter(), {
       writableEnded: false,
@@ -77,6 +87,20 @@ describe('registerAIChatRoutes', () => {
     expect(writes[0]).toContain('"code":"RATE_LIMITED"');
     expect(writes[0]).toContain('"message":"请求过于频繁"');
     expect(writes[0]).toContain('"details":[{"code":"RETRY_LATER","message":"slow down"}]');
+    // SSE framing headers are set by the route before flushHeaders(); the
+    // X-Request-Id header is owned by the global RequestContext middleware
+    // (verified in the API smoke test).
+    const setHeaders = Object.fromEntries(
+      (res.setHeader as ReturnType<typeof vi.fn>).mock.calls.map(([k, v]: [string, string]) => [
+        k.toLowerCase(),
+        v,
+      ]),
+    );
+    expect(setHeaders['content-type']).toBe('text/event-stream');
+    expect(setHeaders['cache-control']).toBe('no-cache, no-transform');
+    expect(setHeaders['connection']).toBe('keep-alive');
+    expect(setHeaders['x-accel-buffering']).toBe('no');
+    expect(res.flushHeaders).toHaveBeenCalled();
   });
 
   it('does not abort stream processing when only the request stream closes', async () => {
@@ -108,6 +132,7 @@ describe('registerAIChatRoutes', () => {
     const req = Object.assign(new EventEmitter(), {
       body: { conversationId: 'conv-1', content: 'hi' },
       user: { identityId: 'identity-1' },
+      requestContext: requestContext(),
     });
     const res = Object.assign(new EventEmitter(), {
       writableEnded: false,
@@ -164,6 +189,7 @@ describe('registerAIChatRoutes', () => {
     const req = Object.assign(new EventEmitter(), {
       body: { conversationId: 'conv-1', content: 'hi' },
       user: { identityId: 'identity-1' },
+      requestContext: requestContext(),
     });
     const res = Object.assign(new EventEmitter(), {
       writableEnded: false,

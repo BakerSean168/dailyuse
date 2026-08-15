@@ -1,9 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import {
   type GoalAutomationExecutionInput,
   type IAnalyticsReadPort,
   type IAIAutomationToolExecutorPort,
 } from '@memoflow/ai/ports';
 import type { IdentityId } from '@memoflow/contracts';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { GoalAutomationExecutedAction } from '@memoflow/contracts/ai';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { LocalVaultElectronPort } from '@memoflow/repository/electron';
@@ -30,6 +32,22 @@ import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapte
 const logger = createLogger('DesktopAutomationToolExecutor');
 // Residual 1015: buildRecurrenceRule elevated to @memoflow/utils/shared.
 // Residual 1013/1011/1009/1007: related helpers elevated to @memoflow/utils/shared.
+
+/**
+ * Builds a canonical `source: 'system'` context for background agent-tool
+ * executions that have no user-facing HTTP/IPC transport. Each execution gets
+ * a fresh, independent request ID (never reused as a durable run key).
+ */
+function systemExecutionContext(identityId: string): ExecutionContext {
+  const requestId = randomUUID();
+  return {
+    requestId,
+    traceId: requestId,
+    startedAt: Date.now(),
+    source: 'system',
+    identityId,
+  };
+}
 
 export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolExecutorPort {
   private readonly goalModule;
@@ -102,9 +120,7 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
                 weight: keyResult.weight,
               })),
             },
-            {
-              identityId: input.identityId as IdentityId,
-            },
+            systemExecutionContext(input.identityId),
           );
 
           const goal = unwrapOrThrowError(result).readModel;
@@ -211,9 +227,7 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
 
           const result = await this.reminderModule.api.createTemplate(
             buildReminderTemplateInput(reminder),
-            {
-              identityId: input.identityId,
-            },
+            systemExecutionContext(input.identityId),
           );
           const createdReminder = unwrapOrThrowError(result) as {
             id?: string;

@@ -10,7 +10,12 @@ import { RuleStatus } from '@memoflow/contracts/governance';
 // ============ Helpers ============
 
 const testCx: ExecutionContext = {
-  identityId: 'test-user-123' as ExecutionContext['identityId'],
+  requestId: 'req-governance-test',
+  traceId: 'req-governance-test',
+  startedAt: 1_700_000_000_000,
+  source: 'ipc',
+  identityId: 'test-user-123',
+  deviceId: 'desktop-test',
 };
 
 type DeleteRuleFixture = NonNullable<Awaited<ReturnType<IRuleRepository['findById']>>>;

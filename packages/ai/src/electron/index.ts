@@ -166,15 +166,13 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.CAPABILITIES_GET);
         ipcMain.handle(AIChannels.PROVIDER_CREATE, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.createProvider(dto, { identityId: requestContext.identityId }),
+            aiModule.api.createProvider(dto, requestContext),
           ),
         );
         installed.push(AIChannels.PROVIDER_CREATE);
         ipcMain.handle(AIChannels.PROVIDER_LIST, async () =>
           withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await aiModule.api.listProviders({
-              identityId: requestContext.identityId,
-            });
+            const result = await aiModule.api.listProviders(requestContext);
             if (!result.ok) {
               return result;
             }
@@ -185,23 +183,19 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.PROVIDER_LIST);
         ipcMain.handle(AIChannels.PROVIDER_GET, async (_, id) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getProvider(id, { identityId: requestContext.identityId }),
+            aiModule.api.getProvider(id, requestContext),
           ),
         );
         installed.push(AIChannels.PROVIDER_GET);
         ipcMain.handle(AIChannels.PROVIDER_UPDATE, async (_, payload) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.updateProvider(String(payload.id), payload, {
-              identityId: requestContext.identityId,
-            }),
+            aiModule.api.updateProvider(String(payload.id), payload, requestContext),
           ),
         );
         installed.push(AIChannels.PROVIDER_UPDATE);
         ipcMain.handle(AIChannels.PROVIDER_DELETE, async (_, id) =>
           withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await aiModule.api.deleteProvider(id, {
-              identityId: requestContext.identityId,
-            });
+            const result = await aiModule.api.deleteProvider(id, requestContext);
             if (!result.ok) return result;
             // Align with HTTP void success: data:null (no undefined dual-track).
             return ok(null);
@@ -210,15 +204,13 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.PROVIDER_DELETE);
         ipcMain.handle(AIChannels.PROVIDER_TEST, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.testConnection(dto, { identityId: requestContext.identityId }),
+            aiModule.api.testConnection(dto, requestContext),
           ),
         );
         installed.push(AIChannels.PROVIDER_TEST);
         ipcMain.handle(AIChannels.PROVIDER_SET_DEFAULT, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await aiModule.api.setDefaultProvider(dto.providerId, {
-              identityId: requestContext.identityId,
-            });
+            const result = await aiModule.api.setDefaultProvider(dto.providerId, requestContext);
             if (!result.ok) return result;
             return ok(null);
           }),
@@ -226,7 +218,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.PROVIDER_SET_DEFAULT);
         ipcMain.handle(AIChannels.PROVIDER_REFRESH_MODELS, async (_, id) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.refreshProviderModels(String(id), { identityId: requestContext.identityId }),
+            aiModule.api.refreshProviderModels(String(id), requestContext),
           ),
         );
         installed.push(AIChannels.PROVIDER_REFRESH_MODELS);
@@ -245,7 +237,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         // -- Conversations --
         ipcMain.handle(AIChannels.CONVERSATION_CREATE, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.createConversation({ identityId: requestContext.identityId }, dto.name),
+            aiModule.api.createConversation(requestContext, dto.name),
           ),
         );
         installed.push(AIChannels.CONVERSATION_CREATE);
@@ -256,7 +248,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
               {
                 name: String(dto.name),
               },
-              { identityId: requestContext.identityId },
+              requestContext,
             ),
           ),
         );
@@ -264,7 +256,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         ipcMain.handle(AIChannels.CONVERSATION_LIST, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
             aiModule.api.listConversations(
-              { identityId: requestContext.identityId },
+              requestContext,
               Number(dto?.page ?? 1),
               Number(dto?.pageSize ?? 20),
             ),
@@ -275,7 +267,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
           withAuthenticatedValue(ctx, async (requestContext) => {
             const result = await aiModule.api.getConversation(
               String(id),
-              { identityId: requestContext.identityId },
+              requestContext,
               true,
             );
             if (!result.ok) return result;
@@ -285,9 +277,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         installed.push(AIChannels.CONVERSATION_GET);
         ipcMain.handle(AIChannels.CONVERSATION_DELETE, async (_, id) =>
           withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await aiModule.api.deleteConversation(String(id), {
-              identityId: requestContext.identityId,
-            });
+            const result = await aiModule.api.deleteConversation(String(id), requestContext);
             if (!result.ok) return result;
             return ok(null);
           }),
@@ -300,7 +290,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
             aiModule.api.sendMessage(
               String(dto.conversationId),
               String(dto.content),
-              { identityId: requestContext.identityId },
+              requestContext,
               dto.providerId,
               dto.model,
             ),
@@ -340,7 +330,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
                       });
                     }
                   },
-                  { identityId: requestContext.identityId },
+                  requestContext,
                   typeof payload.providerId === 'string' ? payload.providerId : undefined,
                   typeof payload.model === 'string' ? payload.model : undefined,
                   abortController.signal,
@@ -478,7 +468,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
           withAuthenticatedValue(ctx, async (requestContext) => {
             const result = await aiModule.api.getConversation(
               String(dto.conversationId),
-              { identityId: requestContext.identityId },
+              requestContext,
               true,
             );
             if (!result.ok) return result;
@@ -499,37 +489,37 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         // -- Knowledge Notes --
         ipcMain.handle(AIChannels.KNOWLEDGE_NOTE_CREATE, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.createKnowledgeNote(dto, { identityId: requestContext.identityId }),
+            aiModule.api.createKnowledgeNote(dto, requestContext),
           ),
         );
         installed.push(AIChannels.KNOWLEDGE_NOTE_CREATE);
         ipcMain.handle(AIChannels.KNOWLEDGE_QUERY, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.queryKnowledge(dto, { identityId: requestContext.identityId }),
+            aiModule.api.queryKnowledge(dto, requestContext),
           ),
         );
         installed.push(AIChannels.KNOWLEDGE_QUERY);
         ipcMain.handle(AIChannels.KNOWLEDGE_EXPAND, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.expandKnowledge(dto, { identityId: requestContext.identityId }),
+            aiModule.api.expandKnowledge(dto, requestContext),
           ),
         );
         installed.push(AIChannels.KNOWLEDGE_EXPAND);
         ipcMain.handle(AIChannels.KNOWLEDGE_REINDEX, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.reindexKnowledge(dto ?? {}, { identityId: requestContext.identityId }),
+            aiModule.api.reindexKnowledge(dto ?? {}, requestContext),
           ),
         );
         installed.push(AIChannels.KNOWLEDGE_REINDEX);
         ipcMain.handle(AIChannels.ANALYTICS_QUERY, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.queryAnalytics(dto, { identityId: requestContext.identityId }),
+            aiModule.api.queryAnalytics(dto, requestContext),
           ),
         );
         installed.push(AIChannels.ANALYTICS_QUERY);
         ipcMain.handle(AIChannels.AGENT_RUN_LIST, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.listAgentRuns(dto ?? {}, { identityId: requestContext.identityId }),
+            aiModule.api.listAgentRuns(dto ?? {}, requestContext),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_LIST);
@@ -540,28 +530,26 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
                 ...dto,
                 identityId: requestContext.identityId,
               },
-              { identityId: requestContext.identityId },
+              requestContext,
             ),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_START);
         ipcMain.handle(AIChannels.AGENT_RUN_RESUME, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.resumeAgentRun(String(dto.runId), dto.payload, {
-              identityId: requestContext.identityId,
-            }),
+            aiModule.api.resumeAgentRun(String(dto.runId), dto.payload, requestContext),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_RESUME);
         ipcMain.handle(AIChannels.AGENT_RUN_GET, async (_, runId) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getAgentRun(String(runId), { identityId: requestContext.identityId }),
+            aiModule.api.getAgentRun(String(runId), requestContext),
           ),
         );
         installed.push(AIChannels.AGENT_RUN_GET);
         ipcMain.handle(AIChannels.AGENT_EVENTS_GET, async (_, runId) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getAgentEvents(String(runId), { identityId: requestContext.identityId }),
+            aiModule.api.getAgentEvents(String(runId), requestContext),
           ),
         );
         installed.push(AIChannels.AGENT_EVENTS_GET);

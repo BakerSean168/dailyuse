@@ -20,6 +20,13 @@ updated: 2026-08-14T00:00:00Z
 | [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                        |
 | [Goal / Task Composition Root 外移](./2026-08-14-goal-task-composition-root-externalization.md) | **Step 1-4 完成**：repository-set ingredient seams、transport instance-bound、API/Desktop host composers 与注入式 repository consumers 落地；Step 5（docs/surface lock）进行中 |
 
+## 本轮已归档（2026-08-15）
+
+| 计划                                                                                                              | 结果                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| [RefArch Phase 2：统一 Request/Execution Context](../archive/2026-08-15-refarch-phase2-request-context.md)        | Steps 1-5 完成：canonical ExecutionContext、RequestContext middleware、governance-first adapter 试点、Principal ordering、AI→Python requestId 透传、SSE/smoke/inventory/docs 封口；详见计划内 gate 记录 |
+| [RefArch Phase 1：P0 分层](../archive/2026-08-15-refarch-phase1-p0-layering.md)                                  | 4 steps + 4 review rounds PASS：governance 试点、@prisma/client 边界、API runtime composer、phase1 docs/audit 闭合 |
+
 ## 本轮已归档（2026-08-08）
 
 | 计划                                                                                                              | 结果                                                                                                                      |

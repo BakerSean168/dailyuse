@@ -36,7 +36,7 @@ describe('registerAIGoalGenerationRoutes', () => {
     const req = {
       body: { idea: 'Build a unified AI workflow for goal creation.' },
       user: { identityId: 'identity-1' },
-      traceId: 'trace-goal-route-1',
+      requestContext: { requestId: 'trace-goal-route-1', traceId: 'trace-goal-route-1', startedAt: 1_700_000_000_000, source: 'http' },
     };
     const res = {
       status: vi.fn().mockReturnThis(),

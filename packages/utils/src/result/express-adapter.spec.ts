@@ -2,23 +2,46 @@
  * Express Adapter Tests
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { expressAdapter, expressAdapterWithValidation, formatZodErrors } from './express-adapter';
+import {
+  expressAdapter,
+  expressAdapterWithValidation,
+  formatZodErrors,
+  type ExpressLikeRequest,
+} from './express-adapter';
 import { ok, fail, ResultErrorException } from '@memoflow/contracts/result';
+import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { ConflictError } from '../errors/domain-error';
 
 // ============================================================================
 // Mock helpers
 // ============================================================================
 
-function createMockReq(overrides: Record<string, unknown> = {}) {
+const CARRIER: RequestContext = {
+  requestId: 'req-1',
+  traceId: 'req-1',
+  startedAt: 1_700_000_000_000,
+  source: 'http',
+};
+
+function fullContext(overrides: Partial<ExecutionContext> = {}): ExecutionContext {
+  return {
+    ...CARRIER,
+    identityId: 'user-1',
+    deviceId: 'unknown',
+    ...overrides,
+  };
+}
+
+function createMockReq(overrides: Record<string, unknown> = {}): ExpressLikeRequest {
   return {
     body: {},
     params: {},
     query: {},
     headers: {},
     user: { identityId: 'user-1', sessionId: 'session-1' },
-    traceId: 'trace-1',
-    startTime: Date.now(),
+    requestContext: CARRIER,
+    traceId: CARRIER.traceId,
+    startTime: CARRIER.startedAt,
     ...overrides,
   };
 }
@@ -88,7 +111,7 @@ describe('formatZodErrors', () => {
 });
 
 describe('expressAdapter', () => {
-  it('should call controller and return success response', async () => {
+  it('should call controller with the full canonical context and return success response', async () => {
     const controllerFn = vi.fn().mockResolvedValue(ok({ id: '1', name: 'Test' }));
     const handler = expressAdapter(controllerFn);
 
@@ -97,10 +120,21 @@ describe('expressAdapter', () => {
 
     await handler(req, res);
 
-    expect(controllerFn).toHaveBeenCalledWith(req, expect.objectContaining({ identityId: 'user-1', deviceId: 'unknown' }));
+    const received = controllerFn.mock.calls[0][1] as ExecutionContext;
+    expect(received).toMatchObject({
+      identityId: 'user-1',
+      deviceId: 'unknown',
+      requestId: 'req-1',
+      traceId: 'req-1',
+      startedAt: 1_700_000_000_000,
+      source: 'http',
+    });
+    expect(received.device).toBeDefined();
     expect(res.statusCode).toBe(200);
     expect(res.body.ok).toBe(true);
     expect(res.body.data).toEqual({ id: '1', name: 'Test' });
+    expect(res.body.traceId).toBe('req-1');
+    expect(res.body.duration).toBeGreaterThanOrEqual(0);
   });
 
   it('should use custom successStatus', async () => {
@@ -142,6 +176,7 @@ describe('expressAdapter', () => {
     expect(controllerFn).not.toHaveBeenCalled();
     expect(res.statusCode).toBe(401);
     expect(res.body.ok).toBe(false);
+    expect(res.body.traceId).toBe('req-1');
   });
 
   it('should skip auth check when requireAuth is false', async () => {
@@ -196,10 +231,10 @@ describe('expressAdapter', () => {
     expect(res.body.ok).toBe(false);
   });
 
-  it('should use custom context extractor', async () => {
+  it('should use custom context extractor returning the full shape', async () => {
     const controllerFn = vi.fn().mockResolvedValue(ok('ok'));
     const handler = expressAdapter(controllerFn, {
-      extractContext: () => ({ identityId: 'custom-id', deviceId: 'mobile' }),
+      extractContext: () => fullContext({ identityId: 'custom-id', deviceId: 'mobile' }),
     });
 
     const req = createMockReq();
@@ -207,7 +242,26 @@ describe('expressAdapter', () => {
 
     await handler(req, res);
 
-    expect(controllerFn).toHaveBeenCalledWith(req, { identityId: 'custom-id', deviceId: 'mobile' });
+    const received = controllerFn.mock.calls[0][1] as ExecutionContext;
+    expect(received).toMatchObject({
+      identityId: 'custom-id',
+      deviceId: 'mobile',
+      requestId: 'req-1',
+      traceId: 'req-1',
+      source: 'http',
+    });
+  });
+
+  it('should fail closed when the global RequestContext carrier is missing', async () => {
+    const controllerFn = vi.fn().mockResolvedValue(ok('ok'));
+    const handler = expressAdapter(controllerFn);
+
+    const req = createMockReq({ requestContext: undefined, traceId: undefined });
+    const res = createMockRes();
+
+    await expect(handler(req, res)).rejects.toThrow(/Missing RequestContext carrier/);
+    expect(controllerFn).not.toHaveBeenCalled();
+    expect(res.body).toBeNull();
   });
 
   it('should preserve domain error context in error responses', async () => {
@@ -269,11 +323,14 @@ describe('expressAdapterWithValidation', () => {
 
     await handler(req, res);
 
-    expect(controllerFn).toHaveBeenCalledWith(
-      inputData,
-      expect.objectContaining({ identityId: 'user-1', deviceId: 'unknown' }),
-      req,
-    );
+    const received = controllerFn.mock.calls[0][1] as ExecutionContext;
+    expect(received).toMatchObject({
+      identityId: 'user-1',
+      deviceId: 'unknown',
+      requestId: 'req-1',
+      traceId: 'req-1',
+      source: 'http',
+    });
     expect(res.statusCode).toBe(200);
     expect(res.body.ok).toBe(true);
   });

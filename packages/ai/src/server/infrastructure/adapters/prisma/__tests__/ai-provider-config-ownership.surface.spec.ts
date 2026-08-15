@@ -48,15 +48,15 @@ describe('ai provider config ownership surface', () => {
     );
   });
 
-  it('HTTP routes pass identity into get/update/delete', () => {
+  it('HTTP routes pass the full canonical context into get/update/delete', () => {
     expect(routes).toMatch(
-      /controller\.get\(req\.params!\.id,\s*\{\s*identityId:\s*ctx\.identityId/,
+      /controller\.get\(req\.params!\.id,\s*ctx\)/,
     );
     expect(routes).toMatch(
-      /controller\.update\(req\.params!\.id,\s*req\.body,\s*\{\s*identityId:\s*ctx\.identityId/,
+      /controller\.update\(req\.params!\.id,\s*req\.body,\s*ctx\)/,
     );
     expect(routes).toMatch(
-      /controller\.delete\(req\.params!\.id,\s*\{\s*identityId:\s*ctx\.identityId/,
+      /controller\.delete\(req\.params!\.id,\s*ctx\)/,
     );
   });
 

@@ -13,8 +13,7 @@ import type {
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
-  createAIRequestId,
-  withAICostEstimate,
+    withAICostEstimate,
 } from './ai-observability';
 import {
   resolveActiveProviderConfig,
@@ -36,7 +35,7 @@ export class QueryAIAnalyticsUseCase {
     cx: ExecutionContext,
   ): Promise<Result<QueryAnalyticsRes>> {
     const startedAt = Date.now();
-    const requestId = createAIRequestId();
+    const requestId = cx.requestId;
     let providerMetadata: {
       providerId?: string;
       providerName?: string;

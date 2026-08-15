@@ -17,8 +17,7 @@ import type { SyncRelevantKnowledgeUseCase } from './sync-relevant-knowledge.use
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
-  createAIRequestId,
-  withAICostEstimate,
+    withAICostEstimate,
 } from './ai-observability';
 import {
   resolveActiveProviderConfig,
@@ -43,7 +42,7 @@ export class ExpandKnowledgeUseCase {
     cx: ExecutionContext,
   ): Promise<Result<ExpandKnowledgeRes>> {
     const startedAt = Date.now();
-    const requestId = createAIRequestId();
+    const requestId = cx.requestId;
     let providerMetadata: {
       providerId?: string;
       providerName?: string;

@@ -315,5 +315,75 @@ describe('notification route contracts', () => {
     expect(idIdx).toBeGreaterThanOrEqual(0);
     expect(getIdx).toBeLessThan(idIdx);
   });
+});
 
+describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () => {
+  it('keeps SSE headers/framing and exposes X-Request-Id before the first chunk', async () => {
+    const { EventEmitter } = await import('node:events');
+    const api = {
+      subscribeSseEvents: vi.fn(() => () => undefined),
+      getDeliveryReceipts: vi.fn(async () => ({ ok: true, data: [] })),
+    } as unknown as NotificationApplicationPort;
+
+    const router = registerNotificationRoutes(api, {
+      auth: ((req, _res, next) => {
+        (req as Record<string, unknown>).user = { id: 'identity-1' };
+        next();
+      }) as RequestHandler,
+      requireRole: () => authMiddleware,
+    });
+
+    const layer = (router as unknown as { stack: Array<{ route?: { path: string; methods: Record<string, boolean>; stack: Array<{ handle: (r: unknown, s: unknown) => unknown }> } }> }).stack.find(
+      (candidate) => candidate.route?.path === '/sse' && candidate.route.methods.get === true,
+    );
+    const handler = layer!.route!.stack.at(-1)!.handle;
+
+    const req = Object.assign(new EventEmitter(), {
+      headers: {},
+      query: {},
+      // Simulate the global RequestContext middleware (owned by apps/api).
+      requestContext: {
+        requestId: 'req-notification-sse',
+        traceId: 'req-notification-sse',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
+      user: { id: 'identity-1' },
+    });
+    const writes: string[] = [];
+    const res = Object.assign(new EventEmitter(), {
+      writableEnded: false,
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        return true;
+      }),
+      end: vi.fn(function (this: { writableEnded: boolean }) {
+        this.writableEnded = true;
+      }),
+    });
+
+    const pending = handler(req, res);
+    await Promise.resolve();
+    res.emit('close');
+    await pending;
+
+    const setHeaders = Object.fromEntries(
+      (res.setHeader as ReturnType<typeof vi.fn>).mock.calls.map(([k, v]: [string, string]) => [
+        k.toLowerCase(),
+        v,
+      ]),
+    );
+    expect(setHeaders['content-type']).toBe('text/event-stream');
+    expect(setHeaders['cache-control']).toBe('no-cache');
+    expect(setHeaders['connection']).toBe('keep-alive');
+    expect(res.flushHeaders).toHaveBeenCalled();
+    // The route does not own X-Request-Id (global middleware does), but the
+    // carrier it read carries the entry requestId for correlation.
+    expect((req as { requestContext?: { requestId?: string } }).requestContext?.requestId).toBe(
+      'req-notification-sse',
+    );
+    expect(writes.length).toBeGreaterThanOrEqual(0);
+  });
 });

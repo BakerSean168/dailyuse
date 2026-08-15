@@ -1,5 +1,4 @@
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -40,7 +39,7 @@ export function registerAIAnalyticsQueryRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.query(req.body, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.query(req.body, ctx),
   );
 
   return router;

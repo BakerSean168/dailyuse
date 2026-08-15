@@ -131,7 +131,7 @@ describe('AIKnowledgeNoteService', () => {
           requestId: 'request-generated',
         },
       },
-      { identityId: 'identity-1' },
+      { requestId: 'req-knowledge-1', traceId: 'req-knowledge-1', startedAt: 1_700_000_000_000, source: 'system', identityId: 'identity-1' },
     );
 
     expect(executionPort.generate).toHaveBeenCalledWith({
@@ -151,6 +151,11 @@ describe('AIKnowledgeNoteService', () => {
 
     expect(persistencePort.createKnowledgeNote).toHaveBeenCalledWith({
       identityId: 'identity-1',
+      context: expect.objectContaining({
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        source: 'system',
+      }),
       path: 'python/Python-Tooling.md',
       fileName: 'Python-Tooling.md',
       content: '# Python Tooling\n\nA concise note.',
@@ -206,12 +211,22 @@ describe('AIKnowledgeNoteService', () => {
           requestId: 'request-reviewed',
         },
       },
-      { identityId: 'identity-1' },
+      { requestId: 'req-knowledge-1', traceId: 'req-knowledge-1', startedAt: 1_700_000_000_000, source: 'system', identityId: 'identity-1' },
     );
 
     expect(executionPort.generate).not.toHaveBeenCalled();
     expect(persistencePort.createKnowledgeNote).toHaveBeenCalledWith({
       identityId: 'identity-1',
+      context: expect.objectContaining({
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        source: 'system',
+      }),
+      context: expect.objectContaining({
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        source: 'system',
+      }),
       path: 'python/Agent-Note-Draft.md',
       fileName: 'Agent-Note-Draft.md',
       content: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',

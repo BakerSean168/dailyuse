@@ -6,6 +6,7 @@
  */
 
 import express, { Router, type Express, type NextFunction, type Request, type RequestHandler, type Response } from 'express';
+import { randomUUID } from 'node:crypto';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { vi } from 'vitest';
 import { TaskTemplateController } from '../server/transport/task-template.controller';
@@ -143,6 +144,19 @@ export function createTaskSmokeApp(): TaskSmokeApp {
 
   const app = express();
   app.use(express.json());
+
+  // Mirrors the API RequestContext middleware: the expressAdapter fails closed
+  // without a producer-owned carrier, so smoke tests need one before routes.
+  app.use((req, _res, next) => {
+    const requestId = randomUUID();
+    (req as unknown as Record<string, unknown>).requestContext = {
+      requestId,
+      traceId: requestId,
+      startedAt: Date.now(),
+      source: 'http',
+    };
+    next();
+  });
 
   const rootRouter = Router();
   const taskRoutes = registerTaskRoutes(

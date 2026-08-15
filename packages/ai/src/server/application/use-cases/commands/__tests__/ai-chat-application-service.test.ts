@@ -97,6 +97,17 @@ class StubExecutionLogPort implements IAIExecutionLogPort {
   public readonly record = vi.fn<(input: AIExecutionLogInput) => Promise<void>>(async () => {});
 }
 
+function executionContext(identityId: string) {
+  return {
+    requestId: 'req-chat-app-1',
+    traceId: 'req-chat-app-1',
+    startedAt: 1_700_000_000_000,
+    source: 'http',
+    identityId,
+    deviceId: 'test-device',
+  };
+}
+
 describe('SendAIMessageUseCase', () => {
   it('routes chat execution through the execution port with structured messages', async () => {
     const identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440000';
@@ -129,7 +140,7 @@ describe('SendAIMessageUseCase', () => {
     const result = await useCase.execute(
       String(conversation.id),
       'Hello from user',
-      { identityId },
+      executionContext(identityId),
       'provider-1',
     );
 
@@ -232,7 +243,7 @@ describe('StreamAIMessageUseCase', () => {
       String(conversation.id),
       'Hello from user',
       vi.fn(),
-      { identityId },
+      executionContext(identityId),
       'provider-1',
       undefined,
       streamAbortController.signal,

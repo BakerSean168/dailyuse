@@ -178,7 +178,7 @@ export function createGoalElectronModule(options: GoalElectronModuleOptions): Go
         installed.push(GoalChannels.GET);
         ipcMain.handle(GoalChannels.CREATE, async (_event, dto) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.create(dto, requestContext as ExecutionContext),
+            goalController.create(dto, requestContext),
           ),
         );
         installed.push(GoalChannels.CREATE);
@@ -394,19 +394,19 @@ export function createGoalElectronModule(options: GoalElectronModuleOptions): Go
         installed.push(GoalChannels.FOLDER_LIST);
         ipcMain.handle(GoalChannels.FOLDER_GET, async (_event, id) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.get(id, requestContext as ExecutionContext),
+            goalFolderController.get(id, requestContext),
           ),
         );
         installed.push(GoalChannels.FOLDER_GET);
         ipcMain.handle(GoalChannels.FOLDER_CREATE, async (_event, dto) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.create(dto, requestContext as ExecutionContext),
+            goalFolderController.create(dto, requestContext),
           ),
         );
         installed.push(GoalChannels.FOLDER_CREATE);
         ipcMain.handle(GoalChannels.FOLDER_UPDATE, async (_event, id, dto) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.update(id, dto, requestContext as ExecutionContext),
+            goalFolderController.update(id, dto, requestContext),
           ),
         );
         installed.push(GoalChannels.FOLDER_UPDATE);
@@ -414,7 +414,7 @@ export function createGoalElectronModule(options: GoalElectronModuleOptions): Go
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
             const result = await goalFolderController.delete(
               id,
-              requestContext as ExecutionContext,
+              requestContext,
             );
             if (!result.ok) return result;
             return ok(null);
