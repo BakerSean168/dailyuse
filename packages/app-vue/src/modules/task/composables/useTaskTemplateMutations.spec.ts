@@ -258,18 +258,23 @@ describe('useTaskTemplateMutations (plan §3.4)', () => {
     expect(runtime.queryClient.getQueryData(listKey)?.templates?.[0].name).toBe('Confirmed');
   });
 
-  it('batch delete patches the identity captured at mutation begin, even if the identity switches while the request is pending (P1-2)', async () => {
+  it('batch delete patches the identity captured at mutation begin even when a competing batch for the switched identity completes first (P1-2)', async () => {
     const tpl = template();
-    let resolveDelete!: (result: Result<void>) => void;
-    const pendingDelete = new Promise<Result<void>>((resolve) => {
-      resolveDelete = resolve;
+    let resolveA!: (result: Result<void>) => void;
+    let resolveB!: (result: Result<void>) => void;
+    const pendingA = new Promise<Result<void>>((resolve) => {
+      resolveA = resolve;
+    });
+    const pendingB = new Promise<Result<void>>((resolve) => {
+      resolveB = resolve;
     });
     const service = makeService({
-      deleteTemplate: vi.fn().mockReturnValue(pendingDelete),
+      deleteTemplate: vi.fn().mockReturnValueOnce(pendingA).mockReturnValueOnce(pendingB),
     });
-    // Model an identity switch between mutation begin and execution: the resolver reports the
-    // CURRENT identity, and the service keeps the batch pending while we flip identity A → B.
-    // A mutationFn that re-resolves the scope at execution time would patch B and leave A stale.
+    // Batch A begins at identity A; the identity then switches to B while it is pending, and a
+    // competing batch B for the new identity starts — its onMutate overwrites the pre-fix shared
+    // scope before batch A's mutationFn reads it — and completes before batch A resolves. Batch A
+    // must still patch the identity it began with (A), not the scope the competing batch wrote.
     let currentIdentity = 'identity-a';
     const { api, runtime } = mountTaskComposable(() => useTaskTemplateMutations(), {
       service,
@@ -281,21 +286,26 @@ describe('useTaskTemplateMutations (plan §3.4)', () => {
     runtime.queryClient.setQueryData(listKeyA, { templates: [tpl], total: 1 });
     runtime.queryClient.setQueryData(listKeyB, { templates: [tpl], total: 1 });
 
-    const pending = api.deleteTemplatesSafe([tpl.id]);
-    // The batch is in flight; the identity switches A → B before the server confirms.
+    const batchA = api.deleteTemplatesSafe([tpl.id]);
+    // The identity switches while batch A is pending; a competing batch for the new identity
+    // begins and completes before batch A resolves.
     currentIdentity = 'identity-b';
-    resolveDelete(ok(undefined));
-    await pending;
+    const batchB = api.deleteTemplatesSafe([tpl.id]);
+    resolveB(ok(undefined));
+    await batchB;
+    resolveA(ok(undefined));
+    await batchA;
 
-    // The begin-scope identity (A) cache is patched; the execution-time identity (B) is untouched.
+    // Batch A removed the template from the identity it began with (A)…
     const remainingA = runtime.queryClient.getQueryData(listKeyA) as {
       templates: TaskTemplateClientDTO[];
     };
     expect(remainingA.templates.some((t) => t.id === tpl.id)).toBe(false);
+    // …and batch B from its own identity (B). Neither cache is left with a stale entry.
     const remainingB = runtime.queryClient.getQueryData(listKeyB) as {
       templates: TaskTemplateClientDTO[];
     };
-    expect(remainingB.templates.some((t) => t.id === tpl.id)).toBe(true);
+    expect(remainingB.templates.some((t) => t.id === tpl.id)).toBe(false);
   });
 
   it('concurrent batch deletes for different identities do not cross-contaminate (P1-2)', async () => {
