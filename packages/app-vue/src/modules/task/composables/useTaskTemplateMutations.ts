@@ -188,14 +188,18 @@ export function useTaskTemplateMutations() {
     },
   });
 
-  // P1-2: batch delete resolves identityScope once at mutation begin (onMutate) and shares it
-  // with mutationFn via this closure. mutationFn never re-resolves it at execution time — an
-  // identity change while the batch is in flight would patch the wrong identity's cache.
-  let batchDeleteIdentityScope = '';
-
+  // P1-2: batch delete captures identityScope per invocation at mutation begin — the wrapper
+  // resolves it into the variables — and mutationFn/onSettled read only that invocation's own
+  // variables. No shared state, so concurrent batches with different identities cannot overwrite
+  // each other's scope between begin and execution; execution never re-resolves the scope.
   const deleteTemplates = useMutation({
-    mutationFn: async (ids: readonly string[]) => {
-      const identityScope = batchDeleteIdentityScope;
+    mutationFn: async ({
+      ids,
+      identityScope,
+    }: {
+      ids: readonly string[];
+      identityScope: string;
+    }) => {
       let deleted = 0;
       for (const id of ids) {
         const result = await executeTaskOperation(
@@ -208,10 +212,7 @@ export function useTaskTemplateMutations() {
       }
       return deleted;
     },
-    onMutate: () => {
-      batchDeleteIdentityScope = resolveIdentityScope();
-      return { identityScope: batchDeleteIdentityScope };
-    },
+    onMutate: ({ identityScope }) => ({ identityScope }),
     onSettled: (_data, _error, _ids, context) => {
       void runtime.dispatcher.invalidate({
         target: 'task-template',
@@ -326,7 +327,7 @@ export function useTaskTemplateMutations() {
   async function deleteTemplatesSafe(ids: readonly string[]): Promise<boolean> {
     if (ids.length === 0) return true;
     try {
-      await deleteTemplates.mutateAsync(ids);
+      await deleteTemplates.mutateAsync({ ids, identityScope: resolveIdentityScope() });
       return true;
     } catch {
       return false;

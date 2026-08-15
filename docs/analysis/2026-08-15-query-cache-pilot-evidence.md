@@ -49,7 +49,7 @@
 | Task management mount → edit → return 60s    | `useTaskTemplateQueries.spec`：graph initial 1；`useTaskTemplateMutations.spec` update 1 + invalidate 后 active graph refetch 1；60s 窗口内 remount 0 次额外 fetch                      | graph initial 1；update 1；invalidate refetch 1；60s 内无第二次无因 fetch | 视图删除无条件 `refreshTaskManagement`/`fetchTaskGraph`                                                           |
 | Task detail mount/update                     | `useTaskTemplateQueries.spec`：detail key 1 + graph key 1；update onSettled 后 active affected key ≤1                                                                                   | 每 canonical key initial 1；onSettled ≤1                                  | `useTaskTemplateDetailQuery` 随 route param 自动收敛                                                              |
 | Task optimistic failure                      | `useTaskTemplateMutations.spec`：update/status failure exact restore 全部 affected keys（list/graph/detail）                                                                            | 100% 恢复                                                                 | snapshot/restore 逐 key；P1-1 回滚移除 patch 新建的 detail key                                                    |
-| Task batch delete 部分成功                   | `useTaskTemplateMutations.spec`：首错停止；已成功项保持删除；toast 一次；P1-2 回归：identity 在 begin 捕获并经闭包复用，执行时切换 identity 不污染其他身份 cache                        | 与当前语义一致                                                            | 不伪装原子批量；`mutationFn` 不再重解析 identityScope                                                             |
+| Task batch delete 部分成功                   | `useTaskTemplateMutations.spec`：首错停止；已成功项保持删除；toast 一次；P1-2 回归：begin 捕获 scope 随本次 variables 贯穿，执行中切换 identity 不污染其他身份 cache，并发批次互不污染  | 与当前语义一致                                                            | 不伪装原子批量；`mutationFn` 不再重解析 identityScope                                                             |
 | Task list error via legacy facade（R2 P2-2） | `useTask.spec`：list query 失败时 facade `error` 暴露翻译后消息；再次 `fetchTemplates` 触发真正 refetch（成功收敛）；`TaskCapsulePreview.spec`：失败显示 retry 状态、点 retry 重新 load | error 暴露 + retry 真实 refetch                                           | facade `error = store.error ?? listQuery.error`；`fetchTemplates` 对 error 态 key 显式 `refetch`（waiter 不挂起） |
 | Desktop lifecycle guard（R2 P2-3）           | `app.spec`：disposed 后延迟启动不启动 notification hook；`server-state.spec`：logout/lock 触发 pending startup cancel、stop 已注册 sources、置 disposed                                 | cancel 一次且不重复；源全部 stop                                          | 与 web 一致：`isDesktopServerStateDisposed` + `registerDesktopServerStateStartupCancel`（P2-5 同款）              |
 | Desktop auth-only install gate（R2 P2-4）    | `app.spec`：profile LOCKED（auth-only entry）不安装 Query Cache runtime；UNLOCKED 才安装                                                                                                | auth-only 不安装                                                          | 与 web `cloudSession.ok` 门禁同构；desktop 以 `unlockState==='UNLOCKED'` 判定已认证                               |
@@ -65,20 +65,23 @@
 
 ## 5. 执行命令记录
 
-- 2026-08-15（UTC，Linux worktree，direct Vitest only）：
-  - `node node_modules/vitest/vitest.mjs run --config packages/app-vue/vitest.config.ts` → **185 files / 996 tests passed**。
+- 2026-08-15（UTC，Linux worktree，direct Vitest only；R3 修正后当前数字）：
+  - `node node_modules/vitest/vitest.mjs run --config packages/app-vue/vitest.config.ts` → **186 files / 1005 tests passed**。
   - `node node_modules/vitest/vitest.mjs run --config apps/web/vitest.config.ts` → **16 files / 67 tests passed**。
-  - `node node_modules/vitest/vitest.mjs run --config apps/desktop/vitest.config.ts` → **38 files / 218 tests passed**。
+  - `node node_modules/vitest/vitest.mjs run --config apps/desktop/vitest.config.ts` → **38 files / 222 tests passed**。
   - `pnpm nx run app-vue:typecheck` / `web:typecheck` / `desktop:typecheck` → all pass。
   - `pnpm nx run app-vue:lint` → 0 errors。
   - Prettier over changed files → clean（`prettier --check` 全量通过；R2 修复后已 `--write` 补格式）。
 - Review R2 修复（2026-08-15，同 worktree）：
-  - P1-2 batch-delete：`useTaskTemplateMutations.deleteTemplates` 的 identityScope 改为在 onMutate（mutation begin）捕获一次，mutationFn 经闭包复用同一 scope；新增「begin 捕获 → 执行时 identity 已切换，仍 patch begin-scope cache、execution-time cache 不动」回归测试（`useTaskTemplateMutations.spec.ts`，先红后绿）。
+  - P1-2 batch-delete（R2 → R3 修正，见下）：`useTaskTemplateMutations.deleteTemplates` 的 identityScope 每次调用独立捕获——`deleteTemplatesSafe` 在 mutation begin 解析 scope 并放进该次调用的 variables，mutationFn/onSettled 只读本次 variables（无共享状态）；并发批次不会互相覆盖 scope，执行中也不重解析。
   - P2-1 Governance stale window：`query-policy.ts` 新增 `GOVERNANCE_STALE_TIME_MS=30_000`（policy `staleTime` 增 `governance` 字段）；`useGovernanceListQuery`/`useGovernanceDetailQuery`/`useGovernanceRevisionsQuery` 全部补 `staleTime`；`useGovernanceQueries.spec` 新增 3 个 fake-timer 30s 窗口测试（窗口内 remount 0 额外 fetch、31s 后 +1）。
   - P2-2 Task list error：`useTask` facade `error` 改为 `store.error ?? templateList.error`，`fetchTemplates` 对 error 态 key 显式 `refetch` 让 retry 真实重试；新增 `useTask.spec`（error 暴露 + 重试 refetch）与 `TaskCapsulePreview.spec` retry 状态/点击重试测试。
   - P2-3 Desktop lifecycle guard：desktop `server-state.ts` 对齐 web，新增 `isDesktopServerStateDisposed`/`registerDesktopServerStateStartupCancel`；`clearDesktopServerStateIdentity` 置 disposed、fire cancel、再 stop sources；`app.ts` 延迟启动带 disposed 守卫并注册 cancel；`app.spec`/`server-state.spec` 覆盖 cancel、stop、disposed、不启动源。
   - P2-4 Desktop auth-only install gate：`app.ts` 仅在 `unlockState==='UNLOCKED'` 时安装 Query Cache runtime（plan §3.1 认证后安装）；`app.spec` 断言 LOCKED 不安装。
   - P2 Prettier：全量 changed files `pnpm exec prettier --check` 全绿；evidence.md 据此如实记录。
+- Review R3 修复（2026-08-15，同 worktree；P1 + P2）：
+  - P1 batch-delete per-invocation scope：R2 用单个共享 `let batchDeleteIdentityScope` 在 onMutate 捕获、mutationFn 读取；并发 mutation 在 onMutate 与 mutationFn 之间互相覆盖该值，导致一条 mutation 去 patch/invalidate 另一 identity 的 cache。改为 scope 随该次调用的 variables 携带（`deleteTemplatesSafe` 在 begin 解析），mutationFn/onSettled 各自读本次 variables，无共享状态。原「resolver calls 计数」回归测试从未触发切换（resolver 只被调用一次，`calls > 1` 不成立）；替换为两个真实验证竞态的测试：deferred 服务「请求挂起中 identity 由 A 切到 B，仍 patch begin-scope A、execution-time B 不动」，以及并发 A/B 两个不同 identity 批次互不污染（两测试在修复前均失败 red、修复后通过 green）。
+  - P2 证据总数修正：R3 独立运行 app-vue 186/1004、desktop 38/222、web 16/67；本修复把 1 个回归测试拆为 2 个（净 +1），当前 app-vue 186/1005、desktop 38/222、web 16/67（见 §5 更新后数字）。
 
 ### 5.1 离线 / 重启 / 重连 / identity-switch / SSE catch-up / PowerSync ordering journeys（Step 5）
 
