@@ -31,7 +31,17 @@ export interface AIAssistantFacadeControllerService {
   ): Promise<Result<AssistantDispatchResult>>;
 }
 
-function toHostCommand(
+/**
+ * Map a validated client command into the server-side `AssistantCommand`,
+ * injecting identity from the trusted authenticated context. Shared by the
+ * HTTP controller and the Electron main transport so both surfaces build the
+ * Host command identically.
+ *
+ * 把校验后的客户端命令映射为服务端 `AssistantCommand`，从可信认证上下文注入
+ * identity。HTTP controller 与 Electron main transport 共用，保证两个传输面
+ * 构造出完全一致的 Host command。
+ */
+export function toHostCommand(
   client: AssistantClientCommand,
   identityId: string,
 ): AssistantCommand {

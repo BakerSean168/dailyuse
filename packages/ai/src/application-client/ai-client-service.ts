@@ -44,6 +44,7 @@ import type {
   AgentRunListParams,
   AgentStartRunClientRequest,
   AssistantClientCommand,
+  AssistantDispatchHandlers,
 } from '@memoflow/contracts/ai';
 
 /**
@@ -221,7 +222,7 @@ export class AIClientService implements AIClientPort {
 
   dispatchAssistant(
     command: AssistantClientCommand,
-    handlers: Parameters<IAIAssistantApiClient['dispatchAssistant']>[1],
+    handlers: AssistantDispatchHandlers,
     signal?: AbortSignal,
   ) {
     return this.assistantApi.dispatchAssistant(command, handlers, signal);

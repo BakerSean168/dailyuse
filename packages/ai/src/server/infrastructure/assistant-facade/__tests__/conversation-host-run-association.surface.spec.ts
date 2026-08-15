@@ -19,6 +19,10 @@ describe('Conversation ↔ Host open-chat association boundary (nightly N2 / AH-
     resolve(repoRoot, 'packages/contracts/src/modules/ai/agent-host/ports.ts'),
     'utf8',
   );
+  const dispatch = readFileSync(
+    resolve(repoRoot, 'packages/contracts/src/modules/ai/agent-host/assistant-dispatch.ts'),
+    'utf8',
+  );
   const agentDto = readFileSync(
     resolve(repoRoot, 'packages/contracts/src/modules/ai/api/ai-agent.dto.ts'),
     'utf8',
@@ -41,9 +45,12 @@ describe('Conversation ↔ Host open-chat association boundary (nightly N2 / AH-
   );
 
   it('N1 contract: run.started may carry conversationId; facade trims and emits it', () => {
-    expect(ports).toContain("type: 'run.started'");
-    expect(ports).toContain('conversationId?: string');
-    expect(ports).toContain('Residual N1');
+    // The event shape lives in the shared wire schema (assistant-dispatch.ts);
+    // ports.ts only re-exports the derived type.
+    expect(dispatch).toContain("type: z.literal('run.started')");
+    expect(dispatch).toContain('conversationId: z.string().optional()');
+    expect(dispatch).toContain('Residual N1');
+    expect(ports).toContain("export type { AssistantClientCommand, AssistantEvent }");
     expect(facade).toContain('Residual N1');
     expect(facade).toContain('const conversationId = command.conversationId?.trim()');
     expect(facade).toContain('...(conversationId ? { conversationId } : {})');

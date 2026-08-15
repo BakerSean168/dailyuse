@@ -14,6 +14,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
+  ASSISTANT_DISPATCH_UNAVAILABLE,
+  ASSISTANT_PROTOCOL_ERROR,
   AssistantClientCommandSchema,
   AssistantDispatchResultSchema,
   AssistantEventSchema,
@@ -273,5 +275,16 @@ describe('derived named types', () => {
   it('exposes AssistantDispatchResult with eventCount', () => {
     const result: AssistantDispatchResult = { eventCount: 1 };
     expect(result.eventCount).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('dispatch error classification codes (plan §4.5 / Step B §5.2)', () => {
+  it('freezes protocol-error and dispatch-unavailable codes', () => {
+    expect(ASSISTANT_PROTOCOL_ERROR).toBe('ASSISTANT_PROTOCOL_ERROR');
+    expect(ASSISTANT_DISPATCH_UNAVAILABLE).toBe('ASSISTANT_DISPATCH_UNAVAILABLE');
+  });
+
+  it('keeps protocol and unavailable codes distinct from each other', () => {
+    expect(ASSISTANT_PROTOCOL_ERROR).not.toBe(ASSISTANT_DISPATCH_UNAVAILABLE);
   });
 });

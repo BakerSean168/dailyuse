@@ -104,6 +104,30 @@ export const AssistantClientCommandSchema = z.discriminatedUnion('type', [
 export type AssistantClientCommand = z.infer<typeof AssistantClientCommandSchema>;
 
 /**
+ * Stable error code for a malformed/invalid dispatch payload (malformed JSON,
+ * wrong shape, unknown event discriminator). Never eligible for a legacy
+ * fallback — a protocol failure means the Host may already have acted.
+ *
+ * payload 解析失败的稳定错误码（malformed JSON、错误 shape、未知事件
+ * discriminator）。这类错误绝不触发 legacy 回退——协议失败意味着 Host 可能
+ * 已经执行。
+ */
+export const ASSISTANT_PROTOCOL_ERROR = 'ASSISTANT_PROTOCOL_ERROR' as const;
+
+/**
+ * Stable error code for a Host that definitely does NOT support dispatch:
+ * Web bootstrap route absence (404/405/501) or Desktop bridge/handler absence
+ * BEFORE the START is accepted. A failure AFTER dispatch started (any SSE
+ * `error` frame or stream break, any IPC ERROR after START) must NOT be
+ * classified with this code.
+ *
+ * Host 明确不支持 dispatch 的稳定错误码：Web bootstrap 路由缺失（404/405/501）
+ * 或 Desktop bridge/handler 在 START 被接受前缺失。dispatch 已经开始之后
+ * （SSE `error` 帧或断流、IPC START 之后的 ERROR）一律不得使用该码。
+ */
+export const ASSISTANT_DISPATCH_UNAVAILABLE = 'ASSISTANT_DISPATCH_UNAVAILABLE' as const;
+
+/**
  * Open-chat `message` wire shape (plan §4.2). Derived from the schema so the
  * runtime validation and the TypeScript shape can never diverge.
  *

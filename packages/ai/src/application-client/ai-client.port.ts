@@ -33,7 +33,7 @@ import type {
   AgentRunResult,
   AgentStartRunClientRequest,
   AssistantClientCommand,
-  AssistantEvent,
+  AssistantDispatchHandlers,
 } from '@memoflow/contracts/ai';
 import type { Result } from '@memoflow/contracts/result';
 
@@ -97,13 +97,18 @@ export interface AIClientPort {
   getAgentRun(runId: string): Promise<Result<AgentRunResult>>;
   getAgentEvents(runId: string): Promise<Result<AgentEvent[]>>;
 
-  /** Residual 347: AssistantFacade client dispatch (no identityId in body). */
+  /**
+   * Residual 347: AssistantFacade client dispatch (no identityId in body).
+   * Handlers use the frozen `AssistantDispatchHandlers`; onDone receives the
+   * named `AssistantDispatchResult`. identityId never appears in the body.
+   *
+   * Residual 347：AssistantFacade 客户端分发（body 不含 identityId）。
+   * handlers 使用冻结的 `AssistantDispatchHandlers`；onDone 收到命名类型
+   * `AssistantDispatchResult`。identityId 永远不会出现在 body。
+   */
   dispatchAssistant(
     command: AssistantClientCommand,
-    handlers: {
-      onEvent?: (event: AssistantEvent) => void;
-      onDone?: (result: { eventCount: number }) => void;
-    },
+    handlers: AssistantDispatchHandlers,
     signal?: AbortSignal,
   ): Promise<void>;
 }
