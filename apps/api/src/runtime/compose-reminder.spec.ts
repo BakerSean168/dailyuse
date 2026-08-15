@@ -143,7 +143,7 @@ describe('composeReminder assembly order', () => {
     });
   });
 
-  it('returns the module handle, repository view and both schedule sources', () => {
+  it('returns the module handle, application port, repository view and both schedule sources', () => {
     const composed = composeReminder({ db: fakeDb, closureChecker });
 
     expect(composed.module).toMatchObject({ name: 'Reminder' });
@@ -151,6 +151,7 @@ describe('composeReminder assembly order', () => {
     expect(typeof composed.module.destroy).toBe('function');
 
     const instance = createReminderModule.mock.results[0].value;
+    expect(composed.applicationPort).toBe(instance.api);
     expect(composed.repositories.reminderTemplateRepository).toBe(
       instance.reminderTemplateRepository,
     );
@@ -160,6 +161,14 @@ describe('composeReminder assembly order', () => {
     expect(composed.scheduleProjectionSource).toBe(
       createReminderScheduleProjectionSource.mock.results[0].value,
     );
+  });
+
+  it('injects the host closure checker into the reminder module (host-owned, not queried by the AI executor)', () => {
+    const hostClosureChecker = async (_identityId: string): Promise<boolean> => true;
+    composeReminder({ db: fakeDb, closureChecker: hostClosureChecker });
+
+    const moduleCall = createReminderModule.mock.calls[0][0];
+    expect(moduleCall.closureChecker).toBe(hostClosureChecker);
   });
 });
 

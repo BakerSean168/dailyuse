@@ -124,12 +124,15 @@ describe('composeGoal assembly order', () => {
     expect(createGoalApiModule).toHaveBeenCalledWith({ instance });
   });
 
-  it('returns a module handle with name Goal plus register and destroy', () => {
-    const handle = composeGoal({ db: fakeDb, taskBindingReadPort: fakeReadPort });
+  it('returns a module handle with name Goal plus register and destroy, and the same instance.api as applicationPort', () => {
+    const composed = composeGoal({ db: fakeDb, taskBindingReadPort: fakeReadPort });
 
-    expect(handle).toMatchObject({ name: 'Goal' });
-    expect(typeof handle.register).toBe('function');
-    expect(typeof handle.destroy).toBe('function');
+    expect(composed.module).toMatchObject({ name: 'Goal' });
+    expect(typeof composed.module.register).toBe('function');
+    expect(typeof composed.module.destroy).toBe('function');
+
+    const instance = createGoalModule.mock.results[0].value;
+    expect(composed.applicationPort).toBe(instance.api);
   });
 });
 
@@ -154,7 +157,7 @@ describe('composeGoal structural registration', () => {
   });
 
   it('mounts /goals + /goal-folders on the router and starts the owned instance', () => {
-    const handle = composeGoal({ db: fakeDb, taskBindingReadPort: fakeReadPort });
+    const composed = composeGoal({ db: fakeDb, taskBindingReadPort: fakeReadPort });
 
     const instance = createGoalModule.mock.results[0].value;
     const startSpy = vi.spyOn(instance, 'start');
@@ -170,13 +173,13 @@ describe('composeGoal structural registration', () => {
       openApiRegistry: undefined,
     };
 
-    expect(() => handle.register(context)).not.toThrow();
+    expect(() => composed.module.register(context)).not.toThrow();
     expect(routerUse).toHaveBeenCalledWith('/goals', expect.anything());
     expect(routerUse).toHaveBeenCalledWith('/goal-folders', expect.anything());
 
     expect(startSpy).toHaveBeenCalledTimes(1);
 
-    handle.destroy?.();
+    composed.module.destroy?.();
     expect(disposeSpy).toHaveBeenCalledTimes(1);
   });
 });

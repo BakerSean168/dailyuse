@@ -26,7 +26,7 @@ describe('reminder API runtime composer surface', () => {
   it('main.ts composes reminder via composeReminder({ db: prisma, closureChecker })', () => {
     expect(main).toContain("from './runtime/compose-reminder'");
     expect(main).toMatch(/composeReminder\(\{\s*db: prisma,\s*closureChecker: accountActiveChecker,?\s*\}/);
-    expect(main).toContain('.register(reminderApiModule.module)');
+    expect(main).toContain('.register(reminderComposed.module)');
   });
 
   it('main.ts no longer references createReminderApiModule or the reminder/api seam', () => {
@@ -38,8 +38,8 @@ describe('reminder API runtime composer surface', () => {
     expect(main).not.toMatch(/createReminderPrismaSchedule(Execution|Projection)Source/);
     expect(main).not.toContain("from '@memoflow/reminder/schedule-execution'");
     expect(main).not.toContain("from '@memoflow/reminder/schedule-projection'");
-    expect(main).toContain('reminderApiModule.scheduleExecutionSource');
-    expect(main).toContain('reminderApiModule.scheduleProjectionSource');
+    expect(main).toContain('reminderComposed.scheduleExecutionSource');
+    expect(main).toContain('reminderComposed.scheduleProjectionSource');
   });
 
   it('composer only touches the narrow seams (no deep server import)', () => {

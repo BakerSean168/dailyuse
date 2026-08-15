@@ -158,7 +158,7 @@ async function bootstrap(): Promise<void> {
       },
     ],
   });
-  const reminderApiModule = composeReminder({
+  const reminderComposed = composeReminder({
     db: prisma,
     closureChecker: accountActiveChecker,
   });
@@ -189,13 +189,13 @@ async function bootstrap(): Promise<void> {
       scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     reminderProjection: {
-      source: reminderApiModule.scheduleProjectionSource,
+      source: reminderComposed.scheduleProjectionSource,
       scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     execution: {
       taskSource: createTaskPrismaScheduleExecutionSource(prisma),
       goalSource: createGoalPrismaScheduleExecutionSource(prisma),
-      reminderSource: reminderApiModule.scheduleExecutionSource,
+      reminderSource: reminderComposed.scheduleExecutionSource,
       notificationPort: notificationApiModule.scheduleNotificationPort,
     },
   });
@@ -203,33 +203,36 @@ async function bootstrap(): Promise<void> {
     repositories: scheduleRepositorySet,
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
   });
-  const taskApiModule = composeTask({
+  const taskComposed = composeTask({
     db: prisma,
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
+  });
+  const goalComposed = composeGoal({
+    db: prisma,
+    taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
   });
   const aiApiModule = composeAI({
     db: prisma,
     repositoryApiPort: repositoryApiModule.getApplicationPort(),
     repositoryStorageBaseDir,
+    goalApplicationPort: goalComposed.applicationPort,
+    taskApplicationPort: taskComposed.applicationPort,
+    reminderApplicationPort: reminderComposed.applicationPort,
   });
   const governanceApiModule = composeGovernance({ db: prisma });
-  const goalApiModule = composeGoal({
-    db: prisma,
-    taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
-  });
   const app = await bootstrapper
     // === 核心：白名单注册 ===
     .register(governanceApiModule) // ✅ 治理模块 (runtime composer)
     .register(accountApiModule) // ✅ 账户模块 (runtime composer)
     .register(notificationApiModule.module) // ✅ 通知模块 (runtime composer)
-    .register(reminderApiModule.module) // ✅ 提醒模块 (runtime composer)
+    .register(reminderComposed.module) // ✅ 提醒模块 (runtime composer)
     .register(repositoryApiModule) // ✅ 仓库模块 (runtime composer)
     .register(scheduleApiModule.module) // ✅ 日程模块 (runtime composer)
     .register(settingApiModule) // ✅ 设置模块 (runtime composer)
-    .register(taskApiModule) // ✅ 任务模块
+    .register(taskComposed.module) // ✅ 任务模块
     .register(aiApiModule) // ✅ AI 模块 (runtime composer)
-    .register(goalApiModule) // ✅ 目标模块
+    .register(goalComposed.module) // ✅ 目标模块
     .register(dataPortabilityApiModule.module) // ✅ 数据导入导出模块 (runtime composer)
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块
     .register(DashboardApiModule) // ✅ 仪表盘聚合模块

@@ -62,6 +62,7 @@ import {
 } from '@memoflow/reminder/api';
 import type { ReminderScheduleExecutionSource } from '@memoflow/reminder';
 import type { ReminderScheduleProjectionSource } from '@memoflow/reminder';
+import type { ReminderApplicationPort } from '@memoflow/reminder';
 
 /**
  * Dependencies the reminder composer needs from the API host runtime.
@@ -83,6 +84,8 @@ export interface ComposeReminderDependencies {
 export interface ComposedReminder {
   /** Already-bound IApiModule-compatible handle. 已绑定的 IApiModule 兼容 handle。 */
   readonly module: ReminderApiModuleDef;
+  /** The transport-neutral application port (`instance.api`) for sibling modules to orchestrate. 供兄弟模块编排的与传输无关 application port（`instance.api`）。 */
+  readonly applicationPort: ReminderApplicationPort;
   /** Repository views exposed to sibling modules in the same host. 暴露给同一宿主内兄弟模块的仓储视图。 */
   readonly repositories: { readonly reminderTemplateRepository: IReminderTemplateRepository };
   /** Schedule execution source built from the SAME repository set. 从同一仓储集合构建的 schedule execution source。 */
@@ -142,7 +145,7 @@ function normalizeRuntimeContributions(
  * （Reminder register 是异步的并会被 await），其 destroy() 会 dispose 所属实例。
  *
  * @param dependencies - ComposeReminderDependencies with the runtime Prisma client.
- * @returns ComposedReminder — the bound module handle, repository view and schedule sources.
+ * @returns ComposedReminder — the bound module handle, application port, repository view and schedule sources.
  */
 export function composeReminder(
   dependencies: ComposeReminderDependencies,
@@ -181,6 +184,7 @@ export function composeReminder(
 
   return {
     module: createReminderApiModule({ instance }),
+    applicationPort: instance.api,
     repositories: { reminderTemplateRepository },
     scheduleExecutionSource,
     scheduleProjectionSource,

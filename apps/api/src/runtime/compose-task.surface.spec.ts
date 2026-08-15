@@ -23,7 +23,7 @@ describe('task API runtime composer surface', () => {
   it('main.ts composes task via composeTask({ db: prisma, runtimeContributions, goalProgressHandler })', () => {
     expect(main).toContain("from './runtime/compose-task'");
     expect(main).toMatch(/composeTask\(\{\s*db: prisma,/);
-    expect(main).toContain('.register(taskApiModule)');
+    expect(main).toContain('.register(taskComposed.module)');
     expect(main).toContain('goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma)');
   });
 
