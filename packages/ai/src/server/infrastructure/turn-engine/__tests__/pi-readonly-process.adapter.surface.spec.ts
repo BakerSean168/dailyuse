@@ -29,6 +29,10 @@ describe('PiReadonlyProcessAdapter surface (residual 373 / 391)', () => {
     resolve(__dirname, '../../../transport/ai-assistant-facade.controller.ts'),
     'utf8',
   );
+  const contract = readFileSync(
+    resolve(root, 'packages/contracts/src/modules/ai/agent-host/assistant-dispatch.ts'),
+    'utf8',
+  );
   const httpAdapter = readFileSync(
     resolve(
       __dirname,
@@ -76,7 +80,10 @@ describe('PiReadonlyProcessAdapter surface (residual 373 / 391)', () => {
   });
 
   it('production transport never routes process.pi_readonly_spike (residual 391)', () => {
-    expect(controller).toContain("z.enum(['direct_turn', 'pi_readonly'])");
+    // The two Host open-chat profiles live in the shared contracts schema; the
+    // controller consumes it and never redefines the union.
+    expect(contract).toContain("z.enum(['direct_turn', 'pi_readonly'])");
+    expect(controller).toContain('AssistantClientCommandSchema');
     expect(controller).not.toContain('process.pi_readonly_spike');
     expect(controller).not.toContain('PiReadonlyProcessAdapter');
     expect(httpAdapter).not.toContain('process.pi_readonly_spike');
@@ -84,6 +91,6 @@ describe('PiReadonlyProcessAdapter surface (residual 373 / 391)', () => {
     expect(ipcAdapter).not.toContain('process.pi_readonly_spike');
     expect(ipcAdapter).not.toContain('PiReadonlyProcessAdapter');
     // Client/transport product profiles stay the two Host open-chat profiles only.
-    expect(controller).toMatch(/direct_turn.*pi_readonly|pi_readonly.*direct_turn/);
+    expect(contract).toMatch(/direct_turn.*pi_readonly|pi_readonly.*direct_turn/);
   });
 });

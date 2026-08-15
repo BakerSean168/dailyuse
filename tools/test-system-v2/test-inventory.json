@@ -1925,6 +1925,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/api/routes/ai-assistant.routes.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/api/routes/ai-chat.routes.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4612,6 +4622,14 @@
     },
     {
       "path": "packages/contracts/src/modules/ai/agent-host/agent-host-stage0-ports.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/modules/ai/agent-host/assistant-dispatch.contract.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/contracts/vitest.config.ts"
@@ -9872,14 +9890,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 119
+      "fileCount": 120
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 119
+      "fileCount": 120
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
@@ -9914,7 +9932,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 60
+      "fileCount": 61
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -10420,6 +10438,7 @@
       "packages/account/src/server/transport/__tests__/account.controller.test.ts",
       "packages/ai/src/api/module-lifecycle.spec.ts",
       "packages/ai/src/api/routes/ai-agent-runtime.routes.test.ts",
+      "packages/ai/src/api/routes/ai-assistant.routes.test.ts",
       "packages/ai/src/api/routes/ai-chat.routes.spec.ts",
       "packages/ai/src/api/routes/ai-chat.routes.test.ts",
       "packages/ai/src/api/routes/ai-checkpoint-void-204.surface.spec.ts",
@@ -10923,7 +10942,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 931,
+    "unit": 933,
     "integration": 23,
     "smoke": 2,
     "boundary-ipc": 9,

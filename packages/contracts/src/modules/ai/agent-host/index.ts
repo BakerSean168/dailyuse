@@ -1,3 +1,4 @@
+export * from './assistant-dispatch';
 export * from './capabilities';
 export * from './proposal';
 export * from './proposal-bridge';

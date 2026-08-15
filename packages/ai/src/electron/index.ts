@@ -420,13 +420,15 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
                     ...(payload.command as object),
                     identityId: requestContext.identityId,
                   } as Parameters<typeof aiModule.api.dispatchAssistant>[0],
-                  (assistantEvent) => {
-                    if (!event.sender.isDestroyed()) {
-                      event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_EVENT, {
-                        streamId,
-                        event: assistantEvent,
-                      });
-                    }
+                  {
+                    onEvent: (assistantEvent) => {
+                      if (!event.sender.isDestroyed()) {
+                        event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_EVENT, {
+                          streamId,
+                          event: assistantEvent,
+                        });
+                      }
+                    },
                   },
                   abortController.signal,
                 );
