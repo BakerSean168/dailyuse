@@ -6,7 +6,7 @@ import {
   createServerStateInvalidationDispatcher,
   type ServerStateInvalidation,
 } from './invalidation-dispatcher';
-import { notificationQueryKeys, taskTemplateQueryKeys } from './query-keys';
+import { governanceQueryKeys, notificationQueryKeys, taskTemplateQueryKeys } from './query-keys';
 
 /** Wait for the current microtask turn so dispatcher turn-batching flushes. */
 async function flushTurn(): Promise<void> {
@@ -146,6 +146,91 @@ describe('invalidation-dispatcher — key mapping', () => {
     expect(keys).toContainEqual(taskTemplateQueryKeys.graphs('id-1'));
     expect(keys).not.toContainEqual(taskTemplateQueryKeys.lists('id-1'));
     expect(keys).not.toContainEqual(taskTemplateQueryKeys.details('id-1'));
+  });
+
+  it('task-template mutation with projection graphs invalidates graphs only (P2-2)', async () => {
+    const dispatcher = createServerStateInvalidationDispatcher(queryClient);
+    await dispatcher.invalidate({
+      target: 'task-template',
+      identityScope: 'id-1',
+      source: 'mutation',
+      projection: 'graphs',
+    });
+    await flushTurn();
+
+    const keys = calledQueryKeys();
+    expect(keys).toContainEqual(taskTemplateQueryKeys.graphs('id-1'));
+    expect(keys).not.toContainEqual(taskTemplateQueryKeys.lists('id-1'));
+    expect(keys).not.toContainEqual(taskTemplateQueryKeys.details('id-1'));
+  });
+
+  it('task-template mutation with projection lists invalidates lists only', async () => {
+    const dispatcher = createServerStateInvalidationDispatcher(queryClient);
+    await dispatcher.invalidate({
+      target: 'task-template',
+      identityScope: 'id-1',
+      source: 'mutation',
+      projection: 'lists',
+    });
+    await flushTurn();
+
+    const keys = calledQueryKeys();
+    expect(keys).toContainEqual(taskTemplateQueryKeys.lists('id-1'));
+    expect(keys).not.toContainEqual(taskTemplateQueryKeys.graphs('id-1'));
+    expect(keys).not.toContainEqual(taskTemplateQueryKeys.details('id-1'));
+  });
+
+  it('task-template mutation projection graphs + entityId invalidates graphs and detail(id)', async () => {
+    const dispatcher = createServerStateInvalidationDispatcher(queryClient);
+    await dispatcher.invalidate({
+      target: 'task-template',
+      identityScope: 'id-1',
+      source: 'mutation',
+      projection: 'graphs',
+      entityId: 't-1',
+    });
+    await flushTurn();
+
+    const keys = calledQueryKeys();
+    expect(keys).toContainEqual(taskTemplateQueryKeys.graphs('id-1'));
+    expect(keys).toContainEqual(taskTemplateQueryKeys.detail('id-1', 't-1'));
+    expect(keys).not.toContainEqual(taskTemplateQueryKeys.lists('id-1'));
+    expect(keys).not.toContainEqual(taskTemplateQueryKeys.details('id-1'));
+  });
+
+  it('governance mutation invalidates lists + details + revision prefix (+ detail(id))', async () => {
+    const dispatcher = createServerStateInvalidationDispatcher(queryClient);
+    await dispatcher.invalidate({
+      target: 'governance',
+      identityScope: 'id-1',
+      source: 'mutation',
+      entityId: 'RuleId_x',
+    });
+    await flushTurn();
+
+    const keys = calledQueryKeys();
+    expect(keys).toContainEqual(governanceQueryKeys.lists('id-1'));
+    expect(keys).toContainEqual(governanceQueryKeys.details('id-1'));
+    expect(keys).toContainEqual(governanceQueryKeys.detail('id-1', 'RuleId_x'));
+    expect(
+      keys.some((k) => k[0] === 'server-state' && k[1] === 'governance' && k[3] === 'revision'),
+    ).toBe(true);
+  });
+
+  it('governance mutation projection revisions invalidates revisions only', async () => {
+    const dispatcher = createServerStateInvalidationDispatcher(queryClient);
+    await dispatcher.invalidate({
+      target: 'governance',
+      identityScope: 'id-1',
+      source: 'mutation',
+      projection: 'revisions',
+    });
+    await flushTurn();
+
+    const keys = calledQueryKeys();
+    expect(keys).toContainEqual([...governanceQueryKeys.identity('id-1'), 'revision'] as QueryKey);
+    expect(keys).not.toContainEqual(governanceQueryKeys.lists('id-1'));
+    expect(keys).not.toContainEqual(governanceQueryKeys.details('id-1'));
   });
 });
 

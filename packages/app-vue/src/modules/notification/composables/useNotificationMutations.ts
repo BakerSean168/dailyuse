@@ -14,10 +14,7 @@ import { useI18n } from 'vue-i18n';
 import { unwrap } from '@memoflow/contracts/result';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
-import {
-  useServerStateIdentityScope,
-  useServerStateRuntime,
-} from '../../../platform/server-state';
+import { useServerStateIdentityScope, useServerStateRuntime } from '../../../platform/server-state';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import {
   adjustUnreadCount,
@@ -44,19 +41,20 @@ export function useNotificationMutations() {
 
   const markAsRead = useMutation({
     mutationFn: async (id: string) => unwrap(await service.markAsRead(id)),
-    onSuccess: (dto) => {
-      const identityScope = resolveIdentityScope();
+    onMutate: () => ({ identityScope: resolveIdentityScope() }),
+    onSuccess: (dto, _vars, context) => {
+      const identityScope = context!.identityScope;
       const cached = findNotificationInCache(runtime.queryClient, identityScope, dto.id);
       patchNotificationFromServer(runtime.queryClient, identityScope, dto);
       if (dto.isRead && cached && !cached.isRead) {
         adjustUnreadCount(runtime.queryClient, identityScope, -1);
       }
     },
-    onSettled: (_data, error, id) => {
+    onSettled: (_data, error, id, context) => {
       if (error) handleError(error, 'notification.error.markReadFailed');
       void runtime.dispatcher.invalidate({
         target: 'notification',
-        identityScope: resolveIdentityScope(),
+        identityScope: context!.identityScope,
         source: 'mutation',
         entityId: id,
       });
@@ -65,11 +63,12 @@ export function useNotificationMutations() {
 
   const markAllAsRead = useMutation({
     mutationFn: async () => unwrap(await service.markAllAsRead()),
-    onSettled: (_data, error) => {
+    onMutate: () => ({ identityScope: resolveIdentityScope() }),
+    onSettled: (_data, error, _vars, context) => {
       if (error) handleError(error, 'notification.error.markAllReadFailed');
       void runtime.dispatcher.invalidate({
         target: 'notification',
-        identityScope: resolveIdentityScope(),
+        identityScope: context!.identityScope,
         source: 'mutation',
       });
     },
@@ -77,19 +76,20 @@ export function useNotificationMutations() {
 
   const dismiss = useMutation({
     mutationFn: async (id: string) => unwrap(await service.deleteNotification(id)),
-    onSuccess: (_data, id) => {
-      const identityScope = resolveIdentityScope();
+    onMutate: () => ({ identityScope: resolveIdentityScope() }),
+    onSuccess: (_data, id, context) => {
+      const identityScope = context!.identityScope;
       const cached = findNotificationInCache(runtime.queryClient, identityScope, id);
       removeNotificationFromCache(runtime.queryClient, identityScope, id);
       if (cached && !cached.isRead) {
         adjustUnreadCount(runtime.queryClient, identityScope, -1);
       }
     },
-    onSettled: (_data, error, id) => {
+    onSettled: (_data, error, id, context) => {
       if (error) handleError(error, 'notification.error.deleteFailed');
       void runtime.dispatcher.invalidate({
         target: 'notification',
-        identityScope: resolveIdentityScope(),
+        identityScope: context!.identityScope,
         source: 'mutation',
         entityId: id,
       });
@@ -101,11 +101,12 @@ export function useNotificationMutations() {
       if (ids.length === 0) return { deleted: 0, failed: [] as string[] };
       return unwrap(await service.batchDeleteNotifications(ids));
     },
-    onSettled: (_data, error) => {
+    onMutate: () => ({ identityScope: resolveIdentityScope() }),
+    onSettled: (_data, error, _vars, context) => {
       if (error) handleError(error, 'notification.error.deleteFailed');
       void runtime.dispatcher.invalidate({
         target: 'notification',
-        identityScope: resolveIdentityScope(),
+        identityScope: context!.identityScope,
         source: 'mutation',
       });
     },

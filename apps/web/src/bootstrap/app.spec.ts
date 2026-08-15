@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => {
   };
   const authStore = {
     isAuthenticated: true,
+    getIdentityId: 'cloud-1',
     setIsInitializing: vi.fn(),
     hydrateCloudSession: vi.fn(),
     reset: vi.fn(),
@@ -54,6 +55,8 @@ const mocks = vi.hoisted(() => {
     installWebServerStateRuntime: vi.fn(() => serverStateRuntime),
     getWebServerStateRuntime: vi.fn(() => serverStateRuntime),
     registerWebServerStateSource: vi.fn(),
+    isWebServerStateDisposed: vi.fn(() => false),
+    registerWebServerStateStartupCancel: vi.fn(),
     createNotificationSseInvalidationSource: vi.fn(() => sseSource),
     createI18nPlugin: vi.fn(() => ({ name: 'i18n-plugin' })),
     loadLocaleMessages: vi.fn(async () => ({ hello: 'world' })),
@@ -125,6 +128,8 @@ vi.mock('../platform/server-state', () => ({
   installWebServerStateRuntime: mocks.installWebServerStateRuntime,
   getWebServerStateRuntime: mocks.getWebServerStateRuntime,
   registerWebServerStateSource: mocks.registerWebServerStateSource,
+  isWebServerStateDisposed: mocks.isWebServerStateDisposed,
+  registerWebServerStateStartupCancel: mocks.registerWebServerStateStartupCancel,
 }));
 
 describe('bootstrapMainApp', () => {
@@ -190,6 +195,19 @@ describe('bootstrapMainApp', () => {
       }),
     );
     expect(mocks.sseSource.start).toHaveBeenCalledTimes(1);
+
+    // Deferred startup is registered with a cancellable handle (P2-5).
+    expect(mocks.registerWebServerStateStartupCancel).toHaveBeenCalledTimes(1);
+
+    // SSE cursor is scoped by identity (P2-5): writing under the identity key round-trips.
+    const sseOptions = mocks.createNotificationSseInvalidationSource.mock.calls[0]?.[0] as {
+      cursorStore: { get(): string | undefined; set(cursor: string): void };
+    };
+    const identityCursorKey = `memoflow:notifications:sse-cursor:${mocks.authStore.getIdentityId ?? ''}`;
+    sseOptions.cursorStore.set('cursor-1');
+    expect(localStorage.getItem(identityCursorKey)).toBe('cursor-1');
+    expect(sseOptions.cursorStore.get()).toBe('cursor-1');
+    localStorage.removeItem(identityCursorKey);
 
     const afterEachHandler = mocks.router.afterEach.mock.calls[0]?.[0];
     expect(afterEachHandler).toBeTypeOf('function');

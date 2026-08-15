@@ -18,6 +18,8 @@ import {
 
 let currentRuntime: ServerStateRuntime | null = null;
 let sources: Array<{ stop: () => void }> = [];
+let disposed = false;
+let pendingStartupCancel: (() => void) | null = null;
 
 /** Create + install the web server-state runtime and remember it. */
 export function installWebServerStateRuntime(app: App): ServerStateRuntime {
@@ -26,12 +28,31 @@ export function installWebServerStateRuntime(app: App): ServerStateRuntime {
     identityScope: () => authStore.getIdentityId ?? '',
   });
   currentRuntime = runtime;
+  disposed = false;
   return runtime;
 }
 
 /** Read the installed runtime (null before install). */
 export function getWebServerStateRuntime(): ServerStateRuntime | null {
   return currentRuntime;
+}
+
+/**
+ * Whether the runtime/sources were disposed (logout). Deferred startup must not start
+ * realtime sources after a logout ran first (plan §3.1 ordering; P2-5).
+ * runtime/sources 是否已被 dispose（登出）；延迟启动不得在登出后继续启动实时源（P2-5）。
+ */
+export function isWebServerStateDisposed(): boolean {
+  return disposed;
+}
+
+/**
+ * Register a cancellation for the deferred startup (requestIdleCallback / setTimeout) so a
+ * logout that runs before it fires can cancel it (P2-5).
+ * 注册延迟启动（requestIdleCallback / setTimeout）的取消器：若登出先于它执行则取消（P2-5）。
+ */
+export function registerWebServerStateStartupCancel(cancel: () => void): void {
+  pendingStartupCancel = cancel;
 }
 
 /** Register a realtime source so logout stops it before clearing the cache. */
@@ -41,6 +62,9 @@ export function registerWebServerStateSource(source: { stop: () => void }): void
 
 /** Stop realtime sources, then clear the cache for an identity (logout / identity switch). */
 export function clearWebServerStateIdentity(identityScope: string): void {
+  disposed = true;
+  pendingStartupCancel?.();
+  pendingStartupCancel = null;
   for (const source of sources) source.stop();
   sources = [];
   currentRuntime?.clearIdentity(identityScope);

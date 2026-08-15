@@ -7,9 +7,7 @@ import { useNotificationMutations } from './useNotificationMutations';
 
 const SCOPE = 'identity-1';
 
-function createNotification(
-  overrides: Partial<NotificationClientDTO> = {},
-): NotificationClientDTO {
+function createNotification(overrides: Partial<NotificationClientDTO> = {}): NotificationClientDTO {
   return {
     id: 'n-1' as NotificationClientDTO['id'],
     identityId: SCOPE as NotificationClientDTO['identityId'],
@@ -166,7 +164,9 @@ describe('useNotificationMutations (plan §3.4 server-confirmed patch / invalida
       notifications: NotificationClientDTO[];
     };
     expect(cached.notifications).toHaveLength(0);
-    expect(runtime.queryClient.getQueryData(notificationQueryKeys.detail(SCOPE, item.id))).toBeUndefined();
+    expect(
+      runtime.queryClient.getQueryData(notificationQueryKeys.detail(SCOPE, item.id)),
+    ).toBeUndefined();
     expect(runtime.queryClient.getQueryData(notificationQueryKeys.unread(SCOPE))).toEqual({
       count: 1,
     });
@@ -210,5 +210,36 @@ describe('useNotificationMutations (plan §3.4 server-confirmed patch / invalida
       identityScope: SCOPE,
       source: 'mutation',
     });
+  });
+
+  it('resolves identityScope at mutation begin and never at completion (P1-2)', async () => {
+    const item = createNotification();
+    const readItem = createNotification({ isRead: true, readAt: 2 });
+    const service = makeService({ markAsRead: vi.fn().mockResolvedValue(ok(readItem)) });
+    const { api, runtime } = mountNotificationComposable(() => useNotificationMutations(), {
+      service,
+    });
+
+    const listKey = notificationQueryKeys.list(SCOPE, { page: 1, limit: 20 });
+    runtime.queryClient.setQueryData(listKey, {
+      notifications: [item],
+      total: 1,
+      page: 1,
+      pageSize: 20,
+      hasMore: false,
+    });
+    runtime.queryClient.setQueryData(notificationQueryKeys.unread(SCOPE), { count: 1 });
+    const invalidate = vi.spyOn(runtime.dispatcher, 'invalidate');
+
+    await api.markAsRead.mutateAsync(item.id);
+
+    // Patch + invalidate both went to the begin-scope identity.
+    const cached = runtime.queryClient.getQueryData(listKey) as {
+      notifications: NotificationClientDTO[];
+    };
+    expect(cached.notifications[0].isRead).toBe(true);
+    expect(invalidate).toHaveBeenCalledWith(
+      expect.objectContaining({ identityScope: SCOPE, target: 'notification' }),
+    );
   });
 });

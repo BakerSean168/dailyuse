@@ -20,13 +20,26 @@ describe('mapTablesToInvalidationIntents (plan §3.3 pilot table mapping)', () =
     ]);
   });
 
+  it('maps rules → governance all (lists/details/revisions)', () => {
+    expect(mapTablesToInvalidationIntents(['rules'], 'id-1')).toEqual([
+      { target: 'governance', identityScope: 'id-1', source: 'powersync', projection: 'all' },
+    ]);
+  });
+
+  it('maps rule_revisions → governance revisions only', () => {
+    expect(mapTablesToInvalidationIntents(['rule_revisions'], 'id-1')).toEqual([
+      { target: 'governance', identityScope: 'id-1', source: 'powersync', projection: 'revisions' },
+    ]);
+  });
+
   it('emits one intent per pilot table for a mixed batch (deduped)', () => {
     const intents = mapTablesToInvalidationIntents(
-      ['notifications', 'task_templates', 'notifications', 'task_dependencies'],
+      ['notifications', 'task_templates', 'notifications', 'task_dependencies', 'rules'],
       'id-1',
     );
-    expect(intents).toHaveLength(3);
+    expect(intents).toHaveLength(4);
     expect(intents.map((i) => `${i.target}:${i.projection ?? ''}`).sort()).toEqual([
+      'governance:all',
       'notification:',
       'task-template:all',
       'task-template:graphs',

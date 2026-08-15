@@ -14,93 +14,93 @@
 
     <!-- FilterBar：搜索优先 + 状态/严重度/标签下拉 -->
     <FilterBar class="!px-3">
-          <template #tabs>
-            <div class="w-64">
-              <GovernanceSearchBar v-model="searchQuery" @search="onSearch" />
-            </div>
-          </template>
+      <template #tabs>
+        <div class="w-64">
+          <GovernanceSearchBar v-model="searchQuery" @search="onSearch" />
+        </div>
+      </template>
 
-          <template #filters>
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
-                  {{ activeStatusLabel }}
-                  <ChevronDown class="h-3 w-3 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" class="w-40">
-                <DropdownMenuItem
-                  v-for="opt in statusOptions"
-                  :key="opt.value"
-                  class="text-xs"
-                  @click="selectStatus(opt.value)"
-                >
-                  <Check
-                    class="mr-2 h-3.5 w-3.5"
-                    :class="selectedStatus === opt.value ? 'opacity-100' : 'opacity-0'"
-                  />
-                  {{ opt.label }}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
-                  {{ activeSeverityLabel }}
-                  <ChevronDown class="h-3 w-3 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" class="w-40">
-                <DropdownMenuItem
-                  v-for="opt in severityOptions"
-                  :key="opt.value"
-                  class="text-xs"
-                  @click="selectSeverity(opt.value)"
-                >
-                  <Check
-                    class="mr-2 h-3.5 w-3.5"
-                    :class="selectedSeverity === opt.value ? 'opacity-100' : 'opacity-0'"
-                  />
-                  {{ opt.label }}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu v-if="allTags.length > 0">
-              <DropdownMenuTrigger as-child>
-                <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
-                  {{ t('governance.list.tagFilterLabel') }}
-                  <Badge v-if="filter.tags.length" variant="secondary" class="px-1.5 text-[10px]">
-                    {{ filter.tags.length }}
-                  </Badge>
-                  <ChevronDown class="h-3 w-3 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" class="max-h-72 w-48 overflow-y-auto">
-                <DropdownMenuCheckboxItem
-                  v-for="tag in allTags"
-                  :key="tag"
-                  class="text-xs"
-                  :model-value="filter.tags.includes(tag)"
-                  @update:model-value="() => toggleFilterTag(tag)"
-                  @select.prevent
-                >
-                  {{ tag }}
-                </DropdownMenuCheckboxItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              v-if="hasActiveFilter"
-              variant="ghost"
-              size="sm"
-              class="h-8 text-xs text-muted-foreground"
-              @click="clearAllFilters"
-            >
-              {{ t('governance.list.clearFilter') }}
+      <template #filters>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
+              {{ activeStatusLabel }}
+              <ChevronDown class="h-3 w-3 opacity-60" />
             </Button>
-          </template>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" class="w-40">
+            <DropdownMenuItem
+              v-for="opt in statusOptions"
+              :key="opt.value"
+              class="text-xs"
+              @click="selectStatus(opt.value)"
+            >
+              <Check
+                class="mr-2 h-3.5 w-3.5"
+                :class="selectedStatus === opt.value ? 'opacity-100' : 'opacity-0'"
+              />
+              {{ opt.label }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
+              {{ activeSeverityLabel }}
+              <ChevronDown class="h-3 w-3 opacity-60" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" class="w-40">
+            <DropdownMenuItem
+              v-for="opt in severityOptions"
+              :key="opt.value"
+              class="text-xs"
+              @click="selectSeverity(opt.value)"
+            >
+              <Check
+                class="mr-2 h-3.5 w-3.5"
+                :class="selectedSeverity === opt.value ? 'opacity-100' : 'opacity-0'"
+              />
+              {{ opt.label }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu v-if="allTags.length > 0">
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
+              {{ t('governance.list.tagFilterLabel') }}
+              <Badge v-if="filter.tags.length" variant="secondary" class="px-1.5 text-[10px]">
+                {{ filter.tags.length }}
+              </Badge>
+              <ChevronDown class="h-3 w-3 opacity-60" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" class="max-h-72 w-48 overflow-y-auto">
+            <DropdownMenuCheckboxItem
+              v-for="tag in allTags"
+              :key="tag"
+              class="text-xs"
+              :model-value="filter.tags.includes(tag)"
+              @update:model-value="() => toggleFilterTag(tag)"
+              @select.prevent
+            >
+              {{ tag }}
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Button
+          v-if="hasActiveFilter"
+          variant="ghost"
+          size="sm"
+          class="h-8 text-xs text-muted-foreground"
+          @click="clearAllFilters"
+        >
+          {{ t('governance.list.clearFilter') }}
+        </Button>
+      </template>
     </FilterBar>
 
     <div class="min-h-0 flex-1 overflow-y-auto p-3" data-scroll-host="governance-list">
@@ -207,11 +207,7 @@ import FilterBar from '../../../components/shared/FilterBar.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGovernance } from '../composables/useGovernance';
 import { usePerformanceMonitor } from '../composables/usePerformanceMonitor';
-import type {
-  RuleClientDTO,
-  RuleStatus,
-  RuleSeverity,
-} from '@memoflow/contracts/governance';
+import type { RuleClientDTO, RuleStatus, RuleSeverity } from '@memoflow/contracts/governance';
 import { RuleCard, GovernanceSearchBar } from '../components';
 
 const router = useRouter();
@@ -328,7 +324,6 @@ function onKeyboardNavigate(event: KeyboardEvent) {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeyboardNavigate);
-  fetchRules();
 });
 
 onBeforeUnmount(() => {

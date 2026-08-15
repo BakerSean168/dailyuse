@@ -13,7 +13,11 @@ import {
   createNotificationStartupHook,
   createNotificationSseInvalidationSource,
 } from '@memoflow/app-vue';
-import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@memoflow/app-vue/web-i18n';
+import {
+  createI18nPlugin,
+  loadLocaleMessages,
+  translateMessageKey,
+} from '@memoflow/app-vue/web-i18n';
 import { progressStart, progressDone } from '@memoflow/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
@@ -21,7 +25,9 @@ import { installAppServices } from '../platform/di-app';
 import {
   getWebServerStateRuntime,
   installWebServerStateRuntime,
+  isWebServerStateDisposed,
   registerWebServerStateSource,
+  registerWebServerStateStartupCancel,
 } from '../platform/server-state';
 import { createCloudAuthHttpClient } from '@memoflow/cloud-auth';
 
@@ -73,6 +79,7 @@ export async function bootstrapMainApp() {
   // Startup hooks — explicit composition, no global phase registry
   // 实时源只向 dispatcher 发 invalidation intent（Step 3）；Web 额外启用 SSE 源，Desktop 不启用。
   const runStartupPhase = () => {
+    if (isWebServerStateDisposed()) return;
     const runtime = getWebServerStateRuntime();
     if (!runtime) return;
     const identityScope = () => authStore.getIdentityId ?? '';
@@ -83,7 +90,9 @@ export async function bootstrapMainApp() {
     notificationHook.start();
     registerWebServerStateSource(notificationHook);
 
-    const sseCursorKey = 'memoflow:notifications:sse-cursor';
+    // Cursor is scoped by identity so account B never inherits account A's cursor (P2-5).
+    // cursor 按 identity 隔离，账户 B 不会继承账户 A 的游标（P2-5）。
+    const sseCursorKey = `memoflow:notifications:sse-cursor:${identityScope()}`;
     const sseSource = createNotificationSseInvalidationSource({
       dispatcher: runtime.dispatcher,
       identityScope,
@@ -109,9 +118,14 @@ export async function bootstrapMainApp() {
     registerWebServerStateSource(sseSource);
   };
 
+  // Deferred startup is lifecycle-guarded and cancellable: a logout that runs before it
+  // fires must not start realtime sources after cleanup (plan §3.1 ordering; P2-5).
+  // 延迟启动带生命周期守卫且可取消：若登出先于其执行，不得在清理后启动实时源（P2-5）。
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    window.requestIdleCallback(runStartupPhase, { timeout: 3000 });
+    const handle = window.requestIdleCallback(runStartupPhase, { timeout: 3000 });
+    registerWebServerStateStartupCancel(() => window.cancelIdleCallback(handle));
   } else {
-    globalThis.setTimeout(runStartupPhase, 0);
+    const handle = globalThis.setTimeout(runStartupPhase, 0);
+    registerWebServerStateStartupCancel(() => globalThis.clearTimeout(handle));
   }
 }

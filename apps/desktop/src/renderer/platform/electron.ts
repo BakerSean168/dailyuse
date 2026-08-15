@@ -14,7 +14,6 @@ import { useTaskStore } from '@memoflow/app-vue/modules/task';
 import { useScheduleStore } from '@memoflow/app-vue/modules/schedule';
 import { useReminderStore } from '@memoflow/app-vue/modules/reminder';
 import { useUserSettingStore } from '@memoflow/app-vue/modules/setting';
-import { useGovernanceStore } from '@memoflow/app-vue/modules/governance';
 // Residual 941: host bridge via getElectronBridge sole helper.
 import { getElectronBridge } from './electron-bridge';
 import { getDesktopServerStateRuntime, mapTablesToInvalidationIntents } from './server-state';
@@ -107,16 +106,14 @@ const TABLE_TO_MODULE: Record<string, string> = {
   notification_templates: 'notification',
   // Settings
   user_settings: 'setting',
-  // Governance
-  rules: 'governance',
-  rule_revisions: 'governance',
 };
 
 /**
  * Module name → Pinia store invalidation function (non-pilot modules keep the legacy path).
  *
- * Pilot tables (notifications / task_templates / task_dependencies) go through the
- * server-state dispatcher instead; the pilot stores keep no `setInitialized(false)` flag.
+ * Pilot tables (notifications / task_templates / task_dependencies / rules / rule_revisions)
+ * go through the server-state dispatcher instead; the pilot stores keep no
+ * `setInitialized(false)` flag.
  * 非 pilot 模块继续走旧 Pinia invalidator；pilot 表走 dispatcher。
  */
 const MODULE_INVALIDATORS: Record<string, () => void> = {
@@ -126,14 +123,19 @@ const MODULE_INVALIDATORS: Record<string, () => void> = {
   schedule: () => useScheduleStore().setInitialized(false),
   reminder: () => useReminderStore().setInitialized(false),
   setting: () => useUserSettingStore().setInitialized(false),
-  governance: () => useGovernanceStore().setInitialized(false),
 };
 
 /**
  * PowerSync pilot tables that must be routed through the server-state dispatcher.
  * 必须走 server-state dispatcher 的 PowerSync pilot 表。
  */
-const PILOT_TABLES = new Set(['notifications', 'task_templates', 'task_dependencies']);
+const PILOT_TABLES = new Set([
+  'notifications',
+  'task_templates',
+  'task_dependencies',
+  'rules',
+  'rule_revisions',
+]);
 
 /**
  * Listens for `db:changed` events from the main process (PowerSync onChange).

@@ -3677,6 +3677,22 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/governance/composables/useGovernanceQueries.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/governance/governance-authority.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/governance/governance-types-export.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4202,6 +4218,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/task/components/widgets/DailyTodoWidget.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/task/composables/taskTemplateCache.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -10075,7 +10099,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 182
+      "fileCount": 185
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11117,7 +11141,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 950,
+    "unit": 953,
     "integration": 25,
     "smoke": 2,
     "boundary-ipc": 9,

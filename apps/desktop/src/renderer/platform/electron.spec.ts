@@ -56,10 +56,6 @@ vi.mock('@memoflow/app-vue/modules/setting', () => ({
   useUserSettingStore: () => ({ setInitialized: vi.fn() }),
 }));
 
-vi.mock('@memoflow/app-vue/modules/governance', () => ({
-  useGovernanceStore: () => ({ setInitialized: vi.fn() }),
-}));
-
 function emitDbChanged(tables: string[]): void {
   for (const cb of handlers.get(RendererEventChannels.DB_CHANGED) ?? []) {
     cb({ tables });
@@ -77,12 +73,15 @@ describe('initElectronFeatures DB_CHANGED pilot routing (Step 3)', () => {
     createTestPinia();
     // Desktop renderer tests run under the node environment; electron.ts touches window/DOM.
     vi.stubGlobal('window', { addEventListener: vi.fn(), dispatchEvent: vi.fn() });
-    vi.stubGlobal('CustomEvent', class CustomEvent {
-      detail: unknown;
-      constructor(_type: string, init?: { detail?: unknown }) {
-        this.detail = init?.detail;
-      }
-    });
+    vi.stubGlobal(
+      'CustomEvent',
+      class CustomEvent {
+        detail: unknown;
+        constructor(_type: string, init?: { detail?: unknown }) {
+          this.detail = init?.detail;
+        }
+      },
+    );
   });
 
   afterEach(() => {
@@ -93,9 +92,9 @@ describe('initElectronFeatures DB_CHANGED pilot routing (Step 3)', () => {
     const { initElectronFeatures } = await import('./electron');
     initElectronFeatures({} as never);
 
-    emitDbChanged(['notifications', 'task_templates', 'task_dependencies', 'goals']);
+    emitDbChanged(['notifications', 'task_templates', 'task_dependencies', 'rules', 'goals']);
 
-    expect(dispatchedIntents()).toHaveLength(3);
+    expect(dispatchedIntents()).toHaveLength(4);
     expect(dispatchedIntents()[0]).toEqual({
       target: 'notification',
       identityScope: 'profile-1',
@@ -112,6 +111,12 @@ describe('initElectronFeatures DB_CHANGED pilot routing (Step 3)', () => {
       identityScope: 'profile-1',
       source: 'powersync',
       projection: 'graphs',
+    });
+    expect(dispatchedIntents()[3]).toEqual({
+      target: 'governance',
+      identityScope: 'profile-1',
+      source: 'powersync',
+      projection: 'all',
     });
   }, 20_000);
 

@@ -17,10 +17,7 @@
  */
 
 import type { QueryClient, QueryKey } from '@tanstack/vue-query';
-import {
-  notificationQueryKeys,
-  taskTemplateQueryKeys,
-} from './query-keys';
+import { governanceQueryKeys, notificationQueryKeys, taskTemplateQueryKeys } from './query-keys';
 
 /**
  * Typed invalidation intent produced by mutation lifecycles and realtime adapters.
@@ -39,6 +36,14 @@ export type ServerStateInvalidation =
       identityScope: string;
       source: 'mutation' | 'powersync' | 'reconnect';
       projection?: 'all' | 'lists' | 'details' | 'graphs';
+      entityId?: string;
+      dedupeKey?: string;
+    }
+  | {
+      target: 'governance';
+      identityScope: string;
+      source: 'mutation' | 'powersync' | 'reconnect';
+      projection?: 'all' | 'lists' | 'details' | 'revisions';
       entityId?: string;
       dedupeKey?: string;
     };
@@ -107,7 +112,9 @@ export function createServerStateInvalidationDispatcher(
     return [...buckets.values()];
   }
 
-  function notificationIntentKeys(intent: Extract<ServerStateInvalidation, { target: 'notification' }>): QueryKey[] {
+  function notificationIntentKeys(
+    intent: Extract<ServerStateInvalidation, { target: 'notification' }>,
+  ): QueryKey[] {
     // mark-all / batch delete (mutation without an entity) clears the whole identity root.
     // mark-all / batch delete（无 entityId 的 mutation）失效整个 identity root。
     if (intent.source === 'mutation' && intent.entityId === undefined) {
@@ -123,19 +130,26 @@ export function createServerStateInvalidationDispatcher(
     return keys;
   }
 
-  function taskTemplateIntentKeys(intent: Extract<ServerStateInvalidation, { target: 'task-template' }>): QueryKey[] {
+  function taskTemplateIntentKeys(
+    intent: Extract<ServerStateInvalidation, { target: 'task-template' }>,
+  ): QueryKey[] {
     const scope = intent.identityScope;
+    const projection = intent.projection ?? 'all';
     const keys: QueryKey[] = [];
-    if (intent.source === 'mutation') {
-      // Mutations invalidate lists + graphs; the known entity detail is added below.
-      keys.push(taskTemplateQueryKeys.lists(scope), taskTemplateQueryKeys.graphs(scope));
+    if (projection === 'graphs') {
+      keys.push(taskTemplateQueryKeys.graphs(scope));
+    } else if (projection === 'lists') {
+      keys.push(taskTemplateQueryKeys.lists(scope));
+    } else if (projection === 'details') {
+      keys.push(taskTemplateQueryKeys.details(scope));
     } else {
-      const projection = intent.projection ?? 'all';
-      if (projection === 'graphs') {
-        keys.push(taskTemplateQueryKeys.graphs(scope));
-      } else {
-        keys.push(taskTemplateQueryKeys.lists(scope), taskTemplateQueryKeys.graphs(scope));
-        if (projection === 'all') keys.push(taskTemplateQueryKeys.details(scope));
+      // 'all' — but mutation semantics differ: mutations must not invalidate the whole details
+      // prefix (only the known entity's detail, added below). Non-mutation 'all' (powersync) does.
+      // mutation 语义不同：只失效 lists+graphs（详情只按已知 entity 单独失效），非 mutation 的
+      // 'all'（powersync 表变化）才整段失效 details prefix。
+      keys.push(taskTemplateQueryKeys.lists(scope), taskTemplateQueryKeys.graphs(scope));
+      if (intent.source !== 'mutation') {
+        keys.push(taskTemplateQueryKeys.details(scope));
       }
     }
     if (intent.entityId !== undefined) {
@@ -144,10 +158,36 @@ export function createServerStateInvalidationDispatcher(
     return keys;
   }
 
+  function governanceIntentKeys(
+    intent: Extract<ServerStateInvalidation, { target: 'governance' }>,
+  ): QueryKey[] {
+    const scope = intent.identityScope;
+    const projection = intent.projection ?? 'all';
+    const keys: QueryKey[] = [];
+    if (projection === 'revisions') {
+      keys.push(governanceQueryKeys.identity(scope).concat('revision') as QueryKey);
+    } else if (projection === 'lists') {
+      keys.push(governanceQueryKeys.lists(scope));
+    } else if (projection === 'details') {
+      keys.push(governanceQueryKeys.details(scope));
+    } else {
+      // 'all' — mutation semantics differ from table changes (see task-template above).
+      keys.push(
+        governanceQueryKeys.lists(scope),
+        governanceQueryKeys.details(scope),
+        governanceQueryKeys.identity(scope).concat('revision') as QueryKey,
+      );
+    }
+    if (intent.entityId !== undefined) {
+      keys.push(governanceQueryKeys.detail(scope, intent.entityId));
+    }
+    return keys;
+  }
+
   function intentKeys(intent: ServerStateInvalidation): QueryKey[] {
-    return intent.target === 'notification'
-      ? notificationIntentKeys(intent)
-      : taskTemplateIntentKeys(intent);
+    if (intent.target === 'notification') return notificationIntentKeys(intent);
+    if (intent.target === 'task-template') return taskTemplateIntentKeys(intent);
+    return governanceIntentKeys(intent);
   }
 
   async function flush(): Promise<void> {
@@ -202,7 +242,11 @@ export function createServerStateInvalidationDispatcher(
 
     clearIdentity(identityScope: string): void {
       // Remove pilot keys for this identity only; other identities stay intact.
-      for (const key of [notificationQueryKeys.identity, taskTemplateQueryKeys.identity]) {
+      for (const key of [
+        notificationQueryKeys.identity,
+        taskTemplateQueryKeys.identity,
+        governanceQueryKeys.identity,
+      ]) {
         queryClient.removeQueries({ queryKey: key(identityScope) });
       }
       // Drop dedupe records for this identity so a re-login can re-process events.

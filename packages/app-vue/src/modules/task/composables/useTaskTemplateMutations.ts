@@ -22,14 +22,12 @@ import type {
 } from '@memoflow/contracts/task';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { TASK_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
-import {
-  useServerStateIdentityScope,
-  useServerStateRuntime,
-} from '../../../platform/server-state';
+import { useServerStateIdentityScope, useServerStateRuntime } from '../../../platform/server-state';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import {
+  getTaskTemplateFromCache,
   mergeTaskTemplateUpdate,
   patchTaskTemplateEverywhere,
   removeTaskTemplateFromCache,
@@ -103,17 +101,25 @@ export function useTaskTemplateMutations() {
       );
       return unwrap(result);
     },
-    onSuccess: (data, { feedbackIntent }) => {
+    onMutate: () => ({ identityScope: resolveIdentityScope() }),
+    onSuccess: (data, _vars, context) => {
+      // Seed the detail key from the server response (plan §3.4).
+      // 用 server 返回的 template seed detail key（§3.4）。
+      patchTaskTemplateEverywhere(
+        runtime.queryClient,
+        context!.identityScope,
+        data.template.toDTO(),
+      );
       toast.success(
-        t(createFeedbackKey(feedbackIntent ?? 'plan', data.todayInstanceCreated), {
+        t(createFeedbackKey(_vars.feedbackIntent ?? 'plan', data.todayInstanceCreated), {
           count: data.instanceCount,
         }),
       );
     },
-    onSettled: () => {
+    onSettled: (_data, _error, _vars, context) => {
       void runtime.dispatcher.invalidate({
         target: 'task-template',
-        identityScope: resolveIdentityScope(),
+        identityScope: context!.identityScope,
         source: 'mutation',
       });
     },
@@ -137,21 +143,21 @@ export function useTaskTemplateMutations() {
       if (optimistic) {
         patchTaskTemplateEverywhere(runtime.queryClient, identityScope, optimistic);
       }
-      return { snapshot };
+      return { snapshot, identityScope };
     },
     onError: (_error, _vars, context) => {
       if (context?.snapshot) {
-        restoreTaskTemplateSnapshot(runtime.queryClient, context.snapshot);
+        restoreTaskTemplateSnapshot(runtime.queryClient, context!.identityScope, context.snapshot);
       }
     },
-    onSuccess: (dto) => {
-      patchTaskTemplateEverywhere(runtime.queryClient, resolveIdentityScope(), dto.toDTO());
+    onSuccess: (dto, _vars, context) => {
+      patchTaskTemplateEverywhere(runtime.queryClient, context!.identityScope, dto.toDTO());
       toast.success(t('task.error.updateSuccess'));
     },
-    onSettled: (_data, _error, vars) => {
+    onSettled: (_data, _error, vars, context) => {
       void runtime.dispatcher.invalidate({
         target: 'task-template',
-        identityScope: resolveIdentityScope(),
+        identityScope: context!.identityScope,
         source: 'mutation',
         entityId: vars.id,
       });
@@ -167,14 +173,15 @@ export function useTaskTemplateMutations() {
       unwrap(result);
       return id;
     },
-    onSuccess: (id) => {
-      removeTaskTemplateFromCache(runtime.queryClient, resolveIdentityScope(), id);
+    onMutate: () => ({ identityScope: resolveIdentityScope() }),
+    onSuccess: (id, _vars, context) => {
+      removeTaskTemplateFromCache(runtime.queryClient, context!.identityScope, id);
       toast.success(t('task.error.deleteSuccess'));
     },
-    onSettled: (_data, _error, id) => {
+    onSettled: (_data, _error, id, context) => {
       void runtime.dispatcher.invalidate({
         target: 'task-template',
-        identityScope: resolveIdentityScope(),
+        identityScope: context!.identityScope,
         source: 'mutation',
         entityId: id,
       });
@@ -196,10 +203,11 @@ export function useTaskTemplateMutations() {
       }
       return deleted;
     },
-    onSettled: () => {
+    onMutate: () => ({ identityScope: resolveIdentityScope() }),
+    onSettled: (_data, _error, _ids, context) => {
       void runtime.dispatcher.invalidate({
         target: 'task-template',
-        identityScope: resolveIdentityScope(),
+        identityScope: context!.identityScope,
         source: 'mutation',
       });
     },
@@ -222,30 +230,35 @@ export function useTaskTemplateMutations() {
           queryKey: taskTemplateQueryKeys.identity(identityScope),
         });
         const snapshot = snapshotTaskTemplateCache(runtime.queryClient, identityScope);
-        const cached = runtime.queryClient.getQueryData<TaskTemplateClientDTO>(
-          taskTemplateQueryKeys.detail(identityScope, id),
-        );
-        const base = cached ?? ({ id, status: optimisticStatus } as TaskTemplateClientDTO);
-        patchTaskTemplateEverywhere(runtime.queryClient, identityScope, {
-          ...base,
-          status: optimisticStatus,
-          updatedAt: Date.now(),
-        });
-        return { snapshot };
+        // Derive the status patch from a complete cached projection; never a bare {id,status}.
+        // 用完整缓存投影派生 status patch，绝不用残缺的 {id,status} DTO（P1-1）。
+        const cached = getTaskTemplateFromCache(runtime.queryClient, identityScope, id);
+        if (cached) {
+          patchTaskTemplateEverywhere(runtime.queryClient, identityScope, {
+            ...cached,
+            status: optimisticStatus,
+            updatedAt: Date.now(),
+          });
+        }
+        return { snapshot, identityScope };
       },
       onError: (_error, _id, context) => {
         if (context?.snapshot) {
-          restoreTaskTemplateSnapshot(runtime.queryClient, context.snapshot);
+          restoreTaskTemplateSnapshot(
+            runtime.queryClient,
+            context!.identityScope,
+            context.snapshot,
+          );
         }
       },
-      onSuccess: (dto) => {
-        patchTaskTemplateEverywhere(runtime.queryClient, resolveIdentityScope(), dto.toDTO());
+      onSuccess: (dto, _id, context) => {
+        patchTaskTemplateEverywhere(runtime.queryClient, context!.identityScope, dto.toDTO());
         toast.success(t(successKey));
       },
-      onSettled: (_data, _error, id) => {
+      onSettled: (_data, _error, id, context) => {
         void runtime.dispatcher.invalidate({
           target: 'task-template',
-          identityScope: resolveIdentityScope(),
+          identityScope: context!.identityScope,
           source: 'mutation',
           entityId: id,
         });
@@ -312,10 +325,7 @@ export function useTaskTemplateMutations() {
     }
   }
 
-  async function statusSafe(
-    mutation: typeof activateTemplate,
-    id: string,
-  ) {
+  async function statusSafe(mutation: typeof activateTemplate, id: string) {
     try {
       return await mutation.mutateAsync(id);
     } catch {

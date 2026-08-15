@@ -2,109 +2,92 @@
  * useGovernance - Governance module main composable
  * useGovernance - 治理模块主 composable
  *
- * Responsibilities:
- * - Calls the injected governance client seam
- * - Keeps Pinia as normalized POJO cache
- * - Derives a lightweight UI display model locally
- * 职责：
- * - 调用注入的治理客户端 seam
- * - 让 Pinia 作为规范化 POJO 缓存
- * - 在 app 层本地派生轻量展示模型
- *
- * Residual 1057: createComposableHandleError console report path
- * (setGovernanceError dual retired onto sole).
+ * RefArch Phase 5（Governance Query Cache authority pilot）后，rules list / detail /
+ * revisions server state 由 TanStack Vue Query 承载；本 facade 组合 list/detail/revisions
+ * query 与 mutations，并保留原 public surface，供各视图与 `usePerformanceMonitor` 使用。
+ * Pinia 只保留 searchQuery/filter/pagination 等 UI state。
  */
 
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { useGovernanceStore } from '../stores/governance-store';
-import { RULE_SERVICE_KEY } from '../../../di/keys';
-import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import type {
-  CreateRuleReq,
-  RuleClientDTO,
-  RuleRevisionClientDTO,
-  RuleSeverity,
-  RuleStatus,
-  UpdateRuleReq,
-} from '@memoflow/contracts/governance';
 import { toGovernanceDisplayRule } from '../display-rule';
-import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
+import type { CreateRuleReq, RuleClientDTO, UpdateRuleReq } from '@memoflow/contracts/governance';
+import { useGovernanceListQuery } from './useGovernanceListQuery';
+import { useGovernanceDetailQuery } from './useGovernanceDetailQuery';
+import { useGovernanceRevisionsQuery } from './useGovernanceRevisionsQuery';
+import { useGovernanceMutations } from './useGovernanceMutations';
+import { collectGovernanceTags, waitForGovernanceQuery } from './governanceCache';
+import { useServerStateIdentityScope, useServerStateRuntime } from '../../../platform/server-state';
+import { governanceQueryKeys } from '../../../platform/server-state/query-keys';
 
 export function useGovernance() {
   const store = useGovernanceStore();
+  const runtime = useServerStateRuntime();
+  const resolveIdentityScope = useServerStateIdentityScope();
+  const currentRuleId = ref<string | null>(null);
   const savingId = ref<string | null>(null);
-  const service = useStrictInject(RULE_SERVICE_KEY, 'RuleService');
-  const { t } = useI18n();
-  type RuleId = RuleClientDTO['id'];
-  type RevisionRuleId = RuleRevisionClientDTO['ruleId'];
 
-  const rules = computed(() => store.rules);
-  const currentRule = computed(() => store.currentRule);
-  const revisions = computed(() => store.revisions);
-  const isLoading = computed(() => store.isLoading);
-  const error = computed(() => store.error);
-  const searchQuery = computed(() => store.searchQuery);
-  const filter = computed(() => store.filter);
-  const pagination = computed(() => store.pagination);
-  const allTags = computed(() => store.allTags);
-  const hasActiveFilter = computed(() => store.hasActiveFilter);
-  const isSaving = computed(() => savingId.value !== null);
+  const listParams = computed(() => ({
+    page: store.pagination.page,
+    pageSize: store.pagination.pageSize,
+    status: store.filter.status ?? undefined,
+    severity: store.filter.severity ?? undefined,
+    tags: store.filter.tags.length > 0 ? store.filter.tags : undefined,
+    search: store.searchQuery || undefined,
+  }));
+  const list = useGovernanceListQuery({ params: listParams });
+  const detail = useGovernanceDetailQuery(() => currentRuleId.value);
+  const revisions = useGovernanceRevisionsQuery(() => currentRuleId.value);
+  const mutations = useGovernanceMutations();
+
+  const rules = computed(() => list.rules.value);
+  const currentRule = computed<RuleClientDTO | null>(() => detail.currentRule.value);
   const currentRuleView = computed(() => toGovernanceDisplayRule(currentRule.value));
-
-  const handleError = createComposableHandleError({
-    t,
-    setError: (message) => store.setError(message),
-  });
+  const allTags = computed(() =>
+    collectGovernanceTags(runtime.queryClient, resolveIdentityScope()),
+  );
+  const isLoading = computed(
+    () => list.isLoading.value || detail.isLoading.value || revisions.isLoading.value,
+  );
+  const error = computed(() => list.error.value ?? detail.error.value ?? revisions.error.value);
+  const isSaving = computed(() => savingId.value !== null || mutations.isMutating.value);
+  const pagination = computed(() => ({
+    page: store.pagination.page,
+    pageSize: store.pagination.pageSize,
+    total: list.total.value,
+  }));
 
   async function fetchRules(): Promise<void> {
-    store.setLoading(true);
-    store.setError(null);
-    try {
-      const result = await service.listRules(store.currentListQuery);
-      if (result.ok) {
-        store.setRules(result.data.items ?? [], result.data.total ?? 0);
-      } else {
-        handleError(result.error, 'governance.error.loadListFailed');
-      }
-    } finally {
-      store.setLoading(false);
-    }
+    // Manual refresh: force an active refetch of the current canonical list key (matches the
+    // pre-pilot `fetchRules()` which always hit the service regardless of stale state).
+    // 手动刷新：强制按当前 canonical list key 触发 active refetch（与迁移前 fetchRules 一致）。
+    await runtime.queryClient.refetchQueries({
+      queryKey: governanceQueryKeys.list(resolveIdentityScope(), listParams.value),
+      type: 'active',
+    });
   }
 
   async function fetchRule(id: string): Promise<RuleClientDTO | null> {
-    store.setLoading(true);
-    store.setError(null);
-    try {
-      const cached = store.getRuleById(id);
-      if (cached) {
-        store.setCurrentRule(cached);
-        return cached;
-      }
+    currentRuleId.value = id;
+    const identityScope = resolveIdentityScope();
+    const key = governanceQueryKeys.detail(identityScope, id);
+    await waitForGovernanceQuery(runtime.queryClient, key);
+    return runtime.queryClient.getQueryData<RuleClientDTO>(key) ?? null;
+  }
 
-      const result = await service.getRule({ id: id as RuleId });
-      if (result.ok) {
-        store.setCurrentRule(result.data);
-        return result.data;
-      }
-      handleError(result.error, 'governance.error.loadRuleFailed');
-      return null;
-    } finally {
-      store.setLoading(false);
-    }
+  async function fetchRevisions(ruleId: string): Promise<void> {
+    currentRuleId.value = ruleId;
+    await waitForGovernanceQuery(
+      runtime.queryClient,
+      governanceQueryKeys.revisions(resolveIdentityScope(), ruleId),
+    );
   }
 
   async function createRule(req: CreateRuleReq): Promise<RuleClientDTO | null> {
     savingId.value = 'new';
-    store.setError(null);
     try {
-      const result = await service.createRule(req);
-      if (result.ok) {
-        store.addRule(result.data);
-        store.setCurrentRule(result.data);
-        return result.data;
-      }
-      handleError(result.error, 'governance.error.createRuleFailed');
+      return await mutations.createRule.mutateAsync(req);
+    } catch {
       return null;
     } finally {
       savingId.value = null;
@@ -113,15 +96,9 @@ export function useGovernance() {
 
   async function updateRule(id: string, req: UpdateRuleReq): Promise<RuleClientDTO | null> {
     savingId.value = id;
-    store.setError(null);
     try {
-      const result = await service.updateRule(id, req);
-      if (result.ok) {
-        store.updateRule(result.data);
-        store.setCurrentRule(result.data);
-        return result.data;
-      }
-      handleError(result.error, 'governance.error.updateRuleFailed');
+      return await mutations.updateRule.mutateAsync({ id, req });
+    } catch {
       return null;
     } finally {
       savingId.value = null;
@@ -130,14 +107,10 @@ export function useGovernance() {
 
   async function deleteRule(id: string): Promise<boolean> {
     savingId.value = id;
-    store.setError(null);
     try {
-      const result = await service.deleteRule({ id: id as RuleId });
-      if (result.ok) {
-        store.removeRule(id);
-        return true;
-      }
-      handleError(result.error, 'governance.error.deleteRuleFailed');
+      await mutations.deleteRule.mutateAsync(id);
+      return true;
+    } catch {
       return false;
     } finally {
       savingId.value = null;
@@ -146,58 +119,21 @@ export function useGovernance() {
 
   async function searchRules(query: string): Promise<void> {
     store.setSearchQuery(query);
-    if (!query.trim()) {
-      await fetchRules();
-      return;
-    }
-
-    store.setLoading(true);
-    store.setError(null);
-    try {
-      const result = await service.searchRules({
-        query,
-        status: store.filter.status ?? undefined,
-        tags: store.filter.tags.length > 0 ? store.filter.tags : undefined,
-        severity: store.filter.severity ?? undefined,
-        page: store.pagination.page,
-        pageSize: store.pagination.pageSize,
-      });
-      if (result.ok) {
-        store.setRules(result.data.items ?? [], result.data.total ?? 0);
-      } else {
-        handleError(result.error, 'governance.error.searchRuleFailed');
-      }
-    } finally {
-      store.setLoading(false);
-    }
+    // The canonical key changes with the search field; force an active refetch so a repeated
+    // identical search still re-reads the server (matches the pre-pilot `searchRules`).
+    // search 字段进入 canonical key；强制 active refetch 保证重复搜索仍会重新读取服务端。
+    await runtime.queryClient.refetchQueries({
+      queryKey: governanceQueryKeys.list(resolveIdentityScope(), listParams.value),
+      type: 'active',
+    });
   }
-
-  async function fetchRevisions(ruleId: string): Promise<void> {
-    store.setLoading(true);
-    store.setError(null);
-    try {
-      const result = await service.getRevisions({
-        ruleId: ruleId as RevisionRuleId,
-        page: 1,
-        pageSize: 50,
-      });
-      if (result.ok) {
-        store.setRevisions(result.data.items ?? ([] as RuleRevisionClientDTO[]));
-      } else {
-        handleError(result.error, 'governance.error.loadRevisionFailed');
-      }
-    } finally {
-      store.setLoading(false);
-    }
-  }
-
-  function setFilterStatus(status: RuleStatus | null): void {
-    store.setFilterStatus(status);
+  function setFilterStatus(status: RuleClientDTO['status'] | null): void {
+    store.setFilterStatus(status ?? null);
     void fetchRules();
   }
 
-  function setFilterSeverity(severity: RuleSeverity | null): void {
-    store.setFilterSeverity(severity);
+  function setFilterSeverity(severity: RuleClientDTO['severity'] | null): void {
+    store.setFilterSeverity(severity ?? null);
     void fetchRules();
   }
 
@@ -220,15 +156,15 @@ export function useGovernance() {
     rules,
     currentRule,
     currentRuleView,
-    revisions,
+    revisions: computed(() => revisions.revisions.value),
     isLoading,
     isSaving,
     error,
-    searchQuery,
-    filter,
+    searchQuery: computed(() => store.searchQuery),
+    filter: computed(() => store.filter),
     pagination,
     allTags,
-    hasActiveFilter,
+    hasActiveFilter: computed(() => store.hasActiveFilter),
     fetchRules,
     fetchRule,
     createRule,

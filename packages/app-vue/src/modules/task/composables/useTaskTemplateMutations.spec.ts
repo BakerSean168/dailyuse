@@ -114,12 +114,59 @@ describe('useTaskTemplateMutations (plan §3.4)', () => {
     expect(runtime.queryClient.getQueryData(detailKey)?.status).toBe('Active');
   });
 
+  it('status mutation derives from the complete cached projection, not a bare {id,status} DTO', async () => {
+    const tpl = template({ name: 'Full DTO', description: 'kept' });
+    const service = makeService({
+      pauseTemplate: vi.fn().mockResolvedValue(fail({ code: 'VALIDATION_ERROR', message: 'nope' })),
+    });
+    const { api, runtime } = mountTaskComposable(() => useTaskTemplateMutations(), { service });
+
+    // Only the list entry is cached — no detail key. A bare `{id,status}` patch would have
+    // clobbered the list entry's other fields; the implementation must derive from the
+    // complete cached projection and roll back residue-free.
+    const listKey = taskTemplateQueryKeys.list(SCOPE, { page: 1, limit: 20 });
+    runtime.queryClient.setQueryData(listKey, { templates: [tpl], total: 1 });
+
+    await api.pauseTemplateSafe(tpl.id);
+
+    const listData = runtime.queryClient.getQueryData(listKey) as {
+      templates: TaskTemplateClientDTO[];
+    };
+    // The list entry keeps its full projection after the failed mutation.
+    expect(listData.templates[0].name).toBe('Full DTO');
+    expect(listData.templates[0].description).toBe('kept');
+    expect(listData.templates[0].status).toBe('Active');
+  });
+
+  it('rolls back a newly-created detail key (optimistic patch residue) when the mutation fails', async () => {
+    const tpl = template();
+    const service = makeService({
+      updateTemplate: vi
+        .fn()
+        .mockResolvedValue(fail({ code: 'VALIDATION_ERROR', message: 'nope' })),
+    });
+    const { api, runtime } = mountTaskComposable(() => useTaskTemplateMutations(), { service });
+
+    // Only the list entry is cached; no detail key exists before the mutation.
+    const listKey = taskTemplateQueryKeys.list(SCOPE, { page: 1, limit: 20 });
+    const detailKey = taskTemplateQueryKeys.detail(SCOPE, tpl.id);
+    runtime.queryClient.setQueryData(listKey, { templates: [tpl], total: 1 });
+    expect(runtime.queryClient.getQueryData(detailKey)).toBeUndefined();
+
+    await api.updateTemplateSafe(tpl.id, { name: 'Broken' });
+
+    // The optimistic patch may create a detail key, but a failed mutation must remove it.
+    expect(runtime.queryClient.getQueryData(detailKey)).toBeUndefined();
+  });
+
   it('create success keeps server-confirmed semantics (no fake id) and invalidates lists/graphs', async () => {
     const created = template({ id: 'template-new' as TaskTemplateClientDTO['id'] });
     const service = makeService({
-      createTemplate: vi.fn().mockResolvedValue(
-        ok({ template: entity(created), instanceCount: 7, todayInstanceCreated: true }),
-      ),
+      createTemplate: vi
+        .fn()
+        .mockResolvedValue(
+          ok({ template: entity(created), instanceCount: 7, todayInstanceCreated: true }),
+        ),
     });
     const { api, runtime } = mountTaskComposable(() => useTaskTemplateMutations(), { service });
     const invalidate = vi.spyOn(runtime.dispatcher, 'invalidate');
@@ -131,6 +178,9 @@ describe('useTaskTemplateMutations (plan §3.4)', () => {
     expect(invalidate).toHaveBeenCalledWith(
       expect.objectContaining({ target: 'task-template', source: 'mutation' }),
     );
+    // Plan §3.4: create seeds the detail key from the server response.
+    const detailKey = taskTemplateQueryKeys.detail(SCOPE, created.id);
+    expect(runtime.queryClient.getQueryData(detailKey)?.id).toBe('template-new');
   });
 
   it('single delete removes the item from cache after server confirmation and invalidates detail', async () => {
@@ -148,9 +198,11 @@ describe('useTaskTemplateMutations (plan §3.4)', () => {
 
     const deleted = await api.deleteTemplateSafe(tpl.id);
     expect(deleted).toBe(true);
-    const remaining = (runtime.queryClient.getQueryData(listKey) as {
-      templates: TaskTemplateClientDTO[];
-    }).templates;
+    const remaining = (
+      runtime.queryClient.getQueryData(listKey) as {
+        templates: TaskTemplateClientDTO[];
+      }
+    ).templates;
     expect(remaining.some((t) => t.id === tpl.id)).toBe(false);
     expect(runtime.queryClient.getQueryData(detailKey)).toBeUndefined();
     expect(invalidate).toHaveBeenCalledWith(
@@ -175,10 +227,34 @@ describe('useTaskTemplateMutations (plan §3.4)', () => {
     const deleted = await api.deleteTemplatesSafe([first.id, second.id]);
     expect(deleted).toBe(false);
     expect(service.deleteTemplate).toHaveBeenCalledTimes(2);
-    const remaining = (runtime.queryClient.getQueryData(listKey) as {
-      templates: TaskTemplateClientDTO[];
-    }).templates;
+    const remaining = (
+      runtime.queryClient.getQueryData(listKey) as {
+        templates: TaskTemplateClientDTO[];
+      }
+    ).templates;
     // First confirmed removal stays gone; the failed second item is restored by invalidation.
     expect(remaining.some((t) => t.id === first.id)).toBe(false);
+  });
+
+  it('resolves identityScope at mutation begin and carries it through callbacks (P1-2)', async () => {
+    const tpl = template();
+    const service = makeService({
+      updateTemplate: vi.fn().mockResolvedValue(ok(entity(template({ name: 'Confirmed' })))),
+    });
+    const { api, runtime } = mountTaskComposable(() => useTaskTemplateMutations(), { service });
+
+    const detailKey = taskTemplateQueryKeys.detail(SCOPE, tpl.id);
+    const listKey = taskTemplateQueryKeys.list(SCOPE, { page: 1, limit: 20 });
+    runtime.queryClient.setQueryData(listKey, { templates: [tpl], total: 1 });
+    const invalidate = vi.spyOn(runtime.dispatcher, 'invalidate');
+
+    await api.updateTemplateSafe(tpl.id, { name: 'Renamed' });
+
+    // The mutation patched and invalidated the begin-scope identity.
+    expect(invalidate).toHaveBeenCalledWith(
+      expect.objectContaining({ identityScope: SCOPE, target: 'task-template' }),
+    );
+    expect(runtime.queryClient.getQueryData(detailKey)?.name).toBe('Confirmed');
+    expect(runtime.queryClient.getQueryData(listKey)?.templates?.[0].name).toBe('Confirmed');
   });
 });

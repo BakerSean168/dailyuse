@@ -48,8 +48,9 @@ export function clearDesktopServerStateIdentity(identityScope: string): void {
  * Map a PowerSync table batch to pilot invalidation intents.
  *
  * Pilot tables: `notifications` → notification lists/unread; `task_templates` → task template
- * lists/graphs/details; `task_dependencies` → graphs only. Non-pilot tables yield no intents
- * and keep flowing through the legacy Pinia invalidator (plan §3.3 mapping table).
+ * lists/graphs/details; `task_dependencies` → graphs only; `rules`/`rule_revisions` →
+ * governance lists/details/revisions. Non-pilot tables yield no intents and keep flowing
+ * through the legacy Pinia invalidator (plan §3.3 mapping table).
  */
 export function mapTablesToInvalidationIntents(
   tables: readonly string[],
@@ -78,6 +79,22 @@ export function mapTablesToInvalidationIntents(
       identityScope,
       source: 'powersync',
       projection: 'graphs',
+    });
+  }
+  if (unique.includes('rules')) {
+    intents.push({
+      target: 'governance',
+      identityScope,
+      source: 'powersync',
+      projection: 'all',
+    });
+  }
+  if (unique.includes('rule_revisions')) {
+    intents.push({
+      target: 'governance',
+      identityScope,
+      source: 'powersync',
+      projection: 'revisions',
     });
   }
   return intents;

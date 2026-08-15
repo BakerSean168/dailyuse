@@ -23,6 +23,9 @@ export function createServerQueryClient(policy: ServerStateRuntimePolicy): Query
         gcTime: policy.gcTime,
         retry: false,
         networkMode: policy.queryNetworkMode,
+        // Plan §3.5: focus never auto-refetches; only dispatcher/reconnect invalidations do.
+        // 计划 §3.5：窗口聚焦不自动 refetch，仅 dispatcher/reconnect 失效触发。
+        refetchOnWindowFocus: false,
       },
       mutations: {
         retry: policy.mutationRetry,
@@ -39,7 +42,7 @@ export function createServerQueryClient(policy: ServerStateRuntimePolicy): Query
 export function createTestServerQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
-      queries: { retry: false, gcTime: 1_000 },
+      queries: { retry: false, gcTime: 1_000, refetchOnWindowFocus: false },
       mutations: { retry: 0 },
     },
   });

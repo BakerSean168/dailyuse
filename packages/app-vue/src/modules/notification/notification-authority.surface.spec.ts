@@ -6,7 +6,7 @@
  * 必须失败。
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -33,7 +33,10 @@ function walkFiles(dir: string, out: string[] = []): string[] {
 const storeSource = code(readFileSync(resolve(moduleRoot, 'stores/notification-store.ts'), 'utf8'));
 const initSource = code(readFileSync(resolve(moduleRoot, 'initialization/index.ts'), 'utf8'));
 const sseSource = code(
-  readFileSync(resolve(moduleRoot, 'initialization/notification-sse-invalidation-source.ts'), 'utf8'),
+  readFileSync(
+    resolve(moduleRoot, 'initialization/notification-sse-invalidation-source.ts'),
+    'utf8',
+  ),
 );
 
 describe('Notification pilot authority surface (fail closed)', () => {
@@ -68,9 +71,11 @@ describe('Notification pilot authority surface (fail closed)', () => {
     const disallowed: string[] = [];
     for (const file of walkFiles(moduleRoot)) {
       const relativePath = relative(moduleRoot, file);
-      if (relativePath.includes('.spec.') || relativePath.includes('notificationCache.ts')) continue;
+      if (relativePath.includes('.spec.') || relativePath.includes('notificationCache.ts'))
+        continue;
       const source = code(readFileSync(file, 'utf8'));
-      if (source.includes('invalidateQueries(')) disallowed.push(`${relativePath}: invalidateQueries`);
+      if (source.includes('invalidateQueries('))
+        disallowed.push(`${relativePath}: invalidateQueries`);
       if (source.includes('setQueryData(')) disallowed.push(`${relativePath}: setQueryData`);
     }
     expect(disallowed).toEqual([]);

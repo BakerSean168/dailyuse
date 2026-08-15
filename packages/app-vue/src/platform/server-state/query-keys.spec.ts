@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canonicalizeGovernanceListQuery,
   canonicalizeNotificationListQuery,
   canonicalizeTaskTemplateListQuery,
+  governanceQueryKeys,
   notificationQueryKeys,
   taskTemplateQueryKeys,
 } from './query-keys';
@@ -79,7 +81,14 @@ describe('canonicalizeNotificationListQuery', () => {
       page: 3,
       startDate: 100,
     });
-    expect(Object.keys(canonical)).toEqual(['page', 'limit', 'type', 'isRead', 'startDate', 'endDate']);
+    expect(Object.keys(canonical)).toEqual([
+      'page',
+      'limit',
+      'type',
+      'isRead',
+      'startDate',
+      'endDate',
+    ]);
     expect(canonical.startDate).toBe('100');
     expect(canonical.endDate).toBe('200');
   });
@@ -169,12 +178,87 @@ describe('canonicalizeTaskTemplateListQuery', () => {
       tags: ['x'],
       limit: 10,
     });
-    expect(Object.keys(canonical)).toEqual(['page', 'limit', 'status', 'goalId', 'folderId', 'tags']);
+    expect(Object.keys(canonical)).toEqual([
+      'page',
+      'limit',
+      'status',
+      'goalId',
+      'folderId',
+      'tags',
+    ]);
   });
 
   it('produces equal keys for semantically equal requests regardless of array order', () => {
     const a = canonicalizeTaskTemplateListQuery({ status: ['Active', 'Paused'] });
     const b = canonicalizeTaskTemplateListQuery({ status: ['Paused', 'Active'] });
     expect(a).toEqual(b);
+  });
+});
+
+describe('governanceQueryKeys (governance pilot key scheme)', () => {
+  it('builds the frozen key hierarchy', () => {
+    expect(governanceQueryKeys.all).toEqual(['server-state', 'governance']);
+    expect(governanceQueryKeys.identity('id-1')).toEqual(['server-state', 'governance', 'id-1']);
+    expect(governanceQueryKeys.lists('id-1')).toEqual([
+      'server-state',
+      'governance',
+      'id-1',
+      'list',
+    ]);
+    expect(governanceQueryKeys.list('id-1', { page: 1, pageSize: 20 })).toEqual([
+      'server-state',
+      'governance',
+      'id-1',
+      'list',
+      { page: 1, pageSize: 20 },
+    ]);
+    expect(governanceQueryKeys.details('id-1')).toEqual([
+      'server-state',
+      'governance',
+      'id-1',
+      'detail',
+    ]);
+    expect(governanceQueryKeys.detail('id-1', 'RuleId_x')).toEqual([
+      'server-state',
+      'governance',
+      'id-1',
+      'detail',
+      'RuleId_x',
+    ]);
+    expect(governanceQueryKeys.revisions('id-1', 'RuleId_x')).toEqual([
+      'server-state',
+      'governance',
+      'id-1',
+      'revision',
+      'RuleId_x',
+    ]);
+  });
+});
+
+describe('canonicalizeGovernanceListQuery', () => {
+  it('materializes pagination defaults and drops empty optional fields', () => {
+    expect(canonicalizeGovernanceListQuery()).toEqual({ page: 1, pageSize: 20 });
+    expect(canonicalizeGovernanceListQuery({ page: 2, pageSize: 50 })).toEqual({
+      page: 2,
+      pageSize: 50,
+    });
+  });
+
+  it('normalizes tags arrays and keeps scalar filters in frozen order', () => {
+    const canonical = canonicalizeGovernanceListQuery({
+      page: 1,
+      pageSize: 20,
+      status: 'Active',
+      severity: 'Mandatory',
+      tags: ['b', 'a', 'b'],
+    });
+    expect(Object.keys(canonical)).toEqual(['page', 'pageSize', 'status', 'severity', 'tags']);
+    expect(canonical.tags).toEqual(['a', 'b']);
+  });
+
+  it('drops empty search and empty tags arrays', () => {
+    const canonical = canonicalizeGovernanceListQuery({ search: '', tags: [] });
+    expect(canonical).not.toHaveProperty('search');
+    expect(canonical).not.toHaveProperty('tags');
   });
 });

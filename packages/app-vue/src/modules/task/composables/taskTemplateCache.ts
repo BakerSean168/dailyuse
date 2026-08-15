@@ -23,7 +23,11 @@ interface TemplateDetailData {
 }
 
 function isCollectionData(data: unknown): data is TemplateCollectionData {
-  return typeof data === 'object' && data !== null && Array.isArray((data as { templates?: unknown }).templates);
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    Array.isArray((data as { templates?: unknown }).templates)
+  );
 }
 
 function isDetailFor(data: unknown, id: string): data is TemplateDetailData {
@@ -119,29 +123,58 @@ export function removeTaskTemplateFromCache(
 /**
  * Snapshot every matching query under the identity (for optimistic rollback).
  * 快照 identity 下所有匹配 query（用于 optimistic rollback）。
+ *
+ * Besides the data per key, it records which keys already existed so an optimistic
+ * patch that creates a brand-new detail entry can be rolled back residue-free (§P1-1).
+ * 除逐 key 数据外，还记录快照时已存在的 key，使得 optimistic patch 新建的 detail 条目
+ * 能在回滚时被无残留地移除（P1-1）。
  */
+export interface TaskTemplateCacheSnapshot {
+  /** Data captured per existing key. 每个已存在 key 的数据。 */
+  entries: Array<[QueryKey, unknown]>;
+  /** hashKey set of the keys that existed at snapshot time. 快照时已存在 key 的 hashKey 集合。 */
+  existingKeys: Set<string>;
+}
+
 export function snapshotTaskTemplateCache(
   queryClient: QueryClient,
   identityScope: string,
-): Array<[QueryKey, unknown]> {
-  return queryClient.getQueriesData<unknown>({
+): TaskTemplateCacheSnapshot {
+  const entries = queryClient.getQueriesData<unknown>({
     queryKey: taskTemplateQueryKeys.identity(identityScope),
   });
+  return {
+    entries,
+    existingKeys: new Set(entries.map(([queryKey]) => hashKey(queryKey))),
+  };
 }
 
 /**
- * Exactly restore a snapshot taken by `snapshotTaskTemplateCache` (per-key).
- * 逐 key 精确恢复 `snapshotTaskTemplateCache` 快照。
+ * Exactly restore a snapshot taken by `snapshotTaskTemplateCache` (per-key), then remove
+ * any key created by the optimistic patch that did not exist at snapshot time.
+ * 逐 key 精确恢复 `snapshotTaskTemplateCache` 快照，再移除 optimistic patch 新建（快照时
+ * 不存在）的 key，保证回滚无残留。
  */
 export function restoreTaskTemplateSnapshot(
   queryClient: QueryClient,
-  snapshot: Array<[QueryKey, unknown]>,
+  identityScope: string,
+  snapshot: TaskTemplateCacheSnapshot,
 ): void {
-  for (const [queryKey, data] of snapshot) {
+  for (const [queryKey, data] of snapshot.entries) {
     if (data === undefined) {
       queryClient.removeQueries({ queryKey });
     } else {
       queryClient.setQueryData(queryKey, data);
+    }
+  }
+  // Remove newly-created keys (e.g. a detail key the optimistic patch introduced).
+  // 移除快照中不存在的、由 optimistic patch 新建的 key。
+  const current = queryClient.getQueriesData<unknown>({
+    queryKey: taskTemplateQueryKeys.identity(identityScope),
+  });
+  for (const [queryKey] of current) {
+    if (!snapshot.existingKeys.has(hashKey(queryKey))) {
+      queryClient.removeQueries({ queryKey });
     }
   }
 }
@@ -189,21 +222,33 @@ export function mergeTaskTemplateUpdate(
 }
 
 /**
- * Wait until a query key reaches `success` (imperative facade callers await this).
- * 等待指定 query key 达到 success（命令式 facade 调用方 await 它）。
+ * Wait until a query key reaches a terminal state (`success` or `error`), or is removed.
+ * Resolves on success and on error/removal so imperative facade callers never hang.
+ * Unsubscribes in every terminal path.
+ * 等待指定 query key 进入终态（`success`/`error`）或被移除；成功或失败/移除都会 resolve，
+ * 保证命令式 facade 调用方不会永久挂起；每个终态路径都会取消订阅。
  */
 export function waitForTaskTemplateQuery(
   queryClient: QueryClient,
   queryKey: QueryKey,
 ): Promise<void> {
   const state = queryClient.getQueryState(queryKey);
-  if (state?.status === 'success') return Promise.resolve();
+  if (state) {
+    if (state.status === 'success' || state.status === 'error') {
+      return Promise.resolve();
+    }
+  }
   return new Promise((resolve) => {
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (hashKey(event.query.queryKey) !== hashKey(queryKey)) return;
+      if (event.type === 'removed') {
+        unsubscribe();
+        resolve();
+        return;
+      }
       if (
         event.type === 'updated' &&
-        hashKey(event.query.queryKey) === hashKey(queryKey) &&
-        event.query.state.status === 'success'
+        (event.query.state.status === 'success' || event.query.state.status === 'error')
       ) {
         unsubscribe();
         resolve();

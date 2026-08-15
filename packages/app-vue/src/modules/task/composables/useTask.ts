@@ -18,15 +18,22 @@ import {
 } from '../../../platform/server-state/query-keys';
 import { useTaskInstances } from './useTaskInstances';
 import { useTaskDependencies } from './useTaskDependencies';
-import { useTaskTemplateListQuery, type UseTaskTemplateListQueryOptions } from './useTaskTemplateListQuery';
+import { useTaskTemplateListQuery } from './useTaskTemplateListQuery';
 import { waitForTaskTemplateQuery } from './taskTemplateCache';
 
 export function useTask() {
   const store = useTaskStore();
   const runtime = useServerStateRuntime();
   const resolveIdentityScope = useServerStateIdentityScope();
-  const listParams = ref<UseTaskTemplateListQueryOptions>({});
-  const templateList = useTaskTemplateListQuery(listParams);
+  const listParams = ref<TaskTemplateListQueryInput>({});
+  // P2-4: keep the default list query disabled until `fetchTemplates` requests it, so no
+  // avoidable default `limit:20` fetch fires before a consumer supplies its own params.
+  // P2-4：默认 list query 保持禁用，直到 `fetchTemplates` 被调用，避免提前发起默认 limit:20 请求。
+  const listRequested = ref(false);
+  const templateList = useTaskTemplateListQuery({
+    params: listParams,
+    enabled: listRequested,
+  });
   const instanceOps = useTaskInstances();
   const dependencyOps = useTaskDependencies();
 
@@ -39,6 +46,7 @@ export function useTask() {
       folderId: query?.folderId,
       tags: query?.tags,
     };
+    listRequested.value = true;
     await waitForTaskTemplateQuery(
       runtime.queryClient,
       taskTemplateQueryKeys.list(
