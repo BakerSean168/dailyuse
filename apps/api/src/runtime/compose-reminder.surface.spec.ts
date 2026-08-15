@@ -23,9 +23,11 @@ describe('reminder API runtime composer surface', () => {
   const main = readFileSync(resolve(dir, 'main.ts'), 'utf8');
   const composer = readFileSync(resolve(dir, 'runtime/compose-reminder.ts'), 'utf8');
 
-  it('main.ts composes reminder via composeReminder({ db: prisma, closureChecker })', () => {
+  it('main.ts composes reminder via composeReminder({ db: prisma, closureChecker, executorClosureChecker })', () => {
     expect(main).toContain("from './runtime/compose-reminder'");
-    expect(main).toMatch(/composeReminder\(\{\s*db: prisma,\s*closureChecker: accountActiveChecker,?\s*\}/);
+    expect(main).toMatch(
+      /composeReminder\(\{\s*db: prisma,\s*closureChecker: accountActiveChecker,\s*executorClosureChecker,?\s*\}/,
+    );
     expect(main).toContain('.register(reminderComposed.module)');
   });
 

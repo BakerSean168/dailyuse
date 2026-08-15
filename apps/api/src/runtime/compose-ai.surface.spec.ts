@@ -32,7 +32,7 @@ describe('AI API runtime composer surface', () => {
   it('main.ts composes AI via composeAI({ db: prisma, repositoryApiPort, repositoryStorageBaseDir, goal/task/reminder applicationPorts })', () => {
     expect(main).toContain("from './runtime/compose-ai'");
     expect(main).toMatch(
-      /composeAI\(\{\s*db: prisma,\s*repositoryApiPort: repositoryApiModule\.getApplicationPort\(\),\s*repositoryStorageBaseDir,\s*goalApplicationPort: goalComposed\.applicationPort,\s*taskApplicationPort: taskComposed\.applicationPort,\s*reminderApplicationPort: reminderComposed\.applicationPort,\s*\}/,
+      /composeAI\(\{\s*db: prisma,\s*repositoryApiPort: repositoryApiModule\.getApplicationPort\(\),\s*repositoryStorageBaseDir,\s*goalApplicationPort: goalComposed\.applicationPort,\s*taskApplicationPort: taskComposed\.applicationPort,\s*reminderApplicationPort: reminderComposed\.executorReminderPort,\s*\}/,
     );
     expect(main).toContain('.register(aiApiModule)');
   });
@@ -51,7 +51,7 @@ describe('AI API runtime composer surface', () => {
   it('main.ts feeds the composed goal/task/reminder application ports into composeAI and registers their .module handles', () => {
     expect(main).toContain('goalComposed.applicationPort');
     expect(main).toContain('taskComposed.applicationPort');
-    expect(main).toContain('reminderComposed.applicationPort');
+    expect(main).toContain('reminderComposed.executorReminderPort');
     expect(main).toContain('.register(taskComposed.module)');
     expect(main).toContain('.register(goalComposed.module)');
     expect(main).not.toMatch(/create(Goal|Task|Reminder)PrismaModule/);

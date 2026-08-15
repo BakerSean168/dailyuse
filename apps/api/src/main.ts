@@ -31,7 +31,7 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 import { composeGovernance } from './runtime/compose-governance';
 import { composeAccount } from './runtime/compose-account';
 import { composeNotification } from './runtime/compose-notification';
-import { composeReminder } from './runtime/compose-reminder';
+import { composeReminder, createExecutorClosureChecker } from './runtime/compose-reminder';
 import { composeRepository } from './runtime/compose-repository';
 import { composeSchedule } from './runtime/compose-schedule';
 import { composeSetting } from './runtime/compose-setting';
@@ -118,6 +118,14 @@ async function bootstrap(): Promise<void> {
   const closureRepo = new PrismaAccountClosureOperationRepository(prisma);
   const accountActiveChecker = async (identityId: string) =>
     (await closureRepo.findActiveByIdentityId(identityId)) !== null;
+  // Executor-visible closure predicate frozen from merge-base: block when the
+  // account is missing / Deactivated / Closed, or an active closure operation
+  // exists in requested|revoking|closing. The AI executor MUST see this
+  // predicate, not the shared account-active checker.
+  // 从 merge-base 冻结的 executor 可见闭户谓词：账户缺失 / Deactivated / Closed
+  // 或存在 requested|revoking|closing 阶段的有效闭户操作时阻断。AI executor
+  // 必须看到该谓词，而不是共享的账户激活检查器。
+  const executorClosureChecker = createExecutorClosureChecker(prisma);
   const cloudAuth = createCloudAuth({
     database: prisma,
     secret: jwtConfig.secret,
@@ -161,6 +169,7 @@ async function bootstrap(): Promise<void> {
   const reminderComposed = composeReminder({
     db: prisma,
     closureChecker: accountActiveChecker,
+    executorClosureChecker,
   });
   const repositoryApiModule = composeRepository({
     db: prisma,
@@ -218,7 +227,7 @@ async function bootstrap(): Promise<void> {
     repositoryStorageBaseDir,
     goalApplicationPort: goalComposed.applicationPort,
     taskApplicationPort: taskComposed.applicationPort,
-    reminderApplicationPort: reminderComposed.applicationPort,
+    reminderApplicationPort: reminderComposed.executorReminderPort,
   });
   const governanceApiModule = composeGovernance({ db: prisma });
   const app = await bootstrapper

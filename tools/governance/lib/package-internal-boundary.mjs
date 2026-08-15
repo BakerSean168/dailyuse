@@ -30,7 +30,7 @@ export const LEGACY_LAYER_NAMES = new Set([
   'electron-entry',
 ]);
 
-const IMPORT_SPECIFIER_PATTERN = /(?:from\s+['"]|import\s*\(\s*['"])([^'"]+)['"]/g;
+const IMPORT_SPECIFIER_PATTERN = /(?:from\s+['"]|import\s*\(\s*['"]|import\s+['"])([^'"]+)['"]/g;
 
 /**
  * Determine whether an entry inside a walked layer directory should be skipped
@@ -90,8 +90,8 @@ function lineAt(content, index) {
 
 /**
  * Scan file content for layering violations against `rule`.
- * Covers `from '…'`, dynamic `import('…')` and `import type … from '…'`
- * (all matched by the shared pattern).
+ * Covers `from '…'`, bare side-effect `import '…'`, dynamic `import('…')`
+ * and `import type … from '…'` (all matched by the shared pattern).
  *
  * @param {object} input
  * @param {string} input.content  file source

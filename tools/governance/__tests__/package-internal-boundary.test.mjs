@@ -61,6 +61,34 @@ describe('findBoundaryViolations — forbidden external @memoflow/database', () 
     expect(violations).toHaveLength(1);
     expect(violations[0].specifier).toBe('@memoflow/database');
   });
+
+  it('flags bare side-effect `import "@memoflow/database"` in server/application', () => {
+    const content = "import '@memoflow/database';\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/application/bootstrap-db.ts',
+      ...APPLICATION_RULE,
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({
+      file: 'packages/foo/src/server/application/bootstrap-db.ts',
+      line: 1,
+      layer: 'server/application',
+      specifier: '@memoflow/database',
+    });
+  });
+
+  it('flags bare side-effect `import "@memoflow/database"` in server/domain', () => {
+    const content = "import '@memoflow/database';\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/domain/setup.ts',
+      ...DOMAIN_RULE,
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0].layer).toBe('server/domain');
+    expect(violations[0].specifier).toBe('@memoflow/database');
+  });
 });
 
 describe('findBoundaryViolations — positive cases', () => {
@@ -88,6 +116,26 @@ describe('findBoundaryViolations — positive cases', () => {
       content,
       relPath: 'packages/goal/src/server/domain/repositories/i-relation-repository.ts',
       ...DOMAIN_RULE,
+    });
+    expect(violations).toEqual([]);
+  });
+
+  it('allows bare side-effect `import "@memoflow/utils"` in server/domain', () => {
+    const content = "import '@memoflow/utils';\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/goal/src/server/domain/side-effect.ts',
+      ...DOMAIN_RULE,
+    });
+    expect(violations).toEqual([]);
+  });
+
+  it('allows bare side-effect `import "@memoflow/utils"` in server/application', () => {
+    const content = "import '@memoflow/utils';\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/goal/src/server/application/side-effect.ts',
+      ...APPLICATION_RULE,
     });
     expect(violations).toEqual([]);
   });

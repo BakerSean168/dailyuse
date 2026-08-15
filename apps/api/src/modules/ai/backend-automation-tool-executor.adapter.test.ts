@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ok } from '@memoflow/contracts/result';
+import { error, ok } from '@memoflow/contracts/result';
 import type {
   GoalAutomationExecutionInput,
   IAnalyticsReadPort,
@@ -253,5 +253,21 @@ describe('BackendAutomationToolExecutorAdapter', () => {
       },
     ]);
     expect(mocks.createGoal).not.toHaveBeenCalled();
+  });
+
+  it('marks create_reminder as failed when the reminder port blocks on closure (merge-base receipt semantics)', async () => {
+    mocks.createTemplate.mockResolvedValue(
+      error('FORBIDDEN', 'Account is closed or closure in progress'),
+    );
+    const adapter = new BackendAutomationToolExecutorAdapter(createDependencies());
+
+    const result = await adapter.executeGoalAutomation(createExecutionInput());
+
+    expect(result.find((action) => action.tool === 'create_reminder')).toEqual({
+      tool: 'create_reminder',
+      status: 'failed',
+      message: 'Account is closed or closure in progress',
+    });
+    expect(mocks.createTemplate).toHaveBeenCalledTimes(1);
   });
 });

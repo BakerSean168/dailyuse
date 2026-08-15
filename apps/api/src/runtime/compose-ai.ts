@@ -77,7 +77,15 @@ export interface ComposeAIDependencies {
   readonly goalApplicationPort: GoalApplicationPort;
   /** The shared Task application port composed once by the API runtime (`composeTask(...).applicationPort`). API runtime 只组装一次并共享的 Task application port（`composeTask(...).applicationPort`）。 */
   readonly taskApplicationPort: TaskApplicationPort;
-  /** The shared Reminder application port composed once by the API runtime (`composeReminder(...).applicationPort`). API runtime 只组装一次并共享的 Reminder application port（`composeReminder(...).applicationPort`）。 */
+  /**
+   * The Reminder application port wired for the AI executor — the host's
+   * executor-facing port (`composeReminder(...).executorReminderPort`), whose
+   * `createTemplate` uses the frozen merge-base closure predicate rather than
+   * the module's account-active checker.
+   *
+   * 为 AI executor 预留的 Reminder application port（`composeReminder(...).executorReminderPort`），
+   * 其 `createTemplate` 使用冻结的 merge-base 闭户谓词，而非模块的账户激活检查器。
+   */
   readonly reminderApplicationPort: ReminderApplicationPort;
   /**
    * Optional ai-service runtime config override. When omitted or `undefined`,

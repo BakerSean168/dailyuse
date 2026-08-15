@@ -54,7 +54,7 @@ vi.mock('@memoflow/reminder/api', async (importOriginal) => {
   };
 });
 
-import { composeReminder } from './compose-reminder';
+import { composeReminder, createExecutorClosureChecker } from './compose-reminder';
 import {
   createReminderModule,
   createReminderPrismaRepositories,
@@ -152,6 +152,7 @@ describe('composeReminder assembly order', () => {
 
     const instance = createReminderModule.mock.results[0].value;
     expect(composed.applicationPort).toBe(instance.api);
+    expect(composed.executorReminderPort).toBe(instance.api);
     expect(composed.repositories.reminderTemplateRepository).toBe(
       instance.reminderTemplateRepository,
     );
@@ -169,6 +170,108 @@ describe('composeReminder assembly order', () => {
 
     const moduleCall = createReminderModule.mock.calls[0][0];
     expect(moduleCall.closureChecker).toBe(hostClosureChecker);
+  });
+
+  it('exposes an executor reminder port with the frozen closure checker when provided', () => {
+    const executorClosureChecker = async (_identityId: string): Promise<boolean> => false;
+    const composed = composeReminder({ db: fakeDb, closureChecker, executorClosureChecker });
+
+    const instance = createReminderModule.mock.results[0].value;
+    // The module api keeps the module checker; the executor port swaps only
+    // createTemplate to the executor use case carrying the frozen predicate.
+    expect(composed.applicationPort).toBe(instance.api);
+    expect(composed.executorReminderPort).not.toBe(instance.api);
+    expect(composed.executorReminderPort.createTemplate).not.toBe(instance.api.createTemplate);
+    expect(composed.executorReminderPort.listTemplates).toBe(instance.api.listTemplates);
+  });
+});
+
+describe('createExecutorClosureChecker — merge-base frozen closure predicate', () => {
+  const cases: Array<{
+    name: string;
+    account: { status: string } | null;
+    opPhase: string | null;
+    expectedBlocked: boolean;
+  }> = [
+    { name: 'missing account blocks', account: null, opPhase: null, expectedBlocked: true },
+    {
+      name: 'Deactivated account blocks (no closure op)',
+      account: { status: 'Deactivated' },
+      opPhase: null,
+      expectedBlocked: true,
+    },
+    {
+      name: 'Closed account blocks (no closure op)',
+      account: { status: 'Closed' },
+      opPhase: null,
+      expectedBlocked: true,
+    },
+    {
+      name: 'active account without closure op allows',
+      account: { status: 'Active' },
+      opPhase: null,
+      expectedBlocked: false,
+    },
+    {
+      name: 'active account with requested closure op blocks',
+      account: { status: 'Active' },
+      opPhase: 'requested',
+      expectedBlocked: true,
+    },
+    {
+      name: 'active account with revoking closure op blocks',
+      account: { status: 'Active' },
+      opPhase: 'revoking',
+      expectedBlocked: true,
+    },
+    {
+      name: 'active account with closing closure op blocks',
+      account: { status: 'Active' },
+      opPhase: 'closing',
+      expectedBlocked: true,
+    },
+    {
+      name: 'active account with revoked closure op allows (revoked NOT in merge-base phase set)',
+      account: { status: 'Active' },
+      opPhase: 'revoked',
+      expectedBlocked: false,
+    },
+    {
+      name: 'active account with closed closure op allows (closed NOT in merge-base phase set)',
+      account: { status: 'Active' },
+      opPhase: 'closed',
+      expectedBlocked: false,
+    },
+  ];
+
+  it.each(cases)('$name', async ({ account, opPhase, expectedBlocked }) => {
+    const findUnique = vi.fn().mockResolvedValue(account);
+    const findFirst = vi.fn().mockResolvedValue(
+      opPhase !== null && ['requested', 'revoking', 'closing'].includes(opPhase)
+        ? { id: 'op-1', phase: opPhase }
+        : null,
+    );
+    const db = {
+      account: { findUnique },
+      accountClosureOperation: { findFirst },
+    } as unknown as PrismaClient;
+
+    const checker = createExecutorClosureChecker(db);
+    const isBlocked = await checker('identity-closure');
+
+    expect(isBlocked).toBe(expectedBlocked);
+
+    if (!account || account.status !== 'Active') {
+      // Account status alone decides — the closure table is never queried.
+      expect(findFirst).not.toHaveBeenCalled();
+    } else {
+      expect(findFirst).toHaveBeenCalledWith({
+        where: {
+          identityId: 'identity-closure',
+          phase: { in: ['requested', 'revoking', 'closing'] },
+        },
+      });
+    }
   });
 });
 
