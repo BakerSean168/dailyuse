@@ -3,6 +3,14 @@ import { describe, expect, it, vi } from 'vitest';
 import type { GovernanceApplicationPort } from '../../server/application';
 import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import { registerGovernanceRoutes } from './index';
+import { expressAdapter } from '@memoflow/utils/result';
+import { ok } from '@memoflow/contracts/result';
+import {
+  createAuthenticatedIpcWrapper,
+  type IElectronModuleContext,
+} from '@memoflow/contracts/electron';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import { GovernanceController } from '../../server/transport/governance.controller';
 
 type RegisteredRoute = {
   method: string;
@@ -24,13 +32,13 @@ const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
 function createUseCaseStub(): GovernanceApplicationPort {
   return {
-    createRule: vi.fn(),
-    updateRule: vi.fn(),
-    deleteRule: vi.fn(),
-    getRule: vi.fn(),
-    listRules: vi.fn(),
-    searchRules: vi.fn(),
-    getRevisions: vi.fn(),
+    createRule: vi.fn(() => ok(null as never)),
+    updateRule: vi.fn(() => ok(null as never)),
+    deleteRule: vi.fn(() => ok(null as never)),
+    getRule: vi.fn(() => ok(null as never)),
+    listRules: vi.fn(() => ok([] as never)),
+    searchRules: vi.fn(() => ok([] as never)),
+    getRevisions: vi.fn(() => ok(null as never)),
   } as GovernanceApplicationPort;
 }
 
@@ -52,8 +60,7 @@ function getJsonBodySchema(route: RegisteredRoute): {
   return (
     (
       (route.request?.body as Record<string, unknown> | undefined)?.content as
-        | Record<string, unknown>
-        | undefined
+        Record<string, unknown> | undefined
     )?.['application/json'] as Record<string, unknown> | undefined
   )?.schema as {
     safeParse: (value: unknown) => { success: boolean };
@@ -141,5 +148,76 @@ describe('governance route contracts', () => {
         authorId: 'user-1',
       }).success,
     ).toBe(true);
+  });
+});
+
+describe('governance context parity — HTTP adapter vs IPC wrapper (RefArch Phase 2)', () => {
+  const fixture: ExecutionContext = {
+    requestId: 'req-governance-parity',
+    traceId: 'req-governance-parity',
+    startedAt: 1_700_000_000_123,
+    source: 'ipc',
+    identityId: 'identity-1',
+    deviceId: 'desktop-app',
+  };
+
+  const validCreateRule = {
+    code: 'DDD-100',
+    title: 'Parity rule',
+    description: 'Valid governance rule for the context parity test.',
+    severity: 'Mandatory',
+    tags: ['parity'],
+    goodExamples: [{ language: 'TypeScript', content: 'class Example {}' }],
+    badExamples: [{ language: 'TypeScript', content: 'const broken = true' }],
+  };
+
+  it('HTTP: the full fixture context reaches the GovernanceApplicationPort untruncated', async () => {
+    const port = createUseCaseStub();
+    const controller = new GovernanceController(port);
+    const handler = expressAdapter((req, ctx) => controller.createRule(req.body, ctx), {
+      successStatus: 201,
+      extractContext: () => fixture,
+    });
+
+    const res = {
+      statusCode: 0,
+      status(code: number) {
+        this.statusCode = code;
+        return this;
+      },
+      json: vi.fn().mockReturnThis(),
+      end: vi.fn().mockReturnThis(),
+    };
+    await handler(
+      {
+        body: validCreateRule,
+        user: { identityId: 'identity-1' },
+        requestContext: fixture,
+      },
+      res,
+    );
+
+    expect(port.createRule).toHaveBeenCalledTimes(1);
+    const [, received] = (port.createRule as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(received).toEqual(fixture);
+    expect(res.statusCode).toBe(201);
+  });
+
+  it('IPC: the same fixture context reaches the same port method via withAuthenticatedValue', async () => {
+    const port = createUseCaseStub();
+    const controller = new GovernanceController(port);
+    const withAuthenticatedValue = createAuthenticatedIpcWrapper();
+    const ctx = {
+      db: {},
+      auth: { requireRequestContext: vi.fn().mockResolvedValue(fixture) },
+    } as unknown as IElectronModuleContext;
+
+    const result = await withAuthenticatedValue(ctx, async (requestContext) =>
+      controller.createRule(validCreateRule, requestContext),
+    );
+
+    expect(result.ok).toBe(true);
+    const [, received] = (port.createRule as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(received).toEqual(fixture);
   });
 });

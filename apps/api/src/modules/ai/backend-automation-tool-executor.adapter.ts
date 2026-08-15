@@ -13,6 +13,7 @@
  * `apps/api/src/runtime/compose-ai.ts` 导入 package `/api` transport seam；
  * app-local adapter 保持在 port 接口之后。
  */
+import { randomUUID } from 'node:crypto';
 import {
   type GoalAutomationExecutionInput,
   type IAnalyticsReadPort,
@@ -20,6 +21,7 @@ import {
   type IKnowledgeSourcePort,
 } from '@memoflow/ai/ports';
 import type { IdentityId } from '@memoflow/contracts';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { GoalAutomationExecutedAction } from '@memoflow/contracts/ai';
 import type { GoalId, KeyResultId } from '@memoflow/contracts/goal';
 import type { GoalApplicationPort } from '@memoflow/goal';
@@ -43,6 +45,22 @@ import {
 const logger = createLogger('BackendAutomationToolExecutor');
 // Residual 1015: buildRecurrenceRule elevated to @memoflow/utils/shared.
 // Residual 1013/1011/1009/1007: related helpers elevated to @memoflow/utils/shared.
+
+/**
+ * Builds a canonical `source: 'system'` context for background agent-tool
+ * executions that have no user-facing HTTP/IPC transport. Each execution gets
+ * a fresh, independent request ID (never reused as a durable run key).
+ */
+function systemExecutionContext(identityId: string): ExecutionContext {
+  const requestId = randomUUID();
+  return {
+    requestId,
+    traceId: requestId,
+    startedAt: Date.now(),
+    source: 'system',
+    identityId,
+  };
+}
 
 /**
  * Dependencies the AI automation tool executor needs from the API host runtime.
@@ -153,9 +171,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
                 weight: keyResult.weight,
               })),
             },
-            {
-              identityId: input.identityId as IdentityId,
-            },
+            systemExecutionContext(input.identityId),
           );
 
           const goal = unwrapOrThrowError(result).readModel;
@@ -282,9 +298,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
 
           const result = await this.reminderApplicationPort.createTemplate(
             buildReminderTemplateInput(reminder),
-            {
-              identityId: input.identityId,
-            },
+            systemExecutionContext(input.identityId),
           );
           const createdReminder = unwrapOrThrowError(result) as {
             id?: string;

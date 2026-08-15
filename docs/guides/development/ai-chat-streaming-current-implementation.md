@@ -263,6 +263,14 @@ updated: 2026-04-14T00:00:00
 - 流式展示用的增量输出
 - 最终持久化用的完整消息
 
+### Correlation ID 来源（RefArch Phase 2）
+
+- 入口 `requestId` 由 API 全局 RequestContext middleware 建立（接受 `X-Request-Id` 或生成 UUID），并写入 `req.requestContext`。
+- SSE 路由通过共享 Express extractor 把该 carrier 合成完整 `ExecutionContext`；use case 的 outbound/log correlation 使用 `cx.requestId`。
+- 对 Python 的 `X-Request-Id` 只透传入口 ID；无 entry context 的内部调用才由 `AIServiceInternalClient` 生成 fallback UUID。
+- durable `runId` 与 transport request ID 分离：请求可复用 proxy request ID，但 run/proposal/checkpoint 身份不依赖它。
+- API request log、TS AI internal request log 与 Python completion log 可用同一个 `requestId` 检索。
+
 ## 当前状态模型是什么
 
 如果按工程能力拆，当前页面已经有一部分状态模型，但还没有完全展开。
@@ -281,10 +289,10 @@ updated: 2026-04-14T00:00:00
 
 ```ts
 type ChatItem = {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-}
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+};
 ```
 
 这代表当前消息模型还比较轻：
@@ -518,15 +526,15 @@ type ChatItem = {
 先改 `ChatItem`，把消息状态明确下来，例如：
 
 ```ts
-type MessageStatus = 'generating' | 'success' | 'error' | 'aborted'
+type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
 
 type ChatItem = {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  status: MessageStatus
-  errorMessage?: string
-}
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  status: MessageStatus;
+  errorMessage?: string;
+};
 ```
 
 这一层补完后，再做取消、重试、重新生成会顺很多。

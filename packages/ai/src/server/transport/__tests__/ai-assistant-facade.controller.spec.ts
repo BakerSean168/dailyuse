@@ -10,10 +10,7 @@ import { AIAssistantFacadeController } from '../ai-assistant-facade.controller';
 describe('AIAssistantFacadeController', () => {
   it('injects identityId from ExecutionContext and rejects body identityId', async () => {
     const dispatchAssistant = vi.fn(
-      async (
-        command: AssistantCommand,
-        handlers: AssistantDispatchHandlers,
-      ) => {
+      async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
         handlers.onEvent?.({
           type: 'run.started',
           runId: 'run-1',
@@ -88,7 +85,11 @@ describe('AIAssistantFacadeController', () => {
   it('forwards the abort signal to the service', async () => {
     const abortController = new AbortController();
     const dispatchAssistant = vi.fn(
-      async (_command: AssistantCommand, _handlers: AssistantDispatchHandlers, signal?: AbortSignal) => {
+      async (
+        _command: AssistantCommand,
+        _handlers: AssistantDispatchHandlers,
+        signal?: AbortSignal,
+      ) => {
         expect(signal).toBe(abortController.signal);
         return ok({ eventCount: 0 });
       },
@@ -137,30 +138,28 @@ describe('AIAssistantFacadeController', () => {
     if (result.ok) {
       expect(result.data).toEqual({ eventCount: 3 });
     }
-    expect(events.map((e) => e.type)).toEqual([
-      'message.delta',
-      'message.delta',
-      'message.delta',
-    ]);
+    expect(events.map((e) => e.type)).toEqual(['message.delta', 'message.delta', 'message.delta']);
   });
 
   it('routes approve_proposal without any mutation executor surface', async () => {
-    const dispatchAssistant = vi.fn(async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
-      expect(command).toEqual({
-        type: 'approve_proposal',
-        identityId: 'user-1',
-        runId: 'run-p',
-        proposalId: 'prop-1',
-        revision: 2,
-      });
-      handlers.onEvent?.({
-        type: 'proposal.approved',
-        runId: 'run-p',
-        proposalId: 'prop-1',
-        revision: 2,
-      });
-      return ok({ eventCount: 1 });
-    });
+    const dispatchAssistant = vi.fn(
+      async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
+        expect(command).toEqual({
+          type: 'approve_proposal',
+          identityId: 'user-1',
+          runId: 'run-p',
+          proposalId: 'prop-1',
+          revision: 2,
+        });
+        handlers.onEvent?.({
+          type: 'proposal.approved',
+          runId: 'run-p',
+          proposalId: 'prop-1',
+          revision: 2,
+        });
+        return ok({ eventCount: 1 });
+      },
+    );
     const controller = new AIAssistantFacadeController({ dispatchAssistant });
     const events: AssistantEvent[] = [];
     const result = await controller.dispatch(
@@ -185,25 +184,27 @@ describe('AIAssistantFacadeController', () => {
   });
 
   it('routes revise_proposal lifecycle without mutation executor surface', async () => {
-    const dispatchAssistant = vi.fn(async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
-      expect(command).toMatchObject({
-        type: 'revise_proposal',
-        identityId: 'user-1',
-        runId: 'run-p',
-        proposalId: 'agent-run:run-p:goal.create',
-        revision: 1,
-        patch: { title: 'Edited' },
-      });
-      handlers.onEvent?.({
-        type: 'proposal.revised',
-        runId: 'run-p',
-        proposalId: 'agent-run:run-p:goal.create',
-        revision: 2,
-        kind: 'goal.create',
-        title: 'Edited',
-      });
-      return ok({ eventCount: 1 });
-    });
+    const dispatchAssistant = vi.fn(
+      async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
+        expect(command).toMatchObject({
+          type: 'revise_proposal',
+          identityId: 'user-1',
+          runId: 'run-p',
+          proposalId: 'agent-run:run-p:goal.create',
+          revision: 1,
+          patch: { title: 'Edited' },
+        });
+        handlers.onEvent?.({
+          type: 'proposal.revised',
+          runId: 'run-p',
+          proposalId: 'agent-run:run-p:goal.create',
+          revision: 2,
+          kind: 'goal.create',
+          title: 'Edited',
+        });
+        return ok({ eventCount: 1 });
+      },
+    );
     const controller = new AIAssistantFacadeController({ dispatchAssistant });
     const events: AssistantEvent[] = [];
     const result = await controller.dispatch(
@@ -222,23 +223,25 @@ describe('AIAssistantFacadeController', () => {
   });
 
   it('routes reject_proposal lifecycle without mutation executor surface', async () => {
-    const dispatchAssistant = vi.fn(async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
-      expect(command).toEqual({
-        type: 'reject_proposal',
-        identityId: 'user-1',
-        runId: 'run-p',
-        proposalId: 'prop-1',
-        revision: 3,
-        reason: 'needs revision',
-      });
-      handlers.onEvent?.({
-        type: 'proposal.rejected',
-        runId: 'run-p',
-        proposalId: 'prop-1',
-        revision: 3,
-      });
-      return ok({ eventCount: 1 });
-    });
+    const dispatchAssistant = vi.fn(
+      async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
+        expect(command).toEqual({
+          type: 'reject_proposal',
+          identityId: 'user-1',
+          runId: 'run-p',
+          proposalId: 'prop-1',
+          revision: 3,
+          reason: 'needs revision',
+        });
+        handlers.onEvent?.({
+          type: 'proposal.rejected',
+          runId: 'run-p',
+          proposalId: 'prop-1',
+          revision: 3,
+        });
+        return ok({ eventCount: 1 });
+      },
+    );
     const controller = new AIAssistantFacadeController({ dispatchAssistant });
     const events: AssistantEvent[] = [];
     const result = await controller.dispatch(
@@ -257,15 +260,17 @@ describe('AIAssistantFacadeController', () => {
   });
 
   it('routes cancel_run lifecycle', async () => {
-    const dispatchAssistant = vi.fn(async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
-      expect(command).toEqual({
-        type: 'cancel_run',
-        identityId: 'user-1',
-        runId: 'run-c',
-      });
-      handlers.onEvent?.({ type: 'run.cancelled', runId: 'run-c' });
-      return ok({ eventCount: 1 });
-    });
+    const dispatchAssistant = vi.fn(
+      async (command: AssistantCommand, handlers: AssistantDispatchHandlers) => {
+        expect(command).toEqual({
+          type: 'cancel_run',
+          identityId: 'user-1',
+          runId: 'run-c',
+        });
+        handlers.onEvent?.({ type: 'run.cancelled', runId: 'run-c' });
+        return ok({ eventCount: 1 });
+      },
+    );
     const controller = new AIAssistantFacadeController({ dispatchAssistant });
     const events: AssistantEvent[] = [];
     const result = await controller.dispatch(
@@ -343,5 +348,21 @@ describe('AIAssistantFacadeController', () => {
       expect(result.error.code).toBe('VALIDATION_ERROR');
     }
     expect(dispatchAssistant).not.toHaveBeenCalled();
+  });
+
+  it('forwards the entry correlation requestId to the dispatch service', async () => {
+    const dispatchAssistant = vi.fn(async () => ok({ eventCount: 0 }));
+    const controller = new AIAssistantFacadeController({ dispatchAssistant });
+    const cx = {
+      requestId: 'entry-req-facade-1',
+      traceId: 'entry-req-facade-1',
+      startedAt: 1_700_000_000_000,
+      source: 'http',
+      identityId: 'user-1',
+    } as never;
+    await controller.dispatch({ type: 'cancel_run', runId: 'run-1' }, cx, {});
+    expect(dispatchAssistant).toHaveBeenCalledOnce();
+    const [, , , requestId] = dispatchAssistant.mock.calls[0];
+    expect(requestId).toBe('entry-req-facade-1');
   });
 });

@@ -75,7 +75,14 @@ function createFakeContext(): IElectronModuleContext {
   return {
     db: {},
     auth: {
-      requireRequestContext: vi.fn().mockResolvedValue({ identityId: 'identity-1' }),
+      requireRequestContext: vi.fn().mockResolvedValue({
+        requestId: 'req-governance-ipc',
+        traceId: 'req-governance-ipc',
+        startedAt: 1_700_000_000_000,
+        source: 'ipc',
+        identityId: 'identity-1',
+        deviceId: 'desktop-app',
+      }),
     },
   } as unknown as IElectronModuleContext;
 }
@@ -139,14 +146,13 @@ describe('createGovernanceElectronModule IPC lifecycle', () => {
     expect(listResult).toMatchObject({ ok: true });
     expect(fake.api.listRules).toHaveBeenCalledTimes(1);
 
-    const searchResult = await registered(GovernanceChannels.RULE_SEARCH)(
-      undefined,
-      { query: 'architecture' },
-    );
+    const searchResult = await registered(GovernanceChannels.RULE_SEARCH)(undefined, {
+      query: 'architecture',
+    });
     expect(searchResult).toMatchObject({ ok: true });
     expect(fake.api.searchRules).toHaveBeenCalledWith(
       expect.anything(),
-      { identityId: 'identity-1' },
+      expect.objectContaining({ identityId: 'identity-1', source: 'ipc' }),
     );
   });
 

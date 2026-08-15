@@ -15,6 +15,7 @@ import type { Result } from '@memoflow/contracts/result';
 import { toResultErrorException, unwrapOrThrowError } from '@memoflow/contracts/result';
 import { resultify } from '@memoflow/utils/result';
 import type { CreateRuleReq, CreateRuleRes } from '@memoflow/contracts/governance';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 import type { ExecutionContext } from '../execution-context';
 
 /**
@@ -23,8 +24,8 @@ import type { ExecutionContext } from '../execution-context';
  *
  * Dependencies injected via constructor (standard dependency injection).
  * 通过构造函数注入依赖（标准依赖注入）。
-  * @param private readonly ruleRepository - 
-  * @param private readonly revisionRepository - 
+ * @param private readonly ruleRepository -
+ * @param private readonly revisionRepository -
  */
 export class CreateRuleUseCase {
   constructor(
@@ -86,7 +87,7 @@ export class CreateRuleUseCase {
           goodExamples,
           badExamples,
           liveReferenceLocation: req.liveReferenceLocation ?? undefined,
-          authorId: cx.identityId,
+          authorId: cx.identityId as IdentityId,
         }),
       );
 
@@ -95,7 +96,7 @@ export class CreateRuleUseCase {
         RuleRevision.create({
           ruleId: rule.id,
           revisionNumber: revisionCount + 1,
-          authorId: cx.identityId,
+          authorId: cx.identityId as IdentityId,
           changedFields: [
             'code',
             'title',
@@ -128,4 +129,3 @@ export class CreateRuleUseCase {
     }, 'Failed to create rule');
   }
 }
-

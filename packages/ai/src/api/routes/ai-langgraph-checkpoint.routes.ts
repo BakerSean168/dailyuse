@@ -1,5 +1,5 @@
 /**
- * Residual 965: getRequestId sole import (packages/ai/src/shared/get-request-id.ts).
+ * RefArch Phase 2: correlation requestId comes from the canonical entry context (`ctx.requestId`).
  */
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
@@ -12,7 +12,6 @@ import {
   fail,
 } from '@memoflow/utils/result';
 import type { AILangGraphCheckpointController } from '../../server/transport/ai-langgraph-checkpoint.controller';
-import { getRequestId } from '../../shared/get-request-id';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -132,7 +131,7 @@ export function registerAILangGraphCheckpointRoutes(
         parentCheckpointId: body.parentCheckpointId,
         checkpoint: body.checkpoint,
         metadata: body.metadata,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
       return ok(null);
     },
@@ -164,7 +163,7 @@ export function registerAILangGraphCheckpointRoutes(
         taskId: body.taskId,
         taskPath: body.taskPath,
         writes: body.writes,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
       return ok(null);
     },
@@ -193,7 +192,7 @@ export function registerAILangGraphCheckpointRoutes(
         threadId: query.threadId,
         checkpointNs: query.checkpointNs,
         checkpointId: query.checkpointId,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
       if (!result) {
         return fail({ code: 'NOT_FOUND', message: 'Checkpoint not found' });
@@ -211,7 +210,10 @@ export function registerAILangGraphCheckpointRoutes(
         query: ListCheckpointsQuerySchema,
       },
       responses: {
-        200: successResponse(z.array(LangGraphCheckpointTupleRecordSchema), 'Checkpoints retrieved'),
+        200: successResponse(
+          z.array(LangGraphCheckpointTupleRecordSchema),
+          'Checkpoints retrieved',
+        ),
       },
     },
     [auth],
@@ -225,7 +227,7 @@ export function registerAILangGraphCheckpointRoutes(
         checkpointNs: query.checkpointNs,
         beforeCheckpointId: query.beforeCheckpointId,
         limit,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
       return ok(result);
     },
@@ -251,7 +253,7 @@ export function registerAILangGraphCheckpointRoutes(
         agentType: query.agentType,
         threadId: query.threadId,
         checkpointNs: query.checkpointNs,
-        requestId: getRequestId(req),
+        requestId: ctx.requestId,
       });
       return ok(null);
     },

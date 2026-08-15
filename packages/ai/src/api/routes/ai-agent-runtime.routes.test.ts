@@ -80,7 +80,12 @@ describe('registerAIAgentRuntimeRoutes', () => {
     const req = {
       query,
       user: { identityId: 'identity-route' },
-      traceId: 'trace-agent-route-list',
+      requestContext: {
+        requestId: 'trace-agent-route-list',
+        traceId: 'trace-agent-route-list',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -91,8 +96,10 @@ describe('registerAIAgentRuntimeRoutes', () => {
 
     expect(controller.listRuns).toHaveBeenCalledWith(
       query,
-      { identityId: 'identity-route' },
-      'trace-agent-route-list',
+      expect.objectContaining({
+        identityId: 'identity-route',
+        requestId: 'trace-agent-route-list',
+      }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(
@@ -120,7 +127,12 @@ describe('registerAIAgentRuntimeRoutes', () => {
     const req = {
       body,
       user: { identityId: 'identity-route' },
-      traceId: 'trace-agent-route-1',
+      requestContext: {
+        requestId: 'trace-agent-route-1',
+        traceId: 'trace-agent-route-1',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -131,8 +143,7 @@ describe('registerAIAgentRuntimeRoutes', () => {
 
     expect(controller.startRun).toHaveBeenCalledWith(
       body,
-      { identityId: 'identity-route' },
-      'trace-agent-route-1',
+      expect.objectContaining({ identityId: 'identity-route', requestId: 'trace-agent-route-1' }),
     );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(
@@ -159,7 +170,12 @@ describe('registerAIAgentRuntimeRoutes', () => {
       body,
       params: { runId: 'run-1' },
       user: { identityId: 'identity-route' },
-      id: 'request-agent-route-2',
+      requestContext: {
+        requestId: 'request-agent-route-2',
+        traceId: 'request-agent-route-2',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -171,8 +187,7 @@ describe('registerAIAgentRuntimeRoutes', () => {
     expect(controller.resumeRun).toHaveBeenCalledWith(
       'run-1',
       body,
-      { identityId: 'identity-route' },
-      'request-agent-route-2',
+      expect.objectContaining({ identityId: 'identity-route', requestId: 'request-agent-route-2' }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
   });
@@ -186,7 +201,12 @@ describe('registerAIAgentRuntimeRoutes', () => {
     const req = {
       params: { runId: 'run-1' },
       user: { identityId: 'identity-route' },
-      traceId: 'trace-agent-route-lookup',
+      requestContext: {
+        requestId: 'trace-agent-route-lookup',
+        traceId: 'trace-agent-route-lookup',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -197,8 +217,10 @@ describe('registerAIAgentRuntimeRoutes', () => {
 
     expect(controller.getRun).toHaveBeenCalledWith(
       'run-1',
-      { identityId: 'identity-route' },
-      'trace-agent-route-lookup',
+      expect.objectContaining({
+        identityId: 'identity-route',
+        requestId: 'trace-agent-route-lookup',
+      }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
   });
@@ -212,7 +234,12 @@ describe('registerAIAgentRuntimeRoutes', () => {
     const req = {
       params: { runId: 'run-1' },
       user: { identityId: 'identity-route' },
-      traceId: 'trace-agent-route-3',
+      requestContext: {
+        requestId: 'trace-agent-route-3',
+        traceId: 'trace-agent-route-3',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
     };
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -223,8 +250,7 @@ describe('registerAIAgentRuntimeRoutes', () => {
 
     expect(controller.getEvents).toHaveBeenCalledWith(
       'run-1',
-      { identityId: 'identity-route' },
-      'trace-agent-route-3',
+      expect.objectContaining({ identityId: 'identity-route', requestId: 'trace-agent-route-3' }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
   });

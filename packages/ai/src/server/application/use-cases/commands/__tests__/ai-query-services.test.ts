@@ -209,9 +209,7 @@ class StubKnowledgeIndexRepository implements IKnowledgeIndexRepository {
     (identityId: string, query: string, limit: number) => Promise<KnowledgeIndexedNote[]>
   >(async () => []);
 
-  public readonly upsert = vi.fn<(resource: KnowledgeIndexedNote) => Promise<void>>(
-    async () => {},
-  );
+  public readonly upsert = vi.fn<(resource: KnowledgeIndexedNote) => Promise<void>>(async () => {});
 
   public readonly markRequested = vi.fn<
     (identityId: string, resourceIds: string[], requestedAt: number) => Promise<void>
@@ -257,9 +255,7 @@ class StubAnalyticsQueryPort implements IAnalyticsQueryPort {
 
 describe('SyncKnowledgeNotesUseCase', () => {
   it('records an indexing failure without conflating it with the persisted source note', async () => {
-    const resource = (
-      await new StubKnowledgeSourcePort().listIndexableNotes('identity-1', 1)
-    )[0]!;
+    const resource = (await new StubKnowledgeSourcePort().listIndexableNotes('identity-1', 1))[0]!;
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
     ingestionPort.indexNote.mockRejectedValueOnce(new Error('embedding provider unavailable'));
@@ -304,9 +300,7 @@ describe('SyncKnowledgeNotesUseCase', () => {
   });
 
   it('reports a successful index without making status projection failures fatal', async () => {
-    const resource = (
-      await new StubKnowledgeSourcePort().listIndexableNotes('identity-1', 1)
-    )[0]!;
+    const resource = (await new StubKnowledgeSourcePort().listIndexableNotes('identity-1', 1))[0]!;
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const indexStatusPort = new StubKnowledgeIndexStatusPort();
     indexStatusPort.updateIndexStatus.mockRejectedValueOnce(new Error('projection unavailable'));
@@ -368,7 +362,13 @@ describe('AIKnowledgeQueryService', () => {
       {
         query: 'How does knowledge grounding work?',
       } satisfies QueryKnowledgeReq,
-      { identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(sourcePort.listRelevantNotes).toHaveBeenCalledWith(
@@ -466,7 +466,13 @@ describe('AIKnowledgeQueryService', () => {
       {
         query: 'How does grounding from repos cite sources?',
       } satisfies QueryKnowledgeReq,
-      { identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(sourcePort.listRelevantNotes).toHaveBeenCalledWith(
@@ -532,7 +538,13 @@ describe('AIKnowledgeQueryService', () => {
       {
         query: 'How does repository grounding work?',
       } satisfies QueryKnowledgeReq,
-      { identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(knowledgeIndexRepository.findRelevantNotes).toHaveBeenCalledWith(
@@ -581,7 +593,13 @@ describe('AIKnowledgeQueryService', () => {
         instruction: 'Expand this note with citation guidance.',
         currentContent: '# Repository Grounding',
       } satisfies ExpandKnowledgeReq,
-      { identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(queryPort.expand).toHaveBeenCalledWith(
@@ -648,7 +666,13 @@ describe('AIKnowledgeQueryService', () => {
         force: true,
         limit: 20,
       },
-      { identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(ingestionPort.indexNote).toHaveBeenCalledWith(
@@ -697,7 +721,13 @@ describe('AIKnowledgeQueryService', () => {
 
     const result = await service.execute(
       { resourceIds: ['resource-42'], force: false },
-      { identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(sourcePort.getNoteById).toHaveBeenCalledWith('identity-1', 'resource-42');
@@ -732,7 +762,13 @@ describe('AIKnowledgeQueryService', () => {
 
     const result = await service.execute(
       { resourceIds: ['resource-1'] },
-      { identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(result.ok).toBe(true);
@@ -770,7 +806,13 @@ describe('AIAnalyticsQueryService', () => {
       {
         query: 'What needs attention today?',
       } satisfies QueryAnalyticsReq,
-      { identityId: 'identity-1' },
+      {
+        requestId: 'req-knowledge-1',
+        traceId: 'req-knowledge-1',
+        startedAt: 1_700_000_000_000,
+        source: 'system',
+        identityId: 'identity-1',
+      },
     );
 
     expect(readPort.buildContext).toHaveBeenCalledWith('identity-1', 'What needs attention today?');

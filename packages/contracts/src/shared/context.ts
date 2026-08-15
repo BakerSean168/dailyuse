@@ -1,17 +1,11 @@
-export interface Context {
-  identityId: string;
-  deviceId: string;
-  /**
-   * Optional richer client metadata captured at the transport edge.
-   * 传输层可选采集的更完整客户端元数据。
-   */
-  device?: {
-    deviceName?: string | null;
-    os?: string | null;
-    browser?: string | null;
-    ipAddress?: string | null;
-    userAgent?: string | null;
-    deviceType?: string;
-    deviceFingerprint?: string;
-  };
-}
+import type { ExecutionContext } from './execution-context';
+
+/**
+ * @deprecated Import `ExecutionContext` from './execution-context' directly.
+ * 请直接导入 `ExecutionContext`。
+ *
+ * This file must NOT declare a second `Context`/`ExecutionContext` interface
+ * body — `ExecutionContext` in `./execution-context` is the single canonical
+ * shape for the whole repository.
+ */
+export type Context = ExecutionContext;

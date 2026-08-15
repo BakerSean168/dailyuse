@@ -1,5 +1,4 @@
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -41,7 +40,7 @@ export function registerAIKnowledgeNoteRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.create(req.body, { identityId: ctx.identityId } as ExecutionContext),
+    (req, ctx) => controller.create(req.body, ctx),
     { successStatus: 201 },
   );
 

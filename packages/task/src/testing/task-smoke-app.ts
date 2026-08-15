@@ -5,7 +5,15 @@
  * without exposing the full application-server public surface.
  */
 
-import express, { Router, type Express, type NextFunction, type Request, type RequestHandler, type Response } from 'express';
+import express, {
+  Router,
+  type Express,
+  type NextFunction,
+  type Request,
+  type RequestHandler,
+  type Response,
+} from 'express';
+import { randomUUID } from 'node:crypto';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { vi } from 'vitest';
 import { TaskTemplateController } from '../server/transport/task-template.controller';
@@ -17,9 +25,7 @@ import {
 } from '../server/infrastructure/task.module';
 import { createTaskTransportHandlers } from '../server/transport';
 import { registerTaskRoutes } from '../api/routes';
-import type {
-  ITaskTemplateRepository,
-} from '../server/domain/repositories/i-task-template-repository';
+import type { ITaskTemplateRepository } from '../server/domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../server/domain/repositories/i-task-instance-repository';
 import type { ITaskDependencyRepository } from '../server/domain/repositories/i-task-dependency-repository';
 
@@ -143,6 +149,19 @@ export function createTaskSmokeApp(): TaskSmokeApp {
 
   const app = express();
   app.use(express.json());
+
+  // Mirrors the API RequestContext middleware: the expressAdapter fails closed
+  // without a producer-owned carrier, so smoke tests need one before routes.
+  app.use((req, _res, next) => {
+    const requestId = randomUUID();
+    (req as unknown as Record<string, unknown>).requestContext = {
+      requestId,
+      traceId: requestId,
+      startedAt: Date.now(),
+      source: 'http',
+    };
+    next();
+  });
 
   const rootRouter = Router();
   const taskRoutes = registerTaskRoutes(

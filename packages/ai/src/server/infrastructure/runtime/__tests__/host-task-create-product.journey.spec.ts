@@ -38,10 +38,14 @@ import type { IAgentRuntimePort } from '../../../application/ports/agent-runtime
 function makePort(): IAgentRuntimePort {
   return {
     startRun: vi.fn().mockRejectedValue(new Error('port.startRun must not run for task.create')),
-    resumeRun: vi.fn().mockRejectedValue(new Error('port.resumeRun must not run for stored task.create')),
+    resumeRun: vi
+      .fn()
+      .mockRejectedValue(new Error('port.resumeRun must not run for stored task.create')),
     getRun: vi.fn().mockRejectedValue(new Error('port.getRun must not run for stored task.create')),
     listRuns: vi.fn().mockResolvedValue([]),
-    getEvents: vi.fn().mockRejectedValue(new Error('port.getEvents must not run for stored task.create')),
+    getEvents: vi
+      .fn()
+      .mockRejectedValue(new Error('port.getEvents must not run for stored task.create')),
   };
 }
 
@@ -66,7 +70,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
         input: { title: 'Draft task', goalId: 'goal-1' },
       },
       cx as any,
-      'req-start',
     );
     expect(started.ok).toBe(true);
     if (!started.ok) return;
@@ -91,7 +94,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
         ],
       },
       cx as any,
-      'req-edit',
     );
     expect(edited.ok).toBe(true);
     if (!edited.ok) return;
@@ -104,7 +106,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
       'run-journey-cancel',
       { userDecision: 'cancel' },
       cx as any,
-      'req-cancel',
     );
     expect(cancelled.ok).toBe(true);
     if (!cancelled.ok) return;
@@ -293,7 +294,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(port.startRun).not.toHaveBeenCalled();
   });
 
-
   it('fails closed when confirm omits client settlement executedActions (residual 453)', async () => {
     const port = makePort();
     const service = createAgentRuntimeService(port);
@@ -330,7 +330,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillWaiting.data.state.executedActions).toEqual([]);
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
-
 
   it('fails closed on blank edit title without mutating stored draft (residual 455)', async () => {
     const port = makePort();
@@ -380,7 +379,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
 
-
   it('fails closed on same-identity conversation rebinding of runId (residual 457)', async () => {
     const port = makePort();
     const service = createAgentRuntimeService(port);
@@ -425,10 +423,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!listedA.ok) return;
     expect(listedA.data.some((run) => run.runId === 'run-journey-session')).toBe(true);
 
-    const listedB = await service.listRuns(
-      { conversationId: 'conv-session-b' },
-      cx as any,
-    );
+    const listedB = await service.listRuns({ conversationId: 'conv-session-b' }, cx as any);
     expect(listedB.ok).toBe(true);
     if (!listedB.ok) return;
     expect(listedB.data.some((run) => run.runId === 'run-journey-session')).toBe(false);
@@ -440,7 +435,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillA.data.state.pendingActions[0]?.payload['title']).toBe('Session A draft');
     expect(port.startRun).not.toHaveBeenCalled();
   });
-
 
   it('rejects missing conversationId at start without store registration (residual 461/483)', async () => {
     const port = makePort();
@@ -488,8 +482,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(listed.data.some((run) => run.runId === 'run-journey-blank-conv')).toBe(false);
     expect(port.startRun).not.toHaveBeenCalled();
   });
-
-
 
   it('rejects blank threadId at start without store registration (residual 485)', async () => {
     const port = makePort();
@@ -543,13 +535,14 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(rejected.error.message).toMatch(/non-empty identityId/);
 
     // No process-local registration under any identity for this runId.
-    const listedOwner = await service.listRuns({}, { identityId: 'client-body-must-not-win' } as any);
+    const listedOwner = await service.listRuns({}, {
+      identityId: 'client-body-must-not-win',
+    } as any);
     expect(listedOwner.ok).toBe(true);
     if (!listedOwner.ok) return;
     expect(listedOwner.data.some((run) => run.runId === 'run-journey-blank-identity')).toBe(false);
     expect(port.startRun).not.toHaveBeenCalled();
   });
-
 
   it('rejects blank runId at start without store registration (residual 497)', async () => {
     const port = makePort();
@@ -641,7 +634,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(listed.data.some((run) => run.runId === 'run-journey-trim-id')).toBe(true);
     expect(port.getRun).not.toHaveBeenCalled();
   });
-
 
   it('confirm normalizes settlement title from process-local draft (residual 463)', async () => {
     const port = makePort();
@@ -924,7 +916,9 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(failConfirm.ok).toBe(false);
     if (failConfirm.ok) return;
     expect(failConfirm.error.code).toBe('VALIDATION_ERROR');
-    expect(failConfirm.error.message).toMatch(/confirm requires waiting_approval|does not support|cancel/);
+    expect(failConfirm.error.message).toMatch(
+      /confirm requires waiting_approval|does not support|cancel/,
+    );
 
     const stillCancelled = await service.getRun('run-journey-confirm-status', cx as any);
     expect(stillCancelled.ok).toBe(true);
@@ -987,7 +981,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillCompleted.data.run.status).toBe('completed');
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
-
 
   it('edit fails closed after completed and only works from waiting_approval (residual 481)', async () => {
     const port = makePort();
@@ -1076,7 +1069,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillCompleted.data.run.status).toBe('completed');
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
-
 
   it('confirm normalizes settlement template id and fails closed without recoverable id (residual 465)', async () => {
     const port = makePort();
@@ -1323,7 +1315,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
 
-
   it('getRun/getEvents match trimmed runId query (residual 505)', async () => {
     const port = makePort();
     const service = createAgentRuntimeService(port);
@@ -1357,7 +1348,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(port.getEvents).not.toHaveBeenCalled();
   });
 
-
   it('listRuns match trimmed conversationId query (residual 509)', async () => {
     const port = makePort();
     const service = createAgentRuntimeService(port);
@@ -1378,10 +1368,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!started.ok) return;
     expect(started.data.run.conversationId).toBe('conv-journey-trim');
 
-    const listed = await service.listRuns(
-      { conversationId: '  conv-journey-trim  ' },
-      cx as any,
-    );
+    const listed = await service.listRuns({ conversationId: '  conv-journey-trim  ' }, cx as any);
     expect(listed.ok).toBe(true);
     if (!listed.ok) return;
     expect(listed.data.some((run) => run.runId === 'run-journey-trim-conv')).toBe(true);
@@ -1392,7 +1379,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     // Blank conversation filter is fail-closed for process-local runs (still may consult port merge).
     expect(blank.data.some((run) => run.runId === 'run-journey-trim-conv')).toBe(false);
   });
-
 
   it('resume edit keeps process-local thread binding across whitespace-equivalent threadId (residual 511)', async () => {
     const port = makePort();
@@ -1443,7 +1429,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(got.data.run.threadId).toBe('thread-journey-trim');
   });
 
-
   it('process-local start stores normalized conversationId for list rehydrate (residual 513)', async () => {
     const port = makePort();
     const service = createAgentRuntimeService(port);
@@ -1465,15 +1450,11 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     // start builder + store upsert both normalize conversationId.
     expect(started.data.run.conversationId).toBe('conv-journey-norm');
 
-    const listed = await service.listRuns(
-      { conversationId: 'conv-journey-norm' },
-      cx as any,
-    );
+    const listed = await service.listRuns({ conversationId: 'conv-journey-norm' }, cx as any);
     expect(listed.ok).toBe(true);
     if (!listed.ok) return;
     expect(listed.data.some((run) => run.runId === 'run-journey-conv-norm')).toBe(true);
   });
-
 
   it('process-local start stores normalized identityId for get/list rehydrate (residual 515)', async () => {
     const port = makePort();
@@ -1506,7 +1487,6 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!listed.ok) return;
     expect(listed.data.some((run) => run.runId === 'run-journey-id-norm')).toBe(true);
   });
-
 
   it('listRuns remote merge ownership trims identity (residual 517)', async () => {
     const port = makePort();
@@ -1562,5 +1542,4 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(listed.data.some((run) => run.runId === 'run-remote-foreign')).toBe(false);
     expect(port.listRuns).toHaveBeenCalled();
   });
-
 });

@@ -276,7 +276,6 @@ export function assertAgentStartCapabilityPlan(
   return ok(undefined);
 }
 
-
 /**
  * Residual 503/517: ownership compare uses trimmed non-empty identity
  * (matchesHostTaskCreateIdentity — process-local store + list merge symmetry).
@@ -287,10 +286,7 @@ function ensureAgentRunOwnedByIdentity(
   identityId: string,
 ): Result<AgentRunResult> {
   if (!matchesHostTaskCreateIdentity(result.run.identityId, identityId)) {
-    return error(
-      'FORBIDDEN',
-      'Agent run is not owned by the current identity.',
-    );
+    return error('FORBIDDEN', 'Agent run is not owned by the current identity.');
   }
   return ok(result);
 }
@@ -552,7 +548,7 @@ async function withGoalAgentReadOnlyContext(
 
 async function withKnowledgeQaAnswer(
   req: AgentStartRunRequest,
-  identityId: string,
+  cx: ExecutionContext,
   knowledgeQueryUseCase?: QueryKnowledgeUseCase,
 ): Promise<Result<AgentStartRunRequest>> {
   if (req.agentType !== 'knowledge.qa' || !knowledgeQueryUseCase) {
@@ -575,7 +571,7 @@ async function withKnowledgeQaAnswer(
     ...(providerId ? { providerId: providerId as QueryKnowledgeReq['providerId'] } : {}),
     ...(maxResources ? { maxResources } : {}),
   };
-  const queryResult = await knowledgeQueryUseCase.execute(queryRequest, { identityId });
+  const queryResult = await knowledgeQueryUseCase.execute(queryRequest, cx);
   if (!queryResult.ok) {
     return queryResult;
   }
@@ -840,8 +836,7 @@ export function createAgentRuntimeService(
     result: AgentRunResult,
     input: {
       runId: string;
-      identityId: string;
-      requestId?: string;
+      cx: ExecutionContext;
       signal?: AbortSignal;
     },
   ): Promise<AgentRunResult> {
@@ -855,18 +850,18 @@ export function createAgentRuntimeService(
 
     const executedActions = await executeGoalAgentInterrupt(
       interrupt,
-      input.identityId,
+      input.cx.identityId,
       automationToolExecutorPort,
     );
 
     return port.resumeRun({
-      identityId: input.identityId,
+      identityId: input.cx.identityId,
       runId: input.runId,
       payload: {
         userDecision: 'confirm',
         executedActions,
       },
-      requestId: input.requestId,
+      requestId: input.cx.requestId,
       signal: input.signal,
     });
   }
@@ -914,8 +909,7 @@ export function createAgentRuntimeService(
 
   async function executeKnowledgeGenerateInterrupt(
     interrupt: z.infer<typeof KnowledgeGenerateExecutionRequiredInterruptSchema>,
-    identityId: string,
-    requestId?: string,
+    cx: ExecutionContext,
   ): Promise<AgentExecutedAction[]> {
     if (!knowledgeNoteUseCase) {
       throw new Error('Knowledge Generation execution requires the knowledge-note use case.');
@@ -934,7 +928,7 @@ export function createAgentRuntimeService(
 
       const contentArtifactId = getPayloadString(action.payload, 'contentArtifactId');
       const confirmationRequestId =
-        requestId ?? `${interrupt.runId}:knowledge-note:${action.index ?? 0}`;
+        cx.requestId ?? `${interrupt.runId}:knowledge-note:${action.index ?? 0}`;
       const parsed = CreateKnowledgeNoteSchema.safeParse({
         topic: getPayloadString(action.payload, 'topic'),
         title: getPayloadString(action.payload, 'title'),
@@ -961,7 +955,7 @@ export function createAgentRuntimeService(
         continue;
       }
 
-      const result = await knowledgeNoteUseCase.createKnowledgeNote(parsed.data, { identityId });
+      const result = await knowledgeNoteUseCase.createKnowledgeNote(parsed.data, cx);
       if (!result.ok) {
         executedActions.push({
           tool: action.tool,
@@ -995,8 +989,7 @@ export function createAgentRuntimeService(
     result: AgentRunResult,
     input: {
       runId: string;
-      identityId: string;
-      requestId?: string;
+      cx: ExecutionContext;
       signal?: AbortSignal;
     },
   ): Promise<AgentRunResult> {
@@ -1008,19 +1001,15 @@ export function createAgentRuntimeService(
       throw new Error('Agent runtime execution requires the Agent runtime port.');
     }
 
-    const executedActions = await executeKnowledgeGenerateInterrupt(
-      interrupt,
-      input.identityId,
-      input.requestId,
-    );
+    const executedActions = await executeKnowledgeGenerateInterrupt(interrupt, input.cx);
     return port.resumeRun({
-      identityId: input.identityId,
+      identityId: input.cx.identityId,
       runId: input.runId,
       payload: {
         userDecision: 'confirm',
         executedActions,
       },
-      requestId: input.requestId,
+      requestId: input.cx.requestId,
       signal: input.signal,
     });
   }
@@ -1029,8 +1018,7 @@ export function createAgentRuntimeService(
     result: AgentRunResult,
     input: {
       runId: string;
-      identityId: string;
-      requestId?: string;
+      cx: ExecutionContext;
       signal?: AbortSignal;
     },
   ): Promise<AgentRunResult> {
@@ -1135,9 +1123,11 @@ export function createAgentRuntimeService(
     async startRun(
       req: AgentStartRunRequest,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      // Correlation comes exclusively from the entry context — never a caller
+      // bypass, never a durable runId. ADR-045.
+      const requestId = cx.requestId;
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
@@ -1169,7 +1159,7 @@ export function createAgentRuntimeService(
       );
       const requestWithKnowledge = await withKnowledgeQaAnswer(
         requestWithContext,
-        cx.identityId,
+        cx,
         knowledgeQueryUseCase,
       );
       if (!requestWithKnowledge.ok) {
@@ -1183,38 +1173,23 @@ export function createAgentRuntimeService(
         // Residual 493: ExecutionContext identity fail-closed (builder also throws; no silent empty).
         const taskCreateIdentityId = resolveTaskCreateIdentityId(cx.identityId);
         if (!taskCreateIdentityId) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE);
         }
         // Residual 497: process-local runId fail-closed (builder also throws; no silent empty).
         if (!resolveTaskCreateRunId(requestWithKnowledge.data.runId)) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE);
         }
         // Residual 479: title fail-closed (builder also throws; no silent 'New task').
         if (!resolveTaskCreateTitle(requestWithKnowledge.data.input)) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE);
         }
         // Residual 461/483: session-bound product path — conversationId required (builder also throws).
         if (!resolveTaskCreateConversationId(requestWithKnowledge.data.conversationId)) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE);
         }
         // Residual 485: process-local thread binding — blank/whitespace threadId fail-closed.
         if (!resolveTaskCreateThreadId(requestWithKnowledge.data.threadId)) {
-          return error(
-            'VALIDATION_ERROR',
-            HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
-          );
+          return error('VALIDATION_ERROR', HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE);
         }
         const startedAt = Date.now();
         try {
@@ -1292,8 +1267,7 @@ export function createAgentRuntimeService(
         }
         const resolvedResult = await resolveRuntimeExecutionInterrupt(result, {
           runId: req.runId,
-          identityId: cx.identityId,
-          requestId,
+          cx,
           signal,
         });
         await recordAgentRuntimeExecution({
@@ -1321,9 +1295,10 @@ export function createAgentRuntimeService(
       runId: string,
       payload: AgentResumePayload,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      // Correlation comes exclusively from the entry context. ADR-045.
+      const requestId = cx.requestId;
       const startedAt = Date.now();
       const request = { runId, payload };
 
@@ -1397,8 +1372,7 @@ export function createAgentRuntimeService(
           if (hasResolvableExecutionInterrupt(snapshot)) {
             const resolvedSnapshot = await resolveRuntimeExecutionInterrupt(snapshot, {
               runId,
-              identityId: cx.identityId,
-              requestId,
+              cx,
               signal,
             });
             await recordAgentRuntimeExecution({
@@ -1432,8 +1406,7 @@ export function createAgentRuntimeService(
           payload.userDecision === 'confirm'
             ? await resolveRuntimeExecutionInterrupt(result, {
                 runId,
-                identityId: cx.identityId,
-                requestId,
+                cx,
                 signal,
               })
             : result;
@@ -1461,9 +1434,10 @@ export function createAgentRuntimeService(
     async getRun(
       runId: string,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      // Correlation comes exclusively from the entry context. ADR-045.
+      const requestId = cx.requestId;
       // Residual 435: process-local task.create store before remote port lookup.
       const stored = taskCreateRunStore.get(runId, cx.identityId);
       if (stored) {
@@ -1485,9 +1459,10 @@ export function createAgentRuntimeService(
     async listRuns(
       params: AgentRunListParams,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRun[]>> {
+      // Correlation comes exclusively from the entry context. ADR-045.
+      const requestId = cx.requestId;
       // Residual 435: load unscoped-by-limit local runs, merge, then apply limit once.
       const { limit: listLimit, ...listFilters } = params;
       const localTaskRuns = taskCreateRunStore.list(cx.identityId, listFilters);
@@ -1528,17 +1503,16 @@ export function createAgentRuntimeService(
       }
       const merged = [...byId.values()].sort((left, right) => right.updatedAt - left.updatedAt);
       const limited =
-        typeof listLimit === 'number' && listLimit > 0
-          ? merged.slice(0, listLimit)
-          : merged;
+        typeof listLimit === 'number' && listLimit > 0 ? merged.slice(0, listLimit) : merged;
       return ok(limited);
     },
     async getEvents(
       runId: string,
       cx: ExecutionContext,
-      requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentEvent[]>> {
+      // Correlation comes exclusively from the entry context. ADR-045.
+      const requestId = cx.requestId;
       // Residual 435: process-local task.create events.
       const storedEvents = taskCreateRunStore.getEvents(runId, cx.identityId);
       if (storedEvents) {

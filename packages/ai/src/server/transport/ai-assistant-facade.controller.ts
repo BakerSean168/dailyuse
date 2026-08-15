@@ -28,6 +28,7 @@ export interface AIAssistantFacadeControllerService {
     command: AssistantCommand,
     handlers: AssistantDispatchHandlers,
     signal?: AbortSignal,
+    requestId?: string,
   ): Promise<Result<AssistantDispatchResult>>;
 }
 
@@ -121,6 +122,6 @@ export class AIAssistantFacadeController {
 
     // Never accept identityId from body — always ExecutionContext.
     const command = toHostCommand(parsed.data, cx.identityId);
-    return this.service.dispatchAssistant(command, handlers, signal);
+    return this.service.dispatchAssistant(command, handlers, signal, cx.requestId);
   }
 }

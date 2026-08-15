@@ -2,7 +2,6 @@ import express from 'express';
 import request from 'supertest';
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import type { Context } from '@memoflow/contracts/shared';
 import { fail, ok } from '@memoflow/contracts/result';
 import type { ScheduleEventApplicationPort } from '../server/application';
 import { registerScheduleEventRoutes } from './schedule-event.routes';
@@ -15,6 +14,17 @@ const authMiddleware: RequestHandler = (req, _res, next) => {
 function createApp(port: ScheduleEventApplicationPort) {
   const app = express();
   app.use(express.json());
+  // Simulate the API RequestContext middleware (expressAdapter fails closed
+  // without a producer-owned carrier).
+  app.use((req, _res, next) => {
+    (req as { requestContext?: unknown }).requestContext = {
+      requestId: 'req-schedule-roundtrip',
+      traceId: 'req-schedule-roundtrip',
+      startedAt: 1_700_000_000_000,
+      source: 'http',
+    };
+    next();
+  });
   app.use(
     '/schedules/events',
     registerScheduleEventRoutes(port, {
@@ -59,7 +69,9 @@ describe('Schedule event DELETE HTTP round-trip contract (real Express handler)'
     const port = createStubPort({ deleteEvent: deleteSpy });
     const app = createApp(port);
 
-    const res = await request(app).delete('/schedules/events/schedule-1').send({ expectedVersion: 4 });
+    const res = await request(app)
+      .delete('/schedules/events/schedule-1')
+      .send({ expectedVersion: 4 });
 
     expect(res.status).toBe(200);
     expect(deleteSpy).toHaveBeenCalledWith('schedule-1', expect.anything(), 4);
@@ -77,7 +89,9 @@ describe('Schedule event DELETE HTTP round-trip contract (real Express handler)'
     });
     const app = createApp(port);
 
-    const res = await request(app).delete('/schedules/events/schedule-1').send({ expectedVersion: 1 });
+    const res = await request(app)
+      .delete('/schedules/events/schedule-1')
+      .send({ expectedVersion: 1 });
 
     expect(res.status).toBe(409);
     expect(res.body).toMatchObject({

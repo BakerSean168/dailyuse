@@ -12,7 +12,13 @@ import { AgentRunResultSchema } from '@memoflow/contracts/ai';
 import { ok } from '@memoflow/contracts/result';
 import { AIAgentRuntimeController } from './ai-agent-runtime.controller';
 
-const cx: ExecutionContext = { identityId: 'identity-auth' };
+const cx: ExecutionContext = {
+  identityId: 'identity-auth',
+  requestId: 'request-auth-1',
+  traceId: 'request-auth-1',
+  startedAt: 1_700_000_000_000,
+  source: 'http',
+};
 
 function createRunResult(identityId = cx.identityId): AgentRunResult {
   return AgentRunResultSchema.parse({
@@ -74,7 +80,7 @@ describe('AIAgentRuntimeController', () => {
       input: { idea: 'Ship the AI agent runtime.' },
     };
 
-    const result = await controller.startRun(input, cx, 'trace-agent-1');
+    const result = await controller.startRun(input, cx);
 
     expect(result.ok).toBe(true);
     expect(service.startAgentRun).toHaveBeenCalledWith(
@@ -88,7 +94,6 @@ describe('AIAgentRuntimeController', () => {
         input: { idea: 'Ship the AI agent runtime.' },
       } satisfies AgentStartRunRequest,
       cx,
-      'trace-agent-1',
       undefined,
     );
   });
@@ -97,12 +102,7 @@ describe('AIAgentRuntimeController', () => {
     const service = createServiceStub();
     const controller = new AIAgentRuntimeController(service);
 
-    const result = await controller.resumeRun(
-      'run-1',
-      { userDecision: 'approve' },
-      cx,
-      'trace-agent-2',
-    );
+    const result = await controller.resumeRun('run-1', { userDecision: 'approve' }, cx);
 
     expect(result.ok).toBe(false);
     expect(service.resumeAgentRun).not.toHaveBeenCalled();
@@ -123,7 +123,7 @@ describe('AIAgentRuntimeController', () => {
       approvedActions: [{ tool: 'create_goal', index: 0 }],
     };
 
-    const result = await controller.resumeRun('run-1', payload, cx, 'trace-agent-3');
+    const result = await controller.resumeRun('run-1', payload, cx);
 
     expect(result.ok).toBe(true);
     expect(service.resumeAgentRun).toHaveBeenCalledWith(
@@ -133,7 +133,6 @@ describe('AIAgentRuntimeController', () => {
         approvedPlan: expect.objectContaining({ summary: 'Approved plan' }),
       }),
       cx,
-      'trace-agent-3',
       undefined,
     );
   });
@@ -142,15 +141,10 @@ describe('AIAgentRuntimeController', () => {
     const service = createServiceStub();
     const controller = new AIAgentRuntimeController(service);
 
-    const result = await controller.getRun('run-1', cx, 'trace-agent-lookup');
+    const result = await controller.getRun('run-1', cx);
 
     expect(result.ok).toBe(true);
-    expect(service.getAgentRun).toHaveBeenCalledWith(
-      'run-1',
-      cx,
-      'trace-agent-lookup',
-      undefined,
-    );
+    expect(service.getAgentRun).toHaveBeenCalledWith('run-1', cx, undefined);
   });
 
   it('normalizes run list query params before calling the service', async () => {
@@ -165,7 +159,6 @@ describe('AIAgentRuntimeController', () => {
         limit: '5',
       },
       cx,
-      'trace-agent-list',
     );
 
     expect(result.ok).toBe(true);
@@ -177,7 +170,6 @@ describe('AIAgentRuntimeController', () => {
         limit: 5,
       },
       cx,
-      'trace-agent-list',
       undefined,
     );
   });

@@ -47,11 +47,12 @@ export class AssistantFacade implements IAssistantFacadePort {
   async *dispatch(
     command: AssistantCommand,
     signal?: AbortSignal,
+    requestId?: string,
   ): AsyncGenerator<AssistantEvent, void, void> {
     try {
       switch (command.type) {
         case 'message':
-          yield* this.dispatchMessage(command, signal);
+          yield* this.dispatchMessage(command, signal, requestId);
           return;
         case 'approve_proposal':
           yield* this.dispatchApprove(command);
@@ -87,6 +88,7 @@ export class AssistantFacade implements IAssistantFacadePort {
   private async *dispatchMessage(
     command: Extract<AssistantCommand, { type: 'message' }>,
     signal?: AbortSignal,
+    requestId?: string,
   ): AsyncGenerator<AssistantEvent, void, void> {
     if (!command.identityId?.trim()) {
       yield { type: 'error', code: 'IDENTITY_REQUIRED', message: 'identityId is required' };
@@ -152,9 +154,8 @@ export class AssistantFacade implements IAssistantFacadePort {
     let notify: (() => void) | null = null;
     let streamDone = false;
     let streamError: unknown;
-    let streamResult: Awaited<
-      ReturnType<IOpenChatTurnPort['streamConversationTurn']>
-    > | null = null;
+    let streamResult: Awaited<ReturnType<IOpenChatTurnPort['streamConversationTurn']>> | null =
+      null;
 
     const wake = () => {
       const resolve = notify;
@@ -166,6 +167,7 @@ export class AssistantFacade implements IAssistantFacadePort {
       .streamConversationTurn(
         {
           runId,
+          requestId,
           identityId: command.identityId,
           conversationId: command.conversationId,
           message: command.content,
@@ -204,9 +206,7 @@ export class AssistantFacade implements IAssistantFacadePort {
     await streamPromise;
 
     if (streamError) {
-      throw streamError instanceof Error
-        ? streamError
-        : new Error('Open chat stream failed');
+      throw streamError instanceof Error ? streamError : new Error('Open chat stream failed');
     }
 
     const result = streamResult!;
@@ -315,8 +315,7 @@ export class AssistantFacade implements IAssistantFacadePort {
                 typeof command.patch?.title === 'string' && command.patch.title.trim()
                   ? command.patch.title.trim()
                   : undefined,
-              goalId:
-                command.patch && 'goalId' in command.patch ? command.patch.goalId : undefined,
+              goalId: command.patch && 'goalId' in command.patch ? command.patch.goalId : undefined,
             }),
     } as typeof patched;
     const revised = await this.proposalKernel.revise(command.proposalId, next);
@@ -331,7 +330,7 @@ export class AssistantFacade implements IAssistantFacadePort {
     };
   }
 
-    /**
+  /**
    * Materialise legacy AgentRun bridge proposals into ProposalKernel on first use.
    * Non-bridge ids are ignored (kernel remains source of truth).
    */

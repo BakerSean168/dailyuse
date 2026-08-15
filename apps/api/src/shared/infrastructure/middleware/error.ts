@@ -13,6 +13,7 @@ import { mapPrismaError } from '@memoflow/utils/errors';
 import { createLogger } from '@memoflow/utils/logger';
 import { errorCodeToHttpStatus, extractStructuredResultError } from '@memoflow/contracts/result';
 import { createApiResponseBuilder } from '../http/response-builder.js';
+import type { RequestContextCarrierRequest } from '../http/middlewares/request-context.middleware.js';
 
 const logger = createLogger('ErrorHandler');
 
@@ -51,9 +52,12 @@ export function applyErrorHandlers(app: Express): void {
   app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
     const errorLike = toErrorLike(err);
     const responseBuilder = createApiResponseBuilder(req);
+    const requestContext = (req as Partial<RequestContextCarrierRequest>).requestContext;
     logger.error('Express error handler caught error', err, {
       code: errorLike?.code,
       message: errorLike?.message,
+      requestId: requestContext?.requestId,
+      traceId: requestContext?.traceId,
     });
 
     // 0. CORS rejections — expected client-side access control failures

@@ -2,12 +2,13 @@
  * @file performance.middleware.ts
  * @description 性能监控中间件，用于记录请求处理时间和 endpoint 指标统计。
  * @date 2025-01-22
+ *
+ * RefArch Phase 2: metrics sampling and `X-Response-Time` ownership only. The
+ * single terminal request completion/abort log lives in the RequestContext
+ * middleware, so this file does not emit a second request-completion log.
  */
 
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
-import { createLogger } from '@memoflow/utils/logger';
-
-const logger = createLogger('PerformanceMiddleware');
 
 /**
  * Endpoint 聚合统计。
@@ -108,8 +109,6 @@ export function createPerformanceMiddleware(metricsStore: MetricsStore): Request
     const originalJson = res.json.bind(res) as (body: unknown) => Response;
     res.json = ((body: unknown) => {
       const duration = Date.now() - start;
-      const logLevel = duration > 300 ? 'warn' : 'debug';
-      logger[logLevel](`[PERF] ${endpoint} - ${duration}ms - ${res.statusCode}`);
 
       metricsStore.recordRequest(endpoint, duration);
       res.setHeader('X-Response-Time', `${duration}ms`);
@@ -123,9 +122,6 @@ export function createPerformanceMiddleware(metricsStore: MetricsStore): Request
       }
 
       const duration = Date.now() - start;
-      const logLevel = duration > 300 ? 'warn' : 'debug';
-      logger[logLevel](`[PERF] ${endpoint} - ${duration}ms - ${res.statusCode}`);
-
       metricsStore.recordRequest(endpoint, duration);
 
       if (!res.headersSent) {

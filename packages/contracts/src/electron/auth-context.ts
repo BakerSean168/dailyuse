@@ -1,4 +1,4 @@
-import type { Context } from '../shared';
+import type { ExecutionContext } from '../shared';
 
 export type ElectronAuthResolutionCode = 'AUTH_REQUIRED' | 'AUTH_RESTORING';
 
@@ -15,11 +15,18 @@ export function isElectronAuthResolutionError(
   return error instanceof ElectronAuthResolutionError;
 }
 
+/**
+ * Electron IPC auth context — resolves the local profile owner and produces the
+ * canonical `ExecutionContext` (requestId/traceId/startedAt/source: 'ipc') once
+ * per invocation.
+ * Electron IPC 鉴权上下文 — 解析本地 profile owner 并每次 invocation 生成一次
+ * canonical `ExecutionContext`（requestId/traceId/startedAt/source: 'ipc'）。
+ */
 export interface IElectronAuthContext {
   getIdentityId(): Promise<string | null>;
   requireIdentityId(): Promise<string>;
   getSessionId(): Promise<string | null>;
-  getRequestContext(): Promise<Context | null>;
-  requireRequestContext(): Promise<Context>;
+  getRequestContext(): Promise<ExecutionContext | null>;
+  requireRequestContext(): Promise<ExecutionContext>;
   isAuthenticated(): Promise<boolean>;
 }

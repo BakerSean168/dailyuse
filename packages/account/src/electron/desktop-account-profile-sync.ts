@@ -2,6 +2,7 @@ import type { UpdateAccountReq, UpdateAccountRes } from '@memoflow/contracts/acc
 import { UpdateAccountSchema } from '@memoflow/contracts/account';
 import type { Result } from '@memoflow/contracts/result';
 import { fail } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { formatZodErrors } from '@memoflow/utils/result';
 import type { UpdateAccountProfileUseCase } from '../server/application';
 import type { IAccountRepository } from '../server/domain';
@@ -37,10 +38,7 @@ export class DesktopAccountProfileSync {
     private readonly options: DesktopAccountProfileSyncOptions,
   ) {}
 
-  async update(
-    input: unknown,
-    identityId: string,
-  ): Promise<Result<UpdateAccountRes>> {
+  async update(input: unknown, cx: ExecutionContext): Promise<Result<UpdateAccountRes>> {
     const parsed = UpdateAccountSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -51,12 +49,8 @@ export class DesktopAccountProfileSync {
     }
 
     const result = await this.db.writeTransaction(async (tx) => {
-      const updated = await this.updateProfileUseCase.execute(
-        parsed.data,
-        { identityId },
-        tx,
-      );
-      if (!updated.ok || this.options.getCloudAccountId() !== identityId) {
+      const updated = await this.updateProfileUseCase.execute(parsed.data, cx, tx);
+      if (!updated.ok || this.options.getCloudAccountId() !== cx.identityId) {
         return updated;
       }
 
@@ -67,7 +61,7 @@ export class DesktopAccountProfileSync {
            owner_id = excluded.owner_id,
            revision = account_profile_sync_outbox.revision + 1,
            requested_at = excluded.requested_at`,
-        [identityId, Date.now()],
+        [cx.identityId, Date.now()],
       );
       return updated;
     });

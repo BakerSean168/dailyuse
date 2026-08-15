@@ -1,8 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Context } from '@memoflow/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { ServerHeldDataDisclosureController } from './data-portability.controller';
 
-const context = { identityId: 'identity-1' } as Context;
+const context: ExecutionContext = {
+  requestId: 'req-data-portability-1',
+  traceId: 'req-data-portability-1',
+  startedAt: 1_700_000_000_000,
+  source: 'http',
+  identityId: 'identity-1',
+  deviceId: 'device-1',
+};
 
 describe('ServerHeldDataDisclosureController', () => {
   it('uses the authenticated identity and accepts only the empty request', async () => {

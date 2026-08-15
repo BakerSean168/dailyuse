@@ -139,7 +139,9 @@ export interface GoalElectronModuleOptions {
  * @param options - Options carrying the assembled goal instance.
  * @returns An IElectronModule-compatible handle bound to the instance.
  */
-export function createGoalElectronModule(options: GoalElectronModuleOptions): GoalElectronModuleDef {
+export function createGoalElectronModule(
+  options: GoalElectronModuleOptions,
+): GoalElectronModuleDef {
   if (!options?.instance) {
     throw new Error('[FAIL-CLOSED] createGoalElectronModule requires options.instance');
   }
@@ -158,7 +160,9 @@ export function createGoalElectronModule(options: GoalElectronModuleOptions): Go
       const installed: string[] = [];
 
       try {
-        const goalController = new GoalController(createGoalTransportHandlers(options.instance.api));
+        const goalController = new GoalController(
+          createGoalTransportHandlers(options.instance.api),
+        );
         const goalFolderController = new GoalFolderController(
           createGoalFolderTransportHandlers(options.instance.api),
         );
@@ -178,7 +182,7 @@ export function createGoalElectronModule(options: GoalElectronModuleOptions): Go
         installed.push(GoalChannels.GET);
         ipcMain.handle(GoalChannels.CREATE, async (_event, dto) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.create(dto, requestContext as ExecutionContext),
+            goalController.create(dto, requestContext),
           ),
         );
         installed.push(GoalChannels.CREATE);
@@ -314,12 +318,10 @@ export function createGoalElectronModule(options: GoalElectronModuleOptions): Go
           ),
         );
         installed.push(GoalChannels.KEY_RESULT_DELETE);
-        ipcMain.handle(
-          GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS,
-          async (_, goalId, request) =>
-            withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-              goalController.batchUpdateKeyResultWeights(goalId, request, requestContext),
-            ),
+        ipcMain.handle(GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS, async (_, goalId, request) =>
+          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+            goalController.batchUpdateKeyResultWeights(goalId, request, requestContext),
+          ),
         );
         installed.push(GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS);
         ipcMain.handle(GoalChannels.REVIEW_CREATE, async (_, goalId, dto) =>
@@ -394,28 +396,25 @@ export function createGoalElectronModule(options: GoalElectronModuleOptions): Go
         installed.push(GoalChannels.FOLDER_LIST);
         ipcMain.handle(GoalChannels.FOLDER_GET, async (_event, id) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.get(id, requestContext as ExecutionContext),
+            goalFolderController.get(id, requestContext),
           ),
         );
         installed.push(GoalChannels.FOLDER_GET);
         ipcMain.handle(GoalChannels.FOLDER_CREATE, async (_event, dto) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.create(dto, requestContext as ExecutionContext),
+            goalFolderController.create(dto, requestContext),
           ),
         );
         installed.push(GoalChannels.FOLDER_CREATE);
         ipcMain.handle(GoalChannels.FOLDER_UPDATE, async (_event, id, dto) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.update(id, dto, requestContext as ExecutionContext),
+            goalFolderController.update(id, dto, requestContext),
           ),
         );
         installed.push(GoalChannels.FOLDER_UPDATE);
         ipcMain.handle(GoalChannels.FOLDER_DELETE, async (_event, id) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
-            const result = await goalFolderController.delete(
-              id,
-              requestContext as ExecutionContext,
-            );
+            const result = await goalFolderController.delete(id, requestContext);
             if (!result.ok) return result;
             return ok(null);
           }),

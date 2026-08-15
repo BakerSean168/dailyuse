@@ -2,7 +2,19 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { GenerateGoalsRes } from '@memoflow/contracts/ai';
 import { ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { AIGoalGenerationController } from './ai-goal-generation.controller';
+
+function createCx(overrides: Partial<ExecutionContext> = {}): ExecutionContext {
+  return {
+    requestId: 'trace-goal-123',
+    traceId: 'trace-goal-123',
+    startedAt: 1_700_000_000_000,
+    source: 'http',
+    identityId: 'identity-1',
+    ...overrides,
+  };
+}
 
 describe('AIGoalGenerationController', () => {
   it('returns a validation failure for malformed requests', async () => {
@@ -11,7 +23,7 @@ describe('AIGoalGenerationController', () => {
     };
     const controller = new AIGoalGenerationController(service);
 
-    const result = await controller.generateGoal({ idea: 'short' }, 'identity-1');
+    const result = await controller.generateGoal({ idea: 'short' }, createCx());
 
     expect(result.ok).toBe(false);
     expect(service.generateGoal).not.toHaveBeenCalled();
@@ -55,32 +67,34 @@ describe('AIGoalGenerationController', () => {
         includeKeyResults: true,
         clarificationAnswers: ['Target product teams', 'Within one quarter'],
       },
-      'identity-1',
+      createCx(),
     );
 
-    expect(service.generateGoal).toHaveBeenCalledWith({
-      identityId: 'identity-1',
-      idea: 'Build a unified AI goal workflow for the chat entry point.',
-      providerId: undefined,
-      model: undefined,
-      category: undefined,
-      timeframe: undefined,
-      includeKeyResults: true,
-      includeTaskTemplates: true,
-      command: 'draft',
-      clarificationAnswers: ['Target product teams', 'Within one quarter'],
-      draftContext: undefined,
-      approvedSummary: undefined,
-      approvedPlan: undefined,
-      approvedActions: undefined,
-    });
+    expect(service.generateGoal).toHaveBeenCalledWith(
+      {
+        idea: 'Build a unified AI goal workflow for the chat entry point.',
+        providerId: undefined,
+        model: undefined,
+        category: undefined,
+        timeframe: undefined,
+        includeKeyResults: true,
+        includeTaskTemplates: true,
+        command: 'draft',
+        clarificationAnswers: ['Target product teams', 'Within one quarter'],
+        draftContext: undefined,
+        approvedSummary: undefined,
+        approvedPlan: undefined,
+        approvedActions: undefined,
+      },
+      createCx(),
+    );
     expect(result).toEqual({
       ok: true,
       data: response,
     });
   });
 
-  it('forwards an explicit request id when provided by the route layer', async () => {
+  it('forwards the canonical cx unchanged — requestId comes from cx, never minted in the controller', async () => {
     const response: GenerateGoalsRes = {
       state: 'draft',
       goal: {
@@ -113,11 +127,13 @@ describe('AIGoalGenerationController', () => {
       {
         idea: 'Build a unified AI goal workflow for the chat entry point.',
       },
-      'identity-1',
-      'trace-goal-123',
+      createCx({ requestId: 'trace-goal-123', traceId: 'trace-goal-123' }),
     );
 
     expect(service.generateGoal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idea: 'Build a unified AI goal workflow for the chat entry point.',
+      }),
       expect.objectContaining({
         identityId: 'identity-1',
         requestId: 'trace-goal-123',
@@ -162,7 +178,7 @@ describe('AIGoalGenerationController', () => {
       {
         idea: 'Help me get better at AI engineering in a structured way.',
       },
-      'identity-1',
+      createCx(),
     );
 
     expect(result).toEqual({
@@ -216,12 +232,11 @@ describe('AIGoalGenerationController', () => {
           },
         },
       },
-      'identity-1',
+      createCx(),
     );
 
     expect(service.generateGoal).toHaveBeenCalledWith(
       expect.objectContaining({
-        identityId: 'identity-1',
         command: 'prepare',
         includeTaskTemplates: true,
         draftContext: expect.objectContaining({
@@ -230,6 +245,7 @@ describe('AIGoalGenerationController', () => {
           }),
         }),
       }),
+      createCx(),
     );
   });
 });

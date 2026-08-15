@@ -1,9 +1,9 @@
 /**
- * Residual 965: getRequestId sole import (packages/ai/src/shared/get-request-id.ts).
+ * RefArch Phase 2: correlation requestId comes from the canonical entry
+ * context (`ctx.requestId`); no route-local request-ID reconstruction.
  */
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -19,7 +19,6 @@ import {
   AgentStartRunClientRequestSchema,
 } from '@memoflow/contracts/ai';
 import type { AIAgentRuntimeController } from '../../server/transport/ai-agent-runtime.controller';
-import { getRequestId } from '../../shared/get-request-id';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -54,12 +53,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.startRun(
-        req.body,
-        { identityId: ctx.identityId } as ExecutionContext,
-        getRequestId(req),
-      ),
+    (req, ctx) => controller.startRun(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -82,12 +76,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.listRuns(
-        req.query,
-        { identityId: ctx.identityId } as ExecutionContext,
-        getRequestId(req),
-      ),
+    (req, ctx) => controller.listRuns(req.query, ctx),
   );
 
   r.route(
@@ -105,13 +94,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.resumeRun(
-        req.params?.runId ?? '',
-        req.body,
-        { identityId: ctx.identityId } as ExecutionContext,
-        getRequestId(req),
-      ),
+    (req, ctx) => controller.resumeRun(req.params?.runId ?? '', req.body, ctx),
   );
 
   r.route(
@@ -128,12 +111,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.getRun(
-        req.params?.runId ?? '',
-        { identityId: ctx.identityId } as ExecutionContext,
-        getRequestId(req),
-      ),
+    (req, ctx) => controller.getRun(req.params?.runId ?? '', ctx),
   );
 
   r.route(
@@ -150,12 +128,7 @@ export function registerAIAgentRuntimeRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.getEvents(
-        req.params?.runId ?? '',
-        { identityId: ctx.identityId } as ExecutionContext,
-        getRequestId(req),
-      ),
+    (req, ctx) => controller.getEvents(req.params?.runId ?? '', ctx),
   );
 
   return router;

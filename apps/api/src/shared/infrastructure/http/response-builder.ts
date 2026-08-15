@@ -1,24 +1,25 @@
 import { createHttpResponseBuilder } from '@memoflow/contracts/result';
+import type { RequestContext } from '@memoflow/contracts/shared';
 
 /**
- * Residual 1171 keep-boundary: API response-builder readString — single record key, empty string allowed.
- * Soft residual 1171: AI result-client-error readString uses dotted path + non-empty filter (no force-merge).
+ * Builds an HttpResponse envelope for one HTTP attempt.
+ * 为单次 HTTP 请求构建 HttpResponse envelope。
+ *
+ * RefArch Phase 2: the producer-owned carrier (`req.requestContext`) is the
+ * single source of `traceId`/`startedAt`. There are no fallback projections.
+ *
+ * RefArch 阶段 2：`req.requestContext` 是 `traceId`/`startedAt` 的唯一来源，
+ * 没有兼容回退投影。
  */
-function readString(record: Record<string, unknown>, key: string): string | undefined {
-  const value = record[key];
-  return typeof value === 'string' ? value : undefined;
-}
-
-function readNumber(record: Record<string, unknown>, key: string): number | undefined {
-  const value = record[key];
-  return typeof value === 'number' ? value : undefined;
-}
-
 export function createApiResponseBuilder(req?: unknown) {
   const request = req && typeof req === 'object' ? (req as Record<string, unknown>) : {};
+  const requestContext =
+    request.requestContext && typeof request.requestContext === 'object'
+      ? (request.requestContext as RequestContext)
+      : undefined;
 
   return createHttpResponseBuilder({
-    traceId: readString(request, 'traceId') ?? readString(request, 'id'),
-    startTime: readNumber(request, 'startTime') ?? Date.now(),
+    traceId: requestContext?.traceId,
+    startTime: requestContext?.startedAt ?? Date.now(),
   });
 }

@@ -15,6 +15,13 @@ export interface OpenChatTurnInput {
   message: string;
   providerId?: string;
   model?: string;
+  /**
+   * Entry correlation request ID (from the caller's `ExecutionContext`).
+   * Distinct from `runId`, which stays the durable ownership key only.
+   * 入口 correlation request ID（来自调用方的 `ExecutionContext`）。
+   * 与仅作为持久 ownership key 的 `runId` 严格区分。
+   */
+  requestId?: string;
   signal?: AbortSignal;
 }
 

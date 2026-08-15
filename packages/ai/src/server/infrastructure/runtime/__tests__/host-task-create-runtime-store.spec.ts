@@ -17,7 +17,9 @@ describe('host task.create process-local store runtime wire (residual 435)', () 
       resumeRun: vi.fn(),
       getRun: vi.fn().mockRejectedValue(new Error('should not call port.getRun for stored task')),
       listRuns: vi.fn().mockResolvedValue([]),
-      getEvents: vi.fn().mockRejectedValue(new Error('should not call port.getEvents for stored task')),
+      getEvents: vi
+        .fn()
+        .mockRejectedValue(new Error('should not call port.getEvents for stored task')),
     };
 
     const service = createAgentRuntimeService(port);
@@ -34,7 +36,6 @@ describe('host task.create process-local store runtime wire (residual 435)', () 
         input: { title: 'Stored task', goalId: 'goal-1' },
       },
       cx as any,
-      'req-1',
     );
 
     expect(started.ok).toBe(true);
@@ -42,19 +43,19 @@ describe('host task.create process-local store runtime wire (residual 435)', () 
     expect(started.data.run.identityId).toBe('identity-1');
     expect(port.startRun).not.toHaveBeenCalled();
 
-    const got = await service.getRun('run-task-store-1', cx as any, 'req-2');
+    const got = await service.getRun('run-task-store-1', cx as any);
     expect(got.ok).toBe(true);
     if (!got.ok) return;
     expect(got.data.run.runId).toBe('run-task-store-1');
     expect(got.data.state.pendingActions[0]?.tool).toBe('create_task_template');
     expect(port.getRun).not.toHaveBeenCalled();
 
-    const listed = await service.listRuns({ conversationId: 'conv-1' }, cx as any, 'req-3');
+    const listed = await service.listRuns({ conversationId: 'conv-1' }, cx as any);
     expect(listed.ok).toBe(true);
     if (!listed.ok) return;
     expect(listed.data.some((run) => run.runId === 'run-task-store-1')).toBe(true);
 
-    const events = await service.getEvents('run-task-store-1', cx as any, 'req-4');
+    const events = await service.getEvents('run-task-store-1', cx as any);
     expect(events.ok).toBe(true);
     if (!events.ok) return;
     expect(events.data[0]?.type).toBe('approval.required');
