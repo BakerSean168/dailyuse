@@ -199,20 +199,20 @@ export type Context = ExecutionContext;
 
 **文件与变更**
 
-- [ ] 修改 `packages/contracts/src/shared/execution-context.ts`：加入 `ExecutionSource`、`RequestContext`、required request metadata、optional opaque run IDs；所有 public surface 增加中英双语 JSDoc。
-- [ ] 修改 `packages/contracts/src/shared/context.ts`、`shared/index.ts`：`Context` 只做 deprecated type alias；不保留 duplicate interface body。
-- [ ] 更新 `packages/contracts/src/shared/dual-registry.surface.spec.ts`：锁住唯一 `ExecutionContext` body、`Context` alias、metadata-only forbidden inventory（不出现 Prisma/repository/business aggregate fields）。
-- [ ] 新增 `apps/api/src/shared/infrastructure/http/middlewares/request-context.middleware.ts` 与 spec；从 middleware barrel 导出 factory/carrier types。
-- [ ] 修改 `apps/api/src/shared/infrastructure/middleware/global.ts`：把 middleware 放在第一个 `app.use`；更新 CORS `allowedHeaders/exposedHeaders`；保持 auth passthrough callback/body parser 顺序。
-- [ ] 修改 `apps/api/src/shared/infrastructure/http/response-builder.ts`、global error handler 与 `api-module.ts` JSDoc：使用 canonical carrier，保持 envelope shape 和 `IApiMiddleware` methods 不变。
-- [ ] 修改 `performance.middleware.ts`：只保留 metrics/response-time ownership，避免重复 request completion log；SSE skip 行为不扩大或缩小。
+- [x] 修改 `packages/contracts/src/shared/execution-context.ts`：加入 `ExecutionSource`、`RequestContext`、required request metadata、optional opaque run IDs；所有 public surface 增加中英双语 JSDoc。
+- [x] 修改 `packages/contracts/src/shared/context.ts`、`shared/index.ts`：`Context` 只做 deprecated type alias；不保留 duplicate interface body。
+- [x] 更新 `packages/contracts/src/shared/dual-registry.surface.spec.ts`：锁住唯一 `ExecutionContext` body、`Context` alias、metadata-only forbidden inventory（不出现 Prisma/repository/business aggregate fields）。
+- [x] 新增 `apps/api/src/shared/infrastructure/http/middlewares/request-context.middleware.ts` 与 spec；从 middleware barrel 导出 factory/carrier types。
+- [x] 修改 `apps/api/src/shared/infrastructure/middleware/global.ts`：把 middleware 放在第一个 `app.use`；更新 CORS `allowedHeaders/exposedHeaders`；保持 auth passthrough callback/body parser 顺序。
+- [x] 修改 `apps/api/src/shared/infrastructure/http/response-builder.ts`、global error handler 与 `api-module.ts` JSDoc：使用 canonical carrier，保持 envelope shape 和 `IApiMiddleware` methods 不变。
+- [x] 修改 `performance.middleware.ts`：只保留 metrics/response-time ownership，避免重复 request completion log；SSE skip 行为不扩大或缩小。
 
 **测试与门禁**
 
-- [ ] Middleware spec 覆盖：valid header preserve、missing/invalid/duplicate/129-char fallback、UUID factory只调用一次、`traceId === requestId`、startedAt/source、response header 在 `next()` 前存在。
-- [ ] Lifecycle spec 覆盖：finish/abort 每 attempt 仅一条 terminal structured log、duration 来自 injected clock、敏感 headers/body 不进入 metadata、headersSent 后不 mutation。
-- [ ] Error/envelope specs 覆盖 auth 401、404、global 500 都回显同一 header 和现有 `traceId` body；204 body 仍为空。
-- [ ] Direct gates：
+- [x] Middleware spec 覆盖：valid header preserve、missing/invalid/duplicate/129-char fallback、UUID factory只调用一次、`traceId === requestId`、startedAt/source、response header 在 `next()` 前存在。
+- [x] Lifecycle spec 覆盖：finish/abort 每 attempt 仅一条 terminal structured log、duration 来自 injected clock、敏感 headers/body 不进入 metadata、headersSent 后不 mutation。
+- [x] Error/envelope specs 覆盖 auth 401、404、global 500 都回显同一 header 和现有 `traceId` body；204 body 仍为空。
+- [x] Direct gates：
   - `node node_modules/vitest/vitest.mjs run --config packages/contracts/vitest.config.ts packages/contracts/src/shared/dual-registry.surface.spec.ts`
   - `node node_modules/vitest/vitest.mjs run --config apps/api/vitest.config.ts apps/api/src/shared/infrastructure/http/middlewares/request-context.middleware.spec.ts apps/api/src/shared/infrastructure/middleware/error.spec.ts apps/api/src/shared/infrastructure/middleware/error-result-envelope.surface.spec.ts`
   - `pnpm nx run contracts:typecheck --skip-nx-cache`
@@ -226,19 +226,19 @@ export type Context = ExecutionContext;
 
 **文件与变更**
 
-- [ ] 修改 `packages/utils/src/result/express-adapter.ts`、`route-registrar.ts`：request-like interface 包含 canonical carrier；default/exported extractor 合成 Principal + request/device metadata；envelope 使用同一 trace/start。
-- [ ] 修改 `packages/utils/src/result/ipc-adapter.ts`：所有 callback/options 使用 `ExecutionContext`；默认/custom extractor 不再返回 identity-only desktop stub。
-- [ ] 修改 `packages/contracts/src/electron/auth-context.ts`、`authenticated-ipc.ts`：`IElectronAuthContext` 与 handler 明确返回/消费 canonical `ExecutionContext`。
-- [ ] 修改 `apps/desktop/src/main/profile/profile-access-context.ts`：每个 invocation 生成新的 request ID、相同 trace ID、startedAt、`source: 'ipc'`；owner resolver 只调用一次。
-- [ ] 删除 `packages/governance/src/server/application/use-cases/execution-context.ts` 的私有 body，Application Port/use cases import shared `ExecutionContext`；`governance.controller.ts` 删除 identity-only `toExecutionContext`。
-- [ ] 更新 governance HTTP/Electron route/controller/lifecycle specs：同一 fixture 的 full context 到达同一个 `GovernanceApplicationPort` method。
+- [x] 修改 `packages/utils/src/result/express-adapter.ts`、`route-registrar.ts`：request-like interface 包含 canonical carrier；default/exported extractor 合成 Principal + request/device metadata；envelope 使用同一 trace/start。
+- [x] 修改 `packages/utils/src/result/ipc-adapter.ts`：所有 callback/options 使用 `ExecutionContext`；默认/custom extractor 不再返回 identity-only desktop stub。
+- [x] 修改 `packages/contracts/src/electron/auth-context.ts`、`authenticated-ipc.ts`：`IElectronAuthContext` 与 handler 明确返回/消费 canonical `ExecutionContext`。
+- [x] 修改 `apps/desktop/src/main/profile/profile-access-context.ts`：每个 invocation 生成新的 request ID、相同 trace ID、startedAt、`source: 'ipc'`；owner resolver 只调用一次。
+- [x] 删除 `packages/governance/src/server/application/use-cases/execution-context.ts` 的私有 body，Application Port/use cases import shared `ExecutionContext`；`governance.controller.ts` 删除 identity-only `toExecutionContext`。
+- [x] 更新 governance HTTP/Electron route/controller/lifecycle specs：同一 fixture 的 full context 到达同一个 `GovernanceApplicationPort` method。
 
 **测试与门禁**
 
-- [ ] `express-adapter.spec.ts` 同时断言 identity/device/request/trace/start/source 全字段和 envelope trace；custom extractor 也必须返回完整 shape。
-- [ ] `ipc-adapter.spec.ts`、`authenticated-ipc.spec.ts` 断言每次 invocation 独立 ID、同 invocation 不重建、auth failure 不调用 handler。
-- [ ] Governance parity test 使用固定 context fixture分别走 HTTP adapter 与 IPC wrapper，断言 metadata不被 controller截断；无新增 governance business behavior。
-- [ ] Direct gates：
+- [x] `express-adapter.spec.ts` 同时断言 identity/device/request/trace/start/source 全字段和 envelope trace；custom extractor 也必须返回完整 shape。
+- [x] `ipc-adapter.spec.ts`、`authenticated-ipc.spec.ts` 断言每次 invocation 独立 ID、同 invocation 不重建、auth failure 不调用 handler。
+- [x] Governance parity test 使用固定 context fixture分别走 HTTP adapter 与 IPC wrapper，断言 metadata不被 controller截断；无新增 governance business behavior。
+- [x] Direct gates：
   - `node node_modules/vitest/vitest.mjs run --config packages/utils/vitest.config.ts packages/utils/src/result/express-adapter.spec.ts packages/utils/src/result/ipc-adapter.spec.ts`
   - `node node_modules/vitest/vitest.mjs run --config packages/contracts/vitest.config.ts packages/contracts/src/electron/authenticated-ipc.spec.ts`
   - `node node_modules/vitest/vitest.mjs run --config packages/governance/vitest.config.ts`
@@ -254,19 +254,19 @@ export type Context = ExecutionContext;
 
 **文件与变更**
 
-- [ ] 修改 `apps/api/src/shared/infrastructure/http/middlewares/auth-middleware.ts` 与 specs：注入/共享 logger，记录 request correlation；`resolveNodePrincipal`、Account Active 查询、`req.user` shape、401/500 message 不变。
-- [ ] 更新 Goal/Task/Reminder/Schedule/Notification/Account/Repository/Data Portability/Setting 的 route/controller tests 与 Electron auth fixtures，使 required metadata 由 entry fixture 产生，而不是在 controller 手工补齐。
-- [ ] 删除 `packages/goal/src/electron/index.ts` 中 `requestContext as ExecutionContext` casts；Goal module manifest 的 system command 显式创建 `source: 'system'` context，并生成独立 request ID。
-- [ ] 检查所有 `IApiModule.register(context)` call site：模块仍只使用 `context.middleware.auth` 等 platform middleware，不重复挂载 RequestContext；router mount 顺序不变。
-- [ ] 更新所有生产/测试 `ExecutionContext` fixtures：HTTP=`http`、IPC=`ipc`、明确 background=`system`；不得用 `as ExecutionContext` 绕过 required fields。
+- [x] 修改 `apps/api/src/shared/infrastructure/http/middlewares/auth-middleware.ts` 与 specs：注入/共享 logger，记录 request correlation；`resolveNodePrincipal`、Account Active 查询、`req.user` shape、401/500 message 不变。
+- [x] 更新 Goal/Task/Reminder/Schedule/Notification/Account/Repository/Data Portability/Setting 的 route/controller tests 与 Electron auth fixtures，使 required metadata 由 entry fixture 产生，而不是在 controller 手工补齐。
+- [x] 删除 `packages/goal/src/electron/index.ts` 中 `requestContext as ExecutionContext` casts；Goal module manifest 的 system command 显式创建 `source: 'system'` context，并生成独立 request ID。
+- [x] 检查所有 `IApiModule.register(context)` call site：模块仍只使用 `context.middleware.auth` 等 platform middleware，不重复挂载 RequestContext；router mount 顺序不变。
+- [x] 更新所有生产/测试 `ExecutionContext` fixtures：HTTP=`http`、IPC=`ipc`、明确 background=`system`；不得用 `as ExecutionContext` 绕过 required fields。
 
 **测试与门禁**
 
-- [ ] `authMiddleware.spec.ts` 增加顺序断言：request carrier 已存在后才解析 Principal；success 只解析一次；failure envelope/header correlation 不丢失。
-- [ ] Goal/Task/governance selected transport specs 断言 controller 获得完整 context；业务 payload、identity scoping 和 route middleware arrays 不变。
-- [ ] Desktop profile/auth specs 断言两次 IPC invocation 有不同 request IDs，单次 invocation 的 handler/application/response meta 使用同一 trace。
-- [ ] `rg` gate：生产代码没有 `{ identityId } as ExecutionContext`、`requestContext as ExecutionContext` 或第二次 Authorization parsing。
-- [ ] Direct gates（不得运行 `pnpm nx run <pkg>:test`）：按各 package `vitest.config.ts` 直接执行被修改的 route/controller/auth specs；随后运行 `api/contracts/utils/desktop/governance/goal/task` typecheck 与 lint targets。
+- [x] `authMiddleware.spec.ts` 增加顺序断言：request carrier 已存在后才解析 Principal；success 只解析一次；failure envelope/header correlation 不丢失。
+- [x] Goal/Task/governance selected transport specs 断言 controller 获得完整 context；业务 payload、identity scoping 和 route middleware arrays 不变。
+- [x] Desktop profile/auth specs 断言两次 IPC invocation 有不同 request IDs，单次 invocation 的 handler/application/response meta 使用同一 trace。
+- [x] `rg` gate：生产代码没有 `{ identityId } as ExecutionContext`、`requestContext as ExecutionContext` 或第二次 Authorization parsing。
+- [x] Direct gates（不得运行 `pnpm nx run <pkg>:test`）：按各 package `vitest.config.ts` 直接执行被修改的 route/controller/auth specs；随后运行 `api/contracts/utils/desktop/governance/goal/task` typecheck 与 lint targets。
 
 **Step gate**：运行时顺序固定为 RequestContext → Principal → adapter；所有 feature context 都来自 entry，没有 route-local partial reconstruction。
 
@@ -276,20 +276,20 @@ export type Context = ExecutionContext;
 
 **文件与变更**
 
-- [ ] 修改 `packages/ai/src/api/routes/ai-chat.routes.ts`、`ai-assistant.routes.ts`、`ai-agent-runtime.routes.ts`、provider/knowledge/analytics/checkpoint routes：普通 routes 直接传 `ctx`；SSE routes 使用共享 Express extractor；删除 identity-only casts 与 route-local `getRequestId` reconstruction。
-- [ ] 更新 `packages/ai/src/shared/get-request-id.ts` 及 dual surface spec：若 helper 已无 caller则删除；若专用 route仍需要，则只读 canonical carrier，并以双语 JSDoc 标明它不是新的 ID producer。
-- [ ] 修改有 entry `ExecutionContext` 的 AI use cases（chat stream/complete、goal generation、knowledge note/query/expand/reindex、analytics、agent runtime）：outbound request/log correlation 使用 `cx.requestId`。
-- [ ] 对当前 `runId: requestId` 的 chat/agent paths 拆分 durable `runId`；proposal confirmation/checkpoint/operation IDs 保持现有字段与幂等语义，日志同时记录 request ID 与 run/proposal ID。
-- [ ] 保持 `packages/ai/src/server/infrastructure/chat-execution/ai-service-internal-client.ts` 的 HMAC 实现和 optional request option；补充精确 forward/fallback tests，不把 fallback上移到每个 adapter。
-- [ ] 更新各 `ai-service-*.adapter` tests：传入 entry ID 时 request header/body中需要 correlation 的字段一致；无值时 client只生成一次 fallback ID；abort/error exception携带 resolved ID。
+- [x] 修改 `packages/ai/src/api/routes/ai-chat.routes.ts`、`ai-assistant.routes.ts`、`ai-agent-runtime.routes.ts`、provider/knowledge/analytics/checkpoint routes：普通 routes 直接传 `ctx`；SSE routes 使用共享 Express extractor；删除 identity-only casts 与 route-local `getRequestId` reconstruction。
+- [x] 更新 `packages/ai/src/shared/get-request-id.ts` 及 dual surface spec：若 helper 已无 caller则删除；若专用 route仍需要，则只读 canonical carrier，并以双语 JSDoc 标明它不是新的 ID producer。
+- [x] 修改有 entry `ExecutionContext` 的 AI use cases（chat stream/complete、goal generation、knowledge note/query/expand/reindex、analytics、agent runtime）：outbound request/log correlation 使用 `cx.requestId`。
+- [x] 对当前 `runId: requestId` 的 chat/agent paths 拆分 durable `runId`；proposal confirmation/checkpoint/operation IDs 保持现有字段与幂等语义，日志同时记录 request ID 与 run/proposal ID。
+- [x] 保持 `packages/ai/src/server/infrastructure/chat-execution/ai-service-internal-client.ts` 的 HMAC 实现和 optional request option；补充精确 forward/fallback tests，不把 fallback上移到每个 adapter。
+- [x] 更新各 `ai-service-*.adapter` tests：传入 entry ID 时 request header/body中需要 correlation 的字段一致；无值时 client只生成一次 fallback ID；abort/error exception携带 resolved ID。
 
 **测试与门禁**
 
-- [ ] AI route/controller tests 断言完整 context到达 Application；SSE controller input与 response header使用同一 request ID。
-- [ ] AI use-case tests用固定 `cx.requestId`，断言 internal port收到该值；另断言 run/proposal IDs仍独立且 retry不会把 request ID 当成幂等键。
-- [ ] Internal client tests覆盖 HMAC headers未变、exact `X-Request-Id` forwarding、missing-context UUID fallback、GET/POST/SSE、timeout/abort/error request ID。
-- [ ] Python focused tests验证 incoming `X-Request-Id`在 `request.state`、completion log、response header中一致；不运行无关 provider/eval 全套。
-- [ ] Direct gates：
+- [x] AI route/controller tests 断言完整 context到达 Application；SSE controller input与 response header使用同一 request ID。
+- [x] AI use-case tests用固定 `cx.requestId`，断言 internal port收到该值；另断言 run/proposal IDs仍独立且 retry不会把 request ID 当成幂等键。
+- [x] Internal client tests覆盖 HMAC headers未变、exact `X-Request-Id` forwarding、missing-context UUID fallback、GET/POST/SSE、timeout/abort/error request ID。
+- [x] Python focused tests验证 incoming `X-Request-Id`在 `request.state`、completion log、response header中一致；不运行无关 provider/eval 全套。
+- [x] Direct gates：
   - `node node_modules/vitest/vitest.mjs run --config packages/ai/vitest.config.ts`（可用文件参数缩小到本 step 修改的 routes/use cases/internal-client specs）
   - `node node_modules/vitest/vitest.mjs run --config apps/api/vitest.config.ts apps/api/src/modules/ai/backend-automation-tool-executor.adapter.test.ts`
   - `cd apps/ai-service && uv run pytest tests/test_health.py tests/test_chat.py -q`
@@ -303,18 +303,18 @@ export type Context = ExecutionContext;
 
 **文件与变更**
 
-- [ ] 扩展 `packages/ai/src/api/routes/ai-chat.routes.test.ts`、assistant route tests、`packages/notification/src/api/routes` 相关 specs：锁定 header-before-flush 与现有 SSE header/event framing。
-- [ ] 扩展 `apps/api/src/__tests__/smoke`：至少一个 JSON route、一个 auth failure、一个 AI SSE route验证 client-supplied/generated request ID、response header、envelope trace与 Principal ordering。
-- [ ] 在现有 contracts/AI dual registry或 governance audit中加入最小 fail-closed inventory：唯一 context body、无 production identity-only casts、无 adapter-local request ID producer、无 context business-object fields。
-- [ ] 更新 `docs/standards/architecture.md` 或新增 canonical request-context ADR（按实施时文档ownership选择其一），记录字段、顺序、header/retry/Principal/SSE语义；更新 AI streaming/current workflow文档中的 correlation ID来源。
-- [ ] 更新 `docs/plan/active/README.md` 状态；完成后将本计划移入 archive，并回填每个 gate的命令/结果。文档不得复制实现细节，以 contracts/middleware/tests为真值。
+- [x] 扩展 `packages/ai/src/api/routes/ai-chat.routes.test.ts`、assistant route tests、`packages/notification/src/api/routes` 相关 specs：锁定 header-before-flush 与现有 SSE header/event framing。
+- [x] 扩展 `apps/api/src/__tests__/smoke`：至少一个 JSON route、一个 auth failure、一个 AI SSE route验证 client-supplied/generated request ID、response header、envelope trace与 Principal ordering。
+- [x] 在现有 contracts/AI dual registry或 governance audit中加入最小 fail-closed inventory：唯一 context body、无 production identity-only casts、无 adapter-local request ID producer、无 context business-object fields。
+- [x] 更新 `docs/standards/architecture.md` 或新增 canonical request-context ADR（按实施时文档ownership选择其一），记录字段、顺序、header/retry/Principal/SSE语义；更新 AI streaming/current workflow文档中的 correlation ID来源。
+- [x] 更新 `docs/plan/active/README.md` 状态；完成后将本计划移入 archive，并回填每个 gate的命令/结果。文档不得复制实现细节，以 contracts/middleware/tests为真值。
 
 **测试与门禁**
 
-- [ ] SSE smoke 断言 `X-Request-Id` 在第一次 chunk前可见，原有 `Content-Type/Cache-Control/Connection/X-Accel-Buffering`、event names、done/error、disconnect cancel均不变。
-- [ ] API smoke 对 generated 与 caller-provided ID各跑一次；invalid input回退 UUID而非400；response JSON字段快照无新增/删除。
-- [ ] `rg` inventory 输出附在 PR：context definitions、casts、`randomUUID/createAIRequestId` request-correlation producers、`X-Request-Id` writers/readers均符合 allowlist。
-- [ ] 运行最终门禁：direct Vitest focused suites、API smoke target、affected typecheck/lint、`pnpm nx run memoflow:governance-check --skip-nx-cache`、`pnpm nx run memoflow:docs-check --skip-nx-cache`。
+- [x] SSE smoke 断言 `X-Request-Id` 在第一次 chunk前可见，原有 `Content-Type/Cache-Control/Connection/X-Accel-Buffering`、event names、done/error、disconnect cancel均不变。
+- [x] API smoke 对 generated 与 caller-provided ID各跑一次；invalid input回退 UUID而非400；response JSON字段快照无新增/删除。
+- [x] `rg` inventory 输出附在 PR：context definitions、casts、`randomUUID/createAIRequestId` request-correlation producers、`X-Request-Id` writers/readers均符合 allowlist。
+- [x] 运行最终门禁：direct Vitest focused suites、API smoke target、affected typecheck/lint、`pnpm nx run memoflow:governance-check --skip-nx-cache`、`pnpm nx run memoflow:docs-check --skip-nx-cache`。
 
 **Step gate**：compatibility、governance与文档证据齐全后才宣称阶段 2 完成；不能只凭 typecheck或单元测试完成。
 
@@ -336,21 +336,21 @@ export type Context = ExecutionContext;
 
 ### 5.2 每个 PR 的共同 gate
 
-- [ ] Diff 只包含该 Step 列出的生产/测试/文档/治理文件；不得夹带业务功能、schema migration 或 unrelated formatting。
-- [ ] 所有新增 public type/interface/factory/adapter option 有英文 + 中文 JSDoc；private implementation不为满足规则制造空洞注释。
-- [ ] 不运行已知会 hang 的 `pnpm nx run <pkg>:test`；测试用 `node node_modules/vitest/vitest.mjs run --config ... [files]` 直接执行。
-- [ ] 对修改的 package运行 direct Vitest、typecheck与 lint；对 platform/shared contract影响在最终 Step运行 API smoke、governance、docs check。
-- [ ] 测试 fixtures不通过 `as ExecutionContext`、partial object或 optional metadata掩盖 contract错误。
+- [x] Diff 只包含该 Step 列出的生产/测试/文档/治理文件；不得夹带业务功能、schema migration 或 unrelated formatting。
+- [x] 所有新增 public type/interface/factory/adapter option 有英文 + 中文 JSDoc；private implementation不为满足规则制造空洞注释。
+- [x] 不运行已知会 hang 的 `pnpm nx run <pkg>:test`；测试用 `node node_modules/vitest/vitest.mjs run --config ... [files]` 直接执行。
+- [x] 对修改的 package运行 direct Vitest、typecheck与 lint；对 platform/shared contract影响在最终 Step运行 API smoke、governance、docs check。
+- [x] 测试 fixtures不通过 `as ExecutionContext`、partial object或 optional metadata掩盖 contract错误。
 
 ### 5.3 最终完成门禁
 
-- [ ] `requestId/traceId/startedAt/source` 在 HTTP、IPC 与 system entry均为required并有真实 producer。
-- [ ] API middleware顺序为 RequestContext → Principal → adapter；Principal只解析一次，Application没有 header parsing。
-- [ ] response envelope快照、status、204与SSE framing/header兼容，新增 `X-Request-Id` 在所有 response types可见。
-- [ ] AI entry request ID原样到达 Python；无 entry caller才触发 internal client fallback；durable run/proposal/checkpoint/idempotency identity不受影响。
-- [ ] governance pilot先于 Goal/Task/批量推广；仓库只有一个 `ExecutionContext` interface body且没有 identity-only casts。
-- [ ] Public surface双语 JSDoc、surface tests、inventory、canonical architecture/AI docs完成。
-- [ ] Focused direct Vitest、API smoke、affected typecheck/lint、`memoflow:governance-check`、`memoflow:docs-check`全部通过。
+- [x] `requestId/traceId/startedAt/source` 在 HTTP、IPC 与 system entry均为required并有真实 producer。
+- [x] API middleware顺序为 RequestContext → Principal → adapter；Principal只解析一次，Application没有 header parsing。
+- [x] response envelope快照、status、204与SSE framing/header兼容，新增 `X-Request-Id` 在所有 response types可见。
+- [x] AI entry request ID原样到达 Python；无 entry caller才触发 internal client fallback；durable run/proposal/checkpoint/idempotency identity不受影响。
+- [x] governance pilot先于 Goal/Task/批量推广；仓库只有一个 `ExecutionContext` interface body且没有 identity-only casts。
+- [x] Public surface双语 JSDoc、surface tests、inventory、canonical architecture/AI docs完成。
+- [x] Focused direct Vitest、API smoke、affected typecheck/lint、`memoflow:governance-check`、`memoflow:docs-check`全部通过。
 
 ## 6. 风险与回滚
 
@@ -377,13 +377,13 @@ export type Context = ExecutionContext;
 
 ## 7. 完成定义
 
-- [ ] 五个 Steps 均形成独立 PR-able diff并通过各自 gates，governance feature pilot先于批量 rollout。
-- [ ] HTTP、IPC、system entry创建同一 `ExecutionContext` interface，Request ID可从 API一路关联到Python AI service。
-- [ ] Principal、response envelope、SSE、HMAC、AI durable identity与业务行为满足冻结契约。
-- [ ] `rg`/surface/governance证据防止 duplicate context body、partial casts、adapter-local ID producer与business object context回归。
-- [ ] 所有新增public surface中英双语JSDoc齐全；canonical architecture/AI docs与代码/测试一致。
-- [ ] Direct Vitest、API smoke、affected typecheck/lint、`pnpm nx run memoflow:governance-check --skip-nx-cache`、`pnpm nx run memoflow:docs-check --skip-nx-cache`全部通过。
-- [ ] 本阶段不宣称完整OpenTelemetry、阶段4 Transport parity、阶段5 Query Cache或阶段6长期可观测平台完成。
+- [x] 五个 Steps 均形成独立 PR-able diff并通过各自 gates，governance feature pilot先于批量 rollout。
+- [x] HTTP、IPC、system entry创建同一 `ExecutionContext` interface，Request ID可从 API一路关联到Python AI service。
+- [x] Principal、response envelope、SSE、HMAC、AI durable identity与业务行为满足冻结契约。
+- [x] `rg`/surface/governance证据防止 duplicate context body、partial casts、adapter-local ID producer与business object context回归。
+- [x] 所有新增public surface中英双语JSDoc齐全；canonical architecture/AI docs与代码/测试一致。
+- [x] Direct Vitest、API smoke、affected typecheck/lint、`pnpm nx run memoflow:governance-check --skip-nx-cache`、`pnpm nx run memoflow:docs-check --skip-nx-cache`全部通过。
+- [x] 本阶段不宣称完整OpenTelemetry、阶段4 Transport parity、阶段5 Query Cache或阶段6长期可观测平台完成。
 
 ---
 
