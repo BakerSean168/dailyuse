@@ -30,7 +30,7 @@ import {
   createRealAssistantDispatchService,
   type AIAssistantFacadeControllerService,
 } from '@memoflow/ai/testing';
-import type { AssistantCommand } from '@memoflow/contracts/ai';
+import type { AssistantCommand, AssistantDispatchHandlers } from '@memoflow/contracts/ai';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -46,19 +46,19 @@ function createAssistantService(captured: CapturedDispatch): AIAssistantFacadeCo
     dispatchAssistant: vi.fn(
       async (
         _command: AssistantCommand,
-        onEvent: (event: unknown) => void,
+        handlers: AssistantDispatchHandlers,
         signal?: AbortSignal,
         requestId?: string,
       ) => {
         captured.requestId = requestId;
         captured.signal = signal;
-        onEvent({
+        handlers.onEvent?.({
           type: 'run.started',
           runId: 'run-1',
           engineId: 'engine.direct_turn',
           profile: 'direct_turn',
         });
-        onEvent({ type: 'message.delta', runId: 'run-1', content: 'hello' });
+        handlers.onEvent?.({ type: 'message.delta', runId: 'run-1', content: 'hello' });
         return ok({ eventCount: 2 });
       },
     ),
@@ -287,7 +287,7 @@ describe('Request Context smoke (RefArch Phase 2)', () => {
       dispatchAssistant: vi.fn(
         async (
           _command: AssistantCommand,
-          _onEvent: (event: unknown) => void,
+          _handlers: AssistantDispatchHandlers,
           signal?: AbortSignal,
           requestId?: string,
         ) => {

@@ -152,13 +152,15 @@ export function createRealAssistantDispatchService(options: {
 
   const facade = new AssistantFacade(turnEngine, turnEngine, proposalKernel, turnEngine);
   const service: AIAssistantFacadeControllerService = {
-    dispatchAssistant: async (command, onEvent, signal, requestId) => {
+    dispatchAssistant: async (command, handlers, signal, requestId) => {
       let eventCount = 0;
       for await (const event of facade.dispatch(command, signal, requestId)) {
         eventCount += 1;
-        onEvent(event);
+        handlers.onEvent?.(event);
       }
-      return ok({ eventCount });
+      const result = ok({ eventCount });
+      handlers.onDone?.(result.data);
+      return result;
     },
   };
 

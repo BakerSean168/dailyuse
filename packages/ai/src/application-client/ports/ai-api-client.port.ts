@@ -43,7 +43,7 @@ import type {
   AgentRunResult,
   AgentStartRunClientRequest,
   AssistantClientCommand,
-  AssistantEvent,
+  AssistantDispatchHandlers,
 } from '@memoflow/contracts/ai';
 import type { Result } from '@memoflow/contracts/result';
 
@@ -139,13 +139,13 @@ export interface IAIAssistantApiClient {
   /**
    * Dispatch AssistantFacade command over transport SSE/stream.
    * identityId is never part of the client body.
+   *
+   * AssistantFacade 命令经 transport SSE/stream 分发。
+   * identityId 永远不会出现在客户端 body 中。
    */
   dispatchAssistant(
     command: AssistantClientCommand,
-    handlers: {
-      onEvent?: (event: AssistantEvent) => void;
-      onDone?: (result: { eventCount: number }) => void;
-    },
+    handlers: AssistantDispatchHandlers,
     signal?: AbortSignal,
   ): Promise<void>;
 }

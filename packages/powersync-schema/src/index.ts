@@ -795,55 +795,6 @@ const editor_workspace_session_group_tabs = new Table({
 });
 
 // ──────────────────────────────────────────────
-// Document
-// ──────────────────────────────────────────────
-
-const documents = new Table({
-  identity_id: column.text,
-  title: column.text,
-  content: column.text,
-  folder_path: column.text,
-  tags: column.text, // JSON array
-  status: column.text,
-  current_version: column.integer,
-  last_versioned_at: column.text,
-  last_edited_at: column.text,
-  edit_session_id: column.text,
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
-
-const document_versions = new Table({
-  identity_id: column.text,
-  document_id: column.text, // FK
-  version_number: column.integer,
-  title: column.text,
-  content: column.text,
-  change_type: column.text,
-  change_description: column.text,
-  changed_by: column.text,
-  restored_from: column.text,
-  metadata: column.text, // JSON
-  version: column.integer,
-  created_at: column.text,
-});
-
-const document_links = new Table({
-  identity_id: column.text,
-  source_document_id: column.text, // FK
-  target_document_id: column.text, // FK
-  link_text: column.text,
-  link_position: column.integer,
-  is_broken: column.integer, // boolean
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
-
-// ──────────────────────────────────────────────
 // AI
 // ──────────────────────────────────────────────
 
@@ -1135,10 +1086,6 @@ export const PowerSyncAppSchema = new Schema({
   editor_workspace_sessions,
   editor_workspace_session_groups,
   editor_workspace_session_group_tabs,
-  // Document
-  documents,
-  document_versions,
-  document_links,
   // AI
   ai_conversations,
   ai_messages,

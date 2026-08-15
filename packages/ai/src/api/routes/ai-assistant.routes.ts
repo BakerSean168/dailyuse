@@ -5,6 +5,31 @@
  * RefArch Phase 2: the SSE route composes the canonical `ExecutionContext` via
  * the shared Express extractor (carrier + principal) and reads the envelope
  * trace/start from the same carrier — no route-local request-ID reconstruction.
+ *
+ * Framing is frozen in plan §4.4:
+ * - `event: assistant` + `data: AssistantEvent` per Host event
+ * - `event: error` + `data: { code, message, details? }` exactly once on failure
+ * - `event: done` + `data: AssistantDispatchResult` exactly once on success
+ *
+ * Lifecycle invariants:
+ * - A request abort or response close aborts the controller, removes the
+ *   listeners and never writes a terminal frame (no fake success after abort).
+ * - `identityId` comes from the authenticated `req.user` only; a missing
+ *   identity answers 401 JSON BEFORE the SSE headers are written.
+ *
+ * AssistantFacade HTTP 路由（residual 345）。
+ * POST /api/v1/ai/assistant/dispatch/sse —— 以 SSE 流式返回 AssistantEvent。
+ *
+ * 帧格式按计划 §4.4 冻结：
+ * - `event: assistant` + `data: AssistantEvent`：每个 Host 事件一帧
+ * - `event: error` + `data: { code, message, details? }`：失败时恰好一帧
+ * - `event: done` + `data: AssistantDispatchResult`：成功时恰好一帧
+ *
+ * 生命周期不变量：
+ * - request abort 或 response close 时中止 controller、移除监听器，并且绝不写
+ *   终态帧（abort 后不得补发成功 terminal）。
+ * - `identityId` 只来自认证后的 `req.user`；identity 缺失时在写 SSE headers
+ *   之前直接返回 401 JSON。
  */
 import { Router, type Request, type RequestHandler } from 'express';
 import { createHttpResponseBuilder } from '@memoflow/utils/result';
@@ -68,8 +93,12 @@ export function registerAIAssistantRoutes(
       const result = await controller.dispatch(
         req.body,
         extractAiExpressExecutionContext(req),
-        (assistantEvent) => {
-          writeSseEvent('assistant', assistantEvent);
+        {
+          onEvent: (assistantEvent) => {
+            if (!writeSseEvent('assistant', assistantEvent)) {
+              handleConnectionClosed();
+            }
+          },
         },
         streamAbortController.signal,
       );

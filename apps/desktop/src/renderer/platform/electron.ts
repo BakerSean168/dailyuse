@@ -87,7 +87,6 @@ const TABLE_TO_MODULE: Record<string, string> = {
   task_statistics: 'task',
   // Schedule
   schedules: 'schedule',
-  schedule_jobs: 'schedule',
   schedule_tasks: 'schedule',
   schedule_executions: 'schedule',
   schedule_statistics: 'schedule',

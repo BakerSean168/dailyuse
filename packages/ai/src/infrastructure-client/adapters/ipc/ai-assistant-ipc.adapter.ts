@@ -3,9 +3,24 @@
  *
  * Mirrors AIMessageIpcAdapter stream lifecycle: start/cancel on AIChannels,
  * event/done/error on AIStreamChannels. identityId never appears in the body.
+ *
+ * Hardening (plan Step B §5.2):
+ * - EVENT/DONE/ERROR envelope AND inner payload are runtime validated against
+ *   the shared schemas; malformed envelopes become `ASSISTANT_PROTOCOL_ERROR`.
+ * - A missing bridge or a START that is rejected as NOT_SUPPORTED/NOT_FOUND is
+ *   normalized to `ASSISTANT_DISPATCH_UNAVAILABLE`. Once START succeeds, an
+ *   ERROR frame or stream break is never downgraded to unavailable.
+ * - streamId isolation, once-settlement and listener/abort cleanup are kept.
  */
 import { AIChannels, AIStreamChannels } from '@memoflow/contracts/electron';
-import type { AssistantClientCommand, AssistantEvent } from '@memoflow/contracts/ai';
+import {
+  ASSISTANT_DISPATCH_UNAVAILABLE,
+  ASSISTANT_PROTOCOL_ERROR,
+  AssistantDispatchResultSchema,
+  AssistantEventSchema,
+  type AssistantClientCommand,
+  type AssistantDispatchHandlers,
+} from '@memoflow/contracts/ai';
 import { unwrapOrThrowError } from '@memoflow/contracts/result';
 import type { IAIAssistantApiClient, IResultIpcClient } from '../types';
 import { createResultClientError } from '../result-client-error';
@@ -21,15 +36,30 @@ type StreamErrorPayload = {
   details?: unknown;
 };
 
+type StartResult = {
+  ok: boolean;
+  error?: { code?: string };
+};
+
+function normalizeStartFailure(error: unknown): unknown {
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = (error as { code?: unknown }).code;
+    if (code === 'NOT_SUPPORTED' || code === 'NOT_FOUND') {
+      return createResultClientError(
+        'AssistantFacade dispatch is not available on this host',
+        ASSISTANT_DISPATCH_UNAVAILABLE,
+      );
+    }
+  }
+  return error;
+}
+
 export class AIAssistantIpcAdapter implements IAIAssistantApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async dispatchAssistant(
     command: AssistantClientCommand,
-    handlers: {
-      onEvent?: (event: AssistantEvent) => void;
-      onDone?: (result: { eventCount: number }) => void;
-    },
+    handlers: AssistantDispatchHandlers,
     signal?: AbortSignal,
   ): Promise<void> {
     if ('identityId' in (command as object)) {
@@ -43,7 +73,7 @@ export class AIAssistantIpcAdapter implements IAIAssistantApiClient {
     if (!bridge) {
       throw createResultClientError(
         'AssistantFacade dispatch requires Desktop IPC stream bridge',
-        'NOT_SUPPORTED',
+        ASSISTANT_DISPATCH_UNAVAILABLE,
       );
     }
 
@@ -84,26 +114,43 @@ export class AIAssistantIpcAdapter implements IAIAssistantApiClient {
       rejectStream(error);
     };
 
+    const protocolError = (message: string) =>
+      createResultClientError(message, ASSISTANT_PROTOCOL_ERROR);
+
     const onEventPush = (...args: unknown[]) => {
-      const payload = lastArg<{ streamId?: string; event?: AssistantEvent }>(args);
-      if (!payload || payload.streamId !== streamId || !payload.event) {
+      const payload = lastArg<{ streamId?: unknown; event?: unknown }>(args);
+      if (!payload || payload.streamId !== streamId) {
         return;
       }
-      handlers.onEvent?.(payload.event);
+      const parsed = AssistantEventSchema.safeParse(payload.event);
+      if (!parsed.success) {
+        settleError(protocolError('Assistant IPC event payload failed protocol validation'));
+        return;
+      }
+      handlers.onEvent?.(parsed.data);
     };
 
     const onDoneEvent = (...args: unknown[]) => {
-      const payload = lastArg<{ streamId?: string; result?: { eventCount: number } }>(args);
-      if (!payload || payload.streamId !== streamId || !payload.result) {
+      const payload = lastArg<{ streamId?: unknown; result?: unknown }>(args);
+      if (!payload || payload.streamId !== streamId) {
         return;
       }
-      handlers.onDone?.(payload.result);
+      const parsed = AssistantDispatchResultSchema.safeParse(payload.result);
+      if (!parsed.success) {
+        settleError(protocolError('Assistant IPC done payload failed protocol validation'));
+        return;
+      }
+      handlers.onDone?.(parsed.data);
       settleOk();
     };
 
     const onErrorEvent = (...args: unknown[]) => {
       const payload = lastArg<StreamErrorPayload | undefined>(args);
       if (!payload || payload.streamId !== streamId) {
+        return;
+      }
+      if (typeof payload.code !== 'string' || typeof payload.message !== 'string') {
+        settleError(protocolError('Assistant IPC error envelope is malformed'));
         return;
       }
       settleError(
@@ -137,10 +184,13 @@ export class AIAssistantIpcAdapter implements IAIAssistantApiClient {
     signal?.addEventListener('abort', onAbort, { once: true });
 
     try {
-      const startResult = await this.ipcClient.invoke<void>(AIChannels.ASSISTANT_DISPATCH_START, {
-        streamId,
-        command,
-      });
+      const startResult = await this.ipcClient.invoke<StartResult>(
+        AIChannels.ASSISTANT_DISPATCH_START,
+        {
+          streamId,
+          command,
+        },
+      );
       unwrapOrThrowError(startResult);
       startCompleted = true;
       if (abortRequested) {
@@ -148,11 +198,9 @@ export class AIAssistantIpcAdapter implements IAIAssistantApiClient {
       }
     } catch (error) {
       cleanup();
-      throw error;
+      throw normalizeStartFailure(error);
     }
 
     await completion;
   }
 }
-
-
