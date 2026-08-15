@@ -3,8 +3,9 @@
  *
  * Extracted so the audit CLI and unit tests share the same specifier checks.
  * Enforces in-package layering (e.g. `server/application` must not import
- * `server/infrastructure`) plus exact forbidden external specifiers
- * (`server/domain` / `server/application` must not import `@memoflow/database`:
+ * `server/infrastructure`) plus forbidden external specifier roots
+ * (`server/domain` / `server/application` must not import `@memoflow/database`
+ * or any of its exported subpaths like `@memoflow/database/prisma`:
  * Application/Domain consume Port only; Prisma concrete code belongs to
  * Infrastructure — Application/Domain 只消费 Port；Prisma 具体实现属于 Infrastructure).
  */
@@ -31,6 +32,19 @@ export const LEGACY_LAYER_NAMES = new Set([
 ]);
 
 const IMPORT_SPECIFIER_PATTERN = /(?:from\s+['"]|import\s*\(\s*['"]|import\s+['"])([^'"]+)['"]/g;
+
+/**
+ * Fail-closed match for a forbidden external specifier. A forbidden root
+ * (`@memoflow/database`) also matches every exported subpath
+ * (`@memoflow/database/prisma`, `@memoflow/database/...`) so subpath imports
+ * cannot bypass the rule. Unrelated specifiers keep exact matching
+ * (`@memoflow/databaseX` is not touched).
+ */
+export function isForbiddenExternalSpecifier(specifier, forbiddenExternalSpecifiers) {
+  return forbiddenExternalSpecifiers.some(
+    (forbidden) => specifier === forbidden || specifier.startsWith(`${forbidden}/`),
+  );
+}
 
 /**
  * Determine whether an entry inside a walked layer directory should be skipped
@@ -98,7 +112,8 @@ function lineAt(content, index) {
  * @param {string} input.relPath  repo-relative path (for reporting)
  * @param {string} input.layer    current rule layer (`server/domain` …)
  * @param {string[]} input.forbidden             forbidden in-package layer targets
- * @param {string[]} [input.forbiddenExternalSpecifiers] exact forbidden external specifiers
+ * @param {string[]} [input.forbiddenExternalSpecifiers] forbidden external specifier roots
+ *   (subpaths of a root, e.g. `@memoflow/database/prisma`, are forbidden too)
  * @returns {Array<{file:string, line:number, layer:string, specifier:string, message:string}>}
  */
 export function findBoundaryViolations({
@@ -122,7 +137,7 @@ export function findBoundaryViolations({
         specifier,
         message: `${layer} must not import from ${withinPackageTarget} (found: '${specifier}')`,
       });
-    } else if (forbiddenExternalSpecifiers.includes(specifier)) {
+    } else if (isForbiddenExternalSpecifier(specifier, forbiddenExternalSpecifiers)) {
       violations.push({
         file: relPath,
         line,

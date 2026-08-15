@@ -89,6 +89,44 @@ describe('findBoundaryViolations — forbidden external @memoflow/database', () 
     expect(violations[0].layer).toBe('server/domain');
     expect(violations[0].specifier).toBe('@memoflow/database');
   });
+
+  it('flags subpath `import { prisma } from "@memoflow/database/prisma"` in server/application', () => {
+    const content = "import { prisma } from '@memoflow/database/prisma';\n\nexport const client = prisma;\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/application/db/prisma.ts',
+      ...APPLICATION_RULE,
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({
+      file: 'packages/foo/src/server/application/db/prisma.ts',
+      layer: 'server/application',
+      specifier: '@memoflow/database/prisma',
+    });
+    expect(violations[0].message).toContain("forbidden external specifier '@memoflow/database/prisma'");
+  });
+
+  it('flags deeper subpath `import type ... from "@memoflow/database/prisma/generated"` in server/domain', () => {
+    const content = "import type { PrismaClient } from '@memoflow/database/prisma/generated';\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/domain/repositories/i-repository.ts',
+      ...DOMAIN_RULE,
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0].specifier).toBe('@memoflow/database/prisma/generated');
+  });
+
+  it('flags bare side-effect `import "@memoflow/database/prisma"` in server/domain', () => {
+    const content = "import '@memoflow/database/prisma';\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/domain/setup.ts',
+      ...DOMAIN_RULE,
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0].specifier).toBe('@memoflow/database/prisma');
+  });
 });
 
 describe('findBoundaryViolations — positive cases', () => {
@@ -135,6 +173,31 @@ describe('findBoundaryViolations — positive cases', () => {
     const violations = findBoundaryViolations({
       content,
       relPath: 'packages/goal/src/server/application/side-effect.ts',
+      ...APPLICATION_RULE,
+    });
+    expect(violations).toEqual([]);
+  });
+
+  it('allows `@memoflow/database` in server/infrastructure (rule has no forbidden external specifiers)', () => {
+    const content = "import { prisma } from '@memoflow/database';\n";
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/infrastructure/adapters/prisma.ts',
+      layer: 'server/infrastructure',
+      forbidden: ['client', 'electron', 'api'],
+      forbiddenExternalSpecifiers: [],
+    });
+    expect(violations).toEqual([]);
+  });
+
+  it('does not flag specifiers that merely share a prefix with the forbidden root', () => {
+    const content = [
+      "import { x } from '@memoflow/databaseX';",
+      "import { schema } from '@memoflow/database-schema';",
+    ].join('\n');
+    const violations = findBoundaryViolations({
+      content,
+      relPath: 'packages/foo/src/server/application/unrelated.ts',
       ...APPLICATION_RULE,
     });
     expect(violations).toEqual([]);
