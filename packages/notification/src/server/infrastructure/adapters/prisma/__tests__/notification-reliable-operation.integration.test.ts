@@ -23,6 +23,8 @@ import {
   getPrisma,
   seedAccount,
 } from '@memoflow/test-utils/setup/integration-helpers';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { ReminderTemplate, createReminderPrismaRepositories } from '@memoflow/reminder/server';
 
 describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', () => {
   let prisma: ReturnType<typeof getPrisma>;
@@ -1027,13 +1029,6 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
   });
 
   it('12. Cross-module W1 Reminder Outbox intent is consumed, FK/id created correctly and persisted', async () => {
-    // eslint-disable-next-line @nx/enforce-module-boundaries
-    const { PrismaReminderWriteTransactionRunner } =
-      await import('../../../../../../../reminder/src/server/infrastructure/adapters/prisma/prisma-reminder-write-transaction-runner');
-    // eslint-disable-next-line @nx/enforce-module-boundaries
-    const { ReminderTemplate } =
-      await import('../../../../../../../reminder/src/server/domain/aggregates/reminder-template');
-
     // W1 cron trigger intent (0 9 * * *) is expressed via FixedTime trigger in the current contract
     const template = ReminderTemplate.create({
       identityId: identityId as any,
@@ -1117,7 +1112,7 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
       },
     });
 
-    const runner = new PrismaReminderWriteTransactionRunner(prisma);
+    const runner = createReminderPrismaRepositories(prisma).transactionRunner;
 
     await runner.executeClaimedOccurrenceTransaction({
       template,
