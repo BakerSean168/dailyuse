@@ -1,49 +1,83 @@
 /**
- * useTask - 任务模块主 composable
+ * useTask - 任务模块薄编排 facade（RefArch Phase 5 迁移后）
  *
- * 薄编排层，组合 useTaskTemplates / useTaskInstances / useTaskDependencies。
- * 所有具体逻辑由子 composable 承载。
+ * 组合 template list query、instances（非 pilot，维持现状）与 dependencies 操作。
+ * Management/Detail 视图直接使用 graph/detail query 与 template mutations（Step 4），
+ * 本 facade 只服务 Daily widget / calendar / capsule 等非 pilot consumer：
+ * `templates` 来自 template list key，`fetchTemplates(params)` 以 canonical key 预取并
+ * await 收敛，保留命令式语义。
  */
 
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useTaskStore } from '../stores/task-store';
-import { useTaskTemplates } from './useTaskTemplates';
+import { useServerStateIdentityScope, useServerStateRuntime } from '../../../platform/server-state';
+import {
+  canonicalizeTaskTemplateListQuery,
+  taskTemplateQueryKeys,
+  type TaskTemplateListQueryInput,
+} from '../../../platform/server-state/query-keys';
 import { useTaskInstances } from './useTaskInstances';
 import { useTaskDependencies } from './useTaskDependencies';
+import { useTaskTemplateListQuery } from './useTaskTemplateListQuery';
+import { waitForTaskTemplateQuery } from './taskTemplateCache';
 
 export function useTask() {
   const store = useTaskStore();
-  const templateOps = useTaskTemplates();
+  const runtime = useServerStateRuntime();
+  const resolveIdentityScope = useServerStateIdentityScope();
+  const listParams = ref<TaskTemplateListQueryInput>({});
+  // P2-4: keep the default list query disabled until `fetchTemplates` requests it, so no
+  // avoidable default `limit:20` fetch fires before a consumer supplies its own params.
+  // P2-4：默认 list query 保持禁用，直到 `fetchTemplates` 被调用，避免提前发起默认 limit:20 请求。
+  const listRequested = ref(false);
+  const templateList = useTaskTemplateListQuery({
+    params: listParams,
+    enabled: listRequested,
+  });
   const instanceOps = useTaskInstances();
   const dependencyOps = useTaskDependencies();
 
+  async function fetchTemplates(query?: TaskTemplateListQueryInput) {
+    listParams.value = {
+      page: query?.page ?? store.pagination.page,
+      limit: query?.limit ?? store.pagination.pageSize,
+      status: query?.status,
+      goalId: query?.goalId,
+      folderId: query?.folderId,
+      tags: query?.tags,
+    };
+    listRequested.value = true;
+    const queryKey = taskTemplateQueryKeys.list(
+      resolveIdentityScope(),
+      canonicalizeTaskTemplateListQuery(listParams.value),
+    );
+    // An errored query makes the waiter settle instantly without re-requesting; force a
+    // refetch so a consumer's retry actually retries (P2-2). Fresh/pending keys still wait.
+    // error 态 query 会让 waiter 立即 settle 而不重新请求；这里显式 refetch，让 retry 真正生效（P2-2）。
+    if (runtime.queryClient.getQueryState(queryKey)?.status === 'error') {
+      await templateList.refetch();
+    } else {
+      await waitForTaskTemplateQuery(runtime.queryClient, queryKey);
+    }
+  }
+
   function setPage(p: number) {
     store.setPage(p);
-    templateOps.fetchTemplates();
+    void fetchTemplates();
   }
 
   return {
     // State
-    templates: computed(() => store.templates),
+    templates: templateList.templates,
     instances: computed(() => store.instances),
-    dependencies: computed(() => store.dependencies),
-    currentTemplate: computed(() => store.currentTemplate),
-    currentInstance: computed(() => store.currentInstance),
-    isLoading: computed(() => store.isLoading),
-    isSaving: templateOps.isSaving,
-    error: computed(() => store.error),
+    isLoading: computed(() => templateList.isLoading.value || store.isLoading),
+    // Surface the template list query error so legacy consumers (e.g. TaskCapsulePreview)
+    // see failed template fetches instead of treating them as success (P2-2).
+    // 暴露 template list query 的 error，让 legacy consumer（如 TaskCapsulePreview）能看到失败而非当作成功（P2-2）。
+    error: computed(() => store.error ?? templateList.error.value),
     pagination: computed(() => store.pagination),
-    // Template operations
-    fetchTemplates: templateOps.fetchTemplates,
-    fetchTaskGraph: templateOps.fetchTaskGraph,
-    fetchTemplate: templateOps.fetchTemplate,
-    createTemplate: templateOps.createTemplate,
-    updateTemplate: templateOps.updateTemplate,
-    deleteTemplate: templateOps.deleteTemplate,
-    deleteTemplates: templateOps.deleteTemplates,
-    activateTemplate: templateOps.activateTemplate,
-    pauseTemplate: templateOps.pauseTemplate,
-    archiveTemplate: templateOps.archiveTemplate,
+    // Template operations (list key)
+    fetchTemplates,
     // Instance operations
     fetchInstances: instanceOps.fetchInstances,
     fetchInstancesByDateRange: instanceOps.fetchInstancesByDateRange,

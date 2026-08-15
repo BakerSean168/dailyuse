@@ -68,7 +68,11 @@
       </template>
     </ModuleHeader>
 
-    <div id="task-template-management" class="min-h-0 flex-1 overflow-y-auto p-3" data-scroll-host="task-management">
+    <div
+      id="task-template-management"
+      class="min-h-0 flex-1 overflow-y-auto p-3"
+      data-scroll-host="task-management"
+    >
       <template v-if="viewMode === 'card'">
         <TaskTemplateGrid
           :templates="filteredViewModels"
@@ -207,7 +211,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
@@ -235,7 +239,9 @@ import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
 import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import QuickTaskDialog from '../components/dialogs/QuickTaskDialog.vue';
-import { useTask } from '../composables/useTask';
+import { useTaskTemplateGraphQuery } from '../composables/useTaskTemplateGraphQuery';
+import { useTaskTemplateMutations } from '../composables/useTaskTemplateMutations';
+import { useTaskDependencies } from '../composables/useTaskDependencies';
 import { useTaskGoalBindingOptions } from '../composables/useTaskGoalBindingOptions';
 import type {
   TaskRelationFilter,
@@ -260,28 +266,22 @@ import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceSta
 const router = useRouter();
 const route = useRoute();
 const { t } = useI18n();
+const { templates, dependencies, isLoading } = useTaskTemplateGraphQuery();
 const {
-  templates,
-  dependencies,
-  isLoading,
   isSaving,
-  fetchTaskGraph,
-  createTemplate,
-  updateTemplate,
-  deleteTemplate,
-  deleteTemplates,
-  activateTemplate,
-  pauseTemplate,
-  createDependency,
-  deleteDependency,
-} = useTask();
+  createTemplateSafe: createTemplate,
+  updateTemplateSafe: updateTemplate,
+  deleteTemplateSafe: deleteTemplate,
+  deleteTemplatesSafe: deleteTemplates,
+  activateTemplateSafe: activateTemplate,
+  pauseTemplateSafe: pauseTemplate,
+} = useTaskTemplateMutations();
+const { createDependency, deleteDependency } = useTaskDependencies();
 const { loadGoalBindings, resolveGoalBinding } = useTaskGoalBindingOptions();
 
 function resolveTaskGoalBindingName(binding: TaskGoalBindingViewModel): string {
   const display = resolveGoalBinding(binding);
-  return display
-    ? `${display.goalName} · ${display.keyResultName}`
-    : t('common.unavailable');
+  return display ? `${display.goalName} · ${display.keyResultName}` : t('common.unavailable');
 }
 
 // ── 过滤 / 视图状态（从 TaskTemplateManagement 上移） ──
@@ -374,6 +374,15 @@ const viewModels = computed(() => {
 
 const graphData = computed(() => buildTaskGraphData(templates.value, dependencies.value));
 
+// Goal binding 名称属于非 pilot Goal 数据：graph query 收敛后按 goalId 集合加载一次。
+watch(
+  () => templates.value.map((template) => template.goalBinding?.goalId).filter(Boolean),
+  (goalIds) => {
+    if (goalIds.length > 0) void loadGoalBindings(goalIds);
+  },
+  { immediate: true },
+);
+
 const countLabel = computed(() =>
   t('task.templateMgmt.countLabel', { count: viewModels.value.length }),
 );
@@ -464,11 +473,6 @@ function clearFilters() {
   searchQuery.value = '';
 }
 
-async function refreshTaskManagement() {
-  await fetchTaskGraph({ page: 1, limit: 1000 });
-  await loadGoalBindings(templates.value.map((template) => template.goalBinding?.goalId));
-}
-
 function toGoalBindingPayload(template: TaskTemplateViewModel) {
   if (!template.goalBinding?.goalId || !template.goalBinding?.keyResultId) {
     return null;
@@ -501,7 +505,6 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
   });
   if (result) {
     showCreateDialog.value = false;
-    await refreshTaskManagement();
     return true;
   }
   return false;
@@ -532,7 +535,6 @@ async function handleSaveQuickTask(value: { title: string }) {
   );
   if (result) {
     showQuickTaskDialog.value = false;
-    await refreshTaskManagement();
   }
 }
 
@@ -582,7 +584,6 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
   if (result) {
     showEditDialog.value = false;
     editViewModel.value = null;
-    await refreshTaskManagement();
   }
 }
 
@@ -601,7 +602,6 @@ async function handleCardCreateDependency(
     return false;
   }
 
-  await refreshTaskManagement();
   return true;
 }
 
@@ -615,7 +615,6 @@ async function handleCreateDependencyFromDialog(dependency: {
     return false;
   }
 
-  await refreshTaskManagement();
   return true;
 }
 
@@ -625,7 +624,6 @@ async function handleDeleteDependency(dependencyId: string): Promise<boolean> {
     return false;
   }
 
-  await refreshTaskManagement();
   return true;
 }
 
@@ -641,14 +639,12 @@ async function handleDelete(template: TaskTemplateViewModel) {
   if (!confirmed) return;
   const deleted = await deleteTemplate(template.id);
   if (deleted) {
-    await refreshTaskManagement();
   }
 }
 
 async function handleResume(template: TaskTemplateViewModel) {
   const result = await activateTemplate(template.id);
   if (result) {
-    await refreshTaskManagement();
   }
 }
 
@@ -665,7 +661,6 @@ async function handlePause(template: TaskTemplateViewModel) {
 
   const result = await pauseTemplate(template.id);
   if (result) {
-    await refreshTaskManagement();
   }
 }
 
@@ -682,7 +677,6 @@ async function confirmDeleteAll() {
   const deleted = await deleteTemplates(templates.value.map((template) => template.id));
   if (!deleted) return;
 
-  await refreshTaskManagement();
   toast.success(t('task.management.allDeleted'));
 }
 
@@ -704,8 +698,4 @@ async function handleGraphNodeClick(task: TaskForDAG) {
   const target = document.querySelector(`[data-task-id="${task.id}"]`) as HTMLElement | null;
   target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
-
-onMounted(async () => {
-  await refreshTaskManagement();
-});
 </script>

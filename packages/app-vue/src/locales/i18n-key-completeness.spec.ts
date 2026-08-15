@@ -5,20 +5,19 @@
  * Failures mean users would see bare dotted keys (PM-journey P0).
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { extname, join, resolve } from 'node:path';
+import { dirname, extname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import zhCN from './zh-CN';
 import enUS from './en-US';
 
-const WORKSPACE_ROOT = resolve(process.cwd(), '../..');
-const SCAN_ROOTS = [
-  resolve(process.cwd(), 'src'),
-  resolve(WORKSPACE_ROOT, 'apps/web/src'),
-];
+// Resolve relative to this spec file so the gate works from any cwd.
+const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const WORKSPACE_ROOT = resolve(PKG_ROOT, '../..');
+const SCAN_ROOTS = [resolve(PKG_ROOT, 'src'), resolve(WORKSPACE_ROOT, 'apps/web/src')];
 const SOURCE_EXTS = new Set(['.vue', '.ts', '.tsx']);
 /** Match t('a.b'), $t("a.b.c"), te(`x.y`) with dotted keys only. */
-const KEY_RE =
-  /(?:[^\w$.]|^)(?:\$t|t|te|tm)\(\s*(['"`])((?:[\w-]+\.)+[\w-]+)\1/g;
+const KEY_RE = /(?:[^\w$.]|^)(?:\$t|t|te|tm)\(\s*(['"`])((?:[\w-]+\.)+[\w-]+)\1/g;
 
 function walkSources(dir: string, out: string[] = []): string[] {
   let entries: string[];
@@ -68,10 +67,7 @@ function extractKeys(): Map<string, string[]> {
   return keys;
 }
 
-function resolveMessage(
-  messages: Record<string, unknown>,
-  key: string,
-): unknown {
+function resolveMessage(messages: Record<string, unknown>, key: string): unknown {
   let cur: unknown = messages;
   for (const part of key.split('.')) {
     if (cur == null || typeof cur !== 'object' || !(part in (cur as object))) {
@@ -107,17 +103,13 @@ describe('i18n key completeness (production locales)', () => {
         .slice(0, 40)
         .map((m) => `${m.key} (zh=${m.zh}, en=${m.en})`)
         .join('\n');
-      expect.fail(
-        `${missing.length} key(s) missing from production locales. Sample:\n${sample}`,
-      );
+      expect.fail(`${missing.length} key(s) missing from production locales. Sample:\n${sample}`);
     }
   });
 
   it('fails the gate when a known production key is deleted (negative control)', () => {
     const probe = 'goal.list.noGoalsFound';
-    expect(isPresent(resolveMessage(zhCN as Record<string, unknown>, probe))).toBe(
-      true,
-    );
+    expect(isPresent(resolveMessage(zhCN as Record<string, unknown>, probe))).toBe(true);
     // Simulate deletion without mutating production objects permanently
     const broken = structuredClone(zhCN) as Record<string, any>;
     delete broken.goal.list.noGoalsFound;

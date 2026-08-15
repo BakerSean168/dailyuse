@@ -4,7 +4,11 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHashHistory } from 'vue-router';
 import { APP_TITLE_NAME } from '@memoflow/assets';
 import { createAppRouter } from '@memoflow/app-vue/router';
-import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@memoflow/app-vue/plugins/i18n';
+import {
+  createI18nPlugin,
+  loadLocaleMessages,
+  translateMessageKey,
+} from '@memoflow/app-vue/plugins/i18n';
 import { readDesktopAccessSnapshot } from '@memoflow/app-vue/desktop';
 import {
   createNotificationStartupHook,
@@ -20,6 +24,13 @@ import { installDesktopAppServices } from '../platform/di-app';
 // Residual 941: host bridge via getElectronBridge sole helper.
 import { requireElectronBridge } from '../platform/electron-bridge';
 import { initElectronFeatures } from '../platform/electron';
+import {
+  getDesktopServerStateRuntime,
+  installDesktopServerStateRuntime,
+  isDesktopServerStateDisposed,
+  registerDesktopServerStateSource,
+  registerDesktopServerStateStartupCancel,
+} from '../platform/server-state';
 import { shouldRedirectAuthenticatedDesktopEntry } from './route-entry';
 import { createCloudAuthIpcClient } from '@memoflow/cloud-auth';
 import { createResultIpcClient } from '@memoflow/ipc-client';
@@ -77,15 +88,31 @@ export async function bootstrapMainApp() {
     document.title = title ? `${title} - ${APP_TITLE_NAME}` : APP_TITLE_NAME;
   });
 
+  // 已认证 renderer：mount 前创建/安装 server-state runtime（§3.1；desktop lane 走 PowerSync/IPC）。
+  // auth-only entry（profile 锁定）不安装 Query Cache（plan §3.1 认证后安装；P2-4）。
+  if (desktopAccessSnapshot?.unlockState === 'UNLOCKED') {
+    installDesktopServerStateRuntime(app);
+  }
+
   app.use(router);
   app.use(installDesktopAppServices);
   initElectronFeatures(app);
   app.mount('#app');
 
   const runStartupPhase = () => {
+    if (isDesktopServerStateDisposed()) return;
     try {
-      const notificationHook = createNotificationStartupHook();
-      notificationHook.start();
+      // 实时源只向 dispatcher 发 invalidation intent（Step 3）；Desktop 不启用 cloud SSE。
+      const runtime = getDesktopServerStateRuntime();
+      const identityScope = () => accountStore.getCurrentAccountId ?? '';
+      if (runtime) {
+        const notificationHook = createNotificationStartupHook({
+          dispatcher: runtime.dispatcher,
+          identityScope,
+        });
+        notificationHook.start();
+        registerDesktopServerStateSource(notificationHook);
+      }
       // R3 收尾：桌面通知点击 → 稳定导航（navigationIntent / category landing）。
       createNotificationClickNavigation(router, () => bridge).start();
     } catch (error) {
@@ -93,10 +120,15 @@ export async function bootstrapMainApp() {
     }
   };
 
+  // Deferred startup is lifecycle-guarded and cancellable: a logout/profile lock that runs
+  // before it fires must not start realtime sources after cleanup (plan §3.1 ordering; P2-3).
+  // 延迟启动带生命周期守卫且可取消：若登出/锁屏先于其执行，不得在清理后启动实时源（P2-3）。
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    window.requestIdleCallback(runStartupPhase, { timeout: 3000 });
+    const handle = window.requestIdleCallback(runStartupPhase, { timeout: 3000 });
+    registerDesktopServerStateStartupCancel(() => window.cancelIdleCallback(handle));
   } else {
-    globalThis.setTimeout(runStartupPhase, 0);
+    const handle = globalThis.setTimeout(runStartupPhase, 0);
+    registerDesktopServerStateStartupCancel(() => globalThis.clearTimeout(handle));
   }
 
   void router.isReady().then(() => {

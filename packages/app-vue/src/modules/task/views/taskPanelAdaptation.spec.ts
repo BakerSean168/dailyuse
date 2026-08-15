@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const managementSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/task/views/TaskManagementView.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), 'TaskManagementView.vue'),
   'utf8',
 );
 const gridSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/task/components/TaskTemplateGrid.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), '../components/TaskTemplateGrid.vue'),
   'utf8',
 );
 

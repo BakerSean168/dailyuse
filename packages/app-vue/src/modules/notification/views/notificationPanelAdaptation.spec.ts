@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const notificationSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/notification/views/NotificationListPage.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), 'NotificationListPage.vue'),
   'utf8',
 );
 

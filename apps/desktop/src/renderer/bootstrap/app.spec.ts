@@ -31,6 +31,12 @@ const mocks = vi.hoisted(() => {
   const notificationHook = {
     start: vi.fn(),
   };
+  const serverStateRuntime = {
+    queryClient: {},
+    dispatcher: { invalidate: vi.fn(async () => undefined) },
+    dispose: vi.fn(),
+    clearIdentity: vi.fn(),
+  };
 
   return {
     app,
@@ -40,6 +46,7 @@ const mocks = vi.hoisted(() => {
     accountStore,
     bridge,
     notificationHook,
+    serverStateRuntime,
     createApp: vi.fn(() => app),
     createPinia: vi.fn(() => pinia),
     createAppRouter: vi.fn(() => router),
@@ -59,6 +66,11 @@ const mocks = vi.hoisted(() => {
       data: { toDTO: () => ({ id: 'cloud-1' }) },
     })),
     createNotificationStartupHook: vi.fn(() => notificationHook),
+    installDesktopServerStateRuntime: vi.fn(() => serverStateRuntime),
+    getDesktopServerStateRuntime: vi.fn(() => serverStateRuntime),
+    registerDesktopServerStateSource: vi.fn(),
+    isDesktopServerStateDisposed: vi.fn(() => false),
+    registerDesktopServerStateStartupCancel: vi.fn(),
     initElectronFeatures: vi.fn(),
     shouldRedirectAuthenticatedDesktopEntry: vi.fn(() => true),
     progressStart: vi.fn(),
@@ -153,6 +165,14 @@ vi.mock('../platform/electron', () => ({
   initElectronFeatures: mocks.initElectronFeatures,
 }));
 
+vi.mock('../platform/server-state', () => ({
+  installDesktopServerStateRuntime: mocks.installDesktopServerStateRuntime,
+  getDesktopServerStateRuntime: mocks.getDesktopServerStateRuntime,
+  registerDesktopServerStateSource: mocks.registerDesktopServerStateSource,
+  isDesktopServerStateDisposed: mocks.isDesktopServerStateDisposed,
+  registerDesktopServerStateStartupCancel: mocks.registerDesktopServerStateStartupCancel,
+}));
+
 vi.mock('../platform/electron-bridge', () => ({
   requireElectronBridge: mocks.requireElectronBridge,
 }));
@@ -216,6 +236,10 @@ describe('desktop bootstrapMainApp', () => {
     expect(mocks.app.mount).toHaveBeenCalledWith('#app');
     expect(mocks.notificationHook.start).toHaveBeenCalledTimes(1);
     expect(mocks.router.replace).toHaveBeenCalledWith('/');
+    // Server-state runtime installed before mount (plan §3.1).
+    expect(mocks.installDesktopServerStateRuntime).toHaveBeenCalledWith(mocks.app);
+    // Deferred startup is registered with a cancellable handle (P2-3).
+    expect(mocks.registerDesktopServerStateStartupCancel).toHaveBeenCalledTimes(1);
 
     const afterEachHandler = mocks.router.afterEach.mock.calls[0]?.[0];
     expect(afterEachHandler).toBeTypeOf('function');
@@ -242,5 +266,21 @@ describe('desktop bootstrapMainApp', () => {
     expect(mocks.authStore.reset).toHaveBeenCalledTimes(1);
     expect(mocks.accountStore.reset).toHaveBeenCalledTimes(1);
     expect(mocks.router.replace).not.toHaveBeenCalled();
+    // auth-only entry (locked profile) must not install the Query Cache (plan §3.1; P2-4).
+    expect(mocks.installDesktopServerStateRuntime).not.toHaveBeenCalled();
+  });
+
+  it('does not start realtime sources when disposed before the deferred startup fires (P2-3)', async () => {
+    mocks.isDesktopServerStateDisposed.mockReturnValueOnce(true);
+
+    const { bootstrapMainApp } = await import('./app');
+
+    await bootstrapMainApp();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.notificationHook.start).not.toHaveBeenCalled();
+    // Startup was still scheduled + registered for cancellation (P2-3).
+    expect(mocks.registerDesktopServerStateStartupCancel).toHaveBeenCalledTimes(1);
   });
 });

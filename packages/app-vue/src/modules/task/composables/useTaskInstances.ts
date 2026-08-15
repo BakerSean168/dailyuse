@@ -8,20 +8,23 @@ import { useTaskStore } from '../stores/task-store';
 import { TASK_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import type { CompleteTaskInstanceReq } from '@memoflow/contracts/task';
+import type { CompleteTaskInstanceReq, TaskTemplateClientDTO } from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
+import { useServerStateIdentityScope, useServerStateRuntime } from '../../../platform/server-state';
+import { patchTaskTemplateEverywhere } from './taskTemplateCache';
 
 type TaskInstanceDTO = ReturnType<typeof useTaskStore>['instances'][number];
 type TaskInstanceEntityLike = { toDTO(): TaskInstanceDTO };
-type TaskTemplateDTO = ReturnType<typeof useTaskStore>['templates'][number];
-type TaskTemplateEntityLike = { toDTO(): TaskTemplateDTO };
+type TaskTemplateEntityLike = { toDTO(): TaskTemplateClientDTO };
 
 export function useTaskInstances() {
   const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');
   const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
   const store = useTaskStore();
+  const runtime = useServerStateRuntime();
+  const resolveIdentityScope = useServerStateIdentityScope();
   const { t } = useI18n();
 
   const handleError = createComposableHandleError({
@@ -54,11 +57,18 @@ export function useTaskInstances() {
       'task.error.loadTemplatesFailed',
     );
     if (result.ok) {
-      store.updateTemplate((result.data as TaskTemplateEntityLike).toDTO());
+      // 模板投影现在属于 Query Cache authority；instance mutation 仍以本地 patch 收敛。
+      patchTaskTemplateEverywhere(
+        runtime.queryClient,
+        resolveIdentityScope(),
+        (result.data as TaskTemplateEntityLike).toDTO(),
+      );
     }
   }
 
-  async function updateInstanceProjection(entity: TaskInstanceEntityLike): Promise<TaskInstanceDTO> {
+  async function updateInstanceProjection(
+    entity: TaskInstanceEntityLike,
+  ): Promise<TaskInstanceDTO> {
     const dto = entity.toDTO();
     store.updateInstance(dto);
     await refreshTemplateProjection(String(dto.templateId));
@@ -105,7 +115,10 @@ export function useTaskInstances() {
   }
 
   async function startInstance(id: string) {
-    const result = await executeTaskOperation(() => service.startInstance(id), 'task.error.startFailed');
+    const result = await executeTaskOperation(
+      () => service.startInstance(id),
+      'task.error.startFailed',
+    );
     if (result.ok) {
       return updateInstanceProjection(result.data);
     }
@@ -139,7 +152,10 @@ export function useTaskInstances() {
   }
 
   async function skipInstance(id: string) {
-    const result = await executeTaskOperation(() => service.skipInstance(id), 'task.error.skipFailed');
+    const result = await executeTaskOperation(
+      () => service.skipInstance(id),
+      'task.error.skipFailed',
+    );
     if (result.ok) {
       const dto = await updateInstanceProjection(result.data);
       toast.success(t('task.error.skipSuccess'));

@@ -41,9 +41,11 @@ import {
 } from '@memoflow/app-vue/di';
 import { createDashboardIpcAdapter } from '@memoflow/app-vue/modules/dashboard/adapters';
 import { useAuthenticationStore } from '@memoflow/app-vue/modules/authentication';
+import { useAccountStore } from '@memoflow/app-vue/modules/account';
 import { readDesktopAccessSnapshot } from '@memoflow/app-vue/desktop';
 // Residual 941: host bridge via requireElectronBridge sole helper.
 import { requireElectronBridge } from './electron-bridge';
+import { clearDesktopServerStateIdentity } from './server-state';
 import { ProfileAccessChannels, WindowChannels } from '@memoflow/contracts/electron';
 import { fromIpcResult, isOk, type IpcResult } from '@memoflow/contracts/result';
 
@@ -90,6 +92,8 @@ export function installDesktopAppServices(app: App): void {
     desktopAccessSnapshot.value = snapshot;
   });
   app.provide(PROFILE_LOCK_HANDLER_KEY, async () => {
+    // 锁定/切换 profile：先清空当前 identity 的 query cache，避免下一 profile 数据闪现。
+    clearDesktopServerStateIdentity(useAccountStore().getCurrentAccountId ?? '');
     const lockResult = fromIpcResult(
       (await bridge.invoke(ProfileAccessChannels.LOCK)) as IpcResult<null>,
     );
@@ -101,6 +105,8 @@ export function installDesktopAppServices(app: App): void {
   });
   app.provide(LOGOUT_HANDLER_KEY, async () => {
     console.info('[Desktop Logout] Handler invoked');
+    // 登出：先清空当前 identity 的 query cache（§3.1）。
+    clearDesktopServerStateIdentity(useAccountStore().getCurrentAccountId ?? '');
     try {
       await bridge.invoke('cloud-auth:sign-out');
 

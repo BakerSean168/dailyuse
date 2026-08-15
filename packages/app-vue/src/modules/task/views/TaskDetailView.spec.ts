@@ -5,8 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TaskTemplateClientDTO } from '@memoflow/contracts/task';
 import TaskDetailView from './TaskDetailView.vue';
 
-const fetchTemplate = vi.fn().mockResolvedValue(undefined);
-const fetchTaskGraph = vi.fn().mockResolvedValue(undefined);
 const loadGoalBinding = vi.fn().mockResolvedValue(undefined);
 
 const template = {
@@ -56,16 +54,30 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ back: vi.fn(), push: vi.fn() }),
 }));
 
-vi.mock('../composables/useTask', () => ({
-  useTask: () => ({
+vi.mock('../composables/useTaskTemplateGraphQuery', () => ({
+  useTaskTemplateGraphQuery: () => ({
     templates,
     dependencies: ref([]),
+    isLoading: ref(false),
+  }),
+}));
+
+vi.mock('../composables/useTaskTemplateDetailQuery', () => ({
+  useTaskTemplateDetailQuery: () => ({
     currentTemplate,
     isLoading: ref(false),
+  }),
+}));
+
+vi.mock('../composables/useTaskTemplateMutations', () => ({
+  useTaskTemplateMutations: () => ({
     isSaving: ref(false),
-    fetchTemplate,
-    fetchTaskGraph,
-    updateTemplate: vi.fn(),
+    updateTemplateSafe: vi.fn(),
+  }),
+}));
+
+vi.mock('../composables/useTaskDependencies', () => ({
+  useTaskDependencies: () => ({
     createDependency: vi.fn(),
     deleteDependency: vi.fn(),
   }),
@@ -163,8 +175,6 @@ describe('TaskDetailView goal binding', () => {
   beforeEach(() => {
     templates.value = [template];
     currentTemplate.value = template;
-    fetchTemplate.mockClear();
-    fetchTaskGraph.mockClear();
     loadGoalBinding.mockClear();
   });
 
@@ -199,8 +209,6 @@ describe('TaskDetailView goal binding', () => {
 
 describe('TaskDetailView completion projection', () => {
   beforeEach(() => {
-    fetchTemplate.mockClear();
-    fetchTaskGraph.mockClear();
     loadGoalBinding.mockClear();
   });
 

@@ -189,6 +189,97 @@ describe('useGoalStore', () => {
     expect(store.getGoalById('goal-1')?.name).toBe('After');
   });
 
+  it('drops dangling normalized references from getters and projections', () => {
+    const store = useGoalStore();
+    store.setGoals([createGoal()]);
+    store.goalIds.push('ghost-goal');
+    store.keyResultIdsByGoalId['goal-1'] = ['ghost-kr'];
+
+    const goals = store.goals;
+    expect(goals).toHaveLength(1);
+    expect(goals[0]?.id).toBe('goal-1');
+    expect(goals[0]?.keyResults).toEqual([]);
+
+    store.setGoals([createGoal({ id: 'goal-2', name: 'No KRs' })]);
+    expect(store.goals.find((g) => g.id === 'goal-2')?.keyResults).toEqual([]);
+
+    store.selectGoal('goal-2');
+    expect(store.keyResults).toEqual([]);
+
+    store.selectGoal('ghost-goal');
+    expect(store.selectedGoal).toBeNull();
+
+    store.selectGoal(null);
+    expect(store.keyResults).toEqual([]);
+
+    store.selectGoal('goal-1');
+    expect(store.keyResults).toEqual([]);
+  });
+
+  it('filters goals by folder and matches unknown folders to nothing', () => {
+    const store = useGoalStore();
+    store.setGoals([createGoal(), createGoal({ id: 'goal-2', folderId: 'folder-a' })]);
+    store.goalIds.push('ghost-goal');
+
+    expect(store.getGoalsByFolder('folder-a').map((g) => g.id)).toEqual(['goal-2']);
+    expect(store.getGoalsByFolder('folder-missing')).toEqual([]);
+  });
+
+  it('ignores mutation receipts whose existing goal version is newer', () => {
+    const store = useGoalStore();
+    store.setGoals([createGoal({ name: 'Newer', version: 5 })]);
+
+    store.applyGoalMutationReceipt({
+      goalId: createGoal().id,
+      goalVersion: 3,
+      affectedEntityIds: { goalIds: [], keyResultIds: [], recordIds: [], reviewIds: [] },
+      readModel: createGoal({ name: 'Stale receipt', version: 3 }),
+    });
+
+    expect(store.getGoalById('goal-1')?.name).toBe('Newer');
+  });
+
+  it('applies recordChanges by removing and upserting goal records', () => {
+    const store = useGoalStore();
+    store.setGoalRecords([
+      { id: 'record-keep' } as GoalRecordClientDTO,
+      { id: 'record-remove' } as GoalRecordClientDTO,
+    ]);
+
+    store.applyGoalMutationReceipt({
+      goalId: createGoal().id,
+      goalVersion: 1,
+      affectedEntityIds: { goalIds: [], keyResultIds: [], recordIds: [], reviewIds: [] },
+      readModel: createGoal({ version: 1 }),
+      recordChanges: {
+        removedIds: ['record-remove'] as GoalRecordClientDTO['id'][],
+        upserted: [{ id: 'record-upsert' } as GoalRecordClientDTO],
+      },
+    });
+
+    expect(store.goalRecords.map((r) => r.id)).toEqual(['record-keep', 'record-upsert']);
+  });
+
+  it('removes a goal without key results and never deselects unrelated goals', () => {
+    const store = useGoalStore();
+    store.setGoals([createGoal(), createGoal({ id: 'goal-2', name: 'Other' })]);
+    store.selectGoal('goal-2');
+
+    store.removeGoal('goal-1');
+
+    expect(store.goalIds).toEqual(['goal-2']);
+    expect(store.selectedGoalId).toBe('goal-2');
+  });
+
+  it('leaves folders untouched when updating an unknown folder', () => {
+    const store = useGoalStore();
+    store.setGoalFolders([{ id: 'folder-1', name: 'Known' } as GoalFolderClientDTO]);
+
+    store.updateGoalFolder({ id: 'folder-unknown', name: 'Ghost' } as GoalFolderClientDTO);
+
+    expect(store.goalFolders.map((f) => f.id)).toEqual(['folder-1']);
+  });
+
   it('preserves one authoritative progress projection across list and detail views', () => {
     const store = useGoalStore();
     store.setGoals([createGoal()]);

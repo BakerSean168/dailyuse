@@ -1,21 +1,22 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const scheduleSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/schedule/views/ScheduleCalendarView.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), 'ScheduleCalendarView.vue'),
   'utf8',
 );
 const daySource = readFileSync(
-  resolve(process.cwd(), 'src/modules/schedule/components/DayViewCalendar.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), '../components/DayViewCalendar.vue'),
   'utf8',
 );
 const weekSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/schedule/components/WeekViewCalendar.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), '../components/WeekViewCalendar.vue'),
   'utf8',
 );
 const monthSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/schedule/components/MonthViewCalendar.vue'),
+  resolve(dirname(fileURLToPath(import.meta.url)), '../components/MonthViewCalendar.vue'),
   'utf8',
 );
 

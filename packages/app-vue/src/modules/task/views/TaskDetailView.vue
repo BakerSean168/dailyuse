@@ -328,7 +328,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, FileQuestion, Pencil } from '@lucide/vue';
@@ -342,7 +342,10 @@ import {
   CardTitle,
   CardContent,
 } from '@memoflow/ui-vue-shadcn';
-import { useTask } from '../composables/useTask';
+import { useTaskTemplateGraphQuery } from '../composables/useTaskTemplateGraphQuery';
+import { useTaskTemplateDetailQuery } from '../composables/useTaskTemplateDetailQuery';
+import { useTaskTemplateMutations } from '../composables/useTaskTemplateMutations';
+import { useTaskDependencies } from '../composables/useTaskDependencies';
 import { useTaskGoalBindingOptions } from '../composables/useTaskGoalBindingOptions';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
@@ -364,18 +367,12 @@ import { emptyKind, formatProductDate } from '../../../shared/utils/product-time
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
-const {
-  templates,
-  dependencies,
-  currentTemplate,
-  isLoading,
-  isSaving,
-  fetchTemplate,
-  fetchTaskGraph,
-  updateTemplate,
-  createDependency,
-  deleteDependency,
-} = useTask();
+const { templates, dependencies } = useTaskTemplateGraphQuery();
+const { currentTemplate, isLoading } = useTaskTemplateDetailQuery(
+  () => route.params.id as string | undefined,
+);
+const { isSaving, updateTemplateSafe } = useTaskTemplateMutations();
+const { createDependency, deleteDependency } = useTaskDependencies();
 const { loadGoalBinding, resolveGoalBinding } = useTaskGoalBindingOptions();
 
 const showEditDialog = ref(false);
@@ -384,7 +381,8 @@ const templateViewModels = computed(() =>
 );
 const graphData = computed(() => buildTaskGraphData(templates.value, dependencies.value));
 
-const detailViewModel = computed<TaskTemplateViewModel | null>(() => {  if (!currentTemplate.value) return null;
+const detailViewModel = computed<TaskTemplateViewModel | null>(() => {
+  if (!currentTemplate.value) return null;
   return mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
 });
 
@@ -474,7 +472,7 @@ function toGoalBindingPayload(goalBinding: TaskTemplateViewModel['goalBinding'])
 
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const id = route.params.id as string;
-  const result = await updateTemplate(id, {
+  const result = await updateTemplateSafe(id, {
     name: vm.title,
     description: vm.description ?? null,
     timeConfig: toTaskTimeConfigPayload(vm.timeConfig),
@@ -487,7 +485,6 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
   });
   if (result) {
     showEditDialog.value = false;
-    await Promise.all([fetchTemplate(id), fetchTaskGraph({ page: 1, limit: 1000 })]);
   }
 }
 
@@ -501,7 +498,6 @@ async function handleCreateDependency(dependency: {
     return false;
   }
 
-  await fetchTaskGraph({ page: 1, limit: 1000 });
   return true;
 }
 
@@ -511,7 +507,6 @@ async function handleDeleteDependency(dependencyId: string): Promise<boolean> {
     return false;
   }
 
-  await fetchTaskGraph({ page: 1, limit: 1000 });
   return true;
 }
 
@@ -583,30 +578,12 @@ function getTimeValueLabel(timeConfig?: TaskTemplateViewModel['timeConfig'] | nu
   return getTaskTimeValueDisplay(t, timeConfig);
 }
 
-async function loadDetailPage(id: string) {
-  if (!id || id === 'new') {
-    return;
-  }
-
-  await Promise.all([fetchTemplate(id), fetchTaskGraph({ page: 1, limit: 1000 })]);
-
-  const goalId = currentTemplate.value?.goalBinding?.goalId;
-  if (goalId) {
-    await loadGoalBinding(goalId);
-  }
-}
-
+// detail query 随 route params 自动收敛；goal binding 名称按当前模板的 goalId 加载。
 watch(
-  () => route.params.id,
-  async (id) => {
-    if (typeof id === 'string') {
-      await loadDetailPage(id);
-    }
+  () => currentTemplate.value?.goalBinding?.goalId,
+  (goalId) => {
+    if (goalId) void loadGoalBinding(goalId);
   },
+  { immediate: true },
 );
-
-onMounted(async () => {
-  const id = route.params.id as string;
-  await loadDetailPage(id);
-});
 </script>

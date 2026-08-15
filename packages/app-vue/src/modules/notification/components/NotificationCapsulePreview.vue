@@ -85,14 +85,17 @@
  * NotificationCapsulePreview — 通知胶囊预览浮层（UI 重构 V2 §6.5 / §2.2）
  *
  * 承接 V1 铃铛弹层职责：最近 N 条 + 全部已读 + 查看全部（进入完整信箱面板）。
- * 数据走 useNotification / DI 端口，不新增接口；由 WindowHeader 在
- * notification 胶囊展开时挂载。
+ * 数据走 Query Cache（pilot）：capsule 使用自己的 canonical list key（page 1 + 不同 limit），
+ * 不再覆盖共享 list；unread 与 Shell/页面共享同一 key。组件不做 imperative mount refresh，
+ * mutation 成功后由 invalidation 收敛。
  */
-import { computed, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { Button } from '@memoflow/ui-vue-shadcn';
-import { useNotification } from '../composables/useNotification';
+import { useNotificationListQuery } from '../composables/useNotificationListQuery';
+import { useNotificationUnreadQuery } from '../composables/useNotificationUnreadQuery';
+import { useNotificationMutations } from '../composables/useNotificationMutations';
 import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 const RECENT_LIMIT = 5;
@@ -102,17 +105,14 @@ defineEmits<{
 }>();
 
 const { t } = useI18n();
-const {
-  notifications,
-  hasUnread,
-  isLoading,
-  fetchNotifications,
-  markAsRead,
-  markAllAsRead,
-  refreshStats,
-} = useNotification();
+const { notifications, isLoading } = useNotificationListQuery({
+  page: 1,
+  limit: RECENT_LIMIT * 2,
+});
+const { hasUnread } = useNotificationUnreadQuery();
+const { markAsRead, markAllAsRead } = useNotificationMutations();
 
-const isMarkingAll = ref(false);
+const isMarkingAll = computed(() => markAllAsRead.isPending.value);
 
 const recentItems = computed(() => {
   // 未读优先，其次按创建时间倒序；预览只展示最近 N 条
@@ -125,24 +125,13 @@ const recentItems = computed(() => {
 
 async function handleMarkAllRead() {
   if (!hasUnread.value || isMarkingAll.value) return;
-  isMarkingAll.value = true;
-  try {
-    await markAllAsRead();
-    toast.success(t('notification.toast.allMarkedRead'));
-    await refreshStats();
-  } finally {
-    isMarkingAll.value = false;
-  }
+  await markAllAsRead.mutateAsync();
+  toast.success(t('notification.toast.allMarkedRead'));
 }
 
 async function handleItemClick(item: NotificationClientDTO) {
   if (!item.isRead) {
-    await markAsRead(item.id);
-    await refreshStats();
+    await markAsRead.mutateAsync(item.id);
   }
 }
-
-onMounted(async () => {
-  await Promise.all([fetchNotifications({ page: 1, limit: RECENT_LIMIT * 2 }), refreshStats()]);
-});
 </script>

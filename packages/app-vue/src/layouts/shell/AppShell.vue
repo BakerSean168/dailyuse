@@ -25,7 +25,7 @@ import { useAppShellStore, MAX_BUSINESS_TABS } from './useAppShellStore';
 import { useShellRouterSync, AUTO_FOCUS_VIEWPORT, moduleForPath } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
 import { hasDesktopAuthApi } from '../../shared/utils/desktop-auth-recovery';
-import { useNotification } from '../../modules/notification/composables/useNotification';
+import { useNotificationUnreadQuery } from '../../modules/notification/composables/useNotificationUnreadQuery';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
 import { useAccountStore } from '../../modules/account/stores/account-store';
 import AIChatView from '../../modules/ai/views/AIChatView.vue';
@@ -111,7 +111,7 @@ const isSettingsScene = computed(() => shellScene.value === 'settings');
 const configuredModuleCapsules = inject(MODULE_CAPSULES_KEY, defaultModuleCapsules);
 
 // Phase 5 / UI-008：badgeSource token → 实时计数（notification unread）。
-const { unreadCount: notificationUnreadCount } = useNotification();
+const { unreadCount: notificationUnreadCount } = useNotificationUnreadQuery();
 function resolveCapsuleBadge(source: string | undefined): number | null {
   if (source === 'notification.unread') return notificationUnreadCount.value;
   return null;
@@ -688,19 +688,13 @@ function panelCacheKey(
       </template>
       <template #capsule-preview-reminder="{ closePreview }">
         <ReminderCapsulePreview
-          @view-all="
-            openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })
-          "
-          @select="
-            openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })
-          "
+          @view-all="openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })"
+          @select="openHeaderPreviewModule(closePreview, { id: 'reminder', route: '/reminders' })"
         />
       </template>
       <template #capsule-preview-schedule="{ closePreview }">
         <ScheduleCapsulePreview
-          @view-all="
-            openHeaderPreviewModule(closePreview, { id: 'schedule', route: '/schedule' })
-          "
+          @view-all="openHeaderPreviewModule(closePreview, { id: 'schedule', route: '/schedule' })"
         />
       </template>
       <template #capsule-preview-notification="{ closePreview }">

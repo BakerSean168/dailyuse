@@ -13,11 +13,10 @@ import { useGoalStore } from '@memoflow/app-vue/modules/goal';
 import { useTaskStore } from '@memoflow/app-vue/modules/task';
 import { useScheduleStore } from '@memoflow/app-vue/modules/schedule';
 import { useReminderStore } from '@memoflow/app-vue/modules/reminder';
-import { useNotificationStore } from '@memoflow/app-vue/modules/notification';
 import { useUserSettingStore } from '@memoflow/app-vue/modules/setting';
-import { useGovernanceStore } from '@memoflow/app-vue/modules/governance';
 // Residual 941: host bridge via getElectronBridge sole helper.
 import { getElectronBridge } from './electron-bridge';
+import { getDesktopServerStateRuntime, mapTablesToInvalidationIntents } from './server-state';
 
 const api = getElectronBridge();
 
@@ -106,16 +105,15 @@ const TABLE_TO_MODULE: Record<string, string> = {
   notification_templates: 'notification',
   // Settings
   user_settings: 'setting',
-  // Governance
-  rules: 'governance',
-  rule_revisions: 'governance',
 };
 
 /**
- * Module name → Pinia store invalidation function.
+ * Module name → Pinia store invalidation function (non-pilot modules keep the legacy path).
  *
- * When a PowerSync table changes, we mark the corresponding store as
- * not-initialized so the next composable access triggers a fresh fetch.
+ * Pilot tables (notifications / task_templates / task_dependencies / rules / rule_revisions)
+ * go through the server-state dispatcher instead; the pilot stores keep no
+ * `setInitialized(false)` flag.
+ * 非 pilot 模块继续走旧 Pinia invalidator；pilot 表走 dispatcher。
  */
 const MODULE_INVALIDATORS: Record<string, () => void> = {
   account: () => useAccountStore().setInitialized(false),
@@ -123,31 +121,50 @@ const MODULE_INVALIDATORS: Record<string, () => void> = {
   task: () => useTaskStore().setInitialized(false),
   schedule: () => useScheduleStore().setInitialized(false),
   reminder: () => useReminderStore().setInitialized(false),
-  notification: () => useNotificationStore().setInitialized(false),
   setting: () => useUserSettingStore().setInitialized(false),
-  governance: () => useGovernanceStore().setInitialized(false),
 };
 
 /**
- * Listens for `db:changed` events from the main process (PowerSync onChange)
- * and invalidates the affected Pinia stores so the next view access re-fetches.
- *
- * Also dispatches a `db:tables-changed` CustomEvent on `window` so active
- * components can react immediately if desired.
+ * PowerSync pilot tables that must be routed through the server-state dispatcher.
+ * 必须走 server-state dispatcher 的 PowerSync pilot 表。
+ */
+const PILOT_TABLES = new Set([
+  'notifications',
+  'task_templates',
+  'task_dependencies',
+  'rules',
+  'rule_revisions',
+]);
+
+/**
+ * Listens for `db:changed` events from the main process (PowerSync onChange).
+ * Pilot tables are mapped to invalidation intents and dispatched (Step 3); other modules
+ * keep flowing through the legacy Pinia invalidators. Also emits the `db:tables-changed`
+ * CustomEvent so active components can react immediately if desired.
  */
 function setupDbChangeListener(): void {
   api?.on(RendererEventChannels.DB_CHANGED, (...args: unknown[]) => {
     const payload = args[0] as { tables: string[] } | undefined;
     if (!payload?.tables?.length) return;
 
-    // Deduplicate modules
+    const identityScope = useAccountStore().getCurrentAccountId ?? '';
+    const runtime = getDesktopServerStateRuntime();
+
+    const pilotTables = payload.tables.filter((table) => PILOT_TABLES.has(table));
+    if (runtime && identityScope && pilotTables.length > 0) {
+      for (const intent of mapTablesToInvalidationIntents(pilotTables, identityScope)) {
+        void runtime.dispatcher.invalidate(intent);
+      }
+    }
+
+    // Non-pilot modules keep the legacy Pinia invalidator.
     const modules = new Set<string>();
     for (const table of payload.tables) {
+      if (PILOT_TABLES.has(table)) continue;
       const mod = TABLE_TO_MODULE[table];
       if (mod) modules.add(mod);
     }
 
-    // Invalidate affected stores
     for (const mod of modules) {
       MODULE_INVALIDATORS[mod]?.();
     }

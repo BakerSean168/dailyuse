@@ -56,7 +56,11 @@
     </ModuleHeader>
 
     <!-- 信箱是读列表：max-w-4xl（§11-3） -->
-    <div class="min-h-0 flex-1 overflow-y-auto p-3" data-testid="notification-scroll-host" data-scroll-host="notification">
+    <div
+      class="min-h-0 flex-1 overflow-y-auto p-3"
+      data-testid="notification-scroll-host"
+      data-scroll-host="notification"
+    >
       <div class="mx-auto max-w-4xl">
         <!-- 加载 = 行骨架（§0.3 禁整页 spinner） -->
         <div v-if="isLoading" class="space-y-3 py-2" data-testid="notification-list-skeleton">
@@ -103,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { Bell, CheckCheck } from '@lucide/vue';
@@ -111,29 +115,29 @@ import { Badge, Button, Skeleton } from '@memoflow/ui-vue-shadcn';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import ModuleHeader from '../../../components/shared/ModuleHeader.vue';
 import NotificationList from '../components/NotificationList.vue';
-import { useNotification } from '../composables/useNotification';
+import { useNotificationListQuery } from '../composables/useNotificationListQuery';
+import { useNotificationUnreadQuery } from '../composables/useNotificationUnreadQuery';
+import { useNotificationMutations } from '../composables/useNotificationMutations';
+import { useNotificationStore } from '../stores/notification-store';
 import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
-const {
-  notifications,
-  unreadCount,
-  hasUnread,
-  isLoading,
-  fetchNotifications,
-  markAsRead,
-  markAllAsRead,
-  dismiss,
-  refreshStats,
-} = useNotification();
+const { notifications, isLoading } = useNotificationListQuery();
+const { unreadCount, hasUnread } = useNotificationUnreadQuery();
+const { markAsRead, markAllAsRead, dismiss } = useNotificationMutations();
+
+const store = useNotificationStore();
 
 const { t } = useI18n();
 
-// 过滤收敛为 全部/未读 两态（§11-5；「已读」不是信箱高频动作）
-const selectedFilter = ref('all');
+// 过滤收敛为 全部/未读 两态（§11-5；「已读」不是信箱高频动作）；read filter 是 UI state。
+const selectedFilter = computed({
+  get: () => store.readFilter,
+  set: (value: 'all' | 'unread') => store.setReadFilter(value),
+});
 
 const filterTabs = computed(() => [
-  { label: t('notification.filter.all'), value: 'all' },
-  { label: t('notification.filter.unread'), value: 'unread' },
+  { label: t('notification.filter.all'), value: 'all' as const },
+  { label: t('notification.filter.unread'), value: 'unread' as const },
 ]);
 
 const filteredNotifications = computed(() => {
@@ -143,25 +147,21 @@ const filteredNotifications = computed(() => {
 
 function handleNotificationClick(notification: NotificationClientDTO) {
   if (!notification.isRead) {
-    markAsRead(notification.id);
+    markAsRead.mutate(notification.id);
   }
 }
 
 async function handleMarkRead(id: string) {
-  await markAsRead(id);
+  await markAsRead.mutateAsync(id);
 }
 
 async function handleMarkAllRead() {
-  await markAllAsRead();
+  await markAllAsRead.mutateAsync();
   toast.success(t('notification.toast.allMarkedRead'));
 }
 
 async function handleDelete(id: string) {
-  await dismiss(id);
+  await dismiss.mutateAsync(id);
   toast.success(t('notification.toast.deleted'));
 }
-
-onMounted(async () => {
-  await Promise.all([fetchNotifications(), refreshStats()]);
-});
 </script>

@@ -12,9 +12,9 @@ test('classifies explicit boundary and measurement file names', () => {
 test('gives every Desktop primary file exactly one owner', async () => {
   const inventory = await buildInventory(process.cwd());
   const desktop = inventory.primary.filter((entry) => entry.path.startsWith('apps/desktop/src/'));
-  assert.equal(desktop.length, 51);
-  assert.equal(new Set(desktop.map((entry) => entry.path)).size, 51);
-  assert.equal(desktop.filter((entry) => entry.primarySuite === 'unit').length, 37);
+  assert.equal(desktop.length, 53);
+  assert.equal(new Set(desktop.map((entry) => entry.path)).size, 53);
+  assert.equal(desktop.filter((entry) => entry.primarySuite === 'unit').length, 39);
   assert.equal(desktop.filter((entry) => entry.primarySuite === 'boundary-ipc').length, 9);
   assert.equal(desktop.filter((entry) => entry.primarySuite === 'boundary-main').length, 5);
   assert.deepEqual(inventory.missing, []);

@@ -30,6 +30,7 @@ import {
 } from '@memoflow/app-vue/web-core';
 import { resultHttpClient } from './http';
 import { createLazyService } from './lazy-service';
+import { clearWebServerStateIdentity } from './server-state';
 
 const authService = createCloudAuthHttpClient(resultHttpClient, {
   baseUrl: window.location.origin,
@@ -114,6 +115,8 @@ export function installAppServices(app: App): void {
   app.provide(MODULE_CAPSULES_KEY, defaultModuleCapsules);
   app.provide(LOGOUT_HANDLER_KEY, async () => {
     const authStore = useAuthenticationStore();
+    // Stop realtime sources first, then clear the identity cache (plan §3.1).
+    clearWebServerStateIdentity(authStore.getIdentityId ?? '');
     await authService.signOut();
     authStore.reset();
     window.location.replace('/auth');
