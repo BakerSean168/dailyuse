@@ -1,0 +1,174 @@
+{
+  "kind": "timing-report-v1",
+  "version": 1,
+  "profile": "full-affected",
+  "sampleCount": 7,
+  "samples": [
+    {
+      "runId": "31869952387",
+      "commit": "c8a7653080087a44e9a22ac2c1e0445d9dc4c528",
+      "lanes": [
+        "boundary",
+        "coverage",
+        "governance",
+        "integration",
+        "performance",
+        "validate",
+        "web"
+      ],
+      "setupMs": 330361,
+      "executionMs": 2716343,
+      "longestLaneMs": 319984,
+      "wallClockMs": 623292,
+      "runnerMinutes": 49.85315
+    },
+    {
+      "runId": "31882507690",
+      "commit": "f97c9c5cfa52519c8a2e49b8e9367ac4e9de4911",
+      "lanes": [
+        "boundary",
+        "coverage",
+        "governance",
+        "integration",
+        "performance",
+        "validate",
+        "web"
+      ],
+      "setupMs": 352291,
+      "executionMs": 1890116,
+      "longestLaneMs": 300060,
+      "wallClockMs": 639759,
+      "runnerMinutes": 41.843933
+    },
+    {
+      "runId": "31890672317",
+      "commit": "910efe7327f1730e87c649fba052a571f4f05add",
+      "lanes": [
+        "boundary",
+        "coverage",
+        "governance",
+        "integration",
+        "performance",
+        "validate",
+        "web"
+      ],
+      "setupMs": 333933,
+      "executionMs": 2693095,
+      "longestLaneMs": 347218,
+      "wallClockMs": 636625,
+      "runnerMinutes": 49.87635
+    },
+    {
+      "runId": "31893794420",
+      "commit": "f4840035022083439895b293786a34fe5b464da8",
+      "lanes": [
+        "boundary",
+        "coverage",
+        "governance",
+        "integration",
+        "performance",
+        "validate",
+        "web"
+      ],
+      "setupMs": 319963,
+      "executionMs": 2592837,
+      "longestLaneMs": 345722,
+      "wallClockMs": 643759,
+      "runnerMinutes": 50.011617
+    },
+    {
+      "runId": "31924539153",
+      "commit": "65c1bf03adbb92b1551a1203622dc420ebefee0d",
+      "lanes": [
+        "boundary",
+        "coverage",
+        "governance",
+        "integration",
+        "performance",
+        "validate",
+        "web"
+      ],
+      "setupMs": 346084,
+      "executionMs": 1948857,
+      "longestLaneMs": 317624,
+      "wallClockMs": 654054,
+      "runnerMinutes": 42.7656
+    },
+    {
+      "runId": "31939746666",
+      "commit": "cdb272f8edaae49e518e8e2953f3be982441f1e7",
+      "lanes": [
+        "boundary",
+        "coverage",
+        "governance",
+        "integration",
+        "performance",
+        "validate",
+        "web"
+      ],
+      "setupMs": 326588,
+      "executionMs": 2739253,
+      "longestLaneMs": 349572,
+      "wallClockMs": 648675,
+      "runnerMinutes": 51.1593
+    },
+    {
+      "runId": "31946721432",
+      "commit": "ccc68bbfbd71677255d753255abd1ba8efb0aeb9",
+      "lanes": [
+        "boundary",
+        "coverage",
+        "governance",
+        "integration",
+        "performance",
+        "validate",
+        "web"
+      ],
+      "setupMs": 351327,
+      "executionMs": 2730216,
+      "longestLaneMs": 361932,
+      "wallClockMs": 628395,
+      "runnerMinutes": 50.455567
+    }
+  ],
+  "metrics": {
+    "setupMs": {
+      "p50": 333933,
+      "p95": 352001.8,
+      "samples": 7
+    },
+    "executionMs": {
+      "p50": 2693095,
+      "p95": 2736541.9,
+      "samples": 7
+    },
+    "longestLaneMs": {
+      "p50": 345722,
+      "p95": 358224,
+      "samples": 7
+    },
+    "wallClockMs": {
+      "p50": 639759,
+      "p95": 652440.3,
+      "samples": 7
+    },
+    "runnerMinutes": {
+      "p50": 49.87635,
+      "p95": 50.9481801,
+      "samples": 7
+    }
+  },
+  "provenance": {
+    "generator": "ci-cd-platform-v2/compare-timings@1",
+    "sourceRuns": [
+      "31869952387",
+      "31882507690",
+      "31890672317",
+      "31893794420",
+      "31924539153",
+      "31939746666",
+      "31946721432"
+    ]
+  },
+  "digest": "221086cd77a819d200f357d19b710c87ebafe3cb273f5c185592f83216911a56"
+}
