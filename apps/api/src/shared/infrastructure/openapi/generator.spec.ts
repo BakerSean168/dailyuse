@@ -41,10 +41,10 @@ import { createGovernanceApiModule } from '@memoflow/governance/api';
  * response schema 同一性，也能生成最终文档。
  */
 class CapturingRegistry implements OpenApiRegistryLike {
-  readonly rawPaths: Array<Record<string, unknown>> = [];
+  readonly rawPaths: Array<RouteDef> = [];
   constructor(readonly inner: OpenAPIRegistry) {}
   registerPath(route: Record<string, unknown>): void {
-    this.rawPaths.push(route);
+    this.rawPaths.push(route as RouteDef);
     this.inner.registerPath(route as never);
   }
   register(name: string, schema: unknown): void {
@@ -82,27 +82,32 @@ async function registerAll(registry: CapturingRegistry) {
 
 type SchemaLike = { safeParse(data: unknown): { success: boolean } };
 
-function getBodySchema(def: Record<string, unknown>): SchemaLike | undefined {
-  const body = def.request?.body as Record<string, unknown> | undefined;
-  const content = body?.content as Record<string, unknown> | undefined;
-  const json = content?.['application/json'] as Record<string, unknown> | undefined;
-  return json?.schema as SchemaLike | undefined;
+type RouteDef = {
+  readonly method: string;
+  readonly path: string;
+  readonly request?: {
+    body?: { content?: Record<string, { schema?: unknown }> };
+    params?: unknown;
+    query?: unknown;
+  };
+  readonly responses?: Record<string, { content?: Record<string, { schema?: unknown }> }>;
+};
+
+function getBodySchema(def: RouteDef): SchemaLike | undefined {
+  return def.request?.body?.content?.['application/json']?.schema as SchemaLike | undefined;
 }
 
-function getParamsSchema(def: Record<string, unknown>): SchemaLike | undefined {
+function getParamsSchema(def: RouteDef): SchemaLike | undefined {
   return def.request?.params as SchemaLike | undefined;
 }
 
-function getQuerySchema(def: Record<string, unknown>): SchemaLike | undefined {
+function getQuerySchema(def: RouteDef): SchemaLike | undefined {
   return def.request?.query as SchemaLike | undefined;
 }
 
-function getResponseSchema(def: Record<string, unknown>, status: number): SchemaLike | undefined {
-  const responses = def.responses as Record<string, unknown> | undefined;
-  const response = responses?.[String(status)] as Record<string, unknown> | undefined;
-  const content = response?.content as Record<string, unknown> | undefined;
-  const json = content?.['application/json'] as Record<string, unknown> | undefined;
-  return json?.schema as SchemaLike | undefined;
+function getResponseSchema(def: RouteDef, status: number): SchemaLike | undefined {
+  return def.responses?.[String(status)]?.content?.['application/json']?.schema as
+    SchemaLike | undefined;
 }
 
 interface LedgerRow {
@@ -135,6 +140,7 @@ const GOAL_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/goals/{id}',
     status: 200,
+    hasBody: false,
     hasParams: true,
     hasQuery: true,
   },
@@ -214,6 +220,7 @@ const GOAL_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/goals/{id}/key-results/{krId}',
     status: 200,
+    hasBody: false,
     hasParams: true,
     hasQuery: true,
   },
@@ -238,6 +245,7 @@ const GOAL_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/goals/{id}/reviews/{reviewId}',
     status: 200,
+    hasBody: false,
     hasParams: true,
     hasQuery: true,
   },
@@ -254,6 +262,7 @@ const GOAL_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/goals/{id}/key-results/{krId}/records/{recordId}',
     status: 200,
+    hasBody: false,
     hasParams: true,
     hasQuery: true,
   },
@@ -292,6 +301,7 @@ const GOAL_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/goal-folders/{id}',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
 ];
@@ -311,6 +321,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/task-templates/{id}',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -318,6 +329,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'post',
     path: '/api/v1/task-templates/{id}/activate',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -325,6 +337,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'post',
     path: '/api/v1/task-templates/{id}/pause',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -332,6 +345,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'post',
     path: '/api/v1/task-templates/{id}/archive',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -355,6 +369,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'post',
     path: '/api/v1/task-templates/{id}/unbind-goal',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -370,6 +385,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'post',
     path: '/api/v1/task-instances/{id}/uncomplete',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -385,6 +401,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'post',
     path: '/api/v1/task-instances/{id}/start',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -392,6 +409,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/task-instances/{id}',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -422,6 +440,7 @@ const TASK_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/tasks/dependencies/{id}',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -446,6 +465,7 @@ const NOTIFICATION_LEDGER: LedgerRow[] = [
     method: 'delete',
     path: '/api/v1/notifications/{id}',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -453,6 +473,7 @@ const NOTIFICATION_LEDGER: LedgerRow[] = [
     method: 'patch',
     path: '/api/v1/notifications/{id}/read',
     status: 200,
+    hasBody: false,
     hasParams: true,
   },
   {
@@ -591,7 +612,7 @@ describe('OpenAPI generator ledger coverage (Phase 4)', () => {
     )!;
     expect(getBodySchema(notifReadAll)).toBeUndefined();
     const readAllShape = (
-      getResponseSchema(notifReadAll, 200) as { shape: Record<string, unknown> }
+      getResponseSchema(notifReadAll, 200) as unknown as { shape: Record<string, unknown> }
     ).shape;
     expect(readAllShape.data).toBeDefined();
     expect(
