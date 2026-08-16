@@ -37,6 +37,10 @@ vi.mock('@memoflow/utils', async (importOriginal) => {
 
 const FAKE_TEMPLATE_ID = aTaskTemplateId();
 
+// Well-formed UUID that does not exist — passes :id param validation (branded UUID
+// format) so the route reaches the not-found path instead of failing validation.
+const NON_EXISTENT_ID = '00000000-0000-0000-0000-000000000000';
+
 /**
  * Create a real TaskInstance aggregate via the domain factory method.
  * Uses proper value object classes so toClientDTO() works correctly.
@@ -47,7 +51,7 @@ async function makeFakeInstance(
     identityId: ReturnType<typeof anIdentityId>;
     status: string;
   }> = {},
-){
+) {
   const instance = await aTaskInstance({
     templateId: overrides.templateId ?? FAKE_TEMPLATE_ID,
     identityId: overrides.identityId ?? anIdentityId(TEST_IDENTITY_ID),
@@ -252,7 +256,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 404 when instance not found', async () => {
       const res = await request(ctx.app)
-        .post('/api/v1/task-instances/non-existent-id/start')
+        .post(`/api/v1/task-instances/${NON_EXISTENT_ID}/start`)
         .set('Authorization', `Bearer ${ctx.token}`);
 
       expect(res.status).toBe(404);
@@ -301,7 +305,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 404 when instance not found', async () => {
       const res = await request(ctx.app)
-        .post('/api/v1/task-instances/non-existent-id/complete')
+        .post(`/api/v1/task-instances/${NON_EXISTENT_ID}/complete`)
         .set('Authorization', `Bearer ${ctx.token}`)
         .send({});
 
@@ -409,7 +413,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 404 when instance not found', async () => {
       const res = await request(ctx.app)
-        .post('/api/v1/task-instances/non-existent-id/skip')
+        .post(`/api/v1/task-instances/${NON_EXISTENT_ID}/skip`)
         .set('Authorization', `Bearer ${ctx.token}`)
         .send({});
 
@@ -475,7 +479,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 200 (idempotent delete, no findById check)', async () => {
       const res = await request(ctx.app)
-        .delete('/api/v1/task-instances/non-existent-id')
+        .delete(`/api/v1/task-instances/${NON_EXISTENT_ID}`)
         .set('Authorization', `Bearer ${ctx.token}`);
 
       expect(res.status).toBe(200);

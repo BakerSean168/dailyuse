@@ -7,7 +7,7 @@
  * Each endpoint is tested for:
  *   1. Auth gate (401 without token)
  *   2. Happy path (200/201 with valid request)
- *   3. Validation rejection (422 with invalid body, where applicable)
+ *   3. Validation rejection (400 with invalid body via adapter, where applicable)
  *   4. NOT_FOUND propagation (404 when repo returns null)
  */
 
@@ -56,6 +56,10 @@ const VALID_CREATE_BODY = {
   timeConfig: { timeType: 'AllDay', startDate: null, timePoint: null },
   importance: 'Moderate',
 };
+
+// Well-formed UUID that does not exist — passes :id param validation (branded UUID
+// format) so the route reaches the not-found path instead of failing validation.
+const NON_EXISTENT_ID = '00000000-0000-0000-0000-000000000000';
 
 // ============================================================================
 // Tests
@@ -115,13 +119,13 @@ describe('Task Template API Smoke Tests', () => {
       expect(res.body.data.template.identityId).toBe(TEST_IDENTITY_ID);
     });
 
-    it('should return 422 with invalid body (missing name)', async () => {
+    it('should return 400 with invalid body (missing name)', async () => {
       const res = await request(ctx.app)
         .post('/api/v1/task-templates')
         .set('Authorization', `Bearer ${ctx.token}`)
         .send({ taskType: TaskType.OneTime }); // missing required fields
 
-      expect(res.status).toBe(422);
+      expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
     });
@@ -243,7 +247,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 404 when template not found', async () => {
       const res = await request(ctx.app)
-        .put('/api/v1/task-templates/non-existent-id')
+        .put(`/api/v1/task-templates/${NON_EXISTENT_ID}`)
         .set('Authorization', `Bearer ${ctx.token}`)
         .send({ name: 'Updated' });
 
@@ -271,7 +275,7 @@ describe('Task Template API Smoke Tests', () => {
       // UpdateTaskTemplateSchema allows empty partial — all fields optional.
       // The use case proceeds with the identity-scoped lookup, which returns null → NOT_FOUND.
       const res = await request(ctx.app)
-        .put('/api/v1/task-templates/some-id')
+        .put(`/api/v1/task-templates/${NON_EXISTENT_ID}`)
         .set('Authorization', `Bearer ${ctx.token}`)
         .send({});
 
@@ -294,7 +298,7 @@ describe('Task Template API Smoke Tests', () => {
     it('should return 200 even when template not found (idempotent delete)', async () => {
       // DeleteTaskTemplate.execute() returns ok({ success: true }) when not found
       const res = await request(ctx.app)
-        .delete('/api/v1/task-templates/non-existent-id')
+        .delete(`/api/v1/task-templates/${NON_EXISTENT_ID}`)
         .set('Authorization', `Bearer ${ctx.token}`);
 
       expect(res.status).toBe(200);
@@ -327,7 +331,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 404 when template not found', async () => {
       const res = await request(ctx.app)
-        .post('/api/v1/task-templates/non-existent-id/activate')
+        .post(`/api/v1/task-templates/${NON_EXISTENT_ID}/activate`)
         .set('Authorization', `Bearer ${ctx.token}`);
 
       expect(res.status).toBe(404);
@@ -363,7 +367,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 404 when template not found', async () => {
       const res = await request(ctx.app)
-        .post('/api/v1/task-templates/non-existent-id/pause')
+        .post(`/api/v1/task-templates/${NON_EXISTENT_ID}/pause`)
         .set('Authorization', `Bearer ${ctx.token}`);
 
       expect(res.status).toBe(404);
@@ -397,7 +401,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 404 when template not found', async () => {
       const res = await request(ctx.app)
-        .post('/api/v1/task-templates/non-existent-id/archive')
+        .post(`/api/v1/task-templates/${NON_EXISTENT_ID}/archive`)
         .set('Authorization', `Bearer ${ctx.token}`);
 
       expect(res.status).toBe(404);
