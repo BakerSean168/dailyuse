@@ -13,10 +13,7 @@ describe('notification ownership surface', () => {
     resolve(__dirname, '../../../../domain/repositories/i-notification-repository.ts'),
     'utf8',
   );
-  const prisma = readFileSync(
-    resolve(__dirname, '../notification-prisma.repository.ts'),
-    'utf8',
-  );
+  const prisma = readFileSync(resolve(__dirname, '../notification-prisma.repository.ts'), 'utf8');
   const powersync = readFileSync(
     resolve(__dirname, '../../powersync/notification-powersync.repository.ts'),
     'utf8',
@@ -52,9 +49,7 @@ describe('notification ownership surface', () => {
 
   it('domain service loads via findByIdForIdentity (residual 138)', () => {
     expect(domainService).toContain('findByIdForIdentity(identityId, id)');
-    expect(domainService).toContain(
-      'public async markAsRead(identityId: string, id: string)',
-    );
+    expect(domainService).toContain('public async markAsRead(identityId: string, id: string)');
     expect(domainService).toContain(
       'public async deleteNotification(identityId: string, id: string, soft = true)',
     );
@@ -64,9 +59,7 @@ describe('notification ownership surface', () => {
     expect(domainService).toContain(
       'public async executeNotificationAction(\n    identityId: string,\n    notificationId: string,',
     );
-    expect(domainService).not.toMatch(
-      /markAsRead\(id: string\): Promise<void>/,
-    );
+    expect(domainService).not.toMatch(/markAsRead\(id: string\): Promise<void>/);
   });
 
   it('port drops bare findById dual method (residual 178)', () => {
@@ -80,9 +73,7 @@ describe('notification ownership surface', () => {
 
   it('port findByIdForIdentity requires identityId', () => {
     expect(port).toContain('findByIdForIdentity(');
-    expect(port).toContain(
-      'findByIdForIdentity(\n    identityId: string,\n    id: string,',
-    );
+    expect(port).toContain('findByIdForIdentity(\n    identityId: string,\n    id: string,');
   });
 
   it('prisma filters by id + identityId', () => {
@@ -104,11 +95,18 @@ describe('notification ownership surface', () => {
     expect(module).toContain('batchDelete: async (data, identityId) =>');
   });
 
-  it('HTTP and Electron notification get/delete/mark-read pass identity context', () => {
+  it('HTTP and Electron notification get/delete/mark-read pass identity context (Phase 4)', () => {
+    // Read/query routes keep expressAdapter with controller-side identity scope.
     expect(routes).toContain('controller.get(req.params!.id, ctx)');
-    expect(routes).toContain('controller.delete(req.params!.id, ctx)');
-    expect(routes).toContain('controller.markAsRead(req.params!.id, ctx)');
-    expect(routes).toContain('controller.batchDelete(req.body, ctx)');
+
+    // Phase 4: mutation routes bind contract invocation schemas through the
+    // validation-aware registrar; the controller still receives the canonical
+    // identity-bearing context.
+    expect(routes).toContain('routeWithValidation');
+    expect(routes).toMatch(/controller\.delete\(data\.params\.id, ctx\)/);
+    expect(routes).toMatch(/controller\.markAsRead\(data\.params\.id, ctx\)/);
+    expect(routes).toMatch(/controller\.batchDelete\(data, ctx\)/);
+    expect(electron).toContain('withAuthenticatedValidation');
     expect(electron).toMatch(
       /NotificationChannels\.GET[\s\S]*controller\.get\([\s\S]*requestContext/,
     );
@@ -130,9 +128,7 @@ describe('notification ownership surface', () => {
     expect(port).toContain('deleteMany(identityId: string, ids: string[]): Promise<void>;');
     expect(port).toContain('softDelete(identityId: string, id: string): Promise<void>;');
     expect(port).toContain('exists(identityId: string, id: string): Promise<boolean>;');
-    expect(port).toContain(
-      'markManyAsRead(identityId: string, ids: string[]): Promise<void>;',
-    );
+    expect(port).toContain('markManyAsRead(identityId: string, ids: string[]): Promise<void>;');
   });
 
   it('prisma delete/related/markMany filter by identityId (residual 150)', () => {
@@ -147,9 +143,7 @@ describe('notification ownership surface', () => {
   });
 
   it('powersync delete/related filter by identity_id (residual 150)', () => {
-    expect(powersync).toContain(
-      'DELETE FROM notifications WHERE id = ? AND identity_id = ?',
-    );
+    expect(powersync).toContain('DELETE FROM notifications WHERE id = ? AND identity_id = ?');
     expect(powersync).toContain(
       'DELETE FROM notifications WHERE identity_id = ? AND id IN (${placeholders})',
     );
@@ -163,9 +157,6 @@ describe('notification ownership surface', () => {
     );
     expect(maintenance).toContain('deleteMany(data.identityId, expiredIds)');
     expect(domainService).toContain('delete(identityId, id)');
-    expect(domainService).toContain(
-      'getNotificationsByRelatedEntity(\n    identityId: string,',
-    );
+    expect(domainService).toContain('getNotificationsByRelatedEntity(\n    identityId: string,');
   });
-
 });

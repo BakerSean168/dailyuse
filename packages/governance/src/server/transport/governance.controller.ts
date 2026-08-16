@@ -27,6 +27,7 @@ import {
   UpdateRuleSchema,
 } from '@memoflow/contracts/governance';
 import type {
+  CreateRuleReq,
   CreateRuleRes,
   DeleteRuleReq,
   GetRuleReq,
@@ -53,12 +54,8 @@ import type { GovernanceApplicationPort } from '../application';
 export class GovernanceController {
   constructor(private readonly useCases: GovernanceApplicationPort) {}
 
-  async createRule(input: unknown, ctx: ExecutionContext): Promise<Result<CreateRuleRes>> {
-    const parsed = CreateRuleSchema.safeParse(input);
-    if (!parsed.success) {
-      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
-    }
-    return this.useCases.createRule(parsed.data, ctx);
+  async createRule(input: CreateRuleReq, ctx: ExecutionContext): Promise<Result<CreateRuleRes>> {
+    return this.useCases.createRule(input, ctx);
   }
 
   async updateRule(

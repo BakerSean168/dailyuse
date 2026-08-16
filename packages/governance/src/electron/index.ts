@@ -70,6 +70,7 @@ import { ok } from '@memoflow/contracts/result';
 import { createLogger } from '@memoflow/utils/logger';
 import type { IElectronModuleContext } from '@memoflow/contracts/electron';
 import {
+  CreateRuleSchema,
   GovernanceChannels,
   type CreateRuleReq,
   type DeleteRuleReq,
@@ -81,7 +82,7 @@ import {
 } from '@memoflow/contracts/governance';
 import { GovernanceController } from '../server/transport/governance.controller';
 import type { GovernanceModuleInstance } from '../server/infrastructure';
-import { withAuthenticatedValue } from './authenticated-ipc';
+import { withAuthenticatedValidation, withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('GovernanceElectron');
 const channels = Object.values(GovernanceChannels);
@@ -158,9 +159,8 @@ export function createGovernanceElectronModule(
       try {
         const controller = new GovernanceController(options.instance.api);
 
-        ipcMain.handle(
-          GovernanceChannels.RULE_LIST,
-          (_event, query: ListRulesQueryInput = {}) => controller.listRules(query),
+        ipcMain.handle(GovernanceChannels.RULE_LIST, (_event, query: ListRulesQueryInput = {}) =>
+          controller.listRules(query),
         );
         installed.push(GovernanceChannels.RULE_LIST);
 
@@ -176,9 +176,10 @@ export function createGovernanceElectronModule(
         );
         installed.push(GovernanceChannels.RULE_SEARCH);
 
-        ipcMain.handle(GovernanceChannels.RULE_CREATE, (_event, req: CreateRuleReq) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            controller.createRule(req, requestContext),
+        ipcMain.handle(
+          GovernanceChannels.RULE_CREATE,
+          withAuthenticatedValidation(ctx, CreateRuleSchema, (data, requestContext) =>
+            controller.createRule(data, requestContext),
           ),
         );
         installed.push(GovernanceChannels.RULE_CREATE);

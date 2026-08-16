@@ -305,6 +305,7 @@ export const GoalReviewListResSchema = z.object({
  * 归档过期目标响应 Schema
  */
 export const ArchiveExpiredResSchema = z.object({ archivedCount: z.number() });
+export type ArchiveExpiredRes = z.infer<typeof ArchiveExpiredResSchema>;
 
 /**
  * 进度分解响应 Schema

@@ -1,39 +1,102 @@
+import { z } from 'zod';
 import type {
   CreateTaskTemplateReq,
   CreateTaskTemplateRes,
-  UpdateTaskTemplateReq,
-  UpdateTaskTemplateRes,
   GetTaskTemplateReq,
   GetTaskTemplateRes,
   ListTaskTemplateFilters,
   QueryTaskTemplateGraphRes,
   QueryTaskTemplatesRes,
-  GenerateInstancesReq,
-  GenerateInstancesRes,
-  BindToGoalReq,
-  BindToGoalRes,
-  UnbindFromGoalReq,
-  UnbindFromGoalRes,
-  GetTaskInstancesByRangeReq,
-  GetTaskInstancesByRangeRes,
-  CompleteTaskInstanceReq,
-  SkipTaskInstanceReq,
-  TaskInstanceOperationRes,
   RescheduleTaskReq,
   RescheduleTaskRes,
 } from '../api';
+import type {
+  BindTaskToGoalInvocation,
+  CompleteTaskInstanceInvocation,
+  CreateTaskDependencyInvocation,
+  DeleteTaskDependencyInvocation,
+  GenerateInstancesInvocation,
+  SkipTaskInstanceInvocation,
+  TaskInstanceIdCommandInvocation,
+  TaskTemplateIdCommandInvocation,
+  UpdateTaskDependencyInvocation,
+  UpdateTaskTemplateInvocation,
+  ValidateTaskDependencyInvocation,
+} from '../api/task-invocation.schemas';
+import type {
+  GetTaskInstancesByRangeReq,
+  GetTaskInstancesByRangeRes,
+} from '../api/task-instance.dto';
+import type {
+  CheckExpiredTaskInstancesResponseSchema,
+  TaskDependencyResponseSchema,
+  TaskInstanceResponseSchema,
+  TaskTemplateResponseSchema,
+  ValidateDependencyResponseSchema,
+} from '../api/response-schemas';
 
 export type TaskRpcMap = {
-  'task:create-template': [CreateTaskTemplateReq, CreateTaskTemplateRes];
-  'task:update-template': [UpdateTaskTemplateReq, UpdateTaskTemplateRes];
-  'task:get-template': [GetTaskTemplateReq, GetTaskTemplateRes];
-  'task:list-templates': [ListTaskTemplateFilters, QueryTaskTemplatesRes];
-  'task:get-template-graph': [ListTaskTemplateFilters, QueryTaskTemplateGraphRes];
-  'task:generate-instances': [GenerateInstancesReq, GenerateInstancesRes];
-  'task:bind-goal': [BindToGoalReq, BindToGoalRes];
-  'task:unbind-goal': [UnbindFromGoalReq, UnbindFromGoalRes];
-  'task:get-instances-by-range': [GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes];
-  'task:complete-instance': [CompleteTaskInstanceReq, TaskInstanceOperationRes];
-  'task:skip-instance': [SkipTaskInstanceReq, TaskInstanceOperationRes];
+  'task:template:create': [CreateTaskTemplateReq, CreateTaskTemplateRes];
+  'task:template:update': [
+    UpdateTaskTemplateInvocation,
+    z.infer<typeof TaskTemplateResponseSchema>,
+  ];
+  'task:template:delete': [TaskTemplateIdCommandInvocation, null];
+  'task:template:restore': [
+    TaskTemplateIdCommandInvocation,
+    z.infer<typeof TaskTemplateResponseSchema>,
+  ];
+  'task:template:pause': [
+    TaskTemplateIdCommandInvocation,
+    z.infer<typeof TaskTemplateResponseSchema>,
+  ];
+  'task:template:archive': [
+    TaskTemplateIdCommandInvocation,
+    z.infer<typeof TaskTemplateResponseSchema>,
+  ];
+  'task:template:generate-instances': [
+    GenerateInstancesInvocation,
+    z.infer<typeof TaskInstanceResponseSchema>[],
+  ];
+  'task:template:bind-goal': [BindTaskToGoalInvocation, z.infer<typeof TaskTemplateResponseSchema>];
+  'task:template:unbind-goal': [
+    TaskTemplateIdCommandInvocation,
+    z.infer<typeof TaskTemplateResponseSchema>,
+  ];
+  'task:template:get': [GetTaskTemplateReq, GetTaskTemplateRes];
+  'task:template:list': [ListTaskTemplateFilters, QueryTaskTemplatesRes];
+  'task:template:graph': [ListTaskTemplateFilters, QueryTaskTemplateGraphRes];
+
+  'task:instance:create': [
+    TaskInstanceIdCommandInvocation,
+    z.infer<typeof TaskInstanceResponseSchema>,
+  ];
+  'task:instance:delete': [TaskInstanceIdCommandInvocation, null];
+  'task:instance:complete': [
+    CompleteTaskInstanceInvocation,
+    z.infer<typeof TaskInstanceResponseSchema>,
+  ];
+  'task:instance:uncomplete': [
+    TaskInstanceIdCommandInvocation,
+    z.infer<typeof TaskInstanceResponseSchema>,
+  ];
+  'task:instance:skip': [SkipTaskInstanceInvocation, z.infer<typeof TaskInstanceResponseSchema>];
+  'task:instance:check-expired': [void, z.infer<typeof CheckExpiredTaskInstancesResponseSchema>];
+  'task:instance:get-by-date-range': [GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes];
+
+  'task:dependency:create': [
+    CreateTaskDependencyInvocation,
+    z.infer<typeof TaskDependencyResponseSchema>,
+  ];
+  'task:dependency:update': [
+    UpdateTaskDependencyInvocation,
+    z.infer<typeof TaskDependencyResponseSchema>,
+  ];
+  'task:dependency:delete': [DeleteTaskDependencyInvocation, null];
+  'task:dependency:validate': [
+    ValidateTaskDependencyInvocation,
+    z.infer<typeof ValidateDependencyResponseSchema>,
+  ];
+
   'task:reschedule-instance': [RescheduleTaskReq, RescheduleTaskRes];
 };

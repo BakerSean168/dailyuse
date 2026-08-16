@@ -48,8 +48,34 @@ type PrismaNotificationTemplate = {
 // Mappers: Prisma → Domain
 // ============================================================
 
+/**
+ * Structural row input for the template mapper. The generated Prisma row is a
+ * structural superset (extra timestamp/relation columns), so this widens the
+ * accepted input to any object carrying the mapped fields — removing the
+ * the raw cast boundary casts at every repository call site.
+ * 模板 mapper 的结构化行输入。生成的 Prisma row 是结构超集（额外的时间戳/关系
+ * 列），因此放宽接受的输入为任何携带被映射字段的对象——消除每个 repository
+ * 调用点的 the raw cast 边界强转。
+ */
+type NotificationTemplateRowLike = Pick<
+  PrismaNotificationTemplate,
+  | 'id'
+  | 'name'
+  | 'displayName'
+  | 'description'
+  | 'type'
+  | 'category'
+  | 'titleTemplate'
+  | 'contentTemplate'
+  | 'variables'
+  | 'defaultActions'
+  | 'isSystem'
+  | 'isActive'
+  | 'createdAt'
+  | 'updatedAt'
+>;
 
-function mapPrismaTemplateToDomain(row: PrismaNotificationTemplate): NotificationTemplate {
+function mapPrismaTemplateToDomain(row: NotificationTemplateRowLike): NotificationTemplate {
   return NotificationTemplate.load({
     id: row.id as never,
     name: row.name,
@@ -130,7 +156,7 @@ export class NotificationTemplatePrismaRepository
       where: { id },
     });
     if (!row) return null;
-    return mapPrismaTemplateToDomain(row as unknown as PrismaNotificationTemplate);
+    return mapPrismaTemplateToDomain(row);
   }
 
   async findAll(options?: { includeInactive?: boolean }): Promise<NotificationTemplate[]> {
@@ -145,9 +171,7 @@ export class NotificationTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row) =>
-      mapPrismaTemplateToDomain(row as unknown as PrismaNotificationTemplate),
-    );
+    return rows.map((row) => mapPrismaTemplateToDomain(row));
   }
 
   async findByName(name: string): Promise<NotificationTemplate | null> {
@@ -155,7 +179,7 @@ export class NotificationTemplatePrismaRepository
       where: { name },
     });
     if (!row) return null;
-    return mapPrismaTemplateToDomain(row as unknown as PrismaNotificationTemplate);
+    return mapPrismaTemplateToDomain(row);
   }
 
   async findByCategory(
@@ -173,9 +197,7 @@ export class NotificationTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row) =>
-      mapPrismaTemplateToDomain(row as unknown as PrismaNotificationTemplate),
-    );
+    return rows.map((row) => mapPrismaTemplateToDomain(row));
   }
 
   async findByType(
@@ -193,9 +215,7 @@ export class NotificationTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row) =>
-      mapPrismaTemplateToDomain(row as unknown as PrismaNotificationTemplate),
-    );
+    return rows.map((row) => mapPrismaTemplateToDomain(row));
   }
 
   async findSystemTemplates(): Promise<NotificationTemplate[]> {
@@ -204,9 +224,7 @@ export class NotificationTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row) =>
-      mapPrismaTemplateToDomain(row as unknown as PrismaNotificationTemplate),
-    );
+    return rows.map((row) => mapPrismaTemplateToDomain(row));
   }
 
   async delete(id: string): Promise<void> {

@@ -464,4 +464,43 @@ describe('expressAdapterWithValidation', () => {
     expect(res.statusCode).toBe(500);
     expect(res.body.ok).toBe(false);
   });
+
+  it('validates the projected composite input when projectInput is provided', async () => {
+    const inputData = { params: { id: 'goal-1' }, body: { name: 'Updated' } };
+    const schema = createMockSchema(inputData);
+    const controllerFn = vi.fn().mockResolvedValue(ok({ id: 'goal-1' }));
+    const handler = expressAdapterWithValidation(schema, controllerFn, {
+      projectInput: (req) => ({ params: req.params, body: req.body }),
+    });
+
+    const req = createMockReq({
+      body: { name: 'Updated' },
+      params: { id: 'goal-1' },
+    });
+    const res = createMockRes();
+
+    await handler(req, res);
+
+    const received = controllerFn.mock.calls[0][0];
+    expect(received).toEqual(inputData);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.ok).toBe(true);
+  });
+
+  it('returns 400 on projected composite input validation failure before controller', async () => {
+    const schema = createMockSchema(null, true);
+    const controllerFn = vi.fn();
+    const handler = expressAdapterWithValidation(schema, controllerFn, {
+      projectInput: (req) => ({ params: req.params, body: req.body }),
+    });
+
+    const req = createMockReq({ body: {}, params: { id: 'bad' } });
+    const res = createMockRes();
+
+    await handler(req, res);
+
+    expect(controllerFn).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+  });
 });

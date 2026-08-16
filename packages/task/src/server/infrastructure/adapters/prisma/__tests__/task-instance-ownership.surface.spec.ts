@@ -13,19 +13,13 @@ describe('task instance ownership surface', () => {
     resolve(__dirname, '../../../../domain/repositories/i-task-instance-repository.ts'),
     'utf8',
   );
-  const prisma = readFileSync(
-    resolve(__dirname, '../task-instance-prisma.repository.ts'),
-    'utf8',
-  );
+  const prisma = readFileSync(resolve(__dirname, '../task-instance-prisma.repository.ts'), 'utf8');
   const powersync = readFileSync(
     resolve(__dirname, '../../powersync/task-instance-powersync.repository.ts'),
     'utf8',
   );
   const getUseCase = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/queries/get-task-instance.use-case.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/queries/get-task-instance.use-case.ts'),
     'utf8',
   );
   const deleteUseCase = readFileSync(
@@ -43,10 +37,7 @@ describe('task instance ownership surface', () => {
     'utf8',
   );
   const getTemplate = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/queries/get-task-template.use-case.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/queries/get-task-template.use-case.ts'),
     'utf8',
   );
   const completeInstance = readFileSync(
@@ -75,10 +66,7 @@ describe('task instance ownership surface', () => {
     'utf8',
   );
   const listTemplates = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/queries/list-task-templates.use-case.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/queries/list-task-templates.use-case.ts'),
     'utf8',
   );
   const routes = readFileSync(
@@ -145,32 +133,33 @@ describe('task instance ownership surface', () => {
   });
 
   it('module api wrappers pass identityId for instance mutations', () => {
-    expect(module).toMatch(
-      /completeTaskInstance:\s*\(id, identityId, input\)\s*=>/,
-    );
+    expect(module).toMatch(/completeTaskInstance:\s*\(id, identityId, input\)\s*=>/);
     expect(module).toMatch(/deleteTaskInstance:\s*\(id, identityId\)\s*=>/);
     expect(module).toMatch(/getTaskInstance:\s*\(id, identityId\)\s*=>/);
   });
 
-  it('HTTP and Electron instance get/delete pass identity context', () => {
+  it('HTTP and Electron instance get/delete pass identity context (Phase 4)', () => {
+    // Read/query routes keep expressAdapter with controller-side identity scope.
     expect(routes).toContain('controller.getInstance(req.params!.id, ctx)');
-    expect(routes).toContain('controller.deleteInstance(req.params!.id, ctx)');
-    expect(routes).toContain('controller.completeInstance(req.params!.id, req.body, ctx)');
+
+    // Phase 4: mutation routes bind contract invocation schemas through the
+    // validation-aware registrar; the controller still receives the canonical
+    // identity-bearing context.
+    expect(routes).toContain('routeWithValidation');
+    expect(routes).toMatch(/controller\.deleteInstance\(data\.params\.id, ctx\)/);
+    expect(routes).toMatch(/controller\.completeInstance\(data\.params\.id, data\.body, ctx\)/);
+    expect(electron).toContain('registerValidatedChannel');
     expect(electron).toMatch(
       /INSTANCE_GET[\s\S]*instanceController\.getInstance\([\s\S]*requestContext/,
     );
     expect(electron).toMatch(
-      /INSTANCE_DELETE[\s\S]*instanceController\.deleteInstance\([\s\S]*requestContext/,
+      /INSTANCE_DELETE[\s\S]*instanceController\.deleteInstance\(data\.params\.id,[\s\S]*requestContext/,
     );
-    expect(electron).not.toContain(
-      'instanceController.getInstance(payload?.id ?? payload),',
-    );
+    expect(electron).not.toContain('instanceController.getInstance(payload?.id ?? payload),');
   });
 
   it('port deleteMany requires identityId (residual 157)', () => {
-    expect(port).toContain(
-      'deleteMany(identityId: string, ids: string[]): Promise<void>;',
-    );
+    expect(port).toContain('deleteMany(identityId: string, ids: string[]): Promise<void>;');
   });
 
   it('prisma/powersync deleteMany filter by identity (residual 157)', () => {
@@ -180,5 +169,4 @@ describe('task instance ownership surface', () => {
       'DELETE FROM task_instances WHERE identity_id = ? AND id IN (${placeholders})',
     );
   });
-
 });

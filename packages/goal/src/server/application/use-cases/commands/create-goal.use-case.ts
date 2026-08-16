@@ -63,9 +63,11 @@ export class CreateGoalUseCase {
         tags: input.tags ?? [],
         startDate: input.startDate ?? null,
         targetDate: input.targetDate ?? null,
-        folderId: input.folderId ? (input.folderId as unknown as GoalFolderId) : null,
-        parentGoalId: input.parentGoalId ? (input.parentGoalId as unknown as GoalId) : null,
-        reminderConfig: input.reminderConfig ? GoalReminderConfig.fromDTO(input.reminderConfig) : null,
+        folderId: input.folderId ?? null,
+        parentGoalId: input.parentGoalId ?? null,
+        reminderConfig: input.reminderConfig
+          ? GoalReminderConfig.fromDTO(input.reminderConfig)
+          : null,
       },
       parentGoal,
     );
@@ -81,8 +83,10 @@ export class CreateGoalUseCase {
     await this.goalRepository.save(goal);
 
     // 6. 返回 Result
-    return ok(createGoalMutationReceipt(goal, {
-      keyResultIds: goal.keyResults.map((keyResult) => keyResult.id),
-    }));
+    return ok(
+      createGoalMutationReceipt(goal, {
+        keyResultIds: goal.keyResults.map((keyResult) => keyResult.id),
+      }),
+    );
   }
 }

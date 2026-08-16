@@ -6,16 +6,15 @@
  */
 
 import type { Result } from '@memoflow/contracts/result';
-import { fail, isOk, ok } from '@memoflow/contracts/result';
+import { isOk, ok } from '@memoflow/contracts/result';
 import type { TaskDependencyClientDTO, DependencyType } from '@memoflow/contracts/task';
 import type { DependencyChainClientDTO } from '@memoflow/contracts/task';
-import {
-  CreateDependencyBodySchema,
-  UpdateDependencyBodySchema,
-  ValidateDependencyBodySchema,
-  type ValidateDependencyResponse,
+import type {
+  CreateTaskDependencyBody,
+  UpdateTaskDependencyBody,
+  ValidateDependencyBody,
+  ValidateDependencyResponse,
 } from '@memoflow/contracts/task';
-import { formatZodErrors } from '@memoflow/utils/result';
 import type { CreateTaskDependencyUseCase } from '../application/use-cases/commands/create-task-dependency.use-case';
 import type { DeleteTaskDependencyUseCase } from '../application/use-cases/commands/delete-task-dependency.use-case';
 import type { UpdateTaskDependencyUseCase } from '../application/use-cases/commands/update-task-dependency.use-case';
@@ -45,23 +44,14 @@ export class TaskDependencyController {
    */
   async createDependency(
     taskId: string,
-    input: unknown,
+    input: CreateTaskDependencyBody,
     identityId: string,
   ): Promise<Result<TaskDependencyClientDTO>> {
-    const parsed = CreateDependencyBodySchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
     return await this.useCases.createDependency({
-      predecessorTaskId: parsed.data.predecessorTaskId,
+      predecessorTaskId: input.predecessorTaskId,
       successorTaskId: taskId,
-      dependencyType: parsed.data.dependencyType as DependencyType | undefined,
-      lagDays: parsed.data.lagDays,
+      dependencyType: input.dependencyType as DependencyType | undefined,
+      lagDays: input.lagDays,
       identityId,
     });
   }
@@ -100,21 +90,12 @@ export class TaskDependencyController {
    * Validate a potential dependency
    */
   async validateDependency(
-    input: unknown,
+    input: ValidateDependencyBody,
     identityId: string,
   ): Promise<Result<ValidateDependencyResponse>> {
-    const parsed = ValidateDependencyBodySchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
     return await this.useCases.validateDependency(
-      parsed.data.predecessorTaskId,
-      parsed.data.successorTaskId,
+      input.predecessorTaskId,
+      input.successorTaskId,
       identityId,
     );
   }
@@ -136,21 +117,12 @@ export class TaskDependencyController {
    */
   async updateDependency(
     id: string,
-    input: unknown,
+    input: UpdateTaskDependencyBody,
     identityId: string,
   ): Promise<Result<TaskDependencyClientDTO>> {
-    const parsed = UpdateDependencyBodySchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
     return await this.useCases.updateDependency(id, identityId, {
-      dependencyType: parsed.data.dependencyType as DependencyType | undefined,
-      lagDays: parsed.data.lagDays,
+      dependencyType: input.dependencyType as DependencyType | undefined,
+      lagDays: input.lagDays,
     });
   }
 }

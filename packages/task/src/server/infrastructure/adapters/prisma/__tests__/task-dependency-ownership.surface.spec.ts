@@ -74,14 +74,21 @@ describe('task dependency ownership surface', () => {
     );
   });
 
-  it('HTTP and Electron dependency paths pass identity context', () => {
+  it('HTTP and Electron dependency paths pass identity context (Phase 4)', () => {
+    // Read/query routes keep expressAdapter with controller-side identity scope.
     expect(routes).toContain('controller.getDependencies(req.params!.taskId, ctx.identityId)');
-    expect(routes).toContain('controller.deleteDependency(req.params!.id, ctx.identityId)');
-    expect(routes).toContain(
-      'controller.updateDependency(req.params!.id, req.body, ctx.identityId)',
+
+    // Phase 4: mutation routes bind contract invocation schemas through the
+    // validation-aware registrar; the controller still receives the canonical
+    // identity-bearing context.
+    expect(routes).toContain('routeWithValidation');
+    expect(routes).toMatch(/controller\.deleteDependency\(data\.params\.id, ctx\.identityId\)/);
+    expect(routes).toMatch(
+      /controller\.updateDependency\(data\.params\.id, data\.body, ctx\.identityId\)/,
     );
+    expect(electron).toContain('registerValidatedChannel');
     expect(electron).toMatch(
-      /DEPENDENCY_DELETE[\s\S]*dependencyController\.deleteDependency\([\s\S]*requestContext\.identityId/,
+      /DEPENDENCY_DELETE[\s\S]*dependencyController\.deleteDependency\([\s\S]*data\.params\.id,[\s\S]*requestContext\.identityId/,
     );
     expect(electron).toMatch(
       /DEPENDENCY_LIST[\s\S]*getDependencies\(payload\?\.taskId, requestContext\.identityId\)/,
@@ -89,9 +96,7 @@ describe('task dependency ownership surface', () => {
   });
 
   it('port deleteByTaskId requires identityId (residual 153)', () => {
-    expect(port).toContain(
-      'deleteByTaskId(identityId: string, taskId: string): Promise<void>;',
-    );
+    expect(port).toContain('deleteByTaskId(identityId: string, taskId: string): Promise<void>;');
   });
 
   it('prisma deleteByTaskId filters by identityId (residual 153)', () => {
@@ -106,7 +111,6 @@ describe('task dependency ownership surface', () => {
     );
   });
 
-
   it('port findAggregateById requires identityId (residual 166)', () => {
     expect(port).toContain(
       'findAggregateById(identityId: string, id: string): Promise<TaskDependency | null>;',
@@ -116,14 +120,10 @@ describe('task dependency ownership surface', () => {
   });
 
   it('prisma/powersync findAggregateById filters by identity (residual 166)', () => {
-    expect(prisma).toContain(
-      'async findAggregateById(identityId: string, id: string)',
-    );
+    expect(prisma).toContain('async findAggregateById(identityId: string, id: string)');
     expect(prisma).toContain('where: { id, identityId }');
     expect(prisma).not.toContain('findAggregateByIdForIdentity');
-    expect(powersync).toContain(
-      'async findAggregateById(identityId: string, id: string)',
-    );
+    expect(powersync).toContain('async findAggregateById(identityId: string, id: string)');
     expect(powersync).toContain(
       'SELECT * FROM task_dependencies WHERE id = ? AND identity_id = ? LIMIT 1',
     );
@@ -134,5 +134,4 @@ describe('task dependency ownership surface', () => {
     expect(deleteUseCase).toContain('findAggregateById(\n      identityId,\n      id,\n    )');
     expect(deleteUseCase).not.toContain('findAggregateByIdForIdentity');
   });
-
 });

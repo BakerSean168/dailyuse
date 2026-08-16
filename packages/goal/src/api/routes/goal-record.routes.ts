@@ -19,10 +19,10 @@ import {
   errorResponse,
 } from '@memoflow/utils/result';
 import {
-  CreateGoalRecordSchema,
-  DeleteGoalRecordSchema,
   GoalMutationReceiptSchema,
   GoalRecordListResSchema,
+  CreateRecordInvocationSchema,
+  DeleteRecordInvocationSchema,
 } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
 import type { GoalId, KeyResultId, GoalRecordId } from '@memoflow/contracts/primitives';
@@ -52,20 +52,17 @@ export function registerRecordRoutes(
   });
 
   // POST /:id/key-results/:krId/records — 创建进度记录
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/key-results/:krId/records',
       summary: '创建进度记录',
       request: {
-        params: z.object({
-          id: brandedId<GoalId>(),
-          krId: brandedId<KeyResultId>(),
-        }),
+        params: CreateRecordInvocationSchema.shape.params,
         body: {
           content: {
             'application/json': {
-              schema: CreateGoalRecordSchema.omit({ keyResultId: true }),
+              schema: CreateRecordInvocationSchema.shape.body,
             },
           },
         },
@@ -74,9 +71,16 @@ export function registerRecordRoutes(
         201: successResponse(GoalMutationReceiptSchema, '创建成功'),
         404: errorResponse('目标或关键结果不存在'),
       },
+      validation: {
+        schema: CreateRecordInvocationSchema,
+        projectInput: (req) => ({
+          params: req.params,
+          body: { ...(req.body as Record<string, unknown>), keyResultId: req.params?.krId },
+        }),
+      },
     },
     [auth],
-    (req, ctx) => controller.createRecord(req.params!.id, req.params!.krId, req.body, ctx),
+    (data, ctx) => controller.createRecord(data.params.id, data.params.krId, data.body, ctx),
     { successStatus: 201 },
   );
 
@@ -137,31 +141,31 @@ export function registerRecordRoutes(
   );
 
   // DELETE /:id/key-results/:krId/records/:recordId — 删除记录
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/:id/key-results/:krId/records/:recordId',
       summary: '删除进度记录',
       request: {
-        params: z.object({
-          id: brandedId<GoalId>(),
-          krId: brandedId<KeyResultId>(),
-          recordId: brandedId<GoalRecordId>(),
-        }),
-        query: DeleteGoalRecordSchema,
+        params: DeleteRecordInvocationSchema.shape.params,
+        query: DeleteRecordInvocationSchema.shape.query,
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '删除成功'),
         404: errorResponse('记录不存在'),
       },
+      validation: {
+        schema: DeleteRecordInvocationSchema,
+        projectInput: (req) => ({ params: req.params, query: req.query }),
+      },
     },
     [auth],
-    (req, ctx) =>
+    (data, ctx) =>
       controller.deleteRecord(
-        req.params!.id,
-        req.params!.krId,
-        req.params!.recordId,
-        req.query,
+        data.params.id,
+        data.params.krId,
+        data.params.recordId,
+        data.query,
         ctx,
       ),
   );

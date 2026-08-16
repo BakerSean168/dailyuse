@@ -64,18 +64,17 @@ describe('TaskTemplateController', () => {
   // createTemplate
   // =========================================================================
   describe('createTemplate', () => {
-    it('should return VALIDATION_ERROR when input is invalid', async () => {
-      const result = await controller.createTemplate({}, ctx);
+    it('delegates parsed input to the use case (shape validation is adapter-owned)', async () => {
+      // Phase 4: transport shape validation moved to the adapters; the
+      // controller receives inferred parsed input and delegates directly.
+      (useCases.createTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 0, todayInstanceCreated: false }),
+      );
 
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-        expect(result.error.message).toBe('参数验证失败');
-        expect(result.error.details).toBeDefined();
-        expect(result.error.details!.length).toBeGreaterThan(0);
-      }
-      // Use case should NOT have been called
-      expect(useCases.createTemplate).not.toHaveBeenCalled();
+      const result = await controller.createTemplate(VALID_CREATE_INPUT, ctx);
+
+      expect(useCases.createTemplate).toHaveBeenCalledOnce();
+      expect(isOk(result)).toBe(true);
     });
 
     it('should call createTemplate use case with parsed data', async () => {
@@ -126,30 +125,17 @@ describe('TaskTemplateController', () => {
       }
     });
 
-    it('should reject missing name field', async () => {
-      const result = await controller.createTemplate(
-        { taskType: TaskType.OneTime, timeConfig: { timeType: 'AllDay' }, importance: 'Moderate' },
-        ctx,
+    it('does not reject shapes at the controller (adapter-owned validation)', async () => {
+      // Phase 4: malformed shapes are rejected by expressAdapterWithValidation /
+      // ipcAdapterWithValidation before the controller; the controller only
+      // receives parsed input and delegates.
+      (useCases.createTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 0, todayInstanceCreated: false }),
       );
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-      }
-    });
 
-    it('should reject empty name string', async () => {
-      const result = await controller.createTemplate({ ...VALID_CREATE_INPUT, name: '' }, ctx);
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-      }
-    });
-
-    it('should reject recurrence rules that define both endDate and occurrences', async () => {
       const result = await controller.createTemplate(
         {
           ...VALID_CREATE_INPUT,
-          taskType: TaskType.Recurring,
           recurrenceRule: {
             frequency: 'Daily',
             interval: 1,
@@ -161,10 +147,8 @@ describe('TaskTemplateController', () => {
         ctx,
       );
 
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-      }
+      expect(useCases.createTemplate).toHaveBeenCalledOnce();
+      expect(isOk(result)).toBe(true);
     });
   });
 
@@ -173,9 +157,7 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('getTemplate', () => {
     it('should call getTemplate use case with id and default includeChildren=false', async () => {
-      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok(FAKE_TEMPLATE_DTO),
-      );
+      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(ok(FAKE_TEMPLATE_DTO));
 
       await controller.getTemplate('tmpl_abc123', ctx);
 
@@ -183,9 +165,7 @@ describe('TaskTemplateController', () => {
     });
 
     it('should call getTemplate use case with includeChildren=true', async () => {
-      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok(FAKE_TEMPLATE_DTO),
-      );
+      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(ok(FAKE_TEMPLATE_DTO));
 
       await controller.getTemplate('tmpl_abc123', ctx, true);
 
@@ -194,9 +174,7 @@ describe('TaskTemplateController', () => {
 
     it('should pass through use case result data directly', async () => {
       // GetTaskTemplate use case returns ok(DTO | null) — NOT wrapped in { template: ... }
-      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok(FAKE_TEMPLATE_DTO),
-      );
+      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(ok(FAKE_TEMPLATE_DTO));
 
       const result = await controller.getTemplate('tmpl_abc123', ctx);
 
@@ -317,15 +295,17 @@ describe('TaskTemplateController', () => {
   // updateTemplate
   // =========================================================================
   describe('updateTemplate', () => {
-    it('should return VALIDATION_ERROR for invalid input', async () => {
-      // name must be min(1) if provided
-      const result = await controller.updateTemplate('tmpl_1', { name: '' }, ctx);
+    it('delegates parsed input to the use case (shape validation is adapter-owned)', async () => {
+      // Phase 4: malformed shapes are rejected by the adapters before the
+      // controller; the controller receives inferred input and delegates.
+      (useCases.updateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok(FAKE_TEMPLATE_DTO),
+      );
 
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-      }
-      expect(useCases.updateTemplate).not.toHaveBeenCalled();
+      const result = await controller.updateTemplate('tmpl_1', VALID_UPDATE_INPUT, ctx);
+
+      expect(useCases.updateTemplate).toHaveBeenCalledOnce();
+      expect(isOk(result)).toBe(true);
     });
 
     it('should call updateTemplate use case with id and parsed data', async () => {
@@ -348,9 +328,7 @@ describe('TaskTemplateController', () => {
 
     it('should return use case result directly (no unwrap)', async () => {
       const expectedResult = ok(FAKE_TEMPLATE_DTO);
-      (useCases.updateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        expectedResult,
-      );
+      (useCases.updateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(expectedResult);
 
       const result = await controller.updateTemplate('tmpl_1', VALID_UPDATE_INPUT, ctx);
 
@@ -374,9 +352,7 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('deleteTemplate', () => {
     it('should call deleteTemplate use case with id', async () => {
-      (useCases.deleteTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok(undefined),
-      );
+      (useCases.deleteTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(ok(undefined));
 
       await controller.deleteTemplate('tmpl_1', ctx);
 
@@ -384,9 +360,7 @@ describe('TaskTemplateController', () => {
     });
 
     it('should normalize success to ok(null)', async () => {
-      (useCases.deleteTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok(undefined),
-      );
+      (useCases.deleteTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(ok(undefined));
 
       const result = await controller.deleteTemplate('tmpl_1', ctx);
 
@@ -423,9 +397,7 @@ describe('TaskTemplateController', () => {
 
     it('should forward use case failure', async () => {
       const useCaseError = fail({ code: 'NOT_FOUND', message: 'Template not found' });
-      (useCases.activateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        useCaseError,
-      );
+      (useCases.activateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
       const result = await controller.activateTemplate('tmpl_1', ctx);
 
@@ -489,9 +461,7 @@ describe('TaskTemplateController', () => {
 
     it('should pass through use case result directly (no unwrap)', async () => {
       const expectedResult = ok(FAKE_TEMPLATE_DTO);
-      (useCases.archiveTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        expectedResult,
-      );
+      (useCases.archiveTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(expectedResult);
 
       const result = await controller.archiveTemplate('tmpl_1', ctx);
 

@@ -59,7 +59,7 @@ export class UpdateGoalUseCase {
 
     let parentGoalId: GoalId | null | undefined;
     if (input.parentGoalId !== undefined) {
-      parentGoalId = input.parentGoalId ? (input.parentGoalId as unknown as GoalId) : null;
+      parentGoalId = input.parentGoalId ?? null;
       if (parentGoalId === goal.id) {
         return error('VALIDATION_ERROR', 'A goal cannot be its own parent');
       }
@@ -107,7 +107,7 @@ export class UpdateGoalUseCase {
 
     // 6. 更新文件夹
     if (input.folderId !== undefined) {
-      goal.moveToFolder(input.folderId ? (input.folderId as unknown as GoalFolderId) : null);
+      goal.moveToFolder(input.folderId ?? null);
     }
     if (parentGoalId !== undefined) goal.moveToParent(parentGoalId);
 

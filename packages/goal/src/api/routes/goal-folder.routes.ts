@@ -14,18 +14,40 @@ import {
 } from '@memoflow/utils/result';
 import {
   CreateGoalFolderSchema,
-  UpdateGoalFolderSchema,
   GoalFolderClientDTOSchema,
   ListGoalFolderFiltersSchema,
   QueryGoalFoldersResSchema,
+  UpdateGoalFolderInvocationSchema,
 } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
 import type { GoalFolderId } from '@memoflow/contracts/primitives';
+import type { ListGoalFolderFilters } from '@memoflow/contracts/goal';
 import type { GoalFolderController } from '../../server/transport/goal-folder.controller';
 // Residual 985: sole parseBoolean (local dual retired).
 import { parseBoolean } from './parse-boolean';
 
 // ============ Helpers ============
+
+/**
+ * Normalizes raw Express req.query into a canonical ListGoalFolderFilters.
+ * Pure query-alias projector — it composes wire values, not schema validation.
+ * 把原始 Express req.query 规范化成 canonical ListGoalFolderFilters。
+ * 纯 query alias projector——只组合 wire 值，不做 schema 校验。
+ */
+function normalizeFolderListQuery(
+  query: Record<string, unknown> | undefined,
+): ListGoalFolderFilters {
+  const parentFolderId =
+    typeof query?.parentFolderId === 'string' && query.parentFolderId
+      ? (query.parentFolderId as GoalFolderId)
+      : undefined;
+  return {
+    parentFolderId,
+    includeSystemFolders: parseBoolean(query?.includeSystemFolders),
+    sortBy: (query?.sortBy as ListGoalFolderFilters['sortBy']) ?? undefined,
+    sortOrder: (query?.sortOrder as ListGoalFolderFilters['sortOrder']) ?? undefined,
+  };
+}
 
 // ============ Types ============
 
@@ -53,7 +75,7 @@ export function registerGoalFolderRoutes(
   // ==================== Goal Folder CRUD ====================
 
   // POST / — 创建文件夹
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/',
@@ -63,9 +85,10 @@ export function registerGoalFolderRoutes(
         201: successResponse(GoalFolderClientDTOSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
+      validation: { schema: CreateGoalFolderSchema },
     },
     [auth],
-    (req, ctx) => controller.create(req.body, ctx),
+    (data, ctx) => controller.create(data, ctx),
     { successStatus: 201 },
   );
 
@@ -85,15 +108,7 @@ export function registerGoalFolderRoutes(
     [auth],
     (req, ctx) =>
       // Pass filters to controller - identityId is injected from ctx inside controller
-      controller.list(
-        {
-          parentFolderId: req.query?.parentFolderId as unknown as GoalFolderId | undefined,
-          includeSystemFolders: parseBoolean(req.query?.includeSystemFolders),
-          sortBy: req.query?.sortBy as 'name' | 'createdAt' | 'sortOrder' | undefined,
-          sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
-        },
-        ctx,
-      ),
+      controller.list(normalizeFolderListQuery(req.query as Record<string, unknown>), ctx),
   );
 
   // GET /:id — 获取文件夹详情
@@ -113,33 +128,43 @@ export function registerGoalFolderRoutes(
   );
 
   // PUT /:id — 更新文件夹
-  r.route(
+  r.routeWithValidation(
     {
       method: 'put',
       path: '/:id',
       summary: '更新目标文件夹',
       request: {
-        params: z.object({ id: brandedId<GoalFolderId>() }),
-        body: { content: { 'application/json': { schema: UpdateGoalFolderSchema } } },
+        params: UpdateGoalFolderInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: UpdateGoalFolderInvocationSchema.shape.body } },
+        },
       },
       responses: {
         200: successResponse(GoalFolderClientDTOSchema, '更新成功'),
         404: errorResponse('文件夹不存在'),
       },
+      validation: {
+        schema: UpdateGoalFolderInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.update(data.params.id, data.body, ctx),
   );
 
   // PATCH /:id — 更新文件夹（别名，跳过 OpenAPI 避免重复）
-  r.route(
+  r.routeWithValidation(
     {
       method: 'patch',
       path: '/:id',
       skipOpenApi: true,
+      validation: {
+        schema: UpdateGoalFolderInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.update(data.params.id, data.body, ctx),
   );
 
   // DELETE /:id — 删除文件夹

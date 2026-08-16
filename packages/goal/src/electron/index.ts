@@ -82,10 +82,72 @@ import {
   createGoalFolderTransportHandlers,
   createGoalTransportHandlers,
 } from '../server/transport';
-import { withAuthenticatedValue } from './authenticated-ipc';
+import { withAuthenticatedValidation, withAuthenticatedValue } from './authenticated-ipc';
+import {
+  ActivateFocusModeSchema,
+  AddKeyResultInvocationSchema,
+  BatchKeyResultWeightsInvocationSchema,
+  CloneGoalInvocationSchema,
+  CreateGoalFolderSchema,
+  CreateGoalSchema,
+  CreateRecordInvocationSchema,
+  CreateReviewInvocationSchema,
+  DeleteGoalFolderInvocationSchema,
+  DeleteGoalInvocationSchema,
+  DeleteKeyResultInvocationSchema,
+  DeleteRecordInvocationSchema,
+  DeleteReviewInvocationSchema,
+  ExtendFocusModeSchema,
+  GoalStatusCommandInvocationSchema,
+  UpdateGoalFolderInvocationSchema,
+  UpdateGoalInvocationSchema,
+  UpdateKeyResultInvocationSchema,
+  UpdateReviewInvocationSchema,
+} from '@memoflow/contracts/goal';
 
 const logger = createLogger('GoalElectron');
 const allChannels = Object.values(GoalChannels);
+
+/**
+ * Registers a positional IPC channel with adapter-owned validation.
+ *
+ * The returned handler runs inside the authenticated context, projects the
+ * positional args into the canonical contract input, validates it via the real
+ * `ipcAdapterWithValidation`, and only then calls the controller. This is the
+ * goal-module registration fixture — it is NOT a parallel validation helper.
+ *
+ * 注册带 adapter 校验的 positional IPC 通道：handler 在鉴权 context 内把
+ * positional args 投影为 canonical contract 输入，经真实
+ * `ipcAdapterWithValidation` 校验后才调用 controller。这是 goal 模块的
+ * 注册 fixture，不是平行 validation helper。
+ */
+function registerValidatedChannel<TInput, TOutput>(
+  ctx: IElectronModuleContext,
+  channel: string,
+  schema: ZodLikeSchema<TInput>,
+  controllerFn: (
+    data: TInput,
+    context: ExecutionContext,
+  ) => Promise<import('@memoflow/contracts/result').Result<TOutput>>,
+  projectArgs?: (args: unknown[]) => unknown,
+): void {
+  ipcMain.handle(channel, (event, ...positionalArgs) =>
+    withAuthenticatedValidation(ctx, schema, controllerFn, (args) => {
+      const list = Array.isArray(args) ? (args as unknown[]) : [args];
+      // Single-object payload channels validate the first arg directly.
+      return projectArgs ? projectArgs(list) : list[0];
+    })(event, positionalArgs),
+  );
+}
+
+/** Minimal structural schema interface (avoid hard Zod dependency in the seam). */
+interface ZodLikeSchema<TInput> {
+  safeParse(
+    data: unknown,
+  ):
+    | { success: true; data: TInput }
+    | { success: false; error: { issues: Array<{ path: PropertyKey[]; message: string }> } };
+}
 
 /**
  * Per-handle lifecycle state. Only 'created' may enter 'registered' (or
@@ -180,26 +242,33 @@ export function createGoalElectronModule(
           ),
         );
         installed.push(GoalChannels.GET);
-        ipcMain.handle(GoalChannels.CREATE, async (_event, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.create(dto, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.CREATE,
+          CreateGoalSchema,
+          (data, requestContext) => goalController.create(data, requestContext),
         );
         installed.push(GoalChannels.CREATE);
-        // Issue #4 fix: route update through auth + controller validation
-        // 问题 #4 修复：将更新操作路由到认证 + 控制器校验
-        ipcMain.handle(GoalChannels.UPDATE, async (_, id, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.update(id, dto, requestContext),
-          ),
+        // Issue #4 fix: route update through auth + adapter validation
+        // 问题 #4 修复：将更新操作路由到认证 + adapter 校验
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.UPDATE,
+          UpdateGoalInvocationSchema,
+          (data, requestContext) =>
+            goalController.update(data.params.id, data.body, requestContext),
+          (args) => ({ params: { id: args[0] }, body: args[1] }),
         );
         installed.push(GoalChannels.UPDATE);
-        // Issue #4 fix: route delete through auth + controller validation
-        // 问题 #4 修复：将删除操作路由到认证 + 控制器校验
-        ipcMain.handle(GoalChannels.DELETE, async (_, id, request) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.delete(id, request.expectedVersion, requestContext),
-          ),
+        // Issue #4 fix: route delete through auth + adapter validation
+        // 问题 #4 修复：将删除操作路由到认证 + adapter 校验
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.DELETE,
+          DeleteGoalInvocationSchema,
+          (data, requestContext) =>
+            goalController.delete(data.params.id, data.query.expectedVersion, requestContext),
+          (args) => ({ params: { id: args[0] }, query: args[1] }),
         );
         installed.push(GoalChannels.DELETE);
         ipcMain.handle(GoalChannels.ARCHIVE_EXPIRED, async () =>
@@ -208,24 +277,33 @@ export function createGoalElectronModule(
           ),
         );
         installed.push(GoalChannels.ARCHIVE_EXPIRED);
-        // Issue #4 fix: route archive through auth + controller validation
-        // 问题 #4 修复：将归档操作路由到认证 + 控制器校验
-        ipcMain.handle(GoalChannels.ARCHIVE, async (_, id, request) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.archive(id, request.expectedVersion, requestContext),
-          ),
+        // Issue #4 fix: route archive through auth + adapter validation
+        // 问题 #4 修复：将归档操作路由到认证 + adapter 校验
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.ARCHIVE,
+          GoalStatusCommandInvocationSchema,
+          (data, requestContext) =>
+            goalController.archive(data.params.id, data.body.expectedVersion, requestContext),
+          (args) => ({ params: { id: args[0] }, body: args[1] }),
         );
         installed.push(GoalChannels.ARCHIVE);
-        ipcMain.handle(GoalChannels.ACTIVATE, async (_, id, request) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.activate(id, request.expectedVersion, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.ACTIVATE,
+          GoalStatusCommandInvocationSchema,
+          (data, requestContext) =>
+            goalController.activate(data.params.id, data.body.expectedVersion, requestContext),
+          (args) => ({ params: { id: args[0] }, body: args[1] }),
         );
         installed.push(GoalChannels.ACTIVATE);
-        ipcMain.handle(GoalChannels.COMPLETE, async (_, id, request) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.complete(id, request.expectedVersion, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.COMPLETE,
+          GoalStatusCommandInvocationSchema,
+          (data, requestContext) =>
+            goalController.complete(data.params.id, data.body.expectedVersion, requestContext),
+          (args) => ({ params: { id: args[0] }, body: args[1] }),
         );
         installed.push(GoalChannels.COMPLETE);
         ipcMain.handle(GoalChannels.SEARCH, async (_event, params) =>
@@ -259,14 +337,17 @@ export function createGoalElectronModule(
           }),
         );
         installed.push(GoalChannels.FOCUS_MODE_GET);
-        ipcMain.handle(GoalChannels.FOCUS_MODE_ACTIVATE, async (_event, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.FOCUS_MODE_ACTIVATE,
+          ActivateFocusModeSchema,
+          (data, requestContext) => {
             logger.info('IPC 启用专注模式处理器', {
               identityId: requestContext.identityId,
-              dto,
+              data,
             });
-            return goalController.activateFocusMode(dto, requestContext);
-          }),
+            return goalController.activateFocusMode(data, requestContext);
+          },
         );
         installed.push(GoalChannels.FOCUS_MODE_ACTIVATE);
         ipcMain.handle(GoalChannels.FOCUS_MODE_DEACTIVATE, async (_event) =>
@@ -278,26 +359,38 @@ export function createGoalElectronModule(
           }),
         );
         installed.push(GoalChannels.FOCUS_MODE_DEACTIVATE);
-        ipcMain.handle(GoalChannels.FOCUS_MODE_EXTEND, async (_event, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.FOCUS_MODE_EXTEND,
+          ExtendFocusModeSchema,
+          (data, requestContext) => {
             logger.info('IPC 延长专注模式处理器', {
               identityId: requestContext.identityId,
-              dto,
+              data,
             });
-            return goalController.extendFocusMode(dto, requestContext);
-          }),
+            return goalController.extendFocusMode(data, requestContext);
+          },
         );
         installed.push(GoalChannels.FOCUS_MODE_EXTEND);
-        ipcMain.handle(GoalChannels.CLONE, async (_event, goalId, params) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.cloneGoal(goalId, params ?? {}, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.CLONE,
+          CloneGoalInvocationSchema,
+          (data, requestContext) =>
+            goalController.cloneGoal(data.params.id, data.body, requestContext),
+          (args) => ({ params: { id: args[0] }, body: args[1] ?? {} }),
         );
         installed.push(GoalChannels.CLONE);
-        ipcMain.handle(GoalChannels.KEY_RESULT_ADD, async (_, goalId, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.addKeyResult(goalId, dto, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.KEY_RESULT_ADD,
+          AddKeyResultInvocationSchema,
+          (data, requestContext) =>
+            goalController.addKeyResult(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: args[0] },
+            body: { ...(args[1] as Record<string, unknown>), goalId: args[0] },
+          }),
         );
         installed.push(GoalChannels.KEY_RESULT_ADD);
         ipcMain.handle(GoalChannels.KEY_RESULT_LIST, async (_, goalId) =>
@@ -306,28 +399,53 @@ export function createGoalElectronModule(
           ),
         );
         installed.push(GoalChannels.KEY_RESULT_LIST);
-        ipcMain.handle(GoalChannels.KEY_RESULT_UPDATE, async (_, goalId, keyResultId, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.updateKeyResult(goalId, keyResultId, dto, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.KEY_RESULT_UPDATE,
+          UpdateKeyResultInvocationSchema,
+          (data, requestContext) =>
+            goalController.updateKeyResult(
+              data.params.id,
+              data.params.krId,
+              data.body,
+              requestContext,
+            ),
+          (args) => ({ params: { id: args[0], krId: args[1] }, body: args[2] }),
         );
         installed.push(GoalChannels.KEY_RESULT_UPDATE);
-        ipcMain.handle(GoalChannels.KEY_RESULT_DELETE, async (_, goalId, keyResultId, request) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.deleteKeyResult(goalId, keyResultId, request, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.KEY_RESULT_DELETE,
+          DeleteKeyResultInvocationSchema,
+          (data, requestContext) =>
+            goalController.deleteKeyResult(
+              data.params.id,
+              data.params.krId,
+              data.query,
+              requestContext,
+            ),
+          (args) => ({ params: { id: args[0], krId: args[1] }, query: args[2] }),
         );
         installed.push(GoalChannels.KEY_RESULT_DELETE);
-        ipcMain.handle(GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS, async (_, goalId, request) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.batchUpdateKeyResultWeights(goalId, request, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS,
+          BatchKeyResultWeightsInvocationSchema,
+          (data, requestContext) =>
+            goalController.batchUpdateKeyResultWeights(data.params.id, data.body, requestContext),
+          (args) => ({ params: { id: args[0] }, body: args[1] }),
         );
         installed.push(GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS);
-        ipcMain.handle(GoalChannels.REVIEW_CREATE, async (_, goalId, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.addReview(goalId, dto, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.REVIEW_CREATE,
+          CreateReviewInvocationSchema,
+          (data, requestContext) =>
+            goalController.addReview(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: args[0] },
+            body: { ...(args[1] as Record<string, unknown>), goalId: args[0] },
+          }),
         );
         installed.push(GoalChannels.REVIEW_CREATE);
         ipcMain.handle(GoalChannels.REVIEW_LIST, async (_, goalId) =>
@@ -336,22 +454,49 @@ export function createGoalElectronModule(
           ),
         );
         installed.push(GoalChannels.REVIEW_LIST);
-        ipcMain.handle(GoalChannels.REVIEW_UPDATE, async (_, goalId, reviewId, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.updateReview(goalId, reviewId, dto, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.REVIEW_UPDATE,
+          UpdateReviewInvocationSchema,
+          (data, requestContext) =>
+            goalController.updateReview(
+              data.params.id,
+              data.params.reviewId,
+              data.body,
+              requestContext,
+            ),
+          (args) => ({ params: { id: args[0], reviewId: args[1] }, body: args[2] }),
         );
         installed.push(GoalChannels.REVIEW_UPDATE);
-        ipcMain.handle(GoalChannels.REVIEW_DELETE, async (_, goalId, reviewId, request) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.deleteReview(goalId, reviewId, request, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.REVIEW_DELETE,
+          DeleteReviewInvocationSchema,
+          (data, requestContext) =>
+            goalController.deleteReview(
+              data.params.id,
+              data.params.reviewId,
+              data.query,
+              requestContext,
+            ),
+          (args) => ({ params: { id: args[0], reviewId: args[1] }, query: args[2] }),
         );
         installed.push(GoalChannels.REVIEW_DELETE);
-        ipcMain.handle(GoalChannels.RECORD_CREATE, async (_, goalId, keyResultId, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.createRecord(goalId, keyResultId, dto, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.RECORD_CREATE,
+          CreateRecordInvocationSchema,
+          (data, requestContext) =>
+            goalController.createRecord(
+              data.params.id,
+              data.params.krId,
+              data.body,
+              requestContext,
+            ),
+          (args) => ({
+            params: { id: args[0], krId: args[1] },
+            body: { ...(args[2] as Record<string, unknown>), keyResultId: args[1] },
+          }),
         );
         installed.push(GoalChannels.RECORD_CREATE);
         ipcMain.handle(
@@ -373,18 +518,19 @@ export function createGoalElectronModule(
           ),
         );
         installed.push(GoalChannels.RECORD_LIST_BY_GOAL);
-        ipcMain.handle(
+        registerValidatedChannel(
+          ctx,
           GoalChannels.RECORD_DELETE,
-          async (_, goalId, keyResultId, recordId, request) =>
-            withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
-              return goalController.deleteRecord(
-                goalId,
-                keyResultId,
-                recordId,
-                request,
-                requestContext,
-              );
-            }),
+          DeleteRecordInvocationSchema,
+          (data, requestContext) =>
+            goalController.deleteRecord(
+              data.params.id,
+              data.params.krId,
+              data.params.recordId,
+              data.query,
+              requestContext,
+            ),
+          (args) => ({ params: { id: args[0], krId: args[1], recordId: args[2] }, query: args[3] }),
         );
         installed.push(GoalChannels.RECORD_DELETE);
         ipcMain.handle(GoalChannels.FOLDER_LIST, async (_event, params) =>
@@ -400,24 +546,33 @@ export function createGoalElectronModule(
           ),
         );
         installed.push(GoalChannels.FOLDER_GET);
-        ipcMain.handle(GoalChannels.FOLDER_CREATE, async (_event, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.create(dto, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.FOLDER_CREATE,
+          CreateGoalFolderSchema,
+          (data, requestContext) => goalFolderController.create(data, requestContext),
+          (args) => args[0],
         );
         installed.push(GoalChannels.FOLDER_CREATE);
-        ipcMain.handle(GoalChannels.FOLDER_UPDATE, async (_event, id, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.update(id, dto, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.FOLDER_UPDATE,
+          UpdateGoalFolderInvocationSchema,
+          (data, requestContext) =>
+            goalFolderController.update(data.params.id, data.body, requestContext),
+          (args) => ({ params: { id: args[0] }, body: args[1] }),
         );
         installed.push(GoalChannels.FOLDER_UPDATE);
-        ipcMain.handle(GoalChannels.FOLDER_DELETE, async (_event, id) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
-            const result = await goalFolderController.delete(id, requestContext);
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.FOLDER_DELETE,
+          DeleteGoalFolderInvocationSchema,
+          async (data, requestContext) => {
+            const result = await goalFolderController.delete(data.params.id, requestContext);
             if (!result.ok) return result;
             return ok(null);
-          }),
+          },
+          (args) => ({ params: { id: args[0] } }),
         );
         installed.push(GoalChannels.FOLDER_DELETE);
 

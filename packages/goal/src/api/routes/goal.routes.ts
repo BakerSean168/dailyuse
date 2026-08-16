@@ -15,9 +15,6 @@ import {
 } from '@memoflow/utils/result';
 import {
   CreateGoalSchema,
-  UpdateGoalSchema,
-  GoalVersionCommandSchema,
-  CloneGoalSchema,
   ListGoalFiltersSchema,
   GoalClientDTOSchema,
   GoalMutationReceiptSchema,
@@ -25,13 +22,13 @@ import {
   GetGoalAggregateResSchema,
   ArchiveExpiredResSchema,
   ProgressBreakdownResSchema,
-  BatchUpdateKeyResultWeightsReqSchema,
+  UpdateGoalInvocationSchema,
+  DeleteGoalInvocationSchema,
+  GoalStatusCommandInvocationSchema,
+  CloneGoalInvocationSchema,
+  BatchKeyResultWeightsInvocationSchema,
 } from '@memoflow/contracts/goal';
-import type {
-  CloneGoalReq,
-  GoalVersionCommandReq,
-  ListGoalFilters,
-} from '@memoflow/contracts/goal';
+import type { ListGoalFilters } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
 import type { GoalId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
@@ -114,7 +111,7 @@ export function registerGoalCrudRoutes(
   // ==================== Goal CRUD ====================
 
   // POST / — 创建目标
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/',
@@ -124,9 +121,10 @@ export function registerGoalCrudRoutes(
         201: successResponse(GoalMutationReceiptSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
+      validation: { schema: CreateGoalSchema },
     },
     [auth],
-    (req, ctx) => controller.create(req.body, ctx),
+    (data, ctx) => controller.create(data, ctx),
     { successStatus: 201 },
   );
 
@@ -192,53 +190,66 @@ export function registerGoalCrudRoutes(
   );
 
   // PUT /:id — 更新目标
-  r.route(
+  r.routeWithValidation(
     {
       method: 'put',
       path: '/:id',
       summary: '更新目标',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
-        body: { content: { 'application/json': { schema: UpdateGoalSchema } } },
+        params: UpdateGoalInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: UpdateGoalInvocationSchema.shape.body } },
+        },
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: UpdateGoalInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.update(data.params.id, data.body, ctx),
   );
 
   // PATCH /:id — 更新目标（别名，跳过 OpenAPI 避免重复）
-  r.route(
+  r.routeWithValidation(
     {
       method: 'patch',
       path: '/:id',
       skipOpenApi: true,
+      validation: {
+        schema: UpdateGoalInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.update(data.params.id, data.body, ctx),
   );
 
   // DELETE /:id — 删除目标（软删除）
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/:id',
       summary: '删除目标',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
-        query: GoalVersionCommandSchema,
+        params: DeleteGoalInvocationSchema.shape.params,
+        query: DeleteGoalInvocationSchema.shape.query,
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '删除成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: DeleteGoalInvocationSchema,
+        projectInput: (req) => ({ params: req.params, query: req.query }),
+      },
     },
     [auth],
-    (req, ctx) =>
-      controller.delete(req.params!.id, (req.query as GoalVersionCommandReq).expectedVersion, ctx),
+    (data, ctx) => controller.delete(data.params.id, data.query.expectedVersion, ctx),
   );
 
   // ==================== Goal Status Operations ====================
@@ -257,63 +268,84 @@ export function registerGoalCrudRoutes(
   );
 
   // POST /:id/archive — 归档目标
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/archive',
       summary: '归档目标',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
-        body: { content: { 'application/json': { schema: GoalVersionCommandSchema } } },
+        params: GoalStatusCommandInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: GoalStatusCommandInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '归档成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: GoalStatusCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) =>
-      controller.archive(req.params!.id, (req.body as GoalVersionCommandReq).expectedVersion, ctx),
+    (data, ctx) => controller.archive(data.params.id, data.body.expectedVersion, ctx),
   );
 
   // POST /:id/activate — 激活目标
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/activate',
       summary: '激活目标',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
-        body: { content: { 'application/json': { schema: GoalVersionCommandSchema } } },
+        params: GoalStatusCommandInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: GoalStatusCommandInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '激活成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: GoalStatusCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) =>
-      controller.activate(req.params!.id, (req.body as GoalVersionCommandReq).expectedVersion, ctx),
+    (data, ctx) => controller.activate(data.params.id, data.body.expectedVersion, ctx),
   );
 
   // POST /:id/complete — 完成目标
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/complete',
       summary: '完成目标',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
-        body: { content: { 'application/json': { schema: GoalVersionCommandSchema } } },
+        params: GoalStatusCommandInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: GoalStatusCommandInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '完成成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: GoalStatusCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) =>
-      controller.complete(req.params!.id, (req.body as GoalVersionCommandReq).expectedVersion, ctx),
+    (data, ctx) => controller.complete(data.params.id, data.body.expectedVersion, ctx),
   );
 
   // GET /:id/aggregate — 获取目标聚合视图
@@ -349,17 +381,17 @@ export function registerGoalCrudRoutes(
   );
 
   // POST /:id/clone — 克隆目标
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/clone',
       summary: '克隆目标',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
+        params: CloneGoalInvocationSchema.shape.params,
         body: {
           content: {
             'application/json': {
-              schema: CloneGoalSchema,
+              schema: CloneGoalInvocationSchema.shape.body,
             },
           },
         },
@@ -368,24 +400,28 @@ export function registerGoalCrudRoutes(
         201: successResponse(GoalMutationReceiptSchema, '克隆成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: CloneGoalInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body ?? {} }),
+      },
     },
     [auth],
-    (req, ctx) => controller.cloneGoal(req.params!.id, (req.body ?? {}) as CloneGoalReq, ctx),
+    (data, ctx) => controller.cloneGoal(data.params.id, data.body, ctx),
     { successStatus: 201 },
   );
 
   // PUT /:id/key-results/batch-weight — 批量更新关键结果权重
-  r.route(
+  r.routeWithValidation(
     {
       method: 'put',
       path: '/:id/key-results/batch-weight',
       summary: '批量更新关键结果权重',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
+        params: BatchKeyResultWeightsInvocationSchema.shape.params,
         body: {
           content: {
             'application/json': {
-              schema: BatchUpdateKeyResultWeightsReqSchema,
+              schema: BatchKeyResultWeightsInvocationSchema.shape.body,
             },
           },
         },
@@ -394,17 +430,13 @@ export function registerGoalCrudRoutes(
         200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: BatchKeyResultWeightsInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) =>
-      controller.batchUpdateKeyResultWeights(
-        req.params!.id,
-        req.body as {
-          expectedVersion: number;
-          updates: Array<{ keyResultId: string; weight: number }>;
-        },
-        ctx,
-      ),
+    (data, ctx) => controller.batchUpdateKeyResultWeights(data.params.id, data.body, ctx),
   );
 
   return router;

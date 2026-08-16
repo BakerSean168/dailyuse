@@ -35,9 +35,7 @@ import { describe, expect, it } from 'vitest';
 
     it('NotificationBatchResultSchema is sole batch-result shape with optional counts', () => {
       expect(responseSchemas).toContain('Residual 799');
-      expect(responseSchemas).toContain(
-        'export const NotificationBatchResultSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const NotificationBatchResultSchema = z.object({');
       expect(responseSchemas).toContain('updatedCount: z.number().optional()');
       expect(responseSchemas).toContain('deletedCount: z.number().optional()');
     });
@@ -45,8 +43,12 @@ import { describe, expect, it } from 'vitest';
     it('batch Res aliases and OpenAPI routes reuse the sole batch result shape', () => {
       expect(batchDto).toContain('Residual 799');
       expect(batchDto).toContain('export type MarkAsReadBatchRes = BatchOperationResultDTO');
-      expect(batchDto).toContain('export type DeleteNotificationsBatchRes = BatchOperationResultDTO');
-      expect(batchDto).toContain('export type CleanupOldNotificationsRes = BatchOperationResultDTO');
+      expect(batchDto).toContain(
+        'export type DeleteNotificationsBatchRes = BatchOperationResultDTO',
+      );
+      expect(batchDto).toContain(
+        'export type CleanupOldNotificationsRes = BatchOperationResultDTO',
+      );
       expect(routes).toContain('NotificationBatchResultSchema');
       const hits = routes.split('NotificationBatchResultSchema').length - 1;
       expect(hits).toBeGreaterThanOrEqual(3);
@@ -70,7 +72,10 @@ import { describe, expect, it } from 'vitest';
       'utf8',
     );
     const controller = readFileSync(
-      resolve(apiDir, '../../../../../notification/src/server/transport/notification.controller.ts'),
+      resolve(
+        apiDir,
+        '../../../../../notification/src/server/transport/notification.controller.ts',
+      ),
       'utf8',
     );
 
@@ -87,19 +92,20 @@ import { describe, expect, it } from 'vitest';
       expect(dto).not.toMatch(/export const DeleteNotificationsBatchSchema\b/);
     });
 
-    it('routes and controller parse the shared id-batch schema for both ops', () => {
+    it('routes and controller use the shared id-batch schema for both ops (Phase 4)', () => {
+      // Phase 4: batch routes bind NotificationIdsBatchSchema through the
+      // validation adapters; the controller accepts inferred input types.
       expect(routes).toContain('NotificationIdsBatchSchema');
       expect(routes).not.toContain('MarkAsReadBatchSchema');
       expect(routes).not.toContain('DeleteNotificationsBatchSchema');
-      expect(controller).toContain('NotificationIdsBatchSchema');
+      expect(routes).toContain('routeWithValidation');
+      expect(controller).toContain('MarkAsReadBatchReq');
+      expect(controller).toContain('DeleteNotificationsBatchReq');
       expect(controller).not.toContain('MarkAsReadBatchSchema');
       expect(controller).not.toContain('DeleteNotificationsBatchSchema');
-      const routeHits =
-        routes.split('schema: NotificationIdsBatchSchema').length - 1;
+      const routeHits = routes.split('schema: NotificationIdsBatchSchema').length - 1;
       expect(routeHits).toBeGreaterThanOrEqual(2);
-      const parseHits =
-        controller.split('NotificationIdsBatchSchema.safeParse').length - 1;
-      expect(parseHits).toBeGreaterThanOrEqual(2);
+      expect(controller).not.toContain('NotificationIdsBatchSchema.safeParse');
     });
   });
 }
@@ -135,12 +141,8 @@ import { describe, expect, it } from 'vitest';
       );
       expect(aggregate).not.toMatch(/export interface NotificationPreferenceClientDTO\b/);
       expect(schemas).toContain('Residual 829');
-      expect(schemas).toContain(
-        'export const NotificationPreferenceResponseSchema = z.object({',
-      );
-      expect(routes).toContain(
-        "successResponse(NotificationPreferenceResponseSchema, '获取成功')",
-      );
+      expect(schemas).toContain('export const NotificationPreferenceResponseSchema = z.object({');
+      expect(routes).toContain("successResponse(NotificationPreferenceResponseSchema, '获取成功')");
     });
 
     it('owns CalendarEntryClientDTO as z.infer of CalendarEntryResponseSchema', () => {
@@ -158,16 +160,17 @@ import { describe, expect, it } from 'vitest';
       expect(schemas).toContain('Residual 829');
       expect(schemas).toContain('export const CalendarEntryResponseSchema = z.object({');
       expect(routes).toContain('CalendarEntryResponseSchema');
-      expect(routes).toContain(
-        "successResponse(z.array(CalendarEntryResponseSchema), '获取成功')",
-      );
+      expect(routes).toContain("successResponse(z.array(CalendarEntryResponseSchema), '获取成功')");
     });
 
     it('owns UserReminderPreferencesClientDTO as z.infer of UserReminderPreferencesResponseSchema', () => {
       const aggregate = readFileSync(reminderAgg, 'utf8');
       const schemas = readFileSync(resolve(reminderApi, 'response-schemas.ts'), 'utf8');
       const routes = readFileSync(
-        resolve(reminderApi, '../../../../../reminder/src/api/routes/reminder-preferences.routes.ts'),
+        resolve(
+          reminderApi,
+          '../../../../../reminder/src/api/routes/reminder-preferences.routes.ts',
+        ),
         'utf8',
       );
       expect(aggregate).toContain('Residual 829');
@@ -177,9 +180,7 @@ import { describe, expect, it } from 'vitest';
       expect(aggregate).not.toMatch(/export interface UserReminderPreferencesClientDTO\b/);
       expect(aggregate).toMatch(/export interface UserReminderPreferencesServerDTO\b/);
       expect(schemas).toContain('Residual 829');
-      expect(schemas).toContain(
-        'export const UserReminderPreferencesResponseSchema = z.object({',
-      );
+      expect(schemas).toContain('export const UserReminderPreferencesResponseSchema = z.object({');
       expect(routes).toContain(
         "successResponse(UserReminderPreferencesResponseSchema, '获取成功')",
       );
@@ -213,9 +214,7 @@ import { describe, expect, it } from 'vitest';
       );
       expect(client).not.toMatch(/export interface NotificationTemplateClientDTO\b/);
       expect(schemas).toContain('Residual 839');
-      expect(schemas).toContain(
-        'export const NotificationTemplateResponseSchema = z.object({',
-      );
+      expect(schemas).toContain('export const NotificationTemplateResponseSchema = z.object({');
       expect(schemas).toContain('isSystemTemplate: z.boolean()');
       expect(schemas).toContain('export const NotificationTemplateConfigSchema = z.object({');
     });
@@ -264,9 +263,7 @@ import { describe, expect, it } from 'vitest';
       );
       expect(server).not.toMatch(/export interface NotificationTemplateServerDTO\b/);
       expect(schemas).toContain('Residual 845');
-      expect(schemas).toContain(
-        'export const NotificationTemplateResponseSchema = z.object({',
-      );
+      expect(schemas).toContain('export const NotificationTemplateResponseSchema = z.object({');
     });
 
     it('client and server share the same ResponseSchema single-track', () => {
@@ -291,7 +288,7 @@ import { describe, expect, it } from 'vitest';
    * Residual 801: UnreadCountResponse dual body retired.
    * Sole UnreadCountResponseSchema + z.infer owned by contracts response-schemas.
    * Notification package port re-exports the contracts type (no local interface dual).
-    *
+   *
    * Soft residual 829: NotificationPreferenceClientDTO dual retired via NotificationPreferenceResponseSchema
    * (see notification-preference-calendar-prefs-client-dto-dual surface).
    */
@@ -312,9 +309,7 @@ import { describe, expect, it } from 'vitest';
 
     it('owns UnreadCountResponse as z.infer of UnreadCountResponseSchema', () => {
       expect(responseSchemas).toContain('Residual 801');
-      expect(responseSchemas).toContain(
-        'export const UnreadCountResponseSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const UnreadCountResponseSchema = z.object({');
       expect(responseSchemas).toContain(
         'export type UnreadCountResponse = z.infer<typeof UnreadCountResponseSchema>',
       );

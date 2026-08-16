@@ -13,14 +13,14 @@ import {
   errorResponse,
 } from '@memoflow/utils/result';
 import {
-  CreateGoalReviewSchema,
-  DeleteGoalReviewSchema,
-  UpdateGoalReviewSchema,
   GoalMutationReceiptSchema,
   GoalReviewListResSchema,
+  CreateReviewInvocationSchema,
+  UpdateReviewInvocationSchema,
+  DeleteReviewInvocationSchema,
 } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
-import type { GoalId, GoalReviewId } from '@memoflow/contracts/primitives';
+import type { GoalId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
 
 // ============ Types ============
@@ -47,22 +47,28 @@ export function registerReviewRoutes(
   });
 
   // POST /:id/reviews — 添加目标复盘
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/reviews',
       summary: '添加目标复盘',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
-        body: { content: { 'application/json': { schema: CreateGoalReviewSchema } } },
+        params: CreateReviewInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: CreateReviewInvocationSchema.shape.body } },
+        },
       },
       responses: {
         201: successResponse(GoalMutationReceiptSchema, '添加成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: CreateReviewInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.addReview(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.addReview(data.params.id, data.body, ctx),
     { successStatus: 201 },
   );
 
@@ -85,47 +91,51 @@ export function registerReviewRoutes(
   );
 
   // PUT /:id/reviews/:reviewId — 更新复盘
-  r.route(
+  r.routeWithValidation(
     {
       method: 'put',
       path: '/:id/reviews/:reviewId',
       summary: '更新目标复盘',
       request: {
-        params: z.object({
-          id: brandedId<GoalId>(),
-          reviewId: brandedId<GoalReviewId>(),
-        }),
-        body: { content: { 'application/json': { schema: UpdateGoalReviewSchema } } },
+        params: UpdateReviewInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: UpdateReviewInvocationSchema.shape.body } },
+        },
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标或复盘不存在'),
       },
+      validation: {
+        schema: UpdateReviewInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.updateReview(req.params!.id, req.params!.reviewId, req.body, ctx),
+    (data, ctx) => controller.updateReview(data.params.id, data.params.reviewId, data.body, ctx),
   );
 
   // DELETE /:id/reviews/:reviewId — 删除复盘
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/:id/reviews/:reviewId',
       summary: '删除目标复盘',
       request: {
-        params: z.object({
-          id: brandedId<GoalId>(),
-          reviewId: brandedId<GoalReviewId>(),
-        }),
-        query: DeleteGoalReviewSchema,
+        params: DeleteReviewInvocationSchema.shape.params,
+        query: DeleteReviewInvocationSchema.shape.query,
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '删除成功'),
         404: errorResponse('目标或复盘不存在'),
       },
+      validation: {
+        schema: DeleteReviewInvocationSchema,
+        projectInput: (req) => ({ params: req.params, query: req.query }),
+      },
     },
     [auth],
-    (req, ctx) => controller.deleteReview(req.params!.id, req.params!.reviewId, req.query, ctx),
+    (data, ctx) => controller.deleteReview(data.params.id, data.params.reviewId, data.query, ctx),
   );
 
   return router;

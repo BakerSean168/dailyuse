@@ -14,11 +14,12 @@ import {
   errorResponse,
 } from '@memoflow/utils/result';
 import {
-  CompleteTaskInstanceSchema,
-  SkipTaskInstanceSchema,
   CheckExpiredTaskInstancesResponseSchema,
   TaskInstanceResponseSchema,
   GetTaskInstancesByRangeSchema,
+  CompleteTaskInstanceInvocationSchema,
+  SkipTaskInstanceInvocationSchema,
+  TaskInstanceIdCommandInvocationSchema,
 } from '@memoflow/contracts/task';
 import { brandedId } from '@memoflow/contracts/primitives';
 import type { TaskInstanceId, TaskTemplateId } from '@memoflow/contracts/primitives';
@@ -75,13 +76,10 @@ export function registerTaskInstanceRoutes(
     },
     [auth],
     (req, ctx) =>
-      controller.getInstancesByDateRange(
-        ctx.identityId,
-        {
-          startDate: parseTimestampQuery(req.query?.startDate, Date.now()),
-          endDate: parseTimestampQuery(req.query?.endDate, Date.now() + 86400000 * 7),
-        },
-      ),
+      controller.getInstancesByDateRange(ctx.identityId, {
+        startDate: parseTimestampQuery(req.query?.startDate, Date.now()),
+        endDate: parseTimestampQuery(req.query?.endDate, Date.now() + 86400000 * 7),
+      }),
   );
 
   // POST /check-expired — Check and mark expired instances
@@ -139,89 +137,115 @@ export function registerTaskInstanceRoutes(
   );
 
   // POST /:id/complete — Complete instance
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/complete',
       summary: '完成任务实例',
       request: {
-        params: z.object({ id: brandedId<TaskInstanceId>() }),
-        body: { content: { 'application/json': { schema: CompleteTaskInstanceSchema } } },
+        params: CompleteTaskInstanceInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: CompleteTaskInstanceInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         200: successResponse(TaskInstanceResponseSchema, '完成成功'),
         404: errorResponse('实例不存在'),
       },
+      validation: {
+        schema: CompleteTaskInstanceInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.completeInstance(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.completeInstance(data.params.id, data.body, ctx),
   );
 
   // POST /:id/skip — Skip instance
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/uncomplete',
       summary: '撤销完成任务实例',
-      request: { params: z.object({ id: brandedId<TaskInstanceId>() }) },
+      request: { params: TaskInstanceIdCommandInvocationSchema.shape.params },
       responses: {
         200: successResponse(TaskInstanceResponseSchema, '撤销完成成功'),
         404: errorResponse('实例不存在'),
       },
+      validation: {
+        schema: TaskInstanceIdCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.uncompleteInstance(req.params!.id, ctx),
+    (data, ctx) => controller.uncompleteInstance(data.params.id, ctx),
   );
 
   // POST /:id/skip — Skip instance
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/skip',
       summary: '跳过任务实例',
       request: {
-        params: z.object({ id: brandedId<TaskInstanceId>() }),
-        body: { content: { 'application/json': { schema: SkipTaskInstanceSchema } } },
+        params: SkipTaskInstanceInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: SkipTaskInstanceInvocationSchema.shape.body } },
+        },
       },
       responses: {
         200: successResponse(TaskInstanceResponseSchema, '跳过成功'),
         404: errorResponse('实例不存在'),
       },
+      validation: {
+        schema: SkipTaskInstanceInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.skipInstance(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.skipInstance(data.params.id, data.body, ctx),
   );
 
   // POST /:id/start — Start instance
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/start',
       summary: '开始任务实例',
-      request: { params: z.object({ id: brandedId<TaskInstanceId>() }) },
+      request: { params: TaskInstanceIdCommandInvocationSchema.shape.params },
       responses: {
         200: successResponse(TaskInstanceResponseSchema, '开始成功'),
         404: errorResponse('实例不存在'),
       },
+      validation: {
+        schema: TaskInstanceIdCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.startInstance(req.params!.id, ctx),
+    (data, ctx) => controller.startInstance(data.params.id, ctx),
   );
 
   // DELETE /:id — Delete instance
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/:id',
       summary: '删除任务实例',
-      request: { params: z.object({ id: brandedId<TaskInstanceId>() }) },
+      request: { params: TaskInstanceIdCommandInvocationSchema.shape.params },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('实例不存在'),
       },
+      validation: {
+        schema: TaskInstanceIdCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.deleteInstance(req.params!.id, ctx),
+    (data, ctx) => controller.deleteInstance(data.params.id, ctx),
   );
 
   return router;

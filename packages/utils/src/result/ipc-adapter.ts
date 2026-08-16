@@ -73,6 +73,29 @@ export interface IpcAdapterOptions {
   extractContext?: (event: IpcInvokeEvent) => ExecutionContext;
 }
 
+/**
+ * Options for the validation-aware IPC adapter.
+ *
+ * Adds an optional args projector. The adapter validates the projected
+ * canonical input, not an arbitrary `arguments` array. Existing positional
+ * channels use a named projector next to the channel registration; the
+ * projector is tested and contains no schema logic.
+ *
+ * 验证型 IPC adapter 的选项。新增可选 args projector：adapter 校验投影后的
+ * canonical 输入，而不是任意 `arguments` 数组。既有 positional channel 在
+ * 注册旁使用命名 projector；projector 被测试且不包含 schema 逻辑。
+ */
+export interface IpcAdapterValidationOptions extends IpcAdapterOptions {
+  /**
+   * Projects the raw IPC args into the canonical contract input validated by
+   * the schema. When omitted, `args` is validated directly (existing shorthand
+   * for single-object payload channels).
+   * 将原始 IPC args 投影为 schema 校验的 canonical 输入；省略时直接校验
+   * `args`（单对象 payload channel 保持旧 shorthand）。
+   */
+  projectArgs?: (args: unknown) => unknown;
+}
+
 // ============================================================================
 // Default Helpers
 // ============================================================================
@@ -159,8 +182,16 @@ interface ZodLikeSchema<T> {
 /**
  * Adapt a controller function to an IPC handler with upfront Zod validation.
  *
- * The adapter validates args against the schema first, then calls the controller
- * with (parsedData, context). If validation fails, it returns VALIDATION_ERROR.
+ * The adapter validates the projected canonical input (default: `args`) against
+ * the schema first, then calls the controller with (parsedData, context). If
+ * validation fails, it returns VALIDATION_ERROR and never calls the controller.
+ * Positional channels pass a named `projectArgs` projector to compose the
+ * existing wire args into the contract request shape.
+ *
+ * 验证型 IPC adapter：先校验投影后的 canonical 输入（默认 `args`），再以
+ * (parsedData, context) 调用 controller；校验失败返回 VALIDATION_ERROR 且不
+ * 调用 controller。Positional channel 通过命名 `projectArgs` projector 把既有
+ * wire args 组合成 contract 请求形状。
  *
  * @example
  * ```ts
@@ -172,14 +203,15 @@ interface ZodLikeSchema<T> {
 export function ipcAdapterWithValidation<TInput, TOutput>(
   schema: ZodLikeSchema<TInput>,
   controllerFn: (data: TInput, context: ExecutionContext) => Promise<Result<TOutput>>,
-  options: IpcAdapterOptions = {},
+  options: IpcAdapterValidationOptions = {},
 ): (event: IpcInvokeEvent, args: unknown) => Promise<IpcResult<TOutput>> {
-  const { extractContext = defaultExtractContext } = options;
+  const { extractContext = defaultExtractContext, projectArgs } = options;
 
   return async (event: IpcInvokeEvent, args: unknown): Promise<IpcResult<TOutput>> => {
     try {
-      // Validate args
-      const parsed = schema.safeParse(args);
+      // Validate the projected canonical input (default: args as-is)
+      const input = projectArgs ? projectArgs(args) : args;
+      const parsed = schema.safeParse(input);
       if (!parsed.success) {
         const details = formatZodErrors(parsed.error.issues);
         return toIpcResult(

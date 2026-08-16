@@ -53,10 +53,7 @@ import { describe, expect, it } from 'vitest';
    */
   describe('task recurrence-rule dual retired (residual 743)', () => {
     const apiDir = __dirname;
-    const vo = readFileSync(
-      resolve(apiDir, '../value-objects/recurrence-rule.ts'),
-      'utf8',
-    );
+    const vo = readFileSync(resolve(apiDir, '../value-objects/recurrence-rule.ts'), 'utf8');
     const templateDto = readFileSync(resolve(apiDir, 'task-template.dto.ts'), 'utf8');
 
     it('exports RecurrenceConfigSchema as sole shape from VO module', () => {
@@ -76,9 +73,7 @@ import { describe, expect, it } from 'vitest';
       expect(templateDto).toContain('Residual 743');
       expect(templateDto).toContain("from '../value-objects/recurrence-rule'");
       expect(templateDto).toContain('export { RecurrenceConfigSchema }');
-      expect(templateDto).not.toMatch(
-        /const RecurrenceConfigSchema(?::[^=]+)? = z/,
-      );
+      expect(templateDto).not.toMatch(/const RecurrenceConfigSchema(?::[^=]+)? = z/);
       expect(templateDto).toContain('recurrenceRule: RecurrenceConfigSchema');
     });
   });
@@ -140,10 +135,7 @@ import { describe, expect, it } from 'vitest';
       'utf8',
     );
     const controller = readFileSync(
-      resolve(
-        apiDir,
-        '../../../../../task/src/server/transport/task-dependency.controller.ts',
-      ),
+      resolve(apiDir, '../../../../../task/src/server/transport/task-dependency.controller.ts'),
       'utf8',
     );
 
@@ -181,14 +173,20 @@ import { describe, expect, it } from 'vitest';
       expect(dto).toContain('export interface UpdateTaskDependencyRequest');
     });
 
-    it('routes and controller parse dependency body schemas', () => {
-      expect(routes).toContain('CreateDependencyBodySchema');
-      expect(routes).toContain('UpdateDependencyBodySchema');
-      expect(routes).toContain('ValidateDependencyBodySchema');
+    it('routes bind dependency body schemas; controller delegates (Phase 4)', () => {
+      // Phase 4: dependency request schemas are bound through the validation
+      // adapters (routeWithValidation binds invocation schemas that nest the
+      // body schemas); the controller accepts inferred input without safeParse.
+      expect(routes).toContain('CreateTaskDependencyInvocationSchema');
+      expect(routes).toContain('UpdateTaskDependencyInvocationSchema');
+      expect(routes).toContain('ValidateTaskDependencyInvocationSchema');
       expect(routes).toContain('ValidateDependencyResponseSchema');
-      expect(controller).toContain('CreateDependencyBodySchema.safeParse');
-      expect(controller).toContain('UpdateDependencyBodySchema.safeParse');
-      expect(controller).toContain('ValidateDependencyBodySchema.safeParse');
+      expect(controller).toContain('CreateTaskDependencyBody');
+      expect(controller).toContain('UpdateTaskDependencyBody');
+      expect(controller).toContain('ValidateDependencyBody');
+      expect(controller).not.toContain('CreateDependencyBodySchema.safeParse');
+      expect(controller).not.toContain('UpdateDependencyBodySchema.safeParse');
+      expect(controller).not.toContain('ValidateDependencyBodySchema.safeParse');
     });
   });
 }
@@ -203,10 +201,7 @@ import { describe, expect, it } from 'vitest';
    */
   describe('task folder/history client dto duals retired (residual 837)', () => {
     const apiDir = __dirname;
-    const folder = readFileSync(
-      resolve(apiDir, '../aggregates/task-folder-client.ts'),
-      'utf8',
-    );
+    const folder = readFileSync(resolve(apiDir, '../aggregates/task-folder-client.ts'), 'utf8');
     const history = readFileSync(
       resolve(apiDir, '../entities/task-template-history-client.ts'),
       'utf8',
@@ -243,9 +238,7 @@ import { describe, expect, it } from 'vitest';
         'export type TaskTemplateHistoryClientDTO = z.infer<typeof TaskTemplateHistoryResponseSchema>',
       );
       expect(history).not.toMatch(/export interface TaskTemplateHistoryClientDTO\b/);
-      expect(schemas).toContain(
-        'export const TaskTemplateHistoryResponseSchema = z.object({',
-      );
+      expect(schemas).toContain('export const TaskTemplateHistoryResponseSchema = z.object({');
       expect(schemas).toContain('changes: z.unknown()');
       // Soft residual 843: Server is z.infer of same schema (no interface dual body).
       expect(historyServer).toContain(
@@ -312,9 +305,7 @@ import { describe, expect, it } from 'vitest';
         'export type TaskTemplateHistoryServerDTO = z.infer<typeof TaskTemplateHistoryResponseSchema>',
       );
       expect(historyServer).not.toMatch(/export interface TaskTemplateHistoryServerDTO\b/);
-      expect(schemas).toContain(
-        'export const TaskTemplateHistoryResponseSchema = z.object({',
-      );
+      expect(schemas).toContain('export const TaskTemplateHistoryResponseSchema = z.object({');
       expect(historyClient).toContain(
         'export type TaskTemplateHistoryClientDTO = z.infer<typeof TaskTemplateHistoryResponseSchema>',
       );
@@ -359,14 +350,13 @@ import { describe, expect, it } from 'vitest';
       expect(dto).not.toMatch(/export const BindToGoalSchema\b/);
     });
 
-    it('routes and controller parse TaskGoalBindingSchema for bind-goal', () => {
-      expect(routes).toContain('TaskGoalBindingSchema');
+    it('routes and controller use TaskGoalBindingSchema for bind-goal (Phase 4)', () => {
+      expect(routes).toContain('BindTaskToGoalInvocationSchema');
       expect(routes).not.toContain('BindToGoalSchema');
-      expect(controller).toContain('TaskGoalBindingSchema');
+      expect(controller).toContain('BindToGoalReq');
       expect(controller).not.toContain('BindToGoalSchema');
-      expect(routes).toContain(
-        "body: { content: { 'application/json': { schema: TaskGoalBindingSchema } } }",
-      );
+      // The invocation schema nests the VO-owned TaskGoalBindingSchema.
+      expect(routes).toMatch(/BindTaskToGoalInvocationSchema\.shape\.body/);
     });
   });
 }
@@ -380,10 +370,7 @@ import { describe, expect, it } from 'vitest';
    */
   describe('task goal-binding/reminder dual retired (residual 739)', () => {
     const apiDir = __dirname;
-    const binding = readFileSync(
-      resolve(apiDir, '../value-objects/task-goal-binding.ts'),
-      'utf8',
-    );
+    const binding = readFileSync(resolve(apiDir, '../value-objects/task-goal-binding.ts'), 'utf8');
     const reminder = readFileSync(
       resolve(apiDir, '../value-objects/task-reminder-config.ts'),
       'utf8',
@@ -412,15 +399,9 @@ import { describe, expect, it } from 'vitest';
       expect(templateDto).toContain('Residual 739');
       expect(templateDto).toContain("from '../value-objects/task-goal-binding'");
       expect(templateDto).toContain("from '../value-objects/task-reminder-config'");
-      expect(templateDto).toContain(
-        'export { TaskReminderConfigSchema, TaskGoalBindingSchema }',
-      );
-      expect(templateDto).not.toMatch(
-        /const TaskGoalBindingSchema = z\.object\(\{/,
-      );
-      expect(templateDto).not.toMatch(
-        /const TaskReminderConfigSchema(?::[^=]+)? = z/,
-      );
+      expect(templateDto).toContain('export { TaskReminderConfigSchema, TaskGoalBindingSchema }');
+      expect(templateDto).not.toMatch(/const TaskGoalBindingSchema = z\.object\(\{/);
+      expect(templateDto).not.toMatch(/const TaskReminderConfigSchema(?::[^=]+)? = z/);
       expect(templateDto).toContain('goalBinding: TaskGoalBindingSchema');
       expect(templateDto).toContain('reminderConfig: TaskReminderConfigSchema');
       expect(templateDto).toContain(
@@ -445,7 +426,7 @@ import { describe, expect, it } from 'vitest';
 
     it('owns TaskGraphDependencyDTO as z.infer of TaskDependencyResponseSchema', () => {
       expect(dto).toContain('Residual 797');
-      expect(dto).toContain("TaskDependencyResponseSchema");
+      expect(dto).toContain('TaskDependencyResponseSchema');
       expect(dto).toContain(
         'export type TaskGraphDependencyDTO = z.infer<typeof TaskDependencyResponseSchema>',
       );
@@ -465,9 +446,7 @@ import { describe, expect, it } from 'vitest';
 
     it('TaskDependencyResponseSchema owns optional title fields as superset', () => {
       expect(responseSchemas).toContain('Residual 797');
-      expect(responseSchemas).toContain(
-        'export const TaskDependencyResponseSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const TaskDependencyResponseSchema = z.object({');
       expect(responseSchemas).toContain('predecessorTaskTitle: z.string().optional()');
       expect(responseSchemas).toContain('successorTaskTitle: z.string().optional()');
       expect(responseSchemas).toContain('predecessorTaskId: brandedId<TaskTemplateId>()');
@@ -488,10 +467,7 @@ import { describe, expect, it } from 'vitest';
   describe('task/schedule client dto duals retired (residual 831)', () => {
     const taskApi = __dirname;
     const scheduleApi = resolve(taskApi, '../../schedule/api');
-    const dep = readFileSync(
-      resolve(taskApi, '../aggregates/task-dependency-client.ts'),
-      'utf8',
-    );
+    const dep = readFileSync(resolve(taskApi, '../aggregates/task-dependency-client.ts'), 'utf8');
     const instance = readFileSync(
       resolve(taskApi, '../aggregates/task-instance-client.ts'),
       'utf8',
@@ -512,16 +488,12 @@ import { describe, expect, it } from 'vitest';
       expect(dep).toMatch(/export interface DependencyChainClientDTO\b/);
       expect(dep).toContain('estimatedCompletionDate?: Instant');
       expect(taskSchemas).toContain('Residual 831');
-      expect(taskSchemas).toContain(
-        'export const TaskDependencyResponseSchema = z.object({',
-      );
+      expect(taskSchemas).toContain('export const TaskDependencyResponseSchema = z.object({');
       const depRoutes = readFileSync(
         resolve(taskApi, '../../../../../task/src/api/routes/task-dependency.routes.ts'),
         'utf8',
       );
-      expect(depRoutes).toContain(
-        "successResponse(TaskDependencyResponseSchema, '创建成功')",
-      );
+      expect(depRoutes).toContain("successResponse(TaskDependencyResponseSchema, '创建成功')");
     });
 
     it('owns TaskInstanceClientDTO as z.infer of TaskInstanceResponseSchema', () => {
@@ -530,18 +502,14 @@ import { describe, expect, it } from 'vitest';
         'export type TaskInstanceClientDTO = z.infer<typeof TaskInstanceResponseSchema>',
       );
       expect(instance).not.toMatch(/export interface TaskInstanceClientDTO\b/);
-      expect(taskSchemas).toContain(
-        'export const TaskInstanceResponseSchema = z.object({',
-      );
+      expect(taskSchemas).toContain('export const TaskInstanceResponseSchema = z.object({');
       expect(taskSchemas).toContain('timeConfig: TaskTimeConfigSchema');
       const instRoutes = readFileSync(
         resolve(taskApi, '../../../../../task/src/api/routes/task-instance.routes.ts'),
         'utf8',
       );
       expect(instRoutes).toContain('TaskInstanceResponseSchema');
-      expect(instRoutes).toContain(
-        "successResponse(TaskInstanceResponseSchema, '获取成功')",
-      );
+      expect(instRoutes).toContain("successResponse(TaskInstanceResponseSchema, '获取成功')");
     });
 
     it('owns ScheduleTaskClientDTO as z.infer of ScheduleTaskResponseSchema', () => {
@@ -551,9 +519,7 @@ import { describe, expect, it } from 'vitest';
       );
       expect(scheduleTask).not.toMatch(/export interface ScheduleTaskClientDTO\b/);
       expect(scheduleSchemas).toContain('Residual 831');
-      expect(scheduleSchemas).toContain(
-        'export const ScheduleTaskResponseSchema = z.object({',
-      );
+      expect(scheduleSchemas).toContain('export const ScheduleTaskResponseSchema = z.object({');
       expect(scheduleSchemas).toContain(
         'executions: z.array(ScheduleExecutionResponseSchema).nullable()',
       );
@@ -561,9 +527,7 @@ import { describe, expect, it } from 'vitest';
         resolve(scheduleApi, '../../../../../schedule/src/api/routes.ts'),
         'utf8',
       );
-      expect(routes).toContain(
-        "successResponse(ScheduleTaskResponseSchema, '创建成功')",
-      );
+      expect(routes).toContain("successResponse(ScheduleTaskResponseSchema, '创建成功')");
     });
   });
 }
@@ -581,15 +545,11 @@ import { describe, expect, it } from 'vitest';
 
     it('owns by-range and operation ResSchema + z.infer aliases', () => {
       expect(dto).toContain('Residual 789');
-      expect(dto).toContain(
-        'export const GetTaskInstancesByRangeResSchema = z.object({',
-      );
+      expect(dto).toContain('export const GetTaskInstancesByRangeResSchema = z.object({');
       expect(dto).toContain(
         'export type GetTaskInstancesByRangeRes = z.infer<typeof GetTaskInstancesByRangeResSchema>',
       );
-      expect(dto).toContain(
-        'export const TaskInstanceOperationResSchema = z.object({',
-      );
+      expect(dto).toContain('export const TaskInstanceOperationResSchema = z.object({');
       expect(dto).toContain(
         'export type TaskInstanceOperationRes = z.infer<typeof TaskInstanceOperationResSchema>',
       );
@@ -600,9 +560,7 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('nests TaskInstanceResponseSchema from response-schemas', () => {
-      expect(responseSchemas).toContain(
-        'export const TaskInstanceResponseSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const TaskInstanceResponseSchema = z.object({');
       expect(dto).toContain("from './response-schemas'");
       expect(dto).toContain('TaskInstanceResponseSchema');
     });
@@ -619,32 +577,30 @@ import { describe, expect, it } from 'vitest';
     const apiDir = __dirname;
     const instanceDto = readFileSync(resolve(apiDir, 'task-instance.dto.ts'), 'utf8');
     const rpcMap = readFileSync(resolve(apiDir, '../protocol/task-rpc-map.ts'), 'utf8');
-    const eventsIndex = readFileSync(
-      resolve(apiDir, '../domain/events/index.ts'),
-      'utf8',
-    );
+    const eventsIndex = readFileSync(resolve(apiDir, '../domain/events/index.ts'), 'utf8');
 
     it('does not dual-alias Complete/Skip TaskInstanceRes', () => {
       expect(instanceDto).not.toMatch(/export type CompleteTaskInstanceRes\s*=/);
       expect(instanceDto).not.toMatch(/export type SkipTaskInstanceRes\s*=/);
       // Soft residual 789: operation Res dual retired — ResSchema + z.infer only.
       expect(instanceDto).toContain('Residual 789');
-      expect(instanceDto).toContain(
-        'export const TaskInstanceOperationResSchema = z.object({',
-      );
+      expect(instanceDto).toContain('export const TaskInstanceOperationResSchema = z.object({');
       expect(instanceDto).toContain(
         'export type TaskInstanceOperationRes = z.infer<typeof TaskInstanceOperationResSchema>',
       );
       expect(instanceDto).not.toMatch(/export interface TaskInstanceOperationRes\b/);
     });
 
-    it('rpc map uses TaskInstanceOperationRes for complete/skip', () => {
-      expect(rpcMap).toContain(
-        "'task:complete-instance': [CompleteTaskInstanceReq, TaskInstanceOperationRes]",
+    it('rpc map uses shared TaskInstanceResponseSchema for complete/skip (Phase 4)', () => {
+      // Phase 4: the RPC map uses channel-aligned keys and z.infer response
+      // schemas (single source of truth) instead of kebab keys + OperationRes.
+      expect(rpcMap).toMatch(
+        /'task:instance:complete':\s*\[\s*CompleteTaskInstanceInvocation,\s*z\.infer<typeof TaskInstanceResponseSchema>/,
       );
-      expect(rpcMap).toContain(
-        "'task:skip-instance': [SkipTaskInstanceReq, TaskInstanceOperationRes]",
+      expect(rpcMap).toMatch(
+        /'task:instance:skip':\s*\[\s*SkipTaskInstanceInvocation,\s*z\.infer<typeof TaskInstanceResponseSchema>/,
       );
+      expect(rpcMap).toContain('TaskInstanceResponseSchema');
       expect(rpcMap).not.toContain('CompleteTaskInstanceRes');
       expect(rpcMap).not.toContain('SkipTaskInstanceRes');
     });
@@ -662,16 +618,13 @@ import { describe, expect, it } from 'vitest';
    * Residual 747: task time-config dual body retired.
    * TaskTimeConfigDTO reuses TaskTimeConfigSchema only.
    * Domain TaskTimeConfig (Instant startDate + startDay Ymd) — ADR-037; schema is transfer sole.
-    *
+   *
    * Soft residual 831: TaskInstanceClientDTO dual retired via TaskInstanceResponseSchema
    * (see task-instance-dependency-schedule-task-client-dto-dual surface).
    */
   describe('task time-config dual retired (residual 747)', () => {
     const apiDir = __dirname;
-    const vo = readFileSync(
-      resolve(apiDir, '../value-objects/task-time-config.ts'),
-      'utf8',
-    );
+    const vo = readFileSync(resolve(apiDir, '../value-objects/task-time-config.ts'), 'utf8');
     const templateDto = readFileSync(resolve(apiDir, 'task-template.dto.ts'), 'utf8');
 
     it('exports TaskTimeConfigSchema as sole shape from VO module', () => {
@@ -680,9 +633,7 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('semantic DTO is z.infer alias without interface dual body', () => {
-      expect(vo).toContain(
-        'export type TaskTimeConfigDTO = z.infer<typeof TaskTimeConfigSchema>',
-      );
+      expect(vo).toContain('export type TaskTimeConfigDTO = z.infer<typeof TaskTimeConfigSchema>');
       expect(vo).not.toMatch(/export interface TaskTimeConfigDTO\b/);
       expect(vo).toContain('export interface TaskTimeConfig {');
       expect(vo).toContain('startDate: Instant | null');
@@ -692,9 +643,7 @@ import { describe, expect, it } from 'vitest';
       expect(templateDto).toContain('Residual 747');
       expect(templateDto).toContain("from '../value-objects/task-time-config'");
       expect(templateDto).toContain('export { TaskTimeConfigSchema }');
-      expect(templateDto).not.toMatch(
-        /const TaskTimeConfigSchema(?::[^=]+)? = z/,
-      );
+      expect(templateDto).not.toMatch(/const TaskTimeConfigSchema(?::[^=]+)? = z/);
       expect(templateDto).toContain('timeConfig: TaskTimeConfigSchema');
     });
   });

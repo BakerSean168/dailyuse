@@ -111,7 +111,7 @@ describe('PrismaTaskTemplateMapper', () => {
     ]),
     lastGeneratedDate: new Date('2024-02-29T00:00:00Z'),
     generateAheadDays: 7,
-    dependencyStatus: 'BLOCKED',
+    dependencyStatus: 'Blocked',
     isBlocked: true,
     blockingReason: 'Waiting for approval',
   });
@@ -254,7 +254,7 @@ describe('PrismaTaskTemplateMapper', () => {
 
       expect(domain.isBlocked).toBe(true);
       expect(domain.blockingReason).toBe('Waiting for approval');
-      expect(domain.dependencyStatus).toBe('BLOCKED');
+      expect(domain.dependencyStatus).toBe('Blocked');
     });
   });
 

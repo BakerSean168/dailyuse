@@ -247,4 +247,35 @@ describe('ipcAdapterWithValidation', () => {
     expect(result.error?.code).toBe('INTERNAL_ERROR');
     expect(result.error?.message).toBe('Crash');
   });
+
+  it('validates the projected canonical input when projectArgs is provided', async () => {
+    const inputData = { goalId: 'goal-1', body: { title: 'New' } };
+    const schema = createMockSchema(inputData);
+    const controllerFn = vi.fn().mockResolvedValue(ok({ id: '1' }));
+
+    const handler = ipcAdapterWithValidation(schema, controllerFn, {
+      extractContext: () => fullContext(),
+      projectArgs: (args) => ({ goalId: args, body: { title: 'New' } }),
+    });
+    const result = await handler(createMockEvent(), 'goal-1');
+
+    expect(result.ok).toBe(true);
+    const received = controllerFn.mock.calls[0][0];
+    expect(received).toEqual(inputData);
+  });
+
+  it('returns VALIDATION_ERROR on projected canonical input failure before controller', async () => {
+    const schema = createMockSchema(null, true);
+    const controllerFn = vi.fn();
+
+    const handler = ipcAdapterWithValidation(schema, controllerFn, {
+      extractContext: () => fullContext(),
+      projectArgs: (args) => ({ id: args }),
+    });
+    const result = await handler(createMockEvent(), 'bad-id');
+
+    expect(controllerFn).not.toHaveBeenCalled();
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('VALIDATION_ERROR');
+  });
 });

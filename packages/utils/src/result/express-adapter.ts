@@ -119,6 +119,30 @@ export interface ExpressAdapterOptions {
   requireAuth?: boolean;
 }
 
+/**
+ * Options for the validation-aware Express adapter.
+ *
+ * Adds an optional input projector. Body-only callers keep the existing
+ * shorthand (validate `req.body`); composite routes validate one named schema
+ * over the projected input (e.g. `{ params, query, body }` composed into the
+ * contract request shape). The projector is a pure wire adapter and must not
+ * contain schema or business logic.
+ *
+ * 验证型 Express adapter 的选项。新增可选输入 projector：仅 body 的调用方
+ * 保持旧 shorthand（直接校验 `req.body`）；复合路由用一个命名 schema 校验
+ * 投影后的输入（例如把 `{ params, query, body }` 组合成 contract 请求形状）。
+ * projector 是纯 wire 适配，不得包含 schema 或业务逻辑。
+ */
+export interface ExpressAdapterValidationOptions extends ExpressAdapterOptions {
+  /**
+   * Projects the Express request into the canonical contract input validated by
+   * the schema. When omitted, `req.body` is validated (existing shorthand).
+   * 将 Express 请求投影为 schema 校验的 canonical 输入；省略时校验 `req.body`
+   * （保持旧 shorthand）。
+   */
+  projectInput?: (req: ExpressLikeRequest) => unknown;
+}
+
 // ============================================================================
 // Default Helpers
 // ============================================================================
@@ -354,8 +378,16 @@ interface ZodLikeSchema<T> {
 /**
  * Adapt a controller function to an Express route handler with upfront Zod validation.
  *
- * The adapter validates `req.body` against the schema first, then calls the controller
- * with (parsedData, context, req). If validation fails, it responds with 400.
+ * The adapter validates the projected input (default: `req.body`) against the
+ * schema first, then calls the controller with (parsedData, context, req). If
+ * validation fails, it responds with 400 and never calls the controller. An
+ * optional `projectInput` option composes `{ params, query, body }` into a
+ * named contract schema for composite routes.
+ *
+ * 验证型 Express adapter：先校验投影输入（默认 `req.body`），再以
+ * (parsedData, context, req) 调用 controller；校验失败返回 400 且不调用
+ * controller。可选 `projectInput` 把 `{ params, query, body }` 组合成
+ * 复合路由的命名 contract schema 输入。
  *
  * @example
  * ```ts
@@ -372,12 +404,13 @@ export function expressAdapterWithValidation<TInput, TOutput>(
     context: ExecutionContext,
     req: ExpressLikeRequest,
   ) => Promise<Result<TOutput>>,
-  options: ExpressAdapterOptions = {},
+  options: ExpressAdapterValidationOptions = {},
 ): (req: ExpressLikeRequest, res: ExpressLikeResponse) => Promise<void> {
   const {
     successStatus = 200,
     extractContext = defaultExtractContext,
     requireAuth = true,
+    projectInput,
   } = options;
 
   return async (req: ExpressLikeRequest, res: ExpressLikeResponse) => {
@@ -398,8 +431,9 @@ export function expressAdapterWithValidation<TInput, TOutput>(
         return;
       }
 
-      // Validate request body
-      const parsed = schema.safeParse(req.body);
+      // Validate the projected input (default: req.body — existing shorthand)
+      const input = projectInput ? projectInput(req) : req.body;
+      const parsed = schema.safeParse(input);
       if (!parsed.success) {
         const details = formatZodErrors(parsed.error.issues);
         res.status(400).json(responseBuilder.validationError(details));

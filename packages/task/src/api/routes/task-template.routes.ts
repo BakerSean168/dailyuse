@@ -16,15 +16,16 @@ import {
 import {
   CreateTaskTemplateSchema,
   CreateTaskTemplateResponseSchema,
-  UpdateTaskTemplateSchema,
   TaskTemplateGraphResponseSchema,
   TaskTemplateResponseSchema,
   TaskTemplateListResponseSchema,
-  GenerateInstancesSchema,
-  TaskGoalBindingSchema,
   TaskInstanceResponseSchema,
   ListTaskTemplateFiltersSchema,
   TaskTemplateInstancesQuerySchema,
+  UpdateTaskTemplateInvocationSchema,
+  GenerateInstancesInvocationSchema,
+  BindTaskToGoalInvocationSchema,
+  TaskTemplateIdCommandInvocationSchema,
 } from '@memoflow/contracts/task';
 import { brandedId } from '@memoflow/contracts/primitives';
 import type { TaskTemplateId } from '@memoflow/contracts/primitives';
@@ -46,8 +47,14 @@ function parseTemplateFilters(query: Record<string, unknown> | undefined): ListT
     : typeof query?.status === 'string'
       ? [query!.status as string]
       : undefined;
-  const folderId = typeof query?.folderId === 'string' ? (query.folderId as ListTaskTemplateFilters['folderId']) : undefined;
-  const goalId = typeof query?.goalId === 'string' ? (query.goalId as ListTaskTemplateFilters['goalId']) : undefined;
+  const folderId =
+    typeof query?.folderId === 'string'
+      ? (query.folderId as ListTaskTemplateFilters['folderId'])
+      : undefined;
+  const goalId =
+    typeof query?.goalId === 'string'
+      ? (query.goalId as ListTaskTemplateFilters['goalId'])
+      : undefined;
   const tags = Array.isArray(query?.tags)
     ? (query!.tags as string[])
     : typeof query?.tags === 'string'
@@ -57,9 +64,10 @@ function parseTemplateFilters(query: Record<string, unknown> | undefined): ListT
   return { status, folderId, goalId, tags };
 }
 
-function parseTemplateInstancesRange(
-  query: Record<string, unknown> | undefined,
-): { from?: number; to?: number } {
+function parseTemplateInstancesRange(query: Record<string, unknown> | undefined): {
+  from?: number;
+  to?: number;
+} {
   const fromValue = getFirstQueryValue(query?.from);
   const toValue = getFirstQueryValue(query?.to);
   const from = fromValue ? Number(fromValue) : undefined;
@@ -88,7 +96,7 @@ export function registerTaskTemplateRoutes(
   });
 
   // POST / — Create template
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/',
@@ -98,9 +106,10 @@ export function registerTaskTemplateRoutes(
         201: successResponse(CreateTaskTemplateResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
+      validation: { schema: CreateTaskTemplateSchema },
     },
     [auth],
-    (req, ctx) => controller.createTemplate(req.body, ctx),
+    (data, ctx) => controller.createTemplate(data, ctx),
     { successStatus: 201 },
   );
 
@@ -118,7 +127,8 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listTemplates(parseTemplateFilters(req.query as Record<string, unknown>), ctx),
+    (req, ctx) =>
+      controller.listTemplates(parseTemplateFilters(req.query as Record<string, unknown>), ctx),
   );
 
   // GET /graph — List templates with dependency graph projection
@@ -172,128 +182,167 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.getTemplate(req.params!.id, ctx, req.query?.includeChildren === 'true'),
+    (req, ctx) =>
+      controller.getTemplate(req.params!.id, ctx, req.query?.includeChildren === 'true'),
   );
 
   // PUT /:id — Update template (backwards compatibility)
-  r.route(
+  r.routeWithValidation(
     {
       method: 'put',
       path: '/:id',
       summary: '更新任务模板',
       request: {
-        params: z.object({ id: brandedId<TaskTemplateId>() }),
-        body: { content: { 'application/json': { schema: UpdateTaskTemplateSchema } } },
+        params: UpdateTaskTemplateInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: UpdateTaskTemplateInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '更新成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: UpdateTaskTemplateInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.updateTemplate(data.params.id, data.body, ctx),
   );
 
   // PATCH /:id — Update template (preferred method for partial updates)
-  r.route(
+  r.routeWithValidation(
     {
       method: 'patch',
       path: '/:id',
       summary: '更新任务模板',
       request: {
-        params: z.object({ id: brandedId<TaskTemplateId>() }),
-        body: { content: { 'application/json': { schema: UpdateTaskTemplateSchema } } },
+        params: UpdateTaskTemplateInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: UpdateTaskTemplateInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '更新成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: UpdateTaskTemplateInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.updateTemplate(data.params.id, data.body, ctx),
   );
 
   // DELETE /:id — Delete template
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/:id',
       summary: '删除任务模板',
-      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
+      request: { params: TaskTemplateIdCommandInvocationSchema.shape.params },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: TaskTemplateIdCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.deleteTemplate(req.params!.id, ctx),
+    (data, ctx) => controller.deleteTemplate(data.params.id, ctx),
   );
 
   // POST /:id/activate — Activate template
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/activate',
       summary: '激活任务模板',
-      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
+      request: { params: TaskTemplateIdCommandInvocationSchema.shape.params },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '激活成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: TaskTemplateIdCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.activateTemplate(req.params!.id, ctx),
+    (data, ctx) => controller.activateTemplate(data.params.id, ctx),
   );
 
   // POST /:id/pause — Pause template
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/pause',
       summary: '暂停任务模板',
-      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
+      request: { params: TaskTemplateIdCommandInvocationSchema.shape.params },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '暂停成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: TaskTemplateIdCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.pauseTemplate(req.params!.id, ctx),
+    (data, ctx) => controller.pauseTemplate(data.params.id, ctx),
   );
 
   // POST /:id/archive — Archive template
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/archive',
       summary: '归档任务模板',
-      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
+      request: { params: TaskTemplateIdCommandInvocationSchema.shape.params },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '归档成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: TaskTemplateIdCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.archiveTemplate(req.params!.id, ctx),
+    (data, ctx) => controller.archiveTemplate(data.params.id, ctx),
   );
 
   // POST /:id/generate-instances — Generate instances for template
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/generate-instances',
       summary: '为模板生成任务实例',
       request: {
-        params: z.object({ id: brandedId<TaskTemplateId>() }),
-        body: { content: { 'application/json': { schema: GenerateInstancesSchema } } },
+        params: GenerateInstancesInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: GenerateInstancesInvocationSchema.shape.body } },
+        },
       },
       responses: {
         200: successResponse(z.array(TaskInstanceResponseSchema), '生成成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: GenerateInstancesInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.generateInstances(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.generateInstances(data.params.id, data.body, ctx),
   );
 
   // GET /:id/instances — Get instances by template ID
@@ -321,38 +370,48 @@ export function registerTaskTemplateRoutes(
   );
 
   // POST /:id/bind-goal — Bind template to goal
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/bind-goal',
       summary: '绑定任务模板到目标',
       request: {
-        params: z.object({ id: brandedId<TaskTemplateId>() }),
-        body: { content: { 'application/json': { schema: TaskGoalBindingSchema } } },
+        params: BindTaskToGoalInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: BindTaskToGoalInvocationSchema.shape.body } },
+        },
       },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '绑定成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: BindTaskToGoalInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.bindToGoal(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.bindToGoal(data.params.id, data.body, ctx),
   );
 
   // POST /:id/unbind-goal — Unbind template from goal
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/unbind-goal',
       summary: '解除任务模板与目标的绑定',
-      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
+      request: { params: TaskTemplateIdCommandInvocationSchema.shape.params },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '解绑成功'),
         404: errorResponse('模板不存在'),
       },
+      validation: {
+        schema: TaskTemplateIdCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.unbindFromGoal(req.params!.id, ctx),
+    (data, ctx) => controller.unbindFromGoal(data.params.id, ctx),
   );
 
   return router;

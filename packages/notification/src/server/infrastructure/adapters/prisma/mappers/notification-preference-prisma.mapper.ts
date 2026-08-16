@@ -32,6 +32,28 @@ export type PrismaNotificationPreferenceRow = {
 };
 
 /**
+ * Structural row input for `toDomain`. The generated Prisma row is a structural
+ * superset (extra columns), so this widens the accepted input to any object
+ * carrying the mapped fields — removing the the raw cast boundary casts at
+ * the repository call sites.
+ * `toDomain` 的结构化行输入。生成的 Prisma row 是结构超集（额外的列），因此
+ * 放宽接受的输入为任何携带被映射字段的对象——消除 repository 调用点的
+ * the raw cast 边界强转。
+ */
+export type NotificationPreferenceRowLike = Pick<
+  PrismaNotificationPreferenceRow,
+  | 'id'
+  | 'identityId'
+  | 'enabled'
+  | 'channels'
+  | 'categories'
+  | 'version'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'deletedAt'
+>;
+
+/**
  * Safely parses a JSON string, returning null on failure.
  * 安全解析 JSON 字符串，失败时返回 null。
  */
@@ -47,7 +69,7 @@ export class NotificationPreferencePrismaMapper {
    * @param row - Prisma NotificationPreference row  Prisma NotificationPreference 行数据
    * @returns Hydrated NotificationPreference aggregate 水合后的 NotificationPreference 聚合根
    */
-  static toDomain(row: PrismaNotificationPreferenceRow): NotificationPreference {
+  static toDomain(row: NotificationPreferenceRowLike): NotificationPreference {
     const channels = parseJsonSafe<Record<string, boolean>>(row.channels) ?? {};
     const categories =
       parseJsonSafe<Record<string, Record<string, boolean> | boolean>>(row.categories) ?? {};

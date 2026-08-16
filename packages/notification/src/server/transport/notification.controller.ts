@@ -9,12 +9,13 @@ import type { Result } from '@memoflow/contracts/result';
 import { fail, ok } from '@memoflow/contracts/result';
 import type { Context } from '@memoflow/contracts/shared';
 import type { NotificationApplicationPort } from '../application';
-import {
-  CreateNotificationSchema,
-  NotificationQuerySchema,
-  NotificationIdsBatchSchema,
-  CleanupOldNotificationsSchema,
-  UpdateNotificationPreferenceSchema,
+import { NotificationQuerySchema } from '@memoflow/contracts/notification';
+import type {
+  CleanupOldNotificationsReq,
+  CreateNotificationReq,
+  DeleteNotificationsBatchReq,
+  MarkAsReadBatchReq,
+  UpdateNotificationPreferenceReq,
 } from '@memoflow/contracts/notification';
 import { formatZodErrors } from '@memoflow/utils/result';
 
@@ -23,17 +24,9 @@ export class NotificationController {
 
   // ==================== CRUD Operations ====================
 
-  async create(input: unknown, ctx: Context): Promise<Result<unknown>> {
-    const parsed = CreateNotificationSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
+  async create(input: CreateNotificationReq, ctx: Context): Promise<Result<unknown>> {
     return this.useCases.createNotification({
-      ...parsed.data,
+      ...input,
       identityId: ctx.identityId,
     });
   }
@@ -82,32 +75,22 @@ export class NotificationController {
     return this.useCases.getUnreadCount(identityId);
   }
 
-  async batchMarkAsRead(input: unknown, ctx: Context): Promise<Result<{ updatedCount: number }>> {
-    const parsed = NotificationIdsBatchSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    const result = await this.useCases.batchMarkAsRead(parsed.data, ctx.identityId);
+  async batchMarkAsRead(
+    input: MarkAsReadBatchReq,
+    ctx: Context,
+  ): Promise<Result<{ updatedCount: number }>> {
+    const result = await this.useCases.batchMarkAsRead(input, ctx.identityId);
     if (!result.ok) return result as Result<{ updatedCount: number }>;
     // Align bare number Result with NotificationBatchResultSchema { updatedCount }.
     const updatedCount = typeof result.data === 'number' ? result.data : 0;
     return ok({ updatedCount });
   }
 
-  async batchDelete(input: unknown, ctx: Context): Promise<Result<{ deletedCount: number }>> {
-    const parsed = NotificationIdsBatchSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    const result = await this.useCases.batchDelete(parsed.data, ctx.identityId);
+  async batchDelete(
+    input: DeleteNotificationsBatchReq,
+    ctx: Context,
+  ): Promise<Result<{ deletedCount: number }>> {
+    const result = await this.useCases.batchDelete(input, ctx.identityId);
     if (!result.ok) return result as Result<{ deletedCount: number }>;
     // Normalize to BatchOperationResultDTO (no { success, affected } dual-track).
     if (
@@ -120,17 +103,12 @@ export class NotificationController {
     return ok({ deletedCount: 0 });
   }
 
-  async cleanup(input: unknown, ctx: Context): Promise<Result<{ deletedCount: number }>> {
-    const parsed = CleanupOldNotificationsSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
+  async cleanup(
+    input: CleanupOldNotificationsReq,
+    ctx: Context,
+  ): Promise<Result<{ deletedCount: number }>> {
     const result = await this.useCases.cleanupOldNotifications({
-      ...parsed.data,
+      ...input,
       identityId: ctx.identityId,
     });
     if (!result.ok) return result as Result<{ deletedCount: number }>;
@@ -150,17 +128,12 @@ export class NotificationController {
     return this.useCases.getPreferences(ctx.identityId);
   }
 
-  async updatePreferences(input: unknown, ctx: Context): Promise<Result<unknown>> {
-    const parsed = UpdateNotificationPreferenceSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
+  async updatePreferences(
+    input: UpdateNotificationPreferenceReq,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
     // identityId always from auth context — never from client body dual-track.
-    return this.useCases.updatePreferences(parsed.data, ctx.identityId);
+    return this.useCases.updatePreferences(input, ctx.identityId);
   }
 
   // ==================== Dead-Letter & Receipt Operations ====================

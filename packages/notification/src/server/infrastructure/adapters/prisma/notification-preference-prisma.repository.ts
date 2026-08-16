@@ -11,10 +11,7 @@ import type { INotificationPreferenceRepository } from '../../../domain';
 import { NotificationPreference } from '../../../domain/aggregates/notification-preference';
 import { NotificationChannelType } from '@memoflow/contracts/notification';
 import { generateUUID } from '@memoflow/utils/shared';
-import {
-  NotificationPreferencePrismaMapper,
-  type PrismaNotificationPreferenceRow,
-} from './mappers/notification-preference-prisma.mapper';
+import { NotificationPreferencePrismaMapper } from './mappers/notification-preference-prisma.mapper';
 
 /**
  * NotificationPreference Prisma Repository
@@ -47,12 +44,15 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
     });
   }
 
-  async findByIdForIdentity(identityId: string, id: string): Promise<NotificationPreference | null> {
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<NotificationPreference | null> {
     const row = await this.prisma.notificationPreference.findFirst({
       where: { id, identityId },
     });
     if (!row) return null;
-    return NotificationPreferencePrismaMapper.toDomain(row as unknown as PrismaNotificationPreferenceRow);
+    return NotificationPreferencePrismaMapper.toDomain(row);
   }
 
   async findByIdentityId(identityId: string): Promise<NotificationPreference | null> {
@@ -60,7 +60,7 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
       where: { identityId },
     });
     if (!row) return null;
-    return NotificationPreferencePrismaMapper.toDomain(row as unknown as PrismaNotificationPreferenceRow);
+    return NotificationPreferencePrismaMapper.toDomain(row);
   }
 
   async delete(identityId: string, id: string): Promise<void> {

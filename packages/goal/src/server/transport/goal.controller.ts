@@ -12,34 +12,49 @@
 
 import type { Result } from '@memoflow/contracts/result';
 import { fail, ok } from '@memoflow/contracts/result';
-import {
-  CreateGoalSchema,
-  UpdateGoalSchema,
-  CloneGoalSchema,
-  ListGoalFiltersSchema,
-  AddKeyResultSchema,
-  DeleteKeyResultSchema,
-  UpdateKeyResultSchema,
-  UpdateKeyResultProgressSchema,
-  CreateGoalReviewSchema,
-  DeleteGoalReviewSchema,
-  CreateGoalRecordSchema,
-  DeleteGoalRecordSchema,
-  UpdateGoalReviewSchema,
-  ActivateFocusModeSchema,
-  ExtendFocusModeSchema,
-  GoalVersionCommandSchema,
-} from '@memoflow/contracts/goal';
+import { ListGoalFiltersSchema } from '@memoflow/contracts/goal';
+import { formatZodErrors } from '@memoflow/utils/result';
 import type {
+  AddKeyResultInvocation,
+  AddKeyResultReq,
+  BatchKeyResultWeightsInvocation,
+  BatchUpdateKeyResultWeightsReq,
+  CloneGoalInvocation,
+  CloneGoalReq,
+  CreateGoalRecordReq,
+  CreateGoalReviewReq,
+  CreateGoalReq,
+  CreateRecordInvocation,
+  CreateReviewInvocation,
+  DeleteGoalInvocation,
+  DeleteGoalRecordReq,
+  DeleteGoalReviewReq,
+  DeleteKeyResultInvocation,
+  DeleteKeyResultReq,
+  DeleteRecordInvocation,
+  DeleteReviewInvocation,
+  ExtendFocusModeReq,
+  GoalStatusCommandInvocation,
   GoalSystemView,
   GetGoalAggregateRes,
-  ProgressBreakdown,
   ListGoalsQuery,
+  ProgressBreakdown,
+  UpdateGoalFolderReq,
+  UpdateGoalInvocation,
+  UpdateGoalFolderInvocation,
+  UpdateGoalReq,
+  UpdateKeyResultInvocation,
+  UpdateKeyResultProgressInvocation,
+  UpdateKeyResultProgressReq,
+  UpdateKeyResultReq,
+  UpdateReviewInvocation,
+  UpdateGoalReviewReq,
+  ActivateFocusModeReq,
 } from '@memoflow/contracts/goal';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IdentityId } from '@memoflow/contracts/primitives';
-import { formatZodErrors } from '@memoflow/utils/result';
 import { createLogger } from '@memoflow/utils/logger';
+import { toKeyResultListResponse } from './mappers';
 import type {
   CreateGoalUseCase,
   GetGoalUseCase,
@@ -119,16 +134,8 @@ export class GoalController {
 
   // ==================== Goal CRUD ====================
 
-  async create(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
-    const parsed = CreateGoalSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.createGoal(parsed.data, cx);
+  async create(input: CreateGoalReq, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.createGoal(input, cx);
   }
 
   async list(filters: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
@@ -162,32 +169,16 @@ export class GoalController {
     return this.useCases.getGoal(id, cx.identityId, includeChildren);
   }
 
-  async update(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
-    const parsed = UpdateGoalSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.updateGoal(id, cx.identityId, parsed.data);
+  async update(id: string, input: UpdateGoalReq, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.updateGoal(id, cx.identityId, input);
   }
 
   async delete(
     id: string,
-    expectedVersion: unknown,
+    expectedVersion: number,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = GoalVersionCommandSchema.safeParse({ expectedVersion });
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.deleteGoal(id, cx.identityId, parsed.data.expectedVersion);
+    return this.useCases.deleteGoal(id, cx.identityId, expectedVersion);
   }
 
   async archiveExpired(cx: ExecutionContext): Promise<Result<unknown>> {
@@ -233,27 +224,15 @@ export class GoalController {
 
   async cloneGoal(
     goalId: string,
-    params: unknown,
+    params: CloneGoalReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsedParams = CloneGoalSchema.safeParse(params ?? {});
-    if (!parsedParams.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsedParams.error.issues),
-      });
-    }
-
-    return this.useCases.cloneGoal(goalId, parsedParams.data, cx);
+    return this.useCases.cloneGoal(goalId, params, cx);
   }
 
   async batchUpdateKeyResultWeights(
     goalId: string,
-    request: {
-      expectedVersion: number;
-      updates: Array<{ keyResultId: string; weight: number }>;
-    },
+    request: BatchUpdateKeyResultWeightsReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     return this.useCases.batchUpdateKeyResultWeights(
@@ -269,141 +248,86 @@ export class GoalController {
   async getKeyResults(goalId: string, cx: ExecutionContext): Promise<Result<unknown>> {
     const result = await this.useCases.getGoal(goalId, cx.identityId, true);
     if (!result.ok) return result;
-    const goal = result.data as unknown as Record<string, unknown>;
-    const keyResults = (goal.keyResults as unknown[]) ?? [];
-    return ok({
-      data: keyResults,
-      total: keyResults.length,
-    });
+    return ok(toKeyResultListResponse(result.data));
   }
 
   async addKeyResult(
     goalId: string,
-    input: unknown,
+    input: AddKeyResultReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = AddKeyResultSchema.safeParse({
-      ...(input as Record<string, unknown>),
-      goalId,
-    });
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
     return this.useCases.addKeyResult(goalId, cx.identityId, {
-      title: parsed.data.title,
-      valueType: parsed.data.valueType,
-      aggregationMethod: parsed.data.calculationMethod,
-      startValue: parsed.data.startValue,
-      targetValue: parsed.data.targetValue,
-      currentValue: parsed.data.currentValue,
-      unit: parsed.data.unit,
-      weight: parsed.data.weight,
-      expectedVersion: parsed.data.expectedVersion,
+      title: input.title,
+      valueType: input.valueType,
+      aggregationMethod: input.calculationMethod,
+      startValue: input.startValue,
+      targetValue: input.targetValue,
+      currentValue: input.currentValue,
+      unit: input.unit,
+      weight: input.weight,
+      expectedVersion: input.expectedVersion,
     });
   }
 
   async updateKeyResult(
     goalId: string,
     krId: string,
-    input: unknown,
+    input: UpdateKeyResultReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = UpdateKeyResultSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
     return this.useCases.updateKeyResult(goalId, cx.identityId, krId, {
-      title: parsed.data.title,
-      description: parsed.data.description ?? undefined,
-      weight: parsed.data.weight,
-      startValue: parsed.data.startValue,
-      currentValue: parsed.data.currentValue,
-      targetValue: parsed.data.targetValue,
-      unit: parsed.data.unit ?? undefined,
-      expectedVersion: parsed.data.expectedVersion,
+      title: input.title,
+      description: input.description ?? undefined,
+      weight: input.weight,
+      startValue: input.startValue,
+      currentValue: input.currentValue,
+      targetValue: input.targetValue,
+      unit: input.unit ?? undefined,
+      expectedVersion: input.expectedVersion,
     });
   }
 
   async updateKeyResultProgress(
     goalId: string,
     krId: string,
-    input: unknown,
+    input: UpdateKeyResultProgressReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = UpdateKeyResultProgressSchema.safeParse({
-      ...(input as Record<string, unknown>),
-      keyResultId: krId,
-    });
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
     return this.useCases.updateKeyResultProgress(
       goalId,
       cx.identityId,
       krId,
-      parsed.data.newValue,
-      parsed.data.expectedVersion,
-      parsed.data.note,
+      input.newValue,
+      input.expectedVersion,
+      input.note,
     );
   }
 
   async deleteKeyResult(
     goalId: string,
     krId: string,
-    input: unknown,
+    input: DeleteKeyResultReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = DeleteKeyResultSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.deleteKeyResult(
-      goalId,
-      cx.identityId,
-      krId,
-      parsed.data.expectedVersion,
-    );
+    return this.useCases.deleteKeyResult(goalId, cx.identityId, krId, input.expectedVersion);
   }
 
   // ==================== Reviews ====================
 
-  async addReview(goalId: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
-    const parsed = CreateGoalReviewSchema.safeParse({
-      ...(input as Record<string, unknown>),
-      goalId,
-    });
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
+  async addReview(
+    goalId: string,
+    input: CreateGoalReviewReq,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
     return this.useCases.addReview(goalId, cx.identityId, {
-      title: parsed.data.title,
-      content: parsed.data.content,
-      reviewType: parsed.data.reviewType,
-      rating: parsed.data.rating,
-      achievements: parsed.data.achievements,
-      challenges: parsed.data.challenges,
-      nextActions: parsed.data.nextActions,
-      expectedVersion: parsed.data.expectedVersion,
+      title: input.title,
+      content: input.content,
+      reviewType: input.reviewType,
+      rating: input.rating,
+      achievements: input.achievements,
+      challenges: input.challenges,
+      nextActions: input.nextActions,
+      expectedVersion: input.expectedVersion,
     });
   }
 
@@ -416,48 +340,27 @@ export class GoalController {
   async updateReview(
     goalId: string,
     reviewId: string,
-    input: unknown,
+    input: UpdateGoalReviewReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = UpdateGoalReviewSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
     return this.useCases.updateReview(goalId, cx.identityId, reviewId, {
-      title: parsed.data.title,
-      content: parsed.data.content,
-      rating: parsed.data.rating,
-      achievements: parsed.data.achievements,
-      challenges: parsed.data.challenges,
-      nextActions: parsed.data.nextActions,
-      expectedVersion: parsed.data.expectedVersion,
+      title: input.title,
+      content: input.content,
+      rating: input.rating,
+      achievements: input.achievements,
+      challenges: input.challenges,
+      nextActions: input.nextActions,
+      expectedVersion: input.expectedVersion,
     });
   }
 
   async deleteReview(
     goalId: string,
     reviewId: string,
-    input: unknown,
+    input: DeleteGoalReviewReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = DeleteGoalReviewSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.deleteReview(
-      goalId,
-      cx.identityId,
-      reviewId,
-      parsed.data.expectedVersion,
-    );
+    return this.useCases.deleteReview(goalId, cx.identityId, reviewId, input.expectedVersion);
   }
 
   // ==================== Records ====================
@@ -465,27 +368,16 @@ export class GoalController {
   async createRecord(
     goalId: string,
     keyResultId: string,
-    input: unknown,
+    input: CreateGoalRecordReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = CreateGoalRecordSchema.safeParse({
-      ...(input as Record<string, unknown>),
-      keyResultId,
-    });
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
     return this.useCases.createRecord(
       goalId,
       keyResultId,
       {
-        value: parsed.data.value,
-        note: parsed.data.note,
-        expectedVersion: parsed.data.expectedVersion,
+        value: input.value,
+        note: input.note,
+        expectedVersion: input.expectedVersion,
       },
       cx.identityId,
     );
@@ -523,25 +415,16 @@ export class GoalController {
     goalId: string,
     keyResultId: string,
     recordId: string,
-    input: unknown,
+    input: DeleteGoalRecordReq,
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const parsed = DeleteGoalRecordSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    const result = await this.useCases.deleteRecord(
+    return this.useCases.deleteRecord(
       goalId,
       keyResultId,
       recordId,
       cx.identityId,
-      parsed.data.expectedVersion,
+      input.expectedVersion,
     );
-    return result;
   }
 
   // ==================== Focus Mode ====================
@@ -553,29 +436,15 @@ export class GoalController {
     return this.useCases.getCurrentFocusMode(cx.identityId);
   }
 
-  async activateFocusMode(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
+  async activateFocusMode(
+    input: ActivateFocusModeReq,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
     this.logger.info('启用专注模式开始', {
       identityId: cx.identityId,
       input,
     });
-    const parsed = ActivateFocusModeSchema.safeParse(input);
-    if (!parsed.success) {
-      this.logger.info('启用专注模式参数校验失败', {
-        identityId: cx.identityId,
-        issues: parsed.error.issues,
-      });
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    this.logger.info('启用专注模式参数校验通过', {
-      identityId: cx.identityId,
-      focusedGoalIds: parsed.data.focusedGoalIds,
-      hiddenGoalsMode: parsed.data.hiddenGoalsMode,
-    });
-    return this.useCases.activateFocusMode(cx.identityId, parsed.data);
+    return this.useCases.activateFocusMode(cx.identityId, input);
   }
 
   async deactivateFocusMode(cx: ExecutionContext): Promise<Result<unknown>> {
@@ -585,27 +454,11 @@ export class GoalController {
     return this.useCases.deactivateFocusMode(cx.identityId);
   }
 
-  async extendFocusMode(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
+  async extendFocusMode(input: ExtendFocusModeReq, cx: ExecutionContext): Promise<Result<unknown>> {
     this.logger.info('延长专注模式开始', {
       identityId: cx.identityId,
       input,
     });
-    const parsed = ExtendFocusModeSchema.safeParse(input);
-    if (!parsed.success) {
-      this.logger.info('延长专注模式参数校验失败', {
-        identityId: cx.identityId,
-        issues: parsed.error.issues,
-      });
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    this.logger.info('延长专注模式参数校验通过', {
-      identityId: cx.identityId,
-      newEndTime: parsed.data.newEndTime,
-    });
-    return this.useCases.extendFocusMode(cx.identityId, parsed.data.newEndTime);
+    return this.useCases.extendFocusMode(cx.identityId, input.newEndTime);
   }
 }

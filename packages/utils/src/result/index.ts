@@ -72,9 +72,11 @@ export type {
 
 export {
   expressAdapter,
+  expressAdapterWithValidation,
   defaultExtractContext,
   readExpressRequestContext,
   type ExpressAdapterOptions,
+  type ExpressAdapterValidationOptions,
 } from './express-adapter';
 
 // Residual 945: formatZodErrors sole body (not adapter-local dual).
@@ -84,7 +86,12 @@ export { formatZodErrors } from './format-zod-errors';
 // IPC Adapter
 // ============================================================================
 
-export { ipcAdapter, type IpcAdapterOptions } from './ipc-adapter';
+export {
+  ipcAdapter,
+  ipcAdapterWithValidation,
+  type IpcAdapterOptions,
+  type IpcAdapterValidationOptions,
+} from './ipc-adapter';
 
 export { resultify } from './resultify';
 
@@ -97,6 +104,7 @@ export {
   type OpenApiRegistryLike,
   type HttpMethod,
   type ApiRouteDefinition,
+  type ApiRouteValidationBinding,
   type RouteRegistrarConfig,
 } from './route-registrar';
 

@@ -79,15 +79,61 @@
  */
 
 import { ipcMain } from 'electron';
+import { NotificationChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
+import { ok } from '@memoflow/contracts/result';
 import {
-  NotificationChannels,
-  type IElectronModuleContext,
-} from '@memoflow/contracts/electron';
-import { fail, ok } from '@memoflow/contracts/result';
+  CreateNotificationSchema,
+  DeleteNotificationInvocationSchema,
+  MarkNotificationReadInvocationSchema,
+  NotificationBatchInvocationSchema,
+  UpdateNotificationPreferenceSchema,
+} from '@memoflow/contracts/notification';
 import { createLogger } from '@memoflow/utils/logger';
 import type { NotificationModuleInstance } from '../server/infrastructure';
 import { NotificationController } from '../server/transport';
-import { withAuthenticatedIdentity, withAuthenticatedValue } from './authenticated-ipc';
+import {
+  withAuthenticatedIdentity,
+  withAuthenticatedValidation,
+  withAuthenticatedValue,
+} from './authenticated-ipc';
+
+/**
+ * Registers an object-payload IPC channel with adapter-owned validation.
+ *
+ * The returned handler runs inside the authenticated context, projects the
+ * wire payload into the canonical contract input, validates it via the real
+ * `ipcAdapterWithValidation`, and only then calls the controller. This is the
+ * notification-module registration fixture — it is NOT a parallel validation
+ * helper.
+ *
+ * 注册带 adapter 校验的 object-payload IPC 通道：handler 在鉴权 context 内把
+ * wire payload 投影为 canonical contract 输入，经真实
+ * `ipcAdapterWithValidation` 校验后才调用 controller。这是 notification 模块
+ * 的注册 fixture，不是平行 validation helper。
+ */
+function registerValidatedChannel<TInput, TOutput>(
+  ctx: IElectronModuleContext,
+  channel: string,
+  schema: ZodLikeSchema<TInput>,
+  controllerFn: (
+    data: TInput,
+    context: import('@memoflow/contracts/shared').ExecutionContext,
+  ) => Promise<import('@memoflow/contracts/result').Result<TOutput>>,
+  projectArgs?: (args: unknown) => unknown,
+): void {
+  ipcMain.handle(channel, (event, args) =>
+    withAuthenticatedValidation(ctx, schema, controllerFn, projectArgs)(event, args),
+  );
+}
+
+/** Minimal structural schema interface (avoid hard Zod dependency in the seam). */
+interface ZodLikeSchema<TInput> {
+  safeParse(
+    data: unknown,
+  ):
+    | { success: true; data: TInput }
+    | { success: false; error: { issues: Array<{ path: PropertyKey[]; message: string }> } };
+}
 
 const logger = createLogger('NotificationElectron');
 
@@ -208,9 +254,12 @@ export function createNotificationElectronModule(
         //    核心 IPC 处理器 — 保留所有现有核心通道。
         ipcMain.handle(NotificationChannels.LIST, async (_, params) => {
           return withAuthenticatedValue(ctx, (requestContext) =>
-            controller.list({
-              ...(params ?? {}),
-            }, requestContext),
+            controller.list(
+              {
+                ...(params ?? {}),
+              },
+              requestContext,
+            ),
           );
         });
         installed.push(NotificationChannels.LIST);
@@ -218,37 +267,51 @@ export function createNotificationElectronModule(
           withAuthenticatedValue(ctx, (requestContext) => controller.get(id, requestContext)),
         );
         installed.push(NotificationChannels.GET);
-        ipcMain.handle(NotificationChannels.CREATE, async (_, dto) =>
-          withAuthenticatedValue(ctx, (requestContext) => controller.create(dto, requestContext)),
+        registerValidatedChannel(
+          ctx,
+          NotificationChannels.CREATE,
+          CreateNotificationSchema,
+          (data, requestContext) => controller.create(data, requestContext),
         );
         installed.push(NotificationChannels.CREATE);
-        ipcMain.handle(NotificationChannels.MARK_READ, (_, id) =>
-          withAuthenticatedValue(ctx, (requestContext) => controller.markAsRead(id, requestContext)),
+        registerValidatedChannel(
+          ctx,
+          NotificationChannels.MARK_READ,
+          MarkNotificationReadInvocationSchema,
+          (data, requestContext) => controller.markAsRead(data.params.id, requestContext),
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(NotificationChannels.MARK_READ);
         ipcMain.handle(NotificationChannels.MARK_ALL_READ, async () => {
-          return withAuthenticatedIdentity(ctx, (identityId) => controller.markAllAsRead(identityId));
+          return withAuthenticatedIdentity(ctx, (identityId) =>
+            controller.markAllAsRead(identityId),
+          );
         });
         installed.push(NotificationChannels.MARK_ALL_READ);
-        ipcMain.handle(NotificationChannels.DELETE, async (_, id) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await controller.delete(id, requestContext);
+        registerValidatedChannel(
+          ctx,
+          NotificationChannels.DELETE,
+          DeleteNotificationInvocationSchema,
+          async (data, requestContext) => {
+            const result = await controller.delete(data.params.id, requestContext);
             if (!result.ok) return result;
             return ok(null);
-          }),
+          },
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(NotificationChannels.DELETE);
-        ipcMain.handle(NotificationChannels.CLEAR_ALL, async (_, ids) => {
-          if (Array.isArray(ids) && ids.length > 0) {
-            return withAuthenticatedValue(ctx, (requestContext) =>
-              controller.batchDelete({ notificationIds: ids }, requestContext),
-            );
-          }
-          return fail({ code: 'VALIDATION_ERROR', message: 'notification ids are required' });
-        });
+        registerValidatedChannel(
+          ctx,
+          NotificationChannels.CLEAR_ALL,
+          NotificationBatchInvocationSchema,
+          (data, requestContext) => controller.batchDelete(data, requestContext),
+          (args) => ({ notificationIds: args as string[] }),
+        );
         installed.push(NotificationChannels.CLEAR_ALL);
         ipcMain.handle(NotificationChannels.GET_UNREAD_COUNT, async () => {
-          return withAuthenticatedIdentity(ctx, (identityId) => controller.getUnreadCount(identityId));
+          return withAuthenticatedIdentity(ctx, (identityId) =>
+            controller.getUnreadCount(identityId),
+          );
         });
         installed.push(NotificationChannels.GET_UNREAD_COUNT);
         ipcMain.handle(NotificationChannels.PREFERENCES_GET, async () => {
@@ -257,11 +320,13 @@ export function createNotificationElectronModule(
           );
         });
         installed.push(NotificationChannels.PREFERENCES_GET);
-        ipcMain.handle(NotificationChannels.PREFERENCES_UPDATE, async (_, dto) => {
-          return withAuthenticatedValue(ctx, (requestContext) =>
-            controller.updatePreferences(dto ?? {}, requestContext),
-          );
-        });
+        registerValidatedChannel(
+          ctx,
+          NotificationChannels.PREFERENCES_UPDATE,
+          UpdateNotificationPreferenceSchema,
+          (data, requestContext) => controller.updatePreferences(data, requestContext),
+          (args) => args ?? {},
+        );
         installed.push(NotificationChannels.PREFERENCES_UPDATE);
 
         options.instance.start();

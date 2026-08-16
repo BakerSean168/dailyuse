@@ -25,20 +25,21 @@ class TestOpenApiRegistry implements OpenApiRegistryLike {
 const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
 function createGoalControllerStub(): GoalController {
+  const okResult = { ok: true, data: null };
   return {
-    create: vi.fn(),
-    list: vi.fn(),
-    search: vi.fn(),
-    get: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-    archive: vi.fn(),
-    activate: vi.fn(),
-    complete: vi.fn(),
-    getAggregate: vi.fn(),
-    getProgressBreakdown: vi.fn(),
-    cloneGoal: vi.fn(),
-    batchUpdateKeyResultWeights: vi.fn(),
+    create: vi.fn(async () => okResult),
+    list: vi.fn(async () => okResult),
+    search: vi.fn(async () => okResult),
+    get: vi.fn(async () => okResult),
+    update: vi.fn(async () => okResult),
+    delete: vi.fn(async () => okResult),
+    archive: vi.fn(async () => okResult),
+    activate: vi.fn(async () => okResult),
+    complete: vi.fn(async () => okResult),
+    getAggregate: vi.fn(async () => okResult),
+    getProgressBreakdown: vi.fn(async () => okResult),
+    cloneGoal: vi.fn(async () => okResult),
+    batchUpdateKeyResultWeights: vi.fn(async () => okResult),
   } as unknown as GoalController;
 }
 
@@ -47,7 +48,9 @@ function getRegisteredRoute(
   method: string,
   path: string,
 ): RegisteredRoute {
-  const route = registry.paths.find((candidate) => candidate.method === method && candidate.path === path);
+  const route = registry.paths.find(
+    (candidate) => candidate.method === method && candidate.path === path,
+  );
 
   expect(route).toBeDefined();
   return route!;
@@ -56,9 +59,12 @@ function getRegisteredRoute(
 function getJsonBodySchema(route: RegisteredRoute): {
   safeParse: (value: unknown) => { success: boolean };
 } {
-  return (((route.request?.body as Record<string, unknown> | undefined)?.content as
-    | Record<string, unknown>
-    | undefined)?.['application/json'] as Record<string, unknown> | undefined)?.schema as {
+  return (
+    (
+      (route.request?.body as Record<string, unknown> | undefined)?.content as
+        Record<string, unknown> | undefined
+    )?.['application/json'] as Record<string, unknown> | undefined
+  )?.schema as {
     safeParse: (value: unknown) => { success: boolean };
   };
 }
@@ -85,7 +91,8 @@ function getResponseSchema(
 ): {
   safeParse: (value: unknown) => { success: boolean };
 } {
-  const responses = route.responses as Record<string, { content?: Record<string, unknown> }> | undefined;
+  const responses = route.responses as
+    Record<string, { content?: Record<string, unknown> }> | undefined;
   const response = responses?.[String(status)];
   const schema = (response?.content as Record<string, unknown> | undefined)?.[
     'application/json'
@@ -128,6 +135,108 @@ function createGoalUseCasesStub(): Parameters<typeof registerGoalRoutes>[0] {
     batchUpdateKeyResultWeights: vi.fn(),
   };
 }
+
+describe('goal mutation routes run the real validation adapter (Phase 4)', () => {
+  function getHandler(
+    router: ReturnType<typeof registerGoalCrudRoutes>,
+    method: string,
+    path: string,
+  ): (req: unknown, res: unknown) => Promise<unknown> {
+    const stack = (
+      router as unknown as {
+        stack: Array<{
+          route?: {
+            path: string;
+            methods: Record<string, boolean>;
+            stack: Array<{ handle: (r: unknown, s: unknown) => unknown }>;
+          };
+        }>;
+      }
+    ).stack;
+    const layer = stack.find(
+      (candidate) => candidate.route?.path === path && candidate.route.methods[method] === true,
+    );
+    expect(layer, `${method} ${path} registered`).toBeDefined();
+    return layer!.route!.stack.at(-1)!.handle;
+  }
+
+  function createReq(body: unknown): Record<string, unknown> {
+    return {
+      body,
+      params: { id: 'IGoalId_550e8400-e29b-41d4-a716-446655440000' },
+      headers: {},
+      query: {},
+      user: { identityId: 'identity-1' },
+      requestContext: {
+        requestId: 'req-goal-adapter',
+        traceId: 'req-goal-adapter',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
+    };
+  }
+
+  function createRes() {
+    const res: any = {
+      statusCode: 0,
+      body: null,
+      status(code: number) {
+        res.statusCode = code;
+        return res;
+      },
+      json(data: unknown) {
+        res.body = data;
+        return res;
+      },
+      end() {
+        return res;
+      },
+    };
+    return res;
+  }
+
+  it('create: valid body reaches the controller, malformed body is rejected before it', async () => {
+    const controller = createGoalControllerStub();
+    const router = registerGoalCrudRoutes(
+      controller,
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      null,
+    );
+    const handler = getHandler(router, 'post', '/');
+
+    const validRes = createRes();
+    await handler(createReq({ name: 'Ship architecture fixes', importance: 'Moderate' }), validRes);
+    expect(validRes.statusCode).toBe(201);
+    expect(controller.create).toHaveBeenCalledTimes(1);
+
+    const badRes = createRes();
+    await handler(createReq({ name: '', importance: 'Moderate' }), badRes);
+    expect(badRes.statusCode).toBe(400);
+    expect(badRes.body.error.code).toBe('VALIDATION_ERROR');
+    expect(controller.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('archive: missing expectedVersion is rejected before the controller', async () => {
+    const controller = createGoalControllerStub();
+    const router = registerGoalCrudRoutes(
+      controller,
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      null,
+    );
+    const handler = getHandler(router, 'post', '/:id/archive');
+
+    const badRes = createRes();
+    await handler(createReq({}), badRes);
+    expect(badRes.statusCode).toBe(400);
+    expect(badRes.body.error.code).toBe('VALIDATION_ERROR');
+    expect(controller.archive).not.toHaveBeenCalled();
+
+    const validRes = createRes();
+    await handler(createReq({ expectedVersion: 1 }), validRes);
+    expect(validRes.statusCode).toBe(200);
+    expect(controller.archive).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('goal route contracts', () => {
   it('registers canonical create, versioned update, and clone body schemas', () => {
@@ -204,9 +313,11 @@ describe('goal route contracts', () => {
       null,
     );
 
-    const layers = (router as unknown as {
-      stack: Array<{ handle?: { stack?: Array<{ route?: { path: string } }> } }>;
-    }).stack;
+    const layers = (
+      router as unknown as {
+        stack: Array<{ handle?: { stack?: Array<{ route?: { path: string } }> } }>;
+      }
+    ).stack;
 
     const firstRouterPaths = layers[0]?.handle?.stack?.map((layer) => layer.route?.path) ?? [];
     const secondRouterPaths = layers[1]?.handle?.stack?.map((layer) => layer.route?.path) ?? [];
@@ -256,9 +367,9 @@ describe('goal route contracts', () => {
 
     expect(getResponseSchema(listRoute, 200)).toBeDefined();
     expect(getResponseSchema(detailMutationRoute, 200)).toBeDefined();
-    expect(getParamsSchema(detailMutationRoute).safeParse({ id: 'bare', krId: 'bare' }).success).toBe(
-      false,
-    );
+    expect(
+      getParamsSchema(detailMutationRoute).safeParse({ id: 'bare', krId: 'bare' }).success,
+    ).toBe(false);
   });
 
   it('documents review delete with a Goal mutation receipt', () => {
@@ -274,52 +385,52 @@ describe('goal route contracts', () => {
     const responseSchema = getResponseSchema(route, 200);
 
     const receiptResult = responseSchema.safeParse({
-        ok: true,
-        code: 200,
-        message: 'ok',
-        data: {
-          goalId: 'IGoalId_00000000-0000-4000-8000-000000000001',
-          goalVersion: 2,
-          affectedEntityIds: {
-            goalIds: ['IGoalId_00000000-0000-4000-8000-000000000001'],
-            keyResultIds: [],
-            recordIds: [],
-            reviewIds: ['IGoalReviewId_00000000-0000-4000-8000-000000000002'],
-          },
-          readModel: {
-            id: 'IGoalId_00000000-0000-4000-8000-000000000001',
-            identityId: 'IdentityId_00000000-0000-4000-8000-000000000003',
-            name: 'Goal',
-            description: null,
-            color: null,
-            feasibilityAnalysis: null,
-            motivation: null,
-            status: 'Active',
-            importance: 'Moderate',
-            priority: 0,
-            category: null,
-            tags: [],
-            startDate: null,
-            targetDate: null,
-            completedAt: null,
-            archivedAt: null,
-            folderId: null,
-            parentGoalId: null,
-            sortOrder: 0,
-            reminderConfig: null,
-            createdAt: 1,
-            updatedAt: 2,
-            deletedAt: null,
-            version: 2,
-            keyResults: [],
-            reviews: [],
-            totalKeyResults: 0,
-            completedKeyResults: 0,
-            overallProgress: 0,
-          },
+      ok: true,
+      code: 200,
+      message: 'ok',
+      data: {
+        goalId: 'IGoalId_00000000-0000-4000-8000-000000000001',
+        goalVersion: 2,
+        affectedEntityIds: {
+          goalIds: ['IGoalId_00000000-0000-4000-8000-000000000001'],
+          keyResultIds: [],
+          recordIds: [],
+          reviewIds: ['IGoalReviewId_00000000-0000-4000-8000-000000000002'],
         },
-        timestamp: Date.now(),
-      });
+        readModel: {
+          id: 'IGoalId_00000000-0000-4000-8000-000000000001',
+          identityId: 'IdentityId_00000000-0000-4000-8000-000000000003',
+          name: 'Goal',
+          description: null,
+          color: null,
+          feasibilityAnalysis: null,
+          motivation: null,
+          status: 'Active',
+          importance: 'Moderate',
+          priority: 0,
+          category: null,
+          tags: [],
+          startDate: null,
+          targetDate: null,
+          completedAt: null,
+          archivedAt: null,
+          folderId: null,
+          parentGoalId: null,
+          sortOrder: 0,
+          reminderConfig: null,
+          createdAt: 1,
+          updatedAt: 2,
+          deletedAt: null,
+          version: 2,
+          keyResults: [],
+          reviews: [],
+          totalKeyResults: 0,
+          completedKeyResults: 0,
+          overallProgress: 0,
+        },
+      },
+      timestamp: Date.now(),
+    });
     expect(
       receiptResult.success,
       'error' in receiptResult ? JSON.stringify(receiptResult.error) : undefined,
