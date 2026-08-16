@@ -2057,6 +2057,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/application-client/ai-client-service.dispatch-assistant.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/electron/ai-electron.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3588,6 +3598,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/ai/composables/useAI.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/ai/composables/useAIChatSession.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -10278,21 +10296,21 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 122
+      "fileCount": 123
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 122
+      "fileCount": 123
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 186
+      "fileCount": 187
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -10836,6 +10854,7 @@
       "packages/ai/src/api/routes/ai-langgraph-checkpoint.routes.test.ts",
       "packages/ai/src/api/routes/ai-void-success-envelope.surface.spec.ts",
       "packages/ai/src/application-client/ai-client-port-facade-dual.surface.spec.ts",
+      "packages/ai/src/application-client/ai-client-service.dispatch-assistant.spec.ts",
       "packages/ai/src/electron/ai-electron.surface.spec.ts",
       "packages/ai/src/electron/assistant-dispatch-lifecycle.spec.ts",
       "packages/ai/src/electron/index-lifecycle.spec.ts",
@@ -11346,7 +11365,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 973,
+    "unit": 975,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,
