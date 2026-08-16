@@ -19,7 +19,7 @@ export function summarizeGitHubRun({ run, jobs, now = Date.now() }) {
     throw new Error('current time precedes run start');
 
   const runnerMs = jobs.jobs.reduce((total, job) => {
-    if (!job.started_at) return total;
+    if (!job.started_at || job.conclusion === 'skipped') return total;
     const jobStartedAt = parseTimestamp(job.started_at, 'job.started_at');
     const jobCompletedAt = job.completed_at
       ? parseTimestamp(job.completed_at, 'job.completed_at')
