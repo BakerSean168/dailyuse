@@ -45,6 +45,7 @@
     "@memoflow/repository": "workspace:*",
     "@memoflow/setting": "workspace:*",
     "@memoflow/utils": "workspace:*",
+    "@opentelemetry/api": "^1.9.1",
     "express": "^5.2.1",
     "zod": "^4.4.3"
   },

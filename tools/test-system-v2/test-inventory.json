@@ -120,6 +120,16 @@
       ]
     },
     {
+      "path": "apps/api/src/modules/dashboard/module.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
       "path": "apps/api/src/modules/powersync/crud-normalization.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -420,6 +430,16 @@
       ]
     },
     {
+      "path": "apps/api/src/shared/contracts/api-module.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
       "path": "apps/api/src/shared/infrastructure/config/env.schema.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -441,6 +461,16 @@
     },
     {
       "path": "apps/api/src/shared/infrastructure/config/get-github-oauth-config.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "apps/api/src/shared/infrastructure/config/logger-bootstrap.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/api/vitest.config.ts"
@@ -571,6 +601,36 @@
     },
     {
       "path": "apps/api/src/shared/infrastructure/middleware/error.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "apps/api/src/shared/infrastructure/observability/http-request-metrics.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "apps/api/src/shared/infrastructure/observability/http-request-observation.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "apps/api/src/shared/infrastructure/observability/opentelemetry-http-request-trace.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/api/vitest.config.ts"
@@ -9747,6 +9807,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/utils/src/logger/winston-logger.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/utils/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/utils/src/result/default-extract-context-keep-boundary.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -9955,6 +10023,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/governance/__tests__/architecture-surface.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "tools/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/governance/__tests__/local-docker-product-validation.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -9972,6 +10048,14 @@
     },
     {
       "path": "tools/governance/__tests__/package-internal-boundary.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "tools/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "tools/governance/__tests__/public-surface-jsdoc.test.mjs",
       "primarySuite": "governance",
       "collectors": [
         "tools/governance/vitest.config.ts"
@@ -10073,7 +10157,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 53
+      "fileCount": 59
     },
     {
       "id": "apps/api/vitest.smoke.config.ts",
@@ -10094,7 +10178,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 53
+      "fileCount": 59
     },
     {
       "id": "apps/desktop/vitest.config.ts",
@@ -10521,7 +10605,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 13
+      "fileCount": 14
     },
     {
       "id": "memoflow:test:governance",
@@ -10542,7 +10626,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "vitest",
-      "fileCount": 6
+      "fileCount": 8
     },
     {
       "id": "test-system-v2:test",
@@ -10631,6 +10715,7 @@
       "apps/api/src/modules/ai/repository-knowledge-index-status.adapter.test.ts",
       "apps/api/src/modules/ai/repository-knowledge-note-persistence.adapter.test.ts",
       "apps/api/src/modules/ai/repository-knowledge-source.adapter.test.ts",
+      "apps/api/src/modules/dashboard/module.spec.ts",
       "apps/api/src/modules/powersync/crud-normalization.spec.ts",
       "apps/api/src/modules/powersync/module.spec.ts",
       "apps/api/src/modules/powersync/parse-json-like-string-keep-boundary.surface.spec.ts",
@@ -10661,9 +10746,11 @@
       "apps/api/src/runtime/compose-task.spec.ts",
       "apps/api/src/runtime/compose-task.surface.spec.ts",
       "apps/api/src/scripts/database-startup-chain.test.ts",
+      "apps/api/src/shared/contracts/api-module.surface.spec.ts",
       "apps/api/src/shared/infrastructure/config/env.schema.spec.ts",
       "apps/api/src/shared/infrastructure/config/get-cors-origins-keep-boundary.surface.spec.ts",
       "apps/api/src/shared/infrastructure/config/get-github-oauth-config.surface.spec.ts",
+      "apps/api/src/shared/infrastructure/config/logger-bootstrap.spec.ts",
       "apps/api/src/shared/infrastructure/cron/jobs/snapshot-rebuild.job.spec.ts",
       "apps/api/src/shared/infrastructure/cron/registerCronJobs.spec.ts",
       "apps/api/src/shared/infrastructure/http/controllers/info-result-envelope.surface.spec.ts",
@@ -10677,6 +10764,9 @@
       "apps/api/src/shared/infrastructure/load-workspace-env-keep-boundary.surface.spec.ts",
       "apps/api/src/shared/infrastructure/middleware/error-result-envelope.surface.spec.ts",
       "apps/api/src/shared/infrastructure/middleware/error.spec.ts",
+      "apps/api/src/shared/infrastructure/observability/http-request-metrics.spec.ts",
+      "apps/api/src/shared/infrastructure/observability/http-request-observation.spec.ts",
+      "apps/api/src/shared/infrastructure/observability/opentelemetry-http-request-trace.spec.ts",
       "packages/account/src/api/account-void-success-envelope.surface.spec.ts",
       "packages/account/src/api/module-lifecycle.spec.ts",
       "packages/account/src/api/routes.spec.ts",
@@ -11217,13 +11307,13 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 960,
+    "unit": 967,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 5,
     "e2e": 63,
     "perf": 4,
-    "governance": 31
+    "governance": 33
   }
 }

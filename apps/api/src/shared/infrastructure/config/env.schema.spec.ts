@@ -14,33 +14,83 @@ describe('envSchema LOCAL_VALIDATION', () => {
   });
 
   it('requires explicit HTTPS auth origins in production', () => {
-    expect(() => envSchema.parse({
-      ...required,
-      NODE_ENV: 'production',
-      AUTH_BASE_URL: 'http://auth.example.com/api/auth',
-      MEMOFLOW_WEB_URL: 'https://app.example.com',
-    })).toThrow(/AUTH_BASE_URL must use HTTPS/);
-    expect(() => envSchema.parse({
-      ...required,
-      NODE_ENV: 'production',
-      AUTH_BASE_URL: 'https://api.example.com/api/auth',
-    })).toThrow(/MEMOFLOW_WEB_URL is required/);
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        AUTH_BASE_URL: 'http://auth.example.com/api/auth',
+        MEMOFLOW_WEB_URL: 'https://app.example.com',
+      }),
+    ).toThrow(/AUTH_BASE_URL must use HTTPS/);
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        AUTH_BASE_URL: 'https://api.example.com/api/auth',
+      }),
+    ).toThrow(/MEMOFLOW_WEB_URL is required/);
   });
 
   it('allows loopback HTTP only in the explicit local validation lane', () => {
-    expect(envSchema.parse({
-      ...required,
-      NODE_ENV: 'production',
-      LOCAL_VALIDATION: '1',
-      AUTH_BASE_URL: 'http://localhost:12136/api/auth',
-      MEMOFLOW_WEB_URL: 'http://127.0.0.1:12137',
-    })).toMatchObject({ LOCAL_VALIDATION: true });
-    expect(() => envSchema.parse({
-      ...required,
-      NODE_ENV: 'production',
-      LOCAL_VALIDATION: '1',
-      AUTH_BASE_URL: 'http://api.example.com/api/auth',
-      MEMOFLOW_WEB_URL: 'http://app.example.com',
-    })).toThrow(/must use HTTPS/);
+    expect(
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        LOCAL_VALIDATION: '1',
+        AUTH_BASE_URL: 'http://localhost:12136/api/auth',
+        MEMOFLOW_WEB_URL: 'http://127.0.0.1:12137',
+      }),
+    ).toMatchObject({ LOCAL_VALIDATION: true });
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        LOCAL_VALIDATION: '1',
+        AUTH_BASE_URL: 'http://api.example.com/api/auth',
+        MEMOFLOW_WEB_URL: 'http://app.example.com',
+      }),
+    ).toThrow(/must use HTTPS/);
+  });
+});
+
+describe('envSchema OpenTelemetry (Phase 6 opt-in)', () => {
+  const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
+
+  it('keeps tracing disabled by default with no collector requirement', () => {
+    expect(envSchema.parse(required).OTEL_TRACING_ENABLED).toBe('0');
+  });
+
+  it('fails fast when tracing is enabled without an OTLP endpoint', () => {
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        OTEL_TRACING_ENABLED: '1',
+        OTEL_SERVICE_NAME: 'memoflow-api',
+      }),
+    ).toThrow(/OTEL_EXPORTER_OTLP_ENDPOINT is required/);
+  });
+
+  it('fails fast when tracing is enabled without a service name', () => {
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        OTEL_TRACING_ENABLED: '1',
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://localhost:4318/v1/traces',
+      }),
+    ).toThrow(/OTEL_SERVICE_NAME is required/);
+  });
+
+  it('accepts a complete opt-in configuration', () => {
+    expect(
+      envSchema.parse({
+        ...required,
+        OTEL_TRACING_ENABLED: '1',
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://localhost:4318/v1/traces',
+        OTEL_SERVICE_NAME: 'memoflow-api',
+      }),
+    ).toMatchObject({
+      OTEL_TRACING_ENABLED: '1',
+      OTEL_SERVICE_NAME: 'memoflow-api',
+    });
   });
 });

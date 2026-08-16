@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "description": "RefArch Phase 6 architecture surface locks (cross-module read ports, AI proposal approval, reliable operation receipt). Deleting a declared path/symbol or bypassing a rule makes architecture-surface-audit red.",
+  "readPorts": [
+    {
+      "ruleId": "READ_PORT_GOAL_TASK_BINDING",
+      "port": {
+        "symbol": "GoalDependencyReadPort",
+        "file": "packages/contracts/src/modules/reliable-messaging/ports.ts"
+      },
+      "consumerDirs": ["packages/goal/src/server/application"],
+      "providers": [
+        {
+          "file": "packages/task/src/server/infrastructure/adapters/prisma/prisma-task-binding-read-port.ts",
+          "class": "PrismaTaskBindingReadPort"
+        },
+        {
+          "file": "packages/task/src/server/infrastructure/adapters/powersync/powersync-task-binding-read-port.ts",
+          "class": "PowerSyncTaskBindingReadPort"
+        }
+      ],
+      "injections": [
+        {
+          "file": "apps/api/src/runtime/compose-goal.ts",
+          "refs": ["taskBindingReadPort", "GoalDependencyReadPort"]
+        },
+        {
+          "file": "apps/api/src/server.ts",
+          "refs": ["new PrismaTaskBindingReadPort(", "taskBindingReadPort"]
+        },
+        {
+          "file": "apps/desktop/src/main/runtime/compose-goal.ts",
+          "refs": ["taskBindingReadPort", "GoalDependencyReadPort"]
+        },
+        {
+          "file": "apps/desktop/src/main/main.ts",
+          "refs": ["new PowerSyncTaskBindingReadPort(", "taskBindingReadPort"]
+        }
+      ]
+    },
+    {
+      "ruleId": "READ_PORT_AI_ANALYTICS",
+      "port": {
+        "symbol": "IAnalyticsReadPort",
+        "file": "packages/ai/src/server/application/ports/analytics-read.port.ts"
+      },
+      "consumerDirs": ["packages/ai/src/server/application"],
+      "providers": [
+        {
+          "file": "apps/api/src/modules/ai/controlled-analytics-read.adapter.ts",
+          "class": "ControlledAnalyticsReadAdapter"
+        },
+        {
+          "file": "apps/desktop/src/main/modules/ai/desktop-analytics-read.adapter.ts",
+          "class": "DesktopAnalyticsReadAdapter"
+        }
+      ],
+      "injections": [
+        {
+          "file": "apps/api/src/runtime/compose-ai.ts",
+          "refs": ["new ControlledAnalyticsReadAdapter(", "analyticsReadPort"]
+        },
+        {
+          "file": "apps/desktop/src/main/runtime/compose-ai.ts",
+          "refs": ["analyticsReadPort", "IAnalyticsReadPort"]
+        },
+        {
+          "file": "apps/desktop/src/main/main.ts",
+          "refs": ["new DesktopAnalyticsReadAdapter(", "analyticsReadPort"]
+        }
+      ]
+    },
+    {
+      "ruleId": "READ_PORT_AI_KNOWLEDGE_SOURCE",
+      "port": {
+        "symbol": "IKnowledgeSourcePort",
+        "file": "packages/ai/src/server/application/ports/knowledge-source.port.ts"
+      },
+      "consumerDirs": ["packages/ai/src/server/application"],
+      "providers": [
+        {
+          "file": "apps/api/src/modules/ai/repository-knowledge-source.adapter.ts",
+          "class": "RepositoryKnowledgeSourceAdapter"
+        },
+        {
+          "file": "apps/desktop/src/main/modules/ai/desktop-knowledge-source.adapter.ts",
+          "class": "DesktopKnowledgeSourceAdapter"
+        }
+      ],
+      "injections": [
+        {
+          "file": "apps/api/src/runtime/compose-ai.ts",
+          "refs": ["new RepositoryKnowledgeSourceAdapter(", "knowledgeSourcePort"]
+        },
+        {
+          "file": "apps/desktop/src/main/runtime/compose-ai.ts",
+          "refs": ["knowledgeSourcePort", "IKnowledgeSourcePort"]
+        },
+        {
+          "file": "apps/desktop/src/main/main.ts",
+          "refs": ["new DesktopKnowledgeSourceAdapter(", "knowledgeSourcePort"]
+        }
+      ]
+    }
+  ],
+  "aiApproval": {
+    "ruleId": "AI_APPROVAL_LIFECYCLE_ONLY",
+    "assistantFacade": {
+      "file": "packages/ai/src/server/infrastructure/assistant-facade/assistant.facade.ts",
+      "class": "AssistantFacade",
+      "lifecycleMethods": ["dispatchApprove", "dispatchRevise", "dispatchReject"],
+      "bannedCalls": ["executeApproved"]
+    },
+    "turnEngines": {
+      "files": [
+        "packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts",
+        "packages/ai/src/server/infrastructure/turn-engine/readonly-analysis.turn-engine.ts"
+      ],
+      "bannedLiterals": ["tool.mutation"]
+    },
+    "mutationCallers": {
+      "call": "executeApproved",
+      "allowlist": ["packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts"]
+    }
+  },
+  "reliableReceipt": {
+    "ruleId": "RELIABLE_RECEIPT_CANONICAL",
+    "validatorFile": "packages/contracts/src/modules/reliable-messaging/ports.ts",
+    "canonicalFiles": [
+      "packages/contracts/src/modules/reliable-messaging/operation-receipt.ts",
+      "packages/contracts/src/modules/reliable-messaging/projection.ts"
+    ],
+    "canonicalTypes": ["BusinessOperationReceipt", "ProjectionOperation"],
+    "validators": ["assertValidBusinessOperationReceipt", "assertValidProjectionOperation"],
+    "receiptAdapters": [
+      "packages/goal/src/server/infrastructure/adapters/prisma/prisma-goal-reliable-operation.adapter.ts",
+      "packages/goal/src/server/infrastructure/adapters/powersync/powersync-goal-reliable-operation.adapter.ts",
+      "packages/reminder/src/server/infrastructure/adapters/prisma/reminder-reliable-operation-prisma.adapter.ts",
+      "packages/notification/src/server/infrastructure/adapters/prisma/notification-reliable-operation-prisma.adapter.ts",
+      "packages/notification/src/server/infrastructure/adapters/powersync/power-sync-notification-reliable.adapter.ts"
+    ]
+  }
+}

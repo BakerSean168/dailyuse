@@ -101,3 +101,7 @@ W7 运维入口（timeline/replay/audit）**只属于 server lane**。已删除 
 
 - ADR-042：统一 `BusinessOperationReceipt` / `ProjectionOperation` / `LeaseClaim` 契约（本 ADR 的上游状态词典）。
 - ADR-043 附属：`ADR-044-w0-w6-fault-matrix.md`（W0-W6 可枚举故障矩阵）。
+
+## 6. 验收治理（Phase 6）
+
+- `tools/governance/architecture-surface-audit.mjs` 的 `RELIABLE_RECEIPT_CANONICAL` 规则锁定 `BusinessOperationReceipt`/`ProjectionOperation` 唯一 canonical body（contracts），并强制 goal/reminder/notification adapters 在输出边界调用 `assertValidBusinessOperationReceipt`/`assertValidProjectionOperation`；8-state 不变量与幂等性由 `reliable-messaging-contracts.spec.ts` 及各 adapter 行为测试覆盖，不复制到 surface test。

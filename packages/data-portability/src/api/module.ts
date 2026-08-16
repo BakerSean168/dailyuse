@@ -60,7 +60,7 @@
  *   仍为 no-op。
  */
 
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import { registerDataPortabilityRoutes } from './routes';
 import type { DataPortabilityModuleInstance } from '../server/infrastructure';
@@ -85,16 +85,13 @@ type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
  * 数据导出导入注册的传输专用上下文。刻意不包含 `db`：API module 不需要
  * 持久化，这也避免该 seam 变成第二个组合根。
  */
-export type DataPortabilityApiModuleContext = Pick<
-  ServerModuleContext<unknown>,
-  'app' | 'router' | 'middleware' | 'openApiRegistry'
->;
+export type DataPortabilityApiModuleContext = ServerTransportModuleContext;
 
-export interface DataPortabilityApiModuleDef {
-  readonly name: string;
-  register(context: DataPortabilityApiModuleContext): void;
-  destroy?(): void;
-}
+/**
+ * DataPortability API module handle extending the shared lifecycle contract.
+ * DataPortability API 模块 handle，继承共享生命周期契约。
+ */
+export interface DataPortabilityApiModuleDef extends ServerModuleHandle<DataPortabilityApiModuleContext> {}
 
 /**
  * Options carrying the already-assembled data-portability instance and the

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { context, propagation } from '@opentelemetry/api';
 import { createLogger } from '@memoflow/utils/logger';
 
 import {
@@ -12,7 +13,6 @@ import {
 import { previewText } from '../../../shared/preview-text';
 
 const logger = createLogger('AIServiceInternalClient');
-
 
 export interface AIServiceInternalClientOptions {
   baseUrl: string;
@@ -62,9 +62,7 @@ export class AIServiceInternalClient {
     return (await response.json()) as TResponse;
   }
 
-  async getJson<TResponse>(
-    request: AIServiceInternalGetRequestOptions,
-  ): Promise<TResponse> {
+  async getJson<TResponse>(request: AIServiceInternalGetRequestOptions): Promise<TResponse> {
     const response = await this.request({
       ...request,
       method: 'GET',
@@ -73,15 +71,11 @@ export class AIServiceInternalClient {
     return (await response.json()) as TResponse;
   }
 
-  async postStream<TBody>(
-    request: AIServiceInternalRequestOptions<TBody>,
-  ): Promise<Response> {
+  async postStream<TBody>(request: AIServiceInternalRequestOptions<TBody>): Promise<Response> {
     return this.post(request);
   }
 
-  private async post<TBody>(
-    request: AIServiceInternalRequestOptions<TBody>,
-  ): Promise<Response> {
+  private async post<TBody>(request: AIServiceInternalRequestOptions<TBody>): Promise<Response> {
     return this.request({
       ...request,
       method: 'POST',
@@ -113,6 +107,14 @@ export class AIServiceInternalClient {
     const timeoutId = setTimeout(() => timeoutController.abort(), this.timeoutMs);
     const { signal, cleanup } = composeAbortSignal(request.signal, timeoutController.signal);
 
+    // RefArch Phase 6: propagate the active W3C trace context (traceparent/
+    // tracestate) when OpenTelemetry is enabled, so the Python AI request is a
+    // child of the API SERVER span. With OTel disabled the global propagator is
+    // a noop and this carrier stays empty — the HMAC canonical inputs are
+    // unchanged and no new headers appear.
+    const w3cHeaders: Record<string, string> = {};
+    propagation.inject(context.active(), w3cHeaders);
+
     try {
       logger.info('ai-service internal request started', {
         requestId,
@@ -125,6 +127,7 @@ export class AIServiceInternalClient {
       const response = await fetch(requestUrl.toString(), {
         method: request.method,
         headers: {
+          ...w3cHeaders,
           'Content-Type': 'application/json',
           [INTERNAL_SERVICE_HEADER]: this.options.serviceName,
           [INTERNAL_TIMESTAMP_HEADER]: String(signing.timestamp),
@@ -184,11 +187,7 @@ export class AIServiceInternalClient {
           identityId: request.identityId,
           category,
         });
-        throw new AIServiceInternalRequestError(
-          message,
-          requestId,
-          category,
-        );
+        throw new AIServiceInternalRequestError(message, requestId, category);
       }
       if (error instanceof AIServiceInternalRequestError) {
         logger.warn('ai-service internal request raised structured request error', {

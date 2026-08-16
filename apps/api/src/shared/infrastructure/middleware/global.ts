@@ -3,6 +3,15 @@
  *
  * 将原 app.ts 中散落的全局中间件提取为独立模块，
  * 由 ApiBootstrapper 在启动时统一调用。
+ *
+ * RefArch Phase 6: the single request-context/observation middleware drives the
+ * terminal log, bounded metrics and trace in one settlement. The previous
+ * response-monkey-patching performance middleware is retired with
+ * `X-Response-Time`.
+ *
+ * RefArch 阶段 6：唯一 request-context/observation middleware 在一次结算中
+ * 驱动 terminal log、有界 metrics 与 trace。原先 monkey-patch 响应对象的
+ * performance middleware 随 `X-Response-Time` 一起退役。
  */
 
 import type { Express, Request } from 'express';
@@ -10,31 +19,43 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-import {
-  createPerformanceMiddleware,
-  type MetricsStore,
-} from '../http/middlewares/performance.middleware';
 import { createRequestContextMiddleware } from '../http/middlewares/request-context.middleware';
+import {
+  createHttpRequestLoggerObserver,
+  createObserverFanout,
+} from '../observability/http-request-observation';
+import type { HttpRequestMetricsRecorder } from '../observability/http-request-metrics';
+import type { HttpRequestTrace } from '../observability/http-request-trace';
 import { getCorsOrigins, isAllCorsOriginsAllowed } from '../config/env.js';
 
 /**
  * 应用所有全局中间件
  *
- * 包含：RequestContext、Helmet、JSON 解析、Cookie 解析、CORS、Compression、性能监控。
- * RequestContext 必须位于第一个 `app.use`：它在 auth/route/error handler 之前
- * 建立 requestId/traceId/startedAt/source，并先写 `X-Request-Id` 响应头。
+ * 包含：RequestContext/observation、Helmet、JSON 解析、Cookie 解析、CORS、
+ * Compression。RequestContext 必须位于第一个 `app.use`：它在 auth/route/error
+ * handler 之前建立 requestId/traceId/startedAt/source，并先写 `X-Request-Id`
+ * 响应头，同时是 terminal log/metrics/span 的唯一结算点。
  */
 export function applyGlobalMiddleware(
   app: Express,
-  metricsStore: MetricsStore,
-  options: { readonly beforeBodyParsing?: (app: Express) => void } = {},
+  metricsRecorder: HttpRequestMetricsRecorder,
+  options: {
+    readonly beforeBodyParsing?: (app: Express) => void;
+    readonly trace?: HttpRequestTrace;
+  } = {},
 ): void {
   const allowedOrigins = getCorsOrigins();
   const allowAllOrigins = isAllCorsOriginsAllowed();
 
-  // Request metadata producer — must be the very first middleware so JSON,
-  // 204, auth failures, 404, 500 and SSE responses share one X-Request-Id.
-  app.use(createRequestContextMiddleware());
+  // Request metadata producer + single terminal observer (logger + metrics).
+  // It must be the very first middleware so JSON, 204, auth failures, 404, 500
+  // and SSE responses share one X-Request-Id and exactly one settlement.
+  app.use(
+    createRequestContextMiddleware({
+      observer: createObserverFanout([createHttpRequestLoggerObserver(), metricsRecorder]),
+      trace: options.trace,
+    }),
+  );
 
   // Security
   app.use(helmet());
@@ -59,6 +80,9 @@ export function applyGlobalMiddleware(
         'X-Skip-Auth',
         'Cache-Control',
         'X-Request-Id',
+        // W3C trace headers for the opt-in OpenTelemetry lane (never HMAC/internal).
+        'traceparent',
+        'tracestate',
       ],
       // Expose the correlation header (never auth/internal HMAC headers).
       exposedHeaders: ['X-Request-Id'],
@@ -93,9 +117,6 @@ export function applyGlobalMiddleware(
       },
     }),
   );
-
-  // Performance monitoring
-  app.use(createPerformanceMiddleware(metricsStore));
 }
 
 // Re-export express for use in applyGlobalMiddleware

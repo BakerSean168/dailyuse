@@ -63,7 +63,7 @@
  * 不会创建第二个实例；上述显式状态机即每个 handle 自己的状态。
  */
 
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import type { GovernanceModuleInstance } from '../server/infrastructure';
 import { registerGovernanceRoutes } from './routes';
@@ -80,28 +80,38 @@ const logger = createLogger('GovernanceApi');
 type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
 /**
- * Transport-only context for governance registration.
- * Deliberately picks no `db`: the api module never needs persistence, and this
- * keeps the seam from becoming a second composition root.
+ * Transport-only context for governance registration — reuses the canonical
+ * shared `ServerTransportModuleContext`. Deliberately carries no `db`: the api
+ * module never needs persistence, and this keeps the seam from becoming a
+ * second composition root.
  *
- * 治理注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
- * 这也避免该 seam 变成第二个组合根。
+ * 治理注册的传输专用上下文——复用规范的共享 `ServerTransportModuleContext`。
+ * 刻意不包含 `db`：API module 不需要持久化，这也避免该 seam 变成第二个组合根。
  */
-export type GovernanceApiModuleContext = Pick<
-  ServerModuleContext<unknown>,
-  'app' | 'router' | 'middleware' | 'openApiRegistry'
->;
+export type GovernanceApiModuleContext = ServerTransportModuleContext;
 
-export interface GovernanceApiModuleDef {
-  readonly name: string;
-  register(context: GovernanceApiModuleContext): void;
-  destroy?(): void;
-}
+/**
+ * Governance API module handle extending the shared lifecycle contract.
+ * 治理 API 模块 handle，继承共享生命周期契约。
+ *
+ * `register()` only wires routes and starts the already-bound instance; the
+ * handle owns a per-instance state machine (single registration, idempotent
+ * destroy). The `instance` is required and injected by the host composer —
+ * it can never be constructed from the registration context.
+ *
+ * `register()` 只挂载路由并启动已绑定实例；handle 拥有每个实例的状态机
+ * （单次注册、destroy 幂等）。`instance` 由宿主 composer 注入且必填——
+ * 绝不可能从注册上下文构造。
+ */
+export interface GovernanceApiModuleDef extends ServerModuleHandle<GovernanceApiModuleContext> {}
 
+/**
+ * Options for `createGovernanceApiModule`.
+ * `createGovernanceApiModule` 的选项。
+ */
 export interface GovernanceApiModuleOptions {
   readonly instance: GovernanceModuleInstance;
 }
-
 /**
  * Creates the governance API transport module handle.
  * 创建治理 API 传输模块 handle。

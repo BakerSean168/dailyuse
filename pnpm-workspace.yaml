@@ -45,5 +45,6 @@ allowBuilds:
   msw: true
   nx: false
   prisma: false
+  protobufjs: false
   unrs-resolver: false
   vue-demi: false

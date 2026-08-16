@@ -57,7 +57,7 @@
  *   仍为 no-op。
  */
 
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import type { SettingModuleInstance } from '../server/infrastructure';
 import { registerSettingRoutes } from './routes';
@@ -74,23 +74,20 @@ const logger = createLogger('SettingApi');
 type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
 /**
- * Transport-only context for setting registration.
- * Deliberately picks no `db`: the api module never needs persistence, and this
- * keeps the seam from becoming a second composition root.
+ * Transport-only context for 设置 registration — reuses the canonical
+ * shared `ServerTransportModuleContext`. Deliberately carries no `db`, so
+ * this seam can never become a second composition root.
  *
- * 设置注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
- * 这也避免该 seam 变成第二个组合根。
+ * 设置注册的传输专用上下文——复用规范的共享 `ServerTransportModuleContext`。
+ * 刻意不包含 `db`，该 seam 绝不可能是第二个组合根。
  */
-export type SettingApiModuleContext = Pick<
-  ServerModuleContext<unknown>,
-  'app' | 'router' | 'middleware' | 'openApiRegistry'
->;
+export type SettingApiModuleContext = ServerTransportModuleContext;
 
-export interface SettingApiModuleDef {
-  readonly name: string;
-  register(context: SettingApiModuleContext): void;
-  destroy?(): void;
-}
+/**
+ * Setting API module handle extending the shared lifecycle contract.
+ * Setting API 模块 handle，继承共享生命周期契约。
+ */
+export interface SettingApiModuleDef extends ServerModuleHandle<SettingApiModuleContext> {}
 
 /**
  * Options carrying the already-assembled setting instance.

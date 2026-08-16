@@ -58,7 +58,7 @@
  *   仍为 no-op。
  */
 
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import type { RepositoryModuleInstance } from '../server/infrastructure';
 import type { RepositoryApplicationPort } from '../server/application';
@@ -76,24 +76,23 @@ const logger = createLogger('RepositoryApi');
 type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
 /**
- * Transport-only context for repository registration.
- * Deliberately picks no `db`: the api module never needs persistence, and this
- * keeps the seam from becoming a second composition root.
+ * Transport-only context for 仓库 registration — reuses the canonical
+ * shared `ServerTransportModuleContext`. Deliberately carries no `db`, so
+ * this seam can never become a second composition root.
  *
- * 仓库注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
- * 这也避免该 seam 变成第二个组合根。
+ * 仓库注册的传输专用上下文——复用规范的共享 `ServerTransportModuleContext`。
+ * 刻意不包含 `db`，该 seam 绝不可能是第二个组合根。
  */
-export type RepositoryApiModuleContext = Pick<
-  ServerModuleContext<unknown>,
-  'app' | 'router' | 'middleware' | 'openApiRegistry'
->;
+export type RepositoryApiModuleContext = ServerTransportModuleContext;
 
-export interface RepositoryApiModuleDef {
-  readonly name: string;
-  /** The composed application surface for sibling modules in the same host. */
+/**
+ * Repository API module handle extending the shared lifecycle contract.
+ * Repository API 模块 handle，继承共享生命周期契约。
+ */
+export interface RepositoryApiModuleDef extends ServerModuleHandle<RepositoryApiModuleContext> {
+  /** The composed application surface for sibling modules in the same host.
+   *  同一宿主内兄弟模块使用的已组合应用表面。 */
   readonly getApplicationPort: () => RepositoryApplicationPort;
-  register(context: RepositoryApiModuleContext): void;
-  destroy?(): void;
 }
 
 /**

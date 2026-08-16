@@ -16,11 +16,13 @@
 import { Router, type Router as ExpressRouter } from 'express';
 import { healthController, infoController, logsController } from '../controllers';
 import { createMetricsController } from '../controllers/metrics.controller';
-import type { MetricsStore } from '../middlewares/performance.middleware';
+import type { HttpRequestMetricsRecorder } from '../../observability/http-request-metrics';
 
-export function createInfrastructureRouter(metricsStore: MetricsStore): ExpressRouter {
+export function createInfrastructureRouter(
+  metricsRecorder: HttpRequestMetricsRecorder,
+): ExpressRouter {
   const router: ExpressRouter = Router();
-  const metricsController = createMetricsController(metricsStore);
+  const metricsController = createMetricsController(metricsRecorder);
 
   // ============================================
   // Health Probes (K8s 兼容)

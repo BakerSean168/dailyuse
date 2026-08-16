@@ -6,7 +6,7 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { DatabaseClient, IApiModuleContext } from '../../shared/contracts/api-module.js';
 import { env } from '../../shared/infrastructure/config/env.js';
-import { PowerSyncApiModule } from './module.js';
+import { composePowerSyncApiModule } from './module.js';
 import { computeProfileSnapshotKey } from './snapshot-storage.js';
 
 const TEST_IDENTITY_ID = '7e92ca52-b331-4cbb-9ecc-2b1f1471c370';
@@ -45,7 +45,6 @@ async function createTestApp(): Promise<ReturnType<typeof express>> {
   const context: IApiModuleContext = {
     app,
     router,
-    db,
     middleware: {
       auth: (req, _res, next) => {
         const authenticated = req as typeof req & {
@@ -58,7 +57,10 @@ async function createTestApp(): Promise<ReturnType<typeof express>> {
     },
   };
 
-  await PowerSyncApiModule.register(context);
+  // DB/config are bound by the factory closure; register receives the
+  // transport-only context (no db).
+  const module = composePowerSyncApiModule({ db });
+  module.register(context);
   return app;
 }
 
@@ -133,9 +135,7 @@ describe('PowerSyncApiModule profile snapshot routes', () => {
       .buffer(true)
       .parse(binaryParser);
     expect(downloadResponse.status).toBe(200);
-    expect(downloadResponse.headers['x-powersync-snapshot-version']).toBe(
-      '2026-05-18T00:00:00Z',
-    );
+    expect(downloadResponse.headers['x-powersync-snapshot-version']).toBe('2026-05-18T00:00:00Z');
     expect(Buffer.compare(downloadResponse.body as Buffer, sqliteBuffer)).toBe(0);
   });
 });
