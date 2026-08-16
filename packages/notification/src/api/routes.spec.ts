@@ -334,6 +334,142 @@ describe('notification route contracts', () => {
   });
 });
 
+describe('notification mutation routes run the real validation adapter (Phase 4)', () => {
+  function getHandler(
+    router: ReturnType<typeof registerNotificationRoutes>,
+    method: string,
+    path: string,
+  ): (req: unknown, res: unknown) => Promise<unknown> {
+    const layer = (
+      router as unknown as {
+        stack: Array<{
+          route?: {
+            path: string;
+            methods: Record<string, boolean>;
+            stack: Array<{ handle: (r: unknown, s: unknown) => unknown }>;
+          };
+        }>;
+      }
+    ).stack.find(
+      (candidate) => candidate.route?.path === path && candidate.route.methods[method] === true,
+    );
+    expect(layer, `${method} ${path} registered`).toBeDefined();
+    return layer!.route!.stack.at(-1)!.handle;
+  }
+
+  function createReq(body: unknown): Record<string, unknown> {
+    return {
+      body,
+      headers: {},
+      query: {},
+      user: { identityId: 'identity-1' },
+      requestContext: {
+        requestId: 'req-notification-adapter',
+        traceId: 'req-notification-adapter',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
+    };
+  }
+
+  function createRes() {
+    const res: any = {
+      statusCode: 0,
+      body: null,
+      status(code: number) {
+        res.statusCode = code;
+        return res;
+      },
+      json(data: unknown) {
+        res.body = data;
+        return res;
+      },
+      end() {
+        return res;
+      },
+    };
+    return res;
+  }
+
+  function createApi() {
+    return {
+      createNotification: vi.fn(async () => ({ ok: true, data: { id: 'n-1' } })),
+      batchMarkAsRead: vi.fn(async () => ({ ok: true, data: { updatedCount: 2 } })),
+      updatePreferences: vi.fn(async () => ({ ok: true, data: { enabled: true } })),
+    } as unknown as NotificationApplicationPort;
+  }
+
+  it('create: valid body reaches the port, malformed body is rejected before it', async () => {
+    const api = createApi();
+    const router = registerNotificationRoutes(api, {
+      auth: authMiddleware,
+      requireRole: () => authMiddleware,
+    });
+    const handler = getHandler(router, 'post', '/');
+
+    const validRes = createRes();
+    await handler(
+      createReq({ title: 'Hi', content: 'Body', type: 'Reminder', category: 'Task' }),
+      validRes,
+    );
+    expect(validRes.statusCode).toBe(201);
+    expect(api.createNotification).toHaveBeenCalledTimes(1);
+
+    const badRes = createRes();
+    await handler(
+      createReq({ title: '', content: '', type: 'Reminder', category: 'Task' }),
+      badRes,
+    );
+    expect(badRes.statusCode).toBe(400);
+    expect(badRes.body.error.code).toBe('VALIDATION_ERROR');
+    expect(api.createNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('batch-read: empty notificationIds is rejected before the port', async () => {
+    const api = createApi();
+    const router = registerNotificationRoutes(api, {
+      auth: authMiddleware,
+      requireRole: () => authMiddleware,
+    });
+    const handler = getHandler(router, 'post', '/batch-read');
+
+    const badRes = createRes();
+    await handler(createReq({ notificationIds: [] }), badRes);
+    expect(badRes.statusCode).toBe(400);
+    expect(api.batchMarkAsRead).not.toHaveBeenCalled();
+
+    const validRes = createRes();
+    await handler(
+      createReq({ notificationIds: ['INotificationId_550e8400-e29b-41d4-a716-446655440000'] }),
+      validRes,
+    );
+    expect(validRes.statusCode).toBe(200);
+    expect(api.batchMarkAsRead).toHaveBeenCalledTimes(1);
+  });
+
+  it('preferences update: valid body reaches the port, malformed is rejected', async () => {
+    const api = createApi();
+    const router = registerNotificationRoutes(api, {
+      auth: authMiddleware,
+      requireRole: () => authMiddleware,
+    });
+    const handler = getHandler(router, 'put', '/preferences');
+
+    const validRes = createRes();
+    await handler(createReq({ enabled: true }), validRes);
+    expect(validRes.statusCode).toBe(200);
+    expect(api.updatePreferences).toHaveBeenCalledTimes(1);
+
+    const badRes = createRes();
+    await handler(
+      createReq({ doNotDisturb: { enabled: true, startTime: '', endTime: '', daysOfWeek: [9] } }),
+      badRes,
+    );
+    expect(badRes.statusCode).toBe(400);
+    expect(api.updatePreferences).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('notification SSE framing + header-before-flush (RefArch Phase 2)', () => {
   function getSseHandler(
     router: ReturnType<typeof registerNotificationRoutes>,

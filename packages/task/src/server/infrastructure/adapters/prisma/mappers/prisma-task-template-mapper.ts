@@ -12,7 +12,7 @@ import { RecurrenceFrequency } from '@memoflow/contracts/task';
 import { TaskType } from '@memoflow/contracts/task';
 import type { TaskTimeType } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
-import type { DependencyStatus, ReminderTimeUnit } from '@memoflow/contracts/task';
+import type { ReminderTimeUnit } from '@memoflow/contracts/task';
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
 import { TaskFolderId } from '../../../../domain/value-objects/task-folder-id';
 import { IdentityId } from '@memoflow/domain-shared';
@@ -24,6 +24,7 @@ import {
   TaskGoalBinding,
   ChecklistItemDefinition,
 } from '../../../../domain/value-objects';
+import { toDependencyStatus } from './task-row.mapper';
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
 function requiredInstant(value: Date | string | number | null | undefined): number {
@@ -127,7 +128,7 @@ export class PrismaTaskTemplateMapper {
       lastGeneratedDate: optionalInstant(data.lastGeneratedDate),
       generateAheadDays: data.generateAheadDays,
       parentTaskId: data.parentTaskId ? TaskTemplateId.of(data.parentTaskId) : null,
-      dependencyStatus: (data.dependencyStatus ?? 'NONE') as unknown as DependencyStatus,
+      dependencyStatus: toDependencyStatus(data.dependencyStatus),
       isBlocked: data.isBlocked ?? false,
       blockingReason: data.blockingReason,
       startDate: null,

@@ -13,23 +13,48 @@ import type {
   GetGoalRes,
   ListGoalFilters,
 } from '../api/goal-crud.dto';
-import type {
-  AddKeyResultReq,
-  AddKeyResultRes,
-  GetKeyResultsReq,
-  GetKeyResultsRes,
-} from '../api/key-result.dto';
+import type { GetKeyResultsReq, GetKeyResultsRes } from '../api/key-result.dto';
 import type {
   CreateGoalFolderReq,
   CreateGoalFolderRes,
   ListGoalFolderFilters,
+  QueryGoalFoldersRes,
+  UpdateGoalFolderRes,
 } from '../api/goal-folder.dto';
 import type { GetFocusStatusReq, GetFocusStatusRes } from '../api/focus-session.dto';
-import type { QueryGoalsRes } from '../api/response-schemas';
-import type { QueryGoalFoldersRes } from '../api/goal-folder.dto';
+import type {
+  ArchiveExpiredRes,
+  GoalMutationReceipt,
+  QueryGoalsRes,
+} from '../api/response-schemas';
+import type {
+  AddKeyResultInvocation,
+  BatchKeyResultWeightsInvocation,
+  CloneGoalInvocation,
+  CreateRecordInvocation,
+  CreateReviewInvocation,
+  DeleteGoalFolderInvocation,
+  DeleteGoalInvocation,
+  DeleteKeyResultInvocation,
+  DeleteRecordInvocation,
+  DeleteReviewInvocation,
+  GoalStatusCommandInvocation,
+  UpdateGoalFolderInvocation,
+  UpdateGoalInvocation,
+  UpdateKeyResultInvocation,
+  UpdateKeyResultProgressInvocation,
+  UpdateReviewInvocation,
+} from '../api/goal-invocation.schemas';
+import type { ActivateFocusModeReq, ExtendFocusModeReq, FocusModeDTO } from '../api';
 
 /**
  * 定义 Goal 模块处理的 RPC 请求 [请求, 响应]
+ *
+ * 【使用说明】
+ * - HTTP 复合 mutation（params + body/query）以命名 invocation schema 的
+ *   `z.infer` 类型作为 map 的请求类型，与 OpenAPI request 共享同一 schema 对象。
+ * - IPC positional args 由 channel 注册旁的命名 projector 投影为同一 invocation 形状。
+ * - Response 一律使用 contracts response schema 的 `z.infer` 类型。
  *
  * 【使用示例】
  * ```typescript
@@ -38,19 +63,44 @@ import type { QueryGoalFoldersRes } from '../api/goal-folder.dto';
  * ```
  */
 export type GoalRpcMap = {
-  // Goal CRUD
+  // Goal CRUD + core mutations
   'goal:create': [CreateGoalReq, CreateGoalRes];
+  'goal:update': [UpdateGoalInvocation, GoalMutationReceipt];
+  'goal:delete': [DeleteGoalInvocation, GoalMutationReceipt];
+  'goal:archive-expired': [void, ArchiveExpiredRes];
+  'goal:archive': [GoalStatusCommandInvocation, GoalMutationReceipt];
+  'goal:activate': [GoalStatusCommandInvocation, GoalMutationReceipt];
+  'goal:complete': [GoalStatusCommandInvocation, GoalMutationReceipt];
+  'goal:clone': [CloneGoalInvocation, GoalMutationReceipt];
   'goal:get': [GetGoalReq, GetGoalRes];
   'goal:list': [ListGoalFilters, QueryGoalsRes];
 
   // Key Result Operations
-  'key-result:add': [AddKeyResultReq, AddKeyResultRes];
+  'key-result:add': [AddKeyResultInvocation, GoalMutationReceipt];
+  'key-result:update': [UpdateKeyResultInvocation, GoalMutationReceipt];
+  'key-result:progress': [UpdateKeyResultProgressInvocation, GoalMutationReceipt];
+  'key-result:delete': [DeleteKeyResultInvocation, GoalMutationReceipt];
+  'key-result:batch-weights': [BatchKeyResultWeightsInvocation, GoalMutationReceipt];
   'key-result:list': [GetKeyResultsReq, GetKeyResultsRes];
+
+  // Review Operations
+  'goal:review:create': [CreateReviewInvocation, GoalMutationReceipt];
+  'goal:review:update': [UpdateReviewInvocation, GoalMutationReceipt];
+  'goal:review:delete': [DeleteReviewInvocation, GoalMutationReceipt];
+
+  // Record Operations
+  'goal:record:create': [CreateRecordInvocation, GoalMutationReceipt];
+  'goal:record:delete': [DeleteRecordInvocation, GoalMutationReceipt];
 
   // Goal Folder Operations
   'goal-folder:create': [CreateGoalFolderReq, CreateGoalFolderRes];
+  'goal-folder:update': [UpdateGoalFolderInvocation, UpdateGoalFolderRes];
+  'goal-folder:delete': [DeleteGoalFolderInvocation, null];
   'goal-folder:list': [ListGoalFolderFilters, QueryGoalFoldersRes];
 
-  // Focus Session Operations
+  // Focus Mode Operations
+  'focus:activate': [ActivateFocusModeReq, FocusModeDTO];
+  'focus:deactivate': [void, FocusModeDTO];
+  'focus:extend': [ExtendFocusModeReq, FocusModeDTO];
   'focus:get-status': [GetFocusStatusReq, GetFocusStatusRes];
 };

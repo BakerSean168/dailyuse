@@ -5,7 +5,12 @@
 
 import { Router, type RequestHandler } from 'express';
 import { RouteRegistrar, type OpenApiRegistryLike, successResponse } from '@memoflow/utils/result';
-import { ActivateFocusModeSchema, ExtendFocusModeSchema, FocusModeClientDTOSchema } from '@memoflow/contracts/goal';
+import {
+  ActivateFocusModeSchema,
+  DeactivateFocusModeInvocationSchema,
+  ExtendFocusModeSchema,
+  FocusModeClientDTOSchema,
+} from '@memoflow/contracts/goal';
 import type { GoalController } from '../../server/transport/goal.controller';
 
 interface PlatformMiddleware {
@@ -37,39 +42,44 @@ export function registerFocusModeRoutes(
     (_req, ctx) => controller.getCurrentFocusMode(ctx),
   );
 
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/focus-mode/activate',
       summary: '激活专注模式',
       request: { body: { content: { 'application/json': { schema: ActivateFocusModeSchema } } } },
       responses: { 200: successResponse(FocusModeClientDTOSchema, '激活成功') },
+      validation: { schema: ActivateFocusModeSchema },
     },
     [auth],
-    (req, ctx) => controller.activateFocusMode(req.body, ctx),
+    (data, ctx) => controller.activateFocusMode(data, ctx),
   );
 
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/focus-mode/deactivate',
       summary: '停用专注模式',
       responses: { 200: successResponse(FocusModeClientDTOSchema, '停用成功') },
+      validation: {
+        schema: DeactivateFocusModeInvocationSchema,
+      },
     },
     [auth],
-    (_req, ctx) => controller.deactivateFocusMode(ctx),
+    (_data, ctx) => controller.deactivateFocusMode(ctx),
   );
 
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/focus-mode/extend',
       summary: '延长专注模式',
       request: { body: { content: { 'application/json': { schema: ExtendFocusModeSchema } } } },
       responses: { 200: successResponse(FocusModeClientDTOSchema, '延长成功') },
+      validation: { schema: ExtendFocusModeSchema },
     },
     [auth],
-    (req, ctx) => controller.extendFocusMode(req.body, ctx),
+    (data, ctx) => controller.extendFocusMode(data, ctx),
   );
 
   return router;

@@ -640,6 +640,16 @@
       ]
     },
     {
+      "path": "apps/api/src/shared/infrastructure/openapi/generator.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
       "path": "apps/desktop/e2e/authentication/desktop-auth-flow.spec.ts",
       "primarySuite": "e2e",
       "collectors": [
@@ -4985,6 +4995,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/contracts/src/modules/goal/protocol/goal-rpc-map.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/contracts/src/modules/goal/value-objects/dual-registry.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5034,6 +5052,14 @@
     },
     {
       "path": "packages/contracts/src/modules/notification/protocol/asset-image-key-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/modules/notification/protocol/notification-rpc-map.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/contracts/vitest.config.ts"
@@ -5202,6 +5228,22 @@
     },
     {
       "path": "packages/contracts/src/modules/task/domain/events/task-goal-progress-outbox.event.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/modules/task/protocol/task-rpc-map.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/modules/transport-cast-inventory.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/contracts/vitest.config.ts"
@@ -6691,6 +6733,26 @@
       ]
     },
     {
+      "path": "packages/goal/src/server/transport/__tests__/goal-transport-mapper.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/goal/src/server/transport/__tests__/goal-transport-parity.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/governance/src/api/module-lifecycle.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -6712,6 +6774,26 @@
     },
     {
       "path": "packages/governance/src/api/routes/governance-response-schema-name-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/governance/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/governance/src/api/routes/governance-transport-parity.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/governance/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/governance/src/api/routes/governance-validation-binding.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/governance/vitest.config.ts"
@@ -7366,6 +7448,16 @@
     },
     {
       "path": "packages/notification/src/server/infrastructure/runtime/notification.runtime.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/notification/src/server/transport/__tests__/notification-transport-parity.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/notification/vitest.config.ts"
@@ -9575,6 +9667,17 @@
       ]
     },
     {
+      "path": "packages/task/src/server/infrastructure/adapters/prisma/mappers/__tests__/task-row-mapper.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/task/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/task/vitest.config.ts",
+        "packages/task/vitest.mappers.config.ts"
+      ]
+    },
+    {
       "path": "packages/task/src/server/infrastructure/adapters/prisma/mappers/prisma-task-dependency-mapper.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -9767,6 +9870,16 @@
       ]
     },
     {
+      "path": "packages/task/src/server/transport/__tests__/task-transport-parity.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/task/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/task/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/task/src/testing/an-identity-id-dual.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -9866,6 +9979,14 @@
     },
     {
       "path": "packages/utils/src/result/openapi-response-helpers-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/utils/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/utils/src/result/route-registrar.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/utils/vitest.config.ts"
@@ -10175,7 +10296,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 59
+      "fileCount": 60
     },
     {
       "id": "apps/api/vitest.smoke.config.ts",
@@ -10196,7 +10317,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 59
+      "fileCount": 60
     },
     {
       "id": "apps/desktop/vitest.config.ts",
@@ -10301,7 +10422,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 61
+      "fileCount": 65
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -10350,7 +10471,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 93
+      "fileCount": 95
     },
     {
       "id": "packages/goal/vitest.integration.config.ts",
@@ -10364,7 +10485,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 93
+      "fileCount": 95
     },
     {
       "id": "packages/goal/vitest.use-cases.config.ts",
@@ -10385,14 +10506,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 23
+      "fileCount": 25
     },
     {
       "id": "packages/governance/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 23
+      "fileCount": 25
     },
     {
       "id": "packages/http-client/vitest.config.ts",
@@ -10413,7 +10534,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 40
+      "fileCount": 41
     },
     {
       "id": "packages/notification/vitest.integration.config.ts",
@@ -10427,7 +10548,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 40
+      "fileCount": 41
     },
     {
       "id": "packages/patterns/vitest.config.ts",
@@ -10560,7 +10681,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 73
+      "fileCount": 75
     },
     {
       "id": "packages/task/vitest.integration.config.ts",
@@ -10588,7 +10709,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 73
+      "fileCount": 75
     },
     {
       "id": "packages/task/vitest.use-cases.config.ts",
@@ -10602,7 +10723,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 4
+      "fileCount": 5
     },
     {
       "id": "packages/time/vitest.config.ts",
@@ -10623,7 +10744,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "id": "memoflow:test:governance",
@@ -10785,6 +10906,7 @@
       "apps/api/src/shared/infrastructure/observability/http-request-metrics.spec.ts",
       "apps/api/src/shared/infrastructure/observability/http-request-observation.spec.ts",
       "apps/api/src/shared/infrastructure/observability/opentelemetry-http-request-trace.spec.ts",
+      "apps/api/src/shared/infrastructure/openapi/generator.spec.ts",
       "packages/account/src/api/account-void-success-envelope.surface.spec.ts",
       "packages/account/src/api/module-lifecycle.spec.ts",
       "packages/account/src/api/routes.spec.ts",
@@ -11071,9 +11193,13 @@
       "packages/goal/src/server/infrastructure/build-task-name-keep-boundary.surface.spec.ts",
       "packages/goal/src/server/infrastructure/schedule-execution-source.spec.ts",
       "packages/goal/src/server/infrastructure/schedule-projection-source.spec.ts",
+      "packages/goal/src/server/transport/__tests__/goal-transport-mapper.spec.ts",
+      "packages/goal/src/server/transport/__tests__/goal-transport-parity.spec.ts",
       "packages/governance/src/api/module-lifecycle.spec.ts",
       "packages/governance/src/api/routes/governance-parse-string-array-keep-boundary.surface.spec.ts",
       "packages/governance/src/api/routes/governance-response-schema-name-dual.surface.spec.ts",
+      "packages/governance/src/api/routes/governance-transport-parity.spec.ts",
+      "packages/governance/src/api/routes/governance-validation-binding.surface.spec.ts",
       "packages/governance/src/api/routes/governance-void-success-envelope.surface.spec.ts",
       "packages/governance/src/api/routes/governance.routes.spec.ts",
       "packages/governance/src/client/governance-ipc-transport-dual.surface.spec.ts",
@@ -11133,6 +11259,7 @@
       "packages/notification/src/server/infrastructure/adapters/prisma/mappers/notification-prisma.mapper.spec.ts",
       "packages/notification/src/server/infrastructure/runtime/__tests__/notification-durable-dispatch.spec.ts",
       "packages/notification/src/server/infrastructure/runtime/notification.runtime.spec.ts",
+      "packages/notification/src/server/transport/__tests__/notification-transport-parity.spec.ts",
       "packages/notification/src/server/transport/notification-usecases-export.surface.spec.ts",
       "packages/reminder/src/api/module-lifecycle.spec.ts",
       "packages/reminder/src/api/routes/reminder-group.routes.spec.ts",
@@ -11304,6 +11431,7 @@
       "packages/task/src/server/infrastructure/adapters/prisma/__tests__/task-folder-ownership.surface.spec.ts",
       "packages/task/src/server/infrastructure/adapters/prisma/__tests__/task-instance-ownership.surface.spec.ts",
       "packages/task/src/server/infrastructure/adapters/prisma/__tests__/task-template-ownership.surface.spec.ts",
+      "packages/task/src/server/infrastructure/adapters/prisma/mappers/__tests__/task-row-mapper.spec.ts",
       "packages/task/src/server/infrastructure/adapters/prisma/mappers/prisma-task-dependency-mapper.spec.ts",
       "packages/task/src/server/infrastructure/adapters/prisma/mappers/prisma-task-folder-mapper.spec.ts",
       "packages/task/src/server/infrastructure/adapters/prisma/mappers/prisma-task-instance-mapper.spec.ts",
@@ -11318,6 +11446,7 @@
       "packages/task/src/server/infrastructure/task-goal-outbox.test.ts",
       "packages/task/src/server/transport/__tests__/task-instance.controller.test.ts",
       "packages/task/src/server/transport/__tests__/task-template.controller.test.ts",
+      "packages/task/src/server/transport/__tests__/task-transport-parity.spec.ts",
       "packages/task/src/testing/an-identity-id-dual.surface.spec.ts"
     ]
   },
@@ -11326,7 +11455,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 969,
+    "unit": 982,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

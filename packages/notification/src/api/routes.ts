@@ -30,8 +30,6 @@ import {
 // Residual 989: sole parseString/parseNumber (local dual retired).
 // Residual 1021: sole parseBoolean (local dual retired).
 import { parseBoolean, parseNumber, parseString } from '@memoflow/utils/shared';
-import { brandedId } from '@memoflow/contracts/primitives';
-import type { NotificationId } from '@memoflow/contracts/primitives';
 import {
   CreateNotificationSchema,
   NotificationQuerySchema,
@@ -42,6 +40,11 @@ import {
   NotificationBatchResultSchema,
   UnreadCountResponseSchema,
   NotificationPreferenceResponseSchema,
+  DeleteNotificationInvocationSchema,
+  MarkAllNotificationsReadInvocationSchema,
+  MarkNotificationReadInvocationSchema,
+  NotificationIdParamsSchema,
+  ReplayDeadLetterInvocationSchema,
 } from '@memoflow/contracts/notification';
 import { BusinessOperationReceiptSchema } from '@memoflow/contracts/reliable-messaging';
 import {
@@ -76,7 +79,7 @@ export function registerNotificationRoutes(
   });
 
   // POST / — Create notification
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/',
@@ -86,9 +89,10 @@ export function registerNotificationRoutes(
         201: successResponse(NotificationResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
+      validation: { schema: CreateNotificationSchema },
     },
     [auth],
-    (req, ctx) => controller.create(req.body, ctx),
+    (data, ctx) => controller.create(data, ctx),
     { successStatus: 201 },
   );
 
@@ -126,7 +130,7 @@ export function registerNotificationRoutes(
   );
 
   // POST /batch-read — Batch mark as read (must be before /:id)
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/batch-read',
@@ -138,13 +142,14 @@ export function registerNotificationRoutes(
         200: successResponse(NotificationBatchResultSchema, '操作成功'),
         400: errorResponse('参数错误'),
       },
+      validation: { schema: NotificationIdsBatchSchema },
     },
     [auth],
-    (req, ctx) => controller.batchMarkAsRead(req.body, ctx),
+    (data, ctx) => controller.batchMarkAsRead(data, ctx),
   );
 
   // POST /batch-delete — Batch delete (must be before /:id)
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/batch-delete',
@@ -156,13 +161,14 @@ export function registerNotificationRoutes(
         200: successResponse(NotificationBatchResultSchema, '删除成功'),
         400: errorResponse('参数错误'),
       },
+      validation: { schema: NotificationIdsBatchSchema },
     },
     [auth],
-    (req, ctx) => controller.batchDelete(req.body, ctx),
+    (data, ctx) => controller.batchDelete(data, ctx),
   );
 
   // POST /cleanup — Cleanup old notifications (must be before /:id)
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/cleanup',
@@ -174,9 +180,10 @@ export function registerNotificationRoutes(
         200: successResponse(NotificationBatchResultSchema, '清理成功'),
         400: errorResponse('参数错误'),
       },
+      validation: { schema: CleanupOldNotificationsSchema },
     },
     [auth],
-    (req, ctx) => controller.cleanup(req.body, ctx),
+    (data, ctx) => controller.cleanup(data, ctx),
   );
 
   // GET /unread-count — Get unread notification count (must be before /:id)
@@ -194,7 +201,7 @@ export function registerNotificationRoutes(
   );
 
   // PATCH /read-all — Mark all notifications as read (must be before /:id)
-  r.route(
+  r.routeWithValidation(
     {
       method: 'patch',
       path: '/read-all',
@@ -202,9 +209,12 @@ export function registerNotificationRoutes(
       responses: {
         200: successResponse(UnreadCountResponseSchema, '操作成功'),
       },
+      validation: {
+        schema: MarkAllNotificationsReadInvocationSchema,
+      },
     },
     [auth],
-    (_req, ctx) => controller.markAllAsRead(ctx.identityId),
+    (_data, ctx) => controller.markAllAsRead(ctx.identityId),
   );
 
   // GET /preferences — must register before /:id (residual 196)
@@ -222,7 +232,7 @@ export function registerNotificationRoutes(
   );
 
   // PUT /preferences
-  r.route(
+  r.routeWithValidation(
     {
       method: 'put',
       path: '/preferences',
@@ -234,9 +244,10 @@ export function registerNotificationRoutes(
         200: successResponse(NotificationPreferenceResponseSchema, '更新成功'),
         400: errorResponse('参数错误'),
       },
+      validation: { schema: UpdateNotificationPreferenceSchema },
     },
     [auth],
-    (req, ctx) => controller.updatePreferences(req.body, ctx),
+    (data, ctx) => controller.updatePreferences(data, ctx),
   );
 
   // GET /dead-letters — Identity-scoped dead-letter query
@@ -254,19 +265,23 @@ export function registerNotificationRoutes(
   );
 
   // POST /dead-letters/:id/replay — Identity-scoped dead-letter replay
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/dead-letters/:id/replay',
       summary: '重发死信通知',
-      request: { params: z.object({ id: z.string().min(1) }) },
+      request: { params: ReplayDeadLetterInvocationSchema.shape.params },
       responses: {
         200: successResponse(BusinessOperationReceiptSchema, '重发成功'),
         404: errorResponse('死信通知不存在'),
       },
+      validation: {
+        schema: ReplayDeadLetterInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.replayDeadLetter(req.params!.id, ctx),
+    (data, ctx) => controller.replayDeadLetter(data.params.id, ctx),
   );
 
   // GET /receipts — Delivery receipt timeline query
@@ -454,7 +469,7 @@ export function registerNotificationRoutes(
       method: 'get',
       path: '/:id',
       summary: '获取通知详情',
-      request: { params: z.object({ id: brandedId<NotificationId>() }) },
+      request: { params: NotificationIdParamsSchema },
       responses: {
         200: successResponse(NotificationResponseSchema, '获取成功'),
         404: errorResponse('通知不存在'),
@@ -465,35 +480,43 @@ export function registerNotificationRoutes(
   );
 
   // DELETE /:id — Delete notification
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/:id',
       summary: '删除通知',
-      request: { params: z.object({ id: brandedId<NotificationId>() }) },
+      request: { params: DeleteNotificationInvocationSchema.shape.params },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('通知不存在'),
       },
+      validation: {
+        schema: DeleteNotificationInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.delete(req.params!.id, ctx),
+    (data, ctx) => controller.delete(data.params.id, ctx),
   );
 
   // PATCH /:id/read — Mark single notification as read
-  r.route(
+  r.routeWithValidation(
     {
       method: 'patch',
       path: '/:id/read',
       summary: '标记通知为已读',
-      request: { params: z.object({ id: brandedId<NotificationId>() }) },
+      request: { params: MarkNotificationReadInvocationSchema.shape.params },
       responses: {
         200: successResponse(NotificationResponseSchema, '操作成功'),
         404: errorResponse('通知不存在'),
       },
+      validation: {
+        schema: MarkNotificationReadInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.markAsRead(req.params!.id, ctx),
+    (data, ctx) => controller.markAsRead(data.params.id, ctx),
   );
 
   return router;

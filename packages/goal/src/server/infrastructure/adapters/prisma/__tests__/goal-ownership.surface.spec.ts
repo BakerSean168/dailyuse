@@ -222,67 +222,86 @@ describe('goal ownership surface', () => {
     expect(crossModule).toContain('findByIdForIdentity(identityId, goalId)');
   });
 
-  it('HTTP and Electron get/update/delete/record pass identity context', () => {
+  it('HTTP and Electron get/update/delete/record pass identity context (Phase 4)', () => {
+    // Read/query routes keep expressAdapter with controller-side identity scope.
     expect(routes).toContain('controller.get(');
     expect(routes).toMatch(/controller\.get\(\s*req\.params!\.id,\s*ctx,/);
-    expect(routes).toContain('controller.update(req.params!.id, req.body, ctx)');
-    expect(routes).toMatch(/controller\.delete\([\s\S]*expectedVersion,[\s\S]*ctx/);
     expect(routes).toContain('controller.getAggregate(req.params!.id, ctx)');
-    expect(recordRoutes).toMatch(
-      /controller\.deleteRecord\([\s\S]*req\.params!\.id,[\s\S]*req\.params!\.krId,[\s\S]*req\.params!\.recordId,[\s\S]*req\.query,[\s\S]*ctx/,
+    expect(routes).toContain('controller.getProgressBreakdown(req.params!.id, ctx)');
+
+    // Phase 4: mutation routes bind contract invocation schemas through the
+    // validation-aware registrar; the controller still receives the canonical
+    // identity-bearing context (never a body identity).
+    expect(routes).toContain('routeWithValidation');
+    expect(routes).toMatch(/controller\.update\(data\.params\.id, data\.body, ctx\)/);
+    expect(routes).toMatch(
+      /controller\.delete\(data\.params\.id, data\.query\.expectedVersion, ctx\)/,
     );
+    expect(routes).toMatch(
+      /controller\.archive\(data\.params\.id, data\.body\.expectedVersion, ctx\)/,
+    );
+    expect(routes).toMatch(
+      /controller\.activate\(data\.params\.id, data\.body\.expectedVersion, ctx\)/,
+    );
+    expect(routes).toMatch(
+      /controller\.complete\(data\.params\.id, data\.body\.expectedVersion, ctx\)/,
+    );
+    expect(recordRoutes).toMatch(
+      /controller\.deleteRecord\([\s\S]*data\.params\.id,[\s\S]*data\.params\.krId,[\s\S]*data\.params\.recordId,[\s\S]*data\.query,[\s\S]*ctx/,
+    );
+    expect(keyResultRoutes).toMatch(
+      /controller\.addKeyResult\(data\.params\.id, data\.body, ctx\)/,
+    );
+    expect(keyResultRoutes).toMatch(
+      /controller\.deleteKeyResult\(data\.params\.id, data\.params\.krId, data\.query, ctx\)/,
+    );
+    expect(reviewRoutes).toMatch(/controller\.addReview\(data\.params\.id, data\.body, ctx\)/);
+    expect(reviewRoutes).toMatch(
+      /controller\.deleteReview\(data\.params\.id, data\.params\.reviewId, data\.query, ctx\)/,
+    );
+
+    // Electron IPC mutation handlers validate the projected canonical input via
+    // ipcAdapterWithValidation (withAuthenticatedValidation) and still thread
+    // the canonical requestContext into the controller.
+    expect(electron).toContain('registerValidatedChannel');
+    expect(electron).toContain('withAuthenticatedValidation');
     expect(electron).toMatch(
       /GoalChannels\.GET[\s\S]*goalController\.get\(id, requestContext, includeChildren\)/,
     );
     expect(electron).toMatch(
-      /GoalChannels\.UPDATE[\s\S]*goalController\.update\(id, dto, requestContext\)/,
+      /GoalChannels\.UPDATE[\s\S]*goalController\.update\(data\.params\.id, data\.body, requestContext\)/,
     );
     expect(electron).toMatch(
-      /GoalChannels\.DELETE[\s\S]*goalController\.delete\(id, request\.expectedVersion, requestContext\)/,
+      /GoalChannels\.DELETE[\s\S]*goalController\.delete\(data\.params\.id, data\.query\.expectedVersion, requestContext\)/,
     );
     expect(electron).toMatch(
       /GoalChannels\.AGGREGATE[\s\S]*goalController\.getAggregate\(id, requestContext\)/,
     );
     expect(electron).toMatch(
-      /RECORD_DELETE[\s\S]*goalController\.deleteRecord\([\s\S]*goalId,[\s\S]*keyResultId,[\s\S]*recordId,[\s\S]*request,[\s\S]*requestContext/,
-    );
-    expect(electron).not.toMatch(
-      /GoalChannels\.GET, \(_event, id, includeChildren = true\) =>\s*goalController\.get\(id, includeChildren\)/,
-    );
-    expect(routes).toMatch(/controller\.archive\([\s\S]*expectedVersion,[\s\S]*ctx/);
-    expect(routes).toMatch(/controller\.activate\([\s\S]*expectedVersion,[\s\S]*ctx/);
-    expect(routes).toMatch(/controller\.complete\([\s\S]*expectedVersion,[\s\S]*ctx/);
-    expect(electron).toMatch(
-      /GoalChannels\.ARCHIVE[\s\S]*goalController\.archive\(id, request\.expectedVersion, requestContext\)/,
+      /RECORD_DELETE[\s\S]*goalController\.deleteRecord\([\s\S]*data\.params\.id,[\s\S]*data\.params\.krId,[\s\S]*data\.params\.recordId,[\s\S]*data\.query,[\s\S]*requestContext/,
     );
     expect(electron).toMatch(
-      /GoalChannels\.ACTIVATE[\s\S]*goalController\.activate\(id, request\.expectedVersion, requestContext\)/,
+      /GoalChannels\.ARCHIVE[\s\S]*goalController\.archive\(data\.params\.id, data\.body\.expectedVersion, requestContext\)/,
     );
     expect(electron).toMatch(
-      /GoalChannels\.COMPLETE[\s\S]*goalController\.complete\(id, request\.expectedVersion, requestContext\)/,
-    );
-    expect(keyResultRoutes).toContain('controller.addKeyResult(req.params!.id, req.body, ctx)');
-    expect(keyResultRoutes).toContain(
-      'controller.deleteKeyResult(req.params!.id, req.params!.krId, req.query, ctx)',
-    );
-    expect(reviewRoutes).toContain('controller.addReview(req.params!.id, req.body, ctx)');
-    expect(reviewRoutes).toContain(
-      'controller.deleteReview(req.params!.id, req.params!.reviewId, req.query, ctx)',
+      /GoalChannels\.ACTIVATE[\s\S]*goalController\.activate\(data\.params\.id, data\.body\.expectedVersion, requestContext\)/,
     );
     expect(electron).toMatch(
-      /KEY_RESULT_ADD[\s\S]*goalController\.addKeyResult\(goalId, dto, requestContext\)/,
+      /GoalChannels\.COMPLETE[\s\S]*goalController\.complete\(data\.params\.id, data\.body\.expectedVersion, requestContext\)/,
     );
     expect(electron).toMatch(
-      /KEY_RESULT_DELETE[\s\S]*goalController\.deleteKeyResult\([\s\S]*goalId,[\s\S]*keyResultId,[\s\S]*request,[\s\S]*requestContext/,
+      /KEY_RESULT_ADD[\s\S]*goalController\.addKeyResult\(data\.params\.id, data\.body, requestContext\)/,
     );
     expect(electron).toMatch(
-      /REVIEW_CREATE[\s\S]*goalController\.addReview\(goalId, dto, requestContext\)/,
+      /KEY_RESULT_DELETE[\s\S]*goalController\.deleteKeyResult\([\s\S]*data\.params\.id,[\s\S]*data\.params\.krId,[\s\S]*data\.query,[\s\S]*requestContext/,
     );
     expect(electron).toMatch(
-      /REVIEW_DELETE[\s\S]*goalController\.deleteReview\([\s\S]*goalId,[\s\S]*reviewId,[\s\S]*request,[\s\S]*requestContext/,
+      /REVIEW_CREATE[\s\S]*goalController\.addReview\(data\.params\.id, data\.body, requestContext\)/,
+    );
+    expect(electron).toMatch(
+      /REVIEW_DELETE[\s\S]*goalController\.deleteReview\([\s\S]*data\.params\.id,[\s\S]*data\.params\.reviewId,[\s\S]*data\.query,[\s\S]*requestContext/,
     );
     expect(electron).toMatch(/KEY_RESULT_BATCH_UPDATE_WEIGHTS[\s\S]*requestContext/);
-    expect(routes).toContain('controller.getProgressBreakdown(req.params!.id, ctx)');
     expect(electron).toMatch(
       /PROGRESS_BREAKDOWN[\s\S]*goalController\.getProgressBreakdown\(id, requestContext\)/,
     );

@@ -12,15 +12,15 @@
 
 import type { Result } from '@memoflow/contracts/result';
 import type { Context } from '@memoflow/contracts/shared';
-import { fail, isOk, ok } from '@memoflow/contracts/result';
-import { CompleteTaskInstanceSchema, SkipTaskInstanceSchema } from '@memoflow/contracts/task';
+import { isOk, ok } from '@memoflow/contracts/result';
 import type {
   CheckExpiredTaskInstancesRes,
   GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   TaskInstanceStatus,
+  CompleteTaskInstanceReq,
+  SkipTaskInstanceReq,
 } from '@memoflow/contracts/task';
-import { formatZodErrors } from '@memoflow/utils/result';
 import type { CompleteTaskInstanceUseCase } from '../application/use-cases/commands/complete-task-instance.use-case';
 import type { UncompleteTaskInstanceUseCase } from '../application/use-cases/commands/uncomplete-task-instance.use-case';
 import type { DeleteTaskInstanceUseCase } from '../application/use-cases/commands/delete-task-instance.use-case';
@@ -111,19 +111,10 @@ export class TaskInstanceController {
    */
   async completeInstance(
     id: string,
-    input: unknown,
+    input: CompleteTaskInstanceReq,
     ctx: Context,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    const parsed = CompleteTaskInstanceSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
-    const result = await this.useCases.complete(id, ctx.identityId, parsed.data);
+    const result = await this.useCases.complete(id, ctx.identityId, input);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
@@ -145,19 +136,10 @@ export class TaskInstanceController {
    */
   async skipInstance(
     id: string,
-    input: unknown,
+    input: SkipTaskInstanceReq,
     ctx: Context,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    const parsed = SkipTaskInstanceSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
-    const result = await this.useCases.skip(id, ctx.identityId, parsed.data);
+    const result = await this.useCases.skip(id, ctx.identityId, input);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }

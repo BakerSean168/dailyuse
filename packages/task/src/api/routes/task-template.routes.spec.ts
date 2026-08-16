@@ -24,21 +24,22 @@ class TestOpenApiRegistry implements OpenApiRegistryLike {
 const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
 function createControllerStub(): TaskTemplateController {
+  const okResult = { ok: true, data: null };
   return {
-    createTemplate: vi.fn(),
-    getTemplate: vi.fn(),
-    listTemplates: vi.fn(),
-    getTaskGraph: vi.fn(),
-    updateTemplate: vi.fn(),
-    deleteTemplate: vi.fn(),
-    activateTemplate: vi.fn(),
-    pauseTemplate: vi.fn(),
-    archiveTemplate: vi.fn(),
-    listByPriority: vi.fn(),
-    generateInstances: vi.fn(),
-    getInstancesByTemplate: vi.fn(),
-    bindToGoal: vi.fn(),
-    unbindFromGoal: vi.fn(),
+    createTemplate: vi.fn(async () => okResult),
+    getTemplate: vi.fn(async () => okResult),
+    listTemplates: vi.fn(async () => okResult),
+    getTaskGraph: vi.fn(async () => okResult),
+    updateTemplate: vi.fn(async () => okResult),
+    deleteTemplate: vi.fn(async () => okResult),
+    activateTemplate: vi.fn(async () => okResult),
+    pauseTemplate: vi.fn(async () => okResult),
+    archiveTemplate: vi.fn(async () => okResult),
+    listByPriority: vi.fn(async () => okResult),
+    generateInstances: vi.fn(async () => okResult),
+    getInstancesByTemplate: vi.fn(async () => okResult),
+    bindToGoal: vi.fn(async () => okResult),
+    unbindFromGoal: vi.fn(async () => okResult),
   } as unknown as TaskTemplateController;
 }
 
@@ -57,9 +58,12 @@ function getRegisteredRoute(
 function getJsonBodySchema(route: RegisteredRoute): {
   safeParse: (value: unknown) => { success: boolean };
 } {
-  return (((route.request?.body as Record<string, unknown> | undefined)?.content as
-    | Record<string, unknown>
-    | undefined)?.['application/json'] as Record<string, unknown> | undefined)?.schema as {
+  return (
+    (
+      (route.request?.body as Record<string, unknown> | undefined)?.content as
+        Record<string, unknown> | undefined
+    )?.['application/json'] as Record<string, unknown> | undefined
+  )?.schema as {
     safeParse: (value: unknown) => { success: boolean };
   };
 }
@@ -71,12 +75,23 @@ function getResponseSchema(
   safeParse: (value: unknown) => { success: boolean };
   _def?: { typeName?: string };
 } {
-  const responses = route.responses as Record<string, { content?: Record<string, unknown> }> | undefined;
+  const responses = route.responses as
+    Record<string, { content?: Record<string, unknown> }> | undefined;
   const response = responses?.[String(status)];
   const schema = (response?.content as Record<string, unknown> | undefined)?.[
     'application/json'
-  ] as { schema?: { safeParse: (value: unknown) => { success: boolean }; _def?: { typeName?: string } } } | undefined;
-  return schema?.schema ?? (response as unknown as { safeParse: (value: unknown) => { success: boolean } });
+  ] as
+    | {
+        schema?: {
+          safeParse: (value: unknown) => { success: boolean };
+          _def?: { typeName?: string };
+        };
+      }
+    | undefined;
+  return (
+    schema?.schema ??
+    (response as unknown as { safeParse: (value: unknown) => { success: boolean } })
+  );
 }
 
 function getParamsSchema(route: RegisteredRoute): {
@@ -248,9 +263,7 @@ describe('task-template route contracts', () => {
     const route = getRegisteredRoute(registry, 'get', `${BASE}/{id}/instances`);
     const querySchema = getQuerySchema(route);
     expect(querySchema).toBeDefined();
-    expect(
-      querySchema.safeParse({ from: Date.now(), to: Date.now() + 60_000 }).success,
-    ).toBe(true);
+    expect(querySchema.safeParse({ from: Date.now(), to: Date.now() + 60_000 }).success).toBe(true);
     expect(
       querySchema.safeParse({
         from: '2026-05-06T00:00:00.000Z',
@@ -277,17 +290,29 @@ describe('task-template route contracts', () => {
     // List
     expect(getResponseSchema(getRegisteredRoute(registry, 'get', BASE), 200)).toBeDefined();
     // Detail
-    expect(getResponseSchema(getRegisteredRoute(registry, 'get', `${BASE}/{id}`), 200)).toBeDefined();
+    expect(
+      getResponseSchema(getRegisteredRoute(registry, 'get', `${BASE}/{id}`), 200),
+    ).toBeDefined();
     // Update
-    expect(getResponseSchema(getRegisteredRoute(registry, 'put', `${BASE}/{id}`), 200)).toBeDefined();
+    expect(
+      getResponseSchema(getRegisteredRoute(registry, 'put', `${BASE}/{id}`), 200),
+    ).toBeDefined();
     // Delete
-    expect(getResponseSchema(getRegisteredRoute(registry, 'delete', `${BASE}/{id}`), 200)).toBeDefined();
+    expect(
+      getResponseSchema(getRegisteredRoute(registry, 'delete', `${BASE}/{id}`), 200),
+    ).toBeDefined();
     // Activate
-    expect(getResponseSchema(getRegisteredRoute(registry, 'post', `${BASE}/{id}/activate`), 200)).toBeDefined();
+    expect(
+      getResponseSchema(getRegisteredRoute(registry, 'post', `${BASE}/{id}/activate`), 200),
+    ).toBeDefined();
     // Pause
-    expect(getResponseSchema(getRegisteredRoute(registry, 'post', `${BASE}/{id}/pause`), 200)).toBeDefined();
+    expect(
+      getResponseSchema(getRegisteredRoute(registry, 'post', `${BASE}/{id}/pause`), 200),
+    ).toBeDefined();
     // Archive
-    expect(getResponseSchema(getRegisteredRoute(registry, 'post', `${BASE}/{id}/archive`), 200)).toBeDefined();
+    expect(
+      getResponseSchema(getRegisteredRoute(registry, 'post', `${BASE}/{id}/archive`), 200),
+    ).toBeDefined();
   });
 
   it('all param schemas use branded IDs', () => {
@@ -306,13 +331,120 @@ describe('task-template route contracts', () => {
     ];
 
     for (const path of idRoutes) {
-      const method = path.includes('activate') || path.includes('pause') || path.includes('archive') || path.includes('bind') || path.includes('unbind') || path.includes('generate')
-        ? 'post'
-        : 'get';
+      const method =
+        path.includes('activate') ||
+        path.includes('pause') ||
+        path.includes('archive') ||
+        path.includes('bind') ||
+        path.includes('unbind') ||
+        path.includes('generate')
+          ? 'post'
+          : 'get';
       const route = getRegisteredRoute(registry, method, path);
       const paramsSchema = getParamsSchema(route);
       expect(paramsSchema).toBeDefined();
       expect(paramsSchema.safeParse({ id: 'bare-string' }).success).toBe(false);
     }
+  });
+});
+
+describe('task template mutation routes run the real validation adapter (Phase 4)', () => {
+  function getHandler(
+    router: ReturnType<typeof registerTaskTemplateRoutes>,
+    method: string,
+    path: string,
+  ): (req: unknown, res: unknown) => Promise<unknown> {
+    const stack = (
+      router as unknown as {
+        stack: Array<{
+          route?: {
+            path: string;
+            methods: Record<string, boolean>;
+            stack: Array<{ handle: (r: unknown, s: unknown) => unknown }>;
+          };
+        }>;
+      }
+    ).stack;
+    const layer = stack.find(
+      (candidate) => candidate.route?.path === path && candidate.route.methods[method] === true,
+    );
+    expect(layer, `${method} ${path} registered`).toBeDefined();
+    return layer!.route!.stack.at(-1)!.handle;
+  }
+
+  function createReq(body: unknown): Record<string, unknown> {
+    return {
+      body,
+      params: { id: 'ITaskTemplateId_550e8400-e29b-41d4-a716-446655440000' },
+      headers: {},
+      query: {},
+      user: { identityId: 'identity-1' },
+      requestContext: {
+        requestId: 'req-task-adapter',
+        traceId: 'req-task-adapter',
+        startedAt: 1_700_000_000_000,
+        source: 'http',
+      },
+    };
+  }
+
+  function createRes() {
+    const res: any = {
+      statusCode: 0,
+      body: null,
+      status(code: number) {
+        res.statusCode = code;
+        return res;
+      },
+      json(data: unknown) {
+        res.body = data;
+        return res;
+      },
+      end() {
+        return res;
+      },
+    };
+    return res;
+  }
+
+  it('create: malformed name is rejected before the controller', async () => {
+    const controller = createControllerStub();
+    const router = registerTaskTemplateRoutes(controller, { auth: authMiddleware }, null);
+    const handler = getHandler(router, 'post', '/');
+
+    const badRes = createRes();
+    await handler(createReq({ name: '' }), badRes);
+    expect(badRes.statusCode).toBe(400);
+    expect(badRes.body.error.code).toBe('VALIDATION_ERROR');
+    expect(controller.createTemplate).not.toHaveBeenCalled();
+
+    const validRes = createRes();
+    await handler(
+      createReq({
+        name: 'My Task',
+        taskType: 'OneTime',
+        timeConfig: { timeType: 'AllDay', startDate: null, timePoint: null },
+        importance: 'Moderate',
+      }),
+      validRes,
+    );
+    expect(validRes.statusCode).toBe(201);
+    expect(controller.createTemplate).toHaveBeenCalledTimes(1);
+  });
+
+  it('update: params + body are validated together before the controller', async () => {
+    const controller = createControllerStub();
+    const router = registerTaskTemplateRoutes(controller, { auth: authMiddleware }, null);
+    const handler = getHandler(router, 'put', '/:id');
+
+    const badRes = createRes();
+    await handler(createReq({ name: '' }), badRes);
+    expect(badRes.statusCode).toBe(400);
+    expect(controller.updateTemplate).not.toHaveBeenCalled();
+
+    const validRes = createRes();
+    await handler(createReq({ name: 'Updated Name' }), validRes);
+    expect(validRes.statusCode).toBe(200);
+    expect(controller.updateTemplate).toHaveBeenCalledTimes(1);
   });
 });

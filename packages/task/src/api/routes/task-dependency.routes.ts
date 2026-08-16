@@ -14,16 +14,15 @@ import {
   errorResponse,
 } from '@memoflow/utils/result';
 import { brandedId } from '@memoflow/contracts/primitives';
-import type { TaskTemplateId, TaskDependencyId } from '@memoflow/contracts/primitives';
+import type { TaskTemplateId } from '@memoflow/contracts/primitives';
 import {
   TaskDependencyResponseSchema,
   DependencyChainResponseSchema,
   ValidateDependencyResponseSchema,
-} from '@memoflow/contracts/task';
-import {
-  CreateDependencyBodySchema,
-  UpdateDependencyBodySchema,
-  ValidateDependencyBodySchema,
+  CreateTaskDependencyInvocationSchema,
+  UpdateTaskDependencyInvocationSchema,
+  DeleteTaskDependencyInvocationSchema,
+  ValidateTaskDependencyInvocationSchema,
 } from '@memoflow/contracts/task';
 import type { TaskDependencyController } from '../../server/transport/task-dependency.controller';
 
@@ -51,22 +50,30 @@ export function registerTaskDependencyRoutes(
   });
 
   // POST /:taskId/dependencies — Create dependency
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:taskId/dependencies',
       summary: '创建任务依赖关系',
       request: {
-        params: z.object({ taskId: brandedId<TaskTemplateId>() }),
-        body: { content: { 'application/json': { schema: CreateDependencyBodySchema } } },
+        params: CreateTaskDependencyInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: CreateTaskDependencyInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         201: successResponse(TaskDependencyResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
+      validation: {
+        schema: CreateTaskDependencyInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.createDependency(req.params!.taskId, req.body, ctx.identityId),
+    (data, ctx) => controller.createDependency(data.params.taskId, data.body, ctx.identityId),
     { successStatus: 201 },
   );
 
@@ -122,55 +129,70 @@ export function registerTaskDependencyRoutes(
   );
 
   // POST /dependencies/validate — Validate a potential dependency
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/dependencies/validate',
       summary: '验证依赖关系',
       request: {
-        body: { content: { 'application/json': { schema: ValidateDependencyBodySchema } } },
+        body: {
+          content: { 'application/json': { schema: ValidateTaskDependencyInvocationSchema } },
+        },
       },
       responses: {
         200: successResponse(ValidateDependencyResponseSchema, '验证完成'),
       },
+      validation: { schema: ValidateTaskDependencyInvocationSchema },
     },
     [auth],
-    (req, ctx) => controller.validateDependency(req.body, ctx.identityId),
+    (data, ctx) => controller.validateDependency(data, ctx.identityId),
   );
 
   // DELETE /dependencies/:id — Delete dependency
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/dependencies/:id',
       summary: '删除任务依赖关系',
-      request: { params: z.object({ id: brandedId<TaskDependencyId>() }) },
+      request: { params: DeleteTaskDependencyInvocationSchema.shape.params },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('依赖关系不存在'),
       },
+      validation: {
+        schema: DeleteTaskDependencyInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.deleteDependency(req.params!.id, ctx.identityId),
+    (data, ctx) => controller.deleteDependency(data.params.id, ctx.identityId),
   );
 
   // PUT /dependencies/:id — Update dependency
-  r.route(
+  r.routeWithValidation(
     {
       method: 'put',
       path: '/dependencies/:id',
       summary: '更新任务依赖关系',
       request: {
-        params: z.object({ id: brandedId<TaskDependencyId>() }),
-        body: { content: { 'application/json': { schema: UpdateDependencyBodySchema } } },
+        params: UpdateTaskDependencyInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: UpdateTaskDependencyInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         200: successResponse(TaskDependencyResponseSchema, '更新成功'),
         404: errorResponse('依赖关系不存在'),
       },
+      validation: {
+        schema: UpdateTaskDependencyInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.updateDependency(req.params!.id, req.body, ctx.identityId),
+    (data, ctx) => controller.updateDependency(data.params.id, data.body, ctx.identityId),
   );
 
   return router;

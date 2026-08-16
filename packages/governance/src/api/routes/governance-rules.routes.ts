@@ -20,11 +20,7 @@ import { brandedId } from '@memoflow/contracts/primitives';
 import type { RuleId } from '@memoflow/contracts/primitives';
 import type { GovernanceController } from '../../server/transport/governance.controller';
 import type { GovernanceOpenApiRegistry, PlatformMiddleware } from './governance-route-shared';
-import {
-  parseNumber,
-  parseString,
-  parseStringArray,
-} from './governance-route-shared';
+import { parseNumber, parseString, parseStringArray } from './governance-route-shared';
 
 /**
  * Registers all HTTP routes for the governance Rule resource.
@@ -48,7 +44,7 @@ export function registerGovernanceRulesRoutes(
     defaultSecurity: [{ bearerAuth: [] }],
   });
 
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/',
@@ -59,9 +55,10 @@ export function registerGovernanceRulesRoutes(
         400: errorResponse('参数错误'),
         403: errorResponse('权限不足'),
       },
+      validation: { schema: CreateRuleSchema },
     },
     [auth, requireRole(['TechLead', 'Architect'])],
-    (req, ctx) => controller.createRule(req.body, ctx),
+    (data, ctx) => controller.createRule(data, ctx),
     { successStatus: 201 },
   );
 

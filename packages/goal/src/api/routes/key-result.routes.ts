@@ -13,15 +13,15 @@ import {
   errorResponse,
 } from '@memoflow/utils/result';
 import {
-  AddKeyResultSchema,
-  DeleteKeyResultSchema,
-  UpdateKeyResultSchema,
-  UpdateKeyResultProgressSchema,
   GoalMutationReceiptSchema,
   KeyResultListResSchema,
+  AddKeyResultInvocationSchema,
+  UpdateKeyResultInvocationSchema,
+  UpdateKeyResultProgressInvocationSchema,
+  DeleteKeyResultInvocationSchema,
 } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
-import type { GoalId, KeyResultId } from '@memoflow/contracts/primitives';
+import type { GoalId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
 
 // ============ Types ============
@@ -68,81 +68,105 @@ export function registerKeyResultRoutes(
   );
 
   // POST /:id/key-results — 添加关键结果
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/:id/key-results',
       summary: '添加关键结果',
       request: {
-        params: z.object({ id: brandedId<GoalId>() }),
-        body: { content: { 'application/json': { schema: AddKeyResultSchema } } },
+        params: AddKeyResultInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: AddKeyResultInvocationSchema.shape.body } },
+        },
       },
       responses: {
         201: successResponse(GoalMutationReceiptSchema, '添加成功'),
         404: errorResponse('目标不存在'),
       },
+      validation: {
+        schema: AddKeyResultInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.addKeyResult(req.params!.id, req.body, ctx),
+    (data, ctx) => controller.addKeyResult(data.params.id, data.body, ctx),
     { successStatus: 201 },
   );
 
   // PUT /:id/key-results/:krId — 更新关键结果
-  r.route(
+  r.routeWithValidation(
     {
       method: 'put',
       path: '/:id/key-results/:krId',
       summary: '更新关键结果',
       request: {
-        params: z.object({ id: brandedId<GoalId>(), krId: brandedId<KeyResultId>() }),
-        body: { content: { 'application/json': { schema: UpdateKeyResultSchema } } },
+        params: UpdateKeyResultInvocationSchema.shape.params,
+        body: {
+          content: { 'application/json': { schema: UpdateKeyResultInvocationSchema.shape.body } },
+        },
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标或关键结果不存在'),
       },
+      validation: {
+        schema: UpdateKeyResultInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) => controller.updateKeyResult(req.params!.id, req.params!.krId, req.body, ctx),
+    (data, ctx) => controller.updateKeyResult(data.params.id, data.params.krId, data.body, ctx),
   );
 
   // PATCH /:id/key-results/:krId/progress — 更新关键结果进度
-  r.route(
+  r.routeWithValidation(
     {
       method: 'patch',
       path: '/:id/key-results/:krId/progress',
       summary: '更新关键结果进度',
       request: {
-        params: z.object({ id: brandedId<GoalId>(), krId: brandedId<KeyResultId>() }),
-        body: { content: { 'application/json': { schema: UpdateKeyResultProgressSchema } } },
+        params: UpdateKeyResultProgressInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: UpdateKeyResultProgressInvocationSchema.shape.body },
+          },
+        },
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '更新成功'),
         404: errorResponse('目标或关键结果不存在'),
       },
+      validation: {
+        schema: UpdateKeyResultProgressInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
     },
     [auth],
-    (req, ctx) =>
-      controller.updateKeyResultProgress(req.params!.id, req.params!.krId, req.body, ctx),
+    (data, ctx) =>
+      controller.updateKeyResultProgress(data.params.id, data.params.krId, data.body, ctx),
   );
 
   // DELETE /:id/key-results/:krId — 删除关键结果
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/:id/key-results/:krId',
       summary: '删除关键结果',
       request: {
-        params: z.object({ id: brandedId<GoalId>(), krId: brandedId<KeyResultId>() }),
-        query: DeleteKeyResultSchema,
+        params: DeleteKeyResultInvocationSchema.shape.params,
+        query: DeleteKeyResultInvocationSchema.shape.query,
       },
       responses: {
         200: successResponse(GoalMutationReceiptSchema, '删除成功'),
         404: errorResponse('目标或关键结果不存在'),
       },
+      validation: {
+        schema: DeleteKeyResultInvocationSchema,
+        projectInput: (req) => ({ params: req.params, query: req.query }),
+      },
     },
     [auth],
-    (req, ctx) => controller.deleteKeyResult(req.params!.id, req.params!.krId, req.query, ctx),
+    (data, ctx) => controller.deleteKeyResult(data.params.id, data.params.krId, data.query, ctx),
   );
 
   return router;

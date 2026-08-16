@@ -3,8 +3,8 @@ import { TaskInstanceId } from '../../../../domain/value-objects/task-instance-i
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
 import { IdentityId } from '@memoflow/domain-shared';
 import { TaskTimeConfig } from '../../../../domain/value-objects/task-time-config';
-import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { TaskInstanceStatus } from '@memoflow/contracts/task';
+import { toImportanceLevel } from '../../prisma/mappers/task-row.mapper';
 
 export type PowerSyncTaskInstanceRow = {
   id: string;
@@ -34,7 +34,7 @@ export class PowerSyncTaskInstanceMapper {
       instanceDate: new Date(data.instance_date).getTime(),
       occurrenceKey: data.occurrence_key ?? null,
       timeConfig: TaskTimeConfig.fromDTO(JSON.parse(data.time_config || '{}')),
-      importance: (data.importance ?? 'Moderate') as unknown as ImportanceLevel,
+      importance: toImportanceLevel(data.importance),
       priority: data.priority ?? undefined,
       status: data.status as TaskInstanceStatus,
       completionRecord: null,

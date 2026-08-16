@@ -36,10 +36,7 @@ describe('notification preference ownership surface', () => {
     resolve(__dirname, '../../../../application/notification.application.port.ts'),
     'utf8',
   );
-  const moduleSource = readFileSync(
-    resolve(__dirname, '../../../notification.module.ts'),
-    'utf8',
-  );
+  const moduleSource = readFileSync(resolve(__dirname, '../../../notification.module.ts'), 'utf8');
   const routes = readFileSync(resolve(__dirname, '../../../../../api/routes.ts'), 'utf8');
   const controller = readFileSync(
     resolve(__dirname, '../../../../transport/notification.controller.ts'),
@@ -47,17 +44,11 @@ describe('notification preference ownership surface', () => {
   );
   const electron = readFileSync(resolve(__dirname, '../../../../../electron/index.ts'), 'utf8');
   const channels = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../../../../contracts/src/electron/ipc-channels.ts',
-    ),
+    resolve(__dirname, '../../../../../../../contracts/src/electron/ipc-channels.ts'),
     'utf8',
   );
   const clientPort = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../../application-client/ports/notification-api-client.port.ts',
-    ),
+    resolve(__dirname, '../../../../../application-client/ports/notification-api-client.port.ts'),
     'utf8',
   );
   const httpAdapter = readFileSync(
@@ -90,7 +81,9 @@ describe('notification preference ownership surface', () => {
   });
 
   it('prisma filters by id + identityId', () => {
-    expect(prisma).toContain('async findByIdForIdentity(identityId: string, id: string)');
+    expect(prisma).toMatch(
+      /async findByIdForIdentity\([\s\S]*identityId: string,[\s\S]*id: string/,
+    );
     expect(prisma).toContain('where: { id, identityId }');
     expect(prisma).toContain('deleteMany({');
     expect(prisma).toContain(
@@ -119,25 +112,22 @@ describe('notification preference ownership surface', () => {
       'updatePreferences(dto: unknown): Promise<Result<unknown>>;',
     );
     expect(moduleSource).toContain('updatePreferences: async (dto, identityId) =>');
-    expect(moduleSource).toMatch(
-      /updateNotificationPreference\.execute\(\s*identityId,/,
-    );
+    expect(moduleSource).toMatch(/updateNotificationPreference\.execute\(\s*identityId,/);
   });
 
-
-  it('HTTP/Electron preference transport is identity-scoped (residual 196)', () => {
+  it('HTTP/Electron preference transport is identity-scoped (residual 196, Phase 4)', () => {
     expect(channels).toContain("PREFERENCES_GET: 'notification:preferences:get'");
     expect(channels).toContain("PREFERENCES_UPDATE: 'notification:preferences:update'");
     expect(routes).toContain("path: '/preferences'");
     expect(routes).toContain('controller.getPreferences(ctx)');
-    expect(routes).toContain('controller.updatePreferences(req.body, ctx)');
+    expect(routes).toMatch(/controller\.updatePreferences\(data, ctx\)/);
     // Static path must appear before /:id registration.
     expect(routes.indexOf("path: '/preferences'")).toBeLessThan(routes.indexOf("path: '/:id'"));
     expect(controller).toContain('async getPreferences(ctx: Context)');
-    expect(controller).toContain('async updatePreferences(input: unknown, ctx: Context)');
-    expect(controller).toContain(
-      'return this.useCases.updatePreferences(parsed.data, ctx.identityId);',
+    expect(controller).toMatch(
+      /async updatePreferences\(\s*input:\s*UpdateNotificationPreferenceReq,\s*ctx:\s*Context/,
     );
+    expect(controller).toContain('return this.useCases.updatePreferences(input, ctx.identityId);');
     expect(controller).toContain('return this.useCases.getPreferences(ctx.identityId);');
     // Never accept identityId from client preference body dual-track.
     expect(controller).not.toMatch(
@@ -146,24 +136,20 @@ describe('notification preference ownership surface', () => {
     expect(electron).toContain('NotificationChannels.PREFERENCES_GET');
     expect(electron).toContain('NotificationChannels.PREFERENCES_UPDATE');
     expect(electron).toContain('controller.getPreferences(requestContext)');
-    expect(electron).toContain('controller.updatePreferences(dto ?? {}, requestContext)');
+    expect(electron).toContain('withAuthenticatedValidation');
     expect(moduleSource).toContain('executeOrCreate(identityId)');
   });
-
 
   it('client port/adapters expose preference methods without body identity dual-track (residual 197)', () => {
     expect(clientPort).toContain(
       'getPreferences(): Promise<Result<NotificationPreferenceClientDTO>>;',
     );
-    expect(clientPort).toMatch(
-      /updatePreferences\(\s*request: UpdateNotificationPreferenceReq,/,
-    );
+    expect(clientPort).toMatch(/updatePreferences\(\s*request: UpdateNotificationPreferenceReq,/);
     expect(clientPort).not.toMatch(/getPreferences\(\s*identityId/);
     expect(clientPort).not.toMatch(/updatePreferences\([\s\S]*identityId:\s*string/);
     expect(httpAdapter).toContain('`${this.baseUrl}/preferences`');
-    expect(httpAdapter).toContain("this.httpClient.put(`${this.baseUrl}/preferences`, request)");
+    expect(httpAdapter).toContain('this.httpClient.put(`${this.baseUrl}/preferences`, request)');
     expect(ipcAdapter).toContain('NotificationChannels.PREFERENCES_GET');
     expect(ipcAdapter).toContain('NotificationChannels.PREFERENCES_UPDATE');
   });
-
 });

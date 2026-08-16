@@ -73,9 +73,7 @@ describe('TaskInstanceController', () => {
 
     it('should pass through use case result directly', async () => {
       const expectedResult = ok(FAKE_INSTANCE_DTO);
-      (useCases.getTaskInstance as ReturnType<typeof vi.fn>).mockResolvedValue(
-        expectedResult,
-      );
+      (useCases.getTaskInstance as ReturnType<typeof vi.fn>).mockResolvedValue(expectedResult);
 
       const result = await controller.getInstance('inst_abc123', ctx);
 
@@ -158,7 +156,10 @@ describe('TaskInstanceController', () => {
         ok({ data: [FAKE_INSTANCE_DTO], total: 1 }),
       );
 
-      await controller.getInstancesByDateRange(TEST_IDENTITY_ID, { startDate: 1000, endDate: 2000 });
+      await controller.getInstancesByDateRange(TEST_IDENTITY_ID, {
+        startDate: 1000,
+        endDate: 2000,
+      });
 
       expect(useCases.getByDateRange).toHaveBeenCalledWith(TEST_IDENTITY_ID, 1000, 2000);
     });
@@ -167,7 +168,10 @@ describe('TaskInstanceController', () => {
       const useCaseError = fail({ code: 'VALIDATION_ERROR', message: 'Invalid range' });
       (useCases.getByDateRange as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
-      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, { startDate: 1000, endDate: 2000 });
+      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, {
+        startDate: 1000,
+        endDate: 2000,
+      });
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -180,7 +184,10 @@ describe('TaskInstanceController', () => {
         ok({ data: [FAKE_INSTANCE_DTO], total: 1 }),
       );
 
-      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, { startDate: 1000, endDate: 2000 });
+      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, {
+        startDate: 1000,
+        endDate: 2000,
+      });
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -193,17 +200,17 @@ describe('TaskInstanceController', () => {
   // completeInstance
   // =========================================================================
   describe('completeInstance', () => {
-    it('should return VALIDATION_ERROR for invalid input', async () => {
-      // rating must be integer 1-5
-      const result = await controller.completeInstance('inst_1', { rating: 10 }, ctx);
+    it('delegates parsed input to the use case (shape validation is adapter-owned)', async () => {
+      // Phase 4: malformed shapes are rejected by the adapters before the
+      // controller; the controller receives inferred input and delegates.
+      (useCases.complete as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ instance: FAKE_INSTANCE_DTO }),
+      );
 
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-        expect(result.error.message).toBe('参数验证失败');
-        expect(result.error.details).toBeDefined();
-      }
-      expect(useCases.complete).not.toHaveBeenCalled();
+      const result = await controller.completeInstance('inst_1', { rating: 5 }, ctx);
+
+      expect(useCases.complete).toHaveBeenCalledOnce();
+      expect(isOk(result)).toBe(true);
     });
 
     it('should accept empty object (all fields optional)', async () => {
@@ -217,12 +224,12 @@ describe('TaskInstanceController', () => {
       expect(isOk(result)).toBe(true);
     });
 
-    it('should normalize a missing transport body to an empty object', async () => {
+    it('should call complete use case with the parsed input', async () => {
       (useCases.complete as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      const result = await controller.completeInstance('inst_1', undefined, ctx);
+      const result = await controller.completeInstance('inst_1', {}, ctx);
 
       expect(useCases.complete).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {});
       expect(isOk(result)).toBe(true);
@@ -233,11 +240,15 @@ describe('TaskInstanceController', () => {
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      await controller.completeInstance('inst_1', {
-        duration: 30,
-        note: 'Done well',
-        rating: 4,
-      }, ctx);
+      await controller.completeInstance(
+        'inst_1',
+        {
+          duration: 30,
+          note: 'Done well',
+          rating: 4,
+        },
+        ctx,
+      );
 
       expect(useCases.complete).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {
         duration: 30,
@@ -271,22 +282,17 @@ describe('TaskInstanceController', () => {
       }
     });
 
-    it('should reject non-integer rating', async () => {
-      const result = await controller.completeInstance('inst_1', { rating: 3.5 }, ctx);
+    it('does not validate rating shape at the controller (adapter-owned)', async () => {
+      // Phase 4: rating bounds are enforced by CompleteTaskInstanceSchema in the
+      // adapters; the controller delegates parsed input to the use case.
+      (useCases.complete as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ instance: FAKE_INSTANCE_DTO }),
+      );
 
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-      }
-    });
+      const result = await controller.completeInstance('inst_1', { rating: 5 }, ctx);
 
-    it('should reject rating below 1', async () => {
-      const result = await controller.completeInstance('inst_1', { rating: 0 }, ctx);
-
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-      }
+      expect(useCases.complete).toHaveBeenCalledOnce();
+      expect(isOk(result)).toBe(true);
     });
   });
 
@@ -294,12 +300,12 @@ describe('TaskInstanceController', () => {
   // skipInstance
   // =========================================================================
   describe('skipInstance', () => {
-    it('should normalize a missing transport body to an empty object', async () => {
+    it('should call skip use case with the parsed input', async () => {
       (useCases.skip as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      const result = await controller.skipInstance('inst_1', undefined, ctx);
+      const result = await controller.skipInstance('inst_1', {}, ctx);
 
       expect(useCases.skip).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {});
       expect(isOk(result)).toBe(true);
@@ -323,7 +329,9 @@ describe('TaskInstanceController', () => {
 
       await controller.skipInstance('inst_1', { reason: 'Too tired' }, ctx);
 
-      expect(useCases.skip).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, { reason: 'Too tired' });
+      expect(useCases.skip).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {
+        reason: 'Too tired',
+      });
     });
 
     it('should unwrap result.data.instance', async () => {
@@ -348,14 +356,17 @@ describe('TaskInstanceController', () => {
       expect(isOk(result)).toBe(false);
     });
 
-    it('should return VALIDATION_ERROR for invalid input type', async () => {
-      // Pass a non-object to trigger Zod validation failure
-      const result = await controller.skipInstance('inst_1', 'invalid', ctx);
+    it('does not validate input type at the controller (adapter-owned)', async () => {
+      // Phase 4: shape/type validation is enforced by SkipTaskInstanceSchema in
+      // the adapters; the controller delegates parsed input to the use case.
+      (useCases.skip as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ instance: FAKE_INSTANCE_DTO }),
+      );
 
-      expect(isOk(result)).toBe(false);
-      if (!isOk(result)) {
-        expect(result.error.code).toBe('VALIDATION_ERROR');
-      }
+      const result = await controller.skipInstance('inst_1', { reason: 'Too tired' }, ctx);
+
+      expect(useCases.skip).toHaveBeenCalledOnce();
+      expect(isOk(result)).toBe(true);
     });
   });
 
@@ -386,9 +397,7 @@ describe('TaskInstanceController', () => {
   // =========================================================================
   describe('deleteInstance', () => {
     it('should call deleteInstance use case with id', async () => {
-      (useCases.deleteInstance as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok(undefined),
-      );
+      (useCases.deleteInstance as ReturnType<typeof vi.fn>).mockResolvedValue(ok(undefined));
 
       await controller.deleteInstance('inst_1', ctx);
 
@@ -396,9 +405,7 @@ describe('TaskInstanceController', () => {
     });
 
     it('should normalize success to ok(null)', async () => {
-      (useCases.deleteInstance as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok(undefined),
-      );
+      (useCases.deleteInstance as ReturnType<typeof vi.fn>).mockResolvedValue(ok(undefined));
 
       const result = await controller.deleteInstance('inst_1', ctx);
 

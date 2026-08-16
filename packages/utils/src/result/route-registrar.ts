@@ -29,12 +29,64 @@
  *   { successStatus: 201 },
  * );
  * ```
+ *
+ * Validation-aware variant — the OpenAPI request and the runtime validator
+ * share the SAME schema object:
+ *
+ * ```ts
+ * registrar.routeWithValidation(
+ *   {
+ *     method: 'post',
+ *     path: '/',
+ *     summary: '创建目标',
+ *     request: { body: { content: { 'application/json': { schema: CreateGoalSchema } } } },
+ *     responses: { 201: successResponse(GoalResponseSchema, '创建成功') },
+ *     validation: { schema: CreateGoalSchema },
+ *   },
+ *   [auth],
+ *   (data, ctx) => controller.create(data, ctx),
+ *   { successStatus: 201 },
+ * );
+ * ```
  */
 
 import type { Result } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import { expressAdapter, type ExpressAdapterOptions } from './express-adapter';
-import type { ExpressLikeRequest } from './express-adapter';
+import {
+  expressAdapter,
+  expressAdapterWithValidation,
+  type ExpressAdapterOptions,
+  type ExpressAdapterValidationOptions,
+  type ExpressLikeRequest,
+} from './express-adapter';
+
+/** Zod-like schema interface (avoid hard Zod dependency) */
+interface ZodLikeSchema<TInput> {
+  safeParse(
+    data: unknown,
+  ):
+    | { success: true; data: TInput }
+    | { success: false; error: { issues: Array<{ path: PropertyKey[]; message: string }> } };
+}
+
+/**
+ * Runtime validation binding for a route. The schema must be the SAME object
+ * referenced by the OpenAPI request body/query/params registration so the
+ * runtime validator and the generated documentation can never drift.
+ * 路由的 runtime 验证绑定。schema 必须与 OpenAPI request body/query/params
+ * 注册引用同一个对象，保证 runtime 校验与生成文档永不漂移。
+ */
+export interface ApiRouteValidationBinding<TInput = unknown> {
+  /** Contract request schema — single source of truth for runtime + OpenAPI. */
+  schema: ZodLikeSchema<TInput>;
+  /**
+   * Optional input projector composing `{ params, query, body }` into the
+   * contract request shape. When omitted, `req.body` is validated (shorthand).
+   * 可选输入 projector，把 `{ params, query, body }` 组合成 contract 请求形状；
+   * 省略时校验 `req.body`（shorthand）。
+   */
+  projectInput?: (req: ExpressLikeRequest) => unknown;
+}
 
 // ============================================================================
 // Minimal Interfaces (avoid hard dependencies on Express / zod-to-openapi)
@@ -142,26 +194,51 @@ export class RouteRegistrar {
     handler: (req: ExpressLikeRequest, context: ExecutionContext) => Promise<Result<T>>,
     adapterOptions?: ExpressAdapterOptions,
   ): this {
-    // 1. Register OpenAPI path (if registry provided and not skipped)
-    if (this.registry && !def.skipOpenApi) {
-      const openApiPath = this.toOpenApiPath(def.path);
-      const fullPath =
-        openApiPath === '/' ? this.config.basePath : `${this.config.basePath}${openApiPath}`;
-
-      this.registry.registerPath({
-        method: def.method,
-        path: fullPath,
-        tags: def.tags ?? this.config.defaultTags,
-        summary: def.summary,
-        description: def.description,
-        security: def.security ?? this.config.defaultSecurity,
-        request: def.request,
-        responses: def.responses ?? {},
-      });
-    }
+    this.registerOpenApi(def);
 
     // 2. Bind Express route
     const adapted = expressAdapter(handler, adapterOptions);
+    this.router[def.method](def.path, ...middleware, adapted);
+
+    return this;
+  }
+
+  /**
+   * Register an API route with upfront contract validation.
+   *
+   * Binds `expressAdapterWithValidation` so the schema is validated before the
+   * controller runs; the SAME schema object referenced by the OpenAPI
+   * `request` registration is the runtime validator. The handler receives the
+   * parsed contract input instead of the raw request.
+   *
+   * 注册带前置 contract 校验的 API 路由：用 `expressAdapterWithValidation`
+   * 绑定，使 schema 在 controller 之前完成校验；OpenAPI `request` 注册引用
+   * 的 schema 对象与 runtime 校验器是同一个。handler 接收解析后的 contract
+   * 输入，而不是原始 request。
+   *
+   * @param def - Route definition including the runtime `validation` binding.
+   * @param middleware - Express middleware array (e.g., [auth]).
+   * @param handler - Controller handler receiving parsed input and context.
+   * @param adapterOptions - Validation-aware adapter options.
+   * @returns this (for chaining).
+   */
+  routeWithValidation<TInput, TOutput>(
+    def: ApiRouteDefinition & { validation: ApiRouteValidationBinding<TInput> },
+    middleware: unknown[],
+    handler: (
+      data: TInput,
+      context: ExecutionContext,
+      req: ExpressLikeRequest,
+    ) => Promise<Result<TOutput>>,
+    adapterOptions?: ExpressAdapterValidationOptions,
+  ): this {
+    this.registerOpenApi(def);
+
+    // 2. Bind Express route with the validation adapter
+    const adapted = expressAdapterWithValidation(def.validation.schema, handler, {
+      ...adapterOptions,
+      projectInput: def.validation.projectInput,
+    });
     this.router[def.method](def.path, ...middleware, adapted);
 
     return this;
@@ -175,6 +252,33 @@ export class RouteRegistrar {
   }
 
   // ─── Private ───
+
+  /**
+   * Register the OpenAPI path for a route definition when a registry is
+   * provided and the route is not skipped. Shared by `route` and
+   * `routeWithValidation` so runtime and documentation cannot drift.
+   * 当提供 registry 且路由未跳过时注册该路由的 OpenAPI path。`route` 与
+   * `routeWithValidation` 共用，保证 runtime 与文档不漂移。
+   */
+  private registerOpenApi(def: ApiRouteDefinition): void {
+    if (!this.registry || def.skipOpenApi) {
+      return;
+    }
+    const openApiPath = this.toOpenApiPath(def.path);
+    const fullPath =
+      openApiPath === '/' ? this.config.basePath : `${this.config.basePath}${openApiPath}`;
+
+    this.registry.registerPath({
+      method: def.method,
+      path: fullPath,
+      tags: def.tags ?? this.config.defaultTags,
+      summary: def.summary,
+      description: def.description,
+      security: def.security ?? this.config.defaultSecurity,
+      request: def.request,
+      responses: def.responses ?? {},
+    });
+  }
 
   /**
    * Convert Express path params to OpenAPI path params.

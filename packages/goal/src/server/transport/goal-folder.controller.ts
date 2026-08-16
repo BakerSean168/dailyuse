@@ -7,15 +7,14 @@
 
 import type { Result } from '@memoflow/contracts/result';
 import { fail, ok } from '@memoflow/contracts/result';
-import {
-  CreateGoalFolderSchema,
-  UpdateGoalFolderSchema,
-  ListGoalFolderFiltersSchema,
-} from '@memoflow/contracts/goal';
-import type { ListGoalFoldersQuery } from '@memoflow/contracts/goal';
-import type { ExecutionContext } from '@memoflow/contracts/shared';
-import type { IdentityId } from '@memoflow/contracts/primitives';
+import { ListGoalFolderFiltersSchema } from '@memoflow/contracts/goal';
 import { formatZodErrors } from '@memoflow/utils/result';
+import type {
+  CreateGoalFolderReq,
+  ListGoalFoldersQuery,
+  UpdateGoalFolderReq,
+} from '@memoflow/contracts/goal';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   CreateGoalFolderUseCase,
   GetGoalFolderUseCase,
@@ -23,6 +22,7 @@ import type {
   UpdateGoalFolderUseCase,
   DeleteGoalFolderUseCase,
 } from '../application';
+import { toIdentityId } from './mappers';
 
 // ============ Use Case Port ============
 
@@ -44,19 +44,8 @@ export class GoalFolderController {
 
   // ==================== Folder CRUD ====================
 
-  async create(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
-    const parsed = CreateGoalFolderSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.createGoalFolder(
-      cx.identityId as unknown as IdentityId,
-      parsed.data,
-    );
+  async create(input: CreateGoalFolderReq, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.createGoalFolder(toIdentityId(cx.identityId), input);
   }
 
   async list(filters: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
@@ -71,7 +60,7 @@ export class GoalFolderController {
     // Construct internal query with identityId from context
     const query: ListGoalFoldersQuery = {
       ...parsed.data,
-      identityId: cx.identityId as unknown as IdentityId,
+      identityId: toIdentityId(cx.identityId),
     };
     return this.useCases.listGoalFolders(query);
   }
@@ -80,16 +69,12 @@ export class GoalFolderController {
     return this.useCases.getGoalFolder(id, cx.identityId);
   }
 
-  async update(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
-    const parsed = UpdateGoalFolderSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.updateGoalFolder(id, cx.identityId, parsed.data);
+  async update(
+    id: string,
+    input: UpdateGoalFolderReq,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    return this.useCases.updateGoalFolder(id, cx.identityId, input);
   }
 
   async delete(id: string, cx: ExecutionContext): Promise<Result<null>> {

@@ -35,7 +35,10 @@ import type {
   TaskGoalBindingDTO,
 } from '@memoflow/contracts/task';
 import type { TaskFolderId } from '@memoflow/contracts/primitives';
-import type { ITaskTemplateApiClient, TaskTemplateListParams } from './ports/task-template-api-client.port';
+import type {
+  ITaskTemplateApiClient,
+  TaskTemplateListParams,
+} from './ports/task-template-api-client.port';
 import type { ITaskInstanceApiClient } from './ports/task-instance-api-client.port';
 import type { ITaskDependencyApiClient } from './ports/task-dependency-api-client.port';
 import { TaskTemplate } from '../domain-client/aggregates/task-template';
@@ -133,8 +136,8 @@ function parseRecurrenceRule(dto: RecurrenceRuleDTO): RecurrenceRule {
 
 function parseGoalBinding(dto: TaskGoalBindingDTO): TaskGoalBinding {
   return {
-    goalId: dto.goalId as unknown as TaskGoalBinding['goalId'],
-    keyResultId: dto.keyResultId as unknown as TaskGoalBinding['keyResultId'],
+    goalId: dto.goalId,
+    keyResultId: dto.keyResultId,
     goalRecordValue: dto.goalRecordValue,
     progressTrigger: dto.progressTrigger,
   };
@@ -180,7 +183,9 @@ export class TaskClientService implements TaskClientPort {
 
   // ===== Task Template Operations =====
 
-  async createTemplate(request: CreateTaskTemplateReq): Promise<
+  async createTemplate(
+    request: CreateTaskTemplateReq,
+  ): Promise<
     Result<{ template: TaskTemplate; instanceCount: number; todayInstanceCreated: boolean }>
   > {
     const result = await this.templateApi.createTaskTemplate(request);
@@ -205,7 +210,9 @@ export class TaskClientService implements TaskClientPort {
     });
   }
 
-  async getTaskGraph(params?: TaskTemplateListParams): Promise<
+  async getTaskGraph(
+    params?: TaskTemplateListParams,
+  ): Promise<
     Result<{ templates: TaskTemplate[]; dependencies: TaskGraphDependencyDTO[]; total: number }>
   > {
     const result = await this.templateApi.getTaskGraph(params);

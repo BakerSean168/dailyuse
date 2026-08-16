@@ -1,39 +1,65 @@
 import type {
   CreateTaskTemplateReq,
   CreateTaskTemplateRes,
-  UpdateTaskTemplateReq,
-  UpdateTaskTemplateRes,
   GetTaskTemplateReq,
   GetTaskTemplateRes,
   ListTaskTemplateFilters,
   QueryTaskTemplateGraphRes,
   QueryTaskTemplatesRes,
-  GenerateInstancesReq,
-  GenerateInstancesRes,
-  BindToGoalReq,
-  BindToGoalRes,
-  UnbindFromGoalReq,
-  UnbindFromGoalRes,
-  GetTaskInstancesByRangeReq,
-  GetTaskInstancesByRangeRes,
-  CompleteTaskInstanceReq,
-  SkipTaskInstanceReq,
-  TaskInstanceOperationRes,
   RescheduleTaskReq,
   RescheduleTaskRes,
 } from '../api';
+import type {
+  BindTaskToGoalInvocation,
+  CompleteTaskInstanceInvocation,
+  CreateTaskDependencyInvocation,
+  DeleteTaskDependencyInvocation,
+  GenerateInstancesInvocation,
+  SkipTaskInstanceInvocation,
+  TaskInstanceIdCommandInvocation,
+  TaskTemplateIdCommandInvocation,
+  UpdateTaskDependencyInvocation,
+  UpdateTaskTemplateInvocation,
+  ValidateTaskDependencyInvocation,
+} from '../api/task-invocation.schemas';
+import type {
+  GetTaskInstancesByRangeReq,
+  GetTaskInstancesByRangeRes,
+  CheckExpiredTaskInstancesRes,
+} from '../api/task-instance.dto';
+import type { ValidateDependencyResponse } from '../api/task-dependency.dto';
+import type {
+  TaskDependencyResponse,
+  TaskInstanceResponse,
+  TaskTemplateResponse,
+} from '../api/response-schemas';
 
 export type TaskRpcMap = {
-  'task:create-template': [CreateTaskTemplateReq, CreateTaskTemplateRes];
-  'task:update-template': [UpdateTaskTemplateReq, UpdateTaskTemplateRes];
-  'task:get-template': [GetTaskTemplateReq, GetTaskTemplateRes];
-  'task:list-templates': [ListTaskTemplateFilters, QueryTaskTemplatesRes];
-  'task:get-template-graph': [ListTaskTemplateFilters, QueryTaskTemplateGraphRes];
-  'task:generate-instances': [GenerateInstancesReq, GenerateInstancesRes];
-  'task:bind-goal': [BindToGoalReq, BindToGoalRes];
-  'task:unbind-goal': [UnbindFromGoalReq, UnbindFromGoalRes];
-  'task:get-instances-by-range': [GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes];
-  'task:complete-instance': [CompleteTaskInstanceReq, TaskInstanceOperationRes];
-  'task:skip-instance': [SkipTaskInstanceReq, TaskInstanceOperationRes];
+  'task:template:create': [CreateTaskTemplateReq, CreateTaskTemplateRes];
+  'task:template:update': [UpdateTaskTemplateInvocation, TaskTemplateResponse];
+  'task:template:delete': [TaskTemplateIdCommandInvocation, null];
+  'task:template:restore': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
+  'task:template:pause': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
+  'task:template:archive': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
+  'task:template:generate-instances': [GenerateInstancesInvocation, TaskInstanceResponse[]];
+  'task:template:bind-goal': [BindTaskToGoalInvocation, TaskTemplateResponse];
+  'task:template:unbind-goal': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
+  'task:template:get': [GetTaskTemplateReq, GetTaskTemplateRes];
+  'task:template:list': [ListTaskTemplateFilters, QueryTaskTemplatesRes];
+  'task:template:graph': [ListTaskTemplateFilters, QueryTaskTemplateGraphRes];
+
+  'task:instance:create': [TaskInstanceIdCommandInvocation, TaskInstanceResponse];
+  'task:instance:delete': [TaskInstanceIdCommandInvocation, null];
+  'task:instance:complete': [CompleteTaskInstanceInvocation, TaskInstanceResponse];
+  'task:instance:uncomplete': [TaskInstanceIdCommandInvocation, TaskInstanceResponse];
+  'task:instance:skip': [SkipTaskInstanceInvocation, TaskInstanceResponse];
+  'task:instance:check-expired': [void, CheckExpiredTaskInstancesRes];
+  'task:instance:get-by-date-range': [GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes];
+
+  'task:dependency:create': [CreateTaskDependencyInvocation, TaskDependencyResponse];
+  'task:dependency:update': [UpdateTaskDependencyInvocation, TaskDependencyResponse];
+  'task:dependency:delete': [DeleteTaskDependencyInvocation, null];
+  'task:dependency:validate': [ValidateTaskDependencyInvocation, ValidateDependencyResponse];
+
   'task:reschedule-instance': [RescheduleTaskReq, RescheduleTaskRes];
 };

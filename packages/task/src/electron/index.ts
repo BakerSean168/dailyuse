@@ -76,13 +76,65 @@ import { ipcMain } from 'electron';
 import { ok } from '@memoflow/contracts/result';
 import { TaskChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
 import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
+import {
+  BindTaskToGoalInvocationSchema,
+  CheckExpiredTaskInstancesInvocationSchema,
+  CompleteTaskInstanceInvocationSchema,
+  CreateTaskDependencyInvocationSchema,
+  CreateTaskTemplateSchema,
+  DeleteTaskDependencyInvocationSchema,
+  GenerateInstancesInvocationSchema,
+  SkipTaskInstanceInvocationSchema,
+  TaskInstanceIdCommandInvocationSchema,
+  TaskTemplateIdCommandInvocationSchema,
+  UpdateTaskDependencyInvocationSchema,
+  UpdateTaskTemplateInvocationSchema,
+  ValidateTaskDependencyInvocationSchema,
+} from '@memoflow/contracts/task';
 import { createLogger } from '@memoflow/utils/logger';
 import type { TaskModuleInstance } from '../server/infrastructure';
 import { createTaskTransportHandlers } from '../server/transport';
 import { TaskDependencyController } from '../server/transport/task-dependency.controller';
 import { TaskInstanceController } from '../server/transport/task-instance.controller';
 import { TaskTemplateController } from '../server/transport/task-template.controller';
-import { withAuthenticatedValue } from './authenticated-ipc';
+import { withAuthenticatedValidation, withAuthenticatedValue } from './authenticated-ipc';
+
+/**
+ * Registers an object-payload IPC channel with adapter-owned validation.
+ *
+ * The returned handler runs inside the authenticated context, projects the
+ * wire payload into the canonical contract input, validates it via the real
+ * `ipcAdapterWithValidation`, and only then calls the controller. This is the
+ * task-module registration fixture — it is NOT a parallel validation helper.
+ *
+ * 注册带 adapter 校验的 object-payload IPC 通道：handler 在鉴权 context 内把
+ * wire payload 投影为 canonical contract 输入，经真实
+ * `ipcAdapterWithValidation` 校验后才调用 controller。这是 task 模块的
+ * 注册 fixture，不是平行 validation helper。
+ */
+function registerValidatedChannel<TInput, TOutput>(
+  ctx: IElectronModuleContext,
+  channel: string,
+  schema: ZodLikeSchema<TInput>,
+  controllerFn: (
+    data: TInput,
+    context: import('@memoflow/contracts/shared').ExecutionContext,
+  ) => Promise<import('@memoflow/contracts/result').Result<TOutput>>,
+  projectArgs: (args: unknown) => unknown,
+): void {
+  ipcMain.handle(channel, (event, args) =>
+    withAuthenticatedValidation(ctx, schema, controllerFn, projectArgs)(event, args),
+  );
+}
+
+/** Minimal structural schema interface (avoid hard Zod dependency in the seam). */
+interface ZodLikeSchema<TInput> {
+  safeParse(
+    data: unknown,
+  ):
+    | { success: true; data: TInput }
+    | { success: false; error: { issues: Array<{ path: PropertyKey[]; message: string }> } };
+}
 
 const logger = createLogger('TaskElectron');
 const allChannels = Object.values(TaskChannels);
@@ -216,67 +268,83 @@ export function createTaskElectronModule(
           ),
         );
         installed.push(TaskChannels.TEMPLATE_GRAPH);
-        ipcMain.handle(TaskChannels.TEMPLATE_CREATE, (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            return templateController.createTemplate(dto, requestContext);
-          }),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_CREATE,
+          CreateTaskTemplateSchema,
+          (data, requestContext) => templateController.createTemplate(data, requestContext),
+          (args) => args,
         );
         installed.push(TaskChannels.TEMPLATE_CREATE);
-        ipcMain.handle(TaskChannels.TEMPLATE_UPDATE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            templateController.updateTemplate(payload?.id, payload?.request, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_UPDATE,
+          UpdateTaskTemplateInvocationSchema,
+          (data, requestContext) =>
+            templateController.updateTemplate(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: (args as { id?: string }).id },
+            body: (args as { request?: unknown }).request,
+          }),
         );
         installed.push(TaskChannels.TEMPLATE_UPDATE);
-        ipcMain.handle(TaskChannels.TEMPLATE_DELETE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await templateController.deleteTemplate(
-              payload?.id ?? payload,
-              requestContext,
-            );
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_DELETE,
+          TaskTemplateIdCommandInvocationSchema,
+          async (data, requestContext) => {
+            const result = await templateController.deleteTemplate(data.params.id, requestContext);
             if (!result.ok) return result;
             return ok(null);
-          }),
+          },
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(TaskChannels.TEMPLATE_DELETE);
-        ipcMain.handle(TaskChannels.TEMPLATE_ARCHIVE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            templateController.archiveTemplate(payload?.id ?? payload, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_ARCHIVE,
+          TaskTemplateIdCommandInvocationSchema,
+          (data, requestContext) =>
+            templateController.archiveTemplate(data.params.id, requestContext),
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(TaskChannels.TEMPLATE_ARCHIVE);
-        ipcMain.handle(TaskChannels.TEMPLATE_RESTORE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            return templateController.activateTemplate(payload?.id ?? payload, requestContext);
-          }),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_RESTORE,
+          TaskTemplateIdCommandInvocationSchema,
+          (data, requestContext) =>
+            templateController.activateTemplate(data.params.id, requestContext),
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(TaskChannels.TEMPLATE_RESTORE);
-        ipcMain.handle(TaskChannels.TEMPLATE_PAUSE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            return templateController.pauseTemplate(payload?.id ?? payload, requestContext);
-          }),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_PAUSE,
+          TaskTemplateIdCommandInvocationSchema,
+          (data, requestContext) =>
+            templateController.pauseTemplate(data.params.id, requestContext),
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(TaskChannels.TEMPLATE_PAUSE);
-        ipcMain.handle(TaskChannels.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            templateController.generateInstances(
-              payload?.templateId,
-              payload?.request,
-              requestContext,
-            ),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_GENERATE_INSTANCES,
+          GenerateInstancesInvocationSchema,
+          (data, requestContext) =>
+            templateController.generateInstances(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: (args as { templateId?: string }).templateId },
+            body: (args as { request?: unknown }).request,
+          }),
         );
         installed.push(TaskChannels.TEMPLATE_GENERATE_INSTANCES);
         ipcMain.handle(TaskChannels.TEMPLATE_GET_INSTANCES, (_, payload) =>
           withAuthenticatedValue(ctx, async (requestContext) => {
-            return templateController.getInstancesByTemplate(
-              payload?.templateId,
-              requestContext,
-              {
-                from: payload?.from,
-                to: payload?.to,
-              },
-            );
+            return templateController.getInstancesByTemplate(payload?.templateId, requestContext, {
+              from: payload?.from,
+              to: payload?.to,
+            });
           }),
         );
         installed.push(TaskChannels.TEMPLATE_GET_INSTANCES);
@@ -286,20 +354,25 @@ export function createTaskElectronModule(
           ),
         );
         installed.push(TaskChannels.TEMPLATE_GET_BY_PRIORITY);
-        ipcMain.handle(TaskChannels.TEMPLATE_BIND_GOAL, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            templateController.bindToGoal(
-              payload?.templateId,
-              payload?.request,
-              requestContext,
-            ),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_BIND_GOAL,
+          BindTaskToGoalInvocationSchema,
+          (data, requestContext) =>
+            templateController.bindToGoal(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: (args as { templateId?: string }).templateId },
+            body: (args as { request?: unknown }).request,
+          }),
         );
         installed.push(TaskChannels.TEMPLATE_BIND_GOAL);
-        ipcMain.handle(TaskChannels.TEMPLATE_UNBIND_GOAL, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            templateController.unbindFromGoal(payload?.templateId, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_UNBIND_GOAL,
+          TaskTemplateIdCommandInvocationSchema,
+          (data, requestContext) =>
+            templateController.unbindFromGoal(data.params.id, requestContext),
+          (args) => ({ params: { id: (args as { templateId?: string }).templateId } }),
         );
         installed.push(TaskChannels.TEMPLATE_UNBIND_GOAL);
 
@@ -333,65 +406,84 @@ export function createTaskElectronModule(
           ),
         );
         installed.push(TaskChannels.INSTANCE_GET);
-        ipcMain.handle(TaskChannels.INSTANCE_CREATE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            instanceController.startInstance(payload?.id ?? payload, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.INSTANCE_CREATE,
+          TaskInstanceIdCommandInvocationSchema,
+          (data, requestContext) =>
+            instanceController.startInstance(data.params.id, requestContext),
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(TaskChannels.INSTANCE_CREATE);
-        ipcMain.handle(TaskChannels.INSTANCE_DELETE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await instanceController.deleteInstance(
-              payload?.id ?? payload,
-              requestContext,
-            );
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.INSTANCE_DELETE,
+          TaskInstanceIdCommandInvocationSchema,
+          async (data, requestContext) => {
+            const result = await instanceController.deleteInstance(data.params.id, requestContext);
             if (!result.ok) return result;
             return ok(null);
-          }),
+          },
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(TaskChannels.INSTANCE_DELETE);
-        ipcMain.handle(TaskChannels.INSTANCE_COMPLETE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            instanceController.completeInstance(
-              payload?.id ?? payload,
-              payload?.request,
-              requestContext,
-            ),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.INSTANCE_COMPLETE,
+          CompleteTaskInstanceInvocationSchema,
+          (data, requestContext) =>
+            instanceController.completeInstance(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: (args as { id?: string }).id ?? (args as string) },
+            body: (args as { request?: unknown }).request,
+          }),
         );
         installed.push(TaskChannels.INSTANCE_COMPLETE);
-        ipcMain.handle(TaskChannels.INSTANCE_UNCOMPLETE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            instanceController.uncompleteInstance(payload?.id ?? payload, requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.INSTANCE_UNCOMPLETE,
+          TaskInstanceIdCommandInvocationSchema,
+          (data, requestContext) =>
+            instanceController.uncompleteInstance(data.params.id, requestContext),
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(TaskChannels.INSTANCE_UNCOMPLETE);
-        ipcMain.handle(TaskChannels.INSTANCE_SKIP, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            instanceController.skipInstance(
-              payload?.id ?? payload,
-              payload?.request,
-              requestContext,
-            ),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.INSTANCE_SKIP,
+          SkipTaskInstanceInvocationSchema,
+          (data, requestContext) =>
+            instanceController.skipInstance(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: (args as { id?: string }).id ?? (args as string) },
+            body: (args as { request?: unknown }).request,
+          }),
         );
         installed.push(TaskChannels.INSTANCE_SKIP);
-        ipcMain.handle(TaskChannels.INSTANCE_CHECK_EXPIRED, () =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            instanceController.checkExpired(requestContext.identityId),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.INSTANCE_CHECK_EXPIRED,
+          CheckExpiredTaskInstancesInvocationSchema,
+          (_data, requestContext) => instanceController.checkExpired(requestContext.identityId),
+          (args) => args,
         );
         installed.push(TaskChannels.INSTANCE_CHECK_EXPIRED);
 
         // --- Dependency channels ---
-        ipcMain.handle(TaskChannels.DEPENDENCY_CREATE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.DEPENDENCY_CREATE,
+          CreateTaskDependencyInvocationSchema,
+          (data, requestContext) =>
             dependencyController.createDependency(
-              payload?.taskId,
-              payload?.request,
+              data.params.taskId,
+              data.body,
               requestContext.identityId,
             ),
-          ),
+          (args) => ({
+            params: { taskId: (args as { taskId?: string }).taskId },
+            body: (args as { request?: unknown }).request,
+          }),
         );
         installed.push(TaskChannels.DEPENDENCY_CREATE);
         ipcMain.handle(TaskChannels.DEPENDENCY_LIST, (_, payload) =>
@@ -412,37 +504,47 @@ export function createTaskElectronModule(
           ),
         );
         installed.push(TaskChannels.DEPENDENCY_CHAIN);
-        ipcMain.handle(TaskChannels.DEPENDENCY_VALIDATE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            dependencyController.validateDependency(
-              {
-                predecessorTaskId: payload?.predecessorTaskId,
-                successorTaskId: payload?.successorTaskId,
-              },
-              requestContext.identityId,
-            ),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.DEPENDENCY_VALIDATE,
+          ValidateTaskDependencyInvocationSchema,
+          (data, requestContext) =>
+            dependencyController.validateDependency(data, requestContext.identityId),
+          (args) => ({
+            predecessorTaskId: (args as { predecessorTaskId?: string }).predecessorTaskId,
+            successorTaskId: (args as { successorTaskId?: string }).successorTaskId,
+          }),
         );
         installed.push(TaskChannels.DEPENDENCY_VALIDATE);
-        ipcMain.handle(TaskChannels.DEPENDENCY_DELETE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.DEPENDENCY_DELETE,
+          DeleteTaskDependencyInvocationSchema,
+          async (data, requestContext) => {
             const result = await dependencyController.deleteDependency(
-              payload?.id ?? payload,
+              data.params.id,
               requestContext.identityId,
             );
             if (!result.ok) return result;
             return ok(null);
-          }),
+          },
+          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(TaskChannels.DEPENDENCY_DELETE);
-        ipcMain.handle(TaskChannels.DEPENDENCY_UPDATE, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.DEPENDENCY_UPDATE,
+          UpdateTaskDependencyInvocationSchema,
+          (data, requestContext) =>
             dependencyController.updateDependency(
-              payload?.id,
-              payload?.request,
+              data.params.id,
+              data.body,
               requestContext.identityId,
             ),
-          ),
+          (args) => ({
+            params: { id: (args as { id?: string }).id },
+            body: (args as { request?: unknown }).request,
+          }),
         );
         installed.push(TaskChannels.DEPENDENCY_UPDATE);
 

@@ -19,6 +19,7 @@ import type {
   NotificationPreferenceClientDTO,
   UpdateNotificationPreferenceReq,
 } from '@memoflow/contracts/notification';
+import { toNotificationQueryParams } from './notification-http.mapper';
 
 /**
  * NotificationHttpAdapter
@@ -40,7 +41,7 @@ export class NotificationHttpAdapter implements INotificationApiClient {
     query?: QueryNotificationsRequest,
   ): Promise<Result<NotificationListResponse>> {
     return this.httpClient.get(this.baseUrl, {
-      params: query as unknown as Record<string, unknown>,
+      params: query ? toNotificationQueryParams(query) : undefined,
     });
   }
 

@@ -1,0 +1,233 @@
+/**
+ * Goal Invocation Schemas
+ * 目标操作调用契约
+ *
+ * Named composite request schemas that bind path params + body/query into the
+ * canonical contract input validated by the shared validation adapters
+ * (`expressAdapterWithValidation` / `ipcAdapterWithValidation`). Each schema is
+ * the single source of truth for BOTH the OpenAPI request registration (via
+ * `.shape`) and the runtime validator — never inline `z.object` in route
+ * callbacks. Identity never appears in these bodies; it is supplied by the
+ * canonical `ExecutionContext`.
+ *
+ * 命名复合请求 schema：把 path params + body/query 组合成 shared validation
+ * adapter 校验的 canonical contract 输入。每个 schema 同时是 OpenAPI request
+ * 注册（通过 `.shape`）与 runtime 校验器的唯一事实来源——绝不在 route callback
+ * 内拼内联 `z.object`。identity 永不出现于这些 body，而是由 canonical
+ * `ExecutionContext` 提供。
+ */
+
+import { z } from 'zod';
+import { brandedId } from '../../../primitives';
+import type {
+  GoalId,
+  KeyResultId,
+  GoalReviewId,
+  GoalRecordId,
+  GoalFolderId,
+} from '../../../primitives';
+import { CloneGoalSchema, GoalVersionCommandSchema, UpdateGoalSchema } from './goal-crud.dto';
+import {
+  AddKeyResultSchema,
+  DeleteKeyResultSchema,
+  UpdateKeyResultProgressSchema,
+  UpdateKeyResultSchema,
+} from './key-result.dto';
+import {
+  CreateGoalReviewSchema,
+  DeleteGoalReviewSchema,
+  UpdateGoalReviewSchema,
+} from './goal-review.dto';
+import { CreateGoalRecordSchema, DeleteGoalRecordSchema } from './goal-record.dto';
+import { UpdateGoalFolderSchema } from './goal-folder.dto';
+import { BatchUpdateKeyResultWeightsReqSchema } from './response-schemas';
+
+// ============================================================================
+// Shared route params
+// ============================================================================
+
+/** `:id` path param for a goal-scoped route. 目标作用域路由的 `:id` path 参数。 */
+export const GoalRouteIdParamsSchema = z.object({ id: brandedId<GoalId>() });
+export type GoalRouteIdParams = z.infer<typeof GoalRouteIdParamsSchema>;
+
+/** `:id/:krId` path params for a key-result-scoped route. 关键结果作用域路由的 path 参数。 */
+export const KeyResultRouteParamsSchema = z.object({
+  id: brandedId<GoalId>(),
+  krId: brandedId<KeyResultId>(),
+});
+export type KeyResultRouteParams = z.infer<typeof KeyResultRouteParamsSchema>;
+
+/** `:id/:reviewId` path params for a review-scoped route. 复盘作用域路由的 path 参数。 */
+export const ReviewRouteParamsSchema = z.object({
+  id: brandedId<GoalId>(),
+  reviewId: brandedId<GoalReviewId>(),
+});
+export type ReviewRouteParams = z.infer<typeof ReviewRouteParamsSchema>;
+
+/** `:id/:krId/:recordId` path params for a record-scoped route. 进度记录作用域路由的 path 参数。 */
+export const RecordRouteParamsSchema = z.object({
+  id: brandedId<GoalId>(),
+  krId: brandedId<KeyResultId>(),
+  recordId: brandedId<GoalRecordId>(),
+});
+export type RecordRouteParams = z.infer<typeof RecordRouteParamsSchema>;
+
+/** `:id` path param for a folder-scoped route. 文件夹作用域路由的 `:id` path 参数。 */
+export const GoalFolderRouteIdParamsSchema = z.object({ id: brandedId<GoalFolderId>() });
+export type GoalFolderRouteIdParams = z.infer<typeof GoalFolderRouteIdParamsSchema>;
+
+// ============================================================================
+// Core Goal mutations
+// ============================================================================
+
+/** PUT/PATCH /:id — update a goal. 更新目标。 */
+export const UpdateGoalInvocationSchema = z.object({
+  params: GoalRouteIdParamsSchema,
+  body: UpdateGoalSchema,
+});
+export type UpdateGoalInvocation = z.infer<typeof UpdateGoalInvocationSchema>;
+
+/** DELETE /:id — delete a goal (query carries expectedVersion). 删除目标。 */
+export const DeleteGoalInvocationSchema = z.object({
+  params: GoalRouteIdParamsSchema,
+  query: GoalVersionCommandSchema,
+});
+export type DeleteGoalInvocation = z.infer<typeof DeleteGoalInvocationSchema>;
+
+/** POST /:id/archive | /activate | /complete — versioned status commands. 状态命令。 */
+export const GoalStatusCommandInvocationSchema = z.object({
+  params: GoalRouteIdParamsSchema,
+  body: GoalVersionCommandSchema,
+});
+export type GoalStatusCommandInvocation = z.infer<typeof GoalStatusCommandInvocationSchema>;
+
+/** POST /:id/clone — clone a goal. 克隆目标。 */
+export const CloneGoalInvocationSchema = z.object({
+  params: GoalRouteIdParamsSchema,
+  body: CloneGoalSchema,
+});
+export type CloneGoalInvocation = z.infer<typeof CloneGoalInvocationSchema>;
+
+/** PUT /:id/key-results/batch-weight — batch key-result weights. 批量更新关键结果权重。 */
+export const BatchKeyResultWeightsInvocationSchema = z.object({
+  params: GoalRouteIdParamsSchema,
+  body: BatchUpdateKeyResultWeightsReqSchema,
+});
+export type BatchKeyResultWeightsInvocation = z.infer<typeof BatchKeyResultWeightsInvocationSchema>;
+
+// ============================================================================
+// Key Result mutations
+// ============================================================================
+
+/** POST /:id/key-results — add a key result (body includes goalId). 添加关键结果。 */
+export const AddKeyResultInvocationSchema = z.object({
+  params: GoalRouteIdParamsSchema,
+  body: AddKeyResultSchema,
+});
+export type AddKeyResultInvocation = z.infer<typeof AddKeyResultInvocationSchema>;
+
+/** PUT /:id/key-results/:krId — update a key result. 更新关键结果。 */
+export const UpdateKeyResultInvocationSchema = z.object({
+  params: KeyResultRouteParamsSchema,
+  body: UpdateKeyResultSchema,
+});
+export type UpdateKeyResultInvocation = z.infer<typeof UpdateKeyResultInvocationSchema>;
+
+/** PATCH /:id/key-results/:krId/progress — update key-result progress. 更新关键结果进度。 */
+export const UpdateKeyResultProgressInvocationSchema = z.object({
+  params: KeyResultRouteParamsSchema,
+  body: UpdateKeyResultProgressSchema,
+});
+export type UpdateKeyResultProgressInvocation = z.infer<
+  typeof UpdateKeyResultProgressInvocationSchema
+>;
+
+/** DELETE /:id/key-results/:krId — delete a key result (query carries expectedVersion). 删除关键结果。 */
+export const DeleteKeyResultInvocationSchema = z.object({
+  params: KeyResultRouteParamsSchema,
+  query: DeleteKeyResultSchema,
+});
+export type DeleteKeyResultInvocation = z.infer<typeof DeleteKeyResultInvocationSchema>;
+
+// ============================================================================
+// Review mutations
+// ============================================================================
+
+/** POST /:id/reviews — create a review (body includes goalId). 创建复盘。 */
+export const CreateReviewInvocationSchema = z.object({
+  params: GoalRouteIdParamsSchema,
+  body: CreateGoalReviewSchema,
+});
+export type CreateReviewInvocation = z.infer<typeof CreateReviewInvocationSchema>;
+
+/** PUT /:id/reviews/:reviewId — update a review. 更新复盘。 */
+export const UpdateReviewInvocationSchema = z.object({
+  params: ReviewRouteParamsSchema,
+  body: UpdateGoalReviewSchema,
+});
+export type UpdateReviewInvocation = z.infer<typeof UpdateReviewInvocationSchema>;
+
+/** DELETE /:id/reviews/:reviewId — delete a review (query carries expectedVersion). 删除复盘。 */
+export const DeleteReviewInvocationSchema = z.object({
+  params: ReviewRouteParamsSchema,
+  query: DeleteGoalReviewSchema,
+});
+export type DeleteReviewInvocation = z.infer<typeof DeleteReviewInvocationSchema>;
+
+// ============================================================================
+// Record mutations
+// ============================================================================
+
+/** POST /:id/key-results/:krId/records — create a record (body includes keyResultId). 创建进度记录。 */
+export const CreateRecordInvocationSchema = z.object({
+  params: KeyResultRouteParamsSchema,
+  body: CreateGoalRecordSchema,
+});
+export type CreateRecordInvocation = z.infer<typeof CreateRecordInvocationSchema>;
+
+/** DELETE /:id/key-results/:krId/records/:recordId — delete a record. 删除进度记录。 */
+export const DeleteRecordInvocationSchema = z.object({
+  params: RecordRouteParamsSchema,
+  query: DeleteGoalRecordSchema,
+});
+export type DeleteRecordInvocation = z.infer<typeof DeleteRecordInvocationSchema>;
+
+// ============================================================================
+// Folder mutations
+// ============================================================================
+
+/** PUT/PATCH /:id — update a folder. 更新文件夹。 */
+export const UpdateGoalFolderInvocationSchema = z.object({
+  params: GoalFolderRouteIdParamsSchema,
+  body: UpdateGoalFolderSchema,
+});
+export type UpdateGoalFolderInvocation = z.infer<typeof UpdateGoalFolderInvocationSchema>;
+
+/** DELETE /:id — delete a folder (id-only command). 删除文件夹（仅 id 命令）。 */
+export const DeleteGoalFolderInvocationSchema = z.object({
+  params: GoalFolderRouteIdParamsSchema,
+});
+export type DeleteGoalFolderInvocation = z.infer<typeof DeleteGoalFolderInvocationSchema>;
+
+// ============================================================================
+// Void commands (identity-scoped; no payload)
+// ============================================================================
+
+/**
+ * POST /archive-expired — void command. Accepts `undefined` (no body/args) or
+ * an empty object; rejects any payload so the identity-scoped command can never
+ * carry wire input.
+ * POST /archive-expired — void 命令。接受 `undefined`（无 body/args）或空对象；
+ * 拒绝任何 payload，使 identity 作用域命令永不携带 wire 输入。
+ */
+export const ArchiveExpiredInvocationSchema = z.union([z.undefined(), z.object({}).strict()]);
+export type ArchiveExpiredInvocation = z.infer<typeof ArchiveExpiredInvocationSchema>;
+
+/**
+ * POST /focus-mode/deactivate — void command. Same no-payload semantics as
+ * archive-expired (identity-scoped).
+ * POST /focus-mode/deactivate — void 命令。与 archive-expired 相同的无 payload
+ * 语义（identity 作用域）。
+ */
+export const DeactivateFocusModeInvocationSchema = z.union([z.undefined(), z.object({}).strict()]);
+export type DeactivateFocusModeInvocation = z.infer<typeof DeactivateFocusModeInvocationSchema>;

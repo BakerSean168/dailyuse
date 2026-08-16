@@ -11,13 +11,7 @@
  */
 
 import type { Result } from '@memoflow/contracts/result';
-import { fail, isOk, ok } from '@memoflow/contracts/result';
-import {
-  CreateTaskTemplateSchema,
-  UpdateTaskTemplateSchema,
-  GenerateInstancesSchema,
-  TaskGoalBindingSchema,
-} from '@memoflow/contracts/task';
+import { isOk, ok } from '@memoflow/contracts/result';
 import type {
   TaskTemplateClientDTO,
   CreateTaskTemplateRes,
@@ -27,11 +21,14 @@ import type {
   TaskTemplateInstancesQuery,
   QueryTaskTemplateGraphRes,
   QueryTaskTemplatesInternal,
+  CreateTaskTemplateReq,
+  UpdateTaskTemplateReq,
+  GenerateInstancesReq,
+  BindToGoalReq,
 } from '@memoflow/contracts/task';
 import type { Context } from '@memoflow/contracts/shared';
 import type { TaskFolderId, GoalId } from '@memoflow/contracts/primitives';
 import { IdentityId } from '@memoflow/domain-shared';
-import { formatZodErrors } from '@memoflow/utils/result';
 import type { CreateTaskTemplateUseCase } from '../application/use-cases/commands/create-task-template.use-case';
 import type { GetTaskTemplateUseCase } from '../application/use-cases/queries/get-task-template.use-case';
 import type { ListTaskTemplatesUseCase } from '../application/use-cases/queries/list-task-templates.use-case';
@@ -94,31 +91,25 @@ export class TaskTemplateController {
    * Create new task template (with Zod validation)
    * Identity is injected from Context, not from request payload
    */
-  async createTemplate(input: unknown, ctx: Context): Promise<Result<CreateTaskTemplateRes>> {
-    const parsed = CreateTaskTemplateSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
+  async createTemplate(
+    input: CreateTaskTemplateReq,
+    ctx: Context,
+  ): Promise<Result<CreateTaskTemplateRes>> {
     // Assemble internal input with identityId from Context
     const createInput: CreateTaskTemplateInput = {
       identityId: IdentityId.of(ctx.identityId),
-      name: parsed.data.name,
-      description: parsed.data.description,
-      taskType: parsed.data.taskType,
-      timeConfig: parsed.data.timeConfig,
-      recurrenceRule: parsed.data.recurrenceRule,
-      reminderConfig: parsed.data.reminderConfig,
-      importance: parsed.data.importance,
-      parentTaskId: parsed.data.parentTaskId,
-      folderId: parsed.data.folderId,
-      tags: parsed.data.tags,
-      color: parsed.data.color,
-      goalBinding: parsed.data.goalBinding,
+      name: input.name,
+      description: input.description,
+      taskType: input.taskType,
+      timeConfig: input.timeConfig,
+      recurrenceRule: input.recurrenceRule,
+      reminderConfig: input.reminderConfig,
+      importance: input.importance,
+      parentTaskId: input.parentTaskId,
+      folderId: input.folderId,
+      tags: input.tags,
+      color: input.color,
+      goalBinding: input.goalBinding,
     };
 
     const result = await this.useCases.createTemplate(createInput);
@@ -183,28 +174,23 @@ export class TaskTemplateController {
   /**
    * Update template (with Zod validation)
    */
-  async updateTemplate(id: string, input: unknown, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
-    const parsed = UpdateTaskTemplateSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
+  async updateTemplate(
+    id: string,
+    input: UpdateTaskTemplateReq,
+    ctx: Context,
+  ): Promise<Result<TaskTemplateClientDTO>> {
     return await this.useCases.updateTemplate(id, ctx.identityId, {
-      name: parsed.data.name,
-      description: parsed.data.description,
-      timeConfig: parsed.data.timeConfig,
-      recurrenceRule: parsed.data.recurrenceRule,
-      reminderConfig: parsed.data.reminderConfig,
-      importance: parsed.data.importance,
-      parentTaskId: parsed.data.parentTaskId,
-      folderId: parsed.data.folderId,
-      tags: parsed.data.tags,
-      color: parsed.data.color,
-      goalBinding: parsed.data.goalBinding,
+      name: input.name,
+      description: input.description,
+      timeConfig: input.timeConfig,
+      recurrenceRule: input.recurrenceRule,
+      reminderConfig: input.reminderConfig,
+      importance: input.importance,
+      parentTaskId: input.parentTaskId,
+      folderId: input.folderId,
+      tags: input.tags,
+      color: input.color,
+      goalBinding: input.goalBinding,
     });
   }
 
@@ -266,19 +252,10 @@ export class TaskTemplateController {
    */
   async generateInstances(
     id: string,
-    input: unknown,
+    input: GenerateInstancesReq,
     ctx: Context,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    const parsed = GenerateInstancesSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
-    return await this.useCases.generateInstances(id, ctx.identityId, parsed.data);
+    return await this.useCases.generateInstances(id, ctx.identityId, input);
   }
 
   /**
@@ -319,19 +296,10 @@ export class TaskTemplateController {
    */
   async bindToGoal(
     id: string,
-    input: unknown,
+    input: BindToGoalReq,
     ctx: Context,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    const parsed = TaskGoalBindingSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-
-    return await this.useCases.bindToGoal(id, ctx.identityId, parsed.data);
+    return await this.useCases.bindToGoal(id, ctx.identityId, input);
   }
 
   /**
