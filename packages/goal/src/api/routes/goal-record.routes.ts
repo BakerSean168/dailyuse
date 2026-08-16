@@ -25,7 +25,7 @@ import {
   DeleteRecordInvocationSchema,
 } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
-import type { GoalId, KeyResultId, GoalRecordId } from '@memoflow/contracts/primitives';
+import type { GoalId, KeyResultId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
 
 // ============ Types ============

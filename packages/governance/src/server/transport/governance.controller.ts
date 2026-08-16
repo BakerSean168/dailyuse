@@ -18,7 +18,6 @@ import type { Result } from '@memoflow/contracts/result';
 import { error, ok } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
-  CreateRuleSchema,
   DeleteRuleSchema,
   GetRuleRevisionsQuerySchema,
   GetRuleSchema,

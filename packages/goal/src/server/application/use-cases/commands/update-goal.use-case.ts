@@ -11,7 +11,7 @@ import type { UpdateGoalReq, UpdateGoalRes } from '@memoflow/contracts/goal';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
-import type { GoalFolderId, GoalId } from '../../../domain';
+import type { GoalId } from '../../../domain';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 /**

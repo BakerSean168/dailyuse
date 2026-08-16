@@ -72,7 +72,6 @@ import type { IElectronModuleContext } from '@memoflow/contracts/electron';
 import {
   CreateRuleSchema,
   GovernanceChannels,
-  type CreateRuleReq,
   type DeleteRuleReq,
   type GetRuleReq,
   type GetRuleRevisionsQueryInput,
