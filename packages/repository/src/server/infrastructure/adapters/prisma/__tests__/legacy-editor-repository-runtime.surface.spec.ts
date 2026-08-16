@@ -44,7 +44,7 @@ describe('legacy editor/repository runtime surface', () => {
     resolve(repoRoot, 'packages/app-vue/src/modules/repository/router/index.ts'),
     'utf8',
   );
-  const apiMain = readFileSync(resolve(repoRoot, 'apps/api/src/main.ts'), 'utf8');
+  const apiServer = readFileSync(resolve(repoRoot, 'apps/api/src/server.ts'), 'utf8');
 
   it('API repository routes only register knowledge-repository builders (residual 167)', () => {
     expect(repositoryRoutes).toContain('registerKnowledgeRepositoryConnectionRoutes');
@@ -92,11 +92,11 @@ describe('legacy editor/repository runtime surface', () => {
   });
 
   it('API host composes repository module without editor module (residual 167)', () => {
-    expect(apiMain).toContain('composeRepository');
-    expect(apiMain).toContain('.register(repositoryApiModule)');
-    expect(apiMain).not.toContain('createRepositoryApiModule');
-    expect(apiMain).not.toContain('createEditorApiModule');
-    expect(apiMain).not.toContain('EditorApiModule');
+    expect(apiServer).toContain('composeRepository');
+    expect(apiServer).toContain('.register(repositoryApiModule)');
+    expect(apiServer).not.toContain('createRepositoryApiModule');
+    expect(apiServer).not.toContain('createEditorApiModule');
+    expect(apiServer).not.toContain('EditorApiModule');
   });
 
   it('Vue repository router has no retired /note/:id editor path (residual 167)', () => {
@@ -125,14 +125,17 @@ describe('legacy editor/repository runtime surface', () => {
     const rootPkg = readFileSync(resolve(repoRoot, 'package.json'), 'utf8');
     expect(rootPkg).not.toContain('"@memoflow/editor"');
     // apps that historically mounted editor must not reintroduce the dep:
-    for (const rel of ['apps/api/package.json', 'apps/desktop/package.json', 'apps/web/package.json']) {
+    for (const rel of [
+      'apps/api/package.json',
+      'apps/desktop/package.json',
+      'apps/web/package.json',
+    ]) {
       const pkgPath = resolve(repoRoot, rel);
       if (!existsSync(pkgPath)) continue;
       const pkg = readFileSync(pkgPath, 'utf8');
       expect(pkg).not.toContain('"@memoflow/editor"');
     }
   });
-
 
   it('root package.json scripts do not target deleted editor Nx project (residual 182)', () => {
     const rootPkg = JSON.parse(readFileSync(resolve(repoRoot, 'package.json'), 'utf8')) as {
@@ -148,19 +151,15 @@ describe('legacy editor/repository runtime surface', () => {
     expect(coverage).toContain('goal');
   });
 
-
   it('coverage workflow does not target deleted editor Nx project (residual 183)', () => {
     const coverageWorkflow = readFileSync(
       resolve(repoRoot, '.github/workflows/coverage.yml'),
       'utf8',
     );
     expect(coverageWorkflow).toContain('GOVERNED_COVERAGE_PROJECTS:');
-    expect(coverageWorkflow).not.toMatch(
-      /GOVERNED_COVERAGE_PROJECTS:\s*'[^']*\beditor\b[^']*'/,
-    );
+    expect(coverageWorkflow).not.toMatch(/GOVERNED_COVERAGE_PROJECTS:\s*'[^']*\beditor\b[^']*'/);
     expect(coverageWorkflow).toContain('domain-shared,goal,governance');
   });
-
 
   it('ADR-031 and server-feature-shape audit list 12 live packages without editor (residual 184)', () => {
     const adr031 = readFileSync(
@@ -184,11 +183,14 @@ describe('legacy editor/repository runtime surface', () => {
     expect(shapeAudit).not.toContain("'editor'");
   });
 
-
   it('portable editor schema + prepare script remain for backup re-import only (residual 193)', () => {
-    expect(existsSync(resolve(repoRoot, 'packages/database/prisma/schema/editor.prisma'))).toBe(true);
+    expect(existsSync(resolve(repoRoot, 'packages/database/prisma/schema/editor.prisma'))).toBe(
+      true,
+    );
     expect(
-      existsSync(resolve(repoRoot, 'packages/database/scripts/prepare-editor-workspace-natural-key.ts')),
+      existsSync(
+        resolve(repoRoot, 'packages/database/scripts/prepare-editor-workspace-natural-key.ts'),
+      ),
     ).toBe(true);
     expect(
       existsSync(
@@ -201,6 +203,4 @@ describe('legacy editor/repository runtime surface', () => {
     // Runtime package stays deleted (import path is data-portability only).
     expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
   });
-
-
 });

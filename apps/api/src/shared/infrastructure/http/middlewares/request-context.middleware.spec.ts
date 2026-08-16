@@ -16,6 +16,8 @@ import {
   createRequestContextMiddleware,
   type RequestContextCarrierRequest,
 } from './request-context.middleware';
+import type { HttpRequestSpan, HttpRequestTrace } from '../../observability/http-request-trace';
+import type { HttpRequestObservation } from '../../observability/http-request-observation';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -227,10 +229,34 @@ describe('createRequestContextMiddleware (terminal lifecycle log)', () => {
       traceId: expect.any(String),
       source: 'http',
       method: 'GET',
-      path: '/test',
+      routeTemplate: '__unmatched__',
       statusCode: 201,
       durationMs: 250,
+      outcome: 'finished',
     });
+  });
+
+  it('resolves the registered route template with :id params, never the raw path', () => {
+    const logger = createMockLogger();
+    const now = vi.fn(() => 1_000);
+    const { response } = invoke(
+      createRequestContextMiddleware({ logger, now }),
+      createMockReq({
+        method: 'GET',
+        path: '/api/goals/goal-123',
+        originalUrl: '/api/goals/goal-123?tab=active',
+        baseUrl: '/api',
+        route: { path: '/goals/:id' },
+      }),
+      new MockResponse(),
+    );
+
+    response.emit('finish');
+    const [, metadata] = (logger.info as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(metadata.routeTemplate).toBe('/api/goals/:id');
+    // Raw path/query never leak into the terminal metadata as a label.
+    expect(JSON.stringify(metadata)).not.toContain('goal-123');
+    expect(JSON.stringify(metadata)).not.toContain('tab=active');
   });
 
   it('logs a single aborted entry when the response closes without finishing', () => {
@@ -252,9 +278,46 @@ describe('createRequestContextMiddleware (terminal lifecycle log)', () => {
     expect(message).toBe('request aborted');
     expect(metadata).toMatchObject({
       aborted: true,
+      outcome: 'aborted',
       method: 'POST',
+      routeTemplate: '__unmatched__',
       durationMs: 123,
     });
+  });
+
+  it('isolates observer failures so they never change the response', () => {
+    const logger = createMockLogger();
+    const observer = {
+      complete: vi.fn(() => {
+        throw new Error('metrics exploded');
+      }),
+    };
+    const { response, nextCalled } = invoke(
+      createRequestContextMiddleware({ logger, observer }),
+      createMockReq(),
+      new MockResponse(),
+    );
+
+    response.emit('finish');
+    response.emit('close');
+
+    expect(observer.complete).toHaveBeenCalledTimes(1);
+    expect(nextCalled).toBe(true);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Request observer failed; response unaffected',
+      expect.any(Error),
+    );
+  });
+
+  it('keeps traceId === requestId with the default noop trace', () => {
+    const { request } = invoke(
+      createRequestContextMiddleware(),
+      createMockReq({ headers: { 'x-request-id': 'client-123' } }),
+      new MockResponse(),
+    );
+
+    expect(request.requestContext.requestId).toBe('client-123');
+    expect(request.requestContext.traceId).toBe('client-123');
   });
 
   it('attaches identityId to the terminal log when the principal is present', () => {
@@ -312,5 +375,97 @@ describe('createRequestContextMiddleware (terminal lifecycle log)', () => {
 
     expect(setHeader).toHaveBeenCalledTimes(0);
     expect(logger.info).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('createRequestContextMiddleware (trace integration)', () => {
+  function createFakeTrace() {
+    const span = {
+      traceId: 'trace-123',
+      runWithContext: vi.fn((callback: () => unknown) => callback()),
+      complete: vi.fn(),
+    } as unknown as HttpRequestSpan;
+    const trace = {
+      startSpan: vi.fn(() => span),
+    } as unknown as HttpRequestTrace;
+    return { trace, span };
+  }
+
+  it('uses the span traceId when a trace is injected (OTel enabled lane)', () => {
+    const { trace } = createFakeTrace();
+    const { request } = invoke(
+      createRequestContextMiddleware({ trace }),
+      createMockReq({ headers: { 'x-request-id': 'client-123' } }),
+      new MockResponse(),
+    );
+
+    expect(request.requestContext.requestId).toBe('client-123');
+    expect(request.requestContext.traceId).toBe('trace-123');
+  });
+
+  it('runs next() inside the span context and ends the span from the terminal observation', () => {
+    const { trace, span } = createFakeTrace();
+    const { response, nextCalled } = invoke(
+      createRequestContextMiddleware({ trace }),
+      createMockReq({ method: 'POST' }),
+      new MockResponse(),
+    );
+
+    expect(span.runWithContext).toHaveBeenCalledTimes(1);
+    expect(nextCalled).toBe(true);
+
+    response.statusCode = 204;
+    response.emit('finish');
+    response.emit('close');
+
+    expect(span.complete).toHaveBeenCalledTimes(1);
+    const observation = (span.complete as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as HttpRequestObservation;
+    expect(observation).toMatchObject({
+      method: 'POST',
+      statusCode: 204,
+      outcome: 'finished',
+      traceId: 'trace-123',
+    });
+  });
+
+  it('settles the span as aborted on close-without-finish (SSE disconnect)', () => {
+    const { trace, span } = createFakeTrace();
+    const { response } = invoke(
+      createRequestContextMiddleware({ trace }),
+      createMockReq(),
+      new MockResponse(),
+    );
+
+    response.emit('close');
+    const observation = (span.complete as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as HttpRequestObservation;
+    expect(observation.outcome).toBe('aborted');
+  });
+
+  it('isolates span failures so they never change the response', () => {
+    const span = {
+      traceId: 'trace-123',
+      runWithContext: vi.fn((callback: () => unknown) => callback()),
+      complete: vi.fn(() => {
+        throw new Error('exporter down');
+      }),
+    } as unknown as HttpRequestSpan;
+    const trace = { startSpan: vi.fn(() => span) } as unknown as HttpRequestTrace;
+    const logger = createMockLogger();
+    const { response, nextCalled } = invoke(
+      createRequestContextMiddleware({ logger, trace }),
+      createMockReq(),
+      new MockResponse(),
+    );
+
+    response.emit('finish');
+
+    expect(nextCalled).toBe(true);
+    expect(span.complete).toHaveBeenCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Request span failed; response unaffected',
+      expect.any(Error),
+    );
   });
 });

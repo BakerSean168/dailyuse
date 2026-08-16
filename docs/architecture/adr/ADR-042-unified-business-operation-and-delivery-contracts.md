@@ -54,18 +54,18 @@ MemoFlow 包含 Reminder 扫描、Notification 投递、Account Closure 清理�
 
 规定所有异步/长周期业务操作统一收敛至以下 8 种状态，并由 Zod `superRefine` 强制约束状态不变量：
 
-| 状态 | 语义说明 | 终态/暂态 | 必须约束 |
-| --- | --- | --- | --- |
-| `pending` | 已创建/入队，等待 worker 领用或到达可执行时间 | 暂态 | lease=null, finishedAt=null, nextRetryAt=null, deadLetterAt=null |
-| `running` | 已由持有有效 lease 的 worker 领用并在执行中 | 暂态 | lease != null, finishedAt=null, nextRetryAt=null, deadLetterAt=null |
-| `succeeded` | 业务操作成功完成 | 终态 | finishedAt != null, lastError=null, nextRetryAt=null, deadLetterAt=null |
-| `skipped` | 满足幂等或前置条件判定跳过执行 | 终态 | finishedAt != null, lastError=null, nextRetryAt=null, deadLetterAt=null |
-| `failed` | 发生不可重试的业务或技术失败 | 终态 | finishedAt != null, nextRetryAt=null, deadLetterAt=null |
-| `retryable` | 发生暂态异常，已记录退避与 `nextRetryAt` | 暂态 | nextRetryAt != null, lastError != null, finishedAt=null, deadLetterAt=null |
-| `dead_letter` | 达到最大重试次数或致命异常，等待人工/运维 Replay | 暂态（需重载/重放） | deadLetterAt != null, finishedAt=null, nextRetryAt=null |
-| `cancelled` | 用户主动撤销或账号关闭导致的取消 | 终态 | finishedAt != null, nextRetryAt=null, deadLetterAt=null |
+| 状态          | 语义说明                                         | 终态/暂态           | 必须约束                                                                   |
+| ------------- | ------------------------------------------------ | ------------------- | -------------------------------------------------------------------------- |
+| `pending`     | 已创建/入队，等待 worker 领用或到达可执行时间    | 暂态                | lease=null, finishedAt=null, nextRetryAt=null, deadLetterAt=null           |
+| `running`     | 已由持有有效 lease 的 worker 领用并在执行中      | 暂态                | lease != null, finishedAt=null, nextRetryAt=null, deadLetterAt=null        |
+| `succeeded`   | 业务操作成功完成                                 | 终态                | finishedAt != null, lastError=null, nextRetryAt=null, deadLetterAt=null    |
+| `skipped`     | 满足幂等或前置条件判定跳过执行                   | 终态                | finishedAt != null, lastError=null, nextRetryAt=null, deadLetterAt=null    |
+| `failed`      | 发生不可重试的业务或技术失败                     | 终态                | finishedAt != null, nextRetryAt=null, deadLetterAt=null                    |
+| `retryable`   | 发生暂态异常，已记录退避与 `nextRetryAt`         | 暂态                | nextRetryAt != null, lastError != null, finishedAt=null, deadLetterAt=null |
+| `dead_letter` | 达到最大重试次数或致命异常，等待人工/运维 Replay | 暂态（需重载/重放） | deadLetterAt != null, finishedAt=null, nextRetryAt=null                    |
+| `cancelled`   | 用户主动撤销或账号关闭导致的取消                 | 终态                | finishedAt != null, nextRetryAt=null, deadLetterAt=null                    |
 
-*注：R1 遗留 `OutboxMessageStatus` (`pending/dispatched/failed/dead`) 作为向下兼容接口保留，通过 `mapOutboxStatusToBusinessOperationStatus` 隐式与上述 8 状态对齐（`pending`->`pending`, `dispatched`->`succeeded`, `failed`->`failed`, `dead`->`dead_letter`）。*
+_注：R1 遗留 `OutboxMessageStatus` (`pending/dispatched/failed/dead`) 作为向下兼容接口保留，通过 `mapOutboxStatusToBusinessOperationStatus` 隐式与上述 8 状态对齐（`pending`->`pending`, `dispatched`->`succeeded`, `failed`->`failed`, `dead`->`dead_letter`）。_
 
 ### 2.3 领用租约 `LeaseClaim` 与 Fencing 代数
 
@@ -79,6 +79,7 @@ MemoFlow 包含 Reminder 扫描、Notification 投递、Account Closure 清理�
 ### 2.4 派生投影 `ProjectionOperation` 闭环
 
 派生只读模型（如 Schedule 冲突投影、Knowledge 笔记投影）统一实现 `ProjectionOperation` 契约，具备与 `BusinessOperationReceipt` 完全对齐的闭环语义：
+
 - `schemaVersion`: 契约版本号 (1)
 - `operationId`: 操作唯一 ID
 - `identityId` / `source` / `occurrenceKey` / `idempotencyKey`: 规范化标识与幂等键
@@ -103,6 +104,7 @@ MemoFlow 包含 Reminder 扫描、Notification 投递、Account Closure 清理�
 2. **Port 输出契约与运行时闭环**：各 Application Port 输出必须返回 `BusinessOperationReceipt` 或 `ProjectionOperation`。实现与适配器在输出边界必须显式调用 `assertValidBusinessOperationReceipt` / `assertValidProjectionOperation`（即经 `BusinessOperationReceiptSchema.parse()` / `ProjectionOperationSchema.parse()` 校验），只有 Schema parse 成功的输出才可宣称执行成功。
 
 **冻结的 Application Ports 清单**：
+
 - **Reminder**: `ReminderReliableOperationPort` (occurrence claim, lease & delivery intent)
 - **Notification**: `NotificationReliableOperationPort` (outbox dispatch, dead-letter query & replay)
 - **Account**: `AccountClosureReliableOperationPort` (closure saga, session revocation & work cancellation)
@@ -136,11 +138,13 @@ MemoFlow 包含 Reminder 扫描、Notification 投递、Account Closure 清理�
 ## 5. 影响与代价
 
 正面影响：
+
 - 跨模块消息、提醒、通知、账号关闭和投影具有相同的状态语义与回执结构。
 - 生产环境能力缺失能够在启动时立即捕获。
 - 为 W1~W7 提供了标准化的租约 (Lease) 与重试/死信 (Replay) 契约。
 
 需要承担：
+
 - 模块组合根在生产启动时需显式注册 Capability 校验。
 
 ## 6. 验收标准
@@ -148,3 +152,7 @@ MemoFlow 包含 Reminder 扫描、Notification 投递、Account Closure 清理�
 - `@memoflow/contracts/reliable-messaging` 导出完整的 `BusinessOperationReceipt`、`DeliveryAttempt`、`LeaseClaim`、`ProjectionOperation` 和 Capability Zod Schemas。
 - 契约单测正反向校验 100% 通过。
 - 新建 ADR-042 并在 `docs/architecture/adr/README.md` 中备案。
+
+### 验收治理（Phase 6）
+
+- `tools/governance/architecture-surface-audit.mjs` 的 `RELIABLE_RECEIPT_CANONICAL` 规则：`BusinessOperationReceipt`/`ProjectionOperation` 契约 body 只存在于 contracts（manifest 列出 canonical files），manifest 中的 goal/reminder/notification adapters 在输出边界调用 `assertValidBusinessOperationReceipt`/`assertValidProjectionOperation`；本地重复 receipt shape 或移除 validator 调用都会使审计变红。行为由 `reliable-messaging-contracts.spec.ts` 与各 adapter behavior tests 覆盖。

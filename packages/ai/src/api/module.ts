@@ -30,7 +30,7 @@
  * （任一挂载失败时回滚半套路由）、`destroy()` 清理（幂等且 `failed` 后为 no-op）。
  */
 
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import type { AIModuleInstance } from '../server/infrastructure';
 import {
@@ -63,23 +63,20 @@ import { AIAssistantFacadeController } from '../server/transport/ai-assistant-fa
 const logger = createLogger('AIApi');
 
 /**
- * Transport-only context for AI registration.
- * Deliberately picks no `db`: the api module never needs persistence, and this
- * keeps the seam from becoming a second composition root.
+ * Transport-only context for AI registration — reuses the canonical
+ * shared `ServerTransportModuleContext`. Deliberately carries no `db`, so
+ * this seam can never become a second composition root.
  *
- * AI 注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
- * 这也避免该 seam 变成第二个组合根。
+ * AI注册的传输专用上下文——复用规范的共享 `ServerTransportModuleContext`。
+ * 刻意不包含 `db`，该 seam 绝不可能是第二个组合根。
  */
-export type AIApiModuleContext = Pick<
-  ServerModuleContext<unknown>,
-  'app' | 'router' | 'middleware' | 'openApiRegistry'
->;
+export type AIApiModuleContext = ServerTransportModuleContext;
 
-export interface AIApiModuleDef {
-  readonly name: string;
-  register(context: AIApiModuleContext): void;
-  destroy?(): void;
-}
+/**
+ * AI API module handle extending the shared lifecycle contract.
+ * AI API 模块 handle，继承共享生命周期契约。
+ */
+export interface AIApiModuleDef extends ServerModuleHandle<AIApiModuleContext> {}
 
 /**
  * Options carrying the already-assembled AI instance.

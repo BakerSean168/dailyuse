@@ -73,7 +73,7 @@
  * 不会创建第二个实例；上述显式状态机即每个 handle 自己的状态。
  */
 
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import type { AccountModuleInstance } from '../server/infrastructure';
 import { registerAccountRoutes } from './routes';
@@ -90,23 +90,20 @@ const logger = createLogger('AccountApi');
 type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
 /**
- * Transport-only context for account registration.
- * Deliberately picks no `db`: the api module never needs persistence, and this
- * keeps the seam from becoming a second composition root.
+ * Transport-only context for 账户 registration — reuses the canonical
+ * shared `ServerTransportModuleContext`. Deliberately carries no `db`, so
+ * this seam can never become a second composition root.
  *
- * 账户注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
- * 这也避免该 seam 变成第二个组合根。
+ * 账户注册的传输专用上下文——复用规范的共享 `ServerTransportModuleContext`。
+ * 刻意不包含 `db`，该 seam 绝不可能是第二个组合根。
  */
-export type AccountApiModuleContext = Pick<
-  ServerModuleContext<unknown>,
-  'app' | 'router' | 'middleware' | 'openApiRegistry'
->;
+export type AccountApiModuleContext = ServerTransportModuleContext;
 
-export interface AccountApiModuleDef {
-  readonly name: string;
-  register(context: AccountApiModuleContext): void;
-  destroy?(): void;
-}
+/**
+ * Account API module handle extending the shared lifecycle contract.
+ * Account API 模块 handle，继承共享生命周期契约。
+ */
+export interface AccountApiModuleDef extends ServerModuleHandle<AccountApiModuleContext> {}
 
 /**
  * Options carrying the already-assembled account instance.

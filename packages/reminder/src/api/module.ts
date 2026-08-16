@@ -59,7 +59,7 @@
  *   仍为 no-op。
  */
 
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import type { ReminderModuleInstance } from '../server/infrastructure';
 import { registerReminderRoutes } from './routes';
@@ -76,23 +76,20 @@ const logger = createLogger('ReminderApi');
 type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
 /**
- * Transport-only context for reminder registration.
- * Deliberately picks no `db`: the api module never needs persistence, and this
- * keeps the seam from becoming a second composition root.
+ * Transport-only context for 提醒 registration — reuses the canonical
+ * shared `ServerTransportModuleContext`. Deliberately carries no `db`, so
+ * this seam can never become a second composition root.
  *
- * 提醒注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
- * 这也避免该 seam 变成第二个组合根。
+ * 提醒注册的传输专用上下文——复用规范的共享 `ServerTransportModuleContext`。
+ * 刻意不包含 `db`，该 seam 绝不可能是第二个组合根。
  */
-export type ReminderApiModuleContext = Pick<
-  ServerModuleContext<unknown>,
-  'app' | 'router' | 'middleware' | 'openApiRegistry'
->;
+export type ReminderApiModuleContext = ServerTransportModuleContext;
 
-export interface ReminderApiModuleDef {
-  readonly name: string;
-  register(context: ReminderApiModuleContext): Promise<void> | void;
-  destroy?(): Promise<void> | void;
-}
+/**
+ * Reminder API module handle extending the shared lifecycle contract.
+ * Reminder API 模块 handle，继承共享生命周期契约。
+ */
+export interface ReminderApiModuleDef extends ServerModuleHandle<ReminderApiModuleContext> {}
 
 /**
  * Options carrying the already-assembled reminder instance.

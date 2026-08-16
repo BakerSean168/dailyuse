@@ -70,7 +70,7 @@
  * 不会创建第二个实例；上述显式状态机即每个 handle 自己的状态。
  */
 
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import type { GoalModuleInstance } from '../server/infrastructure';
 import {
@@ -91,24 +91,25 @@ const logger = createLogger('GoalApi');
 type ModuleHandleState = 'created' | 'registered' | 'disposed' | 'failed';
 
 /**
- * Transport-only context for goal registration.
- * Deliberately picks no `db`: the api module never needs persistence, and this
- * keeps the seam from becoming a second composition root.
+ * Transport-only context for 目标 registration — reuses the canonical
+ * shared `ServerTransportModuleContext`. Deliberately carries no `db`, so
+ * this seam can never become a second composition root.
  *
- * 目标注册的传输专用上下文。刻意不包含 `db`：API module 不需要持久化，
- * 这也避免该 seam 变成第二个组合根。
+ * 目标注册的传输专用上下文——复用规范的共享 `ServerTransportModuleContext`。
+ * 刻意不包含 `db`，该 seam 绝不可能是第二个组合根。
  */
-export type GoalApiModuleContext = Pick<
-  ServerModuleContext<unknown>,
-  'app' | 'router' | 'middleware' | 'openApiRegistry'
->;
+export type GoalApiModuleContext = ServerTransportModuleContext;
 
-export interface GoalApiModuleDef {
-  readonly name: string;
-  register(context: GoalApiModuleContext): void;
-  destroy?(): void;
-}
+/**
+ * Goal API module handle extending the shared lifecycle contract.
+ * Goal API 模块 handle，继承共享生命周期契约。
+ */
+export interface GoalApiModuleDef extends ServerModuleHandle<GoalApiModuleContext> {}
 
+/**
+ * Options for `createGoalApiModule`.
+ * `createGoalApiModule` 的选项。
+ */
 export interface GoalApiModuleOptions {
   readonly instance: GoalModuleInstance;
 }
@@ -152,11 +153,7 @@ export function createGoalApiModule(options: GoalApiModuleOptions): GoalApiModul
         // Build the routes BEFORE starting the instance and BEFORE mounting:
         // a failed start must not leave any route installed on the host router.
         const goalRoutes = registerGoalRoutes(goalHandlers, middleware, openApiRegistry);
-        const folderRoutes = registerGoalFolderRoutes(
-          folderHandlers,
-          middleware,
-          openApiRegistry,
-        );
+        const folderRoutes = registerGoalFolderRoutes(folderHandlers, middleware, openApiRegistry);
 
         options.instance.start();
 

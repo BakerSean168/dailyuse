@@ -5,11 +5,11 @@ import { ApiBootstrapper } from './bootstrap';
 import { createCloudAuthStub } from './test/cloud-auth.stub';
 
 describe('ApiBootstrapper', () => {
-  it('registers modules with the shared context and mounts routes on both API prefixes', async () => {
+  it('registers modules with the shared transport context and mounts routes on both API prefixes', async () => {
     const db = { tag: 'test-db' };
     const register = vi.fn((context: Parameters<IApiModule['register']>[0]) => {
       context.router.get('/bootstrap-probe', (_req, res) => {
-        res.json({ ok: true, dbTag: (context.db as typeof db).tag });
+        res.json({ ok: true, route: 'probe' });
       });
     });
 
@@ -22,18 +22,19 @@ describe('ApiBootstrapper', () => {
 
     expect(register).toHaveBeenCalledTimes(1);
     const context = register.mock.calls[0][0];
-    expect(context.db).toBe(db);
+    // The registration context is transport-only: no db is ever exposed.
+    expect((context as unknown as Record<string, unknown>).db).toBeUndefined();
     expect(context.middleware.auth).toBeTypeOf('function');
     expect(context.middleware.requireRole).toBeTypeOf('function');
     expect(context.openApiRegistry).toBeDefined();
 
     const apiResponse = await request(app).get('/api/bootstrap-probe');
     expect(apiResponse.status).toBe(200);
-    expect(apiResponse.body).toEqual({ ok: true, dbTag: 'test-db' });
+    expect(apiResponse.body).toEqual({ ok: true, route: 'probe' });
 
     const versionedResponse = await request(app).get('/api/v1/bootstrap-probe');
     expect(versionedResponse.status).toBe(200);
-    expect(versionedResponse.body).toEqual({ ok: true, dbTag: 'test-db' });
+    expect(versionedResponse.body).toEqual({ ok: true, route: 'probe' });
   });
 
   it('destroys registered modules and keeps going when one destroy step fails', async () => {

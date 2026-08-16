@@ -16,14 +16,8 @@ import { describe, expect, it } from 'vitest';
  */
 describe('portable editor backup boundary surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../');
-  const importUseCase = readFileSync(
-    resolve(__dirname, '../import-user-data.use-case.ts'),
-    'utf8',
-  );
-  const exportUseCase = readFileSync(
-    resolve(__dirname, '../export-user-data.use-case.ts'),
-    'utf8',
-  );
+  const importUseCase = readFileSync(resolve(__dirname, '../import-user-data.use-case.ts'), 'utf8');
+  const exportUseCase = readFileSync(resolve(__dirname, '../export-user-data.use-case.ts'), 'utf8');
   const editorImporter = readFileSync(
     resolve(__dirname, '../importers/editor.importer.ts'),
     'utf8',
@@ -44,15 +38,9 @@ describe('portable editor backup boundary surface', () => {
     repoRoot,
     'packages/database/scripts/prepare-editor-workspace-natural-key.ts',
   );
-  const contractsPkg = readFileSync(
-    resolve(repoRoot, 'packages/contracts/package.json'),
-    'utf8',
-  );
-  const apiMain = readFileSync(resolve(repoRoot, 'apps/api/src/main.ts'), 'utf8');
-  const desktopMain = readFileSync(
-    resolve(repoRoot, 'apps/desktop/src/main/main.ts'),
-    'utf8',
-  );
+  const contractsPkg = readFileSync(resolve(repoRoot, 'packages/contracts/package.json'), 'utf8');
+  const apiServer = readFileSync(resolve(repoRoot, 'apps/api/src/server.ts'), 'utf8');
+  const desktopMain = readFileSync(resolve(repoRoot, 'apps/desktop/src/main/main.ts'), 'utf8');
   const ipcChannels = readFileSync(
     resolve(repoRoot, 'packages/contracts/src/electron/ipc-channels.ts'),
     'utf8',
@@ -114,9 +102,9 @@ describe('portable editor backup boundary surface', () => {
   });
 
   it('hosts never remount Editor API/Electron runtime modules', () => {
-    expect(apiMain).not.toContain('createEditorApiModule');
-    expect(apiMain).not.toContain('EditorApiModule');
-    expect(apiMain).not.toContain('@memoflow/editor');
+    expect(apiServer).not.toContain('createEditorApiModule');
+    expect(apiServer).not.toContain('EditorApiModule');
+    expect(apiServer).not.toContain('@memoflow/editor');
     expect(desktopMain).not.toContain('createEditorElectronModule');
     expect(desktopMain).not.toContain('createEditorModule');
     expect(desktopMain).not.toContain('@memoflow/editor');
@@ -132,7 +120,7 @@ describe('portable editor backup boundary surface', () => {
   });
 
   it('user-data import rehydrates editor tables via identity-scoped importer', () => {
-    expect(importUseCase).toContain("if (data.editor) await importEditor(tx, ctx, data.editor);");
+    expect(importUseCase).toContain('if (data.editor) await importEditor(tx, ctx, data.editor);');
     expect(editorImporter).toContain('export async function importEditor(');
     expect(editorImporter).toContain('identityId: ctx.identityId');
     // Every editor create path stamps import identity (not portable author identity alone).
@@ -148,17 +136,12 @@ describe('portable editor backup boundary surface', () => {
     expect(importStore).toContain(
       'createEditorGroup(input: CreateEditorGroupInput): Promise<void>;',
     );
-    expect(importStore).toContain(
-      'createEditorTab(input: CreateEditorTabInput): Promise<void>;',
-    );
+    expect(importStore).toContain('createEditorTab(input: CreateEditorTabInput): Promise<void>;');
   });
 
   it('server-held disclosure remains a separate non-importable product surface', () => {
     const importSafety = readFileSync(
-      resolve(
-        repoRoot,
-        'packages/contracts/src/modules/data-portability/rules/import-safety.ts',
-      ),
+      resolve(repoRoot, 'packages/contracts/src/modules/data-portability/rules/import-safety.ts'),
       'utf8',
     );
     expect(importSafety).toContain("kind === 'memoflow.server-held-data-disclosure'");
@@ -179,7 +162,9 @@ describe('portable editor backup boundary surface', () => {
 
     expect(electronModule).toContain('DataPortabilityChannels.EXPORT');
     expect(electronModule).toContain('DataPortabilityChannels.IMPORT');
-    expect(electronModule).not.toMatch(/exportServerHeldDataDisclosure|server-held-data-disclosure/);
+    expect(electronModule).not.toMatch(
+      /exportServerHeldDataDisclosure|server-held-data-disclosure/,
+    );
 
     // Renderer IPC adapter fail-closed; HTTP posts dedicated non-import route.
     expect(ipcAdapter).toContain('exportServerHeldDataDisclosure');
@@ -201,7 +186,6 @@ describe('portable editor backup boundary surface', () => {
     expect(repositoryProductDoc).toContain('没有 import route');
   });
 
-
   it('PowerSync editor_* remains backup continuity only (residual 539)', () => {
     expect(powersyncTableMapping).toContain('Residual 539');
     expect(powersyncTableMapping).toContain("'editor_workspaces'");
@@ -213,15 +197,19 @@ describe('portable editor backup boundary surface', () => {
     expect(desktopPowersync).toContain('portable backup continuity');
     // Still no first-party editor package / host remount.
     expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
-    expect(apiMain).not.toContain('@memoflow/editor');
+    expect(apiServer).not.toContain('@memoflow/editor');
     expect(desktopMain).not.toContain('@memoflow/editor');
   });
 
   it('repository API mounts knowledge-only routes without Folder/Resource CRUD (residual 539)', () => {
     expect(repositoryRoutesIndex).toContain('Residual 539');
     expect(repositoryRoutesIndex).toContain('registerKnowledgeRepositoryConnectionRoutes');
-    expect(repositoryRoutesIndex).toContain('Legacy database Repository/Folder/Resource CRUD builders are gone');
-    expect(repositoryRoutesIndex).not.toMatch(/registerFolderRoutes|registerResourceRoutes|FolderResourceController/);
+    expect(repositoryRoutesIndex).toContain(
+      'Legacy database Repository/Folder/Resource CRUD builders are gone',
+    );
+    expect(repositoryRoutesIndex).not.toMatch(
+      /registerFolderRoutes|registerResourceRoutes|FolderResourceController/,
+    );
     expect(repositoryRoutesIndex).not.toContain('registerFolder');
     expect(repositoryRoutesIndex).not.toContain('registerResource');
     expect(repositoryRoutesIndex).not.toContain('createEditorApiModule');
@@ -234,5 +222,4 @@ describe('portable editor backup boundary surface', () => {
     expect(appShellStore).toContain("tab.route.startsWith('/note?')");
     expect(appShellStore).toContain('sanitizeLegacyTabs');
   });
-
 });

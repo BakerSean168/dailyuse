@@ -14,6 +14,7 @@
 
 import type { Express, Router } from 'express';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import type { GovernanceApplicationPort } from '../server/application';
 import type { GovernanceModuleInstance } from '../server/infrastructure';
 import { createGovernanceApiModule, type GovernanceApiModuleContext } from './module';
@@ -186,5 +187,49 @@ describe('createGovernanceApiModule lifecycle', () => {
     fake.publish('rule.updated');
     expect(fake.receivedEvents).toEqual(['rule.created']);
     expect(fake.dispose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('GovernanceApiModuleDef shared handle contract (Phase 6)', () => {
+  it('the created handle is assignable to the shared ServerModuleHandle<ServerTransportModuleContext>', () => {
+    const instance = createFakeInstance();
+    const handle = createGovernanceApiModule({ instance: instance.instance });
+    const sharedHandle: ServerModuleHandle<ServerTransportModuleContext> = handle;
+    expect(sharedHandle.name).toBe('Governance');
+    expect(typeof sharedHandle.register).toBe('function');
+    expect(typeof sharedHandle.destroy).toBe('function');
+  });
+
+  it('the registration context exposes no db', () => {
+    const ctx = createFakeContext();
+    // @ts-expect-error GovernanceApiModuleContext carries no `db` property
+    const _db: unknown = ctx.db;
+    expect(_db).toBeUndefined();
+  });
+
+  it('a handle whose register requires a DB-bearing context is NOT assignable to the shared handle', () => {
+    const dbRequiringHandle: ServerModuleHandle<ServerTransportModuleContext & { db: unknown }> = {
+      name: 'DbHandle',
+      register(_ctx: ServerTransportModuleContext & { db: unknown }): void {
+        // A handle that needs `db` can never satisfy the transport-only contract.
+      },
+    };
+    // @ts-expect-error register(context) must not accept a wider DB context
+    const sharedHandle: ServerModuleHandle<ServerTransportModuleContext> = dbRequiringHandle;
+    expect(sharedHandle).toBeDefined();
+  });
+
+  it('cannot be constructed without the required instance option', () => {
+    // @ts-expect-error GovernanceApiModuleOptions requires the assembled `instance`
+    createGovernanceApiModule({} as never);
+  });
+
+  it('the register() parameter type carries no db', () => {
+    const handle = createGovernanceApiModule({ instance: createFakeInstance().instance });
+    const assertContextType = (_ctx: Parameters<typeof handle.register>[0]): void => {
+      // @ts-expect-error Parameters<register>[0] has no `db` property
+      const _db: unknown = _ctx.db;
+    };
+    expect(assertContextType).toBeTypeOf('function');
   });
 });

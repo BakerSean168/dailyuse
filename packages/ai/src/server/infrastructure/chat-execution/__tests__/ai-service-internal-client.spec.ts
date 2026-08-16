@@ -2,8 +2,17 @@
  * AIServiceInternalClient Spec — RefArch Phase 2 request-ID propagation.
  * 覆盖 outbound `X-Request-Id` 的精确透传、UUID fallback、HMAC 不变，
  * 以及 abort/timeout/error 携带同一 resolved request ID。
+ *
+ * RefArch Phase 6: W3C trace context injection — the client forwards whatever
+ * the active global propagator produces (traceparent/tracestate) without
+ * changing the HMAC canonical inputs or the request-ID headers.
+ *
+ * RefArch 阶段 6：W3C trace context 注入——client 透传 active 全局
+ * propagator 的产物（traceparent/tracestate），不改变 HMAC canonical inputs
+ * 或 request-ID headers。
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { propagation, type Context, type TextMapPropagator } from '@opentelemetry/api';
 import {
   AIServiceInternalClient,
   INTERNAL_CONTENT_HASH_HEADER,
@@ -13,6 +22,30 @@ import {
 } from '..';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Fake W3C propagator that always emits traceparent/tracestate, proving the
+ * client injects the active context into the outbound headers.
+ *
+ * 始终输出 traceparent/tracestate 的 fake W3C propagator，证明 client 将
+ * active context 注入 outbound headers。
+ */
+const fakeW3cPropagator: TextMapPropagator = {
+  inject(
+    _context: Context,
+    carrier: Record<string, unknown>,
+    setter: { set(carrier: unknown, key: string, value: unknown): void },
+  ) {
+    setter.set(carrier, 'traceparent', '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01');
+    setter.set(carrier, 'tracestate', 'memoflow=active');
+  },
+  extract(value: Context): Context {
+    return value;
+  },
+  fields(): string[] {
+    return ['traceparent', 'tracestate'];
+  },
+};
 
 function createClient(
   options: Partial<ConstructorParameters<typeof AIServiceInternalClient>[0]> = {},
@@ -36,6 +69,7 @@ function okResponse(body: unknown, status = 200): Response {
 describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    propagation.disable();
   });
 
   it('forwards the provided requestId verbatim as X-Request-Id on POST', async () => {
@@ -172,5 +206,47 @@ describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () 
     const headers = init.headers as Record<string, string>;
     expect(headers['X-Request-Id']).toBe('entry-req-sse');
     expect(response.status).toBe(200);
+  });
+
+  it('injects W3C traceparent/tracestate from the active context when tracing is enabled', async () => {
+    propagation.setGlobalPropagator(fakeW3cPropagator);
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ok: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createClient();
+    await client.postJson({
+      path: '/internal/chat',
+      identityId: 'identity-1',
+      body: {},
+      requestId: 'entry-req-trace',
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Record<string, string>;
+    expect(headers.traceparent).toBe('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01');
+    expect(headers.tracestate).toBe('memoflow=active');
+    // Existing correlation + HMAC headers stay intact; W3C headers are additive.
+    expect(headers['X-Request-Id']).toBe('entry-req-trace');
+    expect(headers[INTERNAL_SERVICE_HEADER]).toBe('memoflow-api');
+    expect(headers[INTERNAL_SIGNATURE_HEADER]).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('adds no W3C headers when tracing is disabled (default noop propagator)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ok: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createClient();
+    await client.postJson({
+      path: '/internal/chat',
+      identityId: 'identity-1',
+      body: {},
+      requestId: 'entry-req-plain',
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Record<string, string>;
+    expect(headers.traceparent).toBeUndefined();
+    expect(headers.tracestate).toBeUndefined();
+    expect(headers['X-Request-Id']).toBe('entry-req-plain');
   });
 });

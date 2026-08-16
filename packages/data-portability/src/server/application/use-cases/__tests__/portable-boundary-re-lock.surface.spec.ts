@@ -38,7 +38,7 @@ describe('portable boundary re-lock (residual 885)', () => {
     resolve(repoRoot, 'packages/app-vue/src/layouts/shell/useAppShellStore.ts'),
     'utf8',
   );
-  const apiMain = readFileSync(resolve(repoRoot, 'apps/api/src/main.ts'), 'utf8');
+  const apiServer = readFileSync(resolve(repoRoot, 'apps/api/src/server.ts'), 'utf8');
   const desktopMain = readFileSync(resolve(repoRoot, 'apps/desktop/src/main/main.ts'), 'utf8');
   const electronModule = readFileSync(
     resolve(repoRoot, 'packages/data-portability/src/electron/index.ts'),
@@ -54,9 +54,9 @@ describe('portable boundary re-lock (residual 885)', () => {
     expect(repositoryRoutesIndex).toContain('Residual 885');
     expect(appShellStore).toContain('Residual 885');
     expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
-    expect(apiMain).not.toContain('@memoflow/editor');
+    expect(apiServer).not.toContain('@memoflow/editor');
     expect(desktopMain).not.toContain('@memoflow/editor');
-    expect(apiMain).not.toContain('createEditorApiModule');
+    expect(apiServer).not.toContain('createEditorApiModule');
     expect(desktopMain).not.toContain('createEditorElectronModule');
   });
 
@@ -74,7 +74,9 @@ describe('portable boundary re-lock (residual 885)', () => {
     expect(channelsBlock).toContain("EXPORT: 'data-portability:export'");
     expect(channelsBlock).toContain("IMPORT: 'data-portability:import'");
     expect(channelsBlock).not.toMatch(/DISCLOSURE|server-held|serverHeld/i);
-    expect(electronModule).not.toMatch(/exportServerHeldDataDisclosure|server-held-data-disclosure/);
+    expect(electronModule).not.toMatch(
+      /exportServerHeldDataDisclosure|server-held-data-disclosure/,
+    );
   });
 
   it('keeps editor_* portable backup continuity + knowledge-only routes + /note strip', () => {

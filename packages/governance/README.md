@@ -65,6 +65,7 @@ packages/governance/src/
 - **Desktop lane composer**：`apps/desktop/src/main/runtime/compose-governance.ts`（PowerSync）。选择 PowerSync adapter → `createGovernancePowerSyncRepositories(db)` → `createGovernanceEventLogRuntime()` → `createGovernanceModule(...)` → `createGovernanceElectronModule({ instance })`。
 - 两个宿主复用同一个 transport-neutral 的 `createGovernanceModule()` / `GovernanceApplicationPort`，只替换持久化 adapter，从而从构造上保证 HTTP/IPC 行为一致。
 - `api` / `electron` module 只是 transport + lifecycle 适配器：只做路由 / IPC handler 注册与 instance 的 start/dispose，不创建 Repository、use case 或 runtime adapter。
+- RefArch Phase 6：`GovernanceApiModuleDef` 显式继承共享 `ServerModuleHandle<ServerTransportModuleContext>`；注册上下文仅含 transport（无 `db`），`instance` 由 composer 注入且必填。治理作为 governance-first 试点，先于其它 feature 锁定该契约。
 
 ## 活文档定位
 

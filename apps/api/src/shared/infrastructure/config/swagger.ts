@@ -13,8 +13,11 @@
 
 import swaggerUi from 'swagger-ui-express';
 import type { Express } from 'express';
+import { createLogger } from '@memoflow/utils/logger';
 import { env } from './env';
 import { generateOpenApiDocument } from '../openapi/generator';
+
+const logger = createLogger('Swagger');
 
 /**
  * 设置 Swagger UI 中间件。
@@ -54,6 +57,6 @@ export function setupSwagger(app: Express): void {
     res.json(getDocument());
   });
 
-  console.log(`📚 Swagger UI: http://localhost:${env.API_PORT}/api/docs`);
-  console.log(`📄 OpenAPI JSON: http://localhost:${env.API_PORT}/api/docs.json`);
+  logger.info(`📚 Swagger UI: http://localhost:${env.API_PORT}/api/docs`);
+  logger.info(`📄 OpenAPI JSON: http://localhost:${env.API_PORT}/api/docs.json`);
 }
