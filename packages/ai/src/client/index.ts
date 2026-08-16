@@ -11,6 +11,7 @@ import {
   AIClientService,
   createAIClientService,
   type AIClientPort,
+  type AssistantDispatchPolicy,
 } from '../application-client';
 import {
   AICapabilitiesHttpAdapter,
@@ -76,7 +77,28 @@ export type {
   IResultIpcClient,
 };
 
-export function createAIHttpClient(httpClient: IResultHttpClient): AIClientPort {
+export type {
+  AssistantDispatchObservedState,
+  AssistantDispatchPolicy,
+  CreateAIClientServiceOptions,
+  AIServiceFromHttpClientOptions,
+} from '../application-client';
+
+/**
+ * Host-provided AI client options (plan §4.5). `dispatchPolicy` defaults to
+ * `prefer_dispatch` when omitted; hosts pass it explicitly per §3.2.
+ *
+ * Host 提供的 AI 客户端选项（计划 §4.5）。省略时 `dispatchPolicy` 缺省为
+ * `prefer_dispatch`；host 按 §3.2 显式传入。
+ */
+export interface AIClientFactoryOptions {
+  dispatchPolicy?: AssistantDispatchPolicy;
+}
+
+export function createAIHttpClient(
+  httpClient: IResultHttpClient,
+  options?: AIClientFactoryOptions,
+): AIClientPort {
   const adapters = createAIHttpAdapters(httpClient);
   return createAIClientService(
     adapters.capabilities,
@@ -90,10 +112,14 @@ export function createAIHttpClient(httpClient: IResultHttpClient): AIClientPort 
     adapters.analytics,
     adapters.agentRuntime,
     adapters.assistant,
+    options,
   );
 }
 
-export function createAIIpcClient(ipcClient: IResultIpcClient): AIClientPort {
+export function createAIIpcClient(
+  ipcClient: IResultIpcClient,
+  options?: AIClientFactoryOptions,
+): AIClientPort {
   const adapters = createAIIpcAdapters(ipcClient);
   return createAIClientService(
     adapters.capabilities,
@@ -107,6 +133,7 @@ export function createAIIpcClient(ipcClient: IResultIpcClient): AIClientPort {
     adapters.analytics,
     adapters.agentRuntime,
     adapters.assistant,
+    options,
   );
 }
 

@@ -8,7 +8,7 @@ tags:
   - plugin
 description: ADR-035 - 统一助手、Agent Host 与可插拔 Workflow、Turn Engine、Model Gateway 边界
 created: 2026-07-17T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-08-15T00:00:00
 ---
 
 # ADR-035: 统一助手与可插拔 Agent Host
@@ -203,6 +203,29 @@ ContextItem 携带来源、信任等级、敏感级别和 token 估算。Vault�
 ### 验收治理（Phase 6）
 
 - `tools/governance/architecture-surface-audit.mjs` 的 `AI_APPROVAL_LIFECYCLE_ONLY` 规则：AST 锁定 Turn Engine/proposal capability 不含 `tool.mutation`，`AssistantFacade.dispatchApprove/Revise/Reject` 不调用 `executeApproved`，mutation 执行只走显式 approved/confirm 路径；行为由 `proposal.kernel.spec.ts`、`assistant.facade.spec.ts`、`agent-host-stage0-composition.surface.spec.ts` 与 host task journey 覆盖。
+## 5.1 窄版本兼容例外（2026-08-15，plan §4.5 / Step D）
+
+产品 open-chat 的默认路径始终是 `dispatchAssistant`；legacy `streamMessage` 不是产品默认路径。
+唯一的窄版本兼容例外是 `AIClientService.dispatchAssistant` 内部的 version-compat adapter：
+
+- **允许条件（全部成立才 fallback 一次）**：command 为 `message` 且 profile 缺省或
+  `direct_turn`；dispatch 未产出任何 `AssistantEvent`（未收到 `run.started`）；错误码为稳定
+  `ASSISTANT_DISPATCH_UNAVAILABLE`（Web bootstrap 404/405/501；Desktop bridge/handler 在
+  START 接受前明确 `NOT_SUPPORTED/NOT_FOUND`）；`conversationId/content/providerId/model`
+  可无损映射。
+- **禁止条件（fail-closed）**：`pi_readonly`、proposal approve/revise/reject、`cancel_run`；
+  已收到任意事件；普通网络/timeout/abort/`STREAM_TERMINATED`；auth/validation/rate
+  limit/provider/Facade application error；protocol error（malformed frame、未知 event
+  type、done/result schema 错误）；Desktop START 接受后的 crash/sender destroy/stream error。
+- fallback 投影 `message.delta` / `message.completed`，保留 command runId 与持久化消息，
+  绝不伪造 `run.started`，不新增 fallback-specific 公共事件；命中只能通过内部 log/metric 观察。
+- `dispatchPolicy`（`prefer_dispatch` / `dispatch_only` / `legacy_only`）由 host composition
+  显式传入 client factory；生产缺省 `prefer_dispatch`，紧急回滚必须显式配置并记录 telemetry。
+- Vue 层不获得 `streamMessage` 依赖，不分支判断 transport，不展示 fallback-specific 产品事件。
+
+**移除条件**：旧 Server/Desktop host 全部升级到支持 dispatch 后，删除该 adapter 与
+`legacy_only` 开关；`streamMessage` 不长期作为双默认路径存在。
+
 
 ## 6. 相关资料
 

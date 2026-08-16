@@ -4,23 +4,21 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 351/369: open chat default send path goes through AssistantFacade
- * (dispatchAssistant), not streamMessage dual path. Residual 369 adds Host
- * multi-engine execution profile selection (direct_turn / pi_readonly).
+ * via the thin `useAssistantDispatch` entry (residual 349) — never a direct
+ * `loadService.dispatchAssistant` bypass and never streamMessage. Residual 369
+ * adds Host multi-engine execution profile selection (direct_turn / pi_readonly).
  * Residual 393: stopGenerating issues Host cancel_run with client-owned runId.
  */
 describe('useAIChatSession open chat Host dispatch surface', () => {
   const session = readFileSync(resolve(__dirname, 'useAIChatSession.ts'), 'utf8');
   const types = readFileSync(resolve(__dirname, 'types.ts'), 'utf8');
   const cancelHelper = readFileSync(resolve(__dirname, 'hostOpenChatCancel.ts'), 'utf8');
-  const composer = readFileSync(
-    resolve(__dirname, '../components/AIFooterComposer.vue'),
-    'utf8',
-  );
+  const composer = readFileSync(resolve(__dirname, '../components/AIFooterComposer.vue'), 'utf8');
   const chatView = readFileSync(resolve(__dirname, '../views/AIChatView.vue'), 'utf8');
 
-  it('routes handleSendChat via dispatchAssistant with model selection', () => {
-    expect(session).toContain('loadService.dispatchAssistant');
-    expect(session).toContain("type: 'message'");
+  it('routes handleSendChat via useAssistantDispatch.dispatchMessage with model selection', () => {
+    expect(session).toContain('useAssistantDispatch({');
+    expect(session).toContain('assistantDispatch.dispatchMessage({');
     expect(session).toContain('providerId: selectedModel.providerId');
     expect(session).toContain('model: selectedModel.modelId');
     // Residual 369: open chat multi-engine Host profile selection.
@@ -29,7 +27,10 @@ describe('useAIChatSession open chat Host dispatch surface', () => {
     expect(session).toContain('selectExecutionProfile');
     expect(session).toContain("event.type === 'message.delta'");
     expect(session).toContain("event.type === 'message.completed'");
+    // The session must NOT branch directly on the transport / call the legacy path.
+    expect(session).not.toMatch(/loadService\.dispatchAssistant\s*\(/);
     expect(session).not.toMatch(/loadService\.streamMessage\s*\(/);
+    expect(session).not.toMatch(/loadService\.sendMessage\s*\(/);
     expect(types).toContain("'dispatchAssistant'");
     expect(types).not.toMatch(/'\s*streamMessage\s*'/);
   });
@@ -70,5 +71,4 @@ describe('useAIChatSession open chat Host dispatch surface', () => {
     // session still must not call streamMessage on default send
     expect(session).not.toMatch(/loadService\.streamMessage\s*\(/);
   });
-
 });

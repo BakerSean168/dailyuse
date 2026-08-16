@@ -14,6 +14,7 @@ export {
   DASHBOARD_SERVICE_KEY,
   MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
+  ASSISTANT_SURFACE_KEY,
 } from './di/keys';
 
 export { defaultModuleCapsules } from './di/navigation';

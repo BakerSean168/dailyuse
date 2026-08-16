@@ -46,6 +46,13 @@ import type {
   AssistantClientCommand,
   AssistantDispatchHandlers,
 } from '@memoflow/contracts/ai';
+import {
+  classifyAssistantDispatchFallback,
+  DEFAULT_ASSISTANT_DISPATCH_POLICY,
+  type AssistantDispatchObservedState,
+  type AssistantDispatchPolicy,
+} from './assistant-dispatch-policy';
+import { createResultClientError } from '../infrastructure-client/adapters/result-client-error';
 
 /**
  * Thin facade over AI API client ports for UI consumption.
@@ -66,6 +73,7 @@ export class AIClientService implements AIClientPort {
     private readonly analyticsQueryApi: AIAnalyticsQueryApiClient,
     private readonly agentRuntimeApi: AIAgentRuntimeApiClient,
     private readonly assistantApi: IAIAssistantApiClient,
+    private readonly dispatchPolicy: AssistantDispatchPolicy = DEFAULT_ASSISTANT_DISPATCH_POLICY,
   ) {
     this.getCapabilities = this.getCapabilities.bind(this);
     this.getEvaluationOverview = this.getEvaluationOverview.bind(this);
@@ -132,7 +140,9 @@ export class AIClientService implements AIClientPort {
   }
 
   setDefaultProvider(providerId: string) {
-    const request: SetDefaultAIProviderReq = { providerId: providerId as SetDefaultAIProviderReq['providerId'] };
+    const request: SetDefaultAIProviderReq = {
+      providerId: providerId as SetDefaultAIProviderReq['providerId'],
+    };
     return this.providerApi.setDefaultProvider(request);
   }
 
@@ -225,11 +235,142 @@ export class AIClientService implements AIClientPort {
     handlers: AssistantDispatchHandlers,
     signal?: AbortSignal,
   ) {
-    return this.assistantApi.dispatchAssistant(command, handlers, signal);
+    return this.dispatchAssistantWithPolicy(command, handlers, signal);
+  }
+
+  /**
+   * Host dispatch is always the default (plan §4.5 / Step D). `legacy_only`
+   * bypasses dispatch for direct-turn messages only; every other command fails
+   * explicitly. `prefer_dispatch` falls back to `streamMessage` only when the
+   * dispatch attempt is definitely unavailable AND produced zero events.
+   *
+   * Host dispatch 始终是默认（计划 §4.5 / Step D）。`legacy_only` 仅对
+   * direct-turn message 绕过 dispatch；其余 command 明确失败。`prefer_dispatch`
+   * 仅在 dispatch 明确不可用且未产出任何事件时回退 `streamMessage`。
+   */
+  private async dispatchAssistantWithPolicy(
+    command: AssistantClientCommand,
+    handlers: AssistantDispatchHandlers,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    if (this.dispatchPolicy === 'legacy_only') {
+      this.assertLegacyEligible(command);
+      return this.dispatchLegacyProjection(command, handlers, signal);
+    }
+
+    const observed: AssistantDispatchObservedState = { sawEvent: false };
+    try {
+      await this.assistantApi.dispatchAssistant(
+        command,
+        {
+          onEvent: (event) => {
+            observed.sawEvent = true;
+            handlers.onEvent?.(event);
+          },
+          onDone: (result) => handlers.onDone?.(result),
+        },
+        signal,
+      );
+      return;
+    } catch (error) {
+      if (this.dispatchPolicy === 'dispatch_only') {
+        throw error;
+      }
+      if (classifyAssistantDispatchFallback(error, command, observed)) {
+        return this.dispatchLegacyProjection(command, handlers, signal);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * `legacy_only` accepts only direct-turn message commands. pi_readonly and
+   * proposal/cancel commands never reach the legacy message endpoint.
+   *
+   * `legacy_only` 只接受 direct-turn message command。pi_readonly 与
+   * proposal/cancel command 永远不进入 legacy message endpoint。
+   */
+  private assertLegacyEligible(command: AssistantClientCommand): void {
+    if (command.type !== 'message' || command.executionProfileId === 'pi_readonly') {
+      throw createResultClientError(
+        'Legacy-only host does not support this assistant command',
+        'ASSISTANT_DISPATCH_UNSUPPORTED',
+      );
+    }
+  }
+
+  /**
+   * Project a legacy `streamMessage` into the normalized dispatch event stream.
+   * Preserves the command runId (generating one when omitted) and the persisted
+   * message. NEVER fabricates a Host `run.started` — fallback visibility is
+   * internal log/metric only (plan §4.3).
+   *
+   * 把 legacy `streamMessage` 投影为归一化 dispatch 事件流。保留 command
+   * runId（缺省时生成一个）与持久化消息。绝不伪造 Host `run.started` ——
+   * fallback 仅能通过内部 log/metric 观察（计划 §4.3）。
+   */
+  private async dispatchLegacyProjection(
+    command: AssistantClientCommand,
+    handlers: AssistantDispatchHandlers,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    if (command.type !== 'message') {
+      throw createResultClientError(
+        'Legacy projection requires a message command',
+        'ASSISTANT_DISPATCH_UNSUPPORTED',
+      );
+    }
+    const runId = command.runId ?? createFallbackDispatchRunId();
+    const request: SendMessageReq = {
+      conversationId: command.conversationId as SendMessageReq['conversationId'],
+      content: command.content,
+      providerId: command.providerId as SendMessageReq['providerId'] | undefined,
+      model: command.model,
+    };
+
+    let eventCount = 0;
+    await this.messageApi.streamMessage(
+      request,
+      {
+        onChunk: (chunk) => {
+          eventCount += 1;
+          handlers.onEvent?.({
+            type: 'message.delta',
+            runId,
+            content: chunk.content,
+          });
+        },
+        onDone: (result) => {
+          eventCount += 1;
+          handlers.onEvent?.({
+            type: 'message.completed',
+            runId,
+            status: 'completed',
+            content: result.assistantMessage?.content,
+            userMessage: result.userMessage
+              ? { id: String(result.userMessage.id), content: result.userMessage.content }
+              : undefined,
+            assistantMessage: result.assistantMessage
+              ? {
+                  id: String(result.assistantMessage.id),
+                  content: result.assistantMessage.content,
+                }
+              : undefined,
+          });
+          handlers.onDone?.({ eventCount });
+        },
+      },
+      signal,
+    );
   }
 }
 
 // ===== Factory =====
+
+export interface CreateAIClientServiceOptions {
+  /** Assistant dispatch rollout policy (plan §4.5). Defaults to prefer_dispatch. */
+  dispatchPolicy?: AssistantDispatchPolicy;
+}
 
 export function createAIClientService(
   capabilitiesApi: IAICapabilitiesApiClient,
@@ -243,6 +384,7 @@ export function createAIClientService(
   analyticsQueryApi: AIAnalyticsQueryApiClient,
   agentRuntimeApi: AIAgentRuntimeApiClient,
   assistantApi: IAIAssistantApiClient,
+  options?: CreateAIClientServiceOptions,
 ): AIClientService {
   return new AIClientService(
     capabilitiesApi,
@@ -256,5 +398,22 @@ export function createAIClientService(
     analyticsQueryApi,
     agentRuntimeApi,
     assistantApi,
+    options?.dispatchPolicy,
   );
+}
+
+/**
+ * Client-owned fallback run id for legacy projections when the command did not
+ * carry a runId (plan §4.2 keeps runId optional for existing callers). Never
+ * persisted as a Host run; used only to correlate projected events.
+ *
+ * command 未携带 runId 时，legacy 投影使用的客户端 run id（计划 §4.2 对既有
+ * 调用方保持 runId 可选）。它不是持久 Host run，仅用于关联投影事件。
+ */
+function createFallbackDispatchRunId(): string {
+  const random =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.floor(Math.random() * 1e9).toString(36)}`;
+  return `legacy:${random}`;
 }
