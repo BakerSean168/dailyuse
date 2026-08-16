@@ -28,6 +28,8 @@ import {
   maybeRenameConversation,
 } from './chatViewHelpers';
 import { unwrap } from '@memoflow/contracts/result';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { ASSISTANT_SURFACE_KEY } from '../../../di/keys';
 import type {
   AIWorkspaceRecentGoal,
   AIWorkspaceRecentKnowledgeNote,
@@ -44,6 +46,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   const { t } = useI18n();
   const router = useRouter();
   const { service, providers, loadProviders } = useAI();
+  // Residual 349: host-provided surface tag; shared composables never sniff window.
+  const assistantSurface = useStrictInject(ASSISTANT_SURFACE_KEY, 'AssistantSurface');
   const { goals, fetchGoals, createGoal } = useGoal();
   const recentKnowledgeNotes = useRecentKnowledgeNotes();
   const formatters = useAIFormatters();
@@ -133,6 +137,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   // 1. Chat session
   const chatSession = useAIChatSession({
     service,
+    surface: assistantSurface,
     getDefaultConversationName,
     onConversationCreated: (id) => _persistWorkflowAndModel?.(id),
   });
