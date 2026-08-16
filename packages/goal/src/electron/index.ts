@@ -86,12 +86,14 @@ import { withAuthenticatedValidation, withAuthenticatedValue } from './authentic
 import {
   ActivateFocusModeSchema,
   AddKeyResultInvocationSchema,
+  ArchiveExpiredInvocationSchema,
   BatchKeyResultWeightsInvocationSchema,
   CloneGoalInvocationSchema,
   CreateGoalFolderSchema,
   CreateGoalSchema,
   CreateRecordInvocationSchema,
   CreateReviewInvocationSchema,
+  DeactivateFocusModeInvocationSchema,
   DeleteGoalFolderInvocationSchema,
   DeleteGoalInvocationSchema,
   DeleteKeyResultInvocationSchema,
@@ -271,10 +273,11 @@ export function createGoalElectronModule(
           (args) => ({ params: { id: args[0] }, query: args[1] }),
         );
         installed.push(GoalChannels.DELETE);
-        ipcMain.handle(GoalChannels.ARCHIVE_EXPIRED, async () =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalController.archiveExpired(requestContext),
-          ),
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.ARCHIVE_EXPIRED,
+          ArchiveExpiredInvocationSchema,
+          (_data, requestContext) => goalController.archiveExpired(requestContext),
         );
         installed.push(GoalChannels.ARCHIVE_EXPIRED);
         // Issue #4 fix: route archive through auth + adapter validation
@@ -350,13 +353,16 @@ export function createGoalElectronModule(
           },
         );
         installed.push(GoalChannels.FOCUS_MODE_ACTIVATE);
-        ipcMain.handle(GoalChannels.FOCUS_MODE_DEACTIVATE, async (_event) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.FOCUS_MODE_DEACTIVATE,
+          DeactivateFocusModeInvocationSchema,
+          (_data, requestContext) => {
             logger.info('IPC 停用专注模式处理器', {
               identityId: requestContext.identityId,
             });
             return goalController.deactivateFocusMode(requestContext);
-          }),
+          },
         );
         installed.push(GoalChannels.FOCUS_MODE_DEACTIVATE);
         registerValidatedChannel(

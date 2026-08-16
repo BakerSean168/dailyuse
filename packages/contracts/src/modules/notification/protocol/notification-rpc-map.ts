@@ -33,11 +33,10 @@ import type {
   ReplayDeadLetterInvocation,
 } from '../api/notification-invocation.schemas';
 import type {
-  NotificationResponseSchema,
-  NotificationBatchResultSchema,
-  UnreadCountResponseSchema,
+  NotificationBatchResult,
+  NotificationResponse,
+  UnreadCountResponse,
 } from '../api/response-schemas';
-import { z } from 'zod';
 
 // === Notification Module RPC Map ===
 // Phase 4: every map entry corresponds to a live HTTP route / IPC channel with
@@ -49,31 +48,22 @@ export type NotificationRpcMap = {
   'notification:create': [CreateNotificationReq, CreateNotificationRes];
   'notification:update': [UpdateNotificationReq, UpdateNotificationRes];
   'notification:delete': [DeleteNotificationInvocation, null];
-  'notification:mark-read': [
-    MarkNotificationReadInvocation,
-    z.infer<typeof NotificationResponseSchema>,
-  ];
-  'notification:mark-all-read': [void, z.infer<typeof UnreadCountResponseSchema>];
+  'notification:mark-read': [MarkNotificationReadInvocation, NotificationResponse];
+  'notification:mark-all-read': [void, UnreadCountResponse];
   'notification:query': [NotificationQuery, NotificationListRes];
 
   // === Batch operations ===
   'notification:mark-as-read-batch': [MarkAsReadBatchReq, MarkAsReadBatchRes];
   'notification:delete-batch': [DeleteNotificationsBatchReq, DeleteNotificationsBatchRes];
-  'notification:clear-all': [
-    NotificationBatchInvocation,
-    z.infer<typeof NotificationBatchResultSchema>,
-  ];
+  'notification:clear-all': [NotificationBatchInvocation, NotificationBatchResult];
   'notification:cleanup-old': [CleanupOldNotificationsReq, CleanupOldNotificationsRes];
 
   // === Statistics ===
   'notification:get-stats': [GetNotificationStatsReq, GetNotificationStatsRes];
-  'notification:unread-count': [void, z.infer<typeof UnreadCountResponseSchema>];
+  'notification:unread-count': [void, UnreadCountResponse];
 
   // === Dead-letter ===
-  'notification:dead-letter-replay': [
-    ReplayDeadLetterInvocation,
-    z.infer<typeof NotificationResponseSchema>,
-  ];
+  'notification:dead-letter-replay': [ReplayDeadLetterInvocation, NotificationResponse];
 
   // === Actions (protocol-only; no live transport) ===
   'notification:execute-action': [ExecuteNotificationActionReq, ExecuteNotificationActionRes];

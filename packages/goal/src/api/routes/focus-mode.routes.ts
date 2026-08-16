@@ -7,6 +7,7 @@ import { Router, type RequestHandler } from 'express';
 import { RouteRegistrar, type OpenApiRegistryLike, successResponse } from '@memoflow/utils/result';
 import {
   ActivateFocusModeSchema,
+  DeactivateFocusModeInvocationSchema,
   ExtendFocusModeSchema,
   FocusModeClientDTOSchema,
 } from '@memoflow/contracts/goal';
@@ -54,15 +55,18 @@ export function registerFocusModeRoutes(
     (data, ctx) => controller.activateFocusMode(data, ctx),
   );
 
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/focus-mode/deactivate',
       summary: '停用专注模式',
       responses: { 200: successResponse(FocusModeClientDTOSchema, '停用成功') },
+      validation: {
+        schema: DeactivateFocusModeInvocationSchema,
+      },
     },
     [auth],
-    (_req, ctx) => controller.deactivateFocusMode(ctx),
+    (_data, ctx) => controller.deactivateFocusMode(ctx),
   );
 
   r.routeWithValidation(

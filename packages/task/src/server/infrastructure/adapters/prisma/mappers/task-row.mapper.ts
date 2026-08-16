@@ -18,22 +18,19 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 const DEPENDENCY_STATUS_VALUES = Object.values(DependencyStatus);
 const IMPORTANCE_LEVEL_VALUES = Object.values(ImportanceLevel);
 
-/** Legacy persistence default kept identical to the previous transport cast. */
-const LEGACY_DEPENDENCY_STATUS_NONE = 'NONE' as DependencyStatus;
-
 /**
  * Narrow a raw Prisma dependencyStatus string into the contract `DependencyStatus`.
- * Falls back to the legacy `'NONE'` marker for unknown/absent values, preserving
- * the exact runtime value the previous `as unknown as` cast produced.
+ * Unknown/absent values fall back to the legal `DependencyStatus.None` so the
+ * emitted value always stays inside the declared contract enum.
  * 把原始 Prisma dependencyStatus 字符串收窄为 contract `DependencyStatus`；
- * 未知/缺失值回退到 legacy `'NONE'` 标记，保持与旧 `as unknown as` 强转一致的
- * 运行时值。
+ * 未知/缺失值回退到合法的 `DependencyStatus.None`，确保输出值始终处于声明的
+ * contract enum 之内。
  */
 export function toDependencyStatus(value: string | null | undefined): DependencyStatus {
   if (value && (DEPENDENCY_STATUS_VALUES as string[]).includes(value)) {
     return value as DependencyStatus;
   }
-  return LEGACY_DEPENDENCY_STATUS_NONE;
+  return DependencyStatus.None;
 }
 
 /**

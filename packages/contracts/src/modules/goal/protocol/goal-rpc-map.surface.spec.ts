@@ -11,7 +11,13 @@
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { GoalRpcMap } from './goal-rpc-map';
+import type {
+  UpdateGoalFolderInvocation,
+  DeleteGoalFolderInvocation,
+} from '../api/goal-invocation.schemas';
+import type { UpdateGoalFolderRes } from '../api/goal-folder.dto';
 
 const protocolDir = __dirname;
 const rpcMapFile = resolve(protocolDir, 'goal-rpc-map.ts');
@@ -68,7 +74,7 @@ describe('goal RPC map surface (Phase 4 ledger)', () => {
     const imports = [...rpcMap.matchAll(/^import type .* from '(\.[^']+)'/gm)].map((m) => m[1]);
     expect(imports.length).toBeGreaterThan(0);
     for (const specifier of imports) {
-      expect(specifier, `import from '${specifier}'`).toMatch(/^\.\.\/api\//);
+      expect(specifier, `import from '${specifier}'`).toMatch(/^\.\.\/api($|\/)/);
     }
   });
 
@@ -123,5 +129,14 @@ describe('goal RPC map surface (Phase 4 ledger)', () => {
     for (const [key] of GOAL_LEDGER) {
       expect(mapBody, `ledger row ${key} must have a GoalRpcMap entry`).toContain(`'${key}':`);
     }
+  });
+
+  it('goal-folder tuples use the named invocation and response types (compile-time)', () => {
+    expectTypeOf<GoalRpcMap['goal-folder:update']>().toEqualTypeOf<
+      [UpdateGoalFolderInvocation, UpdateGoalFolderRes]
+    >();
+    expectTypeOf<GoalRpcMap['goal-folder:delete']>().toEqualTypeOf<
+      [DeleteGoalFolderInvocation, null]
+    >();
   });
 });

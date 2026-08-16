@@ -208,3 +208,26 @@ export const DeleteGoalFolderInvocationSchema = z.object({
   params: GoalFolderRouteIdParamsSchema,
 });
 export type DeleteGoalFolderInvocation = z.infer<typeof DeleteGoalFolderInvocationSchema>;
+
+// ============================================================================
+// Void commands (identity-scoped; no payload)
+// ============================================================================
+
+/**
+ * POST /archive-expired — void command. Accepts `undefined` (no body/args) or
+ * an empty object; rejects any payload so the identity-scoped command can never
+ * carry wire input.
+ * POST /archive-expired — void 命令。接受 `undefined`（无 body/args）或空对象；
+ * 拒绝任何 payload，使 identity 作用域命令永不携带 wire 输入。
+ */
+export const ArchiveExpiredInvocationSchema = z.union([z.undefined(), z.object({}).strict()]);
+export type ArchiveExpiredInvocation = z.infer<typeof ArchiveExpiredInvocationSchema>;
+
+/**
+ * POST /focus-mode/deactivate — void command. Same no-payload semantics as
+ * archive-expired (identity-scoped).
+ * POST /focus-mode/deactivate — void 命令。与 archive-expired 相同的无 payload
+ * 语义（identity 作用域）。
+ */
+export const DeactivateFocusModeInvocationSchema = z.union([z.undefined(), z.object({}).strict()]);
+export type DeactivateFocusModeInvocation = z.infer<typeof DeactivateFocusModeInvocationSchema>;

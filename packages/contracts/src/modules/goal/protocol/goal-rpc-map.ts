@@ -17,10 +17,9 @@ import type { GetKeyResultsReq, GetKeyResultsRes } from '../api/key-result.dto';
 import type {
   CreateGoalFolderReq,
   CreateGoalFolderRes,
-  DeleteGoalFolderReq,
   ListGoalFolderFilters,
   QueryGoalFoldersRes,
-  UpdateGoalFolderReq,
+  UpdateGoalFolderRes,
 } from '../api/goal-folder.dto';
 import type { GetFocusStatusReq, GetFocusStatusRes } from '../api/focus-session.dto';
 import type {
@@ -34,6 +33,7 @@ import type {
   CloneGoalInvocation,
   CreateRecordInvocation,
   CreateReviewInvocation,
+  DeleteGoalFolderInvocation,
   DeleteGoalInvocation,
   DeleteKeyResultInvocation,
   DeleteRecordInvocation,
@@ -45,11 +45,7 @@ import type {
   UpdateKeyResultProgressInvocation,
   UpdateReviewInvocation,
 } from '../api/goal-invocation.schemas';
-import type {
-  ActivateFocusModeReq,
-  ExtendFocusModeReq,
-  FocusModeDTO,
-} from '../value-objects/focus-mode';
+import type { ActivateFocusModeReq, ExtendFocusModeReq, FocusModeDTO } from '../api';
 
 /**
  * 定义 Goal 模块处理的 RPC 请求 [请求, 响应]
@@ -98,8 +94,8 @@ export type GoalRpcMap = {
 
   // Goal Folder Operations
   'goal-folder:create': [CreateGoalFolderReq, CreateGoalFolderRes];
-  'goal-folder:update': [UpdateGoalFolderInvocation, UpdateGoalFolderReq];
-  'goal-folder:delete': [DeleteGoalFolderReq, null];
+  'goal-folder:update': [UpdateGoalFolderInvocation, UpdateGoalFolderRes];
+  'goal-folder:delete': [DeleteGoalFolderInvocation, null];
   'goal-folder:list': [ListGoalFolderFilters, QueryGoalFoldersRes];
 
   // Focus Mode Operations

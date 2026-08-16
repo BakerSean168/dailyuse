@@ -52,3 +52,22 @@ export const NotificationBatchInvocationSchema = z.object({
   notificationIds: z.array(brandedId<NotificationId>()).min(1),
 });
 export type NotificationBatchInvocation = z.infer<typeof NotificationBatchInvocationSchema>;
+
+// ============================================================================
+// Void commands (identity-scoped; no payload)
+// ============================================================================
+
+/**
+ * PATCH /read-all — void command. Accepts `undefined` (no body/args) or an
+ * empty object; rejects any payload so the identity-scoped command can never
+ * carry wire input.
+ * PATCH /read-all — void 命令。接受 `undefined`（无 body/args）或空对象；
+ * 拒绝任何 payload，使 identity 作用域命令永不携带 wire 输入。
+ */
+export const MarkAllNotificationsReadInvocationSchema = z.union([
+  z.undefined(),
+  z.object({}).strict(),
+]);
+export type MarkAllNotificationsReadInvocation = z.infer<
+  typeof MarkAllNotificationsReadInvocationSchema
+>;

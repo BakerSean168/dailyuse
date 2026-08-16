@@ -1,53 +1,50 @@
 /**
  * OpenAPI generator check (Phase 4 Step 6).
  *
- * Registers representative mutation routes from the Goal/Task/Notification and
- * Governance modules through the real `RouteRegistrar` into a fresh
- * zod-to-openapi registry, then generates an OpenAPI document and asserts every
- * ledger HTTP operation has a path, a request schema and a response envelope /
+ * Registers the Goal/Task/Notification/Governance mutation routes through the
+ * PRODUCTION composition-root seams (`createGoalApiModule`,
+ * `createTaskApiModule`, `createNotificationApiModule`,
+ * `createGovernanceApiModule`) into a fresh zod-to-openapi registry, then
+ * generates an OpenAPI document. Every ledger HTTP mutation is asserted to
+ * have a path, a request schema (params/query/body) and a response envelope /
  * data schema. This proves the schema objects referenced by OpenAPI and the
  * runtime validation adapters are the SAME registered objects (no duplicate
- * inline components).
+ * inline components), including Goal void mutations, Task check-expired and
+ * Notification read-all.
  *
- * OpenAPI 生成检查（Phase 4 Step 6）：把 Goal/Task/Notification/Governance 的
- * 代表性 mutation 路由通过真实 `RouteRegistrar` 注册进全新 registry，再生成
- * OpenAPI 文档，断言每个 ledger HTTP operation 都有 path、request schema 与
- * response envelope/data schema。这证明 OpenAPI 引用的 schema 与 runtime
- * validation adapter 是同一注册对象（无重复 inline component）。
+ * OpenAPI 生成检查（Phase 4 Step 6）：通过生产组合根 seam
+ * （`createGoalApiModule` / `createTaskApiModule` / `createNotificationApiModule`
+ * / `createGovernanceApiModule`）把 Goal/Task/Notification/Governance 的
+ * mutation 路由注册进全新 registry，再生成 OpenAPI 文档。每个 ledger HTTP
+ * mutation 都断言有 path、request schema（params/query/body）与 response
+ * envelope/data schema。这证明 OpenAPI 引用的 schema 与 runtime validation
+ * adapter 是同一注册对象（无重复 inline component），包括 Goal void mutation、
+ * Task check-expired 与 Notification read-all。
  */
-import { OpenAPIRegistry, extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-import { z } from 'zod';
-import { describe, expect, it } from 'vitest';
+import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { Router } from 'express';
-import { RouteRegistrar } from '@memoflow/utils/result';
+import { describe, expect, it } from 'vitest';
 import type { OpenApiRegistryLike } from '@memoflow/utils/result';
-import { successResponse, errorResponse } from '@memoflow/utils/result';
-import { registerGoalCrudRoutes } from '@memoflow/goal/api/routes/goal.routes';
-import { GoalController } from '@memoflow/goal/server/transport/goal.controller';
-import { GoalFolderController } from '@memoflow/goal/server/transport/goal-folder.controller';
-import { registerGoalFolderRoutes } from '@memoflow/goal/api/routes/goal-folder.routes';
-import { registerKeyResultRoutes } from '@memoflow/goal/api/routes/key-result.routes';
-import { registerReviewRoutes } from '@memoflow/goal/api/routes/review.routes';
-import { registerRecordRoutes } from '@memoflow/goal/api/routes/goal-record.routes';
-import { registerFocusModeRoutes } from '@memoflow/goal/api/routes/focus-mode.routes';
-import { registerTaskTemplateRoutes } from '@memoflow/task/api/routes/task-template.routes';
-import { registerTaskInstanceRoutes } from '@memoflow/task/api/routes/task-instance.routes';
-import { registerTaskDependencyRoutes } from '@memoflow/task/api/routes/task-dependency.routes';
-import { TaskTemplateController } from '@memoflow/task/server/transport/task-template.controller';
-import { TaskInstanceController } from '@memoflow/task/server/transport/task-instance.controller';
-import { TaskDependencyController } from '@memoflow/task/server/transport/task-dependency.controller';
-import { registerGovernanceRulesRoutes } from '@memoflow/governance/api/routes/governance-rules.routes';
-import { GovernanceController } from '@memoflow/governance/server/transport/governance.controller';
-
-extendZodWithOpenApi(z);
+import { createGoalApiModule } from '@memoflow/goal/api';
+import { createTaskApiModule } from '@memoflow/task/api';
+import { createNotificationApiModule } from '@memoflow/notification/api';
+import { createGovernanceApiModule } from '@memoflow/governance/api';
 
 /**
- * Wraps the zod-to-openapi registry in the registrar's minimal interface.
- * 把 zod-to-openapi registry 包装成 registrar 的最小接口。
+ * Captures every `registerPath` raw route definition (with the exact Zod
+ * schema objects) while forwarding to the real zod-to-openapi registry for
+ * document generation. This lets the spec assert request/response schema
+ * identity AND generate the final document.
+ *
+ * 捕获每个 `registerPath` 原始路由定义（含精确 Zod schema 对象），同时转发到
+ * 真实 zod-to-openapi registry 用于生成文档。这使 spec 既能断言 request/
+ * response schema 同一性，也能生成最终文档。
  */
-class WrappedRegistry implements OpenApiRegistryLike {
+class CapturingRegistry implements OpenApiRegistryLike {
+  readonly rawPaths: Array<Record<string, unknown>> = [];
   constructor(readonly inner: OpenAPIRegistry) {}
   registerPath(route: Record<string, unknown>): void {
+    this.rawPaths.push(route);
     this.inner.registerPath(route as never);
   }
   register(name: string, schema: unknown): void {
@@ -55,127 +52,552 @@ class WrappedRegistry implements OpenApiRegistryLike {
   }
 }
 
-function createControllers() {
-  const empty = { execute: async () => ({ ok: true, data: {} }) } as never;
-  return {
-    goal: new GoalController(empty as never),
-    folder: new GoalFolderController(empty as never),
-    template: new TaskTemplateController(empty as never),
-    instance: new TaskInstanceController(empty as never),
-    dependency: new TaskDependencyController(empty as never),
-    governance: new GovernanceController(empty as never),
-  };
-}
-
 const auth = ((_req: unknown, _res: unknown, next: () => void) => next()) as never;
 const requireRole = () => auth;
 
+function createContext(registry: OpenApiRegistryLike) {
+  return {
+    app: Router() as never,
+    router: Router(),
+    middleware: { auth, requireRole },
+    openApiRegistry: registry,
+  };
+}
+
+/** Minimal module instance: only `api` / `start` / `dispose` are used by transport. */
+function fakeInstance() {
+  return {
+    api: {},
+    start: () => {},
+    dispose: () => {},
+  } as never;
+}
+
+async function registerAll(registry: CapturingRegistry) {
+  await createGoalApiModule({ instance: fakeInstance() }).register(createContext(registry));
+  await createTaskApiModule({ instance: fakeInstance() }).register(createContext(registry));
+  await createNotificationApiModule({ instance: fakeInstance() }).register(createContext(registry));
+  await createGovernanceApiModule({ instance: fakeInstance() }).register(createContext(registry));
+}
+
+type SchemaLike = { safeParse(data: unknown): { success: boolean } };
+
+function getBodySchema(def: Record<string, unknown>): SchemaLike | undefined {
+  const body = def.request?.body as Record<string, unknown> | undefined;
+  const content = body?.content as Record<string, unknown> | undefined;
+  const json = content?.['application/json'] as Record<string, unknown> | undefined;
+  return json?.schema as SchemaLike | undefined;
+}
+
+function getParamsSchema(def: Record<string, unknown>): SchemaLike | undefined {
+  return def.request?.params as SchemaLike | undefined;
+}
+
+function getQuerySchema(def: Record<string, unknown>): SchemaLike | undefined {
+  return def.request?.query as SchemaLike | undefined;
+}
+
+function getResponseSchema(def: Record<string, unknown>, status: number): SchemaLike | undefined {
+  const responses = def.responses as Record<string, unknown> | undefined;
+  const response = responses?.[String(status)] as Record<string, unknown> | undefined;
+  const content = response?.content as Record<string, unknown> | undefined;
+  const json = content?.['application/json'] as Record<string, unknown> | undefined;
+  return json?.schema as SchemaLike | undefined;
+}
+
+interface LedgerRow {
+  readonly module: 'goal' | 'task' | 'notification' | 'governance';
+  readonly method: string;
+  /** OpenAPI path (RouteRegistrar basePath + path). */
+  readonly path: string;
+  /** Success HTTP status (201 for creates). */
+  readonly status: number;
+  /** True when the mutation carries a JSON body (void commands do not). */
+  readonly hasBody: boolean;
+  /** True when the mutation validates `{ params }` (id-only / composite). */
+  readonly hasParams?: boolean;
+  /** True when the mutation validates a query input. */
+  readonly hasQuery?: boolean;
+}
+
+const GOAL_LEDGER: LedgerRow[] = [
+  { module: 'goal', method: 'post', path: '/api/v1/goals', status: 201, hasBody: true },
+  {
+    module: 'goal',
+    method: 'put',
+    path: '/api/v1/goals/{id}',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'delete',
+    path: '/api/v1/goals/{id}',
+    status: 200,
+    hasParams: true,
+    hasQuery: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/archive-expired',
+    status: 200,
+    hasBody: false,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/{id}/archive',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/{id}/activate',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/{id}/complete',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/{id}/clone',
+    status: 201,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'put',
+    path: '/api/v1/goals/{id}/key-results/batch-weight',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/{id}/key-results',
+    status: 201,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'put',
+    path: '/api/v1/goals/{id}/key-results/{krId}',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'patch',
+    path: '/api/v1/goals/{id}/key-results/{krId}/progress',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'delete',
+    path: '/api/v1/goals/{id}/key-results/{krId}',
+    status: 200,
+    hasParams: true,
+    hasQuery: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/{id}/reviews',
+    status: 201,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'put',
+    path: '/api/v1/goals/{id}/reviews/{reviewId}',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'delete',
+    path: '/api/v1/goals/{id}/reviews/{reviewId}',
+    status: 200,
+    hasParams: true,
+    hasQuery: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/{id}/key-results/{krId}/records',
+    status: 201,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'delete',
+    path: '/api/v1/goals/{id}/key-results/{krId}/records/{recordId}',
+    status: 200,
+    hasParams: true,
+    hasQuery: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/focus-mode/activate',
+    status: 200,
+    hasBody: true,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/focus-mode/deactivate',
+    status: 200,
+    hasBody: false,
+  },
+  {
+    module: 'goal',
+    method: 'post',
+    path: '/api/v1/goals/focus-mode/extend',
+    status: 200,
+    hasBody: true,
+  },
+  { module: 'goal', method: 'post', path: '/api/v1/goal-folders', status: 201, hasBody: true },
+  {
+    module: 'goal',
+    method: 'put',
+    path: '/api/v1/goal-folders/{id}',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'goal',
+    method: 'delete',
+    path: '/api/v1/goal-folders/{id}',
+    status: 200,
+    hasParams: true,
+  },
+];
+
+const TASK_LEDGER: LedgerRow[] = [
+  { module: 'task', method: 'post', path: '/api/v1/task-templates', status: 201, hasBody: true },
+  {
+    module: 'task',
+    method: 'put',
+    path: '/api/v1/task-templates/{id}',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'delete',
+    path: '/api/v1/task-templates/{id}',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-templates/{id}/activate',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-templates/{id}/pause',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-templates/{id}/archive',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-templates/{id}/generate-instances',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-templates/{id}/bind-goal',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-templates/{id}/unbind-goal',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-instances/{id}/complete',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-instances/{id}/uncomplete',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-instances/{id}/skip',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-instances/{id}/start',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'delete',
+    path: '/api/v1/task-instances/{id}',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-instances/check-expired',
+    status: 200,
+    hasBody: false,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/tasks/{taskId}/dependencies',
+    status: 201,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'put',
+    path: '/api/v1/tasks/dependencies/{id}',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'delete',
+    path: '/api/v1/tasks/dependencies/{id}',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/tasks/dependencies/validate',
+    status: 200,
+    hasBody: true,
+  },
+];
+
+const NOTIFICATION_LEDGER: LedgerRow[] = [
+  {
+    module: 'notification',
+    method: 'post',
+    path: '/api/v1/notifications',
+    status: 201,
+    hasBody: true,
+  },
+  {
+    module: 'notification',
+    method: 'delete',
+    path: '/api/v1/notifications/{id}',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'notification',
+    method: 'patch',
+    path: '/api/v1/notifications/{id}/read',
+    status: 200,
+    hasParams: true,
+  },
+  {
+    module: 'notification',
+    method: 'patch',
+    path: '/api/v1/notifications/read-all',
+    status: 200,
+    hasBody: false,
+  },
+  {
+    module: 'notification',
+    method: 'post',
+    path: '/api/v1/notifications/batch-read',
+    status: 200,
+    hasBody: true,
+  },
+  {
+    module: 'notification',
+    method: 'post',
+    path: '/api/v1/notifications/batch-delete',
+    status: 200,
+    hasBody: true,
+  },
+  {
+    module: 'notification',
+    method: 'post',
+    path: '/api/v1/notifications/cleanup',
+    status: 200,
+    hasBody: true,
+  },
+  {
+    module: 'notification',
+    method: 'put',
+    path: '/api/v1/notifications/preferences',
+    status: 200,
+    hasBody: true,
+  },
+];
+
+const GOVERNANCE_LEDGER: LedgerRow[] = [
+  {
+    module: 'governance',
+    method: 'post',
+    path: '/api/v1/governance/rules',
+    status: 201,
+    hasBody: true,
+  },
+];
+
+const ALL_LEDGER = [...GOAL_LEDGER, ...TASK_LEDGER, ...NOTIFICATION_LEDGER, ...GOVERNANCE_LEDGER];
+
 describe('OpenAPI generator ledger coverage (Phase 4)', () => {
-  it('every Goal mutation path has request + response envelope', () => {
-    const registry = new WrappedRegistry(new OpenAPIRegistry());
-    const controllers = createControllers();
-    const goalRouter = Router();
-    const folderRouter = Router();
-    const krRouter = Router({ mergeParams: true });
-    const reviewRouter = Router({ mergeParams: true });
-    const recordRouter = Router({ mergeParams: true });
-    const focusRouter = Router();
+  it('registers a path for every ledger mutation', async () => {
+    const registry = new CapturingRegistry(new OpenAPIRegistry());
+    await registerAll(registry);
 
-    registerGoalCrudRoutes(controllers.goal, { auth, requireRole }, registry);
-    registerGoalFolderRoutes(controllers.folder, { auth, requireRole }, registry);
-    registerKeyResultRoutes(controllers.goal, { auth, requireRole }, registry);
-    registerReviewRoutes(controllers.goal, { auth, requireRole }, registry);
-    registerRecordRoutes(controllers.goal, { auth, requireRole }, registry);
-    registerFocusModeRoutes(controllers.goal, { auth, requireRole }, registry);
-
-    void goalRouter;
-    void folderRouter;
-    void krRouter;
-    void reviewRouter;
-    void recordRouter;
-    void focusRouter;
-
-    const doc = new (require('@asteasolutions/zod-to-openapi').OpenApiGeneratorV3)(
-      registry.inner.definitions,
-    ).generateDocument({ openapi: '3.0.0', info: { title: 't', version: '1' } }) as {
-      paths: Record<string, unknown>;
-    };
-
-    // Ledger rows with body + response envelope.
-    expect(doc.paths['/api/v1/goals']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/archive']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/activate']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/complete']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/clone']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/key-results/batch-weight']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/key-results']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/key-results/{krId}']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/key-results/{krId}/progress']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/reviews']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/reviews/{reviewId}']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/key-results/{krId}/records']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/{id}/key-results/{krId}/records/{recordId}']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/focus-mode/activate']).toBeDefined();
-    expect(doc.paths['/api/v1/goals/focus-mode/extend']).toBeDefined();
-    expect(doc.paths['/api/v1/goal-folders']).toBeDefined();
-    expect(doc.paths['/api/v1/goal-folders/{id}']).toBeDefined();
+    expect(registry.rawPaths.length).toBeGreaterThan(0);
+    for (const row of ALL_LEDGER) {
+      const def = registry.rawPaths.find(
+        (candidate) =>
+          candidate.method === row.method &&
+          ((candidate.path as string) ?? '').replace(/\/$/, '') === row.path.replace(/\/$/, ''),
+      );
+      expect(def, `${row.module} ${row.method.toUpperCase()} ${row.path} registered`).toBeDefined();
+    }
   });
 
-  it('every Task mutation path has request + response envelope', () => {
-    const registry = new WrappedRegistry(new OpenAPIRegistry());
-    const controllers = createControllers();
-    const templateRouter = Router();
-    const instanceRouter = Router();
-    const dependencyRouter = Router();
+  it('binds request schema (params/query/body) and success response envelope for every ledger row', async () => {
+    const registry = new CapturingRegistry(new OpenAPIRegistry());
+    await registerAll(registry);
 
-    registerTaskTemplateRoutes(controllers.template, { auth }, registry);
-    registerTaskInstanceRoutes(controllers.instance, { auth }, registry);
-    registerTaskDependencyRoutes(controllers.dependency, { auth }, registry);
+    for (const row of ALL_LEDGER) {
+      const def = registry.rawPaths.find(
+        (candidate) =>
+          candidate.method === row.method &&
+          ((candidate.path as string) ?? '').replace(/\/$/, '') === row.path.replace(/\/$/, ''),
+      )!;
+      const label = `${row.module} ${row.method.toUpperCase()} ${row.path}`;
 
-    void templateRouter;
-    void instanceRouter;
-    void dependencyRouter;
+      // Request schema presence: body-bearing mutations bind a JSON body
+      // schema; void/params-only rows do not.
+      if (row.hasBody) {
+        expect(getBodySchema(def), `${label} body schema`).toBeDefined();
+      } else {
+        expect(getBodySchema(def), `${label} must not bind a body schema (void)`).toBeUndefined();
+      }
+      if (row.hasParams) {
+        expect(getParamsSchema(def), `${label} params schema`).toBeDefined();
+      }
+      if (row.hasQuery) {
+        expect(getQuerySchema(def), `${label} query schema`).toBeDefined();
+      }
 
-    const doc = new (require('@asteasolutions/zod-to-openapi').OpenApiGeneratorV3)(
-      registry.inner.definitions,
-    ).generateDocument({ openapi: '3.0.0', info: { title: 't', version: '1' } }) as {
-      paths: Record<string, unknown>;
-    };
-
-    expect(doc.paths['/api/v1/task-templates']).toBeDefined();
-    expect(doc.paths['/api/v1/task-templates/{id}']).toBeDefined();
-    expect(doc.paths['/api/v1/task-templates/{id}/activate']).toBeDefined();
-    expect(doc.paths['/api/v1/task-templates/{id}/pause']).toBeDefined();
-    expect(doc.paths['/api/v1/task-templates/{id}/archive']).toBeDefined();
-    expect(doc.paths['/api/v1/task-templates/{id}/generate-instances']).toBeDefined();
-    expect(doc.paths['/api/v1/task-templates/{id}/bind-goal']).toBeDefined();
-    expect(doc.paths['/api/v1/task-templates/{id}/unbind-goal']).toBeDefined();
-    expect(doc.paths['/api/v1/task-instances/{id}']).toBeDefined();
-    expect(doc.paths['/api/v1/task-instances/{id}/complete']).toBeDefined();
-    expect(doc.paths['/api/v1/task-instances/{id}/skip']).toBeDefined();
-    expect(doc.paths['/api/v1/task-instances/{id}/start']).toBeDefined();
-    expect(doc.paths['/api/v1/task-instances/{id}/uncomplete']).toBeDefined();
-    expect(doc.paths['/api/v1/tasks/{taskId}/dependencies']).toBeDefined();
-    expect(doc.paths['/api/v1/tasks/dependencies/validate']).toBeDefined();
-    expect(doc.paths['/api/v1/tasks/dependencies/{id}']).toBeDefined();
+      // Response envelope: success status carries the shared HttpResponse
+      // envelope whose `data` is a real (non-any) schema.
+      const responseSchema = getResponseSchema(def, row.status);
+      expect(responseSchema, `${label} ${row.status} response envelope`).toBeDefined();
+      const shape = (responseSchema as { shape?: Record<string, unknown> }).shape;
+      expect(shape, `${label} response envelope shape`).toBeDefined();
+      for (const key of ['ok', 'code', 'message', 'data', 'timestamp']) {
+        expect(shape![key], `${label} response envelope.${key}`).toBeDefined();
+      }
+      const dataSchema = shape!.data as { safeParse?: (value: unknown) => unknown } | undefined;
+      expect(
+        typeof dataSchema?.safeParse,
+        `${label} response data schema must be a Zod schema`,
+      ).toBe('function');
+    }
   });
 
-  it('governance create-rule path carries the validation-bound schema', () => {
-    const registry = new WrappedRegistry(new OpenAPIRegistry());
-    const controllers = createControllers();
-    const router = Router();
+  it('validates runtime schema objects are the same registered request objects (no duplicate inline schemas)', async () => {
+    const registry = new CapturingRegistry(new OpenAPIRegistry());
+    await registerAll(registry);
 
-    registerGovernanceRulesRoutes(controllers.governance, { auth, requireRole }, registry);
+    // Goal create body schema must reject malformed input and accept valid
+    // input — the SAME object the runtime adapter validates with.
+    const goalCreate = registry.rawPaths.find(
+      (candidate) => candidate.method === 'post' && candidate.path === '/api/v1/goals',
+    )!;
+    const goalCreateBody = getBodySchema(goalCreate)!;
+    expect(goalCreateBody.safeParse({ name: 'Ship', importance: 'Moderate' }).success).toBe(true);
+    expect(goalCreateBody.safeParse({ name: '', importance: 'Moderate' }).success).toBe(false);
 
-    void router;
+    // Task check-expired is a void command: no body schema, only a response.
+    const taskCheckExpired = registry.rawPaths.find(
+      (candidate) =>
+        candidate.method === 'post' && candidate.path === '/api/v1/task-instances/check-expired',
+    )!;
+    expect(getBodySchema(taskCheckExpired)).toBeUndefined();
+    expect(getResponseSchema(taskCheckExpired, 200)).toBeDefined();
 
-    const doc = new (require('@asteasolutions/zod-to-openapi').OpenApiGeneratorV3)(
-      registry.inner.definitions,
-    ).generateDocument({ openapi: '3.0.0', info: { title: 't', version: '1' } }) as {
-      paths: Record<string, unknown>;
-    };
-
-    expect(doc.paths['/api/v1/governance/rules']).toBeDefined();
+    // Notification read-all is a void command with an unread-count envelope.
+    const notifReadAll = registry.rawPaths.find(
+      (candidate) =>
+        candidate.method === 'patch' && candidate.path === '/api/v1/notifications/read-all',
+    )!;
+    expect(getBodySchema(notifReadAll)).toBeUndefined();
+    const readAllShape = (
+      getResponseSchema(notifReadAll, 200) as { shape: Record<string, unknown> }
+    ).shape;
+    expect(readAllShape.data).toBeDefined();
+    expect(
+      (readAllShape.data as { safeParse: (v: unknown) => { success: boolean } }).safeParse({
+        count: 5,
+      }).success,
+    ).toBe(true);
   });
 });

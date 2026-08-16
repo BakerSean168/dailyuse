@@ -7,7 +7,14 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { TaskTemplateId, TaskInstanceId, TaskDependencyId, IdentityId, TaskFolderId, SubtaskId } from '../../../primitives';
+import type {
+  TaskTemplateId,
+  TaskInstanceId,
+  TaskDependencyId,
+  IdentityId,
+  TaskFolderId,
+  SubtaskId,
+} from '../../../primitives';
 import {
   TaskGoalBindingSchema,
   TaskReminderConfigSchema,
@@ -145,6 +152,19 @@ export const CheckExpiredTaskInstancesResponseSchema = z.object({
   instances: z.array(TaskInstanceResponseSchema),
 });
 
+// ============ Inferred response aliases ============
+// ADR-047: the RPC map imports ONLY inferred types from `../api`; these aliases
+// are the type surface the protocol layer references (no `z.infer` in maps).
+// ADR-047：RPC map 只从 `../api` 导入推导类型；这些别名是 protocol 层引用的
+// 类型表面（map 内不再出现 `z.infer`）。
+// Note: CheckExpiredTaskInstancesRes and ValidateDependencyResponse live in
+// their respective dto files; they are not re-declared here.
+// 注意：CheckExpiredTaskInstancesRes 与 ValidateDependencyResponse 已定义在
+// 各自 dto 文件中，这里不重复声明。
+
+export type TaskTemplateResponse = z.infer<typeof TaskTemplateResponseSchema>;
+export type TaskInstanceResponse = z.infer<typeof TaskInstanceResponseSchema>;
+export type TaskDependencyResponse = z.infer<typeof TaskDependencyResponseSchema>;
 
 // Residual 837: TaskFolderClientDTO dual retired — sole TaskFolderResponseSchema + z.infer
 // (semantic type is z.infer alias in aggregates/task-folder-client.ts).
@@ -172,7 +192,6 @@ export const TaskTemplateHistoryResponseSchema = z.object({
   changes: z.unknown(),
   createdAt: z.number(),
 });
-
 
 // Residual 841: SubtaskClientDTO dual retired — sole SubtaskResponseSchema + z.infer
 // (semantic type is z.infer alias in entities/subtask-client.ts).

@@ -19,10 +19,11 @@ describe('task row mappers', () => {
     expect(toDependencyStatus('Blocked')).toBe(DependencyStatus.Blocked);
   });
 
-  it('toDependencyStatus falls back to the legacy NONE marker for absent values', () => {
-    expect(toDependencyStatus(null)).toBe('NONE' as DependencyStatus);
-    expect(toDependencyStatus(undefined)).toBe('NONE' as DependencyStatus);
-    expect(toDependencyStatus('unknown-value')).toBe('NONE' as DependencyStatus);
+  it('toDependencyStatus falls back to the legal None value for absent values', () => {
+    expect(toDependencyStatus(null)).toBe(DependencyStatus.None);
+    expect(toDependencyStatus(undefined)).toBe(DependencyStatus.None);
+    expect(toDependencyStatus('unknown-value')).toBe(DependencyStatus.None);
+    expect(toDependencyStatus('NONE')).toBe(DependencyStatus.None);
   });
 
   it('toImportanceLevel preserves known values', () => {

@@ -6,7 +6,12 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId, NotificationId, NotificationPreferenceId, NotificationTemplateId } from '../../../primitives';
+import type {
+  IdentityId,
+  NotificationId,
+  NotificationPreferenceId,
+  NotificationTemplateId,
+} from '../../../primitives';
 import { NotificationType } from '../value-objects/notification-type';
 import { NotificationCategory } from '../value-objects/notification-category';
 import { NotificationStatus } from '../value-objects/notification-status';
@@ -50,6 +55,15 @@ export const UnreadCountResponseSchema = z.object({
 // Residual 801: UnreadCountResponse dual retired from notification package port interface.
 export type UnreadCountResponse = z.infer<typeof UnreadCountResponseSchema>;
 
+// ============ Inferred response aliases ============
+// ADR-047: the RPC map imports ONLY inferred types from `../api`; these aliases
+// are the type surface the protocol layer references (no `z.infer` in maps).
+// ADR-047：RPC map 只从 `../api` 导入推导类型；这些别名是 protocol 层引用的
+// 类型表面（map 内不再出现 `z.infer`）。
+
+export type NotificationResponse = z.infer<typeof NotificationResponseSchema>;
+export type NotificationBatchResult = z.infer<typeof NotificationBatchResultSchema>;
+
 /**
  * Notification Preference Response Schema (residual 196)
  *
@@ -65,8 +79,6 @@ export const NotificationPreferenceResponseSchema = z.object({
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),
 });
-
-
 
 // Residual 839: NotificationTemplateClientDTO dual retired — sole NotificationTemplateResponseSchema + z.infer
 // (semantic type is z.infer alias in aggregates/notification-template-client.ts).

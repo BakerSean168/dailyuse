@@ -78,6 +78,7 @@ import { TaskChannels, type IElectronModuleContext } from '@memoflow/contracts/e
 import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
 import {
   BindTaskToGoalInvocationSchema,
+  CheckExpiredTaskInstancesInvocationSchema,
   CompleteTaskInstanceInvocationSchema,
   CreateTaskDependencyInvocationSchema,
   CreateTaskTemplateSchema,
@@ -459,10 +460,12 @@ export function createTaskElectronModule(
           }),
         );
         installed.push(TaskChannels.INSTANCE_SKIP);
-        ipcMain.handle(TaskChannels.INSTANCE_CHECK_EXPIRED, () =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            instanceController.checkExpired(requestContext.identityId),
-          ),
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.INSTANCE_CHECK_EXPIRED,
+          CheckExpiredTaskInstancesInvocationSchema,
+          (_data, requestContext) => instanceController.checkExpired(requestContext.identityId),
+          (args) => args,
         );
         installed.push(TaskChannels.INSTANCE_CHECK_EXPIRED);
 

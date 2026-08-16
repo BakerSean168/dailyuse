@@ -591,16 +591,18 @@ import { describe, expect, it } from 'vitest';
       expect(instanceDto).not.toMatch(/export interface TaskInstanceOperationRes\b/);
     });
 
-    it('rpc map uses shared TaskInstanceResponseSchema for complete/skip (Phase 4)', () => {
-      // Phase 4: the RPC map uses channel-aligned keys and z.infer response
-      // schemas (single source of truth) instead of kebab keys + OperationRes.
+    it('rpc map uses shared TaskInstanceResponse alias for complete/skip (Phase 4)', () => {
+      // Phase 4: the RPC map uses channel-aligned keys and the exported
+      // inferred response alias (ADR-047: maps import inferred types from
+      // `../api` only) instead of kebab keys + OperationRes or inline z.infer.
       expect(rpcMap).toMatch(
-        /'task:instance:complete':\s*\[\s*CompleteTaskInstanceInvocation,\s*z\.infer<typeof TaskInstanceResponseSchema>/,
+        /'task:instance:complete':\s*\[\s*CompleteTaskInstanceInvocation,\s*TaskInstanceResponse/,
       );
       expect(rpcMap).toMatch(
-        /'task:instance:skip':\s*\[\s*SkipTaskInstanceInvocation,\s*z\.infer<typeof TaskInstanceResponseSchema>/,
+        /'task:instance:skip':\s*\[\s*SkipTaskInstanceInvocation,\s*TaskInstanceResponse/,
       );
-      expect(rpcMap).toContain('TaskInstanceResponseSchema');
+      expect(rpcMap).toContain('TaskInstanceResponse');
+      expect(rpcMap).not.toContain('z.infer');
       expect(rpcMap).not.toContain('CompleteTaskInstanceRes');
       expect(rpcMap).not.toContain('SkipTaskInstanceRes');
     });

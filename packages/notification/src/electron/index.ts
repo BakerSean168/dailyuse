@@ -84,6 +84,7 @@ import { ok } from '@memoflow/contracts/result';
 import {
   CreateNotificationSchema,
   DeleteNotificationInvocationSchema,
+  MarkAllNotificationsReadInvocationSchema,
   MarkNotificationReadInvocationSchema,
   NotificationBatchInvocationSchema,
   UpdateNotificationPreferenceSchema,
@@ -282,11 +283,13 @@ export function createNotificationElectronModule(
           (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
         installed.push(NotificationChannels.MARK_READ);
-        ipcMain.handle(NotificationChannels.MARK_ALL_READ, async () => {
-          return withAuthenticatedIdentity(ctx, (identityId) =>
-            controller.markAllAsRead(identityId),
-          );
-        });
+        registerValidatedChannel(
+          ctx,
+          NotificationChannels.MARK_ALL_READ,
+          MarkAllNotificationsReadInvocationSchema,
+          (_data, requestContext) => controller.markAllAsRead(requestContext.identityId),
+          (args) => args,
+        );
         installed.push(NotificationChannels.MARK_ALL_READ);
         registerValidatedChannel(
           ctx,

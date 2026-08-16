@@ -14,6 +14,7 @@ import {
   errorResponse,
 } from '@memoflow/utils/result';
 import {
+  CheckExpiredTaskInstancesInvocationSchema,
   CheckExpiredTaskInstancesResponseSchema,
   TaskInstanceResponseSchema,
   GetTaskInstancesByRangeSchema,
@@ -83,7 +84,7 @@ export function registerTaskInstanceRoutes(
   );
 
   // POST /check-expired — Check and mark expired instances
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/check-expired',
@@ -91,9 +92,12 @@ export function registerTaskInstanceRoutes(
       responses: {
         200: successResponse(CheckExpiredTaskInstancesResponseSchema, '检查完成'),
       },
+      validation: {
+        schema: CheckExpiredTaskInstancesInvocationSchema,
+      },
     },
     [auth],
-    (_req, ctx) => controller.checkExpired(ctx.identityId),
+    (_data, ctx) => controller.checkExpired(ctx.identityId),
   );
 
   // GET / — List instances

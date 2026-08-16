@@ -27,6 +27,7 @@ import {
   GoalStatusCommandInvocationSchema,
   CloneGoalInvocationSchema,
   BatchKeyResultWeightsInvocationSchema,
+  ArchiveExpiredInvocationSchema,
 } from '@memoflow/contracts/goal';
 import type { ListGoalFilters } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
@@ -254,7 +255,7 @@ export function registerGoalCrudRoutes(
 
   // ==================== Goal Status Operations ====================
 
-  r.route(
+  r.routeWithValidation(
     {
       method: 'post',
       path: '/archive-expired',
@@ -262,9 +263,12 @@ export function registerGoalCrudRoutes(
       responses: {
         200: successResponse(ArchiveExpiredResSchema, '归档成功'),
       },
+      validation: {
+        schema: ArchiveExpiredInvocationSchema,
+      },
     },
     [auth],
-    (_req, ctx) => controller.archiveExpired(ctx),
+    (_data, ctx) => controller.archiveExpired(ctx),
   );
 
   // POST /:id/archive — 归档目标

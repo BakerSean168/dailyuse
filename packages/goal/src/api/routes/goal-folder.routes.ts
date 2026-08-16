@@ -14,6 +14,7 @@ import {
 } from '@memoflow/utils/result';
 import {
   CreateGoalFolderSchema,
+  DeleteGoalFolderInvocationSchema,
   GoalFolderClientDTOSchema,
   ListGoalFolderFiltersSchema,
   QueryGoalFoldersResSchema,
@@ -168,19 +169,23 @@ export function registerGoalFolderRoutes(
   );
 
   // DELETE /:id — 删除文件夹
-  r.route(
+  r.routeWithValidation(
     {
       method: 'delete',
       path: '/:id',
       summary: '删除目标文件夹',
-      request: { params: z.object({ id: brandedId<GoalFolderId>() }) },
+      request: { params: DeleteGoalFolderInvocationSchema.shape.params },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('文件夹不存在'),
       },
+      validation: {
+        schema: DeleteGoalFolderInvocationSchema,
+        projectInput: (req) => ({ params: req.params }),
+      },
     },
     [auth],
-    (req, ctx) => controller.delete(req.params!.id, ctx),
+    (data, ctx) => controller.delete(data.params.id, ctx),
   );
 
   return router;

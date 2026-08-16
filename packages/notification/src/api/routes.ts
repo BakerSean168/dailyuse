@@ -41,6 +41,7 @@ import {
   UnreadCountResponseSchema,
   NotificationPreferenceResponseSchema,
   DeleteNotificationInvocationSchema,
+  MarkAllNotificationsReadInvocationSchema,
   MarkNotificationReadInvocationSchema,
   NotificationIdParamsSchema,
   ReplayDeadLetterInvocationSchema,
@@ -200,7 +201,7 @@ export function registerNotificationRoutes(
   );
 
   // PATCH /read-all — Mark all notifications as read (must be before /:id)
-  r.route(
+  r.routeWithValidation(
     {
       method: 'patch',
       path: '/read-all',
@@ -208,9 +209,12 @@ export function registerNotificationRoutes(
       responses: {
         200: successResponse(UnreadCountResponseSchema, '操作成功'),
       },
+      validation: {
+        schema: MarkAllNotificationsReadInvocationSchema,
+      },
     },
     [auth],
-    (_req, ctx) => controller.markAllAsRead(ctx.identityId),
+    (_data, ctx) => controller.markAllAsRead(ctx.identityId),
   );
 
   // GET /preferences — must register before /:id (residual 196)
