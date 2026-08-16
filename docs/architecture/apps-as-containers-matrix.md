@@ -35,7 +35,6 @@ rg "async.*create|async.*update|async.*delete" apps/api/src/modules/ --type ts -
 
 以下位置是已知的"暂时留在 app 的厚逻辑"，已列入迁移计划：
 
-- `apps/api/src/shared/infrastructure/http/middlewares/performance.middleware.ts` — `metricsStore` 模块级单例，待改为工厂注入
 - `apps/ai-service/src/ai_service/services/goal_planning_service.py`（~1200 行）— goal planning，待拆分
 - `apps/ai-service/src/ai_service/evals/runner.py`（~1200 行）— eval runner，待拆分
 
@@ -43,3 +42,4 @@ rg "async.*create|async.*update|async.*delete" apps/api/src/modules/ --type ts -
 
 - `apps/api/src/modules/powersync/module.ts` — 已拆分为 token-issuer / crud-executor / snapshot-*
 - `apps/api/src/shared/infrastructure/cron/` — 已改为工厂模式（`createCronScheduler()`），调用方持有生命周期
+- `apps/api/src/shared/infrastructure/http/middlewares/performance.middleware.ts` — 已退役（RefArch Phase 6）：metrics 由按实例注入的 `HttpRequestMetricsRecorder` 取代

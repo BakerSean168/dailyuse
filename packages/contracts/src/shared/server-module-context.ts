@@ -12,14 +12,6 @@
  * app/router/middleware/OpenAPI。它刻意不携带 `db`——feature 模块必须通过
  * options 接收 database/adapters/application instance（由宿主 runtime
  * composer/factory 在 `register()` 之前绑定），因此注册绝不可能是第二个组合根。
- *
- * `ServerModuleContext<DbClient>` is retained ONLY as the legacy db-bearing
- * host-composition type (Step 5 removes it along with `context.db` consumers);
- * it extends the transport context and is never the transport contract itself.
- *
- * `ServerModuleContext<DbClient>` 仅作为遗留的 db-bearing host-composition 类型
- * 保留（Step 5 会连同 `context.db` 消费者一起移除）；它扩展 transport context，
- * 本身绝不是 transport 契约。
  */
 
 /**
@@ -80,20 +72,4 @@ export interface ServerModuleHandle<
    * 释放/停止同一绑定实例。必须幂等。
    */
   destroy?(): Promise<void> | void;
-}
-
-/**
- * LEGACY db-bearing host-composition context. Retained only for the interim
- * Step 5 transition (`apps/api` PowerSync/Dashboard and feature modules that
- * still Pick from it); do NOT use for new module contracts — use
- * `ServerTransportModuleContext`.
- *
- * 遗留的 db-bearing host-composition context。仅为 Step 5 过渡期保留
- * （`apps/api` 的 PowerSync/Dashboard 与仍从中 Pick 的 feature 模块）；
- * 新模块契约请使用 `ServerTransportModuleContext`。
- *
- * @typeParam DbClient - The concrete database client type (e.g. PrismaClient).
- */
-export interface ServerModuleContext<DbClient> extends ServerTransportModuleContext {
-  readonly db: DbClient;
 }

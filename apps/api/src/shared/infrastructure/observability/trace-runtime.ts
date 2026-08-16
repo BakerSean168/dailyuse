@@ -14,8 +14,6 @@
  * schema 拒绝（fail fast，绝不"已启用但静默无 exporter"）。
  */
 
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { createLogger, type ILogger } from '@memoflow/utils/logger';
 import { env } from '../config/env.js';
 import { NOOP_HTTP_REQUEST_TRACE } from './noop-http-request-trace';
@@ -68,6 +66,14 @@ export async function initializeTraceRuntime(): Promise<TraceRuntime> {
   // Env schema already fail-fasts when the endpoint/service name are missing.
   const endpoint = env.OTEL_EXPORTER_OTLP_ENDPOINT;
   const serviceName = env.OTEL_SERVICE_NAME ?? DEFAULT_OTEL_SERVICE_NAME;
+  // Load the OTel SDK only when tracing is enabled so a disabled runtime never
+  // imports @opentelemetry/sdk-node / exporter-trace-otlp-http.
+  // 仅在启用 tracing 时加载 OTel SDK，禁用时绝不 import
+  // @opentelemetry/sdk-node / exporter-trace-otlp-http。
+  const [{ NodeSDK }, { OTLPTraceExporter }] = await Promise.all([
+    import('@opentelemetry/sdk-node'),
+    import('@opentelemetry/exporter-trace-otlp-http'),
+  ]);
   const exporter = new OTLPTraceExporter({ url: endpoint });
   // NodeSDK wires a batch span processor around the exporter, so shutdown
   // force-flushes pending spans.
