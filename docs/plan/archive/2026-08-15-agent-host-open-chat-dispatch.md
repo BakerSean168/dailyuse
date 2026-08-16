@@ -31,30 +31,30 @@ surface，并为旧 Server/Desktop host 提供不会造成重复发送的窄兼�
 
 ### 2.1 目标
 
-- [ ] 冻结 `dispatchAssistant` 的请求、`AssistantEvent`、终止结果、HTTP SSE 和 Desktop IPC
+- [x] 冻结 `dispatchAssistant` 的请求、`AssistantEvent`、终止结果、HTTP SSE 和 Desktop IPC
       契约；跨边界 payload 均由共享 runtime schema 校验。
-- [ ] 保持 open chat 默认发送经 `dispatchAssistant` → `AssistantFacade` →
+- [x] 保持 open chat 默认发送经 `dispatchAssistant` → `AssistantFacade` →
       `DirectTurnEngine`，逐 delta 更新当前 assistant draft，并在完成时以持久消息替换 draft。
-- [ ] 将模型选择稳定映射为 `providerId + model`，Web 与 Desktop 均传递真实 `surface`。
-- [ ] 让 `useAIChatSession` 通过 `useAssistantDispatch` 薄入口发送，不再直接依赖 service 的
+- [x] 将模型选择稳定映射为 `providerId + model`，Web 与 Desktop 均传递真实 `surface`。
+- [x] 让 `useAIChatSession` 通过 `useAssistantDispatch` 薄入口发送，不再直接依赖 service 的
       dispatch 细节。
-- [ ] 补齐 server route、Web SSE、Desktop IPC main/renderer 和 Vue chat session 的行为测试，保留
+- [x] 补齐 server route、Web SSE、Desktop IPC main/renderer 和 Vue chat session 的行为测试，保留
       ADR-035 双 Turn Engine conformance 证据。
-- [ ] 当旧部署明确不支持 dispatch，open chat direct-turn 可回退现有 `streamMessage`；一旦 dispatch
+- [x] 当旧部署明确不支持 dispatch，open chat direct-turn 可回退现有 `streamMessage`；一旦 dispatch
       可能已经执行，则禁止重试旧路径，避免重复持久化消息。
-- [ ] 保持 host-composition：API/Electron transport 只绑定 composition root 创建的同一个 AI
+- [x] 保持 host-composition：API/Electron transport 只绑定 composition root 创建的同一个 AI
       instance，不在 transport 内创建数据库、repository、配置或第二个 runtime。
 
 ### 2.2 非目标
 
-- [ ] 不实现完整 Artifact 编辑器或 Task/Goal/Knowledge 共用的完整右侧工作台。
-- [ ] 不接入或 spawn 真实 Pi SDK/CLI；`pi_readonly` 继续使用现有受控 Turn Engine。
-- [ ] 不新增 Web ↔ API ↔ provider 或 Electron ↔ main ↔ provider 的跨端 E2E；本切片仅做分层行为
+- [x] 不实现完整 Artifact 编辑器或 Task/Goal/Knowledge 共用的完整右侧工作台。
+- [x] 不接入或 spawn 真实 Pi SDK/CLI；`pi_readonly` 继续使用现有受控 Turn Engine。
+- [x] 不新增 Web ↔ API ↔ provider 或 Electron ↔ main ↔ provider 的跨端 E2E；本切片仅做分层行为
       测试与人工 smoke。
-- [ ] 不实现 Conversation ↔ AgentRun/Host run 的持久多对一恢复模型。
-- [ ] 不改变 ProposalKernel 的审批/执行边界，不让 approve 自动执行业务 mutation。
-- [ ] 不删除 legacy `sendMessage`/`streamMessage`，也不迁移 app-react 的遗留调用方。
-- [ ] 不宣称父计划的统一助手、完整 multi-engine E2E、完整 Artifact 或全部 §20 已完成。
+- [x] 不实现 Conversation ↔ AgentRun/Host run 的持久多对一恢复模型。
+- [x] 不改变 ProposalKernel 的审批/执行边界，不让 approve 自动执行业务 mutation。
+- [x] 不删除 legacy `sendMessage`/`streamMessage`，也不迁移 app-react 的遗留调用方。
+- [x] 不宣称父计划的统一助手、完整 multi-engine E2E、完整 Artifact 或全部 §20 已完成。
 
 ## 3. 当前状态盘点
 
@@ -88,10 +88,10 @@ createAIModule(dependencies)     createAIModule(dependencies)
   -> HTTP SSE route                -> IPC start/event/done/error
 ```
 
-- [ ] `registerAIAssistantRoutes`、controller 和 Electron handlers 不创建第二个 AI module。
-- [ ] 新配置（例如 rollout policy）由 host composition 显式传入 client factory，不从 package 内部读取
+- [x] `registerAIAssistantRoutes`、controller 和 Electron handlers 不创建第二个 AI module。
+- [x] 新配置（例如 rollout policy）由 host composition 显式传入 client factory，不从 package 内部读取
       全局环境变量。
-- [ ] route/IPC lifecycle 随所属 instance start/dispose，不引入 module-global singleton。
+- [x] route/IPC lifecycle 随所属 instance start/dispose，不引入 module-global singleton。
 
 ### 3.3 测试现状
 
@@ -132,12 +132,12 @@ composable 行为测试。源码字符串 surface 只作为架构护栏，不能
 | `AssistantDispatchResultSchema` | `{ eventCount: nonnegative integer }`；类型名固定为 `AssistantDispatchResult`，替换各层匿名对象                                                                                                            |
 | `AssistantDispatchHandlers`     | `{ onEvent?, onDone? }` 的命名 client 类型，供 port、service 与两个 adapter 共用                                                                                                                           |
 
-- [ ] schema 与 TypeScript 类型只保留一个推导源；如需兼容现有类型引用，保留 type re-export，不复制
+- [x] schema 与 TypeScript 类型只保留一个推导源；如需兼容现有类型引用，保留 type re-export，不复制
       union。
-- [ ] 所有新增 public export 写 English-first、中文-second 的双语 JSDoc。
-- [ ] `identityId` 只存在于 server-side `AssistantCommand`，HTTP auth context 和 Desktop authenticated
+- [x] 所有新增 public export 写 English-first、中文-second 的双语 JSDoc。
+- [x] `identityId` 只存在于 server-side `AssistantCommand`，HTTP auth context 和 Desktop authenticated
       context 注入；client command 永远不携带。
-- [ ] payload 解析失败统一为 `ASSISTANT_PROTOCOL_ERROR`（或仓库已冻结的等价 code），且绝不触发
+- [x] payload 解析失败统一为 `ASSISTANT_PROTOCOL_ERROR`（或仓库已冻结的等价 code），且绝不触发
       legacy fallback。
 
 ### 4.2 Open-chat message request
@@ -263,25 +263,25 @@ legacy path 会重复保存 user/assistant message。fallback 资格必须由稳
 
 **改动**：
 
-- [ ] `AIApplicationPort.dispatchAssistant` 和 controller service 使用命名
+- [x] `AIApplicationPort.dispatchAssistant` 和 controller service 使用命名
       `AssistantDispatchResult/AssistantDispatchHandlers`；module 仍遍历同一个
       `runtime.assistantFacade.dispatch`。
-- [ ] controller 改用 contracts 共享 `AssistantClientCommandSchema`，strict reject `identityId`，再从
+- [x] controller 改用 contracts 共享 `AssistantClientCommandSchema`，strict reject `identityId`，再从
       `ExecutionContext` 注入 identity。
-- [ ] route 保持 `assistant/error/done` framing；锁定 no-cache、no-transform、keep-alive、
+- [x] route 保持 `assistant/error/done` framing；锁定 no-cache、no-transform、keep-alive、
       `X-Accel-Buffering: no` headers。
-- [ ] request aborted 或 response close 时 abort controller，移除 listeners，并且不再写 terminal frame。
-- [ ] controller `Result` failure 只写一个 transport `error`；正常迭代只写一个 `done`；始终安全 end。
-- [ ] `createAIApiModule({ instance })` 继续先 `instance.start()` 再挂载 `/ai/assistant`，失败回滚 route
+- [x] request aborted 或 response close 时 abort controller，移除 listeners，并且不再写 terminal frame。
+- [x] controller `Result` failure 只写一个 transport `error`；正常迭代只写一个 `done`；始终安全 end。
+- [x] `createAIApiModule({ instance })` 继续先 `instance.start()` 再挂载 `/ai/assistant`，失败回滚 route
       stack；不在 route factory 创建 runtime。
 
 **测试**：
 
-- [ ] controller：合法 message、各 command、body identity rejection、auth identity 注入、validation、
+- [x] controller：合法 message、各 command、body identity rejection、auth identity 注入、validation、
       abort signal 和 eventCount。
-- [ ] route：401 JSON 不启动 SSE；headers/framing；多 assistant frame 顺序；done；Result error；throw；
+- [x] route：401 JSON 不启动 SSE；headers/framing；多 assistant frame 顺序；done；Result error；throw；
       request aborted/response close；listener cleanup；write failure。
-- [ ] module lifecycle：已有 instance 只 start/dispose 一次，挂载失败不留下半套路由。
+- [x] module lifecycle：已有 instance 只 start/dispose 一次，挂载失败不留下半套路由。
 
 **门禁**：
 
@@ -311,26 +311,26 @@ pnpm --dir packages/ai exec vitest run --config vitest.config.ts src/server/tran
 
 **改动**：
 
-- [ ] Web adapter 对 `assistant` 和 `done` data 先 `JSON.parse` 再过共享 schema；malformed JSON、错误
+- [x] Web adapter 对 `assistant` 和 `done` data 先 `JSON.parse` 再过共享 schema；malformed JSON、错误
       shape 与 unknown event 统一为 protocol error。
-- [ ] Web 仅把 bootstrap `404/405/501` 规范化为 `ASSISTANT_DISPATCH_UNAVAILABLE`；已进入 2xx SSE
+- [x] Web 仅把 bootstrap `404/405/501` 规范化为 `ASSISTANT_DISPATCH_UNAVAILABLE`；已进入 2xx SSE
       后的任何 `error`/断流都不是 unavailable。
-- [ ] IPC adapter 对 EVENT/DONE/ERROR envelope 和内层 payload 做 runtime validation；保持 streamId
+- [x] IPC adapter 对 EVENT/DONE/ERROR envelope 和内层 payload 做 runtime validation；保持 streamId
       isolation、once settlement 与 listener/abort cleanup。
-- [ ] Desktop 缺 bridge 或 START handler 明确归一为 dispatch unavailable；START 成功后 ERROR/断流不得
+- [x] Desktop 缺 bridge 或 START handler 明确归一为 dispatch unavailable；START 成功后 ERROR/断流不得
       降级为 unavailable。
-- [ ] main START 在 authenticated context 注入 identity，拒绝 renderer identity；session 绑定
+- [x] main START 在 authenticated context 注入 identity，拒绝 renderer identity；session 绑定
       `webContentsId`；其他 sender 不能 cancel；sender destroyed 后不 push。
-- [ ] main 的 success/error/catch/abort/dispose 所有分支都删除 active session，且不双发 DONE/ERROR。
-- [ ] IPC channel 字符串保持不变；仅增加 contract tests，不另设 channel alias。
+- [x] main 的 success/error/catch/abort/dispose 所有分支都删除 active session，且不双发 DONE/ERROR。
+- [x] IPC channel 字符串保持不变；仅增加 contract tests，不另设 channel alias。
 
 **测试**：
 
-- [ ] HTTP：split/multi-line SSE、assistant/done schema、malformed frame、transport error、premature EOF、
+- [x] HTTP：split/multi-line SSE、assistant/done schema、malformed frame、transport error、premature EOF、
       abort，以及 404/405/501 的 unavailable 分类。
-- [ ] IPC renderer：并发 streamId 隔离、foreign event ignore、malformed payload、done/error once、
+- [x] IPC renderer：并发 streamId 隔离、foreign event ignore、malformed payload、done/error once、
       abort-before-start、abort-after-start、invoke rejection、所有 listener cleanup。
-- [ ] IPC main：start/event/done、application error、throw、cancel ownership、sender destroy、module dispose、
+- [x] IPC main：start/event/done、application error、throw、cancel ownership、sender destroy、module dispose、
       identity injection/rejection 和 active session cleanup。
 
 **门禁**：
@@ -358,27 +358,27 @@ pnpm --dir packages/ai exec vitest run --config vitest.config.ts src/infrastruct
 
 **改动**：
 
-- [ ] 新增 host-provided `AssistantSurface` injection（或等价显式 option）；Web 提供 `web`，Desktop
+- [x] 新增 host-provided `AssistantSurface` injection（或等价显式 option）；Web 提供 `web`，Desktop
       renderer 提供 `desktop`，shared composable 不读 `window` 猜平台。
-- [ ] 清理 `useAssistantDispatch` 的过时注释；入口继续只接 `dispatchAssistant`，不接
+- [x] 清理 `useAssistantDispatch` 的过时注释；入口继续只接 `dispatchAssistant`，不接
       `streamMessage`。
-- [ ] `useAIChatSession` 初始化并调用 `useAssistantDispatch().dispatchMessage`；移除对
+- [x] `useAIChatSession` 初始化并调用 `useAssistantDispatch().dispatchMessage`；移除对
       `loadService.dispatchAssistant` 的直接调用，cancel/proposal 仍可按各自既有入口渐进收口。
-- [ ] command 原样带 client-owned `runId`、当前 `executionProfileId`、注入的 `surface`、
+- [x] command 原样带 client-owned `runId`、当前 `executionProfileId`、注入的 `surface`、
       `selectedModel.providerId` 和 `selectedModel.modelId`。
-- [ ] `message.delta` 只追加当前 run 的 assistant draft；`message.completed` 以持久 message id/content
+- [x] `message.delta` 只追加当前 run 的 assistant draft；`message.completed` 以持久 message id/content
       替换 draft；error/abort 不残留 generating 状态。
-- [ ] 保持 per-conversation model selection 和 open-chat Host turn memory，不新增模型默认值的第二份
+- [x] 保持 per-conversation model selection 和 open-chat Host turn memory，不新增模型默认值的第二份
       state。
 
 **测试**：
 
-- [ ] `useAssistantDispatch`：command 映射、identity guard、event order、abort、state reset，以及显式
+- [x] `useAssistantDispatch`：command 映射、identity guard、event order、abort、state reset，以及显式
       Web/Desktop surface。
-- [ ] `useAIChatSession` 行为：创建 conversation 后 dispatch；选择模型透传；多 delta 实时累加；
+- [x] `useAIChatSession` 行为：创建 conversation 后 dispatch；选择模型透传；多 delta 实时累加；
       completed 替换两个 draft；failed/abort；server 改写 runId；完成后刷新 conversation list。
-- [ ] 分别用 `web` 与 `desktop` host option 断言 command surface；删除硬编码 Web 的 source-only 假绿。
-- [ ] 保留 surface test 只锁“Vue open chat 不直接调用 `streamMessage/sendMessage`”和薄入口使用关系。
+- [x] 分别用 `web` 与 `desktop` host option 断言 command surface；删除硬编码 Web 的 source-only 假绿。
+- [x] 保留 surface test 只锁“Vue open chat 不直接调用 `streamMessage/sendMessage`”和薄入口使用关系。
 
 **门禁**：
 
@@ -406,32 +406,32 @@ service 内部。
 
 **改动**：
 
-- [ ] `AIClientService.dispatchAssistant` 包装 onEvent 并记录是否已见 event；默认先调用 assistant
+- [x] `AIClientService.dispatchAssistant` 包装 onEvent 并记录是否已见 event；默认先调用 assistant
       adapter。
-- [ ] 新增纯函数 `classifyAssistantDispatchFallback(error, command, observedState)`；只实现 §4.5 的白名单，
+- [x] 新增纯函数 `classifyAssistantDispatchFallback(error, command, observedState)`；只实现 §4.5 的白名单，
       所有未知值默认 fail-closed。
-- [ ] eligible 时由 service 内部把 message 映射到 `messageApi.streamMessage`，将 chunk/completion 投影为
+- [x] eligible 时由 service 内部把 message 映射到 `messageApi.streamMessage`，将 chunk/completion 投影为
       `message.delta/message.completed`，保留 command runId 和持久 message 内容。
-- [ ] UI-facing `AIChatService` 仍不暴露 `streamMessage`；Vue 不分支判断 transport，不展示
+- [x] UI-facing `AIChatService` 仍不暴露 `streamMessage`；Vue 不分支判断 transport，不展示
       fallback-specific product event。
-- [ ] factories 接受 host-provided `prefer_dispatch | dispatch_only | legacy_only`；生产缺省
+- [x] factories 接受 host-provided `prefer_dispatch | dispatch_only | legacy_only`；生产缺省
       `prefer_dispatch`，紧急回滚必须显式配置并记录 telemetry。
-- [ ] `legacy_only` 对 `pi_readonly`/proposal/cancel 返回明确 unsupported，不把它们错误发送到 message
+- [x] `legacy_only` 对 `pi_readonly`/proposal/cancel 返回明确 unsupported，不把它们错误发送到 message
       endpoint。
-- [ ] 修订 ADR/path map，记录该窄版本兼容例外、禁止条件和移除条件；不得把 legacy 重新描述为产品
+- [x] 修订 ADR/path map，记录该窄版本兼容例外、禁止条件和移除条件；不得把 legacy 重新描述为产品
       默认路径。
 
 **测试**：
 
-- [ ] dispatch success：无 legacy 调用，delta/completed 原样转发。
-- [ ] route/handler definitely unavailable 且未见 event：恰好 fallback 一次，并透传
+- [x] dispatch success：无 legacy 调用，delta/completed 原样转发。
+- [x] route/handler definitely unavailable 且未见 event：恰好 fallback 一次，并透传
       conversation/content/provider/model。
-- [ ] 收到 `run.started` 后断流：拒绝 fallback；普通 network/timeout/abort/auth/validation/provider/
+- [x] 收到 `run.started` 后断流：拒绝 fallback；普通 network/timeout/abort/auth/validation/provider/
       protocol error 同样拒绝。
-- [ ] `pi_readonly`、proposal、cancel 永不 fallback。
-- [ ] fallback chunk 顺序、completed 持久 message、abort 和 legacy failure 正确投影；不得伪造
+- [x] `pi_readonly`、proposal、cancel 永不 fallback。
+- [x] fallback chunk 顺序、completed 持久 message、abort 和 legacy failure 正确投影；不得伪造
       `run.started`。
-- [ ] `dispatch_only/legacy_only` flag 行为和 host 默认值；无配置时仍先 dispatch。
+- [x] `dispatch_only/legacy_only` flag 行为和 host 默认值；无配置时仍先 dispatch。
 
 **门禁**：
 
@@ -481,38 +481,38 @@ pnpm nx run memoflow:docs-check --skip-nx-cache
 
 ### 6.3 Focused smoke（不新增跨端 E2E）
 
-- [ ] Web：选择非默认 provider/model，发送普通消息；首个 delta 到达即显示，完成后刷新仍为同一持久
+- [x] Web：选择非默认 provider/model，发送普通消息；首个 delta 到达即显示，完成后刷新仍为同一持久
       user/assistant message。
-- [ ] Web：模拟 dispatch route 404，direct_turn 走一次 legacy；模拟 500/断流/收到 `run.started` 后断线
+- [x] Web：模拟 dispatch route 404，direct_turn 走一次 legacy；模拟 500/断流/收到 `run.started` 后断线
       时不 fallback。
-- [ ] Web：stop 后 UI 为 aborted，不补发 completed，不触发 fallback。
-- [ ] Desktop：同一 renderer 完成 START → EVENT* → DONE；取消只影响自己的 stream，关闭窗口后无残余
+- [x] Web：stop 后 UI 为 aborted，不补发 completed，不触发 fallback。
+- [x] Desktop：同一 renderer 完成 START → EVENT* → DONE；取消只影响自己的 stream，关闭窗口后无残余
       listener/session。
-- [ ] Desktop：command 标注 `surface: desktop`，Web 标注 `surface: web`；两端选择的 provider/model 均到达
+- [x] Desktop：command 标注 `surface: desktop`，Web 标注 `surface: web`；两端选择的 provider/model 均到达
       DirectTurnEngine。
-- [ ] `pi_readonly` unavailable 时明确失败，绝不落入 legacy direct chat。
+- [x] `pi_readonly` unavailable 时明确失败，绝不落入 legacy direct chat。
 
 ## 7. 切片完成标准
 
 以下只对本 dispatch slice 生效，并与父计划 §19/§20 对齐；不会勾选父计划的完整统一助手完成定义。
 
-- [ ] residual 343：既有 `AssistantFacade` message dispatch 事件序列有共享 contract 和行为证据。
-- [ ] residual 345：instance-bound server route 以 authenticated identity 输出合法 SSE，disconnect 可 abort，
+- [x] residual 343：既有 `AssistantFacade` message dispatch 事件序列有共享 contract 和行为证据。
+- [x] residual 345：instance-bound server route 以 authenticated identity 输出合法 SSE，disconnect 可 abort，
       route 有 focused behavior tests。
-- [ ] residual 347/353：Web HTTP/SSE 与 Desktop IPC 通过同一 schema，Desktop start/cancel/push lifecycle
+- [x] residual 347/353：Web HTTP/SSE 与 Desktop IPC 通过同一 schema，Desktop start/cancel/push lifecycle
       无 listener/session 泄漏。
-- [ ] residual 349：open chat 生产调用通过 `useAssistantDispatch`；thin entry 无业务编排、无 legacy API
+- [x] residual 349：open chat 生产调用通过 `useAssistantDispatch`；thin entry 无业务编排、无 legacy API
       依赖。
-- [ ] residual 351：默认 send 先 dispatch；live delta、completion、abort/error 和 selected model 在 Web/
+- [x] residual 351：默认 send 先 dispatch；live delta、completion、abort/error 和 selected model 在 Web/
       Desktop 行为测试中成立。
-- [ ] 旧 host 只有在 definite unavailable + zero-event + direct_turn message 时 fallback；任何可能已执行的
+- [x] 旧 host 只有在 definite unavailable + zero-event + direct_turn message 时 fallback；任何可能已执行的
       请求都不会双发。
-- [ ] `createAIApiModule({ instance })` / `createAIElectronModule({ instance })` ownership 不变，composition
+- [x] `createAIApiModule({ instance })` / `createAIElectronModule({ instance })` ownership 不变，composition
       tests 保持通过。
-- [ ] 两个既有 Turn Engine conformance/journey suites 保持绿；这只证明本切片未破坏现有 isolation，
+- [x] 两个既有 Turn Engine conformance/journey suites 保持绿；这只证明本切片未破坏现有 isolation，
       **不代表**完整 multi-engine 跨端 E2E 已完成。
-- [ ] focused tests、inventory、governance、docs-check 和 smoke 全部通过。
-- [ ] 父计划仍保持部分完成：完整 Artifact、Pi spawn、Conversation ↔ run 持久多对一、跨端 E2E 继续
+- [x] focused tests、inventory、governance、docs-check 和 smoke 全部通过。
+- [x] 父计划仍保持部分完成：完整 Artifact、Pi spawn、Conversation ↔ run 持久多对一、跨端 E2E 继续
       open。
 
 ## 8. 风险与回滚
@@ -533,11 +533,11 @@ pnpm nx run memoflow:docs-check --skip-nx-cache
 
 ## 9. 交付顺序
 
-- [ ] PR 0：共享 contract/schema、双语 JSDoc 和兼容判定表；无行为切换。
-- [ ] PR A：server controller/route 收口与行为测试。
-- [ ] PR B：Web/Desktop transport runtime validation 与 IPC lifecycle 测试。
-- [ ] PR C：Vue 薄入口接管、surface 注入、model/live-delta 行为测试。
-- [ ] PR D：client-layer guarded fallback、rollout policy、ADR/path-map 更新与 smoke。
+- [x] PR 0：共享 contract/schema、双语 JSDoc 和兼容判定表；无行为切换。
+- [x] PR A：server controller/route 收口与行为测试。
+- [x] PR B：Web/Desktop transport runtime validation 与 IPC lifecycle 测试。
+- [x] PR C：Vue 薄入口接管、surface 注入、model/live-delta 行为测试。
+- [x] PR D：client-layer guarded fallback、rollout policy、ADR/path-map 更新与 smoke。
 
 每个 PR 独立可回滚、通过自己的 direct Vitest 和治理门禁；只有 A–D 全部完成后，才可在父计划中把
 343/345/347/349/351/353 标记为本切片闭环，且仍不得宣称 ADR-035 全量完成。

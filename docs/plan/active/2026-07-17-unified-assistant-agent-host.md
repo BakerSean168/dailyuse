@@ -19,7 +19,7 @@ updated: 2026-07-22T00:00:00
 
 本文执行 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)，承接 Open Design、`earendil-works/pi`、当前 TypeScript AI 模块、Python LangGraph runtime、checkpoint、tool executor 和 Obsidian/GitHub 知识仓库方案的专项调研。
 
-状态：**实施中**（阶段 0/1/2/3/4 部分起步 + AssistantFacade residual 343 + 阶段 6 CustomModelGateway 部分；完成定义未宣称）。  
+状态：**主体完成（2026-08-16 更新）**——Host open-chat dispatch（residual 343/345/349/351）经 Step A-D（PR #218/#222）完成；Host task.create 链 residual 419-449 经审计全部实现（PR #225 文档修正）；阶段 6 CustomModelGateway 已落地。完成定义未宣称：Pi/CLI/完整 Host UI、跨进程 durable LangGraph Turn Engine、完整 Task LangGraph 工作流仍 open。  
 夜间持续协议：[`2026-07-25-nightly-hygiene-and-agent-host.md`](./2026-07-25-nightly-hygiene-and-agent-host.md)。  
 代码优雅化地基（dual 税 / 多路径 / 归档，为后续 Host 切片铺垫）：[`2026-07-26-codebase-elegance-foundation.md`](../archive/2026-07-26-codebase-elegance-foundation.md)。
 
