@@ -54,25 +54,35 @@ class CloudAuthHttpClient implements CloudAuthWebClientPort {
         headers: body === undefined ? undefined : { 'content-type': 'application/json' },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
-      const payload = await response.json().catch(() => null) as T | {
-        message?: string;
-        error?: string;
-        error_description?: string;
-      } | null;
+      const payload = (await response.json().catch(() => null)) as
+        | T
+        | {
+            code?: string;
+            message?: string;
+            error?: string;
+            error_description?: string;
+          }
+        | null;
       if (!response.ok) {
-        const errorPayload = payload && typeof payload === 'object'
-          ? payload as Record<string, unknown>
-          : null;
+        const errorPayload =
+          payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
         const message = errorPayload
-          ? (typeof errorPayload.message === 'string'
-              ? errorPayload.message
-              : typeof errorPayload.error_description === 'string'
-                ? errorPayload.error_description
-                : undefined)
+          ? typeof errorPayload.message === 'string'
+            ? errorPayload.message
+            : typeof errorPayload.error_description === 'string'
+              ? errorPayload.error_description
+              : typeof errorPayload.code === 'string' && typeof errorPayload.error === 'string'
+                ? errorPayload.error
+                : undefined
           : '云端认证请求失败';
-        const code = errorPayload && typeof errorPayload.error === 'string'
-          ? errorPayload.error.toUpperCase()
-          : response.status === 401 ? 'UNAUTHORIZED' : 'AUTH_REQUEST_FAILED';
+        const code =
+          errorPayload && typeof errorPayload.code === 'string'
+            ? errorPayload.code.toUpperCase()
+            : errorPayload && typeof errorPayload.error === 'string'
+              ? errorPayload.error.toUpperCase()
+              : response.status === 401
+                ? 'UNAUTHORIZED'
+                : 'AUTH_REQUEST_FAILED';
         return fail({ code, message: message ?? '云端认证请求失败' });
       }
       return ok(payload as T);
@@ -109,15 +119,22 @@ class CloudAuthHttpClient implements CloudAuthWebClientPort {
     });
   }
 
-  signOut() { return this.request<void>('/sign-out', {}); }
+  signOut() {
+    return this.request<void>('/sign-out', {});
+  }
 
   async getSession(): Promise<Result<CloudSessionState>> {
-    const result = await this.request<{ user: BetterAuthUser; session: BetterAuthSession } | null>('/get-session');
+    const result = await this.request<{ user: BetterAuthUser; session: BetterAuthSession } | null>(
+      '/get-session',
+    );
     if (!result.ok) return result;
     if (!result.data) return ok({ account: null, session: null });
     return ok({
       account: account(result.data.user),
-      session: { id: result.data.session.id, expiresAt: new Date(result.data.session.expiresAt).toISOString() },
+      session: {
+        id: result.data.session.id,
+        expiresAt: new Date(result.data.session.expiresAt).toISOString(),
+      },
     });
   }
 
@@ -127,25 +144,31 @@ class CloudAuthHttpClient implements CloudAuthWebClientPort {
       redirectTo: this.webCallbackUrl('/auth?scene=reset'),
     });
   }
-  resetPassword(input: { token: string; newPassword: string }) { return this.request<void>('/reset-password', input); }
-  changePassword(input: { currentPassword: string; newPassword: string }) { return this.request<void>('/change-password', input); }
+  resetPassword(input: { token: string; newPassword: string }) {
+    return this.request<void>('/reset-password', input);
+  }
+  changePassword(input: { currentPassword: string; newPassword: string }) {
+    return this.request<void>('/change-password', input);
+  }
   beginGithubSignIn(callbackURL = '/') {
     return this.request<{ url: string }>('/sign-in/social', { provider: 'github', callbackURL });
   }
   getDeviceAuthorization(userCode: string) {
     return this.request<{ user_code: string; status: 'pending' | 'approved' | 'denied' }>(
       `/device?user_code=${encodeURIComponent(userCode)}`,
-    ).then((result) => result.ok
-      ? ok({ userCode: result.data.user_code, status: result.data.status })
-      : result);
+    ).then((result) =>
+      result.ok ? ok({ userCode: result.data.user_code, status: result.data.status }) : result,
+    );
   }
   approveDeviceAuthorization(userCode: string) {
-    return this.request<{ success: boolean }>('/device/approve', { userCode })
-      .then((result) => result.ok ? ok(undefined) : result);
+    return this.request<{ success: boolean }>('/device/approve', { userCode }).then((result) =>
+      result.ok ? ok(undefined) : result,
+    );
   }
   denyDeviceAuthorization(userCode: string) {
-    return this.request<{ success: boolean }>('/device/deny', { userCode })
-      .then((result) => result.ok ? ok(undefined) : result);
+    return this.request<{ success: boolean }>('/device/deny', { userCode }).then((result) =>
+      result.ok ? ok(undefined) : result,
+    );
   }
 
   private webCallbackUrl(path: string): string {
@@ -155,12 +178,14 @@ class CloudAuthHttpClient implements CloudAuthWebClientPort {
 
 class CloudAuthIpcClient implements CloudAuthDesktopClientPort {
   constructor(private readonly ipc: IResultIpcClient) {}
-  signOut() { return this.ipc.invoke<void>(CloudAuthChannels.SIGN_OUT); }
-  getSession() { return this.ipc.invoke<CloudSessionState>(CloudAuthChannels.SESSION); }
+  signOut() {
+    return this.ipc.invoke<void>(CloudAuthChannels.SIGN_OUT);
+  }
+  getSession() {
+    return this.ipc.invoke<CloudSessionState>(CloudAuthChannels.SESSION);
+  }
   beginCloudConnection() {
-    return this.ipc.invoke<DesktopCloudConnectionAttempt>(
-      CloudAuthChannels.CLOUD_CONNECTION_BEGIN,
-    );
+    return this.ipc.invoke<DesktopCloudConnectionAttempt>(CloudAuthChannels.CLOUD_CONNECTION_BEGIN);
   }
   getCurrentCloudConnection() {
     return this.ipc.invoke<DesktopCloudConnectionAttempt | null>(
@@ -182,7 +207,8 @@ export function createCloudAuthHttpClient(
   _httpClient?: IResultHttpClient,
   options?: { baseUrl?: string },
 ): CloudAuthWebClientPort {
-  const configured = options?.baseUrl ?? (typeof window !== 'undefined' ? window.location.origin : '');
+  const configured =
+    options?.baseUrl ?? (typeof window !== 'undefined' ? window.location.origin : '');
   return new CloudAuthHttpClient(normalizeBaseUrl(configured));
 }
 

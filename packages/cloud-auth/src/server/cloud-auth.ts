@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@memoflow/database';
 import { IdentityId } from '@memoflow/domain-shared/shared';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { betterAuth } from 'better-auth';
+import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node';
 import { bearer } from 'better-auth/plugins';
 import { deviceAuthorization } from 'better-auth/plugins/device-authorization';
@@ -51,7 +51,14 @@ export interface CloudAuth {
   revokeAllSessions(identityId: string): Promise<{ revokedSessions: number }>;
 }
 
-export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
+interface CloudAuthDependencies {
+  readonly database?: BetterAuthOptions['database'];
+}
+
+export function createCloudAuth(
+  options: CloudAuthOptions,
+  dependencies: CloudAuthDependencies = {},
+): CloudAuth {
   async function isClosureBlocked(identityId: string): Promise<boolean> {
     if (options.closureChecker && (await options.closureChecker(identityId))) {
       return true;
@@ -73,10 +80,12 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
     baseURL: options.baseUrl,
     secret: options.secret,
     trustedOrigins: [...options.trustedOrigins],
-    database: prismaAdapter(options.database, {
-      provider: 'postgresql',
-      transaction: true,
-    }),
+    database:
+      dependencies.database ??
+      prismaAdapter(options.database, {
+        provider: 'postgresql',
+        transaction: true,
+      }),
     advanced: {
       database: {
         generateId: ({ model }) => (model === 'user' ? IdentityId.generate().toString() : false),
@@ -183,7 +192,9 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
     };
   };
 
-  const resolveNodePrincipal = async (headers: IncomingHttpHeaders): Promise<CloudPrincipal | null> => {
+  const resolveNodePrincipal = async (
+    headers: IncomingHttpHeaders,
+  ): Promise<CloudPrincipal | null> => {
     const resolved = await auth.api.getSession({ headers: fromNodeHeaders(headers) });
     if (!resolved) return null;
     if (await isClosureBlocked(resolved.user.id)) return null;
@@ -196,9 +207,10 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
     };
   };
 
-  const checkRequestClosure = async (
+  const checkRequestAccess = async (
     headers: Headers,
     body?: unknown,
+    pathname?: string,
   ): Promise<Response | null> => {
     // 1. Check existing session in request headers (e.g. get-session, refresh, or session-authenticated calls)
     const resolved = await auth.api.getSession({ headers }).catch(() => null);
@@ -216,12 +228,15 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
     }
     if (sessionUserId && (await isClosureBlocked(sessionUserId))) {
       return new Response(
-        JSON.stringify({ error: 'Account closure in progress or completed', code: 'ACCOUNT_CLOSED' }),
+        JSON.stringify({
+          error: 'Account closure in progress or completed',
+          code: 'ACCOUNT_CLOSED',
+        }),
         { status: 403, headers: { 'content-type': 'application/json' } },
       );
     }
 
-    // 2. Check email/identifier in body for sign-in calls
+    // 2. Check email/identifier in the body for email authentication calls.
     if (body && typeof body === 'object') {
       const email = 'email' in body && typeof body.email === 'string' ? body.email : undefined;
       const identifier =
@@ -230,12 +245,24 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
       if (targetEmail) {
         if (options.database.cloudAuthUser) {
           const user = await options.database.cloudAuthUser.findFirst({
-            where: { email: targetEmail },
+            where: { email: targetEmail.toLowerCase() },
             select: { id: true },
           });
+          if (user && pathname?.endsWith('/sign-up/email')) {
+            return new Response(
+              JSON.stringify({ code: 'USER_ALREADY_EXISTS', message: 'User already exists.' }),
+              {
+                status: 409,
+                headers: { 'content-type': 'application/json' },
+              },
+            );
+          }
           if (user && (await isClosureBlocked(user.id))) {
             return new Response(
-              JSON.stringify({ error: 'Account closure in progress or completed', code: 'ACCOUNT_CLOSED' }),
+              JSON.stringify({
+                error: 'Account closure in progress or completed',
+                code: 'ACCOUNT_CLOSED',
+              }),
               { status: 403, headers: { 'content-type': 'application/json' } },
             );
           }
@@ -290,13 +317,17 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
   const expressHandler: RequestHandler = async (req, res, next) => {
     const headers = fromNodeHeaders(req.headers);
     const body = await readExpressBody(req);
-    const closureResponse = await checkRequestClosure(headers, body);
-    if (closureResponse) {
-      res.status(closureResponse.status);
-      for (const [key, value] of closureResponse.headers.entries()) {
+    const accessResponse = await checkRequestAccess(
+      headers,
+      body,
+      (req.originalUrl ?? req.url).split('?')[0],
+    );
+    if (accessResponse) {
+      res.status(accessResponse.status);
+      for (const [key, value] of accessResponse.headers.entries()) {
         res.setHeader(key, value);
       }
-      const text = await closureResponse.text();
+      const text = await accessResponse.text();
       res.send(text);
       return;
     }
@@ -306,11 +337,18 @@ export function createCloudAuth(options: CloudAuthOptions): CloudAuth {
   const handler = async (request: Request): Promise<Response> => {
     let body: unknown = undefined;
     if (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH') {
-      body = await request.clone().json().catch(() => undefined);
+      body = await request
+        .clone()
+        .json()
+        .catch(() => undefined);
     }
-    const closureResponse = await checkRequestClosure(request.headers, body);
-    if (closureResponse) {
-      return closureResponse;
+    const accessResponse = await checkRequestAccess(
+      request.headers,
+      body,
+      new URL(request.url).pathname,
+    );
+    if (accessResponse) {
+      return accessResponse;
     }
     return rawHandler(request);
   };
