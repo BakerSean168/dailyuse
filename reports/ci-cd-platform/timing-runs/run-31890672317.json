@@ -1,0 +1,274 @@
+{
+  "kind": "run-summary-v1",
+  "version": 1,
+  "commit": "910efe7327f1730e87c649fba052a571f4f05add",
+  "manifestDigest": "973ed1f87bf42796f11e02f79d195a86c88b4ffaf9f18bec94ba3801b82c807e",
+  "status": "success",
+  "lanes": [
+    {
+      "lane": "boundary",
+      "status": "success",
+      "timing": {
+        "setupMs": 22728,
+        "executionMs": 101372
+      },
+      "failures": [],
+      "evidence": [
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-boundary-verification-children-job-31890672317/reports/ci-cd-platform/boundary-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-coverage-verification-children-job-31890672317/reports/ci-cd-platform/boundary-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-integration-verification-children-job-31890672317/reports/ci-cd-platform/boundary-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-performance-verification-children-job-31890672317/reports/ci-cd-platform/boundary-summary-v1.json"
+      ]
+    },
+    {
+      "lane": "coverage",
+      "status": "success",
+      "timing": {
+        "setupMs": 11364,
+        "executionMs": 458972
+      },
+      "failures": [],
+      "evidence": [
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-coverage-verification-children-job-31890672317/reports/ci-cd-platform/coverage-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-performance-verification-children-job-31890672317/reports/ci-cd-platform/coverage-summary-v1.json"
+      ]
+    },
+    {
+      "lane": "governance",
+      "status": "success",
+      "timing": {
+        "setupMs": 28088,
+        "executionMs": 33840
+      },
+      "failures": [],
+      "evidence": [
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-governance-governance-job-31890672317/reports/ci-cd-platform/governance-summary-v1.json"
+      ]
+    },
+    {
+      "lane": "integration",
+      "status": "success",
+      "timing": {
+        "setupMs": 17046,
+        "executionMs": 231393
+      },
+      "failures": [],
+      "evidence": [
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-coverage-verification-children-job-31890672317/reports/ci-cd-platform/integration-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-integration-verification-children-job-31890672317/reports/ci-cd-platform/integration-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-performance-verification-children-job-31890672317/reports/ci-cd-platform/integration-summary-v1.json"
+      ]
+    },
+    {
+      "lane": "performance",
+      "status": "success",
+      "timing": {
+        "setupMs": 5681,
+        "executionMs": 3778
+      },
+      "failures": [],
+      "evidence": [
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-performance-verification-children-job-31890672317/reports/ci-cd-platform/performance-summary-v1.json"
+      ]
+    },
+    {
+      "lane": "validate",
+      "status": "success",
+      "timing": {
+        "setupMs": 118073,
+        "executionMs": 674047
+      },
+      "failures": [],
+      "evidence": [
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-validate-build-job-31890672317/reports/ci-cd-platform/validate-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-validate-static-analysis-job-31890672317/reports/ci-cd-platform/validate-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-validate-typecheck-job-31890672317/reports/ci-cd-platform/validate-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-validate-unit-job-31890672317/reports/ci-cd-platform/validate-summary-v1.json"
+      ]
+    },
+    {
+      "lane": "web",
+      "status": "success",
+      "timing": {
+        "setupMs": 130953,
+        "executionMs": 1189693
+      },
+      "failures": [],
+      "evidence": [
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-web-web-flow-shard-shard-0-31890672317/reports/ci-cd-platform/web-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-web-web-flow-shard-shard-1-31890672317/reports/ci-cd-platform/web-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-web-web-flow-shard-shard-2-31890672317/reports/ci-cd-platform/web-summary-v1.json",
+        "/home/runner/work/memoflow/memoflow/reports/run-evidence/delivery-web-web-flow-shard-shard-3-31890672317/reports/ci-cd-platform/web-summary-v1.json"
+      ]
+    }
+  ],
+  "missingLanes": [],
+  "timing": {
+    "setupMs": 333933,
+    "executionMs": 2693095,
+    "longestLaneMs": 347218,
+    "wallClockMs": 636625,
+    "runnerMinutes": 49.87635
+  },
+  "cache": [
+    {
+      "lane": "boundary",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "boundary",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "coverage",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "integration",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "governance",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "boundary",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "integration",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "boundary",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "coverage",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "integration",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "performance",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "validate",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "validate",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "validate",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "validate",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "false"
+      }
+    },
+    {
+      "lane": "web",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "true"
+      }
+    },
+    {
+      "lane": "web",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "true"
+      }
+    },
+    {
+      "lane": "web",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "true"
+      }
+    },
+    {
+      "lane": "web",
+      "cache": {
+        "pnpm": "true",
+        "nx": "true",
+        "playwright": "true"
+      }
+    }
+  ],
+  "failures": [],
+  "provenance": {
+    "generator": "ci-cd-platform-v2/observe-run@1",
+    "runner": "Linux",
+    "runId": "31890672317"
+  },
+  "digest": "7d1cd38bc5c8adf3d9184da8e7165b41bd649ffde78237121228ba3496b72f60"
+}
