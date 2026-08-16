@@ -11,13 +11,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, expect, expectTypeOf, it } from 'vitest';
-import type { GoalRpcMap } from './goal-rpc-map';
-import type {
-  UpdateGoalFolderInvocation,
-  DeleteGoalFolderInvocation,
-} from '../api/goal-invocation.schemas';
-import type { UpdateGoalFolderRes } from '../api/goal-folder.dto';
+import { describe, expect, it } from 'vitest';
 
 const protocolDir = __dirname;
 const rpcMapFile = resolve(protocolDir, 'goal-rpc-map.ts');
@@ -53,6 +47,43 @@ const GOAL_LEDGER = [
   ['goal-folder:create', 'CreateGoalFolderSchema', 'GoalFolderClientDTO'],
   ['goal-folder:update', 'UpdateGoalFolderSchema', 'GoalFolderClientDTO'],
   ['goal-folder:delete', 'void', 'null'],
+] as const;
+
+/**
+ * Every GoalRpcMap tuple, pinned to its canonical request/response types.
+ * Runtime textual pin (not `expectTypeOf`) so a wrong or mispositioned tuple
+ * fails the gate even though `*.spec.ts` is excluded from the typecheck.
+ */
+const GOAL_RPC_TUPLES = [
+  ['goal:create', 'CreateGoalReq', 'CreateGoalRes'],
+  ['goal:update', 'UpdateGoalInvocation', 'GoalMutationReceipt'],
+  ['goal:delete', 'DeleteGoalInvocation', 'GoalMutationReceipt'],
+  ['goal:archive-expired', 'void', 'ArchiveExpiredRes'],
+  ['goal:archive', 'GoalStatusCommandInvocation', 'GoalMutationReceipt'],
+  ['goal:activate', 'GoalStatusCommandInvocation', 'GoalMutationReceipt'],
+  ['goal:complete', 'GoalStatusCommandInvocation', 'GoalMutationReceipt'],
+  ['goal:clone', 'CloneGoalInvocation', 'GoalMutationReceipt'],
+  ['goal:get', 'GetGoalReq', 'GetGoalRes'],
+  ['goal:list', 'ListGoalFilters', 'QueryGoalsRes'],
+  ['key-result:add', 'AddKeyResultInvocation', 'GoalMutationReceipt'],
+  ['key-result:update', 'UpdateKeyResultInvocation', 'GoalMutationReceipt'],
+  ['key-result:progress', 'UpdateKeyResultProgressInvocation', 'GoalMutationReceipt'],
+  ['key-result:delete', 'DeleteKeyResultInvocation', 'GoalMutationReceipt'],
+  ['key-result:batch-weights', 'BatchKeyResultWeightsInvocation', 'GoalMutationReceipt'],
+  ['key-result:list', 'GetKeyResultsReq', 'GetKeyResultsRes'],
+  ['goal:review:create', 'CreateReviewInvocation', 'GoalMutationReceipt'],
+  ['goal:review:update', 'UpdateReviewInvocation', 'GoalMutationReceipt'],
+  ['goal:review:delete', 'DeleteReviewInvocation', 'GoalMutationReceipt'],
+  ['goal:record:create', 'CreateRecordInvocation', 'GoalMutationReceipt'],
+  ['goal:record:delete', 'DeleteRecordInvocation', 'GoalMutationReceipt'],
+  ['goal-folder:create', 'CreateGoalFolderReq', 'CreateGoalFolderRes'],
+  ['goal-folder:update', 'UpdateGoalFolderInvocation', 'UpdateGoalFolderRes'],
+  ['goal-folder:delete', 'DeleteGoalFolderInvocation', 'null'],
+  ['goal-folder:list', 'ListGoalFolderFilters', 'QueryGoalFoldersRes'],
+  ['focus:activate', 'ActivateFocusModeReq', 'FocusModeDTO'],
+  ['focus:deactivate', 'void', 'FocusModeDTO'],
+  ['focus:extend', 'ExtendFocusModeReq', 'FocusModeDTO'],
+  ['focus:get-status', 'GetFocusStatusReq', 'GetFocusStatusRes'],
 ] as const;
 
 const API_DTO_FILES = [
@@ -131,12 +162,11 @@ describe('goal RPC map surface (Phase 4 ledger)', () => {
     }
   });
 
-  it('goal-folder tuples use the named invocation and response types (compile-time)', () => {
-    expectTypeOf<GoalRpcMap['goal-folder:update']>().toEqualTypeOf<
-      [UpdateGoalFolderInvocation, UpdateGoalFolderRes]
-    >();
-    expectTypeOf<GoalRpcMap['goal-folder:delete']>().toEqualTypeOf<
-      [DeleteGoalFolderInvocation, null]
-    >();
+  it('every map tuple matches the canonical request/response types (runtime pin)', () => {
+    for (const [key, requestType, responseType] of GOAL_RPC_TUPLES) {
+      expect(rpcMap, `map entry '${key}' must be [${requestType}, ${responseType}]`).toMatch(
+        new RegExp(`'${key}':\\s*\\[${requestType},\\s*${responseType}\\]`),
+      );
+    }
   });
 });
