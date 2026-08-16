@@ -20,7 +20,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { applyGlobalMiddleware } from '../../../shared/infrastructure/middleware/global';
 import { applyErrorHandlers } from '../../../shared/infrastructure/middleware/error';
 import { createAuthMiddleware } from '../../../shared/infrastructure/http/middlewares/auth-middleware';
-import { MetricsStore } from '../../../shared/infrastructure/http/middlewares/performance.middleware';
+import { HttpRequestMetricsRecorder } from '../../../shared/infrastructure/observability/http-request-metrics';
+import { createInfrastructureRouter } from '../../../shared/infrastructure/http/routes/infrastructure-routes';
 import { expressAdapter } from '@memoflow/utils/result';
 import { ok, error } from '@memoflow/contracts/result';
 import {
@@ -69,9 +70,11 @@ function createApp(options: { dispatchService?: AIAssistantFacadeControllerServi
   app: Express;
   captured: CapturedDispatch;
   dispatchService: AIAssistantFacadeControllerService;
+  recorder: HttpRequestMetricsRecorder;
 } {
   const app = express();
-  applyGlobalMiddleware(app, new MetricsStore());
+  const recorder = new HttpRequestMetricsRecorder();
+  applyGlobalMiddleware(app, recorder);
 
   // Auth: mock Cloud Auth — resolves a principal only with a valid bearer token.
   const auth = createAuthMiddleware({
@@ -94,6 +97,13 @@ function createApp(options: { dispatchService?: AIAssistantFacadeControllerServi
     expressAdapter(() => Promise.resolve(ok({ message: 'echo' }))),
   );
 
+  // Parametrised route: entity IDs must never leak into the metric route label.
+  app.get('/api/goals/:id', auth, (req, res) => {
+    res.json({ id: (req.params as { id: string }).id });
+  });
+
+  app.use('/', createInfrastructureRouter(recorder));
+
   const captured: CapturedDispatch = {};
   const dispatchService = options.dispatchService ?? createAssistantService(captured);
   const assistantController = new AIAssistantFacadeController(dispatchService);
@@ -106,7 +116,7 @@ function createApp(options: { dispatchService?: AIAssistantFacadeControllerServi
   );
 
   applyErrorHandlers(app);
-  return { app, captured, dispatchService };
+  return { app, captured, dispatchService, recorder };
 }
 
 const ASSISTANT_BODY = {
@@ -338,5 +348,82 @@ describe('Request Context smoke (RefArch Phase 2)', () => {
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
+  });
+
+  it('bounded metrics: entity IDs aggregate into one route series and 404 stays __unmatched__', async () => {
+    const { app, recorder } = createApp();
+    await request(app).get('/api/goals/entity-a').set('Authorization', 'Bearer valid-token');
+    await request(app).get('/api/goals/entity-b').set('Authorization', 'Bearer valid-token');
+    await request(app).get('/api/not-a-route');
+
+    const series = recorder.getSeries();
+    const goals = series.find((s) => s.route === '/api/goals/:id' && s.statusCode === 200);
+    expect(goals).toBeDefined();
+    expect(goals!.count).toBe(2);
+
+    // No entity ID ever reaches a metric label.
+    expect(JSON.stringify(series)).not.toContain('entity-a');
+    expect(JSON.stringify(series)).not.toContain('entity-b');
+
+    // 404 stays on the fixed __unmatched__ template, not the raw path.
+    const unmatched = series.find((s) => s.route === '__unmatched__' && s.statusCode === 404);
+    expect(unmatched).toBeDefined();
+    expect(unmatched!.count).toBe(1);
+    expect(JSON.stringify(series)).not.toContain('/api/not-a-route');
+  });
+
+  it('bounded metrics: each attempt settles exactly once (no finish+close double count)', async () => {
+    const { app, recorder } = createApp();
+    for (let i = 0; i < 3; i += 1) {
+      await request(app).get('/api/echo').set('Authorization', 'Bearer valid-token');
+    }
+
+    const series = recorder.getSeries();
+    const echo = series.find((s) => s.route === '/api/echo' && s.outcome === 'finished');
+    expect(echo).toBeDefined();
+    expect(echo!.count).toBe(3);
+    expect(echo!.outcome).toBe('finished');
+  });
+
+  it('bounded metrics: /metrics scrapes stay on fixed series and do not grow cardinality', async () => {
+    const { app, recorder } = createApp();
+    await request(app).get('/api/echo').set('Authorization', 'Bearer valid-token');
+    const first = await request(app).get('/metrics');
+    await request(app).get('/metrics');
+    await request(app).get('/metrics/json');
+
+    expect(first.status).toBe(200);
+    expect(first.headers['content-type']).toContain('text/plain');
+    expect(String(first.text)).toContain('http_requests_total');
+    expect(String(first.text)).toContain('http_request_duration_ms_bucket');
+
+    const routes = recorder
+      .getSeries()
+      .map((s) => s.route)
+      .sort();
+    // Every observed route is a fixed template; scraping never invents series.
+    expect(routes).toContain('/metrics');
+    expect(routes).toContain('/metrics/json');
+    const metricsSeries = recorder.getSeries().filter((s) => s.route === '/metrics');
+    expect(metricsSeries).toHaveLength(1);
+    expect(metricsSeries[0]!.count).toBe(2);
+    expect(new Set(routes).size).toBe(routes.length);
+  });
+
+  it('SSE normal completion settles finished exactly once on the real route', async () => {
+    const { app, recorder } = createApp();
+    const res = await request(app)
+      .post(AI_DISPATCH_PATH)
+      .set('Authorization', 'Bearer valid-token')
+      .set('X-Request-Id', 'client-sse-metrics')
+      .set('Content-Type', 'application/json')
+      .send(ASSISTANT_BODY);
+
+    expect(res.status).toBe(200);
+    const sse = recorder
+      .getSeries()
+      .find((s) => s.route === '/api/v1/ai/assistant/dispatch/sse' && s.outcome === 'finished');
+    expect(sse).toBeDefined();
+    expect(sse!.count).toBe(1);
   });
 });

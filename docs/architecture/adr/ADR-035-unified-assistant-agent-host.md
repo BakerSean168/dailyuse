@@ -200,6 +200,9 @@ ContextItem 携带来源、信任等级、敏感级别和 token 估算。Vault�
 - 现有 LangGraph workflow 可以在不重写 Python graph 的前提下被 Host 包装。
 - 新增第二个 Turn Engine 后，无需修改 UI、业务模块或 Proposal/Executor contract。
 
+### 验收治理（Phase 6）
+
+- `tools/governance/architecture-surface-audit.mjs` 的 `AI_APPROVAL_LIFECYCLE_ONLY` 规则：AST 锁定 Turn Engine/proposal capability 不含 `tool.mutation`，`AssistantFacade.dispatchApprove/Revise/Reject` 不调用 `executeApproved`，mutation 执行只走显式 approved/confirm 路径；行为由 `proposal.kernel.spec.ts`、`assistant.facade.spec.ts`、`agent-host-stage0-composition.surface.spec.ts` 与 host task journey 覆盖。
 ## 5.1 窄版本兼容例外（2026-08-15，plan §4.5 / Step D）
 
 产品 open-chat 的默认路径始终是 `dispatchAssistant`；legacy `streamMessage` 不是产品默认路径。
@@ -222,6 +225,7 @@ ContextItem 携带来源、信任等级、敏感级别和 token 估算。Vault�
 
 **移除条件**：旧 Server/Desktop host 全部升级到支持 dispatch 后，删除该 adapter 与
 `legacy_only` 开关；`streamMessage` 不长期作为双默认路径存在。
+
 
 ## 6. 相关资料
 

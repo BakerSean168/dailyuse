@@ -2,16 +2,28 @@
  * Request Context Middleware
  * 请求上下文中间件
  *
- * RefArch Phase 2: the single producer of canonical `RequestContext` metadata
- * for every HTTP attempt. It runs as the FIRST global `app.use`, before
- * Helmet/CORS/body-parser/compression/performance, so every downstream response
- * type (JSON, 204, auth failure, 404, 500, SSE `flushHeaders()`) shares the
- * same `X-Request-Id`, `traceId` and `startedAt`.
+ * RefArch Phase 2 + Phase 6: the single producer of canonical `RequestContext`
+ * metadata and the single terminal settlement owner for every HTTP attempt. It
+ * runs as the FIRST global `app.use`, before Helmet/CORS/body-parser/
+ * compression, so every downstream response type (JSON, 204, auth failure, 404,
+ * 500, SSE `flushHeaders()`) shares the same `X-Request-Id`, `traceId` and
+ * `startedAt`.
  *
- * RefArch 阶段 2：HTTP 每次请求统一请求元数据的唯一 producer。它作为第一个
- * 全局 `app.use` 运行，早于 Helmet/CORS/body 解析/compression/performance，
- * 因此所有下游响应（JSON、204、鉴权失败、404、500、SSE `flushHeaders()`）
- * 都共享同一个 `X-Request-Id`、`traceId` 与 `startedAt`。
+ * RefArch 阶段 2 + 阶段 6：每次 HTTP 请求统一请求元数据与唯一 terminal
+ * settlement owner。它作为第一个全局 `app.use` 运行，早于 Helmet/CORS/body
+ * 解析/compression，因此所有下游响应（JSON、204、鉴权失败、404、500、SSE
+ * `flushHeaders()`）都共享同一个 `X-Request-Id`、`traceId` 与 `startedAt`。
+ *
+ * finish/close share one exactly-once guard: `finish` settles `finished`, a
+ * later `close` is ignored; a `close` without `finish` (SSE disconnect, socket
+ * drop) settles `aborted`. The injected observer drives the terminal log,
+ * bounded metrics and (opt-in) trace span in one settlement, and observer
+ * failures are isolated so they never change the response.
+ *
+ * finish/close 共享 exactly-once guard：`finish` 结算为 `finished`，其后的
+ * `close` 被忽略；没有 `finish` 的 `close`（SSE 断开、socket 丢弃）结算为
+ * `aborted`。注入的 observer 在一次结算中驱动 terminal log、有界 metrics 与
+ * （opt-in）trace span，observer 失败被隔离，绝不改变响应。
  *
  * The middleware is identity-agnostic: it never reads Authorization/cookies and
  * never resolves a Principal. The Cloud Auth middleware parses the principal
@@ -26,6 +38,15 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import type { RequestContext } from '@memoflow/contracts/shared';
 import { createLogger, type ILogger } from '@memoflow/utils/logger';
+import {
+  createHttpRequestLoggerObserver,
+  resolveRouteTemplate,
+  type HttpRequestObservation,
+  type HttpRequestObserver,
+  type HttpRequestOutcome,
+} from '../../observability/http-request-observation';
+import { NOOP_HTTP_REQUEST_TRACE } from '../../observability/noop-http-request-trace';
+import type { HttpRequestTrace } from '../../observability/http-request-trace';
 
 /**
  * Pattern for accepting a client/proxy-supplied `X-Request-Id`.
@@ -67,17 +88,36 @@ export interface RequestContextMiddlewareOptions {
    */
   readonly idFactory?: () => string;
   /**
-   * Clock used for `startedAt` and terminal log durations. Defaults to
-   * `Date.now`. Returns Unix epoch milliseconds.
-   * 用于 `startedAt` 与日志时长的时钟，默认 `Date.now`；返回 Unix epoch 毫秒。
+   * Clock used for `startedAt` and terminal durations. Defaults to `Date.now`.
+   * Returns Unix epoch milliseconds.
+   * 用于 `startedAt` 与 terminal 时长的时钟，默认 `Date.now`；返回 Unix epoch 毫秒。
    */
   readonly now?: () => number;
   /**
-   * Structured logger for the single terminal request log. Defaults to a
-   * `RequestContext` logger.
-   * 负责唯一 terminal request log 的结构化 logger，默认创建 `RequestContext` logger。
+   * Structured logger used for observer-failure reporting and as the default
+   * terminal logger. Defaults to a `RequestContext` logger.
+   * 用于 observer 失败上报与默认 terminal logger 的结构化 logger，默认创建
+   * `RequestContext` logger。
    */
   readonly logger?: ILogger;
+  /**
+   * Terminal observer that receives the single settlement observation.
+   * Defaults to a logger observer writing the request-completed/aborted entry.
+   * 接收唯一 settlement observation 的 terminal observer。默认使用写入
+   * request-completed/aborted 条目的 logger observer。
+   */
+  readonly observer?: HttpRequestObserver;
+  /**
+   * Trace Port. Defaults to the shared noop trace: no SDK objects, no W3C
+   * extraction, `traceId === requestId`. When OpenTelemetry is enabled the
+   * SERVER span context stays active through `next()` so W3C headers can
+   * propagate to internal calls.
+   *
+   * Trace Port。默认使用共享 noop trace：无 SDK 对象、无 W3C extraction、
+   * `traceId === requestId`。启用 OpenTelemetry 时 SERVER span context 在
+   * `next()` 期间保持 active，使 W3C headers 可透传到内部调用。
+   */
+  readonly trace?: HttpRequestTrace;
 }
 
 /**
@@ -104,7 +144,8 @@ export function acceptClientRequestId(value: unknown): string | null {
  * Creates the global RequestContext middleware.
  * 创建全局 RequestContext 中间件。
  *
- * @param options - Factory options (idFactory / clock / logger) for testability.
+ * @param options - Factory options (idFactory / clock / logger / observer) for
+ *   testability.
  * @returns An Express request handler.
  */
 export function createRequestContextMiddleware(
@@ -113,13 +154,18 @@ export function createRequestContextMiddleware(
   const idFactory = options.idFactory ?? randomUUID;
   const now = options.now ?? Date.now;
   const logger = options.logger ?? createLogger('RequestContext');
+  const observer = options.observer ?? createHttpRequestLoggerObserver(logger);
+  const trace = options.trace ?? NOOP_HTTP_REQUEST_TRACE;
 
   return (req: Request, res: Response, next: NextFunction): void => {
     const requestId = acceptClientRequestId(req.headers['x-request-id']) ?? idFactory();
     const startedAt = now();
+    const span = trace.startSpan(req);
     const requestContext: RequestContext = {
       requestId,
-      traceId: requestId,
+      // OTel disabled: traceId stays equal to requestId (ADR-045). Enabled:
+      // the SERVER span provides a real trace ID.
+      traceId: span.traceId ?? requestId,
       startedAt,
       source: 'http',
     };
@@ -130,36 +176,42 @@ export function createRequestContextMiddleware(
     // Set before next() so every downstream response type echoes the same ID.
     res.setHeader('X-Request-Id', requestId);
 
-    let terminalLogged = false;
-    const logTerminal = (outcome: 'finished' | 'aborted'): void => {
-      if (terminalLogged) return;
-      terminalLogged = true;
+    let settled = false;
+    const settle = (outcome: HttpRequestOutcome): void => {
+      if (settled) return;
+      settled = true;
 
-      const durationMs = now() - startedAt;
       const identityId = (req as { user?: { identityId?: string } }).user?.identityId;
-      const metadata: Record<string, unknown> = {
+      const observation: HttpRequestObservation = {
         requestId,
-        traceId: requestId,
-        source: 'http',
+        traceId: requestContext.traceId,
         method: req.method,
-        path: req.route?.path ?? req.path,
+        routeTemplate: resolveRouteTemplate(req),
         statusCode: res.statusCode,
-        durationMs,
+        outcome,
+        durationMs: now() - startedAt,
+        ...(identityId ? { identityId } : {}),
       };
-      if (identityId) {
-        metadata.identityId = identityId;
+
+      try {
+        observer.complete(observation);
+      } catch (error) {
+        logger.error('Request observer failed; response unaffected', error);
       }
 
-      if (outcome === 'finished') {
-        logger.info('request completed', metadata);
-      } else {
-        logger.warn('request aborted', { ...metadata, aborted: true });
+      try {
+        span.complete(observation);
+      } catch (error) {
+        logger.error('Request span failed; response unaffected', error);
       }
     };
 
-    res.on('finish', () => logTerminal('finished'));
-    res.on('close', () => logTerminal('aborted'));
+    res.on('finish', () => settle('finished'));
+    res.on('close', () => settle('aborted'));
 
-    next();
+    // With OTel enabled, the SERVER span context stays active through next() so
+    // downstream async work (e.g. the AI internal HTTP call) inherits it and
+    // W3C headers propagate. Noop keeps running in the ambient context.
+    span.runWithContext(() => next());
   };
 }

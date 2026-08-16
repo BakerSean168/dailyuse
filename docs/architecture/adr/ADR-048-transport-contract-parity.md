@@ -10,7 +10,7 @@ created: 2026-08-16
 updated: 2026-08-16
 ---
 
-# ADR-047: Transport Contract Parity / 传输契约一致
+# ADR-048: Transport Contract Parity / 传输契约一致
 
 **状态**: 已采纳
 **日期**: 2026-08-16

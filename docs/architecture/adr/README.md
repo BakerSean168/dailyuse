@@ -62,7 +62,8 @@ updated: 2026-08-04T00:00:00+08:00
 | [ADR-044](./ADR-044-w0-w6-fault-matrix.md) | W0-W6 关键故障矩阵（ADR-043 附属：故障、注入层、durable fact、恢复动作、禁止状态、测试文件） | 已采纳 | 2026-08-12 |
 | [ADR-045](./ADR-045-unified-request-execution-context.md) | 统一 HTTP/IPC/System 的 Request/Execution Context（RefArch Phase 2） | 已采纳 | 2026-08-15 |
 | [ADR-046](./ADR-046-query-cache-powersync-offline-policy.md) | Query Cache Pilot — Offline / Freshness / PowerSync 策略（试点范围：Desktop networkMode、freshness、reconnect ordering、profile isolation、拒绝 cache 持久化） | 已接受（试点范围） | 2026-08-15 |
-| [ADR-047](./ADR-047-transport-contract-parity.md) | Transport Contract Parity — adapter-owned validation、HTTP/IPC parity fixture、mapper 边界与 direct Vitest 门禁（RefArch Phase 4） | 已采纳 | 2026-08-16 |
+| [ADR-047](./ADR-047-api-observability-pipeline.md) | API 可观测性流水线与装配治理（single observer、有界 metrics、默认 noop / opt-in OpenTelemetry、transport-only 模块注册上下文） | 已采纳 | 2026-08-15 |
+| [ADR-048](./ADR-048-transport-contract-parity.md) | Transport Contract Parity — adapter-owned validation、HTTP/IPC parity fixture、mapper 边界与 direct Vitest 门禁（RefArch Phase 4） | 已采纳 | 2026-08-16 |
 
 ## 维护规则
 

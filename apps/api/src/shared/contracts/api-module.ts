@@ -17,19 +17,32 @@
  *   instance: createMyModule({ repository, servicePort }),
  * });
  * ```
+ *
+ * RefArch Phase 6: `IApiModuleContext` is transport-only — it carries no `db`.
+ * The host composer/factory binds database, adapters and application instances
+ * through module options before `register()`; registration only wires transport
+ * and lifecycle.
+ *
+ * RefArch 阶段 6：`IApiModuleContext` 仅含 transport——不携带 `db`。宿主
+ * composer/factory 在 `register()` 之前通过模块 options 绑定 database、
+ * adapters 与 application 实例；注册只负责 transport 与生命周期。
  */
 
 import type { RequestHandler } from 'express';
-import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import type { PrismaClient } from '@memoflow/database';
 
 /**
- * 数据库客户端类型
+ * Database client type used by the API host's private bootstrap wiring only.
+ * 仅用于 API 宿主私有 bootstrap 装配的数据库客户端类型。
  *
- * 当前 API runtime 使用 @memoflow/database 暴露的共享 PrismaClient。
+ * `ApiBootstrapper` may use a `DatabaseClient` privately (for example to build
+ * the auth middleware), but it never appears in the module registration
+ * context. Feature modules receive their persistence through host-bound
+ * options instead.
  *
- * 如果未来真的引入第二个生成客户端，请在这里扩展为明确 union 或能力接口，
- * 不要回退到裸 any。
+ * `ApiBootstrapper` 可以私有使用 `DatabaseClient`（例如构建 auth middleware），
+ * 但它绝不进入模块注册上下文。feature 模块通过宿主绑定的 options 接收持久化。
  */
 export type DatabaseClient = PrismaClient;
 
@@ -60,47 +73,20 @@ export interface IApiMiddleware {
  * 模块注册上下文
  *
  * ApiBootstrapper 提供给每个模块的"工具箱"，模块在 register() 中
- * 通过此上下文完成依赖注入和路由挂载。
+ * 完成路由挂载与生命周期启动。该上下文仅含 transport，不含 `db`：
+ * 持久化与 feature 装配由宿主 composer 在注册前通过 options 绑定。
  */
-export interface IApiModuleContext extends ServerModuleContext<DatabaseClient> {}
+export interface IApiModuleContext extends ServerTransportModuleContext {}
 
 /**
  * API 模块标准接口
  *
- * 所有业务模块必须实现此接口才能被 ApiBootstrapper 加载。
+ * 所有业务模块必须实现此接口才能被 ApiBootstrapper 加载。它继承共享的
+ * `ServerModuleHandle<IApiModuleContext>`：name + register + destroy。
  *
  * 目标方向（target direction）：runtime-first 装配 —— 宿主（apps/api/src/runtime）
  * 在 register() 之前完成 feature 模块的 Composition Root 组装（选择 adapter →
  * repository → application instance），register() 只负责 transport 注册与模块生命周期
  * （start/dispose）。参见 apps/api/src/runtime/compose-governance.ts 的治理示范。
- *
- * 当前全部 feature 模块（含 AI）均已由宿主 runtime composer 在 register() 之前完成
- * 组装；`context.db` 字段保留用于 platform adapter（如 app-local host adapter）与
- * 兼容既有代码，transport 层不再从 context 组装 feature。
  */
-export interface IApiModule {
-  /** 模块名称，用于日志和调试 */
-  readonly name: string;
-
-  /**
-   * 注册模块
-   *
-   * 在此方法内完成：
-   * 1. transport 注册（路由挂载）
-   * 2. 模块生命周期启动（可选）
-   *
-   * feature 组装（Repository/UseCase/Application）已由宿主 runtime composer
-   * 在 register() 之前完成。
-   *
-   * @param context - ApiBootstrapper 提供的上下文
-   */
-  register(context: IApiModuleContext): Promise<void> | void;
-
-  /**
-   * 模块销毁（可选）
-   *
-   * 用于释放资源、取消定时任务、断开连接等。
-   * ApiBootstrapper 会在应用关闭时调用。
-   */
-  destroy?(): Promise<void> | void;
-}
+export interface IApiModule extends ServerModuleHandle<IApiModuleContext> {}

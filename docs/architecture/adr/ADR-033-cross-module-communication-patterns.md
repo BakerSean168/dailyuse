@@ -20,11 +20,11 @@
 
 ### 判定表
 
-| # | 语义 | 是否需要返回值 | 是否跨进程/网络 | 选用机制 |
-| --- | --- | --- | --- | --- |
-| 1 | 通知式反应 | 否 | 否 | **事件总线 `send`/`on`**（`@memoflow/utils/domain` 的 typed publisher/subscriber） |
-| 2 | 查询 / 命令回执 | 是 | 否 | **Port（依赖倒置）+ 宿主组装注入** |
-| 3 | 跨进程 / 网络请求 | 是 | 是 | **Electron IPC（`@memoflow/ipc-client`）或 HTTP** |
+| #   | 语义              | 是否需要返回值 | 是否跨进程/网络 | 选用机制                                                                           |
+| --- | ----------------- | -------------- | --------------- | ---------------------------------------------------------------------------------- |
+| 1   | 通知式反应        | 否             | 否              | **事件总线 `send`/`on`**（`@memoflow/utils/domain` 的 typed publisher/subscriber） |
+| 2   | 查询 / 命令回执   | 是             | 否              | **Port（依赖倒置）+ 宿主组装注入**                                                 |
+| 3   | 跨进程 / 网络请求 | 是             | 是              | **Electron IPC（`@memoflow/ipc-client`）或 HTTP**                                  |
 
 对应到范式：
 
@@ -90,6 +90,7 @@
 - **Goal↔Task 联动重构**：见同计划 M6。反应逻辑搬入 Goal 包 `application-server/event-handlers`（替换现有空壳桩 `registerGoalEventListeners`），事件 payload 由 Task 侧填齐所需信息，`apps/api` 与 `apps/desktop` 两宿主分别挂载。
 - **未来所有 AI ↔ 其他模块、Setting ↔ 其他模块** 的联动一律遵循本 ADR。
 - **治理**：`raw-event-bus-audit.mjs` 已确保 `send`/`on` 走 typed seam；后续可增加 audit 检查"是否在业务代码中出现 `.invoke(` / `.handle(` 且不属于 IPC/HTTP adapter"。
+- **Phase 6 跨模块读取 Port 治理**：`tools/governance/architecture-surface-audit.mjs` + `architecture-surface-manifest.json` 的 `READ_PORT_GOAL_TASK_BINDING` / `READ_PORT_AI_ANALYTICS` / `READ_PORT_AI_KNOWLEDGE_SOURCE` 规则锁定消费者拥有契约、Application 只依赖抽象、宿主 composer 注入 adapter、消费者不 deep-import provider 基础设施；删除注入或绕过 Port 会使审计变红。
 
 ## References
 

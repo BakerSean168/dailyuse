@@ -28,7 +28,7 @@
 | Repository composable | 🟡 黄 | `useRepository.ts` 仍有 462 行；barrel 只导出 1/9 个 composable |
 | Editor 大文件 | 🟡 黄 | `useResourceInsertion.ts`（663 行）、`editor-workspace-store.ts`（344 行）、`useEditorDocumentRegistry.ts`（310 行） |
 | AI Chat 视图 | 🟡 黄 | `AIChatView.vue`（1184 行）承担过多，应拆分面板为子组件 |
-| API metricsStore | 🟡 黄 | `performance.middleware.ts` 中的模块级单例未通过 bootstrapper 接入 |
+| API metricsStore | 🟢 绿 | 已闭环（RefArch Phase 6）：`performance.middleware.ts` 已退役，metrics 改为注入式 `HttpRequestMetricsRecorder` |
 | ai-service 大文件 | 🟡 黄 | `goal_planning_service.py`（~1200 行）、`evals/runner.py`（~1200 行） |
 
 ---
@@ -126,9 +126,11 @@
 
 ### Track 6: API Runtime 清理
 
+**状态**: ✅ 已闭环（RefArch Phase 6）——`performance.middleware.ts` 已退役（随 `X-Response-Time`），`metricsStore` 模块级单例由按实例构造并注入的 `HttpRequestMetricsRecorder` 取代，完成条件已验证。
+
 **目标**: 消除 `metricsStore` 单例
 
-**只改这些文件**:
+**只改这些文件**（原计划）:
 - `apps/api/src/shared/infrastructure/http/middlewares/performance.middleware.ts` — 将 `metricsStore` 从模块级单例改为通过 `ApiBootstrapper` context 注入的工厂模式
 - `apps/api/src/bootstrap.ts` — 在 context 中持有 metricsStore 实例
 - `apps/api/src/main.ts` — 传递 metricsStore 到需要的中间件

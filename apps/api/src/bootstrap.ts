@@ -43,7 +43,9 @@ import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createInfrastructureRouter } from './shared/infrastructure/http/routes/infrastructure-routes';
 import { registry } from './shared/infrastructure/openapi/registry';
 import { createLogger } from '@memoflow/utils/logger';
-import { MetricsStore } from './shared/infrastructure/http/middlewares/performance.middleware';
+import { HttpRequestMetricsRecorder } from './shared/infrastructure/observability/http-request-metrics';
+import { NOOP_HTTP_REQUEST_TRACE } from './shared/infrastructure/observability/noop-http-request-trace';
+import type { HttpRequestTrace } from './shared/infrastructure/observability/http-request-trace';
 
 const logger = createLogger('Bootstrapper');
 
@@ -52,17 +54,21 @@ export class ApiBootstrapper {
   private readonly rootRouter: Router;
   private readonly modules: IApiModule[] = [];
   private readonly db: DatabaseClient;
-  private readonly metricsStore: MetricsStore;
+  private readonly metricsRecorder: HttpRequestMetricsRecorder;
+  private readonly trace: HttpRequestTrace;
 
   constructor(
     db: DatabaseClient,
     private readonly cloudAuth: CloudAuth,
     private readonly testEmailLinks?: Pick<CloudAuthEmailLinkCapture, 'findLatest'>,
+    trace: HttpRequestTrace = NOOP_HTTP_REQUEST_TRACE,
   ) {
     this.app = express();
     this.rootRouter = Router();
     this.db = db;
-    this.metricsStore = new MetricsStore();
+    // Per-instance recorder: no global singleton leaks between tests.
+    this.metricsRecorder = new HttpRequestMetricsRecorder();
+    this.trace = trace;
   }
 
   /**
@@ -86,7 +92,8 @@ export class ApiBootstrapper {
    */
   public async init(): Promise<Express> {
     // 1. 全局中间件
-    applyGlobalMiddleware(this.app, this.metricsStore, {
+    applyGlobalMiddleware(this.app, this.metricsRecorder, {
+      trace: this.trace,
       beforeBodyParsing: (app) => {
         const testEmailLinks = this.testEmailLinks;
         if (testEmailLinks) {
@@ -113,7 +120,7 @@ export class ApiBootstrapper {
     setupSwagger(this.app);
 
     // 3. 基础设施路由（health, metrics 等 — 无版本前缀）
-    this.app.use('/', createInfrastructureRouter(this.metricsStore));
+    this.app.use('/', createInfrastructureRouter(this.metricsRecorder));
 
     // 4. 准备模块上下文（含平台中间件 + 邮箱验证门禁）
     const auth = createAuthMiddleware(this.cloudAuth, this.db);
@@ -127,7 +134,6 @@ export class ApiBootstrapper {
     const context: IApiModuleContext = {
       app: this.app,
       router: this.rootRouter,
-      db: this.db,
       middleware: platformMiddleware,
       openApiRegistry: registry,
     };

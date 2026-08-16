@@ -20,6 +20,12 @@ updated: 2026-08-14T00:00:00Z
 | [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md)            | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                                                           |
 | [Goal / Task Composition Root 外移](./2026-08-14-goal-task-composition-root-externalization.md) | **Step 1-4 完成**：repository-set ingredient seams、transport instance-bound、API/Desktop host composers 与注入式 repository consumers 落地；Step 5（docs/surface lock）进行中                   |
 
+## 本轮已归档（2026-08-16）
+
+| 计划                                                                                         | 结果                                                                                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [RefArch Phase 6：可观测性与装配治理](../archive/2026-08-15-refarch-phase6-observability.md) | Steps 1-7 完成：single observer/有界 metrics/opt-in OTel、transport-only module 契约、三组 AST surface locks + 双语 JSDoc audit 接入 governance-check、ADR-047、四宿主关键 journey（API/AI/Web/Desktop）与全量门禁通过；详见计划内 gate 记录与偏差说明 |
+
 ## 本轮已归档（2026-08-15）
 
 | 计划                                                                                                       | 结果                                                                                                                                                                                                    |

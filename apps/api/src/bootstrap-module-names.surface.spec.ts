@@ -4,13 +4,13 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Elegance E5b: API bootstrap docs must not invent dead Legacy* module names.
- * Production registration lives in main.ts via the runtime composers
+ * Production registration lives in server.ts via the runtime composers
  * (composeGovernance / composeAccount and peers).
  */
 describe('api bootstrap module names (elegance E5b)', () => {
   const dir = __dirname;
   const bootstrap = readFileSync(resolve(dir, 'bootstrap.ts'), 'utf8');
-  const main = readFileSync(resolve(dir, 'main.ts'), 'utf8');
+  const server = readFileSync(resolve(dir, 'server.ts'), 'utf8');
 
   it('example registers composed handles; no retired account module alias in bootstrap', () => {
     expect(bootstrap).toContain('.register(accountApiModule)');
@@ -20,10 +20,10 @@ describe('api bootstrap module names (elegance E5b)', () => {
     expect(bootstrap).not.toMatch(/\.register\(\s*Legacy\w*Module\s*\)/);
   });
 
-  it('main wires account through composeAccount as the account API module', () => {
-    expect(main).toContain("from './runtime/compose-account'");
-    expect(main).toMatch(/composeAccount\(\{\s*db: prisma,\s*cloudAuth,?\s*\}/);
-    expect(main).toContain('.register(accountApiModule)');
-    expect(main).not.toMatch(/LegacyAccountModule/);
+  it('server wires account through composeAccount as the account API module', () => {
+    expect(server).toContain("from './runtime/compose-account'");
+    expect(server).toMatch(/composeAccount\(\{\s*db: prisma,\s*cloudAuth,?\s*\}/);
+    expect(server).toContain('.register(accountApiModule)');
+    expect(server).not.toMatch(/LegacyAccountModule/);
   });
 });

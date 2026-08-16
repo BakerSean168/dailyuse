@@ -40,12 +40,14 @@ API、Electron IPC 与 system 入口各自构造“上下文”，但字段重�
 
 ### 2. HTTP 入口 producer
 
-- 新增全局 RequestContext middleware（`request-context.middleware.ts`），作为第一个 `app.use`，早于 Helmet/CORS/body/performance/auth/route/error handler。
+- 新增全局 RequestContext middleware（`request-context.middleware.ts`），作为第一个 `app.use`，早于 Helmet/CORS/body/auth/route/error handler。
 - incoming `X-Request-Id` 仅在 trim 后匹配 `^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$` 时接受；缺失/非法/重复/超长一律生成 UUID，绝不返回 400。
 - 该 ID 只用于 correlation/logging，不是认证、授权、幂等键、run ID、proposal ID 或 checkpoint ID。
 - middleware 在 `next()` 前写 `X-Request-Id` 响应头，因此 JSON、204、auth failure、404、500、SSE `flushHeaders()` 都回传同一值。
-- `traceId === requestId`（本阶段不引入 W3C traceparent/sampling）。
-- 每个 HTTP attempt 最多一条 terminal request log（finish/abort），由 middleware 独占；performance middleware 只保留 metrics 与 `X-Response-Time`。
+- `traceId === requestId` 是默认；只有显式启用 OpenTelemetry（`OTEL_TRACING_ENABLED=1`，见 ADR-047）时 `traceId` 才由 SERVER span 提供并可与 `requestId` 分离。
+- incoming W3C `traceparent/tracestate` 只用于（opt-in）trace 续接，不是认证、授权、幂等键或安全边界；无有效 W3C context 时创建新 root span。
+- 每个 HTTP attempt 恰好一条 terminal observation（finished/aborted）由同一个 observer 独占结算：结构化 request log、有界 HTTP metrics 与（opt-in）trace span 都来自这一次 settlement；finish 后 close 不二次结算。
+- Phase 6 退役 `performance.middleware.ts` 的 `res.json` monkey patch、第二个 finish listener 与 `X-Response-Time` 响应头；terminal duration 以 observer 计算值为真值。
 
 ### 3. Principal 只在入口解析
 
@@ -68,7 +70,7 @@ API、Electron IPC 与 system 入口各自构造“上下文”，但字段重�
 - Web/HTTP、Desktop IPC 与 Python AI service 可用同一个 `requestId` 检索日志。
 - 所有 feature 的 context 都来自入口，Controller/Application 不再二次解析 Principal 或重建 context。
 - 强制 required fields 带来迁移 blast radius：按 governance-first 顺序迁移 fixtures，不得用 `as ExecutionContext` 或 optional 字段掩盖。
-- 本阶段不宣称完整 OpenTelemetry、span exporter、sampling 或 W3C traceparent；引入 tracing 前 `traceId` 与 `requestId` 不得分离。
+- 默认（OTel 关闭）仍保持 `traceId === requestId`；引入 tracing 前不得分离二者。OTel enabled 时 `traceId`/`requestId` 拥有不同生命周期：request ID 持续用于 correlation/logging/幂等边界，trace ID 只用于 span 关联。
 
 ## Enforcement
 
