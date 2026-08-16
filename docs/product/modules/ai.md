@@ -72,15 +72,23 @@ execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK
 - residual 413：Host 工作台 LangGraph UI 泄漏边界（product event allowlist vs node/checkpoint 诊断；Host 面无 vendor 依赖）。
 - residual 415：Goal/Knowledge workflow 诊断事件展示脱敏（`formatLangGraphVendorDiagnosticEventLabel`；UI 不再直出 node.*）。
 - residual 417：跨端 multi-engine product scaffold/driver 扩至 16 步（+isolation/composition/LangGraph 脱敏 unit；仍非 Playwright 全绿）。
-- residual 419：Host **task.create** 提案/回执 lane 基础（title+goalId 编辑、receipt 深链 `/tasks/:id`；域 executor 仍未接线）。
-- residual 421：Goal 可观测性 i18n 去 LangGraph「node」产品语（`diagnosticWorkflowStepTiming`）；cross-end scaffold/driver 增 `ui.task_create_proposal_receipt_lane` unit 步（16→17）。
-- residual 423：Host **task.create** 实时 lane 接线 + 域 executor 基础（`resolveLiveHostWorkbenchAgentRuns`；approve 经 goal resume 或 `createTemplate` fallback；title/goalId 补丁）。
-- residual 425：Host **task.create** 客户端 settle + 执行回执（`createTemplate` fallback 后 `buildHostTaskClientExecutionReceipt`/`settledProposalIds`；receipt 深链 template id）。
-- residual 427：Host **AgentType task.create** 基础 + 专用会话字段 `taskAgentRun`；Host lane/`isPrimaryTaskHostAgentRun` 识别；start 能力门禁不阻塞；完整 Task Agent 工作流仍未齐。
-- residual 429：Host **task.create** 产品 toolMode `task-create` + Welcome/Footer 入口；AgentType 同步 toolMode；完整 Task Agent start/runtime 仍未齐。
-- residual 431：Host **task.create** 产品 start 基础（TS `buildHostTaskCreateStartResult` waiting_approval + create_task_template；客户端 `startTaskAgentRun`）；完整 LangGraph Task 工作流仍未齐。
-- residual 433：Host **task.create** 会话 restore/refresh + 启动时可选关联 `goalId`（`task-agent-linked-goal`）；完整 LangGraph 仍未齐。
-- residual 435：Host **task.create** 进程内 run store 基础（`taskCreateRunStore` 支持 get/list/events 再水合；非跨进程 durable DB）；完整 LangGraph 仍未齐。
+- residual 419（已实现）：Host **task.create** 提案/回执 lane（title+goalId 编辑、receipt 深链 `/tasks/:id`）；其后的 residual 423 已补上域执行接线。
+- residual 421（已实现）：Goal 可观测性 i18n 去 LangGraph「node」产品语（`diagnosticWorkflowStepTiming`）；cross-end scaffold/driver 的 `ui.task_create_proposal_receipt_lane` unit 步已落地并通过。
+- residual 423（已实现）：Host **task.create** 实时 lane + 域 executor（`resolveLiveHostWorkbenchAgentRuns`；approve 经 goal resume 或 `createTemplate` fallback；title/goalId 补丁）。
+- residual 425（已实现）：Host **task.create** 客户端 settle + 执行回执（`buildHostTaskClientExecutionReceipt`/`settledProposalIds`；receipt 深链 template id）。
+- residual 427（已实现）：Host **AgentType task.create** + 专用会话字段 `taskAgentRun`；Host lane/`isPrimaryTaskHostAgentRun` 识别；start 能力门禁允许该类型。
+- residual 429（已实现）：Host **task.create** 产品 toolMode `task-create` + Welcome/Footer 入口；AgentType 与 toolMode 同步。
+- residual 431（已实现）：Host **task.create** 产品 start（TS `buildHostTaskCreateStartResult` 产出 waiting_approval + create_task_template；客户端 `startTaskAgentRun`）。
+- residual 433（已实现）：Host **task.create** 会话 restore/refresh + 启动时可选关联 `goalId`（`task-agent-linked-goal`）。
+- residual 435（已实现，进程内范围）：`taskCreateRunStore` 支持 get/list/events 再水合。
+- residual 437（已实现，进程内范围）：cancel/complete resume 更新 run store；客户端 `cancelTaskAgentRun`/`completeTaskAgentRun` 接入 Host reject/approve settle。
+- residual 439（已实现，进程内范围）：edit revise 保持 waiting_approval，terminal cancel/confirm 幂等；客户端 `reviseTaskAgentRun` 已接入。
+- residual 441（已实现）：AgentRun 历史 reopen 可恢复 proposal/receipt focus，并回收 terminal task.create 标题。
+- residual 443（已实现）：会话 restore 后恢复 Host 工作台 focus，优先 task.create，再回退 goal/knowledge。
+- residual 445（已实现）：linked goal restore 与 client settlement/receipt 会话隔离。
+- residual 447（已实现，进程内范围）：run store 具备 `HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES` 容量边界并按 `updatedAt` 淘汰最旧条目。
+- residual 449（已实现，进程内范围）：product journey 覆盖 start→edit→cancel、start→confirm settle、get/list/events 再水合与 identity fail-closed。
+- 上述 residual 419–449 的编号范围已完成，但只证明当前 TS/客户端与进程内 runtime 路径；跨进程 durable DB、完整 Task LangGraph，以及完整跨端 Playwright/Electron multi-engine product E2E 仍是开放项。
 - direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
   不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；
