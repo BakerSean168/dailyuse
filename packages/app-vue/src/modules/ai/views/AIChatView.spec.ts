@@ -44,7 +44,7 @@ vi.mock('../../setting/composables/useUserSetting', () => ({
 }));
 
 import AIChatView from './AIChatView.vue';
-import { DASHBOARD_SERVICE_KEY, TASK_SERVICE_KEY } from '../../../di/keys';
+import { ASSISTANT_SURFACE_KEY, DASHBOARD_SERVICE_KEY, TASK_SERVICE_KEY } from '../../../di/keys';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import {
   createTestServerStateRuntime,
@@ -1219,6 +1219,7 @@ function mountView() {
         [DASHBOARD_SERVICE_KEY as symbol]: dashboardServiceFake,
         // Residual 1332: AIChatView mounts useTaskTemplateMutations() for Host task.create settlement.
         [TASK_SERVICE_KEY as symbol]: taskServiceFake,
+        [ASSISTANT_SURFACE_KEY as symbol]: 'web',
         [SERVER_STATE_RUNTIME_KEY]: runtime,
         [SERVER_STATE_IDENTITY_SCOPE_KEY]: () => 'identity-1',
       },
