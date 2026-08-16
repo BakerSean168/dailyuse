@@ -31,7 +31,7 @@ workflow：
 
 | Work package               | 当前状态                                                        | 证据                                                                                             |
 | -------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| W0 baseline/capacity       | 待 main 运行窗口采集                                            | 至少 5 次 comparable run；当前不伪造 baseline 报告                                               |
+| W0 baseline/capacity       | 已采集 7 次 comparable run（2026-08-16），DoD 性能项未达标                      | `reports/ci-cd-platform-v2/baseline-v1.json`：墙钟 P50 10.66min（目标 7-8）、runner-min P50 49.88（目标 42.3） |
 | W1 contracts/schema        | 已实现                                                          | `tools/ci-cd-platform/schemas/`、digest negative tests                                           |
 | W2 workspace/capabilities  | 已实现                                                          | `setup-nx-affected-job`、`workspace-receipt-v1`                                                  |
 | W3 control/risk/DAG input  | 已实现                                                          | `generate-delivery-manifest`、`create-lane-input`                                                |
