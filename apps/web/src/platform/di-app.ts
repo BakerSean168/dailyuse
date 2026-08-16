@@ -25,6 +25,7 @@ import {
   DASHBOARD_SERVICE_KEY,
   MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
+  ASSISTANT_SURFACE_KEY,
   defaultModuleCapsules,
   useAuthenticationStore,
 } from '@memoflow/app-vue/web-core';
@@ -83,7 +84,10 @@ const dataPortabilityService = createLazyService(async () => {
 
 const aiService = createLazyService(async () => {
   const { createAIHttpClient } = await import('@memoflow/ai/client');
-  return createAIHttpClient(resultHttpClient);
+  // Residual 351/Step D: dispatch first by default; host passes the policy
+  // explicitly (plan §3.2/§4.5). prefer_dispatch only falls back to legacy on
+  // definite dispatch-unavailable + zero observed events.
+  return createAIHttpClient(resultHttpClient, { dispatchPolicy: 'prefer_dispatch' });
 });
 
 const taskService = createLazyService(async () => {
@@ -113,6 +117,8 @@ export function installAppServices(app: App): void {
   app.provide(DASHBOARD_SERVICE_KEY, dashboardService);
   // V2 shell capsule navigation (UI_REDESIGN_V2_PLAN §2.2 / Brief §12-4)
   app.provide(MODULE_CAPSULES_KEY, defaultModuleCapsules);
+  // Residual 349: Web host advertises the 'web' assistant surface to shared Vue.
+  app.provide(ASSISTANT_SURFACE_KEY, 'web');
   app.provide(LOGOUT_HANDLER_KEY, async () => {
     const authStore = useAuthenticationStore();
     // Stop realtime sources first, then clear the identity cache (plan §3.1).

@@ -37,6 +37,7 @@ import {
   LOGOUT_HANDLER_KEY,
   PROFILE_LOCK_HANDLER_KEY,
   DESKTOP_ACCESS_SNAPSHOT_KEY,
+  ASSISTANT_SURFACE_KEY,
   defaultModuleCapsules,
 } from '@memoflow/app-vue/di';
 import { createDashboardIpcAdapter } from '@memoflow/app-vue/modules/dashboard/adapters';
@@ -73,7 +74,12 @@ export function installDesktopAppServices(app: App): void {
 
   app.provide(SETTING_SERVICE_KEY, createSettingIpcClient(resultIpcClient));
 
-  app.provide(AI_SERVICE_KEY, createAIIpcClient(resultIpcClient));
+  // Residual 351/Step D: dispatch first by default; host passes the policy
+  // explicitly (plan §3.2/§4.5).
+  app.provide(
+    AI_SERVICE_KEY,
+    createAIIpcClient(resultIpcClient, { dispatchPolicy: 'prefer_dispatch' }),
+  );
 
   app.provide(RULE_SERVICE_KEY, createGovernanceIpcClient(resultIpcClient));
 
@@ -82,6 +88,8 @@ export function installDesktopAppServices(app: App): void {
   app.provide(DASHBOARD_SERVICE_KEY, createDashboardIpcAdapter(resultIpcClient));
   // V2 shell capsule navigation (UI_REDESIGN_V2_PLAN §2.2 / Brief §12-4)
   app.provide(MODULE_CAPSULES_KEY, defaultModuleCapsules);
+  // Residual 349: Desktop renderer advertises the 'desktop' assistant surface.
+  app.provide(ASSISTANT_SURFACE_KEY, 'desktop');
 
   // Generic desktop bridge used by business IPC recovery and window controls.
   app.provide(DESKTOP_AUTH_API_KEY, bridge);

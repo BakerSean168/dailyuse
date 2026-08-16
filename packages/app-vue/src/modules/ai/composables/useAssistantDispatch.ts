@@ -1,9 +1,14 @@
 /**
  * useAssistantDispatch — residual 349 thin UI entry for AssistantFacade.
  *
- * Routes Host commands through AIClientPort.dispatchAssistant (Web HTTP/SSE).
- * Never places identityId in the command body. Does not switch the full chat
- * workbench yet; open chat default path remains the existing chat session until residual follow-up.
+ * Routes Host commands through AIChatService.dispatchAssistant (Web HTTP/SSE or
+ * Desktop IPC). Never places identityId in the command body, and the entry only
+ * exposes dispatchAssistant — it never calls streamMessage / sendMessage. The
+ * caller must provide an explicit `surface` (host-provided via DI); this shared
+ * composable does not sniff `window` to guess the platform.
+ *
+ * Open chat send flows through `useAIChatSession`, which uses
+ * `dispatchMessage()` from this entry (residual 349/351).
  */
 import { ref } from 'vue';
 import type { AssistantClientCommand, AssistantEvent } from '@memoflow/contracts/ai';
@@ -29,6 +34,7 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
     handlers?: {
       onEvent?: (event: AssistantEvent) => void;
     },
+    externalSignal?: AbortSignal,
   ): Promise<AssistantEvent[]> {
     if ('identityId' in (command as object)) {
       throw new Error('identityId must not be included in AssistantClientCommand');
@@ -41,6 +47,13 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
     lastError.value = null;
     const collected: AssistantEvent[] = [];
     lastEvents.value = collected;
+
+    const onExternalAbort = () => controller.abort();
+    if (externalSignal?.aborted) {
+      controller.abort();
+    } else {
+      externalSignal?.addEventListener('abort', onExternalAbort, { once: true });
+    }
 
     try {
       await options.service.dispatchAssistant(
@@ -59,6 +72,7 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
       lastError.value = error instanceof Error ? error.message : 'Assistant dispatch failed';
       throw error;
     } finally {
+      externalSignal?.removeEventListener('abort', onExternalAbort);
       if (activeAbortController.value === controller) {
         activeAbortController.value = null;
       }
@@ -69,11 +83,12 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
   async function dispatchMessage(input: {
     conversationId: string;
     content: string;
-    surface?: 'web' | 'desktop' | 'server';
+    surface: 'web' | 'desktop' | 'server';
     runId?: string;
     executionProfileId?: 'direct_turn' | 'pi_readonly';
     providerId?: string;
     model?: string;
+    signal?: AbortSignal;
     onEvent?: (event: AssistantEvent) => void;
   }) {
     return dispatch(
@@ -81,13 +96,14 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
         type: 'message',
         conversationId: input.conversationId,
         content: input.content,
-        surface: input.surface ?? 'web',
+        surface: input.surface,
         runId: input.runId,
         executionProfileId: input.executionProfileId,
         providerId: input.providerId,
         model: input.model,
       },
       { onEvent: input.onEvent },
+      input.signal,
     );
   }
 
@@ -152,10 +168,7 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
     );
   }
 
-  async function cancelRun(input: {
-    runId: string;
-    onEvent?: (event: AssistantEvent) => void;
-  }) {
+  async function cancelRun(input: { runId: string; onEvent?: (event: AssistantEvent) => void }) {
     return dispatch(
       {
         type: 'cancel_run',

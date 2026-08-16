@@ -10,6 +10,7 @@ import type { InjectionKey, Ref, ShallowRef } from 'vue';
 import type { CloudAuthDesktopClientPort } from '@memoflow/contracts';
 import type { DesktopAccessSnapshot } from '@memoflow/contracts/electron';
 import type { ElectronBridge } from '@memoflow/ipc-client';
+import type { AssistantSurface } from '@memoflow/contracts/ai';
 import type { DesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 import type {
   IAccountService,
@@ -56,7 +57,8 @@ export const DASHBOARD_SERVICE_KEY: InjectionKey<IDashboardService> = Symbol('Da
 export const MODULE_CAPSULES_KEY: InjectionKey<ModuleCapsule[]> = Symbol('ModuleCapsules');
 export const USER_NAME_KEY: InjectionKey<string> = Symbol('UserName');
 export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandler');
-export const PROFILE_LOCK_HANDLER_KEY: InjectionKey<() => Promise<void>> = Symbol('ProfileLockHandler');
+export const PROFILE_LOCK_HANDLER_KEY: InjectionKey<() => Promise<void>> =
+  Symbol('ProfileLockHandler');
 export const DESKTOP_ACCESS_SNAPSHOT_KEY: InjectionKey<Ref<DesktopAccessSnapshot | null>> =
   Symbol('DesktopAccessSnapshot');
 
@@ -82,3 +84,17 @@ export const SHELL_COMPOSER_DENSITY_KEY: InjectionKey<Ref<'comfortable' | 'compa
 /** Shell-owned workflow surface teleport mount. */
 export const SHELL_WORKFLOW_MOUNT_KEY: InjectionKey<ShallowRef<HTMLElement | null>> =
   Symbol('ShellWorkflowMount');
+
+/**
+ * Host-provided Assistant surface tag (ADR-035 / plan §4.2).
+ * Web provides `'web'`, Desktop renderer provides `'desktop'`; shared
+ * composables read this instead of sniffing `window`. The value travels
+ * unchanged on every assistant `message` command so the Host Turn Engine
+ * observes the real calling surface.
+ *
+ * Host 提供的 Assistant surface 标签（ADR-035 / 计划 §4.2）。Web 提供
+ * `'web'`，Desktop renderer 提供 `'desktop'`；共享 composable 通过该 key
+ * 读取，而不是嗅探 `window`。该值原样出现在每条 assistant `message`
+ * command 上，使 Host Turn Engine 观察到真实调用 surface。
+ */
+export const ASSISTANT_SURFACE_KEY: InjectionKey<AssistantSurface> = Symbol('AssistantSurface');

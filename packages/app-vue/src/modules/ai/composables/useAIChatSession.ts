@@ -1,7 +1,5 @@
 import { computed, nextTick, ref } from 'vue';
-import type {
-  AssistantEvent,
-} from '@memoflow/contracts/ai';
+import type { AssistantEvent, AssistantSurface } from '@memoflow/contracts/ai';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type {
@@ -13,6 +11,7 @@ import type {
 } from './types';
 import { unwrap } from '@memoflow/contracts/result';
 import { getAIErrorMessage } from './error';
+import { useAssistantDispatch } from './useAssistantDispatch';
 import {
   buildHostOpenChatStopCancelCommand,
   createHostOpenChatRunId,
@@ -32,6 +31,8 @@ type DeleteConversationId = Parameters<AIChatService['deleteConversation']>[0];
 
 export interface UseAIChatSessionOptions {
   service: AIChatService;
+  /** Host-provided Assistant surface tag (web / desktop / server). */
+  surface: AssistantSurface;
   getDefaultConversationName: (mode: string) => string;
   onConversationCreated?: (id: string) => void;
   restoreWorkflowState?: (id: string) => void;
@@ -39,6 +40,11 @@ export interface UseAIChatSessionOptions {
 
 export function useAIChatSession(options: UseAIChatSessionOptions) {
   const { t } = useI18n();
+
+  // Residual 349/351: open chat sends exclusively through the thin entry, never
+  // through streamMessage / sendMessage. surface is host-provided (DI), never
+  // guessed from window.
+  const assistantDispatch = useAssistantDispatch({ service: options.service });
 
   const chatMessage = ref('');
   const chatLoading = ref(false);
@@ -106,10 +112,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     return 'assistant';
   }
 
-  function normalizeChatItem(
-    item: Partial<ConversationMessageSummary>,
-    index: number,
-  ): ChatItem {
+  function normalizeChatItem(item: Partial<ConversationMessageSummary>, index: number): ChatItem {
     return {
       id: item.id ? String(item.id) : `message-${index}`,
       role: normalizeChatRole(item.role),
@@ -213,8 +216,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     // Residual 403: keep open-chat multi-engine badges across conversation switches.
     stashOpenChatHostTurnsForCurrentConversation();
     chatConversationId.value = item.id;
-    conversationTitle.value =
-      item.name || t('aiAssistant.dialogs.chat.defaultConversationName');
+    conversationTitle.value = item.name || t('aiAssistant.dialogs.chat.defaultConversationName');
     updateLastActiveConversation(String(item.id));
     syncModel(getConversationModelKey(String(item.id)));
     restoreOpenChatHostTurns(String(item.id));
@@ -241,10 +243,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       onClearWorkflow(id);
       onClearModel(id);
       // Residual 403: drop session open-chat turn memory for deleted conversation.
-      openChatHostTurnMemory = forgetOpenChatHostTurnsForConversation(
-        openChatHostTurnMemory,
-        id,
-      );
+      openChatHostTurnMemory = forgetOpenChatHostTurnsForConversation(openChatHostTurnMemory, id);
       if (chatConversationId.value === id) {
         startNewConversation();
       }
@@ -258,10 +257,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     }
   }
 
-  async function ensureConversationCreated(
-    loadService: AIChatService,
-    conversationName: string,
-  ) {
+  async function ensureConversationCreated(loadService: AIChatService, conversationName: string) {
     if (chatConversationId.value) return chatConversationId.value;
     const conversation = unwrap(
       await loadService.createConversation({
@@ -334,129 +330,129 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       await nextTick();
       adjustComposerHeight();
 
-      // Residual 351: open chat default path via AssistantFacade Host dispatch.
+      // Residual 351: open chat default path via AssistantFacade Host dispatch,
+      // routed through the thin entry (residual 349). Never streamMessage.
       let sawCompleted = false;
-      await loadService.dispatchAssistant(
-        {
-          type: 'message',
-          conversationId,
-          content: pendingUserMessage,
-          surface: 'web',
-          runId: hostRunId,
-          // Residual 369: multi-engine Host profile selection for open chat.
-          executionProfileId: executionProfileId.value,
-          providerId: selectedModel.providerId,
-          model: selectedModel.modelId,
-        },
-        {
-          onEvent: (event: AssistantEvent) => {
-            if (event.type === 'run.started' && event.runId) {
-              activeHostRunId.value = event.runId;
-              const existing = openChatHostTurns.value.find((turn) => turn.runId === hostRunId);
-              upsertOpenChatHostTurn({
-                runId: event.runId,
-                executionProfileId:
-                  event.profile === 'pi_readonly'
-                    ? 'pi_readonly'
-                    : existing?.executionProfileId ?? profileForTurn,
-                status: 'generating',
-                title: existing?.title ?? pendingUserMessage,
-                summary: existing?.summary ?? '',
-                engineId: event.engineId,
-              });
-              // If server rewrote runId, drop the pre-start client id row.
-              if (event.runId !== hostRunId) {
-                openChatHostTurns.value = openChatHostTurns.value.filter(
-                  (turn) => turn.runId !== hostRunId,
-                );
-              }
-            }
-            if (isHostOpenChatCancelledEvent(event)) {
-              const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
-              if (target && target.status === 'generating') {
-                target.status = 'aborted';
-                target.errorMessage = undefined;
-              }
-              const runKey = activeHostRunId.value ?? hostRunId;
-              const existing = openChatHostTurns.value.find((turn) => turn.runId === runKey);
-              if (existing) {
-                upsertOpenChatHostTurn({ ...existing, status: 'aborted' });
-              }
-            }
-            if (event.type === 'message.delta') {
-              const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
-              if (target) {
-                target.content += event.content;
-                target.status = 'generating';
-                target.errorMessage = undefined;
-              }
-              return;
-            }
-
-            if (event.type === 'message.completed') {
-              sawCompleted = true;
-              const completedRunId = event.runId || activeHostRunId.value || hostRunId;
-              const existingTurn = openChatHostTurns.value.find(
-                (turn) => turn.runId === completedRunId || turn.runId === hostRunId,
+      await assistantDispatch.dispatchMessage({
+        conversationId,
+        content: pendingUserMessage,
+        surface: options.surface,
+        runId: hostRunId,
+        // Residual 369: multi-engine Host profile selection for open chat.
+        executionProfileId: executionProfileId.value,
+        providerId: selectedModel.providerId,
+        model: selectedModel.modelId,
+        signal: streamController.signal,
+        onEvent: (event: AssistantEvent) => {
+          if (event.type === 'run.started' && event.runId) {
+            activeHostRunId.value = event.runId;
+            const existing = openChatHostTurns.value.find((turn) => turn.runId === hostRunId);
+            upsertOpenChatHostTurn({
+              runId: event.runId,
+              executionProfileId:
+                event.profile === 'pi_readonly'
+                  ? 'pi_readonly'
+                  : (existing?.executionProfileId ?? profileForTurn),
+              status: 'generating',
+              title: existing?.title ?? pendingUserMessage,
+              summary: existing?.summary ?? '',
+              engineId: event.engineId,
+            });
+            // If server rewrote runId, drop the pre-start client id row.
+            if (event.runId !== hostRunId) {
+              openChatHostTurns.value = openChatHostTurns.value.filter(
+                (turn) => turn.runId !== hostRunId,
               );
-              if (existingTurn || completedRunId) {
-                const nextStatus =
+            }
+          }
+          if (isHostOpenChatCancelledEvent(event)) {
+            const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
+            if (target && target.status === 'generating') {
+              target.status = 'aborted';
+              target.errorMessage = undefined;
+            }
+            const runKey = activeHostRunId.value ?? hostRunId;
+            const existing = openChatHostTurns.value.find((turn) => turn.runId === runKey);
+            if (existing) {
+              upsertOpenChatHostTurn({ ...existing, status: 'aborted' });
+            }
+          }
+          if (event.type === 'message.delta') {
+            const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
+            if (target) {
+              target.content += event.content;
+              target.status = 'generating';
+              target.errorMessage = undefined;
+            }
+            return;
+          }
+
+          if (event.type === 'message.completed') {
+            sawCompleted = true;
+            const completedRunId = event.runId || activeHostRunId.value || hostRunId;
+            const existingTurn = openChatHostTurns.value.find(
+              (turn) => turn.runId === completedRunId || turn.runId === hostRunId,
+            );
+            if (existingTurn || completedRunId) {
+              const nextStatus =
+                event.status === 'aborted'
+                  ? 'aborted'
+                  : event.status === 'failed'
+                    ? 'failed'
+                    : 'completed';
+              upsertOpenChatHostTurn({
+                runId: completedRunId,
+                executionProfileId: existingTurn?.executionProfileId ?? profileForTurn,
+                status: nextStatus,
+                title: existingTurn?.title ?? pendingUserMessage,
+                summary: (event.content ?? '').trim().slice(0, 240) || existingTurn?.summary || '',
+                engineId: existingTurn?.engineId,
+              });
+            }
+            const assistantIndex = chatTimeline.value.findIndex(
+              (item) => item.id === assistantDraftId,
+            );
+            if (assistantIndex >= 0) {
+              chatTimeline.value[assistantIndex] = {
+                id: event.assistantMessage?.id
+                  ? String(event.assistantMessage.id)
+                  : assistantDraftId,
+                role: 'assistant',
+                content:
+                  event.assistantMessage?.content ??
+                  event.content ??
+                  chatTimeline.value[assistantIndex]?.content ??
+                  '',
+                status:
                   event.status === 'aborted'
                     ? 'aborted'
                     : event.status === 'failed'
-                      ? 'failed'
-                      : 'completed';
-                upsertOpenChatHostTurn({
-                  runId: completedRunId,
-                  executionProfileId: existingTurn?.executionProfileId ?? profileForTurn,
-                  status: nextStatus,
-                  title: existingTurn?.title ?? pendingUserMessage,
-                  summary:
-                    (event.content ?? '').trim().slice(0, 240) || existingTurn?.summary || '',
-                  engineId: existingTurn?.engineId,
-                });
-              }
-              const assistantIndex = chatTimeline.value.findIndex(
-                (item) => item.id === assistantDraftId,
-              );
-              if (assistantIndex >= 0) {
-                chatTimeline.value[assistantIndex] = {
-                  id: event.assistantMessage?.id
-                    ? String(event.assistantMessage.id)
-                    : assistantDraftId,
-                  role: 'assistant',
-                  content:
-                    event.assistantMessage?.content ??
-                    event.content ??
-                    chatTimeline.value[assistantIndex]?.content ??
-                    '',
-                  status: event.status === 'aborted' ? 'aborted' : event.status === 'failed' ? 'error' : 'success',
-                  errorMessage: event.error,
-                };
-              }
-              const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
-              if (userIndex >= 0 && event.userMessage) {
-                chatTimeline.value[userIndex] = {
-                  id: String(event.userMessage.id),
-                  role: 'user',
-                  content: event.userMessage.content,
-                  status: 'success',
-                };
-              }
-              return;
+                      ? 'error'
+                      : 'success',
+                errorMessage: event.error,
+              };
             }
+            const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
+            if (userIndex >= 0 && event.userMessage) {
+              chatTimeline.value[userIndex] = {
+                id: String(event.userMessage.id),
+                role: 'user',
+                content: event.userMessage.content,
+                status: 'success',
+              };
+            }
+            return;
+          }
 
-            if (event.type === 'error') {
-              const assistantDraft = chatTimeline.value.find((item) => item.id === assistantDraftId);
-              if (assistantDraft) {
-                assistantDraft.status = 'error';
-                assistantDraft.errorMessage = event.message;
-              }
+          if (event.type === 'error') {
+            const assistantDraft = chatTimeline.value.find((item) => item.id === assistantDraftId);
+            if (assistantDraft) {
+              assistantDraft.status = 'error';
+              assistantDraft.errorMessage = event.message;
             }
-          },
+          }
         },
-        streamController.signal,
-      );
+      });
       if (sawCompleted) {
         await loadConversationList(loadService);
       }
