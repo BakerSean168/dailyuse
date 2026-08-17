@@ -13,12 +13,12 @@ updated: 2026-08-17T00:00:00+09:00
 
 ## 当前计划
 
-| 计划                                                                                   | 当前状态                                                                                                                                                                                         |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [应用契约与架构大重构](./2026-08-17-application-contract-and-architecture-refactor.md) | **Implementation active**：ACR-R01/R02/R03 研究、隔离 spike 与设计 Gate 已完成；采用 native union/switch + Zod strict registry，生产实施从 ACR-001 起按 PR 批次推进                              |
-| [CI/CD Platform V2 一次性重构](./2026-08-05-ci-cd-platform-v2-refactor.md)             | **Architecture implementation and PR cutover complete**：六平面契约、capability workspace、artifact 晋级、run observation；保留以采集长期 timing/fault 运营证据（baseline-v1 待 comparable run） |
-| [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)            | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称                                                                                                                      |
-| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md)   | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                                                           |
+| 计划                                                                                   | 当前状态                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [应用契约与架构大重构](./2026-08-17-application-contract-and-architecture-refactor.md) | **Foundation batch complete / Auth next**：ACR-001/002/010/011/012 已实现并通过 batch review；typed PublicFailure、diagnostic separation、HTTP/IPC compatibility 与 fail-new governance 已闭合，下一批执行 Auth ACR-020–023 |
+| [CI/CD Platform V2 一次性重构](./2026-08-05-ci-cd-platform-v2-refactor.md)             | **Architecture implementation and PR cutover complete**：六平面契约、capability workspace、artifact 晋级、run observation；保留以采集长期 timing/fault 运营证据（baseline-v1 待 comparable run）                            |
+| [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)            | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称                                                                                                                                                 |
+| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md)   | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                                                                                      |
 
 ## 本轮已归档（2026-08-16）
 

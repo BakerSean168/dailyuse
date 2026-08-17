@@ -3,9 +3,26 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { ipcAdapter, ipcAdapterWithValidation } from './ipc-adapter';
-import { ok, fail, ResultErrorException } from '@memoflow/contracts/result';
+import {
+  EmptyFailureDetailsSchema,
+  FailureCategories,
+  ResultErrorException,
+  createPublicFailure,
+  defineFailureRegistry,
+  fail,
+  ok,
+} from '@memoflow/contracts/result';
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { ConflictError } from '../errors/domain-error';
+
+const AdapterFailureRegistry = defineFailureRegistry({
+  TEST_PROVIDER_UNAVAILABLE: {
+    category: FailureCategories.Unavailable,
+    details: EmptyFailureDetailsSchema,
+    retryHint: { kind: 'transient' },
+    telemetry: 'provider_unavailable',
+  },
+});
 
 // ============================================================================
 // Mock helpers
@@ -33,7 +50,7 @@ function fullContext(overrides: Partial<ExecutionContext> = {}): ExecutionContex
 
 function createMockSchema(data: unknown, shouldFail = false) {
   return {
-    safeParse: (input: unknown) => {
+    safeParse: (_input: unknown) => {
       if (shouldFail) {
         return {
           success: false as const,
@@ -92,15 +109,20 @@ describe('ipcAdapter', () => {
     expect(result.error?.context).toEqual({ entity: 'repository', id: 'repo-1' });
   });
 
-  it('should handle thrown errors', async () => {
-    const controllerFn = vi.fn().mockRejectedValue(new Error('DB connection lost'));
+  it('should keep unknown thrown-error details internal', async () => {
+    const cause = new Error('DB connection lost');
+    const controllerFn = vi.fn().mockRejectedValue(cause);
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const handler = ipcAdapter(controllerFn, { extractContext: () => fullContext() });
 
     const result = await handler(createMockEvent(), {});
 
     expect(result.ok).toBe(false);
     expect(result.error?.code).toBe('INTERNAL_ERROR');
-    expect(result.error?.message).toBe('DB connection lost');
+    expect(result.error?.message).toBe('Internal operation failed');
+    expect(result.error?.message).not.toContain('DB connection lost');
+    expect(consoleError).toHaveBeenCalledWith('[ipcAdapter] Unhandled error:', cause);
+    consoleError.mockRestore();
   });
 
   it('should use custom context extractor returning the full shape', async () => {
@@ -123,6 +145,7 @@ describe('ipcAdapter', () => {
 
   it('should fail closed with no context producer (no identity-only stub)', async () => {
     const controllerFn = vi.fn().mockResolvedValue(ok('ok'));
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const handler = ipcAdapter(controllerFn);
 
     const result = await handler(createMockEvent(), {});
@@ -130,6 +153,8 @@ describe('ipcAdapter', () => {
     expect(controllerFn).not.toHaveBeenCalled();
     expect(result.ok).toBe(false);
     expect(result.error?.code).toBe('INTERNAL_ERROR');
+    expect(consoleError).toHaveBeenCalledWith('[ipcAdapter] Unhandled error:', expect.any(Error));
+    consoleError.mockRestore();
   });
 
   it('should preserve domain error context when controller throws', async () => {
@@ -175,6 +200,38 @@ describe('ipcAdapter', () => {
         context: { source: 'ipc-spec' },
       },
     });
+  });
+
+  it('preserves typed public failure semantics and drops internal causes', async () => {
+    const failure = createPublicFailure(AdapterFailureRegistry, 'TEST_PROVIDER_UNAVAILABLE', {});
+    const controllerFn = vi
+      .fn()
+      .mockRejectedValue(
+        new ResultErrorException(
+          'Provider unavailable',
+          failure.code,
+          undefined,
+          undefined,
+          undefined,
+          new Error('private provider body'),
+          failure,
+        ),
+      );
+    const handler = ipcAdapter(controllerFn, { extractContext: () => fullContext() });
+
+    const result = await handler(createMockEvent(), {});
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        code: 'TEST_PROVIDER_UNAVAILABLE',
+        message: 'Provider unavailable',
+        details: undefined,
+        context: undefined,
+        failure,
+      },
+    });
+    expect(result.error).not.toHaveProperty('cause');
   });
 });
 
@@ -238,6 +295,7 @@ describe('ipcAdapterWithValidation', () => {
     const schema = createMockSchema({ title: 'Test' });
     const controllerFn = vi.fn().mockRejectedValue(new Error('Crash'));
 
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const handler = ipcAdapterWithValidation(schema, controllerFn, {
       extractContext: () => fullContext(),
     });
@@ -245,7 +303,13 @@ describe('ipcAdapterWithValidation', () => {
 
     expect(result.ok).toBe(false);
     expect(result.error?.code).toBe('INTERNAL_ERROR');
-    expect(result.error?.message).toBe('Crash');
+    expect(result.error?.message).toBe('Internal operation failed');
+    expect(result.error?.message).not.toContain('Crash');
+    expect(consoleError).toHaveBeenCalledWith(
+      '[ipcAdapterWithValidation] Unhandled error:',
+      expect.any(Error),
+    );
+    consoleError.mockRestore();
   });
 
   it('validates the projected canonical input when projectArgs is provided', async () => {

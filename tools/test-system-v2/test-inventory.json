@@ -5267,6 +5267,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/contracts/src/result/failure-policy.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/contracts/src/result/ipc-envelope.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5276,6 +5284,14 @@
     },
     {
       "path": "packages/contracts/src/result/is-record-keep-boundary.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/result/public-failure.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/contracts/vitest.config.ts"
@@ -7012,6 +7028,14 @@
     },
     {
       "path": "packages/http-client/src/__tests__/http-client.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/http-client/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/http-client/src/__tests__/result-error.test.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/http-client/vitest.config.ts"
@@ -9922,6 +9946,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/utils/src/errors/result-error-mapper.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/utils/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/utils/src/frontend/delay-dual.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10163,6 +10195,14 @@
     },
     {
       "path": "tools/governance/__tests__/architecture-surface.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "tools/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "tools/governance/__tests__/failure-contract-inventory.test.mjs",
       "primarySuite": "governance",
       "collectors": [
         "tools/governance/vitest.config.ts"
@@ -10422,7 +10462,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 65
+      "fileCount": 67
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -10520,7 +10560,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 4
+      "fileCount": 5
     },
     {
       "id": "packages/ipc-client/vitest.config.ts",
@@ -10744,7 +10784,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "id": "memoflow:test:governance",
@@ -10765,7 +10805,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "vitest",
-      "fileCount": 8
+      "fileCount": 9
     },
     {
       "id": "test-system-v2:test",
@@ -11455,13 +11495,13 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 982,
+    "unit": 986,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 5,
     "e2e": 63,
     "perf": 4,
-    "governance": 33
+    "governance": 34
   }
 }

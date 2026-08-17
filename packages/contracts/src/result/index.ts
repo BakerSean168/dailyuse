@@ -5,6 +5,9 @@
  */
 
 export * from './core';
+export * from './public-failure';
+export * from './failure-policy';
+export * from './failure-compat';
 
 export { toIpcResult, fromIpcResult, isIpcResultEnvelope, type IpcResult } from './ipc';
 
@@ -17,7 +20,12 @@ export {
   createHttpResponseBuilder,
   isClientError,
   isServerError,
+  publicFailureToHttpStatus,
+  defineFailureHttpPolicy,
+  FailureCategoryToHttpStatus,
   ResultCodeToHttpStatus,
+  type FailureHttpRule,
+  type FailureHttpPolicy,
   type HttpResponse,
   type HttpResponseOptions,
 } from './http';

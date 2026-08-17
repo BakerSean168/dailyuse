@@ -1,16 +1,33 @@
 /**
  * Express Adapter Tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   expressAdapter,
   expressAdapterWithValidation,
   formatZodErrors,
   type ExpressLikeRequest,
 } from './express-adapter';
-import { ok, fail, ResultErrorException } from '@memoflow/contracts/result';
+import {
+  EmptyFailureDetailsSchema,
+  FailureCategories,
+  ResultErrorException,
+  createPublicFailure,
+  defineFailureRegistry,
+  fail,
+  ok,
+} from '@memoflow/contracts/result';
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import { ConflictError } from '../errors/domain-error';
+
+const AdapterFailureRegistry = defineFailureRegistry({
+  TEST_PROVIDER_UNAVAILABLE: {
+    category: FailureCategories.Unavailable,
+    details: EmptyFailureDetailsSchema,
+    retryHint: { kind: 'transient' },
+    telemetry: 'provider_unavailable',
+  },
+});
 
 // ============================================================================
 // Mock helpers
@@ -46,8 +63,17 @@ function createMockReq(overrides: Record<string, unknown> = {}): ExpressLikeRequ
   };
 }
 
-function createMockRes() {
-  const res: any = {
+interface MockResponse {
+  statusCode: number;
+  body: unknown;
+  ended: boolean;
+  status(code: number): MockResponse;
+  json(data: unknown): MockResponse;
+  end(): MockResponse;
+}
+
+function createMockRes(): MockResponse {
+  const res: MockResponse = {
     statusCode: 0,
     body: null,
     ended: false,
@@ -69,7 +95,7 @@ function createMockRes() {
 
 function createMockSchema(data: unknown, shouldFail = false) {
   return {
-    safeParse: (input: unknown) => {
+    safeParse: (_input: unknown) => {
       if (shouldFail) {
         return {
           success: false as const,
@@ -337,7 +363,36 @@ describe('expressAdapter', () => {
       message: 'Access denied',
       details: [{ code: 'MISSING_ROLE', message: 'admin required' }],
       context: { source: 'express-spec' },
+      failure: undefined,
     });
+  });
+
+  it('uses typed failure category for HTTP status and never serializes the cause', async () => {
+    const failure = createPublicFailure(AdapterFailureRegistry, 'TEST_PROVIDER_UNAVAILABLE', {});
+    const controllerFn = vi.fn().mockResolvedValue(
+      fail({
+        code: failure.code,
+        message: 'Provider unavailable',
+        failure,
+        cause: new Error('private provider body'),
+      }),
+    );
+    const handler = expressAdapter(controllerFn);
+
+    const req = createMockReq();
+    const res = createMockRes();
+
+    await handler(req, res);
+
+    expect(res.statusCode).toBe(503);
+    expect(res.body.error).toEqual({
+      code: 'TEST_PROVIDER_UNAVAILABLE',
+      message: 'Provider unavailable',
+      details: undefined,
+      context: undefined,
+      failure,
+    });
+    expect(res.body.error).not.toHaveProperty('cause');
   });
 });
 

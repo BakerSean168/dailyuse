@@ -41,6 +41,8 @@ import {
   type Result,
   isOk,
   errorCodeToHttpStatus,
+  getHttpStatusCode,
+  publicFailureToHttpStatus,
   createHttpResponseBuilder,
 } from '@memoflow/contracts/result';
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
@@ -320,13 +322,17 @@ export function expressAdapter<T>(
         }
         res.status(successStatus).json(responseBuilder.success(result.data as T));
       } else {
-        const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');
+        const status = getHttpStatusCode(result);
         res.status(status).json(responseBuilder.fromResult(result));
       }
     } catch (err) {
       const structuredError = extractStructuredResultError(err);
       if (structuredError) {
-        const status = structuredError.statusCode ?? errorCodeToHttpStatus(structuredError.code);
+        const status =
+          structuredError.statusCode ??
+          (structuredError.failure
+            ? publicFailureToHttpStatus(structuredError.failure)
+            : errorCodeToHttpStatus(structuredError.code));
         res
           .status(status)
           .json(
@@ -335,6 +341,7 @@ export function expressAdapter<T>(
               structuredError.message,
               structuredError.details,
               structuredError.context,
+              structuredError.failure,
             ),
           );
         return;
@@ -453,13 +460,17 @@ export function expressAdapterWithValidation<TInput, TOutput>(
         }
         res.status(successStatus).json(responseBuilder.success(result.data as TOutput));
       } else {
-        const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');
+        const status = getHttpStatusCode(result);
         res.status(status).json(responseBuilder.fromResult(result));
       }
     } catch (err) {
       const structuredError = extractStructuredResultError(err);
       if (structuredError) {
-        const status = structuredError.statusCode ?? errorCodeToHttpStatus(structuredError.code);
+        const status =
+          structuredError.statusCode ??
+          (structuredError.failure
+            ? publicFailureToHttpStatus(structuredError.failure)
+            : errorCodeToHttpStatus(structuredError.code));
         res
           .status(status)
           .json(
@@ -468,6 +479,7 @@ export function expressAdapterWithValidation<TInput, TOutput>(
               structuredError.message,
               structuredError.details,
               structuredError.context,
+              structuredError.failure,
             ),
           );
         return;

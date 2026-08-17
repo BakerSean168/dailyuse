@@ -40,6 +40,7 @@ describe('ResultErrorException', () => {
       message: 'Access denied',
       details: [{ code: 'MISSING_ROLE', message: 'admin required' }],
       context: { source: 'spec' },
+      failure: undefined,
       cause: undefined,
       statusCode: 403,
     });

@@ -1,5 +1,5 @@
-import type { ResultError } from '@memoflow/contracts/result';
-import { ResultCode } from '@memoflow/contracts/result';
+import type { JsonObject, ResultError } from '@memoflow/contracts/result';
+import { ResultCode, isPublicFailure } from '@memoflow/contracts/result';
 
 export type ResultErrorMessageKey =
   | 'BAD_REQUEST'
@@ -15,10 +15,7 @@ export type ResultErrorMessageKey =
   | 'CANCELED'
   | 'UNKNOWN';
 
-export type ResultErrorTranslateFn = (
-  key: string,
-  params?: Record<string, unknown>,
-) => string;
+export type ResultErrorTranslateFn = (key: string, params?: Record<string, unknown>) => string;
 
 export interface TranslateResultErrorOptions {
   scope?: string;
@@ -96,16 +93,27 @@ export function normalizeResultError(error: unknown): ResultError | null {
   }
 
   const candidate = error as Partial<ResultError>;
+  const failure = isPublicFailure(candidate.failure) ? candidate.failure : undefined;
   return {
-    code: typeof candidate.code === 'string' ? candidate.code : ResultCode.UNKNOWN,
+    code:
+      failure?.code ?? (typeof candidate.code === 'string' ? candidate.code : ResultCode.UNKNOWN),
     message: typeof candidate.message === 'string' ? candidate.message : '',
     details: Array.isArray(candidate.details) ? candidate.details : undefined,
     context:
-      candidate.context && typeof candidate.context === 'object'
-        ? candidate.context
-        : undefined,
+      candidate.context && typeof candidate.context === 'object' ? candidate.context : undefined,
+    failure,
     cause: candidate.cause,
   };
+}
+
+function publicFailureTranslationParams(
+  error: ResultError | null,
+): Record<string, unknown> | undefined {
+  const details = error?.failure?.details;
+  if (details && typeof details === 'object' && !Array.isArray(details)) {
+    return details as JsonObject as Record<string, unknown>;
+  }
+  return error?.context;
 }
 
 export function classifyNetworkErrorMessage(message: string | undefined): ResultError {
@@ -155,7 +163,7 @@ export function translateResultErrorMessage(
   options: TranslateResultErrorOptions = {},
 ): string {
   const normalized = normalizeResultError(error);
-  const params = normalized?.context;
+  const params = publicFailureTranslationParams(normalized);
   const code = normalized?.code ?? ResultCode.UNKNOWN;
   const fallbackCode = resolveResultErrorCodeFallback(code);
   const candidates = [

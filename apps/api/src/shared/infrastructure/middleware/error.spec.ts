@@ -1,10 +1,25 @@
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { ResultErrorException } from '@memoflow/contracts/result';
+import {
+  EmptyFailureDetailsSchema,
+  FailureCategories,
+  ResultErrorException,
+  createPublicFailure,
+  defineFailureRegistry,
+} from '@memoflow/contracts/result';
 import { applyErrorHandlers } from './error';
 import { createRequestContextMiddleware } from '../http/middlewares/request-context.middleware';
 import { createAuthMiddleware } from '../http/middlewares/auth-middleware';
+
+const MiddlewareFailureRegistry = defineFailureRegistry({
+  TEST_PROVIDER_UNAVAILABLE: {
+    category: FailureCategories.Unavailable,
+    details: EmptyFailureDetailsSchema,
+    retryHint: { kind: 'transient' },
+    telemetry: 'provider_unavailable',
+  },
+});
 
 function createAppWithError(error: Error) {
   const app = express();
@@ -114,6 +129,31 @@ describe('applyErrorHandlers (residual 627)', () => {
         timestamp: expect.any(Number),
       }),
     );
+  });
+
+  it('projects typed public failures without exposing diagnostic causes', async () => {
+    const failure = createPublicFailure(MiddlewareFailureRegistry, 'TEST_PROVIDER_UNAVAILABLE', {});
+    const app = createAppWithError(
+      new ResultErrorException(
+        'Provider unavailable',
+        failure.code,
+        undefined,
+        undefined,
+        undefined,
+        new Error('private provider body'),
+        failure,
+      ),
+    );
+
+    const res = await request(app).get('/boom');
+
+    expect(res.status).toBe(503);
+    expect(res.body.error).toEqual({
+      code: 'TEST_PROVIDER_UNAVAILABLE',
+      message: 'Provider unavailable',
+      failure,
+    });
+    expect(res.body.error).not.toHaveProperty('cause');
   });
 });
 
