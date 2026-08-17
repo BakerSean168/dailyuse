@@ -272,9 +272,22 @@ export function createLocalComposeRuntimeEnv(options = {}) {
 
   // Better Auth embeds this public origin in verification and reset links.
   // Keep both API callbacks and browser confirmation pages aligned with the
-  // resolved host ports used by Compose.
-  env.AUTH_BASE_URL = createLocalDockerAuthBaseUrl(env.API_HOST_PORT);
-  env.MEMOFLOW_WEB_URL = createLocalDockerWebUrl(env.WEB_HOST_PORT);
+  // resolved host ports used by Compose. When the machine opted into port
+  // overrides and explicitly set AUTH_BASE_URL / MEMOFLOW_WEB_URL (e.g. an
+  // external Tailscale magic-DNS origin for OAuth callbacks), preserve those
+  // values instead of forcing localhost, so browser redirects stay reachable.
+  const machineUrlOverride =
+    machineEnvFileMap.get('LOCAL_DOCKER_MACHINE_PORTS')?.toLowerCase() === 'true';
+  if (machineUrlOverride && machineEnvFileMap.has('AUTH_BASE_URL')) {
+    env.AUTH_BASE_URL = machineEnvFileMap.get('AUTH_BASE_URL') ?? env.AUTH_BASE_URL;
+  } else {
+    env.AUTH_BASE_URL = createLocalDockerAuthBaseUrl(env.API_HOST_PORT);
+  }
+  if (machineUrlOverride && machineEnvFileMap.has('MEMOFLOW_WEB_URL')) {
+    env.MEMOFLOW_WEB_URL = machineEnvFileMap.get('MEMOFLOW_WEB_URL') ?? env.MEMOFLOW_WEB_URL;
+  } else {
+    env.MEMOFLOW_WEB_URL = createLocalDockerWebUrl(env.WEB_HOST_PORT);
+  }
 
   // Compose defaults use the shared local-docker ports. When a machine opts
   // into isolated overrides, keep browser-facing CORS allowlists aligned with
