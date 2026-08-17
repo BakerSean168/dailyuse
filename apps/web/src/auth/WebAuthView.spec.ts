@@ -186,6 +186,26 @@ describe('WebAuthView three-login surface contract', () => {
     wrapper.unmount();
   });
 
+  it.each([
+    [false, true],
+    ['needs-email-verification', false],
+  ])(
+    'changes to the verification scene only for the explicit verification outcome',
+    async (outcome, staysOnLogin) => {
+      webAuthMocks.loginByEmail.mockResolvedValueOnce(outcome as never);
+      const wrapper = mountView();
+      await wrapper.get('#email').setValue('person@example.com');
+      await wrapper.get('#password').setValue('Correct-password-123');
+
+      await wrapper.get('[data-testid="login-form"]').trigger('submit');
+      await flushPromises();
+
+      expect(wrapper.find('[data-testid="login-form"]').exists()).toBe(staysOnLogin);
+      expect(wrapper.find('[data-testid="verify-email-form"]').exists()).toBe(!staysOnLogin);
+      wrapper.unmount();
+    },
+  );
+
   it('starts GitHub login only through the dedicated OAuth entry', async () => {
     const wrapper = mountView();
     await flushPromises();
@@ -230,9 +250,9 @@ describe('WebAuthView three-login surface contract', () => {
     await flushPromises();
 
     // The receipt renders the safe allowlisted message + request id + retry.
-    expect(
-      first.get('[data-testid="web-auth-password-receipt-message"]').text(),
-    ).toContain('temporarily unavailable');
+    expect(first.get('[data-testid="web-auth-password-receipt-message"]').text()).toContain(
+      'temporarily unavailable',
+    );
     expect(first.get('[data-testid="web-auth-password-receipt-request-id"]').text()).toContain(
       'trace-reset-1',
     );

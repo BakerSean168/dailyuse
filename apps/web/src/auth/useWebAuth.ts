@@ -16,11 +16,16 @@ export function useWebAuth() {
   const pendingVerificationEmail = ref<string | null>(null);
   const errorMessage = computed(() =>
     error.value
-      ? translateAuthResultError(error.value, t, { scope: 'auth', fallbackKey: 'auth.errors.UNKNOWN' })
+      ? translateAuthResultError(error.value, t, {
+          scope: 'auth',
+          fallbackKey: 'auth.errors.UNKNOWN',
+        })
       : null,
   );
 
-  async function run<T>(operation: () => Promise<{ ok: true; data: T } | { ok: false; error: ResultError }>) {
+  async function run<T>(
+    operation: () => Promise<{ ok: true; data: T } | { ok: false; error: ResultError }>,
+  ) {
     isLoading.value = true;
     error.value = null;
     try {
@@ -39,14 +44,28 @@ export function useWebAuth() {
     input: CloudSignInRequest,
     successUrl = '/',
   ): Promise<AuthSuccessOutcome | false> {
-    const data = await run(() => service.signIn(input));
-    if (!data) return false;
-    if (!data.session) {
-      pendingVerificationEmail.value = input.email;
-      return 'needs-email-verification';
+    isLoading.value = true;
+    error.value = null;
+    pendingVerificationEmail.value = null;
+    try {
+      const result = await service.signIn(input);
+      if (!result.ok) {
+        if (result.error.code === 'EMAIL_VERIFICATION_REQUIRED') {
+          pendingVerificationEmail.value = input.email;
+          return 'needs-email-verification';
+        }
+        error.value = result.error;
+        return false;
+      }
+      if (!result.data.session) {
+        pendingVerificationEmail.value = input.email;
+        return 'needs-email-verification';
+      }
+      window.location.replace(successUrl);
+      return 'authenticated';
+    } finally {
+      isLoading.value = false;
     }
-    window.location.replace(successUrl);
-    return 'authenticated';
   }
 
   async function registerByEmail(input: CloudSignUpRequest): Promise<AuthSuccessOutcome | false> {
@@ -92,7 +111,11 @@ export function useWebAuth() {
     errorMessage,
     successMessage,
     pendingVerificationEmail,
-    clearError: () => { error.value = null; },
-    clearSuccessMessage: () => { successMessage.value = null; },
+    clearError: () => {
+      error.value = null;
+    },
+    clearSuccessMessage: () => {
+      successMessage.value = null;
+    },
   };
 }
