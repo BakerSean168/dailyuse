@@ -17,6 +17,7 @@ import { fail, ok, type Result } from '@memoflow/contracts/result';
 import { CloudAuthChannels } from '@memoflow/contracts/electron';
 import type { IResultHttpClient } from '@memoflow/http-client';
 import type { IResultIpcClient } from '@memoflow/ipc-client';
+import { mapBetterAuthFailure } from './adapters/better-auth-error-mapper.js';
 
 interface BetterAuthUser {
   id: string;
@@ -64,26 +65,7 @@ class CloudAuthHttpClient implements CloudAuthWebClientPort {
           }
         | null;
       if (!response.ok) {
-        const errorPayload =
-          payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
-        const message = errorPayload
-          ? typeof errorPayload.message === 'string'
-            ? errorPayload.message
-            : typeof errorPayload.error_description === 'string'
-              ? errorPayload.error_description
-              : typeof errorPayload.code === 'string' && typeof errorPayload.error === 'string'
-                ? errorPayload.error
-                : undefined
-          : '云端认证请求失败';
-        const code =
-          errorPayload && typeof errorPayload.code === 'string'
-            ? errorPayload.code.toUpperCase()
-            : errorPayload && typeof errorPayload.error === 'string'
-              ? errorPayload.error.toUpperCase()
-              : response.status === 401
-                ? 'UNAUTHORIZED'
-                : 'AUTH_REQUEST_FAILED';
-        return fail({ code, message: message ?? '云端认证请求失败' });
+        return fail(mapBetterAuthFailure(payload, response.status));
       }
       return ok(payload as T);
     } catch (cause) {

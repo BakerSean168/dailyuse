@@ -1611,6 +1611,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/web/src/auth/useWebAuth.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/web/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/web/src/auth/validation.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4780,6 +4788,14 @@
     },
     {
       "path": "packages/cloud-auth/src/index.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/cloud-auth/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/cloud-auth/src/server/auth-flow.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/cloud-auth/vitest.config.ts"
@@ -10392,7 +10408,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "id": "packages/account/vitest.config.ts",
@@ -10455,7 +10471,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 4
+      "fileCount": 5
     },
     {
       "id": "packages/contracts/vitest.config.ts",
@@ -11495,7 +11511,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 986,
+    "unit": 988,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

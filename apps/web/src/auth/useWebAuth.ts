@@ -50,7 +50,7 @@ export function useWebAuth() {
     try {
       const result = await service.signIn(input);
       if (!result.ok) {
-        if (result.error.code === 'EMAIL_NOT_VERIFIED') {
+        if (result.error.code === 'EMAIL_VERIFICATION_REQUIRED') {
           pendingVerificationEmail.value = input.email;
           return 'needs-email-verification';
         }

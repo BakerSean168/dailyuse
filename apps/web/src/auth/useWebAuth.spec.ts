@@ -32,8 +32,8 @@ describe('useWebAuth email sign-in outcomes', () => {
   it('keeps invalid credentials as an error instead of requesting email verification', async () => {
     service.signIn.mockResolvedValue(
       fail({
-        code: 'INVALID_EMAIL_OR_PASSWORD',
-        message: 'Invalid email or password',
+        code: 'UNAUTHORIZED',
+        message: 'Invalid credentials',
       }),
     );
     const auth = useWebAuth();
@@ -45,14 +45,14 @@ describe('useWebAuth email sign-in outcomes', () => {
 
     expect(outcome).toBe(false);
     expect(auth.pendingVerificationEmail.value).toBeNull();
-    expect(auth.errorMessage.value).toBe('Invalid email or password');
+    expect(auth.errorMessage.value).toBe('Invalid credentials');
   });
 
-  it('requests email verification only for Better Auth EMAIL_NOT_VERIFIED', async () => {
+  it('requests email verification only for the provider-neutral verification failure', async () => {
     service.signIn.mockResolvedValue(
       fail({
-        code: 'EMAIL_NOT_VERIFIED',
-        message: 'Email not verified',
+        code: 'EMAIL_VERIFICATION_REQUIRED',
+        message: 'Email verification required',
       }),
     );
     const auth = useWebAuth();

@@ -81,7 +81,7 @@ describe('CloudAuthHttpClient', () => {
       client.signIn({ email: 'user@example.com', password: 'bad-password' }),
     ).resolves.toMatchObject({
       ok: false,
-      error: { code: 'UNAUTHORIZED', message: 'Invalid password' },
+      error: { code: 'UNAUTHORIZED', message: 'Invalid credentials' },
     });
     await expect(client.getSession()).resolves.toMatchObject({
       ok: false,
@@ -90,33 +90,43 @@ describe('CloudAuthHttpClient', () => {
   });
 
   it.each([
-    { status: 401, code: 'INVALID_EMAIL_OR_PASSWORD' },
-    { status: 403, code: 'EMAIL_NOT_VERIFIED' },
+    {
+      status: 401,
+      providerCode: 'INVALID_EMAIL_OR_PASSWORD',
+      providerMessage: 'Invalid email or password',
+      expectedCode: 'UNAUTHORIZED',
+      expectedMessage: 'Invalid credentials',
+    },
+    {
+      status: 403,
+      providerCode: 'EMAIL_NOT_VERIFIED',
+      providerMessage: 'Email not verified',
+      expectedCode: 'EMAIL_VERIFICATION_REQUIRED',
+      expectedMessage: 'Email verification required',
+    },
   ])(
-    'preserves Better Auth error code $code instead of treating it as verification success',
-    async ({ status, code }) => {
+    'projects Better Auth $providerCode into MemoFlow $expectedCode',
+    async ({ status, providerCode, providerMessage, expectedCode, expectedMessage }) => {
       vi.stubGlobal(
         'fetch',
-        vi.fn().mockResolvedValue(
-          jsonResponse(
-            {
-              code,
-              message:
-                code === 'INVALID_EMAIL_OR_PASSWORD'
-                  ? 'Invalid email or password'
-                  : 'Email not verified',
-            },
-            status,
+        vi
+          .fn()
+          .mockResolvedValue(
+            jsonResponse({ code: providerCode, message: providerMessage }, status),
           ),
-        ),
       );
 
       const result = await createCloudAuthHttpClient(undefined, {
         baseUrl: 'https://memo.test',
       }).signIn({ email: 'user@example.com', password: 'wrong-or-unverified' });
 
-      expect(result).toMatchObject({ ok: false, error: { code } });
+      expect(result).toMatchObject({
+        ok: false,
+        error: { code: expectedCode, message: expectedMessage },
+      });
       expect(result).not.toHaveProperty('data.requiresEmailVerification');
+      expect(JSON.stringify(result)).not.toContain(providerCode);
+      expect(JSON.stringify(result)).not.toContain(providerMessage);
     },
   );
 
