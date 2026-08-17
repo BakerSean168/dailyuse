@@ -4,5 +4,6 @@
  */
 
 export * from './domain-error';
+export * from './diagnostic-failure';
 export * from './prisma-error-mapper';
 export * from './result-error-mapper';

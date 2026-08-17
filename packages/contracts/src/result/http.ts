@@ -11,6 +11,12 @@
 import { ResultCode } from './codes';
 import type { Result, ResultError, ResultMeta, ResultErrorDetail, PageInfo } from './core';
 import { ok, fail, isOk } from './core';
+import type {
+  FailureCategory,
+  FailureCodeOf,
+  FailureRegistry,
+  PublicFailure,
+} from './public-failure';
 
 // ============================================================================
 // HTTP Response Types
@@ -19,7 +25,7 @@ import { ok, fail, isOk } from './core';
 /**
  * HTTP 响应格式
  * 在 Result 基础上添加 HTTP 特有的字段
- * 
+ *
  * 注意：使用 `ok` 而非 `success`，与 Result/IpcResult 保持一致
  */
 export interface HttpResponse<T = unknown> {
@@ -37,6 +43,8 @@ export interface HttpResponse<T = unknown> {
     message: string;
     details?: ResultErrorDetail[];
     context?: Record<string, unknown>;
+    /** Typed public failure semantics; legacy code/message remain for compatibility. */
+    failure?: PublicFailure;
   };
   /** 分页信息（列表接口） */
   pagination?: PageInfo;
@@ -95,12 +103,66 @@ export const ResultCodeToHttpStatus: Record<string, number> = {
   [ResultCode.UNKNOWN]: 500,
 };
 
+/** Default HTTP status projection for transport-neutral failure categories. */
+export const FailureCategoryToHttpStatus: Readonly<Record<FailureCategory, number>> = {
+  validation: 422,
+  unauthenticated: 401,
+  permission: 403,
+  not_found: 404,
+  conflict: 409,
+  rate_limited: 429,
+  unavailable: 503,
+  timeout: 504,
+  canceled: 499,
+  internal: 500,
+};
+
+/** HTTP projection rule for one feature failure code. */
+export interface FailureHttpRule {
+  readonly status: number;
+  readonly retryAfter?: boolean;
+}
+
+/** Complete HTTP policy keyed by a feature failure registry. */
+export type FailureHttpPolicy<Registry extends FailureRegistry> = Readonly<
+  Record<FailureCodeOf<Registry>, FailureHttpRule>
+>;
+
+/** Define a complete feature HTTP policy and fail closed on extra keys. */
+export function defineFailureHttpPolicy<
+  const Registry extends FailureRegistry,
+  const Policy extends FailureHttpPolicy<Registry>,
+>(registry: Registry, policy: Policy): Policy {
+  const expected = Object.keys(registry).sort();
+  const received = Object.keys(policy).sort();
+  if (
+    expected.length !== received.length ||
+    expected.some((code, index) => code !== received[index])
+  ) {
+    throw new Error(
+      `Failure HTTP policy codes must exactly match registry codes: expected ${expected.join(', ')}, received ${received.join(', ')}`,
+    );
+  }
+  return Object.freeze({ ...policy }) as Policy;
+}
+
+/** Resolve a typed public failure to an HTTP status. */
+export function publicFailureToHttpStatus(
+  failure: PublicFailure,
+  policy?: Readonly<Record<string, FailureHttpRule>>,
+): number {
+  return policy?.[failure.code]?.status ?? FailureCategoryToHttpStatus[failure.category];
+}
+
 /**
  * 获取 Result 对应的 HTTP 状态码
  */
 export function getHttpStatusCode(result: Result<unknown>): number {
   if (isOk(result)) {
     return 200;
+  }
+  if (result.error.failure) {
+    return publicFailureToHttpStatus(result.error.failure);
   }
   const code = result.error.code;
   return ResultCodeToHttpStatus[code] ?? 500;
@@ -147,7 +209,9 @@ export function toHttpResponse<T>(
     };
   }
 
-  const httpStatus = errorCodeToHttpStatus(result.error.code);
+  const httpStatus = result.error.failure
+    ? publicFailureToHttpStatus(result.error.failure)
+    : errorCodeToHttpStatus(result.error.code);
 
   return {
     ok: false,
@@ -158,6 +222,7 @@ export function toHttpResponse<T>(
       message: result.error.message,
       details: result.error.details,
       context: result.error.context,
+      failure: result.error.failure,
     },
     timestamp,
     traceId: options.traceId ?? result.meta?.traceId,
@@ -186,6 +251,7 @@ export function fromHttpResponse<T>(response: HttpResponse<T>): Result<T, Result
       message: response.error?.message ?? response.message,
       details: response.error?.details,
       context: response.error?.context,
+      failure: response.error?.failure,
     },
     meta,
   );
@@ -222,11 +288,7 @@ export class HttpResponseBuilder {
   /**
    * 构建成功响应（带分页）
    */
-  successWithPagination<T>(
-    data: T,
-    pagination: PageInfo,
-    message = '查询成功',
-  ): HttpResponse<T> {
+  successWithPagination<T>(data: T, pagination: PageInfo, message = '查询成功'): HttpResponse<T> {
     return toHttpResponse(ok(data), {
       traceId: this.traceId,
       startTime: this.startTime,
@@ -243,8 +305,9 @@ export class HttpResponseBuilder {
     message: string,
     details?: ResultErrorDetail[],
     context?: Record<string, unknown>,
+    failure?: PublicFailure,
   ): HttpResponse<never> {
-    return toHttpResponse(fail({ code, message, details, context }), {
+    return toHttpResponse(fail({ code, message, details, context, failure }), {
       traceId: this.traceId,
       startTime: this.startTime,
     });
@@ -253,7 +316,10 @@ export class HttpResponseBuilder {
   /**
    * 从 Result 构建响应
    */
-  fromResult<T>(result: Result<T>, options?: Omit<HttpResponseOptions, 'traceId' | 'startTime'>): HttpResponse<T> {
+  fromResult<T>(
+    result: Result<T>,
+    options?: Omit<HttpResponseOptions, 'traceId' | 'startTime'>,
+  ): HttpResponse<T> {
     return toHttpResponse(result, {
       traceId: this.traceId,
       startTime: this.startTime,
@@ -323,4 +389,3 @@ export function isServerError(result: Result<unknown>): boolean {
   const status = errorCodeToHttpStatus(result.error.code);
   return status >= 500;
 }
-

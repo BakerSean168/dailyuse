@@ -57,6 +57,7 @@ export {
 // ── Result error helpers ──
 export {
   classifyNetworkErrorMessage,
+  normalizeResultError,
   statusToResultCode,
   statusToResultError,
   translateResultErrorMessage,

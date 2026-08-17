@@ -6,6 +6,7 @@
 
 export { ResultCode, type ResultCode as ResultCodeType } from './codes';
 import { ResultCode } from './codes';
+import { isPublicFailure, type PublicFailure } from './public-failure';
 
 export interface ResultErrorDetail {
   field?: string;
@@ -38,6 +39,9 @@ export interface ResultError {
   message: string;
   details?: ResultErrorDetail[];
   context?: Record<string, unknown>;
+  /** Typed, JSON-safe failure semantics carried during the legacy envelope migration. */
+  failure?: PublicFailure;
+  /** Internal-only diagnostic cause. Transport serializers must never emit it. */
   cause?: unknown;
 }
 
@@ -50,6 +54,7 @@ export class ResultErrorException extends Error {
   readonly details?: ResultErrorDetail[];
   readonly context?: Record<string, unknown>;
   readonly statusCode?: number;
+  readonly failure?: PublicFailure;
   readonly cause?: unknown;
 
   constructor(
@@ -59,6 +64,7 @@ export class ResultErrorException extends Error {
     context?: Record<string, unknown>,
     statusCode?: number,
     cause?: unknown,
+    failure?: PublicFailure,
   ) {
     super(message);
     this.name = 'ResultErrorException';
@@ -67,6 +73,7 @@ export class ResultErrorException extends Error {
     this.context = context;
     this.statusCode = statusCode;
     this.cause = cause;
+    this.failure = failure;
   }
 }
 
@@ -85,6 +92,7 @@ export function extractStructuredResultError(error: unknown): StructuredResultEr
       message: error.message,
       details: error.details,
       context: error.context,
+      failure: error.failure,
       cause: error.cause,
       statusCode: error.statusCode,
     };
@@ -108,14 +116,20 @@ export function extractStructuredResultError(error: unknown): StructuredResultEr
       : typeof error.httpStatus === 'number'
         ? error.httpStatus
         : undefined;
+  const failure = isPublicFailure(error.failure) ? error.failure : undefined;
   const cause = 'cause' in error ? error.cause : undefined;
 
   if (!(error instanceof Error)) {
-    return { code, message, details, context, cause, statusCode };
+    return { code, message, details, context, failure, cause, statusCode };
   }
 
-  if (statusCode !== undefined || details !== undefined || context !== undefined) {
-    return { code, message, details, context, cause, statusCode };
+  if (
+    statusCode !== undefined ||
+    details !== undefined ||
+    context !== undefined ||
+    failure !== undefined
+  ) {
+    return { code, message, details, context, failure, cause, statusCode };
   }
 
   return null;
@@ -148,6 +162,11 @@ export function isFail<T, E>(result: Result<T, E>): result is FailureResult<E> {
   return result.ok === false;
 }
 
+/** Exhaustiveness helper for discriminated-union switches. */
+export function assertNever(value: never, message = 'Unexpected union member'): never {
+  throw new Error(`${message}: ${JSON.stringify(value)}`);
+}
+
 export function unwrap<T>(result: Result<T>): T {
   if (isOk(result)) {
     return result.data;
@@ -166,6 +185,7 @@ export function toResultErrorException(
     error.context,
     statusCode,
     error.cause,
+    error.failure,
   );
 }
 

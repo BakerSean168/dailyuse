@@ -511,6 +511,8 @@ OpenTelemetry、Temporal；Lark CLI、Ardan Labs、Memos、Vendure。
 
 ## ACR-001 — Freeze the architecture and failure inventory
 
+**Status:** Completed on 2026-08-17. The AST inventory and 219-entry owned/expiring baseline are active in `governance-check`; evidence is recorded in `docs/analysis/2026-08-17-failure-contract-foundation-review.md`.
+
 **Goal:** 生成可重复的全仓 inventory，记录 failure code、message branch、raw rethrow、provider leakage、
 UI raw message、contracts ownership 和 feature dependencies。
 
@@ -542,6 +544,8 @@ UI raw message、contracts ownership 和 feature dependencies。
 
 ## ACR-002 — Add report-only failure governance
 
+**Status:** Completed on 2026-08-17. Historical findings remain visible; new or expired findings fail immediately, stale fixed entries are reported, and repository-level mutation evidence is recorded in the batch review.
+
 **Goal:** 在不阻塞迁移前提下报告 provider leakage、message branching、raw message rethrow 和 UI raw message。
 
 **Why now:** 先观测再逐类 fail closed，避免一次性阻塞全仓。
@@ -570,6 +574,8 @@ UI raw message、contracts ownership 和 feature dependencies。
 **Risks:** 噪音使规则失去信任；先限定高置信模式。
 
 ## ACR-010 — Introduce JSON-safe PublicFailure primitives
+
+**Status:** Completed on 2026-08-17. `PublicFailure`, strict details schemas, retry hints, operation policy, recovery actions, registry-derived schemas, compatibility envelopes, and JSON-safety tests are implemented without adding a new runtime dependency.
 
 **Goal:** 在 `@memoflow/contracts/result` 引入 category、typed details、failure retry hint 和 typed public failure，并定义 operation retry/recovery boundary，保持现有 wire 兼容。
 
@@ -608,6 +614,8 @@ pnpm nx run contracts:lint
 
 ## ACR-011 — Separate diagnostic failures from public failures
 
+**Status:** Completed on 2026-08-17. New mapping code returns safe public errors and observer/logger-only diagnostics; HTTP/IPC serializers drop causes and unknown IPC errors use a fixed safe message.
+
 **Goal:** cause/stack/provider detail 通过 observer/logger 传递，不再依赖 public ResultError。
 
 **Why now:** provider ACL 和 safe serialization 前必须有内部排障通道。
@@ -636,6 +644,8 @@ pnpm nx run contracts:lint
 **Risks:** 诊断信息丢失；先建立 observer tests 再删除旧 cause 路径。
 
 ## ACR-012 — Create feature failure registry and projection validators
+
+**Status:** Completed on 2026-08-17. The single-source registry derives code/details/schema and enforces strict detail safety, exact retry hints, complete projections, and complete HTTP policies. Auth will be the first feature registry in ACR-020.
 
 **Goal:** 每个 public code 都有 category、operation、typed details、retry hint、HTTP/IPC/i18n/telemetry coverage，并从一个 registry object 推导。
 

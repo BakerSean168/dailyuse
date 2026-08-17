@@ -149,15 +149,16 @@ export function ipcAdapter<T>(
             message: structuredError.message,
             details: structuredError.details,
             context: structuredError.context,
-            cause: structuredError.cause,
+            failure: structuredError.failure,
           }),
         );
       }
 
+      console.error('[ipcAdapter] Unhandled error:', err);
       return toIpcResult(
         fail({
           code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
+          message: 'Internal operation failed',
         }),
       );
     }
@@ -235,15 +236,16 @@ export function ipcAdapterWithValidation<TInput, TOutput>(
             message: structuredError.message,
             details: structuredError.details,
             context: structuredError.context,
-            cause: structuredError.cause,
+            failure: structuredError.failure,
           }),
         );
       }
 
+      console.error('[ipcAdapterWithValidation] Unhandled error:', err);
       return toIpcResult(
         fail({
           code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
+          message: 'Internal operation failed',
         }),
       );
     }

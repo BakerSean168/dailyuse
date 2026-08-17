@@ -11,7 +11,11 @@
 import type { Express, Request, Response, NextFunction } from 'express';
 import { mapPrismaError } from '@memoflow/utils/errors';
 import { createLogger } from '@memoflow/utils/logger';
-import { errorCodeToHttpStatus, extractStructuredResultError } from '@memoflow/contracts/result';
+import {
+  errorCodeToHttpStatus,
+  extractStructuredResultError,
+  publicFailureToHttpStatus,
+} from '@memoflow/contracts/result';
 import { createApiResponseBuilder } from '../http/response-builder.js';
 import type { RequestContextCarrierRequest } from '../http/middlewares/request-context.middleware.js';
 
@@ -69,7 +73,11 @@ export function applyErrorHandlers(app: Express): void {
     // 1. Structured result/domain errors — safe to expose code + message
     const structuredError = extractStructuredResultError(err);
     if (structuredError) {
-      const status = structuredError.statusCode ?? errorCodeToHttpStatus(structuredError.code);
+      const status =
+        structuredError.statusCode ??
+        (structuredError.failure
+          ? publicFailureToHttpStatus(structuredError.failure)
+          : errorCodeToHttpStatus(structuredError.code));
       res
         .status(status)
         .json(
@@ -78,6 +86,7 @@ export function applyErrorHandlers(app: Express): void {
             structuredError.message,
             structuredError.details,
             structuredError.context,
+            structuredError.failure,
           ),
         );
       return;

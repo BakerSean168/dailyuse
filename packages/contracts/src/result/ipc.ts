@@ -11,6 +11,7 @@
 import { ResultCode } from './codes';
 import type { Result, ResultError, ResultMeta } from './core';
 import { ok, fail, isOk } from './core';
+import type { PublicFailure } from './public-failure';
 
 // ============================================================================
 // IPC Result Types
@@ -36,6 +37,8 @@ export interface IpcResult<T = unknown> {
       value?: unknown;
     }>;
     context?: Record<string, unknown>;
+    /** Typed public failure semantics; legacy code/message remain for compatibility. */
+    failure?: PublicFailure;
   };
   /** 元数据 */
   meta?: {
@@ -122,6 +125,7 @@ export function toIpcResult<T>(result: Result<T>): IpcResult<T> {
         value: d.value,
       })),
       context: result.error.context,
+      failure: result.error.failure,
     },
     meta: result.meta
       ? {
@@ -171,6 +175,7 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
       value: d.value,
     })),
     context: ipcResult.error?.context,
+    failure: ipcResult.error?.failure,
   };
 
   return fail(error, meta);
