@@ -4,7 +4,7 @@ tags:
   - index
 description: 架构决策记录索引
 created: 2025-11-23T15:00:00
-updated: 2026-08-04T00:00:00+08:00
+updated: 2026-08-17T00:00:00+09:00
 ---
 
 # ADR 索引
@@ -25,14 +25,14 @@ updated: 2026-08-04T00:00:00+08:00
 | [ADR-007](./ADR-007-api-consistency.md)                             | API 接口一致性规范                                       | 提议中 | 未注明     |
 | [ADR-008](./ADR-008-standard-api-response-format.md)                | API Response Format                                      | 已采纳 | 2026-01-15 |
 | [ADR-009](./ADR-009-standard-clean-architecture-layers.md)          | Clean Architecture Layers                                | 已采纳 | 2026-01-15 |
-| [ADR-010](./ADR-010-standard-centralized-contracts.md)              | Centralized Contracts                                    | 已采纳 | 2026-01-15 |
+| [ADR-010](./ADR-010-standard-centralized-contracts.md)              | Centralized Contracts                                    | 由 ADR-049 修订 | 2026-01-15 |
 | [ADR-011](./ADR-011-standard-naming-conventions.md)                 | Naming Conventions                                       | 已采纳 | 2026-01-15 |
-| [ADR-012](./ADR-012-standard-error-handling.md)                     | Error Handling                                           | 已采纳 | 2026-01-15 |
+| [ADR-012](./ADR-012-standard-error-handling.md)                     | Error Handling                                           | 由 ADR-049 修订 | 2026-01-15 |
 | [ADR-013](./ADR-013-standard-testing-strategy.md)                   | Testing Strategy                                         | 已采纳 | 2026-01-15 |
 | [ADR-014](./ADR-014-standard-typescript-guidelines.md)              | TypeScript Guidelines                                    | 已采纳 | 2026-01-15 |
 | [ADR-015](./ADR-015-dev-phase-simplicity-preference.md)             | Dev Phase Simplicity Preference                          | 已采纳 | 2026-01-16 |
 | [ADR-016](./ADR-016-apps-as-containers.md)                          | Apps as Containers                                       | 已采纳 | 未注明     |
-| [ADR-017](./ADR-017-centralized-types.md)                           | Absolute Type Centralization in Contracts                | 已采纳 | 未注明     |
+| [ADR-017](./ADR-017-centralized-types.md)                           | Absolute Type Centralization in Contracts                | 已被 ADR-049 取代 | 未注明     |
 | [ADR-018](./ADR-018-smart-container-application-service-pattern.md) | Smart Container + Application Service Pattern            | 已采纳 | 2026-01-18 |
 | [ADR-019](./ADR-019-module-extension-strategy.md)                   | 模块扩展策略                                             | 已采纳 | 2025-12-08 |
 | [ADR-020](./ADR-020-api-server-unified-extraction-strategy.md)      | API Server 统一提取策略                                  | 已采纳 | 2026-01-19 |
@@ -45,7 +45,7 @@ updated: 2026-08-04T00:00:00+08:00
 | [ADR-027](./ADR-027-zod-to-openapi-documentation.md)                | API Documentation with Zod-to-OpenAPI                    | 已采纳 | 2026-02-19 |
 | [ADR-028](./ADR-028-workspace-package-resolution-strategy.md)       | Workspace Package Resolution Strategy                    | 已采纳 | 2026-03-09 |
 | [ADR-029](./ADR-029-main-process-sqlite-access.md)                  | 主进程 SQLite 直接访问策略                               | 已过时 | 2025-12-06 |
-| [ADR-030](./ADR-030-standard-result-pattern.md)                     | Unifying API Responses with Result Pattern               | 已采纳 | 2026-01-16 |
+| [ADR-030](./ADR-030-standard-result-pattern.md)                     | Unifying API Responses with Result Pattern               | 由 ADR-049 修订 | 2026-01-16 |
 | [ADR-031](./ADR-031-server-feature-standard-shape.md)               | Server Feature Standard Shape                            | 已采纳 | 2026-08-13 |
 | [ADR-032](./ADR-032-support-package-import-conventions.md)          | Support Package Import Conventions                       | 已采纳 | 2026-05-25 |
 | [ADR-033](./ADR-033-cross-module-communication-patterns.md)         | Cross-Module Communication Patterns                      | 已采纳 | 2026-07-10 |
@@ -64,6 +64,7 @@ updated: 2026-08-04T00:00:00+08:00
 | [ADR-046](./ADR-046-query-cache-powersync-offline-policy.md) | Query Cache Pilot — Offline / Freshness / PowerSync 策略（试点范围：Desktop networkMode、freshness、reconnect ordering、profile isolation、拒绝 cache 持久化） | 已接受（试点范围） | 2026-08-15 |
 | [ADR-047](./ADR-047-api-observability-pipeline.md) | API 可观测性流水线与装配治理（single observer、有界 metrics、默认 noop / opt-in OpenTelemetry、transport-only 模块注册上下文） | 已采纳 | 2026-08-15 |
 | [ADR-048](./ADR-048-transport-contract-parity.md) | Transport Contract Parity — adapter-owned validation、HTTP/IPC parity fixture、mapper 边界与 direct Vitest 门禁（RefArch Phase 4） | 已采纳 | 2026-08-16 |
+| [ADR-049](./ADR-049-domain-outcome-and-failure-contracts.md) | Domain Outcomes and Failure Contracts — 领域故障、应用结果、公开失败、provider ACL 与传输投影 | 已采纳（实施中） | 2026-08-17 |
 
 ## 维护规则
 

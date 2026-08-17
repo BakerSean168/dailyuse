@@ -1,208 +1,388 @@
 ---
-tags: [standard, domain/client]
+tags:
+  - standard
+  - client
+  - presentation
+description: Web/Desktop 客户端快照、交互状态、结果消费和视图模型规范
+created: 2026-02-03T00:00:00
+updated: 2026-08-17T00:00:00+09:00
 ---
 
-# 客户端领域开发规范：聚合根与实体（垂直模块包）
+# 客户端领域开发规范：快照、状态与视图投影
 
-**版本**: 1.0
-**适用范围**: `apps/{web,desktop}/src/modules/{domain}` 与 `packages/{domain}/` 中客户端领域代码（原 `domain-client` 集中包已取消）
-**读者**: 开发人员, AI 助手
+**适用范围**：`packages/app-vue`、`packages/app-react`、feature client/application-client、
+`apps/web` 与 `apps/desktop` 的 renderer/presentation 代码。
+**依据**：ADR-049、`architecture.md`、`failure-and-outcome-contracts.md`。
 
-## 1. 核心设计理念
+## 1. 定位
 
-在 Client 端（前端/桌面端），领域模型（Domain Model）的职责与 Server 端截然不同。
+客户端通常不需要复制一套服务端 Aggregate/Entity。客户端的主要职责是：
 
-* **Server 端**: 侧重于**数据一致性**、**业务规则校验**、**持久化**和**事件分发**。
-* **Client 端**: 侧重于**数据展示（View Model）**、**UI 状态辅助**、**交互逻辑**以及**数据消费**。
+1. 消费服务端/public contracts 的 snapshot、outcome 和 public failure；
+2. 管理 query/mutation/interaction state；
+3. 将稳定业务语义投影成当前平台的 view model、文案和 recovery action；
+4. 处理 optimistic view、草稿、selection、focus、navigation 和 native bridge；
+5. 保持 Web/Desktop 的产品语义一致，同时允许不同 presentation。
 
-**原则**: Client 端的聚合根是 "Anemic Domain Model" (贫血模型) 与 "Rich View Model" (富视图模型) 的结合体。它**不包含**复杂的业务规则校验和持久化逻辑。
+客户端不拥有服务端业务真值、跨实体不变量、持久化事务或 provider error translation。
 
----
+## 2. 三种客户端模型
 
-## 2. 依赖规则
+不要把所有客户端对象都称为“领域模型”。按责任区分：
 
-Client 端领域对象应当遵守以下依赖限制：
+| 模型              | 用途                                | 示例                |
+| ----------------- | ----------------------------------- | ------------------- |
+| Server Snapshot   | 来自 public contract 的只读数据     | `TaskSnapshot`      |
+| Application State | query/mutation/outcome/failure 状态 | `TaskDetailState`   |
+| View Model        | 展示所需的纯投影                    | `TaskCardViewModel` |
 
-* ✅ **允许依赖**:
-* `@memoflow/utils` (基础工具类，如 `AggregateRoot` 基类)
-* `@memoflow/contracts` (DTO 定义, API 接口)
-* `@memoflow/domain-shared` (值对象, 枚举, 通用纯函数)
+必要时可以有 client-side policy，例如是否显示按钮、如何格式化进度，但它不能替代服务端授权和不变量。
 
+## 3. 依赖规则
 
-* ❌ **禁止依赖**:
-* 服务端运行时依赖（Node-only APIs、Express middleware、数据库驱动等）
-* 数据库相关库 (Prisma, TypeORM 等)
-* UI 框架组件 (React, Vue 组件) —— 领域对象应保持框架无关。
+### 3.1 允许依赖
 
+- `@memoflow/contracts/<feature>` public snapshot/outcome/failure；
+- feature public client/application port；
+- presentation-safe shared primitives；
+- UI framework（仅 presentation/store/composable 层）；
+- host navigation/native bridge interface；
+- i18n formatter；
+- query/state libraries。
 
+### 3.2 禁止依赖
 
----
+- server domain/application/infrastructure deep path；
+- Prisma、PowerSync internal row、database driver；
+- BetterAuth/GitHub/provider SDK error type；
+- Express/API middleware；
+- server-only aggregate repository；
+- raw provider message/status branching；
+- 全局 legacy `DomainError`。
 
-## 3. 代码结构规范
+### 3.3 `domain-shared`
 
-### 3.1 类定义与继承
+只有客户端和服务端业务语义完全一致、且不依赖 server runtime 的值对象才可共享。
 
-* 所有聚合根必须继承自 `AggregateRoot<TId>`。
-* 所有实体必须继承自 `Entity<TId>`。
-* 必须实现对应的 `Contract` 中定义的 Client 接口（如果有）。
+不要在 client 重复服务器端的复杂 business validation。客户端本地 validation用于及时反馈；服务器仍是 authoritative owner。
 
-```typescript
-import { AggregateRoot } from '@memoflow/utils';
-import { IdentityId } from '@memoflow/domain-shared/account';
-import type { AccountClientDTO } from '@memoflow/contracts/account';
+## 4. Snapshot Consumption
 
-export class Account extends AggregateRoot<IdentityId> {
-  // ...
+Public snapshot 是边界数据，不要求再包装成继承 `AggregateRoot` 的 client class。
+
+优先使用纯函数/readonly view model：
+
+```ts
+export interface TaskCardViewModel {
+  readonly id: string;
+  readonly title: string;
+  readonly statusLabel: string;
+  readonly progressLabel: string;
+  readonly canOpen: boolean;
 }
 
+export function toTaskCardViewModel(task: TaskSnapshot, t: TranslateFn): TaskCardViewModel {
+  return {
+    id: task.id,
+    title: task.title,
+    statusLabel: t(`task.status.${task.status}`),
+    progressLabel: `${task.progress}%`,
+    canOpen: true,
+  };
+}
 ```
 
-### 3.2 属性 (Properties)
+允许 class 的条件：
 
-* **可见性**: 内部状态使用 `private`，通过 `public` 的 getter 暴露。
-* **类型**: 优先使用 **值对象 (Value Objects)** (来自 `domain-shared`)，而不是原始类型。这保证了展示格式化逻辑的复用。
-* **只读性**: ID 和创建时间等元数据应为 `readonly`。
+- 确实需要封装多个纯 computed behavior；
+- 不复制服务端 state mutation；
+- 不继承 server aggregate基类；
+- 不要求 `implements` wire DTO；
+- 构造通过显式 mapper，而不是将 DTO 与内部状态强耦合。
 
-### 3.3 构造函数 (Constructor)
+## 5. Application State Ownership
 
-* **可见性**: `private`。禁止外部直接 `new`。
-* **参数**: 必须只接收 **API DTO (`ClientDTO`)**。Client 端的数据源头永远是 API，而不是零散的参数。
+每个 operation/flow 只有一个 authoritative state owner。State至少区分：
 
-### 3.4 工厂方法 (Factory Methods)
+```ts
+export type AsyncOperationState<TOutcome, TFailure> =
+  | { readonly status: 'idle' }
+  | { readonly status: 'pending'; readonly startedAt: number }
+  | { readonly status: 'succeeded'; readonly outcome: TOutcome }
+  | { readonly status: 'failed'; readonly failure: TFailure };
+```
 
-* **必须包含**: `fromClientDTO(dto: ClientDTO): ClassName`。
-* **禁止包含**: `create(...)` (用于生成新数据的工厂)。客户端的新建操作是 RPC 调用，不是本地对象创建。
+必要时扩展 canceled、paused、waiting_user_action、replaying 等明确状态。
 
-### 3.5 方法 (Methods)职责
+禁止同一个 operation 同时维护：
 
-#### ✅ 允许的方法类型：
+- local `errorMessage`；
+- Pinia `error`；
+- query library `error`；
+- composable `lastResultError`；
+- durable receipt；
 
-1. **Getters**: 直接暴露内部状态。
-2. **Computed Properties (计算属性)**:
-* 用于 UI 展示的衍生数据。
-* *示例*: `get displayName()`, `get isVip()`, `get progressPercentage()`
+却没有一个清楚的 source of truth。不同投影可以派生，但机器语义只能有一个 owner。
 
+## 6. Outcome Consumption
 
-3. **UI Helpers**:
-* *示例*: `canEdit()`, `hasPermission(p)`
+正常下一步按 outcome `kind` 分支：
 
+```ts
+const result = await auth.signIn(input);
 
-4. **Immutability Helpers (可选)**:
-* 如果配合 React 使用，提供 `cloneWith(...)` 方法以支持不可变更新。
-
-
-5. **Serialization**:
-* `toClientDTO()`: 必须实现，用于序列化后传递给 UI 组件或打印日志。
-
-
-
-#### ❌ 禁止的方法类型：
-
-1. **Business Validation**: 复杂的业务规则校验（应在 Server 端）。
-2. **Persistence**: `save()`, `update()`, `delete()` (应在 Service/Store 层调用 API)。
-3. **Domain Events**: `addDomainEvent()` (Client 端通常只处理 UI 事件，不生产领域事件)。
-
----
-
-## 4. 代码模板 (AI 参照标准)
-
-请 AI 在生成代码时严格参照以下模板：
-
-```typescript
-import { AggregateRoot } from '@memoflow/utils';
-// 1. 引入 Contract 定义的 DTO
-import type { UserClientDTO } from '@memoflow/contracts/user';
-// 2. 引入 Shared 中的值对象
-import { UserId, Email, UserStatus } from '@memoflow/domain-shared/user';
-
-export class User extends AggregateRoot<UserId> {
-  // ================= 状态定义 =================
-  private _email: Email;
-  private _status: UserStatus;
-  private _nickname: string | null;
-  private _avatarUrl: string | null;
-
-  public readonly createdAt: Date;
-
-  // ================= 构造函数 =================
-  private constructor(dto: UserClientDTO) {
-    super(UserId.of(dto.id));
-    
-    // 还原值对象
-    this._email = Email.fromDTO(dto.email);
-    this._status = UserStatus.of(dto.status);
-    this._nickname = dto.nickname ?? null;
-    this._avatarUrl = dto.avatarUrl ?? null;
-    
-    this.createdAt = new Date(dto.createdAt);
-  }
-
-  // ================= 工厂方法 =================
-  public static fromClientDTO(dto: UserClientDTO): User {
-    return new User(dto);
-  }
-
-  public static createDefault(id: string, emailStr: string): User {
-    return new User({
-      id,
-      email: Email.create(emailStr).toDTO(),
-      status: UserStatus.PENDING,
-      nickname: null,
-      avatarUrl: null,
-      createdAt: Date.now(),
-    });
-  }
-
-  // ================= Getters (基础数据) =================
-  get email(): Email { return this._email; }
-  get status(): UserStatus { return this._status; }
-  get nickname(): string | null { return this._nickname; }
-  get avatarUrl(): string | null { return this._avatarUrl; }
-
-  // ================= Computed Properties (UI 逻辑核心) =================
-  
-  /**
-   * UI 展示名称逻辑：有昵称显示昵称，没有显示脱敏邮箱
-   */
-  get displayName(): string {
-    return this._nickname || this._email.getMasked();
-  }
-
-  /**
-   * UI 头像逻辑：有头像显示头像，没有显示默认图
-   */
-  get displayAvatar(): string {
-    return this._avatarUrl || '/assets/default-avatar.png';
-  }
-
-  get isActive(): boolean {
-    return this._status === UserStatus.ACTIVE;
-  }
-
-  // ================= 序列化 =================
-  public toClientDTO(): UserClientDTO {
-    return {
-      id: this.id.toString(),
-      email: this._email.toDTO(),
-      status: this._status,
-      nickname: this._nickname,
-      avatarUrl: this._avatarUrl,
-      createdAt: this.createdAt.getTime(),
-    };
-  }
+if (!result.ok) {
+  state.value = { status: 'failed', failure: result.error };
+  return;
 }
 
+switch (result.data.kind) {
+  case 'authenticated':
+    navigateToWorkspace();
+    break;
+  case 'email_verification_required':
+    scene.value = 'verify-email';
+    break;
+  default:
+    assertNever(result.data);
+}
 ```
 
----
+禁止把 normal outcome当作 error code：
 
-## 5. 常见误区检查清单 (Checklist)
+```ts
+if (result.error.code === 'EMAIL_NOT_VERIFIED') { ... }
+```
 
-在提交代码或生成代码前，请检查：
+## 7. Public Failure Consumption
 
-* [ ] **是否引用了服务端运行时代码？** (客户端领域层不得依赖 Node-only/Express/数据库实现)
-* [ ] **是否包含了 `create` 方法？** (Client 端不应该负责生成 ID 和初始状态)
-* [ ] **是否包含了 `update` / `save` 方法？** (Client 模型应该是纯内存对象，不负责 I/O)
-* [ ] **是否使用了 `addDomainEvent`？** (Client 模型不产生领域事件)
-* [ ] **构造函数是否为 private？** (强制使用 `fromClientDTO`)
-* [ ] **是否复用了 `domain-shared` 里的值对象？** (不要在 Client 端重写一遍 Email 校验逻辑)
+### 7.1 保存稳定语义
+
+```ts
+const failure = ref<AuthFailure | null>(null);
+
+const failureMessage = computed(() =>
+  failure.value ? translateAuthFailure(failure.value, t) : null,
+);
+```
+
+不要只保存最终 message：
+
+```ts
+const errorMessage = ref(result.error.message);
+```
+
+原因：message无法重新本地化、无法可靠 recovery、可能泄漏 provider detail，也不能被编译器穷尽。
+
+### 7.2 Recovery 与 Message 分离
+
+```ts
+const recovery = computed(() => (failure.value ? authRecovery(failure.value) : null));
+```
+
+Message registry负责文案；Recovery registry负责 focus、retry、navigation、disable、reauthenticate。
+不要通过文本推断动作。
+
+### 7.3 HTTP status
+
+客户端可以将 401/403 等用于 transport/session通用处理，但具体业务原因仍依赖 public failure code/outcome。
+
+```text
+401 + AUTH_INVALID_CREDENTIALS -> 留在登录页
+401 + AUTH_SESSION_EXPIRED     -> 清理会话并重新登录
+```
+
+不得只看 status就推断业务 scene。
+
+## 8. i18n
+
+- 每个 public failure code 必须有所有支持 locale 的 key；
+- translation mapping使用 `satisfies Record<FailureCode, string>`；
+- params经过schema allowlist；
+- locale变化时computed message立即变化；
+- provider/server raw message不作为生产fallback；
+- 文案测试与业务code测试分层。
+
+## 9. Optimistic State
+
+允许客户端有 optimistic projection，但必须明确：
+
+1. server command仍是authoritative；
+2. optimistic item带client mutation ID/idempotency key；
+3. server outcome成功后reconcile；
+4. public failure后rollback或显示conflict resolution；
+5. 不在客户端重新执行复杂domain validation；
+6. offline queue使用versioned command contract和durable receipt，不保存UI-only object。
+
+## 10. Draft、Dirty 与 Busy
+
+Draft是presentation/application state，不是server aggregate。
+
+- draft可以包含未提交输入；
+- dirty比较基于canonical form state；
+- busy表示operation不能安全中断；
+- shell/navigation通过surface status registry询问能否离开；
+- draft持久化不得包含token/password/provider error；
+  -提交时通过contract schema构造command。
+
+## 11. Durable Failure Receipt
+
+可持久化：
+
+- public failure code/category；
+- safe params；
+- retry directive；
+- operation；
+- requestId/traceId reference；
+- failedAt；
+- version。
+
+禁止持久化：
+
+- `Error` instance、stack、cause；
+- arbitrary server/provider message；
+- password/reset token/OAuth code；
+- cookies/headers；
+- unfiltered context。
+
+Receipt恢复后重新根据当前locale投影文案。
+
+## 12. View Model
+
+View model是纯函数或只读class：
+
+- 输入snapshot/current locale/presentation preference；
+- 输出label、formatted value、visibility、semantic action descriptor；
+- 不发请求；
+- 不修改server state；
+- 不持有provider/transport object；
+- 不把UI文案写回domain/contract；
+- 可被unit test独立验证。
+
+避免 `toClientDTO()` 循环序列化。Snapshot本身已经是contract；view model不是另一个public transport DTO。
+
+## 13. Host-specific Adapter
+
+Web和Desktop可分别实现：
+
+- browser redirect/deep link；
+- Electron native dialog/filesystem bridge；
+- platform notification；
+- secure credential storage；
+- network/offline detection。
+
+Host adapter消费/实现Port，不复制application state machine和failure mapping。
+
+例如 Auth：
+
+```text
+shared Auth application semantics
+  -> Web redirect adapter
+  -> Desktop device authorization adapter
+```
+
+不同presentation不等于不同错误协议。
+
+## 14. Global Error Boundary
+
+区分两种错误：
+
+1. Public operation failure：由feature state owner渲染可恢复UI；
+2. Programmer/render crash：由global error boundary捕获，显示safe generic fallback并记录diagnostic。
+
+GlobalErrorBoundary不应把任意 `err.message` 原样展示给用户。
+
+## 15. 测试规范
+
+### State/composable tests
+
+- pending/success/normal outcome/failure/cancel；
+- stale request和并发提交；
+- retry/recovery；
+- unmount/remount receipt；
+- locale live retranslation；
+- unknown failure safe fallback。
+
+### View model tests
+
+- snapshot → formatted display；
+- locale/timezone；
+- empty/edge values；
+- 无I/O/side effect。
+
+### Security negative tests
+
+- provider raw message不渲染；
+- password/token不进store/localStorage/log；
+- arbitrary context不持久化；
+- Error/stack不进IPC/HTTP UI receipt。
+
+### E2E
+
+- fixture通过API/DB/global setup准备；
+- helper不根据UI message修改数据库；
+- 文案只在专门i18n contract场景断言；
+- user journey断言stable state/testid/behavior；
+- suite开始校验build revision。
+
+## 16. 禁止模式
+
+```ts
+// 禁止：provider code进入UI
+if (error.code === 'EMAIL_NOT_VERIFIED') { ... }
+
+// 禁止：raw message成为state
+errorMessage.value = result.error.message;
+
+// 禁止：message驱动recovery
+if (message.includes('not found')) createFixture();
+
+// 禁止：复制server aggregate
+class ClientTask extends AggregateRoot<TaskId> {
+  complete() { /* duplicated business rule */ }
+}
+
+// 禁止：用wire DTO约束view model
+class TaskCard implements TaskSnapshot { ... }
+```
+
+## 17. Legacy 迁移
+
+现有“Client Domain Aggregate”不要求一次删除。迁移顺序：
+
+1. 确认对象是snapshot wrapper、view model还是duplicated domain；
+2. 纯展示逻辑迁为view model；
+3. operation state迁入单一state owner；
+4. duplicated business rule删除，改为server command/outcome；
+5. raw message迁为typed failure；
+6. 去掉不必要的AggregateRoot/Entity继承；
+7. 保留compatibility adapter直到调用方更新；
+8. 添加surface和behavior tests后删除旧轨。
+
+## 18. Code Review Checklist
+
+- [ ] 这是snapshot、application state还是view model？
+- [ ] 是否复制了server domain rule？
+- [ ] 是否深路径import server/infra/provider？
+- [ ] operation是否只有一个state owner？
+- [ ] normal state是否使用outcome？
+- [ ] failure是否保留code/category/params而非message？
+- [ ] recovery是否和translation分离？
+- [ ] locale变化是否无需重新请求？
+- [ ] receipt是否只持久化safe fields？
+- [ ] Web/Desktop差异是否封装在host adapter？
+- [ ] tests是否不依赖UI文案准备fixture？
+
+## 19. 结论
+
+客户端的“领域性”体现在正确消费业务语义和维护交互状态，而不是复制服务端aggregate。
+
+```text
+Server/domain owns business truth
+Contracts carry stable snapshots/outcomes/failures
+Client state owns interaction lifecycle
+View model owns presentation projection
+Host adapter owns platform behavior
+```
+
+这样Web和Desktop可以有不同界面，却不会产生两套业务规则和错误协议。

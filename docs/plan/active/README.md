@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-14T00:00:00Z
+updated: 2026-08-17T00:00:00+09:00
 ---
 
 # Active Plans
@@ -13,18 +13,19 @@ updated: 2026-08-14T00:00:00Z
 
 ## 当前计划
 
-| 计划                                                                                            | 当前状态                                                                                                                                                                                         |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [CI/CD Platform V2 一次性重构](./2026-08-05-ci-cd-platform-v2-refactor.md)                      | **Architecture implementation and PR cutover complete**：六平面契约、capability workspace、artifact 晋级、run observation；保留以采集长期 timing/fault 运营证据（baseline-v1 待 comparable run） |
-| [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)                     | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称                                                                                                                      |
-| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md)            | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                                                           |
-| [Goal / Task Composition Root 外移](./2026-08-14-goal-task-composition-root-externalization.md) | **Step 1-4 完成**：repository-set ingredient seams、transport instance-bound、API/Desktop host composers 与注入式 repository consumers 落地；Step 5（docs/surface lock）进行中                   |
+| 计划                                                                                   | 当前状态                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [应用契约与架构大重构](./2026-08-17-application-contract-and-architecture-refactor.md) | **Implementation active**：ACR-R01/R02/R03 研究、隔离 spike 与设计 Gate 已完成；采用 native union/switch + Zod strict registry，生产实施从 ACR-001 起按 PR 批次推进                              |
+| [CI/CD Platform V2 一次性重构](./2026-08-05-ci-cd-platform-v2-refactor.md)             | **Architecture implementation and PR cutover complete**：六平面契约、capability workspace、artifact 晋级、run observation；保留以采集长期 timing/fault 运营证据（baseline-v1 待 comparable run） |
+| [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)            | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称                                                                                                                      |
+| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md)   | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                                                           |
 
 ## 本轮已归档（2026-08-16）
 
-| 计划                                                                                         | 结果                                                                                                                                                                                                                                                   |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [RefArch Phase 6：可观测性与装配治理](../archive/2026-08-15-refarch-phase6-observability.md) | Steps 1-7 完成：single observer/有界 metrics/opt-in OTel、transport-only module 契约、三组 AST surface locks + 双语 JSDoc audit 接入 governance-check、ADR-047、四宿主关键 journey（API/AI/Web/Desktop）与全量门禁通过；详见计划内 gate 记录与偏差说明 |
+| 计划                                                                                                     | 结果                                                                                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [RefArch Phase 6：可观测性与装配治理](../archive/2026-08-15-refarch-phase6-observability.md)             | Steps 1-7 完成：single observer/有界 metrics/opt-in OTel、transport-only module 契约、三组 AST surface locks + 双语 JSDoc audit 接入 governance-check、ADR-047、四宿主关键 journey（API/AI/Web/Desktop）与全量门禁通过；详见计划内 gate 记录与偏差说明 |
+| [Goal / Task Composition Root 外移](../archive/2026-08-14-goal-task-composition-root-externalization.md) | Goal/Task repository-set ingredient seams、instance-bound transport、API/Desktop host composers、repository consumer 注入与 surface locks 已闭合；计划已归档                                                                                           |
 
 ## 本轮已归档（2026-08-15）
 
