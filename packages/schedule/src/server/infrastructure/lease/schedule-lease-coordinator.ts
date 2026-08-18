@@ -1,16 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { IScheduleLeaseRepository, ScheduleLeaseRequest } from '../../application/ports/schedule-lease.port';
+import { ScheduleLeaseLostError } from '../../domain/errors/schedule-lease-lost-error';
 
 export const SCHEDULE_LEASE_TTL_MS = 60_000;
 export const SCHEDULE_LEASE_RENEWAL_INTERVAL_MS = 20_000;
 export const SCHEDULE_LEASE_KEY = 'schedule-host';
-
-export class ScheduleLeaseLostError extends Error {
-  constructor(message?: string) {
-    super(message ?? 'Schedule host lease ownership was lost');
-    this.name = 'ScheduleLeaseLostError';
-  }
-}
 
 export interface ScheduleLeaseGuard {
   ensureHeld(): Promise<void>;

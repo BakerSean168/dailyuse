@@ -5,7 +5,7 @@ import type {
   IScheduleRepository,
   ScheduleDomainEventOutboxDTO,
 } from '../../domain/repositories/i-schedule-repository';
-import { ScheduleLeaseLostError } from '../../infrastructure/lease/schedule-lease-coordinator';
+import { ScheduleLeaseLostError } from '../../domain/errors/schedule-lease-lost-error';
 import type {
   ScheduleLeaseCoordinatorPort,
 } from './schedule-rebuild-worker-service';

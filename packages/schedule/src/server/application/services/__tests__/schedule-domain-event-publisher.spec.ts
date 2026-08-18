@@ -6,7 +6,7 @@ import type {
   ScheduleRebuildOutboxDTO,
 } from '../../domain/repositories/i-schedule-repository';
 import type { CalendarEntry } from '../../domain/aggregates/calendar-entry';
-import { ScheduleLeaseLostError } from '../../../infrastructure/lease/schedule-lease-coordinator';
+import { ScheduleLeaseLostError } from '../../../domain/errors/schedule-lease-lost-error';
 import {
   ScheduleDomainEventPublisherRuntime,
   ScheduleDomainEventPublisherService,

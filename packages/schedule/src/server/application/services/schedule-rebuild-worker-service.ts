@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { IScheduleRepository } from '../../domain/repositories/i-schedule-repository';
-import { ScheduleLeaseLostError } from '../../infrastructure/lease/schedule-lease-coordinator';
+import { ScheduleLeaseLostError } from '../../domain/errors/schedule-lease-lost-error';
 import { ScheduleConflictCacheService } from './schedule-conflict-cache-service';
 import type { UnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 

@@ -52,3 +52,6 @@ export * from './services';
 
 // ============ 业务计算器 ============
 export * from './calculators';
+
+// ============ 错误类 ============
+export * from './errors';

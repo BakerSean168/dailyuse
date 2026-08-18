@@ -9,7 +9,7 @@
 import type { PrismaClient, Schedule as PrismaSchedule } from '@memoflow/database';
 import type { IScheduleRepository, ScheduleRebuildOutboxDTO } from '../../../domain/repositories/i-schedule-repository';
 import { CalendarEntry } from '../../../domain/aggregates/calendar-entry';
-import { ScheduleLeaseLostError } from '../../lease/schedule-lease-coordinator';
+import { ScheduleLeaseLostError } from '../../../domain/errors/schedule-lease-lost-error';
 import { PrismaScheduleMapper } from './mappers/prisma-schedule-mapper';
 import { toResultErrorException } from '@memoflow/contracts/result';
 import type { UnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
