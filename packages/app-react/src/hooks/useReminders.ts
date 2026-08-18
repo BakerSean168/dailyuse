@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { ReminderTemplateClientDTO, ReminderTodayScheduleItem } from '@memoflow/contracts/reminder';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useReminderService } from './useReminderService';
@@ -33,7 +34,7 @@ export function useReminders() {
     if (!templateResult.ok) {
       setTemplates([]);
       setTodaySchedule([]);
-      setError(templateResult.error.message);
+      setError(presentErrorMessage(templateResult.error));
       setIsLoading(false);
       return;
     }
@@ -41,7 +42,7 @@ export function useReminders() {
     if (!scheduleResult.ok) {
       setTemplates(templateResult.data);
       setTodaySchedule([]);
-      setError(scheduleResult.error.message);
+      setError(presentErrorMessage(scheduleResult.error));
       setIsLoading(false);
       return;
     }
@@ -62,7 +63,7 @@ export function useReminders() {
   async function toggleTemplateEnabled(id: string) {
     const result = await service.toggleTemplateEnabled(id);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return false;
     }
 

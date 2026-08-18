@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import type { CreateGoalReq, UpdateGoalReq } from '@memoflow/contracts/goal';
 import {
   ImportanceLevel,
@@ -121,7 +123,7 @@ export function GoalEditorScreen() {
     setIsSubmitting(false);
 
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 

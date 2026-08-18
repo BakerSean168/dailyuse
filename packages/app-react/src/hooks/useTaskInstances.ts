@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import type { TaskInstanceStatus, TaskTimeConfigDTO } from '@memoflow/contracts/task';
 import type { TaskInstance } from '@memoflow/task/client';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useTaskService } from './useTaskService';
@@ -56,7 +57,7 @@ export function useTaskInstances(taskId: string | null) {
     const result = await service.listInstances({ templateId: taskId, limit: 20 });
     if (!result.ok) {
       setInstances([]);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }
@@ -79,7 +80,7 @@ export function useTaskInstances(taskId: string | null) {
   async function startInstance(id: string) {
     const result = await service.startInstance(id);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return false;
     }
 
@@ -90,7 +91,7 @@ export function useTaskInstances(taskId: string | null) {
   async function completeInstance(id: string) {
     const result = await service.completeInstance(id);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return false;
     }
 
@@ -101,7 +102,7 @@ export function useTaskInstances(taskId: string | null) {
   async function skipInstance(id: string) {
     const result = await service.skipInstance(id);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return false;
     }
 

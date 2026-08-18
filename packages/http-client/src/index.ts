@@ -58,6 +58,7 @@ export {
 export {
   classifyNetworkError,
   normalizeResultError,
+  presentErrorMessage,
   statusToResultCode,
   statusToResultError,
   translateResultErrorMessage,

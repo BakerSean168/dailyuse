@@ -188,3 +188,17 @@ export function translateResultErrorMessage(
     'Operation failed'
   );
 }
+
+/**
+ * Framework-free safe message for presentation layers without an i18n host
+ * (e.g. React Native / Expo). Resolves a STABLE code-derived message and NEVER
+ * surfaces an arbitrary provider/raw message as the primary user-visible text.
+ */
+export function presentErrorMessage(error: unknown, fallbackMessage?: string): string {
+  const normalized = normalizeResultError(error);
+  const code = normalized?.code ?? ResultCode.UNKNOWN;
+  if (isResultErrorMessageKey(code)) {
+    return getDefaultResultErrorMessage(code);
+  }
+  return fallbackMessage ?? getDefaultResultErrorMessage(ResultCode.UNKNOWN);
+}

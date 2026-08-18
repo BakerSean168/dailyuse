@@ -7055,6 +7055,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/http-client/src/__tests__/present-error-message.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/http-client/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/http-client/src/__tests__/result-error.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10590,7 +10598,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 5
+      "fileCount": 6
     },
     {
       "id": "packages/ipc-client/vitest.config.ts",
@@ -11526,7 +11534,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 989,
+    "unit": 990,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

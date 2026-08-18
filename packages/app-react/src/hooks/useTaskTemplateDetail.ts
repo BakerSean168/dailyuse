@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import { useAppSession } from './useAppSession';
 import { mapTaskTemplateDetail, type TaskTemplateDetail } from './useTaskTemplates';
 import { useTaskService } from './useTaskService';
@@ -34,7 +36,7 @@ export function useTaskTemplateDetail(taskId: string | null) {
 
       if (!result.ok) {
         setTemplate(null);
-        setError(result.error.message);
+        setError(presentErrorMessage(result.error));
         setIsLoading(false);
         return;
       }
@@ -59,7 +61,7 @@ export function useTaskTemplateDetail(taskId: string | null) {
     const result = await service.getTemplate(taskId);
     if (!result.ok) {
       setTemplate(null);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }

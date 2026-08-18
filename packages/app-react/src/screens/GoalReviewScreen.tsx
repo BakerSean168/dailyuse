@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import { ReviewType, type CreateGoalReviewReq } from '@memoflow/contracts/goal';
 
 import { useGoalDetail } from '../hooks/useGoalDetail';
@@ -72,7 +74,7 @@ export function GoalReviewScreen() {
     setIsSubmitting(false);
 
     if (!result.ok) {
-      setSubmitError(result.error.message);
+      setSubmitError(presentErrorMessage(result.error));
       return;
     }
 

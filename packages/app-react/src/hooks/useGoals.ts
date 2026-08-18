@@ -8,6 +8,7 @@ import type {
 } from '@memoflow/contracts/goal';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { Goal } from '@memoflow/goal/client';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useGoalService } from './useGoalService';
@@ -162,7 +163,7 @@ export function useGoals() {
 
       if (!result.ok) {
         setGoals([]);
-        setError(result.error.message);
+        setError(presentErrorMessage(result.error));
         setIsLoading(false);
         return;
       }
@@ -192,7 +193,7 @@ export function useGoals() {
 
     if (!result.ok) {
       setGoals([]);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }

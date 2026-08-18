@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import type { GoalReviewSummary } from '../hooks/useGoalReviews';
 import { useGoalService } from '../hooks/useGoalService';
 import { formatProductDate, emptyKind } from '../utils/product-time';
@@ -56,7 +58,7 @@ export function GoalReviewDetailScreen() {
     if (!result.ok) {
       setReview(null);
       setGoalVersion(null);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }
@@ -114,7 +116,7 @@ export function GoalReviewDetailScreen() {
     });
     setIsMutating(false);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 
@@ -149,7 +151,7 @@ export function GoalReviewDetailScreen() {
     });
     setIsMutating(false);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 

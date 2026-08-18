@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import { getProductTime, formatProductDateTime, emptyKind } from '../utils/product-time';
 
 import { useTaskInstances } from '../hooks/useTaskInstances';
@@ -89,7 +91,7 @@ export function TaskDetailScreen() {
     setIsMutating(false);
 
     if (!result.ok) {
-      setActionError(result.error.message);
+      setActionError(presentErrorMessage(result.error));
       return;
     }
 
@@ -107,7 +109,7 @@ export function TaskDetailScreen() {
     setIsMutating(false);
 
     if (!result.ok) {
-      setActionError(result.error.message);
+      setActionError(presentErrorMessage(result.error));
       return;
     }
 
@@ -125,7 +127,7 @@ export function TaskDetailScreen() {
     setIsMutating(false);
 
     if (!result.ok) {
-      setActionError(result.error.message);
+      setActionError(presentErrorMessage(result.error));
       return;
     }
 
