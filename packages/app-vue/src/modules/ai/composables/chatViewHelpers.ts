@@ -6,6 +6,7 @@
 
 import type { AIChatService, WorkflowMode, GoalWorkflowStage } from './types';
 import { unwrap } from '@memoflow/contracts/result';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 /** Parameters for workflowStatusText computation. */
 export interface WorkflowStatusParams {
@@ -202,9 +203,10 @@ export async function initializeChatView(ctx: ChatViewInitContext): Promise<void
       await ctx.selectConversation(preferredConversation);
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : null;
     ctx.toastError(
-      message && message.length > 0 ? message : ctx.translate('common.operationFailed'),
+      translateResultError(error, ctx.translate, {
+        fallbackKey: 'common.operationFailed',
+      }),
     );
   }
 

@@ -73,9 +73,11 @@ export function createNotificationClickNavigation(
       route,
     });
     void router.push(route).catch((error) => {
+      // Internal developer surface: the raw navigation failure stays in the log
+      // via String() coercion (never assigned to user-visible state).
       logger.error('[Notification] Click navigation failed', {
         route,
-        error: error instanceof Error ? error.message : String(error),
+        error: String(error),
       });
     });
   };

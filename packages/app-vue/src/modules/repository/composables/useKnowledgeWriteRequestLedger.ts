@@ -14,6 +14,10 @@ import type {
 } from '@memoflow/contracts/repository';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import {
+  getGlobalResultErrorT,
+  translateResultError,
+} from '../../../shared/utils/translate-result-error';
 
 export interface LedgerReplayResult {
   ok: boolean;
@@ -24,6 +28,7 @@ export interface LedgerReplayResult {
 
 export function useKnowledgeWriteRequestLedger() {
   const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');
+  const t = getGlobalResultErrorT();
 
   const writeRequests = ref<KnowledgeWriteRequestClientDTO[]>([]);
   const isLoading = ref(false);
@@ -44,7 +49,10 @@ export function useKnowledgeWriteRequestLedger() {
           result.error.code !== 'UNAUTHORIZED' &&
           result.error.code !== 'NOT_FOUND'
         ) {
-          error.value = result.error.message;
+          error.value = translateResultError(result.error, t, {
+            scope: 'repository',
+            fallbackKey: 'common.operationFailed',
+          });
         }
         return;
       }
@@ -60,8 +68,12 @@ export function useKnowledgeWriteRequestLedger() {
     try {
       const result = await service.replayKnowledgeWriteRequestProjection(writeRequestId);
       if (!result.ok) {
-        error.value = result.error.message;
-        return { ok: false, code: result.error.code, message: result.error.message };
+        const message = translateResultError(result.error, t, {
+          scope: 'repository',
+          fallbackKey: 'common.operationFailed',
+        });
+        error.value = message;
+        return { ok: false, code: result.error.code, message };
       }
       lastReplay.value = { writeRequestId, status: result.data.status };
       return { ok: true, response: result.data };

@@ -5,13 +5,17 @@
  * Does not call legacy database Repository/Resource CRUD endpoints.
  */
 import { inject, ref } from 'vue';
+import { unwrapOrThrowError } from '@memoflow/contracts/result';
 import {
-  EMAIL_VERIFICATION_DOMAIN_CODE,
   EMAIL_VERIFICATION_MESSAGE_KEY,
   isEmailVerificationRequiredError,
 } from '@memoflow/http-client';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import {
+  getGlobalResultErrorT,
+  translateResultError,
+} from '../../../shared/utils/translate-result-error';
 
 export type RecentKnowledgeNote = {
   id: string;
@@ -24,6 +28,7 @@ export type RecentKnowledgeNote = {
 export function useRecentKnowledgeNotes() {
   const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');
   const desktopBridge = inject(DESKTOP_BRIDGE_KEY, undefined);
+  const t = getGlobalResultErrorT();
 
   const notes = ref<RecentKnowledgeNote[]>([]);
   const isLoading = ref(false);
@@ -44,7 +49,10 @@ export function useRecentKnowledgeNotes() {
         : await loadProjectionNotes(limit);
     } catch (loadError) {
       notes.value = [];
-      error.value = loadError instanceof Error ? loadError.message : String(loadError);
+      error.value = translateResultError(loadError, t, {
+        scope: 'repository',
+        fallbackKey: 'common.operationFailed',
+      });
     } finally {
       isLoading.value = false;
     }
@@ -65,10 +73,13 @@ export function useRecentKnowledgeNotes() {
         emailVerificationRequired.value = true;
         const ctx = result.error.context as { messageKey?: string } | undefined;
         errorMessageKey.value = ctx?.messageKey ?? EMAIL_VERIFICATION_MESSAGE_KEY;
-        error.value = result.error.message || EMAIL_VERIFICATION_DOMAIN_CODE;
+        error.value = translateResultError(result.error, t, {
+          scope: 'repository',
+          fallbackKey: 'common.operationFailed',
+        });
         return [];
       }
-      throw new Error(result.error.message);
+      throw unwrapOrThrowError(result);
     }
 
     return [...result.data.notes]
@@ -97,7 +108,7 @@ export function useRecentKnowledgeNotes() {
       ) {
         return [];
       }
-      throw new Error(result.error.message);
+      throw unwrapOrThrowError(result);
     }
 
     return [...result.data.notes]

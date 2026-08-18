@@ -33,11 +33,11 @@ export function reportAuthCatchFailure(
 ): false {
   deps.store.setLoading(false);
   console.error(`[auth] ${logLabel} failed`, error);
+  const description = deps.getLocalizedAuthError(error, 'auth.errors.UNKNOWN');
   deps.lastResultError.value = {
     code: 'UNKNOWN',
-    message: error instanceof Error ? error.message : 'Unknown error',
+    message: description,
   };
-  const description = deps.getLocalizedAuthError(error, 'auth.errors.UNKNOWN');
   deps.store.setError(description);
   toast.error(deps.t(toastKey), { description });
   return false;

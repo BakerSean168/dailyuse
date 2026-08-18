@@ -13,12 +13,17 @@
 import { ref } from 'vue';
 import type { AssistantClientCommand, AssistantEvent } from '@memoflow/contracts/ai';
 import type { AIChatService } from './types';
+import {
+  getGlobalResultErrorT,
+  translateResultError,
+} from '../../../shared/utils/translate-result-error';
 
 export interface UseAssistantDispatchOptions {
   service: Pick<AIChatService, 'dispatchAssistant'>;
 }
 
 export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
+  const t = getGlobalResultErrorT();
   const dispatching = ref(false);
   const lastEvents = ref<AssistantEvent[]>([]);
   const lastError = ref<string | null>(null);
@@ -69,7 +74,10 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
       lastEvents.value = [...collected];
       return collected;
     } catch (error) {
-      lastError.value = error instanceof Error ? error.message : 'Assistant dispatch failed';
+      lastError.value = translateResultError(error, t, {
+        scope: 'ai',
+        fallbackKey: 'common.operationFailed',
+      });
       throw error;
     } finally {
       externalSignal?.removeEventListener('abort', onExternalAbort);
