@@ -193,19 +193,11 @@ export class ResultIpcClient implements IResultIpcClient {
       }) as Result<T>;
     }
 
-    // 主进程崩溃 / 未注册 handler
-    if (error?.message?.includes('No handler registered')) {
-      return fail<ResultError>({
-        code: ResultCode.NOT_FOUND,
-        message: `IPC handler 未注册: ${channel}`,
-        cause: error,
-      }) as Result<T>;
-    }
-
-    // 其他通信异常
+    // 主进程崩溃、未注册 handler 和其他通信异常均是内部 transport failure。
+    // Electron 的人类可读 message 不属于可分支协议。
     return fail<ResultError>({
       code: ResultCode.INTERNAL_ERROR,
-      message: error?.message ?? 'IPC 调用异常',
+      message: 'IPC 调用异常',
       cause: error,
     }) as Result<T>;
   }
@@ -213,5 +205,4 @@ export class ResultIpcClient implements IResultIpcClient {
   // ────────────────────────────────────────
   // Helpers
   // ────────────────────────────────────────
-
 }

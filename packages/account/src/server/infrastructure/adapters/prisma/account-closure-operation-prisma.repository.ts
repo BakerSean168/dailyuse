@@ -5,6 +5,7 @@ import type {
   AccountClosurePhase,
   AccountClosureStatus,
   CASUpdatePhaseParams,
+  AccountClosureFailureCode,
 } from '../../../domain/repositories/i-account-closure-operation-repository';
 import type { OperationAuditRecordInput } from '@memoflow/patterns/operations';
 
@@ -12,9 +13,19 @@ interface ClosureOperationDb {
   accountClosureOperation: PrismaClient['accountClosureOperation'];
 }
 
-export class PrismaAccountClosureOperationRepository
-  implements IAccountClosureOperationRepository
-{
+function parseAccountClosureFailureCode(value: string | null): AccountClosureFailureCode | null {
+  switch (value) {
+    case 'ACCOUNT_NOT_FOUND':
+    case 'ACCOUNT_CLOSURE_FAILED':
+      return value;
+    case null:
+      return null;
+    default:
+      return 'ACCOUNT_CLOSURE_FAILED';
+  }
+}
+
+export class PrismaAccountClosureOperationRepository implements IAccountClosureOperationRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   private client(tx?: ClosureOperationDb): ClosureOperationDb {
@@ -39,6 +50,7 @@ export class PrismaAccountClosureOperationRepository
     piiCleanupStatus: string | null;
     piiReason?: string | null;
     lastHeartbeatAt?: Date | null;
+    lastErrorCode: string | null;
     lastError: string | null;
     receiptJson: string | null;
     createdAt: Date;
@@ -63,6 +75,7 @@ export class PrismaAccountClosureOperationRepository
       revokedSessions: row.revokedSessions,
       piiCleanupStatus: row.piiCleanupStatus,
       piiReason: row.piiReason,
+      lastErrorCode: parseAccountClosureFailureCode(row.lastErrorCode),
       lastError: row.lastError,
       receiptJson: row.receiptJson,
       createdAt: row.createdAt,
@@ -103,9 +116,7 @@ export class PrismaAccountClosureOperationRepository
     return this.mapRowToRecord(row);
   }
 
-  async listByIdentityId(
-    identityId: string,
-  ): Promise<AccountClosureOperationRecord[]> {
+  async listByIdentityId(identityId: string): Promise<AccountClosureOperationRecord[]> {
     if (!identityId) {
       throw new Error('identityId is required for closure timeline query');
     }
@@ -117,10 +128,7 @@ export class PrismaAccountClosureOperationRepository
     return rows.map((row) => this.mapRowToRecord(row));
   }
 
-  async resetForReplay(
-    identityId: string,
-    id: string,
-  ): Promise<AccountClosureOperationRecord> {
+  async resetForReplay(identityId: string, id: string): Promise<AccountClosureOperationRecord> {
     if (!identityId || !id) {
       throw new Error('identityId and id are required for closure replay');
     }
@@ -131,9 +139,7 @@ export class PrismaAccountClosureOperationRepository
       throw new Error(`Closure operation '${id}' not found for this identity`);
     }
     if (existing.status !== 'failed') {
-      throw new Error(
-        `Closure operation '${id}' is not replayable (status: ${existing.status})`,
-      );
+      throw new Error(`Closure operation '${id}' is not replayable (status: ${existing.status})`);
     }
     const now = new Date();
     const updated = await this.prisma.accountClosureOperation.update({
@@ -142,6 +148,7 @@ export class PrismaAccountClosureOperationRepository
         status: 'running',
         deadLetterAt: null,
         nextRetryAt: new Date(now.getTime() - 1000),
+        lastErrorCode: null,
         lastError: null,
         ownerToken: null,
         leaseExpiresAt: null,
@@ -173,9 +180,7 @@ export class PrismaAccountClosureOperationRepository
         throw new Error(`Closure operation '${id}' not found for this identity`);
       }
       if (existing.status !== 'failed') {
-        throw new Error(
-          `Closure operation '${id}' is not replayable (status: ${existing.status})`,
-        );
+        throw new Error(`Closure operation '${id}' is not replayable (status: ${existing.status})`);
       }
       const now = new Date();
       const updated = await tx.accountClosureOperation.update({
@@ -201,10 +206,7 @@ export class PrismaAccountClosureOperationRepository
     });
   }
 
-  async create(
-    record: AccountClosureOperationRecord,
-    tx?: ClosureOperationDb,
-  ): Promise<boolean> {
+  async create(record: AccountClosureOperationRecord, tx?: ClosureOperationDb): Promise<boolean> {
     try {
       await this.client(tx).accountClosureOperation.create({
         data: {
@@ -225,6 +227,7 @@ export class PrismaAccountClosureOperationRepository
           revokedSessions: record.revokedSessions ?? 0,
           piiCleanupStatus: record.piiCleanupStatus,
           piiReason: record.piiReason,
+          lastErrorCode: record.lastErrorCode,
           lastError: record.lastError,
           receiptJson: record.receiptJson,
           createdAt: record.createdAt,
@@ -278,7 +281,7 @@ export class PrismaAccountClosureOperationRepository
         status: 'running',
         updatedAt: params.now,
         ...(params.expectedStatus === 'failed'
-          ? { attempts: { increment: 1 }, lastError: null }
+          ? { attempts: { increment: 1 }, lastErrorCode: null, lastError: null }
           : {}),
       },
     });
@@ -305,10 +308,7 @@ export class PrismaAccountClosureOperationRepository
     return result.count > 0;
   }
 
-  async updatePhaseCAS(
-    params: CASUpdatePhaseParams,
-    tx?: ClosureOperationDb,
-  ): Promise<boolean> {
+  async updatePhaseCAS(params: CASUpdatePhaseParams, tx?: ClosureOperationDb): Promise<boolean> {
     const whereClause: Record<string, unknown> = {
       id: params.id,
       identityId: params.identityId,
@@ -331,6 +331,7 @@ export class PrismaAccountClosureOperationRepository
         piiCleanupStatus: params.piiCleanupStatus ?? undefined,
         piiReason: params.piiReason ?? undefined,
         eventId: params.eventId ?? undefined,
+        lastErrorCode: params.lastErrorCode,
         lastError: params.lastError,
         receiptJson: params.receiptJson,
         finishedAt: params.finishedAt,
@@ -365,6 +366,7 @@ export class PrismaAccountClosureOperationRepository
         revokedSessions: record.revokedSessions,
         piiCleanupStatus: record.piiCleanupStatus,
         piiReason: record.piiReason,
+        lastErrorCode: record.lastErrorCode,
         lastError: record.lastError,
         receiptJson: record.receiptJson,
         updatedAt: record.updatedAt,
@@ -388,6 +390,7 @@ export class PrismaAccountClosureOperationRepository
         revokedSessions: record.revokedSessions ?? 0,
         piiCleanupStatus: record.piiCleanupStatus,
         piiReason: record.piiReason,
+        lastErrorCode: record.lastErrorCode,
         lastError: record.lastError,
         receiptJson: record.receiptJson,
         createdAt: record.createdAt,

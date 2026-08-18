@@ -11,6 +11,7 @@
  * - Credentials stay request-scoped via Model Gateway (modelBindingId only)
  * - Not the open-chat default path (DirectTurnEngine remains primary)
  */
+import { isAbortLikeError } from '../../../shared/is-abort-like-error';
 import type { IModelGatewayPort, ITurnEnginePort } from '@memoflow/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import {
@@ -127,18 +128,10 @@ export class ReadonlyAnalysisTurnEngine implements ITurnEnginePort {
       }
       return { status: 'completed' };
     } catch (error) {
-      if (
-        controller.signal.aborted ||
-        input.signal?.aborted ||
-        (error instanceof Error &&
-          (error.name === 'AbortError' || /abort/i.test(error.message)))
-      ) {
+      if (controller.signal.aborted || input.signal?.aborted || isAbortLikeError(error)) {
         return { status: 'aborted' };
       }
-      return {
-        status: 'failed',
-        error: error instanceof Error ? error.message : 'Readonly analysis turn failed',
-      };
+      return { status: 'failed', error: 'READONLY_ANALYSIS_FAILED' };
     } finally {
       cleanup();
     }

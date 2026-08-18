@@ -9,10 +9,7 @@ import { describe, expect, it } from 'vitest';
  */
 describe('knowledge write request ownership surface', () => {
   const port = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/ports/knowledge-note-projection.repository.ts',
-    ),
+    resolve(__dirname, '../../../../application/ports/knowledge-note-projection.repository.ts'),
     'utf8',
   );
   const prisma = readFileSync(
@@ -20,10 +17,7 @@ describe('knowledge write request ownership surface', () => {
     'utf8',
   );
   const service = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/services/knowledge-note-commit.service.ts',
-    ),
+    resolve(__dirname, '../../../../application/services/knowledge-note-commit.service.ts'),
     'utf8',
   );
 
@@ -58,6 +52,8 @@ describe('knowledge write request ownership surface', () => {
   it('commit service passes identityId into status transitions', () => {
     expect(service).toContain('retryFailed(identityId, existing.id, now)');
     expect(service).toContain('markFailed(identityId, record.id, code, message)');
-    expect(service).toContain('markCommitted(identityId, record.id, committed.commitSha)');
+    expect(service).toMatch(
+      /markCommitted\(\s*identityId,\s*record\.id,\s*committed\.commitSha,?\s*\)/,
+    );
   });
 });

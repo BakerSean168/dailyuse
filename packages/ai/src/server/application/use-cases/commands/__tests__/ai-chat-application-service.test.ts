@@ -248,7 +248,7 @@ describe('StreamAIMessageUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.message).toMatch(/requestId:/i);
+      expect(result.error.message).not.toMatch(/requestId:/i);
     }
 
     expect(executionPort.stream).toHaveBeenCalledWith(
@@ -267,6 +267,7 @@ describe('StreamAIMessageUseCase', () => {
         taskType: 'CHAT_STREAM',
         status: 'FAILED',
         errorCategory: 'aborted',
+        requestId: expect.any(String),
       }),
     );
   });

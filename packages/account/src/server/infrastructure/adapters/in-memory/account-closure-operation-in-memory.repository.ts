@@ -4,9 +4,7 @@ import type {
   CASUpdatePhaseParams,
 } from '../../../domain/repositories/i-account-closure-operation-repository';
 
-export class InMemoryAccountClosureOperationRepository
-  implements IAccountClosureOperationRepository
-{
+export class InMemoryAccountClosureOperationRepository implements IAccountClosureOperationRepository {
   private readonly records = new Map<string, AccountClosureOperationRecord>();
 
   private makeKey(identityId: string, idempotencyKey: string): string {
@@ -22,9 +20,7 @@ export class InMemoryAccountClosureOperationRepository
     return { ...record };
   }
 
-  async findActiveByIdentityId(
-    identityId: string,
-  ): Promise<AccountClosureOperationRecord | null> {
+  async findActiveByIdentityId(identityId: string): Promise<AccountClosureOperationRecord | null> {
     const list = Array.from(this.records.values())
       .filter(
         (r) =>
@@ -41,10 +37,7 @@ export class InMemoryAccountClosureOperationRepository
       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
   }
 
-  async resetForReplay(
-    identityId: string,
-    id: string,
-  ): Promise<AccountClosureOperationRecord> {
+  async resetForReplay(identityId: string, id: string): Promise<AccountClosureOperationRecord> {
     for (const [key, record] of this.records.entries()) {
       if (record.id === id && record.identityId === identityId) {
         if (record.status !== 'failed') {
@@ -56,6 +49,7 @@ export class InMemoryAccountClosureOperationRepository
           status: 'running',
           deadLetterAt: null,
           nextRetryAt: new Date(now.getTime() - 1000),
+          lastErrorCode: null,
           lastError: null,
           ownerToken: null,
           leaseExpiresAt: null,
@@ -99,6 +93,7 @@ export class InMemoryAccountClosureOperationRepository
             lastHeartbeatAt: params.now,
             status: 'running',
             attempts: params.expectedStatus === 'failed' ? record.attempts + 1 : record.attempts,
+            lastErrorCode: params.expectedStatus === 'failed' ? null : record.lastErrorCode,
             lastError: params.expectedStatus === 'failed' ? null : record.lastError,
             updatedAt: params.now,
           });
@@ -155,6 +150,8 @@ export class InMemoryAccountClosureOperationRepository
           piiCleanupStatus: params.piiCleanupStatus ?? record.piiCleanupStatus,
           piiReason: params.piiReason ?? record.piiReason,
           eventId: params.eventId ?? record.eventId,
+          lastErrorCode:
+            params.lastErrorCode !== undefined ? params.lastErrorCode : record.lastErrorCode,
           lastError: params.lastError !== undefined ? params.lastError : record.lastError,
           receiptJson: params.receiptJson !== undefined ? params.receiptJson : record.receiptJson,
           finishedAt: params.finishedAt !== undefined ? params.finishedAt : record.finishedAt,

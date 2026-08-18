@@ -1,3 +1,4 @@
+import { AIExecutionError } from '../../../../shared/ai-execution-error';
 import { normalizeOpenAICompatibleModelId } from '../../../shared/openai-compatible-normalize';
 import { AIProviderType, type AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 
@@ -38,7 +39,7 @@ export async function resolveActiveProviderConfig(
   const providers = await providerConfigRepository.findByIdentityId(identityId);
   const activeProvider = providers.find((provider) => provider.isActive);
   if (!activeProvider) {
-    throw new Error('No AI provider configured');
+    throw new AIExecutionError('provider_unavailable', 'No AI provider configured');
   }
 
   return activeProvider;
@@ -63,7 +64,9 @@ export function toChatExecutionProviderConfig(
 ): ChatExecutionProviderConfig {
   return {
     provider: toExecutionProviderName(providerConfig.providerType),
-    model: normalizeOpenAICompatibleModelId(options?.modelOverride ?? providerConfig.defaultModel ?? 'gpt-4o-mini'),
+    model: normalizeOpenAICompatibleModelId(
+      options?.modelOverride ?? providerConfig.defaultModel ?? 'gpt-4o-mini',
+    ),
     apiKey: providerConfig.apiKey,
     baseUrl: providerConfig.baseUrl,
     temperature: options?.temperature ?? 0.7,
@@ -78,6 +81,3 @@ function toExecutionProviderName(providerType?: string): string {
       return 'openai';
   }
 }
-
-
-

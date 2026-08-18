@@ -1,68 +1,40 @@
-/**
- * AI Module Custom Errors
- * AI 模块自定义错误类
- */
+/** AI-owned structured failures used by domain/application AI flows. */
 
-import { DomainError } from '@memoflow/utils/errors';
+import { AIExecutionError } from '../../../shared/ai-execution-error';
 
-/**
- * AI 生成超时错误
- */
-export class AIGenerationTimeoutError extends DomainError {
+export class AIGenerationTimeoutError extends AIExecutionError {
+  readonly timeoutSeconds: number;
   constructor(timeoutSeconds: number) {
-    super(
-      'TIMEOUT',
-      `AI generation timed out after ${timeoutSeconds} seconds`,
-      { timeoutSeconds },
-      504,
-    );
+    super('timeout', `AI generation timed out after ${timeoutSeconds} seconds`);
+    this.timeoutSeconds = timeoutSeconds;
   }
 }
 
-/**
- * AI 配额超限错误
- */
-export class AIQuotaExceededError extends DomainError {
-  public readonly quotaLimit: number;
-  public readonly currentUsage: number;
-  public readonly resetAt: Date;
-
-  constructor(quotaLimit: number, currentUsage: number, resetAt: Date) {
-    super(
-      'RATE_LIMITED',
-      `AI quota exceeded. Limit: ${quotaLimit}, Current usage: ${currentUsage}. ` +
-        `Quota resets at ${resetAt.toISOString()}`,
-      { quotaLimit, currentUsage, resetAt: resetAt.toISOString() },
-      429,
-    );
-    this.quotaLimit = quotaLimit;
-    this.currentUsage = currentUsage;
-    this.resetAt = resetAt;
+export class AIQuotaExceededError extends AIExecutionError {
+  constructor(
+    readonly quotaLimit: number,
+    readonly currentUsage: number,
+    readonly resetAt: Date,
+  ) {
+    super('rate_limited', 'AI quota exceeded');
   }
 }
 
-/**
- * AI 提供商错误
- */
-export class AIProviderError extends DomainError {
-  public readonly provider: string;
-
-  constructor(provider: string, message: string, originalError?: Error) {
-    super('SERVICE_UNAVAILABLE', `AI Provider (${provider}) error: ${message}`, { provider }, 503, {
-      originalError,
-    });
-    this.provider = provider;
+export class AIProviderError extends AIExecutionError {
+  constructor(
+    readonly provider: string,
+    message: string,
+    originalError?: Error,
+  ) {
+    super('upstream_provider_error', `AI provider ${provider} failed`, { cause: originalError });
   }
 }
 
-/**
- * AI 验证错误
- */
-export class AIValidationError extends DomainError {
-  public readonly validationErrors: string[];
-
-  constructor(message: string, validationErrors: string[]) {
-    super('VALIDATION_ERROR', `AI validation failed: ${message}`, { validationErrors }, 422);
-    this.validationErrors = validationErrors;
+export class AIValidationError extends AIExecutionError {
+  constructor(
+    message: string,
+    readonly validationErrors: string[],
+  ) {
+    super('validation', `AI validation failed: ${message}`);
   }
 }

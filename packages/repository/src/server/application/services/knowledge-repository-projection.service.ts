@@ -23,7 +23,7 @@ import type {
 import type { IdentityId, RepositoryId, ResourceId } from '@memoflow/contracts/primitives';
 import { createLogger } from '@memoflow/utils/logger';
 import type { KnowledgeRepositoryConnectionServerDTO } from '@memoflow/contracts/repository';
-import { GitHubAppClientError } from '../ports/github-app-client.port';
+import { GitHubAppClientFailureError } from '../ports/github-app-client.port';
 import type {
   GitHubBlobContent,
   GitHubMarkdownChange,
@@ -364,20 +364,20 @@ export class KnowledgeRepositoryProjectionService {
       }
       return ok({ attachment: current, contentBase64: Buffer.from(blob.bytes).toString('base64') });
     } catch (error) {
-      if (error instanceof GitHubAppClientError) {
-        if (error.status === 413) {
+      if (error instanceof GitHubAppClientFailureError) {
+        if (error.failure.kind === 'payload_too_large') {
           return fail({
             code: 'VALIDATION_ERROR',
             message: 'Knowledge attachment exceeds the 10 MiB read limit',
           });
         }
-        if (error.status === 401 || error.status === 403) {
+        if (error.failure.kind === 'unauthorized') {
           return fail({
             code: 'FORBIDDEN',
             message: 'Knowledge repository attachment access is no longer authorized',
           });
         }
-        if (error.status === 404) {
+        if (error.failure.kind === 'not_found') {
           return fail({ code: 'NOT_FOUND', message: 'Knowledge attachment blob was not found' });
         }
       }
@@ -484,7 +484,10 @@ export class KnowledgeRepositoryProjectionService {
 
   private assertAttachmentBlobIntegrity(blob: GitHubBlobContent, expectedBlobSha: string): void {
     if (blob.byteSize > MAX_KNOWLEDGE_ATTACHMENT_BYTES) {
-      throw new GitHubAppClientError(413, 'Knowledge attachment exceeds the 10 MiB read limit');
+      throw new GitHubAppClientFailureError(
+        { kind: 'payload_too_large' },
+        'Knowledge attachment exceeds the 10 MiB read limit',
+      );
     }
     if (blob.blobSha !== expectedBlobSha || blob.byteSize !== blob.bytes.byteLength) {
       throw new Error('GitHub attachment blob failed integrity validation');
@@ -552,8 +555,10 @@ export class KnowledgeRepositoryProjectionService {
         message: 'Knowledge write request projection replay is not configured',
       });
     }
-    const writeRequest =
-      await this.options.writeRequestRepository.findByIdForIdentity(identityId, writeRequestId);
+    const writeRequest = await this.options.writeRequestRepository.findByIdForIdentity(
+      identityId,
+      writeRequestId,
+    );
     if (!writeRequest) {
       return fail({ code: 'NOT_FOUND', message: 'Knowledge write request was not found' });
     }
@@ -645,7 +650,10 @@ export class KnowledgeRepositoryProjectionService {
   private async replayPendingWriteRequests(connectionId: string): Promise<void> {
     const repository = this.options.writeRequestRepository;
     if (!repository) return;
-    const candidates = await repository.listProjectionPendingOrFailedForConnection(connectionId, 50);
+    const candidates = await repository.listProjectionPendingOrFailedForConnection(
+      connectionId,
+      50,
+    );
     for (const writeRequest of candidates) {
       if (!this.running) return;
       const result = await this.replayWriteRequestProjection(
@@ -827,7 +835,6 @@ export class KnowledgeRepositoryProjectionService {
       logger.warn('Periodic knowledge projection reconciliation failed', { error });
     }
   }
-
 
   /**
    * System paths (webhook/reconcile) start from bare connection id, then re-load

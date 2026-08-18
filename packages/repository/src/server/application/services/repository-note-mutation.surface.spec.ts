@@ -36,7 +36,7 @@ describe('repository note mutation event surface', () => {
     expect(events).toContain('resourcePath: string');
     expect(events).not.toContain('REPOSITORY_RESOURCE_MUTATED_EVENT');
     expect(events).not.toContain('RepositoryResourceMutatedEvent');
-    expect(events).not.toContain("repository:resource:mutated");
+    expect(events).not.toContain('repository:resource:mutated');
     expect(eventMap).toContain("'repository:note:mutated'");
     expect(eventMap).not.toContain("'repository:resource:mutated'");
   });
@@ -49,9 +49,7 @@ describe('repository note mutation event surface', () => {
     expect(autoIndex).toContain('handleNoteMutation');
     expect(autoIndex).not.toContain('REPOSITORY_RESOURCE_MUTATED_EVENT');
     expect(autoIndex).not.toContain('handleResourceMutation');
-    expect(
-      existsSync(resolve(__dirname, 'repository-resource-mutation.publisher.ts')),
-    ).toBe(false);
+    expect(existsSync(resolve(__dirname, 'repository-resource-mutation.publisher.ts'))).toBe(false);
     expect(existsSync(resolve(__dirname, 'repository-note-mutation.publisher.ts'))).toBe(true);
   });
 });

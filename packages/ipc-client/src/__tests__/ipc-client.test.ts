@@ -68,7 +68,10 @@ describe('ResultIpcClient', () => {
   });
 
   it('returns Result.fail when bridge is missing', async () => {
-    const noBridgeClient = new ResultIpcClient({ bridge: undefined as unknown as ElectronBridge, timeout: 0 });
+    const noBridgeClient = new ResultIpcClient({
+      bridge: undefined as unknown as ElectronBridge,
+      timeout: 0,
+    });
 
     const result = await noBridgeClient.invoke('test:channel');
 
@@ -85,7 +88,7 @@ describe('ResultIpcClient', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.message).toBe('crash');
+      expect(result.error.message).toBe('IPC 调用异常');
     }
   });
 
@@ -106,14 +109,14 @@ describe('ResultIpcClient', () => {
     vi.useRealTimers();
   });
 
-  it('returns Result.fail for "No handler registered" error', async () => {
+  it('treats an unregistered handler as an internal IPC transport failure', async () => {
     vi.mocked(bridge.invoke).mockRejectedValue(new Error('No handler registered for channel'));
 
     const result = await client.invoke('unregistered:channel');
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.code).toBe('INTERNAL_ERROR');
     }
   });
 });

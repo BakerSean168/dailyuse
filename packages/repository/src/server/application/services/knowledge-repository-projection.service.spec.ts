@@ -645,12 +645,7 @@ describe('KnowledgeRepositoryProjectionService', () => {
       processedAt: null,
     });
 
-    await deliveryRepository.updateStatus(
-      'delivery-owned',
-      'connection-other',
-      'Processed',
-      null,
-    );
+    await deliveryRepository.updateStatus('delivery-owned', 'connection-other', 'Processed', null);
     expect(deliveryRepository.rows.get('delivery-owned')).toMatchObject({
       status: 'Received',
       processedAt: null,

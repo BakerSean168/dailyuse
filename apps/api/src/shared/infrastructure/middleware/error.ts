@@ -18,6 +18,7 @@ import {
 } from '@memoflow/contracts/result';
 import { createApiResponseBuilder } from '../http/response-builder.js';
 import type { RequestContextCarrierRequest } from '../http/middlewares/request-context.middleware.js';
+import { CorsRejectionError } from './global';
 
 const logger = createLogger('ErrorHandler');
 
@@ -26,14 +27,8 @@ type ErrorLike = {
   message?: unknown;
 };
 
-function isCorsRejectionError(err: unknown): err is { message: string } {
-  return (
-    typeof err === 'object' &&
-    err !== null &&
-    'message' in err &&
-    typeof err.message === 'string' &&
-    err.message === 'Not allowed by CORS'
-  );
+function isCorsRejectionError(err: unknown): err is CorsRejectionError {
+  return err instanceof CorsRejectionError;
 }
 
 function toErrorLike(err: unknown): ErrorLike | null {

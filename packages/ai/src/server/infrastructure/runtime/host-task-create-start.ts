@@ -1,3 +1,4 @@
+import { hostTaskCreateValidationError } from './host-task-create-error';
 /**
  * Residual 431/461/479/483/485/493/497/499: Host task.create start foundation (TS runtime).
  *
@@ -61,9 +62,7 @@ export function resolveTaskCreateConversationId(
 /**
  * Residual 485: resolve non-empty threadId for product task.create start.
  */
-export function resolveTaskCreateThreadId(
-  threadId: string | null | undefined,
-): string | undefined {
+export function resolveTaskCreateThreadId(threadId: string | null | undefined): string | undefined {
   return asNonEmptyString(threadId ?? undefined);
 }
 
@@ -80,9 +79,7 @@ export function resolveTaskCreateIdentityId(
 /**
  * Residual 497: resolve non-empty runId for product task.create start.
  */
-export function resolveTaskCreateRunId(
-  runId: string | null | undefined,
-): string | undefined {
+export function resolveTaskCreateRunId(runId: string | null | undefined): string | undefined {
   return asNonEmptyString(runId ?? undefined);
 }
 
@@ -122,31 +119,31 @@ export function buildHostTaskCreateStartResult(input: {
   const now = input.nowMs ?? Date.now();
   // Residual 499: agent isolation fail-closed in builder (runtime also gates).
   if (input.request.agentType !== 'task.create') {
-    throw new Error(HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE);
   }
   // Residual 493: ExecutionContext identity binding fail-closed in builder.
   const identityId = resolveTaskCreateIdentityId(input.identityId);
   if (!identityId) {
-    throw new Error(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE);
   }
   // Residual 497: process-local runId map key fail-closed in builder.
   const runId = resolveTaskCreateRunId(input.request.runId);
   if (!runId) {
-    throw new Error(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE);
   }
   const title = resolveTaskCreateTitle(input.request.input);
   if (!title) {
-    throw new Error(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE);
   }
   // Residual 483: session binding fail-closed in builder (runtime also checks).
   const conversationId = resolveTaskCreateConversationId(input.request.conversationId);
   if (!conversationId) {
-    throw new Error(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE);
   }
   // Residual 485: thread binding fail-closed in builder (whitespace is empty).
   const threadId = resolveTaskCreateThreadId(input.request.threadId);
   if (!threadId) {
-    throw new Error(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE);
   }
   const goalId = resolveTaskCreateGoalId(input.request.input);
   const payload: Record<string, unknown> = { title };

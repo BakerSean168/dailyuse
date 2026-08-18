@@ -17,7 +17,7 @@ import type {
   KnowledgeWriteRequestRecord,
 } from '../ports/knowledge-note-projection.repository';
 import type { IGitHubAppClient } from '../ports/github-app-client.port';
-import { GitHubAppClientError } from '../ports/github-app-client.port';
+import { GitHubAppClientFailureError } from '../ports/github-app-client.port';
 import { KnowledgeNoteCommitService } from './knowledge-note-commit.service';
 import { createUnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
@@ -296,10 +296,7 @@ class MemoryWriteRequestRepository implements IKnowledgeWriteRequestRepository {
       .slice(0, limit);
   }
 
-  async listForIdentity(
-    identityId: string,
-    options: { connectionId?: string; limit: number },
-  ) {
+  async listForIdentity(identityId: string, options: { connectionId?: string; limit: number }) {
     return [...this.rows.values()]
       .filter(
         (row) =>
@@ -634,7 +631,7 @@ describe('KnowledgeNoteCommitService', () => {
   it('records GitHub path conflicts as a retryable failed request', async () => {
     const github = githubClient({
       createFileCommit: vi.fn(async () => {
-        throw new GitHubAppClientError(409, 'Path already exists');
+        throw new GitHubAppClientFailureError({ kind: 'conflict' }, 'Path already exists');
       }),
     });
     const { service, writeRequestRepository, publishMutation } = createService(github);
@@ -652,7 +649,9 @@ describe('KnowledgeNoteCommitService', () => {
   it('atomically retries the same confirmed request after a transient GitHub failure', async () => {
     const createFileCommit = vi
       .fn()
-      .mockRejectedValueOnce(new GitHubAppClientError(503, 'GitHub unavailable'))
+      .mockRejectedValueOnce(
+        new GitHubAppClientFailureError({ kind: 'unavailable' }, 'GitHub unavailable'),
+      )
       .mockResolvedValueOnce({ commitSha: 'c'.repeat(40), blobSha: 'd'.repeat(40) });
     const { service, writeRequestRepository } = createService(githubClient({ createFileCommit }));
 

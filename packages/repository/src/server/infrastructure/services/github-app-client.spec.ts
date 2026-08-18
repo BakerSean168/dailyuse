@@ -257,7 +257,7 @@ describe('GitHubAppClient', () => {
     );
   });
 
-  it('preserves the GitHub HTTP status for lifecycle diagnosis', async () => {
+  it('maps GitHub not-found status to a provider-neutral lifecycle failure', async () => {
     const client = new GitHubAppClient({
       appId: 'github-app-123',
       privateKey,
@@ -268,9 +268,9 @@ describe('GitHubAppClient', () => {
     });
 
     await expect(client.getInstallationInventory('removed-installation')).rejects.toMatchObject({
-      name: 'GitHubAppClientError',
-      status: 404,
-      message: expect.stringContaining('GitHub API 404'),
+      name: 'GitHubAppClientFailureError',
+      failure: { kind: 'not_found' },
+      message: 'GitHub API request failed (404)',
     });
   });
 
@@ -547,6 +547,6 @@ describe('GitHubAppClient', () => {
         'large-blob',
         10 * 1024 * 1024,
       ),
-    ).rejects.toMatchObject({ status: 413 });
+    ).rejects.toMatchObject({ failure: { kind: 'payload_too_large' } });
   });
 });

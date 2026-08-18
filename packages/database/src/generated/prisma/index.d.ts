@@ -66888,6 +66888,7 @@ export namespace Prisma {
     revokedSessions: number | null
     piiCleanupStatus: string | null
     piiReason: string | null
+    lastErrorCode: string | null
     lastError: string | null
     receiptJson: string | null
     createdAt: Date | null
@@ -66913,6 +66914,7 @@ export namespace Prisma {
     revokedSessions: number | null
     piiCleanupStatus: string | null
     piiReason: string | null
+    lastErrorCode: string | null
     lastError: string | null
     receiptJson: string | null
     createdAt: Date | null
@@ -66938,6 +66940,7 @@ export namespace Prisma {
     revokedSessions: number
     piiCleanupStatus: number
     piiReason: number
+    lastErrorCode: number
     lastError: number
     receiptJson: number
     createdAt: number
@@ -66977,6 +66980,7 @@ export namespace Prisma {
     revokedSessions?: true
     piiCleanupStatus?: true
     piiReason?: true
+    lastErrorCode?: true
     lastError?: true
     receiptJson?: true
     createdAt?: true
@@ -67002,6 +67006,7 @@ export namespace Prisma {
     revokedSessions?: true
     piiCleanupStatus?: true
     piiReason?: true
+    lastErrorCode?: true
     lastError?: true
     receiptJson?: true
     createdAt?: true
@@ -67027,6 +67032,7 @@ export namespace Prisma {
     revokedSessions?: true
     piiCleanupStatus?: true
     piiReason?: true
+    lastErrorCode?: true
     lastError?: true
     receiptJson?: true
     createdAt?: true
@@ -67139,6 +67145,7 @@ export namespace Prisma {
     revokedSessions: number
     piiCleanupStatus: string | null
     piiReason: string | null
+    lastErrorCode: string | null
     lastError: string | null
     receiptJson: string | null
     createdAt: Date
@@ -67183,6 +67190,7 @@ export namespace Prisma {
     revokedSessions?: boolean
     piiCleanupStatus?: boolean
     piiReason?: boolean
+    lastErrorCode?: boolean
     lastError?: boolean
     receiptJson?: boolean
     createdAt?: boolean
@@ -67208,6 +67216,7 @@ export namespace Prisma {
     revokedSessions?: boolean
     piiCleanupStatus?: boolean
     piiReason?: boolean
+    lastErrorCode?: boolean
     lastError?: boolean
     receiptJson?: boolean
     createdAt?: boolean
@@ -67233,6 +67242,7 @@ export namespace Prisma {
     revokedSessions?: boolean
     piiCleanupStatus?: boolean
     piiReason?: boolean
+    lastErrorCode?: boolean
     lastError?: boolean
     receiptJson?: boolean
     createdAt?: boolean
@@ -67258,6 +67268,7 @@ export namespace Prisma {
     revokedSessions?: boolean
     piiCleanupStatus?: boolean
     piiReason?: boolean
+    lastErrorCode?: boolean
     lastError?: boolean
     receiptJson?: boolean
     createdAt?: boolean
@@ -67265,7 +67276,7 @@ export namespace Prisma {
     finishedAt?: boolean
   }
 
-  export type AccountClosureOperationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "idempotencyKey" | "phase" | "status" | "attempts" | "version" | "ownerToken" | "leaseExpiresAt" | "lastHeartbeatAt" | "nextRetryAt" | "deadLetterAt" | "eventId" | "reason" | "revokedSessions" | "piiCleanupStatus" | "piiReason" | "lastError" | "receiptJson" | "createdAt" | "updatedAt" | "finishedAt", ExtArgs["result"]["accountClosureOperation"]>
+  export type AccountClosureOperationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "idempotencyKey" | "phase" | "status" | "attempts" | "version" | "ownerToken" | "leaseExpiresAt" | "lastHeartbeatAt" | "nextRetryAt" | "deadLetterAt" | "eventId" | "reason" | "revokedSessions" | "piiCleanupStatus" | "piiReason" | "lastErrorCode" | "lastError" | "receiptJson" | "createdAt" | "updatedAt" | "finishedAt", ExtArgs["result"]["accountClosureOperation"]>
 
   export type $AccountClosureOperationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AccountClosureOperation"
@@ -67288,6 +67299,7 @@ export namespace Prisma {
       revokedSessions: number
       piiCleanupStatus: string | null
       piiReason: string | null
+      lastErrorCode: string | null
       lastError: string | null
       receiptJson: string | null
       createdAt: Date
@@ -67733,6 +67745,7 @@ export namespace Prisma {
     readonly revokedSessions: FieldRef<"AccountClosureOperation", 'Int'>
     readonly piiCleanupStatus: FieldRef<"AccountClosureOperation", 'String'>
     readonly piiReason: FieldRef<"AccountClosureOperation", 'String'>
+    readonly lastErrorCode: FieldRef<"AccountClosureOperation", 'String'>
     readonly lastError: FieldRef<"AccountClosureOperation", 'String'>
     readonly receiptJson: FieldRef<"AccountClosureOperation", 'String'>
     readonly createdAt: FieldRef<"AccountClosureOperation", 'DateTime'>
@@ -121569,6 +121582,7 @@ export namespace Prisma {
     revokedSessions: 'revokedSessions',
     piiCleanupStatus: 'piiCleanupStatus',
     piiReason: 'piiReason',
+    lastErrorCode: 'lastErrorCode',
     lastError: 'lastError',
     receiptJson: 'receiptJson',
     createdAt: 'createdAt',
@@ -127152,6 +127166,7 @@ export namespace Prisma {
     revokedSessions?: IntFilter<"AccountClosureOperation"> | number
     piiCleanupStatus?: StringNullableFilter<"AccountClosureOperation"> | string | null
     piiReason?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    lastErrorCode?: StringNullableFilter<"AccountClosureOperation"> | string | null
     lastError?: StringNullableFilter<"AccountClosureOperation"> | string | null
     receiptJson?: StringNullableFilter<"AccountClosureOperation"> | string | null
     createdAt?: DateTimeFilter<"AccountClosureOperation"> | Date | string
@@ -127177,6 +127192,7 @@ export namespace Prisma {
     revokedSessions?: SortOrder
     piiCleanupStatus?: SortOrderInput | SortOrder
     piiReason?: SortOrderInput | SortOrder
+    lastErrorCode?: SortOrderInput | SortOrder
     lastError?: SortOrderInput | SortOrder
     receiptJson?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -127206,6 +127222,7 @@ export namespace Prisma {
     revokedSessions?: IntFilter<"AccountClosureOperation"> | number
     piiCleanupStatus?: StringNullableFilter<"AccountClosureOperation"> | string | null
     piiReason?: StringNullableFilter<"AccountClosureOperation"> | string | null
+    lastErrorCode?: StringNullableFilter<"AccountClosureOperation"> | string | null
     lastError?: StringNullableFilter<"AccountClosureOperation"> | string | null
     receiptJson?: StringNullableFilter<"AccountClosureOperation"> | string | null
     createdAt?: DateTimeFilter<"AccountClosureOperation"> | Date | string
@@ -127231,6 +127248,7 @@ export namespace Prisma {
     revokedSessions?: SortOrder
     piiCleanupStatus?: SortOrderInput | SortOrder
     piiReason?: SortOrderInput | SortOrder
+    lastErrorCode?: SortOrderInput | SortOrder
     lastError?: SortOrderInput | SortOrder
     receiptJson?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -127264,6 +127282,7 @@ export namespace Prisma {
     revokedSessions?: IntWithAggregatesFilter<"AccountClosureOperation"> | number
     piiCleanupStatus?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
     piiReason?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
+    lastErrorCode?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
     lastError?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
     receiptJson?: StringNullableWithAggregatesFilter<"AccountClosureOperation"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"AccountClosureOperation"> | Date | string
@@ -136928,6 +136947,7 @@ export namespace Prisma {
     revokedSessions?: number
     piiCleanupStatus?: string | null
     piiReason?: string | null
+    lastErrorCode?: string | null
     lastError?: string | null
     receiptJson?: string | null
     createdAt?: Date | string
@@ -136953,6 +136973,7 @@ export namespace Prisma {
     revokedSessions?: number
     piiCleanupStatus?: string | null
     piiReason?: string | null
+    lastErrorCode?: string | null
     lastError?: string | null
     receiptJson?: string | null
     createdAt?: Date | string
@@ -136978,6 +136999,7 @@ export namespace Prisma {
     revokedSessions?: IntFieldUpdateOperationsInput | number
     piiCleanupStatus?: NullableStringFieldUpdateOperationsInput | string | null
     piiReason?: NullableStringFieldUpdateOperationsInput | string | null
+    lastErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     receiptJson?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -137003,6 +137025,7 @@ export namespace Prisma {
     revokedSessions?: IntFieldUpdateOperationsInput | number
     piiCleanupStatus?: NullableStringFieldUpdateOperationsInput | string | null
     piiReason?: NullableStringFieldUpdateOperationsInput | string | null
+    lastErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     receiptJson?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -137028,6 +137051,7 @@ export namespace Prisma {
     revokedSessions?: number
     piiCleanupStatus?: string | null
     piiReason?: string | null
+    lastErrorCode?: string | null
     lastError?: string | null
     receiptJson?: string | null
     createdAt?: Date | string
@@ -137053,6 +137077,7 @@ export namespace Prisma {
     revokedSessions?: IntFieldUpdateOperationsInput | number
     piiCleanupStatus?: NullableStringFieldUpdateOperationsInput | string | null
     piiReason?: NullableStringFieldUpdateOperationsInput | string | null
+    lastErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     receiptJson?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -137078,6 +137103,7 @@ export namespace Prisma {
     revokedSessions?: IntFieldUpdateOperationsInput | number
     piiCleanupStatus?: NullableStringFieldUpdateOperationsInput | string | null
     piiReason?: NullableStringFieldUpdateOperationsInput | string | null
+    lastErrorCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     receiptJson?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -145731,6 +145757,7 @@ export namespace Prisma {
     revokedSessions?: SortOrder
     piiCleanupStatus?: SortOrder
     piiReason?: SortOrder
+    lastErrorCode?: SortOrder
     lastError?: SortOrder
     receiptJson?: SortOrder
     createdAt?: SortOrder
@@ -145762,6 +145789,7 @@ export namespace Prisma {
     revokedSessions?: SortOrder
     piiCleanupStatus?: SortOrder
     piiReason?: SortOrder
+    lastErrorCode?: SortOrder
     lastError?: SortOrder
     receiptJson?: SortOrder
     createdAt?: SortOrder
@@ -145787,6 +145815,7 @@ export namespace Prisma {
     revokedSessions?: SortOrder
     piiCleanupStatus?: SortOrder
     piiReason?: SortOrder
+    lastErrorCode?: SortOrder
     lastError?: SortOrder
     receiptJson?: SortOrder
     createdAt?: SortOrder

@@ -1,5 +1,6 @@
 import type { AIModelInfo } from '@memoflow/contracts/ai';
 import { createLogger } from '@memoflow/utils/logger';
+import { AIExecutionError } from '../../../shared/ai-execution-error';
 import type {
   IAIProviderModelCatalogPort,
   ProviderModelCatalogInput,
@@ -57,10 +58,18 @@ export class OpenAICompatibleModelCatalogGateway implements IAIProviderModelCata
     });
 
     if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(
-        `Failed to load provider models (${response.status}) ${detail.trim() || 'unknown error'}`,
-      );
+      await response.text();
+      const category =
+        response.status === 401 || response.status === 403
+          ? 'unauthorized'
+          : response.status === 429
+            ? 'rate_limited'
+            : response.status >= 500
+              ? 'upstream_provider_error'
+              : 'transport';
+      throw new AIExecutionError(category, 'Failed to load provider models', {
+        statusCode: response.status,
+      });
     }
 
     const payload = (await response.json()) as OpenAICompatibleModelsResponse;
@@ -125,6 +134,3 @@ function normalizePrice(value: unknown): number | undefined {
 
   return undefined;
 }
-
-
-

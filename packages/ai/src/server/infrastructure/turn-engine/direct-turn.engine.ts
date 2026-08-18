@@ -8,6 +8,7 @@
  * Open-ended chat/analysis only. Never exposes mutation tools or knowledge-write
  * capabilities; those stay on the Agent Host proposal/executor path.
  */
+import { isAIExecutionError } from '../../../shared/ai-execution-error';
 import type { ITurnEnginePort } from '@memoflow/contracts/ai';
 import { MessageRole } from '@memoflow/contracts/ai';
 import type { IAIConversationRepository } from '../../domain/repositories/i-ai-conversation-repository';
@@ -310,20 +311,28 @@ export class DirectTurnEngine implements ITurnEnginePort, IOpenChatTurnPort {
     error: unknown,
     controller: AbortController,
   ): { status: 'completed' | 'aborted' | 'failed' | 'waiting_approval'; error?: string } {
-    if (
-      controller.signal.aborted ||
-      (error instanceof Error && (error.name === 'AbortError' || /aborted/i.test(error.message)))
-    ) {
+    if (controller.signal.aborted || isAbortLikeError(error)) {
       return { status: 'aborted' };
     }
-    const message = error instanceof Error ? error.message : 'TURN_FAILED';
-    if (/not found/i.test(message)) {
-      return { status: 'failed', error: 'CONVERSATION_NOT_FOUND' };
+    if (isAIExecutionError(error)) {
+      switch (error.category) {
+        case 'not_found':
+          return { status: 'failed', error: 'CONVERSATION_NOT_FOUND' };
+        case 'provider_unavailable':
+        case 'unauthorized':
+        case 'model_not_available':
+        case 'rate_limited':
+        case 'upstream_provider_error':
+        case 'transport':
+        case 'timeout':
+          return { status: 'failed', error: 'PROVIDER_UNAVAILABLE' };
+        case 'aborted':
+          return { status: 'aborted' };
+        default:
+          return { status: 'failed', error: 'TURN_FAILED' };
+      }
     }
-    if (/No AI provider configured/i.test(message)) {
-      return { status: 'failed', error: 'PROVIDER_UNAVAILABLE' };
-    }
-    return { status: 'failed', error: message };
+    return { status: 'failed', error: 'TURN_FAILED' };
   }
 
   private mapOpenChatFailure(error: unknown, controller: AbortController): OpenChatTurnResult {

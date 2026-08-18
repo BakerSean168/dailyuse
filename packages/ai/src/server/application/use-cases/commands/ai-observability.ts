@@ -1,12 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import type { AIExecutionLogInput, AICostEstimate, ChatExecutionUsage } from '../../ports';
-
-type AIErrorWithMetadata = Error & {
-  category?: string;
-  requestId?: string;
-  statusCode?: number;
-};
+import { AIExecutionError, isAIExecutionError } from '../../../../shared/ai-execution-error';
 
 interface AIPricingRule {
   pricingModel: string;
@@ -48,51 +43,30 @@ export function createAIRequestId(): string {
 }
 
 export function classifyAIExecutionError(error: unknown): string {
-  const candidate = error as AIErrorWithMetadata | undefined;
-  if (candidate?.category) {
-    return candidate.category;
+  if (isAIExecutionError(error)) return error.category;
+  if (error && typeof error === 'object' && 'category' in error) {
+    const category = (error as { category?: unknown }).category;
+    if (typeof category === 'string' && category.trim()) return category;
   }
-
-  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-  if (message.includes('timed out') || message.includes('timeout')) {
-    return 'timeout';
-  }
-  if (message.includes('unauthorized') || message.includes('invalid signature')) {
-    return 'unauthorized';
-  }
-  if (message.includes('structured output')) {
-    return 'structured_output';
-  }
-  if (message.includes('not found')) {
-    return 'not_found';
-  }
-  if (message.includes('validation')) {
-    return 'validation';
-  }
-  if (message.includes('upstream')) {
-    return 'upstream_provider_error';
-  }
-  if (message.includes('request failed') || message.includes('fetch')) {
-    return 'transport';
-  }
-
+  if (error instanceof Error && error.name === 'AbortError') return 'aborted';
   return 'unknown';
 }
 
 export function attachRequestIdToError(error: unknown, requestId: string): Error {
+  if (isAIExecutionError(error)) {
+    if (error.requestId === requestId) return error;
+    return new AIExecutionError(error.category, error.message, {
+      requestId,
+      statusCode: error.statusCode,
+      cause: error,
+    });
+  }
   if (error instanceof Error) {
-    if (error.message.includes(requestId)) {
-      return error;
-    }
-
-    const enriched = new Error(`${error.message} [requestId: ${requestId}]`);
-    Object.assign(enriched, error, { requestId });
+    const enriched = new Error(error.message);
+    Object.assign(enriched, { requestId, cause: error });
     return enriched;
   }
-
-  const fallback = new Error(`AI execution failed [requestId: ${requestId}]`);
-  Object.assign(fallback, { requestId });
-  return fallback;
+  return new AIExecutionError('internal', 'AI execution failed', { requestId, cause: error });
 }
 
 export function withAICostEstimate(input: AIExecutionLogInput): AIExecutionLogInput {

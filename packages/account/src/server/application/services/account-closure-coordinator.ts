@@ -9,6 +9,8 @@ import type { CloudAuthRevocationPort } from '../ports/cloud-auth-revocation.por
 import type { AccountClosureEventPublisher } from '../ports/account-closure-event-publisher.port';
 import { AccountStatus } from '../../domain/value-objects';
 import type { UnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
+import { accountClosureFailureCode, accountNotFoundForClosure } from './account-closure-failure';
+import type { AccountClosureFailureCode } from '../../domain/repositories/i-account-closure-operation-repository';
 
 export interface Clock {
   now(): Date;
@@ -27,6 +29,7 @@ export interface AccountClosureReceipt {
   retryable: boolean;
   signedOut: boolean;
   attempts: number;
+  failureCode: AccountClosureFailureCode | null;
   lastError: string | null;
   createdAt: number;
   finishedAt: number | null;
@@ -82,11 +85,10 @@ export class AccountClosureCoordinator {
     const leaseExpiresAt = new Date(now.getTime() + leaseDurationMs);
     const ownerToken = crypto.randomUUID();
 
-    const existing =
-      await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-        identityId,
-        idempotencyKey,
-      );
+    const existing = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+      identityId,
+      idempotencyKey,
+    );
 
     let record: AccountClosureOperationRecord;
 
@@ -105,11 +107,10 @@ export class AccountClosureCoordinator {
           expectedStatus: 'running',
         });
         if (!claimed) {
-          const current =
-            await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-              identityId,
-              idempotencyKey,
-            );
+          const current = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+            identityId,
+            idempotencyKey,
+          );
           return this.toReceipt(current ?? existing);
         }
         this.metrics?.recordOutbox('account-closure', 'claimed');
@@ -129,11 +130,10 @@ export class AccountClosureCoordinator {
           expectedStatus: 'failed',
         });
         if (!claimed) {
-          const current =
-            await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-              identityId,
-              idempotencyKey,
-            );
+          const current = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+            identityId,
+            idempotencyKey,
+          );
           return this.toReceipt(current ?? existing);
         }
         // P1-5：failed → running 的重新认领是一次 retry，不得笼统计为 failed。
@@ -144,6 +144,7 @@ export class AccountClosureCoordinator {
           leaseExpiresAt,
           status: 'running',
           attempts: existing.attempts + 1,
+          lastErrorCode: null,
           lastError: null,
         };
       } else {
@@ -166,6 +167,7 @@ export class AccountClosureCoordinator {
         reason: options?.reason ?? null,
         revokedSessions: 0,
         piiCleanupStatus: null,
+        lastErrorCode: null,
         lastError: null,
         receiptJson: null,
         createdAt: now,
@@ -176,11 +178,10 @@ export class AccountClosureCoordinator {
       const created = await this.closureOperationRepository.create(record);
       this.metrics?.recordOutbox('account-closure', 'persisted');
       if (!created) {
-        const competitor =
-          await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-            identityId,
-            idempotencyKey,
-          );
+        const competitor = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+          identityId,
+          idempotencyKey,
+        );
         if (!competitor) {
           throw new Error('Concurrent operation race detected but record not found');
         }
@@ -196,11 +197,10 @@ export class AccountClosureCoordinator {
           now,
         });
         if (!claimed) {
-          const latest =
-            await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-              identityId,
-              idempotencyKey,
-            );
+          const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+            identityId,
+            idempotencyKey,
+          );
           return this.toReceipt(latest ?? competitor);
         }
         record = {
@@ -256,11 +256,10 @@ export class AccountClosureCoordinator {
           record.phase = 'revoking';
           record.leaseExpiresAt = newLease;
         } else {
-          const latest =
-            await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-              identityId,
-              idempotencyKey,
-            );
+          const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+            identityId,
+            idempotencyKey,
+          );
           if (latest) return this.toReceipt(latest);
           throw new Error('CAS failed at requested->revoking transition');
         }
@@ -270,11 +269,10 @@ export class AccountClosureCoordinator {
       if (record.phase === 'revoking') {
         const stillOwner = await this.heartbeat(record.id, identityId, ownerToken, leaseDurationMs);
         if (!stillOwner) {
-          const latest =
-            await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-              identityId,
-              idempotencyKey,
-            );
+          const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+            identityId,
+            idempotencyKey,
+          );
           if (latest) return this.toReceipt(latest);
           throw new Error('Ownership lost before revoking side effect');
         }
@@ -317,11 +315,10 @@ export class AccountClosureCoordinator {
           record.piiCleanupStatus = piiStatus;
           record.piiReason = piiReason ?? null;
         } else {
-          const latest =
-            await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-              identityId,
-              idempotencyKey,
-            );
+          const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+            identityId,
+            idempotencyKey,
+          );
           if (latest) return this.toReceipt(latest);
           throw new Error('CAS failed at revoking->revoked transition');
         }
@@ -343,11 +340,10 @@ export class AccountClosureCoordinator {
             record.phase = 'closing';
             record.leaseExpiresAt = newLease;
           } else {
-            const latest =
-              await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-                identityId,
-                idempotencyKey,
-              );
+            const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+              identityId,
+              idempotencyKey,
+            );
             if (latest) return this.toReceipt(latest);
             throw new Error('CAS failed at revoked->closing transition');
           }
@@ -355,17 +351,21 @@ export class AccountClosureCoordinator {
 
         const account = await this.accountRepository.findById(identityId);
         if (!account) {
-          throw new Error(`Account not found for identityId: ${identityId}`);
+          throw accountNotFoundForClosure(identityId);
         }
 
         if (!AccountStatus.isDeactivated(account.status)) {
-          const stillOwner = await this.heartbeat(record.id, identityId, ownerToken, leaseDurationMs);
+          const stillOwner = await this.heartbeat(
+            record.id,
+            identityId,
+            ownerToken,
+            leaseDurationMs,
+          );
           if (!stillOwner) {
-            const latest =
-              await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-                identityId,
-                idempotencyKey,
-              );
+            const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+              identityId,
+              idempotencyKey,
+            );
             if (latest) return this.toReceipt(latest);
             throw new Error('Ownership lost before account close side effect');
           }
@@ -386,11 +386,10 @@ export class AccountClosureCoordinator {
           record.phase = 'closed';
           record.leaseExpiresAt = newLease;
         } else {
-          const latest =
-            await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-              identityId,
-              idempotencyKey,
-            );
+          const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+            identityId,
+            idempotencyKey,
+          );
           if (latest) return this.toReceipt(latest);
           throw new Error('CAS failed at closing->closed transition');
         }
@@ -401,7 +400,9 @@ export class AccountClosureCoordinator {
         const account = await this.accountRepository.findById(identityId);
         const serverDto = account
           ? account.toServerDTO()
-          : ({ id: identityId } as unknown as import('@memoflow/contracts/account').AccountServerDTO);
+          : ({
+              id: identityId,
+            } as unknown as import('@memoflow/contracts/account').AccountServerDTO);
 
         const finishedNow = this.clock.now();
         const eventId = record.eventId ?? `closure:${record.id}:closed`;
@@ -435,11 +436,10 @@ export class AccountClosureCoordinator {
         });
 
         if (!okCAS) {
-          const latest =
-            await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-              identityId,
-              idempotencyKey,
-            );
+          const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+            identityId,
+            idempotencyKey,
+          );
           if (latest) return this.toReceipt(latest);
         }
 
@@ -450,8 +450,10 @@ export class AccountClosureCoordinator {
 
       throw new Error(`Unexpected phase progression for operation ${record.id}`);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
+      const errorMessage = err instanceof Error ? err.message : 'Account closure operation failed';
+      const failureCode = accountClosureFailureCode(err);
       record.status = 'failed';
+      record.lastErrorCode = failureCode;
       record.lastError = errorMessage;
       record.updatedAt = this.clock.now();
 
@@ -464,16 +466,16 @@ export class AccountClosureCoordinator {
         newPhase: record.phase,
         newStatus: 'failed',
         ownerToken,
+        lastErrorCode: failureCode,
         lastError: errorMessage,
         receiptJson: record.receiptJson,
       });
 
       if (!okCAS) {
-        const latest =
-          await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
-            identityId,
-            idempotencyKey,
-          );
+        const latest = await this.closureOperationRepository.findByIdentityAndIdempotencyKey(
+          identityId,
+          idempotencyKey,
+        );
         if (latest) return this.toReceipt(latest);
       }
 
@@ -520,6 +522,7 @@ export class AccountClosureCoordinator {
       retryable: record.status === 'failed',
       signedOut: isSignedOut,
       attempts: record.attempts,
+      failureCode: record.lastErrorCode ?? null,
       lastError: record.lastError,
       createdAt: record.createdAt.getTime(),
       finishedAt: record.finishedAt ? record.finishedAt.getTime() : null,

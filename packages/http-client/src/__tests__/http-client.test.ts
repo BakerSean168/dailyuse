@@ -23,7 +23,8 @@ describe('createAxiosInstance', () => {
     let seenAuth: unknown;
     instance.defaults.adapter = async (config) => {
       const headers = config.headers as { get?: (k: string) => unknown; Authorization?: unknown };
-      seenAuth = typeof headers?.get === 'function' ? headers.get('Authorization') : headers?.Authorization;
+      seenAuth =
+        typeof headers?.get === 'function' ? headers.get('Authorization') : headers?.Authorization;
       return {
         data: { ok: true, data: {} },
         status: 200,
@@ -45,7 +46,8 @@ describe('createAxiosInstance', () => {
     let seenAuth: unknown = 'unset';
     instance.defaults.adapter = async (config) => {
       const headers = config.headers as { get?: (k: string) => unknown; Authorization?: unknown };
-      seenAuth = typeof headers?.get === 'function' ? headers.get('Authorization') : headers?.Authorization;
+      seenAuth =
+        typeof headers?.get === 'function' ? headers.get('Authorization') : headers?.Authorization;
       return {
         data: { ok: true, data: {} },
         status: 200,
@@ -123,7 +125,7 @@ describe('ResultHttpClient', () => {
     const axios = client.getAxiosInstance();
 
     axios.defaults.adapter = async () => {
-      throw new Error('Network Error');
+      throw Object.assign(new Error('Network Error'), { code: 'ERR_NETWORK' });
     };
 
     const result = await client.get('/test');
@@ -138,7 +140,7 @@ describe('ResultHttpClient', () => {
     const axios = client.getAxiosInstance();
 
     axios.defaults.adapter = async () => {
-      throw new Error('timeout of 10000ms exceeded');
+      throw Object.assign(new Error('timeout of 10000ms exceeded'), { code: 'ECONNABORTED' });
     };
 
     const result = await client.get('/test');

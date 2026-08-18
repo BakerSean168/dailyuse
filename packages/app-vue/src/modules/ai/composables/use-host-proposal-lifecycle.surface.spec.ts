@@ -388,7 +388,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(store).toContain('HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE');
     expect(store).toContain('already bound to another identity');
     expect(store).toContain('Residual 451');
-    expect(runtime).toContain('HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE');
+    expect(runtime).toContain('HostTaskCreateRuntimeError');
+    expect(runtime).toContain("err.kind === 'forbidden' ? 'FORBIDDEN' : 'VALIDATION_ERROR'");
     expect(runtime).toContain("error('FORBIDDEN'");
     expect(helper).not.toContain('executeApproved');
   });
@@ -453,8 +454,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(store).toContain('already bound to another conversation');
     expect(store).toContain('already bound to another thread');
     expect(store).toContain('Residual 457');
-    expect(runtime).toContain('HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE');
-    expect(runtime).toContain('HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE');
+    expect(runtime).toContain('HostTaskCreateRuntimeError');
+    expect(runtime).toContain("err.kind === 'forbidden' ? 'FORBIDDEN' : 'VALIDATION_ERROR'");
     expect(runtime).toContain("error('VALIDATION_ERROR'");
     expect(helper).not.toContain('executeApproved');
   });
@@ -799,13 +800,13 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(resume).toContain('HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE');
     expect(resume).toContain('HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE');
     expect(resume).toContain('Residual 495');
-    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE)');
+    expect(resume).toContain('throw hostTaskCreateValidationError(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE)');
     expect(resume).toContain('HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE');
     expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE');
     expect(store).toContain('Residual 495');
     expect(store).not.toMatch(/agentType !== 'task\.create'\)\s*\{\s*return;/);
-    expect(runtime).toContain('HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE');
-    expect(runtime).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE');
+    expect(runtime).toContain('HostTaskCreateRuntimeError');
+    expect(runtime).toContain("err.kind === 'forbidden' ? 'FORBIDDEN' : 'VALIDATION_ERROR'");
     expect(helper).not.toContain('executeApproved');
   });
 
@@ -845,7 +846,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(start).toContain('HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE');
     expect(start).toContain('Residual 499');
     expect(start).toContain("input.request.agentType !== 'task.create'");
-    expect(runtime).toContain('HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE');
+    expect(runtime).toContain('HostTaskCreateRuntimeError');
     expect(runtime).toContain('Residual 499');
     expect(helper).not.toContain('executeApproved');
   });
@@ -2067,10 +2068,10 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE');
     expect(resume).toContain('Residual 491');
     // Product path throws use constants, not ad-hoc invent strings.
-    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE)');
-    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE)');
-    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE)');
-    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE)');
+    expect(resume).toContain('throw hostTaskCreateValidationError(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE)');
+    expect(resume).toMatch(/throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE/);
+    expect(resume).toMatch(/throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE/);
+    expect(resume).toMatch(/throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE/);
     expect(helper).not.toContain('executeApproved');
   });
 

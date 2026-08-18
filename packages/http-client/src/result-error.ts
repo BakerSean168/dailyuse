@@ -116,32 +116,30 @@ function publicFailureTranslationParams(
   return error?.context;
 }
 
-export function classifyNetworkErrorMessage(message: string | undefined): ResultError {
-  if (/timeout/i.test(message ?? '')) {
-    return {
-      code: ResultCode.TIMEOUT,
-      message: '网络请求超时',
-    };
-  }
+export function classifyNetworkError(error: unknown): ResultError {
+  const candidate =
+    error && typeof error === 'object'
+      ? (error as { code?: unknown; name?: unknown; __timeout?: unknown })
+      : undefined;
+  const code = typeof candidate?.code === 'string' ? candidate.code : undefined;
+  const name = typeof candidate?.name === 'string' ? candidate.name : undefined;
 
-  if (message?.includes('Network Error') || message?.includes('ERR_NETWORK')) {
-    return {
-      code: ResultCode.SERVICE_UNAVAILABLE,
-      message: '网络连接断开',
-    };
+  if (name === 'AbortError' || code === 'ERR_CANCELED') {
+    return { code: 'CANCELED', message: RESULT_ERROR_MESSAGES.CANCELED };
   }
-
-  if (message?.includes('canceled') || message?.includes('aborted')) {
-    return {
-      code: ResultCode.UNKNOWN,
-      message: RESULT_ERROR_MESSAGES.CANCELED,
-    };
+  if (candidate?.__timeout === true || code === 'ECONNABORTED' || code === 'ETIMEDOUT') {
+    return { code: ResultCode.TIMEOUT, message: '网络请求超时' };
   }
-
-  return {
-    code: ResultCode.SERVICE_UNAVAILABLE,
-    message: '网络连接异常',
-  };
+  if (
+    code === 'ERR_NETWORK' ||
+    code === 'ENOTFOUND' ||
+    code === 'ECONNREFUSED' ||
+    code === 'ECONNRESET' ||
+    code === 'EHOSTUNREACH'
+  ) {
+    return { code: ResultCode.SERVICE_UNAVAILABLE, message: '网络连接断开' };
+  }
+  return { code: ResultCode.SERVICE_UNAVAILABLE, message: '网络连接异常' };
 }
 
 function translateByKey(

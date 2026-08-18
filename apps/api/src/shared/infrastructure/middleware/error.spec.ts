@@ -9,6 +9,7 @@ import {
   defineFailureRegistry,
 } from '@memoflow/contracts/result';
 import { applyErrorHandlers } from './error';
+import { CorsRejectionError } from './global';
 import { createRequestContextMiddleware } from '../http/middlewares/request-context.middleware';
 import { createAuthMiddleware } from '../http/middlewares/auth-middleware';
 
@@ -62,7 +63,7 @@ describe('applyErrorHandlers (residual 627)', () => {
   });
 
   it('maps CORS rejections to 403 HttpResponse FORBIDDEN envelope', async () => {
-    const app = createAppWithError(new Error('Not allowed by CORS'));
+    const app = createAppWithError(new CorsRejectionError('https://blocked.example'));
 
     const res = await request(app).get('/boom');
 

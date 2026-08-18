@@ -1,3 +1,4 @@
+import { hostTaskCreateValidationError } from './host-task-create-error';
 /**
  * Residual 437/439/453/455/463/465/467/469/471/473/475/477: Host task.create process-local resume.
  *
@@ -163,7 +164,6 @@ function cloneActions(
   }));
 }
 
-
 /**
  * Residual 463/469: resolve settlement title without rebinding approved draft title.
  * Approved draft title is source of truth when present; executed may omit and inherit.
@@ -175,9 +175,7 @@ function resolveConfirmSettlementTitle(
 ): string | undefined {
   // Residual 545: sole process-local create_task_template draftAction (no multi-index invent).
   const pending = draftAction.payload ?? {};
-  const approvedTitle =
-    asNonEmptyString(pending['title']) ??
-    asNonEmptyString(pending['name']);
+  const approvedTitle = asNonEmptyString(pending['title']) ?? asNonEmptyString(pending['name']);
   const data = executed.data;
   let executedTitle: string | undefined;
   if (data && typeof data === 'object' && !Array.isArray(data)) {
@@ -186,7 +184,7 @@ function resolveConfirmSettlementTitle(
       asNonEmptyString((data as Record<string, unknown>)['name']);
   }
   if (approvedTitle && executedTitle && approvedTitle !== executedTitle) {
-    throw new Error(HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE);
   }
   return approvedTitle ?? executedTitle;
 }
@@ -212,10 +210,7 @@ function resolveConfirmSettlementTemplateId(executed: AgentExecutedAction): stri
 
 function readGoalIdFromRecord(record: Record<string, unknown> | undefined): string | undefined {
   if (!record) return undefined;
-  return (
-    asNonEmptyString(record['goalId']) ??
-    asNonEmptyString(record['goal_id'])
-  );
+  return asNonEmptyString(record['goalId']) ?? asNonEmptyString(record['goal_id']);
 }
 
 /**
@@ -235,7 +230,7 @@ function resolveConfirmSettlementGoalId(
       : undefined;
   const executedGoalId = readGoalIdFromRecord(data);
   if (approvedGoalId && executedGoalId && approvedGoalId !== executedGoalId) {
-    throw new Error(HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE);
   }
   return approvedGoalId ?? executedGoalId;
 }
@@ -256,17 +251,19 @@ function resolveConfirmStoreDraftActions(
         ? current.state.approvedActions
         : null;
   if (!pool || pool.length === 0) {
-    throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
   }
   // Residual 553: product draft is sole create_task_template (ignore foreign companions).
   const productDrafts = cloneActions(pool).filter(
     (action) => action.tool === 'create_task_template',
   );
   if (productDrafts.length === 0) {
-    throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
   }
   if (productDrafts.length !== 1) {
-    throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE);
+    throw hostTaskCreateValidationError(
+      HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE,
+    );
   }
   return productDrafts;
 }
@@ -297,7 +294,7 @@ export function buildHostTaskCreateResumeResult(input: {
 }): AgentRunResult {
   const current = input.current;
   if (current.run.agentType !== 'task.create') {
-    throw new Error(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE);
+    throw hostTaskCreateValidationError(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE);
   }
 
   const now = input.nowMs ?? Date.now();
@@ -319,7 +316,7 @@ export function buildHostTaskCreateResumeResult(input: {
   if (decision === 'cancel') {
     // Residual 477: product cancel only from waiting_approval (start/edit product status).
     if (status !== 'waiting_approval') {
-      throw new Error(
+      throw hostTaskCreateValidationError(
         `${HOST_TASK_CREATE_CANCEL_REQUIRES_WAITING_APPROVAL_MESSAGE} Current status is '${status}'.`,
       );
     }
@@ -359,17 +356,21 @@ export function buildHostTaskCreateResumeResult(input: {
   if (decision === 'confirm') {
     // Residual 475: product settlement only from waiting_approval (start/edit product status).
     if (status !== 'waiting_approval') {
-      throw new Error(
+      throw hostTaskCreateValidationError(
         `${HOST_TASK_CREATE_CONFIRM_REQUIRES_WAITING_APPROVAL_MESSAGE} Current status is '${status}'.`,
       );
     }
     // Residual 453: client owns createTemplate mutation — Host records settlement only.
     if (!input.payload.executedActions || input.payload.executedActions.length === 0) {
-      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE);
+      throw hostTaskCreateValidationError(
+        HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE,
+      );
     }
     // Residual 471: product settlement is a single create_task_template receipt.
     if (input.payload.executedActions.length !== 1) {
-      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE);
+      throw hostTaskCreateValidationError(
+        HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE,
+      );
     }
     const executedActions: AgentExecutedAction[] = input.payload.executedActions.map((item) => ({
       ...item,
@@ -379,10 +380,14 @@ export function buildHostTaskCreateResumeResult(input: {
     }));
     for (const action of executedActions) {
       if (action.tool !== 'create_task_template') {
-        throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
+        throw hostTaskCreateValidationError(
+          HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
+        );
       }
       if (action.status !== 'executed') {
-        throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE);
+        throw hostTaskCreateValidationError(
+          HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE,
+        );
       }
     }
     // Residual 543: after length===1 + create_task_template + executed gates, the sole
@@ -393,28 +398,36 @@ export function buildHostTaskCreateResumeResult(input: {
       settlementAction.tool !== 'create_task_template' ||
       settlementAction.status !== 'executed'
     ) {
-      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
+      throw hostTaskCreateValidationError(
+        HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
+      );
     }
     // Residual 471/553: process-local sole create_task_template draft only —
     // ignore payload.approvedActions on confirm (edit owns revise).
     const approvedActions = resolveConfirmStoreDraftActions(current);
     // Residual 545/553: defense-in-depth sole draftAction after resolve product filter.
     if (approvedActions.length !== 1) {
-      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE);
+      throw hostTaskCreateValidationError(
+        HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE,
+      );
     }
     const draftAction = approvedActions[0];
     if (!draftAction || draftAction.tool !== 'create_task_template') {
-      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
+      throw hostTaskCreateValidationError(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
     }
     // Residual 463/465/467/469/471/543/545: normalize recoverable settlement title + template entity id
     // + non-rebinding goalId/title against sole process-local draftAction into sole settlementAction.
     const title = resolveConfirmSettlementTitle(settlementAction, draftAction);
     if (!title) {
-      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE);
+      throw hostTaskCreateValidationError(
+        HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE,
+      );
     }
     const templateId = resolveConfirmSettlementTemplateId(settlementAction);
     if (!templateId) {
-      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE);
+      throw hostTaskCreateValidationError(
+        HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE,
+      );
     }
     const goalId = resolveConfirmSettlementGoalId(settlementAction, draftAction);
     const settlementTitle = title;
@@ -484,26 +497,30 @@ export function buildHostTaskCreateResumeResult(input: {
   if (decision === 'edit') {
     // Residual 481: product revise only from waiting_approval (start/confirm/cancel symmetry).
     if (status !== 'waiting_approval') {
-      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE);
+      throw hostTaskCreateValidationError(HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE);
     }
     if (!input.payload.approvedActions || input.payload.approvedActions.length === 0) {
-      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE);
+      throw hostTaskCreateValidationError(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE);
     }
     // Residual 473: product draft is a single create_task_template action (start/confirm symmetry).
     if (input.payload.approvedActions.length !== 1) {
-      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE);
+      throw hostTaskCreateValidationError(HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE);
     }
     const pendingActions = cloneActions(input.payload.approvedActions);
     for (const action of pendingActions) {
       if (action.tool !== 'create_task_template') {
-        throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
+        throw hostTaskCreateValidationError(
+          HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
+        );
       }
     }
     // Residual 541: after length===1 + create_task_template tool gate, the sole product
     // draft action is the only revise payload source — never blind multi-index invent.
     const draftAction = pendingActions[0];
     if (!draftAction || draftAction.tool !== 'create_task_template') {
-      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
+      throw hostTaskCreateValidationError(
+        HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
+      );
     }
     const rawTitle =
       typeof draftAction.payload?.['title'] === 'string'
@@ -514,7 +531,7 @@ export function buildHostTaskCreateResumeResult(input: {
     const title = rawTitle?.trim() ? rawTitle.trim() : undefined;
     // Residual 455: blank revise is fail-closed (same title invariant as start).
     if (!title) {
-      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE);
+      throw hostTaskCreateValidationError(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE);
     }
     // Normalize trimmed title into pending payload so getRun/list rehydrate clean values.
     const firstPayload: Record<string, unknown> = {
@@ -578,7 +595,7 @@ export function buildHostTaskCreateResumeResult(input: {
   }
 
   // Residual 495: clarify/regenerate are not part of Host task.create foundation.
-  throw new Error(
+  throw hostTaskCreateValidationError(
     `${HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE} Received '${String(decision)}'.`,
   );
 }

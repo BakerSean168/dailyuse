@@ -22,7 +22,7 @@ import type {
   IGitHubAppClient,
   IKnowledgeRepositoryInstallationStateStore,
 } from '../ports/github-app-client.port';
-import { GitHubAppClientError } from '../ports/github-app-client.port';
+import { GitHubAppClientFailureError } from '../ports/github-app-client.port';
 import type { IKnowledgeRepositoryConnectionRepository } from '../ports/knowledge-repository-connection.repository';
 import type { IKnowledgeRepositoryCloudDataPurger } from '../ports/knowledge-repository-cloud-data-purger.port';
 
@@ -246,7 +246,12 @@ export class KnowledgeRepositoryConnectionService {
         });
       }
     } else {
-      await this.options.connectionRepository.updateStatus(identityId, connectionId, 'Revoked', null);
+      await this.options.connectionRepository.updateStatus(
+        identityId,
+        connectionId,
+        'Revoked',
+        null,
+      );
     }
     return ok(null);
   }
@@ -467,7 +472,10 @@ export class KnowledgeRepositoryConnectionService {
   ): Promise<KnowledgeRepositoryConnectionServerDTO> {
     const inventory = await inventoryLookup;
     if (!inventory.ok) {
-      if (inventory.error instanceof GitHubAppClientError && inventory.error.status === 404) {
+      if (
+        inventory.error instanceof GitHubAppClientFailureError &&
+        inventory.error.failure.kind === 'not_found'
+      ) {
         return this.persistLifecycle(connection, {
           status: 'Revoked',
           lastErrorCode: KnowledgeRepositoryLifecycleErrorCodes.InstallationNotFound,
