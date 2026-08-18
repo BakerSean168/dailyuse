@@ -3,10 +3,10 @@
  * 优先级计算错误类
  */
 
-import { DomainError } from '@memoflow/utils/errors';
+import { ResultErrorException } from '@memoflow/contracts/result';
 
-export class PriorityCalculationError extends DomainError {
+export class PriorityCalculationError extends ResultErrorException {
   constructor(message: string) {
-    super('BUSINESS_ERROR', message, undefined, 400);
+    super(message, 'BUSINESS_ERROR', undefined, undefined, 400);
   }
 }

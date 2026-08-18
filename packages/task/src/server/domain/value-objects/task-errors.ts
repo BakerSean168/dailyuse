@@ -3,26 +3,26 @@
  * 任务模块领域错误
  */
 
-import { DomainError } from '@memoflow/utils/errors';
+import { ResultErrorException } from '@memoflow/contracts/result';
 
 /**
  * 任务模板未找到错误
  */
-export class TaskTemplateNotFoundError extends DomainError {
+export class TaskTemplateNotFoundError extends ResultErrorException {
   constructor(templateId: string) {
-    super('task_template_not_found', `任务模板未找到：${templateId}`);
+    super(`任务模板未找到：${templateId}`, 'task_template_not_found');
   }
 }
 
 /**
  * 任务模板状态无效错误
  */
-export class InvalidTaskTemplateStateError extends DomainError {
+export class InvalidTaskTemplateStateError extends ResultErrorException {
   constructor(message: string, context?: { templateId?: string; currentStatus?: string; attemptedAction?: string }) {
     const contextStr = context ? ` (templateId: ${context.templateId}, status: ${context.currentStatus}, action: ${context.attemptedAction})` : '';
     super(
-      'invalid_task_template_state',
       `${message}${contextStr}`,
+      'invalid_task_template_state',
     );
   }
 }
@@ -30,20 +30,20 @@ export class InvalidTaskTemplateStateError extends DomainError {
 /**
  * 任务模板已归档错误
  */
-export class TaskTemplateArchivedError extends DomainError {
+export class TaskTemplateArchivedError extends ResultErrorException {
   constructor(templateId: string) {
-    super('task_template_archived', `任务模板已归档：${templateId}`);
+    super(`任务模板已归档：${templateId}`, 'task_template_archived');
   }
 }
 
 /**
  * 重复规则未实现错误
  */
-export class RecurrenceRuleNotImplementedError extends DomainError {
+export class RecurrenceRuleNotImplementedError extends ResultErrorException {
   constructor(ruleType: string) {
     super(
-      'recurrence_rule_not_implemented',
       `重复规则未实现：${ruleType}`,
+      'recurrence_rule_not_implemented',
     );
   }
 }
@@ -51,22 +51,22 @@ export class RecurrenceRuleNotImplementedError extends DomainError {
 /**
  * 目标绑定无效错误
  */
-export class InvalidGoalBindingError extends DomainError {
+export class InvalidGoalBindingError extends ResultErrorException {
   constructor(reason: string) {
-    super('invalid_goal_binding', `目标绑定无效：${reason}`);
+    super(`目标绑定无效：${reason}`, 'invalid_goal_binding');
   }
 }
 
 /**
  * 日期范围无效错误
  */
-export class InvalidDateRangeError extends DomainError {
+export class InvalidDateRangeError extends ResultErrorException {
   constructor(startDate: Date | number, endDate: Date | number) {
     const start = typeof startDate === 'number' ? new Date(startDate) : startDate;
     const end = typeof endDate === 'number' ? new Date(endDate) : endDate;
     super(
-      'invalid_date_range',
       `日期范围无效：开始日期 ${start.toISOString()} 晚于结束日期 ${end.toISOString()}`,
+      'invalid_date_range',
     );
   }
 }
@@ -74,11 +74,11 @@ export class InvalidDateRangeError extends DomainError {
 /**
  * 实例生成失败错误
  */
-export class InstanceGenerationFailedError extends DomainError {
+export class InstanceGenerationFailedError extends ResultErrorException {
   constructor(templateId: string, reason?: string) {
     super(
-      'instance_generation_failed',
       `任务实例生成失败：${templateId}${reason ? ` - ${reason}` : ''}`,
+      'instance_generation_failed',
     );
   }
 }
@@ -86,17 +86,17 @@ export class InstanceGenerationFailedError extends DomainError {
 /**
  * 任务实例未找到错误
  */
-export class TaskInstanceNotFoundError extends DomainError {
+export class TaskInstanceNotFoundError extends ResultErrorException {
   constructor(instanceId: string) {
-    super('task_instance_not_found', `任务实例未找到：${instanceId}`);
+    super(`任务实例未找到：${instanceId}`, 'task_instance_not_found');
   }
 }
 
 /**
  * 任务实例已完成错误
  */
-export class TaskInstanceAlreadyCompletedError extends DomainError {
+export class TaskInstanceAlreadyCompletedError extends ResultErrorException {
   constructor(instanceId: string) {
-    super('task_instance_already_completed', `任务实例已完成：${instanceId}`);
+    super(`任务实例已完成：${instanceId}`, 'task_instance_already_completed');
   }
 }
