@@ -1,4 +1,4 @@
-import type { ResultError } from '@memoflow/contracts/result';
+import { ResultErrorException, type ResultError } from '@memoflow/contracts/result';
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import { isDomainError, mapInfraErrorToResultError } from '@memoflow/utils/errors';
@@ -25,13 +25,10 @@ export function mapTaskWriteErrorToResultError(
   error: unknown,
   fallbackMessage: string,
 ): ResultError {
-  if (isDomainError(error)) {
-    return {
-      code: 'BAD_REQUEST',
-      message: error.message,
-      context: error.context,
-      cause: error.originalError ?? error,
-    };
+  if (isDomainError(error) || error instanceof ResultErrorException) {
+    const ctx = (error as { context?: Record<string, unknown> }).context;
+    const cause = (error as { cause?: unknown }).cause ?? error;
+    return { code: 'BAD_REQUEST', message: error.message, context: ctx, cause };
   }
 
   return mapInfraErrorToResultError(error, fallbackMessage);
