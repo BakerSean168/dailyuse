@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import type { DependencyChainClientDTO } from '@memoflow/contracts/task';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useTaskService } from './useTaskService';
@@ -44,7 +45,7 @@ export function useTaskDependencies(taskId: string | null) {
     ]);
 
     if (!depsResult.ok) {
-      setError(depsResult.error.message);
+      setError(presentErrorMessage(depsResult.error));
       setIsLoading(false);
       return;
     }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import type { ScheduleTaskStatus, SourceModule, TaskPriority } from '@memoflow/contracts/schedule';
 import type { ScheduleTask } from '@memoflow/schedule/client';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useScheduleService } from './useScheduleService';
@@ -77,7 +78,7 @@ export function useScheduleTasks() {
 
       if (!result.ok) {
         setTasks([]);
-        setError(result.error.message);
+        setError(presentErrorMessage(result.error));
         setIsLoading(false);
         return;
       }
@@ -102,7 +103,7 @@ export function useScheduleTasks() {
     const result = await service.getTasks();
     if (!result.ok) {
       setTasks([]);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }

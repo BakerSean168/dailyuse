@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import { useAppSession } from './useAppSession';
 import { mapGoalDetail, type GoalDetail } from './useGoals';
 import { useGoalService } from './useGoalService';
@@ -35,7 +37,7 @@ export function useGoalDetail(goalId: string | null) {
 
       if (!goalResult.ok) {
         setGoal(null);
-        setError(goalResult.error.message);
+        setError(presentErrorMessage(goalResult.error));
         setIsLoading(false);
         return;
       }
@@ -61,7 +63,7 @@ export function useGoalDetail(goalId: string | null) {
 
     if (!goalResult.ok) {
       setGoal(null);
-      setError(goalResult.error.message);
+      setError(presentErrorMessage(goalResult.error));
       setIsLoading(false);
       return;
     }

@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import type { GoalRecordClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
 import { useGoalService } from '../hooks/useGoalService';
 
@@ -67,7 +69,7 @@ export function GoalKeyResultScreen() {
       setKeyResult(null);
       setGoalVersion(null);
       setRecords([]);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }
@@ -116,7 +118,7 @@ export function GoalKeyResultScreen() {
     setIsMutating(false);
 
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 
@@ -142,7 +144,7 @@ export function GoalKeyResultScreen() {
     setIsMutating(false);
 
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 

@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 
 import { useAppSession } from '../hooks/useAppSession';
@@ -48,7 +50,7 @@ export function ReminderDetailScreen() {
     const result = await service.getReminderTemplate(reminderId);
     if (!result.ok) {
       setTemplate(null);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }
@@ -70,7 +72,7 @@ export function ReminderDetailScreen() {
     const result = await service.toggleTemplateEnabled(reminderId);
     setIsMutating(false);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 
@@ -86,7 +88,7 @@ export function ReminderDetailScreen() {
     const result = await service.deleteReminderTemplate(reminderId);
     setIsMutating(false);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 

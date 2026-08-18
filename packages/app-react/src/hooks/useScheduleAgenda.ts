@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import type { CalendarEntryClientDTO } from '@memoflow/contracts/schedule';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useScheduleService } from './useScheduleService';
@@ -140,7 +141,7 @@ export function useScheduleAgenda(options: ScheduleAgendaOptions = {}) {
 
     if (!result.ok) {
       setEntries([]);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }

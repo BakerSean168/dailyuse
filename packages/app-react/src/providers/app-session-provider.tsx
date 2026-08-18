@@ -1,7 +1,7 @@
 import { createContext, type PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import { createCloudAuthHttpClient, type CloudAuthClientPort } from '@memoflow/cloud-auth';
 import type { CloudAccountSummary, CloudSessionSummary, CloudSignInRequest, CloudSignUpRequest } from '@memoflow/contracts';
-import { createResultHttpClient, type IResultHttpClient } from '@memoflow/http-client';
+import { createResultHttpClient, presentErrorMessage, type IResultHttpClient } from '@memoflow/http-client';
 import { MOBILE_API_BASE_URL } from '../constants/auth';
 
 export type AppSessionKind = 'signed-out' | 'authenticating' | 'authenticated' | 'guest' | 'demo';
@@ -70,7 +70,7 @@ export function AppSessionProvider({ children }: PropsWithChildren) {
     const result = await auth.current!.signIn(req);
     if (!result.ok || !result.data.session) {
       setSessionKind('signed-out');
-      setLastError(result.ok ? 'Verify your email before signing in.' : result.error.message);
+      setLastError(result.ok ? 'Verify your email before signing in.' : presentErrorMessage(result.error));
       return false;
     }
     setCurrentIdentity(result.data.account);
@@ -85,7 +85,7 @@ export function AppSessionProvider({ children }: PropsWithChildren) {
     const result = await auth.current!.signUp(req);
     if (!result.ok) {
       setSessionKind('signed-out');
-      setLastError(result.error.message);
+      setLastError(presentErrorMessage(result.error));
       return false;
     }
     setCurrentIdentity(result.data.account);
@@ -97,7 +97,7 @@ export function AppSessionProvider({ children }: PropsWithChildren) {
 
   async function forgotPassword(req: { email: string }) {
     const result = await auth.current!.forgotPassword(req.email);
-    if (!result.ok) setLastError(result.error.message);
+    if (!result.ok) setLastError(presentErrorMessage(result.error));
     return result.ok;
   }
 

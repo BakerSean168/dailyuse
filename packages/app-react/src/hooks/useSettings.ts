@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { PreferenceCategory, UserSettingClientDTO } from '@memoflow/contracts/setting';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useSettingService } from './useSettingService';
@@ -27,7 +28,7 @@ export function useSettings() {
     const result = await service.getUserSettings();
     if (!result.ok) {
       setSettings(null);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }
@@ -52,7 +53,7 @@ export function useSettings() {
     setIsMutating(false);
 
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return false;
     }
 
@@ -68,7 +69,7 @@ export function useSettings() {
     setIsMutating(false);
 
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return false;
     }
 

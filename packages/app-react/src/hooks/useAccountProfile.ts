@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { AccountClientDTO } from '@memoflow/contracts/account';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useAccountService } from './useAccountService';
@@ -26,7 +27,7 @@ export function useAccountProfile() {
     const result = await service.getMyProfile();
     if (!result.ok) {
       setAccount(null);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }

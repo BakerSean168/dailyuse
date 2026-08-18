@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import {
   NotificationChannel,
   ReminderType,
@@ -61,7 +63,7 @@ export function ReminderEditorScreen() {
       setError(null);
       const result = await service.getReminderTemplate(reminderId);
       if (!result.ok) {
-        setError(result.error.message);
+        setError(presentErrorMessage(result.error));
         setIsLoading(false);
         return;
       }
@@ -151,7 +153,7 @@ export function ReminderEditorScreen() {
     setIsSubmitting(false);
 
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 

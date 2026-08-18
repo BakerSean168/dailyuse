@@ -3,6 +3,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskTimeType, TaskType, type CreateTaskTemplateReq, type UpdateTaskTemplateReq } from '@memoflow/contracts/task';
 
@@ -153,7 +155,7 @@ export function TaskEditorScreen() {
       setIsSaving(false);
 
       if (!result.ok) {
-        setFormError(result.error.message);
+        setFormError(presentErrorMessage(result.error));
         return;
       }
 
@@ -180,7 +182,7 @@ export function TaskEditorScreen() {
     setIsSaving(false);
 
     if (!result.ok) {
-      setFormError(result.error.message);
+      setFormError(presentErrorMessage(result.error));
       return;
     }
 

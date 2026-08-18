@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import type { ConflictDetectionResult, CreateScheduleRequest, UpdateScheduleRequest } from '@memoflow/contracts/schedule';
 
 import { useScheduleService } from '../hooks/useScheduleService';
@@ -119,7 +121,7 @@ export function ScheduleEventEditorScreen() {
 
       const result = await service.getSchedule(scheduleId);
       if (!result.ok) {
-        setError(result.error.message);
+        setError(presentErrorMessage(result.error));
         setIsLoading(false);
         return;
       }
@@ -162,7 +164,7 @@ export function ScheduleEventEditorScreen() {
         });
 
         if (!result.ok) {
-          setConflictError(result.error.message);
+          setConflictError(presentErrorMessage(result.error));
           return;
         }
 
@@ -189,7 +191,7 @@ export function ScheduleEventEditorScreen() {
     });
 
     if (!result.ok) {
-      setConflictError(result.error.message);
+      setConflictError(presentErrorMessage(result.error));
       return;
     }
 
@@ -241,7 +243,7 @@ export function ScheduleEventEditorScreen() {
     setIsSubmitting(false);
 
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 
@@ -264,7 +266,7 @@ export function ScheduleEventEditorScreen() {
     setIsDeleting(false);
 
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 

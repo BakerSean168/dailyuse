@@ -9,12 +9,13 @@ import {
   type SendMessageReq,
 } from '@memoflow/contracts/ai';
 import { unwrap } from '@memoflow/contracts/result';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useAIService } from './useAIService';
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'AI request failed';
+  return error instanceof Error ? presentErrorMessage(error) : 'AI request failed';
 }
 
 /**

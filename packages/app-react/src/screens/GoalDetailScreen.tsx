@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import { useGoalDetail } from '../hooks/useGoalDetail';
 import { useGoalService } from '../hooks/useGoalService';
 
@@ -36,7 +38,7 @@ export function GoalDetailScreen() {
     const result = await service.activateGoal(goalId, goal.version);
     setIsMutating(false);
     if (!result.ok) {
-      setActionError(result.error.message);
+      setActionError(presentErrorMessage(result.error));
       return;
     }
     await refresh();
@@ -49,7 +51,7 @@ export function GoalDetailScreen() {
     const result = await service.completeGoal(goalId, goal.version);
     setIsMutating(false);
     if (!result.ok) {
-      setActionError(result.error.message);
+      setActionError(presentErrorMessage(result.error));
       return;
     }
     await refresh();
@@ -62,7 +64,7 @@ export function GoalDetailScreen() {
     const result = await service.archiveGoal(goalId, goal.version);
     setIsMutating(false);
     if (!result.ok) {
-      setActionError(result.error.message);
+      setActionError(presentErrorMessage(result.error));
       return;
     }
     await refresh();

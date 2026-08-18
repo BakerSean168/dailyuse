@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 import { useAppSession } from '../hooks/useAppSession';
@@ -45,7 +47,7 @@ export function NotificationDetailScreen() {
     const result = await service.findNotificationById(notificationId);
     if (!result.ok) {
       setNotification(null);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }
@@ -67,7 +69,7 @@ export function NotificationDetailScreen() {
     const result = await service.markAsRead(notificationId);
     setIsMutating(false);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 
@@ -83,7 +85,7 @@ export function NotificationDetailScreen() {
     const result = await service.deleteNotification(notificationId);
     setIsMutating(false);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return;
     }
 

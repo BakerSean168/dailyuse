@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { GoalReviewClientDTO } from '@memoflow/contracts/goal';
+import { presentErrorMessage } from '@memoflow/http-client';
 import { useAppSession } from './useAppSession';
 import { useGoalService } from './useGoalService';
 
@@ -53,7 +54,7 @@ export function useGoalReviews(goalId: string | null) {
     const result = await service.getGoalAggregateView(goalId);
     if (!result.ok) {
       setReviews([]);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }

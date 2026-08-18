@@ -7,6 +7,7 @@ import type {
   TaskTimeConfigDTO,
 } from '@memoflow/contracts/task';
 import type { TaskTemplate } from '@memoflow/task/client';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useTaskService } from './useTaskService';
@@ -131,7 +132,7 @@ export function useTaskTemplates() {
 
     if (!result.ok) {
       setTemplates([]);
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }
@@ -167,7 +168,7 @@ export function useTaskTemplates() {
 
       if (!result.ok) {
         setTemplates([]);
-        setError(result.error.message);
+        setError(presentErrorMessage(result.error));
         setIsLoading(false);
         return;
       }

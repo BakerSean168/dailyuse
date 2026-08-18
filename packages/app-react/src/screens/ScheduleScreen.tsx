@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
+import { presentErrorMessage } from '@memoflow/http-client';
+
 import { ScheduleTaskStatus } from '@memoflow/contracts/schedule';
 
 import { ScheduleTaskCard } from '../components/ScheduleTaskCard';
@@ -135,7 +137,7 @@ export function ScheduleScreen() {
     setMutatingId(taskId);
 
     if (!result.ok) {
-      setActionError(result.error.message);
+      setActionError(presentErrorMessage(result.error));
       return;
     }
 

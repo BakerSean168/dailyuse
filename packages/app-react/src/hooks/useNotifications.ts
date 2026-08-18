@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { NotificationClientDTO } from '@memoflow/contracts/notification';
+import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
 import { useNotificationService } from './useNotificationService';
@@ -33,7 +34,7 @@ export function useNotifications() {
     if (!listResult.ok) {
       setNotifications([]);
       setUnreadCount(0);
-      setError(listResult.error.message);
+      setError(presentErrorMessage(listResult.error));
       setIsLoading(false);
       return;
     }
@@ -41,7 +42,7 @@ export function useNotifications() {
     if (!unreadResult.ok) {
       setNotifications(listResult.data.notifications);
       setUnreadCount(0);
-      setError(unreadResult.error.message);
+      setError(presentErrorMessage(unreadResult.error));
       setIsLoading(false);
       return;
     }
@@ -62,7 +63,7 @@ export function useNotifications() {
   async function markAsRead(id: string) {
     const result = await service.markAsRead(id);
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return false;
     }
 
@@ -73,7 +74,7 @@ export function useNotifications() {
   async function markAllAsRead() {
     const result = await service.markAllAsRead();
     if (!result.ok) {
-      setError(result.error.message);
+      setError(presentErrorMessage(result.error));
       return false;
     }
 
