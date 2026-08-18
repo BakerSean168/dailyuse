@@ -3,35 +3,25 @@
  * 权重快照应用层错误
  */
 
-import { DomainError } from '@memoflow/utils/errors';
+import { ResultErrorException } from '@memoflow/contracts/result';
 
 /**
  * Goal 未找到错误
  */
-export class GoalNotFoundError extends DomainError {
-  public readonly details: { goalId: string };
-  public readonly statusCode: number;
-
+export class GoalNotFoundError extends ResultErrorException {
   constructor(goalId: string) {
-    super('GOAL_NOT_FOUND', `Goal not found: ${goalId}`, { goalId }, 404);
-    this.details = { goalId };
-    this.statusCode = 404;
+    super(`Goal not found: ${goalId}`, 'GOAL_NOT_FOUND', undefined, { goalId }, 404);
   }
 }
 
 /**
  * KeyResult 未找到错误
  */
-export class KeyResultNotFoundError extends DomainError {
-  public readonly details: { krId: string; goalId?: string };
-  public readonly statusCode: number;
-
+export class KeyResultNotFoundError extends ResultErrorException {
   constructor(krId: string, goalId?: string) {
     const message = goalId
       ? `KeyResult not found in Goal ${goalId}: ${krId}`
       : `KeyResult not found: ${krId}`;
-    super('KEY_RESULT_NOT_FOUND', message, { krId, goalId }, 404);
-    this.details = { krId, goalId };
-    this.statusCode = 404;
+    super(message, 'KEY_RESULT_NOT_FOUND', undefined, { krId, goalId }, 404);
   }
 }

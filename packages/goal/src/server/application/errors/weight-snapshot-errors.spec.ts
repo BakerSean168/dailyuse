@@ -6,7 +6,7 @@ describe('WeightSnapshotErrors', () => {
     const error = new GoalNotFoundError('goal-1');
     expect(error.code).toBe('GOAL_NOT_FOUND');
     expect(error.message).toContain('goal-1');
-    expect(error.details).toEqual({ goalId: 'goal-1' });
+    expect(error.context).toEqual({ goalId: 'goal-1' });
     expect(error.statusCode).toBe(404);
   });
 
@@ -14,7 +14,7 @@ describe('WeightSnapshotErrors', () => {
     const error = new KeyResultNotFoundError('kr-1', 'goal-1');
     expect(error.code).toBe('KEY_RESULT_NOT_FOUND');
     expect(error.message).toContain('kr-1');
-    expect(error.details).toEqual({ krId: 'kr-1', goalId: 'goal-1' });
+    expect(error.context).toEqual({ krId: 'kr-1', goalId: 'goal-1' });
     expect(error.statusCode).toBe(404);
   });
 });
