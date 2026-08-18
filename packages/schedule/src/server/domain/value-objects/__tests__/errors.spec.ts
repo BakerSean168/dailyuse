@@ -31,7 +31,7 @@ describe('schedule domain errors', () => {
     const error = new ScheduleTaskCreationError('Reminder', 'entity-1', cause);
 
     expect(error.code).toBe('schedule_task_creation_error');
-    expect(error.originalError).toBe(cause);
+    expect(error.cause).toBe(cause);
     expect(error.message).toContain('boom');
   });
 
