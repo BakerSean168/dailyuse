@@ -5,6 +5,7 @@ import type {
   IScheduleRepository,
   ScheduleDomainEventOutboxDTO,
 } from '../../domain/repositories/i-schedule-repository';
+import { ScheduleLeaseLostError } from '../../infrastructure/lease/schedule-lease-coordinator';
 import type {
   ScheduleLeaseCoordinatorPort,
 } from './schedule-rebuild-worker-service';
@@ -41,13 +42,7 @@ export class PublishBeforeAckFaultError extends Error {
 }
 
 function isLeaseLostError(err: unknown): boolean {
-  if (!(err instanceof Error)) return false;
-  const message = err.message.toLowerCase();
-  return (
-    err.name === 'ScheduleLeaseLostError' ||
-    message.includes('lease ownership was lost') ||
-    message.includes('lease lost')
-  );
+  return err instanceof ScheduleLeaseLostError;
 }
 
 /**

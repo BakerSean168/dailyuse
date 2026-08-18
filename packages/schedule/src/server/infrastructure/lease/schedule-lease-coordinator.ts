@@ -6,8 +6,8 @@ export const SCHEDULE_LEASE_RENEWAL_INTERVAL_MS = 20_000;
 export const SCHEDULE_LEASE_KEY = 'schedule-host';
 
 export class ScheduleLeaseLostError extends Error {
-  constructor() {
-    super('Schedule host lease ownership was lost');
+  constructor(message?: string) {
+    super(message ?? 'Schedule host lease ownership was lost');
     this.name = 'ScheduleLeaseLostError';
   }
 }

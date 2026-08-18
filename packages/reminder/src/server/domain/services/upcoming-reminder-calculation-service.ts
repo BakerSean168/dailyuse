@@ -24,6 +24,7 @@ import type {
   TriggerConfigDTO,
   UpcomingReminderDTO,
 } from '@memoflow/contracts/reminder';
+import { InvalidTimezoneError } from '../errors/reminder-errors';
 
 const REMINDER_CALCULATION_DEBUG =
   typeof process !== 'undefined' && process.env.DEBUG_REMINDER_CALCULATION === 'true';
@@ -211,7 +212,7 @@ export class UpcomingReminderCalculationService {
 
       return null;
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Invalid or unknown timezone')) {
+      if (error instanceof InvalidTimezoneError) {
         throw error;
       }
       console.error(`[UpcomingReminderCalculationService] 计算提醒 ${reminder.id} 失败:`, error);
@@ -230,7 +231,7 @@ export class UpcomingReminderCalculationService {
     try {
       Intl.DateTimeFormat(undefined, { timeZone: timezone });
     } catch {
-      throw new Error(`Invalid or unknown timezone: "${timezone}"`);
+      throw new InvalidTimezoneError(timezone);
     }
   }
 

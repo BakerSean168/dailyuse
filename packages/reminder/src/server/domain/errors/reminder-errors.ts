@@ -54,3 +54,15 @@ export class ReminderTemplateSaveError extends DomainError {
     super('REMINDER_TEMPLATE_SAVE_FAILED', `保存提醒模板失败: ${message}`, context, 500);
   }
 }
+
+/**
+ * 无效时区（fail-fast）
+ * 用于提醒触发时间计算：无效 IANA 时区应立刻失败，而不是被计算逻辑吞掉。
+ * 控制流用 instanceof 判断，不依赖消息文本。
+ */
+export class InvalidTimezoneError extends Error {
+  constructor(timezone: string) {
+    super(`Invalid or unknown timezone: "${timezone}"`);
+    this.name = 'InvalidTimezoneError';
+  }
+}

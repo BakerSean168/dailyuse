@@ -1,5 +1,6 @@
 import type { IScheduleRepository, ScheduleRebuildOutboxDTO } from '../../../domain/repositories/i-schedule-repository';
 import type { CalendarEntry } from '../../../domain/aggregates/calendar-entry';
+import { ScheduleLeaseLostError } from '../../lease/schedule-lease-coordinator';
 import {
   PowerSyncScheduleMapper,
   type PowerSyncScheduleRow,
@@ -542,7 +543,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
       [id, claimToken, 'processing'],
     );
     if (!existing) {
-      throw new Error(`Rebuild outbox item ${id} is not owned by this claim token (lease lost)`);
+      throw new ScheduleLeaseLostError(`Rebuild outbox item ${id} is not owned by this claim token (lease lost)`);
     }
 
     if (!error) {
@@ -553,7 +554,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
         [nowIso, nowIso, id, claimToken],
       );
       if (res.rowsAffected === 0) {
-        throw new Error(`Rebuild outbox item ${id} is no longer owned by this claim token (lease lost)`);
+        throw new ScheduleLeaseLostError(`Rebuild outbox item ${id} is no longer owned by this claim token (lease lost)`);
       }
       return;
     }
@@ -567,7 +568,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
         [nextAttempts, error, nowIso, id, claimToken],
       );
       if (res.rowsAffected === 0) {
-        throw new Error(`Rebuild outbox item ${id} is no longer owned by this claim token (lease lost)`);
+        throw new ScheduleLeaseLostError(`Rebuild outbox item ${id} is no longer owned by this claim token (lease lost)`);
       }
     } else {
       const backoffMs = Math.pow(2, nextAttempts) * 1000;
@@ -579,7 +580,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
         [nextAttempts, nextAttemptIso, error, nowIso, id, claimToken],
       );
       if (res.rowsAffected === 0) {
-        throw new Error(`Rebuild outbox item ${id} is no longer owned by this claim token (lease lost)`);
+        throw new ScheduleLeaseLostError(`Rebuild outbox item ${id} is no longer owned by this claim token (lease lost)`);
       }
     }
   }
@@ -714,7 +715,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
       [id, claimToken, 'processing'],
     );
     if (!existing) {
-      throw new Error(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
+      throw new ScheduleLeaseLostError(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
     }
 
     if (!error) {
@@ -725,7 +726,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
         [nowIso, nowIso, id, claimToken],
       );
       if (res.rowsAffected === 0) {
-        throw new Error(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
+        throw new ScheduleLeaseLostError(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
       }
       return;
     }
@@ -739,7 +740,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
         [nextAttempts, error, nowIso, id, claimToken],
       );
       if (res.rowsAffected === 0) {
-        throw new Error(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
+        throw new ScheduleLeaseLostError(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
       }
     } else {
       const backoffMs = Math.pow(2, nextAttempts) * 1000;
@@ -751,7 +752,7 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
         [nextAttempts, nextAttemptIso, error, nowIso, id, claimToken],
       );
       if (res.rowsAffected === 0) {
-        throw new Error(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
+        throw new ScheduleLeaseLostError(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
       }
     }
   }

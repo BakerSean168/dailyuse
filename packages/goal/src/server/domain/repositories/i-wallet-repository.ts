@@ -33,10 +33,12 @@ export interface WalletTransactionDTO {
  * 钱包仓储 Port / Wallet repository Port.
  *
  * @remarks
- * - amount 校验与 `ACCOUNT_NOT_FOUND → NOT_FOUND` 映射由 use case 完成；
- *   本 Port 可抛出原始 `ACCOUNT_NOT_FOUND` 错误。Amount validation and the
- *   `ACCOUNT_NOT_FOUND → NOT_FOUND` mapping happen in the use cases; this Port
- *   may throw the raw `ACCOUNT_NOT_FOUND` error.
+ * - amount 校验与账户缺失映射由 use case 完成；`recordTransaction` 在账户缺失时
+ *   抛出 `WalletAccountNotFoundError`（typed，消息文本仅供观测，控制流必须用
+ *   instanceof）。Amount validation and the account-missing mapping happen in
+ *   the use cases; `recordTransaction` throws `WalletAccountNotFoundError` when
+ *   the account is missing (typed; the message text is observational only, branch
+ *   with instanceof).
  * - `recordTransaction` 由实现保证单事务原子性（余额更新 + 交易写入同生共死）。
  *   Implementations must keep the balance update and the transaction insert
  *   atomic inside one database transaction.
