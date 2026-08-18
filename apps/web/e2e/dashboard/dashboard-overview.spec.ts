@@ -8,12 +8,12 @@
  *   business context remains in BusinessPanel tabs
  */
 import { test, expect } from '@playwright/test';
-import { login } from '../helpers/testHelpers';
-import { WEB_CONFIG, TIMEOUT_CONFIG, TEST_USERS } from '../config';
+import { registerAndLogin } from '../helpers/testHelpers';
+import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
 
 test.describe('Dashboard retirement (V2 shell)', () => {
   test.beforeEach(async ({ page }) => {
-    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
+    await registerAndLogin(page);
   });
 
   test('[P0] should redirect /dashboard to the AI workspace ground', async ({ page }) => {

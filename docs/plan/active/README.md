@@ -75,3 +75,5 @@ updated: 2026-08-17T00:00:00+09:00
 - 新计划默认放这里
 - 文件名使用 `YYYY-MM-DD-topic-slug.md`
 - 计划完成、终止或只保留历史参考价值后，移动到 `../archive`
+
+- [Oracle2 / Hermes2 本地部署与产品流验证加固计划](./2026-08-18-oracle2-hermes-local-validation-hardening.md)

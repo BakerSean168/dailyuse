@@ -6,7 +6,10 @@ import { detectHostEnvShadowing } from './env-shadow.mjs';
 import {
   createLocalDockerAuthBaseUrl,
   createLocalDockerWebUrl,
+  extractHttpOrigin,
   mergeLocalDockerWebOrigins,
+  resolveLocalDockerBrowserValidationOrigins,
+  resolveLocalDockerPowerSyncUrl,
 } from './local-compose.mjs';
 
 describe('detectHostEnvShadowing', () => {
@@ -52,6 +55,42 @@ describe('mergeLocalDockerWebOrigins', () => {
         ',',
       ),
       ['https://app.example.com', 'http://localhost:12137', 'http://127.0.0.1:12137'],
+    );
+  });
+});
+
+describe('MagicDNS browser-facing local Docker URLs', () => {
+  it('normalizes the public Web URL into an allowlist origin', () => {
+    const publicWebOrigin = extractHttpOrigin('http://oracle.taile92a8e.ts.net:58080/auth');
+    assert.equal(publicWebOrigin, 'http://oracle.taile92a8e.ts.net:58080');
+    assert.equal(
+      mergeLocalDockerWebOrigins('58080', publicWebOrigin).includes(
+        'http://oracle.taile92a8e.ts.net:58080',
+      ),
+      true,
+    );
+  });
+
+  it('preserves an explicit public PowerSync URL instead of forcing localhost', () => {
+    assert.equal(
+      resolveLocalDockerPowerSyncUrl('58081', 'http://oracle.taile92a8e.ts.net:58081'),
+      'http://oracle.taile92a8e.ts.net:58081',
+    );
+    assert.equal(resolveLocalDockerPowerSyncUrl('58081'), 'http://localhost:58081');
+  });
+
+  it('runs browser validation through the configured public Web and API origins', () => {
+    assert.deepEqual(
+      resolveLocalDockerBrowserValidationOrigins({
+        apiHostPort: '53080',
+        webHostPort: '58080',
+        authBaseUrl: 'http://oracle.taile92a8e.ts.net:53080/api/auth',
+        webUrl: 'http://oracle.taile92a8e.ts.net:58080',
+      }),
+      {
+        apiOrigin: 'http://oracle.taile92a8e.ts.net:53080',
+        webOrigin: 'http://oracle.taile92a8e.ts.net:58080',
+      },
     );
   });
 });

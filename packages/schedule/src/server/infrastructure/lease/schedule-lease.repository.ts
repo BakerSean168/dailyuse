@@ -7,22 +7,37 @@ export function createScheduleLeasePrismaRepository(
   return {
     async tryAcquire(request): Promise<boolean> {
       const now = new Date(request.now);
-      await db.$transaction(async (tx) => {
-        // 1) 清掉已过期的旧租约（原子抢占前提）。
-        await tx.scheduleLease.deleteMany({
-          where: { leaseKey: request.leaseKey, expiresAt: { lte: now } },
+      try {
+        await db.$transaction(async (tx) => {
+          // 1) 清掉已过期的旧租约（原子抢占前提）。
+          await tx.scheduleLease.deleteMany({
+            where: { leaseKey: request.leaseKey, expiresAt: { lte: now } },
+          });
+          // 2) 抢占：键不存在才创建（并发下只有一个成功）。
+          await tx.scheduleLease.create({
+            data: {
+              id: `${request.leaseKey}:${request.ownerToken}`,
+              leaseKey: request.leaseKey,
+              ownerToken: request.ownerToken,
+              expiresAt: new Date(request.expiresAt),
+            },
+          });
         });
-        // 2) 抢占：键不存在才创建（并发下只有一个成功）。
-        await tx.scheduleLease.create({
-          data: {
-            id: `${request.leaseKey}:${request.ownerToken}`,
-            leaseKey: request.leaseKey,
-            ownerToken: request.ownerToken,
-            expiresAt: new Date(request.expiresAt),
-          },
-        });
-      });
-      return true;
+        return true;
+      } catch (error) {
+        // `tryAcquire` 的并发 loser 是正常的租约竞争结果，不是基础设施故障。
+        // Prisma 用 P2002 表示 lease_key 唯一约束冲突；与 PowerSync adapter
+        // 一致，将它投影为 false，让 coordinator 可以进入 standby/retry。
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
+          (error as { code?: unknown }).code === 'P2002'
+        ) {
+          return false;
+        }
+        throw error;
+      }
     },
 
     async renew(request): Promise<boolean> {
@@ -71,10 +86,10 @@ export function createScheduleLeasePowerSyncRepository(
       const expiresIso = new Date(request.expiresAt).toISOString();
       const id = `${request.leaseKey}:${request.ownerToken}`;
 
-      await db.execute(
-        'DELETE FROM schedule_leases WHERE lease_key = ? AND expires_at <= ?',
-        [request.leaseKey, nowIso],
-      );
+      await db.execute('DELETE FROM schedule_leases WHERE lease_key = ? AND expires_at <= ?', [
+        request.leaseKey,
+        nowIso,
+      ]);
 
       try {
         await db.execute(
@@ -100,10 +115,10 @@ export function createScheduleLeasePowerSyncRepository(
 
     async release(leaseKey, ownerToken): Promise<void> {
       await ensureTable();
-      await db.execute(
-        'DELETE FROM schedule_leases WHERE lease_key = ? AND owner_token = ?',
-        [leaseKey, ownerToken],
-      );
+      await db.execute('DELETE FROM schedule_leases WHERE lease_key = ? AND owner_token = ?', [
+        leaseKey,
+        ownerToken,
+      ]);
     },
   };
 }

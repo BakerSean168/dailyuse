@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import {
   createLocalComposeRuntimeEnv,
   localComposeArgs,
+  resolveLocalDockerBrowserValidationOrigins,
 } from '../../../../tools/docker/local-compose.mjs';
 import {
   collectBrowserProbeEvidence,
@@ -19,11 +20,16 @@ const evidencePath = resolve(evidenceDir, 'local-docker-playwright-evidence.json
 
 process.chdir(workspaceRoot);
 const env = createLocalComposeRuntimeEnv({ quiet: true });
-env.E2E_WEB_BASE_URL = `http://127.0.0.1:${env.WEB_HOST_PORT}`;
-env.E2E_API_BASE_URL = `http://127.0.0.1:${env.API_HOST_PORT}`;
+const validationOrigins = resolveLocalDockerBrowserValidationOrigins({
+  apiHostPort: env.API_HOST_PORT,
+  webHostPort: env.WEB_HOST_PORT,
+  authBaseUrl: env.AUTH_BASE_URL,
+  webUrl: env.MEMOFLOW_WEB_URL,
+});
+env.E2E_WEB_BASE_URL = validationOrigins.webOrigin;
+env.E2E_API_BASE_URL = validationOrigins.apiOrigin;
 env.E2E_API_FULL_URL = `${env.E2E_API_BASE_URL}/api/v1`;
-env.E2E_LOCAL_DOCKER_PROBE_TOKEN =
-  `pm-local-docker-browser-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+env.E2E_LOCAL_DOCKER_PROBE_TOKEN = `pm-local-docker-browser-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 const runtimeEvidence = await collectLocalDockerRuntimeEvidence({
   workspace: workspaceRoot,

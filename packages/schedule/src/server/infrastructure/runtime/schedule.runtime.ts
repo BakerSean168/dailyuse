@@ -8,7 +8,10 @@ import type {
   ScheduleTaskExecutionResult,
   ScheduleTaskSourceExecutor,
 } from '../../application/source-executors/runtime-contract';
-import { ScheduleTaskQueue, type ScheduledItem } from '../../application/scheduler/schedule-task-queue';
+import {
+  ScheduleTaskQueue,
+  type ScheduledItem,
+} from '../../application/scheduler/schedule-task-queue';
 import { SCHEDULE_LEASE_KEY } from '../lease/schedule-lease-coordinator';
 import type { ScheduleModuleRuntimeContribution } from '../schedule.module';
 
@@ -41,10 +44,13 @@ export interface ScheduleRuntimeDependencies {
   readonly metrics?: import('@memoflow/patterns').BusinessMetricRecorder;
   /**
    * R3a：调度器宿主租约（可选）。提供时，start 先原子 acquire DB lease，
-   * 失败则本宿主不启动执行队列（只作为读模型宿主）；无 repository 的
-   * coordinator（单宿主/测试）直接放行。
+   * 失败则本宿主先作为读模型 standby，并周期重试 lease；原 owner 退出或
+   * crash-leftover lease 到期后自动 promotion。无 repository 的 coordinator
+   *（单宿主/测试）直接放行。
    */
   readonly leaseCoordinator?: import('../lease/schedule-lease-coordinator').ScheduleLeaseCoordinator;
+  /** Standby host retry cadence after another scheduler owns the host lease. */
+  readonly leaseRetryIntervalMs?: number;
 }
 
 function toScheduledItem(task: ScheduleTask): ScheduledItem | null {
@@ -107,11 +113,14 @@ async function syncTask(
   }
 
   if (!(await isTaskAllowed(task, shouldScheduleTask))) {
-    logger.info('[Schedule] Removing task from queue because it does not match runtime auth scope', {
-      taskId,
-      taskName: task.name,
-      identityId: String(task.identityId),
-    });
+    logger.info(
+      '[Schedule] Removing task from queue because it does not match runtime auth scope',
+      {
+        taskId,
+        taskName: task.name,
+        identityId: String(task.identityId),
+      },
+    );
     queue.removeTask(taskId);
     return;
   }
@@ -153,11 +162,14 @@ async function executeScheduledTask(
   }
 
   if (!(await isTaskAllowed(task, shouldScheduleTask))) {
-    logger.info('[Schedule] Scheduled execution skipped because task does not match runtime auth scope', {
-      taskId,
-      taskName: task.name,
-      identityId: String(task.identityId),
-    });
+    logger.info(
+      '[Schedule] Scheduled execution skipped because task does not match runtime auth scope',
+      {
+        taskId,
+        taskName: task.name,
+        identityId: String(task.identityId),
+      },
+    );
     return;
   }
 
@@ -345,8 +357,14 @@ export function createScheduleRuntimeContribution(
     scheduleRuntimeEvents.on('schedule:task-resumed', syncTaskListeners['schedule:task-resumed']);
     scheduleRuntimeEvents.on('schedule:task-executed', syncTaskListeners['schedule:task-executed']);
     scheduleRuntimeEvents.on('schedule:task-paused', removeTaskListeners['schedule:task-paused']);
-    scheduleRuntimeEvents.on('schedule:task-completed', removeTaskListeners['schedule:task-completed']);
-    scheduleRuntimeEvents.on('schedule:task-cancelled', removeTaskListeners['schedule:task-cancelled']);
+    scheduleRuntimeEvents.on(
+      'schedule:task-completed',
+      removeTaskListeners['schedule:task-completed'],
+    );
+    scheduleRuntimeEvents.on(
+      'schedule:task-cancelled',
+      removeTaskListeners['schedule:task-cancelled'],
+    );
     scheduleRuntimeEvents.on('schedule:task-failed', removeTaskListeners['schedule:task-failed']);
     scheduleRuntimeEvents.on('schedule:task-deleted', removeTaskListeners['schedule:task-deleted']);
   };
@@ -358,24 +376,85 @@ export function createScheduleRuntimeContribution(
       syncTaskListeners['schedule:task-schedule-updated'],
     );
     scheduleRuntimeEvents.off('schedule:task-resumed', syncTaskListeners['schedule:task-resumed']);
-    scheduleRuntimeEvents.off('schedule:task-executed', syncTaskListeners['schedule:task-executed']);
+    scheduleRuntimeEvents.off(
+      'schedule:task-executed',
+      syncTaskListeners['schedule:task-executed'],
+    );
     scheduleRuntimeEvents.off('schedule:task-paused', removeTaskListeners['schedule:task-paused']);
-    scheduleRuntimeEvents.off('schedule:task-completed', removeTaskListeners['schedule:task-completed']);
-    scheduleRuntimeEvents.off('schedule:task-cancelled', removeTaskListeners['schedule:task-cancelled']);
+    scheduleRuntimeEvents.off(
+      'schedule:task-completed',
+      removeTaskListeners['schedule:task-completed'],
+    );
+    scheduleRuntimeEvents.off(
+      'schedule:task-cancelled',
+      removeTaskListeners['schedule:task-cancelled'],
+    );
     scheduleRuntimeEvents.off('schedule:task-failed', removeTaskListeners['schedule:task-failed']);
-    scheduleRuntimeEvents.off('schedule:task-deleted', removeTaskListeners['schedule:task-deleted']);
+    scheduleRuntimeEvents.off(
+      'schedule:task-deleted',
+      removeTaskListeners['schedule:task-deleted'],
+    );
   };
 
   let started = false;
   let starting: Promise<void> | null = null;
+  let schedulerStarted = false;
+  let leaseRetryTimer: NodeJS.Timeout | null = null;
+  let leasePromotion: Promise<void> | null = null;
+  const leaseRetryIntervalMs = Math.max(250, deps.leaseRetryIntervalMs ?? 5_000);
   /** R3a：acquire 返回的 owner token（stop 时释放租约）。 */
   let leaseOwnerToken: string | undefined;
 
-  const startScheduler = async (): Promise<void> => {
-    registerListeners();
+  const startScheduler = async ({ register = true } = {}): Promise<void> => {
+    if (register) registerListeners();
     await queue.start();
+    schedulerStarted = true;
     started = true;
     logger.info('[Schedule] Runtime contribution started');
+  };
+
+  const scheduleLeaseRetry = (): void => {
+    if (!started || schedulerStarted || leaseRetryTimer || !deps.leaseCoordinator) return;
+    leaseRetryTimer = setTimeout(() => {
+      leaseRetryTimer = null;
+      void promoteStandbyHost();
+    }, leaseRetryIntervalMs);
+    leaseRetryTimer.unref?.();
+  };
+
+  const promoteStandbyHost = async (): Promise<void> => {
+    if (!started || schedulerStarted || !deps.leaseCoordinator || leasePromotion) return;
+
+    leasePromotion = (async () => {
+      const result = await deps.leaseCoordinator!.acquire(SCHEDULE_LEASE_KEY);
+      if (!started) {
+        if (result.acquired) {
+          await deps.leaseCoordinator!.release(SCHEDULE_LEASE_KEY, result.ownerToken);
+        }
+        return;
+      }
+      if (!result.acquired) {
+        scheduleLeaseRetry();
+        return;
+      }
+
+      leaseOwnerToken = result.ownerToken;
+      try {
+        await startScheduler({ register: false });
+        logger.info('[Schedule] Standby host promoted to scheduler (lease held)');
+      } catch (error) {
+        schedulerStarted = false;
+        await deps.leaseCoordinator!.release(SCHEDULE_LEASE_KEY, leaseOwnerToken);
+        leaseOwnerToken = undefined;
+        logger.error('[Schedule] Standby promotion failed; retrying lease acquisition', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        scheduleLeaseRetry();
+      }
+    })().finally(() => {
+      leasePromotion = null;
+    });
+    await leasePromotion;
   };
 
   return {
@@ -403,11 +482,13 @@ export function createScheduleRuntimeContribution(
           const result = await lease.acquire(SCHEDULE_LEASE_KEY);
           if (!result.acquired) {
             logger.warn(
-              '[Schedule] Lease not acquired; running as read-model host only (no scheduler)',
+              '[Schedule] Lease not acquired; running as read-model host and retrying promotion',
             );
-            // 仍注册事件监听以跟踪任务变化，便于宿主后续可升级为调度宿主。
+            // 仍注册事件监听以跟踪任务变化；后台重试 lease，原 owner 退出或
+            // crash-leftover lease 到期后，本宿主可自动升级为调度宿主。
             registerListeners();
             started = true;
+            scheduleLeaseRetry();
             return;
           }
 
@@ -430,6 +511,13 @@ export function createScheduleRuntimeContribution(
         return;
       }
 
+      started = false;
+      if (leaseRetryTimer) {
+        clearTimeout(leaseRetryTimer);
+        leaseRetryTimer = null;
+      }
+      await leasePromotion;
+
       // R3a：释放租约（仅 owner）；心跳 timer 由 coordinator 一并清理。
       if (leaseOwnerToken !== undefined) {
         await deps.leaseCoordinator?.release(SCHEDULE_LEASE_KEY, leaseOwnerToken);
@@ -438,9 +526,11 @@ export function createScheduleRuntimeContribution(
 
       unregisterListeners();
       // R1-3：先排空（等待进行中的 handler 完成），再停队列。
-      await queue.drain();
-      queue.stop();
-      started = false;
+      if (schedulerStarted) {
+        await queue.drain();
+        queue.stop();
+        schedulerStarted = false;
+      }
       logger.info('[Schedule] Runtime contribution stopped');
     },
   };
