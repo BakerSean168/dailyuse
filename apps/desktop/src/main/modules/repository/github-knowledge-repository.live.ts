@@ -9,7 +9,7 @@ import type {
   KnowledgeRepositoryConnectionServerDTO,
 } from '@memoflow/contracts/repository';
 import type { IdentityId } from '@memoflow/contracts/primitives';
-import { ok } from '@memoflow/contracts/result';
+import { ok, ResultErrorException } from '@memoflow/contracts/result';
 // This opt-in acceptance file intentionally crosses the Desktop -> Repository
 // boundary so the production service and Git runtime are exercised together.
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -536,7 +536,15 @@ describe('live GitHub knowledge repository acceptance', () => {
       reason: 'Controlled live acceptance fixture',
     });
     expect(committed.ok).toBe(true);
-    if (!committed.ok) throw new Error(committed.error.message);
+    if (!committed.ok)
+      throw new ResultErrorException(
+        'Live GitHub knowledge note commit failed',
+        committed.error.code,
+        undefined,
+        committed.error.context,
+        undefined,
+        committed.error,
+      );
     expect(committed.data.relativePath).toBe(proposedPath);
     expect(committed.data.commitSha).toMatch(/^[a-f0-9]{40,64}$/i);
 
@@ -617,7 +625,15 @@ describe('live GitHub knowledge repository acceptance', () => {
 
     const pulled = await syncService.execute(identityId, { connectionId });
     expect(pulled.ok).toBe(true);
-    if (!pulled.ok) throw new Error(pulled.error.message);
+    if (!pulled.ok)
+      throw new ResultErrorException(
+        'Live GitHub knowledge repository sync failed',
+        pulled.error.code,
+        undefined,
+        pulled.error.context,
+        undefined,
+        pulled.error,
+      );
     expect(pulled.data.remoteChangesApplied).toBe(true);
     expect(pulled.data.headSha).toBe(committed.data.commitSha);
     await expect(

@@ -155,11 +155,22 @@ function isMessageComparison(node) {
   );
 }
 
+function containsResultErrorMessage(node) {
+  if (ts.isPropertyAccessExpression(node) && node.name.text === 'message') {
+    const text = node.getText();
+    return (
+      /\b(?:result|error|failure|err)\.(?:error|failure)?\.message$/.test(text) ||
+      /\b(?:error|failure)\.message$/.test(text)
+    );
+  }
+  return ts.isIdentifier(node) && ERROR_MESSAGE_IDENTIFIERS.has(node.text);
+}
+
 function isRawMessageRethrow(node) {
   if (!ts.isThrowStatement(node) || !node.expression) return false;
   const expression = node.expression;
   if (!ts.isNewExpression(expression) || !isErrorConstructor(expression.expression)) return false;
-  return (expression.arguments ?? []).some(containsMessageExpression);
+  return (expression.arguments ?? []).some(containsResultErrorMessage);
 }
 
 function isUiRawMessage(node, relPath) {

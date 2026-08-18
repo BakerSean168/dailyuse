@@ -15,6 +15,7 @@
  */
 import type { IKnowledgeIndexStatusPort, KnowledgeIndexStatusUpdate } from '@memoflow/ai/ports';
 import type { RepositoryApplicationPort } from '@memoflow/repository';
+import { ResultErrorException } from '@memoflow/contracts/result';
 
 /** Bridges AI indexing outcomes back to the repository-owned projection. */
 export class RepositoryKnowledgeIndexStatusAdapter implements IKnowledgeIndexStatusPort {
@@ -30,7 +31,14 @@ export class RepositoryKnowledgeIndexStatusAdapter implements IKnowledgeIndexSta
       },
     );
     if (!result.ok) {
-      throw new Error(result.error.message);
+      throw new ResultErrorException(
+        'Repository knowledge index status update failed',
+        result.error.code,
+        undefined,
+        result.error.context,
+        undefined,
+        result.error,
+      );
     }
   }
 }

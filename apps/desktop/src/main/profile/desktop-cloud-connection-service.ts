@@ -1,6 +1,6 @@
 import type { AccountClientDTO, UpdateAccountReq } from '@memoflow/contracts/account';
 import type { CloudAuthResponse } from '@memoflow/contracts';
-import { fail, ok, type Result } from '@memoflow/contracts/result';
+import { fail, ok, type Result, ResultErrorException } from '@memoflow/contracts/result';
 import { createLogger } from '@memoflow/utils/logger';
 import { getApiBaseUrl } from '../utils/api-config';
 import type { CloudSessionStore } from './cloud-session-store';
@@ -101,7 +101,14 @@ export class DesktopCloudConnectionService {
     });
     const envelope = (await response.json().catch(() => null)) as AccountHttpResponse | null;
     if (!response.ok || !envelope?.ok || !envelope.data) {
-      throw new Error(envelope?.error?.message ?? '无法读取云端账户资料');
+      throw new ResultErrorException(
+        '无法读取云端账户资料',
+        'REMOTE_PROFILE_READ_FAILED',
+        undefined,
+        undefined,
+        undefined,
+        envelope?.error,
+      );
     }
 
     const cloud = envelope.data;
@@ -124,7 +131,14 @@ export class DesktopCloudConnectionService {
     });
     const updated = (await updateResponse.json().catch(() => null)) as AccountHttpResponse | null;
     if (!updateResponse.ok || !updated?.ok) {
-      throw new Error(updated?.error?.message ?? '无法初始化云端账户资料');
+      throw new ResultErrorException(
+        '无法初始化云端账户资料',
+        'REMOTE_PROFILE_UPDATE_FAILED',
+        undefined,
+        undefined,
+        undefined,
+        updated?.error,
+      );
     }
   }
 

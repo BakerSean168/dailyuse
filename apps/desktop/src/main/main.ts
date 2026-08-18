@@ -55,6 +55,7 @@ import { getApiBaseUrl } from './utils/api-config';
 import { createLogger } from '@memoflow/utils/logger';
 import type { AccountClosureReceiptDTO } from '@memoflow/contracts/account';
 import { createRuntimeOwnership } from '@memoflow/contracts/primitives';
+import { ResultErrorException } from '@memoflow/contracts/result';
 import { getSharedPathResolver } from './runtime-init';
 import { WindowManager } from './lifecycle/window-manager';
 import type { ProfilePathResolver } from './paths';
@@ -229,7 +230,14 @@ async function registerBusinessModules(
           error?: { message?: string };
         } | null;
         if (!response.ok || envelope?.ok !== true) {
-          throw new Error(envelope?.error?.message ?? '云端账户资料同步失败');
+          throw new ResultErrorException(
+            '云端账户资料同步失败',
+            'REMOTE_SYNC_FAILED',
+            undefined,
+            undefined,
+            undefined,
+            envelope?.error,
+          );
         }
       },
       async closeCloudAccount(token, request) {
@@ -247,7 +255,14 @@ async function registerBusinessModules(
           error?: { message?: string };
         } | null;
         if (!response.ok || envelope?.ok !== true) {
-          throw new Error(envelope?.error?.message ?? '云端账号关闭失败');
+          throw new ResultErrorException(
+            '云端账号关闭失败',
+            'REMOTE_ACCOUNT_CLOSE_FAILED',
+            undefined,
+            undefined,
+            undefined,
+            envelope?.error,
+          );
         }
         return envelope.data as AccountClosureReceiptDTO;
       },

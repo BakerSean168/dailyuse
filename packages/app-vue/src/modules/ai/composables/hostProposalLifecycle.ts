@@ -37,6 +37,7 @@ import {
   buildAgentRunHostProposalRef,
 } from '@memoflow/contracts/ai';
 import type { AIChatService } from './types';
+import { ResultErrorException } from '@memoflow/contracts/result';
 
 export type HostProposalLifecycleService = Pick<AIChatService, 'dispatchAssistant'>;
 
@@ -96,7 +97,14 @@ function collectEvents(
     .then(() => {
       const errorEvent = events.find((event) => event.type === 'error');
       if (errorEvent && errorEvent.type === 'error') {
-        throw new Error(errorEvent.message || 'Host proposal lifecycle failed');
+        throw new ResultErrorException(
+          'Host proposal lifecycle failed',
+          errorEvent.code,
+          undefined,
+          undefined,
+          undefined,
+          errorEvent.message,
+        );
       }
       return events;
     });

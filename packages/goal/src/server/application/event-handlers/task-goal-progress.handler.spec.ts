@@ -72,7 +72,7 @@ describe('GoalTaskProgressHandler', () => {
 
     await expect(
       new GoalTaskProgressHandler({ execute }, { execute: vi.fn(async () => ok({} as never)) }).handle(event()),
-    ).rejects.toThrow('Task -> Goal delivery failed (NOT_FOUND): Goal not found');
+    ).rejects.toThrow('Task -> Goal delivery failed (NOT_FOUND)');
   });
 
   it('reverts contributions on uncomplete action (R2-5b)', async () => {
@@ -93,7 +93,7 @@ describe('GoalTaskProgressHandler', () => {
     const remove = vi.fn(async () => error('NOT_FOUND', 'Record missing'));
 
     await expect(handler({ remove }).handle(event('PER_INSTANCE', { action: 'uncomplete' }))).rejects.toThrow(
-      'Task -> Goal removal failed (NOT_FOUND): Record missing',
+      'Task -> Goal removal failed (NOT_FOUND)',
     );
   });
 });

@@ -6,7 +6,7 @@
  * Folder / Resource / Bookmark CRUD is no longer assembled here.
  */
 
-import { fail, ok, type Result } from '@memoflow/contracts/result';
+import { fail, ok, type Result, ResultErrorException } from '@memoflow/contracts/result';
 import type { RepositoryApplicationPort } from '../application';
 import type { IKnowledgeRepositoryConnectionService } from '../application/ports/knowledge-repository-connection.service.port';
 import type { IKnowledgeRepositoryProjectionService } from '../application/ports/knowledge-repository-projection.service.port';
@@ -218,8 +218,13 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
             limit: 100,
           });
           if (!result.ok) {
-            throw new Error(
-              `knowledge timeline query failed: ${result.error.code} ${result.error.message}`,
+            throw new ResultErrorException(
+              `knowledge timeline query failed: ${result.error.code}`,
+              result.error.code,
+              undefined,
+              result.error.context,
+              undefined,
+              result.error,
             );
           }
           return result.data.writeRequests;

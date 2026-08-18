@@ -23,6 +23,24 @@ describe('failure contract source inventory', () => {
     expect(rules).toContain(FAILURE_CONTRACT_RULES.RawMessageRethrow);
   });
 
+  it('only flags RawResultMessage rethrow for result-failure contexts, not generic labels', () => {
+    const rawRethrow = FAILURE_CONTRACT_RULES.RawMessageRethrow;
+
+    expect(
+      ruleIds(`throw new Error(\`${'${message}'}: \${JSON.stringify(value)}\`);`),
+    ).not.toContain(rawRethrow);
+    expect(ruleIds(`throw new Error(message ?? 'waitFor timed out');`)).not.toContain(rawRethrow);
+    expect(ruleIds(`throw new Error('Required module failed: ' + err.message);`)).not.toContain(
+      rawRethrow,
+    );
+    expect(ruleIds(`throw new Error(e.message);`)).not.toContain(rawRethrow);
+
+    expect(ruleIds(`throw new Error(result.error.message);`)).toContain(rawRethrow);
+    expect(ruleIds(`throw new Error(envelope.error.message);`)).toContain(rawRethrow);
+    expect(ruleIds(`throw new Error(x.failure.message);`)).toContain(rawRethrow);
+    expect(ruleIds(`if (x) throw new Error(errorMessage);`)).toContain(rawRethrow);
+  });
+
   it('ignores message shape guards and business objects named message', () => {
     expect(
       ruleIds(`
