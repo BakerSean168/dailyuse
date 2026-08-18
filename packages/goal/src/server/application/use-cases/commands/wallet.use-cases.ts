@@ -14,6 +14,7 @@ import type {
   WalletAccountDTO,
   WalletTransactionDTO,
 } from '../../../domain';
+import { WalletAccountNotFoundError } from '../../errors/wallet-account-not-found-error';
 
 export class CreateWalletAccountUseCase {
   constructor(private readonly repository: IWalletRepository) {}
@@ -51,7 +52,7 @@ export class RecordWalletTransactionUseCase {
     try {
       return ok(await this.repository.recordTransaction({ identityId, ...input }));
     } catch (e) {
-      if (e instanceof Error && e.message === 'ACCOUNT_NOT_FOUND') {
+      if (e instanceof WalletAccountNotFoundError) {
         return error('NOT_FOUND', 'Wallet account not found');
       }
       throw e;

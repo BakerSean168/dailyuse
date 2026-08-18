@@ -6,6 +6,7 @@ import type {
   ScheduleRebuildOutboxDTO,
 } from '../../domain/repositories/i-schedule-repository';
 import type { CalendarEntry } from '../../domain/aggregates/calendar-entry';
+import { ScheduleLeaseLostError } from '../../../domain/errors/schedule-lease-lost-error';
 import {
   ScheduleDomainEventPublisherRuntime,
   ScheduleDomainEventPublisherService,
@@ -100,7 +101,9 @@ class InMemoryDomainEventOutboxRepository implements IScheduleRepository {
   ): Promise<void> {
     const item = this.outbox.find((o) => o.id === id);
     if (!item || item.claimToken !== claimToken || item.status !== 'processing') {
-      throw new Error(`Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`);
+      throw new ScheduleLeaseLostError(
+        `Domain event outbox item ${id} is no longer owned by this claim token (lease lost)`,
+      );
     }
     if (!error) {
       item.status = 'completed';
@@ -262,9 +265,7 @@ describe('ScheduleDomainEventPublisherService — durable delivery semantics', (
           ensureHeld: async () => {
             guardCalls += 1;
             if (guardCalls >= 3) {
-              const err = new Error('Schedule host lease ownership was lost');
-              err.name = 'ScheduleLeaseLostError';
-              throw err;
+              throw new ScheduleLeaseLostError();
             }
           },
         });

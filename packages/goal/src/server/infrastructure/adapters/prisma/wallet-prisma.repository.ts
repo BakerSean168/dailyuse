@@ -5,18 +5,20 @@ import type {
   WalletTransactionDTO,
 } from '../../../domain';
 import { PrismaWalletMapper } from './mappers/prisma-wallet.mapper';
+import { WalletAccountNotFoundError } from '../../../application/errors/wallet-account-not-found-error';
 
 /**
  * Prisma 钱包仓储（R7）/ Prisma wallet repository (R7).
  *
  * 保留默认 currency `CNY`、所有 Decimal 字段 `.toString()`、所有 Date 字段
  * `.getTime()`；`recordTransaction` 保持单个 `db.$transaction`：先按
- * `{ id: accountId, identityId }` 查账户，缺失抛 `ACCOUNT_NOT_FOUND`，
- * 再按 `income/expense/transfer` delta 规则更新余额并创建交易。
+ * `{ id: accountId, identityId }` 查账户，缺失抛 `WalletAccountNotFoundError`
+ * （结构化错误，非裸消息文本），再按 `income/expense/transfer` delta 规则更新
+ * 余额并创建交易。
  * Keeps the default `CNY` currency, `.toString()` on all Decimal fields,
  * `.getTime()` on all Date fields, and `recordTransaction` inside one
  * `db.$transaction`: find the account by `{ id: accountId, identityId }`,
- * throw `ACCOUNT_NOT_FOUND` when missing, then update the balance by the
+ * throw `WalletAccountNotFoundError` when missing, then update the balance by the
  * `income/expense/transfer` delta rule and insert the transaction.
  */
 export class WalletPrismaRepository implements IWalletRepository {
@@ -64,7 +66,7 @@ export class WalletPrismaRepository implements IWalletRepository {
         where: { id: input.accountId, identityId: input.identityId },
       });
       if (!account) {
-        throw new Error('ACCOUNT_NOT_FOUND');
+        throw new WalletAccountNotFoundError();
       }
       const delta =
         input.type === 'income' ? input.amount : `-${input.amount}`;

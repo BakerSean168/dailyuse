@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { IScheduleRepository } from '../../domain/repositories/i-schedule-repository';
+import { ScheduleLeaseLostError } from '../../domain/errors/schedule-lease-lost-error';
 import { ScheduleConflictCacheService } from './schedule-conflict-cache-service';
 import type { UnifiedOperationMetricsRecorder } from '@memoflow/patterns/operations';
 
@@ -76,11 +77,7 @@ export class ScheduleRebuildWorkerService {
           this.metrics?.recordOutbox('schedule-rebuild', 'succeeded');
           processedCount++;
         } catch (err: unknown) {
-          const isLeaseLost =
-            err instanceof Error &&
-            (err.name === 'ScheduleLeaseLostError' ||
-              err.message.toLowerCase().includes('lease ownership was lost'));
-          if (isLeaseLost) {
+          if (err instanceof ScheduleLeaseLostError) {
             throw err;
           }
           const errorMessage = err instanceof Error ? err.message : 'Unknown worker error';

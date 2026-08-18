@@ -5,6 +5,7 @@ import {
   ListWalletUseCase,
   RecordWalletTransactionUseCase,
 } from '../wallet.use-cases';
+import { WalletAccountNotFoundError } from '../../../errors/wallet-account-not-found-error';
 
 function mockRepo(): IWalletRepository {
   return {
@@ -78,7 +79,7 @@ describe('Wallet use cases (R7)', () => {
   it('maps ACCOUNT_NOT_FOUND to NOT_FOUND', async () => {
     const repo = mockRepo();
     repo.recordTransaction = vi.fn(async () => {
-      throw new Error('ACCOUNT_NOT_FOUND');
+      throw new WalletAccountNotFoundError();
     });
     const useCase = new RecordWalletTransactionUseCase(repo);
 

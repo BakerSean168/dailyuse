@@ -124,13 +124,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   function isAbortLikeError(error: unknown): boolean {
     if (error instanceof DOMException && error.name === 'AbortError') return true;
     if (!error || typeof error !== 'object') return false;
-    const candidate = error as { name?: unknown; code?: unknown; message?: unknown };
-    if (candidate.name === 'AbortError' || candidate.code === 'ABORTED') return true;
-    if (typeof candidate.message === 'string') {
-      const message = candidate.message.toLowerCase();
-      return message.includes('abort') || message.includes('cancel');
-    }
-    return false;
+    const candidate = error as { name?: unknown; code?: unknown };
+    return candidate.name === 'AbortError' || candidate.code === 'ABORTED';
   }
 
   function abortActiveStream() {

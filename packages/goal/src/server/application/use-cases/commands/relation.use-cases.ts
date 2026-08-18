@@ -18,6 +18,7 @@ import type {
   SubjectRef,
 } from '../../../domain';
 import { SubjectTypes } from '../../../domain';
+import { isPrismaUniqueConstraintError } from '../../errors/prisma-unique';
 
 export class CreateRelationUseCase {
   constructor(private readonly repository: IRelationRepository) {}
@@ -36,8 +37,8 @@ export class CreateRelationUseCase {
       const dto = await this.repository.create({ identityId, ...input });
       return ok(dto);
     } catch (e) {
-      // 唯一键冲突 = 关系已存在（幂等）
-      if (e instanceof Error && e.message.includes('Unique')) {
+      // 唯一键冲突 = 关系已存在（幂等）— 结构化 Code P2002，非消息文本
+      if (isPrismaUniqueConstraintError(e)) {
         return error('CONFLICT', 'Relation already exists');
       }
       throw e;
