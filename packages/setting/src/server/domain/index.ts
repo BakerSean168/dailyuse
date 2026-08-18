@@ -13,7 +13,7 @@
  *
  * 【依赖规则】
  * ✅ 允许依赖：
- * - @memoflow/utils（基类：AggregateRoot, DomainError）
+ * - @memoflow/utils（基类：AggregateRoot；错误契约见 @memoflow/contracts/result ResultErrorException）
  * - @memoflow/contracts（DTO 接口、事件 Map、Preference 类型）
  * ❌ 禁止依赖：
  * - @memoflow/infrastructure-*（基础设施层）

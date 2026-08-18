@@ -1,6 +1,5 @@
 import type { ResultError, StructuredResultError } from '@memoflow/contracts/result';
 import { extractStructuredResultError } from '@memoflow/contracts/result';
-import { isDomainError } from './domain-error';
 import { createDiagnosticFailure, type MappedResultFailure } from './diagnostic-failure';
 import { mapPrismaError } from './prisma-error-mapper';
 
@@ -35,20 +34,6 @@ export function mapInfraErrorToFailure(
                   ? undefined
                   : { statusCode: structured.statusCode },
             }),
-    };
-  }
-
-  if (isDomainError(error)) {
-    return {
-      publicError: {
-        code: error.code,
-        message: error.message,
-        context: error.context,
-        statusCode: error.httpStatus,
-      },
-      diagnostic: error.originalError
-        ? createDiagnosticFailure({ operation, cause: error.originalError })
-        : undefined,
     };
   }
 
