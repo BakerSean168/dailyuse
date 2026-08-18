@@ -32,6 +32,7 @@ import type { RuleStatus } from '../../../../domain/value-objects/rule-status';
 import type { RuleSeverity } from '../../../../domain/value-objects/rule-severity';
 import type { CodeSnippetPersistenceDTO } from '../../../../domain/value-objects/code-snippet';
 import { fromDbDate, parseJson } from '@memoflow/utils/shared';
+import { ResultErrorException } from '@memoflow/contracts/result';
 
 // ---------------------------------------------------------------------------
 // Mapper
@@ -69,12 +70,27 @@ export class RulePrismaMapper {
       ...goodExamplesJson.map((dto) => {
         const result = CodeSnippet.fromPersistenceDTO(dto);
         if (!result.ok)
-          throw new Error(`Invalid good-example in database: ${result.error.message}`);
+          throw new ResultErrorException(
+            'Invalid good-example in database',
+            result.error.code,
+            undefined,
+            result.error.context,
+            undefined,
+            result.error,
+          );
         return result.data;
       }),
       ...badExamplesJson.map((dto) => {
         const result = CodeSnippet.fromPersistenceDTO(dto);
-        if (!result.ok) throw new Error(`Invalid bad-example in database: ${result.error.message}`);
+        if (!result.ok)
+          throw new ResultErrorException(
+            'Invalid bad-example in database',
+            result.error.code,
+            undefined,
+            result.error.context,
+            undefined,
+            result.error,
+          );
         return result.data;
       }),
     ];

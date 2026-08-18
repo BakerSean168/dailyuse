@@ -25,6 +25,7 @@ import type { RuleSeverity } from '../../../../domain/value-objects/rule-severit
 import type { IdentityId } from '@memoflow/contracts/primitives';
 import type { CodeSnippetPersistenceDTO } from '../../../../domain/value-objects/code-snippet';
 import { toDate, parseJson } from '@memoflow/utils/shared';
+import { ResultErrorException } from '@memoflow/contracts/result';
 
 /**
  * Represents a row in the PowerSync `rules` table.
@@ -89,7 +90,14 @@ export class PowerSyncRuleMapper {
       (dto) => {
         const result = CodeSnippet.fromPersistenceDTO(dto);
         if (!result.ok)
-          throw new Error(`Invalid good-example in persistence: ${result.error.message}`);
+          throw new ResultErrorException(
+            'Invalid good-example in persistence',
+            result.error.code,
+            undefined,
+            result.error.context,
+            undefined,
+            result.error,
+          );
         return result.data;
       },
     );
@@ -97,7 +105,14 @@ export class PowerSyncRuleMapper {
     const badExamples = parseJson<CodeSnippetPersistenceDTO[]>(row.bad_examples, []).map((dto) => {
       const result = CodeSnippet.fromPersistenceDTO(dto);
       if (!result.ok)
-        throw new Error(`Invalid bad-example in persistence: ${result.error.message}`);
+        throw new ResultErrorException(
+          'Invalid bad-example in persistence',
+          result.error.code,
+          undefined,
+          result.error.context,
+          undefined,
+          result.error,
+        );
       return result.data;
     });
 

@@ -1,6 +1,7 @@
 import { GoalRecordSourceType } from '@memoflow/contracts/goal';
 import type { TaskGoalProgressOutboxEventV1 } from '@memoflow/contracts/task';
 import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
+import { ResultErrorException } from '@memoflow/contracts/result';
 import type { IGoalRecordRepository, IGoalRepository } from '../../domain';
 import { CreateGoalRecordUseCase } from '../use-cases/commands/create-goal-record.use-case';
 import { RemoveTaskGoalContributionUseCase } from '../use-cases/commands/remove-task-goal-contribution.use-case';
@@ -46,8 +47,13 @@ export class GoalTaskProgressHandler implements TaskGoalProgressHandler {
           source.id,
         );
         if (!result.ok) {
-          throw new Error(
-            `Task -> Goal removal failed (${result.error.code}): ${result.error.message}`,
+          throw new ResultErrorException(
+            `Task -> Goal removal failed (${result.error.code})`,
+            result.error.code,
+            undefined,
+            result.error.context,
+            undefined,
+            result.error,
           );
         }
       }
@@ -70,8 +76,13 @@ export class GoalTaskProgressHandler implements TaskGoalProgressHandler {
     );
 
     if (!result.ok) {
-      throw new Error(
-        `Task -> Goal delivery failed (${result.error.code}): ${result.error.message}`,
+      throw new ResultErrorException(
+        `Task -> Goal delivery failed (${result.error.code})`,
+        result.error.code,
+        undefined,
+        result.error.context,
+        undefined,
+        result.error,
       );
     }
   }

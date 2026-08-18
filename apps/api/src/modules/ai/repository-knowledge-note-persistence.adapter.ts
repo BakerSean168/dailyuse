@@ -16,6 +16,7 @@
 import { createHash } from 'node:crypto';
 import type { KnowledgeNotePersistedRef } from '@memoflow/contracts/ai';
 import type { RepositoryApplicationPort } from '@memoflow/repository';
+import { ResultErrorException } from '@memoflow/contracts/result';
 import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
@@ -38,7 +39,14 @@ export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNote
 
     const listed = await this.repositoryApi.listKnowledgeRepositoryConnections(input.context);
     if (!listed.ok) {
-      throw new Error(listed.error.message);
+      throw new ResultErrorException(
+        'Repository knowledge connections listing failed',
+        listed.error.code,
+        undefined,
+        listed.error.context,
+        undefined,
+        listed.error,
+      );
     }
 
     const active = listed.data.connections.filter((c) => c.status === 'Active');
@@ -70,7 +78,14 @@ export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNote
       reason: 'AI knowledge note approved by the user',
     });
     if (!committed.ok) {
-      throw new Error(committed.error.message);
+      throw new ResultErrorException(
+        'Repository knowledge note commit failed',
+        committed.error.code,
+        undefined,
+        committed.error.context,
+        undefined,
+        committed.error,
+      );
     }
 
     return {

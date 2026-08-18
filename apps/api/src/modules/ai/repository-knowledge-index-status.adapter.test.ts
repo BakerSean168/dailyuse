@@ -39,6 +39,9 @@ describe('RepositoryKnowledgeIndexStatusAdapter', () => {
         contentHash: 'content-hash-1',
         status: 'failed',
       }),
-    ).rejects.toThrow('Projection store unavailable');
+    ).rejects.toMatchObject({
+      message: 'Repository knowledge index status update failed',
+      code: 'SERVICE_UNAVAILABLE',
+    });
   });
 });
