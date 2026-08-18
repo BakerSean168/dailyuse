@@ -18,7 +18,6 @@ import {
   ok,
 } from '@memoflow/contracts/result';
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
-import { ConflictError } from '../errors/domain-error';
 
 const AdapterFailureRegistry = defineFailureRegistry({
   TEST_PROVIDER_UNAVAILABLE: {
@@ -322,7 +321,13 @@ describe('expressAdapter', () => {
     const controllerFn = vi
       .fn()
       .mockRejectedValue(
-        new ConflictError('Multiple repositories found', { count: 2, repositoryIds: ['repo-1'] }),
+        new ResultErrorException(
+          'Multiple repositories found',
+          'CONFLICT',
+          undefined,
+          { count: 2, repositoryIds: ['repo-1'] },
+          409,
+        ),
       );
     const handler = expressAdapter(controllerFn);
 

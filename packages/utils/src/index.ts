@@ -34,7 +34,7 @@ export {
 export type { Publisher, Subscriber, TypedEventPort } from './domain/typed-event-port';
 
 // ── errors ──
-export { DomainError, BusinessRuleViolationError, NotFoundError, ValidationError, UnauthorizedError } from './errors/domain-error';
+export { BusinessRuleViolationError } from './errors/business-rule-violation-error';
 export { mapPrismaError } from './errors/prisma-error-mapper';
 
 // ── validation ──
