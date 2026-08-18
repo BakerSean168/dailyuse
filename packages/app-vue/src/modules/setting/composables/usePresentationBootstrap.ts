@@ -4,8 +4,10 @@ import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import { useUserSettingStore } from '../stores/user-setting-store';
-import { getI18nGlobal } from '../../../plugins/i18n';
-import { translateResultError } from '../../../shared/utils/translate-result-error';
+import {
+  getGlobalResultErrorT,
+  translateResultError,
+} from '../../../shared/utils/translate-result-error';
 import type { UserSettingClientDTO } from '@memoflow/contracts/setting';
 
 export function usePresentationBootstrap() {
@@ -97,15 +99,10 @@ export function usePresentationBootstrap() {
         presentationStore.syncFromUserSetting(data.preferences);
         await defaultsPromise;
       } catch (error) {
-        const t = getI18nGlobal()?.t;
         userSettingStore.setError(
-          t
-            ? translateResultError(error, t, {
-                fallbackKey: 'setting.errors.loadFailed',
-              })
-            : error instanceof Error
-              ? error.message
-              : String(error),
+          translateResultError(error, getGlobalResultErrorT(), {
+            fallbackKey: 'setting.errors.loadFailed',
+          }),
         );
       } finally {
         userSettingStore.setLoading(false);

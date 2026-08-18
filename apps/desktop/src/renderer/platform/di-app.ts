@@ -5,6 +5,7 @@ import type { App } from 'vue';
 import { ref } from 'vue';
 import { createResultIpcClient } from '@memoflow/ipc-client';
 import { toast } from 'vue-sonner';
+import { getI18nGlobal } from '@memoflow/app-vue/plugins/i18n';
 import { createAccountIpcClient } from '@memoflow/account/client';
 import { createCloudAuthIpcClient } from '@memoflow/cloud-auth';
 import { createGoalIpcClient } from '@memoflow/goal/client';
@@ -49,6 +50,14 @@ import { requireElectronBridge } from './electron-bridge';
 import { clearDesktopServerStateIdentity } from './server-state';
 import { ProfileAccessChannels, WindowChannels } from '@memoflow/contracts/electron';
 import { fromIpcResult, isOk, type IpcResult } from '@memoflow/contracts/result';
+
+function getAppT(): (key: string) => string {
+  try {
+    return getI18nGlobal().t;
+  } catch {
+    return (key: string) => key;
+  }
+}
 
 export function installDesktopAppServices(app: App): void {
   const bridge = requireElectronBridge('installDesktopAppServices');
@@ -105,11 +114,11 @@ export function installDesktopAppServices(app: App): void {
     const lockResult = fromIpcResult(
       (await bridge.invoke(ProfileAccessChannels.LOCK)) as IpcResult<null>,
     );
-    if (!isOk(lockResult)) throw new Error(lockResult.error.message);
+    if (!isOk(lockResult)) throw new Error(getAppT()('common.operationFailed'));
     const transitionResult = fromIpcResult(
       (await bridge.invoke(WindowChannels.TRANSITION_TO_PROFILE_ACCESS)) as IpcResult<null>,
     );
-    if (!isOk(transitionResult)) throw new Error(transitionResult.error.message);
+    if (!isOk(transitionResult)) throw new Error(getAppT()('common.operationFailed'));
   });
   app.provide(LOGOUT_HANDLER_KEY, async () => {
     console.info('[Desktop Logout] Handler invoked');
@@ -124,7 +133,7 @@ export function installDesktopAppServices(app: App): void {
     } catch (error) {
       console.error('[Desktop Logout] Failed to disconnect cloud account', error);
       toast.error('退出登录失败', {
-        description: error instanceof Error ? error.message : String(error),
+        description: getAppT()('common.operationFailed'),
       });
       throw error;
     }

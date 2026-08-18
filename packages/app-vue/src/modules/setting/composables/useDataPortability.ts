@@ -10,10 +10,15 @@ import { ref, inject } from 'vue';
 import { SystemChannels } from '@memoflow/contracts/electron';
 import { isOk, type Result } from '@memoflow/contracts/result';
 import { DATA_PORTABILITY_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
+import {
+  getGlobalResultErrorT,
+  translateResultError,
+} from '../../../shared/utils/translate-result-error';
 
 export function useDataPortability() {
   const service = inject(DATA_PORTABILITY_SERVICE_KEY, undefined);
   const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
+  const t = getGlobalResultErrorT();
 
   const isAvailable = ref(service !== undefined);
   const isServerDisclosureAvailable = ref(service !== undefined && desktopApi === undefined);
@@ -31,7 +36,12 @@ export function useDataPortability() {
         filters: [{ name: 'JSON', extensions: ['json'] }],
       })) as Result<{ canceled: boolean; filePath: string | null }>;
       if (!isOk(response)) {
-        throw new Error(response.error.message || 'Failed to save file');
+        throw new Error(
+          translateResultError(response.error, t, {
+            scope: 'setting',
+            fallbackKey: 'setting.errors.exportFailed',
+          }),
+        );
       }
       return;
     }
@@ -56,7 +66,10 @@ export function useDataPortability() {
     try {
       const result = await service.exportUserData({});
       if (!result.ok) {
-        lastResult.value = `Export failed: ${result.error.message}`;
+        lastResult.value = translateResultError(result.error, t, {
+          scope: 'setting',
+          fallbackKey: 'setting.errors.exportFailed',
+        });
         return;
       }
 
@@ -89,7 +102,10 @@ export function useDataPortability() {
     try {
       const result = await service.exportServerHeldDataDisclosure({});
       if (!result.ok) {
-        lastResult.value = `Disclosure export failed: ${result.error.message}`;
+        lastResult.value = translateResultError(result.error, t, {
+          scope: 'setting',
+          fallbackKey: 'setting.errors.exportFailed',
+        });
         return;
       }
 
@@ -156,7 +172,10 @@ export function useDataPortability() {
 
       const result = await service.importUserData({ content, dryRun: false });
       if (!result.ok) {
-        lastResult.value = `Import failed: ${result.error.message}`;
+        lastResult.value = translateResultError(result.error, t, {
+          scope: 'setting',
+          fallbackKey: 'setting.errors.importFailed',
+        });
         return;
       }
 

@@ -5,9 +5,13 @@ import type {
   LocalVaultNoteSummaryDTO,
   SearchLocalVaultRes,
 } from '@memoflow/contracts/repository';
-import type { Result } from '@memoflow/contracts/result';
+import { unwrapOrThrowError, type Result } from '@memoflow/contracts/result';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import {
+  getGlobalResultErrorT,
+  translateResultError,
+} from '../../../shared/utils/translate-result-error';
 // Residual 999: sole errorMessage (local dual retired).
 import { errorMessage } from '@memoflow/utils/shared';
 
@@ -15,6 +19,7 @@ import { errorMessage } from '@memoflow/utils/shared';
 
 export function useLocalVault() {
   const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');
+  const t = getGlobalResultErrorT();
   const binding = ref<LocalVaultBindingClientDTO | null>(null);
   const notes = ref<LocalVaultNoteSummaryDTO[]>([]);
   const activeNote = ref<LocalVaultNoteDTO | null>(null);
@@ -31,8 +36,7 @@ export function useLocalVault() {
 
   async function unwrap<T>(operation: Promise<Result<T>>): Promise<T> {
     const result = await operation;
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapOrThrowError(result);
   }
 
   async function run<T>(operation: () => Promise<T>): Promise<T | null> {
@@ -41,7 +45,14 @@ export function useLocalVault() {
     try {
       return await operation();
     } catch (cause) {
-      error.value = errorMessage(cause);
+      // Residual 999 keep-boundary: sole errorMessage helper stays on this
+      // file's dev-diagnostic surface (dual-registry.surface.spec.ts), while the
+      // user-facing error is translated.
+      console.warn('[useLocalVault] operation failed', errorMessage(cause));
+      error.value = translateResultError(cause, t, {
+        scope: 'repository',
+        fallbackKey: 'common.operationFailed',
+      });
       return null;
     } finally {
       loading.value = false;
