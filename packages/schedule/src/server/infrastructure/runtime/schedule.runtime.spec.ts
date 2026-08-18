@@ -7,7 +7,12 @@ import {
 } from '@memoflow/contracts/schedule';
 import { ScheduleTask } from '../../domain/aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../../domain/repositories/i-schedule-task-repository';
-import { ExecutionInfo, RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../domain/value-objects';
+import {
+  ExecutionInfo,
+  RetryPolicy,
+  ScheduleConfig,
+  ScheduleTaskMetadata,
+} from '../../domain/value-objects';
 import { ScheduleTaskId } from '../../domain/value-objects/schedule-task-id';
 
 const mocked = vi.hoisted(() => {
@@ -91,8 +96,7 @@ vi.mock('../../application/scheduler/schedule-task-queue', () => {
     start(): Promise<void> {
       this.startPromise = (async () => {
         const taskLoader = this.config.taskLoader as
-          | { loadActiveTasks(): Promise<unknown[]> }
-          | undefined;
+          { loadActiveTasks(): Promise<unknown[]> } | undefined;
         this.loadedItems = taskLoader ? await taskLoader.loadActiveTasks() : [];
       })();
 
@@ -245,7 +249,8 @@ async function flushAsyncWork(): Promise<void> {
 }
 
 function getLastQueue(): MockQueueInstance {
-  const queue = mocked.queueInstances[mocked.queueInstances.length - 1] as MockQueueInstance | undefined;
+  const queue = mocked.queueInstances[mocked.queueInstances.length - 1] as
+    MockQueueInstance | undefined;
   if (!queue) {
     throw new Error('Expected a mocked queue instance');
   }
@@ -312,6 +317,79 @@ describe('createScheduleRuntimeContribution', () => {
     expect(mocked.loggerInfo).toHaveBeenCalledWith('[Schedule] Runtime contribution started');
   });
 
+  it('promotes a standby host after the scheduler lease becomes available', async () => {
+    vi.useFakeTimers();
+    try {
+      const repository = createRepositoryMock();
+      repository.findEnabled.mockResolvedValue([]);
+      const leaseCoordinator = {
+        acquire: vi
+          .fn()
+          .mockResolvedValueOnce({ acquired: false })
+          .mockResolvedValueOnce({ acquired: true, ownerToken: 'standby-owner' }),
+        release: vi.fn(async () => undefined),
+      };
+      const runtime = createScheduleRuntimeContribution({
+        scheduleTaskRepository: repository,
+        sourceExecutor: { execute: vi.fn(async () => undefined) },
+        leaseCoordinator: leaseCoordinator as never,
+        leaseRetryIntervalMs: 250,
+      });
+
+      await runtime.start();
+      const queue = getLastQueue();
+      expect(leaseCoordinator.acquire).toHaveBeenCalledTimes(1);
+      expect(queue.startPromise).toBeNull();
+      expect(mocked.eventBus.on).toHaveBeenCalledTimes(9);
+
+      await vi.advanceTimersByTimeAsync(250);
+      await flushAsyncWork();
+
+      expect(leaseCoordinator.acquire).toHaveBeenCalledTimes(2);
+      expect(queue.startPromise).not.toBeNull();
+      expect(repository.findEnabled).toHaveBeenCalledTimes(1);
+      expect(mocked.eventBus.on).toHaveBeenCalledTimes(9);
+      expect(mocked.loggerInfo).toHaveBeenCalledWith(
+        '[Schedule] Standby host promoted to scheduler (lease held)',
+      );
+
+      await runtime.stop();
+      expect(leaseCoordinator.release).toHaveBeenCalledWith('schedule-host', 'standby-owner');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('cancels standby lease retries when the runtime stops before promotion', async () => {
+    vi.useFakeTimers();
+    try {
+      const repository = createRepositoryMock();
+      const leaseCoordinator = {
+        acquire: vi.fn(async () => ({ acquired: false })),
+        release: vi.fn(async () => undefined),
+      };
+      const runtime = createScheduleRuntimeContribution({
+        scheduleTaskRepository: repository,
+        sourceExecutor: { execute: vi.fn(async () => undefined) },
+        leaseCoordinator: leaseCoordinator as never,
+        leaseRetryIntervalMs: 250,
+      });
+
+      await runtime.start();
+      expect(leaseCoordinator.acquire).toHaveBeenCalledTimes(1);
+
+      await runtime.stop();
+      await vi.advanceTimersByTimeAsync(1_000);
+      await flushAsyncWork();
+
+      expect(leaseCoordinator.acquire).toHaveBeenCalledTimes(1);
+      expect(leaseCoordinator.release).not.toHaveBeenCalled();
+      expect(mocked.eventBus.off).toHaveBeenCalledTimes(9);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('syncs schedulable tasks into the queue for live runtime events', async () => {
     const task = createLoadedTask({ id: 'task-sync', nextRunAt: Date.now() + 120_000 });
     const repository = createRepositoryMock();
@@ -375,7 +453,11 @@ describe('createScheduleRuntimeContribution', () => {
     expect(unhandled).toHaveLength(0);
     expect(mocked.loggerError).toHaveBeenCalledWith(
       '[Schedule] Task sync event handler failed',
-      expect.objectContaining({ event: 'schedule:task-created', taskId: 'task-error', error: 'db unavailable' }),
+      expect.objectContaining({
+        event: 'schedule:task-created',
+        taskId: 'task-error',
+        error: 'db unavailable',
+      }),
     );
   });
 
@@ -569,10 +651,10 @@ describe('createScheduleRuntimeContribution', () => {
 
     queue.config.onExecuteError?.('task-error', error);
 
-    expect(mocked.loggerError).toHaveBeenCalledWith(
-      '[Schedule] Queue execution failed',
-      { taskId: 'task-error', error: 'queue exploded' },
-    );
+    expect(mocked.loggerError).toHaveBeenCalledWith('[Schedule] Queue execution failed', {
+      taskId: 'task-error',
+      error: 'queue exploded',
+    });
   });
 
   it('unsubscribes runtime listeners and stops the queue on stop', async () => {

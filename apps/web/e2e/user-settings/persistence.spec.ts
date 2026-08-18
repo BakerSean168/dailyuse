@@ -98,15 +98,20 @@ async function openNotificationsSettings(page: Page) {
 }
 
 async function selectTheme(page: Page, theme: 'light' | 'dark' | 'auto') {
+  const trigger = themeTrigger(page);
+  const option = page.getByTestId(`appearance-theme-option-${theme}`);
+  await expect(trigger).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await expect(trigger).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await trigger.click();
+  await expect(option).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+
   const patchResponse = page.waitForResponse(
     (response) =>
       response.url().endsWith('/api/v1/settings/appearance') &&
       response.request().method() === 'PATCH' &&
       response.ok(),
   );
-
-  await themeTrigger(page).click();
-  await page.getByTestId(`appearance-theme-option-${theme}`).click();
+  await option.click();
   await patchResponse;
 }
 
@@ -134,10 +139,17 @@ async function resetSettings(page: Page) {
   }, API_CONFIG.API_PREFIX);
   await resetResponse;
 
+  const hydratedSettings = page.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/v1/settings') &&
+      response.request().method() === 'GET' &&
+      response.ok(),
+  );
   await page.goto('/settings', {
     waitUntil: 'domcontentloaded',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
+  await hydratedSettings;
 }
 
 async function toggleSwitch(page: Page, locator: Locator) {

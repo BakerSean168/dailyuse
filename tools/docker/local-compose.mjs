@@ -113,6 +113,35 @@ export function createLocalDockerWebUrl(webHostPort) {
   return `http://localhost:${webHostPort}`;
 }
 
+export function extractHttpOrigin(value) {
+  const candidate = String(value ?? '').trim();
+  if (!candidate) return '';
+
+  try {
+    const url = new URL(candidate);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.origin : '';
+  } catch {
+    return '';
+  }
+}
+
+export function resolveLocalDockerPowerSyncUrl(powersyncHostPort, publicUrl) {
+  const configured = String(publicUrl ?? '').trim();
+  return configured || `http://localhost:${powersyncHostPort}`;
+}
+
+export function resolveLocalDockerBrowserValidationOrigins({
+  apiHostPort,
+  webHostPort,
+  authBaseUrl,
+  webUrl,
+}) {
+  return {
+    apiOrigin: extractHttpOrigin(authBaseUrl) || `http://127.0.0.1:${apiHostPort}`,
+    webOrigin: extractHttpOrigin(webUrl) || `http://127.0.0.1:${webHostPort}`,
+  };
+}
+
 /**
  * Force local-docker host ports from SSOT so local stack never steals host-dev/e2e ports.
  * Secrets and service env still come from .env.production.local.
@@ -158,13 +187,15 @@ function applyLocalDockerHostPortIsolation(
 
   // Keep public PowerSync URL aligned with isolated host port when unset or still pointing at classic ports.
   const powersyncHostPort = resolved.forced.POWERSYNC_HOST_PORT ?? '58081';
-  const isolatedPowerSyncUrl = `http://localhost:${powersyncHostPort}`;
+  const machinePowerSyncUrl = allowMachineOverride
+    ? (machineEnvFileMap.get('POWERSYNC_URL')?.trim() ?? '')
+    : '';
   const currentPowerSyncUrl =
-    (allowMachineOverride ? machineEnvFileMap.get('POWERSYNC_URL') : '') ||
-    env.POWERSYNC_URL ||
-    envFileMap.get('POWERSYNC_URL') ||
-    '';
-  if (
+    machinePowerSyncUrl || env.POWERSYNC_URL || envFileMap.get('POWERSYNC_URL') || '';
+  const isolatedPowerSyncUrl = resolveLocalDockerPowerSyncUrl(powersyncHostPort);
+  if (machinePowerSyncUrl) {
+    env.POWERSYNC_URL = resolveLocalDockerPowerSyncUrl(powersyncHostPort, machinePowerSyncUrl);
+  } else if (
     allowMachineOverride ||
     !currentPowerSyncUrl ||
     /localhost:8080\b/u.test(currentPowerSyncUrl) ||
@@ -293,13 +324,16 @@ export function createLocalComposeRuntimeEnv(options = {}) {
   // into isolated overrides, keep browser-facing CORS allowlists aligned with
   // the resolved Web origin or an otherwise healthy stack rejects every API
   // request from the page.
+  const publicWebOrigin = extractHttpOrigin(env.MEMOFLOW_WEB_URL);
   env.LOCAL_DOCKER_CORS_ORIGIN = mergeLocalDockerWebOrigins(
     env.WEB_HOST_PORT,
+    publicWebOrigin,
     env.LOCAL_DOCKER_CORS_ORIGIN,
     envFileMap.get('LOCAL_DOCKER_CORS_ORIGIN'),
   );
   env.ALLOWED_ORIGINS = mergeLocalDockerWebOrigins(
     env.WEB_HOST_PORT,
+    publicWebOrigin,
     env.ALLOWED_ORIGINS,
     envFileMap.get('ALLOWED_ORIGINS'),
   );

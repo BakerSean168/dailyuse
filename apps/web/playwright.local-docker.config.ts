@@ -11,7 +11,13 @@ if (!webOrigin || !apiOrigin) {
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: ['**/local-docker/core-product-phase-*.spec.ts'],
+  testMatch: [
+    '**/authentication/auth-flow.spec.ts',
+    '**/authentication/auth-login.spec.ts',
+    '**/authentication/auth-password.spec.ts',
+    '**/authentication/auth-register.spec.ts',
+    '**/local-docker/core-product-phase-*.spec.ts',
+  ],
   globalSetup: './e2e/local-docker/global-setup.ts',
   timeout: 5 * 60 * 1000,
   expect: { timeout: 15 * 1000 },

@@ -233,7 +233,7 @@ export function createWebServer(url = `${getE2EWebOrigin()}/auth`) {
   return {
     // Call the Vite entrypoint through the current Node binary so Playwright can
     // tear the dev server down cleanly on Windows without leaving a pnpm/cmd tree behind.
-    command: `${quoteShellArgument(process.execPath)} ${quoteShellArgument(VITE_BIN_PATH)} --config vite.config.ts --host ${webServer.host} --port ${webServer.port}`,
+    command: `${quoteShellArgument(process.execPath)} ${quoteShellArgument(VITE_BIN_PATH)} --config vite.config.ts --host ${webServer.host} --port ${webServer.port} --strictPort`,
     cwd: '.',
     url,
     env: {

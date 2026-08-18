@@ -1126,7 +1126,8 @@
       "path": "apps/web/e2e/authentication/auth-flow.spec.ts",
       "primarySuite": "e2e",
       "collectors": [
-        "apps/web/playwright.config.ts"
+        "apps/web/playwright.config.ts",
+        "apps/web/playwright.local-docker.config.ts"
       ],
       "measurementCollectors": []
     },
@@ -1142,7 +1143,8 @@
       "path": "apps/web/e2e/authentication/auth-login.spec.ts",
       "primarySuite": "e2e",
       "collectors": [
-        "apps/web/playwright.config.ts"
+        "apps/web/playwright.config.ts",
+        "apps/web/playwright.local-docker.config.ts"
       ],
       "measurementCollectors": []
     },
@@ -1174,7 +1176,8 @@
       "path": "apps/web/e2e/authentication/auth-password.spec.ts",
       "primarySuite": "e2e",
       "collectors": [
-        "apps/web/playwright.config.ts"
+        "apps/web/playwright.config.ts",
+        "apps/web/playwright.local-docker.config.ts"
       ],
       "measurementCollectors": []
     },
@@ -1182,7 +1185,8 @@
       "path": "apps/web/e2e/authentication/auth-register.spec.ts",
       "primarySuite": "e2e",
       "collectors": [
-        "apps/web/playwright.config.ts"
+        "apps/web/playwright.config.ts",
+        "apps/web/playwright.local-docker.config.ts"
       ],
       "measurementCollectors": []
     },
@@ -8865,6 +8869,16 @@
       ]
     },
     {
+      "path": "packages/schedule/src/server/infrastructure/lease/schedule-lease.repository.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/schedule/src/server/infrastructure/runtime/schedule-runtime-ownership.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10681,7 +10695,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 40
+      "fileCount": 41
     },
     {
       "id": "packages/schedule/vitest.integration.config.ts",
@@ -10695,7 +10709,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 40
+      "fileCount": 41
     },
     {
       "id": "packages/schedule/vitest.use-cases.config.ts",
@@ -10877,7 +10891,7 @@
       "type": "primary",
       "suite": "e2e",
       "runner": "playwright",
-      "fileCount": 5
+      "fileCount": 9
     },
     {
       "id": "apps/web/playwright.oauth-real.config.ts",
@@ -11409,6 +11423,7 @@
       "packages/schedule/src/server/infrastructure/adapters/prisma/mappers/prisma-schedule-mapper.spec.ts",
       "packages/schedule/src/server/infrastructure/adapters/prisma/mappers/prisma-schedule-task-mapper.spec.ts",
       "packages/schedule/src/server/infrastructure/lease/schedule-lease-coordinator.spec.ts",
+      "packages/schedule/src/server/infrastructure/lease/schedule-lease.repository.spec.ts",
       "packages/schedule/src/server/infrastructure/runtime/schedule-runtime-ownership.surface.spec.ts",
       "packages/schedule/src/server/infrastructure/runtime/schedule.runtime.spec.ts",
       "packages/setting/src/api/module-lifecycle.spec.ts",
@@ -11511,7 +11526,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 988,
+    "unit": 989,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

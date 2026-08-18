@@ -72,9 +72,8 @@ describe('playwright.server', () => {
     delete process.env.E2E_API_FULL_URL;
     delete process.env.CORS_ORIGIN;
 
-    const { createApiServer, createWebServer, getE2EWebOrigin } = await import(
-      '../playwright.server'
-    );
+    const { createApiServer, createWebServer, getE2EWebOrigin } =
+      await import('../playwright.server');
 
     const apiServer = createApiServer();
     const webServer = createWebServer();
@@ -86,7 +85,7 @@ describe('playwright.server', () => {
     expect(webServer.url).toBe('http://localhost:4173/auth');
     expect(getE2EWebOrigin()).toBe('http://localhost:4173');
     expect(webServer.command).toBe(
-      `"${process.execPath}" "${resolve(workspaceRoot, 'node_modules/vite/bin/vite.js')}" --config vite.config.ts --host localhost --port 4173`,
+      `"${process.execPath}" "${resolve(workspaceRoot, 'node_modules/vite/bin/vite.js')}" --config vite.config.ts --host localhost --port 4173 --strictPort`,
     );
     expect(webServer.env?.PROXY_TARGET_URL).toBe('http://127.0.0.1:3001');
     expect(process.env.E2E_API_FULL_URL).toBe('http://127.0.0.1:3001/api/v1');
