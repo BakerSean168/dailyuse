@@ -11,6 +11,7 @@ import type {
   AccountClosureCoordinator,
   AccountClosureReceipt,
 } from '../../services/account-closure-coordinator';
+import { AccountClosureFailureError } from '../../services/account-closure-failure';
 
 export type CloseAccountCommand = CloseAccountReq & {
   idempotencyKey?: string;
@@ -33,20 +34,17 @@ export class CloseAccountUseCase {
       });
 
       if (receipt.status === 'failed') {
-        const errorMsg = receipt.lastError ?? 'Account closure operation failed';
-        if (errorMsg.includes('Account not found')) {
-          return error('NOT_FOUND', errorMsg);
-        }
-        return error('INTERNAL_ERROR', errorMsg);
+        return receipt.failureCode === 'ACCOUNT_NOT_FOUND'
+          ? error('NOT_FOUND', 'Account not found')
+          : error('INTERNAL_ERROR', 'Account closure operation failed');
       }
 
       return ok(receipt);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      if (message.includes('Account not found')) {
-        return error('NOT_FOUND', message);
+      if (err instanceof AccountClosureFailureError && err.code === 'ACCOUNT_NOT_FOUND') {
+        return error('NOT_FOUND', 'Account not found');
       }
-      return error('INTERNAL_ERROR', message);
+      return error('INTERNAL_ERROR', 'Account closure operation failed');
     }
   }
 }

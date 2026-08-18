@@ -49,9 +49,7 @@ describe('knowledge repository connection ownership surface', () => {
   });
 
   it('prisma findByIdForIdentity filters by id + identityId', () => {
-    expect(prisma).toMatch(
-      /async findByIdForIdentity\(\s*identityId: string,\s*id: string/,
-    );
+    expect(prisma).toMatch(/async findByIdForIdentity\(\s*identityId: string,\s*id: string/);
     expect(prisma).toContain('where: { id, identityId }');
   });
 
@@ -70,12 +68,10 @@ describe('knowledge repository connection ownership surface', () => {
   });
 
   it('connection service passes identityId into status transitions', () => {
-    expect(service).toContain(
-      "updateStatus(identityId, connectionId, 'Revoked', null)",
+    expect(service).toMatch(
+      /updateStatus\(\s*identityId,\s*connectionId,\s*'Revoked',\s*null,?\s*\)/,
     );
-    expect(service).not.toMatch(
-      /connectionRepository\.updateStatus\(\s*connectionId\s*,/,
-    );
+    expect(service).not.toMatch(/connectionRepository\.updateStatus\(\s*connectionId\s*,/);
   });
 
   it('prisma save refuses identity reassignment and updates by id + identityId', () => {
@@ -91,13 +87,9 @@ describe('knowledge repository connection ownership surface', () => {
   });
 
   it('connection service loads connections via findByIdForIdentity', () => {
-    expect(service).toMatch(
-      /findByIdForIdentity\(\s*identityId,\s*connectionId,\s*\)/,
-    );
+    expect(service).toMatch(/findByIdForIdentity\(\s*identityId,\s*connectionId,\s*\)/);
     // No bare findById(connectionId) ownership path remaining in connection service.
-    expect(service).not.toMatch(
-      /connectionRepository\.findById\(\s*connectionId\s*\)/,
-    );
+    expect(service).not.toMatch(/connectionRepository\.findById\(\s*connectionId\s*\)/);
   });
   it('projection system loads re-verify connection ownership (residual 137)', () => {
     expect(projectionService).toContain('private async loadOwnedConnectionById(');
@@ -108,9 +100,7 @@ describe('knowledge repository connection ownership surface', () => {
     expect(projectionService).toContain('loadOwnedConnectionById(connectionId)');
     expect(projectionService).toContain('loadOwnedConnectionById(delivery.connectionId)');
     // Bare findById is only the bootstrap inside loadOwnedConnectionById.
-    const bareLoads = projectionService.match(
-      /connectionRepository\.findById\(/g,
-    );
+    const bareLoads = projectionService.match(/connectionRepository\.findById\(/g);
     expect(bareLoads).toHaveLength(1);
     expect(projectionService).not.toContain(
       'const connection = await this.options.connectionRepository.findById(delivery.connectionId)',
@@ -126,21 +116,13 @@ describe('knowledge repository connection ownership surface', () => {
       /findByIdForIdentity\(\s*identityId: string,\s*id: string,\s*\): Promise</,
     );
     expect(prisma).toMatch(/async findById\(id: string\)/);
-    expect(prisma).toMatch(
-      /async findByIdForIdentity\(\s*identityId: string,\s*id: string/,
-    );
+    expect(prisma).toMatch(/async findByIdForIdentity\(\s*identityId: string,\s*id: string/);
     expect(prisma).toContain('where: { id, identityId }');
 
     // Connection service never bare-loads by connectionId.
-    expect(service).toMatch(
-      /findByIdForIdentity\(\s*identityId,\s*connectionId,\s*\)/,
-    );
-    expect(service).not.toMatch(
-      /connectionRepository\.findById\(\s*connectionId\s*\)/,
-    );
-    expect(service).not.toMatch(
-      /connectionRepository\.findById\(/,
-    );
+    expect(service).toMatch(/findByIdForIdentity\(\s*identityId,\s*connectionId,\s*\)/);
+    expect(service).not.toMatch(/connectionRepository\.findById\(\s*connectionId\s*\)/);
+    expect(service).not.toMatch(/connectionRepository\.findById\(/);
 
     // Projection: exactly one bare findById, only inside loadOwnedConnectionById bootstrap.
     expect(projectionService).toContain('private async loadOwnedConnectionById(');
@@ -151,9 +133,7 @@ describe('knowledge repository connection ownership surface', () => {
       'return this.options.connectionRepository.findByIdForIdentity(',
     );
     expect(projectionService).toContain('String(connection.identityId)');
-    const bareLoads = projectionService.match(
-      /connectionRepository\.findById\(/g,
-    );
+    const bareLoads = projectionService.match(/connectionRepository\.findById\(/g);
     expect(bareLoads).toHaveLength(1);
     // Call sites must re-own through the helper, never bare-load delivery.connectionId.
     expect(projectionService).toContain('loadOwnedConnectionById(connectionId)');
@@ -162,5 +142,4 @@ describe('knowledge repository connection ownership surface', () => {
       'const connection = await this.options.connectionRepository.findById(delivery.connectionId)',
     );
   });
-
 });

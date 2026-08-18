@@ -28,6 +28,13 @@ import type { HttpRequestMetricsRecorder } from '../observability/http-request-m
 import type { HttpRequestTrace } from '../observability/http-request-trace';
 import { getCorsOrigins, isAllCorsOriginsAllowed } from '../config/env.js';
 
+export class CorsRejectionError extends Error {
+  constructor(readonly origin?: string) {
+    super('Not allowed by CORS');
+    this.name = 'CorsRejectionError';
+  }
+}
+
 /**
  * 应用所有全局中间件
  *
@@ -70,7 +77,7 @@ export function applyGlobalMiddleware(
         if (!origin) return callback(null, true);
         if (allowAllOrigins) return callback(null, true);
         if (allowedOrigins.includes(origin)) return callback(null, true);
-        return callback(new Error('Not allowed by CORS'));
+        return callback(new CorsRejectionError(origin));
       },
       credentials: !allowAllOrigins,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

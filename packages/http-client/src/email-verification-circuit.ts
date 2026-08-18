@@ -54,13 +54,18 @@ export function resourceKeyFromUrl(url: string | undefined | null): string {
   }
 }
 
-export function isEmailVerificationRequiredError(error: {
-  code?: string;
-  domainCode?: string;
-  message?: string;
-  messageKey?: string;
-  context?: { domainCode?: string; messageKey?: string; [key: string]: unknown };
-} | null | undefined): boolean {
+export function isEmailVerificationRequiredError(
+  error:
+    | {
+        code?: string;
+        domainCode?: string;
+        message?: string;
+        messageKey?: string;
+        context?: { domainCode?: string; messageKey?: string; [key: string]: unknown };
+      }
+    | null
+    | undefined,
+): boolean {
   if (!error) return false;
   const code =
     error.domainCode ??
@@ -73,10 +78,6 @@ export function isEmailVerificationRequiredError(error: {
     error.messageKey === EMAIL_VERIFICATION_MESSAGE_KEY ||
     error.context?.messageKey === EMAIL_VERIFICATION_MESSAGE_KEY
   ) {
-    return true;
-  }
-  // Some envelopes put domain code only in message fallbacks
-  if (typeof error.message === 'string' && error.message.includes(EMAIL_VERIFICATION_DOMAIN_CODE)) {
     return true;
   }
   return false;

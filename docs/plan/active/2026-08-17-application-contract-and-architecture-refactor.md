@@ -815,6 +815,8 @@ pnpm nx run web:typecheck
 
 ## ACR-030 — Remove Account and Repository message/status leakage
 
+**Status:** Completed on 2026-08-18. Account closure now persists a typed failure code and Repository GitHub HTTP semantics stop at the infrastructure adapter. Evidence: `docs/analysis/2026-08-18-failure-contract-feature-migration-batch-1-review.md`.
+
 **Goal:** Account closure 和 GitHub repository flows 不在 application 中解析 message/provider status。
 
 **Why now:** 两者是 Auth 之外最明确的 provider leakage 证据。
@@ -851,6 +853,8 @@ pnpm nx run repository:typecheck
 **Risks:** 相同 HTTP status在不同 operation语义不同；mapper必须 operation-specific。
 
 ## ACR-031 — Replace AI stringly typed failures with typed turn outcomes
+
+**Status:** In progress on 2026-08-18. Server/provider/runtime message branching has been removed and the AI production package has zero failure-message-branch / DomainError findings; client/UI failure ownership closes with ACR-032. Evidence: `docs/analysis/2026-08-18-failure-contract-feature-migration-batch-1-review.md`.
 
 **Goal:** AI turn/stream/host runtime 不再用 `error?: string` 混合 code/message/provider detail。
 

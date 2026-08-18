@@ -290,8 +290,8 @@ import { previewText } from './preview-text';
    * Soft residual 965: getRequestId dual retired (get-request-id-dual.surface.spec.ts).
    * Soft residual 974: tip focused suite numbers track Residual 974 evidence tip (278/1223).
    * Soft residual 969: knowledge-index value helpers dual retired (adapters/knowledge-index-value-helpers-dual.surface.spec.ts).
-   * Keep-boundary: server ai-chat-helpers and app-vue useAIChatSession keep distinct
-   * abort predicates (category / DOMException / ABORTED code).
+   * Structured boundary: server helpers re-export the shared predicate; app-vue consumes
+   * transport codes separately until the presentation migration lands.
    * Does not flip §13.2 checkboxes.
    */
   describe('isAbortLikeError dual retired (residual 967)', () => {
@@ -310,12 +310,12 @@ import { previewText } from './preview-text';
       'utf8',
     );
 
-    it('owns sole isAbortLikeError helper body for client HTTP adapters', () => {
-      expect(sole).toContain('Residual 967');
+    it('owns the sole structured isAbortLikeError helper body', () => {
       expect(sole).toMatch(/export function isAbortLikeError\b/);
-      expect(sole).toContain("error.name === 'AbortError'");
-      expect(sole).toContain("message.includes('abort')");
-      expect(sole).toContain("message.includes('cancel')");
+      expect(sole).toContain('isAIExecutionError(error)');
+      expect(sole).toContain("error.category === 'aborted'");
+      expect(sole).toContain("name === 'AbortError'");
+      expect(sole).not.toContain('message.includes');
     });
 
     it('assistant/message adapters import sole without local dual bodies', () => {
@@ -332,18 +332,19 @@ import { previewText } from './preview-text';
       }
     });
 
-    it('keeps server ai-chat-helpers abort predicate as distinct keep-boundary', () => {
-      expect(serverHelpers).toMatch(/export function isAbortLikeError\b/);
-      expect(serverHelpers).toContain("category === 'aborted'");
-      expect(serverHelpers).not.toContain('is-abort-like-error');
+    it('makes server ai-chat-helpers re-export the canonical structured predicate', () => {
+      expect(serverHelpers).toContain(
+        "export { isAbortLikeError } from '../../../../shared/is-abort-like-error'",
+      );
+      expect(serverHelpers).not.toMatch(/function isAbortLikeError\b/);
     });
 
-    it('detects AbortError name and abort/cancel message fragments', () => {
+    it('detects only structured abort signals and never parses human-readable messages', () => {
       expect(isAbortLikeError(new DOMException('aborted', 'AbortError'))).toBe(true);
       expect(isAbortLikeError({ name: 'AbortError' })).toBe(true);
-      expect(isAbortLikeError({ message: 'Request aborted by user' })).toBe(true);
-      expect(isAbortLikeError({ message: 'Operation cancelled' })).toBe(true);
-      expect(isAbortLikeError({ message: 'network failed' })).toBe(false);
+      expect(isAbortLikeError({ category: 'aborted' })).toBe(true);
+      expect(isAbortLikeError({ message: 'Request aborted by user' })).toBe(false);
+      expect(isAbortLikeError({ message: 'Operation cancelled' })).toBe(false);
       expect(isAbortLikeError(null)).toBe(false);
       expect(isAbortLikeError('abort')).toBe(false);
     });

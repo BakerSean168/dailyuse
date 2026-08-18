@@ -1,6 +1,6 @@
 import { createSign } from 'node:crypto';
 import type { GitHubInstallationRepositoryDTO } from '@memoflow/contracts/repository';
-import { GitHubAppClientError } from '../../application/ports/github-app-client.port';
+import { GitHubAppClientFailureError } from '../../application/ports/github-app-client.port';
 import type {
   GitHubAppInstallationInventory,
   GitHubBlobContent,
@@ -113,6 +113,23 @@ const REPOSITORY_SCAFFOLD_ROOT_ENTRIES = new Set([
 
 function encodeJson(value: unknown): string {
   return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
+}
+
+function mapGitHubHttpStatusToFailure(
+  status: number,
+  retryAfterHeader: string | null,
+): import('../../application/ports/github-app-client.port').GitHubAppClientFailure {
+  if (status == 401 || status == 403) return { kind: 'unauthorized' };
+  if (status == 404) return { kind: 'not_found' };
+  if (status == 409 || status == 422) return { kind: 'conflict' };
+  if (status == 413) return { kind: 'payload_too_large' };
+  if (status == 429) {
+    const retryAfterSeconds = retryAfterHeader ? Number.parseInt(retryAfterHeader, 10) : Number.NaN;
+    return Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0
+      ? { kind: 'rate_limited', retryAfterMs: retryAfterSeconds * 1000 }
+      : { kind: 'rate_limited' };
+  }
+  return { kind: 'unavailable' };
 }
 
 export class GitHubAppClient implements IGitHubAppClient {
@@ -395,9 +412,7 @@ export class GitHubAppClient implements IGitHubAppClient {
     }
     const blobs = (tree.tree ?? []).filter(
       (entry): entry is { path: string; type: string; sha: string; size?: number } =>
-        entry.type === 'blob' &&
-        typeof entry.path === 'string' &&
-        Boolean(entry.sha),
+        entry.type === 'blob' && typeof entry.path === 'string' && Boolean(entry.sha),
     );
     const files = blobs.filter((entry) => this.isMarkdownPath(entry.path));
     const result: GitHubMarkdownSnapshot['files'] = [];
@@ -419,8 +434,7 @@ export class GitHubAppClient implements IGitHubAppClient {
             {
               relativePath: entry.path,
               blobSha: entry.sha,
-              byteSize:
-                Number.isSafeInteger(entry.size) && entry.size! >= 0 ? entry.size! : null,
+              byteSize: Number.isSafeInteger(entry.size) && entry.size! >= 0 ? entry.size! : null,
               mediaType,
             },
           ]
@@ -447,7 +461,7 @@ export class GitHubAppClient implements IGitHubAppClient {
       installationId,
       input.repository.id,
     );
-    let lastConflict: GitHubAppClientError | null = null;
+    let lastConflict: GitHubAppClientFailureError | null = null;
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const ref = await this.requestJson<GitHubRefResponse>(
         `/repos/${this.encodeRepository(input.repository)}/git/ref/heads/${this.encodeBranch(input.branch)}`,
@@ -456,7 +470,10 @@ export class GitHubAppClient implements IGitHubAppClient {
       const headSha = ref.object?.sha;
       if (!headSha) throw new Error('GitHub returned an invalid branch ref');
       if (await this.pathExists(accessToken.token, input.repository, input.path, input.branch)) {
-        throw new GitHubAppClientError(409, 'Knowledge note path already exists');
+        throw new GitHubAppClientFailureError(
+          { kind: 'conflict' },
+          'Knowledge note path already exists',
+        );
       }
       const commit = await this.requestJson<GitHubCommitResponse>(
         `/repos/${this.encodeRepository(input.repository)}/git/commits/${encodeURIComponent(headSha)}`,
@@ -500,7 +517,7 @@ export class GitHubAppClient implements IGitHubAppClient {
           { sha: created.sha, force: false },
         );
       } catch (error) {
-        if (error instanceof GitHubAppClientError && error.status === 422) {
+        if (error instanceof GitHubAppClientFailureError && error.failure.kind === 'conflict') {
           lastConflict = error;
           continue;
         }
@@ -508,7 +525,10 @@ export class GitHubAppClient implements IGitHubAppClient {
       }
       return { commitSha: created.sha, blobSha: blob.sha };
     }
-    throw lastConflict ?? new GitHubAppClientError(409, 'GitHub branch changed during commit');
+    throw (
+      lastConflict ??
+      new GitHubAppClientFailureError({ kind: 'conflict' }, 'GitHub branch changed during commit')
+    );
   }
 
   private createAppJwt(): string {
@@ -545,10 +565,9 @@ export class GitHubAppClient implements IGitHubAppClient {
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     if (!response.ok) {
-      const detail = (await response.text()).slice(0, 500);
-      throw new GitHubAppClientError(
-        response.status,
-        `GitHub API ${response.status}: ${detail || response.statusText}`,
+      throw new GitHubAppClientFailureError(
+        mapGitHubHttpStatusToFailure(response.status, response.headers.get('retry-after')),
+        `GitHub API request failed (${response.status})`,
       );
     }
     return (await response.json()) as T;
@@ -588,7 +607,10 @@ export class GitHubAppClient implements IGitHubAppClient {
       throw new Error('GitHub returned an invalid blob response');
     }
     if (blob.size! > maxBytes) {
-      throw new GitHubAppClientError(413, 'GitHub attachment exceeds the configured size limit');
+      throw new GitHubAppClientFailureError(
+        { kind: 'payload_too_large' },
+        'GitHub attachment exceeds the configured size limit',
+      );
     }
     const bytes = Buffer.from(blob.content.replace(/\s/g, ''), 'base64');
     if (bytes.byteLength !== blob.size) {
@@ -616,10 +638,9 @@ export class GitHubAppClient implements IGitHubAppClient {
     );
     if (response.status === 404) return false;
     if (!response.ok) {
-      const detail = (await response.text()).slice(0, 500);
-      throw new GitHubAppClientError(
-        response.status,
-        `GitHub API ${response.status}: ${detail || response.statusText}`,
+      throw new GitHubAppClientFailureError(
+        mapGitHubHttpStatusToFailure(response.status, response.headers.get('retry-after')),
+        `GitHub API request failed (${response.status})`,
       );
     }
     const payload = (await response.json()) as GitHubContentsResponse;

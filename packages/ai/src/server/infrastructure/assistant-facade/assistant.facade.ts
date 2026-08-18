@@ -1,3 +1,4 @@
+import { ProposalKernelConflictError } from '../proposal-kernel/proposal.kernel';
 /**
  * AssistantFacade — production unified Host dispatch surface (ADR-035 residual 343).
  *
@@ -344,8 +345,7 @@ export class AssistantFacade implements IAssistantFacadePort {
         materializeAgentRunBridgeProposal(parsed.runId, parsed.kind),
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : '';
-      if (message !== 'PROPOSAL_ALREADY_EXISTS') {
+      if (!(error instanceof ProposalKernelConflictError && error.kind === 'already_exists')) {
         throw error;
       }
     }

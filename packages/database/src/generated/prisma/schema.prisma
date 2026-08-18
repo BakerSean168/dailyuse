@@ -1292,6 +1292,7 @@ model AccountClosureOperation {
   revokedSessions  Int       @default(0) @map("revoked_sessions")
   piiCleanupStatus String?   @map("pii_cleanup_status")
   piiReason        String?   @map("pii_reason")
+  lastErrorCode    String?   @map("last_error_code")
   lastError        String?   @map("last_error")
   receiptJson      String?   @map("receipt_json")
   createdAt        DateTime  @default(now()) @map("created_at")

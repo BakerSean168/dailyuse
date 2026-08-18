@@ -5,6 +5,7 @@ import type { MessageClientDTO } from '@memoflow/contracts/ai';
 import { MessageRole } from '@memoflow/contracts/ai';
 import type { ChatExecutionMessage } from '../../ports';
 import { createLogger } from '@memoflow/utils/logger';
+import { AIExecutionError } from '../../../../shared/ai-execution-error';
 
 const logger = createLogger('AIChatHelpers');
 
@@ -93,25 +94,8 @@ export function toExecutionRole(role: MessageClientDTO['role']): ChatExecutionMe
   }
 }
 
-export function isAbortLikeError(error: unknown): boolean {
-  if (error && typeof error === 'object' && 'category' in error && error.category === 'aborted') {
-    return true;
-  }
-
-  if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
-    return true;
-  }
-
-  if (error instanceof Error) {
-    const message = error.message.toLowerCase();
-    return message.includes('abort') || message.includes('cancel');
-  }
-
-  return false;
-}
+export { isAbortLikeError } from '../../../../shared/is-abort-like-error';
 
 export function createStreamAbortError(): Error {
-  const err = new Error('AI chat stream aborted by client');
-  (err as Error & { category?: string }).category = 'aborted';
-  return err;
+  return new AIExecutionError('aborted', 'AI chat stream aborted by client');
 }

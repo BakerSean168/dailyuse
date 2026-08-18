@@ -840,6 +840,7 @@ exports.Prisma.AccountClosureOperationScalarFieldEnum = {
   revokedSessions: 'revokedSessions',
   piiCleanupStatus: 'piiCleanupStatus',
   piiReason: 'piiReason',
+  lastErrorCode: 'lastErrorCode',
   lastError: 'lastError',
   receiptJson: 'receiptJson',
   createdAt: 'createdAt',

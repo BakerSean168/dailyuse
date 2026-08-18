@@ -1,3 +1,7 @@
+import {
+  hostTaskCreateForbiddenError,
+  hostTaskCreateValidationError,
+} from './host-task-create-error';
 /**
  * Residual 435/447/451/457/495/503/505/509/511/513/515: process-local Host task.create run store foundation.
  *
@@ -39,7 +43,12 @@
  * symmetry) and stored normalized; blank identityId on upsert fails closed.
  */
 
-import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@memoflow/contracts/ai';
+import type {
+  AgentEvent,
+  AgentRun,
+  AgentRunListParams,
+  AgentRunResult,
+} from '@memoflow/contracts/ai';
 import {
   resolveTaskCreateConversationId,
   resolveTaskCreateIdentityId,
@@ -151,9 +160,9 @@ function pruneOldest(byRunId: Map<string, AgentRunResult>, maxEntries: number): 
   }
 }
 
-export function createHostTaskCreateRunStore(
-  options?: { maxEntries?: number },
-): HostTaskCreateRunStore {
+export function createHostTaskCreateRunStore(options?: {
+  maxEntries?: number;
+}): HostTaskCreateRunStore {
   const byRunId = new Map<string, AgentRunResult>();
   const maxEntries =
     typeof options?.maxEntries === 'number' && options.maxEntries > 0
@@ -164,27 +173,29 @@ export function createHostTaskCreateRunStore(
     upsert(result: AgentRunResult) {
       // Residual 495: fail-closed — do not silently ignore foreign agent types.
       if (result.run.agentType !== 'task.create') {
-        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE);
+        throw hostTaskCreateValidationError(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE);
       }
       // Residual 505: process-local runId map key is trimmed non-empty (start 497 symmetry).
       const runId = resolveTaskCreateRunId(result.run.runId);
       if (!runId) {
-        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE);
+        throw hostTaskCreateValidationError(HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE);
       }
       // Residual 511: process-local threadId binding is trimmed non-empty (start 485 symmetry).
       const threadId = resolveTaskCreateThreadId(result.run.threadId);
       if (!threadId) {
-        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE);
+        throw hostTaskCreateValidationError(HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE);
       }
       // Residual 513: process-local conversationId is trimmed non-empty (start 483 symmetry).
       const conversationId = resolveTaskCreateConversationId(result.run.conversationId);
       if (!conversationId) {
-        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE);
+        throw hostTaskCreateValidationError(
+          HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE,
+        );
       }
       // Residual 515: process-local identityId is trimmed non-empty (start 493 symmetry).
       const identityId = resolveTaskCreateIdentityId(result.run.identityId);
       if (!identityId) {
-        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE);
+        throw hostTaskCreateValidationError(HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE);
       }
       const needsNormalize =
         result.run.runId !== runId ||
@@ -212,7 +223,7 @@ export function createHostTaskCreateRunStore(
         existing &&
         !matchesHostTaskCreateIdentity(existing.run.identityId, normalized.run.identityId)
       ) {
-        throw new Error(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE);
+        throw hostTaskCreateForbiddenError(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE);
       }
       // Residual 457/509/511: conversation/thread binding (no session rebinding via runId reuse).
       if (existing) {
@@ -222,11 +233,11 @@ export function createHostTaskCreateRunStore(
         const nextConversation =
           resolveTaskCreateConversationId(normalized.run.conversationId) ?? null;
         if (existingConversation !== nextConversation) {
-          throw new Error(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE);
+          throw hostTaskCreateValidationError(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE);
         }
         // Residual 511: thread binding compares trimmed thread ids.
         if (!matchesHostTaskCreateThread(existing.run.threadId, normalized.run.threadId)) {
-          throw new Error(HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE);
+          throw hostTaskCreateValidationError(HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE);
         }
       }
       byRunId.set(runId, normalized);

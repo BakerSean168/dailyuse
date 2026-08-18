@@ -1,3 +1,4 @@
+import { AIExecutionError } from '../../../shared/ai-execution-error';
 import type {
   OpenAICompatibleCompletionRequest,
   OpenAICompatibleCompletionResponse,
@@ -47,7 +48,14 @@ export class OpenAICompatibleGateway {
       });
 
       if (!response.ok) {
-        throw new Error(`Provider request failed: ${response.status} ${await response.text()}`);
+        await response.text();
+        throw new AIExecutionError(
+          mapProviderStatus(response.status),
+          'AI provider request failed',
+          {
+            statusCode: response.status,
+          },
+        );
       }
 
       const json = (await response.json()) as OpenAICompatibleCompletionResponse;
@@ -57,7 +65,7 @@ export class OpenAICompatibleGateway {
 
       if (!content) {
         const reason = finishReason ? ` (finish_reason=${finishReason})` : '';
-        throw new Error(`Provider returned empty content${reason}`);
+        throw new AIExecutionError('structured_output', `Provider returned empty content${reason}`);
       }
 
       return {
@@ -71,10 +79,11 @@ export class OpenAICompatibleGateway {
         },
       };
     } catch (error) {
+      if (error instanceof AIExecutionError) throw error;
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Provider request timed out');
+        throw new AIExecutionError('timeout', 'AI provider request timed out', { cause: error });
       }
-      throw error;
+      throw new AIExecutionError('transport', 'AI provider transport failed', { cause: error });
     } finally {
       clearTimeout(timeoutId);
     }
@@ -83,4 +92,15 @@ export class OpenAICompatibleGateway {
 
 function buildCompletionUrl(baseUrl: string): string {
   return new URL('chat/completions', normalizeOpenAICompatibleBaseUrl(baseUrl)).toString();
+}
+
+function mapProviderStatus(
+  status: number,
+): import('../../../shared/ai-execution-error').AIExecutionErrorKind {
+  if (status === 401 || status === 403) return 'unauthorized';
+  if (status === 404) return 'model_not_available';
+  if (status === 408 || status === 504) return 'timeout';
+  if (status === 429) return 'rate_limited';
+  if (status >= 500) return 'upstream_provider_error';
+  return 'transport';
 }

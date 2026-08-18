@@ -11,6 +11,7 @@ import {
 } from '@memoflow/contracts/repository';
 import type { IdentityId, RepositoryId, ResourceId } from '@memoflow/contracts/primitives';
 import { createLogger } from '@memoflow/utils/logger';
+import { GitHubAppClientFailureError } from '../ports/github-app-client.port';
 import type { GitHubFileCommitResult, IGitHubAppClient } from '../ports/github-app-client.port';
 import type { IKnowledgeRepositoryConnectionRepository } from '../ports/knowledge-repository-connection.repository';
 import type { IKnowledgeRepositoryLeaseRepository } from '../ports/knowledge-repository-lease.repository';
@@ -271,19 +272,25 @@ export class KnowledgeNoteCommitService {
       });
     } catch (error) {
       if (error instanceof KnowledgeRepositoryLeaseLostError) throw error;
-      const status =
-        error && typeof error === 'object' && 'status' in error
-          ? Number((error as { status: unknown }).status)
-          : null;
-      const code = status === 409 || status === 422 ? 'CONFLICT' : 'SERVICE_UNAVAILABLE';
-      const message = error instanceof Error ? error.message : 'Knowledge note commit failed';
+      const code =
+        error instanceof GitHubAppClientFailureError && error.failure.kind === 'conflict'
+          ? 'CONFLICT'
+          : 'SERVICE_UNAVAILABLE';
+      const message =
+        code === 'CONFLICT'
+          ? 'Knowledge note path already exists'
+          : 'Knowledge repository provider is unavailable';
       await guard.ensureHeld();
       await this.options.writeRequestRepository.markFailed(identityId, record.id, code, message);
       return fail({ code, message });
     }
 
     await guard.ensureHeld();
-    await this.options.writeRequestRepository.markCommitted(identityId, record.id, committed.commitSha);
+    await this.options.writeRequestRepository.markCommitted(
+      identityId,
+      record.id,
+      committed.commitSha,
+    );
     // Bind the projection operation to this exact Git commit and store the
     // rebuildable source so a delayed/failed projection can be replayed locally.
     await guard.ensureHeld();

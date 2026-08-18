@@ -7,7 +7,7 @@ import {
 import type { IKnowledgeRepositoryConnectionRepository } from '../ports/knowledge-repository-connection.repository';
 import type { IKnowledgeRepositoryCloudDataPurger } from '../ports/knowledge-repository-cloud-data-purger.port';
 import {
-  GitHubAppClientError,
+  GitHubAppClientFailureError,
   type GitHubAppInstallationInventory,
   type IGitHubAppClient,
 } from '../ports/github-app-client.port';
@@ -270,8 +270,12 @@ describe('KnowledgeRepositoryConnectionService', () => {
       deletedAt: null,
     });
 
-    await expect(repository.findByIdForIdentity('identity-other', 'connection-1')).resolves.toBeNull();
-    await expect(repository.findByIdForIdentity('identity-1', 'connection-1')).resolves.toMatchObject({
+    await expect(
+      repository.findByIdForIdentity('identity-other', 'connection-1'),
+    ).resolves.toBeNull();
+    await expect(
+      repository.findByIdForIdentity('identity-1', 'connection-1'),
+    ).resolves.toMatchObject({
       id: 'connection-1',
       identityId: 'identity-1',
     });
@@ -312,7 +316,6 @@ describe('KnowledgeRepositoryConnectionService', () => {
   });
 
   it('keeps derived cloud data for the default reversible disconnect', async () => {
-
     const cloudDataPurger = { purge: vi.fn(async () => true) };
     const { service, repository } = createService(createGithubClient(), cloudDataPurger);
     await completeInstallation(service);
@@ -608,7 +611,7 @@ describe('KnowledgeRepositoryConnectionService', () => {
     });
     if (!connected.ok) throw new Error('expected connection');
     vi.mocked(github.getInstallationInventory).mockRejectedValueOnce(
-      new GitHubAppClientError(404, 'installation not found'),
+      new GitHubAppClientFailureError({ kind: 'not_found' }, 'installation not found'),
     );
 
     await expect(service.list('identity-1')).resolves.toMatchObject({

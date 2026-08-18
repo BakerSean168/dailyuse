@@ -25,16 +25,23 @@
  * ```
  */
 
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import type {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import type { Result, ResultError } from '@memoflow/contracts/result';
 import { fail, fromHttpResponse } from '@memoflow/contracts/result';
 import type { HttpResponse } from '@memoflow/contracts/result';
-import type { HttpClientConfig, IResultHttpClient, TokenProvider, TokenRefreshHandler } from './types';
+import type {
+  HttpClientConfig,
+  IResultHttpClient,
+  TokenProvider,
+  TokenRefreshHandler,
+} from './types';
 import { createAxiosInstance } from './axios-instance';
-import {
-  classifyNetworkErrorMessage,
-  statusToResultError,
-} from './result-error';
+import { classifyNetworkError, statusToResultError } from './result-error';
 import {
   buildEmailVerificationBlockedError,
   canAttemptEmailVerificationSensitiveRequest,
@@ -99,7 +106,7 @@ export class ResultHttpClient implements IResultHttpClient {
     this.onUnauthorized = config.onUnauthorized;
     this.tokenProvider = config.tokenProvider;
     this.withCredentials = config.axiosConfig?.withCredentials === true;
-    
+
     // 设置 401 响应拦截器
     this.setupResponseInterceptor();
   }
@@ -127,21 +134,33 @@ export class ResultHttpClient implements IResultHttpClient {
   /**
    * POST 请求
    */
-  async post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<Result<T>> {
+  async post<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig,
+  ): Promise<Result<T>> {
     return this.execute<T>(() => this.axios.post(url, data, config), url);
   }
 
   /**
    * PUT 请求
    */
-  async put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<Result<T>> {
+  async put<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig,
+  ): Promise<Result<T>> {
     return this.execute<T>(() => this.axios.put(url, data, config), url);
   }
 
   /**
    * PATCH 请求
    */
-  async patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<Result<T>> {
+  async patch<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig,
+  ): Promise<Result<T>> {
     return this.execute<T>(() => this.axios.patch(url, data, config), url);
   }
 
@@ -215,7 +234,7 @@ export class ResultHttpClient implements IResultHttpClient {
 
   /**
    * 设置 401 响应拦截器
-   * 
+   *
    * 当收到 401 时，尝试用 refreshToken 刷新 accessToken
    * 如果刷新成功，重试原请求
    * 如果刷新失败，调用 onUnauthorized 回调（通常用于导航到登录页）
@@ -233,14 +252,16 @@ export class ResultHttpClient implements IResultHttpClient {
 
         // 其他错误直接抛出，交给 execute 方法的 catch 处理
         return Promise.reject(error);
-      }
+      },
     );
   }
 
   /**
    * 处理 401 自动刷新 Token
    */
-  private async handleTokenRefresh(originalConfig: InternalAxiosRequestConfig & { _retried?: boolean }): Promise<any> {
+  private async handleTokenRefresh(
+    originalConfig: InternalAxiosRequestConfig & { _retried?: boolean },
+  ): Promise<any> {
     if (this.isRefreshing) {
       // 已在刷新中 → 排队等待
       return new Promise((resolve, reject) => {
@@ -368,9 +389,7 @@ export class ResultHttpClient implements IResultHttpClient {
    */
   private handleError<T>(error: any, resourceHint?: string): Result<T> {
     const { response, message, config } = error;
-    const resource = resourceKeyFromUrl(
-      resourceHint ?? config?.url ?? response?.config?.url,
-    );
+    const resource = resourceKeyFromUrl(resourceHint ?? config?.url ?? response?.config?.url);
 
     // ── A. 有 HTTP 响应 (4xx / 5xx) ──
     if (response) {
@@ -383,9 +402,7 @@ export class ResultHttpClient implements IResultHttpClient {
           recordEmailVerificationRequired(resource);
           const err = result.error;
           const domain =
-            typeof err.context?.domainCode === 'string'
-              ? err.context.domainCode
-              : undefined;
+            typeof err.context?.domainCode === 'string' ? err.context.domainCode : undefined;
           if (
             domain === 'EMAIL_VERIFICATION_REQUIRED' &&
             err.context?.messageKey !== 'errors.EMAIL_VERIFICATION_REQUIRED'
@@ -413,7 +430,7 @@ export class ResultHttpClient implements IResultHttpClient {
     }
 
     // ── B. 网络异常 (断网 / DNS / 超时) ──
-    return this.createNetworkFailure<T>(message, error);
+    return this.createNetworkFailure<T>(error);
   }
 
   // ────────────────────────────────────────
@@ -436,8 +453,8 @@ export class ResultHttpClient implements IResultHttpClient {
   }
 
   /** 创建网络异常的 Result.fail */
-  private createNetworkFailure<T>(message: string, cause: unknown): Result<T> {
-    const resultError = classifyNetworkErrorMessage(message);
+  private createNetworkFailure<T>(cause: unknown): Result<T> {
+    const resultError = classifyNetworkError(cause);
     return fail<ResultError>({
       code: resultError.code,
       message: resultError.message,

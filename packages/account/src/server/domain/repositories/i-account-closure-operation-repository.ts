@@ -1,12 +1,8 @@
 export type AccountClosurePhase =
-  | 'requested'
-  | 'revoking'
-  | 'revoked'
-  | 'closing'
-  | 'closed'
-  | 'failed';
+  'requested' | 'revoking' | 'revoked' | 'closing' | 'closed' | 'failed';
 
 export type AccountClosureStatus = 'running' | 'succeeded' | 'failed';
+export type AccountClosureFailureCode = 'ACCOUNT_NOT_FOUND' | 'ACCOUNT_CLOSURE_FAILED';
 
 export interface AccountClosureOperationRecord {
   id: string;
@@ -26,6 +22,7 @@ export interface AccountClosureOperationRecord {
   piiCleanupStatus: string | null;
   piiReason?: string | null;
   lastHeartbeatAt?: Date | null;
+  lastErrorCode?: AccountClosureFailureCode | null;
   lastError: string | null;
   receiptJson: string | null;
   createdAt: Date;
@@ -44,6 +41,7 @@ export interface CASUpdatePhaseParams {
   piiCleanupStatus?: string;
   piiReason?: string;
   eventId?: string;
+  lastErrorCode?: AccountClosureFailureCode | null;
   lastError?: string | null;
   receiptJson?: string | null;
   finishedAt?: Date | null;

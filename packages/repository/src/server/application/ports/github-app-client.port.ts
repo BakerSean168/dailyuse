@@ -1,12 +1,24 @@
 import type { GitHubInstallationRepositoryDTO } from '@memoflow/contracts/repository';
 
-export class GitHubAppClientError extends Error {
+export type GitHubAppClientFailure =
+  | { readonly kind: 'not_found' }
+  | { readonly kind: 'unauthorized' }
+  | { readonly kind: 'payload_too_large' }
+  | { readonly kind: 'conflict' }
+  | { readonly kind: 'rate_limited'; readonly retryAfterMs?: number }
+  | { readonly kind: 'unavailable' }
+  | { readonly kind: 'invalid_response' };
+
+/** Provider-neutral failure emitted by the GitHub capability adapter. */
+export class GitHubAppClientFailureError extends Error {
   constructor(
-    readonly status: number,
+    readonly failure: GitHubAppClientFailure,
     message: string,
+    options?: { cause?: unknown },
   ) {
     super(message);
-    this.name = 'GitHubAppClientError';
+    if (options?.cause !== undefined) Object.assign(this, { cause: options.cause });
+    this.name = 'GitHubAppClientFailureError';
   }
 }
 

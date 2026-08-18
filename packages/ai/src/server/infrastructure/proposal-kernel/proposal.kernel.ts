@@ -24,8 +24,15 @@ export const PROPOSAL_KERNEL_PROVIDER_ID = 'proposal-kernel' as const;
 
 /** R5：稳定内容哈希（忽略 id/revision/status/时间戳等易变字段）。 */
 function computePlanHash(proposal: AgentProposal): string {
-  const { id: _id, status: _status, revision: _rev, createdAt: _c, updatedAt: _u, planHash: _ph, ...stable } =
-    proposal as Record<string, unknown>;
+  const {
+    id: _id,
+    status: _status,
+    revision: _rev,
+    createdAt: _c,
+    updatedAt: _u,
+    planHash: _ph,
+    ...stable
+  } = proposal as Record<string, unknown>;
   const json = JSON.stringify(stable);
   let hash = 0;
   for (let i = 0; i < json.length; i++) {
@@ -50,6 +57,13 @@ function assertId(id: string): void {
 
 function isTerminal(status: AgentProposal['status']): boolean {
   return status === 'executed' || status === 'failed';
+}
+
+export class ProposalKernelConflictError extends Error {
+  constructor(readonly kind: 'already_exists') {
+    super(kind === 'already_exists' ? 'PROPOSAL_ALREADY_EXISTS' : 'PROPOSAL_CONFLICT');
+    this.name = 'ProposalKernelConflictError';
+  }
 }
 
 export class ProposalKernel implements IProposalKernelPort {
@@ -79,7 +93,7 @@ export class ProposalKernel implements IProposalKernelPort {
   async create(proposal: AgentProposal): Promise<AgentProposal> {
     assertId(proposal.id);
     if (this.proposals.has(proposal.id)) {
-      throw new Error('PROPOSAL_ALREADY_EXISTS');
+      throw new ProposalKernelConflictError('already_exists');
     }
     if (
       proposal.kind !== 'goal.create' &&
@@ -98,14 +112,12 @@ export class ProposalKernel implements IProposalKernelPort {
 
     const createdAt = proposal.createdAt ?? now();
     // R5：过期提案直接置 stale（不可批准/执行）。
-    const isExpired =
-      proposal.expiresAt != null && proposal.expiresAt <= createdAt;
-    const status: AgentProposal['status'] =
-      isExpired
-        ? 'stale'
-        : proposal.status === 'ready' || proposal.status === 'draft' || proposal.status === 'stale'
-          ? proposal.status
-          : 'draft';
+    const isExpired = proposal.expiresAt != null && proposal.expiresAt <= createdAt;
+    const status: AgentProposal['status'] = isExpired
+      ? 'stale'
+      : proposal.status === 'ready' || proposal.status === 'draft' || proposal.status === 'stale'
+        ? proposal.status
+        : 'draft';
 
     const stored = cloneProposal({
       ...proposal,
