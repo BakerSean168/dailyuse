@@ -15,7 +15,7 @@ updated: 2026-08-17T00:00:00+09:00
 
 ## 文档状态
 
-- **状态**：Active implementation program；ACR-R01/R02/R03 已完成，生产实施从 ACR-001 起解锁。
+- **状态**：**Implemented（2026-08-18）**。ADR-049 生产 failure-contract 重构完成：inventory 由 219 → 1（详见 `docs/analysis/2026-08-18-adr-049-completion-evidence.md`）。
 - **基线**：oracle3 `/home/ubuntu/projects/memoflow`，`main` = `8258d415e`。
 - **触发事件**：Auth 登录错误映射回归与 PR #229 暴露 provider code、raw message、UI state、
   E2E fixture 和运行版本验证的系统性缺口。
