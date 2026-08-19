@@ -53,6 +53,81 @@ describe('envSchema LOCAL_VALIDATION', () => {
   });
 });
 
+describe('envSchema Tailscale MagicDNS HTTP in local validation lane', () => {
+  const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
+
+  it('rejects MagicDNS HTTP in production without LOCAL_VALIDATION', () => {
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        AUTH_BASE_URL: 'http://oracle.taile92a8e.ts.net:53080/api/auth',
+        MEMOFLOW_WEB_URL: 'https://app.example.com',
+      }),
+    ).toThrow(/AUTH_BASE_URL must use HTTPS/);
+  });
+
+  it('allows MagicDNS HTTP in production with LOCAL_VALIDATION', () => {
+    expect(
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        LOCAL_VALIDATION: '1',
+        AUTH_BASE_URL: 'http://oracle.taile92a8e.ts.net:53080/api/auth',
+        MEMOFLOW_WEB_URL: 'http://memoflow.taile92a8e.ts.net:57021',
+      }),
+    ).toMatchObject({ LOCAL_VALIDATION: true });
+  });
+
+  it('still allows HTTPS MagicDNS origins in production with LOCAL_VALIDATION', () => {
+    expect(
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        LOCAL_VALIDATION: '1',
+        AUTH_BASE_URL: 'https://oracle.taile92a8e.ts.net:53080/api/auth',
+        MEMOFLOW_WEB_URL: 'https://app.example.com',
+      }),
+    ).toMatchObject({ LOCAL_VALIDATION: true });
+  });
+
+  it('still allows loopback HTTP in production with LOCAL_VALIDATION', () => {
+    expect(
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        LOCAL_VALIDATION: '1',
+        AUTH_BASE_URL: 'http://127.0.0.1:8080/api/auth',
+        MEMOFLOW_WEB_URL: 'http://localhost:12137',
+      }),
+    ).toMatchObject({ LOCAL_VALIDATION: true });
+  });
+
+  it('still rejects arbitrary public HTTP hosts in production with LOCAL_VALIDATION', () => {
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        LOCAL_VALIDATION: '1',
+        AUTH_BASE_URL: 'http://example.com/api/auth',
+        MEMOFLOW_WEB_URL: 'http://app.example.com',
+      }),
+    ).toThrow(/must use HTTPS/);
+  });
+
+  it('accepts any MagicDNS suffix host (not only the reserved tailnet) with LOCAL_VALIDATION', () => {
+    expect(
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        LOCAL_VALIDATION: '1',
+        AUTH_BASE_URL: 'http://foo.example.ts.net:53080/api/auth',
+        MEMOFLOW_WEB_URL: 'https://app.example.com',
+      }),
+    ).toMatchObject({ LOCAL_VALIDATION: true });
+  });
+});
+
 describe('envSchema OpenTelemetry (Phase 6 opt-in)', () => {
   const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
 

@@ -14,6 +14,15 @@ const emptyStringToUndefined = (value: unknown) => {
   return value;
 };
 
+const MAGICDNS_SUFFIX = '.ts.net';
+
+function isControlledMagicDnsHost(hostname: string): boolean {
+  // Tailscale MagicDNS names are <machine>.<tailnet>.ts.net — a reserved suffix.
+  // Not treated as a trusted HTTP host on its own; the caller must still gate it
+  // behind LOCAL_VALIDATION so arbitrary public HTTP hosts are rejected.
+  return hostname.toLowerCase().endsWith(MAGICDNS_SUFFIX);
+}
+
 /**
  * 环境变量 Schema
  *
@@ -313,7 +322,9 @@ export const envSchema = z
       const url = new URL(value);
       const loopbackHttp =
         url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
-      if (url.protocol !== 'https:' && !(env.LOCAL_VALIDATION && loopbackHttp)) {
+      const trustedHttp =
+        loopbackHttp || (env.LOCAL_VALIDATION && isControlledMagicDnsHost(url.hostname));
+      if (url.protocol !== 'https:' && !trustedHttp) {
         context.addIssue({
           code: 'custom',
           path: [key],
