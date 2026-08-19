@@ -26,7 +26,8 @@ import {
 } from '../observability/http-request-observation';
 import type { HttpRequestMetricsRecorder } from '../observability/http-request-metrics';
 import type { HttpRequestTrace } from '../observability/http-request-trace';
-import { getCorsOrigins, isAllCorsOriginsAllowed } from '../config/env.js';
+import { getCorsOrigins, isAllCorsOriginsAllowed, env } from '../config/env.js';
+import { getTrustedWebOrigins } from '../config/web-origin.js';
 
 export class CorsRejectionError extends Error {
   constructor(readonly origin?: string) {
@@ -51,7 +52,7 @@ export function applyGlobalMiddleware(
     readonly trace?: HttpRequestTrace;
   } = {},
 ): void {
-  const allowedOrigins = getCorsOrigins();
+  const allowedOrigins = getTrustedWebOrigins(getCorsOrigins(), env.MEMOFLOW_WEB_URL);
   const allowAllOrigins = isAllCorsOriginsAllowed();
 
   // Request metadata producer + single terminal observer (logger + metrics).

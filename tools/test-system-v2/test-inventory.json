@@ -480,6 +480,16 @@
       ]
     },
     {
+      "path": "apps/api/src/shared/infrastructure/config/web-origin.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
       "path": "apps/api/src/shared/infrastructure/cron/jobs/snapshot-rebuild.job.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10382,7 +10392,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 60
+      "fileCount": 61
     },
     {
       "id": "apps/api/vitest.smoke.config.ts",
@@ -10403,7 +10413,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 60
+      "fileCount": 61
     },
     {
       "id": "apps/desktop/vitest.config.ts",
@@ -10976,6 +10986,7 @@
       "apps/api/src/shared/infrastructure/config/get-cors-origins-keep-boundary.surface.spec.ts",
       "apps/api/src/shared/infrastructure/config/get-github-oauth-config.surface.spec.ts",
       "apps/api/src/shared/infrastructure/config/logger-bootstrap.spec.ts",
+      "apps/api/src/shared/infrastructure/config/web-origin.spec.ts",
       "apps/api/src/shared/infrastructure/cron/jobs/snapshot-rebuild.job.spec.ts",
       "apps/api/src/shared/infrastructure/cron/registerCronJobs.spec.ts",
       "apps/api/src/shared/infrastructure/http/controllers/info-result-envelope.surface.spec.ts",
@@ -11542,7 +11553,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 991,
+    "unit": 992,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

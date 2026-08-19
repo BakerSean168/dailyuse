@@ -54,6 +54,9 @@ def set_test_env(tmp_path):
     os.environ["DEV_BYPASS_AUTH"] = "true"
     os.environ["LOG_LEVEL"] = "DEBUG"
     os.environ["ALLOWED_ORIGINS"] = "http://localhost:3000"
+    # Neutralize machine-level MEMOFLOW_WEB_URL (e.g. from .env.local) so the
+    # auto-derived web origin does not leak into unrelated tests.
+    os.environ["MEMOFLOW_WEB_URL"] = ""
     os.environ["INTERNAL_REQUEST_MAX_SKEW_SECONDS"] = "300"
     os.environ["AGENT_CHECKPOINT_DIR"] = str(tmp_path / "agent-checkpoints")
 

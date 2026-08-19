@@ -3,6 +3,7 @@
 import os
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import urlparse
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -46,6 +47,24 @@ def _workspace_env_files() -> tuple[str, ...]:
     return tuple(str(path) for path in env_files)
 
 
+def _derive_web_origin(value: str | None) -> str | None:
+    """Normalize a public Web URL into its http(s) origin (no trailing path).
+
+    Returns None for empty values, non-http(s) schemes, or unparseable URLs so
+    the allowlist keeps its defaults.
+    """
+
+    if not value:
+        return None
+    try:
+        parsed = urlparse(value)
+    except ValueError:
+        return None
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        return None
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
 class Settings(BaseSettings):
     """Application configuration settings."""
 
@@ -87,6 +106,11 @@ class Settings(BaseSettings):
     # Browser allowlist for local development.
     allowed_origins: str = "http://localhost:3000,http://localhost:4200"
 
+    # Canonical public MemoFlow Web URL (e.g. Tailscale MagicDNS). Its origin
+    # is appended to the browser allowlist automatically so a browser reaching
+    # the public origin is CORS-accepted by the AI service as well.
+    memoflow_web_url: str | None = None
+
     # Helpful in local development; should stay disabled in production.
     dev_bypass_auth: bool = False
 
@@ -116,12 +140,21 @@ class Settings(BaseSettings):
 
     @property
     def allowed_origins_list(self) -> list[str]:
-        """Parse allowed origins into a list."""
-        return [
+        """Parse allowed origins into a list, including the public Web origin.
+
+        The MEMOFLOW_WEB_URL origin is appended automatically (deduped) so the
+        MagicDNS public Web URL needs no separate allowlist entry.
+        """
+
+        origins = [
             origin.strip()
             for origin in self.allowed_origins.split(",")
             if origin.strip()
         ]
+        web_origin = _derive_web_origin(self.memoflow_web_url)
+        if web_origin and web_origin not in origins:
+            origins.append(web_origin)
+        return origins
 
 
 @lru_cache
