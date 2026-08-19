@@ -14,7 +14,7 @@ import type {
   WalletAccountDTO,
   WalletTransactionDTO,
 } from '../../../domain';
-import { WalletAccountNotFoundError } from '../../errors/wallet-account-not-found-error';
+import { WalletAccountNotFoundError } from '../../../domain/errors/wallet-account-not-found-error';
 
 export class CreateWalletAccountUseCase {
   constructor(private readonly repository: IWalletRepository) {}

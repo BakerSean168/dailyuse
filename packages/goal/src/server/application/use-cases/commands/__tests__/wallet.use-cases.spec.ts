@@ -5,7 +5,7 @@ import {
   ListWalletUseCase,
   RecordWalletTransactionUseCase,
 } from '../wallet.use-cases';
-import { WalletAccountNotFoundError } from '../../../errors/wallet-account-not-found-error';
+import { WalletAccountNotFoundError } from '../../../../domain/errors/wallet-account-not-found-error';
 
 function mockRepo(): IWalletRepository {
   return {

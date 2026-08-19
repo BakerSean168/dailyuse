@@ -252,6 +252,31 @@ describe('useAIChatSession open chat Host dispatch (residual 349/351)', () => {
     expect(composable.chatTimeline.value.some((item) => item.status === 'generating')).toBe(false);
   });
 
+  it.each([
+    ['AIExecutionError category aborted', { name: 'AIExecutionError', category: 'aborted' }],
+    ['result client code ABORTED', { name: 'ResultClientError', code: 'ABORTED' }],
+    ['controller code CANCELED', { name: 'ResultClientError', code: 'CANCELED' }],
+  ])('keeps %s cancellation quiet (structured marker, no raw message)', async (_label, error) => {
+    const service = createServiceStub();
+    const composable = mountComposable(service, 'web');
+
+    await runDispatch(
+      composable,
+      service,
+      [],
+      vi.fn(async () => {
+        throw error;
+      }),
+    );
+
+    const assistant = composable.chatTimeline.value.find((item) => item.role === 'assistant');
+    expect(assistant?.status).toBe('aborted');
+    expect(assistant?.errorMessage).toBeUndefined();
+    expect(toastMocks.error).not.toHaveBeenCalled();
+    expect(composable.chatLoading.value).toBe(false);
+    expect(composable.chatTimeline.value.some((item) => item.status === 'generating')).toBe(false);
+  });
+
   it('marks the assistant draft error and toasts on a failed dispatch', async () => {
     const service = createServiceStub();
     const composable = mountComposable(service, 'web');

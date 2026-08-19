@@ -196,7 +196,10 @@ export function translateResultErrorMessage(
  */
 export function presentErrorMessage(error: unknown, fallbackMessage?: string): string {
   const normalized = normalizeResultError(error);
-  const code = normalized?.code ?? ResultCode.UNKNOWN;
+  const code =
+    resolveResultErrorCodeFallback(normalized?.code ?? ResultCode.UNKNOWN) ??
+    normalized?.code ??
+    ResultCode.UNKNOWN;
   if (isResultErrorMessageKey(code)) {
     return getDefaultResultErrorMessage(code);
   }

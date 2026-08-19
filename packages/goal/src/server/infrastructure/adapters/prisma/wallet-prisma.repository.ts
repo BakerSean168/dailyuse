@@ -5,7 +5,7 @@ import type {
   WalletTransactionDTO,
 } from '../../../domain';
 import { PrismaWalletMapper } from './mappers/prisma-wallet.mapper';
-import { WalletAccountNotFoundError } from '../../../application/errors/wallet-account-not-found-error';
+import { WalletAccountNotFoundError } from '../../../domain/errors/wallet-account-not-found-error';
 
 /**
  * Prisma 钱包仓储（R7）/ Prisma wallet repository (R7).
