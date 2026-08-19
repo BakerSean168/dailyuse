@@ -29,6 +29,7 @@ import {
   getGithubOAuthConfig,
   getGithubAppConfig,
 } from './shared/infrastructure/config/env.js';
+import { getTrustedWebOrigins } from './shared/infrastructure/config/web-origin.js';
 import { prisma, connectDatabase, disconnectDatabase } from '@memoflow/database';
 import { getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@memoflow/utils/logger';
@@ -151,9 +152,12 @@ async function bootstrap(): Promise<void> {
       '/auth/device',
       env.MEMOFLOW_WEB_URL ?? 'http://localhost:5173',
     ).toString(),
-    trustedOrigins: env.CORS_ORIGIN.split(',')
-      .map((origin) => origin.trim())
-      .filter(Boolean),
+    trustedOrigins: getTrustedWebOrigins(
+      env.CORS_ORIGIN.split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+      env.MEMOFLOW_WEB_URL,
+    ),
     github: githubOAuthConfig ?? undefined,
     userProvisioner: createCloudAccountProvisioner(prisma),
     emailDelivery: testEmailLinks?.delivery ?? baseEmailDelivery,
