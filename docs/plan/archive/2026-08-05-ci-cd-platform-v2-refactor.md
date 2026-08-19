@@ -14,7 +14,7 @@ updated: 2026-08-05T12:45:00Z
 
 ## 状态与范围
 
-- **计划状态**：Active / Architecture implementation and PR cutover complete; operational evidence window pending
+- **计划状态**：**Archived（2026-08-19）**。Architecture implementation and PR cutover complete；运营证据窗口已关——baseline-v1（7 同范围 run）已采集并记录偏差，DoD 性能项确认未达标，按偏差接受归档（不占用更多 CI run 强优化）。
 - **目标 ADR**：[ADR-041: CI/CD Platform V2 解耦与可扩展交付平台](../../architecture/adr/ADR-041-ci-cd-platform-v2.md)
 - **目标架构**：[CI/CD Platform V2](../../architecture/ci-cd-platform-v2.md)
 - **前置决策**：[ADR-040: Test System V2](../../architecture/adr/ADR-040-test-system-v2.md)
@@ -46,6 +46,26 @@ workflow：
 | W12 cutover/archive        | PR #210 cutover 已完成；长期指标后归档                          | required context 已同步、旧入口清理和最终运营证据                                                |
 
 W11/W12 不会产生第二套实现；它们只验证已经完成的契约，并在证据充分后把本计划归档。
+
+## 运营证据窗口偏差记录（2026-08-19 归档前）
+
+`reports/ci-cd-platform-v2/baseline-v1.json` 已采集 7 次同范围 comparable run
+（2026-08-16），作为最终运营证据：
+
+| 指标 | 实测 P50 | DoD 目标 | 偏差 |
+| ---- | ------: | -------: | ----: |
+| wallClock | 10.66 min | 7–8 min | **-26%（未达标）** |
+| runner-min | 49.88 | 42.3 | **-15%（未达标）** |
+
+瓶颈定位（PR #245 run 32213541128 实际 job 墙钟）：总墙钟 10.6 min 由
+`Scope → Unit Tests(6.3) → Verification Children(6.5) → Web Flow 4×shard(各 6.4) → Oracle`
+串行链决定；runner-min 大头是 Web Flow 4 parallel shard（≈4×6.4 = 25 runner-min）。
+
+**归档决定（Alex 2026-08-19）**：DoD 性能项确认未达标，但接受为按偏差归档——不强行为此
+优化 CI（Unit/Typecheck 并行化、Web shard 拆分等会占用大量 GitHub Actions run 时间且引入
+workflow 回归风险），架构/契约/运营闭环已全部验证。CI 性能优化如有需要可作为独立 backlog
+记录，不纳入本计划。W8/W11 的 main scheduled audit 亦按证据已足归档（契约已由本地矩阵与
+PR #210 evidence 通过）。
 
 ## Remote Evidence Checkpoint
 
