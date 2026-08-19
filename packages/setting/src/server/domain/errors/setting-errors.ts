@@ -17,6 +17,7 @@ export class UnknownSettingKeyError extends ResultErrorException {
       'setting_unknown_key',
       undefined,
       { key },
+      400,
     );
   }
 }
@@ -31,6 +32,7 @@ export class UnknownSettingCategoryError extends ResultErrorException {
       'setting_unknown_category',
       undefined,
       { category },
+      400,
     );
   }
 }
@@ -45,6 +47,7 @@ export class SettingValidationError extends ResultErrorException {
       'setting_validation_failed',
       undefined,
       { key, reason },
+      400,
     );
   }
 }

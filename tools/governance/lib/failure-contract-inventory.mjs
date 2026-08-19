@@ -156,14 +156,12 @@ function isMessageComparison(node) {
 }
 
 function containsResultErrorMessage(node) {
-  if (ts.isPropertyAccessExpression(node) && node.name.text === 'message') {
-    const text = node.getText();
-    return (
-      /\b(?:result|error|failure|err)\.(?:error|failure)?\.message$/.test(text) ||
-      /\b(?:error|failure)\.message$/.test(text)
-    );
-  }
-  return ts.isIdentifier(node) && ERROR_MESSAGE_IDENTIFIERS.has(node.text);
+  if (!ts.isPropertyAccessExpression(node) || node.name.text !== 'message') return false;
+  const text = node.getText();
+  return (
+    /\b(?:result|error|failure|err)\.(?:error|failure)?\.message$/.test(text) ||
+    /\b(?:error|failure)\.message$/.test(text)
+  );
 }
 
 function isRawMessageRethrow(node) {
