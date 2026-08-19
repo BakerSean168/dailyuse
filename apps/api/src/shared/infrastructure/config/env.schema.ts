@@ -323,7 +323,7 @@ export const envSchema = z
       const loopbackHttp =
         url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
       const trustedHttp =
-        loopbackHttp || (env.LOCAL_VALIDATION && isControlledMagicDnsHost(url.hostname));
+        env.LOCAL_VALIDATION && (loopbackHttp || isControlledMagicDnsHost(url.hostname));
       if (url.protocol !== 'https:' && !trustedHttp) {
         context.addIssue({
           code: 'custom',

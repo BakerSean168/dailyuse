@@ -67,6 +67,25 @@ describe('envSchema Tailscale MagicDNS HTTP in local validation lane', () => {
     ).toThrow(/AUTH_BASE_URL must use HTTPS/);
   });
 
+  it('rejects loopback HTTP in production without LOCAL_VALIDATION', () => {
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        AUTH_BASE_URL: 'http://localhost:12136/api/auth',
+        MEMOFLOW_WEB_URL: 'http://127.0.0.1:12137',
+      }),
+    ).toThrow(/AUTH_BASE_URL must use HTTPS/);
+    expect(() =>
+      envSchema.parse({
+        ...required,
+        NODE_ENV: 'production',
+        AUTH_BASE_URL: 'https://api.example.com/api/auth',
+        MEMOFLOW_WEB_URL: 'http://[::1]:8080',
+      }),
+    ).toThrow(/MEMOFLOW_WEB_URL must use HTTPS/);
+  });
+
   it('allows MagicDNS HTTP in production with LOCAL_VALIDATION', () => {
     expect(
       envSchema.parse({

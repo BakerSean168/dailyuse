@@ -49,6 +49,14 @@ describe('presentErrorMessage', () => {
     expect(presentErrorMessage({ code: 'MYSTERY_CODE' }, '自定义提示')).toBe('自定义提示');
   });
 
+  it('resolves legacy alias codes to their canonical message (USER_ALREADY_EXISTS → CONFLICT)', () => {
+    expect(
+      presentErrorMessage({ code: 'USER_ALREADY_EXISTS', message: 'Provider raw duplicate text' }),
+    ).toBe('资源冲突');
+    expect(presentErrorMessage({ code: 'ENTITY_NOT_FOUND', message: 'raw' })).toBe('资源不存在');
+    expect(presentErrorMessage({ code: 'AUTH_REQUIRED', message: 'raw' })).toBe('未授权，请登录');
+  });
+
   it('resolves a PublicFailure-shaped error by its code', () => {
     const failure = createPublicFailure(TestFailureRegistry, 'NOT_FOUND', {});
     const resultError = toLegacyResultError(failure, 'Provider raw message');
