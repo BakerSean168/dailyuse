@@ -22,6 +22,7 @@ export class ScheduleStrategyNotFoundError extends ResultErrorException {
       'schedule_strategy_not_found',
       undefined,
       context,
+      400,
     );
   }
 }
@@ -38,6 +39,9 @@ export class SourceEntityNoScheduleRequiredError extends ResultErrorException {
     super(
       `源实体不需要调度：${sourceModule}/${sourceEntityId}${reason ? ` (${reason})` : ''}`,
       'source_entity_no_schedule_required',
+      undefined,
+      undefined,
+      400,
     );
   }
 }
@@ -56,7 +60,7 @@ export class ScheduleTaskCreationError extends ResultErrorException {
       'schedule_task_creation_error',
       undefined,
       undefined,
-      undefined,
+      400,
       originalError,
     );
   }
@@ -75,7 +79,7 @@ export class ScheduleTaskUpdateError extends ResultErrorException {
       'schedule_task_update_error',
       undefined,
       undefined,
-      undefined,
+      400,
       originalError,
     );
   }
@@ -86,7 +90,7 @@ export class ScheduleTaskUpdateError extends ResultErrorException {
  */
 export class ScheduleTaskNotFoundError extends ResultErrorException {
   constructor(taskId: string) {
-    super(`调度任务未找到：${taskId}`, 'schedule_task_not_found');
+    super(`调度任务未找到：${taskId}`, 'schedule_task_not_found', undefined, undefined, 400);
   }
 }
 
@@ -95,7 +99,7 @@ export class ScheduleTaskNotFoundError extends ResultErrorException {
  */
 export class ScheduleTaskDisabledError extends ResultErrorException {
   constructor(taskId: string) {
-    super(`调度任务已禁用：${taskId}`, 'schedule_task_disabled');
+    super(`调度任务已禁用：${taskId}`, 'schedule_task_disabled', undefined, undefined, 400);
   }
 }
 
@@ -107,6 +111,9 @@ export class ScheduleTaskInvalidStatusError extends ResultErrorException {
     super(
       `调度任务状态无效：${taskId} (当前状态: ${currentStatus})`,
       'schedule_task_invalid_status',
+      undefined,
+      undefined,
+      400,
     );
   }
 }

@@ -9984,6 +9984,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/utils/src/errors/extract-error-info.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/utils/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/utils/src/errors/result-error-mapper.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10822,7 +10830,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "id": "memoflow:test:governance",
@@ -11534,7 +11542,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 990,
+    "unit": 991,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

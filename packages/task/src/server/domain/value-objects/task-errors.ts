@@ -10,7 +10,7 @@ import { ResultErrorException } from '@memoflow/contracts/result';
  */
 export class TaskTemplateNotFoundError extends ResultErrorException {
   constructor(templateId: string) {
-    super(`任务模板未找到：${templateId}`, 'task_template_not_found');
+    super(`任务模板未找到：${templateId}`, 'task_template_not_found', undefined, undefined, 400);
   }
 }
 
@@ -23,6 +23,9 @@ export class InvalidTaskTemplateStateError extends ResultErrorException {
     super(
       `${message}${contextStr}`,
       'invalid_task_template_state',
+      undefined,
+      undefined,
+      400,
     );
   }
 }
@@ -32,7 +35,7 @@ export class InvalidTaskTemplateStateError extends ResultErrorException {
  */
 export class TaskTemplateArchivedError extends ResultErrorException {
   constructor(templateId: string) {
-    super(`任务模板已归档：${templateId}`, 'task_template_archived');
+    super(`任务模板已归档：${templateId}`, 'task_template_archived', undefined, undefined, 400);
   }
 }
 
@@ -44,6 +47,9 @@ export class RecurrenceRuleNotImplementedError extends ResultErrorException {
     super(
       `重复规则未实现：${ruleType}`,
       'recurrence_rule_not_implemented',
+      undefined,
+      undefined,
+      400,
     );
   }
 }
@@ -53,7 +59,7 @@ export class RecurrenceRuleNotImplementedError extends ResultErrorException {
  */
 export class InvalidGoalBindingError extends ResultErrorException {
   constructor(reason: string) {
-    super(`目标绑定无效：${reason}`, 'invalid_goal_binding');
+    super(`目标绑定无效：${reason}`, 'invalid_goal_binding', undefined, undefined, 400);
   }
 }
 
@@ -67,6 +73,9 @@ export class InvalidDateRangeError extends ResultErrorException {
     super(
       `日期范围无效：开始日期 ${start.toISOString()} 晚于结束日期 ${end.toISOString()}`,
       'invalid_date_range',
+      undefined,
+      undefined,
+      400,
     );
   }
 }
@@ -79,6 +88,9 @@ export class InstanceGenerationFailedError extends ResultErrorException {
     super(
       `任务实例生成失败：${templateId}${reason ? ` - ${reason}` : ''}`,
       'instance_generation_failed',
+      undefined,
+      undefined,
+      400,
     );
   }
 }
@@ -88,7 +100,7 @@ export class InstanceGenerationFailedError extends ResultErrorException {
  */
 export class TaskInstanceNotFoundError extends ResultErrorException {
   constructor(instanceId: string) {
-    super(`任务实例未找到：${instanceId}`, 'task_instance_not_found');
+    super(`任务实例未找到：${instanceId}`, 'task_instance_not_found', undefined, undefined, 400);
   }
 }
 
@@ -97,6 +109,12 @@ export class TaskInstanceNotFoundError extends ResultErrorException {
  */
 export class TaskInstanceAlreadyCompletedError extends ResultErrorException {
   constructor(instanceId: string) {
-    super(`任务实例已完成：${instanceId}`, 'task_instance_already_completed');
+    super(
+      `任务实例已完成：${instanceId}`,
+      'task_instance_already_completed',
+      undefined,
+      undefined,
+      400,
+    );
   }
 }

@@ -103,7 +103,7 @@ function collectEvents(
           undefined,
           undefined,
           undefined,
-          errorEvent.message,
+          new Error(errorEvent.message),
         );
       }
       return events;

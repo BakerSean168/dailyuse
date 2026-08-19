@@ -38,7 +38,9 @@ describe('failure contract source inventory', () => {
     expect(ruleIds(`throw new Error(result.error.message);`)).toContain(rawRethrow);
     expect(ruleIds(`throw new Error(envelope.error.message);`)).toContain(rawRethrow);
     expect(ruleIds(`throw new Error(x.failure.message);`)).toContain(rawRethrow);
-    expect(ruleIds(`if (x) throw new Error(errorMessage);`)).toContain(rawRethrow);
+    expect(ruleIds(`throw new Error(exception.failure.message);`)).toContain(rawRethrow);
+    expect(ruleIds(`throw new Error(errorMessage);`)).not.toContain(rawRethrow);
+    expect(ruleIds(`throw new Error(errMsg);`)).not.toContain(rawRethrow);
   });
 
   it('ignores message shape guards and business objects named message', () => {
