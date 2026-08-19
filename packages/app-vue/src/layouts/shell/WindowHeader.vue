@@ -4,15 +4,15 @@
  *
  * 桌面式壳的顶栏（h-48px）。三段式：
  * - 左：侧栏折叠按钮 · 返回/前进
- * - 中：工作区 launcher + 全局模块复合胶囊
+ * - 中：全局模块复合胶囊
  * - 右：Schedule/Notification 复合胶囊 · 右侧面板 Toggle · 窗口控制
  *
  * 顶栏胶囊是全局模块启动器和摘要预览；BusinessPanel Tab 只表达当前业务上下文。
  * 桌面窗控复用既有 useDesktopWindowControls（apps/desktop 已落地 IPC）。
  * 交互逻辑不接业务数据，只 emit 给 AppShell。
  *
- * 契约：workspace launcher 的 data-testid = `shell-workspace-launcher`；
- * 复合入口主按钮/预览按钮分别是 `capsule-nav-*` / `capsule-preview-*`。
+ * 契约：复合入口主按钮/预览按钮分别是 `capsule-nav-*` / `capsule-preview-*`；
+ * Settings 模式复用同一顶栏承载「返回应用 + 设置」标题，避免叠两层 48px header。
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -26,7 +26,6 @@ import {
   PanelRight,
   PanelRightClose,
   Square,
-  PanelsTopLeft,
   X,
 } from '@lucide/vue';
 import type { Component } from 'vue';
@@ -73,7 +72,7 @@ const emit = defineEmits<{
   (e: 'toggle-right-panel'): void;
   (e: 'go-back'): void;
   (e: 'go-forward'): void;
-  (e: 'open-workspace'): void;
+  (e: 'return-to-app'): void;
   (e: 'open-module', payload: { id: string; route: string }): void;
   (e: 'window-minimize'): void;
   (e: 'window-toggle-maximize'): void;
@@ -94,58 +93,63 @@ const utilityCapsules = computed(() =>
   <header
     class="window-header flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 text-xs"
     :class="[isDesktop ? 'window-header--drag' : '', isMac ? 'pl-20' : '']"
+    data-testid="window-header"
+    :data-header-mode="props.mode ?? 'workspace'"
   >
-    <!-- 左：侧栏折叠 + 前进后退 -->
+    <!-- 左：workspace 导航；settings 则直接承载独立场景页头，避免双 header 空白。 -->
     <div class="flex shrink-0 items-center gap-2 no-drag">
-      <button
-        v-if="props.mode !== 'settings'"
-        type="button"
-        class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        :title="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
-        :aria-label="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
-        @click="emit('toggle-sidebar')"
-      >
-        <PanelLeftClose v-if="!sidebarCollapsed" class="h-4 w-4" />
-        <PanelLeft v-else class="h-4 w-4" />
-      </button>
-      <!-- 历史后退/前进只在 workspace 显示；设置场景仅保留「返回应用」单一返回语义，
-           避免两个「返回」语义重叠（Phase 3）。 -->
-      <div v-if="props.mode !== 'settings'" class="flex items-center gap-1">
+      <template v-if="props.mode === 'settings'">
         <button
           type="button"
-          class="rounded p-1 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
-          :title="t('shell.back')"
-          :aria-label="t('shell.back')"
-          @click="emit('go-back')"
+          data-testid="settings-return-to-app"
+          class="flex shrink-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          @click="emit('return-to-app')"
         >
-          <ArrowLeft class="h-3.5 w-3.5" />
+          <ArrowLeft class="h-4 w-4" />
+          <span>{{ t('shell.settings.returnToApp') }}</span>
         </button>
+        <span class="h-4 w-px bg-border" aria-hidden="true" />
+        <h1 class="truncate text-sm font-semibold">{{ t('setting.title') }}</h1>
+      </template>
+
+      <template v-else>
         <button
           type="button"
-          class="rounded p-1 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
-          :title="t('shell.forward')"
-          :aria-label="t('shell.forward')"
-          @click="emit('go-forward')"
+          class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          :title="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
+          :aria-label="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
+          @click="emit('toggle-sidebar')"
         >
-          <ArrowRight class="h-3.5 w-3.5" />
+          <PanelLeftClose v-if="!sidebarCollapsed" class="h-4 w-4" />
+          <PanelLeft v-else class="h-4 w-4" />
         </button>
-      </div>
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            class="rounded p-1 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
+            :title="t('shell.back')"
+            :aria-label="t('shell.back')"
+            @click="emit('go-back')"
+          >
+            <ArrowLeft class="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            class="rounded p-1 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
+            :title="t('shell.forward')"
+            :aria-label="t('shell.forward')"
+            @click="emit('go-forward')"
+          >
+            <ArrowRight class="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </template>
     </div>
 
     <div
       v-if="props.mode !== 'settings'"
       class="no-drag flex min-w-0 flex-1 items-center justify-center gap-1.5 overflow-hidden"
     >
-      <button
-        type="button"
-        data-testid="shell-workspace-launcher"
-        class="flex min-h-9 shrink-0 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        :aria-label="t('shell.openWorkspace')"
-        @click="emit('open-workspace')"
-      >
-        <PanelsTopLeft class="h-4 w-4" />
-        <span class="workspace-launcher-label">{{ t('shell.openWorkspace') }}</span>
-      </button>
       <nav
         v-if="primaryCapsules.length"
         class="flex min-w-0 items-center gap-1 overflow-x-auto py-1"
@@ -254,11 +258,5 @@ const utilityCapsules = computed(() =>
 }
 .no-drag {
   -webkit-app-region: no-drag;
-}
-
-@media (max-width: 1000px) {
-  .workspace-launcher-label {
-    display: none;
-  }
 }
 </style>

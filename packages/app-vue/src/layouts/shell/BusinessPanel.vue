@@ -3,7 +3,7 @@
  * BusinessPanel (UI 重构 V2 壳)
  *
  * 多 Tab 业务工作区（V2 §2.3，参照 Codex 桌面端右侧面板）。
- * Tab 条 [模块图标 + 标题] ×N + 右侧 Maximize/Minimize + ✕(关面板)；
+ * Tab 条 [模块图标 + 标题] ×N + 右侧 Focus/Exit Focus；
  * 内容区放 <router-view> + KeepAlive（由 AppShell 通过 slot 注入）。
  *
  * 面板两档（V2 §7）：内容区用 ResizeObserver 实测宽度并 provide
@@ -43,7 +43,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'activate-tab', id: string): void;
   (e: 'close-tab', id: string): void;
-  (e: 'close-panel'): void;
   (e: 'show-home'): void;
   (e: 'show-workflow'): void;
   (e: 'close-workflow'): void;
@@ -178,7 +177,6 @@ const isFocused = computed(() => props.layout === 'focus');
       <!-- 面板级控制 -->
       <div class="flex shrink-0 items-center gap-0.5 pl-1">
         <button
-          v-if="panelSurface !== 'home'"
           type="button"
           data-testid="business-panel-focus-toggle"
           class="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -187,16 +185,6 @@ const isFocused = computed(() => props.layout === 'focus');
           @click="emit('toggle-focus')"
         >
           <component :is="isFocused ? Minimize2 : Maximize2" class="h-3.5 w-3.5" />
-        </button>
-        <button
-          type="button"
-          data-testid="business-panel-close"
-          class="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          :title="t('shell.panel.closePanel')"
-          :aria-label="t('shell.panel.closePanel')"
-          @click="emit('close-panel')"
-        >
-          <X class="h-4 w-4" />
         </button>
       </div>
     </div>

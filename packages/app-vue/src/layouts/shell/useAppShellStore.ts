@@ -3,7 +3,8 @@
  *
  * 承载 ChatGPT 桌面式壳的视图状态：右侧面板 surface、业务多 Tab 集合、
  * 布局态（split / focus）、侧栏与面板宽度。localStorage 持久化实现"会话恢复"
- * （重启后还原上次打开的 Tabs + 各自路由 + 布局偏好，V2 §11 拍板）。
+ * （重启后还原上次打开的 Tabs + 各自路由；显式 focus/split 偏好按 AI conversation id
+ * 记忆，避免某个会话的专注态污染其他会话）。
  *
  * 契约（docs/UI_REDESIGN_V2_PLAN.md + 2026-07-14 壳层诊断修订）：
  * - §2.3 多 Tab：胶囊/深链落 Tab（同 module 已开则激活，否则新开）；
@@ -101,6 +102,8 @@ interface AppShellState {
   workflowAttentionCount: number;
   layout: ShellLayout;
   layoutReason: ShellLayoutReason;
+  /** 用户显式 focus/split 偏好，按 AI conversation id 持久化。 */
+  conversationLayoutPreferences: Record<string, ShellLayout>;
   sidebarCollapsed: boolean;
   sidebarWidth: number;
   /**
@@ -157,6 +160,7 @@ export const useAppShellStore = defineStore('app-shell', {
     workflowAttentionCount: 0,
     layout: 'split',
     layoutReason: 'default',
+    conversationLayoutPreferences: {},
     sidebarCollapsed: false,
     sidebarWidth: SIDEBAR_DEFAULT,
     panelWidth: null,
@@ -267,8 +271,6 @@ export const useAppShellStore = defineStore('app-shell', {
         this.returnPanelSurface = null;
         this.rightPanelOpen = true;
         this.surfaceStatus = 'clean';
-        this.layout = 'split';
-        this.layoutReason = 'default';
         return null;
       }
 
@@ -292,8 +294,6 @@ export const useAppShellStore = defineStore('app-shell', {
       this.panelSurface = 'home';
       this.returnPanelSurface = null;
       this.surfaceStatus = 'clean';
-      this.layout = 'split';
-      this.layoutReason = 'default';
     },
 
     /** 用户显式隐藏右侧面板；保留 Tab、surface、草稿和 focus 偏好。 */
@@ -311,8 +311,6 @@ export const useAppShellStore = defineStore('app-shell', {
       this.panelSurface = 'home';
       this.returnPanelSurface = null;
       this.surfaceStatus = 'clean';
-      this.layout = 'split';
-      this.layoutReason = 'default';
     },
 
     setSurfaceStatus(status: PanelSurfaceStatus): void {
@@ -396,8 +394,6 @@ export const useAppShellStore = defineStore('app-shell', {
         }
         if (next.length === 0) {
           this.panelSurface = 'home';
-          this.layout = 'split';
-          this.layoutReason = 'default';
         }
       }
 
@@ -433,10 +429,33 @@ export const useAppShellStore = defineStore('app-shell', {
       this.layoutReason = reason;
     },
 
-    /** B ⇄ C 切换（分栏 ⇄ 专注）；用户显式操作。 */
-    toggleFocus(): void {
+    /** 返回指定 AI 会话的显式布局偏好；无记录/非法记录时返回 null。 */
+    getConversationLayoutPreference(conversationId: string | null | undefined): ShellLayout | null {
+      if (!conversationId) return null;
+      const value = this.conversationLayoutPreferences[conversationId];
+      return value === 'focus' || value === 'split' ? value : null;
+    },
+
+    /** 记录用户显式布局选择；viewport 自动 focus 不调用此动作。 */
+    rememberConversationLayout(
+      conversationId: string | null | undefined,
+      layout: ShellLayout,
+    ): void {
+      if (!conversationId) return;
+      this.conversationLayoutPreferences[conversationId] = layout;
+    },
+
+    /** 会话删除时同步清理其本地布局偏好，避免持久化 map 长期残留孤儿键。 */
+    forgetConversationLayout(conversationId: string | null | undefined): void {
+      if (!conversationId) return;
+      delete this.conversationLayoutPreferences[conversationId];
+    },
+
+    /** B ⇄ C 切换（分栏 ⇄ 专注）；用户显式操作，并可按当前 AI 会话记忆。 */
+    toggleFocus(conversationId?: string | null): void {
       this.layout = this.layout === 'focus' ? 'split' : 'focus';
       this.layoutReason = 'user';
+      this.rememberConversationLayout(conversationId, this.layout);
     },
 
     toggleSidebar(): void {
@@ -489,8 +508,7 @@ export const useAppShellStore = defineStore('app-shell', {
       'activeTabId',
       'rightPanelOpen',
       'panelSurface',
-      'layout',
-      'layoutReason',
+      'conversationLayoutPreferences',
       'sidebarCollapsed',
       'sidebarWidth',
       'panelWidth',
