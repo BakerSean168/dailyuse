@@ -47,9 +47,7 @@ test.describe('Local Docker core product Phase C', () => {
     await expect(page.getByTestId('ai-welcome-configure-ai')).toHaveText('配置 AI');
     await expect(page.getByTestId('ai-welcome-create-goal')).toHaveText('创建第一个目标');
     await expect(page.getByTestId('ai-welcome-quick-task')).toHaveText('添加今日任务');
-    await expect(page.getByText('尚未配置可用模型。请先在设置中接入 AI 服务商。')).toHaveCount(
-      0,
-    );
+    await expect(page.getByText('尚未配置可用模型。请先在设置中接入 AI 服务商。')).toHaveCount(0);
     await expectComposerGeometry(page.getByTestId('ai-footer-composer'));
 
     await panelToggle.click();
@@ -73,7 +71,7 @@ test.describe('Local Docker core product Phase C', () => {
     });
     // The goal form is intentionally modal, so its overlay owns pointer input. Force the
     // shell control here to exercise the cross-surface dirty-state contract itself.
-    await page.getByTestId('business-panel-close').dispatchEvent('click');
+    await panelToggle.dispatchEvent('click');
     expect(dismissedPrompt).toContain('未保存内容');
     await expect(panel).toBeVisible();
     await expect(page.getByTestId('goal-name-input')).toHaveValue(draftTitle);
@@ -83,7 +81,7 @@ test.describe('Local Docker core product Phase C', () => {
       acceptedPrompt = dialog.message();
       await dialog.accept();
     });
-    await page.getByTestId('business-panel-close').dispatchEvent('click');
+    await panelToggle.dispatchEvent('click');
     expect(acceptedPrompt).toContain('未保存内容');
     await expect(panel).toBeHidden();
 

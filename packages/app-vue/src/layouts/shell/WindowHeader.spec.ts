@@ -12,6 +12,7 @@ const i18n = createI18n({
   messages: {
     'en-US': {
       common: { expand: 'Expand', collapse: 'Collapse' },
+      setting: { title: 'Settings' },
       nav: {
         capsule: {
           goal: 'Goals',
@@ -29,11 +30,11 @@ const i18n = createI18n({
         moduleNav: 'Module navigation',
         moduleWithCount: '{name}, {count} items',
         previewModule: 'Preview {name}',
-        openWorkspace: 'Open workspace',
         openSchedule: 'Open schedule',
         enterModule: 'Enter',
         previewPlaceholder: 'Preview',
         schedule: { empty: 'Nothing scheduled today' },
+        settings: { returnToApp: 'Back to app' },
         window: { minimize: 'Minimize', maximize: 'Maximize', close: 'Close' },
       },
     },
@@ -41,7 +42,7 @@ const i18n = createI18n({
 });
 
 describe('WindowHeader workspace navigation', () => {
-  it('renders compound module capsules alongside the workspace launcher', async () => {
+  it('renders compound module capsules without the redundant workspace launcher', async () => {
     const wrapper = mount(WindowHeader, {
       props: {
         sidebarCollapsed: false,
@@ -51,7 +52,7 @@ describe('WindowHeader workspace navigation', () => {
       global: { plugins: [i18n] },
     });
 
-    expect(wrapper.get('[data-testid="shell-workspace-launcher"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="shell-workspace-launcher"]').exists()).toBe(false);
     expect(wrapper.get('[data-testid="capsule-nav-goal"]').exists()).toBe(true);
     expect(wrapper.get('[data-testid="capsule-preview-goal"]').exists()).toBe(true);
 
@@ -59,17 +60,24 @@ describe('WindowHeader workspace navigation', () => {
     expect(wrapper.emitted('open-module')).toEqual([[{ id: 'goal', route: '/goals' }]]);
   });
 
-  it('opens the workspace through its single launcher', async () => {
+  it('uses the single shell header as the Settings page header', async () => {
     const wrapper = mount(WindowHeader, {
       props: {
+        mode: 'settings',
         sidebarCollapsed: false,
         rightPanelOpen: true,
       },
       global: { plugins: [i18n] },
     });
 
-    await wrapper.get('[data-testid="shell-workspace-launcher"]').trigger('click');
-    expect(wrapper.emitted('open-workspace')).toHaveLength(1);
+    expect(wrapper.get('[data-testid="window-header"]').attributes('data-header-mode')).toBe(
+      'settings',
+    );
+    expect(wrapper.find('[data-testid="shell-primary-capsules"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Settings');
+
+    await wrapper.get('[data-testid="settings-return-to-app"]').trigger('click');
+    expect(wrapper.emitted('return-to-app')).toHaveLength(1);
   });
 
   it('exposes a dynamic right-panel toggle without changing sidebar state', async () => {

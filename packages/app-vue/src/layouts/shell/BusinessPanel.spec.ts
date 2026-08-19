@@ -20,7 +20,6 @@ const i18n = createI18n({
           closeWorkflow: 'Close workflow',
           enterFocus: 'Enter focus',
           exitFocus: 'Exit focus',
-          closePanel: 'Close side panel',
           resize: 'Resize business panel',
         },
       },
@@ -72,6 +71,10 @@ describe('BusinessPanel surfaces', () => {
     );
     expect(wrapper.findAll('[data-testid="business-draft"]')).toHaveLength(1);
     expect(wrapper.text()).toContain('Goals');
+    expect(
+      wrapper.get('[data-testid="business-panel-focus-toggle"]').attributes('aria-label'),
+    ).toBe('Enter focus');
+    expect(wrapper.find('[data-testid="business-panel-close"]').exists()).toBe(false);
     expect(tabs).toHaveLength(1);
   });
 
@@ -87,28 +90,27 @@ describe('BusinessPanel surfaces', () => {
     expect(wrapper.get('[data-testid="workflow-surface"]').exists()).toBe(true);
   });
 
-  it('exposes distinct workflow, Home, focus, and close commands', async () => {
+  it('exposes distinct workflow, Home, and focus commands without a redundant panel close', async () => {
     const wrapper = mountPanel('workflow');
 
     await wrapper.get('[data-testid="business-panel-home"]').trigger('click');
     await wrapper.get('[data-testid="business-panel-workflow"]').trigger('click');
     await wrapper.get('[data-testid="business-panel-focus-toggle"]').trigger('click');
-    await wrapper.get('[data-testid="business-panel-close"]').trigger('click');
 
     expect(wrapper.emitted('show-home')).toHaveLength(1);
     expect(wrapper.emitted('show-workflow')).toHaveLength(1);
     expect(wrapper.emitted('toggle-focus')).toHaveLength(1);
-    expect(wrapper.emitted('close-panel')).toHaveLength(1);
+    expect(wrapper.find('[data-testid="business-panel-close"]').exists()).toBe(false);
   });
 
-  it('keeps tab and close hit targets at their keyboard-operable minimum sizes', () => {
+  it('keeps tab-close and focus hit targets at their keyboard-operable minimum sizes', () => {
     const wrapper = mountPanel('business');
 
     expect(wrapper.get('[aria-current="page"]').classes()).toContain('min-h-9');
     expect(wrapper.get('[data-testid="business-panel-tab-close"]').classes()).toEqual(
       expect.arrayContaining(['h-8', 'w-8']),
     );
-    expect(wrapper.get('[data-testid="business-panel-close"]').classes()).toEqual(
+    expect(wrapper.get('[data-testid="business-panel-focus-toggle"]').classes()).toEqual(
       expect.arrayContaining(['h-9', 'w-9']),
     );
   });

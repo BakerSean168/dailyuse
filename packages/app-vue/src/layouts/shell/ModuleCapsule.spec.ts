@@ -36,9 +36,29 @@ describe('ModuleCapsule', () => {
     await navigation.trigger('click');
     expect(wrapper.emitted('open')).toEqual([[{ id: 'goal', route: '/goals' }]]);
 
+    // Quick pointer passes must not flash the preview open.
     await preview.trigger('mouseenter');
+    expect(preview.attributes('aria-expanded')).toBe('false');
+    vi.advanceTimersByTime(200);
+    await preview.trigger('mouseleave');
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    expect(preview.attributes('aria-expanded')).toBe('false');
+
+    // A deliberate hover dwell opens, then the existing close grace period applies.
+    await preview.trigger('mouseenter');
+    vi.advanceTimersByTime(300);
+    await nextTick();
     expect(preview.attributes('aria-expanded')).toBe('true');
     await preview.trigger('mouseleave');
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    expect(preview.attributes('aria-expanded')).toBe('false');
+
+    // Keyboard focus stays immediate for accessibility.
+    await preview.trigger('focus');
+    expect(preview.attributes('aria-expanded')).toBe('true');
+    await preview.trigger('blur');
     vi.advanceTimersByTime(200);
     await nextTick();
     expect(preview.attributes('aria-expanded')).toBe('false');

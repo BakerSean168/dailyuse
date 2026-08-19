@@ -27,6 +27,7 @@ updated: 2026-08-05T10:00:00+08:00
 
 | 日期       | 计划                                                                                                     | 结果                                                                                         |
 | ---------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 2026-08-20 | [UI Shell Focus Polish](./2026-08-19-ui-shell-focus-polish.md)                                           | #250：Settings 单顶栏、300ms hover intent、移除冗余控件、按 AI 会话记忆 focus/split          |
 | 2026-08-08 | [基础 UI 与 Shell 重构](./2026-08-06-ui-foundation-and-shell-refactor.md)                               | 三栏最小宽度与拖拽收缩、compound capsule、设置页扁平化；local-docker 产品旅程 7/7            |
 | 2026-08-08 | [基础 UI 与桌面 Shell 后续优化](./2026-08-06-ui-foundation-shell-follow-up-optimization.md)             | 场景生命周期/导航意图/滚动宿主/模块骨架；commit 784fb9f6                                   |
 | 2026-08-08 | [业务闭环与模块边界重构 R0-R7](./2026-08-07-business-loop-and-module-boundary-rebuild.md)               | R0-R7 实施完成；local-docker e2e 7/7、PR #211 19/19 全绿                                    |

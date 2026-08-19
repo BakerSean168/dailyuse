@@ -26,7 +26,17 @@ const { t } = useI18n();
 
 const open = ref(false);
 const pinned = ref(false);
+// Match the app-wide tooltip dwell so capsule previews feel consistent with other hover affordances.
+const HOVER_OPEN_DELAY_MS = 300;
+let openTimer: ReturnType<typeof setTimeout> | null = null;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearOpenTimer(): void {
+  if (openTimer) {
+    clearTimeout(openTimer);
+    openTimer = null;
+  }
+}
 
 function clearCloseTimer(): void {
   if (closeTimer) {
@@ -35,12 +45,23 @@ function clearCloseTimer(): void {
   }
 }
 
-function openPreview(): void {
+function openPreviewImmediately(): void {
+  clearOpenTimer();
   clearCloseTimer();
   open.value = true;
 }
 
+function scheduleHoverOpen(): void {
+  if (open.value || pinned.value || openTimer) return;
+  clearCloseTimer();
+  openTimer = setTimeout(() => {
+    openTimer = null;
+    if (!pinned.value) open.value = true;
+  }, HOVER_OPEN_DELAY_MS);
+}
+
 function scheduleClose(): void {
+  clearOpenTimer();
   if (pinned.value) return;
   clearCloseTimer();
   closeTimer = setTimeout(() => {
@@ -50,9 +71,9 @@ function scheduleClose(): void {
 }
 
 function focusPreviewContent(): void {
-  const content = [...document.querySelectorAll<HTMLElement>('[data-capsule-preview-content]')].find(
-    (entry) => entry.dataset.capsulePreviewContent === props.id,
-  );
+  const content = [
+    ...document.querySelectorAll<HTMLElement>('[data-capsule-preview-content]'),
+  ].find((entry) => entry.dataset.capsulePreviewContent === props.id);
   const target = content?.querySelector<HTMLElement>(
     'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
   );
@@ -60,6 +81,7 @@ function focusPreviewContent(): void {
 }
 
 function togglePinned(event: MouseEvent): void {
+  clearOpenTimer();
   clearCloseTimer();
   pinned.value = !pinned.value;
   open.value = pinned.value;
@@ -77,6 +99,8 @@ function handleOpenChange(value: boolean): void {
 }
 
 function dismissPreview(): void {
+  clearOpenTimer();
+  clearCloseTimer();
   pinned.value = false;
   open.value = false;
 }
@@ -87,7 +111,10 @@ function enterModule(): void {
   emit('open', { id: props.id, route: props.route });
 }
 
-onBeforeUnmount(clearCloseTimer);
+onBeforeUnmount(() => {
+  clearOpenTimer();
+  clearCloseTimer();
+});
 </script>
 
 <template>
@@ -123,9 +150,9 @@ onBeforeUnmount(clearCloseTimer);
           :aria-label="t('shell.previewModule', { name: label })"
           :aria-expanded="open"
           aria-haspopup="dialog"
-          @mouseenter="openPreview"
+          @mouseenter="scheduleHoverOpen"
           @mouseleave="scheduleClose"
-          @focus="openPreview"
+          @focus="openPreviewImmediately"
           @blur="scheduleClose"
           @click="togglePinned"
         >
@@ -139,9 +166,9 @@ onBeforeUnmount(clearCloseTimer);
       align="start"
       :side-offset="8"
       :data-capsule-preview-content="id"
-      @mouseenter="openPreview"
+      @mouseenter="openPreviewImmediately"
       @mouseleave="scheduleClose"
-      @focusin="openPreview"
+      @focusin="openPreviewImmediately"
       @focusout="scheduleClose"
       @open-auto-focus.prevent
       @escape-key-down="dismissPreview"

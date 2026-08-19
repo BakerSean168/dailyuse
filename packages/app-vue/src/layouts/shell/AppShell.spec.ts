@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createI18n } from 'vue-i18n';
 import { createMemoryHistory, createRouter } from 'vue-router';
-import { computed, defineComponent, h, inject, nextTick, onMounted, Teleport } from 'vue';
+import { computed, defineComponent, h, inject, nextTick, onMounted, ref, Teleport } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SHELL_WORKFLOW_MOUNT_KEY } from '../../di/keys';
 import AppShell from './AppShell.vue';
@@ -73,12 +73,18 @@ const passThrough = (name: string) =>
     },
   });
 
+const activeChatConversationId = ref<string | null>(null);
+
 const AIChatViewStub = defineComponent({
   name: 'AIChatView',
   setup(_props, { expose }) {
     const workflowMount = inject(SHELL_WORKFLOW_MOUNT_KEY)!;
     const target = computed(() => workflowMount.value);
-    expose({ conversationList: [], conversationListLoading: false, chatConversationId: null });
+    expose({
+      conversationList: [],
+      conversationListLoading: false,
+      chatConversationId: activeChatConversationId,
+    });
 
     return () =>
       h('div', { 'data-testid': 'ai-chat-view' }, [
@@ -142,9 +148,9 @@ const i18n = createI18n({
           workflow: 'Workflow',
           closeWorkflow: 'Close workflow',
           closeTab: 'Close tab',
-          closePanel: 'Close panel',
           enterFocus: 'Enter focus',
           exitFocus: 'Exit focus',
+          resize: 'Resize business panel',
         },
       },
     },
@@ -192,6 +198,7 @@ describe('AppShell right-panel integration', () => {
   beforeEach(() => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
     goalRouteMountCount = 0;
+    activeChatConversationId.value = null;
   });
 
   it('mounts Home by default and teleports AI workflow content into the canonical panel', async () => {
@@ -219,6 +226,30 @@ describe('AppShell right-panel integration', () => {
     await nextTick();
     expect(wrapper.get('[data-testid="conversation-sidebar"]').exists()).toBe(true);
     expect(wrapper.get('[data-testid="app-shell"]').attributes('data-shell-state')).toBe('focus');
+    wrapper.unmount();
+  });
+
+  it('restores explicit focus/split layout independently for each AI conversation', async () => {
+    const { wrapper, store } = await mountShell();
+    store.rememberConversationLayout('conversation-a', 'focus');
+    store.rememberConversationLayout('conversation-b', 'split');
+
+    activeChatConversationId.value = 'conversation-a';
+    await nextTick();
+    expect(store.layout).toBe('focus');
+    expect(store.layoutReason).toBe('user');
+    expect(wrapper.get('[data-testid="app-shell"]').attributes('data-shell-state')).toBe('focus');
+
+    activeChatConversationId.value = 'conversation-b';
+    await nextTick();
+    expect(store.layout).toBe('split');
+    expect(store.layoutReason).toBe('user');
+    expect(wrapper.get('[data-testid="app-shell"]').attributes('data-shell-state')).toBe('split');
+
+    activeChatConversationId.value = 'conversation-c';
+    await nextTick();
+    expect(store.layout).toBe('split');
+    expect(store.layoutReason).toBe('default');
     wrapper.unmount();
   });
 
