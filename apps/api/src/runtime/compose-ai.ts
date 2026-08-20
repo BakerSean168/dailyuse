@@ -45,13 +45,14 @@ import {
   AIServiceKnowledgeQueryAdapter,
   createAIModule,
   createAIPrismaRepositories,
+  createMastraStorage,
+  MastraAIRuntime,
+  MastraModelResolver,
+  type MastraStorageConfig,
   getAIServiceRuntimeConfig,
   type AIServiceRuntimeConfig,
 } from '@memoflow/ai';
-import {
-  createAIApiModule,
-  type AIApiModuleDef,
-} from '@memoflow/ai/api';
+import { createAIApiModule, type AIApiModuleDef } from '@memoflow/ai/api';
 import type { RepositoryApplicationPort } from '@memoflow/repository';
 import type { GoalApplicationPort } from '@memoflow/goal';
 import type { TaskApplicationPort } from '@memoflow/task';
@@ -87,6 +88,8 @@ export interface ComposeAIDependencies {
    * 其 `createTemplate` 使用冻结的 merge-base 闭户谓词，而非模块的账户激活检查器。
    */
   readonly reminderApplicationPort: ReminderApplicationPort;
+  /** Host-selected persistent Mastra storage; API uses PostgreSQL. */
+  readonly mastraStorage: MastraStorageConfig;
   /**
    * Optional ai-service runtime config override. When omitted or `undefined`,
    * the composer reads the config lazily via `getAIServiceRuntimeConfig()`;
@@ -170,6 +173,10 @@ export interface ComposeAIDependencies {
  */
 export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
   const repositorySet = createAIPrismaRepositories(dependencies.db);
+  const mastraRuntime = new MastraAIRuntime({
+    storage: createMastraStorage(dependencies.mastraStorage),
+    modelResolver: new MastraModelResolver(repositorySet.providerConfigRepository),
+  });
 
   const config =
     dependencies.aiServiceRuntimeConfig === undefined
@@ -197,8 +204,12 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
 
   const chatExecutionPort = config ? new AIServiceChatExecutionAdapter(config) : undefined;
   const goalPlanningPort = config ? new AIServiceGoalPlanningAdapter(config) : undefined;
-  const goalAutomationPlanningPort = config ? new AIServiceGoalAutomationAdapter(config) : undefined;
-  const knowledgeIngestionPort = config ? new AIServiceKnowledgeIngestionAdapter(config) : undefined;
+  const goalAutomationPlanningPort = config
+    ? new AIServiceGoalAutomationAdapter(config)
+    : undefined;
+  const knowledgeIngestionPort = config
+    ? new AIServiceKnowledgeIngestionAdapter(config)
+    : undefined;
   const knowledgeQueryPort = config ? new AIServiceKnowledgeQueryAdapter(config) : undefined;
   const knowledgeNoteGenerationPort = config
     ? new AIServiceKnowledgeNoteGenerationAdapter(config)
@@ -210,6 +221,7 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
   const instance = createAIModule({
     conversationRepository: repositorySet.conversationRepository,
     providerConfigRepository: repositorySet.providerConfigRepository,
+    mastraRuntime,
     chatExecutionPort,
     goalPlanningPort,
     goalAutomationPlanningPort,

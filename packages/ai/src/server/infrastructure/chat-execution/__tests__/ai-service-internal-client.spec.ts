@@ -140,6 +140,46 @@ describe('AIServiceInternalClient (RefArch Phase 2 request-ID propagation)', () 
     expect(url).toContain('/internal/chat');
   });
 
+  it('keeps the original credential-bearing request body for signing/sending while log redaction is side-effect free', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ok: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createClient();
+    await client.postJson({
+      path: '/internal/chat',
+      identityId: 'identity-1',
+      body: { provider_config: { api_key: 'provider-key-secret' }, q: 'x' },
+      requestId: 'entry-req-secret-body',
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.body).toBe(
+      JSON.stringify({ provider_config: { api_key: 'provider-key-secret' }, q: 'x' }),
+    );
+  });
+
+  it('redacts request secrets when an upstream non-2xx response echoes them', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response('provider rejected provider-key-secret', { status: 502 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createClient();
+    await expect(
+      client.postJson({
+        path: '/internal/chat',
+        identityId: 'identity-1',
+        body: { provider_config: { api_key: 'provider-key-secret' } },
+        requestId: 'entry-req-secret-error',
+      }),
+    ).rejects.toMatchObject({
+      message:
+        'ai-service request failed (502) [requestId: entry-req-secret-error] provider rejected [REDACTED]',
+      requestId: 'entry-req-secret-error',
+      category: 'upstream_provider_error',
+    });
+  });
+
   it('uses the same resolved requestId in the structured error for non-2xx responses', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response('upstream boom', { status: 502 }));
     vi.stubGlobal('fetch', fetchMock);

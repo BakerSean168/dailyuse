@@ -40,7 +40,7 @@ updated: 2026-07-22T00:00:00
 - **阶段 0 部分已落地（契约冻结）**：
   - `packages/contracts` agent-host：`ITurnEnginePort` / `ICapabilityResolverPort` /
     `IWorkflowAdapterPort` / `IProposalKernelPort` / `IModelGatewayPort` / `IAssistantFacadePort`
-    + `resolveRunPlan` / capability kinds 已冻结。
+    - `resolveRunPlan` / capability kinds 已冻结。
   - stage-0 surface：生产侧允许 `DirectTurnEngine` + `ReadonlyAnalysisTurnEngine` +
     `LangGraphWorkflowAdapter` + `ProposalKernel` + `CapabilityResolver` + `CustomModelGateway` +
     `AssistantFacade`。runtime `buildAgentRuntimeCapabilityOffers` 不静默 emit `engine.*`。
@@ -903,7 +903,7 @@ packages/contracts/src/modules/ai/
 - [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343/351 AssistantFacade + open chat dispatch；residual 355–387 Host Proposal/receipt/timeline 工作台部分落地；仍非全业务 Artifact 面）**
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。 **（部分：AgentRun.conversationId + list 过滤 + Host open-chat `run.started.conversationId` nightly N1；统一助手恢复/UI 多对一仍未完成）**
 - [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
-- [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；residual 413 Host allowlist + residual 415 Goal workflow 诊断展示脱敏；内部 filter 仍可读 node.*）**
+- [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；residual 413 Host allowlist + residual 415 Goal workflow 诊断展示脱敏；内部 filter 仍可读 node.\*）**
 - [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双标签 isolation + 生产 DirectTurnEngine + ReadonlyAnalysisTurnEngine；完整 multi-engine runtime E2E/Pi SDK 仍缺）**
 - [ ] 自定义模型 API 不需要实现完整 Agent runtime。
 - [ ] 本地 CLI 不需要伪装成 Model Provider。
@@ -937,13 +937,12 @@ packages/contracts/src/modules/ai/
 - [earendil-works/pi](https://github.com/earendil-works/pi)
 - [nexu-io/open-design](https://github.com/nexu-io/open-design)
 
-
 <!-- elegance-E6-AH-2 -->
+
 ## Elegance E6 决策摘录（2026-07-26，PR #189）
 
-| 项 | 决策 | 说明 |
-|----|------|------|
-| **AH-2 产品恢复 UI** | **本轮不做**（external / follow-up） | N2 已锁：Host open-chat `assistant-run-*` ≠ `listAgentRuns`。产品「按会话恢复 Host 只读列表」**延期**到 agent-host 产品切片，不在 elegance #189 做假绿 UI。落点：既有 association surface + [`docs/architecture/ai-runtime-path-map.md`](../../architecture/ai-runtime-path-map.md)。 |
-| **AH-4 Task/Goal 共用 Artifact** | **follow-up** | elegance #189 residual 记未做；不宣称 §20。 |
-| **AH-5/6 Electron multi-engine / Pi** | **external** | 不在本 PR；禁止宣称完成。 |
-
+| 项                                    | 决策                                 | 说明                                                                                                                                                                                                                                                                                  |
+| ------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AH-2 产品恢复 UI**                  | **本轮不做**（external / follow-up） | N2 已锁：Host open-chat `assistant-run-*` ≠ `listAgentRuns`。产品「按会话恢复 Host 只读列表」**延期**到 agent-host 产品切片，不在 elegance #189 做假绿 UI。落点：既有 association surface + [`docs/architecture/ai-runtime-path-map.md`](../../architecture/ai-runtime-path-map.md)。 |
+| **AH-4 Task/Goal 共用 Artifact**      | **follow-up**                        | elegance #189 residual 记未做；不宣称 §20。                                                                                                                                                                                                                                           |
+| **AH-5/6 Electron multi-engine / Pi** | **external**                         | 不在本 PR；禁止宣称完成。                                                                                                                                                                                                                                                             |

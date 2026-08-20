@@ -11,6 +11,7 @@ import {
 } from './internal-ai-service-request-signer';
 // Residual 995: sole previewText (local dual retired).
 import { previewText } from '../../../shared/preview-text';
+import { createRedactedAIServiceRequestLogContext } from './redact-ai-service-log-payload';
 
 const logger = createLogger('AIServiceInternalClient');
 
@@ -103,6 +104,7 @@ export class AIServiceInternalClient {
       secret: this.options.serviceSecret,
     });
 
+    const logContext = createRedactedAIServiceRequestLogContext(request.body);
     const timeoutController = new AbortController();
     const timeoutId = setTimeout(() => timeoutController.abort(), this.timeoutMs);
     const { signal, cleanup } = composeAbortSignal(request.signal, timeoutController.signal);
@@ -122,7 +124,7 @@ export class AIServiceInternalClient {
         identityId: request.identityId,
         baseUrl: this.options.baseUrl,
         timeoutMs: this.timeoutMs,
-        bodyPreview: previewText(request.body),
+        bodyPreview: logContext.bodyPreview,
       });
       const response = await fetch(requestUrl.toString(), {
         method: request.method,
@@ -143,6 +145,7 @@ export class AIServiceInternalClient {
       if (!response.ok) {
         const responseText = await response.text();
         const detail = responseText.trim() || 'empty response body';
+        const publicDetail = logContext.redactText(detail);
         const category =
           response.status === 401
             ? 'unauthorized'
@@ -157,10 +160,10 @@ export class AIServiceInternalClient {
           identityId: request.identityId,
           statusCode: response.status,
           category,
-          detail: previewText(detail),
+          detail: previewText(publicDetail),
         });
         throw new AIServiceInternalRequestError(
-          `ai-service request failed (${response.status}) [requestId: ${requestId}] ${detail}`,
+          `ai-service request failed (${response.status}) [requestId: ${requestId}] ${publicDetail}`,
           requestId,
           category,
           response.status,
@@ -196,7 +199,7 @@ export class AIServiceInternalClient {
           identityId: request.identityId,
           category: error.category,
           statusCode: error.statusCode,
-          message: error.message,
+          message: logContext.redactText(error.message),
         });
         throw error;
       }
@@ -205,10 +208,10 @@ export class AIServiceInternalClient {
           requestId,
           path: request.path,
           identityId: request.identityId,
-          message: error.message,
+          message: logContext.redactText(error.message),
         });
         throw new AIServiceInternalRequestError(
-          `${error.message} [requestId: ${requestId}]`,
+          `${logContext.redactText(error.message)} [requestId: ${requestId}]`,
           requestId,
           'transport',
         );

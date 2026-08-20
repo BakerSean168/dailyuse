@@ -964,6 +964,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/main/runtime/compose-ai.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/desktop/src/main/runtime/compose-goal.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -2119,6 +2127,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/api/routes/ai-runtime.routes.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/api/routes/ai-void-success-envelope.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -2140,6 +2158,26 @@
     },
     {
       "path": "packages/ai/src/application-client/ai-client-service.dispatch-assistant.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/client/runtime-assistant.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/client/runtime-workflow.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -2559,6 +2597,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/server/infrastructure/__tests__/ai-module-mastra-lifecycle.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/server/infrastructure/__tests__/ai-module-partial-start.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -2840,6 +2888,16 @@
     },
     {
       "path": "packages/ai/src/server/infrastructure/chat-execution/optional-string-keep-boundary.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/infrastructure/chat-execution/redact-ai-service-log-payload.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -3200,6 +3258,26 @@
     },
     {
       "path": "packages/ai/src/server/infrastructure/workflow/__tests__/langgraph-workflow.adapter.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/mastra/mastra-vnext-architecture.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/mastra/models/model-resolver.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -4986,6 +5064,14 @@
     },
     {
       "path": "packages/contracts/src/modules/ai/api/ai-knowledge-query.dto.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/modules/ai/api/ai-runtime.dto.test.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/contracts/vitest.config.ts"
@@ -10420,7 +10506,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -10476,14 +10562,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 123
+      "fileCount": 130
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 123
+      "fileCount": 130
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
@@ -10518,7 +10604,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 67
+      "fileCount": 68
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -11039,9 +11125,12 @@
       "packages/ai/src/api/routes/ai-checkpoint-void-204.surface.spec.ts",
       "packages/ai/src/api/routes/ai-goal-generation.routes.test.ts",
       "packages/ai/src/api/routes/ai-langgraph-checkpoint.routes.test.ts",
+      "packages/ai/src/api/routes/ai-runtime.routes.test.ts",
       "packages/ai/src/api/routes/ai-void-success-envelope.surface.spec.ts",
       "packages/ai/src/application-client/ai-client-port-facade-dual.surface.spec.ts",
       "packages/ai/src/application-client/ai-client-service.dispatch-assistant.spec.ts",
+      "packages/ai/src/client/runtime-assistant.spec.ts",
+      "packages/ai/src/client/runtime-workflow.spec.ts",
       "packages/ai/src/electron/ai-electron.surface.spec.ts",
       "packages/ai/src/electron/assistant-dispatch-lifecycle.spec.ts",
       "packages/ai/src/electron/index-lifecycle.spec.ts",
@@ -11083,6 +11172,7 @@
       "packages/ai/src/server/domain/value-objects/__tests__/ai-value-objects.spec.ts",
       "packages/ai/src/server/domain/value-objects/__tests__/token-usage.spec.ts",
       "packages/ai/src/server/infrastructure/__tests__/ai-module-checkpoint-pair.spec.ts",
+      "packages/ai/src/server/infrastructure/__tests__/ai-module-mastra-lifecycle.spec.ts",
       "packages/ai/src/server/infrastructure/__tests__/ai-module-partial-start.spec.ts",
       "packages/ai/src/server/infrastructure/__tests__/ai-repositories.surface.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/__tests__/ai-conversation-domain-events.spec.ts",
@@ -11112,6 +11202,7 @@
       "packages/ai/src/server/infrastructure/chat-execution/__tests__/ai-service-internal-client.spec.ts",
       "packages/ai/src/server/infrastructure/chat-execution/as-record-keep-boundary.surface.spec.ts",
       "packages/ai/src/server/infrastructure/chat-execution/optional-string-keep-boundary.surface.spec.ts",
+      "packages/ai/src/server/infrastructure/chat-execution/redact-ai-service-log-payload.spec.ts",
       "packages/ai/src/server/infrastructure/chat-execution/to-number-keep-boundary.surface.spec.ts",
       "packages/ai/src/server/infrastructure/gateways/openai-compatible-model-catalog.gateway.spec.ts",
       "packages/ai/src/server/infrastructure/gateways/openai-compatible.gateway.spec.ts",
@@ -11148,6 +11239,8 @@
       "packages/ai/src/server/infrastructure/turn-engine/__tests__/pi-readonly-process.adapter.surface.spec.ts",
       "packages/ai/src/server/infrastructure/turn-engine/__tests__/readonly-analysis.turn-engine.spec.ts",
       "packages/ai/src/server/infrastructure/workflow/__tests__/langgraph-workflow.adapter.spec.ts",
+      "packages/ai/src/server/mastra/mastra-vnext-architecture.surface.spec.ts",
+      "packages/ai/src/server/mastra/models/model-resolver.spec.ts",
       "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
       "packages/ai/src/server/transport/__tests__/ai-assistant-facade.controller.spec.ts",
       "packages/ai/src/server/transport/ai-agent-runtime.controller.test.ts",
@@ -11553,7 +11646,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 992,
+    "unit": 1001,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

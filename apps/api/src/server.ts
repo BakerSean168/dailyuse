@@ -240,6 +240,9 @@ async function bootstrap(): Promise<void> {
     db: prisma,
     taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
   });
+  if (!env.DATABASE_URL) {
+    throw new Error('AI Mastra runtime requires DATABASE_URL after environment normalization');
+  }
   const aiApiModule = composeAI({
     db: prisma,
     repositoryApiPort: repositoryApiModule.getApplicationPort(),
@@ -247,6 +250,7 @@ async function bootstrap(): Promise<void> {
     goalApplicationPort: goalComposed.applicationPort,
     taskApplicationPort: taskComposed.applicationPort,
     reminderApplicationPort: reminderComposed.executorReminderPort,
+    mastraStorage: { kind: 'postgres', connectionString: env.DATABASE_URL },
   });
   const governanceApiModule = composeGovernance({ db: prisma });
   // App-local infrastructure modules: DB-backed dependencies are bound by the

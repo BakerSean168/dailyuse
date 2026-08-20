@@ -91,6 +91,36 @@ function createFakeInstance() {
   };
   const start = vi.fn();
   const dispose = vi.fn();
+  const dispatchRuntimeMessage = vi.fn(async function* () {});
+  const cancelRuntimeRun = vi.fn(() => true);
+  const mastraRuntime = {
+    dispatchMessage: dispatchRuntimeMessage,
+    cancelRun: cancelRuntimeRun,
+  };
+  const workflowRun = {
+    runId: 'workflow-1',
+    kind: 'goal.create' as const,
+    conversationId: 'conv-1',
+    status: 'suspended' as const,
+    suspension: {
+      type: 'clarification_required' as const,
+      questions: ['What is the target date?'],
+    },
+    createdAt: 1,
+    updatedAt: 2,
+  };
+  const workflowStart = vi.fn(async () => workflowRun);
+  const workflowResume = vi.fn(async () => workflowRun);
+  const workflowGet = vi.fn(async () => workflowRun);
+  const workflowList = vi.fn(async () => [workflowRun]);
+  const workflowCancel = vi.fn(async () => workflowRun);
+  const workflowRuntime = {
+    start: workflowStart,
+    resume: workflowResume,
+    get: workflowGet,
+    list: workflowList,
+    cancel: workflowCancel,
+  };
   const instance: AIModuleInstance = {
     conversationRepository: {} as never,
     providerConfigRepository: {} as never,
@@ -103,10 +133,27 @@ function createFakeInstance() {
     capabilityResolver: {} as never,
     modelGateway: {} as never,
     assistantFacade: {} as never,
+    mastraRuntime: mastraRuntime as never,
+    workflowRuntime: workflowRuntime as never,
     start,
     dispose,
   } as AIModuleInstance;
-  return { instance, api, start, dispose };
+  return {
+    instance,
+    api,
+    start,
+    dispose,
+    mastraRuntime,
+    dispatchRuntimeMessage,
+    cancelRuntimeRun,
+    workflowRun,
+    workflowRuntime,
+    workflowStart,
+    workflowResume,
+    workflowGet,
+    workflowList,
+    workflowCancel,
+  };
 }
 
 function createFakeContext(): IElectronModuleContext {
@@ -152,9 +199,9 @@ describe('AIElectron assistant dispatch lifecycle', () => {
     moduleDef = createAIElectronModule({ instance: fake.instance });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     try {
-      moduleDef.destroy?.();
+      await moduleDef.destroy?.();
     } catch {
       // destroy() may propagate a dispose error by design; don't leak it into unrelated tests.
     }
@@ -162,12 +209,151 @@ describe('AIElectron assistant dispatch lifecycle', () => {
     mocks.handlers.clear();
   });
 
+  it('streams canonical Mastra runtime events and injects authenticated identity', async () => {
+    const runtimeEvent = {
+      eventId: 'run-vnext-1:1',
+      runId: 'run-vnext-1',
+      conversationId: 'conv-1',
+      sequence: 1,
+      createdAt: 1,
+      type: 'assistant.run.started' as const,
+      data: {},
+    };
+    fake.dispatchRuntimeMessage.mockImplementation(async function* (input: {
+      identityId: string;
+      conversationId: string;
+      content: string;
+    }) {
+      expect(input).toMatchObject({
+        identityId: 'identity-1',
+        conversationId: 'conv-1',
+        content: 'hello',
+      });
+      yield runtimeEvent;
+    });
+    await moduleDef.register(context);
+    const sender = createSender(42);
+
+    const result = await registered(AIChannels.RUNTIME_ASSISTANT_START)(sender, {
+      streamId: 'runtime-stream-1',
+      command: dispatchCommand,
+    });
+
+    expect(result).toMatchObject({ ok: true });
+    await vi.waitFor(() =>
+      expect(sender.sender.send).toHaveBeenCalledWith(AIStreamChannels.RUNTIME_ASSISTANT_EVENT, {
+        streamId: 'runtime-stream-1',
+        event: runtimeEvent,
+      }),
+    );
+  });
+
+  it('rejects renderer identity injection before Mastra runtime dispatch', async () => {
+    await moduleDef.register(context);
+    const sender = createSender(42);
+
+    const result = await registered(AIChannels.RUNTIME_ASSISTANT_START)(sender, {
+      streamId: 'runtime-stream-identity',
+      command: { ...dispatchCommand, identityId: 'attacker-controlled' },
+    });
+
+    expect(result).toMatchObject({ ok: false });
+    expect(fake.dispatchRuntimeMessage).not.toHaveBeenCalled();
+  });
+
+  it('cancels a Mastra run only through authenticated identity plus runId', async () => {
+    await moduleDef.register(context);
+
+    const result = await registered(AIChannels.RUNTIME_ASSISTANT_CANCEL)(undefined, {
+      type: 'cancel_run',
+      runId: 'run-vnext-1',
+    });
+
+    expect(result).toMatchObject({ ok: true, data: { cancelled: true } });
+    expect(fake.cancelRuntimeRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-vnext-1',
+    });
+  });
+
+  it('exposes canonical workflow request channels with authenticated identity injection', async () => {
+    await moduleDef.register(context);
+
+    const startResult = await registered(AIChannels.RUNTIME_WORKFLOW_START)(undefined, {
+      kind: 'goal.create',
+      conversationId: 'conv-1',
+      input: { prompt: 'Run a 5K' },
+    });
+    expect(startResult).toMatchObject({ ok: true, data: fake.workflowRun });
+    expect(fake.workflowStart).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      request: {
+        kind: 'goal.create',
+        conversationId: 'conv-1',
+        input: { prompt: 'Run a 5K' },
+      },
+    });
+
+    await registered(AIChannels.RUNTIME_WORKFLOW_RESUME)(undefined, {
+      runId: 'workflow-1',
+      command: { type: 'approve' },
+    });
+    expect(fake.workflowResume).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      request: { runId: 'workflow-1', command: { type: 'approve' } },
+    });
+
+    await registered(AIChannels.RUNTIME_WORKFLOW_GET)(undefined, { runId: 'workflow-1' });
+    expect(fake.workflowGet).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'workflow-1',
+    });
+
+    await registered(AIChannels.RUNTIME_WORKFLOW_LIST)(undefined, { conversationId: 'conv-1' });
+    expect(fake.workflowList).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      conversationId: 'conv-1',
+    });
+
+    await registered(AIChannels.RUNTIME_WORKFLOW_CANCEL)(undefined, { runId: 'workflow-1' });
+    expect(fake.workflowCancel).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'workflow-1',
+    });
+  });
+
+  it('rejects workflow identity injection before the runtime port is called', async () => {
+    await moduleDef.register(context);
+
+    const result = await registered(AIChannels.RUNTIME_WORKFLOW_START)(undefined, {
+      kind: 'goal.create',
+      conversationId: 'conv-1',
+      input: {},
+      identityId: 'attacker-controlled',
+    });
+
+    expect(result).toMatchObject({ ok: false, error: { code: 'VALIDATION_ERROR' } });
+    expect(fake.workflowStart).not.toHaveBeenCalled();
+  });
+
+  it('fails closed on workflow channels when no workflow runtime is composed', async () => {
+    moduleDef = createAIElectronModule({
+      instance: { ...fake.instance, workflowRuntime: null } as AIModuleInstance,
+    });
+    await moduleDef.register(context);
+
+    const result = await registered(AIChannels.RUNTIME_WORKFLOW_START)(undefined, {
+      kind: 'goal.create',
+      conversationId: 'conv-1',
+      input: {},
+    });
+
+    expect(result).toMatchObject({ ok: false, error: { code: 'SERVICE_UNAVAILABLE' } });
+  });
+
   it('injects authenticated identity, streams events and emits exactly one DONE frame', async () => {
     fake.api.dispatchAssistant.mockImplementation(
-      async (
-        command: unknown,
-        handlers: { onEvent?: (event: unknown) => void },
-      ) => {
+      async (command: unknown, handlers: { onEvent?: (event: unknown) => void }) => {
         expect(command).toMatchObject({
           ...dispatchCommand,
           identityId: 'identity-1',
@@ -184,25 +370,22 @@ describe('AIElectron assistant dispatch lifecycle', () => {
     moduleDef.register(context);
     const sender = createSender(42);
 
-    const startResult = await registered(AIChannels.ASSISTANT_DISPATCH_START)(
-      sender,
-      { streamId: 's1', command: dispatchCommand },
-    );
+    const startResult = await registered(AIChannels.ASSISTANT_DISPATCH_START)(sender, {
+      streamId: 's1',
+      command: dispatchCommand,
+    });
     expect(startResult).toMatchObject({ ok: true });
 
     await vi.waitFor(() => {
-      expect(sender.sender.send).toHaveBeenCalledWith(
-        AIStreamChannels.ASSISTANT_DISPATCH_EVENT,
-        {
-          streamId: 's1',
-          event: {
-            type: 'run.started',
-            runId: 'run-1',
-            engineId: 'engine.direct_turn',
-            profile: 'direct_turn',
-          },
+      expect(sender.sender.send).toHaveBeenCalledWith(AIStreamChannels.ASSISTANT_DISPATCH_EVENT, {
+        streamId: 's1',
+        event: {
+          type: 'run.started',
+          runId: 'run-1',
+          engineId: 'engine.direct_turn',
+          profile: 'direct_turn',
         },
-      );
+      });
       expect(sender.sender.send).toHaveBeenCalledWith(AIStreamChannels.ASSISTANT_DISPATCH_DONE, {
         streamId: 's1',
         result: { eventCount: 1 },
@@ -210,7 +393,9 @@ describe('AIElectron assistant dispatch lifecycle', () => {
     });
 
     const sentChannels = sender.sender.send.mock.calls.map(([channel]) => channel);
-    expect(sentChannels.filter((c: string) => c === AIStreamChannels.ASSISTANT_DISPATCH_DONE)).toHaveLength(1);
+    expect(
+      sentChannels.filter((c: string) => c === AIStreamChannels.ASSISTANT_DISPATCH_DONE),
+    ).toHaveLength(1);
     expect(sentChannels).not.toContain(AIStreamChannels.ASSISTANT_DISPATCH_ERROR);
   });
 
@@ -247,10 +432,10 @@ describe('AIElectron assistant dispatch lifecycle', () => {
     moduleDef.register(context);
     const sender = createSender(42);
 
-    await registered(AIChannels.ASSISTANT_DISPATCH_START)(
-      sender,
-      { streamId: 's1', command: dispatchCommand },
-    );
+    await registered(AIChannels.ASSISTANT_DISPATCH_START)(sender, {
+      streamId: 's1',
+      command: dispatchCommand,
+    });
 
     await vi.waitFor(() => {
       expect(sender.sender.send).toHaveBeenCalledWith(AIStreamChannels.ASSISTANT_DISPATCH_ERROR, {
@@ -268,10 +453,10 @@ describe('AIElectron assistant dispatch lifecycle', () => {
     moduleDef.register(context);
     const sender = createSender(42);
 
-    await registered(AIChannels.ASSISTANT_DISPATCH_START)(
-      sender,
-      { streamId: 's1', command: dispatchCommand },
-    );
+    await registered(AIChannels.ASSISTANT_DISPATCH_START)(sender, {
+      streamId: 's1',
+      command: dispatchCommand,
+    });
 
     await vi.waitFor(() => {
       expect(sender.sender.send).toHaveBeenCalledWith(AIStreamChannels.ASSISTANT_DISPATCH_ERROR, {
@@ -281,7 +466,9 @@ describe('AIElectron assistant dispatch lifecycle', () => {
       });
     });
     const sentChannels = sender.sender.send.mock.calls.map(([channel]) => channel);
-    expect(sentChannels.filter((c: string) => c === AIStreamChannels.ASSISTANT_DISPATCH_ERROR)).toHaveLength(1);
+    expect(
+      sentChannels.filter((c: string) => c === AIStreamChannels.ASSISTANT_DISPATCH_ERROR),
+    ).toHaveLength(1);
     expect(sentChannels).not.toContain(AIStreamChannels.ASSISTANT_DISPATCH_DONE);
   });
 

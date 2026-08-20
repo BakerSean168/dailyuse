@@ -7,6 +7,7 @@ import type { AIProviderConfigCreatedEvent } from '../domain/events/ai-provider-
 import type { AIProviderConfigModelsUpdatedEvent } from '../domain/events/ai-provider-config-models-updated.event';
 import type { AIProviderConfigSetDefaultEvent } from '../domain/events/ai-provider-config-set-default.event';
 import type { SendMessageRes, StreamMessageChunk } from '../api/ai-chat.dto';
+import type { AssistantRuntimeEvent } from '../api/ai-runtime.dto';
 
 /**
  * AI Module - Event Map
@@ -30,5 +31,11 @@ export type AIEventMap = {
     code: string;
     message: string;
     details?: unknown;
+  };
+  'ai:runtime:assistant:event': { streamId: string; event: AssistantRuntimeEvent };
+  'ai:runtime:assistant:error': {
+    streamId: string;
+    code: string;
+    message: string;
   };
 };

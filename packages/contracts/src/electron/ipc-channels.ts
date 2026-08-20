@@ -169,6 +169,15 @@ export const AIChannels = {
   MESSAGE_LIST: 'ai:chat:message:list',
   MESSAGE_STREAM_START: 'ai:chat:message:stream:start',
   MESSAGE_STREAM_CANCEL: 'ai:chat:message:stream:cancel',
+  /** AI vNext canonical Mastra Assistant stream start/cancel. */
+  RUNTIME_ASSISTANT_START: 'ai:runtime:assistant:start',
+  RUNTIME_ASSISTANT_CANCEL: 'ai:runtime:assistant:cancel',
+  /** AI vNext canonical Workflow request/response surface. */
+  RUNTIME_WORKFLOW_START: 'ai:runtime:workflow:start',
+  RUNTIME_WORKFLOW_RESUME: 'ai:runtime:workflow:resume',
+  RUNTIME_WORKFLOW_GET: 'ai:runtime:workflow:get',
+  RUNTIME_WORKFLOW_LIST: 'ai:runtime:workflow:list',
+  RUNTIME_WORKFLOW_CANCEL: 'ai:runtime:workflow:cancel',
   /** Residual 353: AssistantFacade dispatch stream start/cancel. */
   ASSISTANT_DISPATCH_START: 'ai:assistant:dispatch:start',
   ASSISTANT_DISPATCH_CANCEL: 'ai:assistant:dispatch:cancel',
@@ -189,6 +198,9 @@ export const AIStreamChannels = {
   MESSAGE_STREAM_CHUNK: 'ai:chat:message:stream:chunk',
   MESSAGE_STREAM_DONE: 'ai:chat:message:stream:done',
   MESSAGE_STREAM_ERROR: 'ai:chat:message:stream:error',
+  /** AI vNext canonical runtime events plus transport-only fatal framing. */
+  RUNTIME_ASSISTANT_EVENT: 'ai:runtime:assistant:event',
+  RUNTIME_ASSISTANT_ERROR: 'ai:runtime:assistant:error',
   /** Residual 353: AssistantFacade Host event stream. */
   ASSISTANT_DISPATCH_EVENT: 'ai:assistant:dispatch:event',
   ASSISTANT_DISPATCH_DONE: 'ai:assistant:dispatch:done',

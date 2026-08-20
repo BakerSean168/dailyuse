@@ -10,3 +10,4 @@ export * from './ai-chat.routes';
 export * from './ai-knowledge-query.routes';
 export * from './ai-knowledge-note.routes';
 export * from './ai-assistant.routes';
+export * from './ai-runtime.routes';

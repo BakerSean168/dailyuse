@@ -6,7 +6,7 @@
  * accepts only an already-assembled `AIModuleInstance`, requires the internal
  * checkpoint application surface fail-closed, wires every controller (including
  * both checkpoint controllers) from `instance.api`, starts the instance once
- * BEFORE mounting, mounts the twelve route groups in the exact current order,
+ * BEFORE mounting, mounts the thirteen route groups in the exact current order,
  * rolls a partial route set back on any mount failure, owns a per-handle state
  * machine (single registration, terminal states, idempotent destroy), cleans up
  * on failure and rethrows the original error, and never touches `db`.
@@ -14,7 +14,7 @@
  * 验证 createAIApiModule 是纯传输/生命周期适配器：只接收已装配的
  * `AIModuleInstance`、fail-closed 校验内部 checkpoint application surface、
  * 从 `instance.api` 接线全部 controller（含两个 checkpoint controller）、先调用
- * 一次 `instance.start()` 再挂载、按当前完全相同的顺序挂载十二组路由、任一挂载
+ * 一次 `instance.start()` 再挂载、按当前完全相同的顺序挂载十三组路由、任一挂载
  * 失败时回滚半套路由、维护每个 handle 的状态机（单次注册、终态、destroy 幂等）、
  * 失败时清理并重新抛出原始错误，且完全不触碰 `db`。
  */
@@ -32,6 +32,7 @@ const AI_ROUTE_MOUNTS = [
   '/ai/agents',
   '/ai/chat',
   '/ai/assistant',
+  '/ai/runtime',
   '/ai/knowledge',
   '/ai/knowledge-notes',
   '/ai/analytics',
@@ -121,7 +122,9 @@ function createFakeContext(): AIApiModuleContext {
 
 describe('createAIApiModule fail-closed validation', () => {
   it('rejects a missing instance', () => {
-    expect(() => createAIApiModule({ instance: undefined as never })).toThrow(/requires options\.instance/);
+    expect(() => createAIApiModule({ instance: undefined as never })).toThrow(
+      /requires options\.instance/,
+    );
   });
 
   it('rejects an instance without the checkpoint application surface', () => {
@@ -152,21 +155,21 @@ describe('createAIApiModule lifecycle', () => {
     context = createFakeContext();
   });
 
-  it('register mounts all twelve route prefixes in the exact current order', () => {
+  it('register mounts all thirteen route prefixes in the exact current order', async () => {
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    expect(() => moduleDef.register(context)).not.toThrow();
+    await expect(moduleDef.register(context)).resolves.toBeUndefined();
 
     const routerUse = context.router.use as ReturnType<typeof vi.fn>;
     const mountedPaths = routerUse.mock.calls.map((call) => call[0]);
     expect(mountedPaths).toEqual([...AI_ROUTE_MOUNTS]);
   });
 
-  it('starts the instance once BEFORE the first mount, then registers once', () => {
+  it('starts the instance once BEFORE the first mount, then registers once', async () => {
     const routerUse = context.router.use as ReturnType<typeof vi.fn>;
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    moduleDef.register(context);
+    await moduleDef.register(context);
 
     expect(fake.start).toHaveBeenCalledTimes(1);
     expect(routerUse).toHaveBeenCalledTimes(AI_ROUTE_MOUNTS.length);
@@ -175,58 +178,58 @@ describe('createAIApiModule lifecycle', () => {
     expect(startOrder).toBeLessThan(firstMountOrder);
   });
 
-  it('register works without a db field on the context (transport-only)', () => {
+  it('register works without a db field on the context (transport-only)', async () => {
     const moduleDef = createAIApiModule({ instance: fake.instance });
     const contextWithoutDb = { ...context } as AIApiModuleContext;
     delete (contextWithoutDb as Record<string, unknown>).db;
 
-    expect(() => moduleDef.register(contextWithoutDb)).not.toThrow();
+    await expect(moduleDef.register(contextWithoutDb)).resolves.toBeUndefined();
   });
 
-  it('throws on a second register() call (single registration per handle)', () => {
+  it('throws on a second register() call (single registration per handle)', async () => {
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    moduleDef.register(context);
-    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    await moduleDef.register(context);
+    await expect(moduleDef.register(context)).rejects.toThrow(/only register once/);
     expect(fake.start).toHaveBeenCalledTimes(1);
   });
 
-  it('throws on register() after destroy()', () => {
+  it('throws on register() after destroy()', async () => {
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    moduleDef.register(context);
-    moduleDef.destroy?.();
+    await moduleDef.register(context);
+    await moduleDef.destroy?.();
 
-    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    await expect(moduleDef.register(context)).rejects.toThrow(/only register once/);
   });
 
-  it('destroy disposes exactly once and is idempotent', () => {
+  it('destroy disposes exactly once and is idempotent', async () => {
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    moduleDef.destroy?.();
+    await moduleDef.destroy?.();
     expect(fake.dispose).toHaveBeenCalledTimes(1);
 
-    moduleDef.destroy?.();
-    moduleDef.destroy?.();
+    await moduleDef.destroy?.();
+    await moduleDef.destroy?.();
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('disposes and rethrows when start() throws, leaving a handle that cannot be re-registered', () => {
+  it('disposes and rethrows when start() throws, leaving a handle that cannot be re-registered', async () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');
     });
 
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    expect(() => moduleDef.register(context)).toThrow('start failed');
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
     expect(fake.dispose).toHaveBeenCalledTimes(1);
 
-    expect(() => moduleDef.register(context)).toThrow(/only register once/);
+    await expect(moduleDef.register(context)).rejects.toThrow(/only register once/);
     expect(fake.start).toHaveBeenCalledTimes(1);
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('does not mount any route on the host router when start() throws', () => {
+  it('does not mount any route on the host router when start() throws', async () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');
     });
@@ -234,27 +237,27 @@ describe('createAIApiModule lifecycle', () => {
     const routerUse = context.router.use as ReturnType<typeof vi.fn>;
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    expect(() => moduleDef.register(context)).toThrow('start failed');
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
     expect(routerUse).not.toHaveBeenCalled();
     expect(fake.start).toHaveBeenCalledTimes(1);
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('destroy() after a failed registration does not dispose a second time', () => {
+  it('destroy() after a failed registration does not dispose a second time', async () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');
     });
 
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    expect(() => moduleDef.register(context)).toThrow('start failed');
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
     expect(fake.dispose).toHaveBeenCalledTimes(1);
 
-    moduleDef.destroy?.();
+    await moduleDef.destroy?.();
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('rolls back the already-installed AI routes when a middle router.use() throws', () => {
+  it('rolls back the already-installed AI routes when a middle router.use() throws', async () => {
     const preExisting = { name: '<pre-existing>' };
     const routerStub = {
       stack: [preExisting] as unknown[],
@@ -269,16 +272,16 @@ describe('createAIApiModule lifecycle', () => {
     const mountContext = { ...context, router: routerStub } as AIApiModuleContext;
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    expect(() => moduleDef.register(mountContext)).toThrow('mount failed');
+    await expect(moduleDef.register(mountContext)).rejects.toThrow('mount failed');
     expect(fake.start).toHaveBeenCalledTimes(1);
     expect(fake.dispose).toHaveBeenCalledTimes(1);
     expect((routerStub as unknown as { stack: unknown[] }).stack).toEqual([preExisting]);
 
-    moduleDef.destroy?.();
+    await moduleDef.destroy?.();
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('rethrows the original registration error even if dispose also throws', () => {
+  it('rethrows the original registration error even if dispose also throws', async () => {
     fake.start.mockImplementation(() => {
       throw new Error('start failed');
     });
@@ -288,14 +291,14 @@ describe('createAIApiModule lifecycle', () => {
 
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    expect(() => moduleDef.register(context)).toThrow('start failed');
+    await expect(moduleDef.register(context)).rejects.toThrow('start failed');
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('wires the internal checkpoint controllers from the instance.api.checkpoints surface', () => {
+  it('wires the internal checkpoint controllers from the instance.api.checkpoints surface', async () => {
     const moduleDef = createAIApiModule({ instance: fake.instance });
 
-    moduleDef.register(context);
+    await moduleDef.register(context);
 
     const routerUse = context.router.use as ReturnType<typeof vi.fn>;
     const mountedPaths = routerUse.mock.calls.map((call) => call[0]);

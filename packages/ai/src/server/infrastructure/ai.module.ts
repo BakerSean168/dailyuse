@@ -54,6 +54,7 @@ import type {
   IWorkflowAdapterPort,
 } from '@memoflow/contracts/ai';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
+import type { AIWorkflowRuntimePort, MastraAIRuntime } from '../mastra/runtime';
 
 import type { Result } from '@memoflow/contracts/result';
 import type {
@@ -135,6 +136,18 @@ export interface AIModuleDependencies {
   readonly executionLogPort?: IAIExecutionLogPort;
   readonly evaluationReportPort?: IAIEvaluationReportPort;
   readonly agentRuntimePort?: IAgentRuntimePort;
+
+  /**
+   * Mastra-native vNext runtime. Hosts compose its storage/model dependencies;
+   * this module only owns its lifecycle alongside temporary legacy runtime
+   * contributions during the decisive rewrite.
+   */
+  readonly mastraRuntime?: MastraAIRuntime;
+  /**
+   * Canonical vNext Workflow runtime seam. Batch C provides the first concrete
+   * Mastra implementation; transports already fail closed when it is absent.
+   */
+  readonly workflowRuntime?: AIWorkflowRuntimePort;
 
   /**
    * Agent checkpoint persistence is an external collaborator (API / Prisma only).
@@ -371,8 +384,12 @@ export interface AIModuleInstance {
    * Assistant Facade (residual 343). Unified Host dispatch over Turn Engines + ProposalKernel.
    */
   readonly assistantFacade: IAssistantFacadePort;
-  start(): void;
-  dispose(): void;
+  /** Mastra-native Assistant execution surface for migrated vNext transports. */
+  readonly mastraRuntime: MastraAIRuntime | null;
+  /** Canonical Workflow execution surface; null until a Mastra workflow runtime is composed. */
+  readonly workflowRuntime: AIWorkflowRuntimePort | null;
+  start(): Promise<void> | void;
+  dispose(): Promise<void> | void;
 }
 
 async function getKnowledgeIndexDiagnostics(
@@ -591,7 +608,9 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     capabilityResolver: runtime.capabilityResolver,
     modelGateway: runtime.modelGateway,
     assistantFacade: runtime.assistantFacade,
-    start(): void {
+    mastraRuntime: dependencies.mastraRuntime ?? null,
+    workflowRuntime: dependencies.workflowRuntime ?? null,
+    start(): Promise<void> | void {
       if (started) {
         return;
       }
@@ -621,8 +640,31 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       }
 
       started = true;
+      if (!dependencies.mastraRuntime) {
+        return;
+      }
+
+      return dependencies.mastraRuntime.init().catch(async (error) => {
+        for (const startedRuntime of [...startedContributions].reverse()) {
+          try {
+            startedRuntime.stop();
+          } catch (stopError) {
+            logger.error(
+              'AIModule: contribution stop failed during Mastra init rollback',
+              stopError,
+            );
+          }
+        }
+        started = false;
+        try {
+          await dependencies.mastraRuntime?.dispose();
+        } catch (disposeError) {
+          logger.error('AIModule: Mastra dispose failed during init rollback', disposeError);
+        }
+        throw error;
+      });
     },
-    dispose(): void {
+    dispose(): Promise<void> | void {
       if (!started) {
         return;
       }
@@ -632,6 +674,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       }
 
       started = false;
+      return dependencies.mastraRuntime?.dispose();
     },
   };
 }

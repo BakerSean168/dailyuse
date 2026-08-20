@@ -84,6 +84,23 @@ export type {
   AIServiceFromHttpClientOptions,
 } from '../application-client';
 
+export {
+  AssistantRuntimeHttpClient,
+  AssistantRuntimeIpcClient,
+  createAssistantRuntimeHttpClient,
+  createAssistantRuntimeIpcClient,
+  type AssistantRuntimeClient,
+  type AssistantRuntimeHandlers,
+  type AssistantRuntimeMessageCommand,
+} from './runtime-assistant';
+export {
+  WorkflowRuntimeHttpClient,
+  WorkflowRuntimeIpcClient,
+  createWorkflowRuntimeHttpClient,
+  createWorkflowRuntimeIpcClient,
+  type WorkflowRuntimeClient,
+} from './runtime-workflow';
+
 /**
  * Host-provided AI client options (plan §4.5). `dispatchPolicy` defaults to
  * `prefer_dispatch` when omitted; hosts pass it explicitly per §3.2.

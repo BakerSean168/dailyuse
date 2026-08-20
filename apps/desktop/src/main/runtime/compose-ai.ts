@@ -55,16 +55,17 @@ import {
   AIServiceKnowledgeQueryAdapter,
   createAIModule,
   createAIPowerSyncRepositories,
+  createMastraStorage,
+  MastraAIRuntime,
+  MastraModelResolver,
+  type MastraStorageConfig,
   type AIServiceRuntimeConfig,
   type IAnalyticsReadPort,
   type IAIAutomationToolExecutorPort,
   type IKnowledgeNotePersistencePort,
   type IKnowledgeSourcePort,
 } from '@memoflow/ai';
-import {
-  createAIElectronModule,
-  type AIElectronModuleDef,
-} from '@memoflow/ai/electron';
+import { createAIElectronModule, type AIElectronModuleDef } from '@memoflow/ai/electron';
 
 /**
  * Dependencies the AI composer needs from the desktop host runtime.
@@ -81,6 +82,8 @@ export interface ComposeAIElectronDependencies {
   readonly analyticsReadPort: IAnalyticsReadPort;
   /** Host-owned automation tool executor port (Goal/Task/Reminder automation). 宿主持有的 automation tool executor port（Goal/Task/Reminder 自动化）。 */
   readonly automationToolExecutor: IAIAutomationToolExecutorPort;
+  /** Host-selected profile-local persistent Mastra storage; Desktop uses LibSQL. */
+  readonly mastraStorage: MastraStorageConfig;
   /** Host-read ai-service runtime config; when absent the optional service ports stay undefined. 宿主导出的 ai-service runtime config；缺省时可选服务 ports 保持 undefined。 */
   readonly aiServiceRuntimeConfig?: AIServiceRuntimeConfig;
 }
@@ -122,14 +125,23 @@ export interface ComposeAIElectronDependencies {
  * @returns AIElectronModuleDef — an already-bound IElectronModule-compatible handle.
  */
 export function composeAI(dependencies: ComposeAIElectronDependencies): AIElectronModuleDef {
-  const { conversationRepository, providerConfigRepository, knowledgeIndexRepository, executionLogPort } =
-    createAIPowerSyncRepositories(dependencies.db);
+  const {
+    conversationRepository,
+    providerConfigRepository,
+    knowledgeIndexRepository,
+    executionLogPort,
+  } = createAIPowerSyncRepositories(dependencies.db);
+  const mastraRuntime = new MastraAIRuntime({
+    storage: createMastraStorage(dependencies.mastraStorage),
+    modelResolver: new MastraModelResolver(providerConfigRepository),
+  });
 
   const config = dependencies.aiServiceRuntimeConfig;
 
   const instance = createAIModule({
     conversationRepository,
     providerConfigRepository,
+    mastraRuntime,
     knowledgeIndexRepository,
     executionLogPort,
     chatExecutionPort: config ? new AIServiceChatExecutionAdapter(config) : undefined,

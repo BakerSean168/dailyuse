@@ -3,7 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Nightly residual N2 (AH-2): honest Conversation ↔ Host-run association boundary.
+ * Historical nightly residual N2 (AH-2): honest Conversation ↔ Host-run
+ * association boundary while ADR-035 remains in the tree during ADR-050
+ * migration. Its source plans are archived, not active.
  *
  * Locks what is implemented after N1 without claiming agent-host §20 "multi-to-one
  * Conversation/AgentRun association" is complete:
@@ -36,11 +38,11 @@ describe('Conversation ↔ Host open-chat association boundary (nightly N2 / AH-
     'utf8',
   );
   const nightlyPlan = readFileSync(
-    resolve(repoRoot, 'docs/plan/active/2026-07-25-nightly-hygiene-and-agent-host.md'),
+    resolve(repoRoot, 'docs/plan/archive/2026-07-25-nightly-hygiene-and-agent-host.md'),
     'utf8',
   );
   const agentHostPlan = readFileSync(
-    resolve(repoRoot, 'docs/plan/active/2026-07-17-unified-assistant-agent-host.md'),
+    resolve(repoRoot, 'docs/plan/archive/2026-07-17-unified-assistant-agent-host.md'),
     'utf8',
   );
 
@@ -50,7 +52,7 @@ describe('Conversation ↔ Host open-chat association boundary (nightly N2 / AH-
     expect(dispatch).toContain("type: z.literal('run.started')");
     expect(dispatch).toContain('conversationId: z.string().optional()');
     expect(dispatch).toContain('Residual N1');
-    expect(ports).toContain("export type { AssistantClientCommand, AssistantEvent }");
+    expect(ports).toContain('export type { AssistantClientCommand, AssistantEvent }');
     expect(facade).toContain('Residual N1');
     expect(facade).toContain('const conversationId = command.conversationId?.trim()');
     expect(facade).toContain('...(conversationId ? { conversationId } : {})');
@@ -76,11 +78,7 @@ describe('Conversation ↔ Host open-chat association boundary (nightly N2 / AH-
     expect(nightlyPlan).toContain('AH-2');
     expect(nightlyPlan).toContain('listAgentRuns');
     expect(agentHostPlan).toContain('run.started.conversationId');
-    expect(agentHostPlan).toMatch(
-      /Conversation 与 AgentRun 有明确、多对一的关联[\s\S]*部分/,
-    );
-    expect(agentHostPlan).not.toMatch(
-      /- \[x\] Conversation 与 AgentRun 有明确、多对一的关联/,
-    );
+    expect(agentHostPlan).toMatch(/Conversation 与 AgentRun 有明确、多对一的关联[\s\S]*部分/);
+    expect(agentHostPlan).not.toMatch(/- \[x\] Conversation 与 AgentRun 有明确、多对一的关联/);
   });
 });

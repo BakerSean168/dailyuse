@@ -55,6 +55,13 @@ vi.mock('@memoflow/ai', async (importOriginal) => {
     AIServiceKnowledgeQueryAdapter: vi.fn(),
     createAIModule: vi.fn(),
     createAIPrismaRepositories: vi.fn(),
+    createMastraStorage: vi.fn(() => ({ tag: 'mastra-storage' })),
+    MastraModelResolver: vi.fn(function MastraModelResolverMock() {
+      return { tag: 'mastra-model-resolver' };
+    }),
+    MastraAIRuntime: vi.fn(function MastraAIRuntimeMock(input: unknown) {
+      return { tag: 'mastra-runtime', input };
+    }),
     getAIServiceRuntimeConfig: vi.fn(),
   };
 });
@@ -96,6 +103,9 @@ import {
   AIServiceKnowledgeQueryAdapter,
   createAIModule,
   createAIPrismaRepositories,
+  createMastraStorage,
+  MastraAIRuntime,
+  MastraModelResolver,
   getAIServiceRuntimeConfig,
   type AIServiceRuntimeConfig,
 } from '@memoflow/ai';
@@ -107,13 +117,19 @@ import { RepositoryKnowledgeNotePersistenceAdapter } from '../modules/ai/reposit
 import { RepositoryKnowledgeSourceAdapter } from '../modules/ai/repository-knowledge-source.adapter';
 
 const fakeDb = { tag: 'fake-db' } as unknown as PrismaClient;
-const fakeRepositoryApiPort = { tag: 'fake-repository-port' } as unknown as RepositoryApplicationPort;
+const fakeRepositoryApiPort = {
+  tag: 'fake-repository-port',
+} as unknown as RepositoryApplicationPort;
 const fakeGoalApplicationPort = { tag: 'fake-goal-port' } as unknown as GoalApplicationPort;
 const fakeTaskApplicationPort = { tag: 'fake-task-port' } as unknown as TaskApplicationPort;
 const fakeReminderApplicationPort = {
   tag: 'fake-reminder-port',
 } as unknown as ReminderApplicationPort;
 const fakeStorageBaseDir = '/tmp/fake-repository-storage';
+const fakeMastraStorage = {
+  kind: 'postgres' as const,
+  connectionString: 'postgresql://memoflow:test@127.0.0.1:5432/memoflow_test',
+};
 
 const aiDependencies = {
   db: fakeDb,
@@ -122,6 +138,7 @@ const aiDependencies = {
   goalApplicationPort: fakeGoalApplicationPort,
   taskApplicationPort: fakeTaskApplicationPort,
   reminderApplicationPort: fakeReminderApplicationPort,
+  mastraStorage: fakeMastraStorage,
 };
 
 const mockRepositorySet = {
@@ -185,6 +202,9 @@ describe('composeAI assembly order', () => {
     composeAI(aiDependencies);
 
     const prismaOrder = vi.mocked(createAIPrismaRepositories).mock.invocationCallOrder[0];
+    const storageOrder = vi.mocked(createMastraStorage).mock.invocationCallOrder[0];
+    const resolverOrder = vi.mocked(MastraModelResolver).mock.invocationCallOrder[0];
+    const mastraRuntimeOrder = vi.mocked(MastraAIRuntime).mock.invocationCallOrder[0];
     const configOrder = vi.mocked(getAIServiceRuntimeConfig).mock.invocationCallOrder[0];
     const firstHostOrder = hostAdapterMocks
       .map((adapter) => vi.mocked(adapter).mock.invocationCallOrder[0])
@@ -193,7 +213,10 @@ describe('composeAI assembly order', () => {
     const moduleOrder = vi.mocked(createAIModule).mock.invocationCallOrder[0];
     const apiModuleOrder = vi.mocked(createAIApiModule).mock.invocationCallOrder[0];
 
-    expect(prismaOrder).toBeLessThan(configOrder);
+    expect(prismaOrder).toBeLessThan(storageOrder);
+    expect(storageOrder).toBeLessThan(resolverOrder);
+    expect(resolverOrder).toBeLessThan(mastraRuntimeOrder);
+    expect(mastraRuntimeOrder).toBeLessThan(configOrder);
     expect(configOrder).toBeLessThan(firstHostOrder);
     expect(firstHostOrder).toBeLessThan(moduleOrder);
     expect(moduleOrder).toBeLessThan(apiModuleOrder);
@@ -202,6 +225,23 @@ describe('composeAI assembly order', () => {
     expect(handle).toMatchObject({ name: 'AI' });
     expect(typeof handle.register).toBe('function');
     expect(typeof handle.destroy).toBe('function');
+  });
+
+  it('composes one Postgres-backed Mastra runtime from the host storage config and identity-scoped provider repository', () => {
+    composeAI(aiDependencies);
+
+    expect(createMastraStorage).toHaveBeenCalledTimes(1);
+    expect(createMastraStorage).toHaveBeenCalledWith(fakeMastraStorage);
+    expect(MastraModelResolver).toHaveBeenCalledTimes(1);
+    expect(MastraModelResolver).toHaveBeenCalledWith(mockRepositorySet.providerConfigRepository);
+
+    const storage = vi.mocked(createMastraStorage).mock.results[0].value;
+    const resolver = vi.mocked(MastraModelResolver).mock.results[0].value;
+    expect(MastraAIRuntime).toHaveBeenCalledTimes(1);
+    expect(MastraAIRuntime).toHaveBeenCalledWith({ storage, modelResolver: resolver });
+
+    const runtime = vi.mocked(MastraAIRuntime).mock.results[0].value;
+    expect(vi.mocked(createAIModule).mock.calls[0][0].mastraRuntime).toBe(runtime);
   });
 
   it('constructs the five app-local host adapters from the exact db / repository port / storage dir identities', () => {
@@ -368,7 +408,11 @@ describe('composeAI config branches', () => {
     vi.mocked(createAIPrismaRepositories).mockReturnValue(
       mockRepositorySet as ReturnType<typeof createAIPrismaRepositories>,
     );
-    vi.mocked(createAIApiModule).mockReturnValue({ name: 'AI', register: vi.fn(), destroy: vi.fn() });
+    vi.mocked(createAIApiModule).mockReturnValue({
+      name: 'AI',
+      register: vi.fn(),
+      destroy: vi.fn(),
+    });
     vi.mocked(createAIModule).mockReturnValue({
       api: {},
       start: vi.fn(),

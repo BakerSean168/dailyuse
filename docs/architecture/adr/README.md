@@ -4,7 +4,7 @@ tags:
   - index
 description: 架构决策记录索引
 created: 2025-11-23T15:00:00
-updated: 2026-08-17T00:00:00+09:00
+updated: 2026-08-20T00:00:00+08:00
 ---
 
 # ADR 索引
@@ -50,7 +50,7 @@ updated: 2026-08-17T00:00:00+09:00
 | [ADR-032](./ADR-032-support-package-import-conventions.md)          | Support Package Import Conventions                       | 已采纳 | 2026-05-25 |
 | [ADR-033](./ADR-033-cross-module-communication-patterns.md)         | Cross-Module Communication Patterns                      | 已采纳 | 2026-07-10 |
 | [ADR-034](./ADR-034-obsidian-vault-repository.md)                   | 本地 Obsidian Vault 与可选 GitHub 知识仓库               | 已采纳 | 2026-07-16 |
-| [ADR-035](./ADR-035-unified-assistant-agent-host.md)                | 统一助手与可插拔 Agent Host                              | 已采纳 | 2026-07-17 |
+| [ADR-035](./ADR-035-unified-assistant-agent-host.md)                | 统一助手与可插拔 Agent Host                              | 已被 ADR-050 取代 | 2026-07-17 |
 | [ADR-036](./ADR-036-auth-account-boundary-and-verification.md)                | Auth / Account 边界与验证安全模型                          | 已采纳 | 2026-07-17 |
 | [ADR-037](./ADR-037-product-time-system.md)                       | 产品时间体系（Instant/Ymd、TransferDate、门面与风格） | 已采纳 | 2026-07-26 |
 | [ADR-038](./ADR-038-goal-consistency-and-reliable-task-contributions.md) | Goal 一致性与可靠 Task 贡献链路 | 已采纳 | 2026-08-01 |
@@ -65,6 +65,9 @@ updated: 2026-08-17T00:00:00+09:00
 | [ADR-047](./ADR-047-api-observability-pipeline.md) | API 可观测性流水线与装配治理（single observer、有界 metrics、默认 noop / opt-in OpenTelemetry、transport-only 模块注册上下文） | 已采纳 | 2026-08-15 |
 | [ADR-048](./ADR-048-transport-contract-parity.md) | Transport Contract Parity — adapter-owned validation、HTTP/IPC parity fixture、mapper 边界与 direct Vitest 门禁（RefArch Phase 4） | 已采纳 | 2026-08-16 |
 | [ADR-049](./ADR-049-domain-outcome-and-failure-contracts.md) | Domain Outcomes and Failure Contracts — 领域故障、应用结果、公开失败、provider ACL 与传输投影 | 已采纳（实施中） | 2026-08-17 |
+| [ADR-050](./ADR-050-mastra-native-ai-runtime.md) | MemoFlow AI vNext — Mastra-native Runtime 与单一状态所有权 | 已采纳 | 2026-08-20 |
+| [ADR-051](./ADR-051-ai-primitive-taxonomy.md) | AI Primitive Taxonomy — Agent / Tool / Workflow / Skill / Memory / Context | 已采纳 | 2026-08-20 |
+| [ADR-052](./ADR-052-goal-create-reference-workflow.md) | `goal.create` Reference Workflow 与确定性业务执行 | 已采纳 | 2026-08-20 |
 
 ## 维护规则
 

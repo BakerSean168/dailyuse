@@ -46,6 +46,7 @@ import {
   registerAIKnowledgeQueryRoutes,
   registerAIKnowledgeNoteRoutes,
   registerAIAssistantRoutes,
+  registerAIRuntimeRoutes,
 } from './routes';
 import { AICapabilitiesController } from '../server/transport/ai-capabilities.controller';
 import { AIAgentCheckpointController } from '../server/transport/ai-agent-checkpoint.controller';
@@ -135,7 +136,7 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
   return {
     name: 'AI',
 
-    register(context) {
+    async register(context) {
       if (state !== 'created') {
         throw new Error(
           `AIApiModule.register() called while in '${state}' state; a handle may only register once from 'created'`,
@@ -247,6 +248,11 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
         );
         const chatRoutes = registerAIChatRoutes(chatController, middleware, openApiRegistry);
         const assistantRoutes = registerAIAssistantRoutes(assistantController, middleware);
+        const runtimeRoutes = registerAIRuntimeRoutes(
+          options.instance.mastraRuntime,
+          middleware,
+          options.instance.workflowRuntime,
+        );
         const knowledgeQueryRoutes = registerAIKnowledgeQueryRoutes(
           knowledgeQueryController,
           middleware,
@@ -282,7 +288,7 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
         // must never leave a partial route set on the host router.
         // 先调用一次 `instance.start()` 再挂载路由：start 失败绝不能把半套路由
         // 留在宿主 router 上。
-        options.instance.start();
+        await options.instance.start();
 
         // Record the stack length before the first mount so a later mount
         // failure can roll back the already-installed AI routes.
@@ -295,6 +301,7 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
           router.use('/ai/agents', agentRuntimeRoutes);
           router.use('/ai/chat', chatRoutes);
           router.use('/ai/assistant', assistantRoutes);
+          router.use('/ai/runtime', runtimeRoutes);
           router.use('/ai/knowledge', knowledgeQueryRoutes);
           router.use('/ai/knowledge-notes', knowledgeNoteRoutes);
           router.use('/ai/analytics', analyticsQueryRoutes);
@@ -311,7 +318,7 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
       } catch (error) {
         state = 'failed';
         try {
-          options.instance.dispose();
+          await options.instance.dispose();
         } catch (disposeError) {
           logger.error(
             'AIApiModule: instance dispose failed during failed registration',
@@ -322,12 +329,12 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
       }
     },
 
-    destroy() {
+    async destroy() {
       if (state === 'disposed' || state === 'failed') {
         return;
       }
       state = 'disposed';
-      options.instance.dispose();
+      await options.instance.dispose();
     },
   };
 }

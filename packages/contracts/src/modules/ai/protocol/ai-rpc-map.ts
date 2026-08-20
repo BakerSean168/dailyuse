@@ -36,6 +36,15 @@ import type {
   AgentRunResult,
   AgentStartRunClientRequest,
 } from '../api/ai-agent.dto';
+import type {
+  AssistantRuntimeClientCommand,
+  AIWorkflowCancelClientRequest,
+  AIWorkflowGetClientRequest,
+  AIWorkflowListClientRequest,
+  AIWorkflowResumeClientRequest,
+  AIWorkflowRunView,
+  AIWorkflowStartClientRequest,
+} from '../api/ai-runtime.dto';
 import type { AiProviderConfigId, AiConversationId } from '../../../primitives';
 
 export type AIRpcMap = {
@@ -50,7 +59,10 @@ export type AIRpcMap = {
   'ai:goal:generate': [GenerateGoalsReq, GenerateGoalsRes];
 
   'ai:chat:conversation:create': [CreateConversationReq, CreateConversationRes];
-  'ai:chat:conversation:update': [UpdateConversationReq & { id: AiConversationId }, UpdateConversationRes];
+  'ai:chat:conversation:update': [
+    UpdateConversationReq & { id: AiConversationId },
+    UpdateConversationRes,
+  ];
   'ai:chat:conversation:list': [ListConversationsQuery | undefined, ConversationListRes];
   'ai:chat:conversation:get': [AiConversationId, GetConversationRes];
   'ai:chat:conversation:delete': [AiConversationId, DeleteConversationRes];
@@ -58,6 +70,16 @@ export type AIRpcMap = {
   'ai:chat:message:list': [ListMessagesQuery, MessageListRes];
   'ai:chat:message:stream:start': [SendMessageReq, SendMessageRes];
   'ai:chat:message:stream:cancel': [AiConversationId, void];
+  'ai:runtime:assistant:start': [
+    { streamId: string; command: AssistantRuntimeClientCommand },
+    void,
+  ];
+  'ai:runtime:assistant:cancel': [AssistantRuntimeClientCommand, { cancelled: boolean }];
+  'ai:runtime:workflow:start': [AIWorkflowStartClientRequest, AIWorkflowRunView];
+  'ai:runtime:workflow:resume': [AIWorkflowResumeClientRequest, AIWorkflowRunView];
+  'ai:runtime:workflow:get': [AIWorkflowGetClientRequest, AIWorkflowRunView | null];
+  'ai:runtime:workflow:list': [AIWorkflowListClientRequest, readonly AIWorkflowRunView[]];
+  'ai:runtime:workflow:cancel': [AIWorkflowCancelClientRequest, AIWorkflowRunView | null];
 
   'ai:knowledge-note:create': [CreateKnowledgeNoteReq, CreateKnowledgeNoteRes];
   'ai:knowledge:expand': [ExpandKnowledgeReq, ExpandKnowledgeRes];

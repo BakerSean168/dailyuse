@@ -3,11 +3,12 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 327/389: product AI docs stay aligned with ADR-034/035 runtime boundaries.
- * Residual 389: Host UI workbench partial (355–387) must be documented honestly.
- * Do not reintroduce "writes database Repository" or "Host adapters unimplemented".
+ * Historical ADR-034/035 documentation consistency while the legacy runtime
+ * still exists during the ADR-050 decisive rewrite. The old Host plan is
+ * archived and must never be restored to docs/plan/active just to satisfy this
+ * characterization test.
  */
-describe('ADR-035 / ADR-034 product AI docs boundary', () => {
+describe('archived ADR-035 / ADR-034 product AI docs boundary', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../');
   const aiProduct = readFileSync(resolve(repoRoot, 'docs/product/modules/ai.md'), 'utf8');
   const aiFilesIndex = readFileSync(
@@ -26,17 +27,11 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     'utf8',
   );
   const proposalKernel = readFileSync(
-    resolve(
-      repoRoot,
-      'packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts',
-    ),
+    resolve(repoRoot, 'packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts'),
     'utf8',
   );
   const directTurn = readFileSync(
-    resolve(
-      repoRoot,
-      'packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts',
-    ),
+    resolve(repoRoot, 'packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts'),
     'utf8',
   );
 
@@ -106,11 +101,15 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(composition).toContain('residual 343');
   });
   it('ai-files index points at server/* Host adapters and no legacy infrastructure-server paths', () => {
-    expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts');
+    expect(aiFilesIndex).toContain(
+      'packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts',
+    );
     expect(aiFilesIndex).toContain(
       'packages/ai/src/server/infrastructure/turn-engine/readonly-analysis.turn-engine.ts',
     );
-    expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts');
+    expect(aiFilesIndex).toContain(
+      'packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts',
+    );
     expect(aiFilesIndex).toContain(
       'packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts',
     );
@@ -130,7 +129,6 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiFilesIndex).toContain('ADR-035 Agent Host 生产适配');
   });
 
-
   it('documents Host UI workbench files and rejects stale "workbench not landed" claim (residual 389)', () => {
     expect(aiFilesIndex).toContain('AIHostProposalPanel.vue');
     expect(aiFilesIndex).toContain('AIHostExecutionReceiptPanel.vue');
@@ -139,7 +137,7 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiFilesIndex).toContain('AIContextPanel.vue');
 
     const hostPlan = readFileSync(
-      resolve(repoRoot, 'docs/plan/active/2026-07-17-unified-assistant-agent-host.md'),
+      resolve(repoRoot, 'docs/plan/archive/2026-07-17-unified-assistant-agent-host.md'),
       'utf8',
     );
     expect(hostPlan).toContain('residual 355–387');

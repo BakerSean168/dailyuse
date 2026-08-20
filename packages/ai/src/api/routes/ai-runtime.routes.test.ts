@@ -1,0 +1,309 @@
+import { EventEmitter } from 'node:events';
+import { Router, type Request, type Response } from 'express';
+import { describe, expect, it, vi } from 'vitest';
+import type { AssistantRuntimeEvent } from '@memoflow/contracts/ai';
+import type { AIWorkflowRuntimePort, MastraAIRuntime } from '../../server/mastra/runtime';
+import { registerAIRuntimeRoutes } from './ai-runtime.routes';
+
+type LayerWithRoute = {
+  route?: {
+    path: string;
+    methods: Record<string, boolean>;
+    stack: Array<{ handle: (req: Request, res: Response) => unknown }>;
+  };
+};
+
+function getRouteHandler(router: Router, method: string, path: string) {
+  const layer = (router as unknown as { stack: LayerWithRoute[] }).stack.find(
+    (candidate) =>
+      candidate.route?.path === path && candidate.route.methods[method.toLowerCase()] === true,
+  );
+  expect(layer?.route).toBeDefined();
+  return layer!.route!.stack.at(-1)!.handle;
+}
+
+function request(body: unknown, identityId = 'identity-1') {
+  return Object.assign(new EventEmitter(), {
+    body,
+    user: identityId ? { identityId } : undefined,
+    requestContext: {
+      requestId: 'request-runtime-1',
+      traceId: 'trace-runtime-1',
+      startedAt: 1_700_000_000_000,
+      source: 'http',
+    },
+  });
+}
+
+function response() {
+  const writes: string[] = [];
+  const res = Object.assign(new EventEmitter(), {
+    statusCode: 200,
+    writableEnded: false,
+    setHeader: vi.fn(),
+    flushHeaders: vi.fn(),
+    write: vi.fn((chunk: string) => {
+      writes.push(chunk);
+      return true;
+    }),
+    end: vi.fn(function (this: { writableEnded: boolean }) {
+      this.writableEnded = true;
+    }),
+    status: vi.fn(function (this: { statusCode: number }, code: number) {
+      this.statusCode = code;
+      return this;
+    }),
+    json: vi.fn(),
+  });
+  return { res, writes };
+}
+
+function runtimeStub(events: AssistantRuntimeEvent[] = []) {
+  const dispatchMessage = vi.fn(async function* () {
+    for (const event of events) yield event;
+  });
+  const cancelRun = vi.fn(() => true);
+  return {
+    dispatchMessage,
+    cancelRun,
+    runtime: { dispatchMessage, cancelRun } as unknown as MastraAIRuntime,
+  };
+}
+
+const workflowRun = {
+  runId: 'workflow-1',
+  kind: 'goal.create' as const,
+  conversationId: 'conversation-1',
+  status: 'suspended' as const,
+  suspension: {
+    type: 'clarification_required' as const,
+    questions: ['What is the target date?'],
+  },
+  createdAt: 1,
+  updatedAt: 2,
+};
+
+function workflowRuntimeStub() {
+  const start = vi.fn(async () => workflowRun);
+  const resume = vi.fn(async () => workflowRun);
+  const get = vi.fn(async () => workflowRun);
+  const list = vi.fn(async () => [workflowRun]);
+  const cancel = vi.fn(async () => workflowRun);
+  return {
+    start,
+    resume,
+    get,
+    list,
+    cancel,
+    runtime: { start, resume, get, list, cancel } satisfies AIWorkflowRuntimePort,
+  };
+}
+
+const auth = ((_: unknown, __: unknown, next: () => void) => next()) as never;
+
+const messageCommand = {
+  type: 'message' as const,
+  conversationId: 'conversation-1',
+  content: 'hello',
+  surface: 'web' as const,
+};
+
+describe('registerAIRuntimeRoutes', () => {
+  it('streams only canonical vNext events and injects authenticated identity into Mastra runtime', async () => {
+    const started: AssistantRuntimeEvent = {
+      eventId: 'run-1:1',
+      runId: 'run-1',
+      conversationId: 'conversation-1',
+      sequence: 1,
+      createdAt: 1,
+      type: 'assistant.run.started',
+      data: {},
+    };
+    const completed: AssistantRuntimeEvent = {
+      eventId: 'run-1:2',
+      runId: 'run-1',
+      conversationId: 'conversation-1',
+      sequence: 2,
+      createdAt: 2,
+      type: 'assistant.run.completed',
+      data: { content: 'hello back' },
+    };
+    const stub = runtimeStub([started, completed]);
+    const router = registerAIRuntimeRoutes(stub.runtime, { auth });
+    const handler = getRouteHandler(router, 'post', '/assistant/sse');
+    const req = request(messageCommand);
+    const { res, writes } = response();
+
+    await handler(req as never, res as never);
+
+    expect(stub.dispatchMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        identityId: 'identity-1',
+        conversationId: 'conversation-1',
+        content: 'hello',
+      }),
+    );
+    expect(writes).toEqual([
+      `event: runtime\ndata: ${JSON.stringify(started)}\n\n`,
+      `event: runtime\ndata: ${JSON.stringify(completed)}\n\n`,
+    ]);
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects client identity injection before runtime dispatch', async () => {
+    const stub = runtimeStub();
+    const router = registerAIRuntimeRoutes(stub.runtime, { auth });
+    const handler = getRouteHandler(router, 'post', '/assistant/sse');
+    const req = request({ ...messageCommand, identityId: 'attacker' });
+    const { res } = response();
+
+    await handler(req as never, res as never);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(stub.dispatchMessage).not.toHaveBeenCalled();
+  });
+
+  it('cancels by runId only through the authenticated identity', async () => {
+    const stub = runtimeStub();
+    const router = registerAIRuntimeRoutes(stub.runtime, { auth });
+    const handler = getRouteHandler(router, 'post', '/assistant/cancel');
+    const req = request({ type: 'cancel_run', runId: 'run-1' });
+    const { res } = response();
+
+    await handler(req as never, res as never);
+
+    expect(stub.cancelRun).toHaveBeenCalledWith({ identityId: 'identity-1', runId: 'run-1' });
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('fails closed when the host did not compose a Mastra runtime', async () => {
+    const router = registerAIRuntimeRoutes(null, { auth });
+    const handler = getRouteHandler(router, 'post', '/assistant/sse');
+    const req = request(messageCommand);
+    const { res } = response();
+
+    await handler(req as never, res as never);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.setHeader).not.toHaveBeenCalledWith('Content-Type', 'text/event-stream');
+  });
+
+  it('exposes the canonical workflow start/resume/get/list/cancel surface with host-owned identity', async () => {
+    const assistant = runtimeStub();
+    const workflow = workflowRuntimeStub();
+    const router = registerAIRuntimeRoutes(assistant.runtime, { auth }, workflow.runtime);
+
+    const cases = [
+      {
+        path: '/workflow/start',
+        body: {
+          kind: 'goal.create',
+          conversationId: 'conversation-1',
+          input: { prompt: 'Run a 5K' },
+        },
+        spy: workflow.start,
+        expected: {
+          identityId: 'identity-1',
+          request: {
+            kind: 'goal.create',
+            conversationId: 'conversation-1',
+            input: { prompt: 'Run a 5K' },
+          },
+        },
+      },
+      {
+        path: '/workflow/resume',
+        body: { runId: 'workflow-1', command: { type: 'approve' } },
+        spy: workflow.resume,
+        expected: {
+          identityId: 'identity-1',
+          request: { runId: 'workflow-1', command: { type: 'approve' } },
+        },
+      },
+      {
+        path: '/workflow/get',
+        body: { runId: 'workflow-1' },
+        spy: workflow.get,
+        expected: { identityId: 'identity-1', runId: 'workflow-1' },
+      },
+      {
+        path: '/workflow/list',
+        body: { conversationId: 'conversation-1' },
+        spy: workflow.list,
+        expected: { identityId: 'identity-1', conversationId: 'conversation-1' },
+      },
+      {
+        path: '/workflow/cancel',
+        body: { runId: 'workflow-1' },
+        spy: workflow.cancel,
+        expected: { identityId: 'identity-1', runId: 'workflow-1' },
+      },
+    ] as const;
+
+    for (const item of cases) {
+      const handler = getRouteHandler(router, 'post', item.path);
+      const { res } = response();
+      await handler(request(item.body) as never, res as never);
+      expect(item.spy).toHaveBeenCalledWith(item.expected);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ ok: true }));
+    }
+  });
+
+  it('rejects workflow identity injection and fails closed when no workflow runtime is composed', async () => {
+    const assistant = runtimeStub();
+    const workflow = workflowRuntimeStub();
+    const router = registerAIRuntimeRoutes(assistant.runtime, { auth }, workflow.runtime);
+    const start = getRouteHandler(router, 'post', '/workflow/start');
+    const { res: injectedRes } = response();
+
+    await start(
+      request({
+        kind: 'goal.create',
+        conversationId: 'conversation-1',
+        input: {},
+        identityId: 'attacker-controlled',
+      }) as never,
+      injectedRes as never,
+    );
+
+    expect(injectedRes.status).toHaveBeenCalledWith(400);
+    expect(workflow.start).not.toHaveBeenCalled();
+
+    const unavailableRouter = registerAIRuntimeRoutes(assistant.runtime, { auth }, null);
+    const unavailableStart = getRouteHandler(unavailableRouter, 'post', '/workflow/start');
+    const { res: unavailableRes } = response();
+    await unavailableStart(
+      request({ kind: 'goal.create', conversationId: 'c1', input: {} }) as never,
+      unavailableRes as never,
+    );
+    expect(unavailableRes.status).toHaveBeenCalledWith(503);
+  });
+
+  it('aborts the Mastra dispatch when the HTTP connection closes', async () => {
+    let capturedSignal: AbortSignal | undefined;
+    const dispatchMessage = vi.fn(async function* (input: { signal?: AbortSignal }) {
+      capturedSignal = input.signal;
+      await new Promise<void>((resolve) => {
+        if (input.signal?.aborted) resolve();
+        else input.signal?.addEventListener('abort', () => resolve(), { once: true });
+      });
+    });
+    const runtime = {
+      dispatchMessage,
+      cancelRun: vi.fn(() => false),
+    } as unknown as MastraAIRuntime;
+    const router = registerAIRuntimeRoutes(runtime, { auth });
+    const handler = getRouteHandler(router, 'post', '/assistant/sse');
+    const req = request(messageCommand);
+    const { res, writes } = response();
+
+    const pending = handler(req as never, res as never);
+    await vi.waitFor(() => expect(capturedSignal).toBeDefined());
+    res.emit('close');
+    await pending;
+
+    expect(capturedSignal?.aborted).toBe(true);
+    expect(writes).toEqual([]);
+  });
+});
