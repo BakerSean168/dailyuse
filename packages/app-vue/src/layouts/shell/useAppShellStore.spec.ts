@@ -14,6 +14,7 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.panelSurface).toBe('home');
     expect(store.activeTab).toBeUndefined();
     expect(store.layoutReason).toBe('default');
+    expect(store.conversationLayoutPreferences).toEqual({});
   });
 
   it('keeps right-panel visibility, tabs, and focus independent', () => {
@@ -154,13 +155,31 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(nextRoute).toBe('/goals');
     expect(store.activeTabId).toBe(a.tabId);
 
+    store.toggleFocus('conversation-a');
     expect(store.closeTab(a.tabId)).toBeNull();
     expect(store.tabs).toHaveLength(0);
     expect(store.activeTabId).toBeNull();
     expect(store.panelSurface).toBe('home');
     expect(store.rightPanelOpen).toBe(true);
-    expect(store.layout).toBe('split');
-    expect(store.layoutReason).toBe('default');
+    expect(store.layout).toBe('focus');
+    expect(store.layoutReason).toBe('user');
+    expect(store.getConversationLayoutPreference('conversation-a')).toBe('focus');
+  });
+
+  it('keeps the current conversation layout when returning to Home or closing all tabs', () => {
+    const store = useAppShellStore();
+    store.openTab({ module: 'goal', route: '/goals', title: 'G', intent: 'deeplink' });
+    store.toggleFocus('conversation-a');
+
+    store.showHome();
+    expect(store.panelSurface).toBe('home');
+    expect(store.layout).toBe('focus');
+    expect(store.layoutReason).toBe('user');
+
+    store.closeAllTabs();
+    expect(store.tabs).toHaveLength(0);
+    expect(store.layout).toBe('focus');
+    expect(store.layoutReason).toBe('user');
   });
 
   it('explicit module navigation reopens a user-hidden panel', () => {
@@ -222,14 +241,23 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.panelSurface).toBe('workflow');
   });
 
-  it('toggleFocus records user layout reason', () => {
+  it('toggleFocus records user layout reason and remembers it per AI conversation', () => {
     const store = useAppShellStore();
-    store.toggleFocus();
+    store.toggleFocus('conversation-a');
     expect(store.layout).toBe('focus');
     expect(store.layoutReason).toBe('user');
-    store.toggleFocus();
+    expect(store.getConversationLayoutPreference('conversation-a')).toBe('focus');
+    expect(store.getConversationLayoutPreference('conversation-b')).toBeNull();
+
+    store.toggleFocus('conversation-a');
     expect(store.layout).toBe('split');
     expect(store.layoutReason).toBe('user');
+    expect(store.getConversationLayoutPreference('conversation-a')).toBe('split');
+
+    store.rememberConversationLayout('conversation-b', 'focus');
+    expect(store.getConversationLayoutPreference('conversation-b')).toBe('focus');
+    store.forgetConversationLayout('conversation-b');
+    expect(store.getConversationLayoutPreference('conversation-b')).toBeNull();
   });
 
   it('sanitizeLegacyTabs drops setting module tabs from persisted state', () => {

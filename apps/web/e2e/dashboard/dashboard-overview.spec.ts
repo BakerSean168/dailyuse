@@ -4,7 +4,7 @@
  * V2 shell contract (docs/UI_REDESIGN_V2_PLAN.md §3):
  * - Dashboard is retired: `/dashboard` redirects to `/` (AI workspace ground)
  * - `/` renders the persistent AI layer inside the AppShell
- * - the window header exposes a workspace launcher plus explicit compound module capsules;
+ * - the window header exposes explicit compound module capsules without a redundant workspace launcher;
  *   business context remains in BusinessPanel tabs
  */
 import { test, expect } from '@playwright/test';
@@ -41,10 +41,12 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     expect(page.url()).toContain(WEB_CONFIG.LOGIN_PATH);
   });
 
-  test('[P0] should expose workspace launcher and explicit module capsules', async ({ page }) => {
+  test('[P0] should expose explicit module capsules without a workspace launcher', async ({
+    page,
+  }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.getByTestId('shell-workspace-launcher')).toBeVisible();
+    await expect(page.getByTestId('shell-workspace-launcher')).toHaveCount(0);
     await expect(page.getByTestId('capsule-nav-goal')).toBeVisible();
     await expect(page.getByTestId('capsule-nav-task')).toBeVisible();
     await expect(page.getByTestId('capsule-nav-schedule')).toBeVisible();
@@ -60,6 +62,8 @@ test.describe('Dashboard retirement (V2 shell)', () => {
 
     await page.getByTestId('business-panel-home').click();
     await expect(page.getByTestId('today-overview-panel')).toBeVisible();
+    await expect(page.getByTestId('business-panel-focus-toggle')).toBeVisible();
+    await expect(page.getByTestId('business-panel-close')).toHaveCount(0);
   });
 
   test('[P1] should keep legacy deep-link redirects working', async ({ page }) => {
@@ -73,6 +77,9 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     await expect(page.getByTestId('standalone-settings-layout')).toBeVisible();
     await expect(page.getByTestId('settings-scene-rail')).toHaveCount(0);
     await expect(page.getByTestId('settings-return-to-app')).toBeVisible();
+    await expect(page.getByTestId('window-header')).toHaveAttribute('data-header-mode', 'settings');
+    const returnButtonBox = await page.getByTestId('settings-return-to-app').boundingBox();
+    expect(returnButtonBox?.y ?? Number.POSITIVE_INFINITY).toBeLessThan(48);
   });
 
   test('[P2] should preserve a business tab and hidden-panel preference across reload', async ({
@@ -81,7 +88,7 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     await page.goto('/goals', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('business-panel')).toBeVisible();
 
-    await page.getByTestId('business-panel-close').click();
+    await page.getByTestId('shell-right-panel-toggle').click();
     await expect(page).toHaveURL(/\/goals$/);
     await expect(page.getByTestId('business-panel')).toBeHidden();
     await page.reload({ waitUntil: 'domcontentloaded' });

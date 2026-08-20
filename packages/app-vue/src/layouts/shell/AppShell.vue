@@ -21,7 +21,7 @@ import { computed, inject, onBeforeUnmount, onMounted, provide, ref, shallowRef,
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
-import { useAppShellStore, MAX_BUSINESS_TABS } from './useAppShellStore';
+import { useAppShellStore, MAX_BUSINESS_TABS, type ShellLayout } from './useAppShellStore';
 import { useShellRouterSync, AUTO_FOCUS_VIEWPORT, moduleForPath } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
 import { hasDesktopAuthApi } from '../../shared/utils/desktop-auth-recovery';
@@ -250,19 +250,41 @@ const conversationGroups = computed(() => {
 const activeConversationId = computed<string | null>(
   () => (aiRef.value?.chatConversationId as string | undefined) || null,
 );
+/** 新会话在首条消息落库前没有 conversation id，先暂存一次用户显式布局选择。 */
+const pendingConversationLayoutPreference = ref<ShellLayout | null>(null);
+
+function applyConversationLayoutPreference(conversationId = activeConversationId.value): void {
+  const preferred = store.getConversationLayoutPreference(conversationId);
+  store.setLayout(preferred ?? 'split', preferred ? 'user' : 'default');
+}
+
+function handleToggleWorkspaceFocus(): void {
+  store.toggleFocus(activeConversationId.value);
+  if (!activeConversationId.value) {
+    pendingConversationLayoutPreference.value = store.layout;
+  }
+  // A narrow viewport may temporarily require focus even when the user records split as
+  // the conversation preference. Re-apply geometry immediately so the actual layout stays valid.
+  onViewportGeometryChange();
+}
 
 async function handleSelectConversation(id: string) {
+  // Selecting an existing conversation must never inherit a pending preference from an unsaved draft.
+  pendingConversationLayoutPreference.value = null;
   const summary = conversations.value.find((item) => String(item.id) === id);
   if (!summary) return;
   await aiRef.value?.selectConversation(summary);
 }
 
 function handleDeleteConversation(id: string) {
+  store.forgetConversationLayout(id);
   void aiRef.value?.deleteConversation(id);
 }
 
 /** 「新对话」= 新建会话 + 关面板回 STATE A（V2 §5）。 */
 async function handleNewConversation() {
+  pendingConversationLayoutPreference.value = null;
+  store.setLayout('split', 'default');
   aiRef.value?.startNewConversation('chat');
   await sync.goHome();
 }
@@ -407,7 +429,7 @@ function onViewportGeometryChange(): void {
   }
 
   if (store.layout === 'focus' && store.layoutReason === 'viewport') {
-    store.setLayout('split', 'default');
+    applyConversationLayoutPreference();
   }
 }
 
@@ -524,16 +546,26 @@ watch([workspaceMainRef, aiColumnRef], () => {
   bindHostResizeObserver();
 });
 
+watch(activeConversationId, (conversationId, previousConversationId) => {
+  if (
+    conversationId &&
+    !previousConversationId &&
+    pendingConversationLayoutPreference.value !== null
+  ) {
+    store.rememberConversationLayout(conversationId, pendingConversationLayoutPreference.value);
+    pendingConversationLayoutPreference.value = null;
+  }
+  applyConversationLayoutPreference(conversationId);
+  // 会话偏好只表达 user intent；窄视口仍由几何规则临时强制 focus。
+  onViewportGeometryChange();
+});
+
 watch([showSidebar, sidebarWidth, sidebarCollapsed], () => {
   // 触发一次布局派生，便于 focus 自动恢复规则与宽度消费保持一致
   onViewportGeometryChange();
 });
 
 // ── 业务工作区入口 / 面板动作（导航细节在 useShellRouterSync） ──
-function openWorkspace() {
-  void sync.goHome();
-}
-
 function openHeaderModule(payload: { id: string; route: string }): void {
   if (!headerCapsules.value.some((entry) => entry.id === payload.id)) return;
   const module = moduleForPath(payload.route);
@@ -662,7 +694,7 @@ function panelCacheKey(
       @toggle-right-panel="() => void sync.togglePanel()"
       @go-back="router.back()"
       @go-forward="router.forward()"
-      @open-workspace="openWorkspace"
+      @return-to-app="returnFromSettings"
       @open-module="openHeaderModule"
       @window-minimize="windowControls.minimizeWindow()"
       @window-toggle-maximize="windowControls.toggleMaximize()"
@@ -712,11 +744,7 @@ function panelCacheKey(
     <!-- STATE D：独立设置场景。设置路由只渲染 named view `settings`（UserSettingsView），
          业务 default view 为空；WorkspaceSceneHost 用 v-show 常驻——KeepAlive 实例、
          AIChatView 流式回复、Teleport 宿主都不随设置导航销毁（Phase 0 / UI-001）。 -->
-    <StandaloneSettingsLayout
-      v-if="isSettingsScene"
-      class="min-h-0 flex-1"
-      @return-to-app="returnFromSettings"
-    >
+    <StandaloneSettingsLayout v-if="isSettingsScene" class="min-h-0 flex-1">
       <router-view name="settings" />
     </StandaloneSettingsLayout>
 
@@ -803,11 +831,10 @@ function panelCacheKey(
             :workflow-attention-count="workflowAttentionCount"
             @activate-tab="(id: string) => void sync.activateTab(id)"
             @close-tab="(id: string) => void sync.closeTab(id)"
-            @close-panel="() => void sync.closePanel()"
             @show-home="() => void sync.goHome()"
             @show-workflow="store.requestWorkflowSurface('explicit')"
             @close-workflow="store.closeWorkflowSurface()"
-            @toggle-focus="store.toggleFocus()"
+            @toggle-focus="handleToggleWorkspaceFocus"
             @start-resize="startPanelResize"
             @reset-width="resetPanelWidth"
             @resize-by="resizePanelBy"
