@@ -35,6 +35,7 @@ export const zhCNAuthMessages = {
       heading: '登录{app}',
       submitting: '登录中...',
       submit: '登录',
+      github: '使用 GitHub 登录',
       registerLink: '立即注册',
       forgotLink: '忘记密码？',
     },
@@ -76,6 +77,7 @@ export const zhCNAuthMessages = {
       linkInstruction: '请打开邮件中的验证链接。完成后即可关闭此页面。',
     },
     field: {
+      name: '名称',
       email: '邮箱',
       password: '密码',
       confirmPassword: '确认密码',
@@ -172,6 +174,7 @@ export const enUSAuthMessages = {
       heading: 'Sign in to {app}',
       submitting: 'Signing in...',
       submit: 'Sign In',
+      github: 'Continue with GitHub',
       registerLink: 'Sign up',
       forgotLink: 'Forgot password?',
     },
@@ -213,6 +216,7 @@ export const enUSAuthMessages = {
       linkInstruction: 'Open the verification link in your email. You can close this page afterward.',
     },
     field: {
+      name: 'Name',
       email: 'Email',
       password: 'Password',
       confirmPassword: 'Confirm Password',
