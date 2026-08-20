@@ -13,6 +13,7 @@ import {
   AIWorkflowRunViewSchema,
   AIWorkflowSuspensionSchema,
   GoalCreateWorkflowInputSchema,
+  TaskCreateWorkflowInputSchema,
   type AIWorkflowResumeClientRequest,
   type AIWorkflowRunView,
   type AIWorkflowStartClientRequest,
@@ -20,7 +21,7 @@ import {
   type AssistantRuntimeHistoryView,
 } from '@memoflow/contracts/ai';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import { createMemoFlowAssistant, GoalPlannerWorker } from '../agents';
+import { createMemoFlowAssistant, GoalPlannerWorker, TaskPlannerWorker } from '../agents';
 import type { MastraModelResolver } from '../models';
 import {
   ApplyGoalPlanService,
@@ -30,6 +31,13 @@ import {
   createGoalCreateWorkflow,
   initialGoalCreateWorkflowState,
   type GoalPlanMutationPort,
+  ApplyTaskPlanService,
+  TASK_CREATE_LIFECYCLE_STEP_ID,
+  TASK_CREATE_WORKFLOW_ID,
+  TaskCreateWorkflowOutputSchema,
+  createTaskCreateWorkflow,
+  initialTaskCreateWorkflowState,
+  type TaskPlanMutationPort,
 } from '../workflows';
 import { AsyncEventQueue } from './async-event-queue';
 import { AssistantHistoryService } from './assistant-history.service';
@@ -74,6 +82,8 @@ export interface MastraAIRuntimeDependencies {
   readonly transcriptBootstrapSource: AssistantTranscriptBootstrapSource;
   /** Host-bound canonical Goal/Task/Reminder application mutations for ADR-052. */
   readonly goalPlanMutationPort: GoalPlanMutationPort;
+  /** Host-bound canonical Task application mutation for the task.create workflow. */
+  readonly taskPlanMutationPort: TaskPlanMutationPort;
 }
 
 type ActiveRun = {
@@ -88,6 +98,8 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
   readonly assistant: ReturnType<typeof createMemoFlowAssistant>;
   readonly goalPlanner: GoalPlannerWorker;
   readonly goalCreateWorkflow: ReturnType<typeof createGoalCreateWorkflow>;
+  readonly taskPlanner: TaskPlannerWorker;
+  readonly taskCreateWorkflow: ReturnType<typeof createTaskCreateWorkflow>;
   readonly controller: AgentController;
   readonly mastra: Mastra;
   private initPromise: Promise<void> | null = null;
@@ -108,6 +120,11 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     this.goalCreateWorkflow = createGoalCreateWorkflow({
       planner: this.goalPlanner,
       applyService: new ApplyGoalPlanService(deps.goalPlanMutationPort),
+    });
+    this.taskPlanner = new TaskPlannerWorker(deps.modelResolver);
+    this.taskCreateWorkflow = createTaskCreateWorkflow({
+      planner: this.taskPlanner,
+      applyService: new ApplyTaskPlanService(deps.taskPlanMutationPort),
     });
     this.controller = new AgentController({
       id: 'memoflow-assistant-controller',
@@ -131,8 +148,9 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       agents: {
         assistant: this.assistant,
         goalPlanner: this.goalPlanner.agent,
+        taskPlanner: this.taskPlanner.agent,
       },
-      workflows: { goalCreate: this.goalCreateWorkflow },
+      workflows: { goalCreate: this.goalCreateWorkflow, taskCreate: this.taskCreateWorkflow },
       agentControllers: { assistant: this.controller },
     });
   }
@@ -275,6 +293,81 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     });
   }
 
+  private taskCreateInputFromSnapshot(snapshot: Record<string, unknown>) {
+    const context = snapshot.context;
+    if (!context || typeof context !== 'object' || Array.isArray(context)) {
+      throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+    }
+    const parsed = TaskCreateWorkflowInputSchema.safeParse(
+      (context as Record<string, unknown>).input,
+    );
+    if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+    return parsed.data;
+  }
+
+  private projectTaskCreateRun(
+    row: {
+      runId: string;
+      resourceId?: string;
+      snapshot: unknown;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+    identityId: string,
+  ): AIWorkflowRunView | null {
+    if (row.resourceId !== identityId) return null;
+    const snapshot = this.parseWorkflowSnapshot(row.snapshot);
+    const workflowInput = this.taskCreateInputFromSnapshot(snapshot);
+    const lowLevelStatus = String(snapshot.status ?? 'running');
+    const context = snapshot.context as Record<string, unknown>;
+    const lifecycle = context[TASK_CREATE_LIFECYCLE_STEP_ID];
+    const lifecycleRecord =
+      lifecycle && typeof lifecycle === 'object' && !Array.isArray(lifecycle)
+        ? (lifecycle as Record<string, unknown>)
+        : undefined;
+
+    let status: AIWorkflowRunView['status'];
+    let suspension: AIWorkflowRunView['suspension'];
+    let result: Extract<AIWorkflowRunView, { kind: 'task.create' }>['result'];
+
+    if (lowLevelStatus === 'suspended') {
+      status = 'suspended';
+      const parsed = AIWorkflowSuspensionSchema.safeParse(lifecycleRecord?.suspendPayload);
+      if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+      suspension = parsed.data;
+    } else if (lowLevelStatus === 'canceled') {
+      status = 'cancelled';
+    } else if (lowLevelStatus === 'failed' || lowLevelStatus === 'tripwire') {
+      status = 'failed';
+    } else if (
+      lowLevelStatus === 'success' ||
+      lowLevelStatus === 'bailed' ||
+      lowLevelStatus === 'skipped'
+    ) {
+      const parsed = TaskCreateWorkflowOutputSchema.safeParse(snapshot.result);
+      if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+      if (parsed.data.outcome === 'cancelled') {
+        status = 'cancelled';
+      } else {
+        status = 'completed';
+        result = parsed.data.receipt;
+      }
+    } else {
+      status = 'running';
+    }
+
+    return AIWorkflowRunViewSchema.parse({
+      runId: row.runId,
+      kind: 'task.create',
+      conversationId: workflowInput.conversationId,
+      status,
+      ...(suspension ? { suspension } : {}),
+      ...(result ? { result } : {}),
+      createdAt: new Date(row.createdAt).getTime(),
+      updatedAt: new Date(row.updatedAt).getTime(),
+    });
+  }
+
   private async workflowStore() {
     const store = await this.deps.storage.getStore('workflows');
     if (!store) throw new Error('AI_WORKFLOW_STORAGE_UNAVAILABLE');
@@ -286,25 +379,42 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     request: AIWorkflowStartClientRequest;
   }): Promise<AIWorkflowRunView> {
     await this.init();
-    if (input.request.kind !== 'goal.create') {
+    if (input.request.kind !== 'goal.create' && input.request.kind !== 'task.create') {
       throw new Error(`AI_WORKFLOW_KIND_UNSUPPORTED:${input.request.kind}`);
     }
-    const workflowInput = GoalCreateWorkflowInputSchema.parse({
-      ...input.request.input,
-      identityId: input.context.identityId,
-      conversationId: input.request.conversationId,
-      locale: input.request.locale ?? 'zh-CN',
-      providerId: input.request.providerId,
-      modelId: input.request.modelId,
-    });
-    const run = await this.goalCreateWorkflow.createRun({
+    const workflowInput = this.workflowInputFromRequest(input);
+    if (input.request.kind === 'goal.create') {
+      const goalInput = GoalCreateWorkflowInputSchema.parse(workflowInput);
+      const run = await this.goalCreateWorkflow.createRun({
+        resourceId: input.context.identityId,
+      });
+      try {
+        await run.start({
+          inputData: goalInput,
+          initialState: initialGoalCreateWorkflowState(goalInput),
+          requestContext: this.workflowRequestContext(input.context, goalInput),
+        });
+      } catch (cause) {
+        const persisted = await this.get({
+          identityId: input.context.identityId,
+          runId: run.runId,
+        });
+        if (persisted) return persisted;
+        throw cause;
+      }
+      const persisted = await this.get({ identityId: input.context.identityId, runId: run.runId });
+      if (!persisted) throw new Error('AI_WORKFLOW_SNAPSHOT_MISSING');
+      return persisted;
+    }
+    const taskInput = TaskCreateWorkflowInputSchema.parse(workflowInput);
+    const run = await this.taskCreateWorkflow.createRun({
       resourceId: input.context.identityId,
     });
     try {
       await run.start({
-        inputData: workflowInput,
-        initialState: initialGoalCreateWorkflowState(workflowInput),
-        requestContext: this.workflowRequestContext(input.context, workflowInput),
+        inputData: taskInput,
+        initialState: initialTaskCreateWorkflowState(taskInput),
+        requestContext: this.workflowRequestContext(input.context, taskInput),
       });
     } catch (cause) {
       const persisted = await this.get({ identityId: input.context.identityId, runId: run.runId });
@@ -314,6 +424,21 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     const persisted = await this.get({ identityId: input.context.identityId, runId: run.runId });
     if (!persisted) throw new Error('AI_WORKFLOW_SNAPSHOT_MISSING');
     return persisted;
+  }
+
+  private workflowInputFromRequest(input: {
+    context: ExecutionContext;
+    request: AIWorkflowStartClientRequest;
+  }) {
+    const base = {
+      ...input.request.input,
+      identityId: input.context.identityId,
+      conversationId: input.request.conversationId,
+      locale: input.request.locale ?? 'zh-CN',
+      providerId: input.request.providerId,
+      modelId: input.request.modelId,
+    };
+    return base;
   }
 
   async resume(input: {
@@ -336,26 +461,32 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     ) {
       return before;
     }
-    if (before.kind !== 'goal.create') throw new Error('AI_WORKFLOW_KIND_UNSUPPORTED');
+    if (before.kind !== 'goal.create' && before.kind !== 'task.create') {
+      throw new Error('AI_WORKFLOW_KIND_UNSUPPORTED');
+    }
 
     const store = await this.workflowStore();
+    const workflowName =
+      before.kind === 'goal.create' ? GOAL_CREATE_WORKFLOW_ID : TASK_CREATE_WORKFLOW_ID;
     const row = await store.getWorkflowRunById({
-      workflowName: GOAL_CREATE_WORKFLOW_ID,
+      workflowName,
       runId: input.request.runId,
     });
     if (!row || row.resourceId !== input.context.identityId) {
       throw new Error('AI_WORKFLOW_RUN_NOT_FOUND');
     }
-    const workflowInput = this.goalCreateInputFromSnapshot(
-      this.parseWorkflowSnapshot(row.snapshot),
-    );
-    const run = await this.goalCreateWorkflow.createRun({
+    const workflowInput = this.workflowInputFromSnapshot(workflowName, row.snapshot);
+    const workflow =
+      before.kind === 'goal.create' ? this.goalCreateWorkflow : this.taskCreateWorkflow;
+    const lifecycleStepId =
+      before.kind === 'goal.create' ? GOAL_CREATE_LIFECYCLE_STEP_ID : TASK_CREATE_LIFECYCLE_STEP_ID;
+    const run = await workflow.createRun({
       runId: input.request.runId,
       resourceId: input.context.identityId,
     });
     try {
       await run.resume({
-        step: GOAL_CREATE_LIFECYCLE_STEP_ID,
+        step: lifecycleStepId,
         resumeData: input.request.command,
         requestContext: this.workflowRequestContext(input.context, workflowInput),
       });
@@ -375,15 +506,36 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     return persisted;
   }
 
+  private workflowInputFromSnapshot(
+    workflowName: string,
+    rawSnapshot: unknown,
+  ):
+    | ReturnType<(typeof GoalCreateWorkflowInputSchema)['parse']>
+    | ReturnType<(typeof TaskCreateWorkflowInputSchema)['parse']> {
+    const snapshot = this.parseWorkflowSnapshot(rawSnapshot);
+    if (workflowName === GOAL_CREATE_WORKFLOW_ID) {
+      return this.goalCreateInputFromSnapshot(snapshot);
+    }
+    if (workflowName === TASK_CREATE_WORKFLOW_ID) {
+      return this.taskCreateInputFromSnapshot(snapshot);
+    }
+    throw new Error('AI_WORKFLOW_KIND_UNSUPPORTED');
+  }
+
   async get(input: { identityId: string; runId: string }): Promise<AIWorkflowRunView | null> {
     await this.init();
     const store = await this.workflowStore();
-    const row = await store.getWorkflowRunById({
+    const goalRow = await store.getWorkflowRunById({
       workflowName: GOAL_CREATE_WORKFLOW_ID,
       runId: input.runId,
     });
-    if (!row) return null;
-    return this.projectGoalCreateRun(row, input.identityId);
+    if (goalRow) return this.projectGoalCreateRun(goalRow, input.identityId);
+    const taskRow = await store.getWorkflowRunById({
+      workflowName: TASK_CREATE_WORKFLOW_ID,
+      runId: input.runId,
+    });
+    if (taskRow) return this.projectTaskCreateRun(taskRow, input.identityId);
+    return null;
   }
 
   async list(input: {
@@ -392,13 +544,21 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
   }): Promise<readonly AIWorkflowRunView[]> {
     await this.init();
     const store = await this.workflowStore();
-    const rows = await store.listWorkflowRuns({
+    const goalRows = await store.listWorkflowRuns({
       workflowName: GOAL_CREATE_WORKFLOW_ID,
       resourceId: input.identityId,
       perPage: false,
     });
-    return rows.runs
-      .map((row) => this.projectGoalCreateRun(row, input.identityId))
+    const taskRows = await store.listWorkflowRuns({
+      workflowName: TASK_CREATE_WORKFLOW_ID,
+      resourceId: input.identityId,
+      perPage: false,
+    });
+    const views = [
+      ...goalRows.runs.map((row) => this.projectGoalCreateRun(row, input.identityId)),
+      ...taskRows.runs.map((row) => this.projectTaskCreateRun(row, input.identityId)),
+    ];
+    return views
       .filter((view): view is AIWorkflowRunView => view !== null)
       .filter((view) => !input.conversationId || view.conversationId === input.conversationId)
       .sort((left, right) => right.updatedAt - left.updatedAt);
@@ -415,7 +575,9 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     ) {
       return before;
     }
-    const run = await this.goalCreateWorkflow.createRun({
+    const workflow =
+      before.kind === 'goal.create' ? this.goalCreateWorkflow : this.taskCreateWorkflow;
+    const run = await workflow.createRun({
       runId: input.runId,
       resourceId: input.identityId,
     });

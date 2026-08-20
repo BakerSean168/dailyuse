@@ -7,6 +7,7 @@ export * from './ai-goal-automation.dto';
 export * from './ai-agent.dto';
 export * from './ai-runtime.dto';
 export * from './ai-goal-create-workflow.dto';
+export * from './ai-task-create-workflow.dto';
 export * from './ai-capabilities.dto';
 export * from './ai-chat.dto';
 export * from './ai-analytics-query.dto';

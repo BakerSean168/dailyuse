@@ -3,7 +3,7 @@ import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LibSQLStore } from '@mastra/libsql';
-import { GoalPlanDraftContentSchema } from '@memoflow/contracts/ai';
+import { GoalPlanDraftContentSchema, TaskPlanDraftContentSchema } from '@memoflow/contracts/ai';
 import { ok } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -47,6 +47,19 @@ const draft = GoalPlanDraftContentSchema.parse({
   warnings: [],
 });
 
+const taskDraft = TaskPlanDraftContentSchema.parse({
+  task: {
+    title: 'Prepare weekly report',
+    importance: 'Important',
+    cadence: 'weekly',
+    daysOfWeek: [1],
+    startDate: Date.UTC(2026, 8, 1),
+    tags: ['reporting'],
+  },
+  rationale: 'A concrete recurring task.',
+  warnings: [],
+});
+
 function context(identityId: string, requestId: string): ExecutionContext {
   return {
     identityId,
@@ -74,23 +87,34 @@ function mutationPort(): GoalPlanMutationPort & {
   };
 }
 
+function taskMutationPort(): ReturnType<typeof vi.fn> {
+  return vi.fn(async (request) => ok({ taskId: String(request.id) }));
+}
+
 async function createRuntime() {
   const file = join(tmpdir(), `memoflow-mastra-runtime-${randomUUID()}.db`);
   const storage = new LibSQLStore({ id: randomUUID(), url: `file:${file}` });
   const mutations = mutationPort();
+  const createTaskTemplate = taskMutationPort();
   const runtime = new MastraAIRuntime({
     storage,
     modelResolver: new MastraModelResolver({} as never),
     transcriptBootstrapSource: { load: vi.fn(async () => null) },
     goalPlanMutationPort: mutations,
+    taskPlanMutationPort: { createTaskTemplate },
   });
   vi.spyOn(runtime.goalPlanner, 'plan').mockResolvedValue({
     status: 'draft_ready',
     reason: 'The request is concrete enough to review.',
     candidateDraft: draft,
   });
+  vi.spyOn(runtime.taskPlanner, 'plan').mockResolvedValue({
+    status: 'draft_ready',
+    reason: 'The task request is concrete enough to review.',
+    candidateDraft: taskDraft,
+  });
   resources.push({ runtime, file });
-  return { runtime, mutations };
+  return { runtime, mutations, createTaskTemplate };
 }
 
 describe('MastraAIRuntime goal.create product projection', () => {
@@ -172,17 +196,60 @@ describe('MastraAIRuntime goal.create product projection', () => {
     expect(await runtime.cancel({ identityId: 'other-identity', runId: started.runId })).toBeNull();
   });
 
-  it('rejects non-goal workflow kinds until their concrete batches land', async () => {
+  it('owns a task.create workflow: start → draft review → approve creates one task template', async () => {
+    const { runtime, createTaskTemplate } = await createRuntime();
+    const identityId = 'identity-task';
+
+    const started = await runtime.start({
+      context: context(identityId, 'request-task-start'),
+      request: {
+        kind: 'task.create',
+        conversationId: 'conversation-task',
+        input: { idea: 'Set up a weekly report task' },
+        locale: 'en-US',
+      },
+    });
+
+    expect(started).toMatchObject({
+      kind: 'task.create',
+      conversationId: 'conversation-task',
+      status: 'suspended',
+      suspension: {
+        type: 'task_draft_review',
+        revision: 1,
+        draft: { revision: 1, task: { title: 'Prepare weekly report' } },
+      },
+    });
+    expect(await runtime.get({ identityId: 'other-identity', runId: started.runId })).toBeNull();
+
+    const completed = await runtime.resume({
+      context: context(identityId, 'request-task-approve'),
+      request: { runId: started.runId, command: { type: 'approve' } },
+    });
+    expect(completed).toMatchObject({
+      runId: started.runId,
+      kind: 'task.create',
+      status: 'completed',
+      result: { workflowRunId: started.runId, revision: 1, status: 'success' },
+    });
+    expect(createTaskTemplate).toHaveBeenCalledTimes(1);
+    expect(createTaskTemplate.mock.calls[0]?.[1]).toMatchObject({
+      requestId: 'request-task-approve',
+      identityId,
+    });
+  });
+
+  it('rejects workflow kinds with no concrete implementation', async () => {
     const { runtime } = await createRuntime();
     await expect(
       runtime.start({
-        context: context('identity-a', 'request-task'),
+        context: context('identity-a', 'request-knowledge'),
         request: {
-          kind: 'task.create',
+          kind: 'knowledge.capture' as never,
           conversationId: 'conversation-a',
           input: {},
         },
       }),
-    ).rejects.toThrow('AI_WORKFLOW_KIND_UNSUPPORTED:task.create');
+    ).rejects.toThrow('AI_WORKFLOW_KIND_UNSUPPORTED:knowledge.capture');
   });
 });

@@ -40,8 +40,40 @@ export function goalWorkflowEntityId(input: {
   if (!Number.isInteger(input.revision) || input.revision < 1) {
     throw new Error('revision must be a positive integer');
   }
-  if (!Number.isInteger(index) || index < 0) throw new Error('index must be a non-negative integer');
+  if (!Number.isInteger(index) || index < 0)
+    throw new Error('index must be a non-negative integer');
 
   const seed = `memoflow:goal.create:v1:${input.workflowRunId}:${input.revision}:${input.kind}:${index}`;
   return `${prefixByKind[input.kind]}_${deterministicUuidV8(seed)}`;
+}
+
+export type TaskWorkflowEntityKind = 'task_template';
+
+const taskPrefixByKind: Readonly<Record<TaskWorkflowEntityKind, string>> = {
+  task_template: ID_PREFIXES.TaskTemplateId,
+};
+
+/**
+ * Deterministic child mutation identity for the `task.create` Mastra Workflow.
+ *
+ * Same RFC-4122-shaped UUIDv8 layout as goal.create but seeded under a distinct
+ * workflow namespace so a task template can never collide with a goal workflow's
+ * generated task template id. The seed is part of the persisted contract.
+ */
+export function taskWorkflowEntityId(input: {
+  workflowRunId: string;
+  revision: number;
+  kind: TaskWorkflowEntityKind;
+  index?: number;
+}): string {
+  const index = input.index ?? 0;
+  if (!input.workflowRunId.trim()) throw new Error('workflowRunId is required');
+  if (!Number.isInteger(input.revision) || input.revision < 1) {
+    throw new Error('revision must be a positive integer');
+  }
+  if (!Number.isInteger(index) || index < 0)
+    throw new Error('index must be a non-negative integer');
+
+  const seed = `memoflow:task.create:v1:${input.workflowRunId}:${input.revision}:${input.kind}:${index}`;
+  return `${taskPrefixByKind[input.kind]}_${deterministicUuidV8(seed)}`;
 }

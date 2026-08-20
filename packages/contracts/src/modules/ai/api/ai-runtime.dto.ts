@@ -5,6 +5,11 @@ import {
   GoalPlanExecutionFailureSchema,
   GoalPlanExecutionReceiptSchema,
 } from './ai-goal-create-workflow.dto';
+import {
+  TaskCreateClientInputSchema,
+  TaskPlanDraftSchema,
+  TaskPlanExecutionReceiptSchema,
+} from './ai-task-create-workflow.dto';
 
 /**
  * MemoFlow AI vNext cross-boundary contracts.
@@ -180,7 +185,7 @@ export const AIWorkflowSuspensionSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('task_draft_review'),
-    draft: z.record(z.string(), z.unknown()),
+    draft: TaskPlanDraftSchema,
     warnings: z.array(z.string()).default([]),
     revision: z.number().int().positive(),
   }),
@@ -232,7 +237,7 @@ export const AIWorkflowStartClientRequestSchema = z.discriminatedUnion('kind', [
     .object({
       ...WorkflowStartBaseShape,
       kind: z.literal('task.create'),
-      input: z.record(z.string(), z.unknown()),
+      input: TaskCreateClientInputSchema,
     })
     .strict(),
   z
@@ -305,7 +310,7 @@ export const AIWorkflowRunViewSchema = z.discriminatedUnion('kind', [
   z.object({
     ...WorkflowRunViewBaseShape,
     kind: z.literal('task.create'),
-    result: z.record(z.string(), z.unknown()).optional(),
+    result: TaskPlanExecutionReceiptSchema.optional(),
   }),
   z.object({
     ...WorkflowRunViewBaseShape,

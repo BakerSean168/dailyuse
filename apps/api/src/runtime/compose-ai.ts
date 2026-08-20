@@ -59,6 +59,7 @@ import type { TaskApplicationPort } from '@memoflow/task';
 import type { ReminderApplicationPort } from '@memoflow/reminder';
 import { BackendAutomationToolExecutorAdapter } from '../modules/ai/backend-automation-tool-executor.adapter';
 import { GoalPlanMutationAdapter } from '../modules/ai/goal-plan-mutation.adapter';
+import { TaskPlanMutationAdapter } from '../modules/ai/task-plan-mutation.adapter';
 import { ControlledAnalyticsReadAdapter } from '../modules/ai/controlled-analytics-read.adapter';
 import { RepositoryKnowledgeIndexStatusAdapter } from '../modules/ai/repository-knowledge-index-status.adapter';
 import { RepositoryKnowledgeNotePersistenceAdapter } from '../modules/ai/repository-knowledge-note-persistence.adapter';
@@ -179,6 +180,7 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
     dependencies.taskApplicationPort,
     dependencies.reminderApplicationPort,
   );
+  const taskPlanMutationPort = new TaskPlanMutationAdapter(dependencies.taskApplicationPort);
   const mastraRuntime = new MastraAIRuntime({
     storage: createMastraStorage(dependencies.mastraStorage),
     modelResolver: new MastraModelResolver(repositorySet.providerConfigRepository),
@@ -186,6 +188,7 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
       repositorySet.conversationRepository,
     ),
     goalPlanMutationPort,
+    taskPlanMutationPort,
   });
 
   const config =

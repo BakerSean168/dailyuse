@@ -8,7 +8,7 @@ tags:
   - refactor
 description: MemoFlow AI vNext Mastra-native 一次性大重构实施计划
 created: 2026-08-20T00:00:00+08:00
-updated: 2026-08-21T02:40:00+08:00
+updated: 2026-08-21T03:40:00+08:00
 ---
 
 # MemoFlow AI vNext — Mastra-native 一次性大重构实施计划
@@ -342,6 +342,28 @@ workflow.cancelled
 
 **Next owner:** `AI-VNEXT-05 / Batch E — UI / workbench rewrite`（整体 UI 投影 + E2E 全量 auth 基础设施稳定性）。
 
+## 5.9 Goal Workbench / Task.create Backend Closure Checkpoint — 2026-08-21
+
+**AI-VNEXT-05 已完成；AI-VNEXT-06 backend 已完成（UI 呈现与 knowledge 迁移待续）。**
+
+**AI-VNEXT-05 — Goal workbench UI（COMPLETE）：** goal 工作台彻底不拥有 workflow 状态。`useAIGoalWorkflow` 是 `AIWorkflowRunView`（kind `goal.create`）的薄投影：所有 start/resume/get/cancel 走 `workflowRuntime` client，映射到 typed resume command；deep link 只在 run `completed` 且产生 `goalId` 时 `router.push('/goals/:id')`（pending draft review / recovery 留在 AI workspace）。新增 `useAIGoalWorkflow.spec.ts`（8 组合式测试）：client 请求不带 `identityId`、clarification/draft-review/recovery 阶段投影、approve/answer/retry/cancel typed command 映射、completed-only deep link、session restore 经 `workflowRuntime.get`。生产 UI 不再引用 `pendingActions/approvedActions/dependsOn`（goal 面；task 面见 AI-VNEXT-06 继续位置）。
+
+**AI-VNEXT-06 — task.create 迁移 Mastra-native（backend COMPLETE）：** 按 ADR-052/gol.create reference 模式落地 `task.create` durable Mastra Workflow：
+
+- contracts：`TaskCreateClientInput`（无 identityId，strict）、`TaskCreateWorkflowInput`（runtime 注入 identityId）、`TaskPlanDraft/Content`、`TaskPlanningDecision`、`TaskClarificationState`、`TaskPlanExecutionReceipt`（`ai-task-create-workflow.dto.ts`）；`AIWorkflowRunView`/`AIWorkflowStartClientRequest`/`task_draft_review` suspension 从 `z.record` 收窄为 typed schema（`ai-runtime.dto.ts`）。
+- backend：`TaskPlannerWorker`（structured output，无 mutation capability）、`task-create.workflow.ts`（durable createWorkflow：planning/clarification/review/recovery/completed/cancelled phases，MAX_CLARIFICATION_ROUNDS=3，approve/edit_structured/revise/regenerate/retry/accept_partial/cancel commands）、`ApplyTaskPlanService` + `TaskPlanMutationPort`（deterministic apply）、`taskWorkflowEntityId`（UUIDv8，独立 `memoflow:task.create:v1` namespace，不与其 goal.create 的 task_template id 冲突）。
+- runtime：`MastraAIRuntime` 增加 `taskCreateWorkflow`/`taskPlanner`，注册进 Mastra workflows/agents map；start/resume/get/list/cancel 按 kind 分发（get/list 同时查 goal + task 两个 workflow 名）；API & Desktop host 增加 `TaskPlanMutationAdapter`/`DesktopTaskPlanMutationAdapter` 绑定 canonical `taskApplicationPort`（mutation 永远走 application port，agent 不直写 persistence）。
+
+**Closure evidence：**
+
+- contracts focused `ai` tests PASS（含 typed task.create start/suspension/runview）；`ai:test` = **138 files / 934 tests PASS**（含新增 `task-create.workflow.spec.ts` 重启/取消/幂等 3 例，与 `mastra-workflow.runtime.spec.ts` task.create journey 1 例 —— 该 spec 旧「reject task.create」期望已更新为「task.create 已落地」+ knowledge.capture 仍 unsupported）；
+- `app-vue:test` = **186 files / 925 tests PASS**（含新增 `useAIGoalWorkflow.spec.ts` 8 例）；
+- `contracts/ai/api/desktop/web/app-vue` typecheck 全 PASS；`ai:build` PASS；
+- lint（contracts/ai/app-vue/api/desktop/web）**0 error**（仅既有无关 warning）；changed-file Prettier + `git diff --check` PASS；
+- `test:inventory` = **1152 files**；`docs:check` PASS；`governance:check` PASS。
+
+**Next owner（AI-VNEXT-06 续点 / AI-VNEXT-07 前置）：** ① 重写 `useAITaskWorkflow` 去除 AgentRun/`pendingActions`/`approvedActions`/`createAgentId`/`hostProposalLifecycle` ownership，投影到 `AIWorkflowRunView`（kind `task.create`）+ `AITaskWorkflowPanel`（testid `task-workflow-panel`）+ 组合式/组件测试；② `knowledge.*`（generate/capture/qa）迁移 Mastra-native；③ task/knowledge E2E（3400 端口）；④ AI-VNEXT-07 「Remove Python/AgentHost legacy」随后执行。
+
 ## 6. Implementation Batches
 
 ### Batch A — Foundation rewrite: contracts + dependencies + runtime composition
@@ -530,11 +552,15 @@ workflow.cancelled
 
 ### AI-VNEXT-05 — Rewrite Goal workbench UI
 
+**Status:** **COMPLETE**（§5.9）。goal 工作台已由 `useAIGoalWorkflow` 作为 `AIWorkflowRunView`（kind `goal.create`）的薄投影承载：UI 不拥有 workflow 状态，所有 start/resume/get/cancel 走 `workflowRuntime` client，typed resume command 映射，deep link 仅在 run `completed` 且产生 `goalId` 时跳到 `/goals/:id`；新增 `useAIGoalWorkflow.spec.ts` 组合式测试（8 例）覆盖投影/命令映射/deep-link/会话恢复。
+
 **Goal:** UI no longer owns workflow state。  
 **Dependency:** 04。  
 **Acceptance:** composable/component tests + deep link。
 
 ### AI-VNEXT-06 — Migrate Task/Knowledge capabilities
+
+**Status:** **PARTIAL（backend COMPLETE）**（§5.9）。`task.create` 的 **Mastra-native durable backend** 已完成并全绿：typed contracts、`TaskPlannerWorker`、`task.create` durable `createWorkflow`、`ApplyTaskPlanService` + `TaskPlanMutationPort`、deterministic `taskWorkflowEntityId`、`MastraAIRuntime` 的 task.create start/resume/get/list/cancel 路由、API/Desktop host `TaskPlanMutationAdapter` 绑定。**仍待续**：`task.create` 的 UI 呈现（重写 `useAITaskWorkflow` 去除 AgentRun/Host Proposal ownership 并投影到 `AIWorkflowRunView`、`AITaskWorkflowPanel`）、`knowledge.*` 迁移、task/knowledge E2E —— 这些是下一个 batch（AI-VNEXT-07 前置）的继续位置。
 
 **Goal:** all product AI journeys Mastra-native。  
 **Dependency:** 03–04。  

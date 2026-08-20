@@ -3357,6 +3357,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/server/mastra/workflows/task-create.workflow.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3820,6 +3830,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/ai/composables/useAIChatSession.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -10624,21 +10642,21 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 137
+      "fileCount": 138
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 137
+      "fileCount": 138
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 185
+      "fileCount": 186
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11310,6 +11328,7 @@
       "packages/ai/src/server/mastra/workflows/apply-goal-plan.service.spec.ts",
       "packages/ai/src/server/mastra/workflows/deterministic-entity-id.spec.ts",
       "packages/ai/src/server/mastra/workflows/goal-create.workflow.spec.ts",
+      "packages/ai/src/server/mastra/workflows/task-create.workflow.spec.ts",
       "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
       "packages/ai/src/server/transport/__tests__/ai-assistant-facade.controller.spec.ts",
       "packages/ai/src/server/transport/ai-agent-runtime.controller.test.ts",
@@ -11715,7 +11734,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 1007,
+    "unit": 1009,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

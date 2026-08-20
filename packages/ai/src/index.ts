@@ -37,6 +37,7 @@ export {
   type IAIConversationRepository,
   type IAIProviderConfigRepository,
   type GoalPlanMutationPort,
+  type TaskPlanMutationPort,
 } from './server';
 export { getAIServiceRuntimeConfig, type AIServiceRuntimeConfig } from './shared/config/env';
 export {

@@ -70,6 +70,7 @@ import {
 } from '@memoflow/ai';
 import { createAIElectronModule, type AIElectronModuleDef } from '@memoflow/ai/electron';
 import { DesktopGoalPlanMutationAdapter } from '../modules/ai/goal-plan-mutation.adapter';
+import { DesktopTaskPlanMutationAdapter } from '../modules/ai/task-plan-mutation.adapter';
 
 /**
  * Dependencies the AI composer needs from the desktop host runtime.
@@ -146,11 +147,13 @@ export function composeAI(dependencies: ComposeAIElectronDependencies): AIElectr
     dependencies.taskApplicationPort,
     dependencies.reminderApplicationPort,
   );
+  const taskPlanMutationPort = new DesktopTaskPlanMutationAdapter(dependencies.taskApplicationPort);
   const mastraRuntime = new MastraAIRuntime({
     storage: createMastraStorage(dependencies.mastraStorage),
     modelResolver: new MastraModelResolver(providerConfigRepository),
     transcriptBootstrapSource: new ConversationTranscriptBootstrapSource(conversationRepository),
     goalPlanMutationPort,
+    taskPlanMutationPort,
   });
 
   const config = dependencies.aiServiceRuntimeConfig;
