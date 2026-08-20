@@ -3317,6 +3317,46 @@
       ]
     },
     {
+      "path": "packages/ai/src/server/mastra/runtime/mastra-workflow.runtime.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/mastra/workflows/apply-goal-plan.service.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/mastra/workflows/deterministic-entity-id.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/mastra/workflows/goal-create.workflow.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5062,6 +5102,14 @@
     },
     {
       "path": "packages/contracts/src/modules/ai/api/ai-capabilities.dto.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/modules/ai/api/ai-goal-create-workflow.dto.test.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/contracts/vitest.config.ts"
@@ -10576,14 +10624,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 133
+      "fileCount": 137
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 133
+      "fileCount": 137
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
@@ -10618,7 +10666,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 68
+      "fileCount": 69
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -11258,6 +11306,10 @@
       "packages/ai/src/server/mastra/models/model-resolver.spec.ts",
       "packages/ai/src/server/mastra/runtime/assistant-history.persistence.spec.ts",
       "packages/ai/src/server/mastra/runtime/assistant-history.service.spec.ts",
+      "packages/ai/src/server/mastra/runtime/mastra-workflow.runtime.spec.ts",
+      "packages/ai/src/server/mastra/workflows/apply-goal-plan.service.spec.ts",
+      "packages/ai/src/server/mastra/workflows/deterministic-entity-id.spec.ts",
+      "packages/ai/src/server/mastra/workflows/goal-create.workflow.spec.ts",
       "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
       "packages/ai/src/server/transport/__tests__/ai-assistant-facade.controller.spec.ts",
       "packages/ai/src/server/transport/ai-agent-runtime.controller.test.ts",
@@ -11663,7 +11715,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 1002,
+    "unit": 1007,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

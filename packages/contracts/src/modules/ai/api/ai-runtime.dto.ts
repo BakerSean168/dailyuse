@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import {
+  GoalCreateClientInputSchema,
+  GoalPlanDraftSchema,
+  GoalPlanExecutionFailureSchema,
+  GoalPlanExecutionReceiptSchema,
+} from './ai-goal-create-workflow.dto';
 
 /**
  * MemoFlow AI vNext cross-boundary contracts.
@@ -162,7 +168,7 @@ export const AIWorkflowSuspensionSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('goal_draft_review'),
-    draft: z.record(z.string(), z.unknown()),
+    draft: GoalPlanDraftSchema,
     warnings: z.array(z.string()).default([]),
     revision: z.number().int().positive(),
   }),
@@ -182,7 +188,7 @@ export const AIWorkflowSuspensionSchema = z.discriminatedUnion('type', [
     type: z.literal('recovery_required'),
     message: z.string().min(1),
     retryable: z.boolean(),
-    failures: z.array(z.record(z.string(), z.unknown())).default([]),
+    failures: z.array(GoalPlanExecutionFailureSchema).default([]),
   }),
 ]);
 export type AIWorkflowSuspension = z.infer<typeof AIWorkflowSuspensionSchema>;
@@ -206,17 +212,37 @@ export const AIWorkflowResumeCommandSchema = z.discriminatedUnion('type', [
 ]);
 export type AIWorkflowResumeCommand = z.infer<typeof AIWorkflowResumeCommandSchema>;
 
-export const AIWorkflowStartClientRequestSchema = z
-  .object({
-    kind: AIWorkflowKindSchema,
-    conversationId: z.string().min(1),
-    input: z.record(z.string(), z.unknown()),
-    providerId: z.string().min(1).optional(),
-    modelId: z.string().min(1).optional(),
-    locale: z.enum(['zh-CN', 'en-US']).optional(),
-    identityId: z.never().optional(),
-  })
-  .strict();
+const WorkflowStartBaseShape = {
+  conversationId: z.string().min(1),
+  providerId: z.string().min(1).optional(),
+  modelId: z.string().min(1).optional(),
+  locale: z.enum(['zh-CN', 'en-US']).optional(),
+  identityId: z.never().optional(),
+} as const;
+
+export const AIWorkflowStartClientRequestSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      ...WorkflowStartBaseShape,
+      kind: z.literal('goal.create'),
+      input: GoalCreateClientInputSchema,
+    })
+    .strict(),
+  z
+    .object({
+      ...WorkflowStartBaseShape,
+      kind: z.literal('task.create'),
+      input: z.record(z.string(), z.unknown()),
+    })
+    .strict(),
+  z
+    .object({
+      ...WorkflowStartBaseShape,
+      kind: z.literal('knowledge.capture'),
+      input: z.record(z.string(), z.unknown()),
+    })
+    .strict(),
+]);
 export type AIWorkflowStartClientRequest = z.infer<typeof AIWorkflowStartClientRequestSchema>;
 
 export const AIWorkflowResumeClientRequestSchema = z
@@ -260,17 +286,33 @@ export const AIRuntimeUsageSchema = z.object({
 });
 export type AIRuntimeUsage = z.infer<typeof AIRuntimeUsageSchema>;
 
-export const AIWorkflowRunViewSchema = z.object({
+const WorkflowRunViewBaseShape = {
   runId: z.string().min(1),
-  kind: AIWorkflowKindSchema,
   conversationId: z.string().min(1),
   status: AIWorkflowStatusSchema,
   suspension: AIWorkflowSuspensionSchema.optional(),
-  result: z.record(z.string(), z.unknown()).optional(),
   usage: AIRuntimeUsageSchema.optional(),
   createdAt: z.number().int().nonnegative(),
   updatedAt: z.number().int().nonnegative(),
-});
+} as const;
+
+export const AIWorkflowRunViewSchema = z.discriminatedUnion('kind', [
+  z.object({
+    ...WorkflowRunViewBaseShape,
+    kind: z.literal('goal.create'),
+    result: GoalPlanExecutionReceiptSchema.optional(),
+  }),
+  z.object({
+    ...WorkflowRunViewBaseShape,
+    kind: z.literal('task.create'),
+    result: z.record(z.string(), z.unknown()).optional(),
+  }),
+  z.object({
+    ...WorkflowRunViewBaseShape,
+    kind: z.literal('knowledge.capture'),
+    result: z.record(z.string(), z.unknown()).optional(),
+  }),
+]);
 export type AIWorkflowRunView = z.infer<typeof AIWorkflowRunViewSchema>;
 
 export const AIWorkflowEventSchema = z.discriminatedUnion('type', [

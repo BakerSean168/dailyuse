@@ -13,14 +13,11 @@ import type {
   QueryKnowledgeRes,
 } from '@memoflow/contracts/ai';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
-import type { IAIService } from '../../../di/types';
+import type { IAIService, IWorkflowRuntimeService } from '../../../di/types';
 
 /** Options for useAIGoalWorkflow composable. */
 export interface UseAIGoalWorkflowOptions {
-  service: Pick<
-    AIChatService,
-    'generateGoal' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'
-  >;
+  workflowRuntime: IWorkflowRuntimeService;
   selectedModel: Ref<ChatModelOption | null>;
   chatConversationId: Ref<string>;
   chatLoading: Ref<boolean>;
@@ -188,9 +185,15 @@ export type PersistedWorkflowEntry = {
   /** Canonical WorkflowMode; unknown/legacy values are normalized on read. */
   mode: string;
   goalWorkflowStage?: GoalWorkflowStage;
-  goalDraft: GoalWorkflowDraftResultDTO | null;
-  goalClarification: GoalClarificationDTO | null;
-  goalAutomationResult: GoalAutomationResult | null;
+  /** @deprecated legacy goal-create snapshot fields; read-only migration input. */
+  goalDraft?: GoalWorkflowDraftResultDTO | null;
+  /** @deprecated clarification is persisted inside the durable Workflow snapshot. */
+  goalClarification?: GoalClarificationDTO | null;
+  /** @deprecated legacy pre-Workflow automation projection. */
+  goalAutomationResult?: GoalAutomationResult | null;
+  /** Canonical durable Workflow projection for goal.create. */
+  goalWorkflowRun?: import('@memoflow/contracts/ai').AIWorkflowRunView | null;
+  /** @deprecated one-way local-storage migration only; goal.create no longer produces AgentRun. */
   goalAgentRun?: AgentRunResult | null;
   knowledgeQaAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;

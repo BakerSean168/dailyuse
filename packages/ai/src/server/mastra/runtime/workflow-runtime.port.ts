@@ -3,6 +3,7 @@ import type {
   AIWorkflowRunView,
   AIWorkflowStartClientRequest,
 } from '@memoflow/contracts/ai';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 
 /**
  * Stable MemoFlow workflow runtime seam.
@@ -12,11 +13,11 @@ import type {
  */
 export interface AIWorkflowRuntimePort {
   start(input: {
-    identityId: string;
+    context: ExecutionContext;
     request: AIWorkflowStartClientRequest;
   }): Promise<AIWorkflowRunView>;
   resume(input: {
-    identityId: string;
+    context: ExecutionContext;
     request: AIWorkflowResumeClientRequest;
   }): Promise<AIWorkflowRunView>;
   get(input: { identityId: string; runId: string }): Promise<AIWorkflowRunView | null>;

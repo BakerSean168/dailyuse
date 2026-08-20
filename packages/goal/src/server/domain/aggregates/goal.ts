@@ -904,6 +904,7 @@ export class Goal extends AggregateRoot<GoalId> {
    * @throws {KeyResultWeightInvalidError} 当权重不在1-5之间时
    */
   public createAndAddKeyResult(params: {
+    id?: KeyResultId;
     title: string;
     description?: string | null;
     valueType: string;
@@ -922,6 +923,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
     // 创建关键结果
     const keyResult = KeyResult.create({
+      id: params.id,
       title: params.title,
       description: params.description ?? undefined,
       progress: {

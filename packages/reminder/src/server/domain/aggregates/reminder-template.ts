@@ -17,16 +17,12 @@ import type {
   ITriggerConfig,
   TriggerConfigDTO,
 } from '@memoflow/contracts/reminder';
-import {
-  ReminderStatus,
-  ReminderType,
-  TriggerResult,
-} from '@memoflow/contracts/reminder';
+import { ReminderStatus, ReminderType, TriggerResult } from '@memoflow/contracts/reminder';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 import { ReminderTemplateId } from '../value-objects/reminder-template-id';
 import { IdentityId } from '@memoflow/domain-shared';
-import type {ReminderGroupId, Instant} from '@memoflow/contracts/primitives';
+import type { ReminderGroupId, Instant } from '@memoflow/contracts/primitives';
 import { AggregateRoot } from '@memoflow/utils/domain';
 import {
   NotificationConfig,
@@ -187,6 +183,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
    * 创建新的 ReminderTemplate 聚合根
    */
   public static create(params: {
+    id?: ReminderTemplateId;
     identityId: IdentityId;
     title: string;
     type: ReminderType;
@@ -201,7 +198,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     icon?: string;
     groupId?: string;
   }): ReminderTemplate {
-    const id = ReminderTemplateId.generate();
+    const id = params.id ?? ReminderTemplateId.generate();
     const now = Date.now();
 
     // 创建值对象
@@ -243,11 +240,14 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     template._props.nextTriggerAt = template.calculateNextTrigger();
 
     // 发布创建事件
-    template.addDomainEvent<ReminderEventMap['reminder:template-created']>('reminder:template-created', {
-      identityId: params.identityId,
-      templateId: id,
-      reminder: template.toServerDTO(),
-    });
+    template.addDomainEvent<ReminderEventMap['reminder:template-created']>(
+      'reminder:template-created',
+      {
+        identityId: params.identityId,
+        templateId: id,
+        reminder: template.toServerDTO(),
+      },
+    );
 
     return template;
   }
@@ -362,12 +362,15 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布更新事件
     const changes = Object.keys(updates);
-    this.addDomainEvent<ReminderEventMap['reminder:template-updated']>('reminder:template-updated', {
-      identityId: this._props.identityId,
-      templateId: this.id,
-      reminder: this.toServerDTO(),
-      changes,
-    });
+    this.addDomainEvent<ReminderEventMap['reminder:template-updated']>(
+      'reminder:template-updated',
+      {
+        identityId: this._props.identityId,
+        templateId: this.id,
+        reminder: this.toServerDTO(),
+        changes,
+      },
+    );
   }
 
   /**
@@ -390,12 +393,15 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.effectiveEnabled = true;
 
     // 发布启用事件
-    this.addDomainEvent<ReminderEventMap['reminder:template-enabled']>('reminder:template-enabled', {
-      activatedAt: now,
-      identityId: this._props.identityId,
-      templateId: this.id,
-      reminder: this.toServerDTO(),
-    });
+    this.addDomainEvent<ReminderEventMap['reminder:template-enabled']>(
+      'reminder:template-enabled',
+      {
+        activatedAt: now,
+        identityId: this._props.identityId,
+        templateId: this.id,
+        reminder: this.toServerDTO(),
+      },
+    );
   }
 
   /**
@@ -597,14 +603,17 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.updatedAt = Date.now();
 
     // 发布删除事件
-    this.addDomainEvent<ReminderEventMap['reminder:template-deleted']>('reminder:template-deleted', {
-      identityId: this._props.identityId,
-      templateId: this.id,
-      templateTitle: this._props.title,
-      reminder: this.toServerDTO(),
-      isSoftDelete: true,
-      deletedAt: this._props.deletedAt!,
-    });
+    this.addDomainEvent<ReminderEventMap['reminder:template-deleted']>(
+      'reminder:template-deleted',
+      {
+        identityId: this._props.identityId,
+        templateId: this.id,
+        templateTitle: this._props.title,
+        reminder: this.toServerDTO(),
+        isSoftDelete: true,
+        deletedAt: this._props.deletedAt!,
+      },
+    );
   }
 
   /**

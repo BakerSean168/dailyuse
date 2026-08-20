@@ -1,28 +1,15 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type {
-  IdentityId,
-  TaskFolderId,
-  GoalId,
-  TaskTemplateId,
-} from '../../../primitives';
+import type { IdentityId, TaskFolderId, GoalId, TaskTemplateId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
 import { TaskType } from '../value-objects/task-type';
 import type { TaskGraphDependencyDTO } from './task-dependency.dto';
-import {
-  TaskReminderConfigSchema,
-} from '../value-objects/task-reminder-config';
-import {
-  TaskGoalBindingSchema,
-} from '../value-objects/task-goal-binding';
-import {
-  RecurrenceConfigSchema,
-} from '../value-objects/recurrence-rule';
-import {
-  TaskTimeConfigSchema,
-} from '../value-objects/task-time-config';
+import { TaskReminderConfigSchema } from '../value-objects/task-reminder-config';
+import { TaskGoalBindingSchema } from '../value-objects/task-goal-binding';
+import { RecurrenceConfigSchema } from '../value-objects/recurrence-rule';
+import { TaskTimeConfigSchema } from '../value-objects/task-time-config';
 
 // Residual 739: TaskReminderConfigSchema / TaskGoalBindingSchema owned by value-objects
 // (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
@@ -39,22 +26,24 @@ export type { RecurrenceConfigReq } from '../value-objects/recurrence-rule';
 export { TaskTimeConfigSchema };
 export type { TaskTimeConfigReq } from '../value-objects/task-time-config';
 
-
 // Public transport schema - NO identityId (injected from Context)
-export const CreateTaskTemplateSchema = z.object({
-  name: z.string().min(1, '标题不能为空'),
-  description: z.string().optional().nullable(),
-  taskType: z.enum([TaskType.OneTime, TaskType.Recurring]).default(TaskType.Recurring),
-  timeConfig: TaskTimeConfigSchema,
-  recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
-  reminderConfig: TaskReminderConfigSchema.optional().nullable(),
-  importance: z.enum(ImportanceLevel),
-  parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
-  folderId: brandedId<TaskFolderId>().optional().nullable(),
-  tags: z.array(z.string()).default([]).optional(),
-  color: z.string().optional().nullable(),
-  goalBinding: TaskGoalBindingSchema.optional().nullable(),
-}).strict();
+export const CreateTaskTemplateSchema = z
+  .object({
+    id: brandedId<TaskTemplateId>().optional(),
+    name: z.string().min(1, '标题不能为空'),
+    description: z.string().optional().nullable(),
+    taskType: z.enum([TaskType.OneTime, TaskType.Recurring]).default(TaskType.Recurring),
+    timeConfig: TaskTimeConfigSchema,
+    recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
+    reminderConfig: TaskReminderConfigSchema.optional().nullable(),
+    importance: z.enum(ImportanceLevel),
+    parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
+    folderId: brandedId<TaskFolderId>().optional().nullable(),
+    tags: z.array(z.string()).default([]).optional(),
+    color: z.string().optional().nullable(),
+    goalBinding: TaskGoalBindingSchema.optional().nullable(),
+  })
+  .strict();
 
 export type CreateTaskTemplateReq = z.infer<typeof CreateTaskTemplateSchema>;
 
@@ -68,22 +57,24 @@ export type CreateTaskTemplateRes = {
   todayInstanceCreated: boolean;
 };
 
-export const UpdateTaskTemplateSchema = z.object({
-  templateId: brandedId<TaskTemplateId>().optional(),
-  name: z.string().min(1).optional(),
-  description: z.string().optional().nullable(),
-  timeConfig: TaskTimeConfigSchema.optional().nullable(),
-  recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
-  reminderConfig: TaskReminderConfigSchema.optional().nullable(),
-  importance: z.enum(ImportanceLevel).optional(),
-  parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
-  folderId: brandedId<TaskFolderId>().optional().nullable(),
-  tags: z.array(z.string()).optional(),
-  color: z.string().optional().nullable(),
-  goalBinding: TaskGoalBindingSchema.optional().nullable(),
-  /** R2-5a：乐观锁期望版本（可选；提供时校验，旧客户端可不传）。 */
-  expectedVersion: z.number().int().positive().optional(),
-}).strict();
+export const UpdateTaskTemplateSchema = z
+  .object({
+    templateId: brandedId<TaskTemplateId>().optional(),
+    name: z.string().min(1).optional(),
+    description: z.string().optional().nullable(),
+    timeConfig: TaskTimeConfigSchema.optional().nullable(),
+    recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
+    reminderConfig: TaskReminderConfigSchema.optional().nullable(),
+    importance: z.enum(ImportanceLevel).optional(),
+    parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
+    folderId: brandedId<TaskFolderId>().optional().nullable(),
+    tags: z.array(z.string()).optional(),
+    color: z.string().optional().nullable(),
+    goalBinding: TaskGoalBindingSchema.optional().nullable(),
+    /** R2-5a：乐观锁期望版本（可选；提供时校验，旧客户端可不传）。 */
+    expectedVersion: z.number().int().positive().optional(),
+  })
+  .strict();
 
 export type UpdateTaskTemplateReq = z.infer<typeof UpdateTaskTemplateSchema>;
 export type UpdateTaskTemplateRes = TaskTemplateClientDTO;

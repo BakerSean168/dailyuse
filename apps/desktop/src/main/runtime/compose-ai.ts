@@ -43,6 +43,9 @@
  */
 
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { GoalApplicationPort } from '@memoflow/goal';
+import type { ReminderApplicationPort } from '@memoflow/reminder';
+import type { TaskApplicationPort } from '@memoflow/task';
 import {
   AIEvaluationReportFileAdapter,
   AIServiceAgentRuntimeAdapter,
@@ -66,6 +69,7 @@ import {
   type IKnowledgeSourcePort,
 } from '@memoflow/ai';
 import { createAIElectronModule, type AIElectronModuleDef } from '@memoflow/ai/electron';
+import { DesktopGoalPlanMutationAdapter } from '../modules/ai/goal-plan-mutation.adapter';
 
 /**
  * Dependencies the AI composer needs from the desktop host runtime.
@@ -82,6 +86,12 @@ export interface ComposeAIElectronDependencies {
   readonly analyticsReadPort: IAnalyticsReadPort;
   /** Host-owned automation tool executor port (Goal/Task/Reminder automation). 宿主持有的 automation tool executor port（Goal/Task/Reminder 自动化）。 */
   readonly automationToolExecutor: IAIAutomationToolExecutorPort;
+  /** Canonical Goal application port from the already-composed desktop module. */
+  readonly goalApplicationPort: GoalApplicationPort;
+  /** Canonical Task application port from the already-composed desktop module. */
+  readonly taskApplicationPort: TaskApplicationPort;
+  /** Canonical Reminder application port from the already-composed desktop module. */
+  readonly reminderApplicationPort: ReminderApplicationPort;
   /** Host-selected profile-local persistent Mastra storage; Desktop uses LibSQL. */
   readonly mastraStorage: MastraStorageConfig;
   /** Host-read ai-service runtime config; when absent the optional service ports stay undefined. 宿主导出的 ai-service runtime config；缺省时可选服务 ports 保持 undefined。 */
@@ -131,10 +141,16 @@ export function composeAI(dependencies: ComposeAIElectronDependencies): AIElectr
     knowledgeIndexRepository,
     executionLogPort,
   } = createAIPowerSyncRepositories(dependencies.db);
+  const goalPlanMutationPort = new DesktopGoalPlanMutationAdapter(
+    dependencies.goalApplicationPort,
+    dependencies.taskApplicationPort,
+    dependencies.reminderApplicationPort,
+  );
   const mastraRuntime = new MastraAIRuntime({
     storage: createMastraStorage(dependencies.mastraStorage),
     modelResolver: new MastraModelResolver(providerConfigRepository),
     transcriptBootstrapSource: new ConversationTranscriptBootstrapSource(conversationRepository),
+    goalPlanMutationPort,
   });
 
   const config = dependencies.aiServiceRuntimeConfig;
@@ -143,6 +159,7 @@ export function composeAI(dependencies: ComposeAIElectronDependencies): AIElectr
     conversationRepository,
     providerConfigRepository,
     mastraRuntime,
+    workflowRuntime: mastraRuntime,
     knowledgeIndexRepository,
     executionLogPort,
     // Batch B: open chat is owned by Mastra; do not compose the legacy

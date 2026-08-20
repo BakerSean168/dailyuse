@@ -32,7 +32,7 @@ const run = {
 const startRequest = {
   kind: 'goal.create' as const,
   conversationId: 'conversation-1',
-  input: { prompt: 'Run a 5K' },
+  input: { idea: 'Run a 5K' },
 };
 
 const resumeRequest = {

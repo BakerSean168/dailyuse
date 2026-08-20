@@ -14,11 +14,6 @@ import { useAITaskWorkflow } from './useAITaskWorkflow';
 import { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 import { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 import { useAIFormatters } from './useAIFormatters';
-import {
-  isPrimaryTaskHostAgentRun,
-  nextDualMirroredTaskAgentRun,
-  shouldDualMirrorPrimaryTaskGoalSession,
-} from './hostProposalLifecycle';
 import { getToolLocaleKey, normalizeWorkflowMode } from './types';
 import {
   adjustComposerHeight as createAdjustComposerHeight,
@@ -29,7 +24,11 @@ import {
 } from './chatViewHelpers';
 import { unwrap } from '@memoflow/contracts/result';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { AI_ASSISTANT_RUNTIME_KEY, ASSISTANT_SURFACE_KEY } from '../../../di/keys';
+import {
+  AI_ASSISTANT_RUNTIME_KEY,
+  AI_WORKFLOW_RUNTIME_KEY,
+  ASSISTANT_SURFACE_KEY,
+} from '../../../di/keys';
 import type {
   AIWorkspaceRecentGoal,
   AIWorkspaceRecentKnowledgeNote,
@@ -47,6 +46,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   const router = useRouter();
   const { service, providers, loadProviders } = useAI();
   const assistantRuntime = useStrictInject(AI_ASSISTANT_RUNTIME_KEY, 'AIAssistantRuntime');
+  const workflowRuntime = useStrictInject(AI_WORKFLOW_RUNTIME_KEY, 'AIWorkflowRuntime');
   const assistantSurface = useStrictInject(ASSISTANT_SURFACE_KEY, 'AssistantSurface');
   const { goals, fetchGoals, createGoal } = useGoal();
   const recentKnowledgeNotes = useRecentKnowledgeNotes();
@@ -151,7 +151,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
 
   // 3. Goal workflow
   const goalWorkflow = useAIGoalWorkflow({
-    service,
+    workflowRuntime,
     selectedModel: modelSelection.selectedModel,
     chatConversationId: chatSession.chatConversationId,
     chatLoading: chatSession.chatLoading,
@@ -227,10 +227,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   const persistence = useAIWorkflowPersistence({
     toolMode,
     goalWorkflowStage: goalWorkflow.goalWorkflowStage,
-    goalDraft: goalWorkflow.goalDraft,
-    goalClarification: goalWorkflow.goalClarification,
-    goalAutomationResult: goalWorkflow.goalAutomationResult,
-    goalAgentRun: goalWorkflow.goalAgentRun,
+    goalWorkflowRun: goalWorkflow.goalWorkflowRun,
     knowledgeQaAgentRun: knowledgeQaWorkflow.knowledgeQaAgentRun,
     noteAgentRun: noteWorkflow.noteAgentRun,
     taskAgentRun,
@@ -246,17 +243,11 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   });
 
   async function refreshRestoredAgentRun(conversationId: string) {
-    const goalRunId = goalWorkflow.goalAgentRun.value?.run.runId;
+    const goalRunId = goalWorkflow.goalWorkflowRun.value?.runId;
     if (goalRunId) {
-      try {
-        const result = unwrap(await service.getAgentRun(goalRunId));
-        if (result?.run) {
-          goalWorkflow.syncGoalAgentRun(result);
-        }
-      } catch {
-        // Keep the persisted snapshot when the experimental in-memory runtime
-        // no longer has this run, for example after an ai-service restart.
-      }
+      // Durable Workflow storage is authoritative: a local snapshot is only a
+      // run reference/UI cache and must be refreshed after reload/restart.
+      await goalWorkflow.syncGoalWorkflowRun(goalRunId);
     }
 
     const noteRunId = noteWorkflow.noteAgentRun.value?.run.runId;
@@ -298,8 +289,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       } catch {
         if (taskAgentRun.value?.run.agentType === 'task.create') {
           toolMode.value = 'task-create';
-        } else if (taskAgentRun.value && isPrimaryTaskHostAgentRun(taskAgentRun.value)) {
-          toolMode.value = 'task-create';
         }
       }
     }
@@ -309,50 +298,33 @@ export function useAIChatView(options: UseAIChatViewOptions) {
 
   async function restoreWorkflowState(conversationId: string) {
     persistence.restoreWorkflowState(conversationId);
-    // Residual 433: re-align toolMode when a persisted task.create run owns the session.
+    // One-way migration: historical primary-task-shaped goal.create snapshots
+    // must never re-enter the Task Host lane after ADR-052 cutover.
+    if (taskAgentRun.value && taskAgentRun.value.run.agentType !== 'task.create') {
+      taskAgentRun.value = null;
+    }
+    // Re-align toolMode only when a real task.create run owns the session.
     if (taskAgentRun.value?.run.agentType === 'task.create') {
       toolMode.value = 'task-create';
     }
-    // Residual 445: re-align linked goal before/after process-local refresh.
     taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
     await refreshRestoredAgentRun(conversationId);
-    // Residual 593: persistence assigns goal then task — task assignment overwrites
-    // the goalAgentRun dual-mirror watch with a possibly stale exclusive snapshot.
-    // Re-apply nextDualMirroredTaskAgentRun after storage + optional server refresh
-    // (process-local task.create preserved; primary-task goal settle wins dual-mirror).
-    const dualMirroredTask = nextDualMirroredTaskAgentRun({
-      goalAgentRun: goalWorkflow.goalAgentRun.value,
-      taskAgentRun: taskAgentRun.value,
-      // Residual 601: knowledge note session drops dual-mirror ghosts on restore.
-      noteAgentRun: noteWorkflow.noteAgentRun.value,
-    });
-    if (dualMirroredTask !== taskAgentRun.value) {
-      taskAgentRun.value = dualMirroredTask;
-    }
+    // goal.create no longer dual-mirrors into the Task AgentRun lane. The task
+    // session is restored only from its own persisted AgentRun snapshot.
     taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
   }
 
   function syncSelectedAgentRun(result: import('@memoflow/contracts/ai').AgentRunResult) {
-    // Residual 427: first-class AgentType task.create owns dedicated session field.
-    if (result.run.agentType === 'task.create' || isPrimaryTaskHostAgentRun(result)) {
+    // Transitional Task/Knowledge AgentRun history remains available. goal.create
+    // is owned exclusively by the durable Workflow runtime and must never be
+    // rehydrated into the Host proposal lane from a legacy AgentRun snapshot.
+    if (result.run.agentType === 'task.create') {
       noteWorkflow.resetNoteArtifacts();
       knowledgeQaWorkflow.resetKnowledgeAnswer();
-      // Keep goal artifacts only when this is a goal.create run dual-carrying task drafts.
-      if (result.run.agentType === 'task.create') {
-        goalWorkflow.resetGoalArtifacts();
-        // Residual 429: product toolMode for AgentType task.create.
-        toolMode.value = 'task-create';
-        taskAgentRun.value = result;
-        // Residual 445: keep ActionBar linked goal aligned with process-local run.
-        taskWorkflow.syncLinkedGoalFromTaskAgentRun(result);
-        return;
-      }
-      // Primary task-shaped goal.create: still lives in goal session for confirm resume,
-      // but also mirror into taskAgentRun for exclusive Host task lane wiring.
-      // Residual 589: subsequent goal-session settle re-mirrors via goalAgentRun watch.
-      toolMode.value = 'goal-create';
-      goalWorkflow.syncGoalAgentRun(result);
+      goalWorkflow.resetGoalArtifacts();
+      toolMode.value = 'task-create';
       taskAgentRun.value = result;
+      taskWorkflow.syncLinkedGoalFromTaskAgentRun(result);
       return;
     }
 
@@ -360,8 +332,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       noteWorkflow.resetNoteArtifacts();
       knowledgeQaWorkflow.resetKnowledgeAnswer();
       taskAgentRun.value = null;
+      goalWorkflow.resetGoalArtifacts();
       toolMode.value = 'goal-create';
-      goalWorkflow.syncGoalAgentRun(result);
       return;
     }
 
@@ -382,26 +354,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       knowledgeQaWorkflow.syncKnowledgeQaAgentRun(result);
     }
   }
-
-  // Residual 589: goal-session primary-task confirm/cancel only updates goalAgentRun.
-  // Keep exclusive task lane dual-mirror fresh so Host workbench does not keep a
-  // stale waiting_approval proposal after settle (ActionBar + Host panel paths).
-  // Residual 603: pass note session so knowledge ghost drop (residual 601) applies on watch.
-  watch(
-    () => goalWorkflow.goalAgentRun.value,
-    (run) => {
-      const next = nextDualMirroredTaskAgentRun({
-        goalAgentRun: run,
-        taskAgentRun: taskAgentRun.value,
-        noteAgentRun: noteWorkflow.noteAgentRun.value,
-      });
-      if (next === taskAgentRun.value) return;
-      taskAgentRun.value = next;
-      if (next && shouldDualMirrorPrimaryTaskGoalSession(next)) {
-        taskWorkflow.syncLinkedGoalFromTaskAgentRun(next);
-      }
-    },
-  );
 
   syncTaskAgentRunFromStart = (result) => {
     syncSelectedAgentRun(result);
@@ -424,7 +376,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     } catch {
       agentRunList.value = [];
     } finally {
-      syncAgentRunListItem(goalWorkflow.goalAgentRun.value?.run);
       syncAgentRunListItem(noteWorkflow.noteAgentRun.value?.run);
       syncAgentRunListItem(knowledgeQaWorkflow.knowledgeQaAgentRun.value?.run);
       syncAgentRunListItem(taskAgentRun.value?.run);
@@ -467,9 +418,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   persistence.bindPersistenceWatcher(chatSession.chatConversationId);
   watch(
     () => [
-      goalWorkflow.goalAgentRun.value?.run.runId,
-      goalWorkflow.goalAgentRun.value?.run.status,
-      goalWorkflow.goalAgentRun.value?.run.updatedAt,
       noteWorkflow.noteAgentRun.value?.run.runId,
       noteWorkflow.noteAgentRun.value?.run.status,
       noteWorkflow.noteAgentRun.value?.run.updatedAt,
@@ -478,7 +426,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       knowledgeQaWorkflow.knowledgeQaAgentRun.value?.run.updatedAt,
     ],
     () => {
-      syncAgentRunListItem(goalWorkflow.goalAgentRun.value?.run);
       syncAgentRunListItem(noteWorkflow.noteAgentRun.value?.run);
       syncAgentRunListItem(knowledgeQaWorkflow.knowledgeQaAgentRun.value?.run);
     },

@@ -9,12 +9,32 @@ import {
 } from '@mastra/core/request-context';
 import type { MastraCompositeStore } from '@mastra/core/storage';
 import { Memory } from '@mastra/memory';
-import type { AssistantRuntimeEvent, AssistantRuntimeHistoryView } from '@memoflow/contracts/ai';
-import { createMemoFlowAssistant } from '../agents';
+import {
+  AIWorkflowRunViewSchema,
+  AIWorkflowSuspensionSchema,
+  GoalCreateWorkflowInputSchema,
+  type AIWorkflowResumeClientRequest,
+  type AIWorkflowRunView,
+  type AIWorkflowStartClientRequest,
+  type AssistantRuntimeEvent,
+  type AssistantRuntimeHistoryView,
+} from '@memoflow/contracts/ai';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import { createMemoFlowAssistant, GoalPlannerWorker } from '../agents';
 import type { MastraModelResolver } from '../models';
+import {
+  ApplyGoalPlanService,
+  GOAL_CREATE_LIFECYCLE_STEP_ID,
+  GOAL_CREATE_WORKFLOW_ID,
+  GoalCreateWorkflowOutputSchema,
+  createGoalCreateWorkflow,
+  initialGoalCreateWorkflowState,
+  type GoalPlanMutationPort,
+} from '../workflows';
 import { AsyncEventQueue } from './async-event-queue';
 import { AssistantHistoryService } from './assistant-history.service';
 import type { AssistantTranscriptBootstrapSource } from './assistant-transcript-bootstrap.port';
+import type { AIWorkflowRuntimePort } from './workflow-runtime.port';
 
 function messageText(
   event: Extract<AgentControllerEvent, { type: 'message_update' | 'message_end' }>,
@@ -52,6 +72,8 @@ export interface MastraAIRuntimeDependencies {
   readonly storage: MastraCompositeStore;
   readonly modelResolver: MastraModelResolver;
   readonly transcriptBootstrapSource: AssistantTranscriptBootstrapSource;
+  /** Host-bound canonical Goal/Task/Reminder application mutations for ADR-052. */
+  readonly goalPlanMutationPort: GoalPlanMutationPort;
 }
 
 type ActiveRun = {
@@ -60,10 +82,12 @@ type ActiveRun = {
 };
 
 /** Mastra is the authoritative AI execution runtime; MemoFlow owns only product/domain truth. */
-export class MastraAIRuntime {
+export class MastraAIRuntime implements AIWorkflowRuntimePort {
   readonly memory: Memory;
   readonly history: AssistantHistoryService;
   readonly assistant: ReturnType<typeof createMemoFlowAssistant>;
+  readonly goalPlanner: GoalPlannerWorker;
+  readonly goalCreateWorkflow: ReturnType<typeof createGoalCreateWorkflow>;
   readonly controller: AgentController;
   readonly mastra: Mastra;
   private initPromise: Promise<void> | null = null;
@@ -79,6 +103,11 @@ export class MastraAIRuntime {
     this.assistant = createMemoFlowAssistant({
       modelResolver: deps.modelResolver,
       memory: this.memory,
+    });
+    this.goalPlanner = new GoalPlannerWorker(deps.modelResolver);
+    this.goalCreateWorkflow = createGoalCreateWorkflow({
+      planner: this.goalPlanner,
+      applyService: new ApplyGoalPlanService(deps.goalPlanMutationPort),
     });
     this.controller = new AgentController({
       id: 'memoflow-assistant-controller',
@@ -99,7 +128,11 @@ export class MastraAIRuntime {
     });
     this.mastra = new Mastra({
       storage: deps.storage,
-      agents: { assistant: this.assistant },
+      agents: {
+        assistant: this.assistant,
+        goalPlanner: this.goalPlanner.agent,
+      },
+      workflows: { goalCreate: this.goalCreateWorkflow },
       agentControllers: { assistant: this.controller },
     });
   }
@@ -125,6 +158,269 @@ export class MastraAIRuntime {
       })();
     }
     await this.disposePromise;
+  }
+
+  private workflowRequestContext(
+    context: ExecutionContext,
+    input: {
+      conversationId: string;
+      locale?: 'zh-CN' | 'en-US';
+      providerId?: string;
+      modelId?: string;
+    },
+  ): RequestContext {
+    const requestContext = new RequestContext();
+    requestContext.setRaw('identityId', context.identityId);
+    requestContext.setRaw('locale', input.locale ?? 'zh-CN');
+    if (input.providerId) requestContext.setRaw('providerId', input.providerId);
+    if (input.modelId) requestContext.setRaw('modelId', input.modelId);
+    // The current entry context is supplied on every start/resume. Credentials
+    // never enter RequestContext; only canonical request metadata used by domain
+    // application ports is persisted with the workflow snapshot.
+    requestContext.setRaw('executionContext', context);
+    requestContext.setRaw(MASTRA_RESOURCE_ID_KEY, context.identityId);
+    requestContext.setRaw(MASTRA_THREAD_ID_KEY, input.conversationId);
+    return requestContext;
+  }
+
+  private parseWorkflowSnapshot(value: unknown): Record<string, unknown> {
+    const parsed =
+      typeof value === 'string'
+        ? (() => {
+            try {
+              return JSON.parse(value) as unknown;
+            } catch {
+              throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+            }
+          })()
+        : value;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+    }
+    return parsed as Record<string, unknown>;
+  }
+
+  private goalCreateInputFromSnapshot(snapshot: Record<string, unknown>) {
+    const context = snapshot.context;
+    if (!context || typeof context !== 'object' || Array.isArray(context)) {
+      throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+    }
+    const parsed = GoalCreateWorkflowInputSchema.safeParse(
+      (context as Record<string, unknown>).input,
+    );
+    if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+    return parsed.data;
+  }
+
+  private projectGoalCreateRun(
+    row: {
+      runId: string;
+      resourceId?: string;
+      snapshot: unknown;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+    identityId: string,
+  ): AIWorkflowRunView | null {
+    if (row.resourceId !== identityId) return null;
+    const snapshot = this.parseWorkflowSnapshot(row.snapshot);
+    const workflowInput = this.goalCreateInputFromSnapshot(snapshot);
+    const lowLevelStatus = String(snapshot.status ?? 'running');
+    const context = snapshot.context as Record<string, unknown>;
+    const lifecycle = context[GOAL_CREATE_LIFECYCLE_STEP_ID];
+    const lifecycleRecord =
+      lifecycle && typeof lifecycle === 'object' && !Array.isArray(lifecycle)
+        ? (lifecycle as Record<string, unknown>)
+        : undefined;
+
+    let status: AIWorkflowRunView['status'];
+    let suspension: AIWorkflowRunView['suspension'];
+    let result: Extract<AIWorkflowRunView, { kind: 'goal.create' }>['result'];
+
+    if (lowLevelStatus === 'suspended') {
+      status = 'suspended';
+      const parsed = AIWorkflowSuspensionSchema.safeParse(lifecycleRecord?.suspendPayload);
+      if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+      suspension = parsed.data;
+    } else if (lowLevelStatus === 'canceled') {
+      status = 'cancelled';
+    } else if (lowLevelStatus === 'failed' || lowLevelStatus === 'tripwire') {
+      status = 'failed';
+    } else if (
+      lowLevelStatus === 'success' ||
+      lowLevelStatus === 'bailed' ||
+      lowLevelStatus === 'skipped'
+    ) {
+      const parsed = GoalCreateWorkflowOutputSchema.safeParse(snapshot.result);
+      if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+      if (parsed.data.outcome === 'cancelled') {
+        status = 'cancelled';
+      } else {
+        status = 'completed';
+        result = parsed.data.receipt;
+      }
+    } else {
+      status = 'running';
+    }
+
+    return AIWorkflowRunViewSchema.parse({
+      runId: row.runId,
+      kind: 'goal.create',
+      conversationId: workflowInput.conversationId,
+      status,
+      ...(suspension ? { suspension } : {}),
+      ...(result ? { result } : {}),
+      createdAt: new Date(row.createdAt).getTime(),
+      updatedAt: new Date(row.updatedAt).getTime(),
+    });
+  }
+
+  private async workflowStore() {
+    const store = await this.deps.storage.getStore('workflows');
+    if (!store) throw new Error('AI_WORKFLOW_STORAGE_UNAVAILABLE');
+    return store;
+  }
+
+  async start(input: {
+    context: ExecutionContext;
+    request: AIWorkflowStartClientRequest;
+  }): Promise<AIWorkflowRunView> {
+    await this.init();
+    if (input.request.kind !== 'goal.create') {
+      throw new Error(`AI_WORKFLOW_KIND_UNSUPPORTED:${input.request.kind}`);
+    }
+    const workflowInput = GoalCreateWorkflowInputSchema.parse({
+      ...input.request.input,
+      identityId: input.context.identityId,
+      conversationId: input.request.conversationId,
+      locale: input.request.locale ?? 'zh-CN',
+      providerId: input.request.providerId,
+      modelId: input.request.modelId,
+    });
+    const run = await this.goalCreateWorkflow.createRun({
+      resourceId: input.context.identityId,
+    });
+    try {
+      await run.start({
+        inputData: workflowInput,
+        initialState: initialGoalCreateWorkflowState(workflowInput),
+        requestContext: this.workflowRequestContext(input.context, workflowInput),
+      });
+    } catch (cause) {
+      const persisted = await this.get({ identityId: input.context.identityId, runId: run.runId });
+      if (persisted) return persisted;
+      throw cause;
+    }
+    const persisted = await this.get({ identityId: input.context.identityId, runId: run.runId });
+    if (!persisted) throw new Error('AI_WORKFLOW_SNAPSHOT_MISSING');
+    return persisted;
+  }
+
+  async resume(input: {
+    context: ExecutionContext;
+    request: AIWorkflowResumeClientRequest;
+  }): Promise<AIWorkflowRunView> {
+    await this.init();
+    const before = await this.get({
+      identityId: input.context.identityId,
+      runId: input.request.runId,
+    });
+    if (!before) throw new Error('AI_WORKFLOW_RUN_NOT_FOUND');
+    // Terminal projection is authoritative. This makes repeated/double approve
+    // a read-only replay even before deterministic domain IDs provide the
+    // second line of defense against concurrent resumes.
+    if (
+      before.status === 'completed' ||
+      before.status === 'failed' ||
+      before.status === 'cancelled'
+    ) {
+      return before;
+    }
+    if (before.kind !== 'goal.create') throw new Error('AI_WORKFLOW_KIND_UNSUPPORTED');
+
+    const store = await this.workflowStore();
+    const row = await store.getWorkflowRunById({
+      workflowName: GOAL_CREATE_WORKFLOW_ID,
+      runId: input.request.runId,
+    });
+    if (!row || row.resourceId !== input.context.identityId) {
+      throw new Error('AI_WORKFLOW_RUN_NOT_FOUND');
+    }
+    const workflowInput = this.goalCreateInputFromSnapshot(
+      this.parseWorkflowSnapshot(row.snapshot),
+    );
+    const run = await this.goalCreateWorkflow.createRun({
+      runId: input.request.runId,
+      resourceId: input.context.identityId,
+    });
+    try {
+      await run.resume({
+        step: GOAL_CREATE_LIFECYCLE_STEP_ID,
+        resumeData: input.request.command,
+        requestContext: this.workflowRequestContext(input.context, workflowInput),
+      });
+    } catch (cause) {
+      const persisted = await this.get({
+        identityId: input.context.identityId,
+        runId: input.request.runId,
+      });
+      if (persisted && persisted.status !== 'running') return persisted;
+      throw cause;
+    }
+    const persisted = await this.get({
+      identityId: input.context.identityId,
+      runId: input.request.runId,
+    });
+    if (!persisted) throw new Error('AI_WORKFLOW_SNAPSHOT_MISSING');
+    return persisted;
+  }
+
+  async get(input: { identityId: string; runId: string }): Promise<AIWorkflowRunView | null> {
+    await this.init();
+    const store = await this.workflowStore();
+    const row = await store.getWorkflowRunById({
+      workflowName: GOAL_CREATE_WORKFLOW_ID,
+      runId: input.runId,
+    });
+    if (!row) return null;
+    return this.projectGoalCreateRun(row, input.identityId);
+  }
+
+  async list(input: {
+    identityId: string;
+    conversationId?: string;
+  }): Promise<readonly AIWorkflowRunView[]> {
+    await this.init();
+    const store = await this.workflowStore();
+    const rows = await store.listWorkflowRuns({
+      workflowName: GOAL_CREATE_WORKFLOW_ID,
+      resourceId: input.identityId,
+      perPage: false,
+    });
+    return rows.runs
+      .map((row) => this.projectGoalCreateRun(row, input.identityId))
+      .filter((view): view is AIWorkflowRunView => view !== null)
+      .filter((view) => !input.conversationId || view.conversationId === input.conversationId)
+      .sort((left, right) => right.updatedAt - left.updatedAt);
+  }
+
+  async cancel(input: { identityId: string; runId: string }): Promise<AIWorkflowRunView | null> {
+    await this.init();
+    const before = await this.get(input);
+    if (!before) return null;
+    if (
+      before.status === 'completed' ||
+      before.status === 'failed' ||
+      before.status === 'cancelled'
+    ) {
+      return before;
+    }
+    const run = await this.goalCreateWorkflow.createRun({
+      runId: input.runId,
+      resourceId: input.identityId,
+    });
+    await run.cancel();
+    return this.get(input);
   }
 
   async listMessages(input: {

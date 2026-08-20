@@ -281,29 +281,18 @@
         <AIGoalWorkflowPanel
           :tool-mode="toolMode"
           :goal-clarification="goalClarification"
-          :goal-draft="goalDraft"
-          :goal-automation-result="goalAutomationResult"
-          :goal-agent-run="goalAgentRun"
-          :goal-agent-pending-actions="goalAgentPendingActions"
-          :goal-agent-executed-actions="goalAgentExecutedActions"
+          :goal-workflow-run="goalWorkflowRun"
           :clarification-answers="clarificationAnswers"
           :editable-goal="editableGoal"
           :editable-key-results="editableKeyResults"
           :editable-task-templates="editableTaskTemplates"
           :editable-reminders="editableReminders"
           :show-goal-draft-editor="showGoalDraftEditor"
-          :creating-goal="creatingGoal"
-          :goal-executed-actions="goalExecutedActions"
-          :goal-execution-summary="goalExecutionSummary"
-          :goal-execution-recovery="goalExecutionRecovery"
           :knowledge-answer="knowledgeAnswer"
           :knowledge-qa-agent-run="knowledgeQaAgentRun"
           :note-agent-run="noteAgentRun"
           :note-summary="noteSummary"
           :note-preview="notePreview"
-          :format-automation-tool="formatAutomationTool"
-          :format-agent-tool="formatAgentTool"
-          :format-action-status="formatActionStatus"
           :format-execution-outcome="formatExecutionOutcome"
           @update:clarification-answers="handleClarificationAnswersUpdate"
           @confirm="handleCreateGoalFromDraft"
@@ -374,11 +363,9 @@ import {
   canHostReviseProductAgentRun,
   resolveHostPanelOwnedProductRun,
   isHostPanelProcessLocalTaskCreateOwned,
-  isHostPanelGoalSessionProductOwned,
   isHostPanelKnowledgeSessionProductOwned,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   shouldReviseKnowledgeSessionDraftBeforeConfirm,
-  shouldReviseGoalSessionDraftBeforeConfirm,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
   resolveLiveHostWorkbenchAgentRuns,
@@ -487,13 +474,10 @@ const {
 const { selectedModelKey, modelGroups, canSendMessage, selectModel } = model;
 
 const {
-  goalDraft,
   goalClarification,
-  goalAutomationResult,
-  goalAgentRun,
+  goalWorkflowRun,
   clarificationAnswers,
   showGoalDraftEditor,
-  creatingGoal,
   goalAgentLoading,
   goalAgentResuming,
   editableGoal,
@@ -504,12 +488,7 @@ const {
   canResumeGoalAgentClarification,
   canContinueGoalAgentExecution,
   canRetryGoalAgentExecution,
-  goalExecutedActions,
-  goalExecutionSummary,
-  goalExecutionRecovery,
   automatedGoalId,
-  goalAgentPendingActions,
-  goalAgentExecutedActions,
   goalAgentWaitingForClarification,
   goalAgentWaitingForApproval,
   goalAgentWaitingForExecution,
@@ -517,7 +496,6 @@ const {
   submitGoalAgentClarification,
   confirmGoalAgentRun,
   cancelGoalAgentRun,
-  reviseGoalAgentRun,
   continueGoalAgentExecution,
   retryGoalAgentExecution,
   openAutomatedGoal,
@@ -593,12 +571,7 @@ const lastOpenedArtifactKey = ref<string | null>(null);
 
 const hasWorkflowArtifact = computed(() => {
   if (toolMode.value === 'goal-create') {
-    return Boolean(
-      goalClarification.value ||
-      goalDraft.value ||
-      goalAutomationResult.value ||
-      goalAgentRun.value,
-    );
+    return Boolean(goalWorkflowRun.value);
   }
 
   if (toolMode.value === 'knowledge-qa') {
@@ -623,7 +596,8 @@ const hasWorkflowArtifact = computed(() => {
 // Residual 423: promote primary task-shaped session runs into exclusive task.create lane.
 const liveHostWorkbenchAgentRuns = computed(() =>
   resolveLiveHostWorkbenchAgentRuns({
-    goalAgentRun: goalAgentRun.value,
+    // goal.create is owned by the durable Workflow panel, never Host Proposal.
+    goalAgentRun: null,
     noteAgentRun: noteAgentRun.value,
     // Residual 427: dedicated task.create session field preferred when present.
     taskAgentRun: taskAgentRun.value,
@@ -789,22 +763,17 @@ async function handleHostProposalRevise(payload: {
   // Edit residual 481 + residual 565 reject / 561 approve symmetry.
   // Avoids revise-then-silent-noop + dual ownership drift.
   const owned =
-    payload.item.source === 'goal' ||
-    payload.item.source === 'knowledge' ||
-    payload.item.source === 'task'
+    payload.item.source === 'knowledge' || payload.item.source === 'task'
       ? resolveHostPanelOwnedProductRun({
           source: payload.item.source,
           runId: payload.item.runId,
-          // Residual 577: exclusive workbench lane (primary-task promotion) for ownership.
-          goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
+          goalAgentRun: null,
           noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
           taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
         })
       : null;
-  // goal/knowledge must own a session run; task orphan Host-only revise stays ungated.
-  if ((payload.item.source === 'goal' || payload.item.source === 'knowledge') && !owned) {
-    return;
-  }
+  // Knowledge must own a session run; task orphan Host-only revise stays ungated.
+  if (payload.item.source === 'knowledge' && !owned) return;
   // Residual 573: sole product draftAction + waiting_approval (approve symmetry).
   if (
     owned &&
@@ -832,17 +801,7 @@ async function handleHostProposalRevise(payload: {
       contentMarkdown: payload.patch.contentMarkdown,
       goalId: payload.patch.goalId,
     });
-    // Residual 607: goal-session product process-local edit via shared classifier
-    // (task residual 439 + knowledge residual 605 symmetry; primary-task-shaped included).
-    if (isHostPanelGoalSessionProductOwned(owned)) {
-      await reviseGoalAgentRun({
-        title: payload.patch.title ?? payload.item.title,
-        description: payload.patch.description ?? payload.item.description,
-        goalId: payload.patch.goalId ?? payload.item.goalId,
-      });
-    }
-    // Residual 439/571/581: process-local task.create edit only via shared classifier.
-    // Residual 579: primary-task-shaped (goal session) applies Host patch at confirm.
+    // Process-local task.create edit only via the dedicated Task owner.
     if (
       payload.item.source === 'task' &&
       payload.item.kind === 'task.create' &&
@@ -880,28 +839,19 @@ async function handleHostProposalApprove(payload: {
 }) {
   if (hostProposalBusy.value) return;
 
-  // Residual 561: goal/knowledge Host approve sole product + waiting_approval.
-  // Residual 563: session-owned task.create Host approve sole create_task_template.
-  // Residual 569/571/577: shared resolveHostPanelOwnedProductRun for gate + settlement
-  // (live workbench lane + primary-task → create_task_template).
-  // Product draftAction before Host lifecycle (confirm residual 555/557/559 +
-  // complete 547/489 symmetry). Pure domain createTemplate fallback stays ungated.
+  // Host Proposal is transitional for Knowledge/Task only. goal.create approval
+  // is owned exclusively by the durable Workflow ActionBar.
   const owned =
-    payload.item.source === 'goal' ||
-    payload.item.source === 'knowledge' ||
-    payload.item.source === 'task'
+    payload.item.source === 'knowledge' || payload.item.source === 'task'
       ? resolveHostPanelOwnedProductRun({
           source: payload.item.source,
           runId: payload.item.runId,
-          // Residual 577: exclusive workbench lane (primary-task promotion) for ownership.
-          goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
+          goalAgentRun: null,
           noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
           taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
         })
       : null;
-  if ((payload.item.source === 'goal' || payload.item.source === 'knowledge') && !owned) {
-    return;
-  }
+  if (payload.item.source === 'knowledge' && !owned) return;
   if (
     owned &&
     !canHostApproveProductAgentRun({
@@ -940,20 +890,6 @@ async function handleHostProposalApprove(payload: {
       revision,
     });
 
-    // Residual 609: dirty approve process-local edit-revise before product confirm
-    // (task residual 459 symmetry for goal/knowledge sessions; reopen cannot rehydrate stale draft).
-    if (
-      shouldReviseGoalSessionDraftBeforeConfirm({
-        dirty: payload.dirty,
-        owned,
-      })
-    ) {
-      await reviseGoalAgentRun({
-        title: payload.patch.title ?? payload.item.title,
-        description: payload.patch.description ?? payload.item.description,
-        goalId: payload.patch.goalId ?? payload.item.goalId,
-      });
-    }
     if (
       shouldReviseKnowledgeSessionDraftBeforeConfirm({
         dirty: payload.dirty,
@@ -966,21 +902,7 @@ async function handleHostProposalApprove(payload: {
       });
     }
 
-    if (payload.item.source === 'goal') {
-      // Residual 579: includes primary-task-shaped ownership (create_task_template) on goal source.
-      // Residual 583: goalId must reach goal-session applyHostTaskPatch (no drop in resume).
-      await confirmGoalAgentRun({
-        skipHostLifecycle: true,
-        revision,
-        // Residual 365: pass Host-revised title/description into resumeAgentRun executor payload.
-        title: payload.patch.title ?? payload.item.title,
-        description: payload.patch.description ?? payload.item.description,
-        // Residual 583: Host-revised linked goalId for primary-task-shaped create_task_template.
-        goalId: payload.patch.goalId ?? payload.item.goalId,
-      });
-      return;
-    }
-    // Residual 603: knowledge settle via shared ownership classifier (581 symmetry).
+    // Knowledge settle via its transitional AgentRun owner.
     if (payload.item.source === 'knowledge' && isHostPanelKnowledgeSessionProductOwned(owned)) {
       await createKnowledgeNoteFromConversation({
         skipHostLifecycle: true,
@@ -995,18 +917,6 @@ async function handleHostProposalApprove(payload: {
     if (payload.item.source === 'task') {
       const title = payload.patch.title ?? payload.item.title;
       const goalId = payload.patch.goalId ?? payload.item.goalId;
-      // Residual 427/571/579/581: goal-session product (create_goal or primary-task-shaped).
-      if (isHostPanelGoalSessionProductOwned(owned)) {
-        // Residual 583: goal-session primary-task confirm receives Host-revised goalId.
-        await confirmGoalAgentRun({
-          skipHostLifecycle: true,
-          revision,
-          title,
-          goalId,
-        });
-        return;
-      }
-      // Residual 571/581: AgentType task.create process-local ownership via shared classifier.
       const isTaskAgentType = isHostPanelProcessLocalTaskCreateOwned(owned);
       const ownedByTaskSession = isTaskAgentType;
       // Residual 459: dirty approve must revise process-local draft before domain createTemplate
@@ -1072,27 +982,19 @@ async function handleHostProposalReject(payload: {
 }) {
   if (hostProposalBusy.value) return;
 
-  // Residual 565: product-lane Host reject waiting_approval before Host lifecycle.
-  // Residual 569/571/577: shared resolveHostPanelOwnedProductRun for gate + settlement
-  // (live workbench lane + primary-task → create_task_template).
-  // Cancel residual 477/559 + residual 561/563 approve symmetry.
-  // Orphan task proposals remain client-settle only.
+  // Reject is transitional for Knowledge/Task only. Goal cancellation is a
+  // Workflow command, never a Host Proposal decision.
   const owned =
-    payload.item.source === 'goal' ||
-    payload.item.source === 'knowledge' ||
-    payload.item.source === 'task'
+    payload.item.source === 'knowledge' || payload.item.source === 'task'
       ? resolveHostPanelOwnedProductRun({
           source: payload.item.source,
           runId: payload.item.runId,
-          // Residual 577: exclusive workbench lane (primary-task promotion) for ownership.
-          goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
+          goalAgentRun: null,
           noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
           taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
         })
       : null;
-  if ((payload.item.source === 'goal' || payload.item.source === 'knowledge') && !owned) {
-    return;
-  }
+  if (payload.item.source === 'knowledge' && !owned) return;
   if (owned && !canHostRejectProductAgentRun({ run: owned.run })) return;
 
   hostProposalBusy.value = true;
@@ -1106,11 +1008,7 @@ async function handleHostProposalReject(payload: {
       reason: normalizeHostProposalRejectReason(payload.reason),
     });
 
-    if (payload.item.source === 'goal') {
-      await cancelGoalAgentRun({ skipHostLifecycle: true, revision: payload.revision });
-      return;
-    }
-    // Residual 603: knowledge cancel via shared ownership classifier (581 symmetry).
+    // Knowledge cancel via its transitional AgentRun owner.
     if (payload.item.source === 'knowledge' && isHostPanelKnowledgeSessionProductOwned(owned)) {
       await cancelKnowledgeNoteAgentRun({
         skipHostLifecycle: true,
@@ -1132,12 +1030,6 @@ async function handleHostProposalReject(payload: {
             payload.item.proposalId,
           ];
         }
-      } else if (isHostPanelGoalSessionProductOwned(owned)) {
-        // Residual 579/581: create_goal or primary-task-shaped → goal session cancel.
-        await cancelGoalAgentRun({
-          skipHostLifecycle: true,
-          revision: payload.revision,
-        });
       } else if (!clientSettledHostProposalIds.value.includes(payload.item.proposalId)) {
         // Residual 425: client-settle orphan task proposals (no AgentRun owner to cancel).
         clientSettledHostProposalIds.value = [
@@ -1166,7 +1058,7 @@ watch(
       if (!focusedHostProposalId.value) {
         focusedHostProposalId.value = resolveDefaultHostWorkbenchFocusProposalId({
           taskAgentRun: taskAgentRun.value,
-          goalAgentRun: goalAgentRun.value,
+          goalAgentRun: null,
           noteAgentRun: noteAgentRun.value,
           proposalItems: hostProposalItems.value,
           receiptItems: hostExecutionReceiptItems.value,
@@ -1244,46 +1136,24 @@ function openArtifactBusinessTab(
   void router.push(route);
 }
 
-// Only open tabs for ready products: created goal / goal draft / created note.
+// Only open tabs for ready products: created goal / created note.
 // Do not open merely because an Agent run is in progress (avoids mid-flow jumps).
 // Open panel Tabs for ready products only (V2 §6.0 / §2.3 deeplink, no steal).
-// Intermediate restored drafts without a live agent run do not auto-navigate
-// (avoids clobbering the AI workspace on session restore).
-watch([goalDraft, goalAgentRun, automatedGoalId, noteSummary, toolMode], () => {
+// A pending goal_draft_review is NOT a ready product: HITL confirm/cancel/retry
+// lives on the Workflow panel in the AI workspace. Auto-navigating to /goals
+// would clobber that surface (and session-restored pending runs must not yank
+// the user out of the AI workspace). Even after approval, a recovery_required
+// suspension (partial execution) is not ready: the user must see the recovery
+// + retry controls before being deep-linked. Only a *completed* goal run is a
+// ready product worth a deeplink.
+watch([goalWorkflowRun, automatedGoalId, noteSummary, toolMode], () => {
   if (toolMode.value === 'goal-create') {
-    if (automatedGoalId.value) {
+    if (automatedGoalId.value && goalWorkflowRun.value?.status === 'completed') {
       openArtifactBusinessTab(
         'goal',
         `/goals/${automatedGoalId.value}`,
         t('nav.capsule.goal'),
         `goal-created:${automatedGoalId.value}`,
-      );
-      return;
-    }
-    // Draft ready during/after agent flow → open Goal panel Tab for the draft.
-    if (goalDraft.value && goalAgentRun.value) {
-      const draft = goalDraft.value as {
-        goal?: { title?: string; description?: string };
-        title?: string;
-        name?: string;
-        description?: string;
-      };
-      const draftName =
-        draft.goal?.title ||
-        draft.title ||
-        draft.name ||
-        t('aiAssistant.chatPage.workflow.goalDraftTitle');
-      const draftDesc = draft.goal?.description || draft.description || '';
-      const runId = String(
-        (goalAgentRun.value as { runId?: string; id?: string }).runId ||
-          (goalAgentRun.value as { runId?: string; id?: string }).id ||
-          'run',
-      );
-      openArtifactBusinessTab(
-        'goal',
-        '/goals',
-        draftName,
-        `goal-draft:${runId}:${draftName}:${draftDesc}`,
       );
     }
     return;
@@ -1365,7 +1235,7 @@ async function selectConversation(item: ConversationSummary) {
   await selectConversationBase(item);
   const focus = resolveHostWorkbenchFocusFromSessionRuns({
     taskAgentRun: taskAgentRun.value,
-    goalAgentRun: goalAgentRun.value,
+    goalAgentRun: null,
     noteAgentRun: noteAgentRun.value,
   });
   if (focus || hasPendingHostProposals.value || hasHostExecutionReceipts.value) {
@@ -1393,7 +1263,7 @@ async function selectAgentRun(run: AgentRun) {
     const focus =
       resolveHostWorkbenchFocusFromSessionRuns({
         taskAgentRun: taskAgentRun.value,
-        goalAgentRun: goalAgentRun.value,
+        goalAgentRun: null,
         noteAgentRun: noteAgentRun.value,
       }) ?? resolveHostWorkbenchFocusFromAgentRun(result);
     focusedHostProposalId.value = focus?.proposalId ?? null;

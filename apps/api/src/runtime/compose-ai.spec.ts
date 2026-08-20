@@ -94,6 +94,11 @@ vi.mock('../modules/ai/controlled-analytics-read.adapter', () => ({
 vi.mock('../modules/ai/backend-automation-tool-executor.adapter', () => ({
   BackendAutomationToolExecutorAdapter: vi.fn(),
 }));
+vi.mock('../modules/ai/goal-plan-mutation.adapter', () => ({
+  GoalPlanMutationAdapter: vi.fn(function GoalPlanMutationAdapterMock(...args: unknown[]) {
+    return { tag: 'goal-plan-mutation', args };
+  }),
+}));
 
 import { composeAI } from './compose-ai';
 import {
@@ -117,6 +122,7 @@ import {
 } from '@memoflow/ai';
 import { createAIApiModule } from '@memoflow/ai/api';
 import { BackendAutomationToolExecutorAdapter } from '../modules/ai/backend-automation-tool-executor.adapter';
+import { GoalPlanMutationAdapter } from '../modules/ai/goal-plan-mutation.adapter';
 import { ControlledAnalyticsReadAdapter } from '../modules/ai/controlled-analytics-read.adapter';
 import { RepositoryKnowledgeIndexStatusAdapter } from '../modules/ai/repository-knowledge-index-status.adapter';
 import { RepositoryKnowledgeNotePersistenceAdapter } from '../modules/ai/repository-knowledge-note-persistence.adapter';
@@ -206,6 +212,7 @@ describe('composeAI assembly order', () => {
     composeAI(aiDependencies);
 
     const prismaOrder = vi.mocked(createAIPrismaRepositories).mock.invocationCallOrder[0];
+    const goalMutationOrder = vi.mocked(GoalPlanMutationAdapter).mock.invocationCallOrder[0];
     const storageOrder = vi.mocked(createMastraStorage).mock.invocationCallOrder[0];
     const resolverOrder = vi.mocked(MastraModelResolver).mock.invocationCallOrder[0];
     const bootstrapOrder = vi.mocked(ConversationTranscriptBootstrapSource).mock
@@ -219,7 +226,8 @@ describe('composeAI assembly order', () => {
     const moduleOrder = vi.mocked(createAIModule).mock.invocationCallOrder[0];
     const apiModuleOrder = vi.mocked(createAIApiModule).mock.invocationCallOrder[0];
 
-    expect(prismaOrder).toBeLessThan(storageOrder);
+    expect(prismaOrder).toBeLessThan(goalMutationOrder);
+    expect(goalMutationOrder).toBeLessThan(storageOrder);
     expect(storageOrder).toBeLessThan(resolverOrder);
     expect(resolverOrder).toBeLessThan(bootstrapOrder);
     expect(bootstrapOrder).toBeLessThan(mastraRuntimeOrder);
@@ -250,15 +258,23 @@ describe('composeAI assembly order', () => {
     );
     const transcriptBootstrapSource = vi.mocked(ConversationTranscriptBootstrapSource).mock
       .results[0].value;
+    expect(GoalPlanMutationAdapter).toHaveBeenCalledWith(
+      fakeGoalApplicationPort,
+      fakeTaskApplicationPort,
+      fakeReminderApplicationPort,
+    );
+    const goalPlanMutationPort = vi.mocked(GoalPlanMutationAdapter).mock.results[0].value;
     expect(MastraAIRuntime).toHaveBeenCalledTimes(1);
     expect(MastraAIRuntime).toHaveBeenCalledWith({
       storage,
       modelResolver: resolver,
       transcriptBootstrapSource,
+      goalPlanMutationPort,
     });
 
     const runtime = vi.mocked(MastraAIRuntime).mock.results[0].value;
     expect(vi.mocked(createAIModule).mock.calls[0][0].mastraRuntime).toBe(runtime);
+    expect(vi.mocked(createAIModule).mock.calls[0][0].workflowRuntime).toBe(runtime);
   });
 
   it('constructs the five app-local host adapters from the exact db / repository port / storage dir identities', () => {

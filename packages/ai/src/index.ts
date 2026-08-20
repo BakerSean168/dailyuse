@@ -36,6 +36,7 @@ export {
   type AIPrismaRepositorySet,
   type IAIConversationRepository,
   type IAIProviderConfigRepository,
+  type GoalPlanMutationPort,
 } from './server';
 export { getAIServiceRuntimeConfig, type AIServiceRuntimeConfig } from './shared/config/env';
 export {

@@ -25,6 +25,7 @@ import type {
   IDataPortabilityService,
   IAIService,
   IAssistantRuntimeService,
+  IWorkflowRuntimeService,
   IRuleService,
   IDashboardService,
   ModuleCapsule,
@@ -48,6 +49,8 @@ export const DATA_PORTABILITY_SERVICE_KEY: InjectionKey<IDataPortabilityService>
 export const AI_SERVICE_KEY: InjectionKey<IAIService> = Symbol('AIService');
 export const AI_ASSISTANT_RUNTIME_KEY: InjectionKey<IAssistantRuntimeService> =
   Symbol('AIAssistantRuntime');
+export const AI_WORKFLOW_RUNTIME_KEY: InjectionKey<IWorkflowRuntimeService> =
+  Symbol('AIWorkflowRuntime');
 export const RULE_SERVICE_KEY: InjectionKey<IRuleService> = Symbol('RuleService');
 export const DASHBOARD_SERVICE_KEY: InjectionKey<IDashboardService> = Symbol('DashboardService');
 

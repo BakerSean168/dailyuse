@@ -6,7 +6,7 @@
  */
 
 import type { IGoalRepository } from '../../../domain';
-import { Goal, GoalPolicy, GoalReminderConfig } from '../../../domain';
+import { Goal, GoalId, GoalPolicy, GoalReminderConfig, KeyResultId } from '../../../domain';
 import { IdentityId } from '@memoflow/domain-shared';
 import type { CreateGoalReq, GoalMutationReceipt } from '@memoflow/contracts/goal';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
@@ -32,7 +32,24 @@ export class CreateGoalUseCase {
       return error('UNAUTHORIZED', 'Identity ID is required');
     }
 
-    // 2. 如果有父目标，先查询
+    // 2. Caller-supplied IDs are the durable idempotency seam used by Mastra
+    // workflows and local-first clients. Replaying the same create after a
+    // disconnect/restart returns the existing aggregate instead of creating a
+    // second business fact.
+    if (input.id) {
+      const existing = await this.goalRepository.findByIdForIdentity(cx.identityId, input.id, {
+        includeChildren: true,
+      });
+      if (existing) {
+        return ok(
+          createGoalMutationReceipt(existing, {
+            keyResultIds: existing.keyResults.map((keyResult) => keyResult.id),
+          }),
+        );
+      }
+    }
+
+    // 3. 如果有父目标，先查询
     let parentGoal: Goal | undefined;
     if (input.parentGoalId) {
       const found = await this.goalRepository.findByIdForIdentity(
@@ -45,12 +62,13 @@ export class CreateGoalUseCase {
       parentGoal = found;
     }
 
-    // 3. 领域策略校验
+    // 4. 领域策略校验
     this.goalPolicy.ensureParentGoalValid(parentGoal ?? null);
 
-    // 4. 创建目标聚合根（直接使用工厂方法）
+    // 5. 创建目标聚合根（直接使用工厂方法）
     const goal = Goal.create(
       {
+        id: input.id ? GoalId.of(input.id) : undefined,
         identityId: IdentityId.of(cx.identityId),
         name: input.name,
         description: input.description ?? null,
@@ -74,14 +92,15 @@ export class CreateGoalUseCase {
     for (const keyResult of input.initialKeyResults ?? []) {
       goal.createAndAddKeyResult({
         ...keyResult,
+        id: keyResult.id ? KeyResultId.of(keyResult.id) : undefined,
         aggregationMethod: keyResult.calculationMethod,
       });
     }
 
-    // 5. 持久化
+    // 6. 持久化
     await this.goalRepository.save(goal);
 
-    // 6. 返回 Result
+    // 7. 返回 Result
     return ok(
       createGoalMutationReceipt(goal, {
         keyResultIds: goal.keyResults.map((keyResult) => keyResult.id),

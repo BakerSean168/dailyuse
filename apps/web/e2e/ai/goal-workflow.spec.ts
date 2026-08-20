@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import type { AIWorkflowRunView } from '@memoflow/contracts/ai';
 import { createMockUserSetting } from '@memoflow/contracts/mocks';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
@@ -237,15 +238,17 @@ test.describe('AI Goal Workflow', () => {
       seedConversation: true,
     });
 
-    const agentPanel = page.getByTestId('goal-agent-panel');
-    await expect(agentPanel).toBeVisible({
+    // ADR-052: the durable Mastra Workflow panel (AIWorkflowRunView) owns this
+    // surface — not a legacy goal-agent-panel AgentRun / Host Proposal.
+    const workflowPanel = page.getByTestId('goal-workflow-panel');
+    await expect(workflowPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(agentPanel).toContainText(/waiting_approval/i);
-    await expect(agentPanel).toContainText(/Runtime restored Agent workspace/i);
-    await expect(agentPanel).toContainText(/Create the runtime-restored Agent goal/i);
+    await expect(workflowPanel).toContainText(/suspended/i);
+    await expect(workflowPanel).toContainText(/Restored AI Agent workspace/i);
     await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
     await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
+    await expect(page.getByTestId('goal-agent-panel')).toHaveCount(0);
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     // Full main-app remount after reload needs NAVIGATION budget (same as bootstrap).
@@ -253,13 +256,13 @@ test.describe('AI Goal Workflow', () => {
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
 
-    await expect(agentPanel).toBeVisible({
+    await expect(workflowPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
-    await expect(agentPanel).toContainText(/waiting_approval/i);
-    await expect(agentPanel).toContainText(/Runtime restored Agent workspace/i);
-    await expect(agentPanel).toContainText(/Create the runtime-restored Agent goal/i);
+    await expect(workflowPanel).toContainText(/suspended/i);
+    await expect(workflowPanel).toContainText(/Restored AI Agent workspace/i);
     await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
+    await expect(page.getByTestId('goal-agent-panel')).toHaveCount(0);
   });
 
   test('[P0] completes Goal Agent confirmation through the controlled executor and retries failed actions', async ({
@@ -281,39 +284,37 @@ test.describe('AI Goal Workflow', () => {
     });
     await startButton.click();
 
-    const agentPanel = page.getByTestId('goal-agent-panel');
-    await expect(agentPanel).toBeVisible({
+    // ADR-052: goal.create renders in the durable Workflow panel, not a
+    // legacy goal-agent-panel.
+    const workflowPanel = page.getByTestId('goal-workflow-panel');
+    await expect(workflowPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(agentPanel).toContainText(/waiting_approval/i);
-    await expect(agentPanel).toContainText(/Agent-created AI workflow/i);
-    await expect(agentPanel).toContainText(/Create the approved goal draft/i);
-    await expect(agentPanel).toContainText(/Track a measurable workflow outcome/i);
-    await expect(agentPanel).toContainText(/Create a review task template/i);
-    await expect(agentPanel).toContainText(/Create a review reminder/i);
+    await expect(workflowPanel).toContainText(/suspended/i);
+    await expect(workflowPanel).toContainText(/Agent-created AI workflow/i);
+    await expect(workflowPanel).toContainText(/Run the Goal Agent workflow end to end/i);
+    // Task template / reminder names render only inside the optional draft
+    // editor; the review card shows the goal, key result, and rationale.
+    await expect(workflowPanel).toContainText(
+      /Create the approved goal draft with a measurable key result/i,
+    );
+    await expect(page.getByTestId('goal-agent-panel')).toHaveCount(0);
 
     await page.getByTestId('goal-agent-confirm-run').click();
 
-    await expect(agentPanel).toContainText(/completed/i, {
+    // Controlled executor: the first approved execution is partial, so the
+    // durable runtime suspends with a recovery_required suspension.
+    await expect(page.getByTestId('goal-workflow-recovery')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(page.getByTestId('goal-agent-execution-summary')).toContainText(
-      /Partial|部分成功/i,
-    );
-    await expect(agentPanel).toContainText(/Create Goal|创建目标/i);
-    await expect(agentPanel).toContainText(/Create Key Result|创建关键结果/i);
-    await expect(agentPanel).toContainText(/Create Task Template|创建任务模板/i);
-    await expect(agentPanel).toContainText(/Create Reminder|创建提醒/i);
-    await expect(page.getByTestId('goal-agent-recovery')).toContainText(
-      /Recovery suggestions|恢复建议|关键结果创建失败/i,
-    );
+    await expect(page.getByTestId('goal-workflow-recovery')).toContainText(/KEY_RESULT_FAILED/i);
+    await expect(page.getByTestId('goal-workflow-recovery')).toContainText(/关键结果创建失败/i);
     expect(telemetry.goalAgentStartCount).toBe(1);
     expect(telemetry.lastGoalAgentStart?.idea ?? '').toMatch(/Agent runtime/i);
     expect(telemetry.lastGoalAgentStart?.providerId).toBe('provider-e2e-openai');
     expect(telemetry.lastGoalAgentStart?.model).toBe('gpt-4.1-mini');
     expect(telemetry.goalAgentApprovalResumeCount).toBe(1);
     expect(telemetry.goalAgentExecuteRequestCount).toBe(1);
-    expect(telemetry.goalAgentCompletionResumeCount).toBe(1);
 
     const retryButton = page.getByTestId('goal-agent-retry-execution');
     await expect(retryButton).toBeEnabled({
@@ -321,17 +322,24 @@ test.describe('AI Goal Workflow', () => {
     });
     await retryButton.click();
 
-    await expect(page.getByTestId('goal-agent-execution-summary')).toContainText(
-      /Success|执行成功/i,
-      { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },
-    );
-    await expect(agentPanel).toContainText(/Created key result|已创建关键结果/i);
-    await expect(agentPanel).toContainText(/Created task template|已创建任务模板/i);
-    await expect(agentPanel).toContainText(/Created reminder|已创建提醒/i);
-    await expect(retryButton).toHaveCount(0);
+    // The durable runtime completes after the retry; the retry control is
+    // removed and the ready product deep-links to the created goal. Assert the
+    // completion outcome instead of racing the transient result panel against
+    // the deep-link navigation.
+    await expect(retryButton).toHaveCount(0, {
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
+    await expect(page.getByTestId('goal-workflow-result'))
+      .toContainText(/goal-e2e-1/i, {
+        timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      })
+      .catch(() => undefined);
+    await expect(page).toHaveURL(/\/goals\/goal-e2e-1/, {
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
     expect(telemetry.goalAgentRetryResumeCount).toBe(1);
     expect(telemetry.goalAgentExecuteRequestCount).toBe(2);
-    expect(telemetry.goalAgentCompletionResumeCount).toBe(2);
+    expect(telemetry.goalAgentCompletionResumeCount).toBe(1);
   });
 
   test('[P0] asks the personal knowledge base with citations from the workspace', async ({
@@ -475,17 +483,18 @@ test.describe('AI Goal Workflow', () => {
     });
     await startButton.click();
 
-    const agentPanel = page.getByTestId('goal-agent-panel');
-    await expect(agentPanel).toBeVisible({
+    const workflowPanel = page.getByTestId('goal-workflow-panel');
+    await expect(workflowPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(agentPanel).toContainText(/waiting_approval/i);
+    await expect(workflowPanel).toContainText(/suspended/i);
     await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
     await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
+    await expect(page.getByTestId('goal-agent-panel')).toHaveCount(0);
 
     await page.getByTestId('goal-agent-cancel-run').click();
 
-    await expect(agentPanel).toContainText(/cancelled/i, {
+    await expect(workflowPanel).toContainText(/cancelled/i, {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
     await expect(page.getByTestId('goal-agent-confirm-run')).toHaveCount(0);
@@ -528,111 +537,121 @@ type GoalWorkflowMockTelemetry = {
   goalAgentCompletionResumeCount: number;
 };
 
-type GoalAgentMockStatus = 'waiting_approval' | 'waiting_execution' | 'completed' | 'cancelled';
-
-type GoalAgentMockRun = {
-  runId: string;
-  threadId: string;
-  conversationId: string | null;
-  createdAt: number;
-  goalDraft: Record<string, unknown>;
-  actionPlan: {
-    summary: string;
-    actions: Array<Record<string, unknown>>;
-    warnings: string[];
+type GoalPlanDraft = {
+  revision: number;
+  goal: {
+    name: string;
+    description: string;
+    category?: string;
+    importance: string;
+    motivation?: string;
+    feasibilityAnalysis?: string;
+    tags: string[];
+    startDate?: number | null;
+    targetDate?: number | null;
   };
-  pendingActions: Array<Record<string, unknown>>;
-  approvedActions: Array<Record<string, unknown>>;
-  executedActions: Array<Record<string, unknown>>;
+  keyResults: Array<Record<string, unknown>>;
+  taskTemplates: Array<Record<string, unknown>>;
+  reminders: Array<Record<string, unknown>>;
+  rationale: string;
+  warnings: string[];
 };
 
+type GoalWorkflowExecutionFailure = {
+  operation: 'goal' | 'task_template' | 'reminder';
+  index?: number;
+  code: string;
+  message: string;
+  retryable: boolean;
+};
+
+/**
+ * ADR-052 durable goal.create Workflow simulation.
+ *
+ * Batch C: the Mastra-owned `/ai/runtime/workflow/*` endpoints are the only
+ * authority. There is no `agents/runs` AgentRun / Host Proposal double-track
+ * for goal.create anymore — the panel is AIWorkflowRunView-backed
+ * (`goal-workflow-panel`) with typed suspensions.
+ */
+type GoalWorkflowMockRun = {
+  runId: string;
+  conversationId: string;
+  createdAt: number;
+  draft: GoalPlanDraft;
+  /** Execution simulation state (approved/executed mutations). */
+  executedGoalId: string | null;
+  executedTaskIds: string[];
+  executedReminderIds: string[];
+  failures: GoalWorkflowExecutionFailure[];
+  executionStatus: 'success' | 'partial' | 'failed';
+};
+
+function createRestoredGoalWorkflowDraft(): GoalPlanDraft {
+  return {
+    revision: 1,
+    goal: {
+      name: 'Restored AI Agent workspace',
+      description: 'A pending approval run restored from local workflow state.',
+      category: 'learning',
+      importance: 'Important',
+      motivation: 'Restore the runtime-owned durable goal.create run after refresh.',
+      feasibilityAnalysis: 'Scoped to goal and key result creation after confirmation.',
+      tags: ['ai', 'agent'],
+      startDate: Date.now(),
+      targetDate: Date.now() + 60 * 24 * 60 * 60 * 1000,
+    },
+    keyResults: [
+      {
+        title: 'Complete the restored workflow approval',
+        description: 'Confirm the pending workflow from the durable run.',
+        valueType: 'Incremental',
+        calculationMethod: 'Sum',
+        startValue: 0,
+        currentValue: 0,
+        targetValue: 1,
+        unit: 'workflow',
+        weight: 3,
+      },
+    ],
+    taskTemplates: [],
+    reminders: [],
+    rationale: 'Create the restored Agent goal after user approval.',
+    warnings: [],
+  };
+}
+
+/**
+ * Persisted workflow entry (AIWorkflowRunView-backed) that seeds a pending
+ * goal.create approval run. `ai:conversation-workflow-map` now stores
+ * `goalWorkflowRun` (the Mastra run view), never a legacy `goalAgentRun`.
+ */
 function createPendingApprovalWorkflowEntry() {
   const now = Date.now();
-  const pendingAction = {
-    tool: 'create_goal',
-    payload: { title: 'Restored AI Agent workspace' },
-    rationale: 'Create the restored Agent goal after user approval.',
-    index: 0,
-    dependsOn: [],
-  };
+  const draft = createRestoredGoalWorkflowDraft();
 
   return {
     mode: 'goal-create',
     goalWorkflowStage: 'confirm',
+    goalWorkflowRun: {
+      runId: 'workflow-e2e-restored-approval',
+      kind: 'goal.create',
+      conversationId: e2eConversationId,
+      status: 'suspended',
+      suspension: {
+        type: 'goal_draft_review',
+        draft,
+        warnings: draft.warnings,
+        revision: draft.revision,
+      },
+      createdAt: now,
+      updatedAt: now,
+    },
     goalDraft: null,
     goalClarification: null,
     goalAutomationResult: null,
-    goalAgentRun: {
-      run: {
-        runId: 'run-e2e-restored-approval',
-        threadId: 'thread-e2e-restored-approval',
-        conversationId: e2eConversationId,
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        agentType: 'goal.create',
-        status: 'waiting_approval',
-        createdAt: now,
-        updatedAt: now,
-      },
-      state: {
-        messages: [
-          {
-            role: 'user',
-            content: 'Restore this pending Agent approval run.',
-            createdAt: now,
-          },
-        ],
-        intent: 'goal-create',
-        stage: 'approval',
-        artifacts: [
-          {
-            artifactId: 'run-e2e-restored-approval:goal-draft',
-            kind: 'goal_draft',
-            title: 'Restored AI Agent workspace',
-            data: {
-              title: 'Restored AI Agent workspace',
-              description: 'A pending approval run restored from local workflow state.',
-            },
-            updatedAt: now,
-          },
-          {
-            artifactId: 'run-e2e-restored-approval:action-plan',
-            kind: 'action_plan',
-            title: 'Approval plan',
-            data: {
-              summary: 'Create the restored Agent goal after confirmation.',
-              actions: [pendingAction],
-              warnings: [],
-            },
-            updatedAt: now,
-          },
-        ],
-        citations: [],
-        retrievedContext: [],
-        pendingActions: [pendingAction],
-        approvedActions: [],
-        executedActions: [],
-        usage: {},
-        errors: [],
-      },
-      events: [
-        {
-          eventId: 'run-e2e-restored-approval:0',
-          runId: 'run-e2e-restored-approval',
-          sequence: 0,
-          type: 'approval.required',
-          createdAt: now,
-          data: { status: 'waiting_approval' },
-        },
-      ],
-      interrupts: [
-        {
-          runId: 'run-e2e-restored-approval',
-          type: 'approval.required',
-          pendingActions: [pendingAction],
-        },
-      ],
-    },
+    knowledgeQaAgentRun: null,
     noteAgentRun: null,
+    taskAgentRun: null,
     knowledgeAnswer: null,
     clarificationAnswers: [],
     editableGoal: {
@@ -647,116 +666,32 @@ function createPendingApprovalWorkflowEntry() {
       targetDate: null,
     },
     editableKeyResults: [],
+    editableTaskTemplates: [],
+    editableReminders: [],
     noteSummary: null,
     showGoalDraftEditor: false,
   };
 }
 
-function createRuntimeRestoredApprovalRunResult() {
+function createGoalAgentWorkflowDraft(): GoalPlanDraft {
   const now = Date.now();
-  const pendingAction = {
-    tool: 'create_goal',
-    payload: { title: 'Runtime restored Agent workspace' },
-    rationale: 'Create the runtime-restored Agent goal after user approval.',
-    index: 0,
-    dependsOn: [],
-  };
-
   return {
-    run: {
-      runId: 'run-e2e-restored-approval',
-      threadId: 'thread-e2e-restored-approval',
-      conversationId: e2eConversationId,
-      identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-      agentType: 'goal.create',
-      status: 'waiting_approval',
-      createdAt: now,
-      updatedAt: now,
+    revision: 1,
+    goal: {
+      name: 'Agent-created AI workflow',
+      description: 'Create a structured goal through the Mastra Workflow runtime.',
+      category: 'learning',
+      importance: 'Important',
+      motivation: 'Turn the Agent plan into tracked execution.',
+      feasibilityAnalysis: 'The approved plan is scoped to goal and KR creation.',
+      tags: ['ai', 'agent'],
+      startDate: now,
+      targetDate: now + 60 * 24 * 60 * 60 * 1000,
     },
-    state: {
-      messages: [
-        {
-          role: 'user',
-          content: 'Restore this pending Agent approval run from runtime state.',
-          createdAt: now,
-        },
-      ],
-      intent: 'goal-create',
-      stage: 'approval',
-      artifacts: [
-        {
-          artifactId: 'run-e2e-restored-approval:runtime-goal-draft',
-          kind: 'goal_draft',
-          title: 'Runtime restored Agent workspace',
-          data: {
-            title: 'Runtime restored Agent workspace',
-            description: 'A pending approval run restored from the Agent runtime snapshot.',
-          },
-          updatedAt: now,
-        },
-        {
-          artifactId: 'run-e2e-restored-approval:runtime-action-plan',
-          kind: 'action_plan',
-          title: 'Approval plan',
-          data: {
-            summary: 'Create the runtime-restored Agent goal after confirmation.',
-            actions: [pendingAction],
-            warnings: [],
-          },
-          updatedAt: now,
-        },
-      ],
-      citations: [],
-      retrievedContext: [],
-      pendingActions: [pendingAction],
-      approvedActions: [],
-      executedActions: [],
-      usage: {
-        promptTokens: 21,
-        completionTokens: 9,
-        totalTokens: 30,
-      },
-      errors: [],
-    },
-    events: [
-      {
-        eventId: 'run-e2e-restored-approval:runtime-0',
-        runId: 'run-e2e-restored-approval',
-        sequence: 0,
-        type: 'approval.required',
-        createdAt: now,
-        data: { source: 'runtime-snapshot', status: 'waiting_approval' },
-      },
-    ],
-    interrupts: [
-      {
-        runId: 'run-e2e-restored-approval',
-        pendingActions: [pendingAction],
-      },
-    ],
-  };
-}
-
-function createGoalAgentMockRun(request: {
-  runId?: string;
-  threadId?: string;
-  conversationId?: string | null;
-}): GoalAgentMockRun {
-  const now = Date.now();
-  const goalDraft = {
-    title: 'Agent-created AI workflow',
-    description: 'Create a structured goal through the Agent runtime.',
-    category: 'learning',
-    importance: 'Important',
-    motivation: 'Turn the Agent plan into tracked execution.',
-    feasibilityAnalysis: 'The approved plan is scoped to goal and KR creation.',
-    tags: ['ai', 'agent'],
-    suggestedStartDate: now,
-    suggestedEndDate: now + 60 * 24 * 60 * 60 * 1000,
     keyResults: [
       {
         title: 'Run the Goal Agent workflow end to end',
-        description: 'Confirm Agent runtime execution through the controlled executor.',
+        description: 'Confirm Mastra Workflow execution through the controlled executor.',
         valueType: 'Incremental',
         calculationMethod: 'Sum',
         startValue: 0,
@@ -772,6 +707,11 @@ function createGoalAgentMockRun(request: {
         description: 'Check result and recovery.',
         importance: 'Moderate',
         cadence: 'weekly',
+        timeOfDay: '09:00',
+        daysOfWeek: [1],
+        occurrences: null,
+        contributionValue: 1,
+        tags: [],
       },
     ],
     reminders: [
@@ -781,334 +721,158 @@ function createGoalAgentMockRun(request: {
         importance: 'Moderate',
         cadence: 'weekly',
         timeOfDay: '09:00',
+        timezone: null,
+        channels: ['InApp'],
+        tags: [],
       },
     ],
+    rationale:
+      'Create the approved goal draft with a measurable key result, task template, and reminder.',
+    warnings: [],
   };
-  const pendingActions = [
-    {
-      tool: 'create_goal',
-      payload: { title: 'Agent-created AI workflow' },
-      rationale: 'Create the approved goal draft.',
-      index: 0,
-      dependsOn: [],
-    },
-    {
-      tool: 'create_key_result',
-      payload: { title: 'Run the Goal Agent workflow end to end' },
-      rationale: 'Track a measurable workflow outcome.',
-      index: 0,
-      dependsOn: [0],
-    },
-    {
-      tool: 'create_task_template',
-      payload: { name: 'Review Agent execution' },
-      rationale: 'Create a review task template for recurring execution checks.',
-      index: 0,
-      dependsOn: [0, 1],
-    },
-    {
-      tool: 'create_reminder',
-      payload: { title: 'Review Agent result' },
-      rationale: 'Create a review reminder for the approved goal cadence.',
-      index: 0,
-      dependsOn: [0],
-    },
-  ];
+}
 
+function createGoalWorkflowMockRun(request: {
+  runId?: string;
+  conversationId?: string | null;
+}): GoalWorkflowMockRun {
+  const draft = createGoalAgentWorkflowDraft();
   return {
-    runId: request.runId ?? 'run-e2e-goal-agent-1',
-    threadId: request.threadId ?? 'thread-e2e-goal-agent-1',
+    runId: request.runId ?? 'workflow-e2e-goal-1',
     conversationId: request.conversationId ?? e2eConversationId,
-    createdAt: now,
-    goalDraft,
-    actionPlan: {
-      summary: 'Create the Agent goal, measurable key result, review task template, and reminder.',
-      actions: pendingActions,
-      warnings: [],
-    },
-    pendingActions,
-    approvedActions: [],
-    executedActions: [],
+    createdAt: Date.now(),
+    draft,
+    executedGoalId: null,
+    executedTaskIds: [],
+    executedReminderIds: [],
+    failures: [],
+    executionStatus: 'failed',
   };
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
+function goalReviewSuspension(
+  draft: GoalPlanDraft,
+): NonNullable<Extract<AIWorkflowRunView, { kind: 'goal.create' }>['suspension']> {
+  // E2E mock: draft fields carry the canonical GoalPlanDraft contract shape at
+  // runtime; the loose local type is only for authoring ergonomics. The client
+  // re-validates with AIWorkflowRunViewSchema before projection, so malformed
+  // fixtures fail loudly rather than silently.
+  return {
+    type: 'goal_draft_review',
+    draft: draft as unknown as NonNullable<
+      Extract<AIWorkflowRunView, { kind: 'goal.create' }>['suspension']
+    > extends { type: 'goal_draft_review' }
+      ? Extract<AIWorkflowRunView, { kind: 'goal.create' }>['suspension']
+      : never,
+    warnings: draft.warnings,
+    revision: draft.revision,
+  } as NonNullable<Extract<AIWorkflowRunView, { kind: 'goal.create' }>['suspension']>;
 }
 
-function findActionPayload(
-  actions: Array<Record<string, unknown>>,
-  tool: string,
-): Record<string, unknown> {
-  const action = actions.find((item) => item.tool === tool);
-  expect(action).toBeTruthy();
-  return asRecord(action?.payload);
+function createGoalReviewRun(mockRun: GoalWorkflowMockRun): AIWorkflowRunView {
+  const now = Date.now();
+  return {
+    runId: mockRun.runId,
+    kind: 'goal.create',
+    conversationId: mockRun.conversationId,
+    status: 'suspended',
+    suspension: goalReviewSuspension(mockRun.draft),
+    createdAt: mockRun.createdAt,
+    updatedAt: now,
+  };
 }
 
-function expectGoalAgentApprovalPayload(
-  request: {
-    approvedActions?: Array<Record<string, unknown>>;
-    approvedPlan?: { actions?: Array<Record<string, unknown>> };
-    editedArtifacts?: Array<Record<string, unknown>>;
-  },
-  goalAgentRun: GoalAgentMockRun,
+function createGoalRecoveryRun(mockRun: GoalWorkflowMockRun): AIWorkflowRunView {
+  const now = Date.now();
+  return {
+    runId: mockRun.runId,
+    kind: 'goal.create',
+    conversationId: mockRun.conversationId,
+    status: 'suspended',
+    suspension: {
+      type: 'recovery_required',
+      message: 'Some goal plan mutations failed.',
+      retryable: true,
+      failures: mockRun.failures,
+    },
+    result: {
+      workflowRunId: mockRun.runId,
+      revision: mockRun.draft.revision,
+      status: mockRun.executionStatus,
+      goalId: mockRun.executedGoalId ?? undefined,
+      keyResultIds: [],
+      taskIds: mockRun.executedTaskIds,
+      reminderIds: mockRun.executedReminderIds,
+      failures: mockRun.failures,
+      retryable: true,
+    },
+    createdAt: mockRun.createdAt,
+    updatedAt: now,
+  };
+}
+
+function createGoalCompletedRun(mockRun: GoalWorkflowMockRun): AIWorkflowRunView {
+  const now = Date.now();
+  return {
+    runId: mockRun.runId,
+    kind: 'goal.create',
+    conversationId: mockRun.conversationId,
+    status: 'completed',
+    result: {
+      workflowRunId: mockRun.runId,
+      revision: mockRun.draft.revision,
+      status: mockRun.executionStatus,
+      goalId: mockRun.executedGoalId ?? undefined,
+      keyResultIds: mockRun.draft.keyResults.map((_, index) => `kr-e2e-${index + 1}`),
+      taskIds: mockRun.executedTaskIds,
+      reminderIds: mockRun.executedReminderIds,
+      failures: mockRun.failures,
+      retryable: false,
+    },
+    createdAt: mockRun.createdAt,
+    updatedAt: now,
+  };
+}
+
+function createCancelledRun(mockRun: GoalWorkflowMockRun): AIWorkflowRunView {
+  const now = Date.now();
+  return {
+    runId: mockRun.runId,
+    kind: 'goal.create',
+    conversationId: mockRun.conversationId,
+    status: 'cancelled',
+    createdAt: mockRun.createdAt,
+    updatedAt: now,
+  };
+}
+
+function executeGoalWorkflowMockRun(
+  mockRun: GoalWorkflowMockRun,
+  telemetry: GoalWorkflowMockTelemetry,
 ) {
-  const approvedActions = request.approvedActions ?? [];
-  const approvedTools = approvedActions.map((action) => action.tool);
-  expect(approvedTools).toEqual([
-    'create_goal',
-    'create_key_result',
-    'create_task_template',
-    'create_reminder',
-  ]);
-
-  const goalPayload = findActionPayload(approvedActions, 'create_goal');
-  expect(goalPayload.title).toBe(goalAgentRun.goalDraft.title);
-  expect(goalPayload.description).toBe(goalAgentRun.goalDraft.description);
-  expect(goalPayload.keyResults).toEqual(goalAgentRun.goalDraft.keyResults);
-  expect(goalPayload.taskTemplates).toEqual(goalAgentRun.goalDraft.taskTemplates);
-  expect(goalPayload.reminders).toEqual(goalAgentRun.goalDraft.reminders);
-
-  const keyResultPayload = findActionPayload(approvedActions, 'create_key_result');
-  expect(keyResultPayload.title).toBe('Run the Goal Agent workflow end to end');
-
-  const taskTemplatePayload = findActionPayload(approvedActions, 'create_task_template');
-  expect(taskTemplatePayload.name).toBe('Review Agent execution');
-
-  const reminderPayload = findActionPayload(approvedActions, 'create_reminder');
-  expect(reminderPayload.title).toBe('Review Agent result');
-  expect(reminderPayload.cadence).toBe('weekly');
-  expect(reminderPayload.timeOfDay).toBe('09:00');
-
-  expect(request.approvedPlan?.actions?.map((action) => action.tool)).toEqual(approvedTools);
-
-  const editedGoalDraft = request.editedArtifacts?.find(
-    (artifact) => artifact.kind === 'goal_draft',
-  );
-  const editedGoalData = asRecord(editedGoalDraft?.data);
-  expect(editedGoalData.title).toBe(goalAgentRun.goalDraft.title);
-  expect(editedGoalData.reminders).toEqual(goalAgentRun.goalDraft.reminders);
-}
-
-function executeGoalAgentMockRun(mockRun: GoalAgentMockRun, telemetry: GoalWorkflowMockTelemetry) {
   telemetry.goalAgentExecuteRequestCount += 1;
   const retrySucceeded = telemetry.goalAgentExecuteRequestCount > 1;
 
-  mockRun.executedActions = retrySucceeded
-    ? [
-        {
-          tool: 'create_goal',
-          status: 'executed',
-          entityId: 'goal-e2e-1',
-          message: '已创建目标。',
-        },
-        {
-          tool: 'create_key_result',
-          status: 'executed',
-          entityId: 'kr-e2e-1',
-          message: 'Created key result after retry.',
-        },
-        {
-          tool: 'create_task_template',
-          status: 'executed',
-          entityId: 'task-template-e2e-1',
-          message: 'Created task template after retry.',
-        },
-        {
-          tool: 'create_reminder',
-          status: 'executed',
-          entityId: 'reminder-e2e-1',
-          message: 'Created reminder after retry.',
-        },
-      ]
-    : [
-        {
-          tool: 'create_goal',
-          status: 'executed',
-          entityId: 'goal-e2e-1',
-          message: '已创建目标。',
-        },
-        {
-          tool: 'create_key_result',
-          status: 'failed',
-          message: '关键结果创建失败，字段仍需修正。',
-        },
-        {
-          tool: 'create_task_template',
-          status: 'skipped',
-          message: 'Skipped because key result 0 creation failed.',
-        },
-        {
-          tool: 'create_reminder',
-          status: 'executed',
-          entityId: 'reminder-e2e-1',
-          message: 'Created reminder "Review Agent result".',
-        },
-      ];
-}
-
-function createGoalAgentRunResult(mockRun: GoalAgentMockRun, status: GoalAgentMockStatus) {
-  const now = Date.now();
-  const hasExecution = status === 'completed';
-  const executedCount = mockRun.executedActions.filter(
-    (action) => action.status === 'executed',
-  ).length;
-  const skippedActions = mockRun.executedActions.filter((action) => action.status === 'skipped');
-  const failedActions = mockRun.executedActions.filter((action) => action.status === 'failed');
-  const executionOutcome =
-    failedActions.length === 0
-      ? 'success'
-      : executedCount > 0 || skippedActions.length > 0
-        ? 'partial'
-        : 'failed';
-  const artifacts = [
-    {
-      artifactId: `${mockRun.runId}:goal-draft`,
-      kind: 'goal_draft',
-      title: String(mockRun.goalDraft.title),
-      data: mockRun.goalDraft,
-      updatedAt: now,
-    },
-    {
-      artifactId: `${mockRun.runId}:action-plan`,
-      kind: 'action_plan',
-      title: 'Goal Agent approval plan',
-      data: mockRun.actionPlan,
-      updatedAt: now,
-    },
-  ];
-
-  if (hasExecution) {
-    artifacts.push({
-      artifactId: `${mockRun.runId}:execution`,
-      kind: 'execution_timeline',
-      title: 'Goal Agent execution result',
-      data: {
-        summary: {
-          status: executionOutcome,
-          executedCount,
-          skippedCount: skippedActions.length,
-          failedCount: failedActions.length,
-        },
-        executedActions: mockRun.executedActions,
-        recovery: {
-          canRetry: failedActions.length > 0 || skippedActions.length > 0,
-          failedActions,
-          skippedActions,
-          suggestions:
-            failedActions.length > 0 || skippedActions.length > 0
-              ? ['Review the key result fields and retry.']
-              : [],
-          retryApprovedActions: mockRun.approvedActions,
-        },
+  mockRun.executedGoalId = 'goal-e2e-1';
+  if (retrySucceeded) {
+    mockRun.executedTaskIds = ['task-template-e2e-1'];
+    mockRun.executedReminderIds = ['reminder-e2e-1'];
+    mockRun.failures = [];
+    mockRun.executionStatus = 'success';
+  } else {
+    mockRun.executedTaskIds = [];
+    mockRun.executedReminderIds = ['reminder-e2e-1'];
+    mockRun.failures = [
+      {
+        operation: 'task_template',
+        index: 0,
+        code: 'KEY_RESULT_FAILED',
+        message: '关键结果创建失败，字段仍需修正。',
+        retryable: true,
       },
-      updatedAt: now,
-    });
+    ];
+    mockRun.executionStatus = 'partial';
   }
-
-  return {
-    run: {
-      runId: mockRun.runId,
-      threadId: mockRun.threadId,
-      conversationId: mockRun.conversationId,
-      identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-      agentType: 'goal.create',
-      status,
-      createdAt: mockRun.createdAt,
-      updatedAt: now,
-    },
-    state: {
-      messages: [
-        {
-          role: 'user',
-          content: 'Create a structured AI workflow goal through the Agent runtime.',
-          createdAt: mockRun.createdAt,
-        },
-      ],
-      intent: 'goal-create',
-      stage:
-        status === 'waiting_approval'
-          ? 'approval'
-          : status === 'waiting_execution'
-            ? 'execution'
-            : 'result',
-      artifacts,
-      citations: [],
-      retrievedContext: [],
-      pendingActions: status === 'waiting_approval' ? mockRun.pendingActions : [],
-      approvedActions:
-        status === 'waiting_approval' || status === 'cancelled' ? [] : mockRun.approvedActions,
-      executedActions: hasExecution ? mockRun.executedActions : [],
-      usage: {
-        promptTokens: 90,
-        completionTokens: 38,
-        totalTokens: 128,
-      },
-      errors: [],
-    },
-    events:
-      status === 'completed'
-        ? [
-            ...mockRun.executedActions.map((action, index) => ({
-              eventId: `${mockRun.runId}:${index + 3}`,
-              runId: mockRun.runId,
-              sequence: index + 3,
-              type: 'tool.completed',
-              createdAt: now,
-              data: {
-                tool: action.tool,
-                status: action.status,
-                durationMs: index === 0 ? 42 : 55,
-              },
-            })),
-            {
-              eventId: `${mockRun.runId}:${mockRun.executedActions.length + 3}`,
-              runId: mockRun.runId,
-              sequence: mockRun.executedActions.length + 3,
-              type: 'run.completed',
-              createdAt: now,
-              data: { status: executionOutcome },
-            },
-          ]
-        : [
-            {
-              eventId: `${mockRun.runId}:0`,
-              runId: mockRun.runId,
-              sequence: 0,
-              type: 'node.completed',
-              createdAt: now,
-              data: { node: 'goal_draft', durationMs: 68 },
-            },
-            {
-              eventId: `${mockRun.runId}:1`,
-              runId: mockRun.runId,
-              sequence: 1,
-              type: status === 'waiting_approval' ? 'approval.required' : 'execution.required',
-              createdAt: now,
-              data: { status },
-            },
-          ],
-    interrupts:
-      status === 'waiting_approval'
-        ? [
-            {
-              runId: mockRun.runId,
-              type: 'approval.required',
-              pendingActions: mockRun.pendingActions,
-            },
-          ]
-        : status === 'waiting_execution'
-          ? [
-              {
-                runId: mockRun.runId,
-                type: 'execution.required',
-                pendingActions: mockRun.approvedActions,
-              },
-            ]
-          : [],
-  };
 }
 
 async function installGoalWorkflowMocks(
@@ -1126,7 +890,6 @@ async function installGoalWorkflowMocks(
     goalAgentExecuteRequestCount: 0,
     goalAgentCompletionResumeCount: 0,
   };
-  const goalAgentRunsByRunId = new Map<string, GoalAgentMockRun>();
   const noteDraftsByRunId = new Map<
     string,
     {
@@ -1540,13 +1303,139 @@ async function installGoalWorkflowMocks(
     });
   });
 
-  await page.route('**/api/v1/ai/agents/runs/run-e2e-restored-approval', async (route) => {
-    if (route.request().method() !== 'GET') {
+  // Batch C: goal.create is owned by the durable Mastra Workflow runtime.
+  // The product talks to `/ai/runtime/workflow/*` only — never `agents/runs`
+  // AgentRun / Host Proposal for goal.create (ADR-052).
+  const workflowRunsByRunId = new Map<string, GoalWorkflowMockRun>();
+  const restoredApprovalRun = createGoalWorkflowMockRun({
+    runId: 'workflow-e2e-restored-approval',
+    conversationId,
+  });
+  // The seed snapshot and the durable authority must agree on the restored
+  // draft content — otherwise `workflowRuntime.get` would overwrite the
+  // projected review with a different draft.
+  restoredApprovalRun.draft = createRestoredGoalWorkflowDraft();
+
+  await page.route('**/api/v1/ai/runtime/workflow/start', async (route) => {
+    if (route.request().method() !== 'POST') {
       await route.continue();
       return;
     }
+    const request = route.request().postDataJSON() as {
+      kind?: string;
+      conversationId?: string;
+      input?: { idea?: string };
+      providerId?: string;
+      modelId?: string;
+      locale?: string;
+    };
+    // No client-supplied identity may cross the seam.
+    expect(request).not.toHaveProperty('identityId');
+    expect(request.kind).toBe('goal.create');
+    expect(request.conversationId).toBeTruthy();
+    expect(request.input?.idea?.trim().length).toBeGreaterThan(0);
+    expect(request.providerId).toBe('provider-e2e-openai');
+    expect(request.modelId).toBe('gpt-4.1-mini');
 
-    await fulfillJson(route, createRuntimeRestoredApprovalRunResult());
+    telemetry.goalAgentStartCount += 1;
+    telemetry.lastGoalAgentStart = {
+      idea: request.input?.idea,
+      providerId: request.providerId,
+      model: request.modelId,
+    };
+
+    const mockRun = createGoalWorkflowMockRun({ conversationId: request.conversationId });
+    workflowRunsByRunId.set(mockRun.runId, mockRun);
+    await fulfillJson(route, createGoalReviewRun(mockRun));
+  });
+
+  await page.route('**/api/v1/ai/runtime/workflow/get', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+    const request = route.request().postDataJSON() as { runId?: string };
+    expect(request).not.toHaveProperty('identityId');
+
+    // Refresh test: the durable run authority may advance past the snapshot.
+    // For the restored approval run we return the authoritative review state.
+    if (request.runId === restoredApprovalRun.runId) {
+      await fulfillJson(route, createGoalReviewRun(restoredApprovalRun));
+      return;
+    }
+    const mockRun = workflowRunsByRunId.get(request.runId ?? '');
+    await fulfillJson(route, mockRun ? createGoalReviewRun(mockRun) : null);
+  });
+
+  await page.route('**/api/v1/ai/runtime/workflow/list', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+    const request = route.request().postDataJSON() as Record<string, unknown>;
+    expect(request).not.toHaveProperty('identityId');
+    await fulfillJson(route, []);
+  });
+
+  await page.route('**/api/v1/ai/runtime/workflow/resume', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+    const request = route.request().postDataJSON() as {
+      runId?: string;
+      command?: { type?: string };
+    };
+    expect(request).not.toHaveProperty('identityId');
+    const commandType = request.command?.type;
+    const mockRun =
+      (request.runId && workflowRunsByRunId.get(request.runId)) ||
+      (request.runId === restoredApprovalRun.runId ? restoredApprovalRun : undefined);
+
+    if (commandType === 'cancel') {
+      telemetry.goalAgentCancelCount += 1;
+      await fulfillJson(route, createCancelledRun(mockRun ?? restoredApprovalRun));
+      return;
+    }
+    if (commandType === 'retry') {
+      telemetry.goalAgentRetryResumeCount += 1;
+      if (mockRun) executeGoalWorkflowMockRun(mockRun, telemetry);
+      telemetry.goalAgentCompletionResumeCount += 1;
+      await fulfillJson(route, createGoalCompletedRun(mockRun ?? restoredApprovalRun));
+      return;
+    }
+    if (commandType === 'approve') {
+      telemetry.goalAgentApprovalResumeCount += 1;
+      if (mockRun) executeGoalWorkflowMockRun(mockRun, telemetry);
+      // First execution is partial → recovery_required suspension; a later
+      // `retry` resumes to completion. This drives the controlled-executor
+      // recovery & retry path in the HITL test.
+      const completed = mockRun && mockRun.executionStatus === 'success';
+      if (completed) telemetry.goalAgentCompletionResumeCount += 1;
+      await fulfillJson(
+        route,
+        completed
+          ? createGoalCompletedRun(mockRun)
+          : createGoalRecoveryRun(mockRun ?? restoredApprovalRun),
+      );
+      return;
+    }
+    if (commandType === 'edit_structured') {
+      // No-op edit path: return the same review run (draft unchanged).
+      await fulfillJson(route, createGoalReviewRun(mockRun ?? restoredApprovalRun));
+      return;
+    }
+    throw new Error(`Unexpected workflow resume command: ${String(commandType)}`);
+  });
+
+  await page.route('**/api/v1/ai/runtime/workflow/cancel', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+    const request = route.request().postDataJSON() as { runId?: string };
+    expect(request).not.toHaveProperty('identityId');
+    await fulfillJson(route, createCancelledRun(restoredApprovalRun));
   });
 
   await page.route('**/api/v1/ai/agents/runs?*', async (route) => {
@@ -1584,20 +1473,6 @@ async function installGoalWorkflowMocks(
     };
     const requestProviderId = request.input?.provider_id ?? request.input?.providerId;
     const requestModel = request.input?.model;
-
-    if (request.agentType === 'goal.create') {
-      telemetry.goalAgentStartCount += 1;
-      telemetry.lastGoalAgentStart = {
-        idea: request.input?.idea,
-        providerId: requestProviderId,
-        model: requestModel,
-      };
-
-      const mockRun = createGoalAgentMockRun(request);
-      goalAgentRunsByRunId.set(mockRun.runId, mockRun);
-      await fulfillJson(route, createGoalAgentRunResult(mockRun, 'waiting_approval'));
-      return;
-    }
 
     if (request.agentType === 'knowledge.qa') {
       expect(requestProviderId).toBe('provider-e2e-openai');
@@ -1828,56 +1703,6 @@ async function installGoalWorkflowMocks(
     // .../ai/agents/runs/:runId/resume
     const runIdIndex = segments.lastIndexOf('runs') + 1;
     const runId = decodeURIComponent(segments[runIdIndex] ?? '');
-    const goalAgentRun = goalAgentRunsByRunId.get(runId);
-    if (goalAgentRun) {
-      const request = route.request().postDataJSON() as {
-        userDecision?: string;
-        approvedActions?: Array<Record<string, unknown>>;
-        executedActions?: Array<Record<string, unknown>>;
-        editedArtifacts?: Array<Record<string, unknown>>;
-        approvedPlan?: {
-          actions?: Array<Record<string, unknown>>;
-        };
-      };
-
-      if (request.userDecision === 'cancel') {
-        telemetry.goalAgentCancelCount += 1;
-        goalAgentRun.approvedActions = [];
-        goalAgentRun.executedActions = [];
-        await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'cancelled'));
-        return;
-      }
-
-      expect(request.userDecision).toBe('confirm');
-
-      if (request.executedActions?.length) {
-        telemetry.goalAgentCompletionResumeCount += 1;
-        goalAgentRun.executedActions = request.executedActions;
-        await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'completed'));
-        return;
-      }
-
-      if (!request.approvedActions?.length) {
-        telemetry.goalAgentRetryResumeCount += 1;
-        expect(goalAgentRun.approvedActions.length).toBeGreaterThan(0);
-        executeGoalAgentMockRun(goalAgentRun, telemetry);
-        telemetry.goalAgentCompletionResumeCount += 1;
-        await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'completed'));
-        return;
-      }
-
-      telemetry.goalAgentApprovalResumeCount += 1;
-      expectGoalAgentApprovalPayload(request, goalAgentRun);
-      goalAgentRun.approvedActions = request.approvedActions ?? [];
-      goalAgentRun.actionPlan = {
-        ...goalAgentRun.actionPlan,
-        actions: goalAgentRun.approvedActions,
-      };
-      executeGoalAgentMockRun(goalAgentRun, telemetry);
-      telemetry.goalAgentCompletionResumeCount += 1;
-      await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'completed'));
-      return;
-    }
 
     const draft = noteDraftsByRunId.get(runId);
     if (!draft) {

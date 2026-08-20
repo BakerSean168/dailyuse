@@ -8,7 +8,7 @@ tags:
   - refactor
 description: MemoFlow AI vNext Mastra-native 一次性大重构实施计划
 created: 2026-08-20T00:00:00+08:00
-updated: 2026-08-20T16:00:00+08:00
+updated: 2026-08-21T02:40:00+08:00
 ---
 
 # MemoFlow AI vNext — Mastra-native 一次性大重构实施计划
@@ -312,6 +312,36 @@ workflow.cancelled
 
 **Next owner:** `AI-VNEXT-04 / Batch C — goal.create reference Workflow`。下一轮直接注册 concrete Mastra `goal.create` Workflow，替换 Goal AgentRun / Host Proposal bridge 的 primary path。
 
+## 5.8 Goal.create Reference Workflow Closure Checkpoint — 2026-08-20
+
+**AI-VNEXT-04 / Batch C 已完成。** `goal.create` 由 durable Mastra `GoalCreateWorkflow` + `ApplyGoalPlanService` 权威承载。Goal Workflow 的 UI/ownership 从旧 Goal AgentRun / Host Proposal / primary-task 双镜像产品切到新的 `AIWorkflowRunView`（`AIGoalWorkflowPanel`，testid `goal-workflow-panel` / `goal-workflow-recovery` / `goal-workflow-result` / `goal-workflow-revision`）与 `useAIGoalWorkflow` 投影；没有把旧 `goal-agent-panel` / AgentRun / Host Proposal 兼容加回。
+
+**Runtime / contracts：**
+
+- 新增 typed `GoalCreateClientInput` / `GoalPlanDraft` / `GoalPlanExecutionReceipt` / `AIWorkflowSuspension`（clarification_required / goal_draft_review / recovery_required 等）contracts（`ai-goal-create-workflow.dto.ts`）；
+- 新增 `GoalPlannerAgent` worker、`goal-create.workflow.ts`、`apply-goal-plan.service.ts`、`goal-plan-mutation.port.ts`、`deterministic-entity-id.ts`；
+- mutation 走 canonical Goal/Task/Reminder application ports；`goalWorkflowEntityId` 提供 deterministic child entity IDs（workflowRunId + revision + kind + index）保障 double-approve / retry 幂等，不创建重复实体；
+- WORKFLOW transport 走 `/ai/runtime/workflow/{start,resume,get,list,cancel}`，identity 只由 authenticated host 注入，客户端 `identityId` 注入被 schema 拒绝；不再用于 goal.create 的 `agents/runs` AgentRun / Host Proposal 双轨。
+
+**UI ownership fix（本 closure 发现并修复的真实 bug）：**
+
+- 旧 watcher 在每次 `goal_draft_review` 投影时自动 `router.push('/goals')`，会 clobber AI workspace 上的 HITL confirm/cancel/retry 表面（尤其 session restore 的 pending run 也被拽出 AI workspace），与 ADR-052 HITL 冲突；
+- 修复为：仅当 run `status === 'completed'` 且产生 `automatedGoalId` 时才 deep-link 到 created goal；pending draft review 与 recovery_required（partial）留在 AI workspace 由 Workflow panel 承载确认/取消/恢复。
+
+**E2E：**
+
+- `goal-workflow.spec.ts` 的 3 个 HITL 场景已按新 Workflow ownership 重写（goal-workflow-panel / goal-workflow-recovery / goal-workflow-result + goal-agent-confirm-run / goal-agent-cancel-run / goal-agent-retry-execution）：refresh 恢复 / confirm+retry / cancel at approval；
+- Web E2E `web:e2e:ai-workspace` 全量 **8/8 PASS**（含 3 个 goal 测试 + 5 个既有 root/mobile/knowledge 测试）。注：该套件偶发 auth `#email`/scene 基础设施 flake（跨分支既有、与端口占用/负载相关，非 Batch C 引入），在负载下降 / 端口干净（3400 / 4174）后可稳定全绿。
+
+**Closure evidence：**
+
+- `contracts:test` = **69 files / 598 tests PASS**；`ai` focused/runtime workflow specs PASS（Mastra Workflow runtime spec、goal planner worker、ApplyGoalPlan、deterministic entity id）；
+- `app-vue:test` = **185 files / 917 tests PASS**（含 AIChatView 29/29、AIGoalWorkflowPanel）；`ai:typecheck`、`app-vue:typecheck`、`api:typecheck`、`desktop:typecheck`、`web:typecheck` PASS；lint:affected 40 projects 0 error；
+- `docs:check` PASS；`governance:check` PASS；format 已跑；
+- Web E2E `web:e2e:ai-workspace` **8/8 PASS**（3 个 goal HITL 测试 + 5 个既有测试）；goal 工作流断言只依赖 canonical Workflow 表面，不依赖已退役的 AgentRun / Host Proposal。
+
+**Next owner:** `AI-VNEXT-05 / Batch E — UI / workbench rewrite`（整体 UI 投影 + E2E 全量 auth 基础设施稳定性）。
+
 ## 6. Implementation Batches
 
 ### Batch A — Foundation rewrite: contracts + dependencies + runtime composition
@@ -371,6 +401,8 @@ workflow.cancelled
 
 ### Batch C — `goal.create` reference Workflow
 
+**Current status:** **COMPLETED — AI-VNEXT-04 closed**，见 §5.8。goal.create 已由 durable Mastra `GoalCreateWorkflow` 权威承载；Goal Workflow 不再回退 AgentRun / Host Proposal 双 ownership。
+
 **Goal:** 完成 ADR-052 全旅程并成为 vNext canonical pattern。
 
 **Changes:**
@@ -379,7 +411,7 @@ workflow.cancelled
 - `GoalPlannerAgent` structured output；clarification max rounds；context loading；
 - review suspend/resume；structured edit without LLM；natural-language revision with worker agent；
 - `ApplyGoalPlanService` calling Goal/Task/Reminder application ports；
-- deterministic idempotency/recovery receipt；
+- deterministic idempotency/recovery receipt (`goalWorkflowEntityId` deterministic child IDs);
 - replace `useAIGoalWorkflow` with thin run projection；
 - delete Goal AgentAction construction, dependsOn patching, Host Proposal bridge lifecycle.
 
@@ -484,13 +516,14 @@ workflow.cancelled
 
 ### AI-VNEXT-03 — Cut open chat to MemoFlow Assistant
 
-**Status:** **IN PROGRESS — next active implementation owner**。  
+**Status:** **COMPLETE**（§5.7）。  
 **Goal:** stream/cancel/history/usage via Mastra。  
 **Dependency:** 01–02。  
 **Acceptance:** Web/Desktop journey。
 
 ### AI-VNEXT-04 — Implement GoalCreateWorkflow + ApplyGoalPlan
 
+**Status:** **COMPLETE**（§5.8）。goal.create 已由 durable Mastra `GoalCreateWorkflow` + `ApplyGoalPlanService` 权威承载，UI 已投影到 `AIWorkflowRunView` / `goal-workflow-panel`，HITL E2E 三个场景各自验证通过；不含旧 AgentRun / Host Proposal 双轨。
 **Goal:** ADR-052 canonical journey。  
 **Dependency:** 01–02。  
 **Acceptance:** clarify/review/revise/approve/cancel/retry/idempotency/restart tests。

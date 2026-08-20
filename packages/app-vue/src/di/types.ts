@@ -12,7 +12,11 @@
  */
 
 import type { AccountClientPort } from '@memoflow/account/client';
-import type { AIClientPort, AssistantRuntimeClient } from '@memoflow/ai/client';
+import type {
+  AIClientPort,
+  AssistantRuntimeClient,
+  WorkflowRuntimeClient,
+} from '@memoflow/ai/client';
 import type { CloudAuthClientPort } from '@memoflow/contracts';
 import type { GovernanceClientPort } from '@memoflow/governance/client';
 import type { GoalClientPort } from '@memoflow/goal/client';
@@ -42,6 +46,8 @@ export type IDataPortabilityService = DataPortabilityClientPort;
 export type IAIService = AIClientPort;
 /** Mastra-native open-chat execution/history seam; separate from the legacy AI facade. */
 export type IAssistantRuntimeService = AssistantRuntimeClient;
+/** Mastra-native durable Workflow seam for goal/task/knowledge product workflows. */
+export type IWorkflowRuntimeService = WorkflowRuntimeClient;
 export type IRuleService = GovernanceClientPort;
 
 // ── Dashboard（纯接口，无 private）──

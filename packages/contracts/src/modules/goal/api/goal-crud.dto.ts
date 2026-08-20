@@ -43,6 +43,7 @@ export const GoalIdParamsSchema = z.object({
  */
 export const CreateGoalSchema = z
   .object({
+    id: brandedId<GoalId>().optional(),
     name: GoalNameSchema,
     description: z.string().max(2000, '描述不能超过 2000 字符').optional(),
     color: z

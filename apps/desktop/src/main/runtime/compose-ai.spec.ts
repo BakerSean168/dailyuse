@@ -30,6 +30,14 @@ vi.mock('@memoflow/ai', async (importOriginal) => {
   };
 });
 
+vi.mock('../modules/ai/goal-plan-mutation.adapter', () => ({
+  DesktopGoalPlanMutationAdapter: vi.fn(function DesktopGoalPlanMutationAdapterMock(
+    ...args: unknown[]
+  ) {
+    return { tag: 'desktop-goal-plan-mutation', args };
+  }),
+}));
+
 vi.mock('@memoflow/ai/electron', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@memoflow/ai/electron')>();
   return {
@@ -57,6 +65,7 @@ import {
   type AIServiceRuntimeConfig,
 } from '@memoflow/ai';
 import { createAIElectronModule } from '@memoflow/ai/electron';
+import { DesktopGoalPlanMutationAdapter } from '../modules/ai/goal-plan-mutation.adapter';
 import { composeAI } from './compose-ai';
 
 const db = { tag: 'desktop-db' } as never;
@@ -64,6 +73,9 @@ const knowledgeNotePersistence = { tag: 'knowledge-persistence' } as never;
 const knowledgeSourcePort = { tag: 'knowledge-source' } as never;
 const analyticsReadPort = { tag: 'analytics-read' } as never;
 const automationToolExecutor = { tag: 'automation-executor' } as never;
+const goalApplicationPort = { tag: 'goal-application' } as never;
+const taskApplicationPort = { tag: 'task-application' } as never;
+const reminderApplicationPort = { tag: 'reminder-application' } as never;
 const mastraStorage = {
   kind: 'libsql' as const,
   url: 'file:///profiles/profile-1/storage/mastra.db',
@@ -82,6 +94,9 @@ const dependencies = {
   knowledgeSourcePort,
   analyticsReadPort,
   automationToolExecutor,
+  goalApplicationPort,
+  taskApplicationPort,
+  reminderApplicationPort,
   mastraStorage,
 };
 
@@ -121,15 +136,23 @@ describe('desktop composeAI Mastra ownership', () => {
     );
     const transcriptBootstrapSource = vi.mocked(ConversationTranscriptBootstrapSource).mock
       .results[0].value;
+    expect(DesktopGoalPlanMutationAdapter).toHaveBeenCalledWith(
+      goalApplicationPort,
+      taskApplicationPort,
+      reminderApplicationPort,
+    );
+    const goalPlanMutationPort = vi.mocked(DesktopGoalPlanMutationAdapter).mock.results[0].value;
     expect(MastraAIRuntime).toHaveBeenCalledTimes(1);
     expect(MastraAIRuntime).toHaveBeenCalledWith({
       storage,
       modelResolver: resolver,
       transcriptBootstrapSource,
+      goalPlanMutationPort,
     });
 
     const runtime = vi.mocked(MastraAIRuntime).mock.results[0].value;
     expect(vi.mocked(createAIModule).mock.calls[0][0].mastraRuntime).toBe(runtime);
+    expect(vi.mocked(createAIModule).mock.calls[0][0].workflowRuntime).toBe(runtime);
   });
 
   it('passes the exact Desktop-owned domain capability ports into the transport-neutral AI module', () => {

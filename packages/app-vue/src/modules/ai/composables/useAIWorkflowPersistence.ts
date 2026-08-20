@@ -1,18 +1,13 @@
 import { ref, watch, type Ref } from 'vue';
 // Residual 1007: sole normalizeReminderTimeOfDay (local dual retired).
 import { normalizeReminderTimeOfDay } from '@memoflow/utils/shared';
-import type {
-  AgentRunResult,
-  GoalClarificationDTO,
-  GoalWorkflowDraftResultDTO,
-} from '@memoflow/contracts/ai';
+import type { AgentRunResult, AIWorkflowRunView } from '@memoflow/contracts/ai';
 import {
   createEmptyGoalDraft,
   type EditableGoal,
   type EditableKeyResult,
   type EditableGoalReminder,
   type EditableGoalTaskTemplate,
-  type GoalAutomationResult,
   type GoalWorkflowStage,
   type KnowledgeAnswer,
   type NoteSummary,
@@ -26,10 +21,7 @@ const WORKFLOW_STORAGE_KEY = 'ai:conversation-workflow-map';
 export interface UseAIWorkflowPersistenceOptions {
   toolMode: Ref<WorkflowMode>;
   goalWorkflowStage: Ref<GoalWorkflowStage>;
-  goalDraft: Ref<GoalWorkflowDraftResultDTO | null>;
-  goalClarification: Ref<GoalClarificationDTO | null>;
-  goalAutomationResult: Ref<GoalAutomationResult | null>;
-  goalAgentRun: Ref<AgentRunResult | null>;
+  goalWorkflowRun: Ref<AIWorkflowRunView | null>;
   knowledgeQaAgentRun: Ref<AgentRunResult | null>;
   noteAgentRun: Ref<AgentRunResult | null>;
   /** Residual 427: dedicated Host task.create AgentRun session field. */
@@ -88,19 +80,30 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
     };
   }
 
-  function inferGoalWorkflowStage(entry: PersistedWorkflowEntry | undefined | null): GoalWorkflowStage {
-    if (entry?.goalAgentRun?.run.status === 'waiting_clarification') return 'clarification';
-    if (entry?.goalAgentRun?.run.status === 'waiting_approval') return 'confirm';
-    if (entry?.goalAgentRun?.run.status === 'waiting_execution') return 'execute';
-    if (
-      entry?.goalAgentRun?.run.status === 'completed' ||
-      entry?.goalAgentRun?.run.status === 'cancelled' ||
-      entry?.goalAgentRun?.run.status === 'failed'
-    ) {
-      return 'result';
+  function inferGoalWorkflowStage(
+    entry: PersistedWorkflowEntry | undefined | null,
+  ): GoalWorkflowStage {
+    const run = entry?.goalWorkflowRun;
+    if (run?.kind === 'goal.create') {
+      if (run.status === 'suspended' && run.suspension?.type === 'clarification_required') {
+        return 'clarification';
+      }
+      if (run.status === 'suspended' && run.suspension?.type === 'goal_draft_review') {
+        return 'confirm';
+      }
+      if (run.status === 'suspended' && run.suspension?.type === 'recovery_required') {
+        return 'execute';
+      }
+      if (run.status === 'completed' || run.status === 'cancelled' || run.status === 'failed') {
+        return 'result';
+      }
+      return 'plan';
     }
     if (entry?.goalWorkflowStage) return entry.goalWorkflowStage;
-    if (entry?.goalAutomationResult?.state === 'result' && entry.goalAutomationResult.executedActions.length)
+    if (
+      entry?.goalAutomationResult?.state === 'result' &&
+      entry.goalAutomationResult.executedActions.length
+    )
       return 'result';
     if (entry?.goalAutomationResult) return 'confirm';
     if (entry?.goalClarification) return 'clarification';
@@ -113,11 +116,9 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
 
     return {
       mode: options.toolMode.value,
-      goalWorkflowStage: options.toolMode.value === 'goal-create' ? options.goalWorkflowStage.value : undefined,
-      goalDraft: options.goalDraft.value,
-      goalClarification: options.goalClarification.value,
-      goalAutomationResult: options.goalAutomationResult.value,
-      goalAgentRun: options.goalAgentRun.value,
+      goalWorkflowStage:
+        options.toolMode.value === 'goal-create' ? options.goalWorkflowStage.value : undefined,
+      goalWorkflowRun: options.goalWorkflowRun.value,
       knowledgeQaAgentRun: options.knowledgeQaAgentRun.value,
       noteAgentRun: options.noteAgentRun.value,
       taskAgentRun: options.taskAgentRun.value,
@@ -166,11 +167,9 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
 
     const mode = normalizeWorkflowMode(entry.mode);
     options.toolMode.value = mode;
-    options.goalWorkflowStage.value = mode === 'goal-create' ? inferGoalWorkflowStage(entry) : 'collect';
-    options.goalDraft.value = entry.goalDraft;
-    options.goalClarification.value = entry.goalClarification ?? null;
-    options.goalAutomationResult.value = entry.goalAutomationResult ?? null;
-    options.goalAgentRun.value = entry.goalAgentRun ?? null;
+    options.goalWorkflowStage.value =
+      mode === 'goal-create' ? inferGoalWorkflowStage(entry) : 'collect';
+    options.goalWorkflowRun.value = entry.goalWorkflowRun ?? null;
     options.knowledgeQaAgentRun.value = entry.knowledgeQaAgentRun ?? null;
     options.noteAgentRun.value = entry.noteAgentRun ?? null;
     options.taskAgentRun.value = entry.taskAgentRun ?? null;
@@ -181,14 +180,18 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
       ...entry.editableGoal,
       tags: [...(entry.editableGoal?.tags ?? [])],
     };
-    options.editableKeyResults.value = (entry.editableKeyResults ?? []).map((item) => ({ ...item }));
+    options.editableKeyResults.value = (entry.editableKeyResults ?? []).map((item) => ({
+      ...item,
+    }));
     options.editableTaskTemplates.value = (entry.editableTaskTemplates ?? []).map((item) => ({
       ...item,
     }));
     options.editableReminders.value = (entry.editableReminders ?? []).map((item) =>
       normalizeReminderDraft(item),
     );
-    options.noteSummary.value = entry.noteSummary ? createStoredNoteSummary(entry.noteSummary) : null;
+    options.noteSummary.value = entry.noteSummary
+      ? createStoredNoteSummary(entry.noteSummary)
+      : null;
     options.showGoalDraftEditor.value = Boolean(entry.showGoalDraftEditor);
   }
 
@@ -200,10 +203,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
           options.toolMode.value,
           options.goalWorkflowStage.value,
           options.showGoalDraftEditor.value ? '1' : '0',
-          JSON.stringify(options.goalDraft.value),
-          JSON.stringify(options.goalClarification.value),
-          JSON.stringify(options.goalAutomationResult.value),
-          JSON.stringify(options.goalAgentRun.value),
+          JSON.stringify(options.goalWorkflowRun.value),
           JSON.stringify(options.knowledgeQaAgentRun.value),
           JSON.stringify(options.noteAgentRun.value),
           JSON.stringify(options.taskAgentRun.value),

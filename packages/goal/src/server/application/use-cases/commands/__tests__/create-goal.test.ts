@@ -3,7 +3,7 @@ import '@memoflow/test-utils/helpers/result-matchers';
 import { anIdentityId } from '@memoflow/test-utils';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
-import { Goal, GoalPolicy } from '../../../../domain';
+import { Goal, GoalId, GoalPolicy, KeyResultId } from '../../../../domain';
 import { CreateGoalUseCase } from '../create-goal.use-case';
 
 describe('CreateGoalUseCase', () => {
@@ -67,6 +67,48 @@ describe('CreateGoalUseCase', () => {
     expect(result).toBeOk();
     expect(goalRepo.save).toHaveBeenCalledTimes(1);
     expect(result.ok && result.data.readModel.keyResults).toHaveLength(1);
+  });
+
+  it('preserves caller-supplied aggregate and key-result IDs and replays the same durable fact', async () => {
+    const goalId = GoalId.of('IGoalId_550e8400-e29b-41d4-a716-446655440000');
+    const keyResultId = KeyResultId.of('IKeyResultId_550e8400-e29b-41d4-a716-446655440001');
+    const input = aCreateInput({
+      id: goalId,
+      initialKeyResults: [
+        {
+          id: keyResultId,
+          title: 'Pass the reference acceptance journey',
+          valueType: 'Incremental',
+          calculationMethod: 'Sum',
+          startValue: 0,
+          currentValue: 0,
+          targetValue: 1,
+          weight: 5,
+        },
+      ],
+    });
+
+    const first = await useCase.execute(input, aContext());
+
+    expect(first).toBeOk();
+    expect(first.ok && first.data.goalId).toBe(goalId);
+    expect(first.ok && first.data.affectedEntityIds.keyResultIds).toEqual([keyResultId]);
+    const persisted = vi.mocked(goalRepo.save).mock.calls[0]?.[0];
+    expect(persisted?.id).toBe(goalId);
+    expect(persisted?.keyResults.map((keyResult) => keyResult.id)).toEqual([keyResultId]);
+
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(persisted ?? null);
+    vi.mocked(goalRepo.save).mockClear();
+
+    const replay = await useCase.execute(input, aContext());
+
+    expect(replay).toBeOk();
+    expect(replay.ok && replay.data.goalId).toBe(goalId);
+    expect(replay.ok && replay.data.affectedEntityIds.keyResultIds).toEqual([keyResultId]);
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith(testIdentityId, goalId, {
+      includeChildren: true,
+    });
+    expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
   it('should return VALIDATION_ERROR when name is empty', async () => {

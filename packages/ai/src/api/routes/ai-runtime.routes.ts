@@ -19,7 +19,10 @@ import {
   type AIWorkflowRuntimePort,
   type MastraAIRuntime,
 } from '../../server/mastra/runtime';
-import { readAiExpressEnvelopeMeta } from '../../shared/express-execution-context';
+import {
+  extractAiExpressExecutionContext,
+  readAiExpressEnvelopeMeta,
+} from '../../shared/express-execution-context';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -237,7 +240,10 @@ export function registerAIRuntimeRoutes(
     }
     try {
       const run = AIWorkflowRunViewSchema.parse(
-        await workflowRuntime.start({ identityId, request: parsed.data }),
+        await workflowRuntime.start({
+          context: extractAiExpressExecutionContext(req),
+          request: parsed.data,
+        }),
       );
       res.status(200).json(responseBuilder.success(run));
     } catch {
@@ -265,7 +271,10 @@ export function registerAIRuntimeRoutes(
     }
     try {
       const run = AIWorkflowRunViewSchema.parse(
-        await workflowRuntime.resume({ identityId, request: parsed.data }),
+        await workflowRuntime.resume({
+          context: extractAiExpressExecutionContext(req),
+          request: parsed.data,
+        }),
       );
       res.status(200).json(responseBuilder.success(run));
     } catch {

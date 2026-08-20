@@ -58,10 +58,13 @@ import { isRecord } from './isRecord';
       expect(index).not.toMatch(/\bGoalWorkflowDraftResultDTO\b/);
     });
 
-    it('call sites import workflow types and Mastra AssistantRuntimeEvent directly from contracts', () => {
+    it('keeps goal.create on typed Workflow contracts while transitional Agent lanes use canonical contracts', () => {
       expect(goalWorkflow).toContain("from '@memoflow/contracts/ai'");
-      expect(goalWorkflow).toMatch(/\bAgentRunResult\b/);
-      expect(goalWorkflow).toMatch(/\bAgentAction\b/);
+      expect(goalWorkflow).toMatch(/\bAIWorkflowRunView\b/);
+      expect(goalWorkflow).toMatch(/\bGoalPlanDraft\b/);
+      expect(goalWorkflow).toMatch(/\bGoalPlanDraftContent\b/);
+      expect(goalWorkflow).not.toMatch(/import[^;]*\bAgentRunResult\b/s);
+      expect(goalWorkflow).not.toMatch(/import[^;]*\bAgentAction\b/s);
       expect(goalWorkflow).not.toMatch(/\bGoalAgentRunResult\b/);
       expect(goalWorkflow).not.toMatch(/\bGoalAgentAction\b/);
       expect(chatView).toMatch(/\bAgentRun\b/);
@@ -74,32 +77,27 @@ import { isRecord } from './isRecord';
       expect(chatSession).not.toMatch(/\bStreamDoneResult\b/);
     });
 
-    it('call sites import GoalWorkflowDraftResultDTO/GoalClarificationDTO from contracts', () => {
-      for (const source of [
-        goalWorkflow,
-        goalDraftHelpers,
-        goalAutomationHelpers,
-        workflowPersistence,
-        goalPanel,
-        actionBar,
-      ]) {
-        expect(source).toContain("from '@memoflow/contracts/ai'");
-        expect(source).toMatch(/\bGoalClarificationDTO\b/);
-      }
-      for (const source of [
-        goalWorkflow,
-        goalDraftHelpers,
-        goalAutomationHelpers,
-        workflowPersistence,
-        goalPanel,
-      ]) {
-        expect(source).toMatch(/\bGoalWorkflowDraftResultDTO\b/);
-      }
+    it('uses durable Goal Workflow types only where each call site actually needs them', () => {
+      expect(goalWorkflow).toContain("from '@memoflow/contracts/ai'");
+      expect(goalWorkflow).toMatch(/\bAIWorkflowRunView\b/);
+      expect(goalWorkflow).toMatch(/\bGoalClarificationDTO\b/);
+      expect(goalWorkflow).toMatch(/\bGoalPlanDraft\b/);
+      expect(goalPanel).toContain("from '@memoflow/contracts/ai'");
+      expect(goalPanel).toMatch(/\bAIWorkflowRunView\b/);
+      expect(goalPanel).toMatch(/\bGoalClarificationDTO\b/);
+      expect(workflowPersistence).toContain("from '@memoflow/contracts/ai'");
+      expect(workflowPersistence).toMatch(/\bAIWorkflowRunView\b/);
+      expect(workflowPersistence).not.toMatch(/import[^;]*\bGoalWorkflowDraftResultDTO\b/s);
+      expect(workflowPersistence).not.toMatch(/import[^;]*\bGoalClarificationDTO\b/s);
+      // Transitional legacy helpers may still own their old DTOs until their later batch.
+      expect(goalDraftHelpers).toMatch(/\bGoalWorkflowDraftResultDTO\b/);
+      expect(goalAutomationHelpers).toMatch(/\bGoalWorkflowDraftResultDTO\b/);
       // UI helper identifiers that end with GoalDraft are not type duals.
       expect(goalDraftHelpers).toMatch(
         /\bcreateEmptyGoalDraft\b|\bGoalDraftState\b|\bapplyGoalDraft\b/,
       );
       expect(types).toMatch(/\bcreateEmptyGoalDraft\b/);
+      expect(actionBar).not.toMatch(/\bGoalWorkflowDraftResultDTO\b/);
     });
   });
 }
@@ -131,9 +129,11 @@ import { isRecord } from './isRecord';
       expect(sole).toContain('`${prefix}-${randomId}`');
     });
 
-    it('goal / knowledge / knowledge-qa / task import sole without local dual bodies', () => {
+    it('keeps createAgentId only on transitional Agent workflows, never durable goal.create', () => {
+      expect(goal).not.toContain("import { createAgentId } from './createAgentId'");
+      expect(goal).not.toContain("createAgentId('run')");
+      expect(goal).not.toContain("createAgentId('thread')");
       for (const [label, src] of [
-        ['goal', goal],
         ['knowledge', knowledge],
         ['knowledgeQa', knowledgeQa],
         ['task', task],
@@ -182,15 +182,10 @@ import { isRecord } from './isRecord';
       expect(sole).toContain("typeof value === 'string' ? value.trim() : ''");
     });
 
-    it('goal and knowledge-note import sole without local dual bodies', () => {
-      expect(goal).toContain('Residual 955');
-      expect(goal).toContain("import { getRecordString } from './getRecordString'");
+    it('keeps getRecordString on the transitional knowledge path, not durable goal.create', () => {
+      expect(goal).not.toContain("import { getRecordString } from './getRecordString'");
       expect(goal).not.toMatch(/function getString\b/);
       expect(goal).not.toMatch(/function getRecordString\b/);
-      expect(goal).toContain('getRecordString(item,');
-      expect(goal).toContain('getRecordString(goalData,');
-      // Retired dual name must not remain as local helper
-      expect(goal).not.toContain('function getString(data: Record<string, unknown>');
 
       expect(knowledge).toContain('Residual 955');
       expect(knowledge).toContain("import { getRecordString } from './getRecordString'");
@@ -243,12 +238,9 @@ import { isRecord } from './isRecord';
       );
     });
 
-    it('goal and knowledge workflows import sole without local dual bodies', () => {
-      expect(goal).toContain('Residual 951');
-      expect(goal).toContain("import { isRecord } from './isRecord'");
+    it('keeps isRecord on the transitional knowledge path, not typed durable goal.create', () => {
+      expect(goal).not.toContain("import { isRecord } from './isRecord'");
       expect(goal).not.toMatch(/function isRecord\b/);
-      expect(goal).toContain('isRecord(item)');
-      expect(goal).toContain('isRecord(artifact?.data)');
 
       expect(knowledge).toContain('Residual 951');
       expect(knowledge).toContain("import { isRecord } from './isRecord'");

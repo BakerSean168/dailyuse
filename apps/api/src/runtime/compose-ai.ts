@@ -58,6 +58,7 @@ import type { GoalApplicationPort } from '@memoflow/goal';
 import type { TaskApplicationPort } from '@memoflow/task';
 import type { ReminderApplicationPort } from '@memoflow/reminder';
 import { BackendAutomationToolExecutorAdapter } from '../modules/ai/backend-automation-tool-executor.adapter';
+import { GoalPlanMutationAdapter } from '../modules/ai/goal-plan-mutation.adapter';
 import { ControlledAnalyticsReadAdapter } from '../modules/ai/controlled-analytics-read.adapter';
 import { RepositoryKnowledgeIndexStatusAdapter } from '../modules/ai/repository-knowledge-index-status.adapter';
 import { RepositoryKnowledgeNotePersistenceAdapter } from '../modules/ai/repository-knowledge-note-persistence.adapter';
@@ -173,12 +174,18 @@ export interface ComposeAIDependencies {
  */
 export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
   const repositorySet = createAIPrismaRepositories(dependencies.db);
+  const goalPlanMutationPort = new GoalPlanMutationAdapter(
+    dependencies.goalApplicationPort,
+    dependencies.taskApplicationPort,
+    dependencies.reminderApplicationPort,
+  );
   const mastraRuntime = new MastraAIRuntime({
     storage: createMastraStorage(dependencies.mastraStorage),
     modelResolver: new MastraModelResolver(repositorySet.providerConfigRepository),
     transcriptBootstrapSource: new ConversationTranscriptBootstrapSource(
       repositorySet.conversationRepository,
     ),
+    goalPlanMutationPort,
   });
 
   const config =
@@ -227,6 +234,7 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
     conversationRepository: repositorySet.conversationRepository,
     providerConfigRepository: repositorySet.providerConfigRepository,
     mastraRuntime,
+    workflowRuntime: mastraRuntime,
     goalPlanningPort,
     goalAutomationPlanningPort,
     automationToolExecutorPort,

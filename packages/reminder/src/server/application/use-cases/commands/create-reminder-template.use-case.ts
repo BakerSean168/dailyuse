@@ -38,13 +38,19 @@ export class CreateReminderTemplateUseCase {
     this.reminderDomainService =
       reminderDomainService ?? new ReminderDomainService(templateRepository, groupRepository);
     this.templateMapper =
-      templateMapper ?? new ReminderTemplateClientMapper(this.reminderDomainService, groupRepository);
+      templateMapper ??
+      new ReminderTemplateClientMapper(this.reminderDomainService, groupRepository);
   }
 
   async execute(
     input: CreateReminderTemplateReq,
     cx: ExecutionContext,
   ): Promise<Result<ReminderTemplateClientDTO>> {
+    if (input.id) {
+      const existing = await this.templateRepository.findByIdForIdentity(cx.identityId, input.id);
+      if (existing) return ok(await this.templateMapper.toDTO(existing));
+    }
+
     if (await this.closureChecker(cx.identityId)) {
       return error('FORBIDDEN', 'Account is closed or closure in progress');
     }
@@ -69,11 +75,20 @@ export class CreateReminderTemplateUseCase {
     try {
       const template = await this.reminderDomainService.createReminderTemplate({
         ...normalizedInput,
+        id: input.id,
         identityId: cx.identityId,
       });
 
       return ok(await this.templateMapper.toDTO(template));
     } catch (cause) {
+      // Close the concurrent deterministic-ID create window: if another
+      // workflow attempt committed first, surface that durable entity as the
+      // successful replay rather than creating a duplicate reminder.
+      if (input.id) {
+        const existing = await this.templateRepository.findByIdForIdentity(cx.identityId, input.id);
+        if (existing) return ok(await this.templateMapper.toDTO(existing));
+      }
+
       return error(
         'NOT_FOUND',
         cause instanceof Error ? cause.message : 'Failed to create reminder template',

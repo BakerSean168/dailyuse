@@ -312,6 +312,9 @@ async function registerBusinessModules(
       localVaultRuntime,
       analyticsReadAdapter,
     ),
+    goalApplicationPort: goalComposed.applicationPort,
+    taskApplicationPort: taskComposed.applicationPort,
+    reminderApplicationPort: reminderComposed.applicationPort,
     mastraStorage: {
       kind: 'libsql',
       url: pathToFileURL(path.join(profilePaths.storageDir, 'mastra.db')).href,

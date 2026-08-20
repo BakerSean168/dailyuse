@@ -8,10 +8,7 @@ import type {
   TaskEventMap,
   TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
 } from '@memoflow/contracts/task';
-import {
-  RecurrenceEndConditionType,
-  TaskGoalBindingTrigger,
-} from '@memoflow/contracts/task';
+import { RecurrenceEndConditionType, TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import { ImportanceLevel, PriorityLevel } from '@memoflow/contracts/shared';
 import { DependencyStatus, TaskType } from '../value-objects';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '../../domain/value-objects';
@@ -40,10 +37,7 @@ import * as goalPolicy from './task-template-goal.policy';
 import * as lifecyclePolicy from './task-template-lifecycle.policy';
 import * as oneTimePolicy from './task-template-onetime.policy';
 import * as recurrencePolicy from './task-template-recurrence.policy';
-import {
-  InvalidTaskTemplateStateError,
-  InvalidDateRangeError,
-} from '../value-objects/task-errors';
+import { InvalidTaskTemplateStateError, InvalidDateRangeError } from '../value-objects/task-errors';
 
 /** TaskTemplate aggregate root. */
 export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
@@ -107,10 +101,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
   }
 
-  private static assertIdentityId(
-    identityId: IdentityId,
-    attemptedAction: string,
-  ): void {
+  private static assertIdentityId(identityId: IdentityId, attemptedAction: string): void {
     if (identityId) {
       return;
     }
@@ -294,7 +285,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   /** Generates task instances within the specified date range. */
   public generateInstances(fromDate: number, toDate: number): TaskInstance[] {
-    const { instances, lastGeneratedDate } = instanceGen.generateInstances(this.getInstanceContext(), fromDate, toDate);
+    const { instances, lastGeneratedDate } = instanceGen.generateInstances(
+      this.getInstanceContext(),
+      fromDate,
+      toDate,
+    );
     this._instances.push(...instances);
     if (lastGeneratedDate) {
       this._props.lastGeneratedDate = lastGeneratedDate;
@@ -313,7 +308,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   /** Gets the task instance for a specific date. */
   public getInstanceForDate(date: number): TaskInstance | null {
     const targetDay = TaskTemplate.startOfLocalDay(date);
-    return this._instances.find((i) => TaskTemplate.startOfLocalDay(i.instanceDate) === targetDay) ?? null;
+    return (
+      this._instances.find((i) => TaskTemplate.startOfLocalDay(i.instanceDate) === targetDay) ??
+      null
+    );
   }
 
   /** Determines whether an instance should be generated for the given date. */
@@ -779,7 +777,9 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       updatedAt: this._props.updatedAt,
       deletedAt: this._props.deletedAt ?? null,
       version: this._props.version,
-      instances: includeChildren ? this._instances.map((instance) => instance.toServerDTO()) : undefined,
+      instances: includeChildren
+        ? this._instances.map((instance) => instance.toServerDTO())
+        : undefined,
     };
   }
 
@@ -795,8 +795,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     ).length;
     const totalCount = this._instances.length;
     const dueInstances = this._instances.filter(
-      (instance) =>
-        instance.instanceDate >= completionWindowStart && instance.instanceDate <= asOf,
+      (instance) => instance.instanceDate >= completionWindowStart && instance.instanceDate <= asOf,
     );
     const completedDueInstanceCount = dueInstances.filter(
       (instance) => instance.status === TaskInstanceStatus.Completed,
@@ -844,7 +843,9 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       isBlocked: this._props.isBlocked,
       blockingReason: this._props.blockingReason,
       history: includeChildren ? this._history.map((entry) => entry.toClientDTO()) : undefined,
-      instances: includeChildren ? this._instances.map((instance) => instance.toClientDTO()) : undefined,
+      instances: includeChildren
+        ? this._instances.map((instance) => instance.toClientDTO())
+        : undefined,
       instanceCount: totalCount,
       completedInstanceCount: completedCount,
       pendingInstanceCount: pendingCount,
@@ -863,6 +864,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   // ===== Factory Methods =====
 
   public static createOneTimeTask(params: {
+    id?: TaskTemplateId;
     identityId: IdentityId;
     title: string;
     description?: string;
@@ -882,7 +884,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
     const now = Date.now();
     const template = TaskTemplate.instantiate({
-      id: TaskTemplateId.generate(),
+      id: params.id ?? TaskTemplateId.generate(),
       identityId: params.identityId,
       title,
       description: params.description ?? null,
@@ -975,6 +977,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   public static create(params: {
+    id?: TaskTemplateId;
     identityId: IdentityId;
     title: string;
     description?: string;
@@ -1016,7 +1019,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
     const now = Date.now();
     const template = TaskTemplate.instantiate({
-      id: TaskTemplateId.generate(),
+      id: params.id ?? TaskTemplateId.generate(),
       identityId: params.identityId,
       title,
       description: params.description ?? null,

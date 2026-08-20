@@ -342,15 +342,15 @@ describe('AIElectron assistant dispatch lifecycle', () => {
     const startResult = await registered(AIChannels.RUNTIME_WORKFLOW_START)(undefined, {
       kind: 'goal.create',
       conversationId: 'conv-1',
-      input: { prompt: 'Run a 5K' },
+      input: { idea: 'Run a 5K' },
     });
     expect(startResult).toMatchObject({ ok: true, data: fake.workflowRun });
     expect(fake.workflowStart).toHaveBeenCalledWith({
-      identityId: 'identity-1',
+      context: { identityId: 'identity-1' },
       request: {
         kind: 'goal.create',
         conversationId: 'conv-1',
-        input: { prompt: 'Run a 5K' },
+        input: { idea: 'Run a 5K' },
       },
     });
 
@@ -359,7 +359,7 @@ describe('AIElectron assistant dispatch lifecycle', () => {
       command: { type: 'approve' },
     });
     expect(fake.workflowResume).toHaveBeenCalledWith({
-      identityId: 'identity-1',
+      context: { identityId: 'identity-1' },
       request: { runId: 'workflow-1', command: { type: 'approve' } },
     });
 

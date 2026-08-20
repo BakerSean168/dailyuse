@@ -69,14 +69,12 @@ import {
   createTaskPowerSyncRepositories,
   createTaskRuntimeContribution,
   normalizeTaskRuntimeContributions,
+  type TaskApplicationPort,
   type ITaskInstanceRepository,
   type ITaskTemplateRepository,
   type TaskRuntimeContributionsInput,
 } from '@memoflow/task';
-import {
-  createTaskElectronModule,
-  type TaskElectronModuleDef,
-} from '@memoflow/task/electron';
+import { createTaskElectronModule, type TaskElectronModuleDef } from '@memoflow/task/electron';
 import type { TaskGoalProgressHandler } from '@memoflow/goal';
 
 /**
@@ -108,6 +106,8 @@ export interface ComposeTaskDependencies {
 export interface ComposeTaskResult {
   /** Already-bound IElectronModule-compatible handle. 已绑定的兼容 IElectronModule 的 handle。 */
   readonly module: TaskElectronModuleDef;
+  /** Canonical transport-neutral application port from the SAME module instance. */
+  readonly applicationPort: TaskApplicationPort;
   /** Instance-bound repository view for desktop consumers (dashboard/AI). 供 desktop 消费者（dashboard/AI）使用的 instance-bound repository view。 */
   readonly repositories: {
     readonly taskTemplateRepository: ITaskTemplateRepository;
@@ -167,12 +167,7 @@ export function composeTask(dependencies: ComposeTaskDependencies): ComposeTaskR
   const runtimeContributions = [
     createTaskRuntimeContribution(),
     ...(dependencies.goalProgressHandler
-      ? [
-          createTaskPowerSyncGoalOutboxRuntime(
-            dependencies.db,
-            dependencies.goalProgressHandler,
-          ),
-        ]
+      ? [createTaskPowerSyncGoalOutboxRuntime(dependencies.db, dependencies.goalProgressHandler)]
       : []),
     ...normalizeTaskRuntimeContributions(dependencies.runtimeContributions),
   ];
@@ -188,6 +183,7 @@ export function composeTask(dependencies: ComposeTaskDependencies): ComposeTaskR
 
   return {
     module: createTaskElectronModule({ instance }),
+    applicationPort: instance.api,
     repositories: {
       taskTemplateRepository,
       taskInstanceRepository,

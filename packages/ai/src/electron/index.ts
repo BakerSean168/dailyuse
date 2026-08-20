@@ -574,7 +574,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
             try {
               const run = AIWorkflowRunViewSchema.parse(
                 await aiModule.workflowRuntime.start({
-                  identityId: requestContext.identityId,
+                  context: requestContext,
                   request: parsed.data,
                 }),
               );
@@ -604,7 +604,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
             try {
               const run = AIWorkflowRunViewSchema.parse(
                 await aiModule.workflowRuntime.resume({
-                  identityId: requestContext.identityId,
+                  context: requestContext,
                   request: parsed.data,
                 }),
               );

@@ -2,6 +2,7 @@ import { defineComponent, h, ref } from 'vue';
 import { flushPromises, shallowMount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AIWorkflowRunView, GoalPlanDraft } from '@memoflow/contracts/ai';
 import { ok } from '@memoflow/contracts/result';
 
 const mocks = vi.hoisted(() => ({
@@ -46,6 +47,7 @@ vi.mock('../../setting/composables/useUserSetting', () => ({
 import AIChatView from './AIChatView.vue';
 import {
   AI_ASSISTANT_RUNTIME_KEY,
+  AI_WORKFLOW_RUNTIME_KEY,
   ASSISTANT_SURFACE_KEY,
   DASHBOARD_SERVICE_KEY,
   TASK_SERVICE_KEY,
@@ -415,21 +417,13 @@ const AIGoalWorkflowPanelStub = defineComponent({
   props: [
     'toolMode',
     'goalClarification',
-    'goalDraft',
-    'goalAutomationResult',
-    'goalAgentRun',
-    'goalAgentPendingActions',
-    'goalAgentExecutedActions',
+    'goalWorkflowRun',
     'clarificationAnswers',
     'editableGoal',
     'editableKeyResults',
     'editableTaskTemplates',
     'editableReminders',
     'showGoalDraftEditor',
-    'creatingGoal',
-    'goalExecutedActions',
-    'goalExecutionSummary',
-    'goalExecutionRecovery',
     'knowledgeAnswer',
     'knowledgeQaAgentRun',
     'noteAgentRun',
@@ -453,131 +447,84 @@ const AIGoalWorkflowPanelStub = defineComponent({
   setup(props, { emit }) {
     return () => {
       const fragments = [];
-      if (props.toolMode === 'goal-create') {
-        if (props.goalDraft) {
-          fragments.push(
-            h('div', { 'data-testid': 'goal-draft-panel' }, [
-              h('h3', 'Goal draft'),
-              h('p', props.goalDraft.goal?.title ?? ''),
-              h('p', props.goalDraft.goal?.description ?? ''),
-            ]),
-          );
-        }
-        if (props.goalClarification) {
+      if (props.toolMode === 'goal-create' && props.goalWorkflowRun) {
+        const run = props.goalWorkflowRun as AIWorkflowRunView;
+        const suspension = run.suspension;
+        fragments.push(
+          h('div', { 'data-testid': 'goal-workflow-panel' }, [
+            h('h3', 'Goal Workflow'),
+            h('p', run.status),
+          ]),
+        );
+        if (suspension?.type === 'clarification_required') {
           const answers = [...(props.clarificationAnswers ?? [])];
           fragments.push(
             h('div', { 'data-testid': 'goal-clarification-panel' }, [
               h('h3', 'Goal clarification'),
-              h('p', props.goalClarification.rationale ?? ''),
-              ...(props.goalClarification.questions ?? []).map(
-                (q: { question: string; context?: string }, i: number) =>
-                  h('div', [
-                    h('p', q.question),
-                    h('textarea', {
-                      placeholder: 'Answer here',
-                      value: answers[i] ?? '',
-                      onInput: (e: Event) => {
-                        const next = [...answers];
-                        next[i] = (e.target as HTMLTextAreaElement).value;
-                        emit('update:clarification-answers', next);
-                      },
-                    }),
-                  ]),
+              h('p', 'Needs clarification'),
+              ...suspension.questions.map((question: string, i: number) =>
+                h('div', [
+                  h('p', question),
+                  h('textarea', {
+                    placeholder: 'Answer here',
+                    value: answers[i] ?? '',
+                    onInput: (e: Event) => {
+                      const next = [...answers];
+                      next[i] = (e.target as HTMLTextAreaElement).value;
+                      emit('update:clarification-answers', next);
+                    },
+                  }),
+                ]),
               ),
             ]),
           );
         }
-        if (props.goalAgentRun) {
-          const run = props.goalAgentRun;
+        if (suspension?.type === 'goal_draft_review') {
           fragments.push(
-            h('div', { 'data-testid': 'goal-agent-panel' }, [
-              h('h3', 'Agent Run'),
-              h('p', run.run.status),
-              h('p', run.state.stage),
+            h('div', { 'data-testid': 'goal-workflow-review' }, [
+              h('h3', 'Goal draft'),
+              h('p', suspension.draft.goal.name),
+              h('p', suspension.draft.goal.description),
+              h('p', suspension.draft.rationale),
               ...(props.showGoalDraftEditor
                 ? [
                     h(
                       'button',
                       {
-                        'data-testid': 'goal-agent-draft-editor-update',
+                        'data-testid': 'goal-workflow-draft-editor-update',
                         onClick: () => {
                           emit('update-goal', {
                             ...props.editableGoal,
-                            name: 'Edited Agent AI Goal',
-                            description: 'Edited before Agent approval.',
+                            name: 'Edited Workflow Goal',
+                            description: 'Edited before Workflow approval.',
                           });
-                          if ((props.editableTaskTemplates ?? []).length) {
-                            emit('update-task-template', {
-                              index: 0,
-                              value: {
-                                ...props.editableTaskTemplates[0],
-                                name: 'Edited weekly implementation block',
-                                description: 'Edited task template before Agent approval.',
-                                cadence: 'daily',
-                              },
-                            });
-                          }
-                          if ((props.editableReminders ?? []).length) {
-                            emit('update-reminder', {
-                              index: 0,
-                              value: {
-                                ...props.editableReminders[0],
-                                title: 'Edited weekly review reminder',
-                                description: 'Edited reminder before Agent approval.',
-                                cadence: 'daily',
-                                timeOfDay: '10:30',
-                              },
-                            });
-                          }
                         },
                       },
-                      'Edit agent draft',
+                      'Edit workflow draft',
                     ),
                   ]
                 : []),
-              ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
-                h('p', String(artifact.title ?? artifact.kind ?? '')),
-              ),
-              ...(props.goalAgentPendingActions ?? []).map((action: Record<string, unknown>) =>
-                h('p', String(action.rationale ?? action.tool ?? '')),
-              ),
-              ...(props.goalAgentExecutedActions ?? []).map((action: Record<string, unknown>) =>
-                h('p', String(action.message ?? action.tool ?? '')),
+            ]),
+          );
+        }
+        if (suspension?.type === 'recovery_required') {
+          fragments.push(
+            h('div', { 'data-testid': 'goal-workflow-recovery' }, [
+              h('h3', 'Recovery'),
+              h('p', suspension.retryable ? 'retryable' : 'blocked'),
+              ...suspension.failures.map((failure: Record<string, unknown>) =>
+                h('p', String(failure.message ?? failure.code ?? '')),
               ),
             ]),
           );
         }
-        if (props.goalAutomationResult) {
-          const result = props.goalAutomationResult;
+        if (run.kind === 'goal.create' && run.result) {
           fragments.push(
-            h('div', { 'data-testid': 'goal-automation-panel' }, [
-              h('h3', 'Summary'),
-              h('p', result.summary ?? ''),
-              ...(result.actions ?? []).map((a: Record<string, unknown>) =>
-                h('p', (a.rationale as string) ?? ''),
-              ),
+            h('div', { 'data-testid': 'goal-workflow-result' }, [
               h('h3', 'Execution Status'),
-              ...(result.executedActions ?? []).map((a: Record<string, unknown>) =>
-                h('p', (a.message as string) ?? ''),
-              ),
-              ...(props.goalExecutionSummary
-                ? [
-                    h(
-                      'p',
-                      `${props.goalExecutionSummary.status === 'partial' ? 'Partial success' : props.goalExecutionSummary.status === 'success' ? 'Success' : 'Failed'}: ${props.goalExecutionSummary.executedCount} executed, ${props.goalExecutionSummary.skippedCount} skipped, ${props.goalExecutionSummary.failedCount} failed.`,
-                    ),
-                  ]
-                : []),
-              h('h3', 'Execution Timeline'),
-              ...(result.executedActions ?? []).map((a: Record<string, unknown>) =>
-                h('p', (a.message as string) ?? ''),
-              ),
-              ...(result.recovery
-                ? [
-                    h('h3', 'Recovery'),
-                    ...(result.recovery.suggestions ?? []).map((s: string) => h('p', s)),
-                  ]
-                : []),
+              h('p', run.result.status),
+              h('p', run.result.goalId ?? ''),
+              ...run.result.failures.map((failure) => h('p', failure.message)),
             ]),
           );
         }
@@ -730,6 +677,56 @@ function createGoalDraft(title: string, description: string) {
     },
     keyResults: [],
   };
+}
+
+type GoalWorkflowRun = Extract<AIWorkflowRunView, { kind: 'goal.create' }>;
+
+function createGoalWorkflowDraft(overrides: Partial<GoalPlanDraft> = {}): GoalPlanDraft {
+  const base: GoalPlanDraft = {
+    revision: 1,
+    goal: {
+      name: 'Workflow AI Goal',
+      description: 'Generated by the durable Workflow runtime',
+      category: 'learning',
+      importance: 'Important',
+      tags: ['ai'],
+      startDate: 1_777_000_000_000,
+      targetDate: 1_780_000_000_000,
+    },
+    keyResults: [],
+    taskTemplates: [],
+    reminders: [],
+    rationale: 'The request is concrete enough to review.',
+    warnings: [],
+  };
+  return {
+    ...base,
+    ...overrides,
+    goal: { ...base.goal, ...(overrides.goal ?? {}) },
+    keyResults: overrides.keyResults ?? base.keyResults,
+    taskTemplates: overrides.taskTemplates ?? base.taskTemplates,
+    reminders: overrides.reminders ?? base.reminders,
+    warnings: overrides.warnings ?? base.warnings,
+  };
+}
+
+function createGoalWorkflowRun(overrides: Partial<GoalWorkflowRun> = {}): GoalWorkflowRun {
+  const draft = createGoalWorkflowDraft();
+  return {
+    runId: 'goal-workflow-1',
+    kind: 'goal.create',
+    conversationId: 'conv-1',
+    status: 'suspended',
+    suspension: {
+      type: 'goal_draft_review',
+      draft,
+      warnings: draft.warnings,
+      revision: draft.revision,
+    },
+    createdAt: 1,
+    updatedAt: 2,
+    ...overrides,
+  } as GoalWorkflowRun;
 }
 
 interface AutomationResult {
@@ -1241,6 +1238,14 @@ const assistantRuntimeFake = {
   cancelRun: vi.fn(async () => true),
 };
 
+const workflowRuntimeFake = {
+  start: vi.fn(),
+  resume: vi.fn(),
+  get: vi.fn(async () => null),
+  list: vi.fn(async () => []),
+  cancel: vi.fn(async () => null),
+};
+
 const taskServiceFake = {
   listTemplates: vi.fn(async () => ok([])),
   getTaskGraph: vi.fn(async () => ok({ nodes: [], edges: [] })),
@@ -1263,6 +1268,7 @@ function mountView() {
         // Residual 1332: AIChatView mounts useTaskTemplateMutations() for Host task.create settlement.
         [TASK_SERVICE_KEY as symbol]: taskServiceFake,
         [AI_ASSISTANT_RUNTIME_KEY as symbol]: assistantRuntimeFake,
+        [AI_WORKFLOW_RUNTIME_KEY as symbol]: workflowRuntimeFake,
         [ASSISTANT_SURFACE_KEY as symbol]: 'web',
         [SERVER_STATE_RUNTIME_KEY]: runtime,
         [SERVER_STATE_IDENTITY_SCOPE_KEY]: () => 'identity-1',
@@ -1316,6 +1322,11 @@ describe('AIChatView', () => {
     assistantRuntimeFake.deleteConversation.mockReset().mockResolvedValue(true);
     assistantRuntimeFake.streamMessage.mockReset().mockResolvedValue(undefined);
     assistantRuntimeFake.cancelRun.mockReset().mockResolvedValue(true);
+    workflowRuntimeFake.start.mockReset();
+    workflowRuntimeFake.resume.mockReset();
+    workflowRuntimeFake.get.mockReset().mockResolvedValue(null);
+    workflowRuntimeFake.list.mockReset().mockResolvedValue([]);
+    workflowRuntimeFake.cancel.mockReset().mockResolvedValue(null);
 
     const aiService = {
       listConversations: vi.fn(),
@@ -1431,30 +1442,66 @@ describe('AIChatView', () => {
     localStorage.clear();
   });
 
-  it('restores legacy persisted goal workflow state when reopening the last active conversation', async () => {
+  it('refreshes a persisted goal Workflow reference from the authoritative runtime snapshot', async () => {
+    const persistedRun = createGoalWorkflowRun({
+      suspension: {
+        type: 'goal_draft_review',
+        draft: createGoalWorkflowDraft({
+          goal: {
+            ...createGoalWorkflowDraft().goal,
+            name: 'Stale local goal',
+            description: 'Local cache must not remain authoritative.',
+          },
+        }),
+        warnings: [],
+        revision: 1,
+      },
+    });
+    const authoritative = createGoalWorkflowRun({
+      suspension: {
+        type: 'goal_draft_review',
+        draft: createGoalWorkflowDraft({
+          revision: 2,
+          goal: {
+            ...createGoalWorkflowDraft().goal,
+            name: 'Authoritative Workflow Goal',
+            description: 'Recovered from durable Workflow storage.',
+          },
+        }),
+        warnings: [],
+        revision: 2,
+      },
+      updatedAt: 3,
+    });
     localStorage.setItem('ai:last-conversation-id', 'conv-1');
     localStorage.setItem(
       'ai:conversation-workflow-map',
       JSON.stringify({
         'conv-1': {
-          mode: 'goal',
-          goalWorkflowStage: 'draft',
-          goalDraft: createGoalDraft('Restored AI Goal', 'Recovered draft from storage'),
-          goalClarification: null,
-          goalAutomationResult: null,
+          mode: 'goal-create',
+          goalWorkflowStage: 'confirm',
+          goalWorkflowRun: persistedRun,
           clarificationAnswers: [],
           editableGoal: {
-            name: 'Restored AI Goal',
-            description: 'Recovered draft from storage',
+            name:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.name
+                : '',
+            description:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.description
+                : '',
             category: 'learning',
             importance: 'Important',
             motivation: '',
             feasibilityAnalysis: '',
             tags: ['ai'],
-            startDate: 1,
-            targetDate: 2,
+            startDate: 1_777_000_000_000,
+            targetDate: 1_780_000_000_000,
           },
           editableKeyResults: [],
+          editableTaskTemplates: [],
+          editableReminders: [],
           noteSummary: null,
           showGoalDraftEditor: false,
         },
@@ -1462,49 +1509,66 @@ describe('AIChatView', () => {
     );
     const { service, loadProviders } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-1', name: 'Goal session' }],
-      }),
+      ok({ data: [{ id: 'conv-1', name: 'Goal session' }] }),
     );
     service.listMessages.mockResolvedValue(
-      ok({
-        data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-      }),
+      ok({ data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }] }),
     );
+    workflowRuntimeFake.get.mockResolvedValueOnce(authoritative);
 
     const wrapper = mountView();
     await flushPromises();
 
     expect(loadProviders).toHaveBeenCalledTimes(1);
-    expect(service.listMessages).toHaveBeenCalledWith('conv-1', { page: 1, pageSize: 80 });
-    expect(wrapper.text()).toContain('Restored AI Goal');
-    expect(wrapper.text()).toContain('Recovered draft from storage');
+    expect(workflowRuntimeFake.get).toHaveBeenCalledWith({ runId: 'goal-workflow-1' });
+    expect(wrapper.text()).toContain('Authoritative Workflow Goal');
+    expect(wrapper.text()).toContain('Recovered from durable Workflow storage.');
+    expect(wrapper.text()).not.toContain('Stale local goal');
   });
-
-  it('renders workflow artifacts in the dedicated context panel instead of the message stream', async () => {
+  it('renders the durable goal Workflow review in the dedicated context panel', async () => {
+    const persistedRun = createGoalWorkflowRun({
+      suspension: {
+        type: 'goal_draft_review',
+        draft: createGoalWorkflowDraft({
+          goal: {
+            ...createGoalWorkflowDraft().goal,
+            name: 'Context Panel Workflow Goal',
+            description: 'Rendered from Workflow suspension outside the message timeline.',
+          },
+        }),
+        warnings: [],
+        revision: 1,
+      },
+    });
     localStorage.setItem('ai:last-conversation-id', 'conv-1');
     localStorage.setItem(
       'ai:conversation-workflow-map',
       JSON.stringify({
         'conv-1': {
           mode: 'goal-create',
-          goalWorkflowStage: 'draft',
-          goalDraft: createGoalDraft('Context Panel Goal', 'Rendered outside the message timeline'),
-          goalClarification: null,
-          goalAutomationResult: null,
+          goalWorkflowStage: 'confirm',
+          goalWorkflowRun: persistedRun,
           clarificationAnswers: [],
           editableGoal: {
-            name: 'Context Panel Goal',
-            description: 'Rendered outside the message timeline',
+            name:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.name
+                : '',
+            description:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.description
+                : '',
             category: 'learning',
             importance: 'Important',
             motivation: '',
             feasibilityAnalysis: '',
             tags: ['ai'],
-            startDate: 1,
-            targetDate: 2,
+            startDate: 1_777_000_000_000,
+            targetDate: 1_780_000_000_000,
           },
           editableKeyResults: [],
+          editableTaskTemplates: [],
+          editableReminders: [],
           noteSummary: null,
           showGoalDraftEditor: false,
         },
@@ -1512,28 +1576,26 @@ describe('AIChatView', () => {
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-1', name: 'Goal session' }],
-      }),
+      ok({ data: [{ id: 'conv-1', name: 'Goal session' }] }),
     );
     service.listMessages.mockResolvedValue(
-      ok({
-        data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-      }),
+      ok({ data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }] }),
     );
+    workflowRuntimeFake.get.mockResolvedValueOnce(persistedRun);
 
     const wrapper = mountView();
     await flushPromises();
 
     const contextPanel = wrapper.find('[data-testid="ai-context-panel"]');
     expect(contextPanel.exists()).toBe(true);
-    expect(contextPanel.find('[data-testid="goal-draft-panel"]').exists()).toBe(true);
-    expect(contextPanel.text()).toContain('Context Panel Goal');
-
-    const messagePanel = wrapper.find('[data-testid="ai-message-panel-stub"]');
-    expect(messagePanel.find('[data-testid="goal-draft-panel"]').exists()).toBe(false);
+    expect(contextPanel.find('[data-testid="goal-workflow-review"]').exists()).toBe(true);
+    expect(contextPanel.text()).toContain('Context Panel Workflow Goal');
+    expect(
+      wrapper
+        .find('[data-testid="ai-message-panel-stub"] [data-testid="goal-workflow-review"]')
+        .exists(),
+    ).toBe(false);
   });
-
   it('loads recent Agent runs into the conversation sidebar', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     const activeRun = {
@@ -1777,68 +1839,34 @@ describe('AIChatView', () => {
     });
   });
 
-  it('restores the selected recent Agent run snapshot even without local workflow state', async () => {
+  it('does not let a legacy goal.create AgentRun history item reclaim Workflow ownership', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     const activeRun = {
       ...createAgentRunResult().run,
-      runId: 'run-active-3',
+      runId: 'legacy-goal-run',
       conversationId: 'conv-3',
       updatedAt: 30,
     };
     service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
     service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-3', name: 'Runtime-only Agent session' }],
-      }),
+      ok({ data: [{ id: 'conv-3', name: 'Legacy goal Agent session' }] }),
     );
     service.listMessages.mockResolvedValue(ok({ data: [] }));
-    service.getAgentRun.mockResolvedValueOnce(
-      ok(
-        createAgentRunResult({
-          status: 'waiting_approval',
-          stage: 'approval',
-          artifacts: [
-            {
-              artifactId: 'runtime-only-goal-draft',
-              kind: 'goal_draft',
-              title: 'Runtime-only restored goal',
-              data: {
-                title: 'Runtime-only restored goal',
-                description: 'Recovered from Agent run history.',
-                category: 'learning',
-                importance: 'Important',
-                tags: ['agent'],
-                suggestedStartDate: 1,
-                suggestedEndDate: 2,
-              },
-              updatedAt: 2,
-            },
-            {
-              artifactId: 'runtime-only-action-plan',
-              kind: 'action_plan',
-              title: 'Approval plan',
-              data: {
-                summary: 'Create the runtime-only restored goal after approval.',
-              },
-              updatedAt: 2,
-            },
-          ],
-        }),
-      ),
-    );
+    service.getAgentRun.mockResolvedValueOnce(ok(createAgentRunResult()));
 
     const wrapper = mountView();
     await flushPromises();
-
-    const sidebar = wrapper.findComponent({ name: 'AIConversationSidebar' });
-    sidebar.vm.$emit('select-agent-run', activeRun);
+    wrapper
+      .findComponent({ name: 'AIConversationSidebar' })
+      .vm.$emit('select-agent-run', activeRun);
     await flushPromises();
 
-    expect(service.getAgentRun).toHaveBeenCalledWith('run-active-3');
-    expect(wrapper.text()).toContain('Runtime-only restored goal');
-    expect(wrapper.find('[data-testid="goal-agent-confirm-run"]').exists()).toBe(true);
+    expect(service.getAgentRun).toHaveBeenCalledWith('legacy-goal-run');
+    expect(wrapper.find('[data-testid="goal-workflow-panel"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="ai-host-proposal-panel"]').exists()).toBe(false);
+    expect(workflowRuntimeFake.resume).not.toHaveBeenCalled();
+    expect(workflowRuntimeFake.start).not.toHaveBeenCalled();
   });
-
   it('restores a selected recent Knowledge Q&A Agent run from runtime history', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     const activeRun = {
@@ -1984,7 +2012,7 @@ describe('AIChatView', () => {
     expect(wrapper.find('[data-testid="goal-workflow-confirm-execute"]').exists()).toBe(false);
   });
 
-  it('starts and confirms a goal Agent run through the AI client service', async () => {
+  it('starts and approves goal.create exclusively through the Workflow runtime', async () => {
     localStorage.setItem('ai:last-conversation-id', 'conv-1');
     localStorage.setItem(
       'ai:conversation-workflow-map',
@@ -1992,9 +2020,7 @@ describe('AIChatView', () => {
         'conv-1': {
           mode: 'goal-create',
           goalWorkflowStage: 'collect',
-          goalDraft: null,
-          goalClarification: null,
-          goalAutomationResult: null,
+          goalWorkflowRun: null,
           clarificationAnswers: [],
           editableGoal: {
             name: '',
@@ -2008,6 +2034,8 @@ describe('AIChatView', () => {
             targetDate: null,
           },
           editableKeyResults: [],
+          editableTaskTemplates: [],
+          editableReminders: [],
           noteSummary: null,
           showGoalDraftEditor: false,
         },
@@ -2015,319 +2043,66 @@ describe('AIChatView', () => {
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-1', name: 'Goal session' }],
-      }),
+      ok({ data: [{ id: 'conv-1', name: 'Goal session' }] }),
     );
     service.listMessages.mockResolvedValue(
-      ok({
-        data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-      }),
+      ok({ data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }] }),
     );
-    service.startAgentRun.mockResolvedValueOnce(ok(createAgentRunResult()));
-    service.resumeAgentRun.mockResolvedValueOnce(
-      ok(
-        createAgentRunResult({
-          status: 'completed',
-          stage: 'result',
-          executedActions: [
-            {
-              tool: 'create_goal',
-              status: 'executed',
-              entityId: 'goal-agent-1',
-              message: 'Created goal "Agent AI Goal"',
-            },
-          ],
-        }),
-      ),
-    );
-
-    const wrapper = mountView();
-    await flushPromises();
-
-    const startButton = wrapper
-      .findAll('button')
-      .find((button) => button.text().includes('Start Agent Run'));
-    expect(startButton).toBeDefined();
-    await startButton!.trigger('click');
-    await flushPromises();
-
-    expect(service.startAgentRun).toHaveBeenCalledWith(
-      expect.objectContaining({
-        conversationId: 'conv-1',
-        agentType: 'goal.create',
-        locale: 'en-US',
-        input: expect.objectContaining({
-          idea: 'User: Help me design an AI goal.',
-          conversationTitle: 'Goal session',
-          provider_id: 'provider-1',
-          model: 'gpt-4o-mini',
-        }),
-      }),
-    );
-    expect(wrapper.text()).toContain('Agent Run');
-    expect(wrapper.text()).toContain('waiting_approval');
-    expect(wrapper.text()).toContain('Agent AI Goal');
-    expect(wrapper.text()).toContain('Create the approved goal draft after user confirmation.');
-    expect(wrapper.find('[data-testid="ai-host-proposal-panel"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="ai-host-proposal-approve-goal"]').exists()).toBe(true);
-
-    const toggleEditorButton = wrapper.find('[data-testid="goal-agent-toggle-editor"]');
-    expect(toggleEditorButton.exists()).toBe(true);
-    await toggleEditorButton.trigger('click');
-    await flushPromises();
-
-    const editAgentDraftButton = wrapper.find('[data-testid="goal-agent-draft-editor-update"]');
-    expect(editAgentDraftButton.exists()).toBe(true);
-    await editAgentDraftButton.trigger('click');
-    await flushPromises();
-
-    const confirmButton = wrapper
-      .findAll('button')
-      .find((button) => button.text().includes('Confirm Run'));
-    expect(confirmButton).toBeDefined();
-    await confirmButton!.trigger('click');
-    await flushPromises();
-
-    expect(service.dispatchAssistant).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'approve_proposal',
-        runId: 'run-1',
-        proposalId: 'agent-run:run-1:goal.create',
+    const review = createGoalWorkflowRun();
+    const completed = createGoalWorkflowRun({
+      status: 'completed',
+      suspension: undefined,
+      result: {
+        workflowRunId: 'goal-workflow-1',
         revision: 1,
-      }),
-      expect.any(Object),
-    );
-    expect(service.resumeAgentRun).toHaveBeenCalledTimes(1);
-    expect(service.resumeAgentRun).toHaveBeenCalledWith(
-      'run-1',
-      expect.objectContaining({
-        userDecision: 'confirm',
-        approvedActions: [
-          expect.objectContaining({
-            tool: 'create_goal',
-            payload: expect.objectContaining({
-              title: 'Edited Agent AI Goal',
-              description: 'Edited before Agent approval.',
-              category: 'learning',
-              importance: 'Important',
-              tags: ['ai'],
-              suggestedStartDate: 1,
-              suggestedEndDate: 2,
-              keyResults: [],
-              taskTemplates: [
-                expect.objectContaining({
-                  name: 'Edited weekly implementation block',
-                  description: 'Edited task template before Agent approval.',
-                  importance: 'Important',
-                  cadence: 'daily',
-                }),
-              ],
-              reminders: [
-                expect.objectContaining({
-                  title: 'Edited weekly review reminder',
-                  description: 'Edited reminder before Agent approval.',
-                  importance: 'Moderate',
-                  cadence: 'daily',
-                  timeOfDay: '10:30',
-                }),
-              ],
-            }),
-            rationale: 'Create the approved goal draft after user confirmation.',
-            index: 0,
-            dependsOn: [],
-          }),
-          expect.objectContaining({
-            tool: 'create_task_template',
-            payload: expect.objectContaining({
-              name: 'Edited weekly implementation block',
-              description: 'Edited task template before Agent approval.',
-              importance: 'Important',
-              cadence: 'daily',
-            }),
-            rationale: 'Create the weekly implementation task template.',
-            index: 0,
-            dependsOn: [0],
-          }),
-          expect.objectContaining({
-            tool: 'create_reminder',
-            payload: expect.objectContaining({
-              title: 'Edited weekly review reminder',
-              description: 'Edited reminder before Agent approval.',
-              importance: 'Moderate',
-              cadence: 'daily',
-              timeOfDay: '10:30',
-            }),
-            rationale: 'Create the weekly review reminder.',
-            index: 0,
-            dependsOn: [0],
-          }),
-        ],
-        editedArtifacts: expect.arrayContaining([
-          expect.objectContaining({
-            kind: 'goal_draft',
-            title: 'Edited Agent AI Goal',
-            data: expect.objectContaining({
-              title: 'Edited Agent AI Goal',
-              description: 'Edited before Agent approval.',
-              taskTemplates: [
-                expect.objectContaining({
-                  name: 'Edited weekly implementation block',
-                  cadence: 'daily',
-                }),
-              ],
-              reminders: [
-                expect.objectContaining({
-                  title: 'Edited weekly review reminder',
-                  cadence: 'daily',
-                  timeOfDay: '10:30',
-                }),
-              ],
-            }),
-          }),
-          expect.objectContaining({
-            kind: 'action_plan',
-            data: expect.objectContaining({
-              summary: 'Create one goal after approval.',
-            }),
-          }),
-        ]),
-        approvedPlan: expect.objectContaining({
-          summary: 'Create one goal after approval.',
-          actions: [
-            expect.objectContaining({
-              tool: 'create_goal',
-              payload: expect.objectContaining({
-                title: 'Edited Agent AI Goal',
-              }),
-            }),
-            expect.objectContaining({
-              tool: 'create_task_template',
-              payload: expect.objectContaining({
-                name: 'Edited weekly implementation block',
-              }),
-            }),
-            expect.objectContaining({
-              tool: 'create_reminder',
-              payload: expect.objectContaining({
-                title: 'Edited weekly review reminder',
-                timeOfDay: '10:30',
-              }),
-            }),
-          ],
-          warnings: [],
-        }),
-      }),
-    );
-    expect(service.generateGoal).not.toHaveBeenCalled();
-    expect(wrapper.text()).toContain('completed');
-    expect(wrapper.text()).toContain('Created goal "Agent AI Goal"');
-
-    const openCreatedGoalButton = wrapper.find('[data-testid="goal-workflow-open-created-goal"]');
-    expect(openCreatedGoalButton.exists()).toBe(true);
-    await openCreatedGoalButton.trigger('click');
-    await flushPromises();
-
-    expect(mocks.push).toHaveBeenCalledWith('/goals/goal-agent-1');
-  });
-
-  it('resumes a goal Agent run from clarification with the collected answers', async () => {
-    localStorage.setItem('ai:last-conversation-id', 'conv-1');
-    localStorage.setItem(
-      'ai:conversation-workflow-map',
-      JSON.stringify({
-        'conv-1': {
-          mode: 'goal-create',
-          goalWorkflowStage: 'collect',
-          goalDraft: null,
-          goalClarification: null,
-          goalAutomationResult: null,
-          clarificationAnswers: [],
-          editableGoal: {
-            name: '',
-            description: '',
-            category: '',
-            importance: 'Moderate',
-            motivation: '',
-            feasibilityAnalysis: '',
-            tags: [],
-            startDate: null,
-            targetDate: null,
-          },
-          editableKeyResults: [],
-          noteSummary: null,
-          showGoalDraftEditor: false,
-        },
-      }),
-    );
-    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-1', name: 'Goal session' }],
-      }),
-    );
-    service.listMessages.mockResolvedValue(
-      ok({
-        data: [{ id: 'm-1', role: 'user', content: 'Get fit' }],
-      }),
-    );
-    service.startAgentRun.mockResolvedValueOnce(
-      ok(
-        createAgentRunResult({
-          status: 'waiting_clarification',
-          stage: 'clarify',
-        }),
-      ),
-    );
-    service.resumeAgentRun.mockResolvedValueOnce(ok(createAgentRunResult()));
+        status: 'success',
+        goalId: 'goal-workflow-created-1',
+        keyResultIds: [],
+        taskIds: [],
+        reminderIds: [],
+        failures: [],
+        retryable: false,
+      },
+      updatedAt: 3,
+    });
+    workflowRuntimeFake.start.mockResolvedValueOnce(review);
+    workflowRuntimeFake.resume.mockResolvedValueOnce(completed);
 
     const wrapper = mountView();
     await flushPromises();
-
     const startButton = wrapper.find('[data-testid="goal-agent-start-run"]');
     expect(startButton.exists()).toBe(true);
     await startButton.trigger('click');
     await flushPromises();
 
-    expect(wrapper.text()).toContain('waiting_clarification');
-    expect(wrapper.text()).toContain('Needs clarification');
-    expect(wrapper.text()).toContain('What concrete outcome should this goal produce?');
-    expect(wrapper.find('[data-testid="goal-agent-start-run"]').exists()).toBe(false);
-
-    const submitButton = wrapper.find('[data-testid="goal-workflow-submit-clarification"]');
-    expect(submitButton.exists()).toBe(true);
-    expect(submitButton.attributes('disabled')).toBeDefined();
-
-    const answers = wrapper.findAll('textarea');
-    expect(answers).toHaveLength(2);
-    await answers[0].setValue('Run a 5K without stopping.');
-    await answers[1].setValue('Review progress every Sunday.');
-    await flushPromises();
-
-    const enabledSubmitButton = wrapper.find('[data-testid="goal-workflow-submit-clarification"]');
-    expect(enabledSubmitButton.attributes('disabled')).toBeUndefined();
-    await enabledSubmitButton.trigger('click');
-    await flushPromises();
-
-    expect(service.resumeAgentRun).toHaveBeenCalledWith('run-1', {
-      userDecision: 'clarify',
-      clarificationAnswers: ['Run a 5K without stopping.', 'Review progress every Sunday.'],
+    expect(workflowRuntimeFake.start).toHaveBeenCalledWith({
+      kind: 'goal.create',
+      conversationId: 'conv-1',
+      input: { idea: 'User: Help me design an AI goal.' },
+      providerId: 'provider-1',
+      modelId: 'gpt-4o-mini',
+      locale: 'en-US',
     });
-    expect(service.generateGoal).not.toHaveBeenCalled();
-    expect(wrapper.text()).toContain('waiting_approval');
-    expect(wrapper.text()).toContain('Agent AI Goal');
-  });
+    expect(service.startAgentRun).not.toHaveBeenCalled();
+    expect(service.dispatchAssistant).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('Workflow AI Goal');
+    expect(wrapper.find('[data-testid="ai-host-proposal-panel"]').exists()).toBe(false);
 
-  it('continues a restored waiting execution Agent run through the controlled executor', async () => {
-    const approvedActions = [
-      {
-        tool: 'create_goal',
-        payload: { title: 'Agent AI Goal' },
-        rationale: 'Create the approved goal draft after user confirmation.',
-        index: 0,
-        dependsOn: [],
-      },
-    ];
+    await wrapper.find('[data-testid="goal-agent-confirm-run"]').trigger('click');
+    await flushPromises();
+
+    expect(workflowRuntimeFake.resume).toHaveBeenCalledWith({
+      runId: 'goal-workflow-1',
+      command: { type: 'approve' },
+    });
+    expect(service.resumeAgentRun).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('goal-workflow-created-1');
+    const openCreatedGoalButton = wrapper.find('[data-testid="goal-workflow-open-created-goal"]');
+    expect(openCreatedGoalButton.exists()).toBe(true);
+    await openCreatedGoalButton.trigger('click');
+    expect(mocks.push).toHaveBeenCalledWith('/goals/goal-workflow-created-1');
+  });
+  it('resumes goal.create clarification with a typed Workflow answer command', async () => {
     localStorage.setItem('ai:last-conversation-id', 'conv-1');
     localStorage.setItem(
       'ai:conversation-workflow-map',
@@ -2335,14 +2110,7 @@ describe('AIChatView', () => {
         'conv-1': {
           mode: 'goal-create',
           goalWorkflowStage: 'collect',
-          goalDraft: null,
-          goalClarification: null,
-          goalAutomationResult: null,
-          goalAgentRun: createAgentRunResult({
-            status: 'waiting_execution',
-            stage: 'execute',
-            approvedActions,
-          }),
+          goalWorkflowRun: null,
           clarificationAnswers: [],
           editableGoal: {
             name: '',
@@ -2356,6 +2124,8 @@ describe('AIChatView', () => {
             targetDate: null,
           },
           editableKeyResults: [],
+          editableTaskTemplates: [],
+          editableReminders: [],
           noteSummary: null,
           showGoalDraftEditor: false,
         },
@@ -2363,67 +2133,84 @@ describe('AIChatView', () => {
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-1', name: 'Goal session' }],
-      }),
+      ok({ data: [{ id: 'conv-1', name: 'Goal session' }] }),
     );
     service.listMessages.mockResolvedValue(
-      ok({
-        data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
+      ok({ data: [{ id: 'm-1', role: 'user', content: 'Get fit' }] }),
+    );
+    workflowRuntimeFake.start.mockResolvedValueOnce(
+      createGoalWorkflowRun({
+        suspension: {
+          type: 'clarification_required',
+          questions: [
+            'What concrete outcome should this goal produce?',
+            'When do you want to review it?',
+          ],
+          round: 1,
+        },
       }),
     );
-    service.resumeAgentRun.mockResolvedValueOnce(
-      ok(
-        createAgentRunResult({
-          status: 'completed',
-          stage: 'result',
-          executedActions: [
-            {
-              tool: 'create_goal',
-              status: 'executed',
-              entityId: 'goal-agent-1',
-              message: 'Created goal "Agent AI Goal"',
-            },
-          ],
-        }),
-      ),
-    );
+    workflowRuntimeFake.resume.mockResolvedValueOnce(createGoalWorkflowRun());
 
     const wrapper = mountView();
     await flushPromises();
-
-    expect(wrapper.text()).toContain('waiting_execution');
-    expect(wrapper.text()).toContain('execute');
-    expect(wrapper.text()).toContain('Executing automation');
-    expect(wrapper.text()).toContain('Create the approved goal draft after user confirmation.');
-    expect(wrapper.find('[data-testid="goal-agent-start-run"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="goal-agent-confirm-run"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="goal-agent-cancel-run"]').exists()).toBe(false);
-    const continueButton = wrapper.find('[data-testid="goal-agent-continue-execution"]');
-    expect(continueButton.exists()).toBe(true);
-    expect(continueButton.attributes('disabled')).toBeUndefined();
-
-    await continueButton.trigger('click');
+    await wrapper.find('[data-testid="goal-agent-start-run"]').trigger('click');
     await flushPromises();
 
-    expect(service.resumeAgentRun).toHaveBeenCalledWith('run-1', {
-      userDecision: 'confirm',
-    });
-    expect(service.generateGoal).not.toHaveBeenCalled();
-    expect(wrapper.text()).toContain('completed');
-    expect(wrapper.text()).toContain('Created goal "Agent AI Goal"');
-  });
+    expect(wrapper.text()).toContain('What concrete outcome should this goal produce?');
+    const answers = wrapper.findAll('textarea');
+    await answers[0].setValue('Run a 5K without stopping.');
+    await answers[1].setValue('Review progress every Sunday.');
+    await flushPromises();
+    await wrapper.find('[data-testid="goal-workflow-submit-clarification"]').trigger('click');
+    await flushPromises();
 
-  it('refreshes a restored active Agent run from the runtime snapshot', async () => {
-    const approvedActions = [
-      {
-        tool: 'create_goal',
-        payload: { title: 'Agent AI Goal' },
-        rationale: 'Create the approved goal draft after user confirmation.',
-        index: 0,
-        dependsOn: [],
+    expect(workflowRuntimeFake.resume).toHaveBeenCalledWith({
+      runId: 'goal-workflow-1',
+      command: {
+        type: 'answer',
+        answers: ['Run a 5K without stopping.', 'Review progress every Sunday.'],
       },
-    ];
+    });
+    expect(service.resumeAgentRun).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('Workflow AI Goal');
+  });
+  it('continues a restored retryable goal Workflow through the retry command', async () => {
+    const persistedRun = createGoalWorkflowRun({
+      suspension: {
+        type: 'recovery_required',
+        message: 'A child mutation failed.',
+        retryable: true,
+        failures: [
+          {
+            operation: 'task_template',
+            index: 0,
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Task store unavailable',
+            retryable: true,
+          },
+        ],
+      },
+      result: {
+        workflowRunId: 'goal-workflow-1',
+        revision: 1,
+        status: 'partial',
+        goalId: 'goal-existing-1',
+        keyResultIds: [],
+        taskIds: [],
+        reminderIds: [],
+        failures: [
+          {
+            operation: 'task_template',
+            index: 0,
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Task store unavailable',
+            retryable: true,
+          },
+        ],
+        retryable: true,
+      },
+    });
     localStorage.setItem('ai:last-conversation-id', 'conv-1');
     localStorage.setItem(
       'ai:conversation-workflow-map',
@@ -2431,281 +2218,28 @@ describe('AIChatView', () => {
         'conv-1': {
           mode: 'goal-create',
           goalWorkflowStage: 'confirm',
-          goalDraft: null,
-          goalClarification: null,
-          goalAutomationResult: null,
-          goalAgentRun: createAgentRunResult({
-            status: 'waiting_approval',
-            stage: 'approval',
-          }),
+          goalWorkflowRun: persistedRun,
           clarificationAnswers: [],
           editableGoal: {
-            name: '',
-            description: '',
-            category: '',
-            importance: 'Moderate',
-            motivation: '',
-            feasibilityAnalysis: '',
-            tags: [],
-            startDate: null,
-            targetDate: null,
-          },
-          editableKeyResults: [],
-          noteSummary: null,
-          showGoalDraftEditor: false,
-        },
-      }),
-    );
-    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-1', name: 'Goal session' }],
-      }),
-    );
-    service.listMessages.mockResolvedValue(
-      ok({
-        data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-      }),
-    );
-    service.getAgentRun.mockResolvedValueOnce(
-      ok(
-        createAgentRunResult({
-          status: 'waiting_execution',
-          stage: 'execute',
-          approvedActions,
-        }),
-      ),
-    );
-
-    const wrapper = mountView();
-    await flushPromises();
-
-    expect(service.getAgentRun).toHaveBeenCalledWith('run-1');
-    expect(wrapper.text()).toContain('waiting_execution');
-    expect(wrapper.find('[data-testid="goal-agent-continue-execution"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="goal-agent-confirm-run"]').exists()).toBe(false);
-  });
-
-  it('retries a completed Agent run with a retryable execution timeline', async () => {
-    const approvedActions = [
-      {
-        tool: 'create_goal',
-        payload: { title: 'Agent AI Goal' },
-        rationale: 'Create the approved goal draft after user confirmation.',
-        index: 0,
-        dependsOn: [],
-      },
-    ];
-    const artifacts = [
-      {
-        artifactId: 'artifact-1',
-        kind: 'goal_draft',
-        title: 'Agent AI Goal',
-        data: {
-          title: 'Agent AI Goal',
-          description: 'Generated by the Agent runtime',
-          category: 'learning',
-          importance: 'Important',
-          tags: ['ai'],
-          suggestedStartDate: 1,
-          suggestedEndDate: 2,
-        },
-        updatedAt: 2,
-      },
-      {
-        artifactId: 'artifact-2',
-        kind: 'action_plan',
-        title: 'Approval plan',
-        data: {
-          summary: 'Create one goal after approval.',
-        },
-        updatedAt: 2,
-      },
-      {
-        artifactId: 'artifact-3',
-        kind: 'execution_timeline',
-        title: 'Execution timeline',
-        data: {
-          summary: {
-            status: 'failed',
-            executedCount: 0,
-            skippedCount: 1,
-            failedCount: 1,
-          },
-          recovery: {
-            canRetry: true,
-            failedActions: [
-              {
-                tool: 'create_goal',
-                status: 'failed',
-                message: 'Goal service unavailable',
-              },
-            ],
-            skippedActions: [
-              {
-                tool: 'create_key_result',
-                status: 'skipped',
-                message: 'Skipped because goal creation failed.',
-              },
-            ],
-            retryApprovedActions: approvedActions,
-          },
-        },
-        updatedAt: 3,
-      },
-    ];
-    localStorage.setItem('ai:last-conversation-id', 'conv-1');
-    localStorage.setItem(
-      'ai:conversation-workflow-map',
-      JSON.stringify({
-        'conv-1': {
-          mode: 'goal-create',
-          goalWorkflowStage: 'result',
-          goalDraft: null,
-          goalClarification: null,
-          goalAutomationResult: null,
-          goalAgentRun: createAgentRunResult({
-            status: 'completed',
-            stage: 'result',
-            artifacts,
-            approvedActions,
-            executedActions: [
-              {
-                tool: 'create_goal',
-                status: 'failed',
-                message: 'Goal service unavailable',
-              },
-            ],
-          }),
-          clarificationAnswers: [],
-          editableGoal: {
-            name: '',
-            description: '',
-            category: '',
-            importance: 'Moderate',
-            motivation: '',
-            feasibilityAnalysis: '',
-            tags: [],
-            startDate: null,
-            targetDate: null,
-          },
-          editableKeyResults: [],
-          noteSummary: null,
-          showGoalDraftEditor: false,
-        },
-      }),
-    );
-    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-1', name: 'Goal session' }],
-      }),
-    );
-    service.listMessages.mockResolvedValue(
-      ok({
-        data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-      }),
-    );
-    service.resumeAgentRun.mockResolvedValueOnce(
-      ok(
-        createAgentRunResult({
-          status: 'completed',
-          stage: 'result',
-          artifacts,
-          approvedActions,
-          executedActions: [
-            {
-              tool: 'create_goal',
-              status: 'executed',
-              entityId: 'goal-agent-1',
-              message: 'Created goal "Agent AI Goal"',
-            },
-          ],
-        }),
-      ),
-    );
-
-    const wrapper = mountView();
-    await flushPromises();
-
-    const retryButton = wrapper.find('[data-testid="goal-agent-retry-execution"]');
-    expect(retryButton.exists()).toBe(true);
-    expect(wrapper.find('[data-testid="goal-agent-start-run"]').exists()).toBe(false);
-
-    await retryButton.trigger('click');
-    await flushPromises();
-
-    expect(service.resumeAgentRun).toHaveBeenCalledWith('run-1', {
-      userDecision: 'confirm',
-    });
-    expect(service.resumeAgentRun).toHaveBeenCalledTimes(1);
-    expect(service.generateGoal).not.toHaveBeenCalled();
-    expect(wrapper.text()).toContain('Created goal "Agent AI Goal"');
-  });
-
-  it('shows recovery guidance when execution finishes with partial success', async () => {
-    localStorage.setItem('ai:last-conversation-id', 'conv-1');
-    localStorage.setItem(
-      'ai:conversation-workflow-map',
-      JSON.stringify({
-        'conv-1': {
-          mode: 'goal-create',
-          goalWorkflowStage: 'result',
-          goalDraft: createGoalDraft(
-            'Generated AI Goal',
-            'Generated from the current conversation',
-          ),
-          goalClarification: null,
-          goalAutomationResult: {
-            state: 'result',
-            ...createAutomationResult({
-              executedActions: [
-                {
-                  tool: 'create_goal',
-                  status: 'executed',
-                  entityId: 'goal-123',
-                  message: 'Created goal "Generated AI Goal"',
-                },
-                {
-                  tool: 'create_key_result',
-                  status: 'failed',
-                  message: 'Missing key result draft for index 0',
-                },
-              ],
-              executionSummary: {
-                status: 'partial',
-                executedCount: 1,
-                skippedCount: 0,
-                failedCount: 1,
-              },
-              recovery: {
-                canRetry: true,
-                failedActions: [
-                  {
-                    tool: 'create_key_result',
-                    status: 'failed',
-                    message: 'Missing key result draft for index 0',
-                  },
-                ],
-                suggestions: [
-                  'Confirm the goal exists and the key result drafts are complete before retrying execution.',
-                ],
-              },
-            }),
-          },
-          clarificationAnswers: [],
-          editableGoal: {
-            name: 'Generated AI Goal',
-            description: 'Generated from the current conversation',
+            name:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.name
+                : '',
+            description:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.description
+                : '',
             category: 'learning',
             importance: 'Important',
             motivation: '',
             feasibilityAnalysis: '',
             tags: ['ai'],
-            startDate: 1,
-            targetDate: 2,
+            startDate: 1_777_000_000_000,
+            targetDate: 1_780_000_000_000,
           },
           editableKeyResults: [],
+          editableTaskTemplates: [],
+          editableReminders: [],
           noteSummary: null,
           showGoalDraftEditor: false,
         },
@@ -2713,27 +2247,315 @@ describe('AIChatView', () => {
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.listConversations.mockResolvedValue(
-      ok({
-        data: [{ id: 'conv-1', name: 'Goal session' }],
-      }),
+      ok({ data: [{ id: 'conv-1', name: 'Goal session' }] }),
     );
     service.listMessages.mockResolvedValue(
-      ok({
-        data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
+      ok({ data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }] }),
+    );
+    workflowRuntimeFake.get.mockResolvedValueOnce(persistedRun);
+    workflowRuntimeFake.resume.mockResolvedValueOnce(
+      createGoalWorkflowRun({
+        status: 'completed',
+        suspension: undefined,
+        result: {
+          workflowRunId: 'goal-workflow-1',
+          revision: 1,
+          status: 'success',
+          goalId: 'goal-existing-1',
+          keyResultIds: [],
+          taskIds: ['task-recovered-1'],
+          reminderIds: [],
+          failures: [],
+          retryable: false,
+        },
+        updatedAt: 4,
       }),
     );
 
     const wrapper = mountView();
     await flushPromises();
+    const retryButton = wrapper.find('[data-testid="goal-agent-retry-execution"]');
+    expect(retryButton.exists()).toBe(true);
+    await retryButton.trigger('click');
+    await flushPromises();
 
-    expect(wrapper.text()).toContain('Execution Status');
-    expect(wrapper.text()).toContain('Partial success: 1 executed, 0 skipped, 1 failed.');
-    expect(wrapper.text()).toContain('Recovery');
-    expect(wrapper.text()).toContain(
-      'Confirm the goal exists and the key result drafts are complete before retrying execution.',
-    );
+    expect(workflowRuntimeFake.resume).toHaveBeenCalledWith({
+      runId: 'goal-workflow-1',
+      command: { type: 'retry' },
+    });
+    expect(service.resumeAgentRun).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('goal-existing-1');
   });
+  it('refreshes a restored goal Workflow from durable runtime state', async () => {
+    const persistedRun = createGoalWorkflowRun();
+    const authoritative = createGoalWorkflowRun({
+      suspension: {
+        type: 'recovery_required',
+        message: 'Durable runtime advanced after reload.',
+        retryable: true,
+        failures: [
+          {
+            operation: 'reminder',
+            index: 0,
+            code: 'TEMPORARY',
+            message: 'Reminder retry required',
+            retryable: true,
+          },
+        ],
+      },
+      updatedAt: 5,
+    });
+    localStorage.setItem('ai:last-conversation-id', 'conv-1');
+    localStorage.setItem(
+      'ai:conversation-workflow-map',
+      JSON.stringify({
+        'conv-1': {
+          mode: 'goal-create',
+          goalWorkflowStage: 'confirm',
+          goalWorkflowRun: persistedRun,
+          clarificationAnswers: [],
+          editableGoal: {
+            name:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.name
+                : '',
+            description:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.description
+                : '',
+            category: 'learning',
+            importance: 'Important',
+            motivation: '',
+            feasibilityAnalysis: '',
+            tags: ['ai'],
+            startDate: 1_777_000_000_000,
+            targetDate: 1_780_000_000_000,
+          },
+          editableKeyResults: [],
+          editableTaskTemplates: [],
+          editableReminders: [],
+          noteSummary: null,
+          showGoalDraftEditor: false,
+        },
+      }),
+    );
+    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
+    service.listConversations.mockResolvedValue(
+      ok({ data: [{ id: 'conv-1', name: 'Goal session' }] }),
+    );
+    service.listMessages.mockResolvedValue(
+      ok({ data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }] }),
+    );
+    workflowRuntimeFake.get.mockResolvedValueOnce(authoritative);
 
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(workflowRuntimeFake.get).toHaveBeenCalledWith({ runId: 'goal-workflow-1' });
+    expect(wrapper.text()).toContain('Reminder retry required');
+    expect(wrapper.find('[data-testid="goal-agent-retry-execution"]').exists()).toBe(true);
+    expect(service.getAgentRun).not.toHaveBeenCalledWith('goal-workflow-1');
+  });
+  it('retries only from a retryable recovery Workflow suspension', async () => {
+    const persistedRun = createGoalWorkflowRun({
+      suspension: {
+        type: 'recovery_required',
+        message: 'Goal plan partially applied.',
+        retryable: true,
+        failures: [
+          {
+            operation: 'task_template',
+            index: 1,
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Task service unavailable',
+            retryable: true,
+          },
+        ],
+      },
+      result: {
+        workflowRunId: 'goal-workflow-1',
+        revision: 1,
+        status: 'partial',
+        goalId: 'goal-123',
+        keyResultIds: [],
+        taskIds: ['task-0'],
+        reminderIds: [],
+        failures: [
+          {
+            operation: 'task_template',
+            index: 1,
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Task service unavailable',
+            retryable: true,
+          },
+        ],
+        retryable: true,
+      },
+    });
+    localStorage.setItem('ai:last-conversation-id', 'conv-1');
+    localStorage.setItem(
+      'ai:conversation-workflow-map',
+      JSON.stringify({
+        'conv-1': {
+          mode: 'goal-create',
+          goalWorkflowStage: 'confirm',
+          goalWorkflowRun: persistedRun,
+          clarificationAnswers: [],
+          editableGoal: {
+            name:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.name
+                : '',
+            description:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.description
+                : '',
+            category: 'learning',
+            importance: 'Important',
+            motivation: '',
+            feasibilityAnalysis: '',
+            tags: ['ai'],
+            startDate: 1_777_000_000_000,
+            targetDate: 1_780_000_000_000,
+          },
+          editableKeyResults: [],
+          editableTaskTemplates: [],
+          editableReminders: [],
+          noteSummary: null,
+          showGoalDraftEditor: false,
+        },
+      }),
+    );
+    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
+    service.listConversations.mockResolvedValue(
+      ok({ data: [{ id: 'conv-1', name: 'Goal session' }] }),
+    );
+    service.listMessages.mockResolvedValue(
+      ok({ data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }] }),
+    );
+    workflowRuntimeFake.get.mockResolvedValueOnce(persistedRun);
+    workflowRuntimeFake.resume.mockResolvedValueOnce(
+      createGoalWorkflowRun({
+        status: 'completed',
+        suspension: undefined,
+        result: {
+          workflowRunId: 'goal-workflow-1',
+          revision: 1,
+          status: 'success',
+          goalId: 'goal-123',
+          keyResultIds: [],
+          taskIds: ['task-0', 'task-1'],
+          reminderIds: [],
+          failures: [],
+          retryable: false,
+        },
+        updatedAt: 5,
+      }),
+    );
+
+    const wrapper = mountView();
+    await flushPromises();
+    const retryButton = wrapper.find('[data-testid="goal-agent-retry-execution"]');
+    expect(retryButton.exists()).toBe(true);
+    await retryButton.trigger('click');
+    await flushPromises();
+
+    expect(workflowRuntimeFake.resume).toHaveBeenCalledTimes(1);
+    expect(workflowRuntimeFake.resume).toHaveBeenCalledWith({
+      runId: 'goal-workflow-1',
+      command: { type: 'retry' },
+    });
+    expect(service.resumeAgentRun).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('goal-123');
+  });
+  it('shows recovery guidance directly from the durable Workflow suspension and receipt', async () => {
+    const persistedRun = createGoalWorkflowRun({
+      suspension: {
+        type: 'recovery_required',
+        message: 'Some goal plan mutations failed.',
+        retryable: true,
+        failures: [
+          {
+            operation: 'reminder',
+            index: 0,
+            code: 'REMINDER_UNAVAILABLE',
+            message: 'Reminder creation failed; retry is safe.',
+            retryable: true,
+          },
+        ],
+      },
+      result: {
+        workflowRunId: 'goal-workflow-1',
+        revision: 1,
+        status: 'partial',
+        goalId: 'goal-123',
+        keyResultIds: [],
+        taskIds: [],
+        reminderIds: [],
+        failures: [
+          {
+            operation: 'reminder',
+            index: 0,
+            code: 'REMINDER_UNAVAILABLE',
+            message: 'Reminder creation failed; retry is safe.',
+            retryable: true,
+          },
+        ],
+        retryable: true,
+      },
+    });
+    localStorage.setItem('ai:last-conversation-id', 'conv-1');
+    localStorage.setItem(
+      'ai:conversation-workflow-map',
+      JSON.stringify({
+        'conv-1': {
+          mode: 'goal-create',
+          goalWorkflowStage: 'confirm',
+          goalWorkflowRun: persistedRun,
+          clarificationAnswers: [],
+          editableGoal: {
+            name:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.name
+                : '',
+            description:
+              persistedRun.suspension?.type === 'goal_draft_review'
+                ? persistedRun.suspension.draft.goal.description
+                : '',
+            category: 'learning',
+            importance: 'Important',
+            motivation: '',
+            feasibilityAnalysis: '',
+            tags: ['ai'],
+            startDate: 1_777_000_000_000,
+            targetDate: 1_780_000_000_000,
+          },
+          editableKeyResults: [],
+          editableTaskTemplates: [],
+          editableReminders: [],
+          noteSummary: null,
+          showGoalDraftEditor: false,
+        },
+      }),
+    );
+    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
+    service.listConversations.mockResolvedValue(
+      ok({ data: [{ id: 'conv-1', name: 'Goal session' }] }),
+    );
+    service.listMessages.mockResolvedValue(
+      ok({ data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }] }),
+    );
+    workflowRuntimeFake.get.mockResolvedValueOnce(persistedRun);
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="goal-workflow-recovery"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Recovery');
+    expect(wrapper.text()).toContain('Reminder creation failed; retry is safe.');
+    expect(wrapper.text()).toContain('partial');
+    expect(wrapper.find('[data-testid="goal-agent-retry-execution"]').exists()).toBe(true);
+  });
   it('queries knowledge from the latest user message and renders a cited answer artifact', async () => {
     localStorage.setItem('ai:last-conversation-id', 'conv-1');
     localStorage.setItem(
