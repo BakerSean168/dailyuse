@@ -44,7 +44,12 @@ vi.mock('../../setting/composables/useUserSetting', () => ({
 }));
 
 import AIChatView from './AIChatView.vue';
-import { ASSISTANT_SURFACE_KEY, DASHBOARD_SERVICE_KEY, TASK_SERVICE_KEY } from '../../../di/keys';
+import {
+  AI_ASSISTANT_RUNTIME_KEY,
+  ASSISTANT_SURFACE_KEY,
+  DASHBOARD_SERVICE_KEY,
+  TASK_SERVICE_KEY,
+} from '../../../di/keys';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import {
   createTestServerStateRuntime,
@@ -1198,6 +1203,44 @@ const dashboardServiceFake = {
   }),
 };
 
+let aiServiceForRuntime: { listMessages: ReturnType<typeof vi.fn> } | null = null;
+
+const assistantRuntimeFake = {
+  listMessages: vi.fn(async (conversationId: string) => {
+    const result = await aiServiceForRuntime?.listMessages(conversationId, {
+      page: 1,
+      pageSize: 80,
+    });
+    const envelope = result as
+      | {
+          ok?: boolean;
+          data?: {
+            data?: Array<{ id?: unknown; role?: unknown; content?: unknown; createdAt?: unknown }>;
+          };
+        }
+      | undefined;
+    const source = envelope?.ok ? (envelope.data?.data ?? []) : [];
+    return {
+      conversationId,
+      messages: source.map((message, index) => ({
+        id: message.id ? String(message.id) : `message-${index}`,
+        conversationId,
+        role:
+          message.role === 'user' || message.role === 'User'
+            ? ('user' as const)
+            : message.role === 'system' || message.role === 'System'
+              ? ('system' as const)
+              : ('assistant' as const),
+        content: typeof message.content === 'string' ? message.content : '',
+        createdAt: typeof message.createdAt === 'number' ? message.createdAt : index,
+      })),
+    };
+  }),
+  deleteConversation: vi.fn(async () => true),
+  streamMessage: vi.fn(async () => {}),
+  cancelRun: vi.fn(async () => true),
+};
+
 const taskServiceFake = {
   listTemplates: vi.fn(async () => ok([])),
   getTaskGraph: vi.fn(async () => ok({ nodes: [], edges: [] })),
@@ -1219,6 +1262,7 @@ function mountView() {
         [DASHBOARD_SERVICE_KEY as symbol]: dashboardServiceFake,
         // Residual 1332: AIChatView mounts useTaskTemplateMutations() for Host task.create settlement.
         [TASK_SERVICE_KEY as symbol]: taskServiceFake,
+        [AI_ASSISTANT_RUNTIME_KEY as symbol]: assistantRuntimeFake,
         [ASSISTANT_SURFACE_KEY as symbol]: 'web',
         [SERVER_STATE_RUNTIME_KEY]: runtime,
         [SERVER_STATE_IDENTITY_SCOPE_KEY]: () => 'identity-1',
@@ -1268,6 +1312,11 @@ describe('AIChatView', () => {
 
     const providers = ref<unknown[]>([]);
     const goals = ref([]);
+    assistantRuntimeFake.listMessages.mockClear();
+    assistantRuntimeFake.deleteConversation.mockReset().mockResolvedValue(true);
+    assistantRuntimeFake.streamMessage.mockReset().mockResolvedValue(undefined);
+    assistantRuntimeFake.cancelRun.mockReset().mockResolvedValue(true);
+
     const aiService = {
       listConversations: vi.fn(),
       listMessages: vi.fn(),
@@ -1317,6 +1366,7 @@ describe('AIChatView', () => {
         }
       }),
     };
+    aiServiceForRuntime = aiService;
     const loadProviders = vi.fn(async () => {
       providers.value = [
         {

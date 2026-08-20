@@ -93,9 +93,24 @@ function createFakeInstance() {
   const dispose = vi.fn();
   const dispatchRuntimeMessage = vi.fn(async function* () {});
   const cancelRuntimeRun = vi.fn(() => true);
+  const listRuntimeMessages = vi.fn(async () => ({
+    conversationId: 'conv-1',
+    messages: [
+      {
+        id: 'mastra-message-1',
+        conversationId: 'conv-1',
+        role: 'assistant' as const,
+        content: 'persisted reply',
+        createdAt: 1,
+      },
+    ],
+  }));
+  const deleteRuntimeConversation = vi.fn(async () => true);
   const mastraRuntime = {
     dispatchMessage: dispatchRuntimeMessage,
     cancelRun: cancelRuntimeRun,
+    listMessages: listRuntimeMessages,
+    deleteConversation: deleteRuntimeConversation,
   };
   const workflowRun = {
     runId: 'workflow-1',
@@ -146,6 +161,8 @@ function createFakeInstance() {
     mastraRuntime,
     dispatchRuntimeMessage,
     cancelRuntimeRun,
+    listRuntimeMessages,
+    deleteRuntimeConversation,
     workflowRun,
     workflowRuntime,
     workflowStart,
@@ -259,6 +276,49 @@ describe('AIElectron assistant dispatch lifecycle', () => {
 
     expect(result).toMatchObject({ ok: false });
     expect(fake.dispatchRuntimeMessage).not.toHaveBeenCalled();
+  });
+
+  it('reads authoritative Mastra history with authenticated identity and rejects renderer identity injection', async () => {
+    await moduleDef.register(context);
+
+    const result = await registered(AIChannels.RUNTIME_ASSISTANT_HISTORY)(undefined, {
+      conversationId: 'conv-1',
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      data: { conversationId: 'conv-1' },
+    });
+    expect(fake.listRuntimeMessages).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      conversationId: 'conv-1',
+    });
+
+    const injected = await registered(AIChannels.RUNTIME_ASSISTANT_HISTORY)(undefined, {
+      conversationId: 'conv-1',
+      identityId: 'attacker-controlled',
+    });
+    expect(injected).toMatchObject({ ok: false, error: { code: 'VALIDATION_ERROR' } });
+    expect(fake.listRuntimeMessages).toHaveBeenCalledTimes(1);
+  });
+
+  it('deletes authoritative Mastra history with authenticated identity and rejects renderer identity injection', async () => {
+    await moduleDef.register(context);
+
+    const result = await registered(AIChannels.RUNTIME_ASSISTANT_DELETE)(undefined, {
+      conversationId: 'conv-1',
+    });
+    expect(result).toMatchObject({ ok: true, data: { deleted: true } });
+    expect(fake.deleteRuntimeConversation).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      conversationId: 'conv-1',
+    });
+
+    const injected = await registered(AIChannels.RUNTIME_ASSISTANT_DELETE)(undefined, {
+      conversationId: 'conv-1',
+      identityId: 'attacker-controlled',
+    });
+    expect(injected).toMatchObject({ ok: false, error: { code: 'VALIDATION_ERROR' } });
+    expect(fake.deleteRuntimeConversation).toHaveBeenCalledTimes(1);
   });
 
   it('cancels a Mastra run only through authenticated identity plus runId', async () => {

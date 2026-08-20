@@ -1,7 +1,6 @@
 import type { AddKeyResultReq, CreateGoalReq } from '@memoflow/contracts/goal';
 import type { Ref } from 'vue';
 import type {
-  AgentRun,
   AgentRunResult,
   ConversationListRes,
   MessageListRes,
@@ -87,7 +86,6 @@ export type ConversationMessageSummary = MessageListRes['data'][number];
 export type AIChatService = Pick<
   IAIService,
   | 'listConversations'
-  | 'listMessages'
   | 'createConversation'
   | 'updateConversation'
   | 'deleteConversation'

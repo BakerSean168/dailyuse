@@ -27,14 +27,8 @@ import { isRecord } from './isRecord';
     const workflowPersistence = readFileSync(resolve(dir, 'useAIWorkflowPersistence.ts'), 'utf8');
     const chatView = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
     const chatSession = readFileSync(resolve(dir, 'useAIChatSession.ts'), 'utf8');
-    const goalPanel = readFileSync(
-      resolve(dir, '../components/AIGoalWorkflowPanel.vue'),
-      'utf8',
-    );
-    const actionBar = readFileSync(
-      resolve(dir, '../components/AIWorkflowActionBar.vue'),
-      'utf8',
-    );
+    const goalPanel = readFileSync(resolve(dir, '../components/AIGoalWorkflowPanel.vue'), 'utf8');
+    const actionBar = readFileSync(resolve(dir, '../components/AIWorkflowActionBar.vue'), 'utf8');
 
     it('does not define unused Goal/KnowledgeNote AgentArtifact dual aliases', () => {
       expect(types).not.toContain('export type GoalAgentArtifact');
@@ -64,7 +58,7 @@ import { isRecord } from './isRecord';
       expect(index).not.toMatch(/\bGoalWorkflowDraftResultDTO\b/);
     });
 
-    it('call sites import AgentRunResult/AgentAction/AgentRun/AssistantEvent from contracts', () => {
+    it('call sites import workflow types and Mastra AssistantRuntimeEvent directly from contracts', () => {
       expect(goalWorkflow).toContain("from '@memoflow/contracts/ai'");
       expect(goalWorkflow).toMatch(/\bAgentRunResult\b/);
       expect(goalWorkflow).toMatch(/\bAgentAction\b/);
@@ -72,8 +66,10 @@ import { isRecord } from './isRecord';
       expect(goalWorkflow).not.toMatch(/\bGoalAgentAction\b/);
       expect(chatView).toMatch(/\bAgentRun\b/);
       expect(chatView).not.toMatch(/\bAgentRunSummary\b/);
-      // residual 351: open chat Host events replace SendMessageRes dual surface
-      expect(chatSession).toMatch(/\bAssistantEvent\b/);
+      // AI-vNext Batch B: default open chat consumes the canonical Mastra runtime event
+      // contract directly; legacy AssistantEvent remains only on transitional workflow paths.
+      expect(chatSession).toMatch(/\bAssistantRuntimeEvent\b/);
+      expect(chatSession).not.toMatch(/\bAssistantEvent\b/);
       expect(chatSession).not.toMatch(/\bSendMessageRes\b/);
       expect(chatSession).not.toMatch(/\bStreamDoneResult\b/);
     });
@@ -100,7 +96,9 @@ import { isRecord } from './isRecord';
         expect(source).toMatch(/\bGoalWorkflowDraftResultDTO\b/);
       }
       // UI helper identifiers that end with GoalDraft are not type duals.
-      expect(goalDraftHelpers).toMatch(/\bcreateEmptyGoalDraft\b|\bGoalDraftState\b|\bapplyGoalDraft\b/);
+      expect(goalDraftHelpers).toMatch(
+        /\bcreateEmptyGoalDraft\b|\bGoalDraftState\b|\bapplyGoalDraft\b/,
+      );
       expect(types).toMatch(/\bcreateEmptyGoalDraft\b/);
     });
   });
@@ -151,9 +149,9 @@ import { isRecord } from './isRecord';
     });
 
     it('prefixes ids and uses crypto.randomUUID when available', () => {
-      const spy = vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
-        '11111111-2222-4333-8444-555555555555',
-      );
+      const spy = vi
+        .spyOn(globalThis.crypto, 'randomUUID')
+        .mockReturnValue('11111111-2222-4333-8444-555555555555');
       expect(createAgentId('run')).toBe('run-11111111-2222-4333-8444-555555555555');
       expect(createAgentId('thread')).toBe('thread-11111111-2222-4333-8444-555555555555');
       spy.mockRestore();
@@ -237,8 +235,12 @@ import { isRecord } from './isRecord';
     it('owns sole plain-object isRecord helper body', () => {
       expect(sole).toContain('Residual 951');
       expect(sole).toMatch(/export function isRecord\b/);
-      expect(sole).toContain("Boolean(value) && typeof value === 'object' && !Array.isArray(value)");
-      expect(sole).toContain('Residual 1089 keep-boundary vs desktop http-envelope-guards isRecord');
+      expect(sole).toContain(
+        "Boolean(value) && typeof value === 'object' && !Array.isArray(value)",
+      );
+      expect(sole).toContain(
+        'Residual 1089 keep-boundary vs desktop http-envelope-guards isRecord',
+      );
     });
 
     it('goal and knowledge workflows import sole without local dual bodies', () => {

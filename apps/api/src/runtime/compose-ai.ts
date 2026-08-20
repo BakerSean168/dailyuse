@@ -37,7 +37,6 @@ import {
   AIEvaluationReportFileAdapter,
   AIServiceAgentRuntimeAdapter,
   AIServiceAnalyticsQueryAdapter,
-  AIServiceChatExecutionAdapter,
   AIServiceGoalAutomationAdapter,
   AIServiceGoalPlanningAdapter,
   AIServiceKnowledgeIngestionAdapter,
@@ -46,6 +45,7 @@ import {
   createAIModule,
   createAIPrismaRepositories,
   createMastraStorage,
+  ConversationTranscriptBootstrapSource,
   MastraAIRuntime,
   MastraModelResolver,
   type MastraStorageConfig,
@@ -176,6 +176,9 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
   const mastraRuntime = new MastraAIRuntime({
     storage: createMastraStorage(dependencies.mastraStorage),
     modelResolver: new MastraModelResolver(repositorySet.providerConfigRepository),
+    transcriptBootstrapSource: new ConversationTranscriptBootstrapSource(
+      repositorySet.conversationRepository,
+    ),
   });
 
   const config =
@@ -202,7 +205,9 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
     analyticsRead: analyticsReadPort,
   });
 
-  const chatExecutionPort = config ? new AIServiceChatExecutionAdapter(config) : undefined;
+  // Batch B: open chat is Mastra-native. The Python AIService chat adapter is
+  // intentionally not composed; legacy service config remains only for the
+  // workflows that have not migrated yet.
   const goalPlanningPort = config ? new AIServiceGoalPlanningAdapter(config) : undefined;
   const goalAutomationPlanningPort = config
     ? new AIServiceGoalAutomationAdapter(config)
@@ -222,7 +227,6 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
     conversationRepository: repositorySet.conversationRepository,
     providerConfigRepository: repositorySet.providerConfigRepository,
     mastraRuntime,
-    chatExecutionPort,
     goalPlanningPort,
     goalAutomationPlanningPort,
     automationToolExecutorPort,

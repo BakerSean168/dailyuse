@@ -1,8 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import {
-  createMockGoal,
-  createMockUserSetting,
-} from '@memoflow/contracts/mocks';
+import { createMockUserSetting } from '@memoflow/contracts/mocks';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
 
@@ -121,7 +118,7 @@ async function sendComposerMessage(page: Page, message: string): Promise<void> {
 
   const sseResponse = page.waitForResponse(
     (response) =>
-      response.url().includes('/ai/assistant/dispatch/sse') &&
+      response.url().includes('/ai/runtime/assistant/sse') &&
       response.request().method() === 'POST' &&
       response.status() === 200,
     { timeout: TIMEOUT_CONFIG.NAVIGATION },
@@ -129,7 +126,7 @@ async function sendComposerMessage(page: Page, message: string): Promise<void> {
   await sendButton.click();
   await sseResponse;
 
-  // Composer clears after a successful Host open-chat turn starts.
+  // Composer clears after a successful Mastra open-chat turn starts.
   await expect(composer).toHaveValue('', {
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
@@ -225,10 +222,7 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    await sendComposerMessage(
-      page,
-      'How should knowledge answers stay grounded in citations?',
-    );
+    await sendComposerMessage(page, 'How should knowledge answers stay grounded in citations?');
 
     await expect(page.getByTestId('knowledge-qa-ask')).toBeEnabled({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -348,10 +342,7 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    await sendComposerMessage(
-      page,
-      'How should knowledge answers stay grounded in citations?',
-    );
+    await sendComposerMessage(page, 'How should knowledge answers stay grounded in citations?');
 
     const askButton = page.getByTestId('knowledge-qa-ask');
     await expect(askButton).toBeEnabled({
@@ -1314,52 +1305,130 @@ async function installGoalWorkflowMocks(
     await route.continue();
   });
 
-  // Residual 1333: seed open-chat timeline messages so post-send listConversations
-  // / selectConversation reloads do not erase hasWorkflowUserMessages.
+  // Batch B: Mastra owns default open-chat transcript persistence. These messages
+  // are returned only by the canonical runtime history route.
   const openChatMessages: Array<{
     id: string;
     conversationId: string;
-    role: string;
+    role: 'user' | 'assistant';
     content: string;
     createdAt: number;
   }> = [];
 
-  await page.route(
-    '**/api/v1/ai/chat/messages?conversationId=*&page=*&pageSize=*',
-    async (route) => {
-      await fulfillJson(route, {
-        data: openChatMessages,
-        total: openChatMessages.length,
-        page: 1,
-        pageSize: 80,
-      });
-    },
-  );
+  await page.route('**/api/v1/ai/runtime/assistant/history', async (route) => {
+    const request = (route.request().postDataJSON() ?? {}) as { conversationId?: string };
+    expect(request).not.toHaveProperty('identityId');
+    await fulfillJson(route, {
+      conversationId: request.conversationId ?? conversationId,
+      messages: openChatMessages,
+    });
+  });
 
-  // Residual 1333: open chat + Host proposal lifecycle use AssistantFacade SSE
-  // (`/ai/assistant/dispatch/sse`), not legacy chat/messages/sse. Missing mocks leave
-  // chatLoading stuck and block confirm/cancel (dispatchHostProposalDecision fails closed).
-  await page.route('**/api/v1/ai/assistant/dispatch/sse', async (route) => {
+  await page.route('**/api/v1/ai/runtime/assistant/sse', async (route) => {
     const request = (route.request().postDataJSON() ?? {}) as {
-
       type?: string;
       content?: string;
-      runId?: string;
       conversationId?: string;
+      surface?: string;
+      providerId?: string;
+      modelId?: string;
+    };
+    expect(request).not.toHaveProperty('identityId');
+    expect(request).not.toHaveProperty('executionProfileId');
+    expect(request.type).toBe('message');
+    expect(request.surface).toBe('web');
+    expect(request.providerId).toBe('provider-e2e-openai');
+    expect(request.modelId).toBe('gpt-4.1-mini');
+
+    const userContent = request.content ?? '';
+    const now = Date.now();
+    const convId = request.conversationId ?? conversationId;
+    const turn = Math.floor(openChatMessages.length / 2) + 1;
+    const runId = `run-e2e-mastra-goal-workflow-${turn}`;
+    const userMsgId = `msg-user-${turn}`;
+    const assistantMsgId = `msg-assistant-${turn}`;
+    const assistantContent = '先把目标拆清楚，我会帮你补全 workflow。';
+    if (userContent.trim()) {
+      openChatMessages.push(
+        {
+          id: userMsgId,
+          conversationId: convId,
+          role: 'user',
+          content: userContent,
+          createdAt: now,
+        },
+        {
+          id: assistantMsgId,
+          conversationId: convId,
+          role: 'assistant',
+          content: assistantContent,
+          createdAt: now + 1,
+        },
+      );
+    }
+    generateGoalStep = Math.max(generateGoalStep, 1);
+
+    const events = [
+      {
+        eventId: `${runId}:1`,
+        runId,
+        conversationId: convId,
+        sequence: 1,
+        createdAt: now,
+        type: 'assistant.run.started',
+        data: { providerId: 'provider-e2e-openai', modelId: 'gpt-4.1-mini' },
+      },
+      {
+        eventId: `${runId}:2`,
+        runId,
+        conversationId: convId,
+        sequence: 2,
+        createdAt: now,
+        type: 'assistant.message.delta',
+        data: { content: assistantContent },
+      },
+      {
+        eventId: `${runId}:3`,
+        runId,
+        conversationId: convId,
+        sequence: 3,
+        createdAt: now,
+        type: 'assistant.run.completed',
+        data: { content: assistantContent, assistantMessageId: assistantMsgId },
+      },
+    ];
+    const body = events
+      .map((event) => `event: runtime\ndata: ${JSON.stringify(event)}\n\n`)
+      .join('');
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream; charset=utf-8',
+      body,
+      headers: {
+        'cache-control': 'no-cache',
+        'content-length': String(Buffer.byteLength(body, 'utf8')),
+        connection: 'close',
+      },
+    });
+  });
+
+  // Transitional workflow proposal lifecycle still uses AssistantFacade until
+  // Batch C/D migrates those workflows. Default chat must never arrive here.
+  await page.route('**/api/v1/ai/assistant/dispatch/sse', async (route) => {
+    const request = (route.request().postDataJSON() ?? {}) as {
+      type?: string;
+      runId?: string;
       proposalId?: string;
       revision?: number;
       reason?: string;
     };
-    const fulfillSse = async (assistantEvents: Record<string, unknown>[]) => {
-      // Match AIAssistantHttpAdapter unit fixtures: event/data pairs terminated by \n\n.
-      // Explicit content-length so Chromium closes the fetch body (chunked/keep-alive
-      // without a length can leave parseSSE waiting and stick chatLoading).
-      const frames: string[] = [];
-      for (const event of assistantEvents) {
-        frames.push(
-          `event: assistant\ndata: ${JSON.stringify(event)}\n\n`,
-        );
-      }
+    expect(request.type).not.toBe('message');
+    expect(request).not.toHaveProperty('identityId');
+
+    const fulfillHostSse = async (assistantEvents: Record<string, unknown>[]) => {
+      const frames = assistantEvents.map(
+        (event) => `event: assistant\ndata: ${JSON.stringify(event)}\n\n`,
+      );
       frames.push(
         `event: done\ndata: ${JSON.stringify({ eventCount: assistantEvents.length })}\n\n`,
       );
@@ -1377,113 +1446,44 @@ async function installGoalWorkflowMocks(
     };
 
     if (request.type === 'cancel_run') {
-      await fulfillSse([
-        {
-          type: 'run.cancelled',
-          runId: request.runId ?? 'run-e2e-open-chat',
-        },
-      ]);
+      await fulfillHostSse([{ type: 'run.cancelled', runId: request.runId ?? 'run-e2e' }]);
       return;
     }
-
     if (request.type === 'approve_proposal') {
-      const revision = (request.revision ?? 1) + 0;
-      await fulfillSse([
+      await fulfillHostSse([
         {
           type: 'proposal.approved',
           runId: request.runId ?? 'run-e2e',
           proposalId: request.proposalId ?? 'proposal-e2e',
-          revision,
+          revision: request.revision ?? 1,
         },
       ]);
       return;
     }
-
     if (request.type === 'reject_proposal') {
-      const revision = request.revision ?? 1;
-      await fulfillSse([
+      await fulfillHostSse([
         {
           type: 'proposal.rejected',
           runId: request.runId ?? 'run-e2e',
           proposalId: request.proposalId ?? 'proposal-e2e',
-          revision,
+          revision: request.revision ?? 1,
           reason: request.reason ?? 'user_cancel',
         },
       ]);
       return;
     }
-
     if (request.type === 'revise_proposal') {
-      const revision = (request.revision ?? 1) + 1;
-      await fulfillSse([
+      await fulfillHostSse([
         {
           type: 'proposal.revised',
           runId: request.runId ?? 'run-e2e',
           proposalId: request.proposalId ?? 'proposal-e2e',
-          revision,
+          revision: (request.revision ?? 1) + 1,
         },
       ]);
       return;
     }
-
-    const userContent = request.content ?? '';
-    const runId = request.runId ?? 'run-e2e-open-chat';
-    const assistantContent = '先把目标拆清楚，我会帮你补全 workflow。';
-    const now = Date.now();
-    const convId = request.conversationId ?? conversationId;
-    const userMsgId = `msg-user-${openChatMessages.length + 1}`;
-    const assistantMsgId = `msg-assistant-${openChatMessages.length + 1}`;
-    if (userContent.trim()) {
-      openChatMessages.push({
-        id: userMsgId,
-        conversationId: convId,
-        role: 'user',
-        content: userContent,
-        createdAt: now,
-      });
-      openChatMessages.push({
-        id: assistantMsgId,
-        conversationId: convId,
-        role: 'assistant',
-        content: assistantContent,
-        createdAt: now + 1,
-      });
-    }
-    // Ensure conversation appears in list after first open-chat turn.
-    generateGoalStep = Math.max(generateGoalStep, 1);
-    await fulfillSse([
-      {
-        type: 'run.started',
-        runId,
-        engineId: 'engine.direct_turn',
-        profile: 'direct_turn',
-      },
-      {
-        type: 'message.delta',
-        runId,
-        content: assistantContent,
-      },
-      {
-        type: 'message.completed',
-        runId,
-        status: 'completed',
-        content: assistantContent,
-        userMessage: {
-          id: userMsgId,
-          conversationId: convId,
-          role: 'user',
-          content: userContent,
-          createdAt: now,
-        },
-        assistantMessage: {
-          id: assistantMsgId,
-          conversationId: convId,
-          role: 'assistant',
-          content: assistantContent,
-          createdAt: now + 1,
-        },
-      },
-    ]);
+    throw new Error(`Unexpected legacy AssistantFacade command: ${String(request.type)}`);
   });
 
   await page.route('**/api/v1/ai/knowledge/query', async (route) => {

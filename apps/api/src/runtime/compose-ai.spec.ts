@@ -56,6 +56,11 @@ vi.mock('@memoflow/ai', async (importOriginal) => {
     createAIModule: vi.fn(),
     createAIPrismaRepositories: vi.fn(),
     createMastraStorage: vi.fn(() => ({ tag: 'mastra-storage' })),
+    ConversationTranscriptBootstrapSource: vi.fn(
+      function ConversationTranscriptBootstrapSourceMock() {
+        return { tag: 'transcript-bootstrap-source' };
+      },
+    ),
     MastraModelResolver: vi.fn(function MastraModelResolverMock() {
       return { tag: 'mastra-model-resolver' };
     }),
@@ -104,6 +109,7 @@ import {
   createAIModule,
   createAIPrismaRepositories,
   createMastraStorage,
+  ConversationTranscriptBootstrapSource,
   MastraAIRuntime,
   MastraModelResolver,
   getAIServiceRuntimeConfig,
@@ -151,7 +157,6 @@ const mockRepositorySet = {
 };
 
 const serviceAdapterMocks = [
-  AIServiceChatExecutionAdapter,
   AIServiceGoalPlanningAdapter,
   AIServiceGoalAutomationAdapter,
   AIServiceKnowledgeIngestionAdapter,
@@ -170,7 +175,6 @@ const hostAdapterMocks = [
 ];
 
 const servicePortKeys = new Map<unknown, string>([
-  [AIServiceChatExecutionAdapter, 'chatExecutionPort'],
   [AIServiceGoalPlanningAdapter, 'goalPlanningPort'],
   [AIServiceGoalAutomationAdapter, 'goalAutomationPlanningPort'],
   [AIServiceKnowledgeIngestionAdapter, 'knowledgeIngestionPort'],
@@ -204,6 +208,8 @@ describe('composeAI assembly order', () => {
     const prismaOrder = vi.mocked(createAIPrismaRepositories).mock.invocationCallOrder[0];
     const storageOrder = vi.mocked(createMastraStorage).mock.invocationCallOrder[0];
     const resolverOrder = vi.mocked(MastraModelResolver).mock.invocationCallOrder[0];
+    const bootstrapOrder = vi.mocked(ConversationTranscriptBootstrapSource).mock
+      .invocationCallOrder[0];
     const mastraRuntimeOrder = vi.mocked(MastraAIRuntime).mock.invocationCallOrder[0];
     const configOrder = vi.mocked(getAIServiceRuntimeConfig).mock.invocationCallOrder[0];
     const firstHostOrder = hostAdapterMocks
@@ -215,7 +221,8 @@ describe('composeAI assembly order', () => {
 
     expect(prismaOrder).toBeLessThan(storageOrder);
     expect(storageOrder).toBeLessThan(resolverOrder);
-    expect(resolverOrder).toBeLessThan(mastraRuntimeOrder);
+    expect(resolverOrder).toBeLessThan(bootstrapOrder);
+    expect(bootstrapOrder).toBeLessThan(mastraRuntimeOrder);
     expect(mastraRuntimeOrder).toBeLessThan(configOrder);
     expect(configOrder).toBeLessThan(firstHostOrder);
     expect(firstHostOrder).toBeLessThan(moduleOrder);
@@ -237,8 +244,18 @@ describe('composeAI assembly order', () => {
 
     const storage = vi.mocked(createMastraStorage).mock.results[0].value;
     const resolver = vi.mocked(MastraModelResolver).mock.results[0].value;
+    expect(ConversationTranscriptBootstrapSource).toHaveBeenCalledTimes(1);
+    expect(ConversationTranscriptBootstrapSource).toHaveBeenCalledWith(
+      mockRepositorySet.conversationRepository,
+    );
+    const transcriptBootstrapSource = vi.mocked(ConversationTranscriptBootstrapSource).mock
+      .results[0].value;
     expect(MastraAIRuntime).toHaveBeenCalledTimes(1);
-    expect(MastraAIRuntime).toHaveBeenCalledWith({ storage, modelResolver: resolver });
+    expect(MastraAIRuntime).toHaveBeenCalledWith({
+      storage,
+      modelResolver: resolver,
+      transcriptBootstrapSource,
+    });
 
     const runtime = vi.mocked(MastraAIRuntime).mock.results[0].value;
     expect(vi.mocked(createAIModule).mock.calls[0][0].mastraRuntime).toBe(runtime);
@@ -305,7 +322,7 @@ describe('composeAI assembly order', () => {
 });
 
 describe('composeAI config branches', () => {
-  it('builds all eight config-backed service adapters with the same injected config object', () => {
+  it('builds the seven remaining config-backed service adapters and never composes Python chat for open chat', () => {
     const config: AIServiceRuntimeConfig = {
       baseUrl: 'http://ai.test',
       serviceSecret: 'secret',
@@ -321,8 +338,10 @@ describe('composeAI config branches', () => {
       expect(vi.mocked(adapter)).toHaveBeenCalledTimes(1);
       expect(vi.mocked(adapter)).toHaveBeenCalledWith(config);
     }
+    expect(AIServiceChatExecutionAdapter).not.toHaveBeenCalled();
 
     const moduleCall = vi.mocked(createAIModule).mock.calls[0][0];
+    expect(moduleCall.chatExecutionPort).toBeUndefined();
     for (const adapter of serviceAdapterMocks) {
       expect(moduleCall[servicePortKeys.get(adapter) as string]).toBe(
         vi.mocked(adapter).mock.results[0].value,
@@ -361,6 +380,7 @@ describe('composeAI config branches', () => {
     composeAI(aiDependencies);
 
     expect(getAIServiceRuntimeConfig).toHaveBeenCalledTimes(1);
+    expect(AIServiceChatExecutionAdapter).not.toHaveBeenCalled();
     for (const adapter of serviceAdapterMocks) {
       expect(vi.mocked(adapter)).toHaveBeenCalledTimes(1);
       expect(vi.mocked(adapter)).toHaveBeenCalledWith(resolvedConfig);
@@ -371,6 +391,7 @@ describe('composeAI config branches', () => {
     composeAI({ ...aiDependencies, aiServiceRuntimeConfig: null });
 
     expect(getAIServiceRuntimeConfig).not.toHaveBeenCalled();
+    expect(AIServiceChatExecutionAdapter).not.toHaveBeenCalled();
     for (const adapter of serviceAdapterMocks) {
       expect(vi.mocked(adapter)).not.toHaveBeenCalled();
     }
@@ -387,6 +408,7 @@ describe('composeAI config branches', () => {
     composeAI(aiDependencies);
 
     expect(getAIServiceRuntimeConfig).toHaveBeenCalledTimes(1);
+    expect(AIServiceChatExecutionAdapter).not.toHaveBeenCalled();
     for (const adapter of serviceAdapterMocks) {
       expect(vi.mocked(adapter)).not.toHaveBeenCalled();
     }

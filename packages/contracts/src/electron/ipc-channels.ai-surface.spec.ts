@@ -31,6 +31,8 @@ describe('AIChannels / AIStreamChannels surface', () => {
     expect(AIStreamChannels.MESSAGE_STREAM_ERROR).toBe('ai:chat:message:stream:error');
     expect(AIChannels.RUNTIME_ASSISTANT_START).toBe('ai:runtime:assistant:start');
     expect(AIChannels.RUNTIME_ASSISTANT_CANCEL).toBe('ai:runtime:assistant:cancel');
+    expect(AIChannels.RUNTIME_ASSISTANT_HISTORY).toBe('ai:runtime:assistant:history');
+    expect(AIChannels.RUNTIME_ASSISTANT_DELETE).toBe('ai:runtime:assistant:delete');
     expect(AIChannels.RUNTIME_WORKFLOW_START).toBe('ai:runtime:workflow:start');
     expect(AIChannels.RUNTIME_WORKFLOW_RESUME).toBe('ai:runtime:workflow:resume');
     expect(AIChannels.RUNTIME_WORKFLOW_GET).toBe('ai:runtime:workflow:get');

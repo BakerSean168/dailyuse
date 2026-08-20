@@ -16,6 +16,11 @@ vi.mock('@memoflow/ai', async (importOriginal) => {
     createAIModule: vi.fn(),
     createAIPowerSyncRepositories: vi.fn(),
     createMastraStorage: vi.fn(() => ({ tag: 'desktop-mastra-storage' })),
+    ConversationTranscriptBootstrapSource: vi.fn(
+      function ConversationTranscriptBootstrapSourceMock() {
+        return { tag: 'desktop-transcript-bootstrap-source' };
+      },
+    ),
     MastraModelResolver: vi.fn(function MastraModelResolverMock() {
       return { tag: 'desktop-mastra-model-resolver' };
     }),
@@ -46,6 +51,7 @@ import {
   createAIModule,
   createAIPowerSyncRepositories,
   createMastraStorage,
+  ConversationTranscriptBootstrapSource,
   MastraAIRuntime,
   MastraModelResolver,
   type AIServiceRuntimeConfig,
@@ -109,8 +115,18 @@ describe('desktop composeAI Mastra ownership', () => {
 
     const storage = vi.mocked(createMastraStorage).mock.results[0].value;
     const resolver = vi.mocked(MastraModelResolver).mock.results[0].value;
+    expect(ConversationTranscriptBootstrapSource).toHaveBeenCalledTimes(1);
+    expect(ConversationTranscriptBootstrapSource).toHaveBeenCalledWith(
+      repositorySet.conversationRepository,
+    );
+    const transcriptBootstrapSource = vi.mocked(ConversationTranscriptBootstrapSource).mock
+      .results[0].value;
     expect(MastraAIRuntime).toHaveBeenCalledTimes(1);
-    expect(MastraAIRuntime).toHaveBeenCalledWith({ storage, modelResolver: resolver });
+    expect(MastraAIRuntime).toHaveBeenCalledWith({
+      storage,
+      modelResolver: resolver,
+      transcriptBootstrapSource,
+    });
 
     const runtime = vi.mocked(MastraAIRuntime).mock.results[0].value;
     expect(vi.mocked(createAIModule).mock.calls[0][0].mastraRuntime).toBe(runtime);
@@ -162,8 +178,10 @@ describe('desktop composeAI Mastra ownership', () => {
 
     composeAI({ ...dependencies, aiServiceRuntimeConfig: config });
 
+    expect(AIServiceChatExecutionAdapter).not.toHaveBeenCalled();
+    expect(vi.mocked(createAIModule).mock.calls[0][0].chatExecutionPort).toBeUndefined();
+
     for (const adapter of [
-      AIServiceChatExecutionAdapter,
       AIServiceGoalPlanningAdapter,
       AIServiceGoalAutomationAdapter,
       AIServiceKnowledgeIngestionAdapter,

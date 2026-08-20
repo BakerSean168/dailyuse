@@ -29,7 +29,7 @@ import {
 } from './chatViewHelpers';
 import { unwrap } from '@memoflow/contracts/result';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { ASSISTANT_SURFACE_KEY } from '../../../di/keys';
+import { AI_ASSISTANT_RUNTIME_KEY, ASSISTANT_SURFACE_KEY } from '../../../di/keys';
 import type {
   AIWorkspaceRecentGoal,
   AIWorkspaceRecentKnowledgeNote,
@@ -46,7 +46,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   const { t } = useI18n();
   const router = useRouter();
   const { service, providers, loadProviders } = useAI();
-  // Residual 349: host-provided surface tag; shared composables never sniff window.
+  const assistantRuntime = useStrictInject(AI_ASSISTANT_RUNTIME_KEY, 'AIAssistantRuntime');
   const assistantSurface = useStrictInject(ASSISTANT_SURFACE_KEY, 'AssistantSurface');
   const { goals, fetchGoals, createGoal } = useGoal();
   const recentKnowledgeNotes = useRecentKnowledgeNotes();
@@ -137,6 +137,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   // 1. Chat session
   const chatSession = useAIChatSession({
     service,
+    runtime: assistantRuntime,
     surface: assistantSurface,
     getDefaultConversationName,
     onConversationCreated: (id) => _persistWorkflowAndModel?.(id),
@@ -702,9 +703,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       openRecentGoal,
       openRecentKnowledgeNote,
       startNewConversation,
-      executionProfileId: chatSession.executionProfileId,
-      selectExecutionProfile: chatSession.selectExecutionProfile,
-      openChatHostTurns: chatSession.openChatHostTurns,
       handleSendChat: () =>
         chatSession.handleSendChat(
           service,

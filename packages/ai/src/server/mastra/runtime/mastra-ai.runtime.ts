@@ -9,10 +9,12 @@ import {
 } from '@mastra/core/request-context';
 import type { MastraCompositeStore } from '@mastra/core/storage';
 import { Memory } from '@mastra/memory';
-import type { AssistantRuntimeEvent } from '@memoflow/contracts/ai';
+import type { AssistantRuntimeEvent, AssistantRuntimeHistoryView } from '@memoflow/contracts/ai';
 import { createMemoFlowAssistant } from '../agents';
 import type { MastraModelResolver } from '../models';
 import { AsyncEventQueue } from './async-event-queue';
+import { AssistantHistoryService } from './assistant-history.service';
+import type { AssistantTranscriptBootstrapSource } from './assistant-transcript-bootstrap.port';
 
 function messageText(
   event: Extract<AgentControllerEvent, { type: 'message_update' | 'message_end' }>,
@@ -49,6 +51,7 @@ function publicRuntimeError(errorType?: unknown): { code: string; message: strin
 export interface MastraAIRuntimeDependencies {
   readonly storage: MastraCompositeStore;
   readonly modelResolver: MastraModelResolver;
+  readonly transcriptBootstrapSource: AssistantTranscriptBootstrapSource;
 }
 
 type ActiveRun = {
@@ -59,6 +62,7 @@ type ActiveRun = {
 /** Mastra is the authoritative AI execution runtime; MemoFlow owns only product/domain truth. */
 export class MastraAIRuntime {
   readonly memory: Memory;
+  readonly history: AssistantHistoryService;
   readonly assistant: ReturnType<typeof createMemoFlowAssistant>;
   readonly controller: AgentController;
   readonly mastra: Mastra;
@@ -71,6 +75,7 @@ export class MastraAIRuntime {
       storage: deps.storage,
       options: { lastMessages: 40 },
     });
+    this.history = new AssistantHistoryService(this.memory, deps.transcriptBootstrapSource);
     this.assistant = createMemoFlowAssistant({
       modelResolver: deps.modelResolver,
       memory: this.memory,
@@ -122,6 +127,22 @@ export class MastraAIRuntime {
     await this.disposePromise;
   }
 
+  async listMessages(input: {
+    identityId: string;
+    conversationId: string;
+  }): Promise<AssistantRuntimeHistoryView> {
+    await this.init();
+    return this.history.listMessages(input);
+  }
+
+  async deleteConversation(input: {
+    identityId: string;
+    conversationId: string;
+  }): Promise<boolean> {
+    await this.init();
+    return this.history.deleteConversation(input);
+  }
+
   /**
    * Cancel only a run owned by the authenticated identity. A guessed runId can
    * never become an authorization primitive.
@@ -143,6 +164,10 @@ export class MastraAIRuntime {
     signal?: AbortSignal;
   }): AsyncGenerator<AssistantRuntimeEvent, void, void> {
     await this.init();
+    await this.history.ensureConversation({
+      identityId: input.identityId,
+      conversationId: input.conversationId,
+    });
     const requestContext = new RequestContext();
     requestContext.setRaw('identityId', input.identityId);
     if (input.providerId) requestContext.setRaw('providerId', input.providerId);
@@ -232,6 +257,14 @@ export class MastraAIRuntime {
       if (event.type === 'message_end' && event.message.role === 'assistant') {
         lastText = messageText(event);
         assistantMessageId = event.message.id;
+        return;
+      }
+      if (event.type === 'usage_update') {
+        emit('assistant.usage.updated', {
+          promptTokens: event.usage.promptTokens,
+          completionTokens: event.usage.completionTokens,
+          totalTokens: event.usage.totalTokens,
+        });
         return;
       }
       if (event.type === 'error') {

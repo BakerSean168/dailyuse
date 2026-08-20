@@ -1,9 +1,6 @@
 /**
- * Residual 405: cross-end multi-engine Host product E2E scaffold evidence.
- *
- * Freezes the product journey contract + surface locks for Web HTTP SSE,
- * Desktop IPC, and Vue Host multi-engine UI. Does not run Playwright/Electron
- * and does not claim full multi-engine product E2E or real Pi spawn.
+ * Batch-B regression lock for the historical ADR-035 cross-end scaffold.
+ * The stable file name remains, but default product chat is Mastra-native.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -16,149 +13,135 @@ import {
 const root = resolve(__dirname, '../../../../../../..');
 const read = (relative: string) => readFileSync(resolve(root, relative), 'utf8');
 
-describe('ADR-035 cross-end multi-engine product E2E scaffold (residual 405)', () => {
+describe('ADR-035 historical scaffold after Mastra open-chat cutover', () => {
   const journey = buildCrossEndMultiEngineProductJourney();
   const summary = summarizeCrossEndMultiEngineProductJourney(journey);
 
-  it('freezes ordered multi-engine product journey with explicit external gaps', () => {
+  it('freezes the Mastra cutover journey and keeps external product runners explicit', () => {
     expect(journey.map((step) => step.id)).toEqual([
-      'ui.select_direct_turn',
-      'web.send_direct_turn',
-      'desktop.send_direct_turn',
-      'ui.timeline_engine_badge_direct',
-      'ui.select_pi_readonly',
-      'web.send_pi_readonly',
-      'desktop.send_pi_readonly',
-      'ui.stop_cancel_run',
-      'host.mid_turn_cancel',
-      'ui.conversation_switch_badge_memory',
-      'ui.timeline_surface_isolation',
-      'ui.workbench_timeline_composition',
+      'ui.mastra_runtime_injection',
+      'ui.mastra_open_chat',
+      'ui.legacy_profile_selector_retired',
+      'web.mastra_runtime_client',
+      'desktop.mastra_runtime_client',
+      'transport.http_runtime_surface',
+      'transport.ipc_runtime_surface',
+      'runtime.one_time_transcript_bootstrap',
+      'runtime.restart_persistence',
+      'runtime.owner_scoped_delete',
+      'runtime.model_usage_metadata',
+      'runtime.python_chat_not_composed',
+      'ui.workflow_timeline_isolation',
+      'ui.workbench_without_open_chat_engine_badges',
       'ui.langgraph_diagnostic_sanitization',
-      'ui.task_create_proposal_receipt_lane',
       'e2e.playwright_web_full',
       'e2e.electron_desktop_full',
-      'e2e.real_pi_spawn',
     ]);
-    expect(summary.total).toBe(17);
-    // Residual 1342: Web Playwright multi-engine Host product e2e is implemented_unit.
-    expect(summary.implementedUnit).toBe(15);
-    expect(summary.externalBlocked).toBe(2);
-    expect(summary.readyForDriver).toBe(true);
+    expect(summary).toMatchObject({
+      total: 17,
+      implementedUnit: 16,
+      externalBlocked: 1,
+      scaffolded: 0,
+      readyForDriver: true,
+    });
     expect(
-      journey.filter((step) => step.status === 'external_blocked').every((step) => step.blockedReason),
+      journey
+        .filter((step) => step.status === 'external_blocked')
+        .every((step) => step.blockedReason),
     ).toBe(true);
-    const webE2e = journey.find((step) => step.id === 'e2e.playwright_web_full');
-    expect(webE2e?.status).toBe('implemented_unit');
-    expect(webE2e?.contracts.join(' ')).toContain('multi-engine-host.spec.ts');
   });
 
-  it('locks Web HTTP SSE multi-profile + cancel_run transport contracts', () => {
-    const http = read(
-      'packages/ai/src/infrastructure-client/adapters/http/ai-assistant-http.adapter.ts',
-    );
-    const httpTest = read(
-      'packages/ai/src/infrastructure-client/adapters/http/ai-assistant-http.adapter.test.ts',
-    );
-    const controller = read(
-      'packages/ai/src/server/transport/ai-assistant-facade.controller.ts',
-    );
-    const contract = read(
-      'packages/contracts/src/modules/ai/agent-host/assistant-dispatch.ts',
-    );
+  it('locks the dedicated Vue Assistant runtime seam and retirement of legacy profile selection', () => {
+    const session = read('packages/app-vue/src/modules/ai/composables/useAIChatSession.ts');
+    const view = read('packages/app-vue/src/modules/ai/composables/useAIChatView.ts');
+    const composer = read('packages/app-vue/src/modules/ai/components/AIFooterComposer.vue');
 
-    expect(http).toContain('/ai/assistant/dispatch/sse');
-    expect(http).toContain('dispatchAssistant');
-    expect(httpTest).toContain('executionProfileId');
-    expect(httpTest).toContain('pi_readonly');
-    expect(httpTest).toContain("type: 'cancel_run'");
-    expect(httpTest).toContain('without identityId');
-    // The two Host open-chat profiles now live in the shared contracts schema,
-    // and the controller consumes that schema instead of redefining it.
-    expect(contract).toContain("z.enum(['direct_turn', 'pi_readonly'])");
-    expect(controller).toContain('AssistantClientCommandSchema');
-    expect(controller).not.toContain('process.pi_readonly_spike');
+    expect(view).toContain('AI_ASSISTANT_RUNTIME_KEY');
+    expect(session).toContain('options.runtime.listMessages(conversationId)');
+    expect(session).toContain('options.runtime.streamMessage(');
+    expect(session).toContain('options.runtime.cancelRun(runId)');
+    expect(session).toContain('options.runtime.deleteConversation(id)');
+    expect(session).not.toContain('useAssistantDispatch');
+    expect(session).not.toContain('executionProfileId');
+    expect(composer).not.toContain('ai-chat-execution-profile');
+    expect(composer).not.toContain("'select-execution-profile'");
   });
 
-  it('locks Desktop IPC multi-profile + cancel_run transport contracts', () => {
-    const ipc = read(
-      'packages/ai/src/infrastructure-client/adapters/ipc/ai-assistant-ipc.adapter.ts',
-    );
-    const ipcTest = read(
-      'packages/ai/src/infrastructure-client/adapters/ipc/ai-assistant-ipc.adapter.test.ts',
-    );
+  it('locks Web/Desktop runtime clients and canonical HTTP/IPC parity', () => {
+    const web = read('apps/web/src/platform/di-app.ts');
+    const desktop = read('apps/desktop/src/renderer/platform/di-app.ts');
+    const client = read('packages/ai/src/client/runtime-assistant.ts');
+    const routes = read('packages/ai/src/api/routes/ai-runtime.routes.ts');
+    const electron = read('packages/ai/src/electron/index.ts');
     const channels = read('packages/contracts/src/electron/ipc-channels.ts');
 
-    expect(ipc).toContain('dispatchAssistant');
-    expect(ipcTest).toContain('executionProfileId');
-    expect(ipcTest).toContain('pi_readonly');
-    expect(ipcTest).toContain("type: 'cancel_run'");
-    expect(channels).toContain("ASSISTANT_DISPATCH_START: 'ai:assistant:dispatch:start'");
-    expect(channels).toContain("ASSISTANT_DISPATCH_CANCEL: 'ai:assistant:dispatch:cancel'");
+    expect(web).toContain('createAssistantRuntimeHttpClient');
+    expect(web).toContain('AI_ASSISTANT_RUNTIME_KEY');
+    expect(desktop).toContain('createAssistantRuntimeIpcClient');
+    expect(desktop).toContain('AI_ASSISTANT_RUNTIME_KEY');
+
+    for (const path of [
+      '/ai/runtime/assistant/history',
+      '/ai/runtime/assistant/delete',
+      '/ai/runtime/assistant/sse',
+      '/ai/runtime/assistant/cancel',
+    ]) {
+      expect(client).toContain(path);
+    }
+    expect(routes).toContain('authenticatedIdentity(req)');
+    for (const channel of [
+      'RUNTIME_ASSISTANT_HISTORY',
+      'RUNTIME_ASSISTANT_DELETE',
+      'RUNTIME_ASSISTANT_START',
+      'RUNTIME_ASSISTANT_CANCEL',
+    ]) {
+      expect(channels).toContain(channel);
+      expect(electron).toContain(channel);
+    }
   });
 
-  it('locks Vue multi-engine Host product selectors for future Playwright drivers', () => {
-    const composer = read(
-      'packages/app-vue/src/modules/ai/components/AIFooterComposer.vue',
+  it('locks one-time persistent transcript migration, owner delete, and runtime metadata', () => {
+    const history = read('packages/ai/src/server/mastra/runtime/assistant-history.service.ts');
+    const bootstrap = read(
+      'packages/ai/src/server/infrastructure/migrations/conversation-transcript-bootstrap.source.ts',
     );
-    const session = read(
-      'packages/app-vue/src/modules/ai/composables/useAIChatSession.ts',
+    const restart = read(
+      'packages/ai/src/server/mastra/runtime/assistant-history.persistence.spec.ts',
     );
-    const timeline = read(
-      'packages/app-vue/src/modules/ai/components/AIHostTimelineArtifactStrip.vue',
-    );
-    const turnMemory = read(
-      'packages/app-vue/src/modules/ai/composables/hostOpenChatTurnMemory.ts',
-    );
+    const runtime = read('packages/ai/src/server/mastra/runtime/mastra-ai.runtime.ts');
 
-    expect(composer).toContain('ai-chat-execution-profile');
-    expect(composer).toContain('ai-chat-execution-profile-direct');
-    expect(composer).toContain('ai-chat-execution-profile-readonly');
-    expect(composer).toContain('ai-chat-stop-generating');
-    expect(session).toContain('executionProfileId');
-    expect(session).toContain('createHostOpenChatRunId');
-    expect(session).toContain('buildHostOpenChatStopCancelCommand');
-    expect(session).toContain('openChatHostTurns');
-    expect(timeline).toContain('ai-host-timeline-artifact-strip');
-    expect(timeline).toContain('ai-host-timeline-artifact-engine-');
-    expect(timeline).toContain('data-engine-key');
-    expect(turnMemory).toContain('rememberOpenChatHostTurnsForConversation');
-    expect(turnMemory).toContain('restoreOpenChatHostTurnsForConversation');
+    expect(history).toContain('memoflowTranscriptBootstrapVersion');
+    expect(bootstrap).toContain('includeChildren: true');
+    expect(bootstrap).not.toContain('createMessage');
+    expect(restart).toContain('persistent restart cutover');
+    expect(restart).toContain('expect(restartedSource.load).not.toHaveBeenCalled()');
+    expect(history).toContain('memory.deleteThread');
+    expect(runtime).toContain("emit('assistant.run.started'");
+    expect(runtime).toContain("emit('assistant.usage.updated'");
+    expect(runtime).toContain('providerId');
+    expect(runtime).toContain('modelId');
   });
 
-  it('keeps process spike out of product multi-engine path and mid-turn cancel evidence present', () => {
-    const facade = read(
-      'packages/ai/src/server/infrastructure/assistant-facade/assistant.facade.ts',
-    );
-    const productionJourney = read(
-      'packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-production-multi-engine-host.journey.spec.ts',
-    );
-    const processAdapter = read(
-      'packages/ai/src/server/infrastructure/turn-engine/pi-readonly-process.adapter.ts',
-    );
+  it('locks Python chat composition out of both hosts while preserving workflow isolation', () => {
+    const apiCompose = read('apps/api/src/runtime/compose-ai.ts');
+    const desktopCompose = read('apps/desktop/src/main/runtime/compose-ai.ts');
+    const chatView = read('packages/app-vue/src/modules/ai/views/AIChatView.vue');
 
-    expect(facade).not.toContain('process.pi_readonly_spike');
-    expect(facade).not.toContain('PiReadonlyProcessAdapter');
-    expect(facade).toContain('cancel_run');
-    expect(productionJourney).toContain('mid-turn cancel_run');
-    expect(productionJourney).toContain('engine.direct_turn');
-    expect(productionJourney).toContain('engine.pi_readonly');
-    expect(processAdapter).toContain('productDefault = false');
-    expect(processAdapter).toContain('PI_SPIKE_SPAWN_BLOCKED');
-    expect(processAdapter).not.toContain('child_process');
+    expect(apiCompose).not.toContain('AIServiceChatExecutionAdapter');
+    expect(desktopCompose).not.toContain('AIServiceChatExecutionAdapter');
+    expect(apiCompose).not.toContain('chatExecutionPort:');
+    expect(desktopCompose).not.toContain('chatExecutionPort:');
+    expect(chatView).toContain('composeHostWorkbenchTimelineArtifacts');
+    expect(chatView).toContain('openChatTurns: []');
+    expect(chatView).not.toContain('openChatHostTurns');
   });
 
-  it('does not claim Playwright/Electron full product E2E green in residual 405', () => {
-    const scaffold = read(
-      'packages/ai/src/server/infrastructure/runtime/adr-035-cross-end-multi-engine-product.scaffold.ts',
-    );
-    expect(scaffold).toContain('Not a Playwright/Electron full product E2E run');
-    expect(scaffold).toContain('external_blocked');
-    expect(scaffold).toContain('e2e.playwright_web_full');
-    expect(scaffold).toContain('e2e.electron_desktop_full');
-    expect(scaffold).toContain('e2e.real_pi_spawn');
-    // Fail closed: no accidental "product E2E complete" claim language.
-    expect(scaffold).not.toMatch(/full multi-engine product E2E passed/i);
-    expect(scaffold).not.toMatch(/Playwright green/i);
+  it('records Web Playwright as implemented but keeps packaged Electron explicitly external', () => {
+    const webStep = journey.find((step) => step.id === 'e2e.playwright_web_full');
+    const electronStep = journey.find((step) => step.id === 'e2e.electron_desktop_full');
+    expect(webStep?.status).toBe('implemented_unit');
+    expect(webStep?.contracts).toContain('/ai/runtime/assistant/sse');
+    expect(electronStep?.status).toBe('external_blocked');
+    expect(electronStep?.blockedReason).toContain('packaged Desktop runtime');
   });
 });

@@ -34,6 +34,42 @@ export const AssistantRuntimeClientCommandSchema = z.discriminatedUnion('type', 
 ]);
 export type AssistantRuntimeClientCommand = z.infer<typeof AssistantRuntimeClientCommandSchema>;
 
+export const AssistantRuntimeHistoryClientRequestSchema = z
+  .object({
+    conversationId: z.string().min(1),
+    identityId: z.never().optional(),
+  })
+  .strict();
+export type AssistantRuntimeHistoryClientRequest = z.infer<
+  typeof AssistantRuntimeHistoryClientRequestSchema
+>;
+
+export const AssistantRuntimeMessageViewSchema = z
+  .object({
+    id: z.string().min(1),
+    conversationId: z.string().min(1),
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string(),
+    createdAt: z.number().int().nonnegative(),
+  })
+  .strict();
+export type AssistantRuntimeMessageView = z.infer<typeof AssistantRuntimeMessageViewSchema>;
+
+export const AssistantRuntimeHistoryViewSchema = z
+  .object({
+    conversationId: z.string().min(1),
+    messages: z.array(AssistantRuntimeMessageViewSchema),
+  })
+  .strict();
+export type AssistantRuntimeHistoryView = z.infer<typeof AssistantRuntimeHistoryViewSchema>;
+
+export const AssistantRuntimeConversationDeleteResultSchema = z
+  .object({ deleted: z.boolean() })
+  .strict();
+export type AssistantRuntimeConversationDeleteResult = z.infer<
+  typeof AssistantRuntimeConversationDeleteResultSchema
+>;
+
 const RuntimeEventBaseShape = {
   eventId: z.string().min(1),
   runId: z.string().min(1),

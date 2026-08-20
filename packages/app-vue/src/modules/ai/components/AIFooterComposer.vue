@@ -116,37 +116,6 @@
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <!-- Residual 369: Host engine profile (DirectTurn vs ReadonlyAnalysis) -->
-            <div class="shrink-0" data-testid="ai-chat-execution-profile">
-              <Select
-                :model-value="executionProfileId"
-                @update:model-value="
-                  $emit(
-                    'select-execution-profile',
-                    String($event) === 'pi_readonly' ? 'pi_readonly' : 'direct_turn',
-                  )
-                "
-              >
-                <SelectTrigger
-                  class="h-8 rounded-xl"
-                  :class="density === 'icon' ? 'w-10 px-2' : 'w-[7.5rem] px-2.5'"
-                  data-testid="ai-chat-execution-profile-trigger"
-                  :title="t('aiAssistant.chatPage.hostProfile.label')"
-                  :aria-label="t('aiAssistant.chatPage.hostProfile.label')"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="direct_turn" data-testid="ai-chat-execution-profile-direct">
-                    {{ t('aiAssistant.chatPage.hostProfile.directTurn') }}
-                  </SelectItem>
-                  <SelectItem value="pi_readonly" data-testid="ai-chat-execution-profile-readonly">
-                    {{ t('aiAssistant.chatPage.hostProfile.piReadonly') }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <!-- Model selector / empty warning (no permanent full-row empty card) -->
             <div
               v-if="modelGroups.length"
@@ -278,12 +247,10 @@ const props = withDefaults(
       models: ChatModelOption[];
     }>;
     selectedModelKey: string;
-    /** Residual 369: Host open-chat engine profile. */
-    executionProfileId?: 'direct_turn' | 'pi_readonly';
     /** Shell density: comfortable (chat) / compact (focus or mid split) / icon (narrow AI). */
     density?: ComposerDensity;
   }>(),
-  { density: 'comfortable', executionProfileId: 'direct_turn' },
+  { density: 'comfortable' },
 );
 
 const emit = defineEmits<{
@@ -292,7 +259,6 @@ const emit = defineEmits<{
   stop: [];
   'start-conversation': [mode?: WorkflowMode | string];
   'select-model': [modelKey: string];
-  'select-execution-profile': [profile: 'direct_turn' | 'pi_readonly'];
   'open-settings': [];
 }>();
 

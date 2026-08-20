@@ -1,7 +1,10 @@
 import { Router, type Request, type RequestHandler, type Response } from 'express';
 import {
   AssistantRuntimeClientCommandSchema,
+  AssistantRuntimeConversationDeleteResultSchema,
   AssistantRuntimeEventSchema,
+  AssistantRuntimeHistoryClientRequestSchema,
+  AssistantRuntimeHistoryViewSchema,
   AIWorkflowCancelClientRequestSchema,
   AIWorkflowGetClientRequestSchema,
   AIWorkflowListClientRequestSchema,
@@ -11,14 +14,21 @@ import {
   type AssistantRuntimeEvent,
 } from '@memoflow/contracts/ai';
 import { createHttpResponseBuilder, formatZodErrors } from '@memoflow/utils/result';
-import type { AIWorkflowRuntimePort, MastraAIRuntime } from '../../server/mastra/runtime';
+import {
+  AssistantConversationUnavailableError,
+  type AIWorkflowRuntimePort,
+  type MastraAIRuntime,
+} from '../../server/mastra/runtime';
 import { readAiExpressEnvelopeMeta } from '../../shared/express-execution-context';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
 }
 
-type AssistantRuntimePort = Pick<MastraAIRuntime, 'dispatchMessage' | 'cancelRun'>;
+type AssistantRuntimePort = Pick<
+  MastraAIRuntime,
+  'dispatchMessage' | 'cancelRun' | 'listMessages' | 'deleteConversation'
+>;
 
 function authenticatedIdentity(req: Request): string | undefined {
   return (req as Request & { user?: { identityId?: string } }).user?.identityId;
@@ -113,6 +123,72 @@ export function registerAIRuntimeRoutes(
       req.removeListener('aborted', close);
       res.removeListener('close', close);
       if (!res.writableEnded) res.end();
+    }
+  });
+
+  router.post('/assistant/history', auth, async (req, res) => {
+    const responseBuilder = createHttpResponseBuilder(readAiExpressEnvelopeMeta(req));
+    const identityId = authenticatedIdentity(req);
+    if (!identityId) {
+      res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
+      return;
+    }
+    if (!runtime) {
+      res.status(503).json(responseBuilder.error('SERVICE_UNAVAILABLE', 'AI runtime unavailable'));
+      return;
+    }
+
+    const parsed = AssistantRuntimeHistoryClientRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(responseBuilder.validationError(formatZodErrors(parsed.error.issues)));
+      return;
+    }
+
+    try {
+      const history = AssistantRuntimeHistoryViewSchema.parse(
+        await runtime.listMessages({
+          identityId,
+          conversationId: parsed.data.conversationId,
+        }),
+      );
+      res.status(200).json(responseBuilder.success(history));
+    } catch (error) {
+      if (error instanceof AssistantConversationUnavailableError) {
+        res.status(404).json(responseBuilder.error('NOT_FOUND', 'Conversation not found'));
+        return;
+      }
+      res.status(500).json(responseBuilder.error('AI_RUNTIME_ERROR', 'AI runtime request failed'));
+    }
+  });
+
+  router.post('/assistant/delete', auth, async (req, res) => {
+    const responseBuilder = createHttpResponseBuilder(readAiExpressEnvelopeMeta(req));
+    const identityId = authenticatedIdentity(req);
+    if (!identityId) {
+      res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
+      return;
+    }
+    if (!runtime) {
+      res.status(503).json(responseBuilder.error('SERVICE_UNAVAILABLE', 'AI runtime unavailable'));
+      return;
+    }
+
+    const parsed = AssistantRuntimeHistoryClientRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(responseBuilder.validationError(formatZodErrors(parsed.error.issues)));
+      return;
+    }
+
+    try {
+      const result = AssistantRuntimeConversationDeleteResultSchema.parse({
+        deleted: await runtime.deleteConversation({
+          identityId,
+          conversationId: parsed.data.conversationId,
+        }),
+      });
+      res.status(200).json(responseBuilder.success(result));
+    } catch {
+      res.status(500).json(responseBuilder.error('AI_RUNTIME_ERROR', 'AI runtime request failed'));
     }
   });
 

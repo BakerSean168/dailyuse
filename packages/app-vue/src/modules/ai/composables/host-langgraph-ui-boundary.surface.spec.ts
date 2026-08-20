@@ -12,12 +12,8 @@ describe('Host LangGraph UI leakage boundary surface (residual 413)', () => {
   const dir = __dirname;
   const boundary = readFileSync(resolve(dir, 'hostLangGraphUiBoundary.ts'), 'utf8');
   const hostLifecycle = readFileSync(resolve(dir, 'hostProposalLifecycle.ts'), 'utf8');
-  const openChatCancel = readFileSync(resolve(dir, 'hostOpenChatCancel.ts'), 'utf8');
-  const openChatMemory = readFileSync(resolve(dir, 'hostOpenChatTurnMemory.ts'), 'utf8');
-  const proposalPanel = readFileSync(
-    resolve(dir, '../components/AIHostProposalPanel.vue'),
-    'utf8',
-  );
+  const openChatSession = readFileSync(resolve(dir, 'useAIChatSession.ts'), 'utf8');
+  const proposalPanel = readFileSync(resolve(dir, '../components/AIHostProposalPanel.vue'), 'utf8');
   const receiptPanel = readFileSync(
     resolve(dir, '../components/AIHostExecutionReceiptPanel.vue'),
     'utf8',
@@ -41,11 +37,10 @@ describe('Host LangGraph UI leakage boundary surface (residual 413)', () => {
     expect(boundary).not.toContain('child_process');
   });
 
-  it('keeps Host proposal/receipt/timeline/open-chat product surfaces free of LangGraph UI contracts', () => {
+  it('keeps Host proposal/receipt/timeline and Mastra open-chat surfaces free of LangGraph UI contracts', () => {
     const violations = collectHostWorkbenchLangGraphLeakageViolations([
       { name: 'hostProposalLifecycle.ts', content: hostLifecycle },
-      { name: 'hostOpenChatCancel.ts', content: openChatCancel },
-      { name: 'hostOpenChatTurnMemory.ts', content: openChatMemory },
+      { name: 'useAIChatSession.ts', content: openChatSession },
       { name: 'AIHostProposalPanel.vue', content: proposalPanel },
       { name: 'AIHostExecutionReceiptPanel.vue', content: receiptPanel },
       { name: 'AIHostTimelineArtifactStrip.vue', content: timelineStrip },

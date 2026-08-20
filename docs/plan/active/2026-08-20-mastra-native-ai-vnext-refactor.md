@@ -8,7 +8,7 @@ tags:
   - refactor
 description: MemoFlow AI vNext Mastra-native 一次性大重构实施计划
 created: 2026-08-20T00:00:00+08:00
-updated: 2026-08-20T13:40:00+08:00
+updated: 2026-08-20T16:00:00+08:00
 ---
 
 # MemoFlow AI vNext — Mastra-native 一次性大重构实施计划
@@ -274,7 +274,43 @@ workflow.cancelled
 - changed-file Prettier check PASS；contracts/ai/api/desktop lint targets均无 error，vNext 新增面 focused lint clean；
 - `docs:check` PASS；`governance:check` PASS；test-system-v2 inventory/governance PASS。
 
-**Next owner:** `AI-VNEXT-03 / Batch B — Open chat cutover to Mastra Assistant`。从这里开始，默认 open chat 必须逐步切断 `AssistantFacade -> DirectTurnEngine -> AIServiceChatExecutionAdapter` 路径，并完成 transcript 一次性 import / Mastra authoritative history cutover。
+**Historical next owner:** `AI-VNEXT-03 / Batch B — Open chat cutover to Mastra Assistant`。该 owner 已在 §5.7 闭合；当前 next owner 为 `AI-VNEXT-04 / Batch C — goal.create reference Workflow`。
+
+## 5.7 Open Chat Cutover Closure Checkpoint — 2026-08-20
+
+**AI-VNEXT-03 / Batch B 已完成。** 默认 open chat 已从旧 `AssistantFacade -> DirectTurnEngine -> AIServiceChatExecutionAdapter` 路径物理切换到单一 Mastra Assistant runtime；旧 Agent Host 仅保留给尚未迁移的 workflow proposal lifecycle，不能再承载默认聊天。
+
+**Runtime / persistence：**
+
+- `useAIChatSession` 的 history / send / cancel / delete 全部经过独立 `AssistantRuntimeClient`；Web 注入 `AssistantRuntimeHttpClient`，Desktop 注入 `AssistantRuntimeIpcClient`；默认聊天不再 import `useAssistantDispatch`；
+- canonical Assistant transport 已包含 `history / delete / stream / cancel`，HTTP 与 IPC 共享 contracts，identity 只由 authenticated host 注入；
+- 既有 `Conversation` / `AiMessage` 只作为一次性只读 bootstrap source；Mastra thread metadata 写入 `memoflowTranscriptBootstrapVersion` 后不再读取旧 transcript，新消息不双写 `AiMessage`；
+- persistent LibSQL restart test 证明第二个 runtime 实例从同一 Mastra thread 恢复历史且不再次调用 legacy transcript source；
+- conversation delete 先 owner-scoped 删除 Mastra thread，再删除 legacy shell；若 shell delete 失败，保留的 shell/transcript 仍可重新 bootstrap，不产生不可见 orphan；
+- runtime 对外投影 selected `providerId/modelId` 与 `assistant.usage.updated` token usage，不暴露 credential/raw provider payload。
+
+**Legacy product path retirement：**
+
+- API/Desktop host composition 不再构造 `AIServiceChatExecutionAdapter`，默认 chat 没有 `chatExecutionPort`；
+- `AIFooterComposer` 删除 `direct_turn / pi_readonly` execution-profile selector；默认 chat 不再制造 client-owned Host runId 或 open-chat engine badge memory；
+- `hostOpenChatCancel.ts`、`hostOpenChatTurnMemory.ts` 及对应 tests 已删除；
+- 历史 ADR-035 cross-end scaffold/driver 保留稳定文件名以兼容归档引用，但治理语义已重写为 Mastra cutover conformance，不再强制旧 multi-engine open-chat 存在；
+- Web 历史 `multi-engine-host.spec.ts` 已重写为真实 Mastra open-chat Playwright journey；Goal workflow E2E 的普通聊天 bootstrap 也改走 canonical runtime SSE，旧 `/ai/assistant/dispatch/sse` 只允许 transitional proposal command，并显式拒绝 `message`。
+
+**Closure evidence：**
+
+- `contracts:test` = **68 files / 594 tests PASS**；test-system-v2 inventory = **1145 files**，inventory check PASS；
+- `ai:test` = **133 files / 917 tests PASS**；Mastra cutover scaffold/driver focused = **13/13 PASS**；
+- `app-vue:test` = **185 files / 1018 tests PASS**；`AIChatView` = **29/29 PASS**；
+- API composition = **12/12 PASS**；Desktop composition = **4/4 PASS**；Assistant history/delete/client/HTTP/IPC focused suite PASS；
+- real Web Playwright Mastra open-chat = **2/2 PASS**：发送路径 + reload 后 authoritative history 恢复；
+- real Web Playwright mixed-period Goal journey = **1/1 PASS**：Mastra open chat bootstrap → transitional Goal Agent confirmation/execution；
+- `ai:typecheck`、`app-vue:typecheck`、`api:typecheck`、`desktop:typecheck`、`web:typecheck` PASS；`ai:build`、`web:build`、`desktop:build` PASS；
+- `ai/app-vue/api/desktop/web` lint 均 **0 error**，本轮改动面新增 warning 已清零；
+- changed-file Prettier + `git diff --check` PASS；`docs:check` PASS；`governance:check` PASS；
+- packaged Electron full product E2E 本轮未执行，因此治理 scaffold 仍把该单项标为 `external_blocked`；这不改变 Desktop canonical IPC/runtime composition 与 package-level parity 已闭合的事实。
+
+**Next owner:** `AI-VNEXT-04 / Batch C — goal.create reference Workflow`。下一轮直接注册 concrete Mastra `goal.create` Workflow，替换 Goal AgentRun / Host Proposal bridge 的 primary path。
 
 ## 6. Implementation Batches
 
@@ -316,6 +352,8 @@ workflow.cancelled
 **Acceptance:** §5.5 全部满足；focused contract/runtime tests + `ai` typecheck/test/build green；API/Desktop composition smoke green；no credential in serialized runtime event/snapshot。
 
 ### Batch B — Open chat cutover to Mastra Assistant / AgentController
+
+**Current status:** **COMPLETED — AI-VNEXT-03 closed**，见 §5.7。默认聊天已由 Mastra Assistant + persistent Memory/Storage 权威承载；旧 Agent Host/Python chat 不再位于 default path。
 
 **Goal:** 默认聊天不再经过 `DirectTurnEngine` 或 Python service。
 

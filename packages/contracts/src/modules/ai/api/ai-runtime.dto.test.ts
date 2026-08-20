@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   AssistantRuntimeClientCommandSchema,
   AssistantRuntimeEventSchema,
+  AssistantRuntimeHistoryClientRequestSchema,
+  AssistantRuntimeHistoryViewSchema,
   AIWorkflowCancelClientRequestSchema,
   AIWorkflowGetClientRequestSchema,
   AIWorkflowListClientRequestSchema,
@@ -21,6 +23,31 @@ describe('AI vNext runtime contracts', () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it('rejects identity injection and private fields on assistant history transport', () => {
+    expect(
+      AssistantRuntimeHistoryClientRequestSchema.safeParse({
+        conversationId: 'conversation-1',
+        identityId: 'attacker-controlled',
+      }).success,
+    ).toBe(false);
+
+    expect(
+      AssistantRuntimeHistoryViewSchema.safeParse({
+        conversationId: 'conversation-1',
+        messages: [
+          {
+            id: 'message-1',
+            conversationId: 'conversation-1',
+            role: 'assistant',
+            content: 'hello',
+            createdAt: 1,
+            providerMetadata: { apiKey: 'must-not-cross-boundary' },
+          },
+        ],
+      }).success,
+    ).toBe(false);
   });
 
   it('requires strictly monotonic-capable positive event sequences, rejects unknown event types, and strips credential-shaped extras', () => {

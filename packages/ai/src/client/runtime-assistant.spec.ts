@@ -80,6 +80,40 @@ const completed = {
 };
 
 describe('AssistantRuntimeHttpClient', () => {
+  it('loads authoritative history from the canonical runtime endpoint without identity payloads', async () => {
+    const history = {
+      conversationId: 'conversation-1',
+      messages: [
+        {
+          id: 'message-1',
+          conversationId: 'conversation-1',
+          role: 'assistant' as const,
+          content: 'persisted reply',
+          createdAt: 1,
+        },
+      ],
+    };
+    const post = vi.fn().mockResolvedValue(ok(history));
+    const client = new AssistantRuntimeHttpClient(httpStub({ post }));
+
+    await expect(client.listMessages('conversation-1')).resolves.toEqual(history);
+    expect(post).toHaveBeenCalledWith('/ai/runtime/assistant/history', {
+      conversationId: 'conversation-1',
+    });
+    expect(JSON.stringify(post.mock.calls)).not.toContain('identityId');
+  });
+
+  it('deletes the owner-scoped Mastra conversation through the canonical runtime endpoint', async () => {
+    const post = vi.fn().mockResolvedValue(ok({ deleted: true }));
+    const client = new AssistantRuntimeHttpClient(httpStub({ post }));
+
+    await expect(client.deleteConversation('conversation-1')).resolves.toBe(true);
+    expect(post).toHaveBeenCalledWith('/ai/runtime/assistant/delete', {
+      conversationId: 'conversation-1',
+    });
+    expect(JSON.stringify(post.mock.calls)).not.toContain('identityId');
+  });
+
   it('streams only canonical runtime events and never adds identity to the command', async () => {
     const stream = vi
       .fn()
@@ -129,6 +163,40 @@ describe('AssistantRuntimeHttpClient', () => {
 });
 
 describe('AssistantRuntimeIpcClient', () => {
+  it('loads authoritative history over the canonical IPC request channel', async () => {
+    const history = {
+      conversationId: 'conversation-1',
+      messages: [
+        {
+          id: 'message-1',
+          conversationId: 'conversation-1',
+          role: 'assistant' as const,
+          content: 'persisted reply',
+          createdAt: 1,
+        },
+      ],
+    };
+    const invoke = vi.fn(async () => ok(history));
+    const client = new AssistantRuntimeIpcClient({ invoke } as never);
+
+    await expect(client.listMessages('conversation-1')).resolves.toEqual(history);
+    expect(invoke).toHaveBeenCalledWith(AIChannels.RUNTIME_ASSISTANT_HISTORY, {
+      conversationId: 'conversation-1',
+    });
+    expect(JSON.stringify(invoke.mock.calls)).not.toContain('identityId');
+  });
+
+  it('deletes the owner-scoped Mastra conversation over the canonical IPC channel', async () => {
+    const invoke = vi.fn(async () => ok({ deleted: true }));
+    const client = new AssistantRuntimeIpcClient({ invoke } as never);
+
+    await expect(client.deleteConversation('conversation-1')).resolves.toBe(true);
+    expect(invoke).toHaveBeenCalledWith(AIChannels.RUNTIME_ASSISTANT_DELETE, {
+      conversationId: 'conversation-1',
+    });
+    expect(JSON.stringify(invoke.mock.calls)).not.toContain('identityId');
+  });
+
   it('subscribes to canonical push events and resolves only after a terminal runtime event', async () => {
     const { bridge, emit } = bridgeHarness();
     const invoke = vi.fn(

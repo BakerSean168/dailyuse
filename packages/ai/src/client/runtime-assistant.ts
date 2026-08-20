@@ -1,8 +1,12 @@
 import {
   AssistantRuntimeClientCommandSchema,
+  AssistantRuntimeConversationDeleteResultSchema,
   AssistantRuntimeEventSchema,
+  AssistantRuntimeHistoryClientRequestSchema,
+  AssistantRuntimeHistoryViewSchema,
   type AssistantRuntimeClientCommand,
   type AssistantRuntimeEvent,
+  type AssistantRuntimeHistoryView,
 } from '@memoflow/contracts/ai';
 import { AIChannels, AIStreamChannels } from '@memoflow/contracts/electron';
 import { unwrapOrThrowError } from '@memoflow/contracts/result';
@@ -28,6 +32,8 @@ export interface AssistantRuntimeHandlers {
 
 /** Thin client-side vNext seam; no Mastra private type crosses this interface. */
 export interface AssistantRuntimeClient {
+  listMessages(conversationId: string): Promise<AssistantRuntimeHistoryView>;
+  deleteConversation(conversationId: string): Promise<boolean>;
   streamMessage(
     command: AssistantRuntimeMessageCommand,
     handlers: AssistantRuntimeHandlers,
@@ -77,10 +83,34 @@ function parseTransportError(payload: unknown) {
 }
 
 export class AssistantRuntimeHttpClient implements AssistantRuntimeClient {
+  private readonly historyUrl = '/ai/runtime/assistant/history';
+  private readonly deleteUrl = '/ai/runtime/assistant/delete';
   private readonly streamUrl = '/ai/runtime/assistant/sse';
   private readonly cancelUrl = '/ai/runtime/assistant/cancel';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
+
+  async listMessages(conversationId: string): Promise<AssistantRuntimeHistoryView> {
+    const request = AssistantRuntimeHistoryClientRequestSchema.parse({ conversationId });
+    const result = await this.httpClient.post<unknown>(this.historyUrl, request);
+    const parsed = AssistantRuntimeHistoryViewSchema.safeParse(unwrapOrThrowError(result));
+    if (!parsed.success) {
+      throw runtimeProtocolError('AI runtime history failed protocol validation');
+    }
+    return parsed.data;
+  }
+
+  async deleteConversation(conversationId: string): Promise<boolean> {
+    const request = AssistantRuntimeHistoryClientRequestSchema.parse({ conversationId });
+    const result = await this.httpClient.post<unknown>(this.deleteUrl, request);
+    const parsed = AssistantRuntimeConversationDeleteResultSchema.safeParse(
+      unwrapOrThrowError(result),
+    );
+    if (!parsed.success) {
+      throw runtimeProtocolError('AI runtime delete failed protocol validation');
+    }
+    return parsed.data.deleted;
+  }
 
   async streamMessage(
     command: AssistantRuntimeMessageCommand,
@@ -156,6 +186,34 @@ export class AssistantRuntimeHttpClient implements AssistantRuntimeClient {
 
 export class AssistantRuntimeIpcClient implements AssistantRuntimeClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
+
+  async listMessages(conversationId: string): Promise<AssistantRuntimeHistoryView> {
+    const request = AssistantRuntimeHistoryClientRequestSchema.parse({ conversationId });
+    const result = await this.ipcClient.invoke<unknown>(
+      AIChannels.RUNTIME_ASSISTANT_HISTORY,
+      request,
+    );
+    const parsed = AssistantRuntimeHistoryViewSchema.safeParse(unwrapOrThrowError(result));
+    if (!parsed.success) {
+      throw runtimeProtocolError('AI runtime history failed protocol validation');
+    }
+    return parsed.data;
+  }
+
+  async deleteConversation(conversationId: string): Promise<boolean> {
+    const request = AssistantRuntimeHistoryClientRequestSchema.parse({ conversationId });
+    const result = await this.ipcClient.invoke<unknown>(
+      AIChannels.RUNTIME_ASSISTANT_DELETE,
+      request,
+    );
+    const parsed = AssistantRuntimeConversationDeleteResultSchema.safeParse(
+      unwrapOrThrowError(result),
+    );
+    if (!parsed.success) {
+      throw runtimeProtocolError('AI runtime delete failed protocol validation');
+    }
+    return parsed.data.deleted;
+  }
 
   async streamMessage(
     command: AssistantRuntimeMessageCommand,

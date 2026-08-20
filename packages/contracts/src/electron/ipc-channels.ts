@@ -172,6 +172,8 @@ export const AIChannels = {
   /** AI vNext canonical Mastra Assistant stream start/cancel. */
   RUNTIME_ASSISTANT_START: 'ai:runtime:assistant:start',
   RUNTIME_ASSISTANT_CANCEL: 'ai:runtime:assistant:cancel',
+  RUNTIME_ASSISTANT_HISTORY: 'ai:runtime:assistant:history',
+  RUNTIME_ASSISTANT_DELETE: 'ai:runtime:assistant:delete',
   /** AI vNext canonical Workflow request/response surface. */
   RUNTIME_WORKFLOW_START: 'ai:runtime:workflow:start',
   RUNTIME_WORKFLOW_RESUME: 'ai:runtime:workflow:resume',

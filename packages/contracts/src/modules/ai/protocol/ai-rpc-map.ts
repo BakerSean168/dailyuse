@@ -38,6 +38,9 @@ import type {
 } from '../api/ai-agent.dto';
 import type {
   AssistantRuntimeClientCommand,
+  AssistantRuntimeConversationDeleteResult,
+  AssistantRuntimeHistoryClientRequest,
+  AssistantRuntimeHistoryView,
   AIWorkflowCancelClientRequest,
   AIWorkflowGetClientRequest,
   AIWorkflowListClientRequest,
@@ -75,6 +78,14 @@ export type AIRpcMap = {
     void,
   ];
   'ai:runtime:assistant:cancel': [AssistantRuntimeClientCommand, { cancelled: boolean }];
+  'ai:runtime:assistant:history': [
+    AssistantRuntimeHistoryClientRequest,
+    AssistantRuntimeHistoryView,
+  ];
+  'ai:runtime:assistant:delete': [
+    AssistantRuntimeHistoryClientRequest,
+    AssistantRuntimeConversationDeleteResult,
+  ];
   'ai:runtime:workflow:start': [AIWorkflowStartClientRequest, AIWorkflowRunView];
   'ai:runtime:workflow:resume': [AIWorkflowResumeClientRequest, AIWorkflowRunView];
   'ai:runtime:workflow:get': [AIWorkflowGetClientRequest, AIWorkflowRunView | null];

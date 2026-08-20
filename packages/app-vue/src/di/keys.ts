@@ -24,6 +24,7 @@ import type {
   ISettingService,
   IDataPortabilityService,
   IAIService,
+  IAssistantRuntimeService,
   IRuleService,
   IDashboardService,
   ModuleCapsule,
@@ -45,6 +46,8 @@ export const SETTING_SERVICE_KEY: InjectionKey<ISettingService> = Symbol('Settin
 export const DATA_PORTABILITY_SERVICE_KEY: InjectionKey<IDataPortabilityService> =
   Symbol('DataPortabilityService');
 export const AI_SERVICE_KEY: InjectionKey<IAIService> = Symbol('AIService');
+export const AI_ASSISTANT_RUNTIME_KEY: InjectionKey<IAssistantRuntimeService> =
+  Symbol('AIAssistantRuntime');
 export const RULE_SERVICE_KEY: InjectionKey<IRuleService> = Symbol('RuleService');
 export const DASHBOARD_SERVICE_KEY: InjectionKey<IDashboardService> = Symbol('DashboardService');
 

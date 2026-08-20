@@ -2937,6 +2937,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/server/infrastructure/migrations/conversation-transcript-bootstrap.source.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/server/infrastructure/model-gateway/__tests__/custom-model.gateway.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3278,6 +3288,26 @@
     },
     {
       "path": "packages/ai/src/server/mastra/models/model-resolver.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/mastra/runtime/assistant-history.persistence.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/mastra/runtime/assistant-history.service.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -3678,22 +3708,6 @@
     },
     {
       "path": "packages/app-vue/src/modules/ai/composables/hostLangGraphUiBoundary.spec.ts",
-      "primarySuite": "unit",
-      "collectors": [
-        "packages/app-vue/vitest.config.ts"
-      ],
-      "measurementCollectors": []
-    },
-    {
-      "path": "packages/app-vue/src/modules/ai/composables/hostOpenChatCancel.spec.ts",
-      "primarySuite": "unit",
-      "collectors": [
-        "packages/app-vue/vitest.config.ts"
-      ],
-      "measurementCollectors": []
-    },
-    {
-      "path": "packages/app-vue/src/modules/ai/composables/hostOpenChatTurnMemory.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -10562,21 +10576,21 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 130
+      "fileCount": 133
     },
     {
       "id": "packages/ai/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 130
+      "fileCount": 133
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 187
+      "fileCount": 185
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11206,6 +11220,7 @@
       "packages/ai/src/server/infrastructure/chat-execution/to-number-keep-boundary.surface.spec.ts",
       "packages/ai/src/server/infrastructure/gateways/openai-compatible-model-catalog.gateway.spec.ts",
       "packages/ai/src/server/infrastructure/gateways/openai-compatible.gateway.spec.ts",
+      "packages/ai/src/server/infrastructure/migrations/conversation-transcript-bootstrap.source.spec.ts",
       "packages/ai/src/server/infrastructure/model-gateway/__tests__/custom-model.gateway.spec.ts",
       "packages/ai/src/server/infrastructure/proposal-kernel/__tests__/proposal.kernel.spec.ts",
       "packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-capability-turn-isolation.journey.spec.ts",
@@ -11241,6 +11256,8 @@
       "packages/ai/src/server/infrastructure/workflow/__tests__/langgraph-workflow.adapter.spec.ts",
       "packages/ai/src/server/mastra/mastra-vnext-architecture.surface.spec.ts",
       "packages/ai/src/server/mastra/models/model-resolver.spec.ts",
+      "packages/ai/src/server/mastra/runtime/assistant-history.persistence.spec.ts",
+      "packages/ai/src/server/mastra/runtime/assistant-history.service.spec.ts",
       "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
       "packages/ai/src/server/transport/__tests__/ai-assistant-facade.controller.spec.ts",
       "packages/ai/src/server/transport/ai-agent-runtime.controller.test.ts",
@@ -11646,7 +11663,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 1001,
+    "unit": 1002,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

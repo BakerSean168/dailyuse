@@ -63,10 +63,30 @@ function runtimeStub(events: AssistantRuntimeEvent[] = []) {
     for (const event of events) yield event;
   });
   const cancelRun = vi.fn(() => true);
+  const deleteConversation = vi.fn(async () => true);
+  const listMessages = vi.fn(async () => ({
+    conversationId: 'conversation-1',
+    messages: [
+      {
+        id: 'mastra-message-1',
+        conversationId: 'conversation-1',
+        role: 'assistant' as const,
+        content: 'persisted reply',
+        createdAt: 10,
+      },
+    ],
+  }));
   return {
     dispatchMessage,
     cancelRun,
-    runtime: { dispatchMessage, cancelRun } as unknown as MastraAIRuntime,
+    deleteConversation,
+    listMessages,
+    runtime: {
+      dispatchMessage,
+      cancelRun,
+      deleteConversation,
+      listMessages,
+    } as unknown as MastraAIRuntime,
   };
 }
 
@@ -161,6 +181,61 @@ describe('registerAIRuntimeRoutes', () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(stub.dispatchMessage).not.toHaveBeenCalled();
+  });
+
+  it('reads authoritative Mastra history through authenticated identity and rejects identity injection', async () => {
+    const stub = runtimeStub();
+    const router = registerAIRuntimeRoutes(stub.runtime, { auth });
+    const handler = getRouteHandler(router, 'post', '/assistant/history');
+    const { res } = response();
+
+    await handler(request({ conversationId: 'conversation-1' }) as never, res as never);
+
+    expect(stub.listMessages).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      conversationId: 'conversation-1',
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({ conversationId: 'conversation-1' }),
+      }),
+    );
+
+    const { res: injectedRes } = response();
+    await handler(
+      request({ conversationId: 'conversation-1', identityId: 'attacker-controlled' }) as never,
+      injectedRes as never,
+    );
+    expect(injectedRes.status).toHaveBeenCalledWith(400);
+    expect(stub.listMessages).toHaveBeenCalledTimes(1);
+  });
+
+  it('deletes authoritative Mastra history through authenticated identity and rejects identity injection', async () => {
+    const stub = runtimeStub();
+    const router = registerAIRuntimeRoutes(stub.runtime, { auth });
+    const handler = getRouteHandler(router, 'post', '/assistant/delete');
+    const { res } = response();
+
+    await handler(request({ conversationId: 'conversation-1' }) as never, res as never);
+
+    expect(stub.deleteConversation).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      conversationId: 'conversation-1',
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ ok: true, data: { deleted: true } }),
+    );
+
+    const { res: injectedRes } = response();
+    await handler(
+      request({ conversationId: 'conversation-1', identityId: 'attacker-controlled' }) as never,
+      injectedRes as never,
+    );
+    expect(injectedRes.status).toHaveBeenCalledWith(400);
+    expect(stub.deleteConversation).toHaveBeenCalledTimes(1);
   });
 
   it('cancels by runId only through the authenticated identity', async () => {
@@ -292,6 +367,8 @@ describe('registerAIRuntimeRoutes', () => {
     const runtime = {
       dispatchMessage,
       cancelRun: vi.fn(() => false),
+      listMessages: vi.fn(),
+      deleteConversation: vi.fn(),
     } as unknown as MastraAIRuntime;
     const router = registerAIRuntimeRoutes(runtime, { auth });
     const handler = getRouteHandler(router, 'post', '/assistant/sse');

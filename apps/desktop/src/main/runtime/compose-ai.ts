@@ -47,7 +47,6 @@ import {
   AIEvaluationReportFileAdapter,
   AIServiceAgentRuntimeAdapter,
   AIServiceAnalyticsQueryAdapter,
-  AIServiceChatExecutionAdapter,
   AIServiceGoalAutomationAdapter,
   AIServiceGoalPlanningAdapter,
   AIServiceKnowledgeIngestionAdapter,
@@ -56,6 +55,7 @@ import {
   createAIModule,
   createAIPowerSyncRepositories,
   createMastraStorage,
+  ConversationTranscriptBootstrapSource,
   MastraAIRuntime,
   MastraModelResolver,
   type MastraStorageConfig,
@@ -134,6 +134,7 @@ export function composeAI(dependencies: ComposeAIElectronDependencies): AIElectr
   const mastraRuntime = new MastraAIRuntime({
     storage: createMastraStorage(dependencies.mastraStorage),
     modelResolver: new MastraModelResolver(providerConfigRepository),
+    transcriptBootstrapSource: new ConversationTranscriptBootstrapSource(conversationRepository),
   });
 
   const config = dependencies.aiServiceRuntimeConfig;
@@ -144,7 +145,8 @@ export function composeAI(dependencies: ComposeAIElectronDependencies): AIElectr
     mastraRuntime,
     knowledgeIndexRepository,
     executionLogPort,
-    chatExecutionPort: config ? new AIServiceChatExecutionAdapter(config) : undefined,
+    // Batch B: open chat is owned by Mastra; do not compose the legacy
+    // Python-backed chat adapter into the default runtime path.
     goalPlanningPort: config ? new AIServiceGoalPlanningAdapter(config) : undefined,
     goalAutomationPlanningPort: config ? new AIServiceGoalAutomationAdapter(config) : undefined,
     automationToolExecutorPort: dependencies.automationToolExecutor,

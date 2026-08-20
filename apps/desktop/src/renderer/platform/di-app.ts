@@ -16,7 +16,7 @@ import { createReminderIpcClient } from '@memoflow/reminder/client';
 import { createRepositoryIpcClient } from '@memoflow/repository/client';
 import { createNotificationIpcClient } from '@memoflow/notification/client';
 import { createSettingIpcClient } from '@memoflow/setting/client';
-import { createAIIpcClient } from '@memoflow/ai/client';
+import { createAIIpcClient, createAssistantRuntimeIpcClient } from '@memoflow/ai/client';
 import { createDataPortabilityIpcClient } from '@memoflow/data-portability/client';
 import {
   ACCOUNT_SERVICE_KEY,
@@ -29,6 +29,7 @@ import {
   NOTIFICATION_SERVICE_KEY,
   SETTING_SERVICE_KEY,
   AI_SERVICE_KEY,
+  AI_ASSISTANT_RUNTIME_KEY,
   RULE_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
   DATA_PORTABILITY_SERVICE_KEY,
@@ -89,6 +90,7 @@ export function installDesktopAppServices(app: App): void {
     AI_SERVICE_KEY,
     createAIIpcClient(resultIpcClient, { dispatchPolicy: 'prefer_dispatch' }),
   );
+  app.provide(AI_ASSISTANT_RUNTIME_KEY, createAssistantRuntimeIpcClient(resultIpcClient));
 
   app.provide(RULE_SERVICE_KEY, createGovernanceIpcClient(resultIpcClient));
 

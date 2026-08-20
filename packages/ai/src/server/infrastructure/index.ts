@@ -38,6 +38,11 @@ export {
 export { createAIPrismaRepositories, type AIPrismaRepositorySet } from './prisma';
 
 // ---------------------------------------------------------------------------
+// One-time vNext migration bridges
+// ---------------------------------------------------------------------------
+export { ConversationTranscriptBootstrapSource } from './migrations/conversation-transcript-bootstrap.source';
+
+// ---------------------------------------------------------------------------
 // Ports (Interfaces)
 // ---------------------------------------------------------------------------
 export { type IAIConversationRepository, type AIConversationQueryOptions } from '../domain';
@@ -98,37 +103,24 @@ export type {
 // ---------------------------------------------------------------------------
 // Workflow Adapter (ADR-035)
 // ---------------------------------------------------------------------------
-export {
-  LangGraphWorkflowAdapter,
-  LANGGRAPH_WORKFLOW_ADAPTER_ID,
-} from './workflow';
+export { LangGraphWorkflowAdapter, LANGGRAPH_WORKFLOW_ADAPTER_ID } from './workflow';
 
 // ---------------------------------------------------------------------------
 // Proposal Kernel (ADR-035)
 // ---------------------------------------------------------------------------
-export {
-  ProposalKernel,
-  PROPOSAL_KERNEL_PROVIDER_ID,
-} from './proposal-kernel';
+export { ProposalKernel, PROPOSAL_KERNEL_PROVIDER_ID } from './proposal-kernel';
 
 // ---------------------------------------------------------------------------
 // Capability Resolver (ADR-035)
 // ---------------------------------------------------------------------------
-export {
-  CapabilityResolver,
-  CAPABILITY_RESOLVER_ENGINE_ID,
-} from './capability-resolver';
+export { CapabilityResolver, CAPABILITY_RESOLVER_ENGINE_ID } from './capability-resolver';
 
 // ---------------------------------------------------------------------------
 // Model Gateway (ADR-035)
 // ---------------------------------------------------------------------------
-export {
-  CustomModelGateway,
-  CUSTOM_MODEL_GATEWAY_ID,
-} from './model-gateway';
+export { CustomModelGateway, CUSTOM_MODEL_GATEWAY_ID } from './model-gateway';
 
 // ---------------------------------------------------------------------------
 // Assistant Facade (ADR-035)
 // ---------------------------------------------------------------------------
 export { AssistantFacade, ASSISTANT_FACADE_ID } from './assistant-facade';
-

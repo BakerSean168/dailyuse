@@ -74,7 +74,10 @@ import {
 import {
   AssistantClientCommandSchema,
   AssistantRuntimeClientCommandSchema,
+  AssistantRuntimeConversationDeleteResultSchema,
   AssistantRuntimeEventSchema,
+  AssistantRuntimeHistoryClientRequestSchema,
+  AssistantRuntimeHistoryViewSchema,
   AIWorkflowCancelClientRequestSchema,
   AIWorkflowGetClientRequestSchema,
   AIWorkflowListClientRequestSchema,
@@ -486,6 +489,68 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
           }),
         );
         installed.push(AIChannels.RUNTIME_ASSISTANT_CANCEL);
+        ipcMain.handle(AIChannels.RUNTIME_ASSISTANT_HISTORY, async (_, request) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            if (!aiModule.mastraRuntime) {
+              return fail({ code: 'SERVICE_UNAVAILABLE', message: 'AI runtime unavailable' });
+            }
+            const parsed = AssistantRuntimeHistoryClientRequestSchema.safeParse(request);
+            if (!parsed.success) {
+              return fail({
+                code: 'VALIDATION_ERROR',
+                message: 'Invalid runtime assistant history request',
+                details: formatZodErrors(parsed.error.issues),
+              });
+            }
+            try {
+              const history = AssistantRuntimeHistoryViewSchema.parse(
+                await aiModule.mastraRuntime.listMessages({
+                  identityId: requestContext.identityId,
+                  conversationId: parsed.data.conversationId,
+                }),
+              );
+              return ok(history);
+            } catch (error) {
+              if (
+                error &&
+                typeof error === 'object' &&
+                'code' in error &&
+                error.code === 'ASSISTANT_CONVERSATION_NOT_FOUND'
+              ) {
+                return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
+              }
+              return fail({ code: 'AI_RUNTIME_ERROR', message: 'AI runtime request failed' });
+            }
+          }),
+        );
+        installed.push(AIChannels.RUNTIME_ASSISTANT_HISTORY);
+        ipcMain.handle(AIChannels.RUNTIME_ASSISTANT_DELETE, async (_, request) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            if (!aiModule.mastraRuntime) {
+              return fail({ code: 'SERVICE_UNAVAILABLE', message: 'AI runtime unavailable' });
+            }
+            const parsed = AssistantRuntimeHistoryClientRequestSchema.safeParse(request);
+            if (!parsed.success) {
+              return fail({
+                code: 'VALIDATION_ERROR',
+                message: 'Invalid runtime assistant delete request',
+                details: formatZodErrors(parsed.error.issues),
+              });
+            }
+            try {
+              const result = AssistantRuntimeConversationDeleteResultSchema.parse({
+                deleted: await aiModule.mastraRuntime.deleteConversation({
+                  identityId: requestContext.identityId,
+                  conversationId: parsed.data.conversationId,
+                }),
+              });
+              return ok(result);
+            } catch {
+              return fail({ code: 'AI_RUNTIME_ERROR', message: 'AI runtime request failed' });
+            }
+          }),
+        );
+        installed.push(AIChannels.RUNTIME_ASSISTANT_DELETE);
 
         // AI vNext canonical Workflow request/response transport. The concrete
         // Mastra workflow runtime is introduced in Batch C; until then these

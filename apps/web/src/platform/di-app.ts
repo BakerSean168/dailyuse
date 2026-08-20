@@ -21,6 +21,7 @@ import {
   SETTING_SERVICE_KEY,
   DATA_PORTABILITY_SERVICE_KEY,
   AI_SERVICE_KEY,
+  AI_ASSISTANT_RUNTIME_KEY,
   TASK_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
   MODULE_CAPSULES_KEY,
@@ -84,10 +85,12 @@ const dataPortabilityService = createLazyService(async () => {
 
 const aiService = createLazyService(async () => {
   const { createAIHttpClient } = await import('@memoflow/ai/client');
-  // Residual 351/Step D: dispatch first by default; host passes the policy
-  // explicitly (plan §3.2/§4.5). prefer_dispatch only falls back to legacy on
-  // definite dispatch-unavailable + zero observed events.
   return createAIHttpClient(resultHttpClient, { dispatchPolicy: 'prefer_dispatch' });
+});
+
+const aiAssistantRuntime = createLazyService(async () => {
+  const { createAssistantRuntimeHttpClient } = await import('@memoflow/ai/client');
+  return createAssistantRuntimeHttpClient(resultHttpClient);
 });
 
 const taskService = createLazyService(async () => {
@@ -112,6 +115,7 @@ export function installAppServices(app: App): void {
   app.provide(SETTING_SERVICE_KEY, settingService);
   app.provide(DATA_PORTABILITY_SERVICE_KEY, dataPortabilityService);
   app.provide(AI_SERVICE_KEY, aiService);
+  app.provide(AI_ASSISTANT_RUNTIME_KEY, aiAssistantRuntime);
   app.provide(TASK_SERVICE_KEY, taskService);
 
   app.provide(DASHBOARD_SERVICE_KEY, dashboardService);

@@ -217,13 +217,11 @@
           :tool-button-label="currentToolButtonLabel"
           :model-groups="modelGroups"
           :selected-model-key="selectedModelKey"
-          :execution-profile-id="executionProfileId"
           :density="composerDensity"
           @send="handleSendChat"
           @stop="stopGenerating"
           @start-conversation="startNewConversation"
           @select-model="selectModel"
-          @select-execution-profile="selectExecutionProfile"
           @open-settings="openAISettings"
         />
       </Teleport>
@@ -236,13 +234,11 @@
         :tool-button-label="currentToolButtonLabel"
         :model-groups="modelGroups"
         :selected-model-key="selectedModelKey"
-        :execution-profile-id="executionProfileId"
         :density="composerDensity"
         @send="handleSendChat"
         @stop="stopGenerating"
         @start-conversation="startNewConversation"
         @select-model="selectModel"
-        @select-execution-profile="selectExecutionProfile"
         @open-settings="openAISettings"
       />
     </section>
@@ -484,9 +480,6 @@ const {
   deleteConversation,
   loadConversationList,
   startNewConversation: startNewConversationBase,
-  executionProfileId,
-  selectExecutionProfile,
-  openChatHostTurns,
   handleSendChat,
   stopGenerating,
 } = session;
@@ -657,12 +650,12 @@ const hostExecutionReceiptItems = computed(() =>
 );
 
 /**
- * Residual 383/399/401/409/411: Host Artifact cards + open-chat multi-engine badges
- * via workbench composition (partition + fail-closed surface isolation audit).
+ * Host workflow Artifact cards remain in the workbench. Open chat no longer
+ * contributes legacy DirectTurn / pi_readonly engine badges after Mastra cutover.
  */
 const hostWorkbenchTimeline = computed(() =>
   composeHostWorkbenchTimelineArtifacts({
-    openChatTurns: openChatHostTurns.value,
+    openChatTurns: [],
     proposals: hostProposalItems.value,
     receipts: hostExecutionReceiptItems.value,
   }),
@@ -733,10 +726,7 @@ const hasWorkflowContext = computed(
     toolMode.value !== 'chat' ||
     hasWorkflowArtifact.value ||
     hasPendingHostProposals.value ||
-    hasHostExecutionReceipts.value ||
-    // Residual 1342: open-chat multi-engine Host turns need the timeline strip
-    // (engine badges for direct_turn / pi_readonly) even in pure chat mode.
-    openChatHostTurns.value.length > 0,
+    hasHostExecutionReceipts.value,
 );
 
 const workflowSurfaceItemCount = computed(() =>

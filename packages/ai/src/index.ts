@@ -21,6 +21,7 @@ export {
   createAIPowerSyncRepositories,
   createAIPrismaRepositories,
   createMastraStorage,
+  ConversationTranscriptBootstrapSource,
   MastraAIRuntime,
   MastraModelResolver,
   type MastraStorageConfig,

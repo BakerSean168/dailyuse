@@ -15,10 +15,15 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   const types = readFileSync(resolve(dir, 'types.ts'), 'utf8');
   const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
   const panel = readFileSync(resolve(dir, '../components/AIHostProposalPanel.vue'), 'utf8');
-  const receiptPanel = readFileSync(resolve(dir, '../components/AIHostExecutionReceiptPanel.vue'), 'utf8');
-  const timelineStrip = readFileSync(resolve(dir, '../components/AIHostTimelineArtifactStrip.vue'), 'utf8');
+  const receiptPanel = readFileSync(
+    resolve(dir, '../components/AIHostExecutionReceiptPanel.vue'),
+    'utf8',
+  );
+  const timelineStrip = readFileSync(
+    resolve(dir, '../components/AIHostTimelineArtifactStrip.vue'),
+    'utf8',
+  );
   const session = readFileSync(resolve(dir, 'useAIChatSession.ts'), 'utf8');
-  const turnMemory = readFileSync(resolve(dir, 'hostOpenChatTurnMemory.ts'), 'utf8');
   const contextPanel = readFileSync(resolve(dir, '../components/AIContextPanel.vue'), 'utf8');
 
   it('routes confirm/cancel lifecycle via dispatchAssistant Host commands', () => {
@@ -88,7 +93,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('hasPendingHostProposals');
     expect(chatView).toContain('hasPendingHostProposals.value');
     expect(chatView).toContain(':host-proposal-count="hostProposalItems.length"');
-    expect(chatView).toContain('auto-open right workbench for Host proposals or execution receipts');
+    expect(chatView).toContain(
+      'auto-open right workbench for Host proposals or execution receipts',
+    );
     expect(chatView).toContain('targetPath: payload.patch.targetPath');
     expect(chatView).toContain('contentMarkdown: payload.patch.contentMarkdown');
     expect(chatView).toContain('title: payload.patch.title ?? payload.item.title');
@@ -176,7 +183,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(receiptPanel).toContain('hostReceiptOpenNote');
     expect(chatView).toContain('openHostReceiptEntity');
     expect(chatView).toContain('@open-entity="openHostReceiptEntity"');
-    expect(chatView).toContain("router.push(`/goals/${payload.entityId}`)");
+    expect(chatView).toContain('router.push(`/goals/${payload.entityId}`)');
     expect(chatView).toContain('openRecentKnowledgeNote(payload.entityId)');
   });
 
@@ -223,30 +230,22 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(timelineStrip).not.toContain('dispatchAssistant');
   });
 
-  it('open-chat Host turns appear on timeline with engine badges (residual 401)', () => {
+  it('retires legacy open-chat Host timeline badges from the default chat product surface', () => {
+    // The historical builders may remain inside legacy Agent Host code until
+    // Batch F, but the default chat session/view no longer consumes them.
     expect(helper).toContain('buildHostOpenChatTimelineArtifactItems');
-    expect(helper).toContain("surface: 'open_chat'");
-    expect(helper).toContain("kind: 'open_chat.turn'");
-    expect(helper).toContain('HostOpenChatTurnSnapshot');
-    expect(session).toContain('openChatHostTurns');
-    expect(session).toContain('upsertOpenChatHostTurn');
-    expect(chatView).toContain('openChatHostTurns');
-    expect(timelineStrip).toContain('hostTimelineOpenChat');
-    expect(timelineStrip).toContain("item.surface === 'open_chat'");
-    expect(timelineStrip).not.toContain('executeApproved');
+    expect(session).not.toContain('openChatHostTurns');
+    expect(session).not.toContain('upsertOpenChatHostTurn');
+    expect(session).not.toContain('openChatHostTurnMemory');
+    expect(chatView).toContain('openChatTurns: []');
+    expect(chatView).not.toContain('openChatHostTurns');
   });
 
-  it('persists open-chat Host turn badges per conversation in session (residual 403)', () => {
-    expect(turnMemory).toContain('rememberOpenChatHostTurnsForConversation');
-    expect(turnMemory).toContain('restoreOpenChatHostTurnsForConversation');
-    expect(turnMemory).toContain('forgetOpenChatHostTurnsForConversation');
-    expect(turnMemory).toContain('upsertOpenChatHostTurnList');
-    expect(turnMemory).not.toContain('localStorage');
-    expect(session).toContain('openChatHostTurnMemory');
-    expect(session).toContain('stashOpenChatHostTurnsForCurrentConversation');
-    expect(session).toContain('restoreOpenChatHostTurns');
-    expect(session).toContain('rememberOpenChatHostTurnsForConversation');
-    expect(session).toContain('forgetOpenChatHostTurnsForConversation');
+  it('does not keep a second per-conversation open-chat badge memory after Mastra cutover', () => {
+    expect(session).not.toContain('rememberOpenChatHostTurnsForConversation');
+    expect(session).not.toContain('restoreOpenChatHostTurnsForConversation');
+    expect(session).not.toContain('forgetOpenChatHostTurnsForConversation');
+    expect(session).toContain('options.runtime.listMessages(conversationId)');
   });
 
   it('composes Host workbench timeline with isolation (residual 411)', () => {
@@ -372,7 +371,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('task.create process-local runId identity binding (residual 451)', () => {
     const store = readFileSync(
       resolve(
@@ -393,7 +391,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(runtime).toContain("error('FORBIDDEN'");
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('task.create confirm requires client settlement executedActions (residual 453)', () => {
     const resume = readFileSync(
@@ -416,7 +413,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('task.create edit requires non-empty revised title (residual 455)', () => {
     const resume = readFileSync(
       resolve(
@@ -435,7 +431,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(taskWorkflow).toContain('applyHostTaskPatchToAgentActions');
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('task.create process-local conversation/thread runId binding (residual 457)', () => {
     const store = readFileSync(
@@ -460,7 +455,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('task.create dirty approve revises process-local draft before domain settle (residual 459)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
     expect(helper).toContain('shouldReviseProcessLocalTaskDraftBeforeDomainSettle');
@@ -475,13 +469,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('task.create start requires non-empty conversationId (residual 461)', () => {
     const start = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     const runtime = readFileSync(
@@ -498,7 +488,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(taskWorkflow).toContain('Residual 461');
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('task.create confirm requires recoverable settlement title (residual 463)', () => {
     const resume = readFileSync(
@@ -661,13 +650,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('task.create start requires non-empty title without default invent (residual 479)', () => {
     const start = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     const runtime = readFileSync(
@@ -683,8 +668,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(runtime).toContain('resolveTaskCreateTitle');
     expect(helper).not.toContain('executeApproved');
   });
-
-
 
   it('task.create edit requires waiting_approval only (residual 481)', () => {
     const resume = readFileSync(
@@ -707,14 +690,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
-
   it('task.create start requires non-empty conversationId in builder (residual 483)', () => {
     const start = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     const runtime = readFileSync(
@@ -724,20 +702,17 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(start).toContain('HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE');
     expect(start).toContain('Residual 483');
     expect(start).toContain('resolveTaskCreateConversationId');
-    expect(start).not.toContain("resolveTaskCreateConversationId(input.request.conversationId) ?? null");
+    expect(start).not.toContain(
+      'resolveTaskCreateConversationId(input.request.conversationId) ?? null',
+    );
     expect(runtime).toContain('HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE');
     expect(runtime).toContain('Residual 461/483');
     expect(helper).not.toContain('executeApproved');
   });
 
-
-
   it('task.create start requires non-empty threadId in builder (residual 485)', () => {
     const start = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     const runtime = readFileSync(
@@ -753,13 +728,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('task.create start requires non-empty identityId from ExecutionContext (residual 493)', () => {
     const start = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     const runtime = readFileSync(
@@ -776,7 +747,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(start).toContain('never trust client body identity');
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('task.create resume agentType + unsupported decision use named constants (residual 495)', () => {
     const resume = readFileSync(
@@ -800,7 +770,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(resume).toContain('HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE');
     expect(resume).toContain('HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE');
     expect(resume).toContain('Residual 495');
-    expect(resume).toContain('throw hostTaskCreateValidationError(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE)');
+    expect(resume).toContain(
+      'throw hostTaskCreateValidationError(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE)',
+    );
     expect(resume).toContain('HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE');
     expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE');
     expect(store).toContain('Residual 495');
@@ -812,10 +784,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
 
   it('task.create start requires non-empty runId in builder (residual 497)', () => {
     const start = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     const runtime = readFileSync(
@@ -833,10 +802,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
 
   it('task.create start requires agentType task.create in builder (residual 499)', () => {
     const start = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     const runtime = readFileSync(
@@ -903,10 +869,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
       'utf8',
     );
     const start = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     expect(store).toContain('resolveTaskCreateRunId');
@@ -932,7 +895,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(reviseSlice).toContain('const draftAction = productDrafts[0]');
     expect(reviseSlice).toContain('Residual 507');
     expect(reviseSlice).not.toContain('?? source[0]');
-    expect(reviseSlice).not.toContain('source.find((action) => action.tool === \'create_task_template\') ?? source[0]');
+    expect(reviseSlice).not.toContain(
+      "source.find((action) => action.tool === 'create_task_template') ?? source[0]",
+    );
     // Still waiting_approval double-gate (residual 481) and single approvedAction (475).
     expect(reviseSlice).toContain("run.run.status !== 'waiting_approval'");
     expect(reviseSlice).toContain('if (approvedActions.length !== 1) return');
@@ -956,7 +921,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(reviseSlice).toContain('productDrafts.length !== 1');
     expect(reviseSlice).toContain('applyHostTaskPatchToAgentActions([draftAction]');
     // No multi-find invent on either product path.
-    expect(completeSlice).not.toContain(".find((action) => action.tool === 'create_task_template')");
+    expect(completeSlice).not.toContain(
+      ".find((action) => action.tool === 'create_task_template')",
+    );
     expect(reviseSlice).not.toContain(".find((action) => action.tool === 'create_task_template')");
     expect(helper).not.toContain('executeApproved');
   });
@@ -975,16 +942,23 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(knowledgeFn).toBeGreaterThan(-1);
     expect(goalFn).toBeGreaterThan(-1);
     expect(rationaleFn).toBeGreaterThan(-1);
-    expect(helper.slice(taskFn, taskFn + 280)).toContain("soleProductDraftAction(run, 'create_task_template')");
-    expect(helper.slice(knowledgeFn, knowledgeFn + 280)).toContain("soleProductDraftAction(run, 'create_knowledge_note')");
-    expect(helper.slice(goalFn, goalFn + 280)).toContain("soleProductDraftAction(run, 'create_goal')");
-    expect(helper.slice(rationaleFn, rationaleFn + 350)).toContain('soleProductDraftAction(run, productTool)');
+    expect(helper.slice(taskFn, taskFn + 280)).toContain(
+      "soleProductDraftAction(run, 'create_task_template')",
+    );
+    expect(helper.slice(knowledgeFn, knowledgeFn + 280)).toContain(
+      "soleProductDraftAction(run, 'create_knowledge_note')",
+    );
+    expect(helper.slice(goalFn, goalFn + 280)).toContain(
+      "soleProductDraftAction(run, 'create_goal')",
+    );
+    expect(helper.slice(rationaleFn, rationaleFn + 350)).toContain(
+      'soleProductDraftAction(run, productTool)',
+    );
     expect(helper.slice(taskFn, taskFn + 280)).not.toContain('.find(');
     expect(helper.slice(knowledgeFn, knowledgeFn + 280)).not.toContain('.find(');
     expect(helper.slice(goalFn, goalFn + 280)).not.toContain('.find(');
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('applyHost*Patch uses sole product draftAction only (residual 551)', () => {
     expect(helper).toContain('Residual 551');
@@ -995,7 +969,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(knowledgeFn).toBeGreaterThan(-1);
     expect(goalFn).toBeGreaterThan(-1);
     expect(taskFn).toBeGreaterThan(-1);
-    expect(helper.slice(knowledgeFn, knowledgeFn + 900)).toContain("action.tool === 'create_knowledge_note'");
+    expect(helper.slice(knowledgeFn, knowledgeFn + 900)).toContain(
+      "action.tool === 'create_knowledge_note'",
+    );
     expect(helper.slice(knowledgeFn, knowledgeFn + 900)).toContain('productDraftCount !== 1');
     expect(helper.slice(goalFn, goalFn + 800)).toContain("action.tool === 'create_goal'");
     expect(helper.slice(goalFn, goalFn + 800)).toContain('productDraftCount !== 1');
@@ -1003,7 +979,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper.slice(taskFn, taskFn + 900)).toContain('productDraftCount !== 1');
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('knowledge.write confirm requires sole create_knowledge_note draftAction (residual 555)', () => {
     const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');
@@ -1103,7 +1078,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(goal).not.toContain('executeApproved');
   });
 
-
   it('Host workbench focus/proposal builders use primary-task exclusive kind (residual 585)', () => {
     expect(helper).toContain('Residual 585');
     expect(helper).toContain('isPrimaryTaskHostAgentRun');
@@ -1135,7 +1109,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('goal session Host lifecycle kind is task.create for primary-task (residual 587)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
     expect(goal).toContain('Residual 587');
@@ -1161,7 +1134,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
     expect(goal).not.toContain('executeApproved');
   });
-
 
   it('dual-mirrors primary-task goal session settle into exclusive task lane (residual 589)', () => {
     expect(helper).toContain('Residual 589');
@@ -1250,7 +1222,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('Host panel ownership dual-mirrors exclusive before match (residual 597)', () => {
     expect(helper).toContain('Residual 597');
     const resolveIdx = helper.indexOf('export function resolveHostPanelOwnedProductRun');
@@ -1267,7 +1238,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(resolveSlice).toContain("agentType !== 'task.create'");
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('drops dual-mirror primary-task ghost beside normal goal (residual 599)', () => {
     expect(helper).toContain('Residual 599');
@@ -1304,7 +1274,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
     expect(chatView).not.toContain('executeApproved');
   });
-
 
   it('knowledge classifier + AgentRun history session focus (residual 603)', () => {
     expect(helper).toContain('Residual 603');
@@ -1388,7 +1357,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(reviseIdx).toBeGreaterThan(-1);
     const reviseSlice = goal.slice(reviseIdx, reviseIdx + 2800);
     expect(reviseSlice).toContain("status !== 'waiting_approval'");
-    expect(reviseSlice).toContain("productTool = primaryTask ? 'create_task_template' : 'create_goal'");
+    expect(reviseSlice).toContain(
+      "productTool = primaryTask ? 'create_task_template' : 'create_goal'",
+    );
     expect(reviseSlice).toContain('title: hostOptions?.title');
     expect(reviseSlice).toContain('description: hostOptions?.description');
     expect(reviseSlice).toContain('goalId: hostOptions?.goalId');
@@ -1413,7 +1384,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
     expect(goal).not.toContain('executeApproved');
   });
-
 
   it('dirty approve process-local revise before goal/knowledge confirm (residual 609)', () => {
     expect(helper).toContain('Residual 609');
@@ -1451,7 +1421,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
     const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');
@@ -1485,10 +1454,11 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     // Knowledge cancel already waiting_approval-only (residual 357).
     const cancelIdx = knowledge.indexOf('async function cancelKnowledgeNoteAgentRun');
     expect(cancelIdx).toBeGreaterThan(-1);
-    expect(knowledge.slice(cancelIdx, cancelIdx + 600)).toContain("run.status !== 'waiting_approval'");
+    expect(knowledge.slice(cancelIdx, cancelIdx + 600)).toContain(
+      "run.status !== 'waiting_approval'",
+    );
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('Host panel goal/knowledge approve gates waiting_approval + sole product draft before lifecycle (residual 561)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
@@ -1610,7 +1580,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).not.toContain('executeApproved');
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('Host panel approve/reject/revise share resolveHostPanelOwnedProductRun ownership (residual 569)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
@@ -1744,9 +1713,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
-
-
   it('Host panel settlement reuses resolveHostPanelOwnedProductRun ownership (residual 571)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
     expect(helper).toContain('Residual 571');
@@ -1766,9 +1732,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
       // Residual 581: settlement uses shared classifiers (not dual productTool re-branch invent).
       expect(slice).toContain('isHostPanelProcessLocalTaskCreateOwned');
       // Settlement paths bind ownership classifiers — not dual isTaskAgentType/liveHost re-resolve.
-      expect(slice).not.toContain(
-        'liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType',
-      );
+      expect(slice).not.toContain('liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType');
     }
     // Task approve settlement: goal-session product confirms goal; process-local completes.
     const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
@@ -1787,11 +1751,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
-
-
-
-
   it('task.create process-local store conversation list trims (residual 509)', () => {
     const store = readFileSync(
       resolve(
@@ -1803,7 +1762,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(store).toContain('matchesHostTaskCreateConversation');
     expect(store).toContain('resolveTaskCreateConversationId');
     expect(store).toContain('Residual 509');
-    expect(store).toContain('matchesHostTaskCreateConversation(run.conversationId, queryConversationId)');
+    expect(store).toContain(
+      'matchesHostTaskCreateConversation(run.conversationId, queryConversationId)',
+    );
     expect(helper).not.toContain('executeApproved');
   });
 
@@ -1819,7 +1780,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(store).toContain('resolveTaskCreateThreadId');
     expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE');
     expect(store).toContain('Residual 511');
-    expect(store).toContain('matchesHostTaskCreateThread(existing.run.threadId, normalized.run.threadId)');
+    expect(store).toContain(
+      'matchesHostTaskCreateThread(existing.run.threadId, normalized.run.threadId)',
+    );
     expect(helper).not.toContain('executeApproved');
   });
 
@@ -1834,7 +1797,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE');
     expect(store).toContain('resolveTaskCreateConversationId');
     expect(store).toContain('Residual 513');
-    expect(store).toContain('const conversationId = resolveTaskCreateConversationId(result.run.conversationId)');
+    expect(store).toContain(
+      'const conversationId = resolveTaskCreateConversationId(result.run.conversationId)',
+    );
     expect(helper).not.toContain('executeApproved');
   });
 
@@ -1849,7 +1814,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE');
     expect(store).toContain('resolveTaskCreateIdentityId');
     expect(store).toContain('Residual 515');
-    expect(store).toContain('const identityId = resolveTaskCreateIdentityId(result.run.identityId)');
+    expect(store).toContain(
+      'const identityId = resolveTaskCreateIdentityId(result.run.identityId)',
+    );
     expect(helper).not.toContain('executeApproved');
   });
 
@@ -1860,9 +1827,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     );
     expect(runtime).toContain('matchesHostTaskCreateIdentity');
     expect(runtime).toContain('Residual 517');
-    expect(runtime).toContain(
-      'matchesHostTaskCreateIdentity(run.identityId, cx.identityId)',
-    );
+    expect(runtime).toContain('matchesHostTaskCreateIdentity(run.identityId, cx.identityId)');
     // Ownership helper shares the same trim matcher.
     expect(runtime).toContain('matchesHostTaskCreateIdentity(result.run.identityId, identityId)');
     expect(helper).not.toContain('executeApproved');
@@ -1965,7 +1930,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(fnSlice).toContain('productTool');
     expect(fnSlice).toContain('action.tool === productTool');
     expect(fnSlice).not.toContain('if (!primaryEntityId && entityIds[0])');
-    expect(fnSlice).not.toContain("action.tool === 'create_goal' || action.tool === 'create_knowledge_note'");
+    expect(fnSlice).not.toContain(
+      "action.tool === 'create_goal' || action.tool === 'create_knowledge_note'",
+    );
     expect(helper).toContain("summarizeExecutedActions(goalRun, 'create_goal')");
     expect(helper).toContain("summarizeExecutedActions(noteRun, 'create_knowledge_note')");
     expect(helper).toContain("summarizeExecutedActions(taskRun, 'create_task_template')");
@@ -2011,22 +1978,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     );
   });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   it('task.create client complete requires waiting_approval only (residual 489)', () => {
     const resume = readFileSync(
       resolve(
@@ -2052,8 +2003,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-
-
   it('task.create edit/confirm tool gates use named constants (residual 491)', () => {
     const resume = readFileSync(
       resolve(
@@ -2068,13 +2017,20 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE');
     expect(resume).toContain('Residual 491');
     // Product path throws use constants, not ad-hoc invent strings.
-    expect(resume).toContain('throw hostTaskCreateValidationError(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE)');
-    expect(resume).toMatch(/throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE/);
-    expect(resume).toMatch(/throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE/);
-    expect(resume).toMatch(/throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE/);
+    expect(resume).toContain(
+      'throw hostTaskCreateValidationError(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE)',
+    );
+    expect(resume).toMatch(
+      /throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE/,
+    );
+    expect(resume).toMatch(
+      /throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE/,
+    );
+    expect(resume).toMatch(
+      /throw hostTaskCreateValidationError\(\s*HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE/,
+    );
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
@@ -2127,7 +2083,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(fnSlice).toContain('proposalItems');
     expect(fnSlice).toContain('receiptItems');
     // Session exclusive call before firstProposal/firstReceipt fallbacks.
-    const sessionCallIdx = fnSlice.indexOf('const sessionFocus = resolveHostWorkbenchFocusFromSessionRuns');
+    const sessionCallIdx = fnSlice.indexOf(
+      'const sessionFocus = resolveHostWorkbenchFocusFromSessionRuns',
+    );
     const firstProposalIdx = fnSlice.indexOf('const firstProposal = input.proposalItems');
     expect(sessionCallIdx).toBeGreaterThan(-1);
     expect(firstProposalIdx).toBeGreaterThan(sessionCallIdx);
@@ -2175,7 +2133,6 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(rNote).toBeGreaterThan(rGoal);
     expect(helper).not.toContain('executeApproved');
   });
-
 
   it('AgentRun history Host workbench focus for task.create reopen (residual 441)', () => {
     expect(helper).toContain('resolveHostWorkbenchFocusFromAgentRun');
@@ -2245,10 +2202,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(taskWorkflow).toContain('linkedGoalId');
     expect(taskWorkflow).toContain('goalId');
     expect(taskWorkflow).toContain('setLinkedGoalId');
-    const actionBar = readFileSync(
-      resolve(dir, '../components/AIWorkflowActionBar.vue'),
-      'utf8',
-    );
+    const actionBar = readFileSync(resolve(dir, '../components/AIWorkflowActionBar.vue'), 'utf8');
     expect(actionBar).toContain('task-agent-linked-goal');
     expect(actionBar).toContain('setLinkedGoalId');
     expect(helper).not.toContain('executeApproved');
@@ -2262,17 +2216,11 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatViewTs).toContain('taskWorkflow');
     expect(chatViewTs).toContain('useAITaskWorkflow');
     expect(chatViewTs).toContain('syncTaskAgentRunFromStart');
-    const actionBar = readFileSync(
-      resolve(dir, '../components/AIWorkflowActionBar.vue'),
-      'utf8',
-    );
+    const actionBar = readFileSync(resolve(dir, '../components/AIWorkflowActionBar.vue'), 'utf8');
     expect(actionBar).toContain('task-agent-start-run');
     expect(actionBar).toContain('startTaskAgentRun');
     const hostStart = readFileSync(
-      resolve(
-        dir,
-        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
-      ),
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts'),
       'utf8',
     );
     expect(hostStart).toContain('buildHostTaskCreateStartResult');
@@ -2293,20 +2241,16 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(types).toContain("mode === 'task-create'");
     const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
     expect(chatViewTs).toContain("toolMode.value = 'task-create'");
-    const messagePanel = readFileSync(
-      resolve(dir, '../components/AIMessagePanel.vue'),
-      'utf8',
-    );
+    const messagePanel = readFileSync(resolve(dir, '../components/AIMessagePanel.vue'), 'utf8');
     expect(messagePanel).toContain("mode: 'task-create'");
-    expect(messagePanel).toContain("ai-welcome-entry-");
-    const footer = readFileSync(
-      resolve(dir, '../components/AIFooterComposer.vue'),
-      'utf8',
-    );
+    expect(messagePanel).toContain('ai-welcome-entry-');
+    const footer = readFileSync(resolve(dir, '../components/AIFooterComposer.vue'), 'utf8');
     expect(footer).toContain('ai-chat-tool-task-create');
     expect(footer).toContain("'task-create'");
     const chatViewVue = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
-    expect(chatViewVue).toContain("'task-create': 'aiAssistant.chatPage.shortcuts.taskCreate.prefill'");
+    expect(chatViewVue).toContain(
+      "'task-create': 'aiAssistant.chatPage.shortcuts.taskCreate.prefill'",
+    );
     expect(chatViewVue).toContain("toolMode.value === 'task-create'");
     expect(helper).not.toContain('executeApproved');
   });
