@@ -77,3 +77,24 @@ export function taskWorkflowEntityId(input: {
   const seed = `memoflow:task.create:v1:${input.workflowRunId}:${input.revision}:${input.kind}:${index}`;
   return `${taskPrefixByKind[input.kind]}_${deterministicUuidV8(seed)}`;
 }
+
+/**
+ * Deterministic idempotency request id for the `knowledge.capture` Mastra
+ * Workflow.
+ *
+ * Same RFC-4122-shaped UUIDv8 layout as goal.create/task.create but seeded
+ * under a distinct workflow namespace so a knowledge-note write request can
+ * never collide with a goal/task mutation request id. The seed is part of the
+ * persisted workflow contract; changing it would break replay idempotency.
+ */
+export function knowledgeCaptureRequestId(input: {
+  workflowRunId: string;
+  revision: number;
+}): string {
+  if (!input.workflowRunId.trim()) throw new Error('workflowRunId is required');
+  if (!Number.isInteger(input.revision) || input.revision < 1) {
+    throw new Error('revision must be a positive integer');
+  }
+  const seed = `memoflow:knowledge.capture:v1:${input.workflowRunId}:${input.revision}`;
+  return deterministicUuidV8(seed);
+}

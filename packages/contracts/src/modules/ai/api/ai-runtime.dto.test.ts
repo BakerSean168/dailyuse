@@ -157,4 +157,84 @@ describe('AI vNext runtime contracts', () => {
     expect('snapshot' in parsed).toBe(false);
     expect('steps' in parsed).toBe(false);
   });
+
+  it('rejects identity injection on knowledge.capture start request', () => {
+    const result = AIWorkflowStartClientRequestSchema.safeParse({
+      kind: 'knowledge.capture',
+      conversationId: 'conversation-1',
+      input: { topic: 'Mastra workflows', identityId: 'attacker-controlled' },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('enforces vault-relative knowledge draft paths on the typed draft review suspension', () => {
+    const absolute = AIWorkflowRunViewSchema.safeParse({
+      runId: 'knowledge-1',
+      kind: 'knowledge.capture',
+      conversationId: 'conversation-1',
+      status: 'suspended',
+      suspension: {
+        type: 'knowledge_draft_review',
+        draft: {
+          title: 'Mastra Workflows',
+          topic: 'Reference',
+          markdown: '# Mastra',
+          targetSubpath: '/var/local-vault/notes/mastra.md',
+          revision: 1,
+        },
+        revision: 1,
+      },
+      createdAt: 1,
+      updatedAt: 2,
+    });
+    expect(absolute.success).toBe(false);
+
+    const relative = AIWorkflowRunViewSchema.safeParse({
+      runId: 'knowledge-1',
+      kind: 'knowledge.capture',
+      conversationId: 'conversation-1',
+      status: 'suspended',
+      suspension: {
+        type: 'knowledge_draft_review',
+        draft: {
+          title: 'Mastra Workflows',
+          topic: 'Reference',
+          markdown: '# Mastra',
+          targetSubpath: 'notes/mastra.md',
+          revision: 1,
+        },
+        warnings: ['Duplicate risk'],
+        revision: 1,
+      },
+      createdAt: 1,
+      updatedAt: 2,
+    });
+    expect(relative.success).toBe(true);
+  });
+
+  it('projects typed knowledge.capture result receipt', () => {
+    const parsed = AIWorkflowRunViewSchema.parse({
+      runId: 'knowledge-1',
+      kind: 'knowledge.capture',
+      conversationId: 'conversation-1',
+      status: 'completed',
+      result: {
+        workflowRunId: 'knowledge-1',
+        revision: 1,
+        status: 'success',
+        noteId: 'knowledge-note-abc',
+        notePath: 'notes/mastra.md',
+        noteName: 'mastra.md',
+        failures: [],
+        retryable: false,
+      },
+      createdAt: 1,
+      updatedAt: 2,
+    });
+    expect(parsed.status).toBe('completed');
+    if (parsed.kind === 'knowledge.capture') {
+      expect(parsed.result?.status).toBe('success');
+      expect(parsed.result?.noteId).toBe('knowledge-note-abc');
+    }
+  });
 });

@@ -13,6 +13,7 @@ import {
   AIWorkflowRunViewSchema,
   AIWorkflowSuspensionSchema,
   GoalCreateWorkflowInputSchema,
+  KnowledgeCaptureWorkflowInputSchema,
   TaskCreateWorkflowInputSchema,
   type AIWorkflowResumeClientRequest,
   type AIWorkflowRunView,
@@ -21,7 +22,12 @@ import {
   type AssistantRuntimeHistoryView,
 } from '@memoflow/contracts/ai';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import { createMemoFlowAssistant, GoalPlannerWorker, TaskPlannerWorker } from '../agents';
+import {
+  createMemoFlowAssistant,
+  GoalPlannerWorker,
+  KnowledgeCapturePlannerWorker,
+  TaskPlannerWorker,
+} from '../agents';
 import type { MastraModelResolver } from '../models';
 import {
   ApplyGoalPlanService,
@@ -38,6 +44,13 @@ import {
   createTaskCreateWorkflow,
   initialTaskCreateWorkflowState,
   type TaskPlanMutationPort,
+  ApplyKnowledgeNoteService,
+  KNOWLEDGE_CAPTURE_LIFECYCLE_STEP_ID,
+  KNOWLEDGE_CAPTURE_WORKFLOW_ID,
+  KnowledgeCaptureWorkflowOutputSchema,
+  createKnowledgeCaptureWorkflow,
+  initialKnowledgeCaptureWorkflowState,
+  type KnowledgeCaptureMutationPort,
 } from '../workflows';
 import { AsyncEventQueue } from './async-event-queue';
 import { AssistantHistoryService } from './assistant-history.service';
@@ -84,6 +97,8 @@ export interface MastraAIRuntimeDependencies {
   readonly goalPlanMutationPort: GoalPlanMutationPort;
   /** Host-bound canonical Task application mutation for the task.create workflow. */
   readonly taskPlanMutationPort: TaskPlanMutationPort;
+  /** Host-bound canonical knowledge-note persistence mutation for knowledge.capture. */
+  readonly knowledgeCaptureMutationPort: KnowledgeCaptureMutationPort;
 }
 
 type ActiveRun = {
@@ -100,6 +115,8 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
   readonly goalCreateWorkflow: ReturnType<typeof createGoalCreateWorkflow>;
   readonly taskPlanner: TaskPlannerWorker;
   readonly taskCreateWorkflow: ReturnType<typeof createTaskCreateWorkflow>;
+  readonly knowledgeCapturePlanner: KnowledgeCapturePlannerWorker;
+  readonly knowledgeCaptureWorkflow: ReturnType<typeof createKnowledgeCaptureWorkflow>;
   readonly controller: AgentController;
   readonly mastra: Mastra;
   private initPromise: Promise<void> | null = null;
@@ -126,6 +143,11 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       planner: this.taskPlanner,
       applyService: new ApplyTaskPlanService(deps.taskPlanMutationPort),
     });
+    this.knowledgeCapturePlanner = new KnowledgeCapturePlannerWorker(deps.modelResolver);
+    this.knowledgeCaptureWorkflow = createKnowledgeCaptureWorkflow({
+      planner: this.knowledgeCapturePlanner,
+      applyService: new ApplyKnowledgeNoteService(deps.knowledgeCaptureMutationPort),
+    });
     this.controller = new AgentController({
       id: 'memoflow-assistant-controller',
       storage: deps.storage,
@@ -149,8 +171,13 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
         assistant: this.assistant,
         goalPlanner: this.goalPlanner.agent,
         taskPlanner: this.taskPlanner.agent,
+        knowledgeCapturePlanner: this.knowledgeCapturePlanner.agent,
       },
-      workflows: { goalCreate: this.goalCreateWorkflow, taskCreate: this.taskCreateWorkflow },
+      workflows: {
+        goalCreate: this.goalCreateWorkflow,
+        taskCreate: this.taskCreateWorkflow,
+        knowledgeCapture: this.knowledgeCaptureWorkflow,
+      },
       agentControllers: { assistant: this.controller },
     });
   }
@@ -368,6 +395,81 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     });
   }
 
+  private knowledgeCaptureInputFromSnapshot(snapshot: Record<string, unknown>) {
+    const context = snapshot.context;
+    if (!context || typeof context !== 'object' || Array.isArray(context)) {
+      throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+    }
+    const parsed = KnowledgeCaptureWorkflowInputSchema.safeParse(
+      (context as Record<string, unknown>).input,
+    );
+    if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+    return parsed.data;
+  }
+
+  private projectKnowledgeCaptureRun(
+    row: {
+      runId: string;
+      resourceId?: string;
+      snapshot: unknown;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+    identityId: string,
+  ): AIWorkflowRunView | null {
+    if (row.resourceId !== identityId) return null;
+    const snapshot = this.parseWorkflowSnapshot(row.snapshot);
+    const workflowInput = this.knowledgeCaptureInputFromSnapshot(snapshot);
+    const lowLevelStatus = String(snapshot.status ?? 'running');
+    const context = snapshot.context as Record<string, unknown>;
+    const lifecycle = context[KNOWLEDGE_CAPTURE_LIFECYCLE_STEP_ID];
+    const lifecycleRecord =
+      lifecycle && typeof lifecycle === 'object' && !Array.isArray(lifecycle)
+        ? (lifecycle as Record<string, unknown>)
+        : undefined;
+
+    let status: AIWorkflowRunView['status'];
+    let suspension: AIWorkflowRunView['suspension'];
+    let result: Extract<AIWorkflowRunView, { kind: 'knowledge.capture' }>['result'];
+
+    if (lowLevelStatus === 'suspended') {
+      status = 'suspended';
+      const parsed = AIWorkflowSuspensionSchema.safeParse(lifecycleRecord?.suspendPayload);
+      if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+      suspension = parsed.data;
+    } else if (lowLevelStatus === 'canceled') {
+      status = 'cancelled';
+    } else if (lowLevelStatus === 'failed' || lowLevelStatus === 'tripwire') {
+      status = 'failed';
+    } else if (
+      lowLevelStatus === 'success' ||
+      lowLevelStatus === 'bailed' ||
+      lowLevelStatus === 'skipped'
+    ) {
+      const parsed = KnowledgeCaptureWorkflowOutputSchema.safeParse(snapshot.result);
+      if (!parsed.success) throw new Error('AI_WORKFLOW_SNAPSHOT_CORRUPT');
+      if (parsed.data.outcome === 'cancelled') {
+        status = 'cancelled';
+      } else {
+        status = 'completed';
+        result = parsed.data.receipt;
+      }
+    } else {
+      status = 'running';
+    }
+
+    return AIWorkflowRunViewSchema.parse({
+      runId: row.runId,
+      kind: 'knowledge.capture',
+      conversationId: workflowInput.conversationId,
+      status,
+      ...(suspension ? { suspension } : {}),
+      ...(result ? { result } : {}),
+      createdAt: new Date(row.createdAt).getTime(),
+      updatedAt: new Date(row.updatedAt).getTime(),
+    });
+  }
+
   private async workflowStore() {
     const store = await this.deps.storage.getStore('workflows');
     if (!store) throw new Error('AI_WORKFLOW_STORAGE_UNAVAILABLE');
@@ -379,8 +481,16 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     request: AIWorkflowStartClientRequest;
   }): Promise<AIWorkflowRunView> {
     await this.init();
-    if (input.request.kind !== 'goal.create' && input.request.kind !== 'task.create') {
-      throw new Error(`AI_WORKFLOW_KIND_UNSUPPORTED:${input.request.kind}`);
+    // Capture the raw runtime kind as a plain string before any control-flow
+    // narrowing so the unsupported-kind guard can report it faithfully even
+    // when the closed client union types the branch as `never`.
+    const requestedKind: string = input.request.kind as string;
+    if (
+      requestedKind !== 'goal.create' &&
+      requestedKind !== 'task.create' &&
+      requestedKind !== 'knowledge.capture'
+    ) {
+      throw new Error(`AI_WORKFLOW_KIND_UNSUPPORTED:${requestedKind}`);
     }
     const workflowInput = this.workflowInputFromRequest(input);
     if (input.request.kind === 'goal.create') {
@@ -406,18 +516,44 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       if (!persisted) throw new Error('AI_WORKFLOW_SNAPSHOT_MISSING');
       return persisted;
     }
-    const taskInput = TaskCreateWorkflowInputSchema.parse(workflowInput);
-    const run = await this.taskCreateWorkflow.createRun({
+    if (input.request.kind === 'task.create') {
+      const taskInput = TaskCreateWorkflowInputSchema.parse(workflowInput);
+      const run = await this.taskCreateWorkflow.createRun({
+        resourceId: input.context.identityId,
+      });
+      try {
+        await run.start({
+          inputData: taskInput,
+          initialState: initialTaskCreateWorkflowState(taskInput),
+          requestContext: this.workflowRequestContext(input.context, taskInput),
+        });
+      } catch (cause) {
+        const persisted = await this.get({
+          identityId: input.context.identityId,
+          runId: run.runId,
+        });
+        if (persisted) return persisted;
+        throw cause;
+      }
+      const persisted = await this.get({ identityId: input.context.identityId, runId: run.runId });
+      if (!persisted) throw new Error('AI_WORKFLOW_SNAPSHOT_MISSING');
+      return persisted;
+    }
+    const knowledgeInput = KnowledgeCaptureWorkflowInputSchema.parse(workflowInput);
+    const run = await this.knowledgeCaptureWorkflow.createRun({
       resourceId: input.context.identityId,
     });
     try {
       await run.start({
-        inputData: taskInput,
-        initialState: initialTaskCreateWorkflowState(taskInput),
-        requestContext: this.workflowRequestContext(input.context, taskInput),
+        inputData: knowledgeInput,
+        initialState: initialKnowledgeCaptureWorkflowState(knowledgeInput),
+        requestContext: this.workflowRequestContext(input.context, knowledgeInput),
       });
     } catch (cause) {
-      const persisted = await this.get({ identityId: input.context.identityId, runId: run.runId });
+      const persisted = await this.get({
+        identityId: input.context.identityId,
+        runId: run.runId,
+      });
       if (persisted) return persisted;
       throw cause;
     }
@@ -461,13 +597,21 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     ) {
       return before;
     }
-    if (before.kind !== 'goal.create' && before.kind !== 'task.create') {
+    if (
+      before.kind !== 'goal.create' &&
+      before.kind !== 'task.create' &&
+      before.kind !== 'knowledge.capture'
+    ) {
       throw new Error('AI_WORKFLOW_KIND_UNSUPPORTED');
     }
 
     const store = await this.workflowStore();
     const workflowName =
-      before.kind === 'goal.create' ? GOAL_CREATE_WORKFLOW_ID : TASK_CREATE_WORKFLOW_ID;
+      before.kind === 'goal.create'
+        ? GOAL_CREATE_WORKFLOW_ID
+        : before.kind === 'task.create'
+          ? TASK_CREATE_WORKFLOW_ID
+          : KNOWLEDGE_CAPTURE_WORKFLOW_ID;
     const row = await store.getWorkflowRunById({
       workflowName,
       runId: input.request.runId,
@@ -477,9 +621,17 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     }
     const workflowInput = this.workflowInputFromSnapshot(workflowName, row.snapshot);
     const workflow =
-      before.kind === 'goal.create' ? this.goalCreateWorkflow : this.taskCreateWorkflow;
+      before.kind === 'goal.create'
+        ? this.goalCreateWorkflow
+        : before.kind === 'task.create'
+          ? this.taskCreateWorkflow
+          : this.knowledgeCaptureWorkflow;
     const lifecycleStepId =
-      before.kind === 'goal.create' ? GOAL_CREATE_LIFECYCLE_STEP_ID : TASK_CREATE_LIFECYCLE_STEP_ID;
+      before.kind === 'goal.create'
+        ? GOAL_CREATE_LIFECYCLE_STEP_ID
+        : before.kind === 'task.create'
+          ? TASK_CREATE_LIFECYCLE_STEP_ID
+          : KNOWLEDGE_CAPTURE_LIFECYCLE_STEP_ID;
     const run = await workflow.createRun({
       runId: input.request.runId,
       resourceId: input.context.identityId,
@@ -511,13 +663,17 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     rawSnapshot: unknown,
   ):
     | ReturnType<(typeof GoalCreateWorkflowInputSchema)['parse']>
-    | ReturnType<(typeof TaskCreateWorkflowInputSchema)['parse']> {
+    | ReturnType<(typeof TaskCreateWorkflowInputSchema)['parse']>
+    | ReturnType<(typeof KnowledgeCaptureWorkflowInputSchema)['parse']> {
     const snapshot = this.parseWorkflowSnapshot(rawSnapshot);
     if (workflowName === GOAL_CREATE_WORKFLOW_ID) {
       return this.goalCreateInputFromSnapshot(snapshot);
     }
     if (workflowName === TASK_CREATE_WORKFLOW_ID) {
       return this.taskCreateInputFromSnapshot(snapshot);
+    }
+    if (workflowName === KNOWLEDGE_CAPTURE_WORKFLOW_ID) {
+      return this.knowledgeCaptureInputFromSnapshot(snapshot);
     }
     throw new Error('AI_WORKFLOW_KIND_UNSUPPORTED');
   }
@@ -535,6 +691,11 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       runId: input.runId,
     });
     if (taskRow) return this.projectTaskCreateRun(taskRow, input.identityId);
+    const knowledgeRow = await store.getWorkflowRunById({
+      workflowName: KNOWLEDGE_CAPTURE_WORKFLOW_ID,
+      runId: input.runId,
+    });
+    if (knowledgeRow) return this.projectKnowledgeCaptureRun(knowledgeRow, input.identityId);
     return null;
   }
 
@@ -554,9 +715,15 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       resourceId: input.identityId,
       perPage: false,
     });
+    const knowledgeRows = await store.listWorkflowRuns({
+      workflowName: KNOWLEDGE_CAPTURE_WORKFLOW_ID,
+      resourceId: input.identityId,
+      perPage: false,
+    });
     const views = [
       ...goalRows.runs.map((row) => this.projectGoalCreateRun(row, input.identityId)),
       ...taskRows.runs.map((row) => this.projectTaskCreateRun(row, input.identityId)),
+      ...knowledgeRows.runs.map((row) => this.projectKnowledgeCaptureRun(row, input.identityId)),
     ];
     return views
       .filter((view): view is AIWorkflowRunView => view !== null)
@@ -576,7 +743,11 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       return before;
     }
     const workflow =
-      before.kind === 'goal.create' ? this.goalCreateWorkflow : this.taskCreateWorkflow;
+      before.kind === 'goal.create'
+        ? this.goalCreateWorkflow
+        : before.kind === 'task.create'
+          ? this.taskCreateWorkflow
+          : this.knowledgeCaptureWorkflow;
     const run = await workflow.createRun({
       runId: input.runId,
       resourceId: input.identityId,

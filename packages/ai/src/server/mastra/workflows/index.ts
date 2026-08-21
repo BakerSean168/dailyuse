@@ -5,3 +5,6 @@ export * from './goal-create.workflow';
 export * from './task-plan-mutation.port';
 export * from './apply-task-plan.service';
 export * from './task-create.workflow';
+export * from './knowledge-note-mutation.port';
+export * from './apply-knowledge-note.service';
+export * from './knowledge-capture.workflow';

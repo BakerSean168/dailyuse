@@ -3,7 +3,11 @@ import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LibSQLStore } from '@mastra/libsql';
-import { GoalPlanDraftContentSchema, TaskPlanDraftContentSchema } from '@memoflow/contracts/ai';
+import {
+  GoalPlanDraftContentSchema,
+  KnowledgeNoteDraftContentSchema,
+  TaskPlanDraftContentSchema,
+} from '@memoflow/contracts/ai';
 import { ok } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -60,6 +64,15 @@ const taskDraft = TaskPlanDraftContentSchema.parse({
   warnings: [],
 });
 
+const knowledgeDraft = KnowledgeNoteDraftContentSchema.parse({
+  title: 'Mastra durable workflow notes',
+  topic: 'Mastra workflow durability',
+  markdown: '# Mastra durable workflow notes\n\nDurability comes from snapshot persistence.',
+  targetSubpath: 'Notes/Engineering',
+  tags: ['mastra', 'ai-vnext'],
+  duplicateRisk: '',
+});
+
 function context(identityId: string, requestId: string): ExecutionContext {
   return {
     identityId,
@@ -96,12 +109,14 @@ async function createRuntime() {
   const storage = new LibSQLStore({ id: randomUUID(), url: `file:${file}` });
   const mutations = mutationPort();
   const createTaskTemplate = taskMutationPort();
+  const saveKnowledgeNote = vi.fn(async (request) => ok({ noteId: String(request.requestId) }));
   const runtime = new MastraAIRuntime({
     storage,
     modelResolver: new MastraModelResolver({} as never),
     transcriptBootstrapSource: { load: vi.fn(async () => null) },
     goalPlanMutationPort: mutations,
     taskPlanMutationPort: { createTaskTemplate },
+    knowledgeCaptureMutationPort: { saveKnowledgeNote },
   });
   vi.spyOn(runtime.goalPlanner, 'plan').mockResolvedValue({
     status: 'draft_ready',
@@ -113,8 +128,13 @@ async function createRuntime() {
     reason: 'The task request is concrete enough to review.',
     candidateDraft: taskDraft,
   });
+  vi.spyOn(runtime.knowledgeCapturePlanner, 'plan').mockResolvedValue({
+    status: 'draft_ready',
+    reason: 'The knowledge request is concrete enough to review.',
+    candidateDraft: knowledgeDraft,
+  });
   resources.push({ runtime, file });
-  return { runtime, mutations, createTaskTemplate };
+  return { runtime, mutations, createTaskTemplate, saveKnowledgeNote };
 }
 
 describe('MastraAIRuntime goal.create product projection', () => {
@@ -245,11 +265,80 @@ describe('MastraAIRuntime goal.create product projection', () => {
       runtime.start({
         context: context('identity-a', 'request-knowledge'),
         request: {
-          kind: 'knowledge.capture' as never,
+          kind: 'unknown.kind' as never,
           conversationId: 'conversation-a',
           input: {},
         },
       }),
-    ).rejects.toThrow('AI_WORKFLOW_KIND_UNSUPPORTED:knowledge.capture');
+    ).rejects.toThrow('AI_WORKFLOW_KIND_UNSUPPORTED:unknown.kind');
+  });
+});
+
+describe('MastraAIRuntime knowledge.capture product projection', () => {
+  it('owns start/get/list/resume and persists a note only after approval', async () => {
+    const { runtime, saveKnowledgeNote } = await createRuntime();
+    const identityId = 'identity-knowledge';
+
+    const started = await runtime.start({
+      context: context(identityId, 'request-kstart'),
+      request: {
+        kind: 'knowledge.capture',
+        conversationId: 'conversation-knowledge',
+        input: { topic: 'Mastra workflow durability' },
+        locale: 'en-US',
+      },
+    });
+
+    expect(started).toMatchObject({
+      kind: 'knowledge.capture',
+      conversationId: 'conversation-knowledge',
+      status: 'suspended',
+      suspension: {
+        type: 'knowledge_draft_review',
+        revision: 1,
+        draft: { revision: 1, title: 'Mastra durable workflow notes' },
+      },
+    });
+    expect(await runtime.get({ identityId: 'identity-b', runId: started.runId })).toBeNull();
+    expect(await runtime.list({ identityId })).toHaveLength(1);
+    // No note write should occur before explicit approval.
+    expect(saveKnowledgeNote).not.toHaveBeenCalled();
+
+    const completed = await runtime.resume({
+      context: context(identityId, 'request-kapprove'),
+      request: { runId: started.runId, command: { type: 'approve' } },
+    });
+    expect(completed).toMatchObject({
+      runId: started.runId,
+      status: 'completed',
+      result: {
+        workflowRunId: started.runId,
+        revision: 1,
+        status: 'success',
+      },
+    });
+    expect(saveKnowledgeNote).toHaveBeenCalledTimes(1);
+    const saveCall = saveKnowledgeNote.mock.calls[0]?.[0];
+    expect(saveCall).toMatchObject({
+      workflowRunId: started.runId,
+      revision: 1,
+      path: 'Notes/Engineering',
+      title: 'Mastra durable workflow notes',
+    });
+    // requestId is a deterministic idempotency key, not a caller-supplied value.
+    expect(typeof saveCall.requestId).toBe('string');
+    expect(saveCall.requestId.length).toBeGreaterThan(0);
+    expect(saveCall.context).toMatchObject({
+      identityId,
+      requestId: 'request-kapprove',
+    });
+
+    // Double-approve after terminal completion is idempotent.
+    const duplicateApprove = await runtime.resume({
+      context: context(identityId, 'request-kapprove-again'),
+      request: { runId: started.runId, command: { type: 'approve' } },
+    });
+    expect(duplicateApprove).toEqual(completed);
+    expect(saveKnowledgeNote).toHaveBeenCalledTimes(1);
   });
 });

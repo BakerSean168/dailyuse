@@ -10,6 +10,12 @@ import {
   TaskPlanDraftSchema,
   TaskPlanExecutionReceiptSchema,
 } from './ai-task-create-workflow.dto';
+import {
+  KnowledgeCaptureClientInputSchema,
+  KnowledgeCaptureExecutionFailureSchema,
+  KnowledgeCaptureExecutionReceiptSchema,
+  KnowledgeDraftSchema,
+} from './ai-knowledge-capture-workflow.dto';
 
 /**
  * MemoFlow AI vNext cross-boundary contracts.
@@ -165,6 +171,12 @@ export const AIWorkflowStatusSchema = z.enum([
 ]);
 export type AIWorkflowStatus = z.infer<typeof AIWorkflowStatusSchema>;
 
+export const AIWorkflowExecutionFailureSchema = z.discriminatedUnion('operation', [
+  GoalPlanExecutionFailureSchema,
+  KnowledgeCaptureExecutionFailureSchema,
+]);
+export type AIWorkflowExecutionFailure = z.infer<typeof AIWorkflowExecutionFailureSchema>;
+
 export const AIWorkflowSuspensionSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('clarification_required'),
@@ -179,7 +191,7 @@ export const AIWorkflowSuspensionSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('knowledge_draft_review'),
-    draft: z.record(z.string(), z.unknown()),
+    draft: KnowledgeDraftSchema,
     warnings: z.array(z.string()).default([]),
     revision: z.number().int().positive(),
   }),
@@ -193,7 +205,7 @@ export const AIWorkflowSuspensionSchema = z.discriminatedUnion('type', [
     type: z.literal('recovery_required'),
     message: z.string().min(1),
     retryable: z.boolean(),
-    failures: z.array(GoalPlanExecutionFailureSchema).default([]),
+    failures: z.array(AIWorkflowExecutionFailureSchema).default([]),
   }),
 ]);
 export type AIWorkflowSuspension = z.infer<typeof AIWorkflowSuspensionSchema>;
@@ -244,7 +256,7 @@ export const AIWorkflowStartClientRequestSchema = z.discriminatedUnion('kind', [
     .object({
       ...WorkflowStartBaseShape,
       kind: z.literal('knowledge.capture'),
-      input: z.record(z.string(), z.unknown()),
+      input: KnowledgeCaptureClientInputSchema,
     })
     .strict(),
 ]);
@@ -315,7 +327,7 @@ export const AIWorkflowRunViewSchema = z.discriminatedUnion('kind', [
   z.object({
     ...WorkflowRunViewBaseShape,
     kind: z.literal('knowledge.capture'),
-    result: z.record(z.string(), z.unknown()).optional(),
+    result: KnowledgeCaptureExecutionReceiptSchema.optional(),
   }),
 ]);
 export type AIWorkflowRunView = z.infer<typeof AIWorkflowRunViewSchema>;
