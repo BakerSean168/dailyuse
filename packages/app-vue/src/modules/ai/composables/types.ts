@@ -32,6 +32,20 @@ export interface UseAIGoalWorkflowOptions {
   ) => Promise<{ id: string } | null>;
 }
 
+export interface UseAITaskWorkflowOptions {
+  workflowRuntime: IWorkflowRuntimeService;
+  selectedModel: Ref<ChatModelOption | null>;
+  chatConversationId: Ref<string>;
+  chatLoading: Ref<boolean>;
+  hasWorkflowUserMessages: Ref<boolean>;
+  buildConversationTranscript: () => string;
+  scrollMessagesToBottom: () => void;
+  maybeRenameCurrentConversation: (name: string) => Promise<void>;
+  openCreatedTask?: (taskId: string) => Promise<unknown>;
+}
+
+export type TaskWorkflowStage = 'collect' | 'clarification' | 'confirm' | 'result' | 'plan' | 'execute';
+
 /** Options for useAIKnowledgeQaWorkflow composable. */
 export interface UseAIKnowledgeQaWorkflowOptions {
   service: Pick<AIChatService, 'startAgentRun'>;
@@ -193,6 +207,7 @@ export type PersistedWorkflowEntry = {
   goalAutomationResult?: GoalAutomationResult | null;
   /** Canonical durable Workflow projection for goal.create. */
   goalWorkflowRun?: import('@memoflow/contracts/ai').AIWorkflowRunView | null;
+  taskWorkflowRun?: import('@memoflow/contracts/ai').AIWorkflowRunView | null;
   /** @deprecated one-way local-storage migration only; goal.create no longer produces AgentRun. */
   goalAgentRun?: AgentRunResult | null;
   knowledgeQaAgentRun?: AgentRunResult | null;

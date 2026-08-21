@@ -129,14 +129,21 @@ import { isRecord } from './isRecord';
       expect(sole).toContain('`${prefix}-${randomId}`');
     });
 
-    it('keeps createAgentId only on transitional Agent workflows, never durable goal.create', () => {
+    it('keeps createAgentId only on transitional Agent workflows, never durable goal.create/task.create', () => {
       expect(goal).not.toContain("import { createAgentId } from './createAgentId'");
       expect(goal).not.toContain("createAgentId('run')");
       expect(goal).not.toContain("createAgentId('thread')");
+      // AI-VNEXT-06: task.create is a durable Mastra Workflow projection like
+      // goal.create — it must not mint client-owned AgentRun ids either.
+      expect(task).not.toContain("import { createAgentId } from './createAgentId'");
+      expect(task).not.toContain("createAgentId('run')");
+      expect(task).not.toContain("createAgentId('thread')");
+      expect(task).toContain('workflowRuntime.start');
+      expect(task).toContain('workflowRuntime.resume');
+      expect(task).toContain('taskWorkflowRun');
       for (const [label, src] of [
         ['knowledge', knowledge],
         ['knowledgeQa', knowledgeQa],
-        ['task', task],
       ] as const) {
         expect(src, label).toContain('Residual 953');
         expect(src, label).toContain("import { createAgentId } from './createAgentId'");

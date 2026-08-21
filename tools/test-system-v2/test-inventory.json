@@ -3733,6 +3733,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/ai/components/AITaskWorkflowPanel.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/ai/composables/ai-knowledge-note-terminology.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3838,6 +3846,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/ai/composables/useAITaskWorkflow.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -10656,7 +10672,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 186
+      "fileCount": 188
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11734,7 +11750,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 1009,
+    "unit": 1011,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

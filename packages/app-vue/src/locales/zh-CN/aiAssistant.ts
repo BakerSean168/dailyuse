@@ -162,8 +162,8 @@ export default {
         taskCreate: '任务规划',
       },
       taskCollectingHint:
-        '在对话中描述任务，然后启动 Task Agent。Host task.create 提案会进入工作台审阅。',
-      taskAwaitingApprovalHint: '请在 Host 工作台审阅 task.create 提案，确认后创建任务模板。',
+        '在对话中描述任务，然后启动 Task 工作流。生成的任务计划草稿会显示在这里供审阅。',
+      taskAwaitingApprovalHint: '请审阅生成的任务计划草稿，确认后创建任务模板。',
       taskLinkedGoalLabel: '关联目标（可选）',
       taskLinkedGoalNone: '不关联目标',
     },
@@ -277,6 +277,7 @@ export default {
       startRun: '启动智能体',
       starting: '启动中...',
       confirmRun: '确认运行',
+      retry: '重试',
       continueExecution: '继续执行',
       resuming: '恢复中...',
       started: '智能体已启动',
@@ -343,6 +344,7 @@ export default {
     },
     automation: {
       title: '自动化目标设置',
+      confirm: '确认',
       placeholder: '描述你想得到的结果、可能的阶段，以及需要创建哪些任务设置...',
       planning: '规划中...',
       planAutomation: '规划自动化',

@@ -79,7 +79,7 @@ describe('Host proposal lifecycle after ADR-052 goal.create cutover', () => {
     expect(persistence).not.toContain('goalAgentRun: options.goalAgentRun.value');
   });
 
-  it('keeps Task and Knowledge Host Proposal lanes transitional without reopening Goal', () => {
+  it('keeps the Knowledge Host Proposal lane transitional without reopening Goal/Task', () => {
     expect(helper).toContain('dispatchHostProposalRevise');
     expect(helper).toContain("type: 'approve_proposal'");
     expect(helper).toContain("type: 'reject_proposal'");
@@ -90,7 +90,16 @@ describe('Host proposal lifecycle after ADR-052 goal.create cutover', () => {
 
     expect(knowledge).toContain('await dispatchHostProposalDecision');
     expect(knowledge).toContain("kind: 'knowledge.write'");
-    expect(task).toContain('create_task_template');
+    // AI-VNEXT-06: task.create is a durable Mastra Workflow projection; it must
+    // not resurrect Host Proposal / AgentRun ownership.
+    expect(task).toContain('workflowRuntime.start');
+    expect(task).toContain('workflowRuntime.resume');
+    expect(task).toContain("kind: 'task.create'");
+    expect(task).not.toContain('create_task_template');
+    expect(task).not.toContain('pendingActions');
+    expect(task).not.toContain('approvedActions');
+    expect(task).not.toContain('startAgentRun');
+    expect(task).not.toContain('resumeAgentRun');
     expect(chatView).toContain("payload.item.source === 'knowledge'");
     expect(chatView).toContain("payload.item.source === 'task'");
     expect(chatView).toContain('createTaskTemplate');

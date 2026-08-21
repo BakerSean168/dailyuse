@@ -177,9 +177,9 @@ export default {
         taskCreate: 'Task Planning',
       },
       taskCollectingHint:
-        'Describe the task in chat, then start the Task Agent. Host task.create proposals appear in the workbench for review.',
+        'Describe the task in chat, then start the Task workflow. The generated task draft appears here for review.',
       taskAwaitingApprovalHint:
-        'Review the Host task.create proposal, then approve to create the task template.',
+        'Review the generated task draft, then approve to create the task template.',
       taskLinkedGoalLabel: 'Link goal (optional)',
       taskLinkedGoalNone: 'No linked goal',
     },
@@ -296,6 +296,7 @@ export default {
       startRun: 'Start Agent Run',
       starting: 'Starting...',
       confirmRun: 'Confirm Run',
+      retry: 'Retry',
       continueExecution: 'Continue Execution',
       resuming: 'Resuming...',
       started: 'Agent run started',
@@ -362,6 +363,7 @@ export default {
     },
     automation: {
       title: 'Automate Goal Setup',
+      confirm: 'Confirm',
       placeholder:
         'Describe the outcome you want, the likely milestones, and what task setup should be created...',
       planning: 'Planning...',

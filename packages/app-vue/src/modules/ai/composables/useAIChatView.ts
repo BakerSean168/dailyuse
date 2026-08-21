@@ -192,25 +192,15 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     requestOpenKnowledgeNote,
   });
 
-  // Residual 431: Task create product start (AgentType task.create Host foundation).
-  // Late-bound sync: syncSelectedAgentRun is declared below.
-  // eslint-disable-next-line prefer-const -- reassigned after helper is constructed
-  let syncTaskAgentRunFromStart:
-    ((result: import('@memoflow/contracts/ai').AgentRunResult) => void) | undefined;
   const taskWorkflow = useAITaskWorkflow({
-    service,
+    workflowRuntime,
     selectedModel: modelSelection.selectedModel,
     chatConversationId: chatSession.chatConversationId,
     chatLoading: chatSession.chatLoading,
-    chatTimeline: chatSession.chatTimeline,
-    conversationTitle: chatSession.conversationTitle,
     hasWorkflowUserMessages: chatSession.hasWorkflowUserMessages,
     buildConversationTranscript: chatSession.buildConversationTranscript,
     scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
-    taskAgentRun,
-    syncTaskAgentRun: (result) => {
-      syncTaskAgentRunFromStart?.(result);
-    },
+    maybeRenameCurrentConversation,
   });
 
   // 6. Persistence
@@ -230,7 +220,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     goalWorkflowRun: goalWorkflow.goalWorkflowRun,
     knowledgeQaAgentRun: knowledgeQaWorkflow.knowledgeQaAgentRun,
     noteAgentRun: noteWorkflow.noteAgentRun,
-    taskAgentRun,
+    taskWorkflowRun: taskWorkflow.taskWorkflowRun,
     knowledgeAnswer: knowledgeQaWorkflow.knowledgeAnswer,
     clarificationAnswers: goalWorkflow.clarificationAnswers,
     editableGoal: goalWorkflow.editableGoal,
@@ -277,20 +267,10 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       }
     }
 
-    // Residual 433: restore dedicated task.create session field.
-    // TS Host start is session-local (no Python checkpointer); keep snapshot on miss.
-    const taskRunId = taskAgentRun.value?.run.runId;
+    const taskRunId = taskWorkflow.taskWorkflowRun.value?.runId;
     if (taskRunId) {
-      try {
-        const result = unwrap(await service.getAgentRun(taskRunId));
-        if (result?.run) {
-          syncSelectedAgentRun(result);
-        }
-      } catch {
-        if (taskAgentRun.value?.run.agentType === 'task.create') {
-          toolMode.value = 'task-create';
-        }
-      }
+      await taskWorkflow.syncTaskWorkflowRun(taskRunId);
+      if (taskWorkflow.taskWorkflowRun.value) toolMode.value = 'task-create';
     }
 
     persistence.persistWorkflowState(conversationId);
@@ -307,11 +287,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     if (taskAgentRun.value?.run.agentType === 'task.create') {
       toolMode.value = 'task-create';
     }
-    taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
     await refreshRestoredAgentRun(conversationId);
-    // goal.create no longer dual-mirrors into the Task AgentRun lane. The task
-    // session is restored only from its own persisted AgentRun snapshot.
-    taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
   }
 
   function syncSelectedAgentRun(result: import('@memoflow/contracts/ai').AgentRunResult) {
@@ -324,7 +300,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       goalWorkflow.resetGoalArtifacts();
       toolMode.value = 'task-create';
       taskAgentRun.value = result;
-      taskWorkflow.syncLinkedGoalFromTaskAgentRun(result);
       return;
     }
 
@@ -354,11 +329,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       knowledgeQaWorkflow.syncKnowledgeQaAgentRun(result);
     }
   }
-
-  syncTaskAgentRunFromStart = (result) => {
-    syncSelectedAgentRun(result);
-    syncAgentRunListItem(result.run);
-  };
 
   function syncAgentRunListItem(run: AgentRun | null | undefined) {
     if (!run) return;

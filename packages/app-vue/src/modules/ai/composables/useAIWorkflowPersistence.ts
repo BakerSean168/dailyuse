@@ -24,8 +24,7 @@ export interface UseAIWorkflowPersistenceOptions {
   goalWorkflowRun: Ref<AIWorkflowRunView | null>;
   knowledgeQaAgentRun: Ref<AgentRunResult | null>;
   noteAgentRun: Ref<AgentRunResult | null>;
-  /** Residual 427: dedicated Host task.create AgentRun session field. */
-  taskAgentRun: Ref<AgentRunResult | null>;
+  taskWorkflowRun: Ref<AIWorkflowRunView | null>;
   knowledgeAnswer: Ref<KnowledgeAnswer | null>;
   clarificationAnswers: Ref<string[]>;
   editableGoal: Ref<EditableGoal>;
@@ -121,7 +120,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
       goalWorkflowRun: options.goalWorkflowRun.value,
       knowledgeQaAgentRun: options.knowledgeQaAgentRun.value,
       noteAgentRun: options.noteAgentRun.value,
-      taskAgentRun: options.taskAgentRun.value,
+      taskWorkflowRun: options.taskWorkflowRun.value,
       knowledgeAnswer: options.knowledgeAnswer.value,
       clarificationAnswers: [...options.clarificationAnswers.value],
       editableGoal: {
@@ -172,7 +171,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
     options.goalWorkflowRun.value = entry.goalWorkflowRun ?? null;
     options.knowledgeQaAgentRun.value = entry.knowledgeQaAgentRun ?? null;
     options.noteAgentRun.value = entry.noteAgentRun ?? null;
-    options.taskAgentRun.value = entry.taskAgentRun ?? null;
+    options.taskWorkflowRun.value = entry.taskWorkflowRun ?? null;
     options.knowledgeAnswer.value = entry.knowledgeAnswer ?? null;
     options.clarificationAnswers.value = [...(entry.clarificationAnswers ?? [])];
     options.editableGoal.value = {
@@ -206,7 +205,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
           JSON.stringify(options.goalWorkflowRun.value),
           JSON.stringify(options.knowledgeQaAgentRun.value),
           JSON.stringify(options.noteAgentRun.value),
-          JSON.stringify(options.taskAgentRun.value),
+          JSON.stringify(options.taskWorkflowRun.value),
           JSON.stringify(options.knowledgeAnswer.value),
           JSON.stringify(options.clarificationAnswers.value),
           JSON.stringify(options.editableGoal.value),

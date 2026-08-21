@@ -310,6 +310,14 @@
           @open-created-note="openCreatedNote"
           @start-new-conversation="startNewConversation"
         />
+        <AITaskWorkflowPanel
+          :tool-mode="toolMode"
+          :task-workflow-run="taskWorkflowRun"
+          @confirm="confirmTaskAgentRun"
+          @cancel="cancelTaskAgentRun"
+          @retry="retryTaskAgentExecution"
+          @edit-started="showTaskDraftEditor = true"
+        />
         <div
           v-if="
             !hasWorkflowArtifact &&
@@ -340,6 +348,7 @@ import AIConversationSidebar from '../components/AIConversationSidebar.vue';
 import AIMessagePanel from '../components/AIMessagePanel.vue';
 import AIFooterComposer from '../components/AIFooterComposer.vue';
 import AIGoalWorkflowPanel from '../components/AIGoalWorkflowPanel.vue';
+import AITaskWorkflowPanel from '../components/AITaskWorkflowPanel.vue';
 import AIWorkflowActionBar from '../components/AIWorkflowActionBar.vue';
 import AIContextPanel from '../components/AIContextPanel.vue';
 import AIHostProposalPanel from '../components/AIHostProposalPanel.vue';
@@ -540,6 +549,8 @@ const {
 
 const {
   taskAgentLoading,
+  taskWorkflowRun,
+  showTaskDraftEditor,
   canRunTaskAgent,
   linkedGoalId,
   setLinkedGoalId,
@@ -547,6 +558,8 @@ const {
   cancelTaskAgentRun,
   completeTaskAgentRun,
   reviseTaskAgentRun,
+  confirmTaskAgentRun,
+  retryTaskAgentExecution,
 } = taskWorkflow;
 
 const { formatAutomationTool, formatAgentTool, formatActionStatus, formatExecutionOutcome } =
