@@ -267,4 +267,78 @@ describe('ApplyGoalPlanService', () => {
       }),
     ]);
   });
+
+  it('folds a goal mutation throw into a retryable failed receipt instead of escaping the Result contract', async () => {
+    const port = mutationPort();
+    port.createGoal.mockRejectedValueOnce(
+      new Error('duplicate key value violates unique constraint "goals_pkey"'),
+    );
+    const service = new ApplyGoalPlanService(port);
+
+    const receipt = await service.apply({ workflowRunId: 'workflow-1', draft, context });
+
+    expect(receipt.status).toBe('failed');
+    expect(receipt.retryable).toBe(true);
+    expect(receipt.goalId).toBeUndefined();
+    expect(receipt.failures).toEqual([
+      expect.objectContaining({
+        operation: 'goal',
+        code: 'INTERNAL_ERROR',
+        retryable: true,
+      }),
+    ]);
+    expect(port.createTaskTemplate).not.toHaveBeenCalled();
+    expect(port.createReminder).not.toHaveBeenCalled();
+  });
+
+  it('folds a task mutation throw into a retryable partial receipt and continues other mutations', async () => {
+    const port = mutationPort();
+    port.createTaskTemplate
+      .mockImplementationOnce(async (request) => ok({ taskId: String(request.id) }))
+      .mockRejectedValueOnce(
+        new Error('duplicate key value violates unique constraint "task_templates_pkey"'),
+      );
+    const service = new ApplyGoalPlanService(port);
+    const expected = ids();
+
+    const receipt = await service.apply({ workflowRunId: 'workflow-1', draft, context });
+
+    expect(receipt.status).toBe('partial');
+    expect(receipt.retryable).toBe(true);
+    expect(receipt.taskIds).toEqual([expected.task0]);
+    expect(receipt.reminderIds).toEqual([expected.reminder0]);
+    expect(receipt.failures).toEqual([
+      expect.objectContaining({
+        operation: 'task_template',
+        index: 1,
+        code: 'INTERNAL_ERROR',
+        retryable: true,
+      }),
+    ]);
+    expect(port.createReminder).toHaveBeenCalledTimes(1);
+  });
+
+  it('folds a reminder mutation throw into a retryable partial receipt', async () => {
+    const port = mutationPort();
+    port.createReminder.mockRejectedValueOnce(
+      new Error('duplicate key value violates unique constraint "reminder_templates_pkey"'),
+    );
+    const service = new ApplyGoalPlanService(port);
+    const expected = ids();
+
+    const receipt = await service.apply({ workflowRunId: 'workflow-1', draft, context });
+
+    expect(receipt.status).toBe('partial');
+    expect(receipt.retryable).toBe(true);
+    expect(receipt.taskIds).toEqual([expected.task0, expected.task1]);
+    expect(receipt.reminderIds).toEqual([]);
+    expect(receipt.failures).toEqual([
+      expect.objectContaining({
+        operation: 'reminder',
+        index: 0,
+        code: 'INTERNAL_ERROR',
+        retryable: true,
+      }),
+    ]);
+  });
 });

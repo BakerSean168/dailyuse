@@ -11,7 +11,7 @@ import {
   TriggerType,
   type CreateReminderTemplateReq,
 } from '@memoflow/contracts/reminder';
-import type { ResultError } from '@memoflow/contracts/result';
+import type { Result, ResultError } from '@memoflow/contracts/result';
 import {
   TaskGoalBindingTrigger,
   TaskTimeType,
@@ -19,7 +19,13 @@ import {
   type CreateTaskTemplateReq,
 } from '@memoflow/contracts/task';
 import { goalWorkflowEntityId } from './deterministic-entity-id';
-import type { ApplyGoalPlanInput, GoalPlanMutationPort } from './goal-plan-mutation.port';
+import type {
+  ApplyGoalPlanInput,
+  GoalMutationResult,
+  GoalPlanMutationPort,
+  ReminderMutationResult,
+  TaskTemplateMutationResult,
+} from './goal-plan-mutation.port';
 
 const DAILY_MINUTES = 24 * 60;
 const WEEKLY_MINUTES = 7 * DAILY_MINUTES;
@@ -52,6 +58,29 @@ function failure(
     message: error.message,
     retryable: retryableFailure(error as ResultError),
   };
+}
+
+/**
+ * Fold an exception thrown by a mutation application port (past its own Result
+ * boundary) into a retryable workflow failure entry instead of letting it escape
+ * and crash the durable workflow run. INTERNAL_ERROR is classified retryable by
+ * retryableFailure, so the durable workflow resumes as recovery_required rather
+ * than failing terminally.
+ */
+function throwToFailure(
+  operation: GoalPlanExecutionFailure['operation'],
+  cause: unknown,
+  index?: number,
+): GoalPlanExecutionFailure {
+  return failure(
+    operation,
+    {
+      code: 'INTERNAL_ERROR',
+      message: cause instanceof Error ? cause.message : String(cause),
+      failure: { code: 'INTERNAL_ERROR', category: 'unavailable', retryHint: { kind: 'transient' } },
+    },
+    index,
+  );
 }
 
 function uniqueInOrder(values: readonly string[]): string[] {
@@ -316,7 +345,22 @@ export class ApplyGoalPlanService {
           weight: keyResult.weight,
         })),
       };
-      const result = await this.mutations.createGoal(request, context);
+      let result: Result<GoalMutationResult> | undefined;
+      try {
+        result = await this.mutations.createGoal(request, context);
+      } catch (cause) {
+        failures.push(throwToFailure('goal', cause));
+        return {
+          workflowRunId,
+          revision: draft.revision,
+          status: 'failed',
+          keyResultIds: [],
+          taskIds: [],
+          reminderIds: [],
+          failures,
+          retryable: failures.some((item) => item.retryable),
+        };
+      }
       if (!result.ok) {
         failures.push(failure('goal', result.error));
         return {
@@ -356,15 +400,21 @@ export class ApplyGoalPlanService {
     for (const [index, task] of draft.taskTemplates.entries()) {
       const expectedId = expectedTaskIds[index]!;
       if (taskIds.includes(expectedId)) continue;
-      const result = await this.mutations.createTaskTemplate(
-        taskRequest(task, {
-          id: expectedId,
-          goalId,
-          keyResultIds: expectedKeyResultIds,
-          goalStartDate: draft.goal.startDate,
-        }),
-        context,
-      );
+      let result: Result<TaskTemplateMutationResult> | undefined;
+      try {
+        result = await this.mutations.createTaskTemplate(
+          taskRequest(task, {
+            id: expectedId,
+            goalId,
+            keyResultIds: expectedKeyResultIds,
+            goalStartDate: draft.goal.startDate,
+          }),
+          context,
+        );
+      } catch (cause) {
+        failures.push(throwToFailure('task_template', cause, index));
+        continue;
+      }
       if (result.ok) {
         if (result.data.taskId !== expectedId) {
           failures.push({
@@ -401,7 +451,13 @@ export class ApplyGoalPlanService {
         });
         continue;
       }
-      const result = await this.mutations.createReminder(request, context);
+      let result: Result<ReminderMutationResult> | undefined;
+      try {
+        result = await this.mutations.createReminder(request, context);
+      } catch (cause) {
+        failures.push(throwToFailure('reminder', cause, index));
+        continue;
+      }
       if (result.ok) {
         if (result.data.reminderId !== expectedId) {
           failures.push({

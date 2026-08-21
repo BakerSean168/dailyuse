@@ -179,4 +179,57 @@ describe('CreateGoalUseCase', () => {
       expect(result.data.readModel.tags).toEqual(['fitness', 'health']);
     }
   });
+
+  it('replays the same durable goal when a concurrent save hits the unique constraint and the goal was committed', async () => {
+    const goalId = GoalId.of('IGoalId_550e8400-e29b-41d4-a716-446655440002');
+    const input = aCreateInput({ id: goalId });
+    const committed = Goal.create({
+      id: goalId,
+      identityId: testIdentityId,
+      name: 'Learn TypeScript',
+      description: null,
+      color: '#3B82F6',
+      feasibilityAnalysis: null,
+      motivation: null,
+      importance: 'Important',
+      category: null,
+      tags: [],
+      startDate: null,
+      targetDate: null,
+      folderId: null,
+      parentGoalId: null,
+      reminderConfig: null,
+    });
+    committed.createAndAddKeyResult({
+      title: 'Ship the reference journey',
+      valueType: 'Incremental',
+      startValue: 0,
+      targetValue: 1,
+      weight: 5,
+    });
+
+    // Both workers pass the pre-check (not found), then the slower worker's save
+    // hits the unique constraint while the other worker already committed.
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValueOnce(null).mockResolvedValueOnce(committed);
+    vi.mocked(goalRepo.save).mockRejectedValueOnce(
+      new Error('duplicate key value violates unique constraint "goals_pkey"'),
+    );
+
+    const result = await useCase.execute(input, aContext());
+
+    expect(result).toBeOk();
+    expect(result.ok && result.data.goalId).toBe(goalId);
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledTimes(2);
+    expect(goalRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns INTERNAL_ERROR instead of throwing when a non-idempotent save fails and no goal is committed', async () => {
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
+    vi.mocked(goalRepo.save).mockRejectedValueOnce(new Error('connection reset'));
+
+    const result = await useCase.execute(aCreateInput(), aContext());
+
+    expect(result).toBeErrorWithCode('INTERNAL_ERROR');
+    expect(goalRepo.save).toHaveBeenCalledTimes(1);
+  });
 });
