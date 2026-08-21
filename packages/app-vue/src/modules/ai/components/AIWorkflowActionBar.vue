@@ -61,10 +61,15 @@ const props = defineProps<{
   linkedGoalId: string | null;
   recentGoals: Array<{ id: string; title: string }>;
 
+  // ── knowledge.capture 状态（ADR-052 Mastra Workflow） ──
+  knowledgeCaptureLoading: boolean;
+  canRunKnowledgeCapture: boolean;
+
   // ── 动作（函数 props：状态机处理器原样透传） ──
   startGoalAgentRun: () => void;
   startTaskAgentRun: () => void;
   setLinkedGoalId: (goalId: string | null) => void;
+  startKnowledgeCaptureRun: () => void;
   submitGoalAgentClarification: () => void;
   confirmGoalAgentRun: () => void;
   cancelGoalAgentRun: () => void;
@@ -196,6 +201,20 @@ function onTaskLinkedGoalChange(event: Event) {
         >
           {{
             taskAgentLoading
+              ? t('aiAssistant.dialogs.agent.starting')
+              : t('aiAssistant.dialogs.agent.startRun')
+          }}
+        </Button>
+      </template>
+      <template v-else-if="toolMode === 'knowledge-capture'">
+        <Button
+          variant="outline"
+          :disabled="!canRunKnowledgeCapture"
+          data-testid="knowledge-capture-agent-start-run"
+          @click="startKnowledgeCaptureRun"
+        >
+          {{
+            knowledgeCaptureLoading
               ? t('aiAssistant.dialogs.agent.starting')
               : t('aiAssistant.dialogs.agent.startRun')
           }}

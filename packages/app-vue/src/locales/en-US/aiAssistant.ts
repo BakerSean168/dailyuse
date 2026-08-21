@@ -98,6 +98,11 @@ export default {
         description:
           'Use the conversation to clarify the topic, source, and key takeaways, then create the markdown note directly in the background.',
       },
+      knowledgeCapture: {
+        title: 'Capture Knowledge',
+        description:
+          'Clarify the topic and sources in chat, then review a durable knowledge note draft before saving it to the knowledge base.',
+      },
       taskCreate: {
         title: 'Plan A Task',
         description:
@@ -119,6 +124,11 @@ export default {
         title: 'Write a knowledge note',
         description: 'Clarify topic, sources, and takeaways, then save to the knowledge base.',
         prefill: 'Turn the following into a knowledge note:',
+      },
+      knowledgeCapture: {
+        title: 'Capture knowledge',
+        description: 'Review a durable note draft from the conversation before saving.',
+        prefill: 'Capture the following as knowledge:',
       },
       knowledgeQa: {
         title: 'Ask knowledge base',
@@ -167,12 +177,14 @@ export default {
         chat: 'Chat',
         goalCreate: 'Create Goal',
         knowledgeQa: 'Ask Knowledge Base',
+        knowledgeCapture: 'Capture Knowledge',
         knowledgeGenerate: 'Create Knowledge Note',
         taskCreate: 'Create Task',
       },
       defaultConversationNames: {
         goalCreate: 'Goal Planning',
         knowledgeQa: 'Knowledge Q&A',
+        knowledgeCapture: 'Knowledge Capture',
         knowledgeGenerate: 'Knowledge Note',
         taskCreate: 'Task Planning',
       },
@@ -182,6 +194,10 @@ export default {
         'Review the generated task draft, then approve to create the task template.',
       taskLinkedGoalLabel: 'Link goal (optional)',
       taskLinkedGoalNone: 'No linked goal',
+      knowledgeCaptureCollectingHint:
+        'Describe the knowledge topic in chat, then start the Knowledge Capture workflow. The reviewed note draft appears here.',
+      knowledgeCaptureAwaitingApprovalHint:
+        'Review the generated knowledge note draft, then approve to save it to the knowledge base.',
     },
     hostProfile: {
       label: 'Host engine',

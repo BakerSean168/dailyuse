@@ -25,6 +25,8 @@ export interface WorkflowStatusParams {
   /** Residual 431: task.create start in flight. */
   taskAgentLoading?: boolean;
   taskAgentRun?: { run: { status: string } } | null;
+  /** knowledge.capture Mastra Workflow start in flight. */
+  knowledgeCaptureLoading?: boolean;
 }
 
 /** Computes the workflow status text for the chat view. */
@@ -70,6 +72,10 @@ export function getWorkflowStatusText(
       return t('aiAssistant.chatPage.workflow.taskAwaitingApprovalHint');
     }
     return t('aiAssistant.chatPage.workflow.taskCollectingHint');
+  }
+  if (params.toolMode === 'knowledge-capture') {
+    if (params.knowledgeCaptureLoading) return t('aiAssistant.dialogs.agent.starting');
+    return t('aiAssistant.chatPage.workflow.knowledgeCaptureCollectingHint');
   }
   if (params.toolMode === 'knowledge-qa') {
     if (params.knowledgeQueryLoading) return t('aiAssistant.dialogs.knowledge.searching');

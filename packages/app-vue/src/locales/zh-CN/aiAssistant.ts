@@ -89,6 +89,10 @@ export default {
         title: '开始创建知识笔记',
         description: '先把主题、来源和想保留的重点聊清楚，确认后会直接在后台创建 Markdown 笔记。',
       },
+      knowledgeCapture: {
+        title: '捕获知识',
+        description: '在对话中澄清主题与来源，审阅持久化知识笔记草稿后再保存到知识库。',
+      },
       taskCreate: {
         title: '规划任务',
         description:
@@ -110,6 +114,11 @@ export default {
         title: '写一篇知识笔记',
         description: '先聊清主题、来源和要点，再落到知识库。',
         prefill: '帮我把下面内容整理成一篇知识笔记：',
+      },
+      knowledgeCapture: {
+        title: '捕获知识',
+        description: '从对话中审阅一篇持久化笔记草稿后再保存。',
+        prefill: '帮我把下面内容捕获为知识：',
       },
       knowledgeQa: {
         title: '问知识库',
@@ -152,12 +161,14 @@ export default {
         chat: '普通对话',
         goalCreate: '创建目标',
         knowledgeQa: '查询知识库',
+        knowledgeCapture: '捕获知识',
         knowledgeGenerate: '创建知识笔记',
         taskCreate: '创建任务',
       },
       defaultConversationNames: {
         goalCreate: '目标规划',
         knowledgeQa: '知识库问答',
+        knowledgeCapture: '知识捕获',
         knowledgeGenerate: '知识笔记',
         taskCreate: '任务规划',
       },
@@ -166,6 +177,9 @@ export default {
       taskAwaitingApprovalHint: '请审阅生成的任务计划草稿，确认后创建任务模板。',
       taskLinkedGoalLabel: '关联目标（可选）',
       taskLinkedGoalNone: '不关联目标',
+      knowledgeCaptureCollectingHint:
+        '在对话中描述知识主题，然后启动知识捕获工作流。生成的笔记草稿会显示在这里供审阅。',
+      knowledgeCaptureAwaitingApprovalHint: '请审阅生成的知识笔记草稿，确认后保存到知识库。',
     },
     hostProfile: {
       label: 'Host 引擎',

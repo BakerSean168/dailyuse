@@ -25,6 +25,7 @@ export interface UseAIWorkflowPersistenceOptions {
   knowledgeQaAgentRun: Ref<AgentRunResult | null>;
   noteAgentRun: Ref<AgentRunResult | null>;
   taskWorkflowRun: Ref<AIWorkflowRunView | null>;
+  knowledgeCaptureRun: Ref<AIWorkflowRunView | null>;
   knowledgeAnswer: Ref<KnowledgeAnswer | null>;
   clarificationAnswers: Ref<string[]>;
   editableGoal: Ref<EditableGoal>;
@@ -121,6 +122,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
       knowledgeQaAgentRun: options.knowledgeQaAgentRun.value,
       noteAgentRun: options.noteAgentRun.value,
       taskWorkflowRun: options.taskWorkflowRun.value,
+      knowledgeCaptureRun: options.knowledgeCaptureRun.value,
       knowledgeAnswer: options.knowledgeAnswer.value,
       clarificationAnswers: [...options.clarificationAnswers.value],
       editableGoal: {
@@ -172,6 +174,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
     options.knowledgeQaAgentRun.value = entry.knowledgeQaAgentRun ?? null;
     options.noteAgentRun.value = entry.noteAgentRun ?? null;
     options.taskWorkflowRun.value = entry.taskWorkflowRun ?? null;
+    options.knowledgeCaptureRun.value = entry.knowledgeCaptureRun ?? null;
     options.knowledgeAnswer.value = entry.knowledgeAnswer ?? null;
     options.clarificationAnswers.value = [...(entry.clarificationAnswers ?? [])];
     options.editableGoal.value = {

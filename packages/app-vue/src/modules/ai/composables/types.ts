@@ -44,7 +44,20 @@ export interface UseAITaskWorkflowOptions {
   openCreatedTask?: (taskId: string) => Promise<unknown>;
 }
 
+export interface UseAIKnowledgeCaptureOptions {
+  workflowRuntime: IWorkflowRuntimeService;
+  selectedModel: Ref<ChatModelOption | null>;
+  chatConversationId: Ref<string>;
+  chatLoading: Ref<boolean>;
+  hasWorkflowUserMessages: Ref<boolean>;
+  buildConversationTranscript: () => string;
+  scrollMessagesToBottom: () => void;
+  maybeRenameCurrentConversation: (name: string) => Promise<void>;
+  openCreatedNote?: (noteId: string) => Promise<unknown>;
+}
+
 export type TaskWorkflowStage = 'collect' | 'clarification' | 'confirm' | 'result' | 'plan' | 'execute';
+export type KnowledgeCaptureWorkflowStage = 'collect' | 'clarification' | 'confirm' | 'result' | 'plan' | 'execute';
 
 /** Options for useAIKnowledgeQaWorkflow composable. */
 export interface UseAIKnowledgeQaWorkflowOptions {
@@ -59,7 +72,7 @@ export interface UseAIKnowledgeQaWorkflowOptions {
 }
 
 export type WorkflowMode =
-  'chat' | 'goal-create' | 'task-create' | 'knowledge-qa' | 'knowledge-generate';
+  'chat' | 'goal-create' | 'task-create' | 'knowledge-capture' | 'knowledge-qa' | 'knowledge-generate';
 
 export type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
 
@@ -208,6 +221,8 @@ export type PersistedWorkflowEntry = {
   /** Canonical durable Workflow projection for goal.create. */
   goalWorkflowRun?: import('@memoflow/contracts/ai').AIWorkflowRunView | null;
   taskWorkflowRun?: import('@memoflow/contracts/ai').AIWorkflowRunView | null;
+  /** Canonical durable Workflow projection for knowledge.capture. */
+  knowledgeCaptureRun?: import('@memoflow/contracts/ai').AIWorkflowRunView | null;
   /** @deprecated one-way local-storage migration only; goal.create no longer produces AgentRun. */
   goalAgentRun?: AgentRunResult | null;
   knowledgeQaAgentRun?: AgentRunResult | null;
@@ -265,6 +280,7 @@ export function getToolLocaleKey(mode: WorkflowMode): string {
     chat: 'chat',
     'goal-create': 'goalCreate',
     'task-create': 'taskCreate',
+    'knowledge-capture': 'knowledgeCapture',
     'knowledge-qa': 'knowledgeQa',
     'knowledge-generate': 'knowledgeGenerate',
   }[mode];
@@ -279,6 +295,7 @@ export function normalizeWorkflowMode(mode: string | null | undefined): Workflow
   if (
     mode === 'goal-create' ||
     mode === 'task-create' ||
+    mode === 'knowledge-capture' ||
     mode === 'knowledge-qa' ||
     mode === 'knowledge-generate'
   ) {

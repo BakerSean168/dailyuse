@@ -11,6 +11,7 @@ import { useAIModelSelection } from './useAIModelSelection';
 import { useAIGoalWorkflow } from './useAIGoalWorkflow';
 import { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
 import { useAITaskWorkflow } from './useAITaskWorkflow';
+import { useAIKnowledgeCapture } from './useAIKnowledgeCapture';
 import { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 import { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 import { useAIFormatters } from './useAIFormatters';
@@ -79,6 +80,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       return t('aiAssistant.chatPage.workflow.defaultConversationNames.taskCreate');
     if (normalizedMode === 'knowledge-generate')
       return t('aiAssistant.chatPage.workflow.defaultConversationNames.knowledgeGenerate');
+    if (normalizedMode === 'knowledge-capture')
+      return t('aiAssistant.chatPage.workflow.defaultConversationNames.knowledgeCapture');
     if (normalizedMode === 'knowledge-qa')
       return t('aiAssistant.chatPage.workflow.defaultConversationNames.knowledgeQa');
     return t('aiAssistant.dialogs.chat.defaultConversationName');
@@ -203,15 +206,26 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     maybeRenameCurrentConversation,
   });
 
+  const knowledgeCaptureWorkflow = useAIKnowledgeCapture({
+    workflowRuntime,
+    selectedModel: modelSelection.selectedModel,
+    chatConversationId: chatSession.chatConversationId,
+    chatLoading: chatSession.chatLoading,
+    hasWorkflowUserMessages: chatSession.hasWorkflowUserMessages,
+    buildConversationTranscript: chatSession.buildConversationTranscript,
+    scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
+    maybeRenameCurrentConversation,
+    openCreatedNote: requestOpenKnowledgeNote,
+  });
+
   // 6. Persistence
   function resetWorkflowArtifacts() {
     goalWorkflow.resetGoalArtifacts();
     noteWorkflow.resetNoteArtifacts();
     knowledgeQaWorkflow.resetKnowledgeAnswer();
-    // Residual 427: clear dedicated task.create session field.
     taskAgentRun.value = null;
-    // Residual 433: clear task start local state (linked goal).
     taskWorkflow.resetTaskWorkflowLocalState();
+    knowledgeCaptureWorkflow.resetKnowledgeCaptureLocalState();
   }
 
   const persistence = useAIWorkflowPersistence({
@@ -221,6 +235,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     knowledgeQaAgentRun: knowledgeQaWorkflow.knowledgeQaAgentRun,
     noteAgentRun: noteWorkflow.noteAgentRun,
     taskWorkflowRun: taskWorkflow.taskWorkflowRun,
+    knowledgeCaptureRun: knowledgeCaptureWorkflow.knowledgeCaptureRun,
     knowledgeAnswer: knowledgeQaWorkflow.knowledgeAnswer,
     clarificationAnswers: goalWorkflow.clarificationAnswers,
     editableGoal: goalWorkflow.editableGoal,
@@ -271,6 +286,14 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     if (taskRunId) {
       await taskWorkflow.syncTaskWorkflowRun(taskRunId);
       if (taskWorkflow.taskWorkflowRun.value) toolMode.value = 'task-create';
+    }
+
+    const knowledgeCaptureRunId = knowledgeCaptureWorkflow.knowledgeCaptureRun.value?.runId;
+    if (knowledgeCaptureRunId) {
+      await knowledgeCaptureWorkflow.syncKnowledgeCaptureRun(knowledgeCaptureRunId);
+      if (knowledgeCaptureWorkflow.knowledgeCaptureRun.value) {
+        toolMode.value = 'knowledge-capture';
+      }
     }
 
     persistence.persistWorkflowState(conversationId);
@@ -444,6 +467,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
         noteSummary: noteWorkflow.noteSummary.value,
         taskAgentLoading: taskWorkflow.taskAgentLoading.value,
         taskAgentRun: taskAgentRun.value,
+        knowledgeCaptureLoading: knowledgeCaptureWorkflow.knowledgeCaptureLoading.value,
       },
       t,
       formatters.formatExecutionOutcome,
@@ -465,6 +489,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       !noteWorkflow.noteCreating.value &&
       !noteWorkflow.noteAgentLoading.value &&
       !taskWorkflow.taskAgentLoading.value &&
+      !knowledgeCaptureWorkflow.knowledgeCaptureLoading.value &&
       (toolMode.value !== 'knowledge-generate' || chatSession.hasWorkflowMessages.value) &&
       (toolMode.value !== 'knowledge-qa' || chatSession.hasWorkflowUserMessages.value),
   );
@@ -642,6 +667,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     },
     noteWorkflow,
     taskWorkflow,
+    knowledgeCaptureWorkflow,
     formatters,
     common: {
       toolMode,

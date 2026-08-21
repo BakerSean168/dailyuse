@@ -89,6 +89,14 @@
                   {{ t('aiAssistant.chatPage.workflow.tools.knowledgeQa') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  data-testid="ai-chat-tool-knowledge-capture"
+                  :disabled="!hasAvailableModels"
+                  @click="hasAvailableModels && $emit('start-conversation', 'knowledge-capture')"
+                >
+                  <NotebookPen class="mr-2 h-4 w-4" />
+                  {{ t('aiAssistant.chatPage.workflow.tools.knowledgeCapture') }}
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   data-testid="ai-chat-tool-knowledge-generate"
                   :disabled="!hasAvailableModels"
                   @click="hasAvailableModels && $emit('start-conversation', 'knowledge-generate')"

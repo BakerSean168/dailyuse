@@ -187,6 +187,9 @@
             :recent-goals="recentGoalList"
             :set-linked-goal-id="setLinkedGoalId"
             :start-task-agent-run="startTaskAgentRun"
+            :knowledge-capture-loading="knowledgeCaptureLoading"
+            :can-run-knowledge-capture="canRunKnowledgeCapture"
+            :start-knowledge-capture-run="startKnowledgeCaptureRun"
             :start-goal-agent-run="startGoalAgentRun"
             :submit-goal-agent-clarification="submitGoalAgentClarification"
             :confirm-goal-agent-run="confirmGoalAgentRun"
@@ -318,6 +321,14 @@
           @retry="retryTaskAgentExecution"
           @edit-started="showTaskDraftEditor = true"
         />
+        <AIKnowledgeCapturePanel
+          :tool-mode="toolMode"
+          :knowledge-capture-run="knowledgeCaptureRun"
+          @confirm="confirmKnowledgeCaptureRun"
+          @cancel="cancelKnowledgeCaptureRun"
+          @retry="retryKnowledgeCaptureExecution"
+          @edit-started="showKnowledgeDraftEditor = true"
+        />
         <div
           v-if="
             !hasWorkflowArtifact &&
@@ -349,6 +360,7 @@ import AIMessagePanel from '../components/AIMessagePanel.vue';
 import AIFooterComposer from '../components/AIFooterComposer.vue';
 import AIGoalWorkflowPanel from '../components/AIGoalWorkflowPanel.vue';
 import AITaskWorkflowPanel from '../components/AITaskWorkflowPanel.vue';
+import AIKnowledgeCapturePanel from '../components/AIKnowledgeCapturePanel.vue';
 import AIWorkflowActionBar from '../components/AIWorkflowActionBar.vue';
 import AIContextPanel from '../components/AIContextPanel.vue';
 import AIHostProposalPanel from '../components/AIHostProposalPanel.vue';
@@ -448,6 +460,7 @@ const {
   noteWorkflow,
   knowledgeQaWorkflow,
   taskWorkflow,
+  knowledgeCaptureWorkflow,
   formatters,
   common,
 } = useAIChatView({
@@ -562,6 +575,24 @@ const {
   retryTaskAgentExecution,
 } = taskWorkflow;
 
+const {
+  knowledgeCaptureRun,
+  showKnowledgeDraftEditor,
+  canRunKnowledgeCapture,
+  knowledgeCaptureLoading,
+  knowledgeCaptureResuming,
+  startKnowledgeCaptureRun,
+  cancelKnowledgeCaptureRun,
+  completeKnowledgeCaptureRun,
+  reviseKnowledgeCaptureRun,
+  confirmKnowledgeCaptureRun,
+  retryKnowledgeCaptureExecution,
+  submitKnowledgeClarification,
+  knowledgeCaptureWaitingForApproval,
+  knowledgeCaptureWaitingForClarification,
+  canSubmitKnowledgeClarification,
+} = knowledgeCaptureWorkflow;
+
 const { formatAutomationTool, formatAgentTool, formatActionStatus, formatExecutionOutcome } =
   formatters;
 
@@ -600,6 +631,10 @@ const hasWorkflowArtifact = computed(() => {
   // Residual 429: task.create product toolMode owns dedicated taskAgentRun artifacts.
   if (toolMode.value === 'task-create') {
     return Boolean(taskAgentRun.value);
+  }
+
+  if (toolMode.value === 'knowledge-capture') {
+    return Boolean(knowledgeCaptureRun.value);
   }
 
   return false;

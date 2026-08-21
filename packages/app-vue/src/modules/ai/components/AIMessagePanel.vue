@@ -245,6 +245,11 @@ const workflowEntries = [
     icon: ClipboardCheck,
   },
   {
+    mode: 'knowledge-capture' as const,
+    localeKey: getToolLocaleKey('knowledge-capture'),
+    icon: NotebookPen,
+  },
+  {
     mode: 'knowledge-generate' as const,
     localeKey: getToolLocaleKey('knowledge-generate'),
     icon: NotebookPen,

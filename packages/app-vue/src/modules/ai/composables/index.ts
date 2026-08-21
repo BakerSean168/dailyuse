@@ -7,6 +7,7 @@ export { useAIGoalWorkflow } from './useAIGoalWorkflow';
 export { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
 export { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 export { useAITaskWorkflow } from './useAITaskWorkflow';
+export { useAIKnowledgeCapture } from './useAIKnowledgeCapture';
 export { useAIModelSelection } from './useAIModelSelection';
 export { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 export type {
