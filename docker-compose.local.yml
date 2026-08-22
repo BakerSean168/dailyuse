@@ -7,14 +7,13 @@
 #
 # 设计目标：
 #   - 单文件启动，不再叠加 prod/local/local-test 多层 compose
-#   - 尽量保持与生产拓扑一致：postgres + redis + ai-service + api + powersync + web
+#   - 尽量保持与生产拓扑一致：postgres + redis + api + powersync + web
 #   - 使用本地构建镜像，便于修改代码后快速验证
 #   - 不引入 caddy/watchtower，改为直接暴露调试端口
 #
 # 本地访问入口：
 #   - Web:       http://localhost:58080
 #   - API:       http://localhost:53080
-#   - AI:        http://localhost:58100
 #   - PowerSync: http://localhost:58081
 # =============================================================================
 
@@ -81,55 +80,6 @@ services:
       retries: 5
       start_period: 5s
 
-  ai-service:
-    image: memoflow-ai-service:local
-    pull_policy: never
-    build:
-      context: .
-      dockerfile: Dockerfile.ai-service
-      args:
-        VERSION: local
-      labels:
-        org.opencontainers.image.created: ${BUILD_DATE:-unknown}
-        org.opencontainers.image.revision: ${VCS_REF:-unknown}
-    restart: unless-stopped
-    init: true
-    environment:
-      NODE_ENV: production
-      SERVICE_NAME: memoflow-ai-service
-      AI_SERVICE_PORT: ${AI_SERVICE_PORT:-8100}
-      APP_VERSION: ${APP_VERSION:-0.3.0}
-      SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
-      DEBUG: ${DEBUG:-false}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      REQUEST_TIMEOUT_SECONDS: ${AI_SERVICE_REQUEST_TIMEOUT_SECONDS:-60}
-      CONNECT_TIMEOUT_SECONDS: ${AI_SERVICE_CONNECT_TIMEOUT_SECONDS:-10}
-      INTERNAL_REQUEST_MAX_SKEW_SECONDS: ${INTERNAL_REQUEST_MAX_SKEW_SECONDS:-300}
-      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:-http://localhost:58080}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:58080,http://127.0.0.1:58080}
-      DEV_BYPASS_AUTH: ${DEV_BYPASS_AUTH:-false}
-      AI_SERVICE_EVAL_PROVIDER: ${AI_SERVICE_EVAL_PROVIDER:-}
-      AI_SERVICE_EVAL_MODEL: ${AI_SERVICE_EVAL_MODEL:-}
-      AI_SERVICE_EVAL_API_KEY: ${AI_SERVICE_EVAL_API_KEY:-}
-      AI_SERVICE_EVAL_BASE_URL: ${AI_SERVICE_EVAL_BASE_URL:-}
-      TZ: ${TZ:-Asia/Shanghai}
-    ports:
-      - '${AI_SERVICE_HOST_PORT:-58100}:${AI_SERVICE_PORT:-8100}'
-    networks:
-      - memoflow-local-network
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'python',
-          '-c',
-          "import os,urllib.request,sys;port=os.getenv('AI_SERVICE_PORT','8100');sys.exit(0 if urllib.request.urlopen(f'http://127.0.0.1:{port}/healthz').status == 200 else 1)",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-
   migrator:
     image: memoflow-migrator:local
     pull_policy: never
@@ -179,8 +129,6 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_healthy
-      ai-service:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
@@ -233,10 +181,6 @@ services:
       QI_NIU_YUN_API_KEY: ${QI_NIU_YUN_API_KEY:-}
       QI_NIU_YUN_BASE_URL: ${QI_NIU_YUN_BASE_URL:-}
       QI_NIU_YUN_MODEL_ID: ${QI_NIU_YUN_MODEL_ID:-}
-      AI_SERVICE_BASE_URL: http://ai-service:${AI_SERVICE_PORT:-8100}
-      AI_SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
-      AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-memoflow-api}
-      AI_SERVICE_TIMEOUT_MS: ${AI_SERVICE_TIMEOUT_MS:-60000}
       POWERSYNC_URL: ${POWERSYNC_URL:?set POWERSYNC_URL}
       POWERSYNC_PRIVATE_KEY: ${POWERSYNC_PRIVATE_KEY:?set POWERSYNC_PRIVATE_KEY}
       POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}

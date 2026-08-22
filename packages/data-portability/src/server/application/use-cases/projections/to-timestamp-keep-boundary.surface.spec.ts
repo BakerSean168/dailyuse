@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { toTimestamp } from './projection-helpers';
@@ -6,7 +6,7 @@ import { toTimestamp } from './projection-helpers';
 /**
  * Residual 1101: toTimestamp cross-package keep-boundary.
  * - data-portability projection: unknown → number|undefined (any number + Date + Date.parse)
- * - AI goal-planning: positive finite number or Date.parse string → number|undefined
+ * - AI-vNext: the legacy goal-planning chat-execution timestamp helper is retired
  * - notification PowerSync: string|null|undefined → number|null
  * Soft residual: app-react entity-presentation 0-fallback remains separate.
  * Soft residual 1095/1099: parseJsonField + asRecord/toRecord keep-boundaries remain.
@@ -18,9 +18,9 @@ import { toTimestamp } from './projection-helpers';
 describe('toTimestamp cross-package keep-boundary (residual 1101)', () => {
   const dir = __dirname;
   const helpers = readFileSync(resolve(dir, 'projection-helpers.ts'), 'utf8');
-  const aiGoalPlanning = readFileSync(
-    resolve(dir, '../../../../../../ai/src/server/infrastructure/chat-execution/goal-planning-response.ts'),
-    'utf8',
+  const legacyAiGoalPlanningPath = resolve(
+    dir,
+    '../../../../../../ai/src/server/infrastructure/chat-execution/goal-planning-response.ts',
   );
   const notificationRepo = readFileSync(
     resolve(
@@ -46,14 +46,8 @@ describe('toTimestamp cross-package keep-boundary (residual 1101)', () => {
     expect(helpers).not.toMatch(/export function toTimestamp[\s\S]{0,300}return 0/);
   });
 
-  it('differs from AI goal-planning positive-only toTimestamp (no force-merge)', () => {
-    expect(aiGoalPlanning).toContain('Residual 1101 keep-boundary');
-    expect(aiGoalPlanning).toContain('Soft residual 1101');
-    expect(aiGoalPlanning).toMatch(/function toTimestamp\b/);
-    expect(aiGoalPlanning).toContain('value > 0');
-    expect(aiGoalPlanning).toContain('Math.round(value)');
-    // soft residual may name projection shapes; AI must keep positive gate
-    expect(aiGoalPlanning).not.toContain('value instanceof Date');
+  it('keeps the retired AI goal-planning chat-execution helper deleted', () => {
+    expect(existsSync(legacyAiGoalPlanningPath)).toBe(false);
   });
 
   it('differs from notification PowerSync string→null toTimestamp (no force-merge)', () => {

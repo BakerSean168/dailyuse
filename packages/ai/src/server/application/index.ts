@@ -7,5 +7,4 @@
 // Use Cases
 export * from './use-cases';
 export * from './ports';
-export * from './services/ai-knowledge-note-path-resolver';
 export type { AIApplicationPort } from './ai.application.port';

@@ -61,14 +61,12 @@ import {
   createGoalPowerSyncRepositories,
   createGoalRuntimeContribution,
   normalizeGoalRuntimeContributions,
+  type GoalApplicationPort,
   type GoalRuntimeContributionsInput,
   type IGoalRecordRepository,
   type IGoalRepository,
 } from '@memoflow/goal';
-import {
-  createGoalElectronModule,
-  type GoalElectronModuleDef,
-} from '@memoflow/goal/electron';
+import { createGoalElectronModule, type GoalElectronModuleDef } from '@memoflow/goal/electron';
 import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
 
 /**
@@ -100,6 +98,8 @@ export interface ComposeGoalDependencies {
 export interface ComposeGoalResult {
   /** Already-bound IElectronModule-compatible handle. 已绑定的兼容 IElectronModule 的 handle。 */
   readonly module: GoalElectronModuleDef;
+  /** Canonical transport-neutral application port from the SAME module instance. */
+  readonly applicationPort: GoalApplicationPort;
   /** Instance-bound repository view for desktop consumers (dashboard/AI). 供 desktop 消费者（dashboard/AI）使用的 instance-bound repository view。 */
   readonly repositories: {
     readonly goalRepository: IGoalRepository;
@@ -174,6 +174,7 @@ export function composeGoal(dependencies: ComposeGoalDependencies): ComposeGoalR
 
   return {
     module: createGoalElectronModule({ instance }),
+    applicationPort: instance.api,
     repositories: {
       goalRepository,
       goalRecordRepository,

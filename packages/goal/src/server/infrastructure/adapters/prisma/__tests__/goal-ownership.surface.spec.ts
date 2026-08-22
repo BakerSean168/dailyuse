@@ -211,8 +211,11 @@ describe('goal ownership surface', () => {
 
   it('create parent, focus, records, progress and cross-module use owned reads', () => {
     expect(createGoal).toContain(
-      'findByIdForIdentity(\n        cx.identityId,\n        input.parentGoalId,',
+      'findByIdForIdentity(\n          cx.identityId,\n          input.parentGoalId,',
     );
+    expect(createGoal).toContain('createGoalMutationReceipt');
+    expect(createGoal).toMatch(/catch \(caughtError\)/);
+    expect(createGoal).toMatch(/findByIdForIdentity\(\s*cx\.identityId,\s*input\.id,/);
     expect(activateFocus).toContain('findByIdForIdentity(identityId, goalId)');
     expect(listRecords).toContain('identityId: string;');
     expect(listRecords).toContain('findByIdForIdentity(identityId, goalId,');

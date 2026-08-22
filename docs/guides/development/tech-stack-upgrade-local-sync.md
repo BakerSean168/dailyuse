@@ -18,20 +18,20 @@ updated: 2026-07-14T00:00:00+00:00
 
 ## 1. 你需要同步什么？
 
-| 项目 | 为什么 |
-| --- | --- |
-| 分支 / 代码 | 依赖声明、配置、源码适配都在新分支 |
-| Node / pnpm | 运行时统一 Node 24（engines ≥22.12）；**pnpm ≥11**（`packageManager=pnpm@11.12.0`） |
-| `node_modules` + lockfile | major 跨度大，旧安装树不可复用 |
-| Prisma Client | postinstall 重新生成 |
-| Electron 原生模块 | Electron 43 / ABI 148，需 rebuild better-sqlite3 等 |
-| Docker 卷 | PG18 卷路径与 PG16 数据**不兼容**；旧 volume 直接起会失败 |
-| IDE / 全局工具 | 若本机仍钉 pnpm 10 / Node 22，命令会装错或拒绝执行 |
+| 项目                      | 为什么                                                                              |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| 分支 / 代码               | 依赖声明、配置、源码适配都在新分支                                                  |
+| Node / pnpm               | 运行时统一 Node 24（engines ≥22.13）；**pnpm ≥11**（`packageManager=pnpm@11.12.0`） |
+| `node_modules` + lockfile | major 跨度大，旧安装树不可复用                                                      |
+| Prisma Client             | postinstall 重新生成                                                                |
+| Electron 原生模块         | Electron 43 / ABI 148，需 rebuild better-sqlite3 等                                 |
+| Docker 卷                 | PG18 卷路径与 PG16 数据**不兼容**；旧 volume 直接起会失败                           |
+| IDE / 全局工具            | 若本机仍钉 pnpm 10 / Node 22，命令会装错或拒绝执行                                  |
 
 ## 2. 前置条件
 
 - Git 可访问该仓库与分支 `chore/tech-stack-upgrade-2026-07`（或已合并的目标分支）
-- 推荐 **Node 24 LTS**（最低 `>=22.12.0`）
+- 推荐 **Node 24 LTS**（最低 `>=22.13.0`；Mastra 1.60.0 要求 Node ≥22.13）
 - 启用 Corepack（或等价方式拿到 **pnpm 11.12.0**）
 - 若做本地 Docker：Docker Engine + Compose，且存在 `.env.production.local`（见 [`local.docker.md`](./local.docker.md)）
 
@@ -202,21 +202,21 @@ pnpm nx run desktop:test
 
 ```bash
 pnpm docker:local:ps
-# postgres / redis / api / web / powersync / ai-service healthy
+# postgres / redis / api / web / powersync healthy
 ```
 
 ## 9. 故障排查速查
 
-| 现象 | 处理 |
-| --- | --- |
-| `Only pnpm is allowed` / 被 preinstall 拒绝 | 使用 pnpm 11，不要 npm i |
-| `packageManager` 与本机 pnpm 不一致 | `corepack prepare pnpm@11.12.0 --activate` |
-| install 后 Electron 原生模块加载失败 | `pnpm nx run desktop:native-rebuild` |
-| Prisma Client 找不到 / 旧生成物 | `pnpm install` 或在 `packages/database` 跑 prisma generate |
-| postgres 容器 Restarting / unhealthy | 删旧 PG 卷后重建；确认 compose 挂载 `/var/lib/postgresql` |
-| `pnpm install` 中断后 allowBuilds 异常 | 清 `node_modules` 后完整重装，避免半截 install |
-| Nx 缓存怪错 | `rm -rf .nx/cache` 后重跑目标 |
-| ESLint / TS 版本看起来仍旧 | 确认当前目录已 checkout 升级分支且 `node_modules` 已重装 |
+| 现象                                        | 处理                                                       |
+| ------------------------------------------- | ---------------------------------------------------------- |
+| `Only pnpm is allowed` / 被 preinstall 拒绝 | 使用 pnpm 11，不要 npm i                                   |
+| `packageManager` 与本机 pnpm 不一致         | `corepack prepare pnpm@11.12.0 --activate`                 |
+| install 后 Electron 原生模块加载失败        | `pnpm nx run desktop:native-rebuild`                       |
+| Prisma Client 找不到 / 旧生成物             | `pnpm install` 或在 `packages/database` 跑 prisma generate |
+| postgres 容器 Restarting / unhealthy        | 删旧 PG 卷后重建；确认 compose 挂载 `/var/lib/postgresql`  |
+| `pnpm install` 中断后 allowBuilds 异常      | 清 `node_modules` 后完整重装，避免半截 install             |
+| Nx 缓存怪错                                 | `rm -rf .nx/cache` 后重跑目标                              |
+| ESLint / TS 版本看起来仍旧                  | 确认当前目录已 checkout 升级分支且 `node_modules` 已重装   |
 
 ## 10. 不需要你做的事
 

@@ -20,7 +20,10 @@ import {
   SCHEDULE_SERVICE_KEY,
   SETTING_SERVICE_KEY,
   DATA_PORTABILITY_SERVICE_KEY,
-  AI_SERVICE_KEY,
+  AI_CLIENT_KEY,
+  AI_ASSISTANT_RUNTIME_KEY,
+  AI_RUNTIME_USAGE_KEY,
+  AI_WORKFLOW_RUNTIME_KEY,
   TASK_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
   MODULE_CAPSULES_KEY,
@@ -82,13 +85,26 @@ const dataPortabilityService = createLazyService(async () => {
   return createDataPortabilityHttpClient(resultHttpClient);
 });
 
-const aiService = createLazyService(async () => {
+const aiClient = createLazyService(async () => {
   const { createAIHttpClient } = await import('@memoflow/ai/client');
-  // Residual 351/Step D: dispatch first by default; host passes the policy
-  // explicitly (plan §3.2/§4.5). prefer_dispatch only falls back to legacy on
-  // definite dispatch-unavailable + zero observed events.
-  return createAIHttpClient(resultHttpClient, { dispatchPolicy: 'prefer_dispatch' });
+  return createAIHttpClient(resultHttpClient);
 });
+
+const aiAssistantRuntime = createLazyService(async () => {
+  const { createAssistantRuntimeHttpClient } = await import('@memoflow/ai/client');
+  return createAssistantRuntimeHttpClient(resultHttpClient);
+});
+
+const aiWorkflowRuntime = createLazyService(async () => {
+  const { createWorkflowRuntimeHttpClient } = await import('@memoflow/ai/client');
+  return createWorkflowRuntimeHttpClient(resultHttpClient);
+});
+
+const aiRuntimeUsage = createLazyService(async () => {
+  const { createRuntimeUsageHttpClient } = await import('@memoflow/ai/client');
+  return createRuntimeUsageHttpClient(resultHttpClient);
+});
+
 
 const taskService = createLazyService(async () => {
   const { createTaskHttpClient } = await import('@memoflow/task/client');
@@ -111,7 +127,10 @@ export function installAppServices(app: App): void {
   app.provide(SCHEDULE_SERVICE_KEY, scheduleService);
   app.provide(SETTING_SERVICE_KEY, settingService);
   app.provide(DATA_PORTABILITY_SERVICE_KEY, dataPortabilityService);
-  app.provide(AI_SERVICE_KEY, aiService);
+  app.provide(AI_CLIENT_KEY, aiClient);
+  app.provide(AI_ASSISTANT_RUNTIME_KEY, aiAssistantRuntime);
+  app.provide(AI_RUNTIME_USAGE_KEY, aiRuntimeUsage);
+  app.provide(AI_WORKFLOW_RUNTIME_KEY, aiWorkflowRuntime);
   app.provide(TASK_SERVICE_KEY, taskService);
 
   app.provide(DASHBOARD_SERVICE_KEY, dashboardService);

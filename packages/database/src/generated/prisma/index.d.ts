@@ -64,21 +64,6 @@ export type AiKnowledgeIndexEntry = $Result.DefaultSelection<Prisma.$AiKnowledge
  */
 export type DashboardConfig = $Result.DefaultSelection<Prisma.$DashboardConfigPayload>
 /**
- * Model AgentRunCheckpoint
- *
- */
-export type AgentRunCheckpoint = $Result.DefaultSelection<Prisma.$AgentRunCheckpointPayload>
-/**
- * Model LangGraphCheckpoint
- *
- */
-export type LangGraphCheckpoint = $Result.DefaultSelection<Prisma.$LangGraphCheckpointPayload>
-/**
- * Model LangGraphCheckpointWrite
- *
- */
-export type LangGraphCheckpointWrite = $Result.DefaultSelection<Prisma.$LangGraphCheckpointWritePayload>
-/**
  * Model CloudAuthUser
  *
  */
@@ -714,36 +699,6 @@ export class PrismaClient<
     * ```
     */
   get dashboardConfig(): Prisma.DashboardConfigDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.agentRunCheckpoint`: Exposes CRUD operations for the **AgentRunCheckpoint** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more AgentRunCheckpoints
-    * const agentRunCheckpoints = await prisma.agentRunCheckpoint.findMany()
-    * ```
-    */
-  get agentRunCheckpoint(): Prisma.AgentRunCheckpointDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.langGraphCheckpoint`: Exposes CRUD operations for the **LangGraphCheckpoint** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more LangGraphCheckpoints
-    * const langGraphCheckpoints = await prisma.langGraphCheckpoint.findMany()
-    * ```
-    */
-  get langGraphCheckpoint(): Prisma.LangGraphCheckpointDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.langGraphCheckpointWrite`: Exposes CRUD operations for the **LangGraphCheckpointWrite** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more LangGraphCheckpointWrites
-    * const langGraphCheckpointWrites = await prisma.langGraphCheckpointWrite.findMany()
-    * ```
-    */
-  get langGraphCheckpointWrite(): Prisma.LangGraphCheckpointWriteDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.cloudAuthUser`: Exposes CRUD operations for the **CloudAuthUser** model.
@@ -1958,9 +1913,6 @@ export namespace Prisma {
     KnowledgeGenerationTask: 'KnowledgeGenerationTask',
     AiKnowledgeIndexEntry: 'AiKnowledgeIndexEntry',
     DashboardConfig: 'DashboardConfig',
-    AgentRunCheckpoint: 'AgentRunCheckpoint',
-    LangGraphCheckpoint: 'LangGraphCheckpoint',
-    LangGraphCheckpointWrite: 'LangGraphCheckpointWrite',
     CloudAuthUser: 'CloudAuthUser',
     CloudAuthSession: 'CloudAuthSession',
     CloudAuthProviderAccount: 'CloudAuthProviderAccount',
@@ -2053,7 +2005,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "agentRunCheckpoint" | "langGraphCheckpoint" | "langGraphCheckpointWrite" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
+      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2794,228 +2746,6 @@ export namespace Prisma {
           count: {
             args: Prisma.DashboardConfigCountArgs<ExtArgs>
             result: $Utils.Optional<DashboardConfigCountAggregateOutputType> | number
-          }
-        }
-      }
-      AgentRunCheckpoint: {
-        payload: Prisma.$AgentRunCheckpointPayload<ExtArgs>
-        fields: Prisma.AgentRunCheckpointFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.AgentRunCheckpointFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.AgentRunCheckpointFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
-          }
-          findFirst: {
-            args: Prisma.AgentRunCheckpointFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.AgentRunCheckpointFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
-          }
-          findMany: {
-            args: Prisma.AgentRunCheckpointFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>[]
-          }
-          create: {
-            args: Prisma.AgentRunCheckpointCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
-          }
-          createMany: {
-            args: Prisma.AgentRunCheckpointCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.AgentRunCheckpointCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>[]
-          }
-          delete: {
-            args: Prisma.AgentRunCheckpointDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
-          }
-          update: {
-            args: Prisma.AgentRunCheckpointUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
-          }
-          deleteMany: {
-            args: Prisma.AgentRunCheckpointDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.AgentRunCheckpointUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.AgentRunCheckpointUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>[]
-          }
-          upsert: {
-            args: Prisma.AgentRunCheckpointUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
-          }
-          aggregate: {
-            args: Prisma.AgentRunCheckpointAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateAgentRunCheckpoint>
-          }
-          groupBy: {
-            args: Prisma.AgentRunCheckpointGroupByArgs<ExtArgs>
-            result: $Utils.Optional<AgentRunCheckpointGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.AgentRunCheckpointCountArgs<ExtArgs>
-            result: $Utils.Optional<AgentRunCheckpointCountAggregateOutputType> | number
-          }
-        }
-      }
-      LangGraphCheckpoint: {
-        payload: Prisma.$LangGraphCheckpointPayload<ExtArgs>
-        fields: Prisma.LangGraphCheckpointFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.LangGraphCheckpointFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.LangGraphCheckpointFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>
-          }
-          findFirst: {
-            args: Prisma.LangGraphCheckpointFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.LangGraphCheckpointFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>
-          }
-          findMany: {
-            args: Prisma.LangGraphCheckpointFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>[]
-          }
-          create: {
-            args: Prisma.LangGraphCheckpointCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>
-          }
-          createMany: {
-            args: Prisma.LangGraphCheckpointCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.LangGraphCheckpointCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>[]
-          }
-          delete: {
-            args: Prisma.LangGraphCheckpointDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>
-          }
-          update: {
-            args: Prisma.LangGraphCheckpointUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>
-          }
-          deleteMany: {
-            args: Prisma.LangGraphCheckpointDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.LangGraphCheckpointUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.LangGraphCheckpointUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>[]
-          }
-          upsert: {
-            args: Prisma.LangGraphCheckpointUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointPayload>
-          }
-          aggregate: {
-            args: Prisma.LangGraphCheckpointAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateLangGraphCheckpoint>
-          }
-          groupBy: {
-            args: Prisma.LangGraphCheckpointGroupByArgs<ExtArgs>
-            result: $Utils.Optional<LangGraphCheckpointGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.LangGraphCheckpointCountArgs<ExtArgs>
-            result: $Utils.Optional<LangGraphCheckpointCountAggregateOutputType> | number
-          }
-        }
-      }
-      LangGraphCheckpointWrite: {
-        payload: Prisma.$LangGraphCheckpointWritePayload<ExtArgs>
-        fields: Prisma.LangGraphCheckpointWriteFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.LangGraphCheckpointWriteFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.LangGraphCheckpointWriteFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>
-          }
-          findFirst: {
-            args: Prisma.LangGraphCheckpointWriteFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.LangGraphCheckpointWriteFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>
-          }
-          findMany: {
-            args: Prisma.LangGraphCheckpointWriteFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>[]
-          }
-          create: {
-            args: Prisma.LangGraphCheckpointWriteCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>
-          }
-          createMany: {
-            args: Prisma.LangGraphCheckpointWriteCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.LangGraphCheckpointWriteCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>[]
-          }
-          delete: {
-            args: Prisma.LangGraphCheckpointWriteDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>
-          }
-          update: {
-            args: Prisma.LangGraphCheckpointWriteUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>
-          }
-          deleteMany: {
-            args: Prisma.LangGraphCheckpointWriteDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.LangGraphCheckpointWriteUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.LangGraphCheckpointWriteUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>[]
-          }
-          upsert: {
-            args: Prisma.LangGraphCheckpointWriteUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$LangGraphCheckpointWritePayload>
-          }
-          aggregate: {
-            args: Prisma.LangGraphCheckpointWriteAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateLangGraphCheckpointWrite>
-          }
-          groupBy: {
-            args: Prisma.LangGraphCheckpointWriteGroupByArgs<ExtArgs>
-            result: $Utils.Optional<LangGraphCheckpointWriteGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.LangGraphCheckpointWriteCountArgs<ExtArgs>
-            result: $Utils.Optional<LangGraphCheckpointWriteCountAggregateOutputType> | number
           }
         }
       }
@@ -8835,9 +8565,6 @@ export namespace Prisma {
     knowledgeGenerationTask?: KnowledgeGenerationTaskOmit
     aiKnowledgeIndexEntry?: AiKnowledgeIndexEntryOmit
     dashboardConfig?: DashboardConfigOmit
-    agentRunCheckpoint?: AgentRunCheckpointOmit
-    langGraphCheckpoint?: LangGraphCheckpointOmit
-    langGraphCheckpointWrite?: LangGraphCheckpointWriteOmit
     cloudAuthUser?: CloudAuthUserOmit
     cloudAuthSession?: CloudAuthSessionOmit
     cloudAuthProviderAccount?: CloudAuthProviderAccountOmit
@@ -9023,9 +8750,6 @@ export namespace Prisma {
     aiGenerationTasks: number
     aiKnowledgeIndexEntries: number
     aiProviderConfigs: number
-    agentRunCheckpoints: number
-    langGraphCheckpoints: number
-    langGraphCheckpointWrites: number
     taskDependencies: number
     taskTemplateHistory: number
     scheduleExecutions: number
@@ -9072,9 +8796,6 @@ export namespace Prisma {
     aiGenerationTasks?: boolean | AccountCountOutputTypeCountAiGenerationTasksArgs
     aiKnowledgeIndexEntries?: boolean | AccountCountOutputTypeCountAiKnowledgeIndexEntriesArgs
     aiProviderConfigs?: boolean | AccountCountOutputTypeCountAiProviderConfigsArgs
-    agentRunCheckpoints?: boolean | AccountCountOutputTypeCountAgentRunCheckpointsArgs
-    langGraphCheckpoints?: boolean | AccountCountOutputTypeCountLangGraphCheckpointsArgs
-    langGraphCheckpointWrites?: boolean | AccountCountOutputTypeCountLangGraphCheckpointWritesArgs
     taskDependencies?: boolean | AccountCountOutputTypeCountTaskDependenciesArgs
     taskTemplateHistory?: boolean | AccountCountOutputTypeCountTaskTemplateHistoryArgs
     scheduleExecutions?: boolean | AccountCountOutputTypeCountScheduleExecutionsArgs
@@ -9297,27 +9018,6 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountAiProviderConfigsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiProviderConfigWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountAgentRunCheckpointsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AgentRunCheckpointWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountLangGraphCheckpointsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: LangGraphCheckpointWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountLangGraphCheckpointWritesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: LangGraphCheckpointWriteWhereInput
   }
 
   /**
@@ -10678,9 +10378,6 @@ export namespace Prisma {
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
-    agentRunCheckpoints?: boolean | Account$agentRunCheckpointsArgs<ExtArgs>
-    langGraphCheckpoints?: boolean | Account$langGraphCheckpointsArgs<ExtArgs>
-    langGraphCheckpointWrites?: boolean | Account$langGraphCheckpointWritesArgs<ExtArgs>
     taskDependencies?: boolean | Account$taskDependenciesArgs<ExtArgs>
     taskTemplateHistory?: boolean | Account$taskTemplateHistoryArgs<ExtArgs>
     scheduleExecutions?: boolean | Account$scheduleExecutionsArgs<ExtArgs>
@@ -10800,9 +10497,6 @@ export namespace Prisma {
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
-    agentRunCheckpoints?: boolean | Account$agentRunCheckpointsArgs<ExtArgs>
-    langGraphCheckpoints?: boolean | Account$langGraphCheckpointsArgs<ExtArgs>
-    langGraphCheckpointWrites?: boolean | Account$langGraphCheckpointWritesArgs<ExtArgs>
     taskDependencies?: boolean | Account$taskDependenciesArgs<ExtArgs>
     taskTemplateHistory?: boolean | Account$taskTemplateHistoryArgs<ExtArgs>
     scheduleExecutions?: boolean | Account$scheduleExecutionsArgs<ExtArgs>
@@ -10867,9 +10561,6 @@ export namespace Prisma {
       aiUsageQuotas: Prisma.$AiUsageQuotaPayload<ExtArgs> | null
       aiProviderConfigs: Prisma.$AiProviderConfigPayload<ExtArgs>[]
       dashboardConfigs: Prisma.$DashboardConfigPayload<ExtArgs> | null
-      agentRunCheckpoints: Prisma.$AgentRunCheckpointPayload<ExtArgs>[]
-      langGraphCheckpoints: Prisma.$LangGraphCheckpointPayload<ExtArgs>[]
-      langGraphCheckpointWrites: Prisma.$LangGraphCheckpointWritePayload<ExtArgs>[]
       taskDependencies: Prisma.$TaskDependencyPayload<ExtArgs>[]
       taskTemplateHistory: Prisma.$TaskTemplateHistoryPayload<ExtArgs>[]
       scheduleExecutions: Prisma.$ScheduleExecutionPayload<ExtArgs>[]
@@ -11335,9 +11026,6 @@ export namespace Prisma {
     aiUsageQuotas<T extends Account$aiUsageQuotasArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiUsageQuotasArgs<ExtArgs>>): Prisma__AiUsageQuotaClient<$Result.GetResult<Prisma.$AiUsageQuotaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     aiProviderConfigs<T extends Account$aiProviderConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiProviderConfigsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dashboardConfigs<T extends Account$dashboardConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$dashboardConfigsArgs<ExtArgs>>): Prisma__DashboardConfigClient<$Result.GetResult<Prisma.$DashboardConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    agentRunCheckpoints<T extends Account$agentRunCheckpointsArgs<ExtArgs> = {}>(args?: Subset<T, Account$agentRunCheckpointsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    langGraphCheckpoints<T extends Account$langGraphCheckpointsArgs<ExtArgs> = {}>(args?: Subset<T, Account$langGraphCheckpointsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    langGraphCheckpointWrites<T extends Account$langGraphCheckpointWritesArgs<ExtArgs> = {}>(args?: Subset<T, Account$langGraphCheckpointWritesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     taskDependencies<T extends Account$taskDependenciesArgs<ExtArgs> = {}>(args?: Subset<T, Account$taskDependenciesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskDependencyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     taskTemplateHistory<T extends Account$taskTemplateHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Account$taskTemplateHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskTemplateHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     scheduleExecutions<T extends Account$scheduleExecutionsArgs<ExtArgs> = {}>(args?: Subset<T, Account$scheduleExecutionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -12621,78 +12309,6 @@ export namespace Prisma {
      */
     include?: DashboardConfigInclude<ExtArgs> | null
     where?: DashboardConfigWhereInput
-  }
-
-  /**
-   * Account.agentRunCheckpoints
-   */
-  export type Account$agentRunCheckpointsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    where?: AgentRunCheckpointWhereInput
-    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
-    cursor?: AgentRunCheckpointWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AgentRunCheckpointScalarFieldEnum | AgentRunCheckpointScalarFieldEnum[]
-  }
-
-  /**
-   * Account.langGraphCheckpoints
-   */
-  export type Account$langGraphCheckpointsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    where?: LangGraphCheckpointWhereInput
-    orderBy?: LangGraphCheckpointOrderByWithRelationInput | LangGraphCheckpointOrderByWithRelationInput[]
-    cursor?: LangGraphCheckpointWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: LangGraphCheckpointScalarFieldEnum | LangGraphCheckpointScalarFieldEnum[]
-  }
-
-  /**
-   * Account.langGraphCheckpointWrites
-   */
-  export type Account$langGraphCheckpointWritesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    where?: LangGraphCheckpointWriteWhereInput
-    orderBy?: LangGraphCheckpointWriteOrderByWithRelationInput | LangGraphCheckpointWriteOrderByWithRelationInput[]
-    cursor?: LangGraphCheckpointWriteWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: LangGraphCheckpointWriteScalarFieldEnum | LangGraphCheckpointWriteScalarFieldEnum[]
   }
 
   /**
@@ -16556,12 +16172,14 @@ export namespace Prisma {
   }
 
   export type AiGenerationTaskAvgAggregateOutputType = {
+    estimatedCostUsd: number | null
     retryCount: number | null
     processingMs: number | null
     version: number | null
   }
 
   export type AiGenerationTaskSumAggregateOutputType = {
+    estimatedCostUsd: number | null
     retryCount: number | null
     processingMs: number | null
     version: number | null
@@ -16572,6 +16190,13 @@ export namespace Prisma {
     identityId: string | null
     taskType: string | null
     status: string | null
+    conversationId: string | null
+    runId: string | null
+    requestId: string | null
+    traceId: string | null
+    providerId: string | null
+    model: string | null
+    estimatedCostUsd: number | null
     input: string | null
     result: string | null
     error: string | null
@@ -16590,6 +16215,13 @@ export namespace Prisma {
     identityId: string | null
     taskType: string | null
     status: string | null
+    conversationId: string | null
+    runId: string | null
+    requestId: string | null
+    traceId: string | null
+    providerId: string | null
+    model: string | null
+    estimatedCostUsd: number | null
     input: string | null
     result: string | null
     error: string | null
@@ -16608,6 +16240,13 @@ export namespace Prisma {
     identityId: number
     taskType: number
     status: number
+    conversationId: number
+    runId: number
+    requestId: number
+    traceId: number
+    providerId: number
+    model: number
+    estimatedCostUsd: number
     input: number
     result: number
     error: number
@@ -16624,12 +16263,14 @@ export namespace Prisma {
 
 
   export type AiGenerationTaskAvgAggregateInputType = {
+    estimatedCostUsd?: true
     retryCount?: true
     processingMs?: true
     version?: true
   }
 
   export type AiGenerationTaskSumAggregateInputType = {
+    estimatedCostUsd?: true
     retryCount?: true
     processingMs?: true
     version?: true
@@ -16640,6 +16281,13 @@ export namespace Prisma {
     identityId?: true
     taskType?: true
     status?: true
+    conversationId?: true
+    runId?: true
+    requestId?: true
+    traceId?: true
+    providerId?: true
+    model?: true
+    estimatedCostUsd?: true
     input?: true
     result?: true
     error?: true
@@ -16658,6 +16306,13 @@ export namespace Prisma {
     identityId?: true
     taskType?: true
     status?: true
+    conversationId?: true
+    runId?: true
+    requestId?: true
+    traceId?: true
+    providerId?: true
+    model?: true
+    estimatedCostUsd?: true
     input?: true
     result?: true
     error?: true
@@ -16676,6 +16331,13 @@ export namespace Prisma {
     identityId?: true
     taskType?: true
     status?: true
+    conversationId?: true
+    runId?: true
+    requestId?: true
+    traceId?: true
+    providerId?: true
+    model?: true
+    estimatedCostUsd?: true
     input?: true
     result?: true
     error?: true
@@ -16781,6 +16443,13 @@ export namespace Prisma {
     identityId: string
     taskType: string
     status: string
+    conversationId: string | null
+    runId: string | null
+    requestId: string | null
+    traceId: string | null
+    providerId: string | null
+    model: string | null
+    estimatedCostUsd: number | null
     input: string
     result: string | null
     error: string | null
@@ -16818,6 +16487,13 @@ export namespace Prisma {
     identityId?: boolean
     taskType?: boolean
     status?: boolean
+    conversationId?: boolean
+    runId?: boolean
+    requestId?: boolean
+    traceId?: boolean
+    providerId?: boolean
+    model?: boolean
+    estimatedCostUsd?: boolean
     input?: boolean
     result?: boolean
     error?: boolean
@@ -16837,6 +16513,13 @@ export namespace Prisma {
     identityId?: boolean
     taskType?: boolean
     status?: boolean
+    conversationId?: boolean
+    runId?: boolean
+    requestId?: boolean
+    traceId?: boolean
+    providerId?: boolean
+    model?: boolean
+    estimatedCostUsd?: boolean
     input?: boolean
     result?: boolean
     error?: boolean
@@ -16856,6 +16539,13 @@ export namespace Prisma {
     identityId?: boolean
     taskType?: boolean
     status?: boolean
+    conversationId?: boolean
+    runId?: boolean
+    requestId?: boolean
+    traceId?: boolean
+    providerId?: boolean
+    model?: boolean
+    estimatedCostUsd?: boolean
     input?: boolean
     result?: boolean
     error?: boolean
@@ -16875,6 +16565,13 @@ export namespace Prisma {
     identityId?: boolean
     taskType?: boolean
     status?: boolean
+    conversationId?: boolean
+    runId?: boolean
+    requestId?: boolean
+    traceId?: boolean
+    providerId?: boolean
+    model?: boolean
+    estimatedCostUsd?: boolean
     input?: boolean
     result?: boolean
     error?: boolean
@@ -16888,7 +16585,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type AiGenerationTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "taskType" | "status" | "input" | "result" | "error" | "retryCount" | "tokenUsage" | "processingMs" | "version" | "createdAt" | "updatedAt" | "completedAt" | "deletedAt", ExtArgs["result"]["aiGenerationTask"]>
+  export type AiGenerationTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "taskType" | "status" | "conversationId" | "runId" | "requestId" | "traceId" | "providerId" | "model" | "estimatedCostUsd" | "input" | "result" | "error" | "retryCount" | "tokenUsage" | "processingMs" | "version" | "createdAt" | "updatedAt" | "completedAt" | "deletedAt", ExtArgs["result"]["aiGenerationTask"]>
   export type AiGenerationTaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }
@@ -16909,6 +16606,13 @@ export namespace Prisma {
       identityId: string
       taskType: string
       status: string
+      conversationId: string | null
+      runId: string | null
+      requestId: string | null
+      traceId: string | null
+      providerId: string | null
+      model: string | null
+      estimatedCostUsd: number | null
       input: string
       result: string | null
       error: string | null
@@ -17348,6 +17052,13 @@ export namespace Prisma {
     readonly identityId: FieldRef<"AiGenerationTask", 'String'>
     readonly taskType: FieldRef<"AiGenerationTask", 'String'>
     readonly status: FieldRef<"AiGenerationTask", 'String'>
+    readonly conversationId: FieldRef<"AiGenerationTask", 'String'>
+    readonly runId: FieldRef<"AiGenerationTask", 'String'>
+    readonly requestId: FieldRef<"AiGenerationTask", 'String'>
+    readonly traceId: FieldRef<"AiGenerationTask", 'String'>
+    readonly providerId: FieldRef<"AiGenerationTask", 'String'>
+    readonly model: FieldRef<"AiGenerationTask", 'String'>
+    readonly estimatedCostUsd: FieldRef<"AiGenerationTask", 'Float'>
     readonly input: FieldRef<"AiGenerationTask", 'String'>
     readonly result: FieldRef<"AiGenerationTask", 'String'>
     readonly error: FieldRef<"AiGenerationTask", 'String'>
@@ -23649,3572 +23360,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: DashboardConfigInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model AgentRunCheckpoint
-   */
-
-  export type AggregateAgentRunCheckpoint = {
-    _count: AgentRunCheckpointCountAggregateOutputType | null
-    _avg: AgentRunCheckpointAvgAggregateOutputType | null
-    _sum: AgentRunCheckpointSumAggregateOutputType | null
-    _min: AgentRunCheckpointMinAggregateOutputType | null
-    _max: AgentRunCheckpointMaxAggregateOutputType | null
-  }
-
-  export type AgentRunCheckpointAvgAggregateOutputType = {
-    version: number | null
-  }
-
-  export type AgentRunCheckpointSumAggregateOutputType = {
-    version: number | null
-  }
-
-  export type AgentRunCheckpointMinAggregateOutputType = {
-    id: string | null
-    runId: string | null
-    identityId: string | null
-    conversationId: string | null
-    threadId: string | null
-    agentType: string | null
-    status: string | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type AgentRunCheckpointMaxAggregateOutputType = {
-    id: string | null
-    runId: string | null
-    identityId: string | null
-    conversationId: string | null
-    threadId: string | null
-    agentType: string | null
-    status: string | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type AgentRunCheckpointCountAggregateOutputType = {
-    id: number
-    runId: number
-    identityId: number
-    conversationId: number
-    threadId: number
-    agentType: number
-    status: number
-    runMetadata: number
-    stateSnapshot: number
-    events: number
-    interrupts: number
-    version: number
-    createdAt: number
-    updatedAt: number
-    deletedAt: number
-    _all: number
-  }
-
-
-  export type AgentRunCheckpointAvgAggregateInputType = {
-    version?: true
-  }
-
-  export type AgentRunCheckpointSumAggregateInputType = {
-    version?: true
-  }
-
-  export type AgentRunCheckpointMinAggregateInputType = {
-    id?: true
-    runId?: true
-    identityId?: true
-    conversationId?: true
-    threadId?: true
-    agentType?: true
-    status?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type AgentRunCheckpointMaxAggregateInputType = {
-    id?: true
-    runId?: true
-    identityId?: true
-    conversationId?: true
-    threadId?: true
-    agentType?: true
-    status?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type AgentRunCheckpointCountAggregateInputType = {
-    id?: true
-    runId?: true
-    identityId?: true
-    conversationId?: true
-    threadId?: true
-    agentType?: true
-    status?: true
-    runMetadata?: true
-    stateSnapshot?: true
-    events?: true
-    interrupts?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-    _all?: true
-  }
-
-  export type AgentRunCheckpointAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AgentRunCheckpoint to aggregate.
-     */
-    where?: AgentRunCheckpointWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of AgentRunCheckpoints to fetch.
-     */
-    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the start position
-     */
-    cursor?: AgentRunCheckpointWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` AgentRunCheckpoints from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` AgentRunCheckpoints.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Count returned AgentRunCheckpoints
-    **/
-    _count?: true | AgentRunCheckpointCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to average
-    **/
-    _avg?: AgentRunCheckpointAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to sum
-    **/
-    _sum?: AgentRunCheckpointSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to find the minimum value
-    **/
-    _min?: AgentRunCheckpointMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to find the maximum value
-    **/
-    _max?: AgentRunCheckpointMaxAggregateInputType
-  }
-
-  export type GetAgentRunCheckpointAggregateType<T extends AgentRunCheckpointAggregateArgs> = {
-        [P in keyof T & keyof AggregateAgentRunCheckpoint]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateAgentRunCheckpoint[P]>
-      : GetScalarType<T[P], AggregateAgentRunCheckpoint[P]>
-  }
-
-
-
-
-  export type AgentRunCheckpointGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AgentRunCheckpointWhereInput
-    orderBy?: AgentRunCheckpointOrderByWithAggregationInput | AgentRunCheckpointOrderByWithAggregationInput[]
-    by: AgentRunCheckpointScalarFieldEnum[] | AgentRunCheckpointScalarFieldEnum
-    having?: AgentRunCheckpointScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: AgentRunCheckpointCountAggregateInputType | true
-    _avg?: AgentRunCheckpointAvgAggregateInputType
-    _sum?: AgentRunCheckpointSumAggregateInputType
-    _min?: AgentRunCheckpointMinAggregateInputType
-    _max?: AgentRunCheckpointMaxAggregateInputType
-  }
-
-  export type AgentRunCheckpointGroupByOutputType = {
-    id: string
-    runId: string
-    identityId: string
-    conversationId: string | null
-    threadId: string
-    agentType: string
-    status: string
-    runMetadata: JsonValue
-    stateSnapshot: JsonValue | null
-    events: JsonValue
-    interrupts: JsonValue
-    version: number
-    createdAt: Date
-    updatedAt: Date
-    deletedAt: Date | null
-    _count: AgentRunCheckpointCountAggregateOutputType | null
-    _avg: AgentRunCheckpointAvgAggregateOutputType | null
-    _sum: AgentRunCheckpointSumAggregateOutputType | null
-    _min: AgentRunCheckpointMinAggregateOutputType | null
-    _max: AgentRunCheckpointMaxAggregateOutputType | null
-  }
-
-  type GetAgentRunCheckpointGroupByPayload<T extends AgentRunCheckpointGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<AgentRunCheckpointGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof AgentRunCheckpointGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], AgentRunCheckpointGroupByOutputType[P]>
-            : GetScalarType<T[P], AgentRunCheckpointGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type AgentRunCheckpointSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    runId?: boolean
-    identityId?: boolean
-    conversationId?: boolean
-    threadId?: boolean
-    agentType?: boolean
-    status?: boolean
-    runMetadata?: boolean
-    stateSnapshot?: boolean
-    events?: boolean
-    interrupts?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["agentRunCheckpoint"]>
-
-  export type AgentRunCheckpointSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    runId?: boolean
-    identityId?: boolean
-    conversationId?: boolean
-    threadId?: boolean
-    agentType?: boolean
-    status?: boolean
-    runMetadata?: boolean
-    stateSnapshot?: boolean
-    events?: boolean
-    interrupts?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["agentRunCheckpoint"]>
-
-  export type AgentRunCheckpointSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    runId?: boolean
-    identityId?: boolean
-    conversationId?: boolean
-    threadId?: boolean
-    agentType?: boolean
-    status?: boolean
-    runMetadata?: boolean
-    stateSnapshot?: boolean
-    events?: boolean
-    interrupts?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["agentRunCheckpoint"]>
-
-  export type AgentRunCheckpointSelectScalar = {
-    id?: boolean
-    runId?: boolean
-    identityId?: boolean
-    conversationId?: boolean
-    threadId?: boolean
-    agentType?: boolean
-    status?: boolean
-    runMetadata?: boolean
-    stateSnapshot?: boolean
-    events?: boolean
-    interrupts?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-  }
-
-  export type AgentRunCheckpointOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "runId" | "identityId" | "conversationId" | "threadId" | "agentType" | "status" | "runMetadata" | "stateSnapshot" | "events" | "interrupts" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["agentRunCheckpoint"]>
-  export type AgentRunCheckpointInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type AgentRunCheckpointIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type AgentRunCheckpointIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-
-  export type $AgentRunCheckpointPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "AgentRunCheckpoint"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      runId: string
-      identityId: string
-      conversationId: string | null
-      threadId: string
-      agentType: string
-      status: string
-      runMetadata: Prisma.JsonValue
-      stateSnapshot: Prisma.JsonValue | null
-      events: Prisma.JsonValue
-      interrupts: Prisma.JsonValue
-      version: number
-      createdAt: Date
-      updatedAt: Date
-      deletedAt: Date | null
-    }, ExtArgs["result"]["agentRunCheckpoint"]>
-    composites: {}
-  }
-
-  type AgentRunCheckpointGetPayload<S extends boolean | null | undefined | AgentRunCheckpointDefaultArgs> = $Result.GetResult<Prisma.$AgentRunCheckpointPayload, S>
-
-  type AgentRunCheckpointCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<AgentRunCheckpointFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: AgentRunCheckpointCountAggregateInputType | true
-    }
-
-  export interface AgentRunCheckpointDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AgentRunCheckpoint'], meta: { name: 'AgentRunCheckpoint' } }
-    /**
-     * Find zero or one AgentRunCheckpoint that matches the filter.
-     * @param {AgentRunCheckpointFindUniqueArgs} args - Arguments to find a AgentRunCheckpoint
-     * @example
-     * // Get one AgentRunCheckpoint
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends AgentRunCheckpointFindUniqueArgs>(args: SelectSubset<T, AgentRunCheckpointFindUniqueArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one AgentRunCheckpoint that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {AgentRunCheckpointFindUniqueOrThrowArgs} args - Arguments to find a AgentRunCheckpoint
-     * @example
-     * // Get one AgentRunCheckpoint
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends AgentRunCheckpointFindUniqueOrThrowArgs>(args: SelectSubset<T, AgentRunCheckpointFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first AgentRunCheckpoint that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AgentRunCheckpointFindFirstArgs} args - Arguments to find a AgentRunCheckpoint
-     * @example
-     * // Get one AgentRunCheckpoint
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends AgentRunCheckpointFindFirstArgs>(args?: SelectSubset<T, AgentRunCheckpointFindFirstArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first AgentRunCheckpoint that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AgentRunCheckpointFindFirstOrThrowArgs} args - Arguments to find a AgentRunCheckpoint
-     * @example
-     * // Get one AgentRunCheckpoint
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends AgentRunCheckpointFindFirstOrThrowArgs>(args?: SelectSubset<T, AgentRunCheckpointFindFirstOrThrowArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more AgentRunCheckpoints that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AgentRunCheckpointFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all AgentRunCheckpoints
-     * const agentRunCheckpoints = await prisma.agentRunCheckpoint.findMany()
-     *
-     * // Get first 10 AgentRunCheckpoints
-     * const agentRunCheckpoints = await prisma.agentRunCheckpoint.findMany({ take: 10 })
-     *
-     * // Only select the `id`
-     * const agentRunCheckpointWithIdOnly = await prisma.agentRunCheckpoint.findMany({ select: { id: true } })
-     *
-     */
-    findMany<T extends AgentRunCheckpointFindManyArgs>(args?: SelectSubset<T, AgentRunCheckpointFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a AgentRunCheckpoint.
-     * @param {AgentRunCheckpointCreateArgs} args - Arguments to create a AgentRunCheckpoint.
-     * @example
-     * // Create one AgentRunCheckpoint
-     * const AgentRunCheckpoint = await prisma.agentRunCheckpoint.create({
-     *   data: {
-     *     // ... data to create a AgentRunCheckpoint
-     *   }
-     * })
-     *
-     */
-    create<T extends AgentRunCheckpointCreateArgs>(args: SelectSubset<T, AgentRunCheckpointCreateArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many AgentRunCheckpoints.
-     * @param {AgentRunCheckpointCreateManyArgs} args - Arguments to create many AgentRunCheckpoints.
-     * @example
-     * // Create many AgentRunCheckpoints
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     */
-    createMany<T extends AgentRunCheckpointCreateManyArgs>(args?: SelectSubset<T, AgentRunCheckpointCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many AgentRunCheckpoints and returns the data saved in the database.
-     * @param {AgentRunCheckpointCreateManyAndReturnArgs} args - Arguments to create many AgentRunCheckpoints.
-     * @example
-     * // Create many AgentRunCheckpoints
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     * // Create many AgentRunCheckpoints and only return the `id`
-     * const agentRunCheckpointWithIdOnly = await prisma.agentRunCheckpoint.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     *
-     */
-    createManyAndReturn<T extends AgentRunCheckpointCreateManyAndReturnArgs>(args?: SelectSubset<T, AgentRunCheckpointCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a AgentRunCheckpoint.
-     * @param {AgentRunCheckpointDeleteArgs} args - Arguments to delete one AgentRunCheckpoint.
-     * @example
-     * // Delete one AgentRunCheckpoint
-     * const AgentRunCheckpoint = await prisma.agentRunCheckpoint.delete({
-     *   where: {
-     *     // ... filter to delete one AgentRunCheckpoint
-     *   }
-     * })
-     *
-     */
-    delete<T extends AgentRunCheckpointDeleteArgs>(args: SelectSubset<T, AgentRunCheckpointDeleteArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one AgentRunCheckpoint.
-     * @param {AgentRunCheckpointUpdateArgs} args - Arguments to update one AgentRunCheckpoint.
-     * @example
-     * // Update one AgentRunCheckpoint
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     *
-     */
-    update<T extends AgentRunCheckpointUpdateArgs>(args: SelectSubset<T, AgentRunCheckpointUpdateArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more AgentRunCheckpoints.
-     * @param {AgentRunCheckpointDeleteManyArgs} args - Arguments to filter AgentRunCheckpoints to delete.
-     * @example
-     * // Delete a few AgentRunCheckpoints
-     * const { count } = await prisma.agentRunCheckpoint.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     *
-     */
-    deleteMany<T extends AgentRunCheckpointDeleteManyArgs>(args?: SelectSubset<T, AgentRunCheckpointDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AgentRunCheckpoints.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AgentRunCheckpointUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many AgentRunCheckpoints
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     *
-     */
-    updateMany<T extends AgentRunCheckpointUpdateManyArgs>(args: SelectSubset<T, AgentRunCheckpointUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AgentRunCheckpoints and returns the data updated in the database.
-     * @param {AgentRunCheckpointUpdateManyAndReturnArgs} args - Arguments to update many AgentRunCheckpoints.
-     * @example
-     * // Update many AgentRunCheckpoints
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     * // Update zero or more AgentRunCheckpoints and only return the `id`
-     * const agentRunCheckpointWithIdOnly = await prisma.agentRunCheckpoint.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     *
-     */
-    updateManyAndReturn<T extends AgentRunCheckpointUpdateManyAndReturnArgs>(args: SelectSubset<T, AgentRunCheckpointUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one AgentRunCheckpoint.
-     * @param {AgentRunCheckpointUpsertArgs} args - Arguments to update or create a AgentRunCheckpoint.
-     * @example
-     * // Update or create a AgentRunCheckpoint
-     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.upsert({
-     *   create: {
-     *     // ... data to create a AgentRunCheckpoint
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the AgentRunCheckpoint we want to update
-     *   }
-     * })
-     */
-    upsert<T extends AgentRunCheckpointUpsertArgs>(args: SelectSubset<T, AgentRunCheckpointUpsertArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of AgentRunCheckpoints.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AgentRunCheckpointCountArgs} args - Arguments to filter AgentRunCheckpoints to count.
-     * @example
-     * // Count the number of AgentRunCheckpoints
-     * const count = await prisma.agentRunCheckpoint.count({
-     *   where: {
-     *     // ... the filter for the AgentRunCheckpoints we want to count
-     *   }
-     * })
-    **/
-    count<T extends AgentRunCheckpointCountArgs>(
-      args?: Subset<T, AgentRunCheckpointCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], AgentRunCheckpointCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a AgentRunCheckpoint.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AgentRunCheckpointAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends AgentRunCheckpointAggregateArgs>(args: Subset<T, AgentRunCheckpointAggregateArgs>): Prisma.PrismaPromise<GetAgentRunCheckpointAggregateType<T>>
-
-    /**
-     * Group by AgentRunCheckpoint.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AgentRunCheckpointGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     *
-    **/
-    groupBy<
-      T extends AgentRunCheckpointGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: AgentRunCheckpointGroupByArgs['orderBy'] }
-        : { orderBy?: AgentRunCheckpointGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, AgentRunCheckpointGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAgentRunCheckpointGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the AgentRunCheckpoint model
-   */
-  readonly fields: AgentRunCheckpointFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for AgentRunCheckpoint.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__AgentRunCheckpointClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the AgentRunCheckpoint model
-   */
-  interface AgentRunCheckpointFieldRefs {
-    readonly id: FieldRef<"AgentRunCheckpoint", 'String'>
-    readonly runId: FieldRef<"AgentRunCheckpoint", 'String'>
-    readonly identityId: FieldRef<"AgentRunCheckpoint", 'String'>
-    readonly conversationId: FieldRef<"AgentRunCheckpoint", 'String'>
-    readonly threadId: FieldRef<"AgentRunCheckpoint", 'String'>
-    readonly agentType: FieldRef<"AgentRunCheckpoint", 'String'>
-    readonly status: FieldRef<"AgentRunCheckpoint", 'String'>
-    readonly runMetadata: FieldRef<"AgentRunCheckpoint", 'Json'>
-    readonly stateSnapshot: FieldRef<"AgentRunCheckpoint", 'Json'>
-    readonly events: FieldRef<"AgentRunCheckpoint", 'Json'>
-    readonly interrupts: FieldRef<"AgentRunCheckpoint", 'Json'>
-    readonly version: FieldRef<"AgentRunCheckpoint", 'Int'>
-    readonly createdAt: FieldRef<"AgentRunCheckpoint", 'DateTime'>
-    readonly updatedAt: FieldRef<"AgentRunCheckpoint", 'DateTime'>
-    readonly deletedAt: FieldRef<"AgentRunCheckpoint", 'DateTime'>
-  }
-
-
-  // Custom InputTypes
-  /**
-   * AgentRunCheckpoint findUnique
-   */
-  export type AgentRunCheckpointFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which AgentRunCheckpoint to fetch.
-     */
-    where: AgentRunCheckpointWhereUniqueInput
-  }
-
-  /**
-   * AgentRunCheckpoint findUniqueOrThrow
-   */
-  export type AgentRunCheckpointFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which AgentRunCheckpoint to fetch.
-     */
-    where: AgentRunCheckpointWhereUniqueInput
-  }
-
-  /**
-   * AgentRunCheckpoint findFirst
-   */
-  export type AgentRunCheckpointFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which AgentRunCheckpoint to fetch.
-     */
-    where?: AgentRunCheckpointWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of AgentRunCheckpoints to fetch.
-     */
-    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for searching for AgentRunCheckpoints.
-     */
-    cursor?: AgentRunCheckpointWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` AgentRunCheckpoints from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` AgentRunCheckpoints.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of AgentRunCheckpoints.
-     */
-    distinct?: AgentRunCheckpointScalarFieldEnum | AgentRunCheckpointScalarFieldEnum[]
-  }
-
-  /**
-   * AgentRunCheckpoint findFirstOrThrow
-   */
-  export type AgentRunCheckpointFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which AgentRunCheckpoint to fetch.
-     */
-    where?: AgentRunCheckpointWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of AgentRunCheckpoints to fetch.
-     */
-    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for searching for AgentRunCheckpoints.
-     */
-    cursor?: AgentRunCheckpointWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` AgentRunCheckpoints from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` AgentRunCheckpoints.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of AgentRunCheckpoints.
-     */
-    distinct?: AgentRunCheckpointScalarFieldEnum | AgentRunCheckpointScalarFieldEnum[]
-  }
-
-  /**
-   * AgentRunCheckpoint findMany
-   */
-  export type AgentRunCheckpointFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which AgentRunCheckpoints to fetch.
-     */
-    where?: AgentRunCheckpointWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of AgentRunCheckpoints to fetch.
-     */
-    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for listing AgentRunCheckpoints.
-     */
-    cursor?: AgentRunCheckpointWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` AgentRunCheckpoints from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` AgentRunCheckpoints.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of AgentRunCheckpoints.
-     */
-    distinct?: AgentRunCheckpointScalarFieldEnum | AgentRunCheckpointScalarFieldEnum[]
-  }
-
-  /**
-   * AgentRunCheckpoint create
-   */
-  export type AgentRunCheckpointCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * The data needed to create a AgentRunCheckpoint.
-     */
-    data: XOR<AgentRunCheckpointCreateInput, AgentRunCheckpointUncheckedCreateInput>
-  }
-
-  /**
-   * AgentRunCheckpoint createMany
-   */
-  export type AgentRunCheckpointCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many AgentRunCheckpoints.
-     */
-    data: AgentRunCheckpointCreateManyInput | AgentRunCheckpointCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * AgentRunCheckpoint createManyAndReturn
-   */
-  export type AgentRunCheckpointCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * The data used to create many AgentRunCheckpoints.
-     */
-    data: AgentRunCheckpointCreateManyInput | AgentRunCheckpointCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * AgentRunCheckpoint update
-   */
-  export type AgentRunCheckpointUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * The data needed to update a AgentRunCheckpoint.
-     */
-    data: XOR<AgentRunCheckpointUpdateInput, AgentRunCheckpointUncheckedUpdateInput>
-    /**
-     * Choose, which AgentRunCheckpoint to update.
-     */
-    where: AgentRunCheckpointWhereUniqueInput
-  }
-
-  /**
-   * AgentRunCheckpoint updateMany
-   */
-  export type AgentRunCheckpointUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update AgentRunCheckpoints.
-     */
-    data: XOR<AgentRunCheckpointUpdateManyMutationInput, AgentRunCheckpointUncheckedUpdateManyInput>
-    /**
-     * Filter which AgentRunCheckpoints to update
-     */
-    where?: AgentRunCheckpointWhereInput
-    /**
-     * Limit how many AgentRunCheckpoints to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * AgentRunCheckpoint updateManyAndReturn
-   */
-  export type AgentRunCheckpointUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * The data used to update AgentRunCheckpoints.
-     */
-    data: XOR<AgentRunCheckpointUpdateManyMutationInput, AgentRunCheckpointUncheckedUpdateManyInput>
-    /**
-     * Filter which AgentRunCheckpoints to update
-     */
-    where?: AgentRunCheckpointWhereInput
-    /**
-     * Limit how many AgentRunCheckpoints to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * AgentRunCheckpoint upsert
-   */
-  export type AgentRunCheckpointUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * The filter to search for the AgentRunCheckpoint to update in case it exists.
-     */
-    where: AgentRunCheckpointWhereUniqueInput
-    /**
-     * In case the AgentRunCheckpoint found by the `where` argument doesn't exist, create a new AgentRunCheckpoint with this data.
-     */
-    create: XOR<AgentRunCheckpointCreateInput, AgentRunCheckpointUncheckedCreateInput>
-    /**
-     * In case the AgentRunCheckpoint was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<AgentRunCheckpointUpdateInput, AgentRunCheckpointUncheckedUpdateInput>
-  }
-
-  /**
-   * AgentRunCheckpoint delete
-   */
-  export type AgentRunCheckpointDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter which AgentRunCheckpoint to delete.
-     */
-    where: AgentRunCheckpointWhereUniqueInput
-  }
-
-  /**
-   * AgentRunCheckpoint deleteMany
-   */
-  export type AgentRunCheckpointDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AgentRunCheckpoints to delete
-     */
-    where?: AgentRunCheckpointWhereInput
-    /**
-     * Limit how many AgentRunCheckpoints to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * AgentRunCheckpoint without action
-   */
-  export type AgentRunCheckpointDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AgentRunCheckpoint
-     */
-    select?: AgentRunCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AgentRunCheckpoint
-     */
-    omit?: AgentRunCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AgentRunCheckpointInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model LangGraphCheckpoint
-   */
-
-  export type AggregateLangGraphCheckpoint = {
-    _count: LangGraphCheckpointCountAggregateOutputType | null
-    _min: LangGraphCheckpointMinAggregateOutputType | null
-    _max: LangGraphCheckpointMaxAggregateOutputType | null
-  }
-
-  export type LangGraphCheckpointMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    agentType: string | null
-    threadId: string | null
-    checkpointNs: string | null
-    checkpointId: string | null
-    parentCheckpointId: string | null
-    checkpointType: string | null
-    checkpointBlob: Bytes | null
-    metadataType: string | null
-    metadataBlob: Bytes | null
-    createdAt: Date | null
-  }
-
-  export type LangGraphCheckpointMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    agentType: string | null
-    threadId: string | null
-    checkpointNs: string | null
-    checkpointId: string | null
-    parentCheckpointId: string | null
-    checkpointType: string | null
-    checkpointBlob: Bytes | null
-    metadataType: string | null
-    metadataBlob: Bytes | null
-    createdAt: Date | null
-  }
-
-  export type LangGraphCheckpointCountAggregateOutputType = {
-    id: number
-    identityId: number
-    agentType: number
-    threadId: number
-    checkpointNs: number
-    checkpointId: number
-    parentCheckpointId: number
-    checkpointType: number
-    checkpointBlob: number
-    metadataType: number
-    metadataBlob: number
-    createdAt: number
-    _all: number
-  }
-
-
-  export type LangGraphCheckpointMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    agentType?: true
-    threadId?: true
-    checkpointNs?: true
-    checkpointId?: true
-    parentCheckpointId?: true
-    checkpointType?: true
-    checkpointBlob?: true
-    metadataType?: true
-    metadataBlob?: true
-    createdAt?: true
-  }
-
-  export type LangGraphCheckpointMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    agentType?: true
-    threadId?: true
-    checkpointNs?: true
-    checkpointId?: true
-    parentCheckpointId?: true
-    checkpointType?: true
-    checkpointBlob?: true
-    metadataType?: true
-    metadataBlob?: true
-    createdAt?: true
-  }
-
-  export type LangGraphCheckpointCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    agentType?: true
-    threadId?: true
-    checkpointNs?: true
-    checkpointId?: true
-    parentCheckpointId?: true
-    checkpointType?: true
-    checkpointBlob?: true
-    metadataType?: true
-    metadataBlob?: true
-    createdAt?: true
-    _all?: true
-  }
-
-  export type LangGraphCheckpointAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which LangGraphCheckpoint to aggregate.
-     */
-    where?: LangGraphCheckpointWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of LangGraphCheckpoints to fetch.
-     */
-    orderBy?: LangGraphCheckpointOrderByWithRelationInput | LangGraphCheckpointOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the start position
-     */
-    cursor?: LangGraphCheckpointWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` LangGraphCheckpoints from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` LangGraphCheckpoints.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Count returned LangGraphCheckpoints
-    **/
-    _count?: true | LangGraphCheckpointCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to find the minimum value
-    **/
-    _min?: LangGraphCheckpointMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to find the maximum value
-    **/
-    _max?: LangGraphCheckpointMaxAggregateInputType
-  }
-
-  export type GetLangGraphCheckpointAggregateType<T extends LangGraphCheckpointAggregateArgs> = {
-        [P in keyof T & keyof AggregateLangGraphCheckpoint]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateLangGraphCheckpoint[P]>
-      : GetScalarType<T[P], AggregateLangGraphCheckpoint[P]>
-  }
-
-
-
-
-  export type LangGraphCheckpointGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: LangGraphCheckpointWhereInput
-    orderBy?: LangGraphCheckpointOrderByWithAggregationInput | LangGraphCheckpointOrderByWithAggregationInput[]
-    by: LangGraphCheckpointScalarFieldEnum[] | LangGraphCheckpointScalarFieldEnum
-    having?: LangGraphCheckpointScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: LangGraphCheckpointCountAggregateInputType | true
-    _min?: LangGraphCheckpointMinAggregateInputType
-    _max?: LangGraphCheckpointMaxAggregateInputType
-  }
-
-  export type LangGraphCheckpointGroupByOutputType = {
-    id: string
-    identityId: string
-    agentType: string
-    threadId: string
-    checkpointNs: string
-    checkpointId: string
-    parentCheckpointId: string | null
-    checkpointType: string
-    checkpointBlob: Bytes
-    metadataType: string
-    metadataBlob: Bytes
-    createdAt: Date
-    _count: LangGraphCheckpointCountAggregateOutputType | null
-    _min: LangGraphCheckpointMinAggregateOutputType | null
-    _max: LangGraphCheckpointMaxAggregateOutputType | null
-  }
-
-  type GetLangGraphCheckpointGroupByPayload<T extends LangGraphCheckpointGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<LangGraphCheckpointGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof LangGraphCheckpointGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], LangGraphCheckpointGroupByOutputType[P]>
-            : GetScalarType<T[P], LangGraphCheckpointGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type LangGraphCheckpointSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    agentType?: boolean
-    threadId?: boolean
-    checkpointNs?: boolean
-    checkpointId?: boolean
-    parentCheckpointId?: boolean
-    checkpointType?: boolean
-    checkpointBlob?: boolean
-    metadataType?: boolean
-    metadataBlob?: boolean
-    createdAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["langGraphCheckpoint"]>
-
-  export type LangGraphCheckpointSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    agentType?: boolean
-    threadId?: boolean
-    checkpointNs?: boolean
-    checkpointId?: boolean
-    parentCheckpointId?: boolean
-    checkpointType?: boolean
-    checkpointBlob?: boolean
-    metadataType?: boolean
-    metadataBlob?: boolean
-    createdAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["langGraphCheckpoint"]>
-
-  export type LangGraphCheckpointSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    agentType?: boolean
-    threadId?: boolean
-    checkpointNs?: boolean
-    checkpointId?: boolean
-    parentCheckpointId?: boolean
-    checkpointType?: boolean
-    checkpointBlob?: boolean
-    metadataType?: boolean
-    metadataBlob?: boolean
-    createdAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["langGraphCheckpoint"]>
-
-  export type LangGraphCheckpointSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    agentType?: boolean
-    threadId?: boolean
-    checkpointNs?: boolean
-    checkpointId?: boolean
-    parentCheckpointId?: boolean
-    checkpointType?: boolean
-    checkpointBlob?: boolean
-    metadataType?: boolean
-    metadataBlob?: boolean
-    createdAt?: boolean
-  }
-
-  export type LangGraphCheckpointOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "agentType" | "threadId" | "checkpointNs" | "checkpointId" | "parentCheckpointId" | "checkpointType" | "checkpointBlob" | "metadataType" | "metadataBlob" | "createdAt", ExtArgs["result"]["langGraphCheckpoint"]>
-  export type LangGraphCheckpointInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type LangGraphCheckpointIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type LangGraphCheckpointIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-
-  export type $LangGraphCheckpointPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "LangGraphCheckpoint"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      agentType: string
-      threadId: string
-      checkpointNs: string
-      checkpointId: string
-      parentCheckpointId: string | null
-      checkpointType: string
-      checkpointBlob: Prisma.Bytes
-      metadataType: string
-      metadataBlob: Prisma.Bytes
-      createdAt: Date
-    }, ExtArgs["result"]["langGraphCheckpoint"]>
-    composites: {}
-  }
-
-  type LangGraphCheckpointGetPayload<S extends boolean | null | undefined | LangGraphCheckpointDefaultArgs> = $Result.GetResult<Prisma.$LangGraphCheckpointPayload, S>
-
-  type LangGraphCheckpointCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<LangGraphCheckpointFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: LangGraphCheckpointCountAggregateInputType | true
-    }
-
-  export interface LangGraphCheckpointDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LangGraphCheckpoint'], meta: { name: 'LangGraphCheckpoint' } }
-    /**
-     * Find zero or one LangGraphCheckpoint that matches the filter.
-     * @param {LangGraphCheckpointFindUniqueArgs} args - Arguments to find a LangGraphCheckpoint
-     * @example
-     * // Get one LangGraphCheckpoint
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends LangGraphCheckpointFindUniqueArgs>(args: SelectSubset<T, LangGraphCheckpointFindUniqueArgs<ExtArgs>>): Prisma__LangGraphCheckpointClient<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one LangGraphCheckpoint that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {LangGraphCheckpointFindUniqueOrThrowArgs} args - Arguments to find a LangGraphCheckpoint
-     * @example
-     * // Get one LangGraphCheckpoint
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends LangGraphCheckpointFindUniqueOrThrowArgs>(args: SelectSubset<T, LangGraphCheckpointFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LangGraphCheckpointClient<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first LangGraphCheckpoint that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointFindFirstArgs} args - Arguments to find a LangGraphCheckpoint
-     * @example
-     * // Get one LangGraphCheckpoint
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends LangGraphCheckpointFindFirstArgs>(args?: SelectSubset<T, LangGraphCheckpointFindFirstArgs<ExtArgs>>): Prisma__LangGraphCheckpointClient<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first LangGraphCheckpoint that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointFindFirstOrThrowArgs} args - Arguments to find a LangGraphCheckpoint
-     * @example
-     * // Get one LangGraphCheckpoint
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends LangGraphCheckpointFindFirstOrThrowArgs>(args?: SelectSubset<T, LangGraphCheckpointFindFirstOrThrowArgs<ExtArgs>>): Prisma__LangGraphCheckpointClient<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more LangGraphCheckpoints that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all LangGraphCheckpoints
-     * const langGraphCheckpoints = await prisma.langGraphCheckpoint.findMany()
-     *
-     * // Get first 10 LangGraphCheckpoints
-     * const langGraphCheckpoints = await prisma.langGraphCheckpoint.findMany({ take: 10 })
-     *
-     * // Only select the `id`
-     * const langGraphCheckpointWithIdOnly = await prisma.langGraphCheckpoint.findMany({ select: { id: true } })
-     *
-     */
-    findMany<T extends LangGraphCheckpointFindManyArgs>(args?: SelectSubset<T, LangGraphCheckpointFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a LangGraphCheckpoint.
-     * @param {LangGraphCheckpointCreateArgs} args - Arguments to create a LangGraphCheckpoint.
-     * @example
-     * // Create one LangGraphCheckpoint
-     * const LangGraphCheckpoint = await prisma.langGraphCheckpoint.create({
-     *   data: {
-     *     // ... data to create a LangGraphCheckpoint
-     *   }
-     * })
-     *
-     */
-    create<T extends LangGraphCheckpointCreateArgs>(args: SelectSubset<T, LangGraphCheckpointCreateArgs<ExtArgs>>): Prisma__LangGraphCheckpointClient<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many LangGraphCheckpoints.
-     * @param {LangGraphCheckpointCreateManyArgs} args - Arguments to create many LangGraphCheckpoints.
-     * @example
-     * // Create many LangGraphCheckpoints
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     */
-    createMany<T extends LangGraphCheckpointCreateManyArgs>(args?: SelectSubset<T, LangGraphCheckpointCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many LangGraphCheckpoints and returns the data saved in the database.
-     * @param {LangGraphCheckpointCreateManyAndReturnArgs} args - Arguments to create many LangGraphCheckpoints.
-     * @example
-     * // Create many LangGraphCheckpoints
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     * // Create many LangGraphCheckpoints and only return the `id`
-     * const langGraphCheckpointWithIdOnly = await prisma.langGraphCheckpoint.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     *
-     */
-    createManyAndReturn<T extends LangGraphCheckpointCreateManyAndReturnArgs>(args?: SelectSubset<T, LangGraphCheckpointCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a LangGraphCheckpoint.
-     * @param {LangGraphCheckpointDeleteArgs} args - Arguments to delete one LangGraphCheckpoint.
-     * @example
-     * // Delete one LangGraphCheckpoint
-     * const LangGraphCheckpoint = await prisma.langGraphCheckpoint.delete({
-     *   where: {
-     *     // ... filter to delete one LangGraphCheckpoint
-     *   }
-     * })
-     *
-     */
-    delete<T extends LangGraphCheckpointDeleteArgs>(args: SelectSubset<T, LangGraphCheckpointDeleteArgs<ExtArgs>>): Prisma__LangGraphCheckpointClient<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one LangGraphCheckpoint.
-     * @param {LangGraphCheckpointUpdateArgs} args - Arguments to update one LangGraphCheckpoint.
-     * @example
-     * // Update one LangGraphCheckpoint
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     *
-     */
-    update<T extends LangGraphCheckpointUpdateArgs>(args: SelectSubset<T, LangGraphCheckpointUpdateArgs<ExtArgs>>): Prisma__LangGraphCheckpointClient<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more LangGraphCheckpoints.
-     * @param {LangGraphCheckpointDeleteManyArgs} args - Arguments to filter LangGraphCheckpoints to delete.
-     * @example
-     * // Delete a few LangGraphCheckpoints
-     * const { count } = await prisma.langGraphCheckpoint.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     *
-     */
-    deleteMany<T extends LangGraphCheckpointDeleteManyArgs>(args?: SelectSubset<T, LangGraphCheckpointDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more LangGraphCheckpoints.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many LangGraphCheckpoints
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     *
-     */
-    updateMany<T extends LangGraphCheckpointUpdateManyArgs>(args: SelectSubset<T, LangGraphCheckpointUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more LangGraphCheckpoints and returns the data updated in the database.
-     * @param {LangGraphCheckpointUpdateManyAndReturnArgs} args - Arguments to update many LangGraphCheckpoints.
-     * @example
-     * // Update many LangGraphCheckpoints
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     * // Update zero or more LangGraphCheckpoints and only return the `id`
-     * const langGraphCheckpointWithIdOnly = await prisma.langGraphCheckpoint.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     *
-     */
-    updateManyAndReturn<T extends LangGraphCheckpointUpdateManyAndReturnArgs>(args: SelectSubset<T, LangGraphCheckpointUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one LangGraphCheckpoint.
-     * @param {LangGraphCheckpointUpsertArgs} args - Arguments to update or create a LangGraphCheckpoint.
-     * @example
-     * // Update or create a LangGraphCheckpoint
-     * const langGraphCheckpoint = await prisma.langGraphCheckpoint.upsert({
-     *   create: {
-     *     // ... data to create a LangGraphCheckpoint
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the LangGraphCheckpoint we want to update
-     *   }
-     * })
-     */
-    upsert<T extends LangGraphCheckpointUpsertArgs>(args: SelectSubset<T, LangGraphCheckpointUpsertArgs<ExtArgs>>): Prisma__LangGraphCheckpointClient<$Result.GetResult<Prisma.$LangGraphCheckpointPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of LangGraphCheckpoints.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointCountArgs} args - Arguments to filter LangGraphCheckpoints to count.
-     * @example
-     * // Count the number of LangGraphCheckpoints
-     * const count = await prisma.langGraphCheckpoint.count({
-     *   where: {
-     *     // ... the filter for the LangGraphCheckpoints we want to count
-     *   }
-     * })
-    **/
-    count<T extends LangGraphCheckpointCountArgs>(
-      args?: Subset<T, LangGraphCheckpointCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], LangGraphCheckpointCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a LangGraphCheckpoint.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends LangGraphCheckpointAggregateArgs>(args: Subset<T, LangGraphCheckpointAggregateArgs>): Prisma.PrismaPromise<GetLangGraphCheckpointAggregateType<T>>
-
-    /**
-     * Group by LangGraphCheckpoint.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     *
-    **/
-    groupBy<
-      T extends LangGraphCheckpointGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: LangGraphCheckpointGroupByArgs['orderBy'] }
-        : { orderBy?: LangGraphCheckpointGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, LangGraphCheckpointGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLangGraphCheckpointGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the LangGraphCheckpoint model
-   */
-  readonly fields: LangGraphCheckpointFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for LangGraphCheckpoint.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__LangGraphCheckpointClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the LangGraphCheckpoint model
-   */
-  interface LangGraphCheckpointFieldRefs {
-    readonly id: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly identityId: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly agentType: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly threadId: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly checkpointNs: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly checkpointId: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly parentCheckpointId: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly checkpointType: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly checkpointBlob: FieldRef<"LangGraphCheckpoint", 'Bytes'>
-    readonly metadataType: FieldRef<"LangGraphCheckpoint", 'String'>
-    readonly metadataBlob: FieldRef<"LangGraphCheckpoint", 'Bytes'>
-    readonly createdAt: FieldRef<"LangGraphCheckpoint", 'DateTime'>
-  }
-
-
-  // Custom InputTypes
-  /**
-   * LangGraphCheckpoint findUnique
-   */
-  export type LangGraphCheckpointFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpoint to fetch.
-     */
-    where: LangGraphCheckpointWhereUniqueInput
-  }
-
-  /**
-   * LangGraphCheckpoint findUniqueOrThrow
-   */
-  export type LangGraphCheckpointFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpoint to fetch.
-     */
-    where: LangGraphCheckpointWhereUniqueInput
-  }
-
-  /**
-   * LangGraphCheckpoint findFirst
-   */
-  export type LangGraphCheckpointFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpoint to fetch.
-     */
-    where?: LangGraphCheckpointWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of LangGraphCheckpoints to fetch.
-     */
-    orderBy?: LangGraphCheckpointOrderByWithRelationInput | LangGraphCheckpointOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for searching for LangGraphCheckpoints.
-     */
-    cursor?: LangGraphCheckpointWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` LangGraphCheckpoints from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` LangGraphCheckpoints.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of LangGraphCheckpoints.
-     */
-    distinct?: LangGraphCheckpointScalarFieldEnum | LangGraphCheckpointScalarFieldEnum[]
-  }
-
-  /**
-   * LangGraphCheckpoint findFirstOrThrow
-   */
-  export type LangGraphCheckpointFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpoint to fetch.
-     */
-    where?: LangGraphCheckpointWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of LangGraphCheckpoints to fetch.
-     */
-    orderBy?: LangGraphCheckpointOrderByWithRelationInput | LangGraphCheckpointOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for searching for LangGraphCheckpoints.
-     */
-    cursor?: LangGraphCheckpointWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` LangGraphCheckpoints from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` LangGraphCheckpoints.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of LangGraphCheckpoints.
-     */
-    distinct?: LangGraphCheckpointScalarFieldEnum | LangGraphCheckpointScalarFieldEnum[]
-  }
-
-  /**
-   * LangGraphCheckpoint findMany
-   */
-  export type LangGraphCheckpointFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpoints to fetch.
-     */
-    where?: LangGraphCheckpointWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of LangGraphCheckpoints to fetch.
-     */
-    orderBy?: LangGraphCheckpointOrderByWithRelationInput | LangGraphCheckpointOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for listing LangGraphCheckpoints.
-     */
-    cursor?: LangGraphCheckpointWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` LangGraphCheckpoints from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` LangGraphCheckpoints.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of LangGraphCheckpoints.
-     */
-    distinct?: LangGraphCheckpointScalarFieldEnum | LangGraphCheckpointScalarFieldEnum[]
-  }
-
-  /**
-   * LangGraphCheckpoint create
-   */
-  export type LangGraphCheckpointCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * The data needed to create a LangGraphCheckpoint.
-     */
-    data: XOR<LangGraphCheckpointCreateInput, LangGraphCheckpointUncheckedCreateInput>
-  }
-
-  /**
-   * LangGraphCheckpoint createMany
-   */
-  export type LangGraphCheckpointCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many LangGraphCheckpoints.
-     */
-    data: LangGraphCheckpointCreateManyInput | LangGraphCheckpointCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * LangGraphCheckpoint createManyAndReturn
-   */
-  export type LangGraphCheckpointCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * The data used to create many LangGraphCheckpoints.
-     */
-    data: LangGraphCheckpointCreateManyInput | LangGraphCheckpointCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * LangGraphCheckpoint update
-   */
-  export type LangGraphCheckpointUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * The data needed to update a LangGraphCheckpoint.
-     */
-    data: XOR<LangGraphCheckpointUpdateInput, LangGraphCheckpointUncheckedUpdateInput>
-    /**
-     * Choose, which LangGraphCheckpoint to update.
-     */
-    where: LangGraphCheckpointWhereUniqueInput
-  }
-
-  /**
-   * LangGraphCheckpoint updateMany
-   */
-  export type LangGraphCheckpointUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update LangGraphCheckpoints.
-     */
-    data: XOR<LangGraphCheckpointUpdateManyMutationInput, LangGraphCheckpointUncheckedUpdateManyInput>
-    /**
-     * Filter which LangGraphCheckpoints to update
-     */
-    where?: LangGraphCheckpointWhereInput
-    /**
-     * Limit how many LangGraphCheckpoints to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * LangGraphCheckpoint updateManyAndReturn
-   */
-  export type LangGraphCheckpointUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * The data used to update LangGraphCheckpoints.
-     */
-    data: XOR<LangGraphCheckpointUpdateManyMutationInput, LangGraphCheckpointUncheckedUpdateManyInput>
-    /**
-     * Filter which LangGraphCheckpoints to update
-     */
-    where?: LangGraphCheckpointWhereInput
-    /**
-     * Limit how many LangGraphCheckpoints to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * LangGraphCheckpoint upsert
-   */
-  export type LangGraphCheckpointUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * The filter to search for the LangGraphCheckpoint to update in case it exists.
-     */
-    where: LangGraphCheckpointWhereUniqueInput
-    /**
-     * In case the LangGraphCheckpoint found by the `where` argument doesn't exist, create a new LangGraphCheckpoint with this data.
-     */
-    create: XOR<LangGraphCheckpointCreateInput, LangGraphCheckpointUncheckedCreateInput>
-    /**
-     * In case the LangGraphCheckpoint was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<LangGraphCheckpointUpdateInput, LangGraphCheckpointUncheckedUpdateInput>
-  }
-
-  /**
-   * LangGraphCheckpoint delete
-   */
-  export type LangGraphCheckpointDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-    /**
-     * Filter which LangGraphCheckpoint to delete.
-     */
-    where: LangGraphCheckpointWhereUniqueInput
-  }
-
-  /**
-   * LangGraphCheckpoint deleteMany
-   */
-  export type LangGraphCheckpointDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which LangGraphCheckpoints to delete
-     */
-    where?: LangGraphCheckpointWhereInput
-    /**
-     * Limit how many LangGraphCheckpoints to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * LangGraphCheckpoint without action
-   */
-  export type LangGraphCheckpointDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpoint
-     */
-    select?: LangGraphCheckpointSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpoint
-     */
-    omit?: LangGraphCheckpointOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model LangGraphCheckpointWrite
-   */
-
-  export type AggregateLangGraphCheckpointWrite = {
-    _count: LangGraphCheckpointWriteCountAggregateOutputType | null
-    _avg: LangGraphCheckpointWriteAvgAggregateOutputType | null
-    _sum: LangGraphCheckpointWriteSumAggregateOutputType | null
-    _min: LangGraphCheckpointWriteMinAggregateOutputType | null
-    _max: LangGraphCheckpointWriteMaxAggregateOutputType | null
-  }
-
-  export type LangGraphCheckpointWriteAvgAggregateOutputType = {
-    idx: number | null
-  }
-
-  export type LangGraphCheckpointWriteSumAggregateOutputType = {
-    idx: number | null
-  }
-
-  export type LangGraphCheckpointWriteMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    agentType: string | null
-    threadId: string | null
-    checkpointNs: string | null
-    checkpointId: string | null
-    taskId: string | null
-    taskPath: string | null
-    idx: number | null
-    channel: string | null
-    valueType: string | null
-    valueBlob: Bytes | null
-    createdAt: Date | null
-  }
-
-  export type LangGraphCheckpointWriteMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    agentType: string | null
-    threadId: string | null
-    checkpointNs: string | null
-    checkpointId: string | null
-    taskId: string | null
-    taskPath: string | null
-    idx: number | null
-    channel: string | null
-    valueType: string | null
-    valueBlob: Bytes | null
-    createdAt: Date | null
-  }
-
-  export type LangGraphCheckpointWriteCountAggregateOutputType = {
-    id: number
-    identityId: number
-    agentType: number
-    threadId: number
-    checkpointNs: number
-    checkpointId: number
-    taskId: number
-    taskPath: number
-    idx: number
-    channel: number
-    valueType: number
-    valueBlob: number
-    createdAt: number
-    _all: number
-  }
-
-
-  export type LangGraphCheckpointWriteAvgAggregateInputType = {
-    idx?: true
-  }
-
-  export type LangGraphCheckpointWriteSumAggregateInputType = {
-    idx?: true
-  }
-
-  export type LangGraphCheckpointWriteMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    agentType?: true
-    threadId?: true
-    checkpointNs?: true
-    checkpointId?: true
-    taskId?: true
-    taskPath?: true
-    idx?: true
-    channel?: true
-    valueType?: true
-    valueBlob?: true
-    createdAt?: true
-  }
-
-  export type LangGraphCheckpointWriteMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    agentType?: true
-    threadId?: true
-    checkpointNs?: true
-    checkpointId?: true
-    taskId?: true
-    taskPath?: true
-    idx?: true
-    channel?: true
-    valueType?: true
-    valueBlob?: true
-    createdAt?: true
-  }
-
-  export type LangGraphCheckpointWriteCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    agentType?: true
-    threadId?: true
-    checkpointNs?: true
-    checkpointId?: true
-    taskId?: true
-    taskPath?: true
-    idx?: true
-    channel?: true
-    valueType?: true
-    valueBlob?: true
-    createdAt?: true
-    _all?: true
-  }
-
-  export type LangGraphCheckpointWriteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which LangGraphCheckpointWrite to aggregate.
-     */
-    where?: LangGraphCheckpointWriteWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of LangGraphCheckpointWrites to fetch.
-     */
-    orderBy?: LangGraphCheckpointWriteOrderByWithRelationInput | LangGraphCheckpointWriteOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the start position
-     */
-    cursor?: LangGraphCheckpointWriteWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` LangGraphCheckpointWrites from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` LangGraphCheckpointWrites.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Count returned LangGraphCheckpointWrites
-    **/
-    _count?: true | LangGraphCheckpointWriteCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to average
-    **/
-    _avg?: LangGraphCheckpointWriteAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to sum
-    **/
-    _sum?: LangGraphCheckpointWriteSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to find the minimum value
-    **/
-    _min?: LangGraphCheckpointWriteMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Select which fields to find the maximum value
-    **/
-    _max?: LangGraphCheckpointWriteMaxAggregateInputType
-  }
-
-  export type GetLangGraphCheckpointWriteAggregateType<T extends LangGraphCheckpointWriteAggregateArgs> = {
-        [P in keyof T & keyof AggregateLangGraphCheckpointWrite]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateLangGraphCheckpointWrite[P]>
-      : GetScalarType<T[P], AggregateLangGraphCheckpointWrite[P]>
-  }
-
-
-
-
-  export type LangGraphCheckpointWriteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: LangGraphCheckpointWriteWhereInput
-    orderBy?: LangGraphCheckpointWriteOrderByWithAggregationInput | LangGraphCheckpointWriteOrderByWithAggregationInput[]
-    by: LangGraphCheckpointWriteScalarFieldEnum[] | LangGraphCheckpointWriteScalarFieldEnum
-    having?: LangGraphCheckpointWriteScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: LangGraphCheckpointWriteCountAggregateInputType | true
-    _avg?: LangGraphCheckpointWriteAvgAggregateInputType
-    _sum?: LangGraphCheckpointWriteSumAggregateInputType
-    _min?: LangGraphCheckpointWriteMinAggregateInputType
-    _max?: LangGraphCheckpointWriteMaxAggregateInputType
-  }
-
-  export type LangGraphCheckpointWriteGroupByOutputType = {
-    id: string
-    identityId: string
-    agentType: string
-    threadId: string
-    checkpointNs: string
-    checkpointId: string
-    taskId: string
-    taskPath: string
-    idx: number
-    channel: string
-    valueType: string
-    valueBlob: Bytes
-    createdAt: Date
-    _count: LangGraphCheckpointWriteCountAggregateOutputType | null
-    _avg: LangGraphCheckpointWriteAvgAggregateOutputType | null
-    _sum: LangGraphCheckpointWriteSumAggregateOutputType | null
-    _min: LangGraphCheckpointWriteMinAggregateOutputType | null
-    _max: LangGraphCheckpointWriteMaxAggregateOutputType | null
-  }
-
-  type GetLangGraphCheckpointWriteGroupByPayload<T extends LangGraphCheckpointWriteGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<LangGraphCheckpointWriteGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof LangGraphCheckpointWriteGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], LangGraphCheckpointWriteGroupByOutputType[P]>
-            : GetScalarType<T[P], LangGraphCheckpointWriteGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type LangGraphCheckpointWriteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    agentType?: boolean
-    threadId?: boolean
-    checkpointNs?: boolean
-    checkpointId?: boolean
-    taskId?: boolean
-    taskPath?: boolean
-    idx?: boolean
-    channel?: boolean
-    valueType?: boolean
-    valueBlob?: boolean
-    createdAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["langGraphCheckpointWrite"]>
-
-  export type LangGraphCheckpointWriteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    agentType?: boolean
-    threadId?: boolean
-    checkpointNs?: boolean
-    checkpointId?: boolean
-    taskId?: boolean
-    taskPath?: boolean
-    idx?: boolean
-    channel?: boolean
-    valueType?: boolean
-    valueBlob?: boolean
-    createdAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["langGraphCheckpointWrite"]>
-
-  export type LangGraphCheckpointWriteSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    agentType?: boolean
-    threadId?: boolean
-    checkpointNs?: boolean
-    checkpointId?: boolean
-    taskId?: boolean
-    taskPath?: boolean
-    idx?: boolean
-    channel?: boolean
-    valueType?: boolean
-    valueBlob?: boolean
-    createdAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["langGraphCheckpointWrite"]>
-
-  export type LangGraphCheckpointWriteSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    agentType?: boolean
-    threadId?: boolean
-    checkpointNs?: boolean
-    checkpointId?: boolean
-    taskId?: boolean
-    taskPath?: boolean
-    idx?: boolean
-    channel?: boolean
-    valueType?: boolean
-    valueBlob?: boolean
-    createdAt?: boolean
-  }
-
-  export type LangGraphCheckpointWriteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "agentType" | "threadId" | "checkpointNs" | "checkpointId" | "taskId" | "taskPath" | "idx" | "channel" | "valueType" | "valueBlob" | "createdAt", ExtArgs["result"]["langGraphCheckpointWrite"]>
-  export type LangGraphCheckpointWriteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type LangGraphCheckpointWriteIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type LangGraphCheckpointWriteIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-
-  export type $LangGraphCheckpointWritePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "LangGraphCheckpointWrite"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      agentType: string
-      threadId: string
-      checkpointNs: string
-      checkpointId: string
-      taskId: string
-      taskPath: string
-      idx: number
-      channel: string
-      valueType: string
-      valueBlob: Prisma.Bytes
-      createdAt: Date
-    }, ExtArgs["result"]["langGraphCheckpointWrite"]>
-    composites: {}
-  }
-
-  type LangGraphCheckpointWriteGetPayload<S extends boolean | null | undefined | LangGraphCheckpointWriteDefaultArgs> = $Result.GetResult<Prisma.$LangGraphCheckpointWritePayload, S>
-
-  type LangGraphCheckpointWriteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<LangGraphCheckpointWriteFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: LangGraphCheckpointWriteCountAggregateInputType | true
-    }
-
-  export interface LangGraphCheckpointWriteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LangGraphCheckpointWrite'], meta: { name: 'LangGraphCheckpointWrite' } }
-    /**
-     * Find zero or one LangGraphCheckpointWrite that matches the filter.
-     * @param {LangGraphCheckpointWriteFindUniqueArgs} args - Arguments to find a LangGraphCheckpointWrite
-     * @example
-     * // Get one LangGraphCheckpointWrite
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends LangGraphCheckpointWriteFindUniqueArgs>(args: SelectSubset<T, LangGraphCheckpointWriteFindUniqueArgs<ExtArgs>>): Prisma__LangGraphCheckpointWriteClient<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one LangGraphCheckpointWrite that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {LangGraphCheckpointWriteFindUniqueOrThrowArgs} args - Arguments to find a LangGraphCheckpointWrite
-     * @example
-     * // Get one LangGraphCheckpointWrite
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends LangGraphCheckpointWriteFindUniqueOrThrowArgs>(args: SelectSubset<T, LangGraphCheckpointWriteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LangGraphCheckpointWriteClient<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first LangGraphCheckpointWrite that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointWriteFindFirstArgs} args - Arguments to find a LangGraphCheckpointWrite
-     * @example
-     * // Get one LangGraphCheckpointWrite
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends LangGraphCheckpointWriteFindFirstArgs>(args?: SelectSubset<T, LangGraphCheckpointWriteFindFirstArgs<ExtArgs>>): Prisma__LangGraphCheckpointWriteClient<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first LangGraphCheckpointWrite that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointWriteFindFirstOrThrowArgs} args - Arguments to find a LangGraphCheckpointWrite
-     * @example
-     * // Get one LangGraphCheckpointWrite
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends LangGraphCheckpointWriteFindFirstOrThrowArgs>(args?: SelectSubset<T, LangGraphCheckpointWriteFindFirstOrThrowArgs<ExtArgs>>): Prisma__LangGraphCheckpointWriteClient<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more LangGraphCheckpointWrites that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointWriteFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all LangGraphCheckpointWrites
-     * const langGraphCheckpointWrites = await prisma.langGraphCheckpointWrite.findMany()
-     *
-     * // Get first 10 LangGraphCheckpointWrites
-     * const langGraphCheckpointWrites = await prisma.langGraphCheckpointWrite.findMany({ take: 10 })
-     *
-     * // Only select the `id`
-     * const langGraphCheckpointWriteWithIdOnly = await prisma.langGraphCheckpointWrite.findMany({ select: { id: true } })
-     *
-     */
-    findMany<T extends LangGraphCheckpointWriteFindManyArgs>(args?: SelectSubset<T, LangGraphCheckpointWriteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a LangGraphCheckpointWrite.
-     * @param {LangGraphCheckpointWriteCreateArgs} args - Arguments to create a LangGraphCheckpointWrite.
-     * @example
-     * // Create one LangGraphCheckpointWrite
-     * const LangGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.create({
-     *   data: {
-     *     // ... data to create a LangGraphCheckpointWrite
-     *   }
-     * })
-     *
-     */
-    create<T extends LangGraphCheckpointWriteCreateArgs>(args: SelectSubset<T, LangGraphCheckpointWriteCreateArgs<ExtArgs>>): Prisma__LangGraphCheckpointWriteClient<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many LangGraphCheckpointWrites.
-     * @param {LangGraphCheckpointWriteCreateManyArgs} args - Arguments to create many LangGraphCheckpointWrites.
-     * @example
-     * // Create many LangGraphCheckpointWrites
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     */
-    createMany<T extends LangGraphCheckpointWriteCreateManyArgs>(args?: SelectSubset<T, LangGraphCheckpointWriteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many LangGraphCheckpointWrites and returns the data saved in the database.
-     * @param {LangGraphCheckpointWriteCreateManyAndReturnArgs} args - Arguments to create many LangGraphCheckpointWrites.
-     * @example
-     * // Create many LangGraphCheckpointWrites
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     * // Create many LangGraphCheckpointWrites and only return the `id`
-     * const langGraphCheckpointWriteWithIdOnly = await prisma.langGraphCheckpointWrite.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     *
-     */
-    createManyAndReturn<T extends LangGraphCheckpointWriteCreateManyAndReturnArgs>(args?: SelectSubset<T, LangGraphCheckpointWriteCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a LangGraphCheckpointWrite.
-     * @param {LangGraphCheckpointWriteDeleteArgs} args - Arguments to delete one LangGraphCheckpointWrite.
-     * @example
-     * // Delete one LangGraphCheckpointWrite
-     * const LangGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.delete({
-     *   where: {
-     *     // ... filter to delete one LangGraphCheckpointWrite
-     *   }
-     * })
-     *
-     */
-    delete<T extends LangGraphCheckpointWriteDeleteArgs>(args: SelectSubset<T, LangGraphCheckpointWriteDeleteArgs<ExtArgs>>): Prisma__LangGraphCheckpointWriteClient<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one LangGraphCheckpointWrite.
-     * @param {LangGraphCheckpointWriteUpdateArgs} args - Arguments to update one LangGraphCheckpointWrite.
-     * @example
-     * // Update one LangGraphCheckpointWrite
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     *
-     */
-    update<T extends LangGraphCheckpointWriteUpdateArgs>(args: SelectSubset<T, LangGraphCheckpointWriteUpdateArgs<ExtArgs>>): Prisma__LangGraphCheckpointWriteClient<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more LangGraphCheckpointWrites.
-     * @param {LangGraphCheckpointWriteDeleteManyArgs} args - Arguments to filter LangGraphCheckpointWrites to delete.
-     * @example
-     * // Delete a few LangGraphCheckpointWrites
-     * const { count } = await prisma.langGraphCheckpointWrite.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     *
-     */
-    deleteMany<T extends LangGraphCheckpointWriteDeleteManyArgs>(args?: SelectSubset<T, LangGraphCheckpointWriteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more LangGraphCheckpointWrites.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointWriteUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many LangGraphCheckpointWrites
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     *
-     */
-    updateMany<T extends LangGraphCheckpointWriteUpdateManyArgs>(args: SelectSubset<T, LangGraphCheckpointWriteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more LangGraphCheckpointWrites and returns the data updated in the database.
-     * @param {LangGraphCheckpointWriteUpdateManyAndReturnArgs} args - Arguments to update many LangGraphCheckpointWrites.
-     * @example
-     * // Update many LangGraphCheckpointWrites
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *
-     * // Update zero or more LangGraphCheckpointWrites and only return the `id`
-     * const langGraphCheckpointWriteWithIdOnly = await prisma.langGraphCheckpointWrite.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     *
-     */
-    updateManyAndReturn<T extends LangGraphCheckpointWriteUpdateManyAndReturnArgs>(args: SelectSubset<T, LangGraphCheckpointWriteUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one LangGraphCheckpointWrite.
-     * @param {LangGraphCheckpointWriteUpsertArgs} args - Arguments to update or create a LangGraphCheckpointWrite.
-     * @example
-     * // Update or create a LangGraphCheckpointWrite
-     * const langGraphCheckpointWrite = await prisma.langGraphCheckpointWrite.upsert({
-     *   create: {
-     *     // ... data to create a LangGraphCheckpointWrite
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the LangGraphCheckpointWrite we want to update
-     *   }
-     * })
-     */
-    upsert<T extends LangGraphCheckpointWriteUpsertArgs>(args: SelectSubset<T, LangGraphCheckpointWriteUpsertArgs<ExtArgs>>): Prisma__LangGraphCheckpointWriteClient<$Result.GetResult<Prisma.$LangGraphCheckpointWritePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of LangGraphCheckpointWrites.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointWriteCountArgs} args - Arguments to filter LangGraphCheckpointWrites to count.
-     * @example
-     * // Count the number of LangGraphCheckpointWrites
-     * const count = await prisma.langGraphCheckpointWrite.count({
-     *   where: {
-     *     // ... the filter for the LangGraphCheckpointWrites we want to count
-     *   }
-     * })
-    **/
-    count<T extends LangGraphCheckpointWriteCountArgs>(
-      args?: Subset<T, LangGraphCheckpointWriteCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], LangGraphCheckpointWriteCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a LangGraphCheckpointWrite.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointWriteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends LangGraphCheckpointWriteAggregateArgs>(args: Subset<T, LangGraphCheckpointWriteAggregateArgs>): Prisma.PrismaPromise<GetLangGraphCheckpointWriteAggregateType<T>>
-
-    /**
-     * Group by LangGraphCheckpointWrite.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {LangGraphCheckpointWriteGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     *
-    **/
-    groupBy<
-      T extends LangGraphCheckpointWriteGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: LangGraphCheckpointWriteGroupByArgs['orderBy'] }
-        : { orderBy?: LangGraphCheckpointWriteGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, LangGraphCheckpointWriteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLangGraphCheckpointWriteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the LangGraphCheckpointWrite model
-   */
-  readonly fields: LangGraphCheckpointWriteFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for LangGraphCheckpointWrite.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__LangGraphCheckpointWriteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the LangGraphCheckpointWrite model
-   */
-  interface LangGraphCheckpointWriteFieldRefs {
-    readonly id: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly identityId: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly agentType: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly threadId: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly checkpointNs: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly checkpointId: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly taskId: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly taskPath: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly idx: FieldRef<"LangGraphCheckpointWrite", 'Int'>
-    readonly channel: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly valueType: FieldRef<"LangGraphCheckpointWrite", 'String'>
-    readonly valueBlob: FieldRef<"LangGraphCheckpointWrite", 'Bytes'>
-    readonly createdAt: FieldRef<"LangGraphCheckpointWrite", 'DateTime'>
-  }
-
-
-  // Custom InputTypes
-  /**
-   * LangGraphCheckpointWrite findUnique
-   */
-  export type LangGraphCheckpointWriteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpointWrite to fetch.
-     */
-    where: LangGraphCheckpointWriteWhereUniqueInput
-  }
-
-  /**
-   * LangGraphCheckpointWrite findUniqueOrThrow
-   */
-  export type LangGraphCheckpointWriteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpointWrite to fetch.
-     */
-    where: LangGraphCheckpointWriteWhereUniqueInput
-  }
-
-  /**
-   * LangGraphCheckpointWrite findFirst
-   */
-  export type LangGraphCheckpointWriteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpointWrite to fetch.
-     */
-    where?: LangGraphCheckpointWriteWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of LangGraphCheckpointWrites to fetch.
-     */
-    orderBy?: LangGraphCheckpointWriteOrderByWithRelationInput | LangGraphCheckpointWriteOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for searching for LangGraphCheckpointWrites.
-     */
-    cursor?: LangGraphCheckpointWriteWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` LangGraphCheckpointWrites from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` LangGraphCheckpointWrites.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of LangGraphCheckpointWrites.
-     */
-    distinct?: LangGraphCheckpointWriteScalarFieldEnum | LangGraphCheckpointWriteScalarFieldEnum[]
-  }
-
-  /**
-   * LangGraphCheckpointWrite findFirstOrThrow
-   */
-  export type LangGraphCheckpointWriteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpointWrite to fetch.
-     */
-    where?: LangGraphCheckpointWriteWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of LangGraphCheckpointWrites to fetch.
-     */
-    orderBy?: LangGraphCheckpointWriteOrderByWithRelationInput | LangGraphCheckpointWriteOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for searching for LangGraphCheckpointWrites.
-     */
-    cursor?: LangGraphCheckpointWriteWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` LangGraphCheckpointWrites from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` LangGraphCheckpointWrites.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of LangGraphCheckpointWrites.
-     */
-    distinct?: LangGraphCheckpointWriteScalarFieldEnum | LangGraphCheckpointWriteScalarFieldEnum[]
-  }
-
-  /**
-   * LangGraphCheckpointWrite findMany
-   */
-  export type LangGraphCheckpointWriteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * Filter, which LangGraphCheckpointWrites to fetch.
-     */
-    where?: LangGraphCheckpointWriteWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of LangGraphCheckpointWrites to fetch.
-     */
-    orderBy?: LangGraphCheckpointWriteOrderByWithRelationInput | LangGraphCheckpointWriteOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for listing LangGraphCheckpointWrites.
-     */
-    cursor?: LangGraphCheckpointWriteWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` LangGraphCheckpointWrites from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` LangGraphCheckpointWrites.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of LangGraphCheckpointWrites.
-     */
-    distinct?: LangGraphCheckpointWriteScalarFieldEnum | LangGraphCheckpointWriteScalarFieldEnum[]
-  }
-
-  /**
-   * LangGraphCheckpointWrite create
-   */
-  export type LangGraphCheckpointWriteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * The data needed to create a LangGraphCheckpointWrite.
-     */
-    data: XOR<LangGraphCheckpointWriteCreateInput, LangGraphCheckpointWriteUncheckedCreateInput>
-  }
-
-  /**
-   * LangGraphCheckpointWrite createMany
-   */
-  export type LangGraphCheckpointWriteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many LangGraphCheckpointWrites.
-     */
-    data: LangGraphCheckpointWriteCreateManyInput | LangGraphCheckpointWriteCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * LangGraphCheckpointWrite createManyAndReturn
-   */
-  export type LangGraphCheckpointWriteCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * The data used to create many LangGraphCheckpointWrites.
-     */
-    data: LangGraphCheckpointWriteCreateManyInput | LangGraphCheckpointWriteCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * LangGraphCheckpointWrite update
-   */
-  export type LangGraphCheckpointWriteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * The data needed to update a LangGraphCheckpointWrite.
-     */
-    data: XOR<LangGraphCheckpointWriteUpdateInput, LangGraphCheckpointWriteUncheckedUpdateInput>
-    /**
-     * Choose, which LangGraphCheckpointWrite to update.
-     */
-    where: LangGraphCheckpointWriteWhereUniqueInput
-  }
-
-  /**
-   * LangGraphCheckpointWrite updateMany
-   */
-  export type LangGraphCheckpointWriteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update LangGraphCheckpointWrites.
-     */
-    data: XOR<LangGraphCheckpointWriteUpdateManyMutationInput, LangGraphCheckpointWriteUncheckedUpdateManyInput>
-    /**
-     * Filter which LangGraphCheckpointWrites to update
-     */
-    where?: LangGraphCheckpointWriteWhereInput
-    /**
-     * Limit how many LangGraphCheckpointWrites to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * LangGraphCheckpointWrite updateManyAndReturn
-   */
-  export type LangGraphCheckpointWriteUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * The data used to update LangGraphCheckpointWrites.
-     */
-    data: XOR<LangGraphCheckpointWriteUpdateManyMutationInput, LangGraphCheckpointWriteUncheckedUpdateManyInput>
-    /**
-     * Filter which LangGraphCheckpointWrites to update
-     */
-    where?: LangGraphCheckpointWriteWhereInput
-    /**
-     * Limit how many LangGraphCheckpointWrites to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * LangGraphCheckpointWrite upsert
-   */
-  export type LangGraphCheckpointWriteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * The filter to search for the LangGraphCheckpointWrite to update in case it exists.
-     */
-    where: LangGraphCheckpointWriteWhereUniqueInput
-    /**
-     * In case the LangGraphCheckpointWrite found by the `where` argument doesn't exist, create a new LangGraphCheckpointWrite with this data.
-     */
-    create: XOR<LangGraphCheckpointWriteCreateInput, LangGraphCheckpointWriteUncheckedCreateInput>
-    /**
-     * In case the LangGraphCheckpointWrite was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<LangGraphCheckpointWriteUpdateInput, LangGraphCheckpointWriteUncheckedUpdateInput>
-  }
-
-  /**
-   * LangGraphCheckpointWrite delete
-   */
-  export type LangGraphCheckpointWriteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
-    /**
-     * Filter which LangGraphCheckpointWrite to delete.
-     */
-    where: LangGraphCheckpointWriteWhereUniqueInput
-  }
-
-  /**
-   * LangGraphCheckpointWrite deleteMany
-   */
-  export type LangGraphCheckpointWriteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which LangGraphCheckpointWrites to delete
-     */
-    where?: LangGraphCheckpointWriteWhereInput
-    /**
-     * Limit how many LangGraphCheckpointWrites to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * LangGraphCheckpointWrite without action
-   */
-  export type LangGraphCheckpointWriteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LangGraphCheckpointWrite
-     */
-    select?: LangGraphCheckpointWriteSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LangGraphCheckpointWrite
-     */
-    omit?: LangGraphCheckpointWriteOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LangGraphCheckpointWriteInclude<ExtArgs> | null
   }
 
 
@@ -120800,6 +116945,13 @@ export namespace Prisma {
     identityId: 'identityId',
     taskType: 'taskType',
     status: 'status',
+    conversationId: 'conversationId',
+    runId: 'runId',
+    requestId: 'requestId',
+    traceId: 'traceId',
+    providerId: 'providerId',
+    model: 'model',
+    estimatedCostUsd: 'estimatedCostUsd',
     input: 'input',
     result: 'result',
     error: 'error',
@@ -120907,64 +117059,6 @@ export namespace Prisma {
   };
 
   export type DashboardConfigScalarFieldEnum = (typeof DashboardConfigScalarFieldEnum)[keyof typeof DashboardConfigScalarFieldEnum]
-
-
-  export const AgentRunCheckpointScalarFieldEnum: {
-    id: 'id',
-    runId: 'runId',
-    identityId: 'identityId',
-    conversationId: 'conversationId',
-    threadId: 'threadId',
-    agentType: 'agentType',
-    status: 'status',
-    runMetadata: 'runMetadata',
-    stateSnapshot: 'stateSnapshot',
-    events: 'events',
-    interrupts: 'interrupts',
-    version: 'version',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt'
-  };
-
-  export type AgentRunCheckpointScalarFieldEnum = (typeof AgentRunCheckpointScalarFieldEnum)[keyof typeof AgentRunCheckpointScalarFieldEnum]
-
-
-  export const LangGraphCheckpointScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    agentType: 'agentType',
-    threadId: 'threadId',
-    checkpointNs: 'checkpointNs',
-    checkpointId: 'checkpointId',
-    parentCheckpointId: 'parentCheckpointId',
-    checkpointType: 'checkpointType',
-    checkpointBlob: 'checkpointBlob',
-    metadataType: 'metadataType',
-    metadataBlob: 'metadataBlob',
-    createdAt: 'createdAt'
-  };
-
-  export type LangGraphCheckpointScalarFieldEnum = (typeof LangGraphCheckpointScalarFieldEnum)[keyof typeof LangGraphCheckpointScalarFieldEnum]
-
-
-  export const LangGraphCheckpointWriteScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    agentType: 'agentType',
-    threadId: 'threadId',
-    checkpointNs: 'checkpointNs',
-    checkpointId: 'checkpointId',
-    taskId: 'taskId',
-    taskPath: 'taskPath',
-    idx: 'idx',
-    channel: 'channel',
-    valueType: 'valueType',
-    valueBlob: 'valueBlob',
-    createdAt: 'createdAt'
-  };
-
-  export type LangGraphCheckpointWriteScalarFieldEnum = (typeof LangGraphCheckpointWriteScalarFieldEnum)[keyof typeof LangGraphCheckpointWriteScalarFieldEnum]
 
 
   export const CloudAuthUserScalarFieldEnum: {
@@ -122567,20 +118661,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Bytes'
-   */
-  export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
-
-
-
-  /**
-   * Reference to a field of type 'Bytes[]'
-   */
-  export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
-
-
-
-  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -122605,6 +118685,20 @@ export namespace Prisma {
    * Reference to a field of type 'BigInt[]'
    */
   export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+
+
+
+  /**
+   * Reference to a field of type 'Bytes'
+   */
+  export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+
+
+
+  /**
+   * Reference to a field of type 'Bytes[]'
+   */
+  export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
 
 
 
@@ -122683,9 +118777,6 @@ export namespace Prisma {
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
-    agentRunCheckpoints?: AgentRunCheckpointListRelationFilter
-    langGraphCheckpoints?: LangGraphCheckpointListRelationFilter
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteListRelationFilter
     taskDependencies?: TaskDependencyListRelationFilter
     taskTemplateHistory?: TaskTemplateHistoryListRelationFilter
     scheduleExecutions?: ScheduleExecutionListRelationFilter
@@ -122758,9 +118849,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaOrderByWithRelationInput
     aiProviderConfigs?: AiProviderConfigOrderByRelationAggregateInput
     dashboardConfigs?: DashboardConfigOrderByWithRelationInput
-    agentRunCheckpoints?: AgentRunCheckpointOrderByRelationAggregateInput
-    langGraphCheckpoints?: LangGraphCheckpointOrderByRelationAggregateInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteOrderByRelationAggregateInput
     taskDependencies?: TaskDependencyOrderByRelationAggregateInput
     taskTemplateHistory?: TaskTemplateHistoryOrderByRelationAggregateInput
     scheduleExecutions?: ScheduleExecutionOrderByRelationAggregateInput
@@ -122836,9 +118924,6 @@ export namespace Prisma {
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
-    agentRunCheckpoints?: AgentRunCheckpointListRelationFilter
-    langGraphCheckpoints?: LangGraphCheckpointListRelationFilter
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteListRelationFilter
     taskDependencies?: TaskDependencyListRelationFilter
     taskTemplateHistory?: TaskTemplateHistoryListRelationFilter
     scheduleExecutions?: ScheduleExecutionListRelationFilter
@@ -123160,6 +119245,13 @@ export namespace Prisma {
     identityId?: StringFilter<"AiGenerationTask"> | string
     taskType?: StringFilter<"AiGenerationTask"> | string
     status?: StringFilter<"AiGenerationTask"> | string
+    conversationId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    runId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    requestId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    traceId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    providerId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    model?: StringNullableFilter<"AiGenerationTask"> | string | null
+    estimatedCostUsd?: FloatNullableFilter<"AiGenerationTask"> | number | null
     input?: StringFilter<"AiGenerationTask"> | string
     result?: StringNullableFilter<"AiGenerationTask"> | string | null
     error?: StringNullableFilter<"AiGenerationTask"> | string | null
@@ -123179,6 +119271,13 @@ export namespace Prisma {
     identityId?: SortOrder
     taskType?: SortOrder
     status?: SortOrder
+    conversationId?: SortOrderInput | SortOrder
+    runId?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
+    traceId?: SortOrderInput | SortOrder
+    providerId?: SortOrderInput | SortOrder
+    model?: SortOrderInput | SortOrder
+    estimatedCostUsd?: SortOrderInput | SortOrder
     input?: SortOrder
     result?: SortOrderInput | SortOrder
     error?: SortOrderInput | SortOrder
@@ -123201,6 +119300,13 @@ export namespace Prisma {
     identityId?: StringFilter<"AiGenerationTask"> | string
     taskType?: StringFilter<"AiGenerationTask"> | string
     status?: StringFilter<"AiGenerationTask"> | string
+    conversationId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    runId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    requestId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    traceId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    providerId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    model?: StringNullableFilter<"AiGenerationTask"> | string | null
+    estimatedCostUsd?: FloatNullableFilter<"AiGenerationTask"> | number | null
     input?: StringFilter<"AiGenerationTask"> | string
     result?: StringNullableFilter<"AiGenerationTask"> | string | null
     error?: StringNullableFilter<"AiGenerationTask"> | string | null
@@ -123220,6 +119326,13 @@ export namespace Prisma {
     identityId?: SortOrder
     taskType?: SortOrder
     status?: SortOrder
+    conversationId?: SortOrderInput | SortOrder
+    runId?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
+    traceId?: SortOrderInput | SortOrder
+    providerId?: SortOrderInput | SortOrder
+    model?: SortOrderInput | SortOrder
+    estimatedCostUsd?: SortOrderInput | SortOrder
     input?: SortOrder
     result?: SortOrderInput | SortOrder
     error?: SortOrderInput | SortOrder
@@ -123246,6 +119359,13 @@ export namespace Prisma {
     identityId?: StringWithAggregatesFilter<"AiGenerationTask"> | string
     taskType?: StringWithAggregatesFilter<"AiGenerationTask"> | string
     status?: StringWithAggregatesFilter<"AiGenerationTask"> | string
+    conversationId?: StringNullableWithAggregatesFilter<"AiGenerationTask"> | string | null
+    runId?: StringNullableWithAggregatesFilter<"AiGenerationTask"> | string | null
+    requestId?: StringNullableWithAggregatesFilter<"AiGenerationTask"> | string | null
+    traceId?: StringNullableWithAggregatesFilter<"AiGenerationTask"> | string | null
+    providerId?: StringNullableWithAggregatesFilter<"AiGenerationTask"> | string | null
+    model?: StringNullableWithAggregatesFilter<"AiGenerationTask"> | string | null
+    estimatedCostUsd?: FloatNullableWithAggregatesFilter<"AiGenerationTask"> | number | null
     input?: StringWithAggregatesFilter<"AiGenerationTask"> | string
     result?: StringNullableWithAggregatesFilter<"AiGenerationTask"> | string | null
     error?: StringNullableWithAggregatesFilter<"AiGenerationTask"> | string | null
@@ -123728,302 +119848,6 @@ export namespace Prisma {
     widgetConfig?: JsonWithAggregatesFilter<"DashboardConfig">
     createdAt?: DateTimeWithAggregatesFilter<"DashboardConfig"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DashboardConfig"> | Date | string
-  }
-
-  export type AgentRunCheckpointWhereInput = {
-    AND?: AgentRunCheckpointWhereInput | AgentRunCheckpointWhereInput[]
-    OR?: AgentRunCheckpointWhereInput[]
-    NOT?: AgentRunCheckpointWhereInput | AgentRunCheckpointWhereInput[]
-    id?: StringFilter<"AgentRunCheckpoint"> | string
-    runId?: StringFilter<"AgentRunCheckpoint"> | string
-    identityId?: StringFilter<"AgentRunCheckpoint"> | string
-    conversationId?: StringNullableFilter<"AgentRunCheckpoint"> | string | null
-    threadId?: StringFilter<"AgentRunCheckpoint"> | string
-    agentType?: StringFilter<"AgentRunCheckpoint"> | string
-    status?: StringFilter<"AgentRunCheckpoint"> | string
-    runMetadata?: JsonFilter<"AgentRunCheckpoint">
-    stateSnapshot?: JsonNullableFilter<"AgentRunCheckpoint">
-    events?: JsonFilter<"AgentRunCheckpoint">
-    interrupts?: JsonFilter<"AgentRunCheckpoint">
-    version?: IntFilter<"AgentRunCheckpoint"> | number
-    createdAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
-    updatedAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"AgentRunCheckpoint"> | Date | string | null
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }
-
-  export type AgentRunCheckpointOrderByWithRelationInput = {
-    id?: SortOrder
-    runId?: SortOrder
-    identityId?: SortOrder
-    conversationId?: SortOrderInput | SortOrder
-    threadId?: SortOrder
-    agentType?: SortOrder
-    status?: SortOrder
-    runMetadata?: SortOrder
-    stateSnapshot?: SortOrderInput | SortOrder
-    events?: SortOrder
-    interrupts?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    account?: AccountOrderByWithRelationInput
-  }
-
-  export type AgentRunCheckpointWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    runId?: string
-    AND?: AgentRunCheckpointWhereInput | AgentRunCheckpointWhereInput[]
-    OR?: AgentRunCheckpointWhereInput[]
-    NOT?: AgentRunCheckpointWhereInput | AgentRunCheckpointWhereInput[]
-    identityId?: StringFilter<"AgentRunCheckpoint"> | string
-    conversationId?: StringNullableFilter<"AgentRunCheckpoint"> | string | null
-    threadId?: StringFilter<"AgentRunCheckpoint"> | string
-    agentType?: StringFilter<"AgentRunCheckpoint"> | string
-    status?: StringFilter<"AgentRunCheckpoint"> | string
-    runMetadata?: JsonFilter<"AgentRunCheckpoint">
-    stateSnapshot?: JsonNullableFilter<"AgentRunCheckpoint">
-    events?: JsonFilter<"AgentRunCheckpoint">
-    interrupts?: JsonFilter<"AgentRunCheckpoint">
-    version?: IntFilter<"AgentRunCheckpoint"> | number
-    createdAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
-    updatedAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"AgentRunCheckpoint"> | Date | string | null
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }, "id" | "runId">
-
-  export type AgentRunCheckpointOrderByWithAggregationInput = {
-    id?: SortOrder
-    runId?: SortOrder
-    identityId?: SortOrder
-    conversationId?: SortOrderInput | SortOrder
-    threadId?: SortOrder
-    agentType?: SortOrder
-    status?: SortOrder
-    runMetadata?: SortOrder
-    stateSnapshot?: SortOrderInput | SortOrder
-    events?: SortOrder
-    interrupts?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    _count?: AgentRunCheckpointCountOrderByAggregateInput
-    _avg?: AgentRunCheckpointAvgOrderByAggregateInput
-    _max?: AgentRunCheckpointMaxOrderByAggregateInput
-    _min?: AgentRunCheckpointMinOrderByAggregateInput
-    _sum?: AgentRunCheckpointSumOrderByAggregateInput
-  }
-
-  export type AgentRunCheckpointScalarWhereWithAggregatesInput = {
-    AND?: AgentRunCheckpointScalarWhereWithAggregatesInput | AgentRunCheckpointScalarWhereWithAggregatesInput[]
-    OR?: AgentRunCheckpointScalarWhereWithAggregatesInput[]
-    NOT?: AgentRunCheckpointScalarWhereWithAggregatesInput | AgentRunCheckpointScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
-    runId?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
-    identityId?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
-    conversationId?: StringNullableWithAggregatesFilter<"AgentRunCheckpoint"> | string | null
-    threadId?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
-    agentType?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
-    status?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
-    runMetadata?: JsonWithAggregatesFilter<"AgentRunCheckpoint">
-    stateSnapshot?: JsonNullableWithAggregatesFilter<"AgentRunCheckpoint">
-    events?: JsonWithAggregatesFilter<"AgentRunCheckpoint">
-    interrupts?: JsonWithAggregatesFilter<"AgentRunCheckpoint">
-    version?: IntWithAggregatesFilter<"AgentRunCheckpoint"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"AgentRunCheckpoint"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"AgentRunCheckpoint"> | Date | string
-    deletedAt?: DateTimeNullableWithAggregatesFilter<"AgentRunCheckpoint"> | Date | string | null
-  }
-
-  export type LangGraphCheckpointWhereInput = {
-    AND?: LangGraphCheckpointWhereInput | LangGraphCheckpointWhereInput[]
-    OR?: LangGraphCheckpointWhereInput[]
-    NOT?: LangGraphCheckpointWhereInput | LangGraphCheckpointWhereInput[]
-    id?: StringFilter<"LangGraphCheckpoint"> | string
-    identityId?: StringFilter<"LangGraphCheckpoint"> | string
-    agentType?: StringFilter<"LangGraphCheckpoint"> | string
-    threadId?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointNs?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointId?: StringFilter<"LangGraphCheckpoint"> | string
-    parentCheckpointId?: StringNullableFilter<"LangGraphCheckpoint"> | string | null
-    checkpointType?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointBlob?: BytesFilter<"LangGraphCheckpoint"> | Bytes
-    metadataType?: StringFilter<"LangGraphCheckpoint"> | string
-    metadataBlob?: BytesFilter<"LangGraphCheckpoint"> | Bytes
-    createdAt?: DateTimeFilter<"LangGraphCheckpoint"> | Date | string
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }
-
-  export type LangGraphCheckpointOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    parentCheckpointId?: SortOrderInput | SortOrder
-    checkpointType?: SortOrder
-    checkpointBlob?: SortOrder
-    metadataType?: SortOrder
-    metadataBlob?: SortOrder
-    createdAt?: SortOrder
-    account?: AccountOrderByWithRelationInput
-  }
-
-  export type LangGraphCheckpointWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    identityId_agentType_threadId_checkpointNs_checkpointId?: LangGraphCheckpointIdentityIdAgentTypeThreadIdCheckpointNsCheckpointIdCompoundUniqueInput
-    AND?: LangGraphCheckpointWhereInput | LangGraphCheckpointWhereInput[]
-    OR?: LangGraphCheckpointWhereInput[]
-    NOT?: LangGraphCheckpointWhereInput | LangGraphCheckpointWhereInput[]
-    identityId?: StringFilter<"LangGraphCheckpoint"> | string
-    agentType?: StringFilter<"LangGraphCheckpoint"> | string
-    threadId?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointNs?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointId?: StringFilter<"LangGraphCheckpoint"> | string
-    parentCheckpointId?: StringNullableFilter<"LangGraphCheckpoint"> | string | null
-    checkpointType?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointBlob?: BytesFilter<"LangGraphCheckpoint"> | Bytes
-    metadataType?: StringFilter<"LangGraphCheckpoint"> | string
-    metadataBlob?: BytesFilter<"LangGraphCheckpoint"> | Bytes
-    createdAt?: DateTimeFilter<"LangGraphCheckpoint"> | Date | string
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }, "id" | "identityId_agentType_threadId_checkpointNs_checkpointId">
-
-  export type LangGraphCheckpointOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    parentCheckpointId?: SortOrderInput | SortOrder
-    checkpointType?: SortOrder
-    checkpointBlob?: SortOrder
-    metadataType?: SortOrder
-    metadataBlob?: SortOrder
-    createdAt?: SortOrder
-    _count?: LangGraphCheckpointCountOrderByAggregateInput
-    _max?: LangGraphCheckpointMaxOrderByAggregateInput
-    _min?: LangGraphCheckpointMinOrderByAggregateInput
-  }
-
-  export type LangGraphCheckpointScalarWhereWithAggregatesInput = {
-    AND?: LangGraphCheckpointScalarWhereWithAggregatesInput | LangGraphCheckpointScalarWhereWithAggregatesInput[]
-    OR?: LangGraphCheckpointScalarWhereWithAggregatesInput[]
-    NOT?: LangGraphCheckpointScalarWhereWithAggregatesInput | LangGraphCheckpointScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"LangGraphCheckpoint"> | string
-    identityId?: StringWithAggregatesFilter<"LangGraphCheckpoint"> | string
-    agentType?: StringWithAggregatesFilter<"LangGraphCheckpoint"> | string
-    threadId?: StringWithAggregatesFilter<"LangGraphCheckpoint"> | string
-    checkpointNs?: StringWithAggregatesFilter<"LangGraphCheckpoint"> | string
-    checkpointId?: StringWithAggregatesFilter<"LangGraphCheckpoint"> | string
-    parentCheckpointId?: StringNullableWithAggregatesFilter<"LangGraphCheckpoint"> | string | null
-    checkpointType?: StringWithAggregatesFilter<"LangGraphCheckpoint"> | string
-    checkpointBlob?: BytesWithAggregatesFilter<"LangGraphCheckpoint"> | Bytes
-    metadataType?: StringWithAggregatesFilter<"LangGraphCheckpoint"> | string
-    metadataBlob?: BytesWithAggregatesFilter<"LangGraphCheckpoint"> | Bytes
-    createdAt?: DateTimeWithAggregatesFilter<"LangGraphCheckpoint"> | Date | string
-  }
-
-  export type LangGraphCheckpointWriteWhereInput = {
-    AND?: LangGraphCheckpointWriteWhereInput | LangGraphCheckpointWriteWhereInput[]
-    OR?: LangGraphCheckpointWriteWhereInput[]
-    NOT?: LangGraphCheckpointWriteWhereInput | LangGraphCheckpointWriteWhereInput[]
-    id?: StringFilter<"LangGraphCheckpointWrite"> | string
-    identityId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    agentType?: StringFilter<"LangGraphCheckpointWrite"> | string
-    threadId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    checkpointNs?: StringFilter<"LangGraphCheckpointWrite"> | string
-    checkpointId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    taskId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    taskPath?: StringFilter<"LangGraphCheckpointWrite"> | string
-    idx?: IntFilter<"LangGraphCheckpointWrite"> | number
-    channel?: StringFilter<"LangGraphCheckpointWrite"> | string
-    valueType?: StringFilter<"LangGraphCheckpointWrite"> | string
-    valueBlob?: BytesFilter<"LangGraphCheckpointWrite"> | Bytes
-    createdAt?: DateTimeFilter<"LangGraphCheckpointWrite"> | Date | string
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }
-
-  export type LangGraphCheckpointWriteOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    taskId?: SortOrder
-    taskPath?: SortOrder
-    idx?: SortOrder
-    channel?: SortOrder
-    valueType?: SortOrder
-    valueBlob?: SortOrder
-    createdAt?: SortOrder
-    account?: AccountOrderByWithRelationInput
-  }
-
-  export type LangGraphCheckpointWriteWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    identityId_agentType_threadId_checkpointNs_checkpointId_taskId_idx?: LangGraphCheckpointWriteIdentityIdAgentTypeThreadIdCheckpointNsCheckpointIdTaskIdIdxCompoundUniqueInput
-    AND?: LangGraphCheckpointWriteWhereInput | LangGraphCheckpointWriteWhereInput[]
-    OR?: LangGraphCheckpointWriteWhereInput[]
-    NOT?: LangGraphCheckpointWriteWhereInput | LangGraphCheckpointWriteWhereInput[]
-    identityId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    agentType?: StringFilter<"LangGraphCheckpointWrite"> | string
-    threadId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    checkpointNs?: StringFilter<"LangGraphCheckpointWrite"> | string
-    checkpointId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    taskId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    taskPath?: StringFilter<"LangGraphCheckpointWrite"> | string
-    idx?: IntFilter<"LangGraphCheckpointWrite"> | number
-    channel?: StringFilter<"LangGraphCheckpointWrite"> | string
-    valueType?: StringFilter<"LangGraphCheckpointWrite"> | string
-    valueBlob?: BytesFilter<"LangGraphCheckpointWrite"> | Bytes
-    createdAt?: DateTimeFilter<"LangGraphCheckpointWrite"> | Date | string
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }, "id" | "identityId_agentType_threadId_checkpointNs_checkpointId_taskId_idx">
-
-  export type LangGraphCheckpointWriteOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    taskId?: SortOrder
-    taskPath?: SortOrder
-    idx?: SortOrder
-    channel?: SortOrder
-    valueType?: SortOrder
-    valueBlob?: SortOrder
-    createdAt?: SortOrder
-    _count?: LangGraphCheckpointWriteCountOrderByAggregateInput
-    _avg?: LangGraphCheckpointWriteAvgOrderByAggregateInput
-    _max?: LangGraphCheckpointWriteMaxOrderByAggregateInput
-    _min?: LangGraphCheckpointWriteMinOrderByAggregateInput
-    _sum?: LangGraphCheckpointWriteSumOrderByAggregateInput
-  }
-
-  export type LangGraphCheckpointWriteScalarWhereWithAggregatesInput = {
-    AND?: LangGraphCheckpointWriteScalarWhereWithAggregatesInput | LangGraphCheckpointWriteScalarWhereWithAggregatesInput[]
-    OR?: LangGraphCheckpointWriteScalarWhereWithAggregatesInput[]
-    NOT?: LangGraphCheckpointWriteScalarWhereWithAggregatesInput | LangGraphCheckpointWriteScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    identityId?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    agentType?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    threadId?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    checkpointNs?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    checkpointId?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    taskId?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    taskPath?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    idx?: IntWithAggregatesFilter<"LangGraphCheckpointWrite"> | number
-    channel?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    valueType?: StringWithAggregatesFilter<"LangGraphCheckpointWrite"> | string
-    valueBlob?: BytesWithAggregatesFilter<"LangGraphCheckpointWrite"> | Bytes
-    createdAt?: DateTimeWithAggregatesFilter<"LangGraphCheckpointWrite"> | Date | string
   }
 
   export type CloudAuthUserWhereInput = {
@@ -131817,9 +127641,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -131891,9 +127712,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -131965,9 +127783,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -132039,9 +127854,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -132395,6 +128207,13 @@ export namespace Prisma {
     id: string
     taskType: string
     status: string
+    conversationId?: string | null
+    runId?: string | null
+    requestId?: string | null
+    traceId?: string | null
+    providerId?: string | null
+    model?: string | null
+    estimatedCostUsd?: number | null
     input: string
     result?: string | null
     error?: string | null
@@ -132414,6 +128233,13 @@ export namespace Prisma {
     identityId: string
     taskType: string
     status: string
+    conversationId?: string | null
+    runId?: string | null
+    requestId?: string | null
+    traceId?: string | null
+    providerId?: string | null
+    model?: string | null
+    estimatedCostUsd?: number | null
     input: string
     result?: string | null
     error?: string | null
@@ -132431,6 +128257,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     taskType?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    runId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    traceId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCostUsd?: NullableFloatFieldUpdateOperationsInput | number | null
     input?: StringFieldUpdateOperationsInput | string
     result?: NullableStringFieldUpdateOperationsInput | string | null
     error?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132450,6 +128283,13 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     taskType?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    runId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    traceId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCostUsd?: NullableFloatFieldUpdateOperationsInput | number | null
     input?: StringFieldUpdateOperationsInput | string
     result?: NullableStringFieldUpdateOperationsInput | string | null
     error?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132468,6 +128308,13 @@ export namespace Prisma {
     identityId: string
     taskType: string
     status: string
+    conversationId?: string | null
+    runId?: string | null
+    requestId?: string | null
+    traceId?: string | null
+    providerId?: string | null
+    model?: string | null
+    estimatedCostUsd?: number | null
     input: string
     result?: string | null
     error?: string | null
@@ -132485,6 +128332,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     taskType?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    runId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    traceId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCostUsd?: NullableFloatFieldUpdateOperationsInput | number | null
     input?: StringFieldUpdateOperationsInput | string
     result?: NullableStringFieldUpdateOperationsInput | string | null
     error?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132503,6 +128357,13 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     taskType?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    runId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    traceId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCostUsd?: NullableFloatFieldUpdateOperationsInput | number | null
     input?: StringFieldUpdateOperationsInput | string
     result?: NullableStringFieldUpdateOperationsInput | string | null
     error?: NullableStringFieldUpdateOperationsInput | string | null
@@ -133053,346 +128914,6 @@ export namespace Prisma {
     widgetConfig?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AgentRunCheckpointCreateInput = {
-    id: string
-    runId: string
-    conversationId?: string | null
-    threadId: string
-    agentType: string
-    status: string
-    runMetadata: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    account: AccountCreateNestedOneWithoutAgentRunCheckpointsInput
-  }
-
-  export type AgentRunCheckpointUncheckedCreateInput = {
-    id: string
-    runId: string
-    identityId: string
-    conversationId?: string | null
-    threadId: string
-    agentType: string
-    status: string
-    runMetadata: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type AgentRunCheckpointUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    runId?: StringFieldUpdateOperationsInput | string
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    threadId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    runMetadata?: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    account?: AccountUpdateOneRequiredWithoutAgentRunCheckpointsNestedInput
-  }
-
-  export type AgentRunCheckpointUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    runId?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    threadId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    runMetadata?: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AgentRunCheckpointCreateManyInput = {
-    id: string
-    runId: string
-    identityId: string
-    conversationId?: string | null
-    threadId: string
-    agentType: string
-    status: string
-    runMetadata: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type AgentRunCheckpointUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    runId?: StringFieldUpdateOperationsInput | string
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    threadId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    runMetadata?: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AgentRunCheckpointUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    runId?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    threadId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    runMetadata?: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type LangGraphCheckpointCreateInput = {
-    id: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    parentCheckpointId?: string | null
-    checkpointType: string
-    checkpointBlob: Bytes
-    metadataType: string
-    metadataBlob: Bytes
-    createdAt?: Date | string
-    account: AccountCreateNestedOneWithoutLangGraphCheckpointsInput
-  }
-
-  export type LangGraphCheckpointUncheckedCreateInput = {
-    id: string
-    identityId: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    parentCheckpointId?: string | null
-    checkpointType: string
-    checkpointBlob: Bytes
-    metadataType: string
-    metadataBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    parentCheckpointId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkpointType?: StringFieldUpdateOperationsInput | string
-    checkpointBlob?: BytesFieldUpdateOperationsInput | Bytes
-    metadataType?: StringFieldUpdateOperationsInput | string
-    metadataBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    account?: AccountUpdateOneRequiredWithoutLangGraphCheckpointsNestedInput
-  }
-
-  export type LangGraphCheckpointUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    parentCheckpointId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkpointType?: StringFieldUpdateOperationsInput | string
-    checkpointBlob?: BytesFieldUpdateOperationsInput | Bytes
-    metadataType?: StringFieldUpdateOperationsInput | string
-    metadataBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointCreateManyInput = {
-    id: string
-    identityId: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    parentCheckpointId?: string | null
-    checkpointType: string
-    checkpointBlob: Bytes
-    metadataType: string
-    metadataBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    parentCheckpointId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkpointType?: StringFieldUpdateOperationsInput | string
-    checkpointBlob?: BytesFieldUpdateOperationsInput | Bytes
-    metadataType?: StringFieldUpdateOperationsInput | string
-    metadataBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    parentCheckpointId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkpointType?: StringFieldUpdateOperationsInput | string
-    checkpointBlob?: BytesFieldUpdateOperationsInput | Bytes
-    metadataType?: StringFieldUpdateOperationsInput | string
-    metadataBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointWriteCreateInput = {
-    id: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    taskId: string
-    taskPath?: string
-    idx: number
-    channel: string
-    valueType: string
-    valueBlob: Bytes
-    createdAt?: Date | string
-    account: AccountCreateNestedOneWithoutLangGraphCheckpointWritesInput
-  }
-
-  export type LangGraphCheckpointWriteUncheckedCreateInput = {
-    id: string
-    identityId: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    taskId: string
-    taskPath?: string
-    idx: number
-    channel: string
-    valueType: string
-    valueBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointWriteUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    taskId?: StringFieldUpdateOperationsInput | string
-    taskPath?: StringFieldUpdateOperationsInput | string
-    idx?: IntFieldUpdateOperationsInput | number
-    channel?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    valueBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    account?: AccountUpdateOneRequiredWithoutLangGraphCheckpointWritesNestedInput
-  }
-
-  export type LangGraphCheckpointWriteUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    taskId?: StringFieldUpdateOperationsInput | string
-    taskPath?: StringFieldUpdateOperationsInput | string
-    idx?: IntFieldUpdateOperationsInput | number
-    channel?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    valueBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointWriteCreateManyInput = {
-    id: string
-    identityId: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    taskId: string
-    taskPath?: string
-    idx: number
-    channel: string
-    valueType: string
-    valueBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointWriteUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    taskId?: StringFieldUpdateOperationsInput | string
-    taskPath?: StringFieldUpdateOperationsInput | string
-    idx?: IntFieldUpdateOperationsInput | number
-    channel?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    valueBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointWriteUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    taskId?: StringFieldUpdateOperationsInput | string
-    taskPath?: StringFieldUpdateOperationsInput | string
-    idx?: IntFieldUpdateOperationsInput | number
-    channel?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    valueBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CloudAuthUserCreateInput = {
@@ -142555,24 +138076,6 @@ export namespace Prisma {
     isNot?: DashboardConfigWhereInput | null
   }
 
-  export type AgentRunCheckpointListRelationFilter = {
-    every?: AgentRunCheckpointWhereInput
-    some?: AgentRunCheckpointWhereInput
-    none?: AgentRunCheckpointWhereInput
-  }
-
-  export type LangGraphCheckpointListRelationFilter = {
-    every?: LangGraphCheckpointWhereInput
-    some?: LangGraphCheckpointWhereInput
-    none?: LangGraphCheckpointWhereInput
-  }
-
-  export type LangGraphCheckpointWriteListRelationFilter = {
-    every?: LangGraphCheckpointWriteWhereInput
-    some?: LangGraphCheckpointWriteWhereInput
-    none?: LangGraphCheckpointWriteWhereInput
-  }
-
   export type TaskDependencyListRelationFilter = {
     every?: TaskDependencyWhereInput
     some?: TaskDependencyWhereInput
@@ -142777,18 +138280,6 @@ export namespace Prisma {
   }
 
   export type AiProviderConfigOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type AgentRunCheckpointOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type LangGraphCheckpointOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type LangGraphCheckpointWriteOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -143175,6 +138666,17 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -143191,6 +138693,13 @@ export namespace Prisma {
     identityId?: SortOrder
     taskType?: SortOrder
     status?: SortOrder
+    conversationId?: SortOrder
+    runId?: SortOrder
+    requestId?: SortOrder
+    traceId?: SortOrder
+    providerId?: SortOrder
+    model?: SortOrder
+    estimatedCostUsd?: SortOrder
     input?: SortOrder
     result?: SortOrder
     error?: SortOrder
@@ -143205,6 +138714,7 @@ export namespace Prisma {
   }
 
   export type AiGenerationTaskAvgOrderByAggregateInput = {
+    estimatedCostUsd?: SortOrder
     retryCount?: SortOrder
     processingMs?: SortOrder
     version?: SortOrder
@@ -143215,6 +138725,13 @@ export namespace Prisma {
     identityId?: SortOrder
     taskType?: SortOrder
     status?: SortOrder
+    conversationId?: SortOrder
+    runId?: SortOrder
+    requestId?: SortOrder
+    traceId?: SortOrder
+    providerId?: SortOrder
+    model?: SortOrder
+    estimatedCostUsd?: SortOrder
     input?: SortOrder
     result?: SortOrder
     error?: SortOrder
@@ -143233,6 +138750,13 @@ export namespace Prisma {
     identityId?: SortOrder
     taskType?: SortOrder
     status?: SortOrder
+    conversationId?: SortOrder
+    runId?: SortOrder
+    requestId?: SortOrder
+    traceId?: SortOrder
+    providerId?: SortOrder
+    model?: SortOrder
+    estimatedCostUsd?: SortOrder
     input?: SortOrder
     result?: SortOrder
     error?: SortOrder
@@ -143247,9 +138771,26 @@ export namespace Prisma {
   }
 
   export type AiGenerationTaskSumOrderByAggregateInput = {
+    estimatedCostUsd?: SortOrder
     retryCount?: SortOrder
     processingMs?: SortOrder
     version?: SortOrder
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -143590,196 +139131,6 @@ export namespace Prisma {
 
   export type DashboardConfigSumOrderByAggregateInput = {
     id?: SortOrder
-  }
-
-  export type AgentRunCheckpointCountOrderByAggregateInput = {
-    id?: SortOrder
-    runId?: SortOrder
-    identityId?: SortOrder
-    conversationId?: SortOrder
-    threadId?: SortOrder
-    agentType?: SortOrder
-    status?: SortOrder
-    runMetadata?: SortOrder
-    stateSnapshot?: SortOrder
-    events?: SortOrder
-    interrupts?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type AgentRunCheckpointAvgOrderByAggregateInput = {
-    version?: SortOrder
-  }
-
-  export type AgentRunCheckpointMaxOrderByAggregateInput = {
-    id?: SortOrder
-    runId?: SortOrder
-    identityId?: SortOrder
-    conversationId?: SortOrder
-    threadId?: SortOrder
-    agentType?: SortOrder
-    status?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type AgentRunCheckpointMinOrderByAggregateInput = {
-    id?: SortOrder
-    runId?: SortOrder
-    identityId?: SortOrder
-    conversationId?: SortOrder
-    threadId?: SortOrder
-    agentType?: SortOrder
-    status?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type AgentRunCheckpointSumOrderByAggregateInput = {
-    version?: SortOrder
-  }
-
-  export type BytesFilter<$PrismaModel = never> = {
-    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
-    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesFilter<$PrismaModel> | Bytes
-  }
-
-  export type LangGraphCheckpointIdentityIdAgentTypeThreadIdCheckpointNsCheckpointIdCompoundUniqueInput = {
-    identityId: string
-    agentType: string
-    threadId: string
-    checkpointNs: string
-    checkpointId: string
-  }
-
-  export type LangGraphCheckpointCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    parentCheckpointId?: SortOrder
-    checkpointType?: SortOrder
-    checkpointBlob?: SortOrder
-    metadataType?: SortOrder
-    metadataBlob?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type LangGraphCheckpointMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    parentCheckpointId?: SortOrder
-    checkpointType?: SortOrder
-    checkpointBlob?: SortOrder
-    metadataType?: SortOrder
-    metadataBlob?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type LangGraphCheckpointMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    parentCheckpointId?: SortOrder
-    checkpointType?: SortOrder
-    checkpointBlob?: SortOrder
-    metadataType?: SortOrder
-    metadataBlob?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type BytesWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
-    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBytesFilter<$PrismaModel>
-    _max?: NestedBytesFilter<$PrismaModel>
-  }
-
-  export type LangGraphCheckpointWriteIdentityIdAgentTypeThreadIdCheckpointNsCheckpointIdTaskIdIdxCompoundUniqueInput = {
-    identityId: string
-    agentType: string
-    threadId: string
-    checkpointNs: string
-    checkpointId: string
-    taskId: string
-    idx: number
-  }
-
-  export type LangGraphCheckpointWriteCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    taskId?: SortOrder
-    taskPath?: SortOrder
-    idx?: SortOrder
-    channel?: SortOrder
-    valueType?: SortOrder
-    valueBlob?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type LangGraphCheckpointWriteAvgOrderByAggregateInput = {
-    idx?: SortOrder
-  }
-
-  export type LangGraphCheckpointWriteMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    taskId?: SortOrder
-    taskPath?: SortOrder
-    idx?: SortOrder
-    channel?: SortOrder
-    valueType?: SortOrder
-    valueBlob?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type LangGraphCheckpointWriteMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    agentType?: SortOrder
-    threadId?: SortOrder
-    checkpointNs?: SortOrder
-    checkpointId?: SortOrder
-    taskId?: SortOrder
-    taskPath?: SortOrder
-    idx?: SortOrder
-    channel?: SortOrder
-    valueType?: SortOrder
-    valueBlob?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type LangGraphCheckpointWriteSumOrderByAggregateInput = {
-    idx?: SortOrder
   }
 
   export type CloudAuthSessionListRelationFilter = {
@@ -145859,17 +141210,6 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
   export type ReminderGroupNullableScalarRelationFilter = {
     is?: ReminderGroupWhereInput | null
     isNot?: ReminderGroupWhereInput | null
@@ -146017,22 +141357,6 @@ export namespace Prisma {
     sampleSize?: SortOrder
     originalInterval?: SortOrder
     adjustedInterval?: SortOrder
-  }
-
-  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type ReminderGroupCountOrderByAggregateInput = {
@@ -147196,6 +142520,13 @@ export namespace Prisma {
     byteSize?: SortOrder
   }
 
+  export type BytesFilter<$PrismaModel = never> = {
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Bytes
+  }
+
   export type KnowledgeAttachmentContentCacheConnectionIdBlobShaCompoundUniqueInput = {
     connectionId: string
     blobSha: string
@@ -147234,6 +142565,16 @@ export namespace Prisma {
 
   export type KnowledgeAttachmentContentCacheSumOrderByAggregateInput = {
     byteSize?: SortOrder
+  }
+
+  export type BytesWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBytesFilter<$PrismaModel>
+    _max?: NestedBytesFilter<$PrismaModel>
   }
 
   export type KnowledgeWriteRequestIdentityIdRequestIdCompoundUniqueInput = {
@@ -148927,27 +144268,6 @@ export namespace Prisma {
     connect?: DashboardConfigWhereUniqueInput
   }
 
-  export type AgentRunCheckpointCreateNestedManyWithoutAccountInput = {
-    create?: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput> | AgentRunCheckpointCreateWithoutAccountInput[] | AgentRunCheckpointUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: AgentRunCheckpointCreateOrConnectWithoutAccountInput | AgentRunCheckpointCreateOrConnectWithoutAccountInput[]
-    createMany?: AgentRunCheckpointCreateManyAccountInputEnvelope
-    connect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-  }
-
-  export type LangGraphCheckpointCreateNestedManyWithoutAccountInput = {
-    create?: XOR<LangGraphCheckpointCreateWithoutAccountInput, LangGraphCheckpointUncheckedCreateWithoutAccountInput> | LangGraphCheckpointCreateWithoutAccountInput[] | LangGraphCheckpointUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: LangGraphCheckpointCreateOrConnectWithoutAccountInput | LangGraphCheckpointCreateOrConnectWithoutAccountInput[]
-    createMany?: LangGraphCheckpointCreateManyAccountInputEnvelope
-    connect?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-  }
-
-  export type LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput = {
-    create?: XOR<LangGraphCheckpointWriteCreateWithoutAccountInput, LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput> | LangGraphCheckpointWriteCreateWithoutAccountInput[] | LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput | LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput[]
-    createMany?: LangGraphCheckpointWriteCreateManyAccountInputEnvelope
-    connect?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-  }
-
   export type TaskDependencyCreateNestedManyWithoutIdentityInput = {
     create?: XOR<TaskDependencyCreateWithoutIdentityInput, TaskDependencyUncheckedCreateWithoutIdentityInput> | TaskDependencyCreateWithoutIdentityInput[] | TaskDependencyUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: TaskDependencyCreateOrConnectWithoutIdentityInput | TaskDependencyCreateOrConnectWithoutIdentityInput[]
@@ -149295,27 +144615,6 @@ export namespace Prisma {
     create?: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
     connectOrCreate?: DashboardConfigCreateOrConnectWithoutAccountInput
     connect?: DashboardConfigWhereUniqueInput
-  }
-
-  export type AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput> | AgentRunCheckpointCreateWithoutAccountInput[] | AgentRunCheckpointUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: AgentRunCheckpointCreateOrConnectWithoutAccountInput | AgentRunCheckpointCreateOrConnectWithoutAccountInput[]
-    createMany?: AgentRunCheckpointCreateManyAccountInputEnvelope
-    connect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-  }
-
-  export type LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<LangGraphCheckpointCreateWithoutAccountInput, LangGraphCheckpointUncheckedCreateWithoutAccountInput> | LangGraphCheckpointCreateWithoutAccountInput[] | LangGraphCheckpointUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: LangGraphCheckpointCreateOrConnectWithoutAccountInput | LangGraphCheckpointCreateOrConnectWithoutAccountInput[]
-    createMany?: LangGraphCheckpointCreateManyAccountInputEnvelope
-    connect?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-  }
-
-  export type LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<LangGraphCheckpointWriteCreateWithoutAccountInput, LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput> | LangGraphCheckpointWriteCreateWithoutAccountInput[] | LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput | LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput[]
-    createMany?: LangGraphCheckpointWriteCreateManyAccountInputEnvelope
-    connect?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
   }
 
   export type TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput = {
@@ -149933,48 +145232,6 @@ export namespace Prisma {
     delete?: DashboardConfigWhereInput | boolean
     connect?: DashboardConfigWhereUniqueInput
     update?: XOR<XOR<DashboardConfigUpdateToOneWithWhereWithoutAccountInput, DashboardConfigUpdateWithoutAccountInput>, DashboardConfigUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type AgentRunCheckpointUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput> | AgentRunCheckpointCreateWithoutAccountInput[] | AgentRunCheckpointUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: AgentRunCheckpointCreateOrConnectWithoutAccountInput | AgentRunCheckpointCreateOrConnectWithoutAccountInput[]
-    upsert?: AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput | AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: AgentRunCheckpointCreateManyAccountInputEnvelope
-    set?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-    disconnect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-    delete?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-    connect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-    update?: AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput | AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput | AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: AgentRunCheckpointScalarWhereInput | AgentRunCheckpointScalarWhereInput[]
-  }
-
-  export type LangGraphCheckpointUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<LangGraphCheckpointCreateWithoutAccountInput, LangGraphCheckpointUncheckedCreateWithoutAccountInput> | LangGraphCheckpointCreateWithoutAccountInput[] | LangGraphCheckpointUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: LangGraphCheckpointCreateOrConnectWithoutAccountInput | LangGraphCheckpointCreateOrConnectWithoutAccountInput[]
-    upsert?: LangGraphCheckpointUpsertWithWhereUniqueWithoutAccountInput | LangGraphCheckpointUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: LangGraphCheckpointCreateManyAccountInputEnvelope
-    set?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-    disconnect?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-    delete?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-    connect?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-    update?: LangGraphCheckpointUpdateWithWhereUniqueWithoutAccountInput | LangGraphCheckpointUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: LangGraphCheckpointUpdateManyWithWhereWithoutAccountInput | LangGraphCheckpointUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: LangGraphCheckpointScalarWhereInput | LangGraphCheckpointScalarWhereInput[]
-  }
-
-  export type LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<LangGraphCheckpointWriteCreateWithoutAccountInput, LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput> | LangGraphCheckpointWriteCreateWithoutAccountInput[] | LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput | LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput[]
-    upsert?: LangGraphCheckpointWriteUpsertWithWhereUniqueWithoutAccountInput | LangGraphCheckpointWriteUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: LangGraphCheckpointWriteCreateManyAccountInputEnvelope
-    set?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-    disconnect?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-    delete?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-    connect?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-    update?: LangGraphCheckpointWriteUpdateWithWhereUniqueWithoutAccountInput | LangGraphCheckpointWriteUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: LangGraphCheckpointWriteUpdateManyWithWhereWithoutAccountInput | LangGraphCheckpointWriteUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: LangGraphCheckpointWriteScalarWhereInput | LangGraphCheckpointWriteScalarWhereInput[]
   }
 
   export type TaskDependencyUpdateManyWithoutIdentityNestedInput = {
@@ -150659,48 +145916,6 @@ export namespace Prisma {
     update?: XOR<XOR<DashboardConfigUpdateToOneWithWhereWithoutAccountInput, DashboardConfigUpdateWithoutAccountInput>, DashboardConfigUncheckedUpdateWithoutAccountInput>
   }
 
-  export type AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput> | AgentRunCheckpointCreateWithoutAccountInput[] | AgentRunCheckpointUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: AgentRunCheckpointCreateOrConnectWithoutAccountInput | AgentRunCheckpointCreateOrConnectWithoutAccountInput[]
-    upsert?: AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput | AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: AgentRunCheckpointCreateManyAccountInputEnvelope
-    set?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-    disconnect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-    delete?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-    connect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
-    update?: AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput | AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput | AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: AgentRunCheckpointScalarWhereInput | AgentRunCheckpointScalarWhereInput[]
-  }
-
-  export type LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<LangGraphCheckpointCreateWithoutAccountInput, LangGraphCheckpointUncheckedCreateWithoutAccountInput> | LangGraphCheckpointCreateWithoutAccountInput[] | LangGraphCheckpointUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: LangGraphCheckpointCreateOrConnectWithoutAccountInput | LangGraphCheckpointCreateOrConnectWithoutAccountInput[]
-    upsert?: LangGraphCheckpointUpsertWithWhereUniqueWithoutAccountInput | LangGraphCheckpointUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: LangGraphCheckpointCreateManyAccountInputEnvelope
-    set?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-    disconnect?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-    delete?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-    connect?: LangGraphCheckpointWhereUniqueInput | LangGraphCheckpointWhereUniqueInput[]
-    update?: LangGraphCheckpointUpdateWithWhereUniqueWithoutAccountInput | LangGraphCheckpointUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: LangGraphCheckpointUpdateManyWithWhereWithoutAccountInput | LangGraphCheckpointUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: LangGraphCheckpointScalarWhereInput | LangGraphCheckpointScalarWhereInput[]
-  }
-
-  export type LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<LangGraphCheckpointWriteCreateWithoutAccountInput, LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput> | LangGraphCheckpointWriteCreateWithoutAccountInput[] | LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput | LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput[]
-    upsert?: LangGraphCheckpointWriteUpsertWithWhereUniqueWithoutAccountInput | LangGraphCheckpointWriteUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: LangGraphCheckpointWriteCreateManyAccountInputEnvelope
-    set?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-    disconnect?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-    delete?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-    connect?: LangGraphCheckpointWriteWhereUniqueInput | LangGraphCheckpointWriteWhereUniqueInput[]
-    update?: LangGraphCheckpointWriteUpdateWithWhereUniqueWithoutAccountInput | LangGraphCheckpointWriteUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: LangGraphCheckpointWriteUpdateManyWithWhereWithoutAccountInput | LangGraphCheckpointWriteUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: LangGraphCheckpointWriteScalarWhereInput | LangGraphCheckpointWriteScalarWhereInput[]
-  }
-
   export type TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput = {
     create?: XOR<TaskDependencyCreateWithoutIdentityInput, TaskDependencyUncheckedCreateWithoutIdentityInput> | TaskDependencyCreateWithoutIdentityInput[] | TaskDependencyUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: TaskDependencyCreateOrConnectWithoutIdentityInput | TaskDependencyCreateOrConnectWithoutIdentityInput[]
@@ -151015,6 +146230,14 @@ export namespace Prisma {
     connect?: AccountWhereUniqueInput
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
@@ -151094,52 +146317,6 @@ export namespace Prisma {
     upsert?: AccountUpsertWithoutDashboardConfigsInput
     connect?: AccountWhereUniqueInput
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutDashboardConfigsInput, AccountUpdateWithoutDashboardConfigsInput>, AccountUncheckedUpdateWithoutDashboardConfigsInput>
-  }
-
-  export type AccountCreateNestedOneWithoutAgentRunCheckpointsInput = {
-    create?: XOR<AccountCreateWithoutAgentRunCheckpointsInput, AccountUncheckedCreateWithoutAgentRunCheckpointsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutAgentRunCheckpointsInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type AccountUpdateOneRequiredWithoutAgentRunCheckpointsNestedInput = {
-    create?: XOR<AccountCreateWithoutAgentRunCheckpointsInput, AccountUncheckedCreateWithoutAgentRunCheckpointsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutAgentRunCheckpointsInput
-    upsert?: AccountUpsertWithoutAgentRunCheckpointsInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutAgentRunCheckpointsInput, AccountUpdateWithoutAgentRunCheckpointsInput>, AccountUncheckedUpdateWithoutAgentRunCheckpointsInput>
-  }
-
-  export type AccountCreateNestedOneWithoutLangGraphCheckpointsInput = {
-    create?: XOR<AccountCreateWithoutLangGraphCheckpointsInput, AccountUncheckedCreateWithoutLangGraphCheckpointsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutLangGraphCheckpointsInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type BytesFieldUpdateOperationsInput = {
-    set?: Bytes
-  }
-
-  export type AccountUpdateOneRequiredWithoutLangGraphCheckpointsNestedInput = {
-    create?: XOR<AccountCreateWithoutLangGraphCheckpointsInput, AccountUncheckedCreateWithoutLangGraphCheckpointsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutLangGraphCheckpointsInput
-    upsert?: AccountUpsertWithoutLangGraphCheckpointsInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutLangGraphCheckpointsInput, AccountUpdateWithoutLangGraphCheckpointsInput>, AccountUncheckedUpdateWithoutLangGraphCheckpointsInput>
-  }
-
-  export type AccountCreateNestedOneWithoutLangGraphCheckpointWritesInput = {
-    create?: XOR<AccountCreateWithoutLangGraphCheckpointWritesInput, AccountUncheckedCreateWithoutLangGraphCheckpointWritesInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutLangGraphCheckpointWritesInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type AccountUpdateOneRequiredWithoutLangGraphCheckpointWritesNestedInput = {
-    create?: XOR<AccountCreateWithoutLangGraphCheckpointWritesInput, AccountUncheckedCreateWithoutLangGraphCheckpointWritesInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutLangGraphCheckpointWritesInput
-    upsert?: AccountUpsertWithoutLangGraphCheckpointWritesInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutLangGraphCheckpointWritesInput, AccountUpdateWithoutLangGraphCheckpointWritesInput>, AccountUncheckedUpdateWithoutLangGraphCheckpointWritesInput>
   }
 
   export type CloudAuthSessionCreateNestedManyWithoutUserInput = {
@@ -152738,14 +147915,6 @@ export namespace Prisma {
     connect?: ReminderOccurrenceWhereUniqueInput | ReminderOccurrenceWhereUniqueInput[]
   }
 
-  export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type ReminderHistoryUpdateManyWithoutTemplateNestedInput = {
     create?: XOR<ReminderHistoryCreateWithoutTemplateInput, ReminderHistoryUncheckedCreateWithoutTemplateInput> | ReminderHistoryCreateWithoutTemplateInput[] | ReminderHistoryUncheckedCreateWithoutTemplateInput[]
     connectOrCreate?: ReminderHistoryCreateOrConnectWithoutTemplateInput | ReminderHistoryCreateOrConnectWithoutTemplateInput[]
@@ -153886,6 +149055,10 @@ export namespace Prisma {
     connect?: KnowledgeRepositoryConnectionWhereUniqueInput
   }
 
+  export type BytesFieldUpdateOperationsInput = {
+    set?: Bytes
+  }
+
   export type KnowledgeRepositoryConnectionUpdateOneRequiredWithoutAttachmentContentCachesNestedInput = {
     create?: XOR<KnowledgeRepositoryConnectionCreateWithoutAttachmentContentCachesInput, KnowledgeRepositoryConnectionUncheckedCreateWithoutAttachmentContentCachesInput>
     connectOrCreate?: KnowledgeRepositoryConnectionCreateOrConnectWithoutAttachmentContentCachesInput
@@ -154790,6 +149963,33 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -154804,17 +150004,6 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -154840,23 +150029,6 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type NestedBytesFilter<$PrismaModel = never> = {
-    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
-    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesFilter<$PrismaModel> | Bytes
-  }
-
-  export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
-    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBytesFilter<$PrismaModel>
-    _max?: NestedBytesFilter<$PrismaModel>
-  }
-
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -154871,22 +150043,6 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type NestedBigIntFilter<$PrismaModel = never> = {
@@ -154914,6 +150070,23 @@ export namespace Prisma {
     _sum?: NestedBigIntFilter<$PrismaModel>
     _min?: NestedBigIntFilter<$PrismaModel>
     _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
+  export type NestedBytesFilter<$PrismaModel = never> = {
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Bytes
+  }
+
+  export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBytesFilter<$PrismaModel>
+    _max?: NestedBytesFilter<$PrismaModel>
   }
 
   export type NestedDecimalFilter<$PrismaModel = never> = {
@@ -156443,6 +151616,13 @@ export namespace Prisma {
     id: string
     taskType: string
     status: string
+    conversationId?: string | null
+    runId?: string | null
+    requestId?: string | null
+    traceId?: string | null
+    providerId?: string | null
+    model?: string | null
+    estimatedCostUsd?: number | null
     input: string
     result?: string | null
     error?: string | null
@@ -156460,6 +151640,13 @@ export namespace Prisma {
     id: string
     taskType: string
     status: string
+    conversationId?: string | null
+    runId?: string | null
+    requestId?: string | null
+    traceId?: string | null
+    providerId?: string | null
+    model?: string | null
+    estimatedCostUsd?: number | null
     input: string
     result?: string | null
     error?: string | null
@@ -156628,128 +151815,6 @@ export namespace Prisma {
   export type DashboardConfigCreateOrConnectWithoutAccountInput = {
     where: DashboardConfigWhereUniqueInput
     create: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
-  }
-
-  export type AgentRunCheckpointCreateWithoutAccountInput = {
-    id: string
-    runId: string
-    conversationId?: string | null
-    threadId: string
-    agentType: string
-    status: string
-    runMetadata: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type AgentRunCheckpointUncheckedCreateWithoutAccountInput = {
-    id: string
-    runId: string
-    conversationId?: string | null
-    threadId: string
-    agentType: string
-    status: string
-    runMetadata: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type AgentRunCheckpointCreateOrConnectWithoutAccountInput = {
-    where: AgentRunCheckpointWhereUniqueInput
-    create: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput>
-  }
-
-  export type AgentRunCheckpointCreateManyAccountInputEnvelope = {
-    data: AgentRunCheckpointCreateManyAccountInput | AgentRunCheckpointCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type LangGraphCheckpointCreateWithoutAccountInput = {
-    id: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    parentCheckpointId?: string | null
-    checkpointType: string
-    checkpointBlob: Bytes
-    metadataType: string
-    metadataBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointUncheckedCreateWithoutAccountInput = {
-    id: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    parentCheckpointId?: string | null
-    checkpointType: string
-    checkpointBlob: Bytes
-    metadataType: string
-    metadataBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointCreateOrConnectWithoutAccountInput = {
-    where: LangGraphCheckpointWhereUniqueInput
-    create: XOR<LangGraphCheckpointCreateWithoutAccountInput, LangGraphCheckpointUncheckedCreateWithoutAccountInput>
-  }
-
-  export type LangGraphCheckpointCreateManyAccountInputEnvelope = {
-    data: LangGraphCheckpointCreateManyAccountInput | LangGraphCheckpointCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type LangGraphCheckpointWriteCreateWithoutAccountInput = {
-    id: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    taskId: string
-    taskPath?: string
-    idx: number
-    channel: string
-    valueType: string
-    valueBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput = {
-    id: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    taskId: string
-    taskPath?: string
-    idx: number
-    channel: string
-    valueType: string
-    valueBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointWriteCreateOrConnectWithoutAccountInput = {
-    where: LangGraphCheckpointWriteWhereUniqueInput
-    create: XOR<LangGraphCheckpointWriteCreateWithoutAccountInput, LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput>
-  }
-
-  export type LangGraphCheckpointWriteCreateManyAccountInputEnvelope = {
-    data: LangGraphCheckpointWriteCreateManyAccountInput | LangGraphCheckpointWriteCreateManyAccountInput[]
-    skipDuplicates?: boolean
   }
 
   export type TaskDependencyCreateWithoutIdentityInput = {
@@ -158673,6 +153738,13 @@ export namespace Prisma {
     identityId?: StringFilter<"AiGenerationTask"> | string
     taskType?: StringFilter<"AiGenerationTask"> | string
     status?: StringFilter<"AiGenerationTask"> | string
+    conversationId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    runId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    requestId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    traceId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    providerId?: StringNullableFilter<"AiGenerationTask"> | string | null
+    model?: StringNullableFilter<"AiGenerationTask"> | string | null
+    estimatedCostUsd?: FloatNullableFilter<"AiGenerationTask"> | number | null
     input?: StringFilter<"AiGenerationTask"> | string
     result?: StringNullableFilter<"AiGenerationTask"> | string | null
     error?: StringNullableFilter<"AiGenerationTask"> | string | null
@@ -158824,112 +153896,6 @@ export namespace Prisma {
     widgetConfig?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput = {
-    where: AgentRunCheckpointWhereUniqueInput
-    update: XOR<AgentRunCheckpointUpdateWithoutAccountInput, AgentRunCheckpointUncheckedUpdateWithoutAccountInput>
-    create: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput>
-  }
-
-  export type AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput = {
-    where: AgentRunCheckpointWhereUniqueInput
-    data: XOR<AgentRunCheckpointUpdateWithoutAccountInput, AgentRunCheckpointUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput = {
-    where: AgentRunCheckpointScalarWhereInput
-    data: XOR<AgentRunCheckpointUpdateManyMutationInput, AgentRunCheckpointUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type AgentRunCheckpointScalarWhereInput = {
-    AND?: AgentRunCheckpointScalarWhereInput | AgentRunCheckpointScalarWhereInput[]
-    OR?: AgentRunCheckpointScalarWhereInput[]
-    NOT?: AgentRunCheckpointScalarWhereInput | AgentRunCheckpointScalarWhereInput[]
-    id?: StringFilter<"AgentRunCheckpoint"> | string
-    runId?: StringFilter<"AgentRunCheckpoint"> | string
-    identityId?: StringFilter<"AgentRunCheckpoint"> | string
-    conversationId?: StringNullableFilter<"AgentRunCheckpoint"> | string | null
-    threadId?: StringFilter<"AgentRunCheckpoint"> | string
-    agentType?: StringFilter<"AgentRunCheckpoint"> | string
-    status?: StringFilter<"AgentRunCheckpoint"> | string
-    runMetadata?: JsonFilter<"AgentRunCheckpoint">
-    stateSnapshot?: JsonNullableFilter<"AgentRunCheckpoint">
-    events?: JsonFilter<"AgentRunCheckpoint">
-    interrupts?: JsonFilter<"AgentRunCheckpoint">
-    version?: IntFilter<"AgentRunCheckpoint"> | number
-    createdAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
-    updatedAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"AgentRunCheckpoint"> | Date | string | null
-  }
-
-  export type LangGraphCheckpointUpsertWithWhereUniqueWithoutAccountInput = {
-    where: LangGraphCheckpointWhereUniqueInput
-    update: XOR<LangGraphCheckpointUpdateWithoutAccountInput, LangGraphCheckpointUncheckedUpdateWithoutAccountInput>
-    create: XOR<LangGraphCheckpointCreateWithoutAccountInput, LangGraphCheckpointUncheckedCreateWithoutAccountInput>
-  }
-
-  export type LangGraphCheckpointUpdateWithWhereUniqueWithoutAccountInput = {
-    where: LangGraphCheckpointWhereUniqueInput
-    data: XOR<LangGraphCheckpointUpdateWithoutAccountInput, LangGraphCheckpointUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type LangGraphCheckpointUpdateManyWithWhereWithoutAccountInput = {
-    where: LangGraphCheckpointScalarWhereInput
-    data: XOR<LangGraphCheckpointUpdateManyMutationInput, LangGraphCheckpointUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type LangGraphCheckpointScalarWhereInput = {
-    AND?: LangGraphCheckpointScalarWhereInput | LangGraphCheckpointScalarWhereInput[]
-    OR?: LangGraphCheckpointScalarWhereInput[]
-    NOT?: LangGraphCheckpointScalarWhereInput | LangGraphCheckpointScalarWhereInput[]
-    id?: StringFilter<"LangGraphCheckpoint"> | string
-    identityId?: StringFilter<"LangGraphCheckpoint"> | string
-    agentType?: StringFilter<"LangGraphCheckpoint"> | string
-    threadId?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointNs?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointId?: StringFilter<"LangGraphCheckpoint"> | string
-    parentCheckpointId?: StringNullableFilter<"LangGraphCheckpoint"> | string | null
-    checkpointType?: StringFilter<"LangGraphCheckpoint"> | string
-    checkpointBlob?: BytesFilter<"LangGraphCheckpoint"> | Bytes
-    metadataType?: StringFilter<"LangGraphCheckpoint"> | string
-    metadataBlob?: BytesFilter<"LangGraphCheckpoint"> | Bytes
-    createdAt?: DateTimeFilter<"LangGraphCheckpoint"> | Date | string
-  }
-
-  export type LangGraphCheckpointWriteUpsertWithWhereUniqueWithoutAccountInput = {
-    where: LangGraphCheckpointWriteWhereUniqueInput
-    update: XOR<LangGraphCheckpointWriteUpdateWithoutAccountInput, LangGraphCheckpointWriteUncheckedUpdateWithoutAccountInput>
-    create: XOR<LangGraphCheckpointWriteCreateWithoutAccountInput, LangGraphCheckpointWriteUncheckedCreateWithoutAccountInput>
-  }
-
-  export type LangGraphCheckpointWriteUpdateWithWhereUniqueWithoutAccountInput = {
-    where: LangGraphCheckpointWriteWhereUniqueInput
-    data: XOR<LangGraphCheckpointWriteUpdateWithoutAccountInput, LangGraphCheckpointWriteUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type LangGraphCheckpointWriteUpdateManyWithWhereWithoutAccountInput = {
-    where: LangGraphCheckpointWriteScalarWhereInput
-    data: XOR<LangGraphCheckpointWriteUpdateManyMutationInput, LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type LangGraphCheckpointWriteScalarWhereInput = {
-    AND?: LangGraphCheckpointWriteScalarWhereInput | LangGraphCheckpointWriteScalarWhereInput[]
-    OR?: LangGraphCheckpointWriteScalarWhereInput[]
-    NOT?: LangGraphCheckpointWriteScalarWhereInput | LangGraphCheckpointWriteScalarWhereInput[]
-    id?: StringFilter<"LangGraphCheckpointWrite"> | string
-    identityId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    agentType?: StringFilter<"LangGraphCheckpointWrite"> | string
-    threadId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    checkpointNs?: StringFilter<"LangGraphCheckpointWrite"> | string
-    checkpointId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    taskId?: StringFilter<"LangGraphCheckpointWrite"> | string
-    taskPath?: StringFilter<"LangGraphCheckpointWrite"> | string
-    idx?: IntFilter<"LangGraphCheckpointWrite"> | number
-    channel?: StringFilter<"LangGraphCheckpointWrite"> | string
-    valueType?: StringFilter<"LangGraphCheckpointWrite"> | string
-    valueBlob?: BytesFilter<"LangGraphCheckpointWrite"> | Bytes
-    createdAt?: DateTimeFilter<"LangGraphCheckpointWrite"> | Date | string
   }
 
   export type TaskDependencyUpsertWithWhereUniqueWithoutIdentityInput = {
@@ -159518,9 +154484,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -159591,9 +154554,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -159680,9 +154640,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -159753,9 +154710,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -159826,9 +154780,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -159899,9 +154850,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -160016,9 +154964,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -160089,9 +155034,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -160179,9 +155121,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -160252,9 +155191,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -160372,9 +155308,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -160445,9 +155378,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -160554,9 +155484,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -160627,9 +155554,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -160716,9 +155640,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -160789,9 +155710,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -160862,9 +155780,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -160935,9 +155850,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -161024,9 +155936,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -161097,9 +156006,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -161170,9 +156076,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -161243,9 +156146,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -161332,9 +156232,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -161405,9 +156302,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -161478,9 +156372,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -161551,9 +156442,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -161640,9 +156528,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -161713,9 +156598,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -161786,9 +156668,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -161859,9 +156738,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -161948,9 +156824,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -162021,933 +156894,6 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
-    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
-    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
-    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountCreateWithoutAgentRunCheckpointsInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    habits?: HabitCreateNestedManyWithoutAccountInput
-    relations?: RelationCreateNestedManyWithoutAccountInput
-    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
-    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
-    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
-    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
-    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
-    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
-    folders?: FolderCreateNestedManyWithoutIdentityInput
-    resources?: ResourceCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountUncheckedCreateWithoutAgentRunCheckpointsInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
-    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
-    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
-    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
-    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
-    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
-    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
-    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
-    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
-    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountCreateOrConnectWithoutAgentRunCheckpointsInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutAgentRunCheckpointsInput, AccountUncheckedCreateWithoutAgentRunCheckpointsInput>
-  }
-
-  export type AccountUpsertWithoutAgentRunCheckpointsInput = {
-    update: XOR<AccountUpdateWithoutAgentRunCheckpointsInput, AccountUncheckedUpdateWithoutAgentRunCheckpointsInput>
-    create: XOR<AccountCreateWithoutAgentRunCheckpointsInput, AccountUncheckedCreateWithoutAgentRunCheckpointsInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutAgentRunCheckpointsInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutAgentRunCheckpointsInput, AccountUncheckedUpdateWithoutAgentRunCheckpointsInput>
-  }
-
-  export type AccountUpdateWithoutAgentRunCheckpointsInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    habits?: HabitUpdateManyWithoutAccountNestedInput
-    relations?: RelationUpdateManyWithoutAccountNestedInput
-    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
-    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
-    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
-    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
-    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
-    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutAgentRunCheckpointsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
-    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
-    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
-    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
-    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
-    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
-    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountCreateWithoutLangGraphCheckpointsInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    habits?: HabitCreateNestedManyWithoutAccountInput
-    relations?: RelationCreateNestedManyWithoutAccountInput
-    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
-    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
-    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
-    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
-    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
-    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
-    folders?: FolderCreateNestedManyWithoutIdentityInput
-    resources?: ResourceCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountUncheckedCreateWithoutLangGraphCheckpointsInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
-    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
-    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
-    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
-    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
-    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
-    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
-    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
-    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
-    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountCreateOrConnectWithoutLangGraphCheckpointsInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutLangGraphCheckpointsInput, AccountUncheckedCreateWithoutLangGraphCheckpointsInput>
-  }
-
-  export type AccountUpsertWithoutLangGraphCheckpointsInput = {
-    update: XOR<AccountUpdateWithoutLangGraphCheckpointsInput, AccountUncheckedUpdateWithoutLangGraphCheckpointsInput>
-    create: XOR<AccountCreateWithoutLangGraphCheckpointsInput, AccountUncheckedCreateWithoutLangGraphCheckpointsInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutLangGraphCheckpointsInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutLangGraphCheckpointsInput, AccountUncheckedUpdateWithoutLangGraphCheckpointsInput>
-  }
-
-  export type AccountUpdateWithoutLangGraphCheckpointsInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    habits?: HabitUpdateManyWithoutAccountNestedInput
-    relations?: RelationUpdateManyWithoutAccountNestedInput
-    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
-    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
-    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
-    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
-    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
-    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutLangGraphCheckpointsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
-    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
-    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
-    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
-    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
-    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
-    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountCreateWithoutLangGraphCheckpointWritesInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    habits?: HabitCreateNestedManyWithoutAccountInput
-    relations?: RelationCreateNestedManyWithoutAccountInput
-    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
-    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
-    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
-    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
-    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
-    folders?: FolderCreateNestedManyWithoutIdentityInput
-    resources?: ResourceCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountUncheckedCreateWithoutLangGraphCheckpointWritesInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
-    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
-    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
-    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
-    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
-    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
-    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
-    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
-    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountCreateOrConnectWithoutLangGraphCheckpointWritesInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutLangGraphCheckpointWritesInput, AccountUncheckedCreateWithoutLangGraphCheckpointWritesInput>
-  }
-
-  export type AccountUpsertWithoutLangGraphCheckpointWritesInput = {
-    update: XOR<AccountUpdateWithoutLangGraphCheckpointWritesInput, AccountUncheckedUpdateWithoutLangGraphCheckpointWritesInput>
-    create: XOR<AccountCreateWithoutLangGraphCheckpointWritesInput, AccountUncheckedCreateWithoutLangGraphCheckpointWritesInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutLangGraphCheckpointWritesInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutLangGraphCheckpointWritesInput, AccountUncheckedUpdateWithoutLangGraphCheckpointWritesInput>
-  }
-
-  export type AccountUpdateWithoutLangGraphCheckpointWritesInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    habits?: HabitUpdateManyWithoutAccountNestedInput
-    relations?: RelationUpdateManyWithoutAccountNestedInput
-    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
-    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
-    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
-    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
-    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
-    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
-    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutLangGraphCheckpointWritesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
-    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
-    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
-    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -163122,9 +157068,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -163195,9 +157138,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -163381,9 +157321,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -163454,9 +157391,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -163791,9 +157725,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -163864,9 +157795,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -163969,9 +157897,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -164042,9 +157967,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -164153,9 +158075,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -164226,9 +158145,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -164370,9 +158286,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -164443,9 +158356,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -164607,9 +158517,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -164680,9 +158587,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -164816,9 +158720,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -164889,9 +158790,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -164999,9 +158897,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -165072,9 +158967,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -165194,9 +159086,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -165267,9 +159156,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -165379,9 +159265,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -165452,9 +159335,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -165899,9 +159779,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -165972,9 +159849,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -166306,9 +160180,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -166379,9 +160250,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -166629,9 +160497,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -166702,9 +160567,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -167712,9 +161574,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -167785,9 +161644,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -167943,9 +161799,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -168016,9 +161869,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -168164,9 +162014,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -168237,9 +162084,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -168326,9 +162170,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -168399,9 +162240,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -168623,9 +162461,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -168696,9 +162531,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -168834,9 +162666,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -168907,9 +162736,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -169414,9 +163240,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -169487,9 +163310,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -169624,9 +163444,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -169697,9 +163514,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -169771,9 +163585,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -169844,9 +163655,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -169992,9 +163800,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -170065,9 +163870,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -170203,9 +164005,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -170276,9 +164075,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -170424,9 +164220,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -170497,9 +164290,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -170694,9 +164484,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -170767,9 +164554,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -170921,9 +164705,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -170994,9 +164775,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -171066,9 +164844,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -171139,9 +164914,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -171228,9 +165000,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -171301,9 +165070,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -171530,9 +165296,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -171603,9 +165366,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -171797,9 +165557,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -171870,9 +165627,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -171990,9 +165744,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -172063,9 +165814,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -172248,9 +165996,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -172321,9 +166066,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -172410,9 +166152,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -172483,9 +166222,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -172663,9 +166399,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -172736,9 +166469,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -172907,9 +166637,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -172980,9 +166707,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -173160,9 +166884,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -173233,9 +166954,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -173402,9 +167120,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -173475,9 +167190,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -173564,9 +167276,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -173637,9 +167346,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -173711,9 +167417,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -173784,9 +167487,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -173964,9 +167664,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -174037,9 +167734,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -174206,9 +167900,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -174279,9 +167970,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -174368,9 +168056,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -174441,9 +168126,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -174606,9 +168288,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -174679,9 +168358,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -174865,9 +168541,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -174938,9 +168611,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -175010,9 +168680,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -175083,9 +168750,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -175360,9 +169024,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -175433,9 +169094,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -175571,9 +169229,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -175644,9 +169299,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -175855,9 +169507,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -175928,9 +169577,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -176113,9 +169759,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -176186,9 +169829,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -176326,9 +169966,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -176399,9 +170036,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -176571,9 +170205,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -176644,9 +170275,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -176880,9 +170508,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -176953,9 +170578,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -177440,9 +171062,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -177513,9 +171132,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -177653,9 +171269,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -177726,9 +171339,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -177856,9 +171466,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -177929,9 +171536,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -178018,9 +171622,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -178091,9 +171692,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -178165,9 +171763,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -178238,9 +171833,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -178515,9 +172107,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -178588,9 +172177,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -179252,9 +172838,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -179325,9 +172908,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -179467,9 +173047,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -179540,9 +173117,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -179671,9 +173245,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -179744,9 +173315,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -179833,9 +173401,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -179906,9 +173471,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -180013,9 +173575,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -180086,9 +173645,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -180191,9 +173747,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -180264,9 +173817,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -180338,9 +173888,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
@@ -180411,9 +173958,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
@@ -180575,9 +174119,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
@@ -180648,9 +174189,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
@@ -180801,9 +174339,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -180874,9 +174409,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -180963,9 +174495,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -181036,9 +174565,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -181109,9 +174635,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -181182,9 +174705,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -181271,9 +174791,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -181344,9 +174861,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -181417,9 +174931,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -181490,9 +175001,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -181688,9 +175196,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -181761,9 +175266,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -181850,9 +175352,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -181923,9 +175422,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -182440,9 +175936,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -182513,9 +176006,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -182863,9 +176353,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -182936,9 +176423,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -183129,9 +176613,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -183202,9 +176683,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -183386,9 +176864,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
@@ -183459,9 +176934,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
@@ -183756,9 +177228,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
@@ -183829,9 +177298,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
@@ -184122,9 +177588,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
@@ -184195,9 +177658,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
@@ -184388,9 +177848,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
@@ -184461,9 +177918,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
@@ -184643,9 +178097,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -184716,9 +178167,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -184805,9 +178253,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -184878,9 +178323,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -184951,9 +178393,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -185024,9 +178463,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -185147,9 +178583,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -185220,9 +178653,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -185334,9 +178764,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -185407,9 +178834,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedCreateNestedManyWithoutAccountInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedCreateNestedManyWithoutAccountInput
     taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -185527,9 +178951,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -185600,9 +179021,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpoints?: LangGraphCheckpointUncheckedUpdateManyWithoutAccountNestedInput
-    langGraphCheckpointWrites?: LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountNestedInput
     taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -186084,6 +179502,13 @@ export namespace Prisma {
     id: string
     taskType: string
     status: string
+    conversationId?: string | null
+    runId?: string | null
+    requestId?: string | null
+    traceId?: string | null
+    providerId?: string | null
+    model?: string | null
+    estimatedCostUsd?: number | null
     input: string
     result?: string | null
     error?: string | null
@@ -186134,52 +179559,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-  }
-
-  export type AgentRunCheckpointCreateManyAccountInput = {
-    id: string
-    runId: string
-    conversationId?: string | null
-    threadId: string
-    agentType: string
-    status: string
-    runMetadata: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type LangGraphCheckpointCreateManyAccountInput = {
-    id: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    parentCheckpointId?: string | null
-    checkpointType: string
-    checkpointBlob: Bytes
-    metadataType: string
-    metadataBlob: Bytes
-    createdAt?: Date | string
-  }
-
-  export type LangGraphCheckpointWriteCreateManyAccountInput = {
-    id: string
-    agentType: string
-    threadId: string
-    checkpointNs?: string
-    checkpointId: string
-    taskId: string
-    taskPath?: string
-    idx: number
-    channel: string
-    valueType: string
-    valueBlob: Bytes
-    createdAt?: Date | string
   }
 
   export type TaskDependencyCreateManyIdentityInput = {
@@ -187864,6 +181243,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     taskType?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    runId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    traceId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCostUsd?: NullableFloatFieldUpdateOperationsInput | number | null
     input?: StringFieldUpdateOperationsInput | string
     result?: NullableStringFieldUpdateOperationsInput | string | null
     error?: NullableStringFieldUpdateOperationsInput | string | null
@@ -187881,6 +181267,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     taskType?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    runId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    traceId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCostUsd?: NullableFloatFieldUpdateOperationsInput | number | null
     input?: StringFieldUpdateOperationsInput | string
     result?: NullableStringFieldUpdateOperationsInput | string | null
     error?: NullableStringFieldUpdateOperationsInput | string | null
@@ -187898,6 +181291,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     taskType?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    runId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    traceId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCostUsd?: NullableFloatFieldUpdateOperationsInput | number | null
     input?: StringFieldUpdateOperationsInput | string
     result?: NullableStringFieldUpdateOperationsInput | string | null
     error?: NullableStringFieldUpdateOperationsInput | string | null
@@ -188026,144 +181426,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AgentRunCheckpointUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    runId?: StringFieldUpdateOperationsInput | string
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    threadId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    runMetadata?: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AgentRunCheckpointUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    runId?: StringFieldUpdateOperationsInput | string
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    threadId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    runMetadata?: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AgentRunCheckpointUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    runId?: StringFieldUpdateOperationsInput | string
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    threadId?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    runMetadata?: JsonNullValueInput | InputJsonValue
-    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
-    events?: JsonNullValueInput | InputJsonValue
-    interrupts?: JsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type LangGraphCheckpointUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    parentCheckpointId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkpointType?: StringFieldUpdateOperationsInput | string
-    checkpointBlob?: BytesFieldUpdateOperationsInput | Bytes
-    metadataType?: StringFieldUpdateOperationsInput | string
-    metadataBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    parentCheckpointId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkpointType?: StringFieldUpdateOperationsInput | string
-    checkpointBlob?: BytesFieldUpdateOperationsInput | Bytes
-    metadataType?: StringFieldUpdateOperationsInput | string
-    metadataBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    parentCheckpointId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkpointType?: StringFieldUpdateOperationsInput | string
-    checkpointBlob?: BytesFieldUpdateOperationsInput | Bytes
-    metadataType?: StringFieldUpdateOperationsInput | string
-    metadataBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointWriteUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    taskId?: StringFieldUpdateOperationsInput | string
-    taskPath?: StringFieldUpdateOperationsInput | string
-    idx?: IntFieldUpdateOperationsInput | number
-    channel?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    valueBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointWriteUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    taskId?: StringFieldUpdateOperationsInput | string
-    taskPath?: StringFieldUpdateOperationsInput | string
-    idx?: IntFieldUpdateOperationsInput | number
-    channel?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    valueBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type LangGraphCheckpointWriteUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentType?: StringFieldUpdateOperationsInput | string
-    threadId?: StringFieldUpdateOperationsInput | string
-    checkpointNs?: StringFieldUpdateOperationsInput | string
-    checkpointId?: StringFieldUpdateOperationsInput | string
-    taskId?: StringFieldUpdateOperationsInput | string
-    taskPath?: StringFieldUpdateOperationsInput | string
-    idx?: IntFieldUpdateOperationsInput | number
-    channel?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    valueBlob?: BytesFieldUpdateOperationsInput | Bytes
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TaskDependencyUpdateWithoutIdentityInput = {

@@ -40,6 +40,7 @@ export interface CloudAuthOptions {
   readonly userProvisioner: CloudUserProvisioner;
   readonly emailDelivery: CloudAuthEmailDelivery;
   readonly closureChecker?: (identityId: string) => Promise<boolean>;
+  readonly rateLimit?: BetterAuthOptions['rateLimit'];
 }
 
 export interface CloudAuth {
@@ -87,10 +88,16 @@ export function createCloudAuth(
         transaction: true,
       }),
     advanced: {
+      ipAddress: {
+        // MemoFlow is deployed behind reverse proxies (Nginx/Caddy). Better Auth
+        // uses the resolved client address for rate limiting and session metadata.
+        ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'],
+      },
       database: {
         generateId: ({ model }) => (model === 'user' ? IdentityId.generate().toString() : false),
       },
     },
+    rateLimit: options.rateLimit,
     user: { modelName: 'cloudAuthUser' },
     session: { modelName: 'cloudAuthSession' },
     account: { modelName: 'cloudAuthProviderAccount' },

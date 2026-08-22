@@ -10,7 +10,7 @@ import { ReminderTemplate } from '../aggregates/reminder-template';
 import { ReminderGroup } from '../aggregates/reminder-group';
 import { ReminderTemplateControlService } from './reminder-template-control-service';
 import { ReminderGroupBusinessService } from './reminder-group-business-service';
-import { GroupStats } from '../value-objects';
+import { GroupStats, ReminderTemplateId } from '../value-objects';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { IUserReminderPreferenceRepository } from '../repositories/i-user-reminder-preference-repository';
 
@@ -93,6 +93,7 @@ export class ReminderDomainService {
   // --- ReminderTemplate Methods ---
 
   public async createReminderTemplate(params: {
+    id?: string;
     identityId: string;
     title: string;
     type: ReminderType;
@@ -119,6 +120,7 @@ export class ReminderDomainService {
 
     const template = ReminderTemplate.create({
       ...params,
+      id: params.id ? ReminderTemplateId.of(params.id) : undefined,
       identityId: params.identityId as IdentityId,
     });
     await this.syncTemplateEffectiveEnabled(template);
@@ -252,10 +254,7 @@ export class ReminderDomainService {
     return template;
   }
 
-  public async toggleGroupAndTemplates(
-    identityId: string,
-    id: string,
-  ): Promise<ReminderGroup> {
+  public async toggleGroupAndTemplates(identityId: string, id: string): Promise<ReminderGroup> {
     const group = await this.getGroup(identityId, id);
     if (!group) {
       throw new Error(`ReminderGroup not found: ${id}`);

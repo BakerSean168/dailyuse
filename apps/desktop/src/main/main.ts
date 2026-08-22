@@ -14,6 +14,8 @@
  */
 
 import './runtime-init';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { powerMonitor } from 'electron';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
@@ -29,7 +31,6 @@ import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestrat
 import { createGoalPowerSyncScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
 import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { createLocalVaultRuntime } from '@memoflow/repository/electron';
-import { getAIServiceRuntimeConfig } from '@memoflow/ai';
 import { createSchedulePowerSyncRepositories } from '@memoflow/schedule';
 import { composeGovernance } from './runtime/compose-governance';
 import { composeGoal } from './runtime/compose-goal';
@@ -43,7 +44,6 @@ import { composeDataPortability } from './runtime/compose-data-portability';
 import { composeAI } from './runtime/compose-ai';
 import { composeRepository } from './runtime/compose-repository';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
-import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
 import {
@@ -204,8 +204,8 @@ async function registerBusinessModules(
     db,
     syncOptions: {
       getCloudAccountId: () =>
-        mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding?.cloudAccountId
-        ?? null,
+        mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding
+          ?.cloudAccountId ?? null,
       getCloudAccessToken,
       async updateLocalProfileMetadata(request) {
         if (request.nickname === undefined) return;
@@ -268,7 +268,8 @@ async function registerBusinessModules(
       },
       async markAccountClosing() {
         const identityId =
-          mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding?.cloudAccountId;
+          mainRuntime?.profileRuntimeManager.getActiveProfileDescriptorSync()?.cloudBinding
+            ?.cloudAccountId;
         if (!identityId) {
           throw new Error('Cannot mark account closing: active profile has no cloud binding');
         }
@@ -278,7 +279,9 @@ async function registerBusinessModules(
         );
       },
       async clearAccountClosingMarker(identityId: string) {
-        await db.execute('DELETE FROM account_closure_requested WHERE identity_id = ?', [identityId]);
+        await db.execute('DELETE FROM account_closure_requested WHERE identity_id = ?', [
+          identityId,
+        ]);
       },
       async afterCloudAccountClosed() {
         // NOTE: the closure-request marker is intentionally NOT cleared here.
@@ -302,12 +305,13 @@ async function registerBusinessModules(
     knowledgeNotePersistence: new DesktopKnowledgeNotePersistenceAdapter(localVaultRuntime),
     knowledgeSourcePort: new DesktopKnowledgeSourceAdapter(localVaultRuntime),
     analyticsReadPort: analyticsReadAdapter,
-    automationToolExecutor: new DesktopAutomationToolExecutorAdapter(
-      db,
-      localVaultRuntime,
-      analyticsReadAdapter,
-    ),
-    aiServiceRuntimeConfig: getAIServiceRuntimeConfig() ?? undefined,
+    goalApplicationPort: goalComposed.applicationPort,
+    taskApplicationPort: taskComposed.applicationPort,
+    reminderApplicationPort: reminderComposed.applicationPort,
+    mastraStorage: {
+      kind: 'libsql',
+      url: pathToFileURL(path.join(profilePaths.storageDir, 'mastra.db')).href,
+    },
   });
 
   const dataPortabilityElectronModule = composeDataPortability({ db });
@@ -370,7 +374,9 @@ async function registerBusinessModules(
   // 所有者（WindowManager 在窗口切换时驱动延迟启停；profile manager 在停用拆除前
   // 停止它）。
   windowManager.setScheduleRuntimeController(scheduleComposed.runtimeController);
-  mainRuntime?.profileRuntimeManager.setScheduleRuntimeController(scheduleComposed.runtimeController);
+  mainRuntime?.profileRuntimeManager.setScheduleRuntimeController(
+    scheduleComposed.runtimeController,
+  );
 
   await bootstrapper
     // Core services
@@ -460,7 +466,9 @@ async function initializeShellRuntime(): Promise<void> {
       },
     );
   });
-  profileRuntimeManager.setAfterActivation((profile) => cloudConnectionManager.restore(profile).then(() => undefined));
+  profileRuntimeManager.setAfterActivation((profile) =>
+    cloudConnectionManager.restore(profile).then(() => undefined),
+  );
   profileRuntimeManager.setBeforeDeactivation(() => {
     activeProfileDashboardRepositories = null;
     // Clear the WindowManager's bound schedule runtime controller BEFORE the

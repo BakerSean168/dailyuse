@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-17T00:00:00+09:00
+updated: 2026-08-20T00:00:00+08:00
 ---
 
 # Active Plans
@@ -13,12 +13,11 @@ updated: 2026-08-17T00:00:00+09:00
 
 ## 当前计划
 
-| 计划                                                                                   | 当前状态                                                                                                                                                                                                                                              |
-| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [应用契约与架构大重构](../archive/2026-08-17-application-contract-and-architecture-refactor.md) | **ADR-049 implemented**：failure-contract inventory 219→1；8 批次 #234–#241 全绿合并；DomainError 退役、baseline 收敛至唯一内部开发面。见 `docs/analysis/2026-08-18-adr-049-completion-evidence.md` |
-| [CI/CD Platform V2 一次性重构](../archive/2026-08-05-ci-cd-platform-v2-refactor.md) | **Archived（2026-08-19）**：架构实施+PR cutover 完成；baseline-v1 采集 7 同范围 run，DoD 性能项确认未达标（wall 10.66 vs 7-8），按偏差接受归档；契约/运营闭环已验证 |
-| [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)            | **主产品能力线**：统一助手、右侧工作台、Workflow/Turn/Model；完成定义未宣称                                                                                                                                                                           |
-| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md)   | **执行协议**：GOAL_PRIORITY 服务 agent-host 切片；门禁与 residual 格式                                                                                                                                                                                |
+| 计划                                                                                              | 当前状态                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [应用契约与架构大重构](../archive/2026-08-17-application-contract-and-architecture-refactor.md)   | **ADR-049 implemented**：failure-contract inventory 219→1；8 批次 #234–#241 全绿合并；DomainError 退役、baseline 收敛至唯一内部开发面。见 `docs/analysis/2026-08-18-adr-049-completion-evidence.md` |
+| [CI/CD Platform V2 一次性重构](../archive/2026-08-05-ci-cd-platform-v2-refactor.md)               | **Archived（2026-08-19）**：架构实施+PR cutover 完成；baseline-v1 采集 7 同范围 run，DoD 性能项确认未达标（wall 10.66 vs 7-8），按偏差接受归档；契约/运营闭环已验证                                 |
+| [MemoFlow AI vNext — Mastra-native 一次性大重构](./2026-08-20-mastra-native-ai-vnext-refactor.md) | **唯一 AI runtime active plan**：ADR-050/051/052；TypeScript + Mastra，整体移除 Python/LangGraph/Agent Host 双运行时与 UI orchestration                                                             |
 
 ## 本轮已归档（2026-08-16）
 

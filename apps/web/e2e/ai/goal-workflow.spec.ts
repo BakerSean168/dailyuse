@@ -1,8 +1,6 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import {
-  createMockGoal,
-  createMockUserSetting,
-} from '@memoflow/contracts/mocks';
+import type { AIWorkflowRunView } from '@memoflow/contracts/ai';
+import { createMockUserSetting } from '@memoflow/contracts/mocks';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
 
@@ -121,7 +119,7 @@ async function sendComposerMessage(page: Page, message: string): Promise<void> {
 
   const sseResponse = page.waitForResponse(
     (response) =>
-      response.url().includes('/ai/assistant/dispatch/sse') &&
+      response.url().includes('/ai/runtime/assistant/sse') &&
       response.request().method() === 'POST' &&
       response.status() === 200,
     { timeout: TIMEOUT_CONFIG.NAVIGATION },
@@ -129,7 +127,7 @@ async function sendComposerMessage(page: Page, message: string): Promise<void> {
   await sendButton.click();
   await sseResponse;
 
-  // Composer clears after a successful Host open-chat turn starts.
+  // Composer clears after a successful Mastra open-chat turn starts.
   await expect(composer).toHaveValue('', {
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
@@ -225,10 +223,7 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    await sendComposerMessage(
-      page,
-      'How should knowledge answers stay grounded in citations?',
-    );
+    await sendComposerMessage(page, 'How should knowledge answers stay grounded in citations?');
 
     await expect(page.getByTestId('knowledge-qa-ask')).toBeEnabled({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -243,15 +238,17 @@ test.describe('AI Goal Workflow', () => {
       seedConversation: true,
     });
 
-    const agentPanel = page.getByTestId('goal-agent-panel');
-    await expect(agentPanel).toBeVisible({
+    // ADR-052: the durable Mastra Workflow panel (AIWorkflowRunView) owns this
+    // surface — not a legacy goal-agent-panel AgentRun / Host Proposal.
+    const workflowPanel = page.getByTestId('goal-workflow-panel');
+    await expect(workflowPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(agentPanel).toContainText(/waiting_approval/i);
-    await expect(agentPanel).toContainText(/Runtime restored Agent workspace/i);
-    await expect(agentPanel).toContainText(/Create the runtime-restored Agent goal/i);
+    await expect(workflowPanel).toContainText(/suspended/i);
+    await expect(workflowPanel).toContainText(/Restored AI Agent workspace/i);
     await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
     await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
+    await expect(page.getByTestId('goal-agent-panel')).toHaveCount(0);
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     // Full main-app remount after reload needs NAVIGATION budget (same as bootstrap).
@@ -259,13 +256,13 @@ test.describe('AI Goal Workflow', () => {
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
 
-    await expect(agentPanel).toBeVisible({
+    await expect(workflowPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
-    await expect(agentPanel).toContainText(/waiting_approval/i);
-    await expect(agentPanel).toContainText(/Runtime restored Agent workspace/i);
-    await expect(agentPanel).toContainText(/Create the runtime-restored Agent goal/i);
+    await expect(workflowPanel).toContainText(/suspended/i);
+    await expect(workflowPanel).toContainText(/Restored AI Agent workspace/i);
     await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
+    await expect(page.getByTestId('goal-agent-panel')).toHaveCount(0);
   });
 
   test('[P0] completes Goal Agent confirmation through the controlled executor and retries failed actions', async ({
@@ -287,39 +284,37 @@ test.describe('AI Goal Workflow', () => {
     });
     await startButton.click();
 
-    const agentPanel = page.getByTestId('goal-agent-panel');
-    await expect(agentPanel).toBeVisible({
+    // ADR-052: goal.create renders in the durable Workflow panel, not a
+    // legacy goal-agent-panel.
+    const workflowPanel = page.getByTestId('goal-workflow-panel');
+    await expect(workflowPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(agentPanel).toContainText(/waiting_approval/i);
-    await expect(agentPanel).toContainText(/Agent-created AI workflow/i);
-    await expect(agentPanel).toContainText(/Create the approved goal draft/i);
-    await expect(agentPanel).toContainText(/Track a measurable workflow outcome/i);
-    await expect(agentPanel).toContainText(/Create a review task template/i);
-    await expect(agentPanel).toContainText(/Create a review reminder/i);
+    await expect(workflowPanel).toContainText(/suspended/i);
+    await expect(workflowPanel).toContainText(/Agent-created AI workflow/i);
+    await expect(workflowPanel).toContainText(/Run the Goal Agent workflow end to end/i);
+    // Task template / reminder names render only inside the optional draft
+    // editor; the review card shows the goal, key result, and rationale.
+    await expect(workflowPanel).toContainText(
+      /Create the approved goal draft with a measurable key result/i,
+    );
+    await expect(page.getByTestId('goal-agent-panel')).toHaveCount(0);
 
     await page.getByTestId('goal-agent-confirm-run').click();
 
-    await expect(agentPanel).toContainText(/completed/i, {
+    // Controlled executor: the first approved execution is partial, so the
+    // durable runtime suspends with a recovery_required suspension.
+    await expect(page.getByTestId('goal-workflow-recovery')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(page.getByTestId('goal-agent-execution-summary')).toContainText(
-      /Partial|部分成功/i,
-    );
-    await expect(agentPanel).toContainText(/Create Goal|创建目标/i);
-    await expect(agentPanel).toContainText(/Create Key Result|创建关键结果/i);
-    await expect(agentPanel).toContainText(/Create Task Template|创建任务模板/i);
-    await expect(agentPanel).toContainText(/Create Reminder|创建提醒/i);
-    await expect(page.getByTestId('goal-agent-recovery')).toContainText(
-      /Recovery suggestions|恢复建议|关键结果创建失败/i,
-    );
+    await expect(page.getByTestId('goal-workflow-recovery')).toContainText(/KEY_RESULT_FAILED/i);
+    await expect(page.getByTestId('goal-workflow-recovery')).toContainText(/Workflow execution failed/i);
     expect(telemetry.goalAgentStartCount).toBe(1);
     expect(telemetry.lastGoalAgentStart?.idea ?? '').toMatch(/Agent runtime/i);
     expect(telemetry.lastGoalAgentStart?.providerId).toBe('provider-e2e-openai');
     expect(telemetry.lastGoalAgentStart?.model).toBe('gpt-4.1-mini');
     expect(telemetry.goalAgentApprovalResumeCount).toBe(1);
     expect(telemetry.goalAgentExecuteRequestCount).toBe(1);
-    expect(telemetry.goalAgentCompletionResumeCount).toBe(1);
 
     const retryButton = page.getByTestId('goal-agent-retry-execution');
     await expect(retryButton).toBeEnabled({
@@ -327,109 +322,157 @@ test.describe('AI Goal Workflow', () => {
     });
     await retryButton.click();
 
-    await expect(page.getByTestId('goal-agent-execution-summary')).toContainText(
-      /Success|执行成功/i,
-      { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },
-    );
-    await expect(agentPanel).toContainText(/Created key result|已创建关键结果/i);
-    await expect(agentPanel).toContainText(/Created task template|已创建任务模板/i);
-    await expect(agentPanel).toContainText(/Created reminder|已创建提醒/i);
-    await expect(retryButton).toHaveCount(0);
+    // The durable runtime completes after the retry; the retry control is
+    // removed and the ready product deep-links to the created goal. Assert the
+    // completion outcome instead of racing the transient result panel against
+    // the deep-link navigation.
+    await expect(retryButton).toHaveCount(0, {
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
+    await expect(page.getByTestId('goal-workflow-result'))
+      .toContainText(/goal-e2e-1/i, {
+        timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      })
+      .catch(() => undefined);
+    await expect(page).toHaveURL(/\/goals\/goal-e2e-1/, {
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
     expect(telemetry.goalAgentRetryResumeCount).toBe(1);
     expect(telemetry.goalAgentExecuteRequestCount).toBe(2);
-    expect(telemetry.goalAgentCompletionResumeCount).toBe(2);
+    expect(telemetry.goalAgentCompletionResumeCount).toBe(1);
+  });
+
+  test('[P0] restores a pending task.create approval run after refresh', async ({ page }) => {
+    const telemetry = await bootstrapGoalWorkflowSession(page, {
+      conversationId: e2eConversationId,
+      modelKey: 'provider-e2e-openai::gpt-4.1-mini',
+      workflowEntry: createPendingTaskApprovalWorkflowEntry(),
+      seedConversation: true,
+    });
+
+    const workflowPanel = page.getByTestId('task-workflow-panel');
+    await expect(workflowPanel).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await expect(workflowPanel).toContainText(/Restored Mastra task workflow/i);
+    await expect(page.getByTestId('task-agent-confirm-run')).toBeVisible();
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('ai-chat-view')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
+    });
+    await expect(workflowPanel).toBeVisible({ timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await expect(workflowPanel).toContainText(/Restored Mastra task workflow/i);
+    expect(telemetry.legacyEndpointCallCount).toBe(0);
+  });
+
+  test('[P0] completes task.create through the canonical Mastra Workflow panel', async ({
+    page,
+  }) => {
+    const telemetry = await bootstrapGoalWorkflowSession(page);
+
+    await page.getByTestId('ai-chat-tool-menu-trigger').click();
+    await page.getByTestId('ai-chat-tool-task-create').click();
+    await sendComposerMessage(page, 'Create a weekly task to review the Mastra-only AI migration.');
+
+    const startButton = page.getByTestId('task-agent-start-run');
+    await expect(startButton).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await startButton.click();
+
+    const workflowPanel = page.getByTestId('task-workflow-panel');
+    await expect(workflowPanel).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await expect(workflowPanel).toContainText(/Review the Mastra migration/i);
+    await expect(page.getByTestId('task-agent-confirm-run')).toBeVisible();
+    await page.getByTestId('task-agent-confirm-run').click();
+
+    const result = page.getByTestId('task-workflow-result');
+    await expect(result).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await expect(result).toContainText(/task-template-e2e-mastra-1/i);
+    expect(telemetry.taskWorkflowStartCount).toBe(1);
+    expect(telemetry.taskWorkflowApproveCount).toBe(1);
+    expect(telemetry.legacyEndpointCallCount).toBe(0);
+  });
+
+  test('[P0] cancels task.create at approval without invoking a legacy runtime', async ({
+    page,
+  }) => {
+    const telemetry = await bootstrapGoalWorkflowSession(page);
+
+    await page.getByTestId('ai-chat-tool-menu-trigger').click();
+    await page.getByTestId('ai-chat-tool-task-create').click();
+    await sendComposerMessage(page, 'Draft a task but do not create it until I approve.');
+    await page.getByTestId('task-agent-start-run').click();
+
+    const workflowPanel = page.getByTestId('task-workflow-panel');
+    await expect(page.getByTestId('task-agent-cancel-run')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
+    await page.getByTestId('task-agent-cancel-run').click();
+    await expect(workflowPanel).toContainText(/cancelled/i, {
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
+    expect(telemetry.taskWorkflowCancelCount).toBe(1);
+    expect(telemetry.taskWorkflowApproveCount).toBe(0);
+    expect(telemetry.legacyEndpointCallCount).toBe(0);
   });
 
   test('[P0] asks the personal knowledge base with citations from the workspace', async ({
     page,
   }) => {
-    await bootstrapGoalWorkflowSession(page);
+    const telemetry = await bootstrapGoalWorkflowSession(page);
 
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
-
-    await sendComposerMessage(
-      page,
-      'How should knowledge answers stay grounded in citations?',
-    );
+    await sendComposerMessage(page, 'How should knowledge answers stay grounded in citations?');
 
     const askButton = page.getByTestId('knowledge-qa-ask');
-    await expect(askButton).toBeEnabled({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
+    await expect(askButton).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     await askButton.click();
 
     const answerPanel = page.getByTestId('knowledge-answer-panel');
-    await expect(answerPanel).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
+    await expect(answerPanel).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     await expect(answerPanel).toContainText(/Grounded answers cite repository excerpts/i);
     await expect(answerPanel).toContainText(/MemoFlow grounding policy/i);
     await expect(answerPanel).toContainText(/notes\/ai\/grounding-policy\.md/i);
     await expect(page.getByTestId('knowledge-citation-open')).toBeVisible();
 
-    await page.getByTestId('knowledge-qa-draft-note').click();
-    const noteAgentPanel = page.getByTestId('knowledge-note-agent-panel');
-    await expect(noteAgentPanel).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-    await expect(noteAgentPanel).toContainText(/Grounded Knowledge Answers/i);
-
-    await page.getByTestId('knowledge-qa-save-draft').click();
-    await openCreatedKnowledgeNoteWorkflow(page);
-    const noteSummaryPanel = page.getByTestId('knowledge-note-summary-panel');
-    await expect(noteSummaryPanel).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-    await expect(noteSummaryPanel).toContainText(/Grounded Knowledge Answers\.md/i);
-    await expect(noteSummaryPanel).toContainText(/notes\/ai\/Grounded Knowledge Answers\.md/i);
-    await expect(noteSummaryPanel).toContainText(/indexed/i);
-
     await page.getByTestId('knowledge-citation-open').click();
     await expect(page).toHaveURL(/\/repository$/);
+    expect(telemetry.legacyEndpointCallCount).toBe(0);
   });
 
-  test('[P0] generates and saves a knowledge note from the current conversation', async ({
+  test('[P0] captures a knowledge note through the canonical knowledge.capture Workflow', async ({
     page,
   }) => {
-    await bootstrapGoalWorkflowSession(page);
+    const telemetry = await bootstrapGoalWorkflowSession(page);
 
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
-    await page.getByTestId('ai-chat-tool-knowledge-generate').click();
-
+    await page.getByTestId('ai-chat-tool-knowledge-capture').click();
     await sendComposerMessage(
       page,
-      'Turn this planning conversation into a reusable knowledge note about agent checkpoints.',
+      'Capture this conversation as a reusable note about durable Mastra workflow recovery.',
     );
 
-    const draftButton = page.getByTestId('knowledge-note-agent-start-run');
-    await expect(draftButton).toBeEnabled({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-    await draftButton.click();
+    const startButton = page.getByTestId('knowledge-capture-agent-start-run');
+    await expect(startButton).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await startButton.click();
 
-    const noteAgentPanel = page.getByTestId('knowledge-note-agent-panel');
-    await expect(noteAgentPanel).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-    await expect(noteAgentPanel).toContainText(/Conversation Agent Checkpoints/i);
-    await expect(noteAgentPanel).toContainText(/ordinary workspace conversation/i);
+    const workflowPanel = page.getByTestId('knowledge-capture-workflow-panel');
+    await expect(workflowPanel).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await expect(workflowPanel).toContainText(/Conversation Agent Checkpoints/i);
+    await expect(page.getByTestId('knowledge-capture-agent-confirm-run')).toBeVisible();
+    await page.getByTestId('knowledge-capture-agent-confirm-run').click();
 
-    await page.getByTestId('knowledge-note-save-draft').click();
-    await openCreatedKnowledgeNoteWorkflow(page);
-    const noteSummaryPanel = page.getByTestId('knowledge-note-summary-panel');
-    await expect(noteSummaryPanel).toBeVisible({
+    await expect(page).toHaveURL(/\/repository\?note=resource-note-e2e-mastra-1/i, {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(noteSummaryPanel).toContainText(/Conversation Agent Checkpoints\.md/i);
-    await expect(noteSummaryPanel).toContainText(/notes\/ai\/Conversation Agent Checkpoints\.md/i);
-    await expect(noteSummaryPanel).toContainText(/indexed/i);
+    expect(telemetry.knowledgeCaptureStartCount).toBe(1);
+    expect(telemetry.knowledgeCaptureApproveCount).toBe(1);
+    expect(telemetry.legacyEndpointCallCount).toBe(0);
   });
 
   test('[P0] shows insufficient evidence when knowledge citations are missing', async ({
     page,
   }) => {
-    await bootstrapGoalWorkflowSession(page);
+    const telemetry = await bootstrapGoalWorkflowSession(page);
 
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
@@ -454,7 +497,7 @@ test.describe('AI Goal Workflow', () => {
     );
     await expect(answerPanel).toContainText(/I do not have enough repository evidence/i);
     await expect(page.getByTestId('knowledge-citation-open')).toHaveCount(0);
-    await expect(page.getByTestId('knowledge-qa-draft-note')).toBeDisabled();
+    expect(telemetry.legacyEndpointCallCount).toBe(0);
   });
 
   test('[P0] starts Goal Agent from goal-create tool and cancels at approval', async ({ page }) => {
@@ -484,17 +527,18 @@ test.describe('AI Goal Workflow', () => {
     });
     await startButton.click();
 
-    const agentPanel = page.getByTestId('goal-agent-panel');
-    await expect(agentPanel).toBeVisible({
+    const workflowPanel = page.getByTestId('goal-workflow-panel');
+    await expect(workflowPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(agentPanel).toContainText(/waiting_approval/i);
+    await expect(workflowPanel).toContainText(/suspended/i);
     await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
     await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
+    await expect(page.getByTestId('goal-agent-panel')).toHaveCount(0);
 
     await page.getByTestId('goal-agent-cancel-run').click();
 
-    await expect(agentPanel).toContainText(/cancelled/i, {
+    await expect(workflowPanel).toContainText(/cancelled/i, {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
     await expect(page.getByTestId('goal-agent-confirm-run')).toHaveCount(0);
@@ -507,17 +551,6 @@ test.describe('AI Goal Workflow', () => {
     expect(telemetry.goalAgentApprovalResumeCount).toBe(0);
   });
 });
-
-async function openCreatedKnowledgeNoteWorkflow(page: Page): Promise<void> {
-  await expect(page).toHaveURL(/\/repository$/i, {
-    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-  });
-  const workflowTab = page.getByTestId('business-panel-workflow');
-  await expect(workflowTab).toBeVisible();
-  await workflowTab.click();
-  await expect(workflowTab).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByTestId('shell-workflow-surface')).toBeVisible();
-}
 
 type GoalWorkflowMockOptions = {
   seedConversation?: boolean;
@@ -535,113 +568,289 @@ type GoalWorkflowMockTelemetry = {
   goalAgentCancelCount: number;
   goalAgentExecuteRequestCount: number;
   goalAgentCompletionResumeCount: number;
+  taskWorkflowStartCount: number;
+  taskWorkflowApproveCount: number;
+  taskWorkflowCancelCount: number;
+  knowledgeCaptureStartCount: number;
+  knowledgeCaptureApproveCount: number;
+  knowledgeCaptureCancelCount: number;
+  legacyEndpointCallCount: number;
 };
 
-type GoalAgentMockStatus = 'waiting_approval' | 'waiting_execution' | 'completed' | 'cancelled';
-
-type GoalAgentMockRun = {
-  runId: string;
-  threadId: string;
-  conversationId: string | null;
-  createdAt: number;
-  goalDraft: Record<string, unknown>;
-  actionPlan: {
-    summary: string;
-    actions: Array<Record<string, unknown>>;
-    warnings: string[];
+type GoalPlanDraft = {
+  revision: number;
+  goal: {
+    name: string;
+    description: string;
+    category?: string;
+    importance: string;
+    motivation?: string;
+    feasibilityAnalysis?: string;
+    tags: string[];
+    startDate?: number | null;
+    targetDate?: number | null;
   };
-  pendingActions: Array<Record<string, unknown>>;
-  approvedActions: Array<Record<string, unknown>>;
-  executedActions: Array<Record<string, unknown>>;
+  keyResults: Array<Record<string, unknown>>;
+  taskTemplates: Array<Record<string, unknown>>;
+  reminders: Array<Record<string, unknown>>;
+  rationale: string;
+  warnings: string[];
 };
 
+type GoalWorkflowExecutionFailure = {
+  operation: 'goal' | 'task_template' | 'reminder';
+  index?: number;
+  code: string;
+  message: string;
+  retryable: boolean;
+};
+
+/**
+ * ADR-052 durable goal.create Workflow simulation.
+ *
+ * Batch C: the Mastra-owned `/ai/runtime/workflow/*` endpoints are the only
+ * authority. There is no `agents/runs` AgentRun / Host Proposal double-track
+ * for goal.create anymore — the panel is AIWorkflowRunView-backed
+ * (`goal-workflow-panel`) with typed suspensions.
+ */
+type GoalWorkflowMockRun = {
+  runId: string;
+  conversationId: string;
+  createdAt: number;
+  draft: GoalPlanDraft;
+  /** Execution simulation state (approved/executed mutations). */
+  executedGoalId: string | null;
+  executedTaskIds: string[];
+  executedReminderIds: string[];
+  failures: GoalWorkflowExecutionFailure[];
+  executionStatus: 'success' | 'partial' | 'failed';
+};
+
+type TaskWorkflowMockRun = {
+  runId: string;
+  conversationId: string;
+  createdAt: number;
+  draft: Extract<
+    NonNullable<Extract<AIWorkflowRunView, { kind: 'task.create' }>['suspension']>,
+    { type: 'task_draft_review' }
+  >['draft'];
+};
+
+type KnowledgeCaptureMockRun = {
+  runId: string;
+  conversationId: string;
+  createdAt: number;
+  draft: Extract<
+    NonNullable<Extract<AIWorkflowRunView, { kind: 'knowledge.capture' }>['suspension']>,
+    { type: 'knowledge_draft_review' }
+  >['draft'];
+};
+
+function createTaskWorkflowDraft(
+  title = 'Review the Mastra migration',
+): TaskWorkflowMockRun['draft'] {
+  return {
+    revision: 1,
+    task: {
+      title,
+      description: 'Verify the Mastra-only task workflow from review to deterministic apply.',
+      importance: 'Moderate',
+      cadence: 'weekly',
+      startDate: null,
+      timeOfDay: '09:00',
+      daysOfWeek: [1],
+      occurrences: null,
+      goalId: null,
+      keyResultId: null,
+      folderId: null,
+      tags: ['ai', 'mastra'],
+    },
+    rationale: 'Keep task creation behind the canonical task mutation port.',
+    warnings: [],
+  };
+}
+
+function createKnowledgeCaptureDraft(
+  title = 'Conversation Agent Checkpoints',
+): KnowledgeCaptureMockRun['draft'] {
+  return {
+    revision: 1,
+    title,
+    topic: 'Durable Mastra workflow recovery and checkpoint ownership',
+    markdown: [
+      `# ${title}`,
+      '',
+      'Mastra owns the durable workflow state while product mutations stay behind canonical ports.',
+    ].join('\n'),
+    targetSubpath: 'notes/ai',
+    tags: ['ai', 'mastra'],
+    duplicateRisk: 'low',
+  };
+}
+
+function createTaskReviewRun(mockRun: TaskWorkflowMockRun): AIWorkflowRunView {
+  return {
+    runId: mockRun.runId,
+    kind: 'task.create',
+    conversationId: mockRun.conversationId,
+    status: 'suspended',
+    suspension: {
+      type: 'task_draft_review',
+      draft: mockRun.draft,
+      warnings: mockRun.draft.warnings,
+      revision: mockRun.draft.revision,
+    },
+    createdAt: mockRun.createdAt,
+    updatedAt: Date.now(),
+  };
+}
+
+function createTaskCompletedRun(mockRun: TaskWorkflowMockRun): AIWorkflowRunView {
+  return {
+    runId: mockRun.runId,
+    kind: 'task.create',
+    conversationId: mockRun.conversationId,
+    status: 'completed',
+    result: {
+      workflowRunId: mockRun.runId,
+      revision: mockRun.draft.revision,
+      status: 'success',
+      taskTemplateId: 'task-template-e2e-mastra-1',
+      taskIds: ['task-instance-e2e-mastra-1'],
+      failures: [],
+      retryable: false,
+    },
+    createdAt: mockRun.createdAt,
+    updatedAt: Date.now(),
+  };
+}
+
+function createTaskCancelledRun(mockRun: TaskWorkflowMockRun): AIWorkflowRunView {
+  return {
+    runId: mockRun.runId,
+    kind: 'task.create',
+    conversationId: mockRun.conversationId,
+    status: 'cancelled',
+    createdAt: mockRun.createdAt,
+    updatedAt: Date.now(),
+  };
+}
+
+function createKnowledgeCaptureReviewRun(mockRun: KnowledgeCaptureMockRun): AIWorkflowRunView {
+  return {
+    runId: mockRun.runId,
+    kind: 'knowledge.capture',
+    conversationId: mockRun.conversationId,
+    status: 'suspended',
+    suspension: {
+      type: 'knowledge_draft_review',
+      draft: mockRun.draft,
+      warnings: [],
+      revision: mockRun.draft.revision,
+    },
+    createdAt: mockRun.createdAt,
+    updatedAt: Date.now(),
+  };
+}
+
+function createKnowledgeCaptureCompletedRun(mockRun: KnowledgeCaptureMockRun): AIWorkflowRunView {
+  return {
+    runId: mockRun.runId,
+    kind: 'knowledge.capture',
+    conversationId: mockRun.conversationId,
+    status: 'completed',
+    result: {
+      workflowRunId: mockRun.runId,
+      revision: mockRun.draft.revision,
+      status: 'success',
+      noteId: 'resource-note-e2e-mastra-1',
+      noteName: `${mockRun.draft.title}.md`,
+      notePath: `notes/ai/${mockRun.draft.title}.md`,
+      failures: [],
+      retryable: false,
+    },
+    createdAt: mockRun.createdAt,
+    updatedAt: Date.now(),
+  };
+}
+
+function createKnowledgeCaptureCancelledRun(mockRun: KnowledgeCaptureMockRun): AIWorkflowRunView {
+  return {
+    runId: mockRun.runId,
+    kind: 'knowledge.capture',
+    conversationId: mockRun.conversationId,
+    status: 'cancelled',
+    createdAt: mockRun.createdAt,
+    updatedAt: Date.now(),
+  };
+}
+
+function createRestoredGoalWorkflowDraft(): GoalPlanDraft {
+  return {
+    revision: 1,
+    goal: {
+      name: 'Restored AI Agent workspace',
+      description: 'A pending approval run restored from local workflow state.',
+      category: 'learning',
+      importance: 'Important',
+      motivation: 'Restore the runtime-owned durable goal.create run after refresh.',
+      feasibilityAnalysis: 'Scoped to goal and key result creation after confirmation.',
+      tags: ['ai', 'agent'],
+      startDate: Date.now(),
+      targetDate: Date.now() + 60 * 24 * 60 * 60 * 1000,
+    },
+    keyResults: [
+      {
+        title: 'Complete the restored workflow approval',
+        description: 'Confirm the pending workflow from the durable run.',
+        valueType: 'Incremental',
+        calculationMethod: 'Sum',
+        startValue: 0,
+        currentValue: 0,
+        targetValue: 1,
+        unit: 'workflow',
+        weight: 3,
+      },
+    ],
+    taskTemplates: [],
+    reminders: [],
+    rationale: 'Create the restored Agent goal after user approval.',
+    warnings: [],
+  };
+}
+
+/**
+ * Persisted workflow entry (AIWorkflowRunView-backed) that seeds a pending
+ * goal.create approval run. `ai:conversation-workflow-map` now stores
+ * `goalWorkflowRun` (the Mastra run view), never a legacy `goalAgentRun`.
+ */
 function createPendingApprovalWorkflowEntry() {
   const now = Date.now();
-  const pendingAction = {
-    tool: 'create_goal',
-    payload: { title: 'Restored AI Agent workspace' },
-    rationale: 'Create the restored Agent goal after user approval.',
-    index: 0,
-    dependsOn: [],
-  };
+  const draft = createRestoredGoalWorkflowDraft();
 
   return {
     mode: 'goal-create',
     goalWorkflowStage: 'confirm',
+    goalWorkflowRun: {
+      runId: 'workflow-e2e-restored-approval',
+      kind: 'goal.create',
+      conversationId: e2eConversationId,
+      status: 'suspended',
+      suspension: {
+        type: 'goal_draft_review',
+        draft,
+        warnings: draft.warnings,
+        revision: draft.revision,
+      },
+      createdAt: now,
+      updatedAt: now,
+    },
     goalDraft: null,
     goalClarification: null,
     goalAutomationResult: null,
-    goalAgentRun: {
-      run: {
-        runId: 'run-e2e-restored-approval',
-        threadId: 'thread-e2e-restored-approval',
-        conversationId: e2eConversationId,
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        agentType: 'goal.create',
-        status: 'waiting_approval',
-        createdAt: now,
-        updatedAt: now,
-      },
-      state: {
-        messages: [
-          {
-            role: 'user',
-            content: 'Restore this pending Agent approval run.',
-            createdAt: now,
-          },
-        ],
-        intent: 'goal-create',
-        stage: 'approval',
-        artifacts: [
-          {
-            artifactId: 'run-e2e-restored-approval:goal-draft',
-            kind: 'goal_draft',
-            title: 'Restored AI Agent workspace',
-            data: {
-              title: 'Restored AI Agent workspace',
-              description: 'A pending approval run restored from local workflow state.',
-            },
-            updatedAt: now,
-          },
-          {
-            artifactId: 'run-e2e-restored-approval:action-plan',
-            kind: 'action_plan',
-            title: 'Approval plan',
-            data: {
-              summary: 'Create the restored Agent goal after confirmation.',
-              actions: [pendingAction],
-              warnings: [],
-            },
-            updatedAt: now,
-          },
-        ],
-        citations: [],
-        retrievedContext: [],
-        pendingActions: [pendingAction],
-        approvedActions: [],
-        executedActions: [],
-        usage: {},
-        errors: [],
-      },
-      events: [
-        {
-          eventId: 'run-e2e-restored-approval:0',
-          runId: 'run-e2e-restored-approval',
-          sequence: 0,
-          type: 'approval.required',
-          createdAt: now,
-          data: { status: 'waiting_approval' },
-        },
-      ],
-      interrupts: [
-        {
-          runId: 'run-e2e-restored-approval',
-          type: 'approval.required',
-          pendingActions: [pendingAction],
-        },
-      ],
-    },
+    knowledgeQaAgentRun: null,
     noteAgentRun: null,
+    taskAgentRun: null,
     knowledgeAnswer: null,
     clarificationAnswers: [],
     editableGoal: {
@@ -656,116 +865,65 @@ function createPendingApprovalWorkflowEntry() {
       targetDate: null,
     },
     editableKeyResults: [],
+    editableTaskTemplates: [],
+    editableReminders: [],
     noteSummary: null,
     showGoalDraftEditor: false,
   };
 }
 
-function createRuntimeRestoredApprovalRunResult() {
+function createPendingTaskApprovalWorkflowEntry() {
   const now = Date.now();
-  const pendingAction = {
-    tool: 'create_goal',
-    payload: { title: 'Runtime restored Agent workspace' },
-    rationale: 'Create the runtime-restored Agent goal after user approval.',
-    index: 0,
-    dependsOn: [],
+  const mockRun: TaskWorkflowMockRun = {
+    runId: 'workflow-e2e-restored-task-approval',
+    conversationId: e2eConversationId,
+    createdAt: now,
+    draft: createTaskWorkflowDraft('Restored Mastra task workflow'),
   };
-
   return {
-    run: {
-      runId: 'run-e2e-restored-approval',
-      threadId: 'thread-e2e-restored-approval',
-      conversationId: e2eConversationId,
-      identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-      agentType: 'goal.create',
-      status: 'waiting_approval',
-      createdAt: now,
-      updatedAt: now,
+    mode: 'task-create',
+    taskWorkflowRun: createTaskReviewRun(mockRun),
+    goalWorkflowRun: null,
+    knowledgeCaptureRun: null,
+    knowledgeAnswer: null,
+    clarificationAnswers: [],
+    editableGoal: {
+      name: '',
+      description: '',
+      category: '',
+      importance: 'Moderate',
+      motivation: '',
+      feasibilityAnalysis: '',
+      tags: [],
+      startDate: null,
+      targetDate: null,
     },
-    state: {
-      messages: [
-        {
-          role: 'user',
-          content: 'Restore this pending Agent approval run from runtime state.',
-          createdAt: now,
-        },
-      ],
-      intent: 'goal-create',
-      stage: 'approval',
-      artifacts: [
-        {
-          artifactId: 'run-e2e-restored-approval:runtime-goal-draft',
-          kind: 'goal_draft',
-          title: 'Runtime restored Agent workspace',
-          data: {
-            title: 'Runtime restored Agent workspace',
-            description: 'A pending approval run restored from the Agent runtime snapshot.',
-          },
-          updatedAt: now,
-        },
-        {
-          artifactId: 'run-e2e-restored-approval:runtime-action-plan',
-          kind: 'action_plan',
-          title: 'Approval plan',
-          data: {
-            summary: 'Create the runtime-restored Agent goal after confirmation.',
-            actions: [pendingAction],
-            warnings: [],
-          },
-          updatedAt: now,
-        },
-      ],
-      citations: [],
-      retrievedContext: [],
-      pendingActions: [pendingAction],
-      approvedActions: [],
-      executedActions: [],
-      usage: {
-        promptTokens: 21,
-        completionTokens: 9,
-        totalTokens: 30,
-      },
-      errors: [],
-    },
-    events: [
-      {
-        eventId: 'run-e2e-restored-approval:runtime-0',
-        runId: 'run-e2e-restored-approval',
-        sequence: 0,
-        type: 'approval.required',
-        createdAt: now,
-        data: { source: 'runtime-snapshot', status: 'waiting_approval' },
-      },
-    ],
-    interrupts: [
-      {
-        runId: 'run-e2e-restored-approval',
-        pendingActions: [pendingAction],
-      },
-    ],
+    editableKeyResults: [],
+    editableTaskTemplates: [],
+    editableReminders: [],
+    showGoalDraftEditor: false,
   };
 }
 
-function createGoalAgentMockRun(request: {
-  runId?: string;
-  threadId?: string;
-  conversationId?: string | null;
-}): GoalAgentMockRun {
+function createGoalAgentWorkflowDraft(): GoalPlanDraft {
   const now = Date.now();
-  const goalDraft = {
-    title: 'Agent-created AI workflow',
-    description: 'Create a structured goal through the Agent runtime.',
-    category: 'learning',
-    importance: 'Important',
-    motivation: 'Turn the Agent plan into tracked execution.',
-    feasibilityAnalysis: 'The approved plan is scoped to goal and KR creation.',
-    tags: ['ai', 'agent'],
-    suggestedStartDate: now,
-    suggestedEndDate: now + 60 * 24 * 60 * 60 * 1000,
+  return {
+    revision: 1,
+    goal: {
+      name: 'Agent-created AI workflow',
+      description: 'Create a structured goal through the Mastra Workflow runtime.',
+      category: 'learning',
+      importance: 'Important',
+      motivation: 'Turn the Agent plan into tracked execution.',
+      feasibilityAnalysis: 'The approved plan is scoped to goal and KR creation.',
+      tags: ['ai', 'agent'],
+      startDate: now,
+      targetDate: now + 60 * 24 * 60 * 60 * 1000,
+    },
     keyResults: [
       {
         title: 'Run the Goal Agent workflow end to end',
-        description: 'Confirm Agent runtime execution through the controlled executor.',
+        description: 'Confirm Mastra Workflow execution through the controlled executor.',
         valueType: 'Incremental',
         calculationMethod: 'Sum',
         startValue: 0,
@@ -781,6 +939,11 @@ function createGoalAgentMockRun(request: {
         description: 'Check result and recovery.',
         importance: 'Moderate',
         cadence: 'weekly',
+        timeOfDay: '09:00',
+        daysOfWeek: [1],
+        occurrences: null,
+        contributionValue: 1,
+        tags: [],
       },
     ],
     reminders: [
@@ -790,334 +953,158 @@ function createGoalAgentMockRun(request: {
         importance: 'Moderate',
         cadence: 'weekly',
         timeOfDay: '09:00',
+        timezone: null,
+        channels: ['InApp'],
+        tags: [],
       },
     ],
+    rationale:
+      'Create the approved goal draft with a measurable key result, task template, and reminder.',
+    warnings: [],
   };
-  const pendingActions = [
-    {
-      tool: 'create_goal',
-      payload: { title: 'Agent-created AI workflow' },
-      rationale: 'Create the approved goal draft.',
-      index: 0,
-      dependsOn: [],
-    },
-    {
-      tool: 'create_key_result',
-      payload: { title: 'Run the Goal Agent workflow end to end' },
-      rationale: 'Track a measurable workflow outcome.',
-      index: 0,
-      dependsOn: [0],
-    },
-    {
-      tool: 'create_task_template',
-      payload: { name: 'Review Agent execution' },
-      rationale: 'Create a review task template for recurring execution checks.',
-      index: 0,
-      dependsOn: [0, 1],
-    },
-    {
-      tool: 'create_reminder',
-      payload: { title: 'Review Agent result' },
-      rationale: 'Create a review reminder for the approved goal cadence.',
-      index: 0,
-      dependsOn: [0],
-    },
-  ];
+}
 
+function createGoalWorkflowMockRun(request: {
+  runId?: string;
+  conversationId?: string | null;
+}): GoalWorkflowMockRun {
+  const draft = createGoalAgentWorkflowDraft();
   return {
-    runId: request.runId ?? 'run-e2e-goal-agent-1',
-    threadId: request.threadId ?? 'thread-e2e-goal-agent-1',
+    runId: request.runId ?? 'workflow-e2e-goal-1',
     conversationId: request.conversationId ?? e2eConversationId,
-    createdAt: now,
-    goalDraft,
-    actionPlan: {
-      summary: 'Create the Agent goal, measurable key result, review task template, and reminder.',
-      actions: pendingActions,
-      warnings: [],
-    },
-    pendingActions,
-    approvedActions: [],
-    executedActions: [],
+    createdAt: Date.now(),
+    draft,
+    executedGoalId: null,
+    executedTaskIds: [],
+    executedReminderIds: [],
+    failures: [],
+    executionStatus: 'failed',
   };
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
+function goalReviewSuspension(
+  draft: GoalPlanDraft,
+): NonNullable<Extract<AIWorkflowRunView, { kind: 'goal.create' }>['suspension']> {
+  // E2E mock: draft fields carry the canonical GoalPlanDraft contract shape at
+  // runtime; the loose local type is only for authoring ergonomics. The client
+  // re-validates with AIWorkflowRunViewSchema before projection, so malformed
+  // fixtures fail loudly rather than silently.
+  return {
+    type: 'goal_draft_review',
+    draft: draft as unknown as NonNullable<
+      Extract<AIWorkflowRunView, { kind: 'goal.create' }>['suspension']
+    > extends { type: 'goal_draft_review' }
+      ? Extract<AIWorkflowRunView, { kind: 'goal.create' }>['suspension']
+      : never,
+    warnings: draft.warnings,
+    revision: draft.revision,
+  } as NonNullable<Extract<AIWorkflowRunView, { kind: 'goal.create' }>['suspension']>;
 }
 
-function findActionPayload(
-  actions: Array<Record<string, unknown>>,
-  tool: string,
-): Record<string, unknown> {
-  const action = actions.find((item) => item.tool === tool);
-  expect(action).toBeTruthy();
-  return asRecord(action?.payload);
+function createGoalReviewRun(mockRun: GoalWorkflowMockRun): AIWorkflowRunView {
+  const now = Date.now();
+  return {
+    runId: mockRun.runId,
+    kind: 'goal.create',
+    conversationId: mockRun.conversationId,
+    status: 'suspended',
+    suspension: goalReviewSuspension(mockRun.draft),
+    createdAt: mockRun.createdAt,
+    updatedAt: now,
+  };
 }
 
-function expectGoalAgentApprovalPayload(
-  request: {
-    approvedActions?: Array<Record<string, unknown>>;
-    approvedPlan?: { actions?: Array<Record<string, unknown>> };
-    editedArtifacts?: Array<Record<string, unknown>>;
-  },
-  goalAgentRun: GoalAgentMockRun,
+function createGoalRecoveryRun(mockRun: GoalWorkflowMockRun): AIWorkflowRunView {
+  const now = Date.now();
+  return {
+    runId: mockRun.runId,
+    kind: 'goal.create',
+    conversationId: mockRun.conversationId,
+    status: 'suspended',
+    suspension: {
+      type: 'recovery_required',
+      message: 'Some goal plan mutations failed.',
+      retryable: true,
+      failures: mockRun.failures,
+    },
+    result: {
+      workflowRunId: mockRun.runId,
+      revision: mockRun.draft.revision,
+      status: mockRun.executionStatus,
+      goalId: mockRun.executedGoalId ?? undefined,
+      keyResultIds: [],
+      taskIds: mockRun.executedTaskIds,
+      reminderIds: mockRun.executedReminderIds,
+      failures: mockRun.failures,
+      retryable: true,
+    },
+    createdAt: mockRun.createdAt,
+    updatedAt: now,
+  };
+}
+
+function createGoalCompletedRun(mockRun: GoalWorkflowMockRun): AIWorkflowRunView {
+  const now = Date.now();
+  return {
+    runId: mockRun.runId,
+    kind: 'goal.create',
+    conversationId: mockRun.conversationId,
+    status: 'completed',
+    result: {
+      workflowRunId: mockRun.runId,
+      revision: mockRun.draft.revision,
+      status: mockRun.executionStatus,
+      goalId: mockRun.executedGoalId ?? undefined,
+      keyResultIds: mockRun.draft.keyResults.map((_, index) => `kr-e2e-${index + 1}`),
+      taskIds: mockRun.executedTaskIds,
+      reminderIds: mockRun.executedReminderIds,
+      failures: mockRun.failures,
+      retryable: false,
+    },
+    createdAt: mockRun.createdAt,
+    updatedAt: now,
+  };
+}
+
+function createCancelledRun(mockRun: GoalWorkflowMockRun): AIWorkflowRunView {
+  const now = Date.now();
+  return {
+    runId: mockRun.runId,
+    kind: 'goal.create',
+    conversationId: mockRun.conversationId,
+    status: 'cancelled',
+    createdAt: mockRun.createdAt,
+    updatedAt: now,
+  };
+}
+
+function executeGoalWorkflowMockRun(
+  mockRun: GoalWorkflowMockRun,
+  telemetry: GoalWorkflowMockTelemetry,
 ) {
-  const approvedActions = request.approvedActions ?? [];
-  const approvedTools = approvedActions.map((action) => action.tool);
-  expect(approvedTools).toEqual([
-    'create_goal',
-    'create_key_result',
-    'create_task_template',
-    'create_reminder',
-  ]);
-
-  const goalPayload = findActionPayload(approvedActions, 'create_goal');
-  expect(goalPayload.title).toBe(goalAgentRun.goalDraft.title);
-  expect(goalPayload.description).toBe(goalAgentRun.goalDraft.description);
-  expect(goalPayload.keyResults).toEqual(goalAgentRun.goalDraft.keyResults);
-  expect(goalPayload.taskTemplates).toEqual(goalAgentRun.goalDraft.taskTemplates);
-  expect(goalPayload.reminders).toEqual(goalAgentRun.goalDraft.reminders);
-
-  const keyResultPayload = findActionPayload(approvedActions, 'create_key_result');
-  expect(keyResultPayload.title).toBe('Run the Goal Agent workflow end to end');
-
-  const taskTemplatePayload = findActionPayload(approvedActions, 'create_task_template');
-  expect(taskTemplatePayload.name).toBe('Review Agent execution');
-
-  const reminderPayload = findActionPayload(approvedActions, 'create_reminder');
-  expect(reminderPayload.title).toBe('Review Agent result');
-  expect(reminderPayload.cadence).toBe('weekly');
-  expect(reminderPayload.timeOfDay).toBe('09:00');
-
-  expect(request.approvedPlan?.actions?.map((action) => action.tool)).toEqual(approvedTools);
-
-  const editedGoalDraft = request.editedArtifacts?.find(
-    (artifact) => artifact.kind === 'goal_draft',
-  );
-  const editedGoalData = asRecord(editedGoalDraft?.data);
-  expect(editedGoalData.title).toBe(goalAgentRun.goalDraft.title);
-  expect(editedGoalData.reminders).toEqual(goalAgentRun.goalDraft.reminders);
-}
-
-function executeGoalAgentMockRun(mockRun: GoalAgentMockRun, telemetry: GoalWorkflowMockTelemetry) {
   telemetry.goalAgentExecuteRequestCount += 1;
   const retrySucceeded = telemetry.goalAgentExecuteRequestCount > 1;
 
-  mockRun.executedActions = retrySucceeded
-    ? [
-        {
-          tool: 'create_goal',
-          status: 'executed',
-          entityId: 'goal-e2e-1',
-          message: '已创建目标。',
-        },
-        {
-          tool: 'create_key_result',
-          status: 'executed',
-          entityId: 'kr-e2e-1',
-          message: 'Created key result after retry.',
-        },
-        {
-          tool: 'create_task_template',
-          status: 'executed',
-          entityId: 'task-template-e2e-1',
-          message: 'Created task template after retry.',
-        },
-        {
-          tool: 'create_reminder',
-          status: 'executed',
-          entityId: 'reminder-e2e-1',
-          message: 'Created reminder after retry.',
-        },
-      ]
-    : [
-        {
-          tool: 'create_goal',
-          status: 'executed',
-          entityId: 'goal-e2e-1',
-          message: '已创建目标。',
-        },
-        {
-          tool: 'create_key_result',
-          status: 'failed',
-          message: '关键结果创建失败，字段仍需修正。',
-        },
-        {
-          tool: 'create_task_template',
-          status: 'skipped',
-          message: 'Skipped because key result 0 creation failed.',
-        },
-        {
-          tool: 'create_reminder',
-          status: 'executed',
-          entityId: 'reminder-e2e-1',
-          message: 'Created reminder "Review Agent result".',
-        },
-      ];
-}
-
-function createGoalAgentRunResult(mockRun: GoalAgentMockRun, status: GoalAgentMockStatus) {
-  const now = Date.now();
-  const hasExecution = status === 'completed';
-  const executedCount = mockRun.executedActions.filter(
-    (action) => action.status === 'executed',
-  ).length;
-  const skippedActions = mockRun.executedActions.filter((action) => action.status === 'skipped');
-  const failedActions = mockRun.executedActions.filter((action) => action.status === 'failed');
-  const executionOutcome =
-    failedActions.length === 0
-      ? 'success'
-      : executedCount > 0 || skippedActions.length > 0
-        ? 'partial'
-        : 'failed';
-  const artifacts = [
-    {
-      artifactId: `${mockRun.runId}:goal-draft`,
-      kind: 'goal_draft',
-      title: String(mockRun.goalDraft.title),
-      data: mockRun.goalDraft,
-      updatedAt: now,
-    },
-    {
-      artifactId: `${mockRun.runId}:action-plan`,
-      kind: 'action_plan',
-      title: 'Goal Agent approval plan',
-      data: mockRun.actionPlan,
-      updatedAt: now,
-    },
-  ];
-
-  if (hasExecution) {
-    artifacts.push({
-      artifactId: `${mockRun.runId}:execution`,
-      kind: 'execution_timeline',
-      title: 'Goal Agent execution result',
-      data: {
-        summary: {
-          status: executionOutcome,
-          executedCount,
-          skippedCount: skippedActions.length,
-          failedCount: failedActions.length,
-        },
-        executedActions: mockRun.executedActions,
-        recovery: {
-          canRetry: failedActions.length > 0 || skippedActions.length > 0,
-          failedActions,
-          skippedActions,
-          suggestions:
-            failedActions.length > 0 || skippedActions.length > 0
-              ? ['Review the key result fields and retry.']
-              : [],
-          retryApprovedActions: mockRun.approvedActions,
-        },
+  mockRun.executedGoalId = 'goal-e2e-1';
+  if (retrySucceeded) {
+    mockRun.executedTaskIds = ['task-template-e2e-1'];
+    mockRun.executedReminderIds = ['reminder-e2e-1'];
+    mockRun.failures = [];
+    mockRun.executionStatus = 'success';
+  } else {
+    mockRun.executedTaskIds = [];
+    mockRun.executedReminderIds = ['reminder-e2e-1'];
+    mockRun.failures = [
+      {
+        operation: 'task_template',
+        index: 0,
+        code: 'KEY_RESULT_FAILED',
+        message: '关键结果创建失败，字段仍需修正。',
+        retryable: true,
       },
-      updatedAt: now,
-    });
+    ];
+    mockRun.executionStatus = 'partial';
   }
-
-  return {
-    run: {
-      runId: mockRun.runId,
-      threadId: mockRun.threadId,
-      conversationId: mockRun.conversationId,
-      identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-      agentType: 'goal.create',
-      status,
-      createdAt: mockRun.createdAt,
-      updatedAt: now,
-    },
-    state: {
-      messages: [
-        {
-          role: 'user',
-          content: 'Create a structured AI workflow goal through the Agent runtime.',
-          createdAt: mockRun.createdAt,
-        },
-      ],
-      intent: 'goal-create',
-      stage:
-        status === 'waiting_approval'
-          ? 'approval'
-          : status === 'waiting_execution'
-            ? 'execution'
-            : 'result',
-      artifacts,
-      citations: [],
-      retrievedContext: [],
-      pendingActions: status === 'waiting_approval' ? mockRun.pendingActions : [],
-      approvedActions:
-        status === 'waiting_approval' || status === 'cancelled' ? [] : mockRun.approvedActions,
-      executedActions: hasExecution ? mockRun.executedActions : [],
-      usage: {
-        promptTokens: 90,
-        completionTokens: 38,
-        totalTokens: 128,
-      },
-      errors: [],
-    },
-    events:
-      status === 'completed'
-        ? [
-            ...mockRun.executedActions.map((action, index) => ({
-              eventId: `${mockRun.runId}:${index + 3}`,
-              runId: mockRun.runId,
-              sequence: index + 3,
-              type: 'tool.completed',
-              createdAt: now,
-              data: {
-                tool: action.tool,
-                status: action.status,
-                durationMs: index === 0 ? 42 : 55,
-              },
-            })),
-            {
-              eventId: `${mockRun.runId}:${mockRun.executedActions.length + 3}`,
-              runId: mockRun.runId,
-              sequence: mockRun.executedActions.length + 3,
-              type: 'run.completed',
-              createdAt: now,
-              data: { status: executionOutcome },
-            },
-          ]
-        : [
-            {
-              eventId: `${mockRun.runId}:0`,
-              runId: mockRun.runId,
-              sequence: 0,
-              type: 'node.completed',
-              createdAt: now,
-              data: { node: 'goal_draft', durationMs: 68 },
-            },
-            {
-              eventId: `${mockRun.runId}:1`,
-              runId: mockRun.runId,
-              sequence: 1,
-              type: status === 'waiting_approval' ? 'approval.required' : 'execution.required',
-              createdAt: now,
-              data: { status },
-            },
-          ],
-    interrupts:
-      status === 'waiting_approval'
-        ? [
-            {
-              runId: mockRun.runId,
-              type: 'approval.required',
-              pendingActions: mockRun.pendingActions,
-            },
-          ]
-        : status === 'waiting_execution'
-          ? [
-              {
-                runId: mockRun.runId,
-                type: 'execution.required',
-                pendingActions: mockRun.approvedActions,
-              },
-            ]
-          : [],
-  };
 }
 
 async function installGoalWorkflowMocks(
@@ -1134,20 +1121,14 @@ async function installGoalWorkflowMocks(
     goalAgentCancelCount: 0,
     goalAgentExecuteRequestCount: 0,
     goalAgentCompletionResumeCount: 0,
+    taskWorkflowStartCount: 0,
+    taskWorkflowApproveCount: 0,
+    taskWorkflowCancelCount: 0,
+    knowledgeCaptureStartCount: 0,
+    knowledgeCaptureApproveCount: 0,
+    knowledgeCaptureCancelCount: 0,
+    legacyEndpointCallCount: 0,
   };
-  const goalAgentRunsByRunId = new Map<string, GoalAgentMockRun>();
-  const noteDraftsByRunId = new Map<
-    string,
-    {
-      title: string;
-      markdown: string;
-      topic: string;
-      targetSubpath: string;
-      tags: string[];
-      source: string;
-      pendingAction: Record<string, unknown>;
-    }
-  >();
   await page.route('**/api/v1/settings', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.continue();
@@ -1314,176 +1295,121 @@ async function installGoalWorkflowMocks(
     await route.continue();
   });
 
-  // Residual 1333: seed open-chat timeline messages so post-send listConversations
-  // / selectConversation reloads do not erase hasWorkflowUserMessages.
+  // Batch B: Mastra owns default open-chat transcript persistence. These messages
+  // are returned only by the canonical runtime history route.
   const openChatMessages: Array<{
     id: string;
     conversationId: string;
-    role: string;
+    role: 'user' | 'assistant';
     content: string;
     createdAt: number;
   }> = [];
 
-  await page.route(
-    '**/api/v1/ai/chat/messages?conversationId=*&page=*&pageSize=*',
-    async (route) => {
-      await fulfillJson(route, {
-        data: openChatMessages,
-        total: openChatMessages.length,
-        page: 1,
-        pageSize: 80,
-      });
-    },
-  );
+  await page.route('**/api/v1/ai/runtime/assistant/history', async (route) => {
+    const request = (route.request().postDataJSON() ?? {}) as { conversationId?: string };
+    expect(request).not.toHaveProperty('identityId');
+    await fulfillJson(route, {
+      conversationId: request.conversationId ?? conversationId,
+      messages: openChatMessages,
+    });
+  });
 
-  // Residual 1333: open chat + Host proposal lifecycle use AssistantFacade SSE
-  // (`/ai/assistant/dispatch/sse`), not legacy chat/messages/sse. Missing mocks leave
-  // chatLoading stuck and block confirm/cancel (dispatchHostProposalDecision fails closed).
-  await page.route('**/api/v1/ai/assistant/dispatch/sse', async (route) => {
+  await page.route('**/api/v1/ai/runtime/assistant/sse', async (route) => {
     const request = (route.request().postDataJSON() ?? {}) as {
-
       type?: string;
       content?: string;
-      runId?: string;
       conversationId?: string;
-      proposalId?: string;
-      revision?: number;
-      reason?: string;
+      surface?: string;
+      providerId?: string;
+      modelId?: string;
     };
-    const fulfillSse = async (assistantEvents: Record<string, unknown>[]) => {
-      // Match AIAssistantHttpAdapter unit fixtures: event/data pairs terminated by \n\n.
-      // Explicit content-length so Chromium closes the fetch body (chunked/keep-alive
-      // without a length can leave parseSSE waiting and stick chatLoading).
-      const frames: string[] = [];
-      for (const event of assistantEvents) {
-        frames.push(
-          `event: assistant\ndata: ${JSON.stringify(event)}\n\n`,
-        );
-      }
-      frames.push(
-        `event: done\ndata: ${JSON.stringify({ eventCount: assistantEvents.length })}\n\n`,
-      );
-      const body = frames.join('');
-      await route.fulfill({
-        status: 200,
-        contentType: 'text/event-stream; charset=utf-8',
-        body,
-        headers: {
-          'cache-control': 'no-cache',
-          'content-length': String(Buffer.byteLength(body, 'utf8')),
-          connection: 'close',
-        },
-      });
-    };
-
-    if (request.type === 'cancel_run') {
-      await fulfillSse([
-        {
-          type: 'run.cancelled',
-          runId: request.runId ?? 'run-e2e-open-chat',
-        },
-      ]);
-      return;
-    }
-
-    if (request.type === 'approve_proposal') {
-      const revision = (request.revision ?? 1) + 0;
-      await fulfillSse([
-        {
-          type: 'proposal.approved',
-          runId: request.runId ?? 'run-e2e',
-          proposalId: request.proposalId ?? 'proposal-e2e',
-          revision,
-        },
-      ]);
-      return;
-    }
-
-    if (request.type === 'reject_proposal') {
-      const revision = request.revision ?? 1;
-      await fulfillSse([
-        {
-          type: 'proposal.rejected',
-          runId: request.runId ?? 'run-e2e',
-          proposalId: request.proposalId ?? 'proposal-e2e',
-          revision,
-          reason: request.reason ?? 'user_cancel',
-        },
-      ]);
-      return;
-    }
-
-    if (request.type === 'revise_proposal') {
-      const revision = (request.revision ?? 1) + 1;
-      await fulfillSse([
-        {
-          type: 'proposal.revised',
-          runId: request.runId ?? 'run-e2e',
-          proposalId: request.proposalId ?? 'proposal-e2e',
-          revision,
-        },
-      ]);
-      return;
-    }
+    expect(request).not.toHaveProperty('identityId');
+    expect(request).not.toHaveProperty('executionProfileId');
+    expect(request.type).toBe('message');
+    expect(request.surface).toBe('web');
+    expect(request.providerId).toBe('provider-e2e-openai');
+    expect(request.modelId).toBe('gpt-4.1-mini');
 
     const userContent = request.content ?? '';
-    const runId = request.runId ?? 'run-e2e-open-chat';
-    const assistantContent = '先把目标拆清楚，我会帮你补全 workflow。';
     const now = Date.now();
     const convId = request.conversationId ?? conversationId;
-    const userMsgId = `msg-user-${openChatMessages.length + 1}`;
-    const assistantMsgId = `msg-assistant-${openChatMessages.length + 1}`;
+    const turn = Math.floor(openChatMessages.length / 2) + 1;
+    const runId = `run-e2e-mastra-goal-workflow-${turn}`;
+    const userMsgId = `msg-user-${turn}`;
+    const assistantMsgId = `msg-assistant-${turn}`;
+    const assistantContent = '先把目标拆清楚，我会帮你补全 workflow。';
     if (userContent.trim()) {
-      openChatMessages.push({
-        id: userMsgId,
-        conversationId: convId,
-        role: 'user',
-        content: userContent,
-        createdAt: now,
-      });
-      openChatMessages.push({
-        id: assistantMsgId,
-        conversationId: convId,
-        role: 'assistant',
-        content: assistantContent,
-        createdAt: now + 1,
-      });
-    }
-    // Ensure conversation appears in list after first open-chat turn.
-    generateGoalStep = Math.max(generateGoalStep, 1);
-    await fulfillSse([
-      {
-        type: 'run.started',
-        runId,
-        engineId: 'engine.direct_turn',
-        profile: 'direct_turn',
-      },
-      {
-        type: 'message.delta',
-        runId,
-        content: assistantContent,
-      },
-      {
-        type: 'message.completed',
-        runId,
-        status: 'completed',
-        content: assistantContent,
-        userMessage: {
+      openChatMessages.push(
+        {
           id: userMsgId,
           conversationId: convId,
           role: 'user',
           content: userContent,
           createdAt: now,
         },
-        assistantMessage: {
+        {
           id: assistantMsgId,
           conversationId: convId,
           role: 'assistant',
           content: assistantContent,
           createdAt: now + 1,
         },
+      );
+    }
+    generateGoalStep = Math.max(generateGoalStep, 1);
+
+    const events = [
+      {
+        eventId: `${runId}:1`,
+        runId,
+        conversationId: convId,
+        sequence: 1,
+        createdAt: now,
+        type: 'assistant.run.started',
+        data: { providerId: 'provider-e2e-openai', modelId: 'gpt-4.1-mini' },
       },
-    ]);
+      {
+        eventId: `${runId}:2`,
+        runId,
+        conversationId: convId,
+        sequence: 2,
+        createdAt: now,
+        type: 'assistant.message.delta',
+        data: { content: assistantContent },
+      },
+      {
+        eventId: `${runId}:3`,
+        runId,
+        conversationId: convId,
+        sequence: 3,
+        createdAt: now,
+        type: 'assistant.run.completed',
+        data: { content: assistantContent, assistantMessageId: assistantMsgId },
+      },
+    ];
+    const body = events
+      .map((event) => `event: runtime\ndata: ${JSON.stringify(event)}\n\n`)
+      .join('');
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream; charset=utf-8',
+      body,
+      headers: {
+        'cache-control': 'no-cache',
+        'content-length': String(Buffer.byteLength(body, 'utf8')),
+        connection: 'close',
+      },
+    });
+  });
+
+  // AI-VNEXT-07 architecture lock: no UI journey may fall back to AssistantFacade.
+  await page.route('**/api/v1/ai/assistant/dispatch/sse', async (route) => {
+    telemetry.legacyEndpointCallCount += 1;
+    await route.fulfill({
+      status: 410,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Legacy AssistantFacade endpoint is retired' }),
+    });
   });
 
   await page.route('**/api/v1/ai/knowledge/query', async (route) => {
@@ -1540,810 +1466,265 @@ async function installGoalWorkflowMocks(
     });
   });
 
-  await page.route('**/api/v1/ai/agents/runs/run-e2e-restored-approval', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
-      return;
-    }
+  // AI-VNEXT-07: goal.create, task.create and knowledge.capture are all owned by
+  // the canonical durable Mastra Workflow runtime. No AgentRun/HostProposal seam exists.
+  const workflowRunsByRunId = new Map<string, GoalWorkflowMockRun>();
+  const taskWorkflowRunsByRunId = new Map<string, TaskWorkflowMockRun>();
+  const knowledgeCaptureRunsByRunId = new Map<string, KnowledgeCaptureMockRun>();
 
-    await fulfillJson(route, createRuntimeRestoredApprovalRunResult());
+  const restoredApprovalRun = createGoalWorkflowMockRun({
+    runId: 'workflow-e2e-restored-approval',
+    conversationId,
   });
+  restoredApprovalRun.draft = createRestoredGoalWorkflowDraft();
+  const restoredTaskApprovalRun: TaskWorkflowMockRun = {
+    runId: 'workflow-e2e-restored-task-approval',
+    conversationId,
+    createdAt: Date.now(),
+    draft: createTaskWorkflowDraft('Restored Mastra task workflow'),
+  };
 
-  await page.route('**/api/v1/ai/agents/runs?*', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
-      return;
-    }
-
-    await fulfillJson(route, []);
-  });
-
-  await page.route('**/api/v1/ai/agents/runs', async (route) => {
+  await page.route('**/api/v1/ai/runtime/workflow/start', async (route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
       return;
     }
-
     const request = route.request().postDataJSON() as {
-      runId?: string;
-      threadId?: string;
-      conversationId?: string | null;
-      agentType?: string;
-      input?: {
-        idea?: string;
-        question?: string;
-        maxResources?: number;
-        topic?: string;
-        title?: string;
-        source?: string;
-        // Residual 1333: client AgentStartRun uses snake_case provider_id (Host contract).
-        provider_id?: string;
-        providerId?: string;
-        model?: string;
-      };
+      kind?: string;
+      conversationId?: string;
+      input?: { idea?: string; topic?: string; goalId?: string };
+      providerId?: string;
+      modelId?: string;
+      locale?: string;
     };
-    const requestProviderId = request.input?.provider_id ?? request.input?.providerId;
-    const requestModel = request.input?.model;
+    expect(request).not.toHaveProperty('identityId');
+    expect(request.conversationId).toBeTruthy();
+    expect(request.providerId).toBe('provider-e2e-openai');
+    expect(request.modelId).toBe('gpt-4.1-mini');
 
-    if (request.agentType === 'goal.create') {
+    if (request.kind === 'goal.create') {
+      expect(request.input?.idea?.trim().length).toBeGreaterThan(0);
       telemetry.goalAgentStartCount += 1;
       telemetry.lastGoalAgentStart = {
         idea: request.input?.idea,
-        providerId: requestProviderId,
-        model: requestModel,
+        providerId: request.providerId,
+        model: request.modelId,
       };
-
-      const mockRun = createGoalAgentMockRun(request);
-      goalAgentRunsByRunId.set(mockRun.runId, mockRun);
-      await fulfillJson(route, createGoalAgentRunResult(mockRun, 'waiting_approval'));
+      const mockRun = createGoalWorkflowMockRun({ conversationId: request.conversationId });
+      workflowRunsByRunId.set(mockRun.runId, mockRun);
+      await fulfillJson(route, createGoalReviewRun(mockRun));
       return;
     }
 
-    if (request.agentType === 'knowledge.qa') {
-      expect(requestProviderId).toBe('provider-e2e-openai');
-      expect(request.input?.question).toBeTruthy();
-
-      const question = request.input?.question ?? '';
-      const insufficientEvidence = question.includes('unindexed archive migration plan');
-      const citations = insufficientEvidence
-        ? []
-        : [
-            {
-              resourceId: 'resource-grounding-1',
-              resourcePath: 'notes/ai/grounding-policy.md',
-              title: 'MemoFlow grounding policy',
-              chunkIndex: 0,
-              excerpt: 'Knowledge answers must cite repository evidence before sounding certain.',
-              score: 0.94,
-            },
-          ];
-      const answer = insufficientEvidence
-        ? 'I do not have enough repository evidence to answer this from your indexed knowledge base.'
-        : 'Grounded answers cite repository excerpts and show where each claim came from.';
-      const runId = request.runId ?? 'knowledge-qa-run-e2e-1';
-      const threadId = request.threadId ?? 'knowledge-qa-thread-e2e-1';
-      const now = Date.now();
-
-      await fulfillJson(route, {
-        run: {
-          runId,
-          threadId,
-          conversationId: request.conversationId ?? conversationId,
-          identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-          agentType: 'knowledge.qa',
-          status: 'completed',
-          createdAt: now,
-          updatedAt: now,
-        },
-        state: {
-          messages: [],
-          intent: 'knowledge-qa',
-          stage: 'result',
-          artifacts: [
-            {
-              artifactId: `${runId}:answer`,
-              kind: 'knowledge_answer',
-              title: question,
-              data: {
-                question,
-                answer,
-                evidenceStatus: insufficientEvidence ? 'insufficient' : 'grounded',
-                matchedResourceCount: citations.length,
-                providerId: 'provider-e2e-openai',
-                processingTimeMs: insufficientEvidence ? 54 : 75,
-              },
-              updatedAt: now,
-            },
-          ],
-          citations,
-          retrievedContext: [],
-          pendingActions: [],
-          approvedActions: [],
-          executedActions: [],
-          usage: {
-            promptTokens: insufficientEvidence ? 48 : 64,
-            completionTokens: insufficientEvidence ? 18 : 24,
-            totalTokens: insufficientEvidence ? 66 : 88,
-          },
-          errors: [],
-        },
-        events: [
-          {
-            eventId: `${runId}:0`,
-            runId,
-            sequence: 0,
-            type: 'node.completed',
-            createdAt: now,
-            data: {
-              node: 'search_knowledge',
-              durationMs: insufficientEvidence ? 54 : 75,
-            },
-          },
-        ],
-        interrupts: [],
-      });
-      return;
-    }
-
-    if (request.agentType !== 'knowledge.generate') {
-      await route.continue();
-      return;
-    }
-
-    expect(requestProviderId).toBe('provider-e2e-openai');
-    expect(requestModel).toBe('gpt-4.1-mini');
-
-    const source = request.input?.source ?? '';
-    const isConversationDraft = source.includes('reusable knowledge note about agent checkpoints');
-    if (!isConversationDraft) {
-      expect(request.input?.title).toContain(
-        'How should knowledge answers stay grounded in citations?',
-      );
-      expect(source).toContain('MemoFlow grounding policy');
-    } else {
-      expect(source).toContain(
-        'User: Turn this planning conversation into a reusable knowledge note about agent checkpoints.',
-      );
-    }
-
-    const draftTitle = isConversationDraft
-      ? 'Conversation Agent Checkpoints'
-      : 'Grounded Knowledge Answers';
-    const draftMarkdown = isConversationDraft
-      ? [
-          '# Conversation Agent Checkpoints',
-          '',
-          'Drafted from an ordinary workspace conversation about checkpoint recovery.',
-        ].join('\n')
-      : '# Grounded Knowledge Answers\n\nGrounded answers cite repository excerpts and show where each claim came from.';
-    const draftTags = isConversationDraft ? ['ai', 'agent-runtime'] : ['ai', 'knowledge'];
-    const runId = request.runId ?? 'note-run-e2e-1';
-    const threadId = request.threadId ?? 'note-thread-e2e-1';
-    const draftArtifactId = `${runId}:knowledge-note-draft`;
-    const pendingAction = {
-      tool: 'create_knowledge_note',
-      payload: {
-        title: draftTitle,
-        topic: request.input?.topic ?? 'Grounded knowledge answers',
-        contentMarkdown: draftMarkdown,
-        contentArtifactId: draftArtifactId,
-        targetSubpath: 'notes/ai',
-        tags: draftTags,
-        providerId: 'provider-e2e-openai',
-        model: 'gpt-4.1-mini',
-      },
-      rationale: 'Persist the approved knowledge note draft.',
-      index: 0,
-      dependsOn: [],
-    };
-    noteDraftsByRunId.set(runId, {
-      title: draftTitle,
-      markdown: draftMarkdown,
-      topic: request.input?.topic ?? 'Grounded knowledge answers',
-      targetSubpath: 'notes/ai',
-      tags: draftTags,
-      source,
-      pendingAction,
-    });
-
-    const now = Date.now();
-    await fulfillJson(route, {
-      run: {
-        runId,
-        threadId,
+    if (request.kind === 'task.create') {
+      expect(request.input?.idea?.trim().length).toBeGreaterThan(0);
+      telemetry.taskWorkflowStartCount += 1;
+      const mockRun: TaskWorkflowMockRun = {
+        runId: `workflow-e2e-task-${telemetry.taskWorkflowStartCount}`,
         conversationId: request.conversationId ?? conversationId,
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        agentType: 'knowledge.generate',
-        status: 'waiting_approval',
-        createdAt: now,
-        updatedAt: now,
-      },
-      state: {
-        messages: [],
-        intent: 'knowledge-generate',
-        stage: 'approval',
-        artifacts: [
-          {
-            artifactId: draftArtifactId,
-            kind: 'knowledge_note_draft',
-            title: draftTitle,
-            data: {
-              title: draftTitle,
-              topic: request.input?.topic ?? 'Grounded knowledge answers',
-              markdown: draftMarkdown,
-              targetSubpath: 'notes/ai',
-              tags: draftTags,
-              duplicateRisk: 'low',
-              indexStatus: 'draft',
-              source,
-            },
-            updatedAt: now,
-          },
-        ],
-        citations: [],
-        retrievedContext: [],
-        pendingActions: [pendingAction],
-        approvedActions: [],
-        executedActions: [],
-        usage: {},
-        errors: [],
-      },
-      events: [
-        {
-          eventId: `${runId}:0`,
-          runId,
-          sequence: 0,
-          type: 'artifact.updated',
-          createdAt: now,
-          data: { kind: 'knowledge_note_draft' },
-        },
-        {
-          eventId: `${runId}:1`,
-          runId,
-          sequence: 1,
-          type: 'approval.required',
-          createdAt: now,
-          data: { status: 'waiting_approval' },
-        },
-      ],
-      interrupts: [
-        {
-          runId,
-          type: 'approval.required',
-          pendingActions: [pendingAction],
-        },
-      ],
-    });
+        createdAt: Date.now(),
+        draft: createTaskWorkflowDraft(),
+      };
+      taskWorkflowRunsByRunId.set(mockRun.runId, mockRun);
+      await fulfillJson(route, createTaskReviewRun(mockRun));
+      return;
+    }
+
+    if (request.kind === 'knowledge.capture') {
+      expect(request.input?.topic?.trim().length).toBeGreaterThan(0);
+      telemetry.knowledgeCaptureStartCount += 1;
+      const mockRun: KnowledgeCaptureMockRun = {
+        runId: `workflow-e2e-knowledge-${telemetry.knowledgeCaptureStartCount}`,
+        conversationId: request.conversationId ?? conversationId,
+        createdAt: Date.now(),
+        draft: createKnowledgeCaptureDraft(),
+      };
+      knowledgeCaptureRunsByRunId.set(mockRun.runId, mockRun);
+      await fulfillJson(route, createKnowledgeCaptureReviewRun(mockRun));
+      return;
+    }
+
+    throw new Error(`Unexpected vNext workflow kind: ${String(request.kind)}`);
   });
 
-  // Match absolute and relative resume URLs (Vite proxy + direct API).
-  await page.route(/\/api\/v1\/ai\/agents\/runs\/[^/]+\/resume(?:\?|$)/, async (route) => {
+  await page.route('**/api/v1/ai/runtime/workflow/get', async (route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
       return;
     }
+    const request = route.request().postDataJSON() as { runId?: string };
+    expect(request).not.toHaveProperty('identityId');
 
-    const url = new URL(route.request().url());
-    const segments = url.pathname.split('/').filter(Boolean);
-    // .../ai/agents/runs/:runId/resume
-    const runIdIndex = segments.lastIndexOf('runs') + 1;
-    const runId = decodeURIComponent(segments[runIdIndex] ?? '');
-    const goalAgentRun = goalAgentRunsByRunId.get(runId);
-    if (goalAgentRun) {
-      const request = route.request().postDataJSON() as {
-        userDecision?: string;
-        approvedActions?: Array<Record<string, unknown>>;
-        executedActions?: Array<Record<string, unknown>>;
-        editedArtifacts?: Array<Record<string, unknown>>;
-        approvedPlan?: {
-          actions?: Array<Record<string, unknown>>;
-        };
-      };
-
-      if (request.userDecision === 'cancel') {
-        telemetry.goalAgentCancelCount += 1;
-        goalAgentRun.approvedActions = [];
-        goalAgentRun.executedActions = [];
-        await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'cancelled'));
-        return;
-      }
-
-      expect(request.userDecision).toBe('confirm');
-
-      if (request.executedActions?.length) {
-        telemetry.goalAgentCompletionResumeCount += 1;
-        goalAgentRun.executedActions = request.executedActions;
-        await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'completed'));
-        return;
-      }
-
-      if (!request.approvedActions?.length) {
-        telemetry.goalAgentRetryResumeCount += 1;
-        expect(goalAgentRun.approvedActions.length).toBeGreaterThan(0);
-        executeGoalAgentMockRun(goalAgentRun, telemetry);
-        telemetry.goalAgentCompletionResumeCount += 1;
-        await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'completed'));
-        return;
-      }
-
-      telemetry.goalAgentApprovalResumeCount += 1;
-      expectGoalAgentApprovalPayload(request, goalAgentRun);
-      goalAgentRun.approvedActions = request.approvedActions ?? [];
-      goalAgentRun.actionPlan = {
-        ...goalAgentRun.actionPlan,
-        actions: goalAgentRun.approvedActions,
-      };
-      executeGoalAgentMockRun(goalAgentRun, telemetry);
-      telemetry.goalAgentCompletionResumeCount += 1;
-      await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'completed'));
+    if (request.runId === restoredApprovalRun.runId) {
+      await fulfillJson(route, createGoalReviewRun(restoredApprovalRun));
       return;
     }
+    if (request.runId === restoredTaskApprovalRun.runId) {
+      await fulfillJson(route, createTaskReviewRun(restoredTaskApprovalRun));
+      return;
+    }
+    const goalRun = workflowRunsByRunId.get(request.runId ?? '');
+    if (goalRun) {
+      await fulfillJson(route, createGoalReviewRun(goalRun));
+      return;
+    }
+    const taskRun = taskWorkflowRunsByRunId.get(request.runId ?? '');
+    if (taskRun) {
+      await fulfillJson(route, createTaskReviewRun(taskRun));
+      return;
+    }
+    const captureRun = knowledgeCaptureRunsByRunId.get(request.runId ?? '');
+    await fulfillJson(route, captureRun ? createKnowledgeCaptureReviewRun(captureRun) : null);
+  });
 
-    const draft = noteDraftsByRunId.get(runId);
-    if (!draft) {
+  await page.route('**/api/v1/ai/runtime/workflow/list', async (route) => {
+    if (route.request().method() !== 'POST') {
       await route.continue();
       return;
     }
+    const request = route.request().postDataJSON() as Record<string, unknown>;
+    expect(request).not.toHaveProperty('identityId');
+    await fulfillJson(route, []);
+  });
 
+  await page.route('**/api/v1/ai/runtime/workflow/resume', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
     const request = route.request().postDataJSON() as {
-      userDecision?: string;
-      approvedActions?: Array<Record<string, unknown>>;
+      runId?: string;
+      command?: { type?: string };
     };
-    expect(request.userDecision).toBe('confirm');
-    expect(request.approvedActions).toEqual([draft.pendingAction]);
+    expect(request).not.toHaveProperty('identityId');
+    const commandType = request.command?.type;
+    const runId = request.runId ?? '';
 
-    const resourceName = `${draft.title}.md`;
-    const resolvedPath = `${draft.targetSubpath}/${resourceName}`;
-    const now = Date.now();
-    const executedAction = {
-      tool: 'create_knowledge_note',
-      status: 'executed',
-      entityId: 'resource-note-e2e-1',
-      message: `Saved knowledge note to ${resolvedPath}.`,
-      data: {
-        note: {
-          id: 'resource-note-e2e-1',
-          name: resourceName,
-          content: draft.markdown,
-        },
-        resolvedPath,
-        indexStatus: 'indexed',
-      },
-    };
+    const taskRun =
+      taskWorkflowRunsByRunId.get(runId) ||
+      (runId === restoredTaskApprovalRun.runId ? restoredTaskApprovalRun : undefined);
+    if (taskRun) {
+      if (commandType === 'cancel') {
+        telemetry.taskWorkflowCancelCount += 1;
+        await fulfillJson(route, createTaskCancelledRun(taskRun));
+        return;
+      }
+      if (commandType === 'approve') {
+        telemetry.taskWorkflowApproveCount += 1;
+        await fulfillJson(route, createTaskCompletedRun(taskRun));
+        return;
+      }
+      if (commandType === 'edit_structured') {
+        await fulfillJson(route, createTaskReviewRun(taskRun));
+        return;
+      }
+      throw new Error(`Unexpected task.create resume command: ${String(commandType)}`);
+    }
 
-    await fulfillJson(route, {
-      run: {
-        runId,
-        threadId: runId.replace(/^run-/, 'thread-'),
-        conversationId,
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        agentType: 'knowledge.generate',
-        status: 'completed',
-        createdAt: now,
-        updatedAt: now,
-      },
-      state: {
-        messages: [],
-        intent: 'knowledge-generate',
-        stage: 'result',
-        artifacts: [
-          {
-            artifactId: `${runId}:knowledge-note-draft`,
-            kind: 'knowledge_note_draft',
-            title: draft.title,
-            data: {
-              title: draft.title,
-              topic: draft.topic,
-              markdown: draft.markdown,
-              targetSubpath: draft.targetSubpath,
-              tags: draft.tags,
-              duplicateRisk: 'low',
-              indexStatus: 'draft',
-              source: draft.source,
-            },
-            updatedAt: now,
-          },
-          {
-            artifactId: `${runId}:knowledge-note-execution`,
-            kind: 'execution_timeline',
-            title: 'Knowledge note save result',
-            data: {
-              summary: {
-                status: 'success',
-                executedCount: 1,
-                failedCount: 0,
-              },
-              executedActions: [executedAction],
-              recovery: {
-                canRetry: false,
-                failedActions: [],
-                skippedActions: [],
-                suggestions: [],
-                retryApprovedActions: [draft.pendingAction],
-              },
-            },
-            updatedAt: now,
-          },
-        ],
-        citations: [],
-        retrievedContext: [],
-        pendingActions: [],
-        approvedActions: [draft.pendingAction],
-        executedActions: [executedAction],
-        usage: {},
-        errors: [],
-      },
-      events: [
-        {
-          eventId: `${runId}:2`,
-          runId,
-          sequence: 2,
-          type: 'tool.completed',
-          createdAt: now,
-          data: { tool: 'create_knowledge_note', status: 'executed' },
-        },
-      ],
-      interrupts: [],
+    const captureRun = knowledgeCaptureRunsByRunId.get(runId);
+    if (captureRun) {
+      if (commandType === 'cancel') {
+        telemetry.knowledgeCaptureCancelCount += 1;
+        await fulfillJson(route, createKnowledgeCaptureCancelledRun(captureRun));
+        return;
+      }
+      if (commandType === 'approve') {
+        telemetry.knowledgeCaptureApproveCount += 1;
+        await fulfillJson(route, createKnowledgeCaptureCompletedRun(captureRun));
+        return;
+      }
+      if (commandType === 'edit_structured') {
+        await fulfillJson(route, createKnowledgeCaptureReviewRun(captureRun));
+        return;
+      }
+      throw new Error(`Unexpected knowledge.capture resume command: ${String(commandType)}`);
+    }
+
+    const mockRun =
+      workflowRunsByRunId.get(runId) ||
+      (runId === restoredApprovalRun.runId ? restoredApprovalRun : undefined);
+    if (commandType === 'cancel') {
+      telemetry.goalAgentCancelCount += 1;
+      await fulfillJson(route, createCancelledRun(mockRun ?? restoredApprovalRun));
+      return;
+    }
+    if (commandType === 'retry') {
+      telemetry.goalAgentRetryResumeCount += 1;
+      if (mockRun) executeGoalWorkflowMockRun(mockRun, telemetry);
+      telemetry.goalAgentCompletionResumeCount += 1;
+      await fulfillJson(route, createGoalCompletedRun(mockRun ?? restoredApprovalRun));
+      return;
+    }
+    if (commandType === 'approve') {
+      telemetry.goalAgentApprovalResumeCount += 1;
+      if (mockRun) executeGoalWorkflowMockRun(mockRun, telemetry);
+      const completed = mockRun && mockRun.executionStatus === 'success';
+      if (completed) telemetry.goalAgentCompletionResumeCount += 1;
+      await fulfillJson(
+        route,
+        completed
+          ? createGoalCompletedRun(mockRun)
+          : createGoalRecoveryRun(mockRun ?? restoredApprovalRun),
+      );
+      return;
+    }
+    if (commandType === 'edit_structured') {
+      await fulfillJson(route, createGoalReviewRun(mockRun ?? restoredApprovalRun));
+      return;
+    }
+    throw new Error(`Unexpected goal.create resume command: ${String(commandType)}`);
+  });
+
+  await page.route('**/api/v1/ai/runtime/workflow/cancel', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+    const request = route.request().postDataJSON() as { runId?: string };
+    expect(request).not.toHaveProperty('identityId');
+    const runId = request.runId ?? '';
+    const taskRun = taskWorkflowRunsByRunId.get(runId);
+    if (taskRun) {
+      telemetry.taskWorkflowCancelCount += 1;
+      await fulfillJson(route, createTaskCancelledRun(taskRun));
+      return;
+    }
+    const captureRun = knowledgeCaptureRunsByRunId.get(runId);
+    if (captureRun) {
+      telemetry.knowledgeCaptureCancelCount += 1;
+      await fulfillJson(route, createKnowledgeCaptureCancelledRun(captureRun));
+      return;
+    }
+    const goalRun = workflowRunsByRunId.get(runId) ?? restoredApprovalRun;
+    telemetry.goalAgentCancelCount += 1;
+    await fulfillJson(route, createCancelledRun(goalRun));
+  });
+
+  await page.route('**/api/v1/ai/agents/runs**', async (route) => {
+    telemetry.legacyEndpointCallCount += 1;
+    await route.fulfill({
+      status: 410,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Legacy AgentRun endpoint is retired' }),
     });
   });
 
   await page.route('**/api/v1/ai/knowledge-notes', async (route) => {
-    if (route.request().method() !== 'POST') {
-      await route.continue();
-      return;
-    }
-
-    throw new Error('Knowledge note E2E should save through Agent resume.');
-
-    const request = route.request().postDataJSON() as {
-      topic?: string;
-      title?: string;
-      contentMarkdown?: string;
-      targetSubpath?: string;
-      providerId?: string;
-      model?: string;
-    };
-
-    const isConversationNote = request.title === 'Conversation Agent Checkpoints';
-    if (isConversationNote) {
-      expect(request.contentMarkdown).toContain('# Conversation Agent Checkpoints');
-    } else {
-      expect(request.title).toBe('Grounded Knowledge Answers');
-      expect(request.contentMarkdown).toContain('# Grounded Knowledge Answers');
-    }
-    expect(request.targetSubpath).toBe('notes/ai');
-    expect(request.providerId).toBe('provider-e2e-openai');
-    expect(request.model).toBe('gpt-4.1-mini');
-
-    const resourceName = isConversationNote
-      ? 'Conversation Agent Checkpoints.md'
-      : 'Grounded Knowledge Answers.md';
-    const resolvedPath = `notes/ai/${resourceName}`;
-
-    const now = Date.now();
-    await fulfillJson(route, {
-      note: {
-        id: 'resource-note-e2e-1',
-        repositoryScopeId: 'connection-e2e-1',
-        name: resourceName,
-        path: resolvedPath,
-        mimeType: 'text/markdown',
-        size: 124,
-        content: request.contentMarkdown ?? null,
-        createdAt: now,
-        updatedAt: now,
-      },
-      resolvedPath,
-      indexStatus: 'indexed',
-      tokenUsage: {
-        promptTokens: 72,
-        completionTokens: 31,
-        totalTokens: 103,
-      },
-      providerId: 'provider-e2e-openai',
-      processingTimeMs: 82,
-      generatedAt: now,
+    telemetry.legacyEndpointCallCount += 1;
+    await route.fulfill({
+      status: 410,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Legacy knowledge-note generation endpoint is retired' }),
     });
   });
 
   await page.route('**/api/v1/ai/generate/goal', async (route) => {
-    const request = route.request().postDataJSON() as {
-      command?: 'draft' | 'prepare' | 'execute';
-      clarificationAnswers?: string[];
-      approvedPlan?: {
-        goal?: {
-          title?: string;
-          description?: string;
-          category?: string;
-          importance?: string;
-          motivation?: string;
-          feasibilityAnalysis?: string;
-          suggestedStartDate?: number;
-          suggestedEndDate?: number;
-          tags?: string[];
-        };
-        keyResults?: Array<Record<string, unknown>>;
-        taskTemplates?: Array<Record<string, unknown>>;
-      };
-      approvedActions?: Array<{ tool?: string }>;
-    };
-
-    if ((request.command ?? 'draft') === 'draft' && !request.clarificationAnswers?.length) {
-      generateGoalStep = 1;
-      await fulfillJson(route, {
-        state: 'clarification',
-        clarification: {
-          needsClarification: true,
-          rationale: '还需要补充执行重点与节奏。',
-          questions: [
-            {
-              question: '你最想先改善哪一段 workflow？',
-              context: '例如澄清、规划、执行或复盘。',
-            },
-            {
-              question: '你希望这套 workflow 以什么节奏运行？',
-              context: '例如每日执行、每周复盘。',
-            },
-          ],
-        },
-        tokenUsage: { promptTokens: 80, completionTokens: 22, totalTokens: 102 },
-        providerId: 'provider-e2e-openai',
-        processingTimeMs: 90,
-        generatedAt: Date.now(),
-        providerUsed: 'E2E OpenAI',
-        modelUsed: 'gpt-4.1-mini',
-      });
-      return;
-    }
-
-    if ((request.command ?? 'draft') === 'draft' && request.clarificationAnswers?.length) {
-      generateGoalStep = 2;
-      conversationName = '建立稳定的 AI agent 工作流';
-      await fulfillJson(route, {
-        state: 'draft',
-        goal: {
-          title: '建立稳定的 AI agent 工作流',
-          description: '围绕澄清、规划、执行和复盘，建立可重复的 AI goal workflow。',
-          category: 'learning',
-          importance: 'Important',
-          motivation: '把 AI 想法稳定转成可执行目标。',
-          feasibilityAnalysis: '聚焦日常执行和每周复盘，范围可控。',
-          suggestedStartDate: Date.now(),
-          suggestedEndDate: Date.now() + 1000 * 60 * 60 * 24 * 60,
-          tags: ['ai', 'workflow'],
-        },
-        keyResults: [
-          {
-            title: '每周复盘 workflow 结果',
-            description: '至少完成 8 次每周复盘。',
-            valueType: 'Incremental',
-            calculationMethod: 'Sum',
-            startValue: 0,
-            currentValue: 0,
-            targetValue: 8,
-            unit: '次',
-            weight: 3,
-          },
-        ],
-        tokenUsage: { promptTokens: 140, completionTokens: 60, totalTokens: 200 },
-        providerId: 'provider-e2e-openai',
-        processingTimeMs: 110,
-        generatedAt: Date.now(),
-        providerUsed: 'E2E OpenAI',
-        modelUsed: 'gpt-4.1-mini',
-      });
-      return;
-    }
-
-    if (request.command === 'prepare') {
-      generateGoalStep = 3;
-      await fulfillJson(route, {
-        state: 'confirm',
-        summary: '先创建目标与关键结果，再保留失败项供后续补齐。',
-        plan: {
-          goal: {
-            title: '建立稳定的 AI agent 工作流',
-            description: '围绕澄清、规划、执行和复盘，建立可重复的 AI goal workflow。',
-            category: 'learning',
-            importance: 'Important',
-            motivation: '把 AI 想法稳定转成可执行目标。',
-            feasibilityAnalysis: '聚焦日常执行和每周复盘，范围可控。',
-            suggestedStartDate: Date.now(),
-            suggestedEndDate: Date.now() + 1000 * 60 * 60 * 24 * 60,
-            tags: ['ai', 'workflow'],
-          },
-          keyResults: [
-            {
-              title: '每周复盘 workflow 结果',
-              description: '至少完成 8 次每周复盘。',
-              valueType: 'Incremental',
-              calculationMethod: 'Sum',
-              startValue: 0,
-              currentValue: 0,
-              targetValue: 8,
-              unit: '次',
-              weight: 3,
-            },
-          ],
-          taskTemplates: [
-            {
-              name: '每周 workflow 复盘',
-              description: '记录执行质量与下周修正点。',
-              importance: 'Moderate',
-              cadence: 'weekly',
-            },
-          ],
-        },
-        actions: [
-          { tool: 'create_goal', index: 0, rationale: '先创建目标主记录。' },
-          { tool: 'create_key_result', index: 1, rationale: '补上可量化 KR。' },
-        ],
-        tokenUsage: { promptTokens: 120, completionTokens: 48, totalTokens: 168 },
-        providerId: 'provider-e2e-openai',
-        processingTimeMs: 125,
-        generatedAt: Date.now(),
-        providerUsed: 'E2E OpenAI',
-        modelUsed: 'gpt-4.1-mini',
-      });
-      return;
-    }
-
-    if (request.command === 'execute') {
-      generateGoalStep = 4;
-      const isGoalAgentExecution =
-        request.approvedPlan?.goal?.title === 'Agent-created AI workflow';
-      let goalAgentExecutionAttempt = 0;
-
-      if (isGoalAgentExecution) {
-        telemetry.goalAgentExecuteRequestCount += 1;
-        goalAgentExecutionAttempt = telemetry.goalAgentExecuteRequestCount;
-        expect(request.approvedActions?.map((action) => action.tool)).toEqual([
-          'create_goal',
-          'create_key_result',
-          'create_task_template',
-          'create_reminder',
-        ]);
-      }
-      const retrySucceeded = isGoalAgentExecution && goalAgentExecutionAttempt > 1;
-      const executedActions = retrySucceeded
-        ? [
-            {
-              tool: 'create_goal',
-              status: 'executed',
-              entityId: 'goal-e2e-1',
-              message: '已创建目标。',
-            },
-            {
-              tool: 'create_key_result',
-              status: 'executed',
-              entityId: 'kr-e2e-1',
-              message: 'Created key result after retry.',
-            },
-            {
-              tool: 'create_task_template',
-              status: 'executed',
-              entityId: 'task-template-e2e-1',
-              message: 'Created task template after retry.',
-            },
-            {
-              tool: 'create_reminder',
-              status: 'executed',
-              entityId: 'reminder-e2e-1',
-              message: 'Created reminder after retry.',
-            },
-          ]
-        : [
-            {
-              tool: 'create_goal',
-              status: 'executed',
-              entityId: 'goal-e2e-1',
-              message: '已创建目标。',
-            },
-            {
-              tool: 'create_key_result',
-              status: 'failed',
-              message: '关键结果创建失败，字段仍需修正。',
-            },
-            {
-              tool: 'create_task_template',
-              status: 'skipped',
-              message: 'Skipped because key result 0 creation failed.',
-            },
-            {
-              tool: 'create_reminder',
-              status: 'executed',
-              entityId: 'reminder-e2e-1',
-              message: 'Created reminder "Review Agent result".',
-            },
-          ];
-
-      await fulfillJson(route, {
-        state: 'result',
-        summary: retrySucceeded ? '目标和关键结果已创建。' : '目标已创建，关键结果暂未完全写入。',
-        plan: {
-          goal: {
-            title: request.approvedPlan?.goal?.title ?? '建立稳定的 AI agent 工作流',
-            description:
-              request.approvedPlan?.goal?.description ??
-              '围绕澄清、规划、执行和复盘，建立可重复的 AI goal workflow。',
-            category: request.approvedPlan?.goal?.category ?? 'learning',
-            importance: request.approvedPlan?.goal?.importance ?? 'Important',
-            motivation: request.approvedPlan?.goal?.motivation ?? '把 AI 想法稳定转成可执行目标。',
-            feasibilityAnalysis:
-              request.approvedPlan?.goal?.feasibilityAnalysis ??
-              '聚焦日常执行和每周复盘，范围可控。',
-            suggestedStartDate: request.approvedPlan?.goal?.suggestedStartDate ?? Date.now(),
-            suggestedEndDate:
-              request.approvedPlan?.goal?.suggestedEndDate ?? Date.now() + 1000 * 60 * 60 * 24 * 60,
-            tags: request.approvedPlan?.goal?.tags ?? ['ai', 'workflow'],
-          },
-          keyResults: request.approvedPlan?.keyResults ?? [
-            {
-              title: '每周复盘 workflow 结果',
-              description: '至少完成 8 次每周复盘。',
-              valueType: 'Incremental',
-              calculationMethod: 'Sum',
-              startValue: 0,
-              currentValue: 0,
-              targetValue: 8,
-              unit: '次',
-              weight: 3,
-            },
-          ],
-          taskTemplates: request.approvedPlan?.taskTemplates ?? [
-            {
-              name: '每周 workflow 复盘',
-              description: '记录执行质量与下周修正点。',
-              importance: 'Moderate',
-              cadence: 'weekly',
-            },
-          ],
-        },
-        actions: [
-          { tool: 'create_goal', index: 0, rationale: '先创建目标主记录。' },
-          { tool: 'create_key_result', index: 0, rationale: '补上可量化 KR。' },
-          {
-            tool: 'create_task_template',
-            index: 0,
-            rationale: '创建支撑 KR 的复盘任务模板。',
-          },
-          {
-            tool: 'create_reminder',
-            index: 0,
-            rationale: '创建复盘提醒。',
-          },
-        ],
-        executedActions,
-        executionSummary: {
-          status: retrySucceeded ? 'success' : 'partial',
-          executedCount: retrySucceeded ? 4 : 2,
-          skippedCount: retrySucceeded ? 0 : 1,
-          failedCount: retrySucceeded ? 0 : 1,
-        },
-        recovery: {
-          canRetry: !retrySucceeded,
-          failedActions: retrySucceeded
-            ? []
-            : [
-                {
-                  tool: 'create_key_result',
-                  status: 'failed',
-                  message: '关键结果创建失败，字段仍需修正。',
-                },
-              ],
-          suggestions: retrySucceeded ? [] : ['先修正关键结果字段，再重新执行失败动作。'],
-        },
-        tokenUsage: { promptTokens: 90, completionTokens: 30, totalTokens: 120 },
-        providerId: 'provider-e2e-openai',
-        processingTimeMs: 140,
-        generatedAt: Date.now(),
-        providerUsed: 'E2E OpenAI',
-        modelUsed: 'gpt-4.1-mini',
-      });
-      return;
-    }
-
-    throw new Error(`Unexpected goal workflow request: ${JSON.stringify(request)}`);
+    telemetry.legacyEndpointCallCount += 1;
+    await route.fulfill({
+      status: 410,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Legacy goal-generation endpoint is retired' }),
+    });
   });
 
   return telemetry;

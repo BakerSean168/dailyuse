@@ -39,8 +39,6 @@ export function AIScreen() {
     sendMessage,
     setSelectedModel,
     setSelectedProviderId,
-    setStreamMode,
-    streamMode,
   } = useAIWorkspace();
   const [conversationName, setConversationName] = useState('');
   const [messageDraft, setMessageDraft] = useState('');
@@ -101,7 +99,7 @@ export function AIScreen() {
                 label={capabilities ? capabilities.runtimeMode : 'runtime unknown'}
                 tone="textSecondary"
               />
-              <StatusPill label={streamMode ? 'stream mode' : 'request mode'} tone={streamMode ? 'success' : 'warning'} />
+              <StatusPill label="Mastra stream" tone="success" />
             </View>
           </SectionCard>
 
@@ -245,18 +243,8 @@ export function AIScreen() {
             </View>
           </SectionCard>
 
-          <SectionCard title="Message composer" description="支持流式和非流式两种发送模式，provider 与 model 使用上面的选择结果。">
+          <SectionCard title="Message composer" description="消息通过与 Web/Desktop 相同的 Mastra Assistant runtime 流式发送，provider 与 model 使用上面的选择结果。">
             <View style={styles.actionRow}>
-              <PrimaryButton
-                label="Stream"
-                onPress={() => setStreamMode(true)}
-                variant={streamMode ? 'solid' : 'ghost'}
-              />
-              <PrimaryButton
-                label="Request"
-                onPress={() => setStreamMode(false)}
-                variant={!streamMode ? 'solid' : 'ghost'}
-              />
               {selectedProvider ? <StatusPill label={selectedProvider.name} tone="tint" /> : null}
               {selectedModel ? <StatusPill label={selectedModel} tone="textSecondary" /> : null}
             </View>

@@ -3,142 +3,127 @@ tags:
   - architecture
   - ai
   - path-map
-  - elegance
-description: AI 运行路径地图——Host open-chat / Workflow AgentRun / legacy message API
+  - mastra
+description: MemoFlow AI vNext 当前运行路径地图——Mastra 是唯一 Assistant/Workflow runtime
 created: 2026-07-26T00:00:00
-updated: 2026-07-26T00:00:00
+updated: 2026-08-22T12:50:00+08:00
 ---
 
 # AI 运行路径地图
 
-> elegance plan **E4 / C1–C2**。产品 open-chat **不得**回退到 `streamMessage` 双路径。  
-> 唯一例外：`AIClientService` 内部的窄版本兼容 adapter（见下方 §① 例外），只对「dispatch 明确不可用 +
-> 零事件 + direct_turn message」生效。  
-> Dual 账本：[`../governance/dual-registry.md`](../governance/dual-registry.md)。  
-> 产品 plan：[`../plan/active/2026-07-17-unified-assistant-agent-host.md`](../plan/active/2026-07-17-unified-assistant-agent-host.md)（勿假绿 §20）。
+> ADR-050 / ADR-051 / ADR-052 已完成目标态切换。**TypeScript + Mastra 是唯一核心 AI execution runtime。**
+> Python `apps/ai-service`、Agent Host、LangGraph bridge、TurnEngine、ProposalKernel、AgentRun checkpoint 双轨均已退役。
 
-## 三条路径（一眼）
+## 当前权威路径
 
-| #     | 名称                   | 主入口                                                                                  | 持久化 / 事件                                                                                | 产品用途                                                                                                                                       |
-| ----- | ---------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **①** | **Host open-chat**     | `AIClientPort.dispatchAssistant` → HTTP SSE `/ai/assistant/dispatch/sse` 或 Desktop IPC | 会话消息 + Host 事件（`assistant-run-*` 绑定 **conversation**，**不是** 持久 `AgentRun` 行） | **产品默认聊天**（Web `useAIChatSession` / `useAssistantDispatch` / proposal lifecycle）                                                       |
-| **②** | **Workflow AgentRun**  | `startAgentRun` / `resumeAgentRun` / `listAgentRuns`                                    | 持久 `AgentRun`（可带 `conversationId` 过滤）                                                | Goal/知识工作流、可恢复 run 列表                                                                                                               |
-| **③** | **Legacy message API** | `sendMessage` / `streamMessage`                                                         | 经典 chat message 流                                                                         | **遗留**；仅 adapter/Electron 桥、**app-react** 工作区，以及 `AIClientService` 内的窄版本兼容 adapter；**Vue 产品 open-chat 禁止作为默认发送** |
+| 路径                             | Client / Transport                                                              | Runtime authority                                    | Product authority                          |
+| -------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------ |
+| Open chat                        | `AssistantRuntimeClient` → `/ai/runtime/assistant/*` / `ai:runtime:assistant:*` | `MastraAIRuntime` + Mastra thread/memory             | Conversation shell + provider config       |
+| Goal / Task / Knowledge workflow | `WorkflowRuntimeClient` → `/ai/runtime/workflow/*` / `ai:runtime:workflow:*`    | `MastraAIRuntime` + durable Mastra workflow snapshot | Goal / Task / Repository application ports |
+| Usage / cost                     | `RuntimeUsageClient` → `/ai/runtime/usage` / `ai:runtime:usage:get`             | indexed `ai_generation_tasks` execution log          | Host-injected identity boundary            |
+| Eval / release gate              | `ai:eval:replay` + canonical report adapter                                     | TypeScript eval runner                               | `reports/apps/ai/evals`                    |
 
-## ① Host open-chat（主路径）
+## 1. Open chat
 
 ```text
-UI (app-vue)
-  useAIChatSession / useAssistantDispatch / hostProposalLifecycle
-    → AIChatService.dispatchAssistant
-      → AIAssistantHttpAdapter (Web SSE) | AIAssistantIpcAdapter (Desktop)
-        → AIAssistantFacadeController.dispatchAssistant
-          → AssistantFacade / ProposalKernel
+AIChatView / useAIChatSession
+  → AI_ASSISTANT_RUNTIME_KEY
+    → Web: AssistantRuntimeHttpClient
+       → POST /ai/runtime/assistant/history
+       → POST /ai/runtime/assistant/delete
+       → POST /ai/runtime/assistant/sse
+       → POST /ai/runtime/assistant/cancel
+    → Desktop: AssistantRuntimeIpcClient
+      → MastraAIRuntime.dispatchMessage()
+        → Mastra Assistant
+        → provider/model resolved from encrypted ProviderConfig
+        → canonical assistant.* events
+        → Mastra thread/memory persistence
+        → execution log (request/trace/provider/model/token/cost)
 ```
 
-**允许调用方（生产）**
+### Contract rules
 
-| 位置                                                 | 角色                           |
-| ---------------------------------------------------- | ------------------------------ |
-| `packages/app-vue/.../useAIChatSession.ts`           | open-chat 发送 / cancel / load |
-| `packages/app-vue/.../useAssistantDispatch.ts`       | Host command 路由              |
-| `packages/app-vue/.../hostProposalLifecycle.ts`      | approve/reject/cancel proposal |
-| `packages/app-vue/.../useAIKnowledgeNoteWorkflow.ts` | 知识笔记工作流可经 Host        |
-| `packages/ai/src/electron/index.ts`                  | Desktop IPC 桥到 facade        |
-| `packages/ai` adapters / controllers / module wiring | 传输与装配（非 UI）            |
+- Client command 永不携带 `identityId`；HTTP auth / authenticated IPC 在 host boundary 注入。
+- `identityId` 映射 Mastra resource，`conversationId` 映射 thread。
+- BYOK credential 只存在于 server-side model resolver；transport/event/log 不返回 API key。
+- UI 只消费 canonical `assistant.*` event，不消费 provider/Mastra 私有 event。
+- cancel 使用 runtime 生成的 `runId` 并进行 owner check。
+- stream 中可显示即时 usage；terminal/history restore 后通过 `RuntimeUsageClient` 读取 durable conversation 累计 usage。
+- history authority 是 Mastra thread。旧 `AiMessage` 只在一次性 transcript bootstrap 时只读；新消息不双写。
+- 禁止默认聊天回退 `AIClientService.dispatchAssistant` / `AssistantFacade`；不存在 legacy open-chat fallback。
 
-**禁止**
-
-- 产品 open-chat 默认路径改回 `streamMessage` / `sendMessage`；Vue 不分支判断 transport，
-  不展示 fallback-specific 产品事件。
-- 把 Host `assistant-run-*` 事件当成 `listAgentRuns` 持久行（见 N2 association surface）。
-
-**§① 窄版本兼容例外（plan §4.5 / ADR-035，2026-08-15）**
-
-`AIClientService.dispatchAssistant` 是唯一允许承担 legacy `streamMessage` 版本兼容的层，
-且仅当**全部**成立时才 fallback 一次：
-
-- command 是 `message`，`executionProfileId` 缺省或为 `direct_turn`；
-- dispatch 未产出任何 `AssistantEvent`（`sawEvent === false`，尤其未收到 `run.started`）；
-- 错误码是稳定的 `ASSISTANT_DISPATCH_UNAVAILABLE`（Web bootstrap 404/405/501；Desktop
-  bridge/handler 在 START 接受前明确 `NOT_SUPPORTED/NOT_FOUND`）；
-- 原 command 的 `conversationId/content/providerId/model` 可无损映射。
-
-**禁止 fallback（fail-closed）：**
-
-- `pi_readonly`、proposal approve/revise/reject、`cancel_run`；
-- 已收到任意事件（尤其是 `run.started`）；
-- 普通网络 / timeout / abort / `STREAM_TERMINATED`；
-- auth、validation、rate limit、provider/model、Facade application error；
-- malformed SSE/IPC frame、未知 event type、done/result schema error（protocol error）；
-- Desktop START 被接受后的 main crash、sender destroy 或 stream error。
-
-fallback 投影 `message.delta` / `message.completed`，保留 command runId 与持久化消息，
-**绝不伪造 `run.started`**，也不新增 fallback-specific 公共事件。命中只能通过内部
-log/metric 观察。`dispatchPolicy` 由 host composition 显式传入（`prefer_dispatch` /
-`dispatch_only` / `legacy_only`）；生产缺省 `prefer_dispatch`，紧急回滚必须显式配置并
-记录 telemetry。**移除条件**：旧 Server/Desktop host 全部升级到支持 dispatch 后，删除该
-adapter 与 `legacy_only` 开关，legacy 不长期作为双默认路径。
-
-## ② Workflow AgentRun
+## 2. Durable workflows
 
 ```text
-UI / API
-  startAgentRun | resumeAgentRun | listAgentRuns
-    → agent-runtime HTTP/IPC adapters
-      → AIAgentRuntimeController
-        → 持久 AgentRun 存储
+Goal / Task / Knowledge panel
+  → WorkflowRuntimeClient
+    → start / resume / get / list / cancel
+      → MastraAIRuntime
+        → goal.create / task.create / knowledge.capture workflow
+          → typed PlannerWorker
+          → optional clarification/revise/reject
+          → explicit approve/confirm
+          → product mutation port
+             ├─ GoalApplicationPort
+             ├─ TaskApplicationPort
+             └─ Repository knowledge persistence
 ```
 
-**允许调用方（生产）**
+Mastra 只拥有 workflow execution/snapshot。业务事实仍由 MemoFlow domain/application module 拥有；Mastra tool/workflow 不允许直写 Prisma/PowerSync repository。
 
-| 位置                                                                                 | 角色                                           |
-| ------------------------------------------------------------------------------------ | ---------------------------------------------- |
-| `packages/app-vue/.../useAIChatView.ts`                                              | `listAgentRuns({ limit })` 工作流侧栏/最近 run |
-| `packages/app-vue` goal/knowledge composables（经 `startAgentRun`/`resumeAgentRun`） | 工作流                                         |
-| `packages/ai/src/electron/index.ts`                                                  | IPC list/start/resume                          |
-| server controller + module                                                           | 装配                                           |
+`AIWorkflowRunView` 是 Web/Desktop 的唯一 workflow view contract。UI 不维护 AgentAction DAG、`pendingActions`、`approvedActions`、`dependsOn` 或第二套 approval lifecycle。
 
-**边界（N2）**：`listAgentRuns` ≠ Host open-chat 会话恢复列表；产品「按会话恢复 Host 列表」仍 open（AH-2）。
+## 3. Usage / tracing / cost
 
-## ③ Legacy message API
+Assistant turn 与 Goal/Task/Knowledge planner 调用都写入统一 execution log：
 
-```text
-sendMessage / streamMessage
-  → AIMessageHttpAdapter | AIMessageIpcAdapter
-    → AIChatController
-      → chatService
-```
+- 一等索引：`identity_id`, `conversation_id`, `run_id`, `request_id`, `trace_id`, `provider_id`, `model`；
+- usage：prompt/completion/total token；
+- cost：静态 pricing catalog 的 `estimated_cost_usd`；
+- input 只记录安全元数据（例如 `contentLength` / planner `mode`），不记录 raw prompt；
+- failure/cancel 使用稳定公开分类，不持久化 raw provider exception。
 
-**仍存在的生产调用方**
+`IAIUsageReadPort` 必须把 authenticated identity 放进数据库查询条件，再按 conversation/run 聚合；禁止从 JSON payload 全表扫描后在内存做 owner filtering。
 
-| 位置                                             | 说明                                                |
-| ------------------------------------------------ | --------------------------------------------------- |
-| `packages/app-react/src/hooks/useAIWorkspace.ts` | React 工作区仍走 stream/send（**非** Vue 主产品壳） |
-| `packages/ai/src/electron/index.ts`              | IPC 仍暴露 message 通道（兼容）                     |
-| `packages/ai` routes/controllers/adapters        | 传输层保留                                          |
+## 4. Evaluation / release gate
 
-**Vue `app-vue` 产品 open-chat**：不得新增对 `streamMessage`/`sendMessage` 的默认发送依赖。
-`AIClientService` 内部的窄版本兼容例外见 §①；该例外不改变「legacy 不是产品默认路径」的结论。
+Canonical report root：`reports/apps/ai/evals`。
 
-## 调用方审计快照（C2，2026-07-26）
+`pnpm nx run ai:eval:replay` 使用同一 TypeScript runner 比较完整 configuration bundle（runtime/provider/model/prompt/tool-policy），覆盖：
 
-| API                           | 生产 UI 主用                | 遗留 / 桥                       | 测试-only             |
-| ----------------------------- | --------------------------- | ------------------------------- | --------------------- |
-| `dispatchAssistant`           | app-vue Host composables    | electron IPC、HTTP/IPC adapters | `*.test.ts`           |
-| `listAgentRuns`               | `useAIChatView`（workflow） | electron、HTTP/IPC              | controller tests      |
-| `sendMessage`/`streamMessage` | **app-react** workspace     | electron message 通道、HTTP/IPC | message adapter tests |
+- open chat；
+- goal planning；
+- knowledge answer；
+- quality / case regression；
+- estimated cost；
+- p95 latency。
 
-死调用方本轮：**无额外 S 删除**（message API 仍被 React + Electron 使用；保留为 ③，不在本 PR 强制摘除）。
+当前 `recorded_replay` 是离线、可复现的 CI 证据，不冒充 live model evaluation。未来 live executor 复用同一 dataset、comparison policy 与 report schema。
 
-## Surface 锁
+旧 `reports/apps/ai-service/evals` 只保留为版本历史证据；当前 runtime adapter 不读取该目录，也不存在 legacy report fallback。
 
-- 既有 Host dispatch / association / stale-approve surfaces 继续有效。
-- Dual Registry path lock：`packages/governance/src/dual-registry-path.surface.spec.ts`。
-- 本文件路径可由文档与 residual 引用；产品 open-chat 回归 `streamMessage` 视为 elegance 回归。
+## 5. Host composition
+
+API 与 Desktop 都只创建一个 `MastraAIRuntime`，并将同一对象同时作为：
+
+- `mastraRuntime`（Assistant）；
+- `workflowRuntime`（durable Workflow）；
+- execution-log producer；
+- durable usage read consumer。
+
+API 使用 PostgreSQL-backed Mastra storage；Desktop 使用 profile-local LibSQL storage。两端共享 contracts/client 语义，不共享 framework private types。
+
+## 6. 反回退锁
+
+- `ai-vnext-no-legacy.surface.spec.ts`：旧 Python/AgentHost/dual-runtime 文件、transport token、AgentAction DAG、deploy env 不得回归。
+- `architecture-surface-audit.mjs` 的 `AI_MASTRA_RUNTIME_AUTHORITY`：锁 `MastraAIRuntime`、API/Desktop composition root 与 retired files。
+- package/public-surface audits：禁止重新把 concrete legacy runtime adapter 暴露到 public root。
+- HTTP/IPC parity tests：锁 host-owned identity、runtime usage、Assistant/Workflow transport。
 
 ## 相关
 
-- [ADR-035](./adr/ADR-035-unified-assistant-agent-host.md)
-- [elegance foundation plan](../plan/archive/2026-07-26-codebase-elegance-foundation.md)
-- [nightly hygiene](../plan/active/2026-07-25-nightly-hygiene-and-agent-host.md)
+- [ADR-050 — Mastra Native AI Runtime](./adr/ADR-050-mastra-native-ai-runtime.md)
+- [ADR-051 — AI Primitive Taxonomy](./adr/ADR-051-ai-primitive-taxonomy.md)
+- [ADR-052 — Goal Create Reference Workflow](./adr/ADR-052-goal-create-reference-workflow.md)
+- [AI vNext active plan](../plan/active/2026-08-20-mastra-native-ai-vnext-refactor.md)

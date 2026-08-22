@@ -83,9 +83,6 @@ model Account {
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
-  agentRunCheckpoints             AgentRunCheckpoint[]
-  langGraphCheckpoints            LangGraphCheckpoint[]
-  langGraphCheckpointWrites       LangGraphCheckpointWrite[]
 
   // PowerSync: denormalized identity relations
   taskDependencies               TaskDependency[]                @relation("AccountTaskDependencies")
@@ -182,21 +179,28 @@ model AiMessage {
 }
 
 model AiGenerationTask {
-  id           String    @id
-  identityId   String    @map("identity_id")
-  taskType     String    @map("task_type") // GOAL_KEY_RESULTS, TASK_TEMPLATES, etc.
-  status       String // PENDING, PROCESSING, COMPLETED, FAILED
-  input        String    @db.Text // JSON string
-  result       String?   @db.Text // JSON string
-  error        String?   @db.Text
-  retryCount   Int       @default(0) @map("retry_count")
-  tokenUsage   String?   @map("token_usage") // JSON
-  processingMs Int?      @map("processing_ms")
-  version      Int       @default(1)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  completedAt  DateTime? @map("completed_at")
-  deletedAt    DateTime? @map("deleted_at")
+  id               String    @id
+  identityId       String    @map("identity_id")
+  taskType         String    @map("task_type") // GOAL_KEY_RESULTS, TASK_TEMPLATES, etc.
+  status           String // PENDING, PROCESSING, COMPLETED, FAILED
+  conversationId   String?   @map("conversation_id")
+  runId            String?   @map("run_id")
+  requestId        String?   @map("request_id")
+  traceId          String?   @map("trace_id")
+  providerId       String?   @map("provider_id")
+  model            String?
+  estimatedCostUsd Float?    @map("estimated_cost_usd")
+  input            String    @db.Text // JSON string
+  result           String?   @db.Text // JSON string
+  error            String?   @db.Text
+  retryCount       Int       @default(0) @map("retry_count")
+  tokenUsage       String?   @map("token_usage") // JSON
+  processingMs     Int?      @map("processing_ms")
+  version          Int       @default(1)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  completedAt      DateTime? @map("completed_at")
+  deletedAt        DateTime? @map("deleted_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
@@ -204,6 +208,8 @@ model AiGenerationTask {
   @@index([taskType])
   @@index([status])
   @@index([createdAt])
+  @@index([identityId, conversationId, createdAt])
+  @@index([identityId, runId, createdAt])
   @@map("ai_generation_tasks")
 }
 
@@ -317,80 +323,6 @@ model DashboardConfig {
 
   @@index([identityId])
   @@map("dashboard_configs")
-}
-
-model AgentRunCheckpoint {
-  id             String    @id
-  runId          String    @unique @map("run_id")
-  identityId     String    @map("identity_id")
-  conversationId String?   @map("conversation_id")
-  threadId       String    @map("thread_id")
-  agentType      String    @map("agent_type")
-  status         String // pending, running, waiting_clarification, waiting_approval, waiting_execution, completed, failed, cancelled
-  runMetadata    Json      @map("run_metadata") // AgentRun JSON
-  stateSnapshot  Json?     @map("state_snapshot") // AgentState JSON
-  events         Json      @default("[]") // AgentEvent[] JSON
-  interrupts     Json      @default("[]") // interrupt data JSON
-  version        Int       @default(1)
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  deletedAt      DateTime? @map("deleted_at")
-
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@index([identityId])
-  @@index([conversationId])
-  @@index([status])
-  @@index([agentType])
-  @@index([createdAt])
-  @@index([updatedAt])
-  @@map("agent_run_checkpoints")
-}
-
-model LangGraphCheckpoint {
-  id                 String   @id
-  identityId         String   @map("identity_id")
-  agentType          String   @map("agent_type")
-  threadId           String   @map("thread_id")
-  checkpointNs       String   @default("") @map("checkpoint_ns")
-  checkpointId       String   @map("checkpoint_id")
-  parentCheckpointId String?  @map("parent_checkpoint_id")
-  checkpointType     String   @map("checkpoint_type")
-  checkpointBlob     Bytes    @map("checkpoint_blob")
-  metadataType       String   @map("metadata_type")
-  metadataBlob       Bytes    @map("metadata_blob")
-  createdAt          DateTime @default(now()) @map("created_at")
-
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@unique([identityId, agentType, threadId, checkpointNs, checkpointId], map: "lg_ckpt_identity_thread_checkpoint_uq")
-  @@index([identityId, agentType, threadId, checkpointNs, createdAt], map: "lg_ckpt_identity_thread_created_idx")
-  @@index([identityId, agentType, threadId, checkpointNs, checkpointId], map: "lg_ckpt_identity_thread_checkpoint_idx")
-  @@index([identityId, agentType, threadId, checkpointNs, parentCheckpointId], map: "lg_ckpt_identity_thread_parent_idx")
-  @@map("langgraph_checkpoints")
-}
-
-model LangGraphCheckpointWrite {
-  id           String   @id
-  identityId   String   @map("identity_id")
-  agentType    String   @map("agent_type")
-  threadId     String   @map("thread_id")
-  checkpointNs String   @default("") @map("checkpoint_ns")
-  checkpointId String   @map("checkpoint_id")
-  taskId       String   @map("task_id")
-  taskPath     String   @default("") @map("task_path")
-  idx          Int
-  channel      String
-  valueType    String   @map("value_type")
-  valueBlob    Bytes    @map("value_blob")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@unique([identityId, agentType, threadId, checkpointNs, checkpointId, taskId, idx], map: "lg_cpw_identity_checkpoint_task_uq")
-  @@index([identityId, agentType, threadId, checkpointNs, checkpointId, createdAt], map: "lg_cpw_identity_checkpoint_created_idx")
-  @@index([identityId, agentType, threadId, checkpointNs, checkpointId, taskId], map: "lg_cpw_identity_checkpoint_task_idx")
-  @@map("langgraph_checkpoint_writes")
 }
 
 // Better Auth cloud identity source.

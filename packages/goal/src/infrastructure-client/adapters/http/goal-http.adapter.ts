@@ -233,27 +233,4 @@ export class GoalHttpAdapter implements IGoalApiClient {
   async cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.post(`${this.baseUrl}/${goalId}/clone`, request);
   }
-
-  // ===== AI Generation =====
-
-  async generateKeyResults(request: {
-    goalTitle: string;
-    goalDescription?: string;
-    startDate: number;
-    endDate: number;
-    goalContext?: string;
-  }): Promise<
-    Result<{
-      keyResults: Array<{
-        title: string;
-        description?: string;
-        targetValue?: number;
-        unit?: string;
-      }>;
-      tokenUsage: unknown;
-      generatedAt: number;
-    }>
-  > {
-    return this.httpClient.post('/ai/generate/key-results', request);
-  }
 }

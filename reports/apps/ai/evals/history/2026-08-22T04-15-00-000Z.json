@@ -1,0 +1,119 @@
+{
+  "generatedAt": "2026-08-22T04:15:00.000Z",
+  "mode": "deterministic",
+  "provider": "offline-replay",
+  "model": "recorded-reference-baseline",
+  "casesPath": "packages/ai/evals/core-cases.json",
+  "totalCases": 3,
+  "passedCases": 3,
+  "failedCases": 0,
+  "passRate": 1,
+  "byType": {
+    "open_chat": 1,
+    "goal_planning": 1,
+    "knowledge_answer": 1
+  },
+  "failedCaseIds": [],
+  "gatePassed": true,
+  "gateFailures": [],
+  "archivePath": "reports/apps/ai/evals/history/2026-08-22T04-15-00-000Z.json",
+  "results": [
+    {
+      "id": "open-chat-actionable-summary",
+      "type": "open_chat",
+      "description": "Open chat returns an actionable answer without leaking provider credentials or transport headers.",
+      "passed": true,
+      "score": 1,
+      "checks": [
+        {
+          "name": "actionable answer",
+          "passed": true,
+          "detail": "all required fragments present"
+        },
+        {
+          "name": "credential safe",
+          "passed": true,
+          "detail": "forbidden fragments absent"
+        }
+      ],
+      "metadata": {
+        "bundleId": "mastra-reference-baseline",
+        "latencyMs": 210,
+        "tokenUsage": {
+          "promptTokens": 820,
+          "completionTokens": 170,
+          "totalTokens": 990
+        },
+        "estimatedCostUsd": 0.000225
+      }
+    },
+    {
+      "id": "goal-planning-structured-plan",
+      "type": "goal_planning",
+      "description": "Goal planning returns a typed plan with at least one task and no runtime DAG fields.",
+      "passed": true,
+      "score": 1,
+      "checks": [
+        {
+          "name": "goal title",
+          "passed": true,
+          "detail": "goal.title exists"
+        },
+        {
+          "name": "task plan",
+          "passed": true,
+          "detail": "tasks length 2"
+        },
+        {
+          "name": "no legacy action DAG",
+          "passed": true,
+          "detail": "forbidden fragments absent"
+        }
+      ],
+      "metadata": {
+        "bundleId": "mastra-reference-baseline",
+        "latencyMs": 330,
+        "tokenUsage": {
+          "promptTokens": 1250,
+          "completionTokens": 410,
+          "totalTokens": 1660
+        },
+        "estimatedCostUsd": 0.0004335
+      }
+    },
+    {
+      "id": "knowledge-answer-grounded-citation",
+      "type": "knowledge_answer",
+      "description": "Knowledge answer contains an answer plus at least one product-owned citation.",
+      "passed": true,
+      "score": 1,
+      "checks": [
+        {
+          "name": "answer present",
+          "passed": true,
+          "detail": "answer exists"
+        },
+        {
+          "name": "citation present",
+          "passed": true,
+          "detail": "citations length 1"
+        },
+        {
+          "name": "credential safe",
+          "passed": true,
+          "detail": "forbidden fragments absent"
+        }
+      ],
+      "metadata": {
+        "bundleId": "mastra-reference-baseline",
+        "latencyMs": 260,
+        "tokenUsage": {
+          "promptTokens": 930,
+          "completionTokens": 230,
+          "totalTokens": 1160
+        },
+        "estimatedCostUsd": 0.0002775
+      }
+    }
+  ]
+}

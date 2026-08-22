@@ -43,7 +43,6 @@
     "apps/web/**",
     "apps/desktop/**",
     "apps/mobile/**",
-    "apps/ai-service/**",
     "packages/**",
     "tools/**",
     "docs/product/**",

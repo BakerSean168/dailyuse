@@ -45,6 +45,7 @@ import {
   createReminderPowerSyncRepositories,
   createReminderScheduleExecutionSource,
   createReminderScheduleProjectionSource,
+  type ReminderApplicationPort,
   type IReminderTemplateRepository,
   type ReminderScheduleExecutionSource,
   type ReminderScheduleProjectionSource,
@@ -70,6 +71,8 @@ export interface ComposeReminderDesktopDependencies {
 export interface ComposedReminderDesktop {
   /** Already-bound IElectronModule-compatible handle. 已绑定的 IElectronModule 兼容 handle。 */
   readonly module: ReminderElectronModuleDef;
+  /** Canonical transport-neutral application port from the SAME module instance. */
+  readonly applicationPort: ReminderApplicationPort;
   /** Repository view exposed to sibling modules (dashboard). 暴露给兄弟模块（dashboard）的仓储视图。 */
   readonly repositories: { readonly reminderTemplateRepository: IReminderTemplateRepository };
   /** Schedule execution source built from the SAME repository set. 从同一仓储集合构建的 schedule execution source。 */
@@ -139,6 +142,7 @@ export function composeReminder(
 
   return {
     module: createReminderElectronModule({ instance }),
+    applicationPort: instance.api,
     repositories: { reminderTemplateRepository },
     scheduleExecutionSource,
     scheduleProjectionSource,

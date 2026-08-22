@@ -31,6 +31,7 @@ describe('migrator interface', () => {
     const labels = createMigrationCommands(workspaceRoot).map((command) => command.label);
     expect(labels).toEqual([
       'prepare pgvector',
+      'retire legacy AI runtime state',
       'prepare goal-record source correlation',
       'prepare editor-workspace natural key',
       'reconcile Prisma schema',

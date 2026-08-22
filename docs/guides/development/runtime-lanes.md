@@ -86,7 +86,6 @@ LOCAL_DOCKER_MACHINE_PORTS=true
 LOCAL_DOCKER_SHARE_DEV_SECRETS=true
 API_HOST_PORT=12136
 WEB_HOST_PORT=12137
-AI_SERVICE_HOST_PORT=12138
 POWERSYNC_HOST_PORT=12139
 POSTGRES_HOST_PORT=12140
 REDIS_HOST_PORT=12141
@@ -97,9 +96,7 @@ REDIS_HOST_PORT=12141
 因此个人端口不会影响其他开发者。
 
 需要在 Docker 服务与宿主 dev 服务之间逐个切换时，可同时设置
-`LOCAL_DOCKER_SHARE_DEV_SECRETS=true`。本地 Docker 的 API 与 AI Service 将采用
-`.env.development` 中的服务签名/JWT 开发密钥，使宿主 API 与剩余 Docker 服务
-保持相同的本地信任边界。该开关只适用于本机开发，不能用于生产部署。
+`LOCAL_DOCKER_SHARE_DEV_SECRETS=true`。本地 Docker 的 API 将采用 `.env.development` 中的 JWT 开发密钥，使宿主 API 与剩余 Docker 服务保持相同的本地认证边界。该开关只适用于本机开发，不能用于生产部署。
 
 ## 排障
 

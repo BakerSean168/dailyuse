@@ -18,7 +18,6 @@ Load this file when the repository's post-change validation workflow matters mor
   - Required healthy services for local deployment verification:
     - `api`
     - `web`
-    - `ai-service`
     - `powersync`
 - `docs/guides/development/release-workflow.md`
   - The default path is local Docker validation first, PR second, release workflow after merge.

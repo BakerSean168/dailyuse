@@ -1,30 +1,27 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { AIChannels, GoalChannels } from '@memoflow/contracts/electron';
+import { GoalChannels } from '@memoflow/contracts/electron';
 
 /**
- * Goal IPC adapter channel surface (stage-6 residual 79):
- * Goal CRUD uses GoalChannels; AI key-result generation uses AIChannels.GOAL_GENERATE.
- * Must not import only AIChannels while calling GoalChannels (build break).
+ * Goal IPC adapter channel surface after AI-vNext:
+ * Goal owns GoalChannels only. AI-assisted goal creation runs through the canonical
+ * Mastra workflow transport and must not leak back into the Goal domain adapter.
  */
 describe('GoalIpcAdapter channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'goal-ipc.adapter.ts'), 'utf8');
 
-  it('imports both GoalChannels and AIChannels for their respective surfaces', () => {
-    expect(source).toContain(
-      "import { AIChannels, GoalChannels } from '@memoflow/contracts/electron'",
-    );
+  it('uses GoalChannels only and keeps legacy AI goal generation out of the domain adapter', () => {
+    expect(source).toContain("import { GoalChannels } from '@memoflow/contracts/electron'");
     expect(source).toContain('GoalChannels.CREATE');
     expect(source).toContain('GoalChannels.LIST');
     expect(source).toContain('GoalChannels.ARCHIVE_EXPIRED');
-    expect(source).toContain('AIChannels.GOAL_GENERATE');
-    expect(source).not.toMatch(/import \{ AIChannels \} from '@memoflow\/contracts\/electron'/);
+    expect(source).not.toContain('AIChannels');
+    expect(source).not.toContain('ai:goal:generate');
   });
 
   it('keeps contracts channel constants stable', () => {
     expect(GoalChannels.CREATE).toBe('goal:create');
     expect(GoalChannels.ARCHIVE_EXPIRED).toBe('goal:archiveExpired');
-    expect(AIChannels.GOAL_GENERATE).toBe('ai:goal:generate');
   });
 });

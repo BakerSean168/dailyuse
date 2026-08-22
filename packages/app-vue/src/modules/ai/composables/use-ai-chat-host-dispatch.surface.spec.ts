@@ -3,72 +3,81 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 351/369: open chat default send path goes through AssistantFacade
- * via the thin `useAssistantDispatch` entry (residual 349) — never a direct
- * `loadService.dispatchAssistant` bypass and never streamMessage. Residual 369
- * adds Host multi-engine execution profile selection (direct_turn / pi_readonly).
- * Residual 393: stopGenerating issues Host cancel_run with client-owned runId.
+ * AI-VNEXT-03 architecture lock: product open chat is Mastra-native. The
+ * transitional AIClientService remains available to non-migrated workflows,
+ * but default chat must never re-enter AssistantFacade/DirectTurn/Pi profiles.
  */
-describe('useAIChatSession open chat Host dispatch surface', () => {
+describe('useAIChatSession Mastra-native open chat surface', () => {
   const session = readFileSync(resolve(__dirname, 'useAIChatSession.ts'), 'utf8');
   const types = readFileSync(resolve(__dirname, 'types.ts'), 'utf8');
-  const cancelHelper = readFileSync(resolve(__dirname, 'hostOpenChatCancel.ts'), 'utf8');
   const composer = readFileSync(resolve(__dirname, '../components/AIFooterComposer.vue'), 'utf8');
   const chatView = readFileSync(resolve(__dirname, '../views/AIChatView.vue'), 'utf8');
+  const viewComposable = readFileSync(resolve(__dirname, 'useAIChatView.ts'), 'utf8');
+  const webDi = readFileSync(
+    resolve(__dirname, '../../../../../../apps/web/src/platform/di-app.ts'),
+    'utf8',
+  );
+  const desktopDi = readFileSync(
+    resolve(__dirname, '../../../../../../apps/desktop/src/renderer/platform/di-app.ts'),
+    'utf8',
+  );
 
-  it('routes handleSendChat via useAssistantDispatch.dispatchMessage with model selection', () => {
-    expect(session).toContain('useAssistantDispatch({');
-    expect(session).toContain('assistantDispatch.dispatchMessage({');
+  it('routes open-chat history/stream/cancel/delete through the dedicated AssistantRuntimeClient', () => {
+    expect(session).toContain('runtime: AssistantRuntimeClient');
+    expect(session).toContain('options.runtime.listMessages(conversationId)');
+    expect(session).toContain('options.runtime.deleteConversation(id)');
+    expect(session).toContain('options.runtime.streamMessage(');
+    expect(session).toContain('options.runtime.cancelRun(runId)');
     expect(session).toContain('providerId: selectedModel.providerId');
-    expect(session).toContain('model: selectedModel.modelId');
-    // Residual 369: open chat multi-engine Host profile selection.
-    expect(session).toContain('executionProfileId: executionProfileId.value');
-    expect(session).toContain("ref<'direct_turn' | 'pi_readonly'>('direct_turn')");
-    expect(session).toContain('selectExecutionProfile');
-    expect(session).toContain("event.type === 'message.delta'");
-    expect(session).toContain("event.type === 'message.completed'");
-    // The session must NOT branch directly on the transport / call the legacy path.
+    expect(session).toContain('modelId: selectedModel.modelId');
+    expect(session).toContain("event.type === 'assistant.message.delta'");
+    expect(session).toContain("event.type === 'assistant.usage.updated'");
+    expect(session).toContain("event.type === 'assistant.run.completed'");
+    expect(session).not.toContain('useAssistantDispatch');
     expect(session).not.toMatch(/loadService\.dispatchAssistant\s*\(/);
     expect(session).not.toMatch(/loadService\.streamMessage\s*\(/);
     expect(session).not.toMatch(/loadService\.sendMessage\s*\(/);
-    expect(types).toContain("'dispatchAssistant'");
     expect(types).not.toMatch(/'\s*streamMessage\s*'/);
+    expect(types).not.toMatch(/'\s*listMessages\s*'/);
   });
 
-  it('exposes Host engine profile control in composer and chat view (residual 369)', () => {
-    expect(composer).toContain('ai-chat-execution-profile');
-    expect(composer).toContain('value="pi_readonly"');
-    expect(composer).toContain('value="direct_turn"');
-    expect(composer).toContain("'select-execution-profile'");
-    expect(chatView).toContain(':execution-profile-id="executionProfileId"');
-    expect(chatView).toContain('@select-execution-profile="selectExecutionProfile"');
+  it('injects a separate runtime service on Web and Desktop instead of hiding Mastra behind AIClientService', () => {
+    expect(viewComposable).toContain('AI_ASSISTANT_RUNTIME_KEY');
+    expect(viewComposable).toContain(
+      "useStrictInject(AI_ASSISTANT_RUNTIME_KEY, 'AIAssistantRuntime')",
+    );
+    expect(webDi).toContain('createAssistantRuntimeHttpClient');
+    expect(webDi).toContain('AI_ASSISTANT_RUNTIME_KEY');
+    expect(desktopDi).toContain('createAssistantRuntimeIpcClient');
+    expect(desktopDi).toContain('AI_ASSISTANT_RUNTIME_KEY');
   });
 
-  it('stopGenerating issues Host cancel_run with client-owned runId (residual 393)', () => {
-    expect(session).toContain('createHostOpenChatRunId');
-    expect(session).toContain('buildHostOpenChatStopCancelCommand');
-    expect(session).toContain('activeHostRunId');
-    expect(session).toContain('runId: hostRunId');
-    expect(session).toContain('dispatchAssistant(cancelCommand');
-    expect(cancelHelper).toContain("type: 'cancel_run'");
-    expect(cancelHelper).toContain('buildHostOpenChatStopCancelCommand');
-    expect(cancelHelper).not.toContain('identityId');
-    // Stop control remains in composer; Host cancel is session-owned.
+  it('removes DirectTurn/pi_readonly as open-chat product controls and uses runtime-owned run ids for cancel', () => {
+    expect(composer).not.toContain('ai-chat-execution-profile');
+    expect(composer).not.toContain('value="pi_readonly"');
+    expect(composer).not.toContain('value="direct_turn"');
+    expect(composer).not.toContain("'select-execution-profile'");
+    expect(chatView).not.toContain(':execution-profile-id="executionProfileId"');
+    expect(chatView).not.toContain('@select-execution-profile="selectExecutionProfile"');
+    expect(session).toContain('activeRuntimeRunId');
+    expect(session).not.toContain('activeHostRunId');
+    expect(session).not.toContain('createHostOpenChatRunId');
+    expect(session).not.toContain('buildHostOpenChatStopCancelCommand');
     expect(composer).toContain('ai-chat-stop-generating');
     expect(chatView).toContain('@stop="stopGenerating"');
   });
 
-  it('documents AI runtime path map and keeps open-chat off streamMessage (elegance E4)', () => {
+  it('documents the Mastra runtime path and forbids legacy open-chat fallback', () => {
     const pathMap = readFileSync(
       resolve(__dirname, '../../../../../../docs/architecture/ai-runtime-path-map.md'),
       'utf8',
     );
-    expect(pathMap).toContain('dispatchAssistant');
-    expect(pathMap).toContain('Host open-chat');
-    expect(pathMap).toContain('listAgentRuns');
-    expect(pathMap).toContain('产品 open-chat');
-    expect(pathMap).toMatch(/不得.*streamMessage|禁止.*streamMessage|不得回退/);
-    // session still must not call streamMessage on default send
-    expect(session).not.toMatch(/loadService\.streamMessage\s*\(/);
+    expect(pathMap).toContain('AssistantRuntimeClient');
+    expect(pathMap).toContain('/ai/runtime/assistant/sse');
+    expect(pathMap).toContain('/ai/runtime/assistant/history');
+    expect(pathMap).toContain('/ai/runtime/assistant/delete');
+    expect(pathMap).toContain('Mastra');
+    expect(pathMap).toContain('默认聊天回退 `AIClientService.dispatchAssistant`');
+    expect(session).not.toContain('dispatchAssistant');
   });
 });

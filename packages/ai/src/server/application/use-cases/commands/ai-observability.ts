@@ -85,7 +85,7 @@ export function withAICostEstimate(input: AIExecutionLogInput): AIExecutionLogIn
   };
 }
 
-function estimateAIExecutionCost(
+export function estimateAIExecutionCost(
   model: string,
   tokenUsage: ChatExecutionUsage,
 ): AICostEstimate | undefined {

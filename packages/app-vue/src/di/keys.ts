@@ -10,7 +10,7 @@ import type { InjectionKey, Ref, ShallowRef } from 'vue';
 import type { CloudAuthDesktopClientPort } from '@memoflow/contracts';
 import type { DesktopAccessSnapshot } from '@memoflow/contracts/electron';
 import type { ElectronBridge } from '@memoflow/ipc-client';
-import type { AssistantSurface } from '@memoflow/contracts/ai';
+import type { AIRuntimeSurface } from '@memoflow/contracts/ai';
 import type { DesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 import type {
   IAccountService,
@@ -23,7 +23,10 @@ import type {
   INotificationService,
   ISettingService,
   IDataPortabilityService,
-  IAIService,
+  IAIClient,
+  IAssistantRuntimeService,
+  IRuntimeUsageService,
+  IWorkflowRuntimeService,
   IRuleService,
   IDashboardService,
   ModuleCapsule,
@@ -44,7 +47,12 @@ export const NOTIFICATION_SERVICE_KEY: InjectionKey<INotificationService> =
 export const SETTING_SERVICE_KEY: InjectionKey<ISettingService> = Symbol('SettingService');
 export const DATA_PORTABILITY_SERVICE_KEY: InjectionKey<IDataPortabilityService> =
   Symbol('DataPortabilityService');
-export const AI_SERVICE_KEY: InjectionKey<IAIService> = Symbol('AIService');
+export const AI_CLIENT_KEY: InjectionKey<IAIClient> = Symbol('AIClient');
+export const AI_ASSISTANT_RUNTIME_KEY: InjectionKey<IAssistantRuntimeService> =
+  Symbol('AIAssistantRuntime');
+export const AI_RUNTIME_USAGE_KEY: InjectionKey<IRuntimeUsageService> = Symbol('AIRuntimeUsage');
+export const AI_WORKFLOW_RUNTIME_KEY: InjectionKey<IWorkflowRuntimeService> =
+  Symbol('AIWorkflowRuntime');
 export const RULE_SERVICE_KEY: InjectionKey<IRuleService> = Symbol('RuleService');
 export const DASHBOARD_SERVICE_KEY: InjectionKey<IDashboardService> = Symbol('DashboardService');
 
@@ -97,4 +105,4 @@ export const SHELL_WORKFLOW_MOUNT_KEY: InjectionKey<ShallowRef<HTMLElement | nul
  * 读取，而不是嗅探 `window`。该值原样出现在每条 assistant `message`
  * command 上，使 Host Turn Engine 观察到真实调用 surface。
  */
-export const ASSISTANT_SURFACE_KEY: InjectionKey<AssistantSurface> = Symbol('AssistantSurface');
+export const ASSISTANT_SURFACE_KEY: InjectionKey<AIRuntimeSurface> = Symbol('AIRuntimeSurface');

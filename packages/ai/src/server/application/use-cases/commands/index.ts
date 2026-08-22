@@ -1,8 +1,6 @@
 // Existing single-purpose use cases
 export * from './query-ai-analytics.use-case';
 export * from './manage-ai-evaluation-report.use-case';
-export * from './manage-ai-knowledge-note.use-case';
-export * from './generate-ai-goal.use-case';
 
 // AI Provider Config helpers and individual use cases
 export * from './ai-provider-config-helpers';
@@ -14,11 +12,6 @@ export * from './list-ai-providers.use-case';
 export * from './test-ai-provider-connection.use-case';
 export * from './set-default-ai-provider.use-case';
 export * from './refresh-ai-provider-models.use-case';
-
-// AI Chat helpers and individual use cases
-export * from './ai-chat-helpers';
-export * from './send-ai-message.use-case';
-export * from './stream-ai-message.use-case';
 
 // AI Conversation use cases
 export * from './create-conversation.use-case';

@@ -15,7 +15,7 @@ updated: 2026-07-29T00:00:00
 
 ## 1. 本文解决什么问题
 
-MemoFlow 同时包含 Web、Desktop、API、AI Service、PowerSync、PostgreSQL 和
+MemoFlow 同时包含 Web、Desktop、API（内含 Mastra AI runtime）、PowerSync、PostgreSQL 和
 Redis。开发者可能需要：
 
 - 运行完整 Docker 栈做近生产验证。
@@ -44,7 +44,6 @@ target，前置任务并不相同。本文建立唯一的日常使用心智。
 | --- | --- |
 | 只启动 API | `pnpm nx run api:serve` |
 | 只启动 Web | `pnpm nx run web:serve` |
-| 只启动 AI Service | `pnpm nx run ai-service:serve` |
 | 安全启动 Desktop | `pnpm nx run desktop:serve-safe` |
 | 快速启动 Desktop | `pnpm nx run desktop:serve` |
 | Web staging 模式 | `pnpm nx run web:serve --configuration=staging` |
@@ -67,8 +66,7 @@ pnpm nx run <project>:<target>
 pnpm nx run-many -t serve --projects=api,web --parallel=2
 ```
 
-不提供 `dev:all` 或其他根级组合脚本。Web 与 Desktop 共享前端端口，而且
-AI Service 与 API 存在明确的运行依赖；组合哪些项目应直接体现在
+不提供 `dev:all` 或其他根级组合脚本。Web 与 Desktop 共享前端端口，；组合哪些项目应直接体现在
 `--projects` 参数中。
 
 ### 2.3 不支持的开发命令形式
@@ -297,11 +295,9 @@ API         12136
 PostgreSQL  12140
 Redis       12141
 PowerSync   12139
-AI Service  12138
 ```
 
-本机 Docker 和宿主 dev 的开发 JWT、PowerSync key 与内部服务签名保持一致，
-因此宿主 API 可以复用剩余 Docker 服务。
+本机 Docker 和宿主 dev 的开发 JWT、PowerSync key 保持一致，因此宿主 API 可以复用剩余 Docker 服务。
 
 注意：Docker Web 的 Nginx 通过 Docker 网络服务名 `api` 访问 API。停止 API
 容器后，Docker Web 不能自动访问宿主 API。测试宿主 API 时应配合
@@ -313,32 +309,7 @@ AI Service  12138
 docker start memoflow-api-1
 ```
 
-## 5.5 模式 E：AI Service 热更新
-
-只停止 AI 容器后，Docker API 仍会尝试通过 Docker 服务名
-`ai-service:8100` 访问它，不能自动连接宿主 `12138`。因此 AI 开发推荐同时把
-API 切到宿主：
-
-终端一：
-
-```bash
-docker stop memoflow-api-1 memoflow-ai-service-1
-pnpm nx run ai-service:serve
-```
-
-终端二：
-
-```bash
-pnpm nx run api:serve
-```
-
-结束后：
-
-```bash
-docker start memoflow-ai-service-1 memoflow-api-1
-```
-
-## 5.6 模式 F：宿主 API + Web
+## 5.5 模式 E：宿主 API + Web
 
 使用 Nx 多项目命令：
 
@@ -347,7 +318,7 @@ docker stop memoflow-api-1 memoflow-web-1
 pnpm nx run-many -t serve --projects=api,web --parallel=2
 ```
 
-该命令只包含 API + Web，不包含 Desktop 和 AI Service。需要改变组合时直接
+该命令只包含 API + Web，不包含 Desktop。需要改变组合时直接
 修改 `--projects`，不新增根级快捷脚本。
 
 ## 6. 单服务替换规则
@@ -366,7 +337,6 @@ pnpm nx run-many -t serve --projects=api,web --parallel=2
 - 在端口冲突后临时随机改一个未记录端口。
 - 同时运行两个 API，让它们消费同一队列或执行同一 cron。
 - 认为 Docker Web 能自动代理到宿主 API。
-- 认为 Docker API 能自动访问宿主 AI Service。
 - 使用 `docker compose down -v` 作为普通服务切换手段。
 
 ## 7. 常用命令速查
@@ -376,7 +346,6 @@ pnpm nx run-many -t serve --projects=api,web --parallel=2
 ```bash
 pnpm nx run api:serve
 pnpm nx run web:serve
-pnpm nx run ai-service:serve
 pnpm nx run desktop:serve-safe
 pnpm nx run desktop:serve
 pnpm nx run-many -t serve --projects=api,web --parallel=2
@@ -423,7 +392,6 @@ pnpm nx affected -t test
 | `12137` 被占用 | Docker Web、Web Vite、Desktop Vite 中已有一个运行 | 停止对应进程/容器，不改临时端口 |
 | API 能连数据库但 publication 创建失败 | 连接了错误 PostgreSQL、权限不足或非 logical WAL | 确认数据库是 `12140` 的 local-docker Postgres |
 | Docker Web 在宿主 API 启动后仍报 502 | Nginx 仍查找 Docker 网络里的 `api` | 使用宿主 Web/Desktop，或恢复 Docker API |
-| Docker API 无法访问宿主 AI | 容器内仍访问 `ai-service:8100` | 同时将 API 切到宿主 |
 
 ### 8.1 Desktop 登录与访客模式同时报错：`better-sqlite3` ABI 不匹配
 

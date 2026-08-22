@@ -1,19 +1,12 @@
 /**
- * Residual 1342: Web multi-engine Host product E2E (ADR-035 open chat).
- * apps/web/e2e/ai/multi-engine-host.spec.ts — product Playwright path for
- * e2e.playwright_web_full (scaffold residual 405/1342).
+ * Historical filename retained from ADR-035.
  *
- * Proves product path (not unit/fixture-only):
- * - select DirectTurn vs ReadonlyAnalysis execution profiles
- * - POST /ai/assistant/dispatch/sse carries executionProfileId
- * - run.started engine.direct_turn / engine.pi_readonly
- * - timeline engine badge ai-host-timeline-artifact
- * - cancel_run mid-turn
- * - no identityId in client body
- * - no process.pi_readonly_spike
+ * AI-vNext Batch B product regression: Web default open chat is a single
+ * Mastra Assistant runtime. This Playwright path proves the browser talks to
+ * the canonical runtime history/SSE surface and no longer exposes or sends the
+ * legacy DirectTurn / pi_readonly product selector.
  *
- * Does NOT claim Electron multi-engine E2E or real Pi process spawn
- * (scaffold e2e.electron_desktop_full / e2e.real_pi_spawn remain external).
+ * It intentionally does not claim Electron runtime coverage.
  */
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { createMockUserSetting } from '@memoflow/contracts/mocks';
@@ -21,30 +14,26 @@ import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
 
 const e2ePassword = 'Test123456!';
-const conversationId = 'conv-e2e-multi-engine-1';
+const conversationId = 'conv-e2e-mastra-open-chat-1';
+const providerId = 'provider-e2e-openai';
+const modelId = 'gpt-4.1-mini';
 
 const generateTestEmail = () =>
-  `e2e-multi-engine-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
+  `e2e-mastra-chat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
 
 async function fulfillJson(route: Route, data: unknown): Promise<void> {
-  // Match goal-workflow / ResultHttpClient: { ok: true, data } envelope.
   await route.fulfill({
     status: 200,
     contentType: 'application/json',
-    body: JSON.stringify({
-      ok: true,
-      data,
-    }),
+    body: JSON.stringify({ ok: true, data }),
   });
 }
 
-async function fulfillSse(route: Route, assistantEvents: Record<string, unknown>[]): Promise<void> {
-  const frames: string[] = [];
-  for (const event of assistantEvents) {
-    frames.push(`event: assistant\ndata: ${JSON.stringify(event)}\n\n`);
-  }
-  frames.push(`event: done\ndata: ${JSON.stringify({ eventCount: assistantEvents.length })}\n\n`);
-  const body = frames.join('');
+async function fulfillRuntimeSse(
+  route: Route,
+  events: readonly Record<string, unknown>[],
+): Promise<void> {
+  const body = events.map((event) => `event: runtime\ndata: ${JSON.stringify(event)}\n\n`).join('');
   await route.fulfill({
     status: 200,
     contentType: 'text/event-stream; charset=utf-8',
@@ -57,20 +46,27 @@ async function fulfillSse(route: Route, assistantEvents: Record<string, unknown>
   });
 }
 
-type DispatchCapture = {
-  bodies: Array<Record<string, unknown>>;
-  cancelCount: number;
+type RuntimeMessage = {
+  id: string;
+  conversationId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: number;
 };
 
-async function installMultiEngineHostMocks(page: Page): Promise<DispatchCapture> {
-  const capture: DispatchCapture = { bodies: [], cancelCount: 0 };
-  const openChatMessages: Array<{
-    id: string;
-    conversationId: string;
-    role: string;
-    content: string;
-    createdAt: number;
-  }> = [];
+type MastraOpenChatCapture = {
+  messageCommands: Array<Record<string, unknown>>;
+  historyRequests: Array<Record<string, unknown>>;
+  deleteRequests: Array<Record<string, unknown>>;
+};
+
+async function installMastraOpenChatMocks(page: Page): Promise<MastraOpenChatCapture> {
+  const capture: MastraOpenChatCapture = {
+    messageCommands: [],
+    historyRequests: [],
+    deleteRequests: [],
+  };
+  const messages: RuntimeMessage[] = [];
   let hasConversation = false;
 
   await page.route('**/api/v1/settings', async (route) => {
@@ -126,14 +122,14 @@ async function installMultiEngineHostMocks(page: Page): Promise<DispatchCapture>
     await fulfillJson(route, {
       data: [
         {
-          id: 'provider-e2e-openai',
+          id: providerId,
           identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
           name: 'E2E OpenAI',
           providerType: 'openai_compatible',
           baseUrl: 'https://api.openai.com/v1',
           apiKeyMasked: 'sk-****e2e',
-          defaultModel: 'gpt-4.1-mini',
-          availableModels: [{ id: 'gpt-4.1-mini', name: 'gpt-4.1-mini' }],
+          defaultModel: modelId,
+          availableModels: [{ id: modelId, name: modelId }],
           isActive: true,
           isDefault: true,
           priority: 1,
@@ -148,7 +144,7 @@ async function installMultiEngineHostMocks(page: Page): Promise<DispatchCapture>
 
   await page.route('**/api/v1/ai/chat/conversations?*', async (route) => {
     const conversations = hasConversation
-      ? [{ id: conversationId, name: 'Multi-engine Host', title: 'Multi-engine Host' }]
+      ? [{ id: conversationId, name: 'Mastra Open Chat', title: 'Mastra Open Chat' }]
       : [];
     await fulfillJson(route, {
       data: conversations,
@@ -167,9 +163,9 @@ async function installMultiEngineHostMocks(page: Page): Promise<DispatchCapture>
     await fulfillJson(route, {
       id: conversationId,
       identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-      name: 'Multi-engine Host',
+      name: 'Mastra Open Chat',
       status: 'Active',
-      messageCount: 0,
+      messageCount: messages.length,
       lastMessageAt: null,
       version: 1,
       createdAt: Date.now(),
@@ -179,141 +175,97 @@ async function installMultiEngineHostMocks(page: Page): Promise<DispatchCapture>
     });
   });
 
-  await page.route(`**/api/v1/ai/chat/conversations/${conversationId}`, async (route) => {
-    if (route.request().method() === 'GET') {
-      await fulfillJson(route, {
-        id: conversationId,
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        name: 'Multi-engine Host',
-        status: 'Active',
-        messageCount: openChatMessages.length,
-        lastMessageAt: Date.now(),
-        version: 1,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        deletedAt: null,
-        messages: null,
-      });
-      return;
-    }
-    await route.continue();
+  await page.route('**/api/v1/ai/runtime/assistant/history', async (route) => {
+    const body = (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
+    capture.historyRequests.push(body);
+    expect(body).not.toHaveProperty('identityId');
+    await fulfillJson(route, {
+      conversationId: body.conversationId ?? conversationId,
+      messages,
+    });
   });
 
-  await page.route(
-    '**/api/v1/ai/chat/messages?conversationId=*&page=*&pageSize=*',
-    async (route) => {
-      await fulfillJson(route, {
-        data: openChatMessages,
-        total: openChatMessages.length,
-        page: 1,
-        pageSize: 80,
-      });
-    },
-  );
-
-  await page.route('**/api/v1/ai/agents/runs?*', async (route) => {
-    await fulfillJson(route, { data: [], total: 0, page: 1, pageSize: 20 });
+  await page.route('**/api/v1/ai/runtime/assistant/delete', async (route) => {
+    const body = (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
+    capture.deleteRequests.push(body);
+    expect(body).not.toHaveProperty('identityId');
+    messages.splice(0, messages.length);
+    hasConversation = false;
+    await fulfillJson(route, { deleted: true });
   });
 
-  // POST /ai/assistant/dispatch/sse — multi-engine Host journey
-  await page.route('**/api/v1/ai/assistant/dispatch/sse', async (route) => {
+  await page.route('**/api/v1/ai/runtime/assistant/cancel', async (route) => {
+    const body = (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
+    expect(body).not.toHaveProperty('identityId');
+    await fulfillJson(route, { cancelled: true });
+  });
+
+  await page.route('**/api/v1/ai/runtime/assistant/sse', async (route) => {
     const request = (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
-    capture.bodies.push(request);
+    capture.messageCommands.push(request);
 
-    // Product contract: client must not send identityId (server resolves from session).
     expect(request).not.toHaveProperty('identityId');
+    expect(request).not.toHaveProperty('executionProfileId');
+    expect(request).not.toHaveProperty('runId');
+    expect(request).toMatchObject({
+      type: 'message',
+      conversationId,
+      surface: 'web',
+      providerId,
+      modelId,
+    });
 
-    if (request.type === 'cancel_run') {
-      capture.cancelCount += 1;
-      await fulfillSse(route, [
-        {
-          type: 'run.cancelled',
-          runId: request.runId ?? 'run-e2e-multi-engine',
-        },
-        {
-          type: 'message.completed',
-          runId: request.runId ?? 'run-e2e-multi-engine',
-          status: 'aborted',
-        },
-      ]);
-      return;
-    }
-
-    const profile =
-      request.executionProfileId === 'pi_readonly' ? 'pi_readonly' : 'direct_turn';
-    const engineId =
-      profile === 'pi_readonly' ? 'engine.pi_readonly' : 'engine.direct_turn';
-    // no process.pi_readonly_spike — ReadonlyAnalysis stays Host engine, not Pi spawn
-    expect(JSON.stringify(request)).not.toContain('process.pi_readonly_spike');
-
-    const userContent = typeof request.content === 'string' ? request.content : '';
-    const runId =
-      typeof request.runId === 'string' && request.runId
-        ? request.runId
-        : `run-e2e-multi-engine-${capture.bodies.length}`;
-    const convId =
-      typeof request.conversationId === 'string' && request.conversationId
-        ? request.conversationId
-        : conversationId;
-    const assistantContent =
-      profile === 'pi_readonly'
-        ? 'ReadonlyAnalysis summary (engine.pi_readonly).'
-        : 'DirectTurn reply (engine.direct_turn).';
+    const content = typeof request.content === 'string' ? request.content : '';
+    const turn = capture.messageCommands.length;
     const now = Date.now();
-    const userMsgId = `msg-user-${openChatMessages.length + 1}`;
-    const assistantMsgId = `msg-assistant-${openChatMessages.length + 1}`;
+    const runId = `run-e2e-mastra-${turn}`;
+    const userMessage: RuntimeMessage = {
+      id: `user-e2e-mastra-${turn}`,
+      conversationId,
+      role: 'user',
+      content,
+      createdAt: now,
+    };
+    const assistantContent = `Mastra persisted reply ${turn}.`;
+    const assistantMessage: RuntimeMessage = {
+      id: `assistant-e2e-mastra-${turn}`,
+      conversationId,
+      role: 'assistant',
+      content: assistantContent,
+      createdAt: now + 1,
+    };
+    messages.push(userMessage, assistantMessage);
+    hasConversation = true;
 
-    if (userContent.trim()) {
-      hasConversation = true;
-      openChatMessages.push({
-        id: userMsgId,
-        conversationId: convId,
-        role: 'user',
-        content: userContent,
-        createdAt: now,
-      });
-      openChatMessages.push({
-        id: assistantMsgId,
-        conversationId: convId,
-        role: 'assistant',
-        content: assistantContent,
-        createdAt: now + 1,
-      });
-    }
-
-    await fulfillSse(route, [
+    const base = { runId, conversationId, createdAt: now };
+    await fulfillRuntimeSse(route, [
       {
-        type: 'run.started',
-        runId,
-        engineId,
-        profile,
-        // Residual N1: product SSE mirrors AssistantFacade conversation binding.
-        conversationId: convId,
+        ...base,
+        eventId: `${runId}:1`,
+        sequence: 1,
+        type: 'assistant.run.started',
+        data: { providerId, modelId },
       },
       {
-        type: 'message.delta',
-        runId,
-        content: assistantContent,
+        ...base,
+        eventId: `${runId}:2`,
+        sequence: 2,
+        type: 'assistant.message.delta',
+        data: { content: assistantContent },
       },
       {
-        type: 'message.completed',
-        runId,
-        status: 'completed',
-        content: assistantContent,
-        userMessage: {
-          id: userMsgId,
-          conversationId: convId,
-          role: 'user',
-          content: userContent,
-          createdAt: now,
-        },
-        assistantMessage: {
-          id: assistantMsgId,
-          conversationId: convId,
-          role: 'assistant',
-          content: assistantContent,
-          createdAt: now + 1,
-        },
+        ...base,
+        eventId: `${runId}:3`,
+        sequence: 3,
+        type: 'assistant.usage.updated',
+        data: { promptTokens: 12, completionTokens: 5, totalTokens: 17 },
+      },
+      {
+        ...base,
+        eventId: `${runId}:4`,
+        sequence: 4,
+        type: 'assistant.run.completed',
+        data: { content: assistantContent, assistantMessageId: assistantMessage.id },
       },
     ]);
   });
@@ -321,12 +273,12 @@ async function installMultiEngineHostMocks(page: Page): Promise<DispatchCapture>
   return capture;
 }
 
-async function bootstrapMultiEngineSession(page: Page): Promise<DispatchCapture> {
+async function bootstrapMastraOpenChat(page: Page): Promise<MastraOpenChatCapture> {
   await registerAndLogin(page, {
     email: generateTestEmail(),
     password: e2ePassword,
   });
-  const capture = await installMultiEngineHostMocks(page);
+  const capture = await installMastraOpenChatMocks(page);
   await page.goto(WEB_CONFIG.getFullUrl('/'), {
     waitUntil: 'domcontentloaded',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
@@ -342,158 +294,74 @@ async function bootstrapMultiEngineSession(page: Page): Promise<DispatchCapture>
   return capture;
 }
 
-async function selectExecutionProfile(
-  page: Page,
-  profile: 'direct_turn' | 'pi_readonly',
-): Promise<void> {
-  await page.getByTestId('ai-chat-execution-profile-trigger').click();
-  const itemTestId =
-    profile === 'pi_readonly'
-      ? 'ai-chat-execution-profile-readonly'
-      : 'ai-chat-execution-profile-direct';
-  await page.getByTestId(itemTestId).click();
-}
-
-async function sendOpenChatMessage(page: Page, message: string): Promise<void> {
+async function sendMastraMessage(page: Page, message: string): Promise<void> {
   const composer = page.getByTestId('ai-chat-composer');
   await expect(composer).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await expect(page.getByTestId('ai-chat-empty-models')).toHaveCount(0, {
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
-  await composer.click();
   await composer.fill(message);
-  await expect(composer).toHaveValue(message);
-  const sendButton = page.getByTestId('ai-chat-send-message');
-  await expect(sendButton).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-  const sseResponse = page.waitForResponse(
-    (response) =>
-      response.url().includes('/ai/assistant/dispatch/sse') &&
-      response.request().method() === 'POST' &&
-      response.status() === 200,
+  const send = page.getByTestId('ai-chat-send-message');
+  await expect(send).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  const response = page.waitForResponse(
+    (candidate) =>
+      candidate.url().includes('/ai/runtime/assistant/sse') &&
+      candidate.request().method() === 'POST' &&
+      candidate.status() === 200,
     { timeout: TIMEOUT_CONFIG.NAVIGATION },
   );
-  await sendButton.click();
-  await sseResponse;
-  await expect(composer).toHaveValue('', { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await send.click();
+  await response;
   await expect(page.getByTestId('ai-chat-stop-generating')).toHaveCount(0, {
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
 }
 
-test.describe('AI multi-engine Host product (residual 1342)', () => {
-  test('[P0] DirectTurn then ReadonlyAnalysis profiles drive SSE engines + badges', async ({
+test.describe('AI Mastra open-chat product cutover', () => {
+  test('[P0] sends through canonical runtime SSE with selected model and no legacy profile/identity', async ({
     page,
   }) => {
-    const capture = await bootstrapMultiEngineSession(page);
+    const capture = await bootstrapMastraOpenChat(page);
 
-    await expect(page.getByTestId('ai-chat-execution-profile')).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
+    await expect(page.getByTestId('ai-chat-execution-profile')).toHaveCount(0);
+    await sendMastraMessage(page, 'Use the canonical Mastra runtime.');
 
-    // ui.select_direct_turn + web.send_direct_turn
-    await selectExecutionProfile(page, 'direct_turn');
-    await sendOpenChatMessage(page, 'DirectTurn multi-engine product probe');
-
-    const directBodies = capture.bodies.filter((b) => b.type === 'message' || !b.type);
-    const lastDirect = capture.bodies[capture.bodies.length - 1];
-    expect(lastDirect?.executionProfileId ?? 'direct_turn').toBe('direct_turn');
-    expect(lastDirect).not.toHaveProperty('identityId');
-
-    await expect(page.getByTestId('ai-host-timeline-artifact-strip')).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-    await expect(
-      page.locator('[data-testid^="ai-host-timeline-artifact-engine-"]').first(),
-    ).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await expect(
-      page.locator('[data-engine-key="engine.direct_turn"]').first(),
-    ).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-
-    // ui.select_pi_readonly + web.send_pi_readonly
-    await selectExecutionProfile(page, 'pi_readonly');
-    await sendOpenChatMessage(page, 'ReadonlyAnalysis multi-engine product probe');
-
-    const lastReadonly = capture.bodies[capture.bodies.length - 1];
-    expect(lastReadonly?.executionProfileId).toBe('pi_readonly');
-    expect(lastReadonly).not.toHaveProperty('identityId');
-    expect(JSON.stringify(lastReadonly)).not.toContain('process.pi_readonly_spike');
-
-    await expect(
-      page.locator('[data-engine-key="engine.pi_readonly"]').first(),
-    ).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-
-    // At least two open-chat dispatches with type message (or default message path)
-    const messageDispatches = capture.bodies.filter(
-      (b) => b.type === 'message' || (b.content && !b.type) || b.type === undefined,
+    expect(capture.messageCommands).toHaveLength(1);
+    expect(capture.messageCommands[0]).toEqual(
+      expect.objectContaining({
+        type: 'message',
+        conversationId,
+        content: 'Use the canonical Mastra runtime.',
+        surface: 'web',
+        providerId,
+        modelId,
+      }),
     );
-    expect(capture.bodies.length).toBeGreaterThanOrEqual(2);
-    expect(directBodies.length + messageDispatches.length).toBeGreaterThanOrEqual(2);
+    expect(capture.messageCommands[0]).not.toHaveProperty('identityId');
+    expect(capture.messageCommands[0]).not.toHaveProperty('executionProfileId');
+    await expect(page.getByTestId('ai-message-panel')).toContainText('Mastra persisted reply 1.');
+    expect(capture.historyRequests.length).toBeGreaterThanOrEqual(1);
   });
 
-  test('[P0] stop generating issues cancel_run without identityId', async ({ page }) => {
-    const capture = await bootstrapMultiEngineSession(page);
-    await selectExecutionProfile(page, 'direct_turn');
+  test('[P0] reload restores the authoritative Mastra transcript instead of legacy AiMessage history', async ({
+    page,
+  }) => {
+    const capture = await bootstrapMastraOpenChat(page);
+    await sendMastraMessage(page, 'Persist this turn in Mastra memory.');
+    await expect(page.getByTestId('ai-message-panel')).toContainText('Mastra persisted reply 1.');
 
-    // Slow first SSE chunk so stop button mounts; cancel_run is client-owned.
-    await page.unroute('**/api/v1/ai/assistant/dispatch/sse');
-    await page.route('**/api/v1/ai/assistant/dispatch/sse', async (route) => {
-      const request = (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
-      capture.bodies.push(request);
-      expect(request).not.toHaveProperty('identityId');
-
-      if (request.type === 'cancel_run') {
-        capture.cancelCount += 1;
-        await fulfillSse(route, [
-          { type: 'run.cancelled', runId: request.runId ?? 'run-cancel' },
-          {
-            type: 'message.completed',
-            runId: request.runId ?? 'run-cancel',
-            status: 'aborted',
-          },
-        ]);
-        return;
-      }
-
-      const runId =
-        typeof request.runId === 'string' && request.runId
-          ? request.runId
-          : 'run-e2e-multi-engine-slow';
-      // Delay body so chatLoading stays true long enough for stop click.
-      await new Promise((r) => setTimeout(r, 2500));
-      await fulfillSse(route, [
-        {
-          type: 'run.started',
-          runId,
-          engineId: 'engine.direct_turn',
-          profile: 'direct_turn',
-          conversationId,
-        },
-        {
-          type: 'message.delta',
-          runId,
-          content: 'slow…',
-        },
-        {
-          type: 'message.completed',
-          runId,
-          status: 'completed',
-          content: 'slow…',
-        },
-      ]);
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await page.getByTestId('ai-chat-view').waitFor({
+      state: 'visible',
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await expect(composer).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await composer.fill('Cancel mid multi-engine turn');
-    await page.getByTestId('ai-chat-send-message').click();
-
-    const stop = page.getByTestId('ai-chat-stop-generating');
-    await expect(stop).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await stop.click();
-
-    await expect.poll(() => capture.cancelCount, { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT }).toBe(1);
-    const cancelBody = capture.bodies.find((b) => b.type === 'cancel_run');
-    expect(cancelBody).toBeTruthy();
-    expect(cancelBody).not.toHaveProperty('identityId');
+    await expect(page.getByTestId('ai-message-panel')).toContainText(
+      'Persist this turn in Mastra memory.',
+      { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },
+    );
+    await expect(page.getByTestId('ai-message-panel')).toContainText('Mastra persisted reply 1.');
+    expect(capture.historyRequests.length).toBeGreaterThanOrEqual(2);
+    expect(capture.historyRequests.every((body) => !('identityId' in body))).toBe(true);
   });
 });

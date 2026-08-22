@@ -1,3 +1,4 @@
+import type { AIRuntimeUsage } from '@memoflow/contracts/ai';
 import type { ChatExecutionUsage } from './chat-execution.port';
 
 export interface AICostEstimate {
@@ -12,7 +13,12 @@ export interface AIExecutionLogInput {
   identityId: string;
   taskType: string;
   status: 'COMPLETED' | 'FAILED';
+  /** Product-owned thread identifier used for durable usage lookup. */
+  conversationId?: string;
+  /** Runtime-owned run identifier used for durable workflow/turn lookup. */
+  runId?: string;
   requestId?: string;
+  traceId?: string;
   providerId?: string;
   providerName?: string;
   model?: string;
@@ -27,4 +33,19 @@ export interface AIExecutionLogInput {
 
 export interface IAIExecutionLogPort {
   record(input: AIExecutionLogInput): Promise<void>;
+}
+
+export interface AIUsageQuery {
+  identityId: string;
+  conversationId?: string;
+  runId?: string;
+}
+
+export interface AIUsageSummary extends AIRuntimeUsage {
+  executionCount: number;
+}
+
+/** Read-only usage projection. Identity is always part of the query boundary. */
+export interface IAIUsageReadPort {
+  summarizeUsage(input: AIUsageQuery): Promise<AIUsageSummary>;
 }

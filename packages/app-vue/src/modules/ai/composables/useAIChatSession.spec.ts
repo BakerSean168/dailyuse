@@ -3,7 +3,8 @@ import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ok } from '@memoflow/contracts/result';
-import type { AssistantEvent } from '@memoflow/contracts/ai';
+import type { AssistantRuntimeEvent } from '@memoflow/contracts/ai';
+import type { AssistantRuntimeClient, RuntimeUsageClient } from '@memoflow/ai/client';
 import { useAIChatSession, type UseAIChatSessionOptions } from './useAIChatSession';
 import type { ChatModelOption } from './types';
 
@@ -12,9 +13,7 @@ const toastMocks = vi.hoisted(() => ({
   error: vi.fn(),
 }));
 
-vi.mock('vue-sonner', () => ({
-  toast: toastMocks,
-}));
+vi.mock('vue-sonner', () => ({ toast: toastMocks }));
 
 const i18n = createI18n({
   legacy: false,
@@ -45,18 +44,6 @@ const MODEL: ChatModelOption = {
   modelName: 'Model 1',
 };
 
-function createMessageEvent(overrides: Partial<AssistantEvent> = {}): AssistantEvent {
-  return {
-    type: 'message.completed',
-    runId: 'server-run-1',
-    status: 'completed',
-    content: 'final content',
-    userMessage: { id: 'user-1', content: 'hello' },
-    assistantMessage: { id: 'assistant-1', content: 'final content' },
-    ...overrides,
-  } as AssistantEvent;
-}
-
 function createConversationDTO(id: string) {
   return {
     id,
@@ -72,26 +59,97 @@ function createConversationDTO(id: string) {
 type ServiceStub = {
   createConversation: ReturnType<typeof vi.fn>;
   listConversations: ReturnType<typeof vi.fn>;
+  updateConversation: ReturnType<typeof vi.fn>;
+  deleteConversation: ReturnType<typeof vi.fn>;
   dispatchAssistant: ReturnType<typeof vi.fn>;
-  listMessages: ReturnType<typeof vi.fn>;
 };
 
-function createServiceStub(overrides: Partial<ServiceStub> = {}): ServiceStub {
+function createServiceStub(): ServiceStub {
   return {
     createConversation: vi.fn(async () => ok(createConversationDTO('conv-1'))),
     listConversations: vi.fn(async () =>
       ok({ data: [{ id: 'conv-1', name: 'New chat' }], total: 1, page: 1, pageSize: 24 }),
     ),
+    updateConversation: vi.fn(),
+    deleteConversation: vi.fn(async () => ok(null)),
     dispatchAssistant: vi.fn(async () => {}),
-    listMessages: vi.fn(async () => ok({ data: [], total: 0, page: 1, pageSize: 80 })),
-    ...overrides,
   };
 }
 
-function mountComposable(service: ServiceStub, surface: 'web' | 'desktop' = 'web') {
+function persistedHistory(content = 'final content') {
+  return {
+    conversationId: 'conv-1',
+    messages: [
+      {
+        id: 'user-1',
+        conversationId: 'conv-1',
+        role: 'user' as const,
+        content: 'hello',
+        createdAt: 10,
+      },
+      {
+        id: 'assistant-1',
+        conversationId: 'conv-1',
+        role: 'assistant' as const,
+        content,
+        createdAt: 20,
+      },
+    ],
+  };
+}
+
+function createRuntimeStub(): AssistantRuntimeClient & {
+  listMessages: ReturnType<typeof vi.fn>;
+  deleteConversation: ReturnType<typeof vi.fn>;
+  streamMessage: ReturnType<typeof vi.fn>;
+  cancelRun: ReturnType<typeof vi.fn>;
+} {
+  return {
+    listMessages: vi.fn(async () => persistedHistory()),
+    deleteConversation: vi.fn(async () => true),
+    streamMessage: vi.fn(async () => {}),
+    cancelRun: vi.fn(async () => true),
+  } as never;
+}
+
+function createUsageRuntimeStub(): RuntimeUsageClient & { get: ReturnType<typeof vi.fn> } {
+  return {
+    get: vi.fn(async () => ({
+      executionCount: 1,
+      promptTokens: 10,
+      completionTokens: 4,
+      totalTokens: 14,
+    })),
+  } as never;
+}
+
+function event(
+  sequence: number,
+  type: AssistantRuntimeEvent['type'],
+  data: AssistantRuntimeEvent['data'],
+): AssistantRuntimeEvent {
+  return {
+    eventId: `run-1:${sequence}`,
+    runId: 'run-1',
+    conversationId: 'conv-1',
+    sequence,
+    createdAt: sequence,
+    type,
+    data,
+  } as AssistantRuntimeEvent;
+}
+
+function mountComposable(
+  service: ServiceStub,
+  runtime: ReturnType<typeof createRuntimeStub>,
+  surface: 'web' | 'desktop' = 'web',
+  usageRuntime: ReturnType<typeof createUsageRuntimeStub> = createUsageRuntimeStub(),
+) {
   let composable!: ReturnType<typeof useAIChatSession>;
   const options: UseAIChatSessionOptions = {
-    service,
+    service: service as never,
+    runtime,
+    usageRuntime,
     surface,
     getDefaultConversationName: () => 'New chat',
   };
@@ -107,193 +165,194 @@ function mountComposable(service: ServiceStub, surface: 'web' | 'desktop' = 'web
   return composable;
 }
 
-function runDispatch(
+async function send(
   composable: ReturnType<typeof useAIChatSession>,
   service: ServiceStub,
-  events: AssistantEvent[],
-  dispatchImpl?: ServiceStub['dispatchAssistant'],
+  runtime: ReturnType<typeof createRuntimeStub>,
+  events: AssistantRuntimeEvent[] = [],
 ) {
-  if (dispatchImpl) {
-    service.dispatchAssistant.mockImplementation(dispatchImpl);
-  } else {
-    service.dispatchAssistant.mockImplementation(async (_command, handlers) => {
-      for (const event of events) {
-        handlers.onEvent?.(event);
-      }
-    });
-  }
+  runtime.streamMessage.mockImplementation(async (_command, handlers) => {
+    for (const next of events) handlers.onEvent?.(next);
+  });
   composable.chatMessage.value = 'hello';
-  return composable.handleSendChat(service as never, MODEL, 'New chat', () => {});
+  await composable.handleSendChat(service as never, MODEL, 'New chat', () => {});
 }
 
-describe('useAIChatSession open chat Host dispatch (residual 349/351)', () => {
+describe('useAIChatSession Mastra-native open chat', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    localStorage.clear();
-  });
+  afterEach(() => localStorage.clear());
 
-  it('creates a conversation then dispatches through the thin entry with model + surface', async () => {
+  it('creates only the Conversation shell, then streams through AssistantRuntimeClient with BYOK model selection', async () => {
     const service = createServiceStub();
-    const composable = mountComposable(service, 'web');
+    const runtime = createRuntimeStub();
+    const usageRuntime = createUsageRuntimeStub();
+    const composable = mountComposable(service, runtime, 'web', usageRuntime);
 
-    await runDispatch(composable, service, []);
+    await send(composable, service, runtime);
 
     expect(service.createConversation).toHaveBeenCalledWith({ name: 'New chat' });
-    expect(service.dispatchAssistant).toHaveBeenCalledTimes(1);
-    const [command] = service.dispatchAssistant.mock.calls[0];
-    expect(command).toMatchObject({
-      type: 'message',
-      conversationId: 'conv-1',
-      content: 'hello',
-      surface: 'web',
-      executionProfileId: 'direct_turn',
-      providerId: 'provider-1',
-      model: 'model-1',
-    });
-    expect(command).toHaveProperty('runId');
-    expect(command.runId).toMatch(/^open-chat:/);
-    expect(command).not.toHaveProperty('identityId');
-    expect(composable.chatLoading.value).toBe(false);
-  });
-
-  it('desktop host option flows the desktop surface on the command', async () => {
-    const service = createServiceStub();
-    const composable = mountComposable(service, 'desktop');
-
-    await runDispatch(composable, service, []);
-
-    expect(service.dispatchAssistant.mock.calls[0][0]).toMatchObject({
-      type: 'message',
-      surface: 'desktop',
-    });
-  });
-
-  it('appends every message.delta to the current assistant draft', async () => {
-    const service = createServiceStub();
-    const composable = mountComposable(service, 'web');
-
-    await runDispatch(composable, service, [
+    expect(runtime.streamMessage).toHaveBeenCalledWith(
       {
-        type: 'run.started',
-        runId: 'server-run-1',
-        engineId: 'engine.direct_turn',
-        profile: 'direct_turn',
+        type: 'message',
         conversationId: 'conv-1',
+        content: 'hello',
+        surface: 'web',
+        providerId: 'provider-1',
+        modelId: 'model-1',
       },
-      { type: 'message.delta', runId: 'server-run-1', content: 'Hel' },
-      { type: 'message.delta', runId: 'server-run-1', content: 'lo' },
-      createMessageEvent(),
+      expect.objectContaining({ onEvent: expect.any(Function) }),
+      expect.any(AbortSignal),
+    );
+    expect(service.dispatchAssistant).not.toHaveBeenCalled();
+    expect(runtime.listMessages).toHaveBeenCalledWith('conv-1');
+    expect(usageRuntime.get).toHaveBeenCalledWith({ conversationId: 'conv-1' });
+  });
+
+  it('deletes Mastra memory before the legacy Conversation shell so a shell failure remains recoverable', async () => {
+    const service = createServiceStub();
+    const runtime = createRuntimeStub();
+    const order: string[] = [];
+    runtime.deleteConversation.mockImplementation(async () => {
+      order.push('mastra');
+      return true;
+    });
+    service.deleteConversation.mockImplementation(async () => {
+      order.push('shell');
+      return ok(null);
+    });
+    const composable = mountComposable(service, runtime);
+
+    await composable.deleteConversation('conv-1', service as never, vi.fn(), vi.fn());
+
+    expect(order).toEqual(['mastra', 'shell']);
+    expect(runtime.deleteConversation).toHaveBeenCalledWith('conv-1');
+    expect(service.deleteConversation).toHaveBeenCalledWith('conv-1');
+  });
+
+  it('uses Desktop surface without exposing identity or legacy execution-profile controls', async () => {
+    const service = createServiceStub();
+    const runtime = createRuntimeStub();
+    const composable = mountComposable(service, runtime, 'desktop');
+
+    await send(composable, service, runtime);
+
+    const command = runtime.streamMessage.mock.calls[0][0];
+    expect(command).toMatchObject({ surface: 'desktop' });
+    expect(command).not.toHaveProperty('identityId');
+    expect(command).not.toHaveProperty('executionProfileId');
+    expect(command).not.toHaveProperty('runId');
+  });
+
+  it('applies canonical delta/usage/completed events then replaces drafts from persisted Mastra history', async () => {
+    const service = createServiceStub();
+    const runtime = createRuntimeStub();
+    const usageRuntime = createUsageRuntimeStub();
+    usageRuntime.get.mockResolvedValue({
+      executionCount: 3,
+      promptTokens: 110,
+      completionTokens: 24,
+      totalTokens: 134,
+      estimatedCost: 0.000081,
+    });
+    runtime.listMessages.mockResolvedValue(persistedHistory('authoritative persisted reply'));
+    const composable = mountComposable(service, runtime, 'web', usageRuntime);
+
+    await send(composable, service, runtime, [
+      event(1, 'assistant.run.started', {}),
+      event(2, 'assistant.message.delta', { content: 'Hel' }),
+      event(3, 'assistant.message.delta', { content: 'lo' }),
+      event(4, 'assistant.usage.updated', {
+        promptTokens: 10,
+        completionTokens: 4,
+        totalTokens: 14,
+      }),
+      event(5, 'assistant.run.completed', {
+        content: 'stream final',
+        assistantMessageId: 'assistant-stream-id',
+      }),
     ]);
 
-    const assistant = composable.chatTimeline.value.find(
-      (item) => item.role === 'assistant' && item.id === 'assistant-1',
-    );
-    expect(assistant).toBeDefined();
-    expect(assistant?.content).toBe('final content');
-    expect(assistant?.status).toBe('success');
-
-    const user = composable.chatTimeline.value.find((item) => item.role === 'user');
-    expect(user?.id).toBe('user-1');
-    expect(user?.content).toBe('hello');
-  });
-
-  it('message.completed replaces both drafts with persisted ids and refreshes the list', async () => {
-    const service = createServiceStub();
-    const composable = mountComposable(service, 'web');
-
-    await runDispatch(composable, service, [createMessageEvent()]);
-
-    expect(service.listConversations).toHaveBeenCalled();
-    const ids = composable.chatTimeline.value.map((item) => item.id);
-    expect(ids).toContain('assistant-1');
-    expect(ids).toContain('user-1');
-    expect(composable.chatTimeline.value.some((item) => item.status === 'generating')).toBe(false);
-  });
-
-  it('server-rewritten runId is tracked and the pre-start client row is dropped', async () => {
-    const service = createServiceStub();
-    const composable = mountComposable(service, 'web');
-
-    await runDispatch(composable, service, [
+    expect(composable.lastRuntimeUsage.value).toEqual({
+      promptTokens: 110,
+      completionTokens: 24,
+      totalTokens: 134,
+      estimatedCost: 0.000081,
+    });
+    expect(usageRuntime.get).toHaveBeenCalledWith({ conversationId: 'conv-1' });
+    expect(composable.chatTimeline.value).toEqual([
+      { id: 'user-1', role: 'user', content: 'hello', status: 'success' },
       {
-        type: 'run.started',
-        runId: 'server-run-9',
-        engineId: 'engine.direct_turn',
-        profile: 'direct_turn',
+        id: 'assistant-1',
+        role: 'assistant',
+        content: 'authoritative persisted reply',
+        status: 'success',
       },
-      createMessageEvent({ runId: 'server-run-9' }),
     ]);
-
-    const turns = composable.openChatHostTurns.value;
-    expect(turns.some((turn) => turn.runId === 'server-run-9')).toBe(true);
-    expect(turns.some((turn) => turn.runId === 'server-run-1')).toBe(false);
   });
 
-  it('marks the assistant draft aborted on abort-like errors with no generating residue', async () => {
+  it('loads conversation history and durable usage from their canonical runtime clients', async () => {
     const service = createServiceStub();
-    const composable = mountComposable(service, 'web');
+    const runtime = createRuntimeStub();
+    const usageRuntime = createUsageRuntimeStub();
+    const composable = mountComposable(service, runtime, 'web', usageRuntime);
 
-    await runDispatch(
-      composable,
-      service,
-      [],
-      vi.fn(async () => {
-        throw new DOMException('The user aborted a request.', 'AbortError');
-      }),
+    await composable.selectConversation(
+      { id: 'conv-1', name: 'Existing' } as never,
+      service as never,
+      vi.fn(),
+      () => MODEL.key,
     );
 
-    const assistant = composable.chatTimeline.value.find((item) => item.role === 'assistant');
-    expect(assistant?.status).toBe('aborted');
-    expect(composable.chatLoading.value).toBe(false);
-    expect(composable.chatTimeline.value.some((item) => item.status === 'generating')).toBe(false);
+    expect(runtime.listMessages).toHaveBeenCalledWith('conv-1');
+    expect(usageRuntime.get).toHaveBeenCalledWith({ conversationId: 'conv-1' });
+    expect(composable.lastRuntimeUsage.value?.totalTokens).toBe(14);
+    expect(composable.chatTimeline.value.map((item) => item.id)).toEqual(['user-1', 'assistant-1']);
   });
 
-  it.each([
-    ['AIExecutionError category aborted', { name: 'AIExecutionError', category: 'aborted' }],
-    ['result client code ABORTED', { name: 'ResultClientError', code: 'ABORTED' }],
-    ['controller code CANCELED', { name: 'ResultClientError', code: 'CANCELED' }],
-  ])('keeps %s cancellation quiet (structured marker, no raw message)', async (_label, error) => {
+  it('stopGenerating aborts the stream and best-effort cancels the authenticated runtime runId', async () => {
     const service = createServiceStub();
-    const composable = mountComposable(service, 'web');
+    const runtime = createRuntimeStub();
+    const composable = mountComposable(service, runtime);
+    runtime.streamMessage.mockImplementation(async (_command, handlers, signal) => {
+      handlers.onEvent?.(event(1, 'assistant.run.started', {}));
+      await new Promise<void>((_resolve, reject) => {
+        signal?.addEventListener(
+          'abort',
+          () => reject(new DOMException('The user aborted a request.', 'AbortError')),
+          { once: true },
+        );
+      });
+    });
+    composable.chatMessage.value = 'hello';
 
-    await runDispatch(
-      composable,
-      service,
-      [],
-      vi.fn(async () => {
-        throw error;
-      }),
+    const pending = composable.handleSendChat(service as never, MODEL, 'New chat', () => {});
+    await vi.waitFor(() => expect(composable.activeRuntimeRunId.value).toBe('run-1'));
+    composable.stopGenerating();
+    await pending;
+
+    expect(runtime.cancelRun).toHaveBeenCalledWith('run-1');
+    expect(composable.chatTimeline.value.find((item) => item.role === 'assistant')?.status).toBe(
+      'aborted',
     );
-
-    const assistant = composable.chatTimeline.value.find((item) => item.role === 'assistant');
-    expect(assistant?.status).toBe('aborted');
-    expect(assistant?.errorMessage).toBeUndefined();
     expect(toastMocks.error).not.toHaveBeenCalled();
-    expect(composable.chatLoading.value).toBe(false);
-    expect(composable.chatTimeline.value.some((item) => item.status === 'generating')).toBe(false);
   });
 
-  it('marks the assistant draft error and toasts on a failed dispatch', async () => {
+  it('keeps structured abort failures quiet and exposes provider/runtime failures as UI errors', async () => {
     const service = createServiceStub();
-    const composable = mountComposable(service, 'web');
+    const runtime = createRuntimeStub();
+    const composable = mountComposable(service, runtime);
+    runtime.streamMessage.mockRejectedValueOnce({ code: 'ABORTED' });
+    composable.chatMessage.value = 'hello';
+    await composable.handleSendChat(service as never, MODEL, 'New chat', () => {});
+    expect(toastMocks.error).not.toHaveBeenCalled();
 
-    await runDispatch(
-      composable,
-      service,
-      [],
-      vi.fn(async () => {
-        throw new Error('provider unavailable');
-      }),
-    );
-
-    const assistant = composable.chatTimeline.value.find((item) => item.role === 'assistant');
-    expect(assistant?.status).toBe('error');
-    expect(assistant?.errorMessage).toBeDefined();
+    composable.chatMessage.value = 'again';
+    runtime.streamMessage.mockRejectedValueOnce(new Error('provider unavailable'));
+    await composable.handleSendChat(service as never, MODEL, 'New chat', () => {});
     expect(toastMocks.error).toHaveBeenCalled();
-    expect(composable.chatLoading.value).toBe(false);
   });
 });

@@ -22,11 +22,14 @@ describe('product feature-map + web public debug surface', () => {
     expect(featureMap).toContain('apps/web/src/auth');
   });
 
-  it('feature-map AI row reflects ADR-035 Host production adapters', () => {
-    expect(featureMap).toContain('ADR-035 Host 部分落地');
-    expect(featureMap).toContain('DirectTurn');
-    expect(featureMap).toContain('CustomModelGateway');
-    expect(featureMap).toContain('CapabilityResolver');
+  it('feature-map AI row reflects the Mastra-native single runtime', () => {
+    expect(featureMap).toContain('Mastra-native vNext 已落地');
+    expect(featureMap).toContain('Mastra 是唯一 Assistant/Workflow runtime');
+    expect(featureMap).toContain('apps/api/src/runtime/compose-ai.ts');
+    expect(featureMap).toContain('apps/desktop/src/main/runtime/compose-ai.ts');
+    expect(featureMap).not.toContain('ADR-035 Host 部分落地');
+    expect(featureMap).not.toContain('CustomModelGateway');
+    expect(featureMap).not.toContain('CapabilityResolver');
   });
 
   it('retired web public debug/test pages stay deleted (residual 337/339)', () => {

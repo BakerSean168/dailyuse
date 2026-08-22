@@ -1,9 +1,12 @@
 import { z } from 'zod';
+import { brandedId } from '../../../primitives';
+import type { KeyResultId } from '../../../primitives';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';
 import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 
 /** Key-result fields shared by aggregate creation and standalone addition. */
 export const KeyResultInputSchema = z.object({
+  id: brandedId<KeyResultId>().optional(),
   title: z.string().min(1, '关键结果标题不能为空').max(256),
   description: z.string().max(2000).optional(),
   valueType: z.enum(KeyResultValueType),

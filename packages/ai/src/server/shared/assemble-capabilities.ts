@@ -1,59 +1,46 @@
 import type { AICapabilities, AIRuntimeMode } from '@memoflow/contracts/ai';
 
-/**
- * Shared reason shown when advanced AI features are unavailable.
- * Kept in the shared capability assembly so direct and remote runtimes
- * expose the same explanation (AH-7: single capability projection).
- */
 export const ADVANCED_AI_REASON =
-  'Advanced AI features require a remote ai-service runtime. Configure AI_SERVICE_BASE_URL and AI_SERVICE_SECRET to enable goal automation, knowledge retrieval, analytics, and reindexing.';
+  'Some optional AI product capabilities are unavailable in this host composition.';
 
 export interface CapabilityAssemblyInput {
   supportsKnowledgeNotes?: boolean;
   supportsKnowledgeQuery?: boolean;
   supportsAnalyticsQuery?: boolean;
-  supportsGoalAutomation?: boolean;
-  supportsAgentRuntime?: boolean;
+  supportsAssistantRuntime?: boolean;
+  supportsWorkflowRuntime?: boolean;
   supportsEvaluationReports?: boolean;
-  /**
-   * When true, clears `advancedFeaturesReason` as soon as every advanced
-   * feature is available (remote runtime behavior). Direct runtime keeps the
-   * reason unconditionally, so it omits this flag.
-   */
-  clearAdvancedReasonWhenComplete?: boolean;
 }
 
-/**
- * Single capability projection shared by all AI runtimes (AH-7).
- *
- * Both runtimes previously declared their own `AICapabilities` literals with
- * subtly different shapes; this function centralizes the assembly so the
- * capability surface stays consistent and fail-closed by default.
- */
+/** Build the product capability projection for the single Mastra runtime. */
 export function assembleCapabilities(
   runtimeMode: AIRuntimeMode,
   input: CapabilityAssemblyInput = {},
 ): AICapabilities {
+  const supportsKnowledgeNotes = Boolean(input.supportsKnowledgeNotes);
   const supportsKnowledgeQuery = Boolean(input.supportsKnowledgeQuery);
   const supportsAnalyticsQuery = Boolean(input.supportsAnalyticsQuery);
-  const supportsGoalAutomation = Boolean(input.supportsGoalAutomation);
-  const supportsAgentRuntime = Boolean(input.supportsAgentRuntime);
-
-  const allAdvancedAvailable =
-    supportsKnowledgeQuery && supportsAnalyticsQuery && supportsGoalAutomation && supportsAgentRuntime;
+  const supportsAssistantRuntime = Boolean(input.supportsAssistantRuntime);
+  const supportsWorkflowRuntime = Boolean(input.supportsWorkflowRuntime);
+  const supportsEvaluationReports = Boolean(input.supportsEvaluationReports);
+  const allOptionalAvailable =
+    supportsKnowledgeNotes &&
+    supportsKnowledgeQuery &&
+    supportsAnalyticsQuery &&
+    supportsAssistantRuntime &&
+    supportsWorkflowRuntime &&
+    supportsEvaluationReports;
 
   return {
     runtimeMode,
-    supportsChat: true,
-    supportsGoalGeneration: true,
-    supportsKnowledgeNotes: Boolean(input.supportsKnowledgeNotes),
+    supportsChat: supportsAssistantRuntime,
+    supportsKnowledgeNotes,
     supportsKnowledgeQuery,
     supportsKnowledgeReindex: supportsKnowledgeQuery,
     supportsAnalyticsQuery,
-    supportsGoalAutomation,
-    supportsAgentRuntime,
-    supportsEvaluationReports: Boolean(input.supportsEvaluationReports),
-    advancedFeaturesReason:
-      input.clearAdvancedReasonWhenComplete && allAdvancedAvailable ? undefined : ADVANCED_AI_REASON,
+    supportsAssistantRuntime,
+    supportsWorkflowRuntime,
+    supportsEvaluationReports,
+    advancedFeaturesReason: allOptionalAvailable ? undefined : ADVANCED_AI_REASON,
   };
 }

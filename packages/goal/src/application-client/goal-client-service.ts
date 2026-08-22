@@ -209,24 +209,6 @@ export interface GoalClientPort {
     updates: Array<{ keyResultId: string; weight: number }>,
   ): Promise<Result<GoalMutationReceipt>>;
   getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>>;
-  generateKeyResults(params: {
-    goalTitle: string;
-    goalDescription?: string;
-    startDate: number;
-    endDate: number;
-    goalContext?: string;
-  }): Promise<
-    Result<{
-      keyResults: Array<{
-        title: string;
-        description?: string;
-        targetValue?: number;
-        unit?: string;
-      }>;
-      tokenUsage: unknown;
-      generatedAt: number;
-    }>
-  >;
   createGoalRecord(
     goalId: string,
     keyResultId: string,
@@ -297,7 +279,6 @@ export class GoalClientService implements GoalClientPort {
     this.deleteKeyResult = this.deleteKeyResult.bind(this);
     this.batchUpdateKeyResultWeights = this.batchUpdateKeyResultWeights.bind(this);
     this.getProgressBreakdown = this.getProgressBreakdown.bind(this);
-    this.generateKeyResults = this.generateKeyResults.bind(this);
     this.createGoalRecord = this.createGoalRecord.bind(this);
     this.getGoalRecordsByKeyResult = this.getGoalRecordsByKeyResult.bind(this);
     this.getGoalRecordsByGoal = this.getGoalRecordsByGoal.bind(this);
@@ -451,26 +432,6 @@ export class GoalClientService implements GoalClientPort {
     return this.goalApi.getProgressBreakdown(goalId);
   }
 
-  async generateKeyResults(params: {
-    goalTitle: string;
-    goalDescription?: string;
-    startDate: number;
-    endDate: number;
-    goalContext?: string;
-  }): Promise<
-    Result<{
-      keyResults: Array<{
-        title: string;
-        description?: string;
-        targetValue?: number;
-        unit?: string;
-      }>;
-      tokenUsage: unknown;
-      generatedAt: number;
-    }>
-  > {
-    return this.goalApi.generateKeyResults(params);
-  }
 
   // ===== Goal Record Use Cases =====
 

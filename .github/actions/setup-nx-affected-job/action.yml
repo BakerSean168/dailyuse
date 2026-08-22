@@ -6,11 +6,11 @@ inputs:
     description: Node.js version to install
     required: true
   setup-python:
-    description: Whether to set up Python for ai-service and other Python-backed Nx targets
+    description: Whether to set up Python for a CI lane that explicitly declares the capability
     required: false
     default: 'true'
   setup-uv:
-    description: Whether to set up uv for ai-service and other Python-backed Nx targets
+    description: Whether to set up uv for a CI lane that explicitly declares the capability
     required: false
     default: 'true'
   capabilities:
@@ -77,12 +77,6 @@ runs:
         if [ "$SETUP_UV_INPUT" = 'true' ] && [[ ",$CI_CAPABILITIES," == *,uv,* ]]; then
           uv_required=true
         fi
-        if [ -f "$DELIVERY_MANIFEST_PATH" ]; then
-          if node -e "const m=require('./$DELIVERY_MANIFEST_PATH'); process.exit((m.scope?.projects || []).includes('ai-service') ? 0 : 1)"; then
-            [ "$SETUP_PYTHON_INPUT" = 'true' ] && python_required=true
-            [ "$SETUP_UV_INPUT" = 'true' ] && uv_required=true
-          fi
-        fi
         echo "python=$python_required" >> "$GITHUB_OUTPUT"
         echo "uv=$uv_required" >> "$GITHUB_OUTPUT"
 
@@ -90,13 +84,12 @@ runs:
       if: ${{ steps.capabilities.outputs.python == 'true' }}
       uses: actions/setup-python@v6
       with:
-        python-version-file: apps/ai-service/.python-version
+        python-version: '3.12'
 
     - name: Setup uv
       if: ${{ steps.capabilities.outputs.uv == 'true' }}
       uses: astral-sh/setup-uv@v7
       with:
-        working-directory: apps/ai-service
         enable-cache: true
 
     - name: Setup pnpm

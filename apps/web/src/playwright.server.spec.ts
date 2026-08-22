@@ -104,6 +104,18 @@ describe('playwright.server', () => {
     );
   });
 
+  it('uses an explicit OpenAI mock port instead of relying on the fixed default', async () => {
+    process.env.E2E_OPENAI_MOCK_PORT = '59234';
+
+    const { createOpenAICompatibleMockServer, getE2EOpenAIMockOrigin } =
+      await import('../playwright.server');
+
+    const mockServer = createOpenAICompatibleMockServer();
+    expect(getE2EOpenAIMockOrigin()).toBe('http://127.0.0.1:59234');
+    expect(mockServer.url).toBe('http://127.0.0.1:59234/healthz');
+    expect(mockServer.env?.E2E_OPENAI_MOCK_PORT).toBe('59234');
+  });
+
   it('starts fresh API and web servers by default', async () => {
     delete process.env.CI;
     delete process.env.E2E_REUSE_SERVERS;

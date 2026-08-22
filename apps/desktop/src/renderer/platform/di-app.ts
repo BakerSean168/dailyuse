@@ -16,7 +16,12 @@ import { createReminderIpcClient } from '@memoflow/reminder/client';
 import { createRepositoryIpcClient } from '@memoflow/repository/client';
 import { createNotificationIpcClient } from '@memoflow/notification/client';
 import { createSettingIpcClient } from '@memoflow/setting/client';
-import { createAIIpcClient } from '@memoflow/ai/client';
+import {
+  createAIIpcClient,
+  createAssistantRuntimeIpcClient,
+  createRuntimeUsageIpcClient,
+  createWorkflowRuntimeIpcClient,
+} from '@memoflow/ai/client';
 import { createDataPortabilityIpcClient } from '@memoflow/data-portability/client';
 import {
   ACCOUNT_SERVICE_KEY,
@@ -28,7 +33,10 @@ import {
   REPOSITORY_SERVICE_KEY,
   NOTIFICATION_SERVICE_KEY,
   SETTING_SERVICE_KEY,
-  AI_SERVICE_KEY,
+  AI_CLIENT_KEY,
+  AI_ASSISTANT_RUNTIME_KEY,
+  AI_RUNTIME_USAGE_KEY,
+  AI_WORKFLOW_RUNTIME_KEY,
   RULE_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
   DATA_PORTABILITY_SERVICE_KEY,
@@ -83,12 +91,10 @@ export function installDesktopAppServices(app: App): void {
 
   app.provide(SETTING_SERVICE_KEY, createSettingIpcClient(resultIpcClient));
 
-  // Residual 351/Step D: dispatch first by default; host passes the policy
-  // explicitly (plan §3.2/§4.5).
-  app.provide(
-    AI_SERVICE_KEY,
-    createAIIpcClient(resultIpcClient, { dispatchPolicy: 'prefer_dispatch' }),
-  );
+  app.provide(AI_CLIENT_KEY, createAIIpcClient(resultIpcClient));
+  app.provide(AI_ASSISTANT_RUNTIME_KEY, createAssistantRuntimeIpcClient(resultIpcClient));
+  app.provide(AI_RUNTIME_USAGE_KEY, createRuntimeUsageIpcClient(resultIpcClient));
+  app.provide(AI_WORKFLOW_RUNTIME_KEY, createWorkflowRuntimeIpcClient(resultIpcClient));
 
   app.provide(RULE_SERVICE_KEY, createGovernanceIpcClient(resultIpcClient));
 

@@ -64,6 +64,12 @@ export function createMigrationCommands(workspaceRoot: string): Command[] {
       cwd: databaseRoot,
       label: 'prepare pgvector',
     },
+    {
+      executable: process.execPath,
+      args: [resolve(runtimeScripts, 'prepare-ai-vnext-runtime-state-retirement.js')],
+      cwd: databaseRoot,
+      label: 'retire legacy AI runtime state',
+    },
   ];
 
   if (hasPrismaMigrations(migrationsDir)) {

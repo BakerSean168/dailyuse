@@ -200,24 +200,6 @@ describe('ai chat route contracts', () => {
     expect(createSchema.safeParse({ name: '' }).success).toBe(false);
   });
 
-  it('send message body schema requires conversationId and content', () => {
-    const registry = new TestOpenApiRegistry();
-
-    registerAIChatRoutes(
-      createAIChatControllerStub(),
-      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
-      registry,
-    );
-
-    const sendSchema = getJsonBodySchema(getRegisteredRoute(registry, 'post', `${BASE}/messages`));
-
-    // SendMessageSchema requires conversationId (branded) and content (non-empty)
-    // Missing fields should fail
-    expect(sendSchema.safeParse({ content: 'Hello' }).success).toBe(false);
-    expect(sendSchema.safeParse({}).success).toBe(false);
-    // Empty content should fail even with conversationId
-    expect(sendSchema.safeParse({ conversationId: 'any-id', content: '' }).success).toBe(false);
-  });
 
   it('delete conversation response uses z.null() (no ActionSuccess dual-track)', () => {
     const registry = new TestOpenApiRegistry();

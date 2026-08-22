@@ -227,7 +227,6 @@ pnpm docker:local:up
 memoflow-migrator-1   Exited (0)
 memoflow-api-1        Up (...) (healthy)
 memoflow-web-1        Up (...) (healthy)
-memoflow-ai-service-1 Up (...) (healthy)
 memoflow-powersync-1  Up (...) (healthy)
 memoflow-postgres-1   Up (...) (healthy)
 memoflow-redis-1      Up (...) (healthy)

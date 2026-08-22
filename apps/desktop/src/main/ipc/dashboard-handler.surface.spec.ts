@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DashboardChannels } from '@memoflow/contracts/electron';
@@ -38,7 +38,7 @@ describe('desktop goal/task repository accessor retirement surface', () => {
     'ipc/dashboard-handler.ts',
     'services/dashboard-read-service.ts',
     'modules/ai/desktop-analytics-read.adapter.ts',
-    'modules/ai/desktop-automation-tool-executor.adapter.ts',
+    'runtime/compose-ai.ts',
   ];
 
   for (const file of files) {
@@ -50,4 +50,19 @@ describe('desktop goal/task repository accessor retirement surface', () => {
       expect(source).not.toMatch(/\bgetTaskInstanceRepository\b/);
     });
   }
+
+  it('keeps the retired desktop automation executor physically deleted', () => {
+    expect(existsSync(resolve(mainDir, 'modules/ai/desktop-automation-tool-executor.adapter.ts'))).toBe(
+      false,
+    );
+  });
+
+  it('wires goal/task workflow mutations through canonical application ports', () => {
+    const source = readFileSync(resolve(mainDir, 'runtime/compose-ai.ts'), 'utf8');
+    expect(source).toContain('GoalApplicationPort');
+    expect(source).toContain('TaskApplicationPort');
+    expect(source).toContain('DesktopGoalPlanMutationAdapter');
+    expect(source).toContain('DesktopTaskPlanMutationAdapter');
+    expect(source).not.toContain('desktop-automation-tool-executor.adapter');
+  });
 });

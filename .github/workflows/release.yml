@@ -129,8 +129,7 @@ jobs:
           npm_config_python: ${{ env.pythonLocation }}/python
           npm_config_msvs_version: 2022
         # desktop:build already pulls its Nx build dependencies, so this stays
-        # focused on the desktop release path and avoids unrelated apps such as
-        # the Python ai-service.
+        # focused on the desktop release path and avoids unrelated application builds.
         run: pnpm nx run desktop:build:production --outputStyle=static
 
       - name: Package desktop application

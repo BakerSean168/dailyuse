@@ -162,6 +162,16 @@ async function bootstrap(): Promise<void> {
     userProvisioner: createCloudAccountProvisioner(prisma),
     emailDelivery: testEmailLinks?.delivery ?? baseEmailDelivery,
     closureChecker: accountActiveChecker,
+    rateLimit: env.LOCAL_VALIDATION
+      ? {
+          enabled: true,
+          customRules: {
+            // Better Auth's glob treats `*` as one path segment; `/**` is
+            // required to override nested endpoints such as `/sign-in/email`.
+            '/**': { window: 10, max: 100 },
+          },
+        }
+      : undefined,
   });
 
   // 2. 白名单注册 & 启动
@@ -240,6 +250,9 @@ async function bootstrap(): Promise<void> {
     db: prisma,
     taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
   });
+  if (!env.DATABASE_URL) {
+    throw new Error('AI Mastra runtime requires DATABASE_URL after environment normalization');
+  }
   const aiApiModule = composeAI({
     db: prisma,
     repositoryApiPort: repositoryApiModule.getApplicationPort(),
@@ -247,6 +260,7 @@ async function bootstrap(): Promise<void> {
     goalApplicationPort: goalComposed.applicationPort,
     taskApplicationPort: taskComposed.applicationPort,
     reminderApplicationPort: reminderComposed.executorReminderPort,
+    mastraStorage: { kind: 'postgres', connectionString: env.DATABASE_URL },
   });
   const governanceApiModule = composeGovernance({ db: prisma });
   // App-local infrastructure modules: DB-backed dependencies are bound by the

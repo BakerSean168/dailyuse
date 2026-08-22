@@ -27,3 +27,6 @@ docs
 reports
 tmp
 nul
+# Browser/E2E generated evidence is not part of product images.
+apps/web/playwright*-report
+apps/web/test-results*

@@ -8,7 +8,9 @@
         "symbol": "GoalDependencyReadPort",
         "file": "packages/contracts/src/modules/reliable-messaging/ports.ts"
       },
-      "consumerDirs": ["packages/goal/src/server/application"],
+      "consumerDirs": [
+        "packages/goal/src/server/application"
+      ],
       "providers": [
         {
           "file": "packages/task/src/server/infrastructure/adapters/prisma/prisma-task-binding-read-port.ts",
@@ -22,19 +24,31 @@
       "injections": [
         {
           "file": "apps/api/src/runtime/compose-goal.ts",
-          "refs": ["taskBindingReadPort", "GoalDependencyReadPort"]
+          "refs": [
+            "taskBindingReadPort",
+            "GoalDependencyReadPort"
+          ]
         },
         {
           "file": "apps/api/src/server.ts",
-          "refs": ["new PrismaTaskBindingReadPort(", "taskBindingReadPort"]
+          "refs": [
+            "new PrismaTaskBindingReadPort(",
+            "taskBindingReadPort"
+          ]
         },
         {
           "file": "apps/desktop/src/main/runtime/compose-goal.ts",
-          "refs": ["taskBindingReadPort", "GoalDependencyReadPort"]
+          "refs": [
+            "taskBindingReadPort",
+            "GoalDependencyReadPort"
+          ]
         },
         {
           "file": "apps/desktop/src/main/main.ts",
-          "refs": ["new PowerSyncTaskBindingReadPort(", "taskBindingReadPort"]
+          "refs": [
+            "new PowerSyncTaskBindingReadPort(",
+            "taskBindingReadPort"
+          ]
         }
       ]
     },
@@ -44,7 +58,9 @@
         "symbol": "IAnalyticsReadPort",
         "file": "packages/ai/src/server/application/ports/analytics-read.port.ts"
       },
-      "consumerDirs": ["packages/ai/src/server/application"],
+      "consumerDirs": [
+        "packages/ai/src/server/application"
+      ],
       "providers": [
         {
           "file": "apps/api/src/modules/ai/controlled-analytics-read.adapter.ts",
@@ -58,15 +74,24 @@
       "injections": [
         {
           "file": "apps/api/src/runtime/compose-ai.ts",
-          "refs": ["new ControlledAnalyticsReadAdapter(", "analyticsReadPort"]
+          "refs": [
+            "new ControlledAnalyticsReadAdapter(",
+            "analyticsReadPort"
+          ]
         },
         {
           "file": "apps/desktop/src/main/runtime/compose-ai.ts",
-          "refs": ["analyticsReadPort", "IAnalyticsReadPort"]
+          "refs": [
+            "analyticsReadPort",
+            "IAnalyticsReadPort"
+          ]
         },
         {
           "file": "apps/desktop/src/main/main.ts",
-          "refs": ["new DesktopAnalyticsReadAdapter(", "analyticsReadPort"]
+          "refs": [
+            "new DesktopAnalyticsReadAdapter(",
+            "analyticsReadPort"
+          ]
         }
       ]
     },
@@ -76,7 +101,9 @@
         "symbol": "IKnowledgeSourcePort",
         "file": "packages/ai/src/server/application/ports/knowledge-source.port.ts"
       },
-      "consumerDirs": ["packages/ai/src/server/application"],
+      "consumerDirs": [
+        "packages/ai/src/server/application"
+      ],
       "providers": [
         {
           "file": "apps/api/src/modules/ai/repository-knowledge-source.adapter.ts",
@@ -90,39 +117,28 @@
       "injections": [
         {
           "file": "apps/api/src/runtime/compose-ai.ts",
-          "refs": ["new RepositoryKnowledgeSourceAdapter(", "knowledgeSourcePort"]
+          "refs": [
+            "new RepositoryKnowledgeSourceAdapter(",
+            "knowledgeSourcePort"
+          ]
         },
         {
           "file": "apps/desktop/src/main/runtime/compose-ai.ts",
-          "refs": ["knowledgeSourcePort", "IKnowledgeSourcePort"]
+          "refs": [
+            "knowledgeSourcePort",
+            "IKnowledgeSourcePort"
+          ]
         },
         {
           "file": "apps/desktop/src/main/main.ts",
-          "refs": ["new DesktopKnowledgeSourceAdapter(", "knowledgeSourcePort"]
+          "refs": [
+            "new DesktopKnowledgeSourceAdapter(",
+            "knowledgeSourcePort"
+          ]
         }
       ]
     }
   ],
-  "aiApproval": {
-    "ruleId": "AI_APPROVAL_LIFECYCLE_ONLY",
-    "assistantFacade": {
-      "file": "packages/ai/src/server/infrastructure/assistant-facade/assistant.facade.ts",
-      "class": "AssistantFacade",
-      "lifecycleMethods": ["dispatchApprove", "dispatchRevise", "dispatchReject"],
-      "bannedCalls": ["executeApproved"]
-    },
-    "turnEngines": {
-      "files": [
-        "packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts",
-        "packages/ai/src/server/infrastructure/turn-engine/readonly-analysis.turn-engine.ts"
-      ],
-      "bannedLiterals": ["tool.mutation"]
-    },
-    "mutationCallers": {
-      "call": "executeApproved",
-      "allowlist": ["packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts"]
-    }
-  },
   "reliableReceipt": {
     "ruleId": "RELIABLE_RECEIPT_CANONICAL",
     "validatorFile": "packages/contracts/src/modules/reliable-messaging/ports.ts",
@@ -130,14 +146,66 @@
       "packages/contracts/src/modules/reliable-messaging/operation-receipt.ts",
       "packages/contracts/src/modules/reliable-messaging/projection.ts"
     ],
-    "canonicalTypes": ["BusinessOperationReceipt", "ProjectionOperation"],
-    "validators": ["assertValidBusinessOperationReceipt", "assertValidProjectionOperation"],
+    "canonicalTypes": [
+      "BusinessOperationReceipt",
+      "ProjectionOperation"
+    ],
+    "validators": [
+      "assertValidBusinessOperationReceipt",
+      "assertValidProjectionOperation"
+    ],
     "receiptAdapters": [
       "packages/goal/src/server/infrastructure/adapters/prisma/prisma-goal-reliable-operation.adapter.ts",
       "packages/goal/src/server/infrastructure/adapters/powersync/powersync-goal-reliable-operation.adapter.ts",
       "packages/reminder/src/server/infrastructure/adapters/prisma/reminder-reliable-operation-prisma.adapter.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/notification-reliable-operation-prisma.adapter.ts",
       "packages/notification/src/server/infrastructure/adapters/powersync/power-sync-notification-reliable.adapter.ts"
+    ]
+  },
+  "aiRuntimeAuthority": {
+    "ruleId": "AI_MASTRA_RUNTIME_AUTHORITY",
+    "runtime": {
+      "file": "packages/ai/src/server/mastra/runtime/mastra-ai.runtime.ts",
+      "class": "MastraAIRuntime",
+      "requiredMethods": [
+        "dispatchMessage",
+        "summarizeUsage",
+        "start",
+        "resume",
+        "get",
+        "list",
+        "cancel"
+      ]
+    },
+    "compositions": [
+      {
+        "file": "apps/api/src/runtime/compose-ai.ts",
+        "requiredRefs": [
+          "const mastraRuntime = new MastraAIRuntime({",
+          "mastraRuntime,",
+          "workflowRuntime: mastraRuntime",
+          "usageReadPort: repositorySet.executionLogPort"
+        ]
+      },
+      {
+        "file": "apps/desktop/src/main/runtime/compose-ai.ts",
+        "requiredRefs": [
+          "const mastraRuntime = new MastraAIRuntime({",
+          "mastraRuntime,",
+          "workflowRuntime: mastraRuntime",
+          "usageReadPort: executionLogPort"
+        ]
+      }
+    ],
+    "retiredFiles": [
+      "packages/ai/src/server/infrastructure/assistant-facade/assistant.facade.ts",
+      "packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts",
+      "packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts",
+      "packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts",
+      "packages/ai/src/server/infrastructure/turn-engine/readonly-analysis.turn-engine.ts",
+      "packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts",
+      "packages/ai/src/server/infrastructure/runtime/remote-ai-service.runtime.ts",
+      "packages/ai/src/server/infrastructure/runtime/direct-provider-ai.runtime.ts"
     ]
   }
 }

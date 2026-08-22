@@ -27,6 +27,7 @@ import { ActiveTimeConfigSchema } from '../value-objects/active-time-config';
  * Residual 835: activeTime request dual retired — ActiveTimeConfigSchema (activatedAt).
  */
 export const CreateReminderTemplateSchema = z.object({
+  id: brandedId<ReminderTemplateId>().optional(),
   title: z.string().min(1).max(200),
   type: z.enum(ReminderType),
   trigger: z.object({

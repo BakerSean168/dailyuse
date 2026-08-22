@@ -64,7 +64,7 @@
             >
               <component
                 :is="
-                  toolMode === 'knowledge-generate'
+                  toolMode === 'knowledge-capture'
                     ? NotebookPen
                     : toolMode === 'goal-create'
                       ? Sparkles
@@ -233,7 +233,7 @@ const shortcutEntries = [
   { mode: 'chat' as const, localeKey: 'chat', icon: MessageSquare },
   { mode: 'goal-create' as const, localeKey: 'goalCreate', icon: Sparkles },
   { mode: 'task-create' as const, localeKey: 'taskCreate', icon: ClipboardCheck },
-  { mode: 'knowledge-generate' as const, localeKey: 'knowledgeGenerate', icon: NotebookPen },
+  { mode: 'knowledge-capture' as const, localeKey: 'knowledgeCapture', icon: NotebookPen },
   { mode: 'knowledge-qa' as const, localeKey: 'knowledgeQa', icon: Search },
 ];
 
@@ -245,8 +245,8 @@ const workflowEntries = [
     icon: ClipboardCheck,
   },
   {
-    mode: 'knowledge-generate' as const,
-    localeKey: getToolLocaleKey('knowledge-generate'),
+    mode: 'knowledge-capture' as const,
+    localeKey: getToolLocaleKey('knowledge-capture'),
     icon: NotebookPen,
   },
   { mode: 'knowledge-qa' as const, localeKey: getToolLocaleKey('knowledge-qa'), icon: Search },

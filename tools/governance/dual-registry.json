@@ -10,16 +10,16 @@
     "dual_surface_files": 71,
     "drop_from_baseline": 166,
     "drop_pct": 70,
-    "registry_suites": 123
+    "registry_suites": 122
   },
   "counts": {
-    "total": 123,
+    "total": 122,
     "by_class": {
-      "keep_boundary": 52,
+      "keep_boundary": 51,
       "retired": 71
     },
     "dual_surface_files": 71,
-    "keep_boundary_files": 52
+    "keep_boundary_files": 51
   },
   "entries": [
     {
@@ -329,17 +329,6 @@
       "next": "none",
       "residual": "248",
       "suite_describes": 4
-    },
-    {
-      "id": "r1089",
-      "path": "packages/app-vue/src/modules/ai/composables/is-record-keep-boundary.surface.spec.ts",
-      "package": "packages/app-vue",
-      "class": "keep_boundary",
-      "sole": "isRecord.ts",
-      "blast": "surface lock (keep_boundary)",
-      "next": "none",
-      "residual": "1089",
-      "suite_describes": 1
     },
     {
       "id": "r1075",

@@ -38,14 +38,12 @@ describe('AIConversationSidebar email verification degrade', () => {
     const wrapper = mount(AIConversationSidebar, {
       props: {
         conversations: [],
-        agentRuns: [],
         recentGoals: [],
         recentKnowledgeNotes: [],
         recentKnowledgeNotesEmailVerificationRequired: true,
         recentKnowledgeNotesErrorMessageKey: 'errors.EMAIL_VERIFICATION_REQUIRED',
         activeConversationId: '',
         loading: false,
-        agentRunsLoading: false,
       },
       global: {
         plugins: [i18n],

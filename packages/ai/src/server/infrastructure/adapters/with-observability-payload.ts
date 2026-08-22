@@ -12,6 +12,7 @@ export function withObservabilityPayload(
 ): Record<string, unknown> {
   const observability = {
     requestId: input.requestId,
+    traceId: input.traceId,
     providerId: input.providerId,
     providerName: input.providerName,
     model: input.model,

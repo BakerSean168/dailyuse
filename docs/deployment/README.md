@@ -34,7 +34,7 @@ api:3000
   |
   +--> postgres:5432
   +--> redis:6379
-  +--> ai-service:8100
+  +--> Mastra AI runtime (in-process)
 
 watchtower
   |
@@ -94,7 +94,6 @@ watchtower
 |------|------|------|---------|
 | `postgres` | `pgvector/pgvector:pg16` | 主数据库 | 本地离线预加载 |
 | `redis` | `redis:7-alpine` | 缓存 / 队列 | 本地离线预加载 |
-| `ai-service` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-ai-service` | AI 服务 | 阿里云 ACR |
 | `migrator` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator` | 一次性数据库初始化 | 阿里云 ACR |
 | `api` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api` | 后端 API | 阿里云 ACR |
 | `powersync` | `journeyapps/powersync-service:latest` | Desktop / Web 实时同步服务 | 本地离线预加载 |
@@ -105,7 +104,7 @@ watchtower
 其中：
 
 - `postgres` 和 `redis` 只绑定宿主机 `127.0.0.1`
-- `api`、`web`、`ai-service`、`powersync` 都不直接暴露到公网
+- `api`、`web`、`powersync` 都不直接暴露到公网
 - `caddy` 暴露 `80/443`
 - `watchtower` 通过 `/var/run/docker.sock` 管理容器更新
 
@@ -216,19 +215,16 @@ ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
 
 - `memoflow-api`
 - `memoflow-web`
-- `memoflow-ai-service`
 
 如果后续发现服务器连 ACR 也偶发超时，那么业务镜像也可以走同样的离线路线：
 
 ```bash
 docker pull <ACR_REGISTRY>/<NAMESPACE>/memoflow-api:prod-latest
 docker pull <ACR_REGISTRY>/<NAMESPACE>/memoflow-web:prod-latest
-docker pull <ACR_REGISTRY>/<NAMESPACE>/memoflow-ai-service:prod-latest
 
 docker save \
   <ACR_REGISTRY>/<NAMESPACE>/memoflow-api:prod-latest \
   <ACR_REGISTRY>/<NAMESPACE>/memoflow-web:prod-latest \
-  <ACR_REGISTRY>/<NAMESPACE>/memoflow-ai-service:prod-latest \
   -o memoflow-app-images.tar
 
 scp memoflow-app-images.tar ali-memoflow:/opt/memoflow/
@@ -310,12 +306,12 @@ ssh ali-memoflow "docker images --format '{{.Repository}}:{{.Tag}}' | grep -E 'p
 ### 6.2 第二步：先启动核心服务
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis ai-service api powersync web caddy"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
 ```
 
 这一步的意义：
 
-- 先验证数据库、缓存、AI、API、Web、入口层都正常
+- 先验证数据库、缓存、migrator、API（含 Mastra AI runtime）、Web、入口层都正常
 - 暂时不让 Watchtower 介入
 
 ### 6.3 第三步：检查容器状态
@@ -328,7 +324,6 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 
 - `postgres` 是否 healthy
 - `redis` 是否 healthy
-- `ai-service` 是否 healthy
 - `api` 是否 healthy
 - `powersync` 是否 healthy
 - `web` 是否 healthy
@@ -338,7 +333,6 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 
 ```bash
 ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 postgres"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 ai-service"
 ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 api"
 ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 powersync"
 ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
@@ -346,15 +340,14 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 
 特别关注：
 
-- `api` 是否完成迁移并正常监听 `3000`
-- `ai-service` 是否成功监听 `8100`
+- `migrator` 是否成功 `Exited (0)`，且 API 随后 healthy
+- `api` 是否正常监听 `3000`，并能初始化 Mastra runtime
 - `caddy` 是否成功申请证书
 
 ### 6.5 第五步：本机健康检查
 
 ```bash
-ssh ali-memoflow "curl -fsS http://127.0.0.1:3000/healthz"
-ssh ali-memoflow "curl -fsS http://127.0.0.1:8100/healthz"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local exec -T api node -e \'require(\"node:http\").get(\"http://127.0.0.1:3000/healthz\",r=>process.exit(r.statusCode===200?0:1)).on(\"error\",()=>process.exit(1))\'"
 ssh ali-memoflow "curl -I http://127.0.0.1"
 ```
 
@@ -409,7 +402,7 @@ scp memoflow-infra-images.tar ali-memoflow:/opt/memoflow/
 ```bash
 ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
 ssh ali-memoflow "cd /opt/memoflow && ls -lah"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis ai-service api powersync web caddy"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
 ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
 ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
 ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
@@ -426,7 +419,6 @@ REGISTRY=<你的 ACR registry>
 IMAGE_NAMESPACE=<你的 ACR namespace>
 API_TAG=prod-latest
 WEB_TAG=prod-latest
-AI_SERVICE_TAG=prod-latest
 ```
 
 ### 8.2 基础服务
@@ -442,7 +434,6 @@ REDIS_PASSWORD=...
 
 ```env
 JWT_SECRET=...
-SERVICE_SECRET=...
 ```
 
 ### 8.4 域名相关
@@ -452,7 +443,6 @@ APP_DOMAIN=<你的域名>
 POWERSYNC_DOMAIN=sync.<你的域名>
 ACME_EMAIL=<你的邮箱>
 CORS_ORIGIN=https://<你的域名>
-ALLOWED_ORIGINS=https://<你的域名>
 ```
 
 ### 8.5 PowerSync 相关
@@ -481,7 +471,7 @@ OPENAI_MODEL=...
 OPENAI_BASE_URL=...
 ```
 
-如果 AI 能力走其他提供商，也要确认 API 和 AI service 所需变量已经齐全。
+如果 AI 能力走其他提供商，也要确认 API 的 provider/BYOK 配置已经齐全；不存在独立 AI service 环境变量。
 
 ## 9. 首次上线后的验证清单
 
@@ -490,7 +480,7 @@ OPENAI_BASE_URL=...
 1. 首页可以正常打开，证书为有效 HTTPS。
 2. 前端访问 `/api/` 的请求能正常返回，不是 502/504。
 3. `api` 健康检查通过：`/healthz`
-4. `ai-service` 健康检查通过：`/healthz`
+4. API 内 Mastra Assistant/Workflow 健康链路通过至少一个 AI smoke。
 5. `powersync` 健康检查通过：`/probes/liveness`
 6. `postgres`、`redis` 状态是 healthy
 7. `desktop` 登录后能从 `/api/v1/powersync/token` 获取 token
@@ -518,7 +508,7 @@ ssh ali-memoflow "docker volume ls | grep memoflow"
 - 直接在本地 `docker pull` + `docker save`
 - `scp` 到服务器后 `docker load`
 
-### 10.2 `web/api/ai-service` 拉取失败
+### 10.2 `web/api` 拉取失败
 
 表现：
 
@@ -600,11 +590,11 @@ git push origin main
 
 正式 tag 创建后，`docker-deploy.yml` 才会继续执行：
 
-1. 构建 `api`、`migrator`、`web`、`ai-service`
+1. 构建 `api`、`migrator`、`web`
 2. 推送不可变镜像 tag
 3. 同时更新 `prod-latest`
 
-Watchtower 仍可自动更新 `web` 与 `ai-service`。`api` 和 `migrator` 明确禁用 Watchtower：数据库初始化必须使用与 API 匹配的镜像先成功完成，不能让 Watchtower 单独替换 API。
+Watchtower 仍可自动更新 `web`。`api` 和 `migrator` 明确禁用 Watchtower：数据库初始化必须使用与 API 匹配的镜像先成功完成，不能让 Watchtower 单独替换 API。
 
 结论：
 
@@ -650,7 +640,6 @@ Watchtower 仍可自动更新 `web` 与 `ai-service`。`api` 和 `migrator` 明�
 ```env
 API_TAG=v0.3.0-prod.20260403-150338-93dca44f0df1
 WEB_TAG=v0.3.0-prod.20260403-150338-93dca44f0df1
-AI_SERVICE_TAG=v0.3.0-prod.20260403-150338-93dca44f0df1
 ```
 
 然后执行：
@@ -669,7 +658,7 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 1. 保持现有 `docker-compose.prod.yml + Caddyfile` 架构，不新增 Nginx Proxy Manager。
 2. 基础设施镜像统一走“本地拉取 + 打包 + 上传 + 服务器导入”。
 3. 业务镜像优先走阿里云 ACR。
-4. 首次上线时先不启动 Watchtower，待站点验证通过后再启用；Watchtower 只管理 Web 与 AI Service，API 必须走显式 Compose 发布。
+4. 首次上线时先不启动 Watchtower，待站点验证通过后再启用；Watchtower 只管理 Web，API 必须走显式 Compose 发布。
 5. 如果后续确认 ACR 也不稳定，就把业务镜像也纳入离线导入流程。
 6. 生产回滚依赖不可变 tag，不依赖 `prod-latest`。
 

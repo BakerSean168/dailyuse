@@ -1,313 +1,76 @@
-/**
- * Residual 431/433/437/439/445/461/489/501/507: product path for AgentType task.create.
- * Residual 433: optional linked goalId at start; session restore owned by useAIChatView.
- * Residual 437: process-local cancel/complete resume after Host lifecycle decisions.
- * Residual 439: process-local edit revise after Host proposal revise.
- * Residual 445: re-align linkedGoalId from restored/synced taskAgentRun.
- * Residual 489: complete only from waiting_approval (Host residual 475 symmetry).
- * Residual 501: complete settlement draft must be create_task_template (no blind pending[0]).
- * Residual 507: revise draft must be create_task_template (no blind source[0]; residual 501 symmetry).
- * Residual 547: complete/revise use sole create_task_template draftAction after
- * single-product-draft gate (Host residual 541/545 symmetry; no multi-find invent).
- * Host proposal + client createTemplate settle own mutation (residual 423–425).
- * Full Task LangGraph workflow is not claimed here.
- */
-
-import { computed, ref, type Ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { unwrap } from '@memoflow/contracts/result';
-import type {
-  AgentExecutedAction,
-  AgentResumePayload,
-  AgentRunResult,
-  AgentStartRunClientRequest,
-} from '@memoflow/contracts/ai';
-import type { AIChatService, ChatModelOption, ChatItem } from './types';
-import { getAIErrorMessage } from './error';
-// Residual 953: createAgentId dual retired — sole AI composable helper.
-import { createAgentId } from './createAgentId';
-import { applyHostTaskPatchToAgentActions, resolveLinkedGoalIdFromTaskAgentRun } from './hostProposalLifecycle';
 import { toast } from 'vue-sonner';
+import type { AIWorkflowRunView } from '@memoflow/contracts/ai';
+import type { TaskWorkflowStage, UseAITaskWorkflowOptions } from './types';
+import { getAIErrorMessage, getAIWorkflowFailureMessage } from './error';
 
-export type UseAITaskWorkflowOptions = {
-  service: Pick<AIChatService, 'startAgentRun' | 'resumeAgentRun'>;
-  selectedModel: Ref<ChatModelOption | null>;
-  chatConversationId: Ref<string>;
-  chatLoading: Ref<boolean>;
-  chatTimeline: Ref<ChatItem[]>;
-  conversationTitle: Ref<string>;
-  hasWorkflowUserMessages: Ref<boolean>;
-  buildConversationTranscript: () => string;
-  scrollMessagesToBottom: () => void;
-  /** Dedicated session field setter from useAIChatView. */
-  syncTaskAgentRun: (result: AgentRunResult) => void;
-  taskAgentRun: Ref<AgentRunResult | null>;
-};
-
-
+/** Thin presentation projection for the durable task.create Mastra Workflow. */
 export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   const { t, locale } = useI18n();
+  const taskWorkflowRun = ref<Extract<AIWorkflowRunView, { kind: 'task.create' }> | null>(null);
+  const taskWorkflowStage = ref<TaskWorkflowStage>('collect');
+  const clarificationAnswers = ref<string[]>([]);
+  const linkedGoalId = ref<string | null>(null);
+  const showTaskDraftEditor = ref(false);
   const taskAgentLoading = ref(false);
   const taskAgentResuming = ref(false);
-  /** Residual 433: optional goal link applied to create_task_template payload on start. */
-  const linkedGoalId = ref<string | null>(null);
+  const reviewDraft = computed(() => taskWorkflowRun.value?.suspension?.type === 'task_draft_review' ? taskWorkflowRun.value.suspension.draft : null);
 
-  const canRunTaskAgent = computed(
-    () =>
-      options.selectedModel.value !== null &&
-      // Residual 461: require session conversation for process-local restore/history reopen.
-      Boolean(options.chatConversationId.value?.trim()) &&
-      !options.chatLoading.value &&
-      !taskAgentLoading.value &&
-      !taskAgentResuming.value &&
-      (options.hasWorkflowUserMessages.value ||
-        options.buildConversationTranscript().trim().length > 0 ||
-        options.conversationTitle.value.trim().length > 0),
-  );
-
-  function setLinkedGoalId(goalId: string | null | undefined) {
-    const next =
-      typeof goalId === 'string' && goalId.trim().length > 0 ? goalId.trim() : null;
-    linkedGoalId.value = next;
+  function projectRun(run: AIWorkflowRunView | null): void {
+    if (!run || run.kind !== 'task.create') { taskWorkflowRun.value = null; taskWorkflowStage.value = 'collect'; clarificationAnswers.value = []; return; }
+    taskWorkflowRun.value = run;
+    const suspension = run.suspension;
+    if (run.status === 'suspended' && suspension?.type === 'clarification_required') {
+      taskWorkflowStage.value = 'clarification'; clarificationAnswers.value = suspension.questions.map(() => '');
+    } else if (run.status === 'suspended' && suspension?.type === 'task_draft_review') {
+      taskWorkflowStage.value = 'confirm'; linkedGoalId.value = suspension.draft.task.goalId;
+    } else if (run.status === 'suspended' && suspension?.type === 'recovery_required') taskWorkflowStage.value = 'execute';
+    else if (['completed', 'failed', 'cancelled'].includes(run.status)) { taskWorkflowStage.value = 'result'; clarificationAnswers.value = []; }
+    else { taskWorkflowStage.value = 'plan'; clarificationAnswers.value = []; }
+    options.scrollMessagesToBottom();
   }
-
-  /**
-   * Residual 445: re-align ActionBar linked goal from task.create AgentRun snapshot
-   * (conversation restore / process-local getRun refresh / history reopen).
-   */
-  function syncLinkedGoalFromTaskAgentRun(result: AgentRunResult | null | undefined) {
-    linkedGoalId.value = resolveLinkedGoalIdFromTaskAgentRun(result);
+  async function syncTaskWorkflowRun(runId: string): Promise<void> {
+    if (!runId) return;
+    try { projectRun(await options.workflowRuntime.get({ runId })); }
+    catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed')); }
   }
+  const taskAgentWaitingForClarification = computed(() => taskWorkflowRun.value?.status === 'suspended' && taskWorkflowRun.value.suspension?.type === 'clarification_required');
+  const taskAgentWaitingForApproval = computed(() => taskWorkflowRun.value?.status === 'suspended' && taskWorkflowRun.value.suspension?.type === 'task_draft_review');
+  const canSubmitTaskClarification = computed(() => taskWorkflowRun.value?.suspension?.type === 'clarification_required' && taskWorkflowRun.value.suspension.questions.every((_, i) => Boolean(clarificationAnswers.value[i]?.trim())));
+  const canRetryTaskAgentExecution = computed(() => taskWorkflowRun.value?.status === 'suspended' && taskWorkflowRun.value.suspension?.type === 'recovery_required' && taskWorkflowRun.value.suspension.retryable && !taskAgentResuming.value);
+  const canRunTaskAgent = computed(() => Boolean(options.selectedModel.value) && Boolean(options.chatConversationId.value) && !options.chatLoading.value && !taskAgentLoading.value && !taskAgentResuming.value && options.hasWorkflowUserMessages.value && (!taskWorkflowRun.value || ['completed', 'failed', 'cancelled'].includes(taskWorkflowRun.value.status)));
+  const taskExecutionSummary = computed(() => { const receipt = taskWorkflowRun.value?.result; return receipt ? { status: receipt.status, executedCount: receipt.taskIds.length, failedCount: receipt.failures.length } : null; });
+  const taskExecutionRecovery = computed(() => { const suspension = taskWorkflowRun.value?.suspension; return suspension?.type === 'recovery_required' ? { canRetry: suspension.retryable, suggestions: suspension.failures.map((failure) => getAIWorkflowFailureMessage(failure, t)) } : null; });
 
-  function resetTaskWorkflowLocalState() {
-    linkedGoalId.value = null;
-    taskAgentLoading.value = false;
-    taskAgentResuming.value = false;
-  }
-
-  async function startTaskAgentRun() {
-    if (!canRunTaskAgent.value) return;
-    // Residual 461: double-gate session binding (Host also fail-closed).
-    const conversationId = options.chatConversationId.value?.trim();
-    if (!conversationId) return;
+  async function startTaskAgentRun(): Promise<void> {
+    if (!canRunTaskAgent.value || !options.selectedModel.value) return;
+    const idea = options.buildConversationTranscript().trim(); if (!idea) return;
     taskAgentLoading.value = true;
     try {
-      const selectedModel = options.selectedModel.value;
-      const transcript = options.buildConversationTranscript().trim();
-      const idea =
-        transcript ||
-        options.conversationTitle.value.trim() ||
-        t('aiAssistant.chatPage.shortcuts.taskCreate.prefill');
       const goalId = linkedGoalId.value;
-      const request: AgentStartRunClientRequest = {
-        runId: createAgentId('run'),
-        threadId: createAgentId('thread'),
-        conversationId,
-        agentType: 'task.create',
-        locale: locale.value === 'en-US' ? 'en-US' : 'zh-CN',
-        input: {
-          idea,
-          title: idea,
-          conversationTitle: options.conversationTitle.value,
-          ...(goalId ? { goalId } : {}),
-          ...(selectedModel
-            ? {
-                provider_id: selectedModel.providerId,
-                model: selectedModel.modelId,
-              }
-            : {}),
-        },
-      };
-
-      const result = unwrap(await options.service.startAgentRun(request));
-      options.syncTaskAgentRun(result);
-      toast.success(t('aiAssistant.dialogs.agent.started'));
-      options.scrollMessagesToBottom();
-    } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.startFailed'));
-    } finally {
-      taskAgentLoading.value = false;
-    }
+      const run = await options.workflowRuntime.start({ kind: 'task.create', conversationId: options.chatConversationId.value, input: { idea, ...(goalId ? { goalId } : {}) }, providerId: options.selectedModel.value.providerId, modelId: options.selectedModel.value.modelId, locale: locale.value.startsWith('en') ? 'en-US' : 'zh-CN' });
+      projectRun(run);
+      if (run.kind === 'task.create' && run.suspension?.type === 'task_draft_review') await options.maybeRenameCurrentConversation(run.suspension.draft.task.title);
+    } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed')); }
+    finally { taskAgentLoading.value = false; }
   }
-
-  /**
-   * Residual 437/477: cancel Host task.create run (process-local resume → cancelled).
-   * Host ProposalKernel reject should run first when coming from workbench.
-   * Residual 477: only cancel from waiting_approval (Host also fail-closed).
-   */
-  async function cancelTaskAgentRun(hostOptions?: {
-    skipHostLifecycle?: boolean;
-    revision?: number;
-  }) {
-    const run = options.taskAgentRun.value;
-    if (!run || run.run.agentType !== 'task.create' || taskAgentResuming.value) return;
-    // Residual 477: product cancel only from waiting_approval.
-    if (run.run.status !== 'waiting_approval') return;
+  async function resume(command: Parameters<typeof options.workflowRuntime.resume>[0]['command']): Promise<void> {
+    const run = taskWorkflowRun.value; if (!run || taskAgentResuming.value) return;
     taskAgentResuming.value = true;
     try {
-      const payload: AgentResumePayload = { userDecision: 'cancel' };
-      const result = unwrap(await options.service.resumeAgentRun(run.run.runId, payload));
-      options.syncTaskAgentRun(result);
-      toast.success(t('aiAssistant.dialogs.agent.cancelled'));
-      options.scrollMessagesToBottom();
-    } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
-    } finally {
-      taskAgentResuming.value = false;
-    }
+      const next = await options.workflowRuntime.resume({ runId: run.runId, command }); projectRun(next);
+      if (next.kind === 'task.create' && next.status === 'completed' && next.result?.taskTemplateId) await options.openCreatedTask?.(next.result.taskTemplateId);
+    } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed')); }
+    finally { taskAgentResuming.value = false; }
   }
-
-  /**
-   * Residual 437/453/463/465/467/469/471/475/489: mark process-local task.create run completed after client createTemplate.
-   * Domain mutation already happened; Host confirm requires these executedActions (no Host default),
-   * a recoverable settlement title in data (residual 463), a non-empty template entity id
-   * (residual 465) for receipt deep-link / reopen, and must not rebind approved goalId/title
-   * (residual 467/469). Residual 471: do not send approvedActions on confirm — process-local
-   * draft is Host source of truth (edit is the only revise path).
-   * Residual 489: only complete from waiting_approval (Host residual 475 also fail-closed).
-   * Residual 501/547: settlement draft source must be sole create_task_template draftAction
-   * (Host 471/491/545 symmetry; no multi-find invent).
-   * This only records settlement for getRun/list/reopen.
-   */
-  async function completeTaskAgentRun(hostOptions?: {
-    templateId?: string | null;
-    title?: string;
-    goalId?: string | null;
-  }) {
-    const run = options.taskAgentRun.value;
-    if (!run || run.run.agentType !== 'task.create' || taskAgentResuming.value) return;
-    // Residual 489: product confirm only from waiting_approval (symmetric cancel/edit).
-    if (run.run.status !== 'waiting_approval') return;
-    // Residual 465: product confirm needs domain template id for Host settlement deep-link.
-    const templateId =
-      typeof hostOptions?.templateId === 'string' && hostOptions.templateId.trim()
-        ? hostOptions.templateId.trim()
-        : undefined;
-    if (!templateId) return;
-    // Residual 501/547: sole create_task_template draftAction after single-product-draft gate
-    // (Host residual 545 store draftAction / 541 edit draftAction symmetry; no multi-find invent).
-    const draftPool =
-      run.state.pendingActions.length > 0
-        ? run.state.pendingActions
-        : run.state.approvedActions;
-    const productDrafts = draftPool.filter(
-      (action) => action.tool === 'create_task_template',
-    );
-    if (productDrafts.length !== 1) return;
-    const draftAction = productDrafts[0];
-    if (!draftAction || draftAction.tool !== 'create_task_template') return;
-    taskAgentResuming.value = true;
-    try {
-      const title =
-        typeof hostOptions?.title === 'string' && hostOptions.title.trim()
-          ? hostOptions.title.trim()
-          : undefined;
-      const goalId =
-        typeof hostOptions?.goalId === 'string' && hostOptions.goalId.trim()
-          ? hostOptions.goalId.trim()
-          : undefined;
-
-      // Residual 471: settlement data may carry title/goalId for display, but Host draft
-      // comes from process-local pending/approved only (ignore client approvedActions).
-      const payloadBase: Record<string, unknown> = {
-        ...(draftAction.payload ?? {}),
-      };
-      // Residual 469: title stamp must match approved draft (Host fail-closes on rebind).
-      if (title) payloadBase['title'] = title;
-      // Residual 467: optional goalId stamp; Host fail-closes on approved-draft rebind.
-      if (goalId) payloadBase['goalId'] = goalId;
-      // Residual 465: always stamp domain template id into settlement data + entityId.
-      payloadBase['templateId'] = templateId;
-      payloadBase['entityId'] = templateId;
-
-      const executedActions: AgentExecutedAction[] = [
-        {
-          tool: 'create_task_template',
-          status: 'executed',
-          message: goalId
-            ? `Created task template · linked goal ${goalId}`
-            : 'Created task template',
-          entityId: templateId,
-          data: payloadBase,
-        },
-      ];
-
-      // Residual 471: confirm payload is executedActions settlement only (no draft revise).
-      const payload: AgentResumePayload = {
-        userDecision: 'confirm',
-        executedActions,
-      };
-      const result = unwrap(await options.service.resumeAgentRun(run.run.runId, payload));
-      options.syncTaskAgentRun(result);
-      options.scrollMessagesToBottom();
-    } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
-    } finally {
-      taskAgentResuming.value = false;
-    }
-  }
-
-  /**
-   * Residual 439/455/473/475/481/507: Host revise → process-local edit resume (stay waiting_approval).
-   * Residual 481: only revise from waiting_approval (Host also fail-closed).
-   * Patches create_task_template pendingActions so getRun/selectAgentRun reopen revised draft.
-   * Residual 455: blank title revise is refused client-side (Host also fail-closed).
-   * Residual 473/475: send exactly one create_task_template approvedAction (Host single-draft).
-   * Residual 507/547: draft source must be sole create_task_template draftAction
-   * (no multi-find invent; residual 501/Host 541 symmetry).
-   */
-  async function reviseTaskAgentRun(hostOptions?: {
-    title?: string;
-    goalId?: string | null;
-  }) {
-    const run = options.taskAgentRun.value;
-    if (!run || run.run.agentType !== 'task.create' || taskAgentResuming.value) return;
-    // Residual 481: product revise only from waiting_approval.
-    if (run.run.status !== 'waiting_approval') return;
-    // Residual 455: do not submit blank revise (Host rejects; avoid noisy VALIDATION_ERROR).
-    if (typeof hostOptions?.title === 'string' && !hostOptions.title.trim()) return;
-    taskAgentResuming.value = true;
-    try {
-      const source =
-        run.state.pendingActions.length > 0
-          ? run.state.pendingActions
-          : run.state.approvedActions;
-      // Residual 507: never patch a foreign tool's source[0] into Host edit resume.
-      // Residual 475/507/547: product draft is a sole create_task_template action only
-      // (Host residual 541 edit draftAction symmetry; no multi-find invent).
-      const productDrafts = source.filter((action) => action.tool === 'create_task_template');
-      if (productDrafts.length !== 1) return;
-      const draftAction = productDrafts[0];
-      if (!draftAction || draftAction.tool !== 'create_task_template') return;
-      const approvedActions = applyHostTaskPatchToAgentActions([draftAction], {
-        title: hostOptions?.title,
-        goalId: hostOptions?.goalId,
-      });
-      if (approvedActions.length !== 1) return;
-      const payload: AgentResumePayload = {
-        userDecision: 'edit',
-        approvedActions,
-      };
-      const result = unwrap(await options.service.resumeAgentRun(run.run.runId, payload));
-      options.syncTaskAgentRun(result);
-    } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
-    } finally {
-      taskAgentResuming.value = false;
-    }
-  }
-
-  return {
-    taskAgentLoading,
-    taskAgentResuming,
-    linkedGoalId,
-    canRunTaskAgent,
-    setLinkedGoalId,
-    syncLinkedGoalFromTaskAgentRun,
-    resetTaskWorkflowLocalState,
-    startTaskAgentRun,
-    cancelTaskAgentRun,
-    completeTaskAgentRun,
-    reviseTaskAgentRun,
-  };
+  const confirmTaskAgentRun = () => resume({ type: 'approve' });
+  const submitTaskClarification = () => resume({ type: 'answer', answers: clarificationAnswers.value.map((answer) => answer.trim()) });
+  const retryTaskAgentExecution = () => resume({ type: 'retry' });
+  const reviseTaskAgentRun = (patch: Record<string, unknown>) => resume({ type: 'edit_structured', patch });
+  async function cancelTaskAgentRun(): Promise<void> { const run = taskWorkflowRun.value; if (!run || taskAgentResuming.value) return; if (run.status === 'suspended') return resume({ type: 'cancel' }); taskAgentResuming.value = true; try { projectRun(await options.workflowRuntime.cancel({ runId: run.runId })); } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed')); } finally { taskAgentResuming.value = false; } }
+  const completeTaskAgentRun = confirmTaskAgentRun;
+  function setLinkedGoalId(goalId: string | null | undefined) { linkedGoalId.value = goalId?.trim() || null; }
+  function resetTaskWorkflowLocalState() { taskWorkflowRun.value = null; taskWorkflowStage.value = 'collect'; clarificationAnswers.value = []; linkedGoalId.value = null; showTaskDraftEditor.value = false; taskAgentLoading.value = false; taskAgentResuming.value = false; }
+  return { taskWorkflowRun, taskWorkflowStage, clarificationAnswers, linkedGoalId, showTaskDraftEditor, taskAgentLoading, taskAgentResuming, canRunTaskAgent, canSubmitTaskClarification, taskAgentWaitingForApproval, taskAgentWaitingForClarification, canRetryTaskAgentExecution, taskExecutionSummary, taskExecutionRecovery, reviewDraft, startTaskAgentRun, cancelTaskAgentRun, completeTaskAgentRun, reviseTaskAgentRun, retryTaskAgentExecution, confirmTaskAgentRun, submitTaskClarification, syncTaskWorkflowRun, resetTaskWorkflowLocalState, setLinkedGoalId, projectRun };
 }

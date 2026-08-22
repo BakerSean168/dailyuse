@@ -1,25 +1,20 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { isRecord as aiIsRecord } from '../../../modules/ai/composables/isRecord';
 import { sanitizeForIpc } from './sanitize-for-ipc';
 
 /**
  * Residual 1139: isPlainObject / isRecord keep-boundary.
  * - sanitize-for-ipc isPlainObject: Object.getPrototypeOf strict (Object.prototype | null only)
- * - AI isRecord: non-null object rejecting arrays (class instances allowed)
  * - desktop http-envelope isRecord: any non-null object (arrays allowed)
- * Soft residual 1089: AI vs desktop isRecord keep-boundary remains separate.
- * Soft residual 951/947: local isRecord duals retired onto package soles.
+ * - the former app-vue AI isRecord helper is retired with the AgentHost workflow payload path
+ * Soft residual 947: desktop local isRecord duals retired onto the package sole.
  * Does not flip §13.2 checkboxes.
  */
 describe('isPlainObject/isRecord keep-boundary (residual 1139)', () => {
   const dir = __dirname;
   const sanitize = readFileSync(resolve(dir, 'sanitize-for-ipc.ts'), 'utf8');
-  const aiSole = readFileSync(
-    resolve(dir, '../../../modules/ai/composables/isRecord.ts'),
-    'utf8',
-  );
+  const retiredAISole = resolve(dir, '../../../modules/ai/composables/isRecord.ts');
   const desktopSole = readFileSync(
     resolve(dir, '../../../../../../apps/desktop/src/main/utils/http-envelope-guards.ts'),
     'utf8',
@@ -39,11 +34,8 @@ describe('isPlainObject/isRecord keep-boundary (residual 1139)', () => {
     expect(body).not.toContain('Boolean(value)');
   });
 
-  it('differs from AI and desktop isRecord shapes (no force-merge)', () => {
-    expect(aiSole).toContain('Soft residual 1139');
-    expect(aiSole).toMatch(/export function isRecord\b/);
-    expect(aiSole).toContain('!Array.isArray(value)');
-    expect(aiSole).not.toContain('Object.getPrototypeOf');
+  it('differs from the remaining desktop isRecord shape and keeps the retired AI helper absent', () => {
+    expect(existsSync(retiredAISole)).toBe(false);
 
     expect(desktopSole).toContain('Soft residual 1139');
     expect(desktopSole).toMatch(/export function isRecord\b/);
@@ -51,19 +43,16 @@ describe('isPlainObject/isRecord keep-boundary (residual 1139)', () => {
     expect(desktopSole).not.toContain('Object.getPrototypeOf');
     expect(desktopSole).not.toContain('!Array.isArray(value)');
 
-    // sanitize must not use AI/desktop isRecord sole bodies for isPlainObject
+    // sanitize must not use the desktop isRecord sole body for isPlainObject
     const body =
       sanitize.match(/function isPlainObject\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).not.toContain("value !== null && typeof value === 'object'");
   });
 
-  it('runtime: AI isRecord allows class instances; sanitize path stays IPC-safe', () => {
+  it('runtime: sanitize path stays IPC-safe without depending on the retired AI helper', () => {
     class Demo {
       x = 1;
     }
-    expect(aiIsRecord(new Demo())).toBe(true);
-    expect(aiIsRecord([])).toBe(false);
-    expect(aiIsRecord({ a: 1 })).toBe(true);
     // sanitizeForIpc still produces plain data for both plain objects and class instances
     expect(sanitizeForIpc({ a: 1 })).toEqual({ a: 1 });
     expect(sanitizeForIpc(new Demo())).toEqual({ x: 1 });

@@ -1,9 +1,0 @@
-{
-  "minimum_pass_rate": 1.0,
-  "required_case_ids": [
-    "live-goal-workflow-clarification-quality",
-    "live-goal-agent-runtime-clarification"
-  ],
-  "max_allowed_score_drop": 0.0,
-  "require_no_new_failures": true
-}

@@ -42,7 +42,9 @@ describe('CreateTaskTemplateUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
   let useCase: CreateTaskTemplateUseCase;
 
-  function aCreateRequest(overrides: Partial<CreateTaskTemplateUseCaseReq> = {}): CreateTaskTemplateUseCaseReq {
+  function aCreateRequest(
+    overrides: Partial<CreateTaskTemplateUseCaseReq> = {},
+  ): CreateTaskTemplateUseCaseReq {
     return {
       identityId: anIdentityId(),
       name: 'Test Task',
@@ -86,7 +88,9 @@ describe('CreateTaskTemplateUseCase', () => {
   it('throws an error if transactionRunner is missing', () => {
     expect(
       () => new CreateTaskTemplateUseCase(templateRepo, instanceRepo, undefined as any),
-    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to CreateTaskTemplateUseCase');
+    ).toThrow(
+      'TaskWriteTransactionRunner must be explicitly provided to CreateTaskTemplateUseCase',
+    );
   });
 
   it('should create a one-time task template', async () => {
@@ -107,6 +111,34 @@ describe('CreateTaskTemplateUseCase', () => {
     await useCase.execute(request);
 
     expect(templateRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves a caller-supplied template ID and replays an existing template without new mutation', async () => {
+    const templateId = 'ITaskTemplateId_550e8400-e29b-41d4-a716-446655440002';
+    const request = aCreateRequest({ id: templateId as never });
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([]);
+
+    const first = await useCase.execute(request);
+
+    expect(first).toBeOk();
+    expect(first.ok && first.data.template.id).toBe(templateId);
+    const persisted = vi.mocked(templateRepo.save).mock.calls[0]?.[0];
+    expect(persisted?.id).toBe(templateId);
+
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(persisted ?? null);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([]);
+    vi.mocked(templateRepo.save).mockClear();
+    vi.mocked(instanceRepo.saveMany).mockClear();
+    mockGenerateInstances.mockClear();
+
+    const replay = await useCase.execute(request);
+
+    expect(replay).toBeOk();
+    expect(replay.ok && replay.data.template.id).toBe(templateId);
+    expect(templateRepo.save).not.toHaveBeenCalled();
+    expect(instanceRepo.saveMany).not.toHaveBeenCalled();
+    expect(mockGenerateInstances).not.toHaveBeenCalled();
   });
 
   it('should persist goal binding on the created template', async () => {

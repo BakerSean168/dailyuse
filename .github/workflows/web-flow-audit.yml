@@ -38,9 +38,9 @@ jobs:
       - uses: ./.github/actions/setup-nx-affected-job
         with:
           node-version: '24'
-          setup-python: 'true'
-          setup-uv: 'true'
-          capabilities: node,pnpm,python,uv,playwright,postgres
+          setup-python: 'false'
+          setup-uv: 'false'
+          capabilities: node,pnpm,playwright,postgres
       - name: Prepare database
         run: pnpm exec nx run database:prisma-push
       - name: Install Chromium

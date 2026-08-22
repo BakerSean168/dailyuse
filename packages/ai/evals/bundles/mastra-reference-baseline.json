@@ -1,0 +1,41 @@
+{
+  "recordedAt": "2026-08-22T04:15:00.000Z",
+  "config": {
+    "id": "mastra-reference-baseline",
+    "runtime": "mastra",
+    "provider": "offline-replay",
+    "model": "recorded-reference-baseline",
+    "promptVersion": "assistant-vnext-2026-08-20",
+    "toolPolicyVersion": "mastra-tools-v1",
+    "source": "recorded_replay"
+  },
+  "observations": [
+    {
+      "caseId": "open-chat-actionable-summary",
+      "output": "Mastra is the sole runtime. The next action is to complete observability and release-gate validation.",
+      "latencyMs": 210,
+      "tokenUsage": { "promptTokens": 820, "completionTokens": 170, "totalTokens": 990 },
+      "estimatedCostUsd": 0.000225
+    },
+    {
+      "caseId": "goal-planning-structured-plan",
+      "output": {
+        "goal": { "title": "Ship AI vNext migration" },
+        "tasks": [{ "title": "Run release gates" }, { "title": "Validate E2E" }]
+      },
+      "latencyMs": 330,
+      "tokenUsage": { "promptTokens": 1250, "completionTokens": 410, "totalTokens": 1660 },
+      "estimatedCostUsd": 0.0004335
+    },
+    {
+      "caseId": "knowledge-answer-grounded-citation",
+      "output": {
+        "answer": "Mastra owns Assistant and Workflow runtime state; MemoFlow owns product facts.",
+        "citations": [{ "sourceId": "ai-vnext-plan", "title": "Mastra Native AI vNext Refactor" }]
+      },
+      "latencyMs": 260,
+      "tokenUsage": { "promptTokens": 930, "completionTokens": 230, "totalTokens": 1160 },
+      "estimatedCostUsd": 0.0002775
+    }
+  ]
+}

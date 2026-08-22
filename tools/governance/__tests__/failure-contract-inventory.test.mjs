@@ -90,6 +90,8 @@ describe('failure contract source inventory', () => {
       'apps/web/e2e/auth.spec.ts',
       'apps/web/playwright-local-docker-report/trace/sw.bundle.js',
       'packages/contracts/dist/result.js',
+      'apps/desktop/dist-renderer/assets/bundle.js',
+      'apps/desktop/dist-electron/main.cjs',
       'docs/audit/example.md',
     ]) {
       expect(isFailureContractProductionPath(file)).toBe(false);

@@ -9,16 +9,13 @@ import {
   classifyValidationFailure,
   summarizeFailureClasses,
 } from './validation-classification.mjs';
-import {
-  createLocalComposeRuntimeEnv,
-  localComposeArgs,
-} from '../../../docker/local-compose.mjs';
+import { createLocalComposeRuntimeEnv, localComposeArgs } from '../../../docker/local-compose.mjs';
 
 const DEFAULT_BASE_REF = 'main';
 const DEFAULT_REPORT_DIR = 'reports/local-deploy-validation';
 const LOCAL_DOCKER_PLAYWRIGHT_EVIDENCE =
   'reports/local-deploy-validation/local-docker-playwright-evidence.json';
-const REQUIRED_DOCKER_SERVICES = ['api', 'web', 'ai-service', 'powersync'];
+const REQUIRED_DOCKER_SERVICES = ['api', 'web', 'powersync'];
 const MAX_OUTPUT_CHARS = 4000;
 const DOCKER_HEALTH_WAIT_TIMEOUT_MS = 90_000;
 const DOCKER_HEALTH_POLL_INTERVAL_MS = 5_000;
@@ -165,8 +162,7 @@ function extractNxFlakyTasks(...values) {
 
 function runCommand(command, args, options = {}) {
   const startTime = Date.now();
-  const shouldUseCmdShim =
-    process.platform === 'win32' && /\.(cmd|bat)$/iu.test(command);
+  const shouldUseCmdShim = process.platform === 'win32' && /\.(cmd|bat)$/iu.test(command);
   const spawnCommand = shouldUseCmdShim ? 'cmd.exe' : command;
   const spawnArgs = shouldUseCmdShim ? ['/d', '/s', '/c', command, ...args] : args;
 
@@ -241,7 +237,8 @@ function detectChangedFiles(workspace, baseRef, includeUncommitted, reportDirRel
         );
         const absolutePath = path.join(workspace, resolvedPath);
         const isDirectory =
-          resolvedPath.endsWith('/') || (existsSync(absolutePath) && lstatSync(absolutePath).isDirectory());
+          resolvedPath.endsWith('/') ||
+          (existsSync(absolutePath) && lstatSync(absolutePath).isDirectory());
 
         if (!isDirectory) {
           changed.add(resolvedPath);
@@ -271,7 +268,9 @@ function detectChangedFiles(workspace, baseRef, includeUncommitted, reportDirRel
     }
   }
 
-  const diffResult = runCommand('git', ['diff', '--name-only', `${baseRef}...HEAD`], { cwd: workspace });
+  const diffResult = runCommand('git', ['diff', '--name-only', `${baseRef}...HEAD`], {
+    cwd: workspace,
+  });
   if (diffResult.exitCode !== 0) {
     warnings.push(`git diff ${baseRef}...HEAD failed: ${diffResult.outputTail || 'unknown error'}`);
   } else {
@@ -315,7 +314,7 @@ function isRuntimeSensitiveFile(file) {
     normalized.startsWith('docker/') ||
     normalized.startsWith('apps/api/') ||
     normalized.startsWith('apps/web/') ||
-    normalized.startsWith('apps/ai-service/') ||
+    normalized.startsWith('packages/ai/') ||
     normalized === 'Caddyfile' ||
     normalized === 'nginx.conf' ||
     /^\.env(\..+)?$/u.test(normalized) ||
@@ -342,8 +341,12 @@ function getBranchAndSha(workspace) {
     branch: branchResult.exitCode === 0 ? branchResult.stdout.trim() : 'unknown',
     headSha: shaResult.exitCode === 0 ? shaResult.stdout.trim() : 'unknown',
     warnings: [
-      branchResult.exitCode === 0 ? null : `git rev-parse --abbrev-ref HEAD failed: ${branchResult.outputTail || 'unknown error'}`,
-      shaResult.exitCode === 0 ? null : `git rev-parse HEAD failed: ${shaResult.outputTail || 'unknown error'}`,
+      branchResult.exitCode === 0
+        ? null
+        : `git rev-parse --abbrev-ref HEAD failed: ${branchResult.outputTail || 'unknown error'}`,
+      shaResult.exitCode === 0
+        ? null
+        : `git rev-parse HEAD failed: ${shaResult.outputTail || 'unknown error'}`,
     ].filter(Boolean),
   };
 }
@@ -565,7 +568,9 @@ function collectDockerEvidence(workspace, maxLogLines) {
 
     services[serviceName].logExcerpt = trimOutput(logResult.combinedOutput);
     if (logResult.exitCode !== 0) {
-      warnings.push(`docker compose logs failed for ${serviceName}: ${logResult.outputTail || 'unknown error'}`);
+      warnings.push(
+        `docker compose logs failed for ${serviceName}: ${logResult.outputTail || 'unknown error'}`,
+      );
     }
   }
 
@@ -607,11 +612,12 @@ function readLocalDockerBrowserEvidence(workspace, expectedRevision, required) {
       headRevision: evidence.headRevision ?? null,
       browserRequest: evidence.browserRequest ?? null,
       playwrightExitCode: evidence.playwrightExitCode ?? null,
-      error: evidenceValid || !required
-        ? null
-        : revisionMatches
-          ? 'Local Docker Playwright evidence did not include a successful browser request proof.'
-          : `Local Docker Playwright evidence revision ${evidence.headRevision ?? 'missing'} does not match ${expectedRevision}.`,
+      error:
+        evidenceValid || !required
+          ? null
+          : revisionMatches
+            ? 'Local Docker Playwright evidence did not include a successful browser request proof.'
+            : `Local Docker Playwright evidence revision ${evidence.headRevision ?? 'missing'} does not match ${expectedRevision}.`,
     };
   } catch (error) {
     return {
@@ -639,7 +645,8 @@ function buildResults(commands) {
 
   return {
     commandCounts: counts,
-    allCommandsPassed: counts.fail === 0 && counts.pass > 0 && counts.planned === 0 && counts.skipped === 0,
+    allCommandsPassed:
+      counts.fail === 0 && counts.pass > 0 && counts.planned === 0 && counts.skipped === 0,
   };
 }
 
@@ -654,44 +661,66 @@ function buildRecommendedActions({
   const actions = [];
 
   if (changedFiles.length === 0) {
-    actions.push('Confirm you are on the intended branch and that the target changes exist in the current working tree or compared base ref.');
+    actions.push(
+      'Confirm you are on the intended branch and that the target changes exist in the current working tree or compared base ref.',
+    );
   }
 
   if (dryRun) {
-    actions.push('Rerun without --dry-run to execute the required validation commands and collect real evidence.');
+    actions.push(
+      'Rerun without --dry-run to execute the required validation commands and collect real evidence.',
+    );
   }
 
-  if (categories.runtimeDeploySensitive && Object.keys(dockerServices).length === 0 && verdict !== 'pass') {
-    actions.push('Ensure Docker is available and .env.production.local is configured before rerunning local deployment validation.');
+  if (
+    categories.runtimeDeploySensitive &&
+    Object.keys(dockerServices).length === 0 &&
+    verdict !== 'pass'
+  ) {
+    actions.push(
+      'Ensure Docker is available and .env.production.local is configured before rerunning local deployment validation.',
+    );
   }
 
   for (const issue of blockingIssues) {
     if (issue.includes('governance-check')) {
-      actions.push('Fix governance or documentation issues reported by memoflow:governance-check, then rerun validation.');
+      actions.push(
+        'Fix governance or documentation issues reported by memoflow:governance-check, then rerun validation.',
+      );
     }
     if (issue.includes('affected-lint')) {
       actions.push('Resolve affected lint failures before considering the branch ready for PR.');
     }
     if (issue.includes('affected-typecheck')) {
-      actions.push('Resolve affected typecheck failures before considering the branch ready for PR.');
+      actions.push(
+        'Resolve affected typecheck failures before considering the branch ready for PR.',
+      );
     }
     if (issue.includes('affected-test')) {
-      actions.push('Fix the affected test failures or adjust the implementation until the default test target passes.');
+      actions.push(
+        'Fix the affected test failures or adjust the implementation until the default test target passes.',
+      );
     }
     if (issue.includes('docker-local-up') || issue.includes('docker-local-rebuild')) {
-      actions.push('Repair the Docker startup or image build failure, then rerun local deployment verification.');
+      actions.push(
+        'Repair the Docker startup or image build failure, then rerun local deployment verification.',
+      );
     }
   }
 
   for (const serviceName of REQUIRED_DOCKER_SERVICES) {
     const service = dockerServices[serviceName];
     if (service && String(service.health).toLowerCase() !== 'healthy') {
-      actions.push(`Investigate ${serviceName} service health and log excerpt, then rerun local deployment verification.`);
+      actions.push(
+        `Investigate ${serviceName} service health and log excerpt, then rerun local deployment verification.`,
+      );
     }
   }
 
   if (verdict === 'pass') {
-    actions.push('Use latest.md as the PR-facing validation summary and keep latest.json for follow-up automation or repair history.');
+    actions.push(
+      'Use latest.md as the PR-facing validation summary and keep latest.json for follow-up automation or repair history.',
+    );
   }
 
   return [...new Set(actions)];
@@ -755,7 +784,9 @@ function renderMarkdown(report) {
   } else {
     for (const serviceName of Object.keys(report.dockerServices).sort()) {
       const service = report.dockerServices[serviceName];
-      lines.push(`- ${serviceName}: state=${service.state || 'unknown'}, health=${service.health || 'n/a'}`);
+      lines.push(
+        `- ${serviceName}: state=${service.state || 'unknown'}, health=${service.health || 'n/a'}`,
+      );
       if (service.logExcerpt) {
         lines.push('```text');
         lines.push(service.logExcerpt);
@@ -772,9 +803,7 @@ function renderMarkdown(report) {
   } else {
     lines.push(`- result: ${report.localDockerRuntime.ok ? 'pass' : 'fail'}`);
     lines.push(`- expected revision: ${report.localDockerRuntime.expectedRevision || 'unknown'}`);
-    for (const [serviceName, service] of Object.entries(
-      report.localDockerRuntime.services ?? {},
-    )) {
+    for (const [serviceName, service] of Object.entries(report.localDockerRuntime.services ?? {})) {
       lines.push(
         `- ${serviceName}: listener=${service.listenerOpen ? 'open' : 'closed'} ${service.hostPort}->${service.targetPort}, mapping=${service.mappingMatches ? 'match' : 'mismatch'}, revision=${service.revisionMatches ? 'match' : 'mismatch'}`,
       );
@@ -797,9 +826,7 @@ function renderMarkdown(report) {
     lines.push(`- result: ${report.localDockerBrowserEvidence.ok ? 'pass' : 'fail'}`);
     lines.push(`- evidence: ${report.localDockerBrowserEvidence.path}`);
     if (report.localDockerBrowserEvidence.browserRequest?.matchingLine) {
-      lines.push(
-        `- web log: ${report.localDockerBrowserEvidence.browserRequest.matchingLine}`,
-      );
+      lines.push(`- web log: ${report.localDockerBrowserEvidence.browserRequest.matchingLine}`);
     }
     if (report.localDockerBrowserEvidence.error) {
       lines.push(`- error: ${report.localDockerBrowserEvidence.error}`);
@@ -859,7 +886,11 @@ function writeReport(report, reportDir, historyEnabled) {
   writeFileSync(latestMd, renderMarkdown(report), 'utf8');
 
   if (historyEnabled) {
-    writeFileSync(path.join(reportDir, `${stamp}.json`), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    writeFileSync(
+      path.join(reportDir, `${stamp}.json`),
+      `${JSON.stringify(report, null, 2)}\n`,
+      'utf8',
+    );
     writeFileSync(path.join(reportDir, `${stamp}.md`), renderMarkdown(report), 'utf8');
   }
 }
@@ -867,7 +898,9 @@ function writeReport(report, reportDir, historyEnabled) {
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   const reportDirAbsolute = path.resolve(options.workspace, options.reportDir);
-  const reportDirRelative = normalizePath(path.relative(options.workspace, reportDirAbsolute) || options.reportDir);
+  const reportDirRelative = normalizePath(
+    path.relative(options.workspace, reportDirAbsolute) || options.reportDir,
+  );
 
   const { branch, headSha, warnings: repoWarnings } = getBranchAndSha(options.workspace);
   const { changedFiles, warnings: diffWarnings } = detectChangedFiles(
@@ -955,7 +988,11 @@ async function main() {
       });
       const result = statusToCommandResult(item.label, execution, item.cwd);
       commandResults.push(result);
-      const flakyTasks = extractNxFlakyTasks(execution.stdout, execution.stderr, execution.outputTail);
+      const flakyTasks = extractNxFlakyTasks(
+        execution.stdout,
+        execution.stderr,
+        execution.outputTail,
+      );
 
       if (flakyTasks.length > 0) {
         warnings.push(`${item.label} reported Nx flaky tasks: ${flakyTasks.join(', ')}`);
@@ -1037,6 +1074,7 @@ async function main() {
       }
 
       imageFreshness = checkLocalImageFreshness(options.workspace, {
+        expectedRevision: localDockerRuntime.expectedRevision,
         runCommand: (command, args, opts) => {
           const execution = runCommand(command, args, opts);
           return {

@@ -205,7 +205,7 @@ export function isFailureContractProductionPath(relPath) {
   if (!/^(?:apps|packages)\//.test(relPath)) return false;
   if (TEST_FILE.test(relPath)) return false;
   if (
-    /\/(?:dist|build|coverage|generated|reports?|playwright-report|[^/]*playwright[^/]*report[^/]*)\//.test(
+    /\/(?:dist(?:-[^/]+)?|build|coverage|generated|reports?|playwright-report|[^/]*playwright[^/]*report[^/]*)\//.test(
       `/${relPath}`,
     )
   ) {
