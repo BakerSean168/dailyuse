@@ -26,4 +26,3 @@ export * from './api';
 
 // ============ DTOs ============
 export * from './dtos';
-export * from './agent-host';

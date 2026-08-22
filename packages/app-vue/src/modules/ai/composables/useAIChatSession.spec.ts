@@ -4,7 +4,7 @@ import { createI18n } from 'vue-i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ok } from '@memoflow/contracts/result';
 import type { AssistantRuntimeEvent } from '@memoflow/contracts/ai';
-import type { AssistantRuntimeClient } from '@memoflow/ai/client';
+import type { AssistantRuntimeClient, RuntimeUsageClient } from '@memoflow/ai/client';
 import { useAIChatSession, type UseAIChatSessionOptions } from './useAIChatSession';
 import type { ChatModelOption } from './types';
 
@@ -112,6 +112,17 @@ function createRuntimeStub(): AssistantRuntimeClient & {
   } as never;
 }
 
+function createUsageRuntimeStub(): RuntimeUsageClient & { get: ReturnType<typeof vi.fn> } {
+  return {
+    get: vi.fn(async () => ({
+      executionCount: 1,
+      promptTokens: 10,
+      completionTokens: 4,
+      totalTokens: 14,
+    })),
+  } as never;
+}
+
 function event(
   sequence: number,
   type: AssistantRuntimeEvent['type'],
@@ -132,11 +143,13 @@ function mountComposable(
   service: ServiceStub,
   runtime: ReturnType<typeof createRuntimeStub>,
   surface: 'web' | 'desktop' = 'web',
+  usageRuntime: ReturnType<typeof createUsageRuntimeStub> = createUsageRuntimeStub(),
 ) {
   let composable!: ReturnType<typeof useAIChatSession>;
   const options: UseAIChatSessionOptions = {
     service: service as never,
     runtime,
+    usageRuntime,
     surface,
     getDefaultConversationName: () => 'New chat',
   };
@@ -176,7 +189,8 @@ describe('useAIChatSession Mastra-native open chat', () => {
   it('creates only the Conversation shell, then streams through AssistantRuntimeClient with BYOK model selection', async () => {
     const service = createServiceStub();
     const runtime = createRuntimeStub();
-    const composable = mountComposable(service, runtime, 'web');
+    const usageRuntime = createUsageRuntimeStub();
+    const composable = mountComposable(service, runtime, 'web', usageRuntime);
 
     await send(composable, service, runtime);
 
@@ -195,6 +209,7 @@ describe('useAIChatSession Mastra-native open chat', () => {
     );
     expect(service.dispatchAssistant).not.toHaveBeenCalled();
     expect(runtime.listMessages).toHaveBeenCalledWith('conv-1');
+    expect(usageRuntime.get).toHaveBeenCalledWith({ conversationId: 'conv-1' });
   });
 
   it('deletes Mastra memory before the legacy Conversation shell so a shell failure remains recoverable', async () => {
@@ -235,8 +250,16 @@ describe('useAIChatSession Mastra-native open chat', () => {
   it('applies canonical delta/usage/completed events then replaces drafts from persisted Mastra history', async () => {
     const service = createServiceStub();
     const runtime = createRuntimeStub();
+    const usageRuntime = createUsageRuntimeStub();
+    usageRuntime.get.mockResolvedValue({
+      executionCount: 3,
+      promptTokens: 110,
+      completionTokens: 24,
+      totalTokens: 134,
+      estimatedCost: 0.000081,
+    });
     runtime.listMessages.mockResolvedValue(persistedHistory('authoritative persisted reply'));
-    const composable = mountComposable(service, runtime);
+    const composable = mountComposable(service, runtime, 'web', usageRuntime);
 
     await send(composable, service, runtime, [
       event(1, 'assistant.run.started', {}),
@@ -254,10 +277,12 @@ describe('useAIChatSession Mastra-native open chat', () => {
     ]);
 
     expect(composable.lastRuntimeUsage.value).toEqual({
-      promptTokens: 10,
-      completionTokens: 4,
-      totalTokens: 14,
+      promptTokens: 110,
+      completionTokens: 24,
+      totalTokens: 134,
+      estimatedCost: 0.000081,
     });
+    expect(usageRuntime.get).toHaveBeenCalledWith({ conversationId: 'conv-1' });
     expect(composable.chatTimeline.value).toEqual([
       { id: 'user-1', role: 'user', content: 'hello', status: 'success' },
       {
@@ -269,10 +294,11 @@ describe('useAIChatSession Mastra-native open chat', () => {
     ]);
   });
 
-  it('loads conversation history exclusively from the Mastra runtime client', async () => {
+  it('loads conversation history and durable usage from their canonical runtime clients', async () => {
     const service = createServiceStub();
     const runtime = createRuntimeStub();
-    const composable = mountComposable(service, runtime);
+    const usageRuntime = createUsageRuntimeStub();
+    const composable = mountComposable(service, runtime, 'web', usageRuntime);
 
     await composable.selectConversation(
       { id: 'conv-1', name: 'Existing' } as never,
@@ -282,6 +308,8 @@ describe('useAIChatSession Mastra-native open chat', () => {
     );
 
     expect(runtime.listMessages).toHaveBeenCalledWith('conv-1');
+    expect(usageRuntime.get).toHaveBeenCalledWith({ conversationId: 'conv-1' });
+    expect(composable.lastRuntimeUsage.value?.totalTokens).toBe(14);
     expect(composable.chatTimeline.value.map((item) => item.id)).toEqual(['user-1', 'assistant-1']);
   });
 

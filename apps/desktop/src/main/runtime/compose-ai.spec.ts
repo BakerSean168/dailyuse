@@ -4,15 +4,9 @@ vi.mock('@memoflow/ai', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@memoflow/ai')>();
   return {
     ...actual,
-    AIEvaluationReportFileAdapter: vi.fn(),
-    AIServiceAgentRuntimeAdapter: vi.fn(),
-    AIServiceAnalyticsQueryAdapter: vi.fn(),
-    AIServiceChatExecutionAdapter: vi.fn(),
-    AIServiceGoalAutomationAdapter: vi.fn(),
-    AIServiceGoalPlanningAdapter: vi.fn(),
-    AIServiceKnowledgeIngestionAdapter: vi.fn(),
-    AIServiceKnowledgeNoteGenerationAdapter: vi.fn(),
-    AIServiceKnowledgeQueryAdapter: vi.fn(),
+    AIEvaluationReportFileAdapter: vi.fn(function AIEvaluationReportFileAdapterMock() {
+      return { tag: 'evaluation-report' };
+    }),
     createAIModule: vi.fn(),
     createAIPowerSyncRepositories: vi.fn(),
     createMastraStorage: vi.fn(() => ({ tag: 'desktop-mastra-storage' })),
@@ -21,6 +15,11 @@ vi.mock('@memoflow/ai', async (importOriginal) => {
         return { tag: 'desktop-transcript-bootstrap-source' };
       },
     ),
+    KnowledgeCapturePersistenceAdapter: vi.fn(function KnowledgeCapturePersistenceAdapterMock(
+      persistence: unknown,
+    ) {
+      return { tag: 'desktop-knowledge-capture-mutation', persistence };
+    }),
     MastraModelResolver: vi.fn(function MastraModelResolverMock() {
       return { tag: 'desktop-mastra-model-resolver' };
     }),
@@ -30,6 +29,11 @@ vi.mock('@memoflow/ai', async (importOriginal) => {
   };
 });
 
+vi.mock('@memoflow/ai/electron', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@memoflow/ai/electron')>();
+  return { ...actual, createAIElectronModule: vi.fn() };
+});
+
 vi.mock('../modules/ai/goal-plan-mutation.adapter', () => ({
   DesktopGoalPlanMutationAdapter: vi.fn(function DesktopGoalPlanMutationAdapterMock(
     ...args: unknown[]
@@ -37,42 +41,31 @@ vi.mock('../modules/ai/goal-plan-mutation.adapter', () => ({
     return { tag: 'desktop-goal-plan-mutation', args };
   }),
 }));
-
-vi.mock('@memoflow/ai/electron', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@memoflow/ai/electron')>();
-  return {
-    ...actual,
-    createAIElectronModule: vi.fn(),
-  };
-});
+vi.mock('../modules/ai/task-plan-mutation.adapter', () => ({
+  DesktopTaskPlanMutationAdapter: vi.fn(function DesktopTaskPlanMutationAdapterMock(task: unknown) {
+    return { tag: 'desktop-task-plan-mutation', task };
+  }),
+}));
 
 import {
   AIEvaluationReportFileAdapter,
-  AIServiceAgentRuntimeAdapter,
-  AIServiceAnalyticsQueryAdapter,
-  AIServiceChatExecutionAdapter,
-  AIServiceGoalAutomationAdapter,
-  AIServiceGoalPlanningAdapter,
-  AIServiceKnowledgeIngestionAdapter,
-  AIServiceKnowledgeNoteGenerationAdapter,
-  AIServiceKnowledgeQueryAdapter,
   createAIModule,
   createAIPowerSyncRepositories,
   createMastraStorage,
   ConversationTranscriptBootstrapSource,
+  KnowledgeCapturePersistenceAdapter,
   MastraAIRuntime,
   MastraModelResolver,
-  type AIServiceRuntimeConfig,
 } from '@memoflow/ai';
 import { createAIElectronModule } from '@memoflow/ai/electron';
 import { DesktopGoalPlanMutationAdapter } from '../modules/ai/goal-plan-mutation.adapter';
+import { DesktopTaskPlanMutationAdapter } from '../modules/ai/task-plan-mutation.adapter';
 import { composeAI } from './compose-ai';
 
 const db = { tag: 'desktop-db' } as never;
 const knowledgeNotePersistence = { tag: 'knowledge-persistence' } as never;
 const knowledgeSourcePort = { tag: 'knowledge-source' } as never;
 const analyticsReadPort = { tag: 'analytics-read' } as never;
-const automationToolExecutor = { tag: 'automation-executor' } as never;
 const goalApplicationPort = { tag: 'goal-application' } as never;
 const taskApplicationPort = { tag: 'task-application' } as never;
 const reminderApplicationPort = { tag: 'reminder-application' } as never;
@@ -80,20 +73,17 @@ const mastraStorage = {
   kind: 'libsql' as const,
   url: 'file:///profiles/profile-1/storage/mastra.db',
 };
-
 const repositorySet = {
   conversationRepository: { tag: 'conversation-repository' },
   providerConfigRepository: { tag: 'provider-repository' },
   knowledgeIndexRepository: { tag: 'knowledge-index-repository' },
   executionLogPort: { tag: 'execution-log' },
 };
-
 const dependencies = {
   db,
   knowledgeNotePersistence,
   knowledgeSourcePort,
   analyticsReadPort,
-  automationToolExecutor,
   goalApplicationPort,
   taskApplicationPort,
   reminderApplicationPort,
@@ -117,45 +107,38 @@ beforeEach(() => {
   });
 });
 
-describe('desktop composeAI Mastra ownership', () => {
-  it('composes one profile-local LibSQL Mastra runtime from the same identity-scoped provider repository', () => {
+describe('Desktop composeAI Mastra-only ownership', () => {
+  it('builds one profile-local LibSQL Mastra runtime with canonical workflow mutation ports and execution logging', () => {
     composeAI(dependencies);
 
-    expect(createAIPowerSyncRepositories).toHaveBeenCalledTimes(1);
     expect(createAIPowerSyncRepositories).toHaveBeenCalledWith(db);
-    expect(createMastraStorage).toHaveBeenCalledTimes(1);
     expect(createMastraStorage).toHaveBeenCalledWith(mastraStorage);
-    expect(MastraModelResolver).toHaveBeenCalledTimes(1);
     expect(MastraModelResolver).toHaveBeenCalledWith(repositorySet.providerConfigRepository);
-
-    const storage = vi.mocked(createMastraStorage).mock.results[0].value;
-    const resolver = vi.mocked(MastraModelResolver).mock.results[0].value;
-    expect(ConversationTranscriptBootstrapSource).toHaveBeenCalledTimes(1);
     expect(ConversationTranscriptBootstrapSource).toHaveBeenCalledWith(
       repositorySet.conversationRepository,
     );
-    const transcriptBootstrapSource = vi.mocked(ConversationTranscriptBootstrapSource).mock
-      .results[0].value;
     expect(DesktopGoalPlanMutationAdapter).toHaveBeenCalledWith(
       goalApplicationPort,
       taskApplicationPort,
       reminderApplicationPort,
     );
-    const goalPlanMutationPort = vi.mocked(DesktopGoalPlanMutationAdapter).mock.results[0].value;
+    expect(DesktopTaskPlanMutationAdapter).toHaveBeenCalledWith(taskApplicationPort);
+    expect(KnowledgeCapturePersistenceAdapter).toHaveBeenCalledWith(knowledgeNotePersistence);
+
     expect(MastraAIRuntime).toHaveBeenCalledTimes(1);
     expect(MastraAIRuntime).toHaveBeenCalledWith({
-      storage,
-      modelResolver: resolver,
-      transcriptBootstrapSource,
-      goalPlanMutationPort,
+      storage: vi.mocked(createMastraStorage).mock.results[0].value,
+      modelResolver: vi.mocked(MastraModelResolver).mock.results[0].value,
+      transcriptBootstrapSource: vi.mocked(ConversationTranscriptBootstrapSource).mock.results[0].value,
+      goalPlanMutationPort: vi.mocked(DesktopGoalPlanMutationAdapter).mock.results[0].value,
+      taskPlanMutationPort: vi.mocked(DesktopTaskPlanMutationAdapter).mock.results[0].value,
+      knowledgeCaptureMutationPort: vi.mocked(KnowledgeCapturePersistenceAdapter).mock.results[0].value,
+      executionLogPort: repositorySet.executionLogPort,
+      usageReadPort: repositorySet.executionLogPort,
     });
-
-    const runtime = vi.mocked(MastraAIRuntime).mock.results[0].value;
-    expect(vi.mocked(createAIModule).mock.calls[0][0].mastraRuntime).toBe(runtime);
-    expect(vi.mocked(createAIModule).mock.calls[0][0].workflowRuntime).toBe(runtime);
   });
 
-  it('passes the exact Desktop-owned domain capability ports into the transport-neutral AI module', () => {
+  it('passes canonical Desktop-owned persistence/read ports into the transport-neutral AI module', () => {
     composeAI(dependencies);
 
     const moduleInput = vi.mocked(createAIModule).mock.calls[0][0];
@@ -166,16 +149,28 @@ describe('desktop composeAI Mastra ownership', () => {
     expect(moduleInput.knowledgeNotePersistence).toBe(knowledgeNotePersistence);
     expect(moduleInput.knowledgeSourcePort).toBe(knowledgeSourcePort);
     expect(moduleInput.analyticsReadPort).toBe(analyticsReadPort);
-    expect(moduleInput.automationToolExecutorPort).toBe(automationToolExecutor);
+    expect(moduleInput.evaluationReportPort).toBe(
+      vi.mocked(AIEvaluationReportFileAdapter).mock.results[0].value,
+    );
+  });
+
+  it('uses the same Mastra runtime as assistant and workflow owner and binds exactly that module instance to IPC', () => {
+    composeAI(dependencies);
+
+    const runtime = vi.mocked(MastraAIRuntime).mock.results[0].value;
+    const moduleInput = vi.mocked(createAIModule).mock.calls[0][0];
+    expect(moduleInput.mastraRuntime).toBe(runtime);
+    expect(moduleInput.workflowRuntime).toBe(runtime);
 
     const instance = vi.mocked(createAIModule).mock.results[0].value;
+    expect(createAIElectronModule).toHaveBeenCalledTimes(1);
     expect(createAIElectronModule).toHaveBeenCalledWith({ instance });
   });
 
-  it('keeps legacy service adapters optional while Mastra runtime stays mandatory during migration', () => {
+  it('does not compose any retired Python/AgentHost/checkpoint service port', () => {
     composeAI(dependencies);
 
-    const moduleInput = vi.mocked(createAIModule).mock.calls[0][0];
+    const input = vi.mocked(createAIModule).mock.calls[0][0] as unknown as Record<string, unknown>;
     for (const key of [
       'chatExecutionPort',
       'goalPlanningPort',
@@ -185,37 +180,11 @@ describe('desktop composeAI Mastra ownership', () => {
       'knowledgeNoteGenerationPort',
       'analyticsQueryPort',
       'agentRuntimePort',
-    ] as const) {
-      expect(moduleInput[key]).toBeUndefined();
-    }
-    expect(moduleInput.mastraRuntime).toBeDefined();
-  });
-
-  it('uses one injected legacy service config consistently until Batch F deletes those adapters', () => {
-    const config: AIServiceRuntimeConfig = {
-      baseUrl: 'http://legacy-ai.internal',
-      serviceSecret: 'test-secret',
-      serviceName: 'desktop-test',
-      timeoutMs: 1000,
-    };
-
-    composeAI({ ...dependencies, aiServiceRuntimeConfig: config });
-
-    expect(AIServiceChatExecutionAdapter).not.toHaveBeenCalled();
-    expect(vi.mocked(createAIModule).mock.calls[0][0].chatExecutionPort).toBeUndefined();
-
-    for (const adapter of [
-      AIServiceGoalPlanningAdapter,
-      AIServiceGoalAutomationAdapter,
-      AIServiceKnowledgeIngestionAdapter,
-      AIServiceKnowledgeQueryAdapter,
-      AIServiceKnowledgeNoteGenerationAdapter,
-      AIServiceAnalyticsQueryAdapter,
-      AIServiceAgentRuntimeAdapter,
+      'agentCheckpointPort',
+      'langGraphCheckpointPort',
+      'automationToolExecutorPort',
     ]) {
-      expect(vi.mocked(adapter)).toHaveBeenCalledTimes(1);
-      expect(vi.mocked(adapter)).toHaveBeenCalledWith(config);
+      expect(input[key]).toBeUndefined();
     }
-    expect(AIEvaluationReportFileAdapter).toHaveBeenCalledTimes(1);
   });
 });

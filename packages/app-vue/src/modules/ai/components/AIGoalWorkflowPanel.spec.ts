@@ -15,6 +15,7 @@ const i18n = createI18n({
     'en-US': {
       common: { untitled: 'Untitled', none: 'None' },
       aiAssistant: {
+        errors: { workflowExecutionFailed: 'Execution failed' },
         chatPage: {
           workflow: {
             goalClarificationTitle: 'Goal Clarification',
@@ -207,10 +208,6 @@ function createPanelProps(overrides: Partial<PanelProps> = {}): PanelProps {
     })),
     showGoalDraftEditor: false,
     knowledgeAnswer: null,
-    knowledgeQaAgentRun: null,
-    noteAgentRun: null,
-    noteSummary: null,
-    notePreview: '',
     formatExecutionOutcome: (status: string) => status,
     ...overrides,
   };
@@ -289,7 +286,8 @@ describe('AIGoalWorkflowPanel — ADR-052 goal.create projection', () => {
 
     expect(wrapper.find('[data-testid="goal-workflow-recovery"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('SERVICE_UNAVAILABLE');
-    expect(wrapper.text()).toContain('Reminder store unavailable');
+    expect(wrapper.text()).toContain('Execution failed (SERVICE_UNAVAILABLE)');
+    expect(wrapper.text()).not.toContain('Reminder store unavailable');
     expect(wrapper.text()).toContain('retryable');
   });
 
@@ -320,7 +318,7 @@ describe('AIGoalWorkflowPanel — ADR-052 goal.create projection', () => {
     expect(wrapper.text()).toContain('success');
   });
 
-  it('keeps Knowledge Agent observability available while Goal moves to Workflow', () => {
+  it('renders grounded Knowledge Q&A evidence independently of goal workflow state', () => {
     const wrapper = mountPanel({
       toolMode: 'knowledge-qa',
       goalWorkflowRun: null,

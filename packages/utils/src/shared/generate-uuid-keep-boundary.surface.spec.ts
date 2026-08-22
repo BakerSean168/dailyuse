@@ -8,7 +8,7 @@ import { generateUUID as utilsGenerateUUID, isValidUUID } from './uuid';
  * - utils generateUUID: crypto.randomUUID + Math.random fallback (cross-platform runtime)
  * - test-utils generateUUID: node:crypto randomUUID only (test fixtures)
  * Soft residual 993: AI createStreamId dual-retired sole remains separate (stream- prefix).
- * Soft residual 951/1089: isRecord keep-boundaries remain separate.
+ * AI-VNEXT: the former app-vue AI isRecord residual is retired; unrelated UUID boundaries remain.
  * Soft residual 1135: newId library-backed uuid v4 keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */

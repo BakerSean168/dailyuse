@@ -66,9 +66,6 @@ model Account {
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
-  agentRunCheckpoints             AgentRunCheckpoint[]
-  langGraphCheckpoints            LangGraphCheckpoint[]
-  langGraphCheckpointWrites       LangGraphCheckpointWrite[]
 
   // PowerSync: denormalized identity relations
   taskDependencies               TaskDependency[]                @relation("AccountTaskDependencies")

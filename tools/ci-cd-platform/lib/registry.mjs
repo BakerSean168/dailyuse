@@ -59,7 +59,7 @@ export const LANE_REGISTRY = Object.freeze({
   }),
   web: lane({
     owner: 'platform-web',
-    capabilities: ['node', 'pnpm', 'python', 'uv', 'playwright', 'postgres'],
+    capabilities: ['node', 'pnpm', 'playwright', 'postgres'],
     inputs: [
       'delivery-manifest',
       'api-artifact',

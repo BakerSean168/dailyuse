@@ -5,6 +5,8 @@ import {
   AssistantRuntimeEventSchema,
   AssistantRuntimeHistoryClientRequestSchema,
   AssistantRuntimeHistoryViewSchema,
+  AIRuntimeUsageQueryClientRequestSchema,
+  AIRuntimeUsageSummarySchema,
   AIWorkflowCancelClientRequestSchema,
   AIWorkflowGetClientRequestSchema,
   AIWorkflowListClientRequestSchema,
@@ -30,7 +32,7 @@ interface PlatformMiddleware {
 
 type AssistantRuntimePort = Pick<
   MastraAIRuntime,
-  'dispatchMessage' | 'cancelRun' | 'listMessages' | 'deleteConversation'
+  'dispatchMessage' | 'cancelRun' | 'listMessages' | 'deleteConversation' | 'summarizeUsage'
 >;
 
 function authenticatedIdentity(req: Request): string | undefined {
@@ -101,6 +103,7 @@ export function registerAIRuntimeRoutes(
     try {
       for await (const event of runtime.dispatchMessage({
         identityId,
+        context: extractAiExpressExecutionContext(req),
         conversationId: parsed.data.conversationId,
         content: parsed.data.content,
         providerId: parsed.data.providerId,
@@ -218,6 +221,38 @@ export function registerAIRuntimeRoutes(
 
     const cancelled = runtime.cancelRun({ identityId, runId: parsed.data.runId });
     res.status(200).json(responseBuilder.success({ cancelled }));
+  });
+
+  router.post('/usage', auth, async (req, res) => {
+    const responseBuilder = createHttpResponseBuilder(readAiExpressEnvelopeMeta(req));
+    const identityId = authenticatedIdentity(req);
+    if (!identityId) {
+      res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
+      return;
+    }
+    if (!runtime) {
+      res.status(503).json(responseBuilder.error('SERVICE_UNAVAILABLE', 'AI runtime unavailable'));
+      return;
+    }
+    const parsed = AIRuntimeUsageQueryClientRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(responseBuilder.validationError(formatZodErrors(parsed.error.issues)));
+      return;
+    }
+    try {
+      const summary = AIRuntimeUsageSummarySchema.parse(
+        await runtime.summarizeUsage({
+          identityId,
+          ...(parsed.data.conversationId
+            ? { conversationId: parsed.data.conversationId }
+            : {}),
+          ...(parsed.data.runId ? { runId: parsed.data.runId } : {}),
+        }),
+      );
+      res.status(200).json(responseBuilder.success(summary));
+    } catch {
+      res.status(500).json(responseBuilder.error('AI_RUNTIME_ERROR', 'AI runtime request failed'));
+    }
   });
 
   router.post('/workflow/start', auth, async (req, res) => {

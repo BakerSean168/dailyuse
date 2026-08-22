@@ -24,7 +24,6 @@ function healthyRuntime(overrides = {}) {
     expectedServices: {
       web: { hostPort: 58080, targetPort: 80 },
       api: { hostPort: 53080, targetPort: 3000 },
-      'ai-service': { hostPort: 58100, targetPort: 8100 },
     },
     composeServices: {
       web: {
@@ -39,22 +38,14 @@ function healthyRuntime(overrides = {}) {
         health: 'healthy',
         publishers: [{ PublishedPort: 53080, TargetPort: 3000, Protocol: 'tcp' }],
       },
-      'ai-service': {
-        name: 'memoflow-ai-service-1',
-        state: 'running',
-        health: 'healthy',
-        publishers: [{ PublishedPort: 58100, TargetPort: 8100, Protocol: 'tcp' }],
-      },
     },
     listeners: {
       58080: { open: true, owner: 'docker-compose:web' },
       53080: { open: true, owner: 'docker-compose:api' },
-      58100: { open: true, owner: 'docker-compose:ai-service' },
     },
     containerRevisions: {
       web: revision,
       api: revision,
-      'ai-service': revision,
     },
     ...overrides,
   };
@@ -68,7 +59,7 @@ describe('local Docker product validation evidence', () => {
     expect(result.errors).toEqual([]);
     expect(result.services.web.mappingMatches).toBe(true);
     expect(result.services.api.revisionMatches).toBe(true);
-    expect(result.services['ai-service'].listenerOpen).toBe(true);
+    expect(result.services.web.listenerOpen).toBe(true);
   });
 
   it('rejects stale images and a listener that is not mapped to the expected container port', () => {

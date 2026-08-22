@@ -364,6 +364,46 @@ workflow.cancelled
 
 **Next owner（AI-VNEXT-06 续点 / AI-VNEXT-07 前置）：** ① 重写 `useAITaskWorkflow` 去除 AgentRun/`pendingActions`/`approvedActions`/`createAgentId`/`hostProposalLifecycle` ownership，投影到 `AIWorkflowRunView`（kind `task.create`）+ `AITaskWorkflowPanel`（testid `task-workflow-panel`）+ 组合式/组件测试；② `knowledge.*`（generate/capture/qa）迁移 Mastra-native；③ task/knowledge E2E（3400 端口）；④ AI-VNEXT-07 「Remove Python/AgentHost legacy」随后执行。
 
+
+## 5.10 Final Runtime Closure Checkpoint — 2026-08-22
+
+**AI-VNEXT-06 / 07 / 08 已完成；AI-VNEXT-09 已进入最终 delivery gate。** 当前 tree 的核心 AI execution authority 已完全收敛到 TypeScript + Mastra，没有 Python/AgentHost 双 runtime fallback。
+
+**AI-VNEXT-06 — Remaining product journeys（COMPLETE）：**
+
+- `task.create` 已完成 typed durable Workflow、`TaskPlannerWorker`、`ApplyTaskPlanService`、产品 mutation port、Web/Desktop transport 与 `AITaskWorkflowPanel` / `useAITaskWorkflow` 薄投影；
+- `knowledge.capture` 已完成 durable Workflow、typed draft/review/recovery、`ApplyKnowledgeNoteService` 与 Repository persistence boundary；
+- knowledge QA/analytics 继续使用 host-owned read ports + OpenAI-compatible typed adapters，不经过 Python service；
+- AI workspace 浏览器套件覆盖 goal/task/knowledge/open-chat/recovery/cancel 等当前产品旅程，最终 **11/11 PASS**（隔离 API `3011` / Web `4174`，避免无关容器占用 `3000`）。
+
+**AI-VNEXT-07 — Hard delete（COMPLETE）：**
+
+- `apps/ai-service`、`Dockerfile.ai-service`、Python FastAPI/LangGraph runtime/eval/checkpoint bridge 已物理删除；
+- Agent Host / `AssistantFacade` / `ProposalKernel` / `CapabilityResolver` / `TurnEngine` / AgentRun contracts、routes、checkpoint persistence 与 UI DAG ownership 已删除；
+- Docker/CI/env/local validation 不再构建、启动或探测 `ai-service`；Web CI 不再因 AI runtime 安装 Python/uv；
+- `ai-vnext-no-legacy.surface.spec.ts` + architecture governance 锁定 retired files、legacy transport token、AgentAction DAG 与 deploy env 不得回归；
+- local Docker env layering 修正为 `.env.production` + 可选 `.env.production.local` overlay，独立 worktree 使用 machine-local port override，不干扰其他服务。
+
+**AI-VNEXT-08 — Observability / eval / release gate（COMPLETE）：**
+
+- Assistant 与 planner generation 统一记录 request/trace/provider/model/token/cost，usage read 以 authenticated identity 作为数据库谓词；
+- Web/Desktop 均使用 canonical `RuntimeUsageClient` / Assistant / Workflow contracts；
+- `pnpm nx run ai:eval:replay` **PASS**：baseline/candidate pass rate 均 `1.000`，candidate estimated cost `-4.81%`，p95 latency `-10.61%`；evidence source 明确为可复现的 `recorded_replay`，不冒充 live-model eval；
+- canonical eval authority 为 `reports/apps/ai/evals`，quality/case regression/cost/p95 latency comparison gate 已落地。
+
+**真实产品验证（2026-08-22）：**
+
+- `packages/ai`：64 test files / 367 tests PASS；
+- `packages/app-vue`：183 test files / 756 tests PASS；
+- core `ai/app-vue/contracts/api/web/desktop` typecheck PASS；core lint PASS（仅既有 warning）；docs/governance/diff-check PASS；
+- Web production `--skipNxCache` fresh build PASS；Docker `web/api/migrator/powersync` no-cache image build PASS；migrator `Exited (0)`；API/Web/Postgres/Redis/PowerSync healthy；
+- official local-Docker Chromium product validation **15/15 PASS**，`reports/local-deploy-validation/local-docker-playwright-evidence.json` 为 `ok: true`；
+- AI workspace Chromium E2E **11/11 PASS**；
+- local validation 暴露的 Better Auth `3/10s` shared-IP flake 已修：生产默认限流保持不变，`LOCAL_VALIDATION` 使用正确的 `/**` nested-path override，反代 IP 明确读取 `x-forwarded-for` / `x-real-ip`；
+- Phase E refresh/approval fixture 已从旧 `/ai/agents/runs` 迁到 canonical `/ai/runtime/workflow/get` + `AIWorkflowRunView`，没有为通过测试恢复 AgentHost。
+
+**Next owner:** `AI-VNEXT-09 / Batch H` 只剩最终全仓门禁、diff/review、commit/rebase/push、PR 与 required CI checks；不再新增 runtime 迁移范围。
+
 ## 6. Implementation Batches
 
 ### Batch A — Foundation rewrite: contracts + dependencies + runtime composition
@@ -441,6 +481,8 @@ workflow.cancelled
 
 ### Batch D — Remaining workflow migration
 
+**Current status:** **COMPLETED — AI-VNEXT-06 closed**，见 §5.10。Task/Knowledge 当前产品 AI 路径已迁移到 Mastra-native / host-owned typed read path，不再依赖 Python runtime。
+
 **Goal:** Python graphs no longer own any product AI path。
 
 **Migrate:**
@@ -454,6 +496,8 @@ workflow.cancelled
 **Acceptance:** all current UI user journeys have a vNext path; no production request to `/internal` Python AI endpoints.
 
 ### Batch E — UI/workbench rewrite
+
+**Current status:** **COMPLETED — AI-VNEXT-05/06 UI closure**，见 §5.10。Vue 仅投影 `AIWorkflowRunView` / Assistant state，不再拥有 AgentAction DAG 或第二套 approval lifecycle。
 
 **Goal:** Vue 只投影 runtime，不实现 runtime。
 
@@ -469,6 +513,8 @@ workflow.cancelled
 **Acceptance:** Vue typecheck/tests + Web journeys；no `pendingActions`, `approvedActions`, `dependsOn` in production UI。
 
 ### Batch F — Hard delete legacy runtime and persistence
+
+**Current status:** **COMPLETED — AI-VNEXT-07 closed**，见 §5.10。Python/AgentHost/legacy checkpoint/runtime/deploy surface 已物理删除，并有反回退 architecture locks。
 
 **Goal:** final tree contains only vNext runtime。
 
@@ -488,6 +534,8 @@ workflow.cancelled
 
 ### Batch G — Observability, eval, governance
 
+**Current status:** **COMPLETED — AI-VNEXT-08 closed**，见 §5.10。Usage/cost/trace、recorded replay eval comparison 与 release gate 均有可执行证据。
+
 **Goal:** framework adoption不牺牲治理。
 
 **Changes:**
@@ -502,6 +550,8 @@ workflow.cancelled
 **Acceptance:** eval runner can compare configuration bundles；usage可按 run/thread 查询；governance catches forbidden legacy reintroduction。
 
 ### Batch H — Review / repair / delivery
+
+**Current status:** **IN PROGRESS — AI-VNEXT-09 delivery only**。Runtime migration 已结束；剩余工作仅为最终全仓 gate、review、Git/PR/CI。
 
 **Goal:** zero known blockers，完整 PR 可合并。
 
@@ -524,64 +574,67 @@ workflow.cancelled
 
 ### AI-VNEXT-01 — Adopt Mastra runtime foundation
 
-**Status:** **COMPLETE**（§5.6）。  
-**Goal:** TypeScript runtime instantiates Mastra with host-owned storage/model resolution。  
-**Files:** `packages/ai/package.json`, `packages/ai/src/server/mastra/**`, API/Desktop composers。  
+**Status:** **COMPLETE**（§5.6）。
+**Goal:** TypeScript runtime instantiates Mastra with host-owned storage/model resolution。
+**Files:** `packages/ai/package.json`, `packages/ai/src/server/mastra/**`, API/Desktop composers。
 **Acceptance:** build/typecheck + storage smoke。
 
 ### AI-VNEXT-02 — Replace Agent Host contracts
 
-**Status:** **COMPLETE**（§5.6；未迁移旧路径仍暂时保留旧 contract，但所有 vNext execution seam 只接受 canonical Assistant/Workflow contract）。  
-**Goal:** new Assistant + Workflow contracts become sole cross-boundary AI execution language。  
-**Dependency:** 01。  
+**Status:** **COMPLETE**（§5.6；未迁移旧路径仍暂时保留旧 contract，但所有 vNext execution seam 只接受 canonical Assistant/Workflow contract）。
+**Goal:** new Assistant + Workflow contracts become sole cross-boundary AI execution language。
+**Dependency:** 01。
 **Acceptance:** contracts tests + HTTP/IPC parity tests。
 
 ### AI-VNEXT-03 — Cut open chat to MemoFlow Assistant
 
-**Status:** **COMPLETE**（§5.7）。  
-**Goal:** stream/cancel/history/usage via Mastra。  
-**Dependency:** 01–02。  
+**Status:** **COMPLETE**（§5.7）。
+**Goal:** stream/cancel/history/usage via Mastra。
+**Dependency:** 01–02。
 **Acceptance:** Web/Desktop journey。
 
 ### AI-VNEXT-04 — Implement GoalCreateWorkflow + ApplyGoalPlan
 
 **Status:** **COMPLETE**（§5.8）。goal.create 已由 durable Mastra `GoalCreateWorkflow` + `ApplyGoalPlanService` 权威承载，UI 已投影到 `AIWorkflowRunView` / `goal-workflow-panel`，HITL E2E 三个场景各自验证通过；不含旧 AgentRun / Host Proposal 双轨。
-**Goal:** ADR-052 canonical journey。  
-**Dependency:** 01–02。  
+**Goal:** ADR-052 canonical journey。
+**Dependency:** 01–02。
 **Acceptance:** clarify/review/revise/approve/cancel/retry/idempotency/restart tests。
 
 ### AI-VNEXT-05 — Rewrite Goal workbench UI
 
 **Status:** **COMPLETE**（§5.9）。goal 工作台已由 `useAIGoalWorkflow` 作为 `AIWorkflowRunView`（kind `goal.create`）的薄投影承载：UI 不拥有 workflow 状态，所有 start/resume/get/cancel 走 `workflowRuntime` client，typed resume command 映射，deep link 仅在 run `completed` 且产生 `goalId` 时跳到 `/goals/:id`；新增 `useAIGoalWorkflow.spec.ts` 组合式测试（8 例）覆盖投影/命令映射/deep-link/会话恢复。
 
-**Goal:** UI no longer owns workflow state。  
-**Dependency:** 04。  
+**Goal:** UI no longer owns workflow state。
+**Dependency:** 04。
 **Acceptance:** composable/component tests + deep link。
 
 ### AI-VNEXT-06 — Migrate Task/Knowledge capabilities
 
-**Status:** **PARTIAL（backend COMPLETE）**（§5.9）。`task.create` 的 **Mastra-native durable backend** 已完成并全绿：typed contracts、`TaskPlannerWorker`、`task.create` durable `createWorkflow`、`ApplyTaskPlanService` + `TaskPlanMutationPort`、deterministic `taskWorkflowEntityId`、`MastraAIRuntime` 的 task.create start/resume/get/list/cancel 路由、API/Desktop host `TaskPlanMutationAdapter` 绑定。**仍待续**：`task.create` 的 UI 呈现（重写 `useAITaskWorkflow` 去除 AgentRun/Host Proposal ownership 并投影到 `AIWorkflowRunView`、`AITaskWorkflowPanel`）、`knowledge.*` 迁移、task/knowledge E2E —— 这些是下一个 batch（AI-VNEXT-07 前置）的继续位置。
+**Status:** **COMPLETE**（§5.10）。`task.create` UI/backend、`knowledge.capture` durable workflow、knowledge QA/analytics typed read path 与 task/knowledge browser journeys 已闭合；当前产品 AI 路径不再依赖 AgentRun/Host Proposal/Python runtime。
 
-**Goal:** all product AI journeys Mastra-native。  
-**Dependency:** 03–04。  
+**Goal:** all product AI journeys Mastra-native。
+**Dependency:** 03–04。
 **Acceptance:** task/knowledge focused tests and journeys。
 
 ### AI-VNEXT-07 — Remove Python/AgentHost legacy
 
-**Goal:** no dual runtime。  
-**Dependency:** 03–06。  
+**Status:** **COMPLETE**（§5.10）。Python/AgentHost/LangGraph checkpoint/legacy transport/deploy surface 已物理删除并由 architecture lock 防回归。
+**Goal:** no dual runtime。
+**Dependency:** 03–06。
 **Acceptance:** forbidden-surface grep/governance + full build。
 
 ### AI-VNEXT-08 — Observability/eval/release gates
 
-**Goal:** token/cost/quality/governance evidence complete。  
-**Dependency:** 03–07。  
+**Status:** **COMPLETE**（§5.10）。Token/cost/trace durable usage 与 configuration-bundle eval/release gate 已落地；canonical replay gate PASS。
+**Goal:** token/cost/quality/governance evidence complete。
+**Dependency:** 03–07。
 **Acceptance:** metrics/eval/governance tests。
 
 ### AI-VNEXT-09 — Whole-repo validation + PR
 
-**Goal:** complete delivery。  
-**Dependency:** all。  
+**Status:** **LOCAL DELIVERY GATES COMPLETE**。全仓 typecheck/lint/test/build/docs/governance、fresh Docker、11/11 AI Workspace E2E 与 P0/P1/P2 review 已闭合；剩余仅 commit/rebase/push、PR 与 required CI。
+**Goal:** complete delivery。
+**Dependency:** all。
 **Acceptance:** required local gates + GitHub CI green。
 
 ## 8. Review Protocol
@@ -597,18 +650,18 @@ P0/P1/P2 在 PR ready 前全部修复或有明确不可实施的外部理由；�
 
 ## 9. Definition of Done
 
-- [ ] ADR-050/051/052 与 current-system docs 同步；
-- [ ] Mastra 是唯一核心 Agent/Workflow runtime；
-- [ ] Python `apps/ai-service` 退役；
-- [ ] open chat Mastra-native；
-- [ ] `goal.create` reference workflow 完整；
-- [ ] task/knowledge 现有产品 AI 路径迁移；
-- [ ] UI 不再维护 AgentAction DAG / double approval；
-- [ ] old checkpoint/AgentHost runtime persistence removed；
-- [ ] ProviderConfig/BYOK 保留且 credential 不泄露；
-- [ ] token/cost/trace + eval/release gates 有证据；
-- [ ] Web + Desktop transport parity；
-- [ ] full typecheck/lint/test/build/docs/governance green；
-- [ ] local Docker AI journey 通过；
+- [x] ADR-050/051/052 与 current-system docs 同步；
+- [x] Mastra 是唯一核心 Agent/Workflow runtime；
+- [x] Python `apps/ai-service` 退役；
+- [x] open chat Mastra-native；
+- [x] `goal.create` reference workflow 完整；
+- [x] task/knowledge 现有产品 AI 路径迁移；
+- [x] UI 不再维护 AgentAction DAG / double approval；
+- [x] old checkpoint/AgentHost runtime persistence removed；
+- [x] ProviderConfig/BYOK 保留且 credential 不泄露；
+- [x] token/cost/trace + eval/release gates 有证据；
+- [x] Web + Desktop transport parity；
+- [x] full typecheck/lint/test/build/docs/governance green；
+- [x] local Docker AI journey 通过；
 - [ ] PR opened and required CI checks green；
-- [ ] no unresolved P0/P1/P2 review findings。
+- [x] no unresolved P0/P1/P2 review findings。

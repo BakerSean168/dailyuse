@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2026-08-22T04:20:00.000Z",
+  "evidenceSource": "recorded_replay",
+  "dataset": {
+    "id": "ai-vnext-core",
+    "version": "2026-08-22.1",
+    "path": "packages/ai/evals/core-cases.json"
+  },
+  "baselineBundle": {
+    "id": "mastra-reference-baseline",
+    "runtime": "mastra",
+    "provider": "offline-replay",
+    "model": "recorded-reference-baseline",
+    "promptVersion": "assistant-vnext-2026-08-20",
+    "toolPolicyVersion": "mastra-tools-v1",
+    "source": "recorded_replay"
+  },
+  "candidateBundle": {
+    "id": "mastra-vnext-candidate",
+    "runtime": "mastra",
+    "provider": "offline-replay",
+    "model": "recorded-reference-vnext",
+    "promptVersion": "assistant-vnext-2026-08-22",
+    "toolPolicyVersion": "mastra-tools-v2",
+    "source": "recorded_replay"
+  },
+  "comparison": {
+    "gatePassed": true,
+    "gateFailures": [],
+    "caseRegressions": [],
+    "baseline": {
+      "passRate": 1,
+      "failedCases": 0,
+      "totalEstimatedCostUsd": 0.000936,
+      "p95LatencyMs": 330
+    },
+    "candidate": {
+      "passRate": 1,
+      "failedCases": 0,
+      "totalEstimatedCostUsd": 0.000891,
+      "p95LatencyMs": 295
+    },
+    "deltas": {
+      "passRate": 0,
+      "estimatedCostRatio": -0.04807692307692309,
+      "p95LatencyRatio": -0.10606060606060606
+    },
+    "policy": {
+      "minCandidatePassRate": 1,
+      "maxPassRateDrop": 0,
+      "maxCostIncreaseRatio": 0.2,
+      "maxP95LatencyIncreaseRatio": 0.25,
+      "maxNewFailedCases": 0,
+      "requiredCaseTypes": [
+        "open_chat",
+        "goal_planning",
+        "knowledge_answer"
+      ]
+    }
+  }
+}

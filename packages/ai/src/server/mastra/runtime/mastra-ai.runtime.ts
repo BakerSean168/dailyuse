@@ -22,6 +22,11 @@ import {
   type AssistantRuntimeHistoryView,
 } from '@memoflow/contracts/ai';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type {
+  AIUsageSummary,
+  IAIExecutionLogPort,
+  IAIUsageReadPort,
+} from '../../application/ports';
 import {
   createMemoFlowAssistant,
   GoalPlannerWorker,
@@ -53,6 +58,11 @@ import {
   type KnowledgeCaptureMutationPort,
 } from '../workflows';
 import { AsyncEventQueue } from './async-event-queue';
+import {
+  createAssistantExecutionLog,
+  projectAssistantUsage,
+  type AssistantUsageSnapshot,
+} from './assistant-observability';
 import { AssistantHistoryService } from './assistant-history.service';
 import type { AssistantTranscriptBootstrapSource } from './assistant-transcript-bootstrap.port';
 import type { AIWorkflowRuntimePort } from './workflow-runtime.port';
@@ -99,6 +109,10 @@ export interface MastraAIRuntimeDependencies {
   readonly taskPlanMutationPort: TaskPlanMutationPort;
   /** Host-bound canonical knowledge-note persistence mutation for knowledge.capture. */
   readonly knowledgeCaptureMutationPort: KnowledgeCaptureMutationPort;
+  /** Canonical runtime observability sink; host-owned and persistence-agnostic. */
+  readonly executionLogPort?: IAIExecutionLogPort;
+  /** Durable indexed usage projection for run/thread queries and workflow views. */
+  readonly usageReadPort?: IAIUsageReadPort;
 }
 
 type ActiveRun = {
@@ -133,17 +147,20 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       modelResolver: deps.modelResolver,
       memory: this.memory,
     });
-    this.goalPlanner = new GoalPlannerWorker(deps.modelResolver);
+    this.goalPlanner = new GoalPlannerWorker(deps.modelResolver, deps.executionLogPort);
     this.goalCreateWorkflow = createGoalCreateWorkflow({
       planner: this.goalPlanner,
       applyService: new ApplyGoalPlanService(deps.goalPlanMutationPort),
     });
-    this.taskPlanner = new TaskPlannerWorker(deps.modelResolver);
+    this.taskPlanner = new TaskPlannerWorker(deps.modelResolver, deps.executionLogPort);
     this.taskCreateWorkflow = createTaskCreateWorkflow({
       planner: this.taskPlanner,
       applyService: new ApplyTaskPlanService(deps.taskPlanMutationPort),
     });
-    this.knowledgeCapturePlanner = new KnowledgeCapturePlannerWorker(deps.modelResolver);
+    this.knowledgeCapturePlanner = new KnowledgeCapturePlannerWorker(
+      deps.modelResolver,
+      deps.executionLogPort,
+    );
     this.knowledgeCaptureWorkflow = createKnowledgeCaptureWorkflow({
       planner: this.knowledgeCapturePlanner,
       applyService: new ApplyKnowledgeNoteService(deps.knowledgeCaptureMutationPort),
@@ -658,6 +675,43 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     return persisted;
   }
 
+  async summarizeUsage(input: {
+    identityId: string;
+    conversationId?: string;
+    runId?: string;
+  }): Promise<AIUsageSummary> {
+    if (!this.deps.usageReadPort) {
+      return {
+        executionCount: 0,
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+      };
+    }
+    return this.deps.usageReadPort.summarizeUsage(input);
+  }
+
+  private async attachWorkflowUsage(
+    view: AIWorkflowRunView | null,
+    identityId: string,
+  ): Promise<AIWorkflowRunView | null> {
+    if (!view || !this.deps.usageReadPort) return view;
+    const summary = await this.deps.usageReadPort.summarizeUsage({
+      identityId,
+      runId: view.runId,
+    });
+    if (summary.executionCount === 0) return view;
+    return {
+      ...view,
+      usage: {
+        promptTokens: summary.promptTokens,
+        completionTokens: summary.completionTokens,
+        totalTokens: summary.totalTokens,
+        ...(summary.estimatedCost !== undefined ? { estimatedCost: summary.estimatedCost } : {}),
+      },
+    };
+  }
+
   private workflowInputFromSnapshot(
     workflowName: string,
     rawSnapshot: unknown,
@@ -685,17 +739,26 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       workflowName: GOAL_CREATE_WORKFLOW_ID,
       runId: input.runId,
     });
-    if (goalRow) return this.projectGoalCreateRun(goalRow, input.identityId);
+    if (goalRow) {
+      return this.attachWorkflowUsage(this.projectGoalCreateRun(goalRow, input.identityId), input.identityId);
+    }
     const taskRow = await store.getWorkflowRunById({
       workflowName: TASK_CREATE_WORKFLOW_ID,
       runId: input.runId,
     });
-    if (taskRow) return this.projectTaskCreateRun(taskRow, input.identityId);
+    if (taskRow) {
+      return this.attachWorkflowUsage(this.projectTaskCreateRun(taskRow, input.identityId), input.identityId);
+    }
     const knowledgeRow = await store.getWorkflowRunById({
       workflowName: KNOWLEDGE_CAPTURE_WORKFLOW_ID,
       runId: input.runId,
     });
-    if (knowledgeRow) return this.projectKnowledgeCaptureRun(knowledgeRow, input.identityId);
+    if (knowledgeRow) {
+      return this.attachWorkflowUsage(
+        this.projectKnowledgeCaptureRun(knowledgeRow, input.identityId),
+        input.identityId,
+      );
+    }
     return null;
   }
 
@@ -724,10 +787,14 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       ...goalRows.runs.map((row) => this.projectGoalCreateRun(row, input.identityId)),
       ...taskRows.runs.map((row) => this.projectTaskCreateRun(row, input.identityId)),
       ...knowledgeRows.runs.map((row) => this.projectKnowledgeCaptureRun(row, input.identityId)),
-    ];
-    return views
+    ]
       .filter((view): view is AIWorkflowRunView => view !== null)
-      .filter((view) => !input.conversationId || view.conversationId === input.conversationId)
+      .filter((view) => !input.conversationId || view.conversationId === input.conversationId);
+    const enriched = await Promise.all(
+      views.map((view) => this.attachWorkflowUsage(view, input.identityId)),
+    );
+    return enriched
+      .filter((view): view is AIWorkflowRunView => view !== null)
       .sort((left, right) => right.updatedAt - left.updatedAt);
   }
 
@@ -785,6 +852,8 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
 
   async *dispatchMessage(input: {
     identityId: string;
+    /** Host request context carries requestId/traceId; credentials never enter it. */
+    context?: ExecutionContext;
     conversationId: string;
     content: string;
     providerId?: string;
@@ -797,11 +866,21 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       identityId: input.identityId,
       conversationId: input.conversationId,
     });
+    if (input.context && input.context.identityId !== input.identityId) {
+      throw new Error('Mastra Assistant execution context identity mismatch');
+    }
+    const startedAt = Date.now();
+    const resolvedModel = await this.deps.modelResolver.resolve({
+      identityId: input.identityId,
+      providerId: input.providerId,
+      modelId: input.modelId,
+    });
     const requestContext = new RequestContext();
     requestContext.setRaw('identityId', input.identityId);
-    if (input.providerId) requestContext.setRaw('providerId', input.providerId);
-    if (input.modelId) requestContext.setRaw('modelId', input.modelId);
+    requestContext.setRaw('providerId', resolvedModel.providerId);
+    requestContext.setRaw('modelId', resolvedModel.modelId);
     requestContext.setRaw('locale', input.locale ?? 'zh-CN');
+    if (input.context) requestContext.setRaw('executionContext', input.context);
     requestContext.setRaw(MASTRA_RESOURCE_ID_KEY, input.identityId);
     requestContext.setRaw(MASTRA_THREAD_ID_KEY, input.conversationId);
 
@@ -820,6 +899,8 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
     let lastDeltaLength = 0;
     let assistantMessageId: string | undefined;
     let lastRuntimeError: { code: string; message: string } | undefined;
+    let lastUsage: AssistantUsageSnapshot | undefined;
+    const observabilityWrites: Promise<void>[] = [];
     let settled = false;
 
     const currentRunId = (): string => runId || session.getCurrentRunId() || fallbackRunId;
@@ -856,6 +937,27 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       } else {
         emit(type, { reason: 'aborted' });
       }
+
+      if (this.deps.executionLogPort) {
+        observabilityWrites.push(
+          this.deps.executionLogPort.record(
+            createAssistantExecutionLog({
+              identityId: input.identityId,
+              ...(input.context ? { context: input.context } : {}),
+              conversationId: input.conversationId,
+              contentLength: input.content.length,
+              model: resolvedModel,
+              runId: currentRunId(),
+              ...(assistantMessageId ? { assistantMessageId } : {}),
+              responseLength: lastText.length,
+              outcome: type,
+              ...(lastUsage ? { usage: lastUsage } : {}),
+              ...(lastRuntimeError?.code ? { runtimeErrorCode: lastRuntimeError.code } : {}),
+              processingMs: Date.now() - startedAt,
+            }),
+          ),
+        );
+      }
       this.activeRuns.delete(currentRunId());
       queue.end();
     };
@@ -868,8 +970,8 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
           abort: () => session.abortRun(),
         });
         emit('assistant.run.started', {
-          ...(input.modelId ? { modelId: input.modelId } : {}),
-          ...(input.providerId ? { providerId: input.providerId } : {}),
+          modelId: resolvedModel.modelId,
+          providerId: resolvedModel.providerId,
         });
         return;
       }
@@ -889,11 +991,12 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
         return;
       }
       if (event.type === 'usage_update') {
-        emit('assistant.usage.updated', {
+        lastUsage = {
           promptTokens: event.usage.promptTokens,
           completionTokens: event.usage.completionTokens,
           totalTokens: event.usage.totalTokens,
-        });
+        };
+        emit('assistant.usage.updated', projectAssistantUsage(resolvedModel.modelId, lastUsage));
         return;
       }
       if (event.type === 'error') {
@@ -924,6 +1027,9 @@ export class MastraAIRuntime implements AIWorkflowRuntimePort {
       input.signal?.removeEventListener('abort', abort);
       unsubscribe();
       if (runId) this.activeRuns.delete(runId);
+      if (observabilityWrites.length > 0) {
+        await Promise.allSettled(observabilityWrites);
+      }
     }
   }
 }

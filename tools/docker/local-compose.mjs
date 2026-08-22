@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
@@ -7,16 +8,29 @@ import { detectHostEnvShadowing } from './env-shadow.mjs';
 
 export { detectHostEnvShadowing } from './env-shadow.mjs';
 
+const baseEnvFile = '.env.production';
 const envFile = '.env.production.local';
 const machineEnvFile = '.env.local';
+
+/**
+ * Build Compose argv using the repository production defaults plus the optional
+ * gitignored local secret overlay. Docker Compose applies later --env-file
+ * entries with higher precedence, matching MemoFlow's documented env layering.
+ *
+ * @param {{ cwd?: string }} [options]
+ * @returns {string[]}
+ */
+export function createLocalComposeArgs(options = {}) {
+  const cwd = options.cwd ?? process.cwd();
+  const args = ['compose', '-f', 'docker-compose.local.yml', '--env-file', baseEnvFile];
+  if (existsSync(resolve(cwd, envFile))) {
+    args.push('--env-file', envFile);
+  }
+  return args;
+}
+
 /** Compose argv shared by CLI and validate-local-deploy evidence collection. */
-export const localComposeArgs = [
-  'compose',
-  '-f',
-  'docker-compose.local.yml',
-  '--env-file',
-  envFile,
-];
+export const localComposeArgs = createLocalComposeArgs();
 const composeArgs = localComposeArgs;
 
 function readEnvFileMap(path) {
@@ -71,21 +85,84 @@ function run(bin, args, env) {
   }
 }
 
-function readGitRevision() {
-  const revisionResult = spawnSync('git', ['rev-parse', 'HEAD'], {
+function runGitCommand(command, args, options = {}) {
+  const result = spawnSync(command, args, {
+    cwd: options.cwd,
     encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
   });
+  return {
+    exitCode: typeof result.status === 'number' ? result.status : 1,
+    stdout: result.stdout ?? '',
+    stderr: result.stderr ?? '',
+  };
+}
 
-  if (revisionResult.status !== 0) {
+/**
+ * Resolve the exact source identity used by local Docker builds. A dirty tree
+ * includes a content fingerprint so two different worktrees at the same HEAD
+ * cannot share stale image/browser evidence. Generated reports and browser
+ * artifacts are excluded to mirror the Docker build context in `.dockerignore`.
+ *
+ * @param {{ cwd?: string, runCommand?: Function, readFile?: Function }} [options]
+ * @returns {string}
+ */
+export function resolveWorkspaceRevision(options = {}) {
+  const cwd = options.cwd ?? process.cwd();
+  const runCommand = options.runCommand ?? runGitCommand;
+  const readFile = options.readFile ?? readFileSync;
+  const runGit = (args) => runCommand('git', args, { cwd });
+
+  const revisionResult = runGit(['rev-parse', 'HEAD']);
+  if (revisionResult.exitCode !== 0) {
     return 'unknown';
   }
 
   const revision = revisionResult.stdout.trim();
-  const statusResult = spawnSync('git', ['status', '--porcelain'], {
-    encoding: 'utf8',
-  });
+  const sourcePathspec = [
+    '--',
+    '.',
+    ':(exclude)docs/**',
+    ':(exclude)reports/**',
+    ':(exclude).github/**',
+    ':(exclude,glob)apps/web/playwright*-report/**',
+    ':(exclude,glob)apps/web/test-results*/**',
+  ];
+  const diffResult = runGit(['diff', '--binary', 'HEAD', ...sourcePathspec]);
+  const untrackedResult = runGit([
+    'ls-files',
+    '--others',
+    '--exclude-standard',
+    '-z',
+    ...sourcePathspec,
+  ]);
 
-  return statusResult.status === 0 && statusResult.stdout.trim() ? `${revision}-dirty` : revision;
+  if (diffResult.exitCode !== 0 || untrackedResult.exitCode !== 0) {
+    throw new Error('Unable to fingerprint the local Docker worktree revision.');
+  }
+
+  const trackedDiff = diffResult.stdout;
+  const untrackedFiles = untrackedResult.stdout
+    .split('\0')
+    .map((file) => file.trim())
+    .filter(Boolean)
+    .sort();
+
+  if (!trackedDiff && untrackedFiles.length === 0) {
+    return revision;
+  }
+
+  const hash = createHash('sha256');
+  hash.update('tracked\0');
+  hash.update(trackedDiff);
+  for (const file of untrackedFiles) {
+    hash.update('\0untracked\0');
+    hash.update(file);
+    hash.update('\0');
+    hash.update(readFile(resolve(cwd, file)));
+  }
+
+  return `${revision}-dirty-${hash.digest('hex').slice(0, 12)}`;
 }
 
 export function mergeLocalDockerWebOrigins(webHostPort, ...configuredValues) {
@@ -211,7 +288,7 @@ function applyLocalDockerHostPortIsolation(
 
   if (!quiet) {
     console.log(
-      `[docker:local] host ports: API=${env.API_HOST_PORT} WEB=${env.WEB_HOST_PORT} AI=${env.AI_SERVICE_HOST_PORT} PS=${env.POWERSYNC_HOST_PORT} PG=${env.POSTGRES_HOST_PORT} REDIS=${env.REDIS_HOST_PORT}`,
+      `[docker:local] host ports: API=${env.API_HOST_PORT} WEB=${env.WEB_HOST_PORT} PS=${env.POWERSYNC_HOST_PORT} PG=${env.POSTGRES_HOST_PORT} REDIS=${env.REDIS_HOST_PORT}`,
     );
   }
 }
@@ -234,7 +311,7 @@ export function createLocalComposeRuntimeEnv(options = {}) {
     NX_DAEMON: 'false',
     NX_ISOLATE_PLUGINS: 'false',
   };
-  env.VCS_REF ||= readGitRevision();
+  env.VCS_REF ||= resolveWorkspaceRevision({ cwd: options.cwd ?? process.cwd() });
   env.BUILD_DATE ||= new Date().toISOString();
 
   log(`[docker:local] image revision: ${env.VCS_REF}`);
@@ -248,7 +325,7 @@ export function createLocalComposeRuntimeEnv(options = {}) {
     machineEnvFileMap.get('LOCAL_DOCKER_SHARE_DEV_SECRETS')?.toLowerCase() === 'true';
 
   if (shareDevelopmentSecrets) {
-    for (const key of ['SERVICE_SECRET', 'JWT_SECRET', 'REFRESH_TOKEN_SECRET']) {
+    for (const key of ['JWT_SECRET', 'REFRESH_TOKEN_SECRET']) {
       const value = developmentEnv.get(key);
       if (value) {
         env[key] = value;
@@ -258,13 +335,6 @@ export function createLocalComposeRuntimeEnv(options = {}) {
 
   for (const warning of detectHostEnvShadowing(process.env, envFileMap)) {
     warn(warning);
-  }
-
-  if (!env.SERVICE_SECRET && !envKeys.has('SERVICE_SECRET')) {
-    env.SERVICE_SECRET = 'local-dev-secret';
-    log(
-      '[docker:local] SERVICE_SECRET is not set in .env.production.local, using a local default for Docker validation.',
-    );
   }
 
   // Local-only secret defaults so prod-like compose can start without copying
@@ -330,12 +400,6 @@ export function createLocalComposeRuntimeEnv(options = {}) {
     publicWebOrigin,
     env.LOCAL_DOCKER_CORS_ORIGIN,
     envFileMap.get('LOCAL_DOCKER_CORS_ORIGIN'),
-  );
-  env.ALLOWED_ORIGINS = mergeLocalDockerWebOrigins(
-    env.WEB_HOST_PORT,
-    publicWebOrigin,
-    env.ALLOWED_ORIGINS,
-    envFileMap.get('ALLOWED_ORIGINS'),
   );
 
   return env;

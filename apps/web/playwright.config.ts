@@ -1,6 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
 import {
-  createAIServiceServer,
   createApiServer,
   createOpenAICompatibleMockServer,
   createWebServer,
@@ -94,7 +93,6 @@ export default defineConfig({
   // 默认业务回归依赖真实登录和 CRUD，必须同时托管 API + Web。
   webServer: [
     createOpenAICompatibleMockServer(),
-    createAIServiceServer(),
     createApiServer(),
     createWebServer(),
   ],

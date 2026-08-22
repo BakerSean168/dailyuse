@@ -2,29 +2,22 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
-import type {
-  AgentRunResult,
-  AgentStartRunClientRequest,
-} from '@memoflow/contracts/ai';
-import type { AiProviderConfigId } from '@memoflow/contracts/primitives';
-import type {
-  KnowledgeAnswer,
-  UseAIKnowledgeQaWorkflowOptions,
-} from './types';
+import type { KnowledgeAnswer, UseAIKnowledgeQaWorkflowOptions } from './types';
 import { getAIErrorMessage } from './error';
-// Residual 953: createAgentId dual retired — sole AI composable helper.
-import { createAgentId } from './createAgentId';
 import { unwrap } from '@memoflow/contracts/result';
 
 type KnowledgeRelatedNote = NonNullable<KnowledgeAnswer['relatedNotes']>[number];
 
+/**
+ * Knowledge Q&A is a product query rather than a durable workflow lifecycle.
+ * The server-side knowledge query port owns retrieval/citation semantics while
+ * the UI only projects the Result and its evidence status.
+ */
 export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOptions) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const router = useRouter();
-
   const knowledgeQueryLoading = ref(false);
   const knowledgeAnswer = ref<KnowledgeAnswer | null>(null);
-  const knowledgeQaAgentRun = ref<AgentRunResult | null>(null);
 
   const canAskKnowledge = computed(
     () =>
@@ -43,9 +36,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
 
   function resetKnowledgeAnswer() {
     knowledgeAnswer.value = null;
-    knowledgeQaAgentRun.value = null;
   }
-
 
   function buildRelatedNotesFromCitations(
     citations: KnowledgeAnswer['citations'],
@@ -64,77 +55,30 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
     return [...notesByResourceId.values()];
   }
 
-  function syncKnowledgeQaAgentRun(result: AgentRunResult) {
-    resetKnowledgeAnswer();
-    knowledgeQaAgentRun.value = result;
-
-    const answerArtifact = result.state.artifacts.find(
-      (artifact) => artifact.kind === 'knowledge_answer',
-    );
-    if (!answerArtifact) return;
-
-    const usage = result.state.usage;
-    const citations = result.state.citations.map((citation) => ({
-      ...citation,
-      title: citation.title ?? undefined,
-    }));
-    const providerId =
-      typeof answerArtifact.data['providerId'] === 'string'
-        ? answerArtifact.data['providerId']
-        : '';
-
-    knowledgeAnswer.value = {
-      question: String(answerArtifact.data['question'] ?? ''),
-      answer: String(answerArtifact.data['answer'] ?? ''),
-      citations,
-      providerId: providerId as AiProviderConfigId,
-      tokenUsage: {
-        promptTokens: usage.promptTokens ?? 0,
-        completionTokens: usage.completionTokens ?? 0,
-        totalTokens: usage.totalTokens ?? 0,
-      },
-      processingTimeMs:
-        typeof answerArtifact.data['processingTimeMs'] === 'number'
-          ? answerArtifact.data['processingTimeMs']
-          : 0,
-      matchedResourceCount:
-        typeof answerArtifact.data['matchedResourceCount'] === 'number'
-          ? answerArtifact.data['matchedResourceCount']
-          : citations.length,
-      evidenceStatus:
-        answerArtifact.data['evidenceStatus'] === 'insufficient'
-          ? 'insufficient'
-          : 'grounded',
-      relatedNotes: buildRelatedNotesFromCitations(citations),
-    };
-  }
-
   async function askKnowledgeFromConversation() {
     if (!canAskKnowledge.value || !options.selectedModel.value) return;
-
     const question = buildKnowledgeQuestion();
     if (!question) return;
 
     knowledgeQueryLoading.value = true;
     try {
-      const selectedModel = options.selectedModel.value;
-      const request: AgentStartRunClientRequest = {
-        runId: createAgentId('run'),
-        threadId: createAgentId('thread'),
-        conversationId: options.chatConversationId.value || null,
-        agentType: 'knowledge.qa',
-        locale: locale.value === 'en-US' ? 'en-US' : 'zh-CN',
-        input: {
-          question,
-          provider_id: selectedModel.providerId,
+      const result = unwrap(
+        await options.service.queryKnowledge({
+          query: question,
+          providerId: options.selectedModel.value.providerId as never,
           maxResources: 8,
-        },
+        }),
+      );
+      const citations = result.citations.map((citation) => ({
+        ...citation,
+        title: citation.title ?? undefined,
+      }));
+      knowledgeAnswer.value = {
+        ...result,
+        question,
+        evidenceStatus: citations.length > 0 ? 'grounded' : 'insufficient',
+        relatedNotes: buildRelatedNotesFromCitations(citations),
       };
-
-      syncKnowledgeQaAgentRun(unwrap(await options.service.startAgentRun(request)));
-      if (!knowledgeAnswer.value) {
-        throw new Error('Knowledge Q&A Agent did not return an answer artifact.');
-      }
       toast.success(t('aiAssistant.dialogs.knowledge.queryCompleted'));
       options.scrollMessagesToBottom();
     } catch (error) {
@@ -153,11 +97,9 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
   return {
     knowledgeQueryLoading,
     knowledgeAnswer,
-    knowledgeQaAgentRun,
     canAskKnowledge,
     buildKnowledgeQuestion,
     resetKnowledgeAnswer,
-    syncKnowledgeQaAgentRun,
     askKnowledgeFromConversation,
     openKnowledgeCitation,
   };

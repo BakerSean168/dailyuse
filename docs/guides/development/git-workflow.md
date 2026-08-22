@@ -31,9 +31,8 @@ D:\home\projects\memoflow-tree2\    # 长期开发槽位 2
 |---|---|---|---|
 | API | 3000 | 3010 | 3020 |
 | Web (Vite) | 5173 | 5183 | 5193 |
-| AI Service | 8100 | 8110 | 8120 |
 
-端口配置在各 worktree 的 `.env.local` 中，Vite 和 ai-service 的端口通过环境变量 `VITE_DEV_PORT` 和 `AI_SERVICE_PORT` 读取。
+端口配置在各 worktree 的 `.env.local` 中；Web Vite 端口通过 `VITE_DEV_PORT` 覆盖，API/基础设施端口遵循 runtime profile。
 
 ### 在槽位内开发
 

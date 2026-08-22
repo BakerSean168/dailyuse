@@ -1,15 +1,12 @@
 /**
- * Compare running local Docker image OCI revision labels against git HEAD.
- * Returns warnings when images lag the workspace tip (status drift).
+ * Compare running local Docker image OCI revision labels against the exact workspace revision.
+ * Dirty worktrees include a content fingerprint so stale evidence at the same HEAD is rejected.
  */
 
 import { spawnSync } from 'node:child_process';
+import { resolveWorkspaceRevision } from '../../../docker/local-compose.mjs';
 
-const DEFAULT_IMAGES = [
-  'memoflow-api:local',
-  'memoflow-web:local',
-  'memoflow-ai-service:local',
-];
+const DEFAULT_IMAGES = ['memoflow-api:local', 'memoflow-web:local'];
 
 /**
  * @param {string} workspace
@@ -33,43 +30,47 @@ export function checkLocalImageFreshness(workspace, options = {}) {
       };
     });
 
-  const headResult = run('git', ['rev-parse', 'HEAD'], { cwd: workspace });
-  const headSha = headResult.exitCode === 0 ? headResult.stdout.trim() : '';
+  const workspaceRevision =
+    options.expectedRevision ??
+    resolveWorkspaceRevision({
+      cwd: workspace,
+      runCommand: run,
+      readFile: options.readFile,
+    });
+  const headSha = workspaceRevision.split('-dirty-')[0] ?? '';
   const warnings = [];
   const comparisons = [];
 
-  if (!headSha) {
-    warnings.push('image-freshness: could not resolve git HEAD');
-    return { headSha: '', warnings, comparisons };
+  if (!workspaceRevision || workspaceRevision === 'unknown') {
+    warnings.push('image-freshness: could not resolve workspace revision');
+    return { headSha: '', workspaceRevision: '', warnings, comparisons };
   }
-
-  const headShort = headSha.slice(0, 12);
 
   for (const image of images) {
     const inspect = run(
       'docker',
-      ['image', 'inspect', image, '--format', '{{index .Config.Labels "org.opencontainers.image.revision"}}'],
+      [
+        'image',
+        'inspect',
+        image,
+        '--format',
+        '{{index .Config.Labels "org.opencontainers.image.revision"}}',
+      ],
       { cwd: workspace },
     );
     if (inspect.exitCode !== 0) {
       comparisons.push({ image, imageRevision: null, matches: null });
-      // Missing image is not a hard failure for this advisory check
       continue;
     }
     const imageRevision = (inspect.stdout || '').trim() || null;
-    const normalized = imageRevision?.replace(/-dirty$/u, '') ?? null;
-    const matches =
-      normalized != null &&
-      (normalized === headSha ||
-        normalized.startsWith(headShort) ||
-        headSha.startsWith(normalized.slice(0, 12)));
+    const matches = imageRevision != null && imageRevision === workspaceRevision;
     comparisons.push({ image, imageRevision, matches });
     if (imageRevision && !matches) {
       warnings.push(
-        `image-freshness: ${image} revision=${imageRevision} lags HEAD=${headShort}… — rebuild with pnpm docker:local:rebuild before relying on local deploy`,
+        `image-freshness: ${image} revision=${imageRevision} does not match workspace=${workspaceRevision} — rebuild with pnpm docker:local:rebuild before relying on local deploy`,
       );
     }
   }
 
-  return { headSha, warnings, comparisons };
+  return { headSha, workspaceRevision, warnings, comparisons };
 }

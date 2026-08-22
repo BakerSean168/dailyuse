@@ -5,24 +5,21 @@ import {
   type AICapabilities,
   type AIConversationClientDTO,
   type AIProviderConfigClientDTO,
+  type AssistantRuntimeHistoryView,
+  type AssistantRuntimeMessageView,
   type MessageClientDTO,
-  type SendMessageReq,
 } from '@memoflow/contracts/ai';
 import { unwrap } from '@memoflow/contracts/result';
 import { presentErrorMessage } from '@memoflow/http-client';
 
 import { useAppSession } from './useAppSession';
-import { useAIService } from './useAIService';
+import { useAppClientRegistry } from '../providers/app-client-registry-provider';
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? presentErrorMessage(error) : 'AI request failed';
 }
 
-/**
- * Residual 1207 keep-boundary: app-react formatMessageTime — fixed Intl zh-CN hour:minute.
- * AI workspace message clock only; not i18n locale-driven.
- * Soft residual 1207: app-vue SSE monitor toLocaleTimeString(locale) differs (no force-merge).
- */
+// Residual 1207 keep-boundary: mobile keeps fixed zh-CN Intl formatting.
 function formatMessageTime(timestamp: number) {
   return new Intl.DateTimeFormat('zh-CN', {
     hour: '2-digit',
@@ -30,18 +27,53 @@ function formatMessageTime(timestamp: number) {
   }).format(new Date(timestamp));
 }
 
+function toMessageClientDTO(message: AssistantRuntimeMessageView): MessageClientDTO {
+  const role =
+    message.role === 'user'
+      ? MessageRole.User
+      : message.role === 'system'
+        ? MessageRole.System
+        : MessageRole.Assistant;
+  return {
+    id: message.id as MessageClientDTO['id'],
+    conversationId: message.conversationId as MessageClientDTO['conversationId'],
+    role,
+    content: message.content,
+    tokenCount: null,
+    version: 1,
+    createdAt: message.createdAt,
+    updatedAt: message.createdAt,
+    deletedAt: null,
+    isUser: role === MessageRole.User,
+    isAssistant: role === MessageRole.Assistant,
+    isSystem: role === MessageRole.System,
+    formattedTime: formatMessageTime(message.createdAt),
+  };
+}
+
+function withRuntimeHistory(
+  shell: AIConversationClientDTO,
+  history: AssistantRuntimeHistoryView,
+): AIConversationClientDTO {
+  const messages = history.messages.map(toMessageClientDTO);
+  return {
+    ...shell,
+    messages,
+    messageCount: messages.length,
+    lastMessageAt: messages[messages.length - 1]?.createdAt ?? shell.lastMessageAt,
+  };
+}
+
+/** Mobile projection of the canonical Mastra Assistant runtime. */
 export function useAIWorkspace() {
-  const service = useAIService();
+  const { aiClient, aiAssistantRuntime: runtime } = useAppClientRegistry();
   const { isRemoteAuthenticated } = useAppSession();
   const [conversations, setConversations] = useState<AIConversationClientDTO[]>([]);
-  const [activeConversation, setActiveConversation] = useState<AIConversationClientDTO | null>(
-    null,
-  );
+  const [activeConversation, setActiveConversation] = useState<AIConversationClientDTO | null>(null);
   const [providers, setProviders] = useState<AIProviderConfigClientDTO[]>([]);
   const [capabilities, setCapabilities] = useState<AICapabilities | null>(null);
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [streamMode, setStreamMode] = useState(true);
   const [isLoading, setIsLoading] = useState(isRemoteAuthenticated);
   const [isMutating, setIsMutating] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -62,10 +94,17 @@ export function useAIWorkspace() {
     setSelectedModel(preferred?.defaultModel ?? null);
   }
 
+  async function fetchConversation(id: string): Promise<AIConversationClientDTO> {
+    const [shellResult, history] = await Promise.all([
+      aiClient.getConversation(id),
+      runtime.listMessages(id),
+    ]);
+    return withRuntimeHistory(unwrap(shellResult), history);
+  }
+
   async function loadConversation(id: string) {
     try {
-      const conversation = unwrap(await service.getConversation(id));
-      setActiveConversation(conversation);
+      setActiveConversation(await fetchConversation(id));
     } catch (loadError) {
       setError(getErrorMessage(loadError));
     }
@@ -89,9 +128,9 @@ export function useAIWorkspace() {
 
     try {
       const [listResult, providersResult, capabilitiesResult] = await Promise.all([
-        service.listConversations({ page: 1, pageSize: 20 }),
-        service.listProviders(),
-        service.getCapabilities(),
+        aiClient.listConversations({ page: 1, pageSize: 20 }),
+        aiClient.listProviders(),
+        aiClient.getCapabilities(),
       ]);
       const list = unwrap(listResult);
       const nextProviders = unwrap(providersResult);
@@ -104,12 +143,7 @@ export function useAIWorkspace() {
 
       const targetId =
         preferredConversationId ?? activeConversation?.id ?? list.data[0]?.id ?? null;
-      if (targetId) {
-        const conversation = unwrap(await service.getConversation(String(targetId)));
-        setActiveConversation(conversation);
-      } else {
-        setActiveConversation(null);
-      }
+      setActiveConversation(targetId ? await fetchConversation(String(targetId)) : null);
     } catch (loadError) {
       setConversations([]);
       setActiveConversation(null);
@@ -132,9 +166,8 @@ export function useAIWorkspace() {
   async function createConversation(name: string) {
     setIsMutating(true);
     setError(null);
-
     try {
-      const conversation = unwrap(await service.createConversation({ name }));
+      const conversation = unwrap(await aiClient.createConversation({ name }));
       await loadWorkspace(String(conversation.id));
       return conversation;
     } catch (createError) {
@@ -148,7 +181,6 @@ export function useAIWorkspace() {
   async function selectConversation(id: string) {
     setIsMutating(true);
     setError(null);
-
     try {
       await loadConversation(id);
       return true;
@@ -163,10 +195,9 @@ export function useAIWorkspace() {
   async function makeDefaultProvider(providerId: string) {
     setIsMutating(true);
     setError(null);
-
     try {
-      unwrap(await service.setDefaultProvider(providerId));
-      const nextProviders = unwrap(await service.listProviders());
+      unwrap(await aiClient.setDefaultProvider(providerId));
+      const nextProviders = unwrap(await aiClient.listProviders());
       setProviders(nextProviders);
       resolveSelectedProvider(nextProviders, providerId);
       return true;
@@ -180,113 +211,108 @@ export function useAIWorkspace() {
 
   async function sendMessage(content: string) {
     setIsMutating(true);
+    setIsStreaming(true);
     setError(null);
 
     try {
-      const conversation =
+      const shell =
         activeConversation ??
         unwrap(
-          await service.createConversation({
+          await aiClient.createConversation({
             name: content.slice(0, 40) || 'New conversation',
           }),
         );
-
-      const request: SendMessageReq = {
-        conversationId: conversation.id as SendMessageReq['conversationId'],
+      const conversationId = String(shell.id);
+      const timestamp = Date.now();
+      const optimisticUser: MessageClientDTO = {
+        id: `draft-user-${timestamp}` as MessageClientDTO['id'],
+        conversationId: shell.id,
+        role: MessageRole.User,
         content,
-        providerId: selectedProviderId
-          ? (selectedProviderId as SendMessageReq['providerId'])
-          : undefined,
-        model: selectedModel ?? undefined,
+        tokenCount: null,
+        version: 0,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        deletedAt: null,
+        isUser: true,
+        isAssistant: false,
+        isSystem: false,
+        formattedTime: formatMessageTime(timestamp),
       };
+      const optimisticAssistant: MessageClientDTO = {
+        id: `draft-assistant-${timestamp}` as MessageClientDTO['id'],
+        conversationId: shell.id,
+        role: MessageRole.Assistant,
+        content: '',
+        tokenCount: null,
+        version: 0,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        deletedAt: null,
+        isUser: false,
+        isAssistant: true,
+        isSystem: false,
+        formattedTime: formatMessageTime(timestamp),
+      };
+      setActiveConversation({
+        ...shell,
+        messages: [...(activeConversation?.messages ?? []), optimisticUser, optimisticAssistant],
+        messageCount: (activeConversation?.messages?.length ?? 0) + 2,
+        lastMessageAt: timestamp,
+      });
 
-      if (streamMode) {
-        const timestamp = Date.now();
-        const userMessage: MessageClientDTO = {
-          id: `draft-user-${timestamp}` as MessageClientDTO['id'],
-          conversationId: conversation.id,
-          role: MessageRole.User,
+      let runtimeFailure: string | null = null;
+      await runtime.streamMessage(
+        {
+          type: 'message',
+          conversationId,
           content,
-          tokenCount: null,
-          version: 0,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-          deletedAt: null,
-          isUser: true,
-          isAssistant: false,
-          isSystem: false,
-          formattedTime: formatMessageTime(timestamp),
-        };
-        const assistantMessage: MessageClientDTO = {
-          id: `draft-assistant-${timestamp}` as MessageClientDTO['id'],
-          conversationId: conversation.id,
-          role: MessageRole.Assistant,
-          content: '',
-          tokenCount: null,
-          version: 0,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-          deletedAt: null,
-          isUser: false,
-          isAssistant: true,
-          isSystem: false,
-          formattedTime: formatMessageTime(timestamp),
-        };
-
-        const optimisticConversation: AIConversationClientDTO = {
-          ...conversation,
-          lastMessageAt: timestamp,
-          messageCount: conversation.messageCount + 2,
-          messages: [...(conversation.messages ?? []), userMessage, assistantMessage],
-        };
-
-        setActiveConversation(optimisticConversation);
-        setIsStreaming(true);
-
-        const controller = new AbortController();
-        await service.streamMessage(
-          request,
-          {
-            onChunk: (chunk) => {
+          surface: 'mobile',
+          providerId: selectedProviderId ?? undefined,
+          modelId: selectedModel ?? undefined,
+        },
+        {
+          onEvent: (event) => {
+            if (event.type === 'assistant.message.delta') {
               setActiveConversation((current) => {
-                if (!current?.messages || current.messages.length === 0) {
-                  return current;
-                }
-
-                const nextMessages = [...current.messages];
-                const lastMessage = nextMessages[nextMessages.length - 1];
-                if (!lastMessage || !lastMessage.isAssistant) {
-                  return current;
-                }
-
-                nextMessages[nextMessages.length - 1] = {
-                  ...lastMessage,
-                  content: `${lastMessage.content}${chunk.content}`,
+                if (!current?.messages?.length) return current;
+                const messages = [...current.messages];
+                const last = messages[messages.length - 1];
+                if (!last?.isAssistant) return current;
+                messages[messages.length - 1] = {
+                  ...last,
+                  content: `${last.content}${event.data.content}`,
                 };
-
-                return {
-                  ...current,
-                  messages: nextMessages,
-                };
+                return { ...current, messages };
               });
-            },
+            } else if (event.type === 'assistant.run.completed') {
+              setActiveConversation((current) => {
+                if (!current?.messages?.length) return current;
+                const messages = [...current.messages];
+                const last = messages[messages.length - 1];
+                if (!last?.isAssistant) return current;
+                messages[messages.length - 1] = {
+                  ...last,
+                  id: (event.data.assistantMessageId ?? last.id) as MessageClientDTO['id'],
+                  content: event.data.content || last.content,
+                };
+                return { ...current, messages };
+              });
+            } else if (event.type === 'assistant.run.failed') {
+              runtimeFailure = event.data.message || 'AI runtime failed';
+            }
           },
-          controller.signal,
-        );
+        },
+      );
 
-        setIsStreaming(false);
-        await loadWorkspace(String(conversation.id));
-        return true;
-      }
-
-      unwrap(await service.sendMessage(request));
-      await loadWorkspace(String(conversation.id));
+      if (runtimeFailure) throw new Error(runtimeFailure);
+      await loadWorkspace(conversationId);
       return true;
     } catch (sendError) {
-      setIsStreaming(false);
       setError(getErrorMessage(sendError));
       return false;
     } finally {
+      setIsStreaming(false);
       setIsMutating(false);
     }
   }
@@ -310,7 +336,5 @@ export function useAIWorkspace() {
     sendMessage,
     setSelectedModel,
     setSelectedProviderId,
-    setStreamMode,
-    streamMode,
   };
 }

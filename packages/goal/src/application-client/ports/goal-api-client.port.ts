@@ -136,22 +136,5 @@ export interface IGoalApiClient {
   cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalMutationReceipt>>;
 
   // AI Generation
-  generateKeyResults(request: {
-    goalTitle: string;
-    goalDescription?: string;
-    startDate: number;
-    endDate: number;
-    goalContext?: string;
-  }): Promise<
-    Result<{
-      keyResults: Array<{
-        title: string;
-        description?: string;
-        targetValue?: number;
-        unit?: string;
-      }>;
-      tokenUsage: unknown;
-      generatedAt: number;
-    }>
-  >;
+
 }

@@ -105,34 +105,15 @@ describe('AI API runtime composer surface', () => {
     }
   });
 
-  it('automation tool executor adapter is DB/module-free: no PrismaClient, create*PrismaModule or feature /server deep import', () => {
-    const executor = readFileSync(
-      resolve(apiDir, 'modules/ai/backend-automation-tool-executor.adapter.ts'),
-      'utf8',
-    );
-    expect(executor).not.toContain('PrismaClient');
-    expect(executor).not.toContain('createGoalPrismaModule');
-    expect(executor).not.toContain('createTaskPrismaModule');
-    expect(executor).not.toContain('createReminderPrismaModule');
-    expect(executor).not.toContain('PrismaTaskBindingReadPort');
-    expect(executor).not.toMatch(/@memoflow\/(goal|task|reminder)\/server/);
-    expect(executor).toContain('interface BackendAutomationToolExecutorDependencies');
-  });
-
-  it('AI transport module.ts keeps the twelve exact relative mounts in order', () => {
+  it('AI transport module.ts keeps the seven Mastra-native relative mounts in order', () => {
     const mounts = [
       "router.use('/ai/providers', providerRoutes);",
       "router.use('/ai', capabilityRoutes);",
-      "router.use('/ai/agents', agentRuntimeRoutes);",
       "router.use('/ai/chat', chatRoutes);",
-      "router.use('/ai/assistant', assistantRoutes);",
+      "router.use('/ai/runtime', runtimeRoutes);",
       "router.use('/ai/knowledge', knowledgeQueryRoutes);",
-      "router.use('/ai/knowledge-notes', knowledgeNoteRoutes);",
       "router.use('/ai/analytics', analyticsQueryRoutes);",
       "router.use('/ai', evaluationReportRoutes);",
-      "router.use('/ai/generate', goalRoutes);",
-      "router.use('/internal/agents/checkpoints', checkpointRoutes);",
-      "router.use('/internal/agents/langgraph-checkpoints', langGraphCheckpointRoutes);",
     ];
     let cursor = 0;
     for (const mount of mounts) {

@@ -41,7 +41,7 @@ export async function detectScope({
     target('test:boundary'),
     target('test:perf'),
   ]);
-  const webFlow = projects.some((project) => ['web', 'api', 'ai-service'].includes(project));
+  const webFlow = projects.some((project) => ['web', 'api'].includes(project));
   return {
     version: SCOPE_VERSION,
     base: base ?? null,

@@ -188,13 +188,6 @@ $images = @(
     Repository = "$registry/$namespace/memoflow-web"
     TagKey     = "WEB_TAG"
     BuildArgs  = @{}
-  },
-  @{
-    Name       = "ai-service"
-    Dockerfile = "Dockerfile.ai-service"
-    Repository = "$registry/$namespace/memoflow-ai-service"
-    TagKey     = "AI_SERVICE_TAG"
-    BuildArgs  = @{}
   }
 )
 

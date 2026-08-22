@@ -1,10 +1,8 @@
 export { useAI } from './useAI';
-export { useAssistantDispatch } from './useAssistantDispatch';
 export { useAIChatSession } from './useAIChatSession';
 export { useAIChatView } from './useAIChatView';
 export { useAIFormatters } from './useAIFormatters';
 export { useAIGoalWorkflow } from './useAIGoalWorkflow';
-export { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
 export { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 export { useAITaskWorkflow } from './useAITaskWorkflow';
 export { useAIKnowledgeCapture } from './useAIKnowledgeCapture';
@@ -19,12 +17,10 @@ export type {
   EditableGoalReminder,
   EditableGoalTaskTemplate,
   EditableKeyResult,
-  GoalAutomationResult,
-  GoalExecutedAction,
   GoalWorkflowStage,
+  GoalClarificationView,
   KnowledgeAnswer,
   MessageStatus,
-  NoteSummary,
   PersistedWorkflowEntry,
   ProviderListItem,
   WorkflowMode,

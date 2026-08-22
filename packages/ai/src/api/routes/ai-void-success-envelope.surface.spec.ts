@@ -55,7 +55,7 @@ describe('ai void success envelope surface', () => {
     );
     const conversationDelete = electron.slice(
       electron.indexOf('AIChannels.CONVERSATION_DELETE'),
-      electron.indexOf('AIChannels.MESSAGE_SEND'),
+      electron.indexOf('AIChannels.RUNTIME_ASSISTANT_START'),
     );
     for (const block of [providerDelete, setDefault, conversationDelete]) {
       expect(block).toContain('return ok(null)');

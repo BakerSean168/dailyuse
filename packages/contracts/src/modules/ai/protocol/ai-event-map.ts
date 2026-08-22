@@ -6,15 +6,9 @@ import type { AIMessageAddedEvent } from '../domain/events/ai-message-added.even
 import type { AIProviderConfigCreatedEvent } from '../domain/events/ai-provider-config-created.event';
 import type { AIProviderConfigModelsUpdatedEvent } from '../domain/events/ai-provider-config-models-updated.event';
 import type { AIProviderConfigSetDefaultEvent } from '../domain/events/ai-provider-config-set-default.event';
-import type { SendMessageRes, StreamMessageChunk } from '../api/ai-chat.dto';
 import type { AssistantRuntimeEvent } from '../api/ai-runtime.dto';
 
-/**
- * AI Module - Event Map
- * AI模块 - 事件映射
- *
- * 事件命名规范：ai:{kebab-entity}-{kebab-action-past-tense}
- */
+/** AI domain events plus the canonical Mastra Assistant transport projection. */
 export type AIEventMap = {
   'ai:conversation-created': AIConversationCreatedEvent;
   'ai:conversation-updated': AIConversationUpdatedEvent;
@@ -24,14 +18,6 @@ export type AIEventMap = {
   'ai:provider-config-created': AIProviderConfigCreatedEvent;
   'ai:provider-config-models-updated': AIProviderConfigModelsUpdatedEvent;
   'ai:provider-config-set-default': AIProviderConfigSetDefaultEvent;
-  'ai:chat:message:stream:chunk': { streamId: string; chunk: StreamMessageChunk };
-  'ai:chat:message:stream:done': { streamId: string; result: SendMessageRes };
-  'ai:chat:message:stream:error': {
-    streamId: string;
-    code: string;
-    message: string;
-    details?: unknown;
-  };
   'ai:runtime:assistant:event': { streamId: string; event: AssistantRuntimeEvent };
   'ai:runtime:assistant:error': {
     streamId: string;

@@ -1,14 +1,13 @@
 # 知行 MemoFlow
 
-知行 MemoFlow 是一个使用 `pnpm` + `Nx` 管理的多应用工作区，承载桌面端、Web、API、AI Service 与共享领域包。项目旨在构建一个 AI 驱动的个人效能管理系统，支持目标管理、任务调度、知识资源、AI 对话等功能。仓库中的文档、配置和测试以当前代码现实为准；如果文档与代码冲突，以代码、`project.json`、`nx.json`、测试配置和测试结果为准。
+知行 MemoFlow 是一个使用 `pnpm` + `Nx` 管理的多应用工作区，承载桌面端、Web、API 与共享领域包；AI runtime 由 API/Desktop 内嵌的 TypeScript + Mastra 组合提供。项目旨在构建一个 AI 驱动的个人效能管理系统，支持目标管理、任务调度、知识资源、AI 对话等功能。仓库中的文档、配置和测试以当前代码现实为准；如果文档与代码冲突，以代码、`project.json`、`nx.json`、测试配置和测试结果为准。
 
 ## 工作区概览
 
 - `apps/desktop`：Electron 桌面应用，前端栈是 Vue 3 + Vite。
 - `apps/web`：Web 应用，使用 Vue 3 + Vite。
-- `apps/api`：Express 5 API，配合 Zod、OpenAPI、Prisma。
+- `apps/api`：Express 5 API，配合 Zod、OpenAPI、Prisma，并组合服务端 Mastra AI runtime。
 - `apps/mobile`：移动端应用容器（规划中）。
-- `apps/ai-service`：Python FastAPI AI 服务，提供 AI 工作流编排、Provider 管理等功能。
 - `packages/*`：按领域拆分的共享业务包（account、ai、goal、task 等），以及 `contracts`、`domain-shared`、`ui-*`、`utils` 等基础包。
 - `tools/*`：工作区脚本、测试治理和 Docker 辅助工具。
 - `docs/`：唯一维护中的正式文档入口。
@@ -31,8 +30,7 @@
 │   ├── api/
 │   ├── desktop/
 │   ├── mobile/
-│   ├── web/
-│   └── ai-service/
+│   └── web/
 ├── packages/
 │   ├── account/ ai/ authentication/ dashboard/ goal/ governance/
 │   ├── notification/ reminder/ schedule/ setting/ task/ ...

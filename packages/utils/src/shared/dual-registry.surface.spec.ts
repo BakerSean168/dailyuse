@@ -4,215 +4,37 @@
  * Behavior/assertions preserved; individual *-dual.surface.spec.ts removed.
  * Sources: build-recurrence-rule-dual.surface.spec.ts, build-reminder-template-input-dual.surface.spec.ts, error-message-cli-dual.surface.spec.ts, error-message-dual.surface.spec.ts, escape-html-dual.surface.spec.ts, extract-error-message-dual.surface.spec.ts, parse-json-safe-dual.surface.spec.ts, parse-query-boolean-dual.surface.spec.ts, parse-query-value-dual.surface.spec.ts, parse-query-value-governance-dual.surface.spec.ts, presentation-preference-dual.surface.spec.ts, preview-text-dual.surface.spec.ts, read-nested-number-dual.surface.spec.ts, reminder-time-of-day-dual.surface.spec.ts
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it, afterEach, vi } from 'vitest';
-import { buildRecurrenceRule } from './build-recurrence-rule';
-import { DAILY_REVIEW_INTERVAL_MINUTES, WEEKLY_REVIEW_INTERVAL_MINUTES, buildReminderTemplateInput } from './build-reminder-template-input';
 import { errorMessage } from './error-message';
 import { escapeHtml } from './escape-html';
 import { parseBoolean, parseNumber, parseString } from './parse-query-value';
 import { withCause, parseJson, parseJsonSafe } from './persistence';
 import { detectBrowserLocale, normalizeLocale, normalizeTheme } from './presentation-preference';
-import { previewText } from './preview-text';
-import { readNestedNumber } from './read-nested-number';
 import { DEFAULT_REMINDER_TIME_OF_DAY, REMINDER_TIME_OF_DAY_PATTERN, buildReminderStartTimestamp, normalizeReminderTimeOfDay } from './reminder-time-of-day';
-import { ReminderType, TriggerType, NotificationChannel } from '@memoflow/contracts/reminder';
 
-// --- merged from build-recurrence-rule-dual.surface.spec.ts ---
+// --- AI-VNEXT-07: retired Goal automation helper surface ---
 {
   /**
-   * Residual 1015: buildRecurrenceRule dual retired (API + Desktop automation).
-   * Sole body in @memoflow/utils/shared/build-recurrence-rule.
-   * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
-   * Soft residual 1013: buildReminderTemplateInput dual retired.
-   * Does not flip §13.2 checkboxes.
+   * The old API/Desktop automation executors were deleted with AgentHost. Their
+   * two utils-only composition helpers had no remaining production consumers,
+   * so keeping them would preserve a misleading legacy execution surface.
    */
-  describe('buildRecurrenceRule dual retired (residual 1015)', () => {
+  describe('retired Goal automation helper surface', () => {
     const sharedDir = __dirname;
-    const sole = readFileSync(resolve(sharedDir, 'build-recurrence-rule.ts'), 'utf8');
     const index = readFileSync(resolve(sharedDir, 'index.ts'), 'utf8');
-    const api = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
-    const desktop = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
+    const retiredPaths = [
+      resolve(sharedDir, 'build-recurrence-rule.ts'),
+      resolve(sharedDir, 'build-reminder-template-input.ts'),
+      resolve(sharedDir, '../../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts'),
+      resolve(sharedDir, '../../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts'),
+    ];
 
-    it('owns sole buildRecurrenceRule helper body and shared barrel export', () => {
-      expect(sole).toContain('Residual 1015');
-      expect(sole).toMatch(/export function buildRecurrenceRule\b/);
-      expect(sole).toContain("FREQUENCY_WEEKLY = 'Weekly'");
-      expect(sole).toContain("FREQUENCY_DAILY = 'Daily'");
-      expect(sole).toContain('now.getDay()');
-      expect(index).toContain("export * from './build-recurrence-rule'");
-    });
-
-    it('API + Desktop automation executors import sole without local dual bodies', () => {
-      for (const [label, source] of [
-        ['api', api],
-        ['desktop', desktop],
-      ] as const) {
-        expect(source, label).toContain('Residual 1015');
-        expect(source, label).toContain("from '@memoflow/utils/shared'");
-        expect(source, label).toMatch(/buildRecurrenceRule/);
-        expect(source, label).not.toMatch(/function buildRecurrenceRule\b/);
-        expect(source, label).not.toMatch(/private buildRecurrenceRule\b/);
-        expect(source, label).toContain('buildRecurrenceRule(taskTemplate.cadence)');
-        expect(source, label).not.toContain('this.buildRecurrenceRule');
-      }
-    });
-
-    it('adapters drop local DayOfWeek/RecurrenceFrequency dual usage for recurrence build', () => {
-      for (const [label, source] of [
-        ['api', api],
-        ['desktop', desktop],
-      ] as const) {
-        expect(source, label).not.toMatch(/RecurrenceFrequency\.Weekly/);
-        expect(source, label).not.toMatch(/RecurrenceFrequency\.Daily/);
-        expect(source, label).not.toMatch(/DayOfWeek/);
-      }
-    });
-
-    it('maps once/daily/weekly cadences onto recurrence config | null', () => {
-      expect(buildRecurrenceRule('once')).toBeNull();
-
-      const fixed = new Date('2026-07-23T12:00:00.000Z');
-      const weekly = buildRecurrenceRule('weekly', fixed);
-      expect(weekly?.frequency).toBe('Weekly');
-      expect(weekly?.interval).toBe(1);
-      expect(weekly?.daysOfWeek).toEqual([fixed.getDay()]);
-      expect(weekly?.endDate).toBeNull();
-      expect(weekly?.occurrences).toBeNull();
-
-      const daily = buildRecurrenceRule('daily', fixed);
-      expect(daily?.frequency).toBe('Daily');
-      expect(daily?.interval).toBe(1);
-      expect(daily?.daysOfWeek).toEqual([]);
-    });
-  });
-}
-
-// --- merged from build-reminder-template-input-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 1013: buildReminderTemplateInput dual retired (API + Desktop automation).
-   * Sole body in @memoflow/utils/shared/build-reminder-template-input.
-   * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
-   * Soft residual 1007: reminder time-of-day helpers remain sole dependency.
-   * Soft residual 835: activeTime uses activatedAt only.
-   * Does not flip §13.2 checkboxes.
-   */
-  describe('buildReminderTemplateInput dual retired (residual 1013)', () => {
-    const sharedDir = __dirname;
-    const sole = readFileSync(resolve(sharedDir, 'build-reminder-template-input.ts'), 'utf8');
-    const index = readFileSync(resolve(sharedDir, 'index.ts'), 'utf8');
-    const api = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
-    const desktop = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
-
-    it('owns sole buildReminderTemplateInput helper body and shared barrel export', () => {
-      expect(sole).toContain('Residual 1013');
-      expect(sole).toMatch(/export function buildReminderTemplateInput\b/);
-      expect(sole).toContain('activatedAt: startTime');
-      expect(sole).not.toMatch(/startDate\s*:/);
-      expect(sole).toContain('DAILY_REVIEW_INTERVAL_MINUTES');
-      expect(sole).toContain('normalizeReminderTimeOfDay');
-      expect(sole).toContain('buildReminderStartTimestamp');
-      expect(index).toContain("export * from './build-reminder-template-input'");
-    });
-
-    it('API + Desktop automation executors import sole without local dual bodies', () => {
-      for (const [label, source] of [
-        ['api', api],
-        ['desktop', desktop],
-      ] as const) {
-        expect(source, label).toContain('Residual 1013');
-        expect(source, label).toContain("from '@memoflow/utils/shared'");
-        expect(source, label).toMatch(/buildReminderTemplateInput/);
-        expect(source, label).not.toMatch(/function buildReminderTemplateInput\b/);
-        expect(source, label).not.toMatch(/const DAILY_REVIEW_INTERVAL_MINUTES\b/);
-        expect(source, label).not.toMatch(/function normalizeReminderTimeOfDay\b/);
-        expect(source, label).toContain('buildReminderTemplateInput(reminder)');
-      }
-    });
-
-    it('adapters drop local reminder enum dual usage for template build', () => {
-      for (const [label, source] of [
-        ['api', api],
-        ['desktop', desktop],
-      ] as const) {
-        expect(source, label).not.toMatch(/ReminderType\.OneTime/);
-        expect(source, label).not.toMatch(/TriggerType\.FixedTime/);
-        expect(source, label).not.toMatch(/NotificationChannel\.InApp/);
-      }
-    });
-
-    it('maps once/daily/weekly previews onto CreateReminderTemplateReq shape', () => {
-      const once = buildReminderTemplateInput(
-        {
-          title: 'Once',
-          description: 'd',
-          timeOfDay: '10:30',
-          cadence: 'once',
-          importance: 'Vital',
-        },
-        new Date('2026-07-23T08:00:00.000Z').getTime(),
-      );
-      expect(once.type).toBe(ReminderType.OneTime);
-      expect(once.trigger.type).toBe(TriggerType.FixedTime);
-      expect(once.trigger.fixedTime?.time).toBe('10:30');
-      expect(once.activeTime.activatedAt).toBeTypeOf('number');
-      expect(once.notificationConfig.channels).toEqual([NotificationChannel.InApp]);
-      expect(once.tags).toEqual(['goal-agent']);
-
-      const daily = buildReminderTemplateInput(
-        {
-          title: 'Daily',
-          description: undefined,
-          timeOfDay: '09:00',
-          cadence: 'daily',
-          importance: 'Moderate',
-        },
-        new Date('2026-07-23T08:00:00.000Z').getTime(),
-      );
-      expect(daily.type).toBe(ReminderType.Recurring);
-      expect(daily.trigger.type).toBe(TriggerType.Interval);
-      expect(daily.trigger.interval?.minutes).toBe(DAILY_REVIEW_INTERVAL_MINUTES);
-      expect(daily.notificationConfig.body).toBeNull();
-
-      const weekly = buildReminderTemplateInput(
-        {
-          title: 'Weekly',
-          description: 'w',
-          timeOfDay: 'bad',
-          cadence: 'weekly',
-          importance: 'Minor',
-        },
-        new Date('2026-07-23T08:00:00.000Z').getTime(),
-      );
-      expect(weekly.trigger.interval?.minutes).toBe(WEEKLY_REVIEW_INTERVAL_MINUTES);
-      // invalid timeOfDay falls back via residual 1007 sole
-      expect(weekly.trigger.interval?.startTime).toBeTypeOf('number');
+    it('keeps the retired helper and AgentHost executor surfaces deleted', () => {
+      for (const path of retiredPaths) expect(existsSync(path), path).toBe(false);
+      expect(index).not.toContain("export * from './build-recurrence-rule'");
+      expect(index).not.toContain("export * from './build-reminder-template-input'");
     });
   });
 }
@@ -300,9 +122,9 @@ import { ReminderType, TriggerType, NotificationChannel } from '@memoflow/contra
     const sharedDir = __dirname;
     const sole = readFileSync(resolve(sharedDir, 'error-message.ts'), 'utf8');
     const index = readFileSync(resolve(sharedDir, 'index.ts'), 'utf8');
-    const aiRuntime = readFileSync(
-      resolve(sharedDir, '../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
-      'utf8',
+    const legacyAiRuntimePath = resolve(
+      sharedDir,
+      '../../../ai/src/server/infrastructure/runtime/ai-runtime.ts',
     );
     const localVault = readFileSync(
       resolve(
@@ -328,16 +150,12 @@ import { ReminderType, TriggerType, NotificationChannel } from '@memoflow/contra
       expect(index).toContain("export * from './error-message'");
     });
 
-    it('AI runtime + local vault import sole without local dual bodies', () => {
-      for (const [label, source] of [
-        ['ai-runtime', aiRuntime],
-        ['useLocalVault', localVault],
-      ] as const) {
-        expect(source, label).toContain('Residual 999');
-        expect(source, label).toContain("import { errorMessage } from '@memoflow/utils/shared'");
-        expect(source, label).not.toMatch(/function errorMessage\b/);
-        expect(source, label).toContain('errorMessage(');
-      }
+    it('keeps the current local-vault consumer on the sole helper and the legacy AI runtime deleted', () => {
+      expect(localVault).toContain('Residual 999');
+      expect(localVault).toContain("import { errorMessage } from '@memoflow/utils/shared'");
+      expect(localVault).not.toMatch(/function errorMessage\b/);
+      expect(localVault).toContain('errorMessage(');
+      expect(existsSync(legacyAiRuntimePath)).toBe(false);
     });
 
     it('database CLI scripts dual retired onto sole (residual 1019)', () => {
@@ -896,154 +714,21 @@ import { ReminderType, TriggerType, NotificationChannel } from '@memoflow/contra
   });
 }
 
-// --- merged from preview-text-dual.surface.spec.ts ---
+// --- AI-VNEXT-07: retired automation-only formatting helpers ---
 {
-  /**
-   * Residual 1011: previewText dual retired (AI package re-export + API automation).
-   * Sole body in @memoflow/utils/shared/preview-text (default maxLength 240).
-   * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
-   * Soft residual 1009: readNestedNumber dual retired (read-nested-number-dual.surface.spec.ts).
-   * Soft residual 995: AI consumers keep package-local re-export path (preview-text.ts).
-   * Does not flip §13.2 checkboxes.
-   */
-  describe('previewText dual retired (residual 1011)', () => {
+  describe('retired automation-only formatting helpers', () => {
     const sharedDir = __dirname;
-    const sole = readFileSync(resolve(sharedDir, 'preview-text.ts'), 'utf8');
     const index = readFileSync(resolve(sharedDir, 'index.ts'), 'utf8');
-    const aiReexport = readFileSync(
+    const retiredPaths = [
+      resolve(sharedDir, 'preview-text.ts'),
+      resolve(sharedDir, 'read-nested-number.ts'),
       resolve(sharedDir, '../../../ai/src/shared/preview-text.ts'),
-      'utf8',
-    );
-    const api = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
+    ];
 
-    it('owns sole previewText helper body and shared barrel export', () => {
-      expect(sole).toContain('Residual 1011');
-      expect(sole).toMatch(/export function previewText\b/);
-      expect(sole).toContain("value.replace(/\\s+/g, ' ')");
-      expect(sole).toContain('maxLength = 240');
-      expect(sole).toContain('maxLength - 3');
-      expect(sole).toContain('...');
-      expect(index).toContain("export * from './preview-text'");
-    });
-
-    it('AI package re-exports utils sole without local dual body', () => {
-      expect(aiReexport).toContain('Residual 995');
-      expect(aiReexport).toContain('Residual 1011');
-      expect(aiReexport).toContain("export { previewText } from '@memoflow/utils/shared'");
-      expect(aiReexport).not.toMatch(/export function previewText\b/);
-      expect(aiReexport).not.toContain('maxLength = 240');
-    });
-
-    it('API automation imports sole without local dual body and keeps maxLength 200', () => {
-      expect(api).toContain('Residual 1011');
-      expect(api).toContain("from '@memoflow/utils/shared'");
-      expect(api).toMatch(/previewText/);
-      expect(api).not.toMatch(/function previewText\b/);
-      expect(api).toMatch(/previewText\([^)]+,\s*200\)/);
-      expect(api).toContain('previewText(input.request.idea, 200)');
-      expect(api).toContain('previewText(action.rationale, 200)');
-    });
-
-    it('collapses whitespace and truncates with ellipsis', () => {
-      expect(previewText(undefined)).toBeUndefined();
-      expect(previewText(null)).toBeUndefined();
-      expect(previewText('')).toBeUndefined();
-      expect(previewText('  hello   world  ')).toBe('hello world');
-      expect(previewText('abcdefghij', 7)).toBe('abcd...');
-      expect(previewText('short', 240)).toBe('short');
-      // Default maxLength is 240 (utils sole); callers may pass 200.
-      const long = 'x'.repeat(250);
-      expect(previewText(long)?.length).toBe(240);
-      expect(previewText(long)?.endsWith('...')).toBe(true);
-      expect(previewText(long, 200)?.length).toBe(200);
-    });
-  });
-}
-
-// --- merged from read-nested-number-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 1009: readNestedNumber dual retired (API + Desktop automation executors).
-   * Sole body in @memoflow/utils/shared/read-nested-number.
-   * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
-   * Soft residual 1011: previewText dual retired (utils sole; API maxLength 200 call sites).
-   * Does not flip §13.2 checkboxes.
-   */
-  describe('readNestedNumber dual retired (residual 1009)', () => {
-    const sharedDir = __dirname;
-    const sole = readFileSync(resolve(sharedDir, 'read-nested-number.ts'), 'utf8');
-    const index = readFileSync(resolve(sharedDir, 'index.ts'), 'utf8');
-    const api = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
-    const desktop = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
-
-    it('owns sole readNestedNumber helper body and shared barrel export', () => {
-      expect(sole).toContain('Residual 1009');
-      expect(sole).toMatch(/export function readNestedNumber\b/);
-      expect(sole).toContain("typeof current !== 'object'");
-      expect(sole).toContain("typeof current === 'number'");
-      expect(index).toContain("export * from './read-nested-number'");
-    });
-
-    it('API + Desktop automation executors import sole without local dual bodies', () => {
-      for (const [label, source] of [
-        ['api', api],
-        ['desktop', desktop],
-      ] as const) {
-        expect(source, label).toContain('Residual 1009');
-        expect(source, label).toContain("from '@memoflow/utils/shared'");
-        expect(source, label).toMatch(/readNestedNumber/);
-        expect(source, label).not.toMatch(/function readNestedNumber\b/);
-        expect(source, label).toContain("readNestedNumber(context.dashboard, ['stats', 'activeGoals'])");
-        expect(source, label).toContain("readNestedNumber(context.taskDashboard, ['summary', 'overdue'])");
-      }
-    });
-
-    it('API previewText dual retired to utils sole (residual 1011)', () => {
-      expect(api).toContain('Residual 1011');
-      expect(api).toContain("from '@memoflow/utils/shared'");
-      expect(api).not.toMatch(/function previewText\b/);
-      expect(api).toMatch(/previewText\([^)]+,\s*200\)/);
-      const aiReexport = readFileSync(
-        resolve(sharedDir, '../../../ai/src/shared/preview-text.ts'),
-        'utf8',
-      );
-      const utilsSole = readFileSync(resolve(sharedDir, 'preview-text.ts'), 'utf8');
-      expect(aiReexport).toContain('Residual 1011');
-      expect(aiReexport).toContain("export { previewText } from '@memoflow/utils/shared'");
-      expect(utilsSole).toContain('Residual 1011');
-      expect(utilsSole).toContain('maxLength = 240');
-    });
-
-    it('walks nested number paths and returns 0 for missing/non-number leaves', () => {
-      const source = {
-        stats: { activeGoals: 3 },
-        summary: { overdue: 2 },
-        bad: { value: 'nope' },
-      };
-      expect(readNestedNumber(source, ['stats', 'activeGoals'])).toBe(3);
-      expect(readNestedNumber(source, ['summary', 'overdue'])).toBe(2);
-      expect(readNestedNumber(source, ['missing', 'x'])).toBe(0);
-      expect(readNestedNumber(source, ['bad', 'value'])).toBe(0);
-      expect(readNestedNumber(null, ['stats'])).toBe(0);
-      expect(readNestedNumber(source, [])).toBe(0);
+    it('keeps dead preview/read-number helper surfaces deleted', () => {
+      for (const path of retiredPaths) expect(existsSync(path), path).toBe(false);
+      expect(index).not.toContain("export * from './preview-text'");
+      expect(index).not.toContain("export * from './read-nested-number'");
     });
   });
 }
@@ -1054,27 +739,18 @@ import { ReminderType, TriggerType, NotificationChannel } from '@memoflow/contra
    * Residual 1007: normalizeReminderTimeOfDay + buildReminderStartTimestamp dual retired.
    * Sole bodies in @memoflow/utils/shared/reminder-time-of-day.
    * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
-   * Soft residual 1013: API/Desktop compose via buildReminderTemplateInput sole (no direct import).
+   * AI-VNEXT-07: the retired Goal automation composer/executors stay deleted.
    * Does not flip §13.2 checkboxes.
    */
   describe('reminder time-of-day dual retired (residual 1007)', () => {
     const sharedDir = __dirname;
     const sole = readFileSync(resolve(sharedDir, 'reminder-time-of-day.ts'), 'utf8');
     const index = readFileSync(resolve(sharedDir, 'index.ts'), 'utf8');
-    const api = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
-    const desktop = readFileSync(
-      resolve(
-        sharedDir,
-        '../../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts',
-      ),
-      'utf8',
-    );
+    const retiredAutomationPaths = [
+      resolve(sharedDir, 'build-reminder-template-input.ts'),
+      resolve(sharedDir, '../../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts'),
+      resolve(sharedDir, '../../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts'),
+    ];
     const goalWorkflow = readFileSync(
       resolve(
         sharedDir,
@@ -1099,27 +775,8 @@ import { ReminderType, TriggerType, NotificationChannel } from '@memoflow/contra
       expect(index).toContain("export * from './reminder-time-of-day'");
     });
 
-    it('API + Desktop automation executors keep residual 1007 marker without local dual bodies', () => {
-      const composer = readFileSync(
-        resolve(sharedDir, 'build-reminder-template-input.ts'),
-        'utf8',
-      );
-      expect(composer).toContain('normalizeReminderTimeOfDay');
-      expect(composer).toContain('buildReminderStartTimestamp');
-      expect(composer).toContain("from './reminder-time-of-day'");
-      for (const [label, source] of [
-        ['api', api],
-        ['desktop', desktop],
-      ] as const) {
-        expect(source, label).toContain('Residual 1007');
-        expect(source, label).toContain('Residual 1013');
-        expect(source, label).toContain("from '@memoflow/utils/shared'");
-        expect(source, label).toContain('buildReminderTemplateInput');
-        expect(source, label).not.toMatch(/function normalizeReminderTimeOfDay\b/);
-        expect(source, label).not.toMatch(/function buildReminderStartTimestamp\b/);
-        expect(source, label).not.toMatch(/const DEFAULT_REMINDER_TIME_OF_DAY\b/);
-        expect(source, label).not.toMatch(/const REMINDER_TIME_OF_DAY_PATTERN\b/);
-      }
+    it('keeps retired Goal automation composer/executors deleted', () => {
+      for (const path of retiredAutomationPaths) expect(existsSync(path), path).toBe(false);
     });
 
     it('app-vue goal workflow + persistence import sole without local dual pattern bodies', () => {
@@ -1127,7 +784,6 @@ import { ReminderType, TriggerType, NotificationChannel } from '@memoflow/contra
         ['useAIGoalWorkflow', goalWorkflow],
         ['useAIWorkflowPersistence', workflowPersistence],
       ] as const) {
-        expect(source, label).toContain('Residual 1007');
         expect(source, label).toContain("from '@memoflow/utils/shared'");
         expect(source, label).toContain('normalizeReminderTimeOfDay');
         expect(source, label).not.toMatch(/function normalizeReminderTimeOfDay\b/);

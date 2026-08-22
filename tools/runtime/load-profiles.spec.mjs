@@ -6,7 +6,6 @@ import { resolveLocalDockerHostPorts } from './load-profiles.mjs';
 const machinePorts = {
   API_HOST_PORT: '12136',
   WEB_HOST_PORT: '12137',
-  AI_SERVICE_HOST_PORT: '12138',
   POWERSYNC_HOST_PORT: '12139',
   POSTGRES_HOST_PORT: '12140',
   REDIS_HOST_PORT: '12141',

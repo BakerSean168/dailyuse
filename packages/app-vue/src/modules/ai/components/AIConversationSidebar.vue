@@ -97,49 +97,7 @@
         {{ t('aiAssistant.dialogs.chat.noSavedConversations') }}
       </div>
 
-      <!-- 折叠段：AgentRun 历史 / 最近目标 / 最近笔记（默认收起，§1-5） -->
-      <Collapsible v-model:open="agentRunsOpen" class="mt-3 border-t pt-2">
-        <CollapsibleTrigger
-          class="flex w-full items-center justify-between rounded px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
-          data-testid="ai-sidebar-section-agent-runs"
-        >
-          {{ t('aiAssistant.dialogs.agent.recentRuns') }}
-          <ChevronDown
-            class="h-3.5 w-3.5 transition-transform"
-            :class="agentRunsOpen ? 'rotate-180' : ''"
-          />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <button
-            v-for="run in agentRuns"
-            :key="run.runId"
-            type="button"
-            class="mb-1 flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            data-testid="agent-run-list-item"
-            @click="$emit('select-agent-run', run)"
-          >
-            <Bot class="mt-0.5 h-4 w-4 shrink-0" />
-            <span class="min-w-0 flex-1">
-              <span class="block truncate font-medium text-foreground">
-                {{ formatAgentType(run.agentType) }}
-              </span>
-              <span class="block truncate text-xs">
-                {{ formatRunStatus(run.status) }}
-              </span>
-            </span>
-          </button>
-          <div v-if="agentRunsLoading" class="rounded-lg px-3 py-2 text-sm text-muted-foreground">
-            {{ t('aiAssistant.dialogs.agent.loadingRuns') }}
-          </div>
-          <div
-            v-else-if="!agentRuns.length"
-            class="rounded-lg px-3 py-2 text-sm text-muted-foreground"
-          >
-            {{ t('aiAssistant.dialogs.agent.noRecentRuns') }}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
+      <!-- Recent Goal / Knowledge shortcuts; runtime runs are Mastra-owned and are not listed here. -->
       <Collapsible v-model:open="recentGoalsOpen" class="mt-1">
         <CollapsibleTrigger
           class="flex w-full items-center justify-between rounded px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
@@ -261,7 +219,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@memoflow/ui-vue-shadcn';
-import type { AgentRun } from '@memoflow/contracts/ai';
 import type {
   AIWorkspaceRecentGoal,
   AIWorkspaceRecentKnowledgeNote,
@@ -271,7 +228,6 @@ import type {
 const props = withDefaults(
   defineProps<{
     conversations: ConversationSummary[];
-    agentRuns: AgentRun[];
     recentGoals: AIWorkspaceRecentGoal[];
     recentKnowledgeNotes: AIWorkspaceRecentKnowledgeNote[];
     /** When true, show verification-required degrade instead of empty notes. */
@@ -280,7 +236,6 @@ const props = withDefaults(
     recentKnowledgeNotesErrorMessageKey?: string | null;
     activeConversationId: string;
     loading: boolean;
-    agentRunsLoading: boolean;
     variant?: 'desktop' | 'mobile';
     showClose?: boolean;
   }>(),
@@ -298,7 +253,6 @@ defineEmits<{
   'open-settings': [];
   close: [];
   select: [item: ConversationSummary];
-  'select-agent-run': [run: AgentRun];
   'select-goal': [id: string];
   'select-knowledge-note': [id: string];
   delete: [id: string];
@@ -307,7 +261,6 @@ defineEmits<{
 const { t } = useI18n();
 
 // 折叠段默认收起（回溯/快捷入口非日常路径，§1-5）
-const agentRunsOpen = ref(false);
 const recentGoalsOpen = ref(false);
 const recentNotesOpen = ref(false);
 
@@ -315,30 +268,6 @@ const sidebarClass =
   props.variant === 'mobile'
     ? 'flex h-full min-h-0 w-full flex-col bg-sidebar'
     : 'hidden min-h-0 w-64 shrink-0 flex-col border-r bg-sidebar md:flex';
-
-function formatAgentType(agentType: AgentRun['agentType']) {
-  const labels: Record<AgentRun['agentType'], string> = {
-    'goal.create': t('aiAssistant.dialogs.agent.typeLabels.goalCreate'),
-    'knowledge.qa': t('aiAssistant.dialogs.agent.typeLabels.knowledgeQa'),
-    'knowledge.generate': t('aiAssistant.dialogs.agent.typeLabels.knowledgeGenerate'),
-    'task.create': t('aiAssistant.dialogs.agent.typeLabels.taskCreate'),
-  };
-  return labels[agentType];
-}
-
-function formatRunStatus(status: AgentRun['status']) {
-  const labels: Record<AgentRun['status'], string> = {
-    pending: t('aiAssistant.dialogs.agent.statusLabels.pending'),
-    running: t('aiAssistant.dialogs.agent.statusLabels.running'),
-    waiting_clarification: t('aiAssistant.dialogs.agent.statusLabels.waitingClarification'),
-    waiting_approval: t('aiAssistant.dialogs.agent.statusLabels.waitingApproval'),
-    waiting_execution: t('aiAssistant.dialogs.agent.statusLabels.waitingExecution'),
-    completed: t('aiAssistant.dialogs.agent.statusLabels.completed'),
-    failed: t('aiAssistant.dialogs.agent.statusLabels.failed'),
-    cancelled: t('aiAssistant.dialogs.agent.statusLabels.cancelled'),
-  };
-  return labels[status];
-}
 
 function formatGoalMeta(goal: AIWorkspaceRecentGoal): string {
   const parts = [goal.status];

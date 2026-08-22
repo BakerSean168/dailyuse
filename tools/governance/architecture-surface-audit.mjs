@@ -221,6 +221,53 @@ function auditReadPorts(manifest) {
   }
 }
 
+// ─────────────────────── AI Mastra runtime authority ───────────────────────
+
+function auditAiRuntimeAuthority(manifest) {
+  const rule = manifest.aiRuntimeAuthority;
+  auditedPaths.push(`ai-runtime-authority:${rule.ruleId}`);
+
+  const runtimeFile = manifestPath(rule.runtime.file);
+  auditedPaths.push(rule.runtime.file);
+  if (!existsSync(runtimeFile)) {
+    violations.push(`${rule.ruleId}: canonical runtime file missing ${rule.runtime.file}`);
+  } else {
+    const source = parseSource(readFileSync(runtimeFile, 'utf8'), rule.runtime.file);
+    const classDecl = findClassDeclaration(source, rule.runtime.class);
+    if (!classDecl) {
+      violations.push(`${rule.ruleId}: ${rule.runtime.class} missing in ${rule.runtime.file}`);
+    } else {
+      for (const method of rule.runtime.requiredMethods) {
+        if (!findClassMethod(classDecl, method)) {
+          violations.push(`${rule.ruleId}: required runtime method ${method} missing in ${rule.runtime.file}`);
+        }
+      }
+    }
+  }
+
+  for (const composition of rule.compositions) {
+    auditedPaths.push(composition.file);
+    const absolute = manifestPath(composition.file);
+    if (!existsSync(absolute)) {
+      violations.push(`${rule.ruleId}: composition root missing ${composition.file}`);
+      continue;
+    }
+    const source = readFileSync(absolute, 'utf8');
+    for (const ref of composition.requiredRefs) {
+      if (!source.includes(ref)) {
+        violations.push(`${rule.ruleId}: composition ref "${ref}" missing in ${composition.file}`);
+      }
+    }
+  }
+
+  for (const retiredFile of rule.retiredFiles) {
+    auditedPaths.push(`retired:${retiredFile}`);
+    if (existsSync(manifestPath(retiredFile))) {
+      violations.push(`${rule.ruleId}: retired runtime file must stay absent ${retiredFile}`);
+    }
+  }
+}
+
 // ─────────────────────────── AI approval rules ───────────────────────────
 
 function auditAiApproval(manifest) {
@@ -394,6 +441,7 @@ function hasExportedType(sourceFile, name) {
 }
 
 auditReadPorts(MANIFEST);
+if (MANIFEST.aiRuntimeAuthority) auditAiRuntimeAuthority(MANIFEST);
 if (MANIFEST.aiApproval) auditAiApproval(MANIFEST);
 if (MANIFEST.reliableReceipt) auditReliableReceipt(MANIFEST);
 

@@ -1,0 +1,41 @@
+{
+  "recordedAt": "2026-08-22T04:20:00.000Z",
+  "config": {
+    "id": "mastra-vnext-candidate",
+    "runtime": "mastra",
+    "provider": "offline-replay",
+    "model": "recorded-reference-vnext",
+    "promptVersion": "assistant-vnext-2026-08-22",
+    "toolPolicyVersion": "mastra-tools-v2",
+    "source": "recorded_replay"
+  },
+  "observations": [
+    {
+      "caseId": "open-chat-actionable-summary",
+      "output": "Mastra is the sole runtime. The next action is to run the evaluation, governance, and end-to-end release gates.",
+      "latencyMs": 185,
+      "tokenUsage": { "promptTokens": 790, "completionTokens": 160, "totalTokens": 950 },
+      "estimatedCostUsd": 0.0002145
+    },
+    {
+      "caseId": "goal-planning-structured-plan",
+      "output": {
+        "goal": { "title": "Ship AI vNext migration" },
+        "tasks": [{ "title": "Run governance gates" }, { "title": "Run browser E2E" }]
+      },
+      "latencyMs": 295,
+      "tokenUsage": { "promptTokens": 1190, "completionTokens": 390, "totalTokens": 1580 },
+      "estimatedCostUsd": 0.0004125
+    },
+    {
+      "caseId": "knowledge-answer-grounded-citation",
+      "output": {
+        "answer": "Mastra is the canonical Assistant and Workflow runtime; product data remains in MemoFlow domain stores.",
+        "citations": [{ "sourceId": "ai-vnext-plan", "title": "Mastra Native AI vNext Refactor" }]
+      },
+      "latencyMs": 225,
+      "tokenUsage": { "promptTokens": 900, "completionTokens": 215, "totalTokens": 1115 },
+      "estimatedCostUsd": 0.000264
+    }
+  ]
+}

@@ -10,10 +10,6 @@ export const LOCAL_DOCKER_PRODUCT_SERVICES = {
     hostPortEnv: 'API_HOST_PORT',
     targetPort: 3000,
   },
-  'ai-service': {
-    hostPortEnv: 'AI_SERVICE_HOST_PORT',
-    targetPort: 8100,
-  },
 };
 
 function runCommand(command, args, options = {}) {

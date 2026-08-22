@@ -31,7 +31,6 @@ import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestrat
 import { createGoalPowerSyncScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
 import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { createLocalVaultRuntime } from '@memoflow/repository/electron';
-import { getAIServiceRuntimeConfig } from '@memoflow/ai';
 import { createSchedulePowerSyncRepositories } from '@memoflow/schedule';
 import { composeGovernance } from './runtime/compose-governance';
 import { composeGoal } from './runtime/compose-goal';
@@ -45,7 +44,6 @@ import { composeDataPortability } from './runtime/compose-data-portability';
 import { composeAI } from './runtime/compose-ai';
 import { composeRepository } from './runtime/compose-repository';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
-import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
 import {
@@ -307,11 +305,6 @@ async function registerBusinessModules(
     knowledgeNotePersistence: new DesktopKnowledgeNotePersistenceAdapter(localVaultRuntime),
     knowledgeSourcePort: new DesktopKnowledgeSourceAdapter(localVaultRuntime),
     analyticsReadPort: analyticsReadAdapter,
-    automationToolExecutor: new DesktopAutomationToolExecutorAdapter(
-      db,
-      localVaultRuntime,
-      analyticsReadAdapter,
-    ),
     goalApplicationPort: goalComposed.applicationPort,
     taskApplicationPort: taskComposed.applicationPort,
     reminderApplicationPort: reminderComposed.applicationPort,
@@ -319,7 +312,6 @@ async function registerBusinessModules(
       kind: 'libsql',
       url: pathToFileURL(path.join(profilePaths.storageDir, 'mastra.db')).href,
     },
-    aiServiceRuntimeConfig: getAIServiceRuntimeConfig() ?? undefined,
   });
 
   const dataPortabilityElectronModule = composeDataPortability({ db });

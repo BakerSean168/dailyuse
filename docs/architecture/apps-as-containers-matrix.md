@@ -9,9 +9,8 @@
 |-----|------|----------|------------|
 | `web` | Web thin shell | Vue DI、路由、startup hook、theme sync | domain/application 实现、业务 service |
 | `mobile` | Mobile thin shell | React DI、路由、startup hook | domain/application 实现、业务 service |
-| `api` | Server runtime container | HTTP 路由注册、cron 调度、DI 装配、PowerSync adapter edge | domain 实现、application use-case 实现 |
-| `desktop` | Desktop runtime container | IPC 注册、window 管理、auth lifecycle、startup hook、DI 装配 | domain/application 实现、业务 service |
-| `ai-service` | AI service container | FastAPI 路由、eval runner、model adapter | prompt 模板业务逻辑、plan synthesis |
+| `api` | Server runtime container | HTTP 路由注册、cron 调度、DI 装配、PowerSync adapter edge、Mastra AI runtime wiring | domain 实现、application use-case 实现 |
+| `desktop` | Desktop runtime container | IPC 注册、window 管理、auth lifecycle、startup hook、DI 装配、profile-local Mastra AI runtime wiring | domain/application 实现、业务 service |
 
 ## 边界规则
 
@@ -31,14 +30,8 @@ rg "class.*implements|export.*function.*Service|export.*class.*Repository" apps/
 rg "async.*create|async.*update|async.*delete" apps/api/src/modules/ --type ts -l
 ```
 
-## 迁移中的例外
+## 已完成的迁移
 
-以下位置是已知的"暂时留在 app 的厚逻辑"，已列入迁移计划：
-
-- `apps/ai-service/src/ai_service/services/goal_planning_service.py`（~1200 行）— goal planning，待拆分
-- `apps/ai-service/src/ai_service/evals/runner.py`（~1200 行）— eval runner，待拆分
-
-### 已完成的迁移
 
 - `apps/api/src/modules/powersync/module.ts` — 已拆分为 token-issuer / crud-executor / snapshot-*
 - `apps/api/src/shared/infrastructure/cron/` — 已改为工厂模式（`createCronScheduler()`），调用方持有生命周期

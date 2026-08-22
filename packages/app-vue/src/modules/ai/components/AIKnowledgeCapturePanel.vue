@@ -12,6 +12,7 @@
         <span class="rounded-full border bg-muted px-3 py-1 text-xs text-muted-foreground">{{
           knowledgeCaptureRun.status
         }}</span>
+        <AIRuntimeUsageBadge :usage="knowledgeCaptureRun.usage" />
         <span
           v-if="reviewDraft"
           class="rounded-full border bg-muted px-3 py-1 text-xs text-muted-foreground"
@@ -23,10 +24,7 @@
       <h2 v-if="reviewDraft" class="text-lg font-semibold text-foreground">
         {{ reviewDraft.title }}
       </h2>
-      <p
-        v-if="reviewDraft"
-        class="whitespace-pre-wrap text-sm leading-6 text-muted-foreground"
-      >
+      <p v-if="reviewDraft" class="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
         {{ reviewDraft.topic }}
       </p>
     </div>
@@ -47,14 +45,18 @@
       data-testid="knowledge-capture-workflow-recovery"
     >
       <p class="text-sm text-muted-foreground">
-        {{ knowledgeCaptureRun.suspension.message }}
+        {{
+          knowledgeCaptureRun.suspension.retryable
+            ? t('aiAssistant.dialogs.automation.recoveryRetryReady')
+            : t('aiAssistant.errors.workflowExecutionFailed')
+        }}
       </p>
       <p
-        v-for="failure in knowledgeCaptureRun.suspension.failures"
-        :key="failure.message"
+        v-for="(failure, index) in knowledgeCaptureRun.suspension.failures"
+        :key="`${failure.operation}-${failure.index ?? 'root'}-${failure.code}-${index}`"
         class="text-sm text-destructive"
       >
-        {{ failure.message }}
+        {{ failure.operation }} · {{ publicFailureMessage(failure) }}
       </p>
       <Button
         v-if="knowledgeCaptureRun.suspension.retryable"
@@ -78,14 +80,15 @@
       </p>
     </div>
 
-    <div
-      v-if="knowledgeCaptureRun.status === 'suspended' && reviewDraft"
-      class="flex gap-2"
-    >
+    <div v-if="knowledgeCaptureRun.status === 'suspended' && reviewDraft" class="flex gap-2">
       <Button data-testid="knowledge-capture-agent-confirm-run" @click="$emit('confirm')">
         {{ t('aiAssistant.dialogs.automation.confirm') }}
       </Button>
-      <Button variant="outline" data-testid="knowledge-capture-agent-cancel-run" @click="$emit('cancel')">
+      <Button
+        variant="outline"
+        data-testid="knowledge-capture-agent-cancel-run"
+        @click="$emit('cancel')"
+      >
         {{ t('common.cancel') }}
       </Button>
       <Button variant="ghost" @click="$emit('edit-started')">
@@ -99,10 +102,14 @@
 import { computed } from 'vue';
 import { Button } from '@memoflow/ui-vue-shadcn';
 import { useI18n } from 'vue-i18n';
-import type { AIWorkflowRunView } from '@memoflow/contracts/ai';
+import type { AIWorkflowExecutionFailure, AIWorkflowRunView } from '@memoflow/contracts/ai';
 import type { WorkflowMode } from '../composables/types';
+import AIRuntimeUsageBadge from './AIRuntimeUsageBadge.vue';
+import { getAIWorkflowFailureMessage } from '../composables/error';
 
 const { t } = useI18n();
+const publicFailureMessage = (failure: AIWorkflowExecutionFailure) =>
+  getAIWorkflowFailureMessage(failure, t);
 const props = defineProps<{
   toolMode: WorkflowMode;
   knowledgeCaptureRun: Extract<AIWorkflowRunView, { kind: 'knowledge.capture' }> | null;

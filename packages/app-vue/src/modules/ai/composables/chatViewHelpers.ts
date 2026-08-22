@@ -18,15 +18,10 @@ export interface WorkflowStatusParams {
   goalExecutionSummary: { status: string } | null;
   knowledgeQueryLoading: boolean;
   knowledgeAnswer: { evidenceStatus: 'grounded' | 'insufficient' } | null;
-  noteCreating: boolean;
-  noteAgentLoading: boolean;
-  noteAgentDraftReady: boolean;
-  noteSummary: { resolvedPath: string } | null;
-  /** Residual 431: task.create start in flight. */
   taskAgentLoading?: boolean;
-  taskAgentRun?: { run: { status: string } } | null;
-  /** knowledge.capture Mastra Workflow start in flight. */
+  taskWorkflowRun?: { status: string; suspension?: { type: string } | null } | null;
   knowledgeCaptureLoading?: boolean;
+  knowledgeCaptureRun?: { status: string; suspension?: { type: string } | null } | null;
 }
 
 /** Computes the workflow status text for the chat view. */
@@ -56,36 +51,28 @@ export function getWorkflowStatusText(
       return t('aiAssistant.chatPage.workflow.goalDraftReadyHint');
     return t('aiAssistant.chatPage.workflow.goalCollectingHint');
   }
-  if (params.toolMode === 'knowledge-generate') {
-    if (params.noteAgentLoading) return t('aiAssistant.dialogs.note.drafting');
-    if (params.noteCreating) return t('aiAssistant.dialogs.note.creating');
-    if (params.noteSummary)
-      return t('aiAssistant.chatPage.workflow.noteCreatedHint', {
-        path: params.noteSummary.resolvedPath,
-      });
-    if (params.noteAgentDraftReady) return t('aiAssistant.chatPage.workflow.noteDraftReadyHint');
-    return t('aiAssistant.chatPage.workflow.noteCollectingHint');
-  }
   if (params.toolMode === 'task-create') {
     if (params.taskAgentLoading) return t('aiAssistant.dialogs.agent.starting');
-    if (params.taskAgentRun?.run.status === 'waiting_approval') {
-      return t('aiAssistant.chatPage.workflow.taskAwaitingApprovalHint');
+    if (params.taskWorkflowRun?.status === 'suspended') {
+      return params.taskWorkflowRun.suspension?.type === 'clarification_required'
+        ? t('aiAssistant.chatPage.workflow.goalClarificationHint')
+        : t('aiAssistant.chatPage.workflow.taskAwaitingApprovalHint');
     }
+    if (params.taskWorkflowRun?.status === 'completed') return t('aiAssistant.dialogs.automation.executionRecorded');
     return t('aiAssistant.chatPage.workflow.taskCollectingHint');
   }
   if (params.toolMode === 'knowledge-capture') {
     if (params.knowledgeCaptureLoading) return t('aiAssistant.dialogs.agent.starting');
+    if (params.knowledgeCaptureRun?.status === 'suspended') {
+      return params.knowledgeCaptureRun.suspension?.type === 'clarification_required'
+        ? t('aiAssistant.chatPage.workflow.goalClarificationHint')
+        : t('aiAssistant.chatPage.workflow.noteDraftReadyHint');
+    }
+    if (params.knowledgeCaptureRun?.status === 'completed') return t('aiAssistant.dialogs.automation.executionRecorded');
     return t('aiAssistant.chatPage.workflow.knowledgeCaptureCollectingHint');
   }
   if (params.toolMode === 'knowledge-qa') {
     if (params.knowledgeQueryLoading) return t('aiAssistant.dialogs.knowledge.searching');
-    if (params.noteAgentLoading) return t('aiAssistant.dialogs.note.drafting');
-    if (params.noteCreating) return t('aiAssistant.dialogs.note.creating');
-    if (params.noteSummary)
-      return t('aiAssistant.chatPage.workflow.noteCreatedHint', {
-        path: params.noteSummary.resolvedPath,
-      });
-    if (params.noteAgentDraftReady) return t('aiAssistant.chatPage.workflow.noteDraftReadyHint');
     if (params.knowledgeAnswer?.evidenceStatus === 'grounded')
       return t('aiAssistant.dialogs.knowledge.grounded');
     if (params.knowledgeAnswer?.evidenceStatus === 'insufficient')

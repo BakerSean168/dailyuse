@@ -197,6 +197,7 @@ export function createTaskCreateWorkflow(input: {
           revisionInstruction: options.instruction,
           targetRevision: options.targetRevision,
         });
+        requestContext.setRaw('workflowRunId', runId);
         const decision = await input.planner.plan(
           {
             input: current.input,

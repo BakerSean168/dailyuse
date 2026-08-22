@@ -1,36 +1,33 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-
 import { afterEach, describe, expect, it } from 'vitest';
-
 import { AIEvaluationReportFileAdapter } from '../ai-evaluation-report-file.adapter';
 
 const tempDirs: string[] = [];
 
-async function createTempReportsRoot(): Promise<string> {
-  const tempDir = await mkdtemp(path.join(os.tmpdir(), 'memoflow-ai-evals-'));
-  tempDirs.push(tempDir);
-  await mkdir(path.join(tempDir, 'history'), { recursive: true });
-  await mkdir(path.join(tempDir, 'live-history'), { recursive: true });
-  return tempDir;
+async function tempRoot(prefix: string): Promise<string> {
+  const dir = await mkdtemp(path.join(os.tmpdir(), prefix));
+  tempDirs.push(dir);
+  await mkdir(path.join(dir, 'history'), { recursive: true });
+  await mkdir(path.join(dir, 'live-history'), { recursive: true });
+  return dir;
 }
 
-function buildReport(overrides: Record<string, unknown> = {}) {
-  // On-disk Python eval report shape (snake_case wire).
+function canonicalReport(overrides: Record<string, unknown> = {}) {
   return {
-    generated_at: '2026-03-27T12:00:00.000Z',
+    generatedAt: '2026-08-22T03:00:00.000Z',
     mode: 'deterministic',
-    cases_path: 'evals/regression_cases.json',
-    total_cases: 4,
-    passed_cases: 4,
-    failed_cases: 0,
-    pass_rate: 1,
-    by_type: { chat_sanity: 1, goal_planning: 1, knowledge_grounding: 2 },
-    failed_case_ids: [],
-    gate_passed: true,
-    gate_failures: [],
-    archive_path: 'reports/apps/ai-service/evals/history/2026-03-27T12-00-00.000Z.json',
+    casesPath: 'packages/ai/evals/core-cases.json',
+    totalCases: 3,
+    passedCases: 3,
+    failedCases: 0,
+    passRate: 1,
+    byType: { open_chat: 1, goal_planning: 1, knowledge_answer: 1 },
+    failedCaseIds: [],
+    gatePassed: true,
+    gateFailures: [],
+    archivePath: 'reports/apps/ai/evals/history/2026-08-22T03-00-00.000Z.json',
     results: [],
     ...overrides,
   };
@@ -41,62 +38,59 @@ afterEach(async () => {
 });
 
 describe('AIEvaluationReportFileAdapter', () => {
-  it('returns latest reports and sorted history entries', async () => {
-    const reportsRoot = await createTempReportsRoot();
-    await writeFile(
-      path.join(reportsRoot, 'latest.json'),
-      JSON.stringify(buildReport()),
-      'utf8',
-    );
+  it('reads canonical Mastra-native latest reports', async () => {
+    const reportsRoot = await tempRoot('memoflow-ai-evals-');
+    await writeFile(path.join(reportsRoot, 'latest.json'), JSON.stringify(canonicalReport()), 'utf8');
     await writeFile(
       path.join(reportsRoot, 'live-latest.json'),
       JSON.stringify(
-        buildReport({
+        canonicalReport({
+          generatedAt: '2026-08-22T04:00:00.000Z',
           mode: 'live',
-          provider: 'openai',
-          model: 'gpt-5.4',
-          archive_path: 'reports/apps/ai-service/evals/live-history/2026-03-27T12-05-00.000Z.json',
-        }),
-      ),
-      'utf8',
-    );
-    await writeFile(
-      path.join(reportsRoot, 'history', '2026-03-27T11-00-00.000Z.json'),
-      JSON.stringify(
-        buildReport({
-          generated_at: '2026-03-27T11:00:00.000Z',
-          archive_path: 'reports/apps/ai-service/evals/history/2026-03-27T11-00-00.000Z.json',
-        }),
-      ),
-      'utf8',
-    );
-    await writeFile(
-      path.join(reportsRoot, 'history', '2026-03-26T11-00-00.000Z.json'),
-      JSON.stringify(
-        buildReport({
-          generated_at: '2026-03-26T11:00:00.000Z',
-          archive_path: 'reports/apps/ai-service/evals/history/2026-03-26T11-00-00.000Z.json',
+          provider: 'provider-1',
+          model: 'model-1',
         }),
       ),
       'utf8',
     );
 
-    const adapter = new AIEvaluationReportFileAdapter({ reportsRoot });
-    const overview = await adapter.getOverview({ historyLimit: 1 });
+    const overview = await new AIEvaluationReportFileAdapter({ reportsRoot }).getOverview();
 
-    expect(overview.latest.deterministic?.mode).toBe('deterministic');
-    expect(overview.latest.live?.model).toBe('gpt-5.4');
-    expect(overview.history.deterministic).toHaveLength(1);
-    expect(overview.history.deterministic[0]?.fileName).toBe('2026-03-27T11-00-00.000Z.json');
-    expect(overview.history.live).toHaveLength(0);
+    expect(overview.latest.deterministic?.generatedAt).toBe('2026-08-22T03:00:00.000Z');
+    expect(overview.latest.live?.generatedAt).toBe('2026-08-22T04:00:00.000Z');
   });
 
-  it('returns empty history and missing latest reports when files are absent', async () => {
-    const reportsRoot = await createTempReportsRoot();
-    const adapter = new AIEvaluationReportFileAdapter({ reportsRoot });
+  it('sorts canonical history by generatedAt and applies the requested limit', async () => {
+    const reportsRoot = await tempRoot('memoflow-ai-evals-');
+    await writeFile(
+      path.join(reportsRoot, 'history', 'a.json'),
+      JSON.stringify(canonicalReport({ generatedAt: '2026-08-20T00:00:00.000Z' })),
+      'utf8',
+    );
+    await writeFile(
+      path.join(reportsRoot, 'history', 'b.json'),
+      JSON.stringify(canonicalReport({ generatedAt: '2026-08-22T00:00:00.000Z' })),
+      'utf8',
+    );
+    await writeFile(
+      path.join(reportsRoot, 'history', 'c.json'),
+      JSON.stringify(canonicalReport({ generatedAt: '2026-08-21T00:00:00.000Z' })),
+      'utf8',
+    );
 
-    const overview = await adapter.getOverview();
+    const overview = await new AIEvaluationReportFileAdapter({ reportsRoot }).getOverview({
+      historyLimit: 2,
+    });
 
+    expect(overview.history.deterministic.map((entry) => entry.generatedAt)).toEqual([
+      '2026-08-22T00:00:00.000Z',
+      '2026-08-21T00:00:00.000Z',
+    ]);
+  });
+
+  it('returns an empty overview when the canonical report root has no reports', async () => {
+    const reportsRoot = await tempRoot('memoflow-ai-evals-');
+    const overview = await new AIEvaluationReportFileAdapter({ reportsRoot }).getOverview();
     expect(overview.latest.deterministic).toBeUndefined();
     expect(overview.latest.live).toBeUndefined();
     expect(overview.history.deterministic).toEqual([]);

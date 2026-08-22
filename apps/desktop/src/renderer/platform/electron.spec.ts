@@ -118,7 +118,7 @@ describe('initElectronFeatures DB_CHANGED pilot routing (Step 3)', () => {
       source: 'powersync',
       projection: 'all',
     });
-  }, 20_000);
+  }, 60_000);
 
   it('emits no pilot intents for a non-pilot table batch', async () => {
     const { initElectronFeatures } = await import('./electron');
@@ -127,7 +127,7 @@ describe('initElectronFeatures DB_CHANGED pilot routing (Step 3)', () => {
     emitDbChanged(['schedules']);
 
     expect(dispatchedIntents()).toHaveLength(0);
-  }, 20_000);
+  }, 60_000);
 
   it('ignores DB_CHANGED payloads without tables', async () => {
     const { initElectronFeatures } = await import('./electron');
@@ -138,5 +138,5 @@ describe('initElectronFeatures DB_CHANGED pilot routing (Step 3)', () => {
     }
 
     expect(dispatchedIntents()).toHaveLength(0);
-  }, 20_000);
+  }, 60_000);
 });

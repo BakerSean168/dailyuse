@@ -212,6 +212,36 @@ describe('AI vNext runtime contracts', () => {
     expect(relative.success).toBe(true);
   });
 
+  it('accepts task.create recovery failures on the shared workflow view', () => {
+    const parsed = AIWorkflowRunViewSchema.parse({
+      runId: 'task-recovery-1',
+      kind: 'task.create',
+      conversationId: 'conversation-1',
+      status: 'suspended',
+      suspension: {
+        type: 'recovery_required',
+        message: 'The approved task plan could not be applied.',
+        retryable: true,
+        failures: [
+          {
+            operation: 'task_template',
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'internal persistence detail',
+            retryable: true,
+          },
+        ],
+      },
+      createdAt: 1,
+      updatedAt: 2,
+    });
+
+    expect(parsed.kind).toBe('task.create');
+    expect(parsed.suspension?.type).toBe('recovery_required');
+    if (parsed.suspension?.type === 'recovery_required') {
+      expect(parsed.suspension.failures[0]?.operation).toBe('task_template');
+    }
+  });
+
   it('projects typed knowledge.capture result receipt', () => {
     const parsed = AIWorkflowRunViewSchema.parse({
       runId: 'knowledge-1',

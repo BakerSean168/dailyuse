@@ -3,6 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: [
     'scripts/prepare-ai-knowledge-index-pgvector.ts',
+    'scripts/prepare-ai-vnext-runtime-state-retirement.ts',
     'scripts/prepare-goal-record-source-correlation.ts',
     'scripts/prepare-ai-provider-default-invariant.ts',
     'scripts/prepare-editor-workspace-natural-key.ts',

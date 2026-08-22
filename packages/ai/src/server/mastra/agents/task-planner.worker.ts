@@ -7,7 +7,13 @@ import {
   type TaskPlanDraft,
   type TaskPlanningDecision,
 } from '@memoflow/contracts/ai';
+import type { IAIExecutionLogPort } from '../../application/ports';
 import type { MastraModelResolver } from '../models/model-resolver';
+import {
+  normalizeMastraGenerateUsage,
+  recordPlannerExecution,
+  rememberResolvedPlannerModel,
+} from './planner-observability';
 
 function stringContext(requestContext: RequestContext, key: string): string | undefined {
   const value = requestContext.getRaw(key);
@@ -37,7 +43,10 @@ export interface TaskPlannerPort {
 export class TaskPlannerWorker implements TaskPlannerPort {
   readonly agent: Agent<'task-planner-worker'>;
 
-  constructor(modelResolver: MastraModelResolver) {
+  constructor(
+    modelResolver: MastraModelResolver,
+    private readonly executionLogPort?: IAIExecutionLogPort,
+  ) {
     this.agent = new Agent({
       id: 'task-planner-worker',
       name: 'Task Planner Worker',
@@ -60,13 +69,13 @@ export class TaskPlannerWorker implements TaskPlannerPort {
       model: async ({ requestContext }) => {
         const identityId = stringContext(requestContext, 'identityId');
         if (!identityId) throw new Error('Task Planner requires authenticated identityId');
-        return (
-          await modelResolver.resolve({
-            identityId,
-            providerId: stringContext(requestContext, 'providerId'),
-            modelId: stringContext(requestContext, 'modelId'),
-          })
-        ).model;
+        const resolved = await modelResolver.resolve({
+          identityId,
+          providerId: stringContext(requestContext, 'providerId'),
+          modelId: stringContext(requestContext, 'modelId'),
+        });
+        rememberResolvedPlannerModel(requestContext, resolved);
+        return resolved.model;
       },
     });
   }
@@ -98,10 +107,36 @@ export class TaskPlannerWorker implements TaskPlannerPort {
       .filter(Boolean)
       .join('\n\n');
 
-    const output = await this.agent.generate(prompt, {
-      requestContext,
-      structuredOutput: { schema: TaskPlanningDecisionSchema },
-    });
-    return TaskPlanningDecisionSchema.parse(output.object);
+    const startedAt = Date.now();
+    try {
+      const output = await this.agent.generate(prompt, {
+        requestContext,
+        structuredOutput: { schema: TaskPlanningDecisionSchema },
+      });
+      const decision = TaskPlanningDecisionSchema.parse(output.object);
+      await recordPlannerExecution(this.executionLogPort, {
+        identityId: request.input.identityId,
+        conversationId: request.input.conversationId,
+        requestContext,
+        taskType: 'MASTRA_TASK_PLANNER',
+        mode: request.mode,
+        status: 'COMPLETED',
+        outcome: decision.status,
+        usage: normalizeMastraGenerateUsage(output),
+        processingMs: Date.now() - startedAt,
+      });
+      return decision;
+    } catch (cause) {
+      await recordPlannerExecution(this.executionLogPort, {
+        identityId: request.input.identityId,
+        conversationId: request.input.conversationId,
+        requestContext,
+        taskType: 'MASTRA_TASK_PLANNER',
+        mode: request.mode,
+        status: 'FAILED',
+        processingMs: Date.now() - startedAt,
+      });
+      throw cause;
+    }
   }
 }

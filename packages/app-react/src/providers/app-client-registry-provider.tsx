@@ -2,8 +2,8 @@ import { createContext, type PropsWithChildren, useContext, useRef } from 'react
 
 import type { AccountClientPort } from '@memoflow/account/client';
 import { createAccountHttpClient } from '@memoflow/account/client';
-import type { AIClientPort } from '@memoflow/ai/client';
-import { createAIHttpClient } from '@memoflow/ai/client';
+import type { AIClientPort, AssistantRuntimeClient } from '@memoflow/ai/client';
+import { createAIHttpClient, createAssistantRuntimeHttpClient } from '@memoflow/ai/client';
 import type { GoalClientPort } from '@memoflow/goal/client';
 import { createGoalHttpClient } from '@memoflow/goal/client';
 import type { NotificationClientPort } from '@memoflow/notification/client';
@@ -23,7 +23,8 @@ import { useAppSession } from './app-session-provider';
 export type AppClientRegistry = {
   httpClient: IResultHttpClient;
   accountService: AccountClientPort;
-  aiService: AIClientPort;
+  aiClient: AIClientPort;
+  aiAssistantRuntime: AssistantRuntimeClient;
   goalService: GoalClientPort;
   notificationService: NotificationClientPort;
   reminderService: ReminderClientPort;
@@ -38,7 +39,8 @@ export function createAppClientRegistry(httpClient: IResultHttpClient): AppClien
   return {
     httpClient,
     accountService: createAccountHttpClient(httpClient),
-    aiService: createAIHttpClient(httpClient),
+    aiClient: createAIHttpClient(httpClient),
+    aiAssistantRuntime: createAssistantRuntimeHttpClient(httpClient),
     goalService: createGoalHttpClient(httpClient),
     notificationService: createNotificationHttpClient(httpClient),
     reminderService: createReminderHttpClient(httpClient),

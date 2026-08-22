@@ -1,7 +1,6 @@
 import { ref, watch, type Ref } from 'vue';
-// Residual 1007: sole normalizeReminderTimeOfDay (local dual retired).
 import { normalizeReminderTimeOfDay } from '@memoflow/utils/shared';
-import type { AgentRunResult, AIWorkflowRunView } from '@memoflow/contracts/ai';
+import type { AIWorkflowRunView } from '@memoflow/contracts/ai';
 import {
   createEmptyGoalDraft,
   type EditableGoal,
@@ -10,7 +9,6 @@ import {
   type EditableGoalTaskTemplate,
   type GoalWorkflowStage,
   type KnowledgeAnswer,
-  type NoteSummary,
   type PersistedWorkflowEntry,
   type WorkflowMode,
   normalizeWorkflowMode,
@@ -22,8 +20,6 @@ export interface UseAIWorkflowPersistenceOptions {
   toolMode: Ref<WorkflowMode>;
   goalWorkflowStage: Ref<GoalWorkflowStage>;
   goalWorkflowRun: Ref<AIWorkflowRunView | null>;
-  knowledgeQaAgentRun: Ref<AgentRunResult | null>;
-  noteAgentRun: Ref<AgentRunResult | null>;
   taskWorkflowRun: Ref<AIWorkflowRunView | null>;
   knowledgeCaptureRun: Ref<AIWorkflowRunView | null>;
   knowledgeAnswer: Ref<KnowledgeAnswer | null>;
@@ -32,7 +28,6 @@ export interface UseAIWorkflowPersistenceOptions {
   editableKeyResults: Ref<EditableKeyResult[]>;
   editableTaskTemplates: Ref<EditableGoalTaskTemplate[]>;
   editableReminders: Ref<EditableGoalReminder[]>;
-  noteSummary: Ref<NoteSummary | null>;
   showGoalDraftEditor: Ref<boolean>;
   resetWorkflowArtifacts: () => void;
 }
@@ -57,82 +52,38 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
     localStorage.setItem(WORKFLOW_STORAGE_KEY, JSON.stringify(next));
   }
 
-  function createStoredNoteSummary(summary: NoteSummary | null): NoteSummary | null {
-    if (!summary) return null;
-    return {
-      resolvedPath: summary.resolvedPath,
-      indexStatus: summary.indexStatus,
-      note: summary.note
-        ? {
-            id: summary.note.id,
-            name: summary.note.name,
-            content: summary.note.content?.slice(0, 280),
-          }
-        : undefined,
-    };
-  }
-
   function normalizeReminderDraft(item: EditableGoalReminder): EditableGoalReminder {
-    return {
-      ...item,
-      // Residual 1007: normalizeReminderTimeOfDay elevated to @memoflow/utils/shared.
-      timeOfDay: normalizeReminderTimeOfDay(item.timeOfDay),
-    };
+    return { ...item, timeOfDay: normalizeReminderTimeOfDay(item.timeOfDay) };
   }
 
-  function inferGoalWorkflowStage(
-    entry: PersistedWorkflowEntry | undefined | null,
-  ): GoalWorkflowStage {
+  function inferGoalWorkflowStage(entry: PersistedWorkflowEntry | undefined | null): GoalWorkflowStage {
     const run = entry?.goalWorkflowRun;
     if (run?.kind === 'goal.create') {
-      if (run.status === 'suspended' && run.suspension?.type === 'clarification_required') {
-        return 'clarification';
-      }
-      if (run.status === 'suspended' && run.suspension?.type === 'goal_draft_review') {
-        return 'confirm';
-      }
-      if (run.status === 'suspended' && run.suspension?.type === 'recovery_required') {
-        return 'execute';
-      }
-      if (run.status === 'completed' || run.status === 'cancelled' || run.status === 'failed') {
-        return 'result';
-      }
+      if (run.status === 'suspended' && run.suspension?.type === 'clarification_required') return 'clarification';
+      if (run.status === 'suspended' && run.suspension?.type === 'goal_draft_review') return 'confirm';
+      if (run.status === 'suspended' && run.suspension?.type === 'recovery_required') return 'execute';
+      if (run.status === 'completed' || run.status === 'cancelled' || run.status === 'failed') return 'result';
       return 'plan';
     }
     if (entry?.goalWorkflowStage) return entry.goalWorkflowStage;
-    if (
-      entry?.goalAutomationResult?.state === 'result' &&
-      entry.goalAutomationResult.executedActions.length
-    )
-      return 'result';
-    if (entry?.goalAutomationResult) return 'confirm';
-    if (entry?.goalClarification) return 'clarification';
-    if (entry?.goalDraft) return 'draft';
     return 'collect';
   }
 
   function snapshotWorkflowEntry(): PersistedWorkflowEntry | null {
     if (options.toolMode.value === 'chat') return null;
-
     return {
       mode: options.toolMode.value,
       goalWorkflowStage:
         options.toolMode.value === 'goal-create' ? options.goalWorkflowStage.value : undefined,
       goalWorkflowRun: options.goalWorkflowRun.value,
-      knowledgeQaAgentRun: options.knowledgeQaAgentRun.value,
-      noteAgentRun: options.noteAgentRun.value,
       taskWorkflowRun: options.taskWorkflowRun.value,
       knowledgeCaptureRun: options.knowledgeCaptureRun.value,
       knowledgeAnswer: options.knowledgeAnswer.value,
       clarificationAnswers: [...options.clarificationAnswers.value],
-      editableGoal: {
-        ...options.editableGoal.value,
-        tags: [...options.editableGoal.value.tags],
-      },
+      editableGoal: { ...options.editableGoal.value, tags: [...options.editableGoal.value.tags] },
       editableKeyResults: options.editableKeyResults.value.map((item) => ({ ...item })),
       editableTaskTemplates: options.editableTaskTemplates.value.map((item) => ({ ...item })),
       editableReminders: options.editableReminders.value.map((item) => ({ ...item })),
-      noteSummary: createStoredNoteSummary(options.noteSummary.value),
       showGoalDraftEditor: options.showGoalDraftEditor.value,
     };
   }
@@ -141,11 +92,8 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
     if (!conversationId) return;
     const stored = readWorkflowStorage();
     const snapshot = snapshotWorkflowEntry();
-    if (!snapshot) {
-      delete stored[conversationId];
-    } else {
-      stored[conversationId] = snapshot;
-    }
+    if (!snapshot) delete stored[conversationId];
+    else stored[conversationId] = snapshot;
     writeWorkflowStorage(stored);
   }
 
@@ -160,7 +108,6 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
   function restoreWorkflowState(conversationId: string) {
     const entry = readWorkflowStorage()[conversationId];
     options.resetWorkflowArtifacts();
-
     if (!entry) {
       options.toolMode.value = 'chat';
       return;
@@ -168,11 +115,8 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
 
     const mode = normalizeWorkflowMode(entry.mode);
     options.toolMode.value = mode;
-    options.goalWorkflowStage.value =
-      mode === 'goal-create' ? inferGoalWorkflowStage(entry) : 'collect';
+    options.goalWorkflowStage.value = mode === 'goal-create' ? inferGoalWorkflowStage(entry) : 'collect';
     options.goalWorkflowRun.value = entry.goalWorkflowRun ?? null;
-    options.knowledgeQaAgentRun.value = entry.knowledgeQaAgentRun ?? null;
-    options.noteAgentRun.value = entry.noteAgentRun ?? null;
     options.taskWorkflowRun.value = entry.taskWorkflowRun ?? null;
     options.knowledgeCaptureRun.value = entry.knowledgeCaptureRun ?? null;
     options.knowledgeAnswer.value = entry.knowledgeAnswer ?? null;
@@ -182,41 +126,29 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
       ...entry.editableGoal,
       tags: [...(entry.editableGoal?.tags ?? [])],
     };
-    options.editableKeyResults.value = (entry.editableKeyResults ?? []).map((item) => ({
-      ...item,
-    }));
-    options.editableTaskTemplates.value = (entry.editableTaskTemplates ?? []).map((item) => ({
-      ...item,
-    }));
-    options.editableReminders.value = (entry.editableReminders ?? []).map((item) =>
-      normalizeReminderDraft(item),
-    );
-    options.noteSummary.value = entry.noteSummary
-      ? createStoredNoteSummary(entry.noteSummary)
-      : null;
+    options.editableKeyResults.value = (entry.editableKeyResults ?? []).map((item) => ({ ...item }));
+    options.editableTaskTemplates.value = (entry.editableTaskTemplates ?? []).map((item) => ({ ...item }));
+    options.editableReminders.value = (entry.editableReminders ?? []).map(normalizeReminderDraft);
     options.showGoalDraftEditor.value = Boolean(entry.showGoalDraftEditor);
   }
 
   function bindPersistenceWatcher(chatConversationId: Ref<string>) {
     watch(
-      () =>
-        [
-          chatConversationId.value,
-          options.toolMode.value,
-          options.goalWorkflowStage.value,
-          options.showGoalDraftEditor.value ? '1' : '0',
-          JSON.stringify(options.goalWorkflowRun.value),
-          JSON.stringify(options.knowledgeQaAgentRun.value),
-          JSON.stringify(options.noteAgentRun.value),
-          JSON.stringify(options.taskWorkflowRun.value),
-          JSON.stringify(options.knowledgeAnswer.value),
-          JSON.stringify(options.clarificationAnswers.value),
-          JSON.stringify(options.editableGoal.value),
-          JSON.stringify(options.editableKeyResults.value),
-          JSON.stringify(options.editableTaskTemplates.value),
-          JSON.stringify(options.editableReminders.value),
-          JSON.stringify(createStoredNoteSummary(options.noteSummary.value)),
-        ].join('|'),
+      () => [
+        chatConversationId.value,
+        options.toolMode.value,
+        options.goalWorkflowStage.value,
+        options.showGoalDraftEditor.value ? '1' : '0',
+        JSON.stringify(options.goalWorkflowRun.value),
+        JSON.stringify(options.taskWorkflowRun.value),
+        JSON.stringify(options.knowledgeCaptureRun.value),
+        JSON.stringify(options.knowledgeAnswer.value),
+        JSON.stringify(options.clarificationAnswers.value),
+        JSON.stringify(options.editableGoal.value),
+        JSON.stringify(options.editableKeyResults.value),
+        JSON.stringify(options.editableTaskTemplates.value),
+        JSON.stringify(options.editableReminders.value),
+      ].join('|'),
       () => {
         if (!chatConversationId.value || suspendWorkflowPersistence.value) return;
         persistWorkflowState(chatConversationId.value);

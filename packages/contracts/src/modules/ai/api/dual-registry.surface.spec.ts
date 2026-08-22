@@ -8,42 +8,6 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-// --- merged from agent-citation-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 757: AgentCitation dual body retired.
-   * AgentCitationSchema reuses residual 755 KnowledgeCitationSchema.
-   */
-  describe('agent citation dual retired (residual 757)', () => {
-    const apiDir = __dirname;
-    const agent = readFileSync(resolve(apiDir, 'ai-agent.dto.ts'), 'utf8');
-    const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-
-    it('agent reuses KnowledgeCitationSchema without local dual body', () => {
-      expect(agent).toContain('Residual 757');
-      expect(agent).toContain("from './response-schemas'");
-      expect(agent).toContain('export const AgentCitationSchema = KnowledgeCitationSchema');
-      expect(agent).toContain(
-        'export type AgentCitation = z.infer<typeof AgentCitationSchema>',
-      );
-      expect(agent).not.toMatch(
-        /export const AgentCitationSchema\s*=\s*z\.object\(\{/,
-      );
-    });
-
-    it('response-schemas residual 755 remains sole citation object body', () => {
-      expect(responseSchemas).toContain('Residual 755');
-      expect(responseSchemas).toContain(
-        'export const KnowledgeCitationSchema = z.object({',
-      );
-    });
-
-    it('AgentState nests AgentCitationSchema alias', () => {
-      expect(agent).toContain('citations: z.array(AgentCitationSchema).default([])');
-    });
-  });
-}
-
 // --- merged from ai-chat-list-res-dual.surface.spec.ts ---
 {
   /**
@@ -76,18 +40,21 @@ import { describe, expect, it } from 'vitest';
       expect(dto).toContain(
         'export type ConversationListRes = z.infer<typeof ConversationListResSchema>',
       );
-      expect(dto).toContain(
-        'export type MessageListRes = z.infer<typeof MessageListResSchema>',
-      );
+      expect(dto).toContain('export type MessageListRes = z.infer<typeof MessageListResSchema>');
       expect(dto).not.toMatch(/export interface ConversationListRes\b/);
       expect(dto).not.toMatch(/export interface MessageListRes\b/);
     });
 
-    it('OpenAPI chat routes use list Res schemas only', () => {
+    it('keeps conversation-shell list on chat routes while message history belongs to Mastra', () => {
+      const runtimeRoutes = readFileSync(
+        resolve(apiDir, '../../../../../ai/src/api/routes/ai-runtime.routes.ts'),
+        'utf8',
+      );
       expect(routes).toContain('ConversationListResSchema');
-      expect(routes).toContain('MessageListResSchema');
       expect(routes).toContain('successResponse(ConversationListResSchema');
-      expect(routes).toContain('successResponse(MessageListResSchema');
+      expect(routes).not.toContain('MessageListResSchema');
+      expect(runtimeRoutes).toContain('AssistantRuntimeHistoryViewSchema');
+      expect(runtimeRoutes).toContain("router.post('/assistant/history'");
     });
   });
 }
@@ -121,9 +88,7 @@ import { describe, expect, it } from 'vitest';
 
     it('AIConversationClientDTOSchema brands identityId and nests MessageClientDTOSchema', () => {
       expect(responseSchemas).toContain('Residual 809');
-      expect(responseSchemas).toContain(
-        'export const AIConversationClientDTOSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const AIConversationClientDTOSchema = z.object({');
       expect(responseSchemas).toContain('identityId: brandedId<IdentityId>()');
       expect(responseSchemas).toContain('messages: z.array(MessageClientDTOSchema).nullable()');
       expect(responseSchemas).toContain('lastMessageAt: z.number().nullable()');
@@ -158,9 +123,7 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('semantic type is z.infer alias without interface dual body', () => {
-      expect(aggregate).toContain(
-        'export type AIModelInfo = z.infer<typeof AIModelInfoSchema>',
-      );
+      expect(aggregate).toContain('export type AIModelInfo = z.infer<typeof AIModelInfoSchema>');
       expect(aggregate).not.toMatch(/export interface AIModelInfo\b/);
     });
 
@@ -199,9 +162,7 @@ import { describe, expect, it } from 'vitest';
 
     it('owns ClientDTO as z.infer of ClientDTOSchema in aggregates', () => {
       expect(aggregate).toContain('Residual 811');
-      expect(aggregate).toContain(
-        'export const AIProviderConfigClientDTOSchema = z.object({',
-      );
+      expect(aggregate).toContain('export const AIProviderConfigClientDTOSchema = z.object({');
       expect(aggregate).toContain(
         'export type AIProviderConfigClientDTO = z.infer<typeof AIProviderConfigClientDTOSchema>',
       );
@@ -219,9 +180,7 @@ import { describe, expect, it } from 'vitest';
       expect(responseSchemas).not.toMatch(
         /export const AIProviderConfigClientDTOSchema = z\.object\(\{/,
       );
-      expect(responseSchemas).toContain(
-        'data: z.array(AIProviderConfigClientDTOSchema)',
-      );
+      expect(responseSchemas).toContain('data: z.array(AIProviderConfigClientDTOSchema)');
     });
 
     it('OpenAPI provider routes use AIProviderConfigClientDTOSchema', () => {
@@ -261,9 +220,7 @@ import { describe, expect, it } from 'vitest';
 
     it('semantic Res types are z.infer aliases without interface dual bodies', () => {
       expect(chat).toContain('Residual 695');
-      expect(chat).toContain(
-        'export type SendMessageRes = z.infer<typeof SendMessageResSchema>',
-      );
+      expect(chat).toContain('export type SendMessageRes = z.infer<typeof SendMessageResSchema>');
       expect(chat).not.toMatch(/export interface SendMessageRes\b/);
 
       expect(provider).toContain('Residual 695');
@@ -314,17 +271,17 @@ import { describe, expect, it } from 'vitest';
         resolve(apiDir, '../../../../../ai/src/api/routes/ai-knowledge-query.routes.ts'),
         'utf8',
       );
-      const noteRoutes = readFileSync(
-        resolve(apiDir, '../../../../../ai/src/api/routes/ai-knowledge-note.routes.ts'),
+      const runtimeRoutes = readFileSync(
+        resolve(apiDir, '../../../../../ai/src/api/routes/ai-runtime.routes.ts'),
         'utf8',
       );
 
-      expect(chatRoutes).toContain('SendMessageResSchema');
+      expect(chatRoutes).not.toContain('SendMessageResSchema');
+      expect(runtimeRoutes).toContain('AssistantRuntimeHistoryViewSchema');
       expect(providerRoutes).toContain('ListAIProviderConfigsResSchema');
       expect(analyticsRoutes).toContain('QueryAnalyticsResSchema');
       expect(knowledgeRoutes).toContain('QueryKnowledgeResSchema');
       expect(knowledgeRoutes).toContain('ExpandKnowledgeResSchema');
-      expect(noteRoutes).toContain('CreateKnowledgeNoteResSchema');
     });
   });
 }
@@ -375,228 +332,6 @@ import { describe, expect, it } from 'vitest';
   });
 }
 
-// --- merged from generate-goal-automation-res-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 787: GenerateGoalAutomationRes dual body retired.
-   * Sole ResSchema + z.infer nesting plan/action/TokenUsage schemas.
-   */
-  describe('generate goal automation res dual retired (residual 787)', () => {
-    const apiDir = __dirname;
-    const dto = readFileSync(resolve(apiDir, 'ai-goal-automation.dto.ts'), 'utf8');
-
-    it('owns ResSchema and z.infer alias without interface dual body', () => {
-      expect(dto).toContain('Residual 787');
-      expect(dto).toContain('export const GenerateGoalAutomationResSchema = z.object({');
-      expect(dto).toContain(
-        'export type GenerateGoalAutomationRes = z.infer<typeof GenerateGoalAutomationResSchema>',
-      );
-      expect(dto).not.toMatch(/export interface GenerateGoalAutomationRes\b/);
-    });
-
-    it('nests plan/action/tokenUsage shared schemas', () => {
-      expect(dto).toContain('plan: GoalAutomationPlanSchema');
-      expect(dto).toContain('actions: z.array(GoalAutomationActionSchema)');
-      expect(dto).toContain(
-        'executedActions: z.array(GoalAutomationExecutedActionSchema).optional()',
-      );
-      expect(dto).toContain('tokenUsage: TokenUsageSchema');
-      expect(dto).toContain("from '../value-objects/token-usage'");
-    });
-  });
-}
-
-// --- merged from goal-automation-plan-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 705: goal automation plan/preview dual bodies retired.
-   * GoalAutomationPlanDTO / TaskTemplatePreview / ReminderPreview reuse *Schema only.
-   */
-  describe('goal automation plan dual retired (residual 705)', () => {
-    const apiDir = __dirname;
-    const dto = readFileSync(resolve(apiDir, 'ai-goal-automation.dto.ts'), 'utf8');
-
-    it('exports plan and preview schemas as sole shapes', () => {
-      expect(dto).toContain('Residual 705');
-      expect(dto).toContain('export const GoalAutomationPlanSchema = z.object({');
-      expect(dto).toContain(
-        'export const GoalAutomationTaskTemplatePreviewSchema = z.object({',
-      );
-      expect(dto).toContain(
-        'export const GoalAutomationReminderPreviewSchema = z.object({',
-      );
-    });
-
-    it('semantic plan/preview types are z.infer aliases without interface dual bodies', () => {
-      expect(dto).toContain(
-        'export type GoalAutomationPlanDTO = z.infer<typeof GoalAutomationPlanSchema>',
-      );
-      expect(dto).toContain(
-        'export type GoalAutomationTaskTemplatePreview = z.infer<',
-      );
-      expect(dto).toContain(
-        'typeof GoalAutomationTaskTemplatePreviewSchema',
-      );
-      expect(dto).toContain(
-        'export type GoalAutomationReminderPreview = z.infer<',
-      );
-      expect(dto).toContain(
-        'typeof GoalAutomationReminderPreviewSchema',
-      );
-      expect(dto).not.toMatch(/export interface GoalAutomationPlanDTO\b/);
-      expect(dto).not.toMatch(
-        /export interface GoalAutomationTaskTemplatePreview\b/,
-      );
-      expect(dto).not.toMatch(
-        /export interface GoalAutomationReminderPreview\b/,
-      );
-    });
-
-    it('GenerateGoalAutomationRes nests GoalAutomationPlanSchema (residual 787 Res dual retired)', () => {
-      // Soft residual: residual 787 retired Res interface dual; plan nests schema.
-      expect(dto).toContain('Residual 787');
-      expect(dto).toContain('export const GenerateGoalAutomationResSchema = z.object({');
-      expect(dto).toContain(
-        'export type GenerateGoalAutomationRes = z.infer<typeof GenerateGoalAutomationResSchema>',
-      );
-      expect(dto).toContain('plan: GoalAutomationPlanSchema');
-      expect(dto).not.toMatch(/export interface GenerateGoalAutomationRes\b/);
-    });
-  });
-}
-
-// --- merged from goal-generation-draft-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 719: goal generation draft/preview/result dual bodies retired.
-   * GeneratedGoalDraft / KeyResultPreview / GenerateGoalResultDTO /
-   * GenerateKeyResultsResultDTO reuse *Schema only (schemas owned by dto module).
-   */
-  describe('goal generation draft dual retired (residual 719)', () => {
-    const apiDir = __dirname;
-    const dto = readFileSync(
-      resolve(apiDir, '../dtos/goal-generation-result.dto.ts'),
-      'utf8',
-    );
-    const automation = readFileSync(resolve(apiDir, 'ai-goal-automation.dto.ts'), 'utf8');
-    const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-
-    it('exports draft/preview/result schemas as sole shapes from dto module', () => {
-      expect(dto).toContain('Residual 719');
-      expect(dto).toContain('export const GeneratedGoalDraftSchema = z.object({');
-      expect(dto).toContain('export const KeyResultPreviewSchema = z.object({');
-      expect(dto).toContain('export const GenerateGoalResultDTOSchema = z.object({');
-      expect(dto).toContain('export const GenerateKeyResultsResultDTOSchema = z.object({');
-    });
-
-    it('semantic types are z.infer aliases without interface dual bodies', () => {
-      expect(dto).toContain(
-        'export type GeneratedGoalDraft = z.infer<typeof GeneratedGoalDraftSchema>',
-      );
-      expect(dto).toContain(
-        'export type KeyResultPreview = z.infer<typeof KeyResultPreviewSchema>',
-      );
-      expect(dto).toContain(
-        'export type GenerateGoalResultDTO = z.infer<typeof GenerateGoalResultDTOSchema>',
-      );
-      expect(dto).toContain(
-        'export type GenerateKeyResultsResultDTO = z.infer<typeof GenerateKeyResultsResultDTOSchema>',
-      );
-      expect(dto).not.toMatch(/export interface GeneratedGoalDraft\b/);
-      expect(dto).not.toMatch(/export interface KeyResultPreview\b/);
-      expect(dto).not.toMatch(/export interface GenerateGoalResultDTO\b/);
-      expect(dto).not.toMatch(/export interface GenerateKeyResultsResultDTO\b/);
-    });
-
-    it('automation and response-schemas reuse dto-owned draft schemas (no local dual bodies)', () => {
-      expect(automation).toContain('Residual 719');
-      expect(automation).toContain('GeneratedGoalDraftSchema');
-      expect(automation).toContain('KeyResultPreviewSchema');
-      expect(automation).not.toMatch(
-        /export const GeneratedGoalDraftSchema = z\.object\(\{/,
-      );
-      expect(automation).not.toMatch(
-        /export const KeyResultPreviewSchema = z\.object\(\{/,
-      );
-      expect(responseSchemas).toContain('Residual 719');
-      expect(responseSchemas).toContain(
-        "from '../dtos/goal-generation-result.dto'",
-      );
-      expect(responseSchemas).not.toMatch(
-        /const GeneratedGoalDraftSchema = z\.object\(\{/,
-      );
-      expect(responseSchemas).not.toMatch(
-        /const KeyResultPreviewSchema = z\.object\(\{/,
-      );
-      expect(responseSchemas).not.toMatch(
-        /export const GenerateGoalResultDTOSchema = z\.object\(\{/,
-      );
-    });
-  });
-}
-
-// --- merged from goal-workflow-result-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 729: goal workflow result dual bodies retired.
-   * GoalClarification* / GoalWorkflow*Result reuse *Schema only (dto-owned).
-   */
-  describe('goal workflow result dual retired (residual 729)', () => {
-    const apiDir = __dirname;
-    const dto = readFileSync(
-      resolve(apiDir, '../dtos/goal-workflow-result.dto.ts'),
-      'utf8',
-    );
-    const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-    const routes = readFileSync(
-      resolve(apiDir, '../../../../../ai/src/api/routes/ai-goal-generation.routes.ts'),
-      'utf8',
-    );
-
-    it('exports workflow schemas as sole shapes from dto module', () => {
-      expect(dto).toContain('Residual 729');
-      expect(dto).toContain('export const GoalClarificationSchema = z.object({');
-      expect(dto).toContain(
-        'export const GoalWorkflowDraftResultDTOSchema = GenerateGoalResultDTOSchema.extend({',
-      );
-      expect(dto).toContain(
-        'export const GoalWorkflowResultDTOSchema = z.discriminatedUnion(',
-      );
-    });
-
-    it('semantic types are z.infer aliases without interface dual bodies', () => {
-      expect(dto).toContain(
-        'export type GoalClarificationDTO = z.infer<typeof GoalClarificationSchema>',
-      );
-      expect(dto).toContain(
-        'export type GoalWorkflowDraftResultDTO = z.infer<typeof GoalWorkflowDraftResultDTOSchema>',
-      );
-      expect(dto).toContain(
-        'export type GoalWorkflowResultDTO = z.infer<typeof GoalWorkflowResultDTOSchema>',
-      );
-      expect(dto).not.toMatch(/export interface GoalClarificationDTO\b/);
-      expect(dto).not.toMatch(/export interface GoalClarificationQuestionDTO\b/);
-      expect(dto).not.toMatch(/export interface GoalWorkflowDraftResultDTO\b/);
-      expect(dto).not.toMatch(/export interface GoalWorkflowConfirmResultDTO\b/);
-      expect(dto).not.toMatch(/export interface GoalWorkflowExecutionResultDTO\b/);
-      expect(dto).not.toMatch(/export interface GoalWorkflowClarificationResultDTO\b/);
-    });
-
-    it('response-schemas re-exports dto-owned schemas; routes use GoalWorkflowResultDTOSchema', () => {
-      expect(responseSchemas).toContain('Residual 729');
-      expect(responseSchemas).toContain("from '../dtos/goal-workflow-result.dto'");
-      expect(responseSchemas).not.toMatch(
-        /export const GoalWorkflowDraftResultDTOSchema = GenerateGoalResultDTOSchema\.extend/,
-      );
-      expect(responseSchemas).not.toMatch(
-        /const GoalClarificationSchema = z\.object\(\{/,
-      );
-      expect(routes).toContain('GoalWorkflowResultDTOSchema');
-      expect(routes).toContain('successResponse(GoalWorkflowResultDTOSchema');
-    });
-  });
-}
-
 // --- merged from knowledge-citation-dual.surface.spec.ts ---
 {
   /**
@@ -610,12 +345,8 @@ import { describe, expect, it } from 'vitest';
 
     it('response-schemas owns the sole citation schema body', () => {
       expect(responseSchemas).toContain('Residual 755');
-      expect(responseSchemas).toContain(
-        'export const KnowledgeCitationSchema = z.object({',
-      );
-      expect(responseSchemas).not.toMatch(
-        /const KnowledgeCitationResSchema\s*=\s*z\.object\(\{/,
-      );
+      expect(responseSchemas).toContain('export const KnowledgeCitationSchema = z.object({');
+      expect(responseSchemas).not.toMatch(/const KnowledgeCitationResSchema\s*=\s*z\.object\(\{/);
       expect(responseSchemas).toContain('citations: z.array(KnowledgeCitationSchema)');
     });
 
@@ -627,9 +358,7 @@ import { describe, expect, it } from 'vitest';
       expect(knowledge).toContain(
         'export type KnowledgeCitation = z.infer<typeof KnowledgeCitationSchema>',
       );
-      expect(knowledge).not.toMatch(
-        /export const KnowledgeCitationSchema\s*=\s*z\.object\(\{/,
-      );
+      expect(knowledge).not.toMatch(/export const KnowledgeCitationSchema\s*=\s*z\.object\(\{/);
     });
 
     it('Query/Expand knowledge responses nest the shared citation schema', () => {
@@ -650,10 +379,7 @@ import { describe, expect, it } from 'vitest';
     const apiDir = __dirname;
     const dto = readFileSync(resolve(apiDir, 'ai-knowledge-note.dto.ts'), 'utf8');
     const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-    const resSurface = readFileSync(
-      resolve(apiDir, 'dual-registry.surface.spec.ts'),
-      'utf8',
-    );
+    const resSurface = readFileSync(resolve(apiDir, 'dual-registry.surface.spec.ts'), 'utf8');
 
     it('exports KnowledgeNotePersistedRefSchema as sole persisted-ref shape', () => {
       expect(responseSchemas).toContain('Residual 723');
@@ -707,9 +433,7 @@ import { describe, expect, it } from 'vitest';
 
     it('MessageClientDTOSchema owns transport + UI computed fields', () => {
       expect(responseSchemas).toContain('Residual 807');
-      expect(responseSchemas).toContain(
-        'export const MessageClientDTOSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const MessageClientDTOSchema = z.object({');
       expect(responseSchemas).toContain('tokenCount: z.number().nullable()');
       expect(responseSchemas).toContain('isUser: z.boolean()');
       expect(responseSchemas).toContain('isAssistant: z.boolean()');
@@ -717,11 +441,16 @@ import { describe, expect, it } from 'vitest';
       expect(responseSchemas).toContain('formattedTime: z.string()');
     });
 
-    it('chat list/send envelopes nest MessageClientDTOSchema', () => {
+    it('keeps the legacy DTO shape isolated from the conversation-shell route', () => {
+      const runtimeRoutes = readFileSync(
+        resolve(apiDir, '../../../../../ai/src/api/routes/ai-runtime.routes.ts'),
+        'utf8',
+      );
       expect(responseSchemas).toContain('data: z.array(MessageClientDTOSchema)');
       expect(responseSchemas).toContain('userMessage: MessageClientDTOSchema');
       expect(responseSchemas).toContain('assistantMessage: MessageClientDTOSchema');
-      expect(routes).toContain('MessageListResSchema');
+      expect(routes).not.toContain('MessageListResSchema');
+      expect(runtimeRoutes).toContain('AssistantRuntimeHistoryViewSchema');
     });
   });
 }
@@ -740,10 +469,7 @@ import { describe, expect, it } from 'vitest';
       'utf8',
     );
     const controller = readFileSync(
-      resolve(
-        apiDir,
-        '../../../../../ai/src/server/transport/ai-provider-config.controller.ts',
-      ),
+      resolve(apiDir, '../../../../../ai/src/server/transport/ai-provider-config.controller.ts'),
       'utf8',
     );
 
@@ -811,24 +537,15 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('retires reminder Summary/Dashboard duals; keeps UpcomingReminderDTO', () => {
-      const reminderDtos = readFileSync(
-        resolve(modules, 'reminder/dtos/index.ts'),
-        'utf8',
-      );
+      const reminderDtos = readFileSync(resolve(modules, 'reminder/dtos/index.ts'), 'utf8');
       expect(reminderDtos).not.toMatch(/export interface ReminderTemplateSummaryDTO\b/);
       expect(reminderDtos).not.toMatch(/export interface ReminderDashboardDTO\b/);
       expect(reminderDtos).toContain('export interface UpcomingReminderDTO');
     });
 
     it('retires GoalTimeRangeSummary dual; GoalClientDTO remains as z.infer', () => {
-      const goalClient = readFileSync(
-        resolve(modules, 'goal/aggregates/goal-client.ts'),
-        'utf8',
-      );
-      const goalIndex = readFileSync(
-        resolve(modules, 'goal/aggregates/index.ts'),
-        'utf8',
-      );
+      const goalClient = readFileSync(resolve(modules, 'goal/aggregates/goal-client.ts'), 'utf8');
+      const goalIndex = readFileSync(resolve(modules, 'goal/aggregates/index.ts'), 'utf8');
       expect(goalClient).not.toMatch(/export interface GoalTimeRangeSummary\b/);
       expect(goalIndex).not.toContain('GoalTimeRangeSummary');
       expect(goalClient).toContain(
@@ -847,10 +564,7 @@ import { describe, expect, it } from 'vitest';
    */
   describe('provider test result dual retired (residual 721)', () => {
     const apiDir = __dirname;
-    const dto = readFileSync(
-      resolve(apiDir, '../dtos/provider-test-result.dto.ts'),
-      'utf8',
-    );
+    const dto = readFileSync(resolve(apiDir, '../dtos/provider-test-result.dto.ts'), 'utf8');
     const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
     const providerDto = readFileSync(resolve(apiDir, 'ai-provider-config.dto.ts'), 'utf8');
     const routes = readFileSync(
@@ -899,9 +613,7 @@ import { describe, expect, it } from 'vitest';
 
     it('dto owns ReindexKnowledgeResSchema and z.infer Res alias', () => {
       expect(dto).toContain('Residual 761');
-      expect(dto).toContain(
-        'export const ReindexKnowledgeResSchema = z.object({',
-      );
+      expect(dto).toContain('export const ReindexKnowledgeResSchema = z.object({');
       expect(dto).toContain(
         'export type ReindexKnowledgeRes = z.infer<typeof ReindexKnowledgeResSchema>',
       );
@@ -910,12 +622,8 @@ import { describe, expect, it } from 'vitest';
 
     it('OpenAPI reindex route uses shared Res schema (no inline dual body)', () => {
       expect(routes).toContain('ReindexKnowledgeResSchema');
-      expect(routes).toContain(
-        "successResponse(ReindexKnowledgeResSchema, '重建成功')",
-      );
-      expect(routes).not.toMatch(
-        /successResponse\(\s*z\.object\(\{[\s\S]*indexedCount/,
-      );
+      expect(routes).toContain("successResponse(ReindexKnowledgeResSchema, '重建成功')");
+      expect(routes).not.toMatch(/successResponse\(\s*z\.object\(\{[\s\S]*indexedCount/);
     });
 
     it('result item schema remains nested under Res schema', () => {
@@ -925,28 +633,24 @@ import { describe, expect, it } from 'vitest';
   });
 }
 
-// --- merged from stream-message-done-payload-dual.surface.spec.ts ---
+// --- AI-VNEXT-07 canonical assistant runtime surface ---
 {
-  /**
-   * Residual 259: StreamMessageDonePayload identity dual is gone.
-   * Stream done / stream start payloads use SendMessageRes directly.
-   */
-  describe('AI StreamMessageDonePayload dual single-track surface', () => {
+  describe('AI Assistant runtime is the single stream surface', () => {
     const apiDir = __dirname;
-    const dto = readFileSync(resolve(apiDir, 'ai-chat.dto.ts'), 'utf8');
     const eventMap = readFileSync(resolve(apiDir, '../protocol/ai-event-map.ts'), 'utf8');
     const rpcMap = readFileSync(resolve(apiDir, '../protocol/ai-rpc-map.ts'), 'utf8');
 
-    it('does not dual-alias StreamMessageDonePayload = SendMessageRes', () => {
-      expect(dto).not.toMatch(/export type StreamMessageDonePayload\s*=/);
-      expect(dto).not.toContain('StreamMessageDonePayload');
+    it('projects canonical AssistantRuntimeEvent instead of legacy message-stream payloads', () => {
+      expect(eventMap).toContain('AssistantRuntimeEvent');
+      expect(eventMap).toContain("'ai:runtime:assistant:event'");
+      expect(eventMap).not.toContain('StreamMessageDonePayload');
+      expect(eventMap).not.toContain('SendMessageRes');
     });
 
-    it('protocol maps use SendMessageRes for stream done/start payloads', () => {
-      expect(eventMap).toContain('SendMessageRes');
-      expect(eventMap).toMatch(/result:\s*SendMessageRes/);
-      expect(eventMap).not.toContain('StreamMessageDonePayload');
-      expect(rpcMap).toContain("'ai:chat:message:stream:start': [SendMessageReq, SendMessageRes]");
+    it('RPC map exposes Mastra assistant start/history and no legacy message stream start', () => {
+      expect(rpcMap).toContain("'ai:runtime:assistant:start'");
+      expect(rpcMap).toContain("'ai:runtime:assistant:history'");
+      expect(rpcMap).not.toContain("'ai:chat:message:stream:start'");
       expect(rpcMap).not.toContain('StreamMessageDonePayload');
     });
   });
@@ -962,10 +666,7 @@ import { describe, expect, it } from 'vitest';
     const apiDir = __dirname;
     const vo = readFileSync(resolve(apiDir, '../value-objects/token-usage.ts'), 'utf8');
     const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-    const goalGen = readFileSync(
-      resolve(apiDir, '../dtos/goal-generation-result.dto.ts'),
-      'utf8',
-    );
+    const runtimeDto = readFileSync(resolve(apiDir, 'ai-runtime.dto.ts'), 'utf8');
 
     it('exports TokenUsageSchema as sole token-usage shape from VO module', () => {
       expect(vo).toContain('Residual 727');
@@ -973,20 +674,18 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('semantic DTO is z.infer alias without interface dual body', () => {
-      expect(vo).toContain(
-        'export type TokenUsageDTO = z.infer<typeof TokenUsageSchema>',
-      );
+      expect(vo).toContain('export type TokenUsageDTO = z.infer<typeof TokenUsageSchema>');
       expect(vo).not.toMatch(/export interface TokenUsageDTO\b/);
     });
 
-    it('response-schemas and goal generation reuse VO TokenUsageSchema (no local duals)', () => {
+    it('response-schemas keep the VO schema while canonical runtime owns its usage envelope', () => {
       expect(responseSchemas).toContain('Residual 727');
       expect(responseSchemas).toContain("from '../value-objects/token-usage'");
       expect(responseSchemas).toContain('export { TokenUsageSchema }');
       expect(responseSchemas).not.toMatch(/const TokenUsageSchema = z\.object\(\{/);
-      expect(goalGen).toContain('Residual 727');
-      expect(goalGen).toContain('tokenUsage: TokenUsageSchema');
-      expect(goalGen).not.toMatch(/GoalTokenUsageSchema/);
+      expect(runtimeDto).toContain('AIRuntimeUsageSchema');
+      expect(runtimeDto).toContain('assistant.usage.updated');
+      expect(runtimeDto).toContain('workflow.usage.updated');
     });
   });
 }

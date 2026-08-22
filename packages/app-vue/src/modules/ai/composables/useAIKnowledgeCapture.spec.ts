@@ -8,7 +8,7 @@ import type { UseAIKnowledgeCaptureOptions } from './types';
 const i18n = createI18n({
   legacy: false,
   locale: 'en-US',
-  messages: { 'en-US': { aiAssistant: { errors: { agentRunFailed: 'Failed' } } } },
+  messages: { 'en-US': { aiAssistant: { errors: { workflowExecutionFailed: 'Failed' } } } },
 });
 
 const model = { value: { providerId: 'p', modelId: 'm' } } as UseAIKnowledgeCaptureOptions['selectedModel'];
@@ -106,6 +106,8 @@ describe('useAIKnowledgeCapture', () => {
       }),
     );
     expect(vm.knowledgeCaptureStage).toBe('execute');
+    expect(vm.knowledgeCaptureExecutionRecovery?.suggestions).toEqual(['Failed (WRITE_FAILED)']);
+    expect(vm.knowledgeCaptureExecutionRecovery?.suggestions.join(' ')).not.toContain('write failed');
   });
 
   it('maps clarification, approval, retry, and cancel to typed commands', async () => {

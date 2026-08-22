@@ -4,7 +4,7 @@ tags:
   - dual-registry
 description: Dual Registry — retired locks vs keep-boundary vs open dual debt
 created: 2026-07-26T00:00:00
-updated: 2026-07-26T00:00:00
+updated: 2026-08-22T15:38:00+08:00
 ---
 
 # Dual Registry
@@ -112,7 +112,6 @@ updated: 2026-07-26T00:00:00
 | `keep_boundary` | `packages/app-vue/src/di/service-client-port-facade-keep-boundary.surface.spec.ts` |
 | `retired` | `packages/app-vue/src/layouts/shell/clamp-dual.surface.spec.ts` |
 | `retired` | `packages/app-vue/src/modules/ai/composables/dual-registry.surface.spec.ts` |
-| `keep_boundary` | `packages/app-vue/src/modules/ai/composables/is-record-keep-boundary.surface.spec.ts` |
 | `keep_boundary` | `packages/app-vue/src/modules/authentication/composables/auto-login-desktop-keep-boundary.surface.spec.ts` |
 | `retired` | `packages/app-vue/src/modules/authentication/composables/completeAuthSuccess-dual.surface.spec.ts` |
 | `keep_boundary` | `packages/app-vue/src/modules/authentication/composables/handle-auth-success-keep-boundary.surface.spec.ts` |

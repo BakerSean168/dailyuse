@@ -9,10 +9,10 @@ import type {
   TestAIProviderRes,
 } from '@memoflow/contracts/ai';
 import { ok } from '@memoflow/contracts/result';
-import { AI_SERVICE_KEY } from '../../../di/keys';
+import { AI_CLIENT_KEY } from '../../../di/keys';
 import { useAI } from './useAI';
 
-type AIServiceStub = {
+type AIClientStub = {
   listProviders: ReturnType<typeof vi.fn>;
   getCapabilities: ReturnType<typeof vi.fn>;
   testProvider: ReturnType<typeof vi.fn>;
@@ -46,15 +46,14 @@ function createCapabilities(
   overrides: Partial<AICapabilities> = {},
 ): AICapabilities {
   return {
-    runtimeMode: 'remote-ai-service',
+    runtimeMode: 'mastra',
     supportsChat: true,
-    supportsGoalGeneration: true,
     supportsKnowledgeNotes: true,
     supportsKnowledgeQuery: true,
     supportsKnowledgeReindex: true,
     supportsAnalyticsQuery: true,
-    supportsGoalAutomation: true,
-    supportsAgentRuntime: true,
+    supportsAssistantRuntime: true,
+    supportsWorkflowRuntime: true,
     supportsEvaluationReports: false,
     ...overrides,
   };
@@ -75,7 +74,7 @@ function createExpandKnowledgeResult(): ExpandKnowledgeRes {
   };
 }
 
-function createServiceStub(overrides: Partial<AIServiceStub> = {}): AIServiceStub {
+function createClientStub(overrides: Partial<AIClientStub> = {}): AIClientStub {
   return {
     listProviders: vi.fn(),
     getCapabilities: vi.fn(),
@@ -85,9 +84,9 @@ function createServiceStub(overrides: Partial<AIServiceStub> = {}): AIServiceStu
   };
 }
 
-function mountComposable(serviceOverrides: Partial<AIServiceStub> = {}) {
+function mountComposable(clientOverrides: Partial<AIClientStub> = {}) {
   let composable!: ReturnType<typeof useAI>;
-  const service = createServiceStub(serviceOverrides);
+  const client = createClientStub(clientOverrides);
 
   mount(
     defineComponent({
@@ -99,13 +98,13 @@ function mountComposable(serviceOverrides: Partial<AIServiceStub> = {}) {
     {
       global: {
         provide: {
-          [AI_SERVICE_KEY as symbol]: service,
+          [AI_CLIENT_KEY as symbol]: client,
         },
       },
     },
   );
 
-  return { composable, service };
+  return { composable, client };
 }
 
 describe('useAI', () => {
@@ -115,13 +114,13 @@ describe('useAI', () => {
 
   it('keeps provider results strongly typed at the composable seam', async () => {
     const providers = [createProvider(), createProvider({ id: 'provider-2' as AIProviderConfigClientDTO['id'], isDefault: false })];
-    const { composable, service } = mountComposable({
+    const { composable, client } = mountComposable({
       listProviders: vi.fn().mockResolvedValue(ok(providers)),
     });
 
     const loadedProviders: AIProviderConfigClientDTO[] = await composable.loadProviders();
 
-    expect(service.listProviders).toHaveBeenCalledTimes(1);
+    expect(client.listProviders).toHaveBeenCalledTimes(1);
     expect(loadedProviders).toEqual(providers);
     expect(composable.providers.value).toEqual(providers);
     expect(composable.hasProviders.value).toBe(true);
@@ -136,7 +135,7 @@ describe('useAI', () => {
       latencyMs: 42,
     };
     const expandKnowledgeResult = createExpandKnowledgeResult();
-    const { composable, service } = mountComposable({
+    const { composable, client } = mountComposable({
       getCapabilities: vi.fn().mockResolvedValue(ok(capabilities)),
       testProvider: vi.fn().mockResolvedValue(ok(providerTestResult)),
       expandKnowledge: vi.fn().mockResolvedValue(ok(expandKnowledgeResult)),
@@ -151,10 +150,10 @@ describe('useAI', () => {
     const loadedTestResult: TestAIProviderRes = await composable.testProvider(request);
     const expanded = await composable.expandKnowledge({ instruction: 'Expand this note' });
 
-    expect(service.getCapabilities).toHaveBeenCalledTimes(1);
+    expect(client.getCapabilities).toHaveBeenCalledTimes(1);
     expect(loadedCapabilities).toEqual(capabilities);
     expect(composable.capabilities.value).toEqual(capabilities);
-    expect(service.testProvider).toHaveBeenCalledWith(request);
+    expect(client.testProvider).toHaveBeenCalledWith(request);
     expect(loadedTestResult).toEqual(providerTestResult);
     expect(expanded).toEqual(expandKnowledgeResult);
   });

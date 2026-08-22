@@ -110,6 +110,13 @@ async function createRuntime() {
   const mutations = mutationPort();
   const createTaskTemplate = taskMutationPort();
   const saveKnowledgeNote = vi.fn(async (request) => ok({ noteId: String(request.requestId) }));
+  const summarizeUsage = vi.fn(async () => ({
+    executionCount: 2,
+    promptTokens: 200,
+    completionTokens: 50,
+    totalTokens: 250,
+    estimatedCost: 0.000075,
+  }));
   const runtime = new MastraAIRuntime({
     storage,
     modelResolver: new MastraModelResolver({} as never),
@@ -117,6 +124,7 @@ async function createRuntime() {
     goalPlanMutationPort: mutations,
     taskPlanMutationPort: { createTaskTemplate },
     knowledgeCaptureMutationPort: { saveKnowledgeNote },
+    usageReadPort: { summarizeUsage },
   });
   vi.spyOn(runtime.goalPlanner, 'plan').mockResolvedValue({
     status: 'draft_ready',
@@ -134,12 +142,12 @@ async function createRuntime() {
     candidateDraft: knowledgeDraft,
   });
   resources.push({ runtime, file });
-  return { runtime, mutations, createTaskTemplate, saveKnowledgeNote };
+  return { runtime, mutations, createTaskTemplate, saveKnowledgeNote, summarizeUsage };
 }
 
 describe('MastraAIRuntime goal.create product projection', () => {
   it('owns start/get/list/resume and short-circuits a second approve after terminal completion', async () => {
-    const { runtime, mutations } = await createRuntime();
+    const { runtime, mutations, summarizeUsage } = await createRuntime();
     const identityId = 'identity-a';
 
     const started = await runtime.start({
@@ -163,7 +171,17 @@ describe('MastraAIRuntime goal.create product projection', () => {
       },
     });
     expect(await runtime.get({ identityId: 'identity-b', runId: started.runId })).toBeNull();
-    expect(await runtime.list({ identityId })).toHaveLength(1);
+    const owned = await runtime.get({ identityId, runId: started.runId });
+    expect(owned?.usage).toEqual({
+      promptTokens: 200,
+      completionTokens: 50,
+      totalTokens: 250,
+      estimatedCost: 0.000075,
+    });
+    expect(summarizeUsage).toHaveBeenCalledWith({ identityId, runId: started.runId });
+    const listed = await runtime.list({ identityId });
+    expect(listed).toHaveLength(1);
+    expect(listed[0]?.usage?.totalTokens).toBe(250);
     expect(await runtime.list({ identityId, conversationId: 'other-conversation' })).toEqual([]);
 
     const completed = await runtime.resume({

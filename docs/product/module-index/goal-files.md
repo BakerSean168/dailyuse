@@ -5,7 +5,7 @@ tags:
   - goal
 description: 目标模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-07-22T00:00:00
+updated: 2026-08-22T00:00:00
 ---
 
 # 目标模块文件索引
@@ -108,14 +108,12 @@ updated: 2026-07-22T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/app-vue/src/modules/ai/views/AIChatView.vue`](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue) | AI Chat 当前 Goal workflow 主入口 |
-| [`packages/app-vue/src/modules/ai/components/AIGoalDraftEditor.vue`](../../../packages/app-vue/src/modules/ai/components/AIGoalDraftEditor.vue) | AI 目标草稿编辑器 |
-| [`packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.ts`](../../../packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.ts) | AI Goal workflow 组合函数 |
-| [`packages/app-vue/src/modules/ai/composables/goalDraftHelpers.ts`](../../../packages/app-vue/src/modules/ai/composables/goalDraftHelpers.ts) | Goal draft 辅助逻辑 |
-| [`packages/app-vue/src/modules/ai/composables/goalAutomationHelpers.ts`](../../../packages/app-vue/src/modules/ai/composables/goalAutomationHelpers.ts) | Goal automation 辅助逻辑 |
-| [`packages/ai/src/server/application/use-cases/commands/generate-ai-goal.use-case.ts`](../../../packages/ai/src/server/application/use-cases/commands/generate-ai-goal.use-case.ts) | AI 目标生成与 automation 用例 |
-| [`apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts`](../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts) | API 侧 automation tool executor |
-| [`apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts`](../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts) | Desktop 侧 automation tool executor |
+| [`packages/app-vue/src/modules/ai/views/AIChatView.vue`](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue) | AI workspace 的 Goal workflow 入口 |
+| [`packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.ts`](../../../packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.ts) | `goal.create` WorkflowRunView 薄投影 |
+| [`packages/app-vue/src/modules/ai/components/AIGoalWorkflowPanel.vue`](../../../packages/app-vue/src/modules/ai/components/AIGoalWorkflowPanel.vue) | Goal review/recovery/result 面板 |
+| [`packages/ai/src/server/mastra/workflows/goal-create.workflow.ts`](../../../packages/ai/src/server/mastra/workflows/goal-create.workflow.ts) | Mastra durable `goal.create` workflow |
+| [`packages/ai/src/server/mastra/workflows/apply-goal-plan.service.ts`](../../../packages/ai/src/server/mastra/workflows/apply-goal-plan.service.ts) | deterministic Goal mutation service |
+| [`packages/ai/src/server/mastra/workflows/goal-plan-mutation.port.ts`](../../../packages/ai/src/server/mastra/workflows/goal-plan-mutation.port.ts) | Goal mutation port |
 
 ## 测试入口
 

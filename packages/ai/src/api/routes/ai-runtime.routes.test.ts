@@ -64,6 +64,13 @@ function runtimeStub(events: AssistantRuntimeEvent[] = []) {
   });
   const cancelRun = vi.fn(() => true);
   const deleteConversation = vi.fn(async () => true);
+  const summarizeUsage = vi.fn(async () => ({
+    executionCount: 2,
+    promptTokens: 120,
+    completionTokens: 30,
+    totalTokens: 150,
+    estimatedCost: 0.000045,
+  }));
   const listMessages = vi.fn(async () => ({
     conversationId: 'conversation-1',
     messages: [
@@ -81,11 +88,13 @@ function runtimeStub(events: AssistantRuntimeEvent[] = []) {
     cancelRun,
     deleteConversation,
     listMessages,
+    summarizeUsage,
     runtime: {
       dispatchMessage,
       cancelRun,
       deleteConversation,
       listMessages,
+      summarizeUsage,
     } as unknown as MastraAIRuntime,
   };
 }
@@ -261,6 +270,42 @@ describe('registerAIRuntimeRoutes', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.setHeader).not.toHaveBeenCalledWith('Content-Type', 'text/event-stream');
+  });
+
+  it('queries durable usage with host-owned identity and rejects client identity injection', async () => {
+    const stub = runtimeStub();
+    const router = registerAIRuntimeRoutes(stub.runtime, { auth });
+    const handler = getRouteHandler(router, 'post', '/usage');
+    const { res } = response();
+
+    await handler(request({ conversationId: 'conversation-1' }) as never, res as never);
+
+    expect(stub.summarizeUsage).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      conversationId: 'conversation-1',
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({ executionCount: 2, totalTokens: 150 }),
+      }),
+    );
+
+    const { res: runRes } = response();
+    await handler(request({ runId: 'run-1' }) as never, runRes as never);
+    expect(stub.summarizeUsage).toHaveBeenLastCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+    });
+
+    const { res: injectedRes } = response();
+    await handler(
+      request({ conversationId: 'conversation-1', identityId: 'attacker-controlled' }) as never,
+      injectedRes as never,
+    );
+    expect(injectedRes.status).toHaveBeenCalledWith(400);
+    expect(stub.summarizeUsage).toHaveBeenCalledTimes(2);
   });
 
   it('exposes the canonical workflow start/resume/get/list/cancel surface with host-owned identity', async () => {

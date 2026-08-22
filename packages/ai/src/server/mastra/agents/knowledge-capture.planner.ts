@@ -7,7 +7,13 @@ import {
   type KnowledgeDraft,
   type KnowledgeCaptureDecision,
 } from '@memoflow/contracts/ai';
+import type { IAIExecutionLogPort } from '../../application/ports';
 import type { MastraModelResolver } from '../models/model-resolver';
+import {
+  normalizeMastraGenerateUsage,
+  recordPlannerExecution,
+  rememberResolvedPlannerModel,
+} from './planner-observability';
 
 function stringContext(requestContext: RequestContext, key: string): string | undefined {
   const value = requestContext.getRaw(key);
@@ -45,7 +51,10 @@ export interface KnowledgeCapturePlannerPort {
 export class KnowledgeCapturePlannerWorker implements KnowledgeCapturePlannerPort {
   readonly agent: Agent<'knowledge-capture-planner-worker'>;
 
-  constructor(modelResolver: MastraModelResolver) {
+  constructor(
+    modelResolver: MastraModelResolver,
+    private readonly executionLogPort?: IAIExecutionLogPort,
+  ) {
     this.agent = new Agent({
       id: 'knowledge-capture-planner-worker',
       name: 'Knowledge Capture Planner Worker',
@@ -73,13 +82,13 @@ export class KnowledgeCapturePlannerWorker implements KnowledgeCapturePlannerPor
       model: async ({ requestContext }) => {
         const identityId = stringContext(requestContext, 'identityId');
         if (!identityId) throw new Error('Knowledge Capture Planner requires authenticated identityId');
-        return (
-          await modelResolver.resolve({
-            identityId,
-            providerId: stringContext(requestContext, 'providerId'),
-            modelId: stringContext(requestContext, 'modelId'),
-          })
-        ).model;
+        const resolved = await modelResolver.resolve({
+          identityId,
+          providerId: stringContext(requestContext, 'providerId'),
+          modelId: stringContext(requestContext, 'modelId'),
+        });
+        rememberResolvedPlannerModel(requestContext, resolved);
+        return resolved.model;
       },
     });
   }
@@ -111,10 +120,36 @@ export class KnowledgeCapturePlannerWorker implements KnowledgeCapturePlannerPor
       .filter(Boolean)
       .join('\n\n');
 
-    const output = await this.agent.generate(prompt, {
-      requestContext,
-      structuredOutput: { schema: KnowledgeCaptureDecisionSchema },
-    });
-    return KnowledgeCaptureDecisionSchema.parse(output.object);
+    const startedAt = Date.now();
+    try {
+      const output = await this.agent.generate(prompt, {
+        requestContext,
+        structuredOutput: { schema: KnowledgeCaptureDecisionSchema },
+      });
+      const decision = KnowledgeCaptureDecisionSchema.parse(output.object);
+      await recordPlannerExecution(this.executionLogPort, {
+        identityId: request.input.identityId,
+        conversationId: request.input.conversationId,
+        requestContext,
+        taskType: 'MASTRA_KNOWLEDGE_PLANNER',
+        mode: request.mode,
+        status: 'COMPLETED',
+        outcome: decision.status,
+        usage: normalizeMastraGenerateUsage(output),
+        processingMs: Date.now() - startedAt,
+      });
+      return decision;
+    } catch (cause) {
+      await recordPlannerExecution(this.executionLogPort, {
+        identityId: request.input.identityId,
+        conversationId: request.input.conversationId,
+        requestContext,
+        taskType: 'MASTRA_KNOWLEDGE_PLANNER',
+        mode: request.mode,
+        status: 'FAILED',
+        processingMs: Date.now() - startedAt,
+      });
+      throw cause;
+    }
   }
 }

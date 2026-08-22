@@ -62,10 +62,10 @@ test.describe('Local Docker core product Phase E', () => {
     );
     await expect(page.getByTestId('shell-workflow-surface')).toBeVisible();
 
-    const approvalPanel = page.getByTestId('goal-agent-panel');
+    const approvalPanel = page.getByTestId('goal-workflow-panel');
     await expect(approvalPanel).toBeVisible({ timeout: TIMEOUT_CONFIG.NAVIGATION });
     await expect(approvalPanel).toContainText('Phase E 待审批目标');
-    await expect(approvalPanel).toContainText(/waiting_approval|等待审批/i);
+    await expect(approvalPanel).toContainText(/suspended/i);
     await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
     await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
     await expectNoHorizontalOverflow(page);
@@ -107,7 +107,6 @@ test.describe('Local Docker core product Phase E', () => {
     await expect(workflowTab).toBeVisible();
     await expect(workflowTab).not.toHaveAttribute('aria-current', 'page');
     await expect(workflowTab).toContainText('1');
-    await expect(page.getByText('工作流已就绪，可从右侧面板查看。')).toBeVisible();
     await expect(page.getByTestId('goal-dialog')).toBeVisible();
     await expect(page.getByTestId('goal-name-input')).toHaveValue(draftTitle);
 
@@ -168,7 +167,6 @@ test.describe('Local Docker core product Phase E', () => {
     await expect(panel).toBeHidden();
     await expect(panelToggle).toHaveAttribute('aria-pressed', 'false');
     await expect(page.getByTestId('shell-workflow-attention-badge')).toHaveText('1');
-    await expect(page.getByText('工作流已就绪，可从右侧面板查看。')).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
     await panelToggle.click();
@@ -270,7 +268,7 @@ async function installApprovalRestoreMocks(
   page: Page,
   fixture: ApprovalFixture,
 ): Promise<void> {
-  const { conversationId, runId, runResult } = fixture;
+  const { conversationId, runView } = fixture;
   const conversation = {
     id: conversationId,
     identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
@@ -291,112 +289,75 @@ async function installApprovalRestoreMocks(
   await page.route(`**/api/v1/ai/chat/conversations/${conversationId}`, async (route) => {
     await fulfillJson(route, conversation);
   });
-  await page.route('**/api/v1/ai/chat/messages?*', async (route) => {
-    await fulfillJson(route, { data: [], total: 0, page: 1, pageSize: 80 });
+  await page.route('**/api/v1/ai/runtime/assistant/history', async (route) => {
+    await fulfillJson(route, { conversationId, messages: [] });
   });
-  await page.route(`**/api/v1/ai/agents/runs/${runId}/events`, async (route) => {
-    await fulfillJson(route, runResult.events);
+  await page.route('**/api/v1/ai/runtime/usage', async (route) => {
+    await fulfillJson(route, { executionCount: 0 });
   });
-  await page.route(`**/api/v1/ai/agents/runs/${runId}`, async (route) => {
-    await fulfillJson(route, runResult);
-  });
-  await page.route('**/api/v1/ai/agents/runs?*', async (route) => {
-    await fulfillJson(route, []);
+  await page.route('**/api/v1/ai/runtime/workflow/get', async (route) => {
+    await fulfillJson(route, runView);
   });
 }
 
 function createApprovalFixture(input: { conversationId: string; runId: string }) {
   const now = Date.now();
-  const pendingAction = {
-    tool: 'create_goal',
-    payload: { title: 'Phase E 待审批目标' },
-    rationale: '用户批准后创建 Phase E 验证目标。',
-    index: 0,
-    dependsOn: [],
+  const draft = {
+    revision: 1,
+    goal: {
+      name: 'Phase E 待审批目标',
+      description: '验证 clean shell 自动恢复 canonical Mastra goal.create workflow。',
+      category: 'validation',
+      importance: 'Important',
+      motivation: '验证 runtime-owned durable workflow refresh restore。',
+      feasibilityAnalysis: '用户确认后由产品 application port 执行业务写入。',
+      tags: ['phase-e', 'mastra'],
+      startDate: now,
+      targetDate: now + 7 * 24 * 60 * 60 * 1000,
+    },
+    keyResults: [
+      {
+        title: '完成 Phase E workflow 审批',
+        description: '从 durable run 恢复并显示待确认草稿。',
+        valueType: 'Incremental',
+        calculationMethod: 'Sum',
+        startValue: 0,
+        currentValue: 0,
+        targetValue: 1,
+        unit: 'workflow',
+        weight: 3,
+      },
+    ],
+    taskTemplates: [],
+    reminders: [],
+    rationale: 'Phase E validates the canonical Mastra workflow surface.',
+    warnings: [],
   };
-  const run = {
+  const runView = {
     runId: input.runId,
-    threadId: `thread-${input.runId}`,
     conversationId: input.conversationId,
-    identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-    agentType: 'goal.create',
-    status: 'waiting_approval',
+    kind: 'goal.create',
+    status: 'suspended',
+    suspension: {
+      type: 'goal_draft_review',
+      draft,
+      warnings: draft.warnings,
+      revision: draft.revision,
+    },
     createdAt: now,
     updatedAt: now,
   };
-  const state = {
-    messages: [
-      {
-        role: 'user',
-        content: '恢复 Phase E 待审批工作流。',
-        createdAt: now,
-      },
-    ],
-    intent: 'goal-create',
-    stage: 'approval',
-    artifacts: [
-      {
-        artifactId: `${input.runId}:goal-draft`,
-        kind: 'goal_draft',
-        title: 'Phase E 待审批目标',
-        data: {
-          title: 'Phase E 待审批目标',
-          description: '验证清洁 surface 自动切换到待审批工作流。',
-        },
-        updatedAt: now,
-      },
-      {
-        artifactId: `${input.runId}:action-plan`,
-        kind: 'action_plan',
-        title: 'Phase E 审批计划',
-        data: {
-          summary: '批准后创建一个目标。',
-          actions: [pendingAction],
-          warnings: [],
-        },
-        updatedAt: now,
-      },
-    ],
-    citations: [],
-    retrievedContext: [],
-    pendingActions: [pendingAction],
-    approvedActions: [],
-    executedActions: [],
-    usage: {},
-    errors: [],
-  };
-  const events = [
-    {
-      eventId: `${input.runId}:0`,
-      runId: input.runId,
-      sequence: 0,
-      type: 'approval.required',
-      createdAt: now,
-      data: { status: 'waiting_approval' },
-    },
-  ];
-  const interrupts = [
-    {
-      runId: input.runId,
-      type: 'approval.required',
-      pendingActions: [pendingAction],
-    },
-  ];
-  const runResult = { run, state, events, interrupts };
 
   return {
     conversationId: input.conversationId,
     runId: input.runId,
-    runResult,
+    runView,
     workflowEntry: {
       mode: 'goal-create',
       goalWorkflowStage: 'confirm',
-      goalDraft: null,
-      goalClarification: null,
-      goalAutomationResult: null,
-      goalAgentRun: runResult,
-      noteAgentRun: null,
-      taskAgentRun: null,
+      goalWorkflowRun: runView,
+      taskWorkflowRun: null,
+      knowledgeCaptureRun: null,
       knowledgeAnswer: null,
       clarificationAnswers: [],
       editableGoal: {
@@ -411,7 +372,8 @@ function createApprovalFixture(input: { conversationId: string; runId: string })
         targetDate: null,
       },
       editableKeyResults: [],
-      noteSummary: null,
+      editableTaskTemplates: [],
+      editableReminders: [],
       showGoalDraftEditor: false,
     },
   };

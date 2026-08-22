@@ -29,7 +29,7 @@ describe('DI I*Service ClientPort facade keep-boundary (residual 927)', () => {
     ['INotificationService', 'NotificationClientPort'],
     ['ISettingService', 'SettingClientPort'],
     ['IDataPortabilityService', 'DataPortabilityClientPort'],
-    ['IAIService', 'AIClientPort'],
+    ['IAIClient', 'AIClientPort'],
     ['IRuleService', 'GovernanceClientPort'],
   ];
 
@@ -44,7 +44,7 @@ describe('DI I*Service ClientPort facade keep-boundary (residual 927)', () => {
   it('InjectionKeys bind I*Service facades (not raw ClientPort names at key type)', () => {
     expect(keys).toContain('InjectionKey<IAuthService>');
     expect(keys).toContain('InjectionKey<IGoalService>');
-    expect(keys).toContain('InjectionKey<IAIService>');
+    expect(keys).toContain('InjectionKey<IAIClient>');
     expect(keys).toContain('AUTH_SERVICE_KEY: InjectionKey<IAuthService>');
     expect(keys).toContain('GOAL_SERVICE_KEY: InjectionKey<IGoalService>');
     // Must not collapse DI keys onto raw package port type params in this surface
@@ -58,9 +58,10 @@ describe('DI I*Service ClientPort facade keep-boundary (residual 927)', () => {
     expect(types).toContain("from '@memoflow/ai/client'");
     expect(types).toContain("from '@memoflow/repository/client'");
     // Facade count stays fixed at twelve structural service aliases
-    const aliasCount = (
+    const serviceAliasCount = (
       types.match(/^export type I\w+Service = \w+ClientPort;/gm) ?? []
     ).length;
-    expect(aliasCount).toBe(12);
+    expect(serviceAliasCount).toBe(11);
+    expect(types).toContain('export type IAIClient = AIClientPort;')
   });
 });

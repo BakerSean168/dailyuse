@@ -12,9 +12,7 @@ const VITE_BIN_PATH = resolve(WORKSPACE_ROOT, 'node_modules/vite/bin/vite.js');
 const DEFAULT_API_ORIGIN = 'http://localhost:3000';
 const DEFAULT_WEB_ORIGIN = 'http://127.0.0.1:5173';
 const LEGACY_LOCALHOST_WEB_ORIGIN = 'http://localhost:5173';
-const DEFAULT_AI_SERVICE_ORIGIN = 'http://127.0.0.1:58101';
 const DEFAULT_OPENAI_MOCK_ORIGIN = 'http://127.0.0.1:58102';
-const DEFAULT_AI_SERVICE_SECRET = 'e2e-ai-service-secret';
 const DEFAULT_AI_PROVIDER_ENCRYPTION_KEY = 'e2e-ai-provider-encryption-key-32-bytes';
 
 function quoteShellArgument(value: string): string {
@@ -60,8 +58,6 @@ export function loadE2EEnv(): void {
 
 loadE2EEnv();
 
-process.env.AI_SERVICE_BASE_URL ??= DEFAULT_AI_SERVICE_ORIGIN;
-process.env.AI_SERVICE_SECRET ??= DEFAULT_AI_SERVICE_SECRET;
 process.env.AI_PROVIDER_ENCRYPTION_KEY ??= DEFAULT_AI_PROVIDER_ENCRYPTION_KEY;
 
 /** Residual 1027: normalizeOrigin sole imported from e2e/helpers. */
@@ -259,19 +255,5 @@ export function createOpenAICompatibleMockServer() {
   };
 }
 
-export function createAIServiceServer() {
-  return {
-    command: 'uv run uvicorn ai_service.main:create_app --factory --host 127.0.0.1 --port 58101',
-    cwd: '../ai-service/src',
-    url: `${DEFAULT_AI_SERVICE_ORIGIN}/healthz`,
-    env: {
-      ...process.env,
-      SERVICE_SECRET: process.env.AI_SERVICE_SECRET ?? DEFAULT_AI_SERVICE_SECRET,
-      DEBUG: 'true',
-    },
-    reuseExistingServer: false,
-    timeout: 120 * 1000,
-  };
-}
 
 export { DEFAULT_API_ORIGIN as defaultApiOrigin };

@@ -28,7 +28,7 @@ const i18n = createI18n({
       aiAssistant: {
         chatPage: { workflow: { goalClarificationTitle: 'Goal Clarification' } },
         goalAutomation: { executionSuccess: 'Goal created' },
-        errors: { agentRunFailed: 'Failed' },
+        errors: { workflowExecutionFailed: 'Failed' },
       },
     },
   },

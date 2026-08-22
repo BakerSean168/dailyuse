@@ -162,6 +162,16 @@ async function bootstrap(): Promise<void> {
     userProvisioner: createCloudAccountProvisioner(prisma),
     emailDelivery: testEmailLinks?.delivery ?? baseEmailDelivery,
     closureChecker: accountActiveChecker,
+    rateLimit: env.LOCAL_VALIDATION
+      ? {
+          enabled: true,
+          customRules: {
+            // Better Auth's glob treats `*` as one path segment; `/**` is
+            // required to override nested endpoints such as `/sign-in/email`.
+            '/**': { window: 10, max: 100 },
+          },
+        }
+      : undefined,
   });
 
   // 2. 白名单注册 & 启动

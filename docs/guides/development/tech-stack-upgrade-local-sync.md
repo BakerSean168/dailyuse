@@ -202,7 +202,7 @@ pnpm nx run desktop:test
 
 ```bash
 pnpm docker:local:ps
-# postgres / redis / api / web / powersync / ai-service healthy
+# postgres / redis / api / web / powersync healthy
 ```
 
 ## 9. 故障排查速查

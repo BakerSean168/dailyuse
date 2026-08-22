@@ -20,12 +20,20 @@ describe('repository note mutation event surface', () => {
     resolve(__dirname, 'repository-note-mutation.publisher.ts'),
     'utf8',
   );
-  const autoIndex = readFileSync(
+  const aiModule = readFileSync(
+    resolve(repoRoot, 'packages/ai/src/server/infrastructure/ai.module.ts'),
+    'utf8',
+  );
+  const deterministicIndexer = readFileSync(
     resolve(
       repoRoot,
-      'packages/ai/src/server/infrastructure/runtime/knowledge-auto-index.runtime.ts',
+      'packages/ai/src/server/infrastructure/adapters/deterministic-knowledge-ingestion.adapter.ts',
     ),
     'utf8',
+  );
+  const legacyAutoIndexPath = resolve(
+    repoRoot,
+    'packages/ai/src/server/infrastructure/runtime/knowledge-auto-index.runtime.ts',
   );
 
   it('contracts expose repository:note:mutated and Note type names', () => {
@@ -41,14 +49,14 @@ describe('repository note mutation event surface', () => {
     expect(eventMap).not.toContain("'repository:resource:mutated'");
   });
 
-  it('publisher and AI auto-index subscribe to note mutation only', () => {
+  it('keeps note mutation naming while AI indexing uses the explicit deterministic path', () => {
     expect(publisher).toContain('publishRepositoryNoteMutation');
     expect(publisher).toContain('REPOSITORY_NOTE_MUTATED_EVENT');
     expect(publisher).not.toContain('publishRepositoryResourceMutation');
-    expect(autoIndex).toContain('REPOSITORY_NOTE_MUTATED_EVENT');
-    expect(autoIndex).toContain('handleNoteMutation');
-    expect(autoIndex).not.toContain('REPOSITORY_RESOURCE_MUTATED_EVENT');
-    expect(autoIndex).not.toContain('handleResourceMutation');
+    expect(aiModule).toContain('DeterministicKnowledgeIngestionAdapter');
+    expect(aiModule).toContain('SyncKnowledgeNotesUseCase');
+    expect(deterministicIndexer).toContain('implements IKnowledgeIngestionPort');
+    expect(existsSync(legacyAutoIndexPath)).toBe(false);
     expect(existsSync(resolve(__dirname, 'repository-resource-mutation.publisher.ts'))).toBe(false);
     expect(existsSync(resolve(__dirname, 'repository-note-mutation.publisher.ts'))).toBe(true);
   });

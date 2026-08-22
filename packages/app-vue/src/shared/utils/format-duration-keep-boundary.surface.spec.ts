@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 1243: formatDuration keep-boundary (schedule ms export vs minutes i18n vs task/AI variants).
+ * Residual 1243: formatDuration keep-boundary (schedule ms export vs minutes i18n vs task variants).
  * - app-vue schedule-presentation: durationMs null→'-'; ms/sec presentation i18n
  * - app-vue ScheduleConflictAlert: total minutes → schedule.duration.* (hours-only band)
  * Residual 1324: ScheduleConflictAlert + ScheduleFormDemo minutes maps dual-retired onto
@@ -13,7 +13,6 @@ import { describe, expect, it } from 'vitest';
  * - schedule-presentation durationMs/Sec keep-boundary remains
  * - TaskDependencyGraph: concatenative task.dependencyGraph labels
  * - formatTaskDuration: Intl unit hour/minute
- * - AI formatDurationMs: agent durationMs/Sec toFixed(1)
  * - app-react buildDuration: compute minutes only
  * Soft residual 1237: formatTime keep-boundary remains separate.
  * Soft residual 1240: formatDate keep-boundary remains separate.
@@ -43,10 +42,6 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
   );
   const taskUtil = readFileSync(
     resolve(dir, '../../modules/task/utils/format-task-duration.ts'),
-    'utf8',
-  );
-  const ai = readFileSync(
-    resolve(dir, '../../modules/ai/components/AIGoalWorkflowPanel.vue'),
     'utf8',
   );
   const react = readFileSync(
@@ -86,7 +81,7 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
     expect(sole).toContain('schedule.duration.hoursMinutes');
   });
 
-  it('soft residual 1243 ms floor / demo / task graph / Intl / AI / buildDuration stay separate', () => {
+  it('soft residual 1243 ms floor / demo / task graph / Intl / buildDuration stay separate', () => {
     expect(conflictMs).toContain('Soft residual 1243');
     const msBody = conflictMs.match(/function formatDuration\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(msBody).toContain('splitDurationMs');
@@ -112,11 +107,6 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
     expect(taskUtil).toMatch(/export function formatTaskDuration\b/);
     expect(taskUtil).toContain('Intl.NumberFormat');
     expect(taskUtil).toContain("unit: 'hour'");
-
-    expect(ai).toContain('Soft residual 1243');
-    expect(ai).toMatch(/function formatDurationMs\b/);
-    expect(ai).toContain('aiAssistant.dialogs.agent.durationMs');
-    expect(ai).toContain('toFixed(1)');
 
     expect(react).toContain('Soft residual 1243');
     expect(react).toMatch(/function buildDuration\b/);

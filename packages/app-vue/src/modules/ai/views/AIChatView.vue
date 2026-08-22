@@ -7,7 +7,6 @@
     <AIConversationSidebar
       v-if="!hideConversationSidebar && !composerOnly"
       :conversations="conversationList"
-      :agent-runs="agentRunList"
       :recent-goals="recentGoalList"
       :recent-knowledge-notes="recentKnowledgeNoteList"
       :recent-knowledge-notes-email-verification-required="
@@ -16,12 +15,10 @@
       :recent-knowledge-notes-error-message-key="recentKnowledgeNotesErrorMessageKey"
       :active-conversation-id="chatConversationId"
       :loading="conversationListLoading"
-      :agent-runs-loading="agentRunListLoading"
       @new-conversation="startNewConversation()"
       @refresh="loadConversationList"
       @open-settings="openSettings"
       @select="selectConversation"
-      @select-agent-run="selectAgentRun"
       @select-goal="openRecentGoal"
       @select-knowledge-note="openRecentKnowledgeNote"
       @delete="deleteConversation"
@@ -44,7 +41,6 @@
           variant="mobile"
           show-close
           :conversations="conversationList"
-          :agent-runs="agentRunList"
           :recent-goals="recentGoalList"
           :recent-knowledge-notes="recentKnowledgeNoteList"
           :recent-knowledge-notes-email-verification-required="
@@ -53,13 +49,11 @@
           :recent-knowledge-notes-error-message-key="recentKnowledgeNotesErrorMessageKey"
           :active-conversation-id="chatConversationId"
           :loading="conversationListLoading"
-          :agent-runs-loading="agentRunListLoading"
           @new-conversation="startNewConversationFromMobile"
           @refresh="loadConversationList"
           @open-settings="openSettingsFromMobile"
           @close="closeMobileSidebar"
           @select="selectConversationFromMobile"
-          @select-agent-run="selectAgentRunFromMobile"
           @select-goal="openRecentGoalFromMobile"
           @select-knowledge-note="openRecentKnowledgeNoteFromMobile"
           @delete="deleteConversation"
@@ -73,8 +67,10 @@
           <h1 class="truncate text-lg font-medium text-foreground">
             {{ currentConversationLabel }}
           </h1>
-          <div class="flex items-center gap-1 md:hidden">
-            <Button
+          <div class="flex items-center gap-2">
+            <AIRuntimeUsageBadge :usage="lastRuntimeUsage" />
+            <div class="flex items-center gap-1 md:hidden">
+              <Button
               variant="ghost"
               size="icon"
               :aria-label="t('aiAssistant.chatPage.sidebar.open')"
@@ -114,7 +110,8 @@
               @click="startNewConversation()"
             >
               <Plus class="h-4 w-4" />
-            </Button>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -140,19 +137,9 @@
           >
             {{ workflowStatusText }}
           </p>
-          <!-- Residual 383: Host Artifact cards in Conversation message timeline -->
-          <AIHostTimelineArtifactStrip
-            :items="hostTimelineArtifactItems"
-            @open="openHostWorkbenchFromTimeline"
-          />
         </template>
       </AIMessagePanel>
 
-      <!--
-        V2 §6.0: workflow lifecycle buttons sit above the pure-dialogue composer
-        (composer-top strip). Kept outside AIFooterComposer so unit specs that stub
-        the composer still mount the real action bar (goal-agent-* contracts).
-      -->
       <div v-show="!composerOnly" class="px-4 @md/ai:px-6">
         <div class="mx-auto w-full max-w-4xl">
           <AIWorkflowActionBar
@@ -170,27 +157,19 @@
             :goal-agent-waiting-for-clarification="goalAgentWaitingForClarification"
             :goal-agent-waiting-for-approval="goalAgentWaitingForApproval"
             :goal-agent-waiting-for-execution="goalAgentWaitingForExecution"
-            :note-agent-run="noteAgentRun"
-            :note-summary="noteSummary"
-            :note-agent-loading="noteAgentLoading"
-            :note-creating="noteCreating"
-            :can-run-knowledge-note-agent="canRunKnowledgeNoteAgent"
-            :can-retry-knowledge-note-agent-execution="canRetryKnowledgeNoteAgentExecution"
             :knowledge-answer="knowledgeAnswer"
             :knowledge-query-loading="knowledgeQueryLoading"
             :can-ask-knowledge="canAskKnowledge"
-            :can-run-workflow-actions="canRunWorkflowActions"
-            :can-send-message="canSendMessage"
             :task-agent-loading="taskAgentLoading"
             :can-run-task-agent="canRunTaskAgent"
             :linked-goal-id="linkedGoalId"
             :recent-goals="recentGoalList"
-            :set-linked-goal-id="setLinkedGoalId"
-            :start-task-agent-run="startTaskAgentRun"
             :knowledge-capture-loading="knowledgeCaptureLoading"
             :can-run-knowledge-capture="canRunKnowledgeCapture"
-            :start-knowledge-capture-run="startKnowledgeCaptureRun"
             :start-goal-agent-run="startGoalAgentRun"
+            :start-task-agent-run="startTaskAgentRun"
+            :set-linked-goal-id="setLinkedGoalId"
+            :start-knowledge-capture-run="startKnowledgeCaptureRun"
             :submit-goal-agent-clarification="submitGoalAgentClarification"
             :confirm-goal-agent-run="confirmGoalAgentRun"
             :cancel-goal-agent-run="cancelGoalAgentRun"
@@ -198,13 +177,6 @@
             :retry-goal-agent-execution="retryGoalAgentExecution"
             :toggle-goal-draft-editor="toggleGoalDraftEditor"
             :open-automated-goal="openAutomatedGoal"
-            :start-knowledge-note-agent-run="startKnowledgeNoteAgentRun"
-            :create-knowledge-note-from-conversation="createKnowledgeNoteFromConversation"
-            :start-knowledge-note-agent-run-from-knowledge-answer="
-              startKnowledgeNoteAgentRunFromKnowledgeAnswer
-            "
-            :retry-knowledge-note-agent-execution="retryKnowledgeNoteAgentExecution"
-            :open-created-note="openCreatedNote"
             :ask-knowledge-from-conversation="askKnowledgeFromConversation"
             :exit-tool-mode="exitToolMode"
           />
@@ -246,16 +218,6 @@
       />
     </section>
 
-    <!--
-      Artifact rail / Host proposal + execution-report workbench (residual 371/379/381/383/387):
-      AIContextPanel is the structured right workbench for Goal/Knowledge artifacts,
-      waiting_approval Host proposals, and post-approve Host execution receipts.
-      Residual 381 reopens this rail from Conversation AgentRun history.
-      Residual 383 also surfaces Host Artifact cards in the message timeline.
-      Residual 387 focuses the matching proposal/receipt row from a timeline card.
-      Actions near composer remain lifecycle shortcuts; Host revise/approve/reject
-      and receipt presentation live here.
-    -->
     <Teleport :to="shellWorkflowMount ?? 'body'" :disabled="!shellWorkflowMount">
       <AIContextPanel
         v-show="!composerOnly"
@@ -263,24 +225,8 @@
         :open="contextPanelOpen"
         :embedded="Boolean(shellWorkflowMount)"
         :tool-label="currentToolLabel"
-        :host-proposal-count="hostProposalItems.length"
-        :host-execution-receipt-count="hostExecutionReceiptItems.length"
         @close="closeContextPanel"
       >
-        <AIHostProposalPanel
-          ref="hostProposalPanelRef"
-          :items="hostProposalItems"
-          :busy="goalAgentResuming || noteCreating || hostProposalBusy"
-          :focused-proposal-id="focusedHostProposalId"
-          @approve="handleHostProposalApprove"
-          @reject="handleHostProposalReject"
-          @revise="handleHostProposalRevise"
-        />
-        <AIHostExecutionReceiptPanel
-          :items="hostExecutionReceiptItems"
-          :focused-proposal-id="focusedHostProposalId"
-          @open-entity="openHostReceiptEntity"
-        />
         <AIGoalWorkflowPanel
           :tool-mode="toolMode"
           :goal-clarification="goalClarification"
@@ -292,10 +238,6 @@
           :editable-reminders="editableReminders"
           :show-goal-draft-editor="showGoalDraftEditor"
           :knowledge-answer="knowledgeAnswer"
-          :knowledge-qa-agent-run="knowledgeQaAgentRun"
-          :note-agent-run="noteAgentRun"
-          :note-summary="noteSummary"
-          :note-preview="notePreview"
           :format-execution-outcome="formatExecutionOutcome"
           @update:clarification-answers="handleClarificationAnswersUpdate"
           @confirm="handleCreateGoalFromDraft"
@@ -310,8 +252,6 @@
           @remove-reminder="removeReminderDraft"
           @update-reminder="updateReminderDraft"
           @open-knowledge-citation="openKnowledgeCitation"
-          @open-created-note="openCreatedNote"
-          @start-new-conversation="startNewConversation"
         />
         <AITaskWorkflowPanel
           :tool-mode="toolMode"
@@ -330,16 +270,10 @@
           @edit-started="showKnowledgeDraftEditor = true"
         />
         <div
-          v-if="
-            !hasWorkflowArtifact &&
-            hostProposalItems.length === 0 &&
-            hostExecutionReceiptItems.length === 0
-          "
+          v-if="!hasWorkflowArtifact"
           class="rounded-lg border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground"
           data-testid="ai-context-empty-state"
         >
-          <!-- Phase 5：ContextPanel 是工作台布局容器，空态只表达"暂无工作台内容"，
-               不再重复渲染 timeline/ActionBar 的 workflowStatusText。 -->
           {{ t('aiAssistant.chatPage.context.empty') }}
         </div>
       </AIContextPanel>
@@ -353,8 +287,6 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Menu, PanelRightOpen, Plus } from '@lucide/vue';
 import { Button } from '@memoflow/ui-vue-shadcn';
-import { toast } from 'vue-sonner';
-import type { AgentRun } from '@memoflow/contracts/ai';
 import AIConversationSidebar from '../components/AIConversationSidebar.vue';
 import AIMessagePanel from '../components/AIMessagePanel.vue';
 import AIFooterComposer from '../components/AIFooterComposer.vue';
@@ -363,9 +295,7 @@ import AITaskWorkflowPanel from '../components/AITaskWorkflowPanel.vue';
 import AIKnowledgeCapturePanel from '../components/AIKnowledgeCapturePanel.vue';
 import AIWorkflowActionBar from '../components/AIWorkflowActionBar.vue';
 import AIContextPanel from '../components/AIContextPanel.vue';
-import AIHostProposalPanel from '../components/AIHostProposalPanel.vue';
-import AIHostExecutionReceiptPanel from '../components/AIHostExecutionReceiptPanel.vue';
-import AIHostTimelineArtifactStrip from '../components/AIHostTimelineArtifactStrip.vue';
+import AIRuntimeUsageBadge from '../components/AIRuntimeUsageBadge.vue';
 import { useAppShellStore } from '../../../layouts/shell/useAppShellStore';
 import {
   SHELL_COMPOSER_DENSITY_KEY,
@@ -374,72 +304,19 @@ import {
 } from '../../../di/keys';
 import type { ComposerDensity } from '../../../layouts/shell/panel-geometry';
 import { useAIChatView } from '../composables/useAIChatView';
-import {
-  buildPendingHostProposalItems,
-  buildHostExecutionReceiptItems,
-  buildHostTaskClientExecutionReceipt,
-  buildHostTaskCreateTemplateRequest,
-  canHostApproveProductAgentRun,
-  canHostRejectProductAgentRun,
-  canHostReviseProductAgentRun,
-  resolveHostPanelOwnedProductRun,
-  isHostPanelProcessLocalTaskCreateOwned,
-  isHostPanelKnowledgeSessionProductOwned,
-  shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
-  shouldReviseKnowledgeSessionDraftBeforeConfirm,
-  composeHostWorkbenchTimelineArtifacts,
-  resolveHostWorkbenchFocusFromTimeline,
-  resolveLiveHostWorkbenchAgentRuns,
-  shouldOpenHostWorkbenchFromAgentRun,
-  resolveHostWorkbenchFocusFromAgentRun,
-  resolveHostWorkbenchFocusFromSessionRuns,
-  resolveDefaultHostWorkbenchFocusProposalId,
-  dispatchHostProposalDecision,
-  normalizeHostProposalRejectReason,
-  dispatchHostProposalRevise,
-  type HostExecutionReceiptItem,
-  type HostProposalPanelItem,
-  type HostTimelineArtifactItem,
-} from '../composables/hostProposalLifecycle';
-import { useTaskTemplateMutations } from '../../task/composables/useTaskTemplateMutations';
-import type { CreateTaskTemplateReq } from '@memoflow/contracts/task';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
-import { useAI } from '../composables/useAI';
 
 const { t } = useI18n();
 const router = useRouter();
-const { service: aiHostService } = useAI();
-/** Residual 423: domain Task template create fallback for Host task approve. */
-const { createTemplateSafe: createTaskTemplate } = useTaskTemplateMutations();
-/** Residual 425: client domain createTemplate settled proposalIds (session-only). */
-const clientSettledHostProposalIds = ref<string[]>([]);
-/** Residual 425: client domain task Host execution receipts (session-only). */
-const clientTaskHostReceipts = ref<HostExecutionReceiptItem[]>([]);
 
-/**
- * V2 shell integration props (UI_REDESIGN_V2_PLAN §2.1).
- *
- * AIChatView is no longer a routed page: the AppShell mounts it once as the
- * persistent AI workspace layer. The shell owns the conversation sidebar
- * (`ConversationSidebar`) and hides the built-in one; in the focus state
- * (STATE C) only the composer strip stays visible ("AI 一句话可达").
- * Both props default to false so the component keeps working standalone
- * (unit specs mount it without the shell).
- */
 withDefaults(
   defineProps<{
     hideConversationSidebar?: boolean;
-    /**
-     * Legacy focus strip mode: hide messages/sidebar and keep only the in-tree
-     * composer. When the shell provides SHELL_COMPOSER_MOUNT_KEY, AppShell hides
-     * the whole AI column in focus instead and this flag stays false.
-     */
     composerOnly?: boolean;
   }>(),
   { hideConversationSidebar: false, composerOnly: false },
 );
 
-/** Shell teleport host for GlobalComposer; null in standalone/unit mounts. */
 const shellComposerMountRef = inject(SHELL_COMPOSER_MOUNT_KEY, null);
 const shellComposerDensityRef = inject(SHELL_COMPOSER_DENSITY_KEY, null);
 const shellWorkflowMountRef = inject(SHELL_WORKFLOW_MOUNT_KEY, null);
@@ -457,15 +334,12 @@ const {
   session,
   model,
   goalWorkflow,
-  noteWorkflow,
   knowledgeQaWorkflow,
   taskWorkflow,
   knowledgeCaptureWorkflow,
   formatters,
   common,
-} = useAIChatView({
-  getComposerTextarea: () => composerRef.value?.composerTextarea ?? null,
-});
+} = useAIChatView({ getComposerTextarea: () => composerRef.value?.composerTextarea ?? null });
 
 const {
   chatMessage,
@@ -474,16 +348,13 @@ const {
   chatTimeline,
   conversationList,
   conversationListLoading,
-  agentRunList,
-  agentRunListLoading,
-  taskAgentRun,
   recentGoalList,
   recentKnowledgeNoteList,
   recentKnowledgeNotesEmailVerificationRequired,
   recentKnowledgeNotesErrorMessageKey,
   messagesViewport,
+  lastRuntimeUsage,
   selectConversation: selectConversationBase,
-  selectAgentRun: selectAgentRunBase,
   openRecentGoal,
   openRecentKnowledgeNote,
   deleteConversation,
@@ -536,25 +407,8 @@ const {
 } = goalWorkflow;
 
 const {
-  noteCreating,
-  noteSummary,
-  noteAgentRun,
-  noteAgentLoading,
-  canRunKnowledgeNoteAgent,
-  canRetryKnowledgeNoteAgentExecution,
-  startKnowledgeNoteAgentRun,
-  createKnowledgeNoteFromConversation,
-  startKnowledgeNoteAgentRunFromKnowledgeAnswer,
-  retryKnowledgeNoteAgentExecution,
-  reviseKnowledgeNoteAgentRun,
-  cancelKnowledgeNoteAgentRun,
-  openCreatedNote,
-} = noteWorkflow;
-
-const {
   knowledgeQueryLoading,
   knowledgeAnswer,
-  knowledgeQaAgentRun,
   canAskKnowledge,
   askKnowledgeFromConversation,
   openKnowledgeCitation,
@@ -569,8 +423,6 @@ const {
   setLinkedGoalId,
   startTaskAgentRun,
   cancelTaskAgentRun,
-  completeTaskAgentRun,
-  reviseTaskAgentRun,
   confirmTaskAgentRun,
   retryTaskAgentExecution,
 } = taskWorkflow;
@@ -580,798 +432,139 @@ const {
   showKnowledgeDraftEditor,
   canRunKnowledgeCapture,
   knowledgeCaptureLoading,
-  knowledgeCaptureResuming,
   startKnowledgeCaptureRun,
   cancelKnowledgeCaptureRun,
-  completeKnowledgeCaptureRun,
-  reviseKnowledgeCaptureRun,
   confirmKnowledgeCaptureRun,
   retryKnowledgeCaptureExecution,
-  submitKnowledgeClarification,
-  knowledgeCaptureWaitingForApproval,
-  knowledgeCaptureWaitingForClarification,
-  canSubmitKnowledgeClarification,
 } = knowledgeCaptureWorkflow;
 
-const { formatAutomationTool, formatAgentTool, formatActionStatus, formatExecutionOutcome } =
-  formatters;
-
+const { formatExecutionOutcome } = formatters;
 const {
   toolMode,
   currentConversationLabel,
   currentToolLabel,
   currentToolButtonLabel,
-  notePreview,
   workflowStatusText,
-  canRunWorkflowActions,
   exitToolMode,
   openSettings,
 } = common;
 
 const contextPanelOpen = ref(false);
 const mobileSidebarOpen = ref(false);
-/** Dedup key for auto-opening a business panel Tab for the current artifact. */
-const lastOpenedArtifactKey = ref<string | null>(null);
+const lastOpenedGoalId = ref<string | null>(null);
 
 const hasWorkflowArtifact = computed(() => {
-  if (toolMode.value === 'goal-create') {
-    return Boolean(goalWorkflowRun.value);
-  }
-
-  if (toolMode.value === 'knowledge-qa') {
-    return Boolean(
-      knowledgeAnswer.value || knowledgeQaAgentRun.value || noteAgentRun.value || noteSummary.value,
-    );
-  }
-
-  if (toolMode.value === 'knowledge-generate') {
-    return Boolean(noteAgentRun.value || noteSummary.value);
-  }
-
-  // Residual 429: task.create product toolMode owns dedicated taskAgentRun artifacts.
-  if (toolMode.value === 'task-create') {
-    return Boolean(taskAgentRun.value);
-  }
-
-  if (toolMode.value === 'knowledge-capture') {
-    return Boolean(knowledgeCaptureRun.value);
-  }
-
+  if (toolMode.value === 'goal-create') return Boolean(goalWorkflowRun.value);
+  if (toolMode.value === 'task-create') return Boolean(taskWorkflowRun.value);
+  if (toolMode.value === 'knowledge-capture') return Boolean(knowledgeCaptureRun.value);
+  if (toolMode.value === 'knowledge-qa') return Boolean(knowledgeAnswer.value);
   return false;
 });
-
-// Residual 357/359/361/367/419/423: Host proposal workbench rows (waiting_approval only).
-// Residual 423: promote primary task-shaped session runs into exclusive task.create lane.
-const liveHostWorkbenchAgentRuns = computed(() =>
-  resolveLiveHostWorkbenchAgentRuns({
-    // goal.create is owned by the durable Workflow panel, never Host Proposal.
-    goalAgentRun: null,
-    noteAgentRun: noteAgentRun.value,
-    // Residual 427: dedicated task.create session field preferred when present.
-    taskAgentRun: taskAgentRun.value,
-  }),
-);
-
-const hostProposalItems = computed(() =>
-  buildPendingHostProposalItems({
-    goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
-    noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
-    taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
-    settledProposalIds: clientSettledHostProposalIds.value,
-  }),
-);
-
-/** Residual 379/423/425: Host execution receipts (AgentRun + client createTemplate). */
-const hostExecutionReceiptItems = computed(() =>
-  buildHostExecutionReceiptItems({
-    goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
-    noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
-    taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
-    clientTaskReceipts: clientTaskHostReceipts.value,
-  }),
-);
-
-/**
- * Host workflow Artifact cards remain in the workbench. Open chat no longer
- * contributes legacy DirectTurn / pi_readonly engine badges after Mastra cutover.
- */
-const hostWorkbenchTimeline = computed(() =>
-  composeHostWorkbenchTimelineArtifacts({
-    openChatTurns: [],
-    proposals: hostProposalItems.value,
-    receipts: hostExecutionReceiptItems.value,
-  }),
-);
-const hostTimelineArtifactItems = computed(() => hostWorkbenchTimeline.value.items);
-
-/** Residual 387: timeline card focus target (proposalId) for right workbench highlight. */
-const focusedHostProposalId = ref<string | null>(null);
-
-/**
- * Residual 383/387: timeline Artifact card reopens Host workbench and focuses
- * the matching proposal/receipt row.
- */
-function openHostWorkbenchFromTimeline(item?: HostTimelineArtifactItem) {
-  // Residual 401: open-chat cards are multi-engine badges only — no proposal/receipt focus.
-  if (item?.surface === 'open_chat') {
-    focusedHostProposalId.value = null;
-    return;
-  }
-  requestContextPanel('explicit');
-  const focus = resolveHostWorkbenchFocusFromTimeline(item);
-  focusedHostProposalId.value = focus?.proposalId ?? null;
-}
-
-watch(
-  [hostProposalItems, hostExecutionReceiptItems],
-  () => {
-    const focusedId = focusedHostProposalId.value;
-    if (!focusedId) return;
-    const stillPresent =
-      hostProposalItems.value.some((row) => row.proposalId === focusedId) ||
-      hostExecutionReceiptItems.value.some((row) => row.proposalId === focusedId);
-    if (!stillPresent) {
-      focusedHostProposalId.value = null;
-    }
-  },
-  { deep: true },
-);
-
-/**
- * Residual 385/419: deep-link from Host execution receipt primary entity.
- * Goal → /goals/:id; knowledge → repository note open path; task → /tasks/:id.
- */
-async function openHostReceiptEntity(payload: {
-  source: 'goal' | 'knowledge' | 'task';
-  entityId: string;
-}) {
-  if (!payload.entityId) return;
-  if (payload.source === 'goal') {
-    await router.push(`/goals/${payload.entityId}`);
-    return;
-  }
-  if (payload.source === 'task') {
-    await router.push(`/tasks/${payload.entityId}`);
-    return;
-  }
-  await openRecentKnowledgeNote(payload.entityId);
-}
-
-/** Residual 371: pending Host proposals are first-class right-workbench context. */
-const hasPendingHostProposals = computed(() => hostProposalItems.value.length > 0);
-
-/** Residual 379: completed Host receipts keep the right workbench relevant. */
-const hasHostExecutionReceipts = computed(() => hostExecutionReceiptItems.value.length > 0);
-
-const hasWorkflowContext = computed(
-  () =>
-    toolMode.value !== 'chat' ||
-    hasWorkflowArtifact.value ||
-    hasPendingHostProposals.value ||
-    hasHostExecutionReceipts.value,
-);
-
-const workflowSurfaceItemCount = computed(() =>
-  Math.max(
-    1,
-    (hasWorkflowArtifact.value ? 1 : 0) +
-      hostProposalItems.value.length +
-      hostExecutionReceiptItems.value.length,
-  ),
-);
-
-const workflowDeferredNotificationShown = ref(false);
+const hasWorkflowContext = computed(() => toolMode.value !== 'chat' || hasWorkflowArtifact.value);
+const workflowSurfaceItemCount = computed(() => (hasWorkflowArtifact.value ? 1 : 0));
 
 function requestContextPanel(intent: 'automatic' | 'explicit') {
   contextPanelOpen.value = true;
-  if (!shellStore) return;
-
-  const result = shellStore.requestWorkflowSurface(intent);
-  if (result === 'deferred' && !workflowDeferredNotificationShown.value) {
-    workflowDeferredNotificationShown.value = true;
-    toast.info(t('shell.panel.workflowReady'));
-  } else if (result === 'opened') {
-    workflowDeferredNotificationShown.value = false;
-  }
+  shellStore?.requestWorkflowSurface(intent);
 }
-
-const hostProposalBusy = ref(false);
-const hostProposalPanelRef = ref<{
-  applyRevised: (
-    proposalId: string,
-    next: {
-      revision: number;
-      title?: string;
-      description?: string | null;
-      targetPath?: string;
-      contentMarkdown?: string;
-      goalId?: string | null;
-    },
-  ) => void;
-} | null>(null);
-
-async function handleHostProposalRevise(payload: {
-  item: HostProposalPanelItem;
-  revision: number;
-  patch: {
-    title?: string;
-    targetPath?: string;
-    contentMarkdown?: string;
-    description?: string | null;
-    goalId?: string | null;
-  };
-  dirty: boolean;
-}) {
-  if (hostProposalBusy.value || !payload.dirty) return;
-
-  // Residual 567: product-lane Host revise waiting_approval before Host lifecycle.
-  // Residual 573: sole product draftAction (approve residual 561/563 symmetry).
-  // Residual 569/571/577: shared resolveHostPanelOwnedProductRun for gate + settlement
-  // (live workbench lane + primary-task → create_task_template).
-  // Edit residual 481 + residual 565 reject / 561 approve symmetry.
-  // Avoids revise-then-silent-noop + dual ownership drift.
-  const owned =
-    payload.item.source === 'knowledge' || payload.item.source === 'task'
-      ? resolveHostPanelOwnedProductRun({
-          source: payload.item.source,
-          runId: payload.item.runId,
-          goalAgentRun: null,
-          noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
-          taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
-        })
-      : null;
-  // Knowledge must own a session run; task orphan Host-only revise stays ungated.
-  if (payload.item.source === 'knowledge' && !owned) return;
-  // Residual 573: sole product draftAction + waiting_approval (approve symmetry).
-  if (
-    owned &&
-    !canHostReviseProductAgentRun({
-      run: owned.run,
-      productTool: owned.productTool,
-    })
-  ) {
-    return;
-  }
-
-  hostProposalBusy.value = true;
-  try {
-    const result = await dispatchHostProposalRevise(aiHostService, {
-      runId: payload.item.runId,
-      kind: payload.item.kind,
-      revision: payload.revision,
-      patch: payload.patch,
-    });
-    hostProposalPanelRef.value?.applyRevised(payload.item.proposalId, {
-      revision: result.revision,
-      title: payload.patch.title,
-      description: payload.patch.description,
-      targetPath: payload.patch.targetPath,
-      contentMarkdown: payload.patch.contentMarkdown,
-      goalId: payload.patch.goalId,
-    });
-    // Process-local task.create edit only via the dedicated Task owner.
-    if (
-      payload.item.source === 'task' &&
-      payload.item.kind === 'task.create' &&
-      isHostPanelProcessLocalTaskCreateOwned(owned)
-    ) {
-      await reviseTaskAgentRun({
-        title: payload.patch.title ?? payload.item.title,
-        goalId: payload.patch.goalId ?? payload.item.goalId,
-      });
-    }
-    // Residual 605: knowledge session process-local edit via shared classifier
-    // (task residual 439 + knowledge classifier residual 603 symmetry).
-    if (payload.item.source === 'knowledge' && isHostPanelKnowledgeSessionProductOwned(owned)) {
-      await reviseKnowledgeNoteAgentRun({
-        targetPath: payload.patch.targetPath ?? payload.item.targetPath,
-        contentMarkdown: payload.patch.contentMarkdown ?? payload.item.contentMarkdown,
-      });
-    }
-  } finally {
-    hostProposalBusy.value = false;
-  }
-}
-
-async function handleHostProposalApprove(payload: {
-  item: HostProposalPanelItem;
-  revision: number;
-  patch: {
-    title?: string;
-    targetPath?: string;
-    contentMarkdown?: string;
-    description?: string | null;
-    goalId?: string | null;
-  };
-  dirty: boolean;
-}) {
-  if (hostProposalBusy.value) return;
-
-  // Host Proposal is transitional for Knowledge/Task only. goal.create approval
-  // is owned exclusively by the durable Workflow ActionBar.
-  const owned =
-    payload.item.source === 'knowledge' || payload.item.source === 'task'
-      ? resolveHostPanelOwnedProductRun({
-          source: payload.item.source,
-          runId: payload.item.runId,
-          goalAgentRun: null,
-          noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
-          taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
-        })
-      : null;
-  if (payload.item.source === 'knowledge' && !owned) return;
-  if (
-    owned &&
-    !canHostApproveProductAgentRun({
-      run: owned.run,
-      productTool: owned.productTool,
-    })
-  ) {
-    return;
-  }
-
-  hostProposalBusy.value = true;
-  try {
-    let revision = payload.revision;
-    if (payload.dirty) {
-      const revised = await dispatchHostProposalRevise(aiHostService, {
-        runId: payload.item.runId,
-        kind: payload.item.kind,
-        revision,
-        patch: payload.patch,
-      });
-      revision = revised.revision;
-      hostProposalPanelRef.value?.applyRevised(payload.item.proposalId, {
-        revision,
-        title: payload.patch.title,
-        description: payload.patch.description,
-        targetPath: payload.patch.targetPath,
-        contentMarkdown: payload.patch.contentMarkdown,
-        goalId: payload.patch.goalId,
-      });
-    }
-
-    await dispatchHostProposalDecision(aiHostService, {
-      decision: 'approve',
-      runId: payload.item.runId,
-      kind: payload.item.kind,
-      revision,
-    });
-
-    if (
-      shouldReviseKnowledgeSessionDraftBeforeConfirm({
-        dirty: payload.dirty,
-        owned,
-      })
-    ) {
-      await reviseKnowledgeNoteAgentRun({
-        targetPath: payload.patch.targetPath ?? payload.item.targetPath,
-        contentMarkdown: payload.patch.contentMarkdown ?? payload.item.contentMarkdown,
-      });
-    }
-
-    // Knowledge settle via its transitional AgentRun owner.
-    if (payload.item.source === 'knowledge' && isHostPanelKnowledgeSessionProductOwned(owned)) {
-      await createKnowledgeNoteFromConversation({
-        skipHostLifecycle: true,
-        revision,
-        // Residual 363: pass Host-revised path/body into resumeAgentRun executor payload.
-        targetPath: payload.patch.targetPath ?? payload.item.targetPath,
-        contentMarkdown: payload.patch.contentMarkdown ?? payload.item.contentMarkdown,
-      });
-      return;
-    }
-    // Residual 423/427/571: task settlement ownership from shared resolver (no dual re-resolve).
-    if (payload.item.source === 'task') {
-      const title = payload.patch.title ?? payload.item.title;
-      const goalId = payload.patch.goalId ?? payload.item.goalId;
-      const isTaskAgentType = isHostPanelProcessLocalTaskCreateOwned(owned);
-      const ownedByTaskSession = isTaskAgentType;
-      // Residual 459: dirty approve must revise process-local draft before domain createTemplate
-      // so getRun/reopen cannot rehydrate a stale title if mutation fails mid-flight.
-      if (
-        shouldReviseProcessLocalTaskDraftBeforeDomainSettle({
-          dirty: payload.dirty,
-          isTaskAgentType,
-          ownedByTaskSession,
-          agentType: owned?.run.run.agentType,
-        })
-      ) {
-        await reviseTaskAgentRun({
-          title,
-          goalId,
-        });
-      }
-      // Fallback: pure domain Task template create (no AgentRun resume owner / after task path).
-      // Residual 425: settle proposal + client Host receipt with deep-link entity id.
-      const req = buildHostTaskCreateTemplateRequest({ title, goalId });
-      if (req) {
-        const created = await createTaskTemplate(req as CreateTaskTemplateReq);
-        const templateId = created?.template?.id ? String(created.template.id) : '';
-        if (templateId) {
-          const receipt = buildHostTaskClientExecutionReceipt({
-            runId: payload.item.runId,
-            proposalId: payload.item.proposalId,
-            revision,
-            title,
-            templateId,
-            goalId,
-          });
-          if (!clientSettledHostProposalIds.value.includes(payload.item.proposalId)) {
-            clientSettledHostProposalIds.value = [
-              ...clientSettledHostProposalIds.value,
-              payload.item.proposalId,
-            ];
-          }
-          if (!clientTaskHostReceipts.value.some((row) => row.proposalId === receipt.proposalId)) {
-            clientTaskHostReceipts.value = [...clientTaskHostReceipts.value, receipt];
-          }
-          // Residual 437/571: process-local complete only when ownership maps task.create.
-          if (isTaskAgentType) {
-            await completeTaskAgentRun({
-              templateId,
-              title,
-              goalId,
-            });
-          }
-        }
-      }
-      return;
-    }
-  } finally {
-    hostProposalBusy.value = false;
-  }
-}
-
-async function handleHostProposalReject(payload: {
-  item: HostProposalPanelItem;
-  revision: number;
-  reason?: string;
-}) {
-  if (hostProposalBusy.value) return;
-
-  // Reject is transitional for Knowledge/Task only. Goal cancellation is a
-  // Workflow command, never a Host Proposal decision.
-  const owned =
-    payload.item.source === 'knowledge' || payload.item.source === 'task'
-      ? resolveHostPanelOwnedProductRun({
-          source: payload.item.source,
-          runId: payload.item.runId,
-          goalAgentRun: null,
-          noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
-          taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
-        })
-      : null;
-  if (payload.item.source === 'knowledge' && !owned) return;
-  if (owned && !canHostRejectProductAgentRun({ run: owned.run })) return;
-
-  hostProposalBusy.value = true;
-  try {
-    // Residual 397: freeform reject reason from Host proposal workbench (lifecycle only).
-    await dispatchHostProposalDecision(aiHostService, {
-      decision: 'reject',
-      runId: payload.item.runId,
-      kind: payload.item.kind,
-      revision: payload.revision,
-      reason: normalizeHostProposalRejectReason(payload.reason),
-    });
-
-    // Knowledge cancel via its transitional AgentRun owner.
-    if (payload.item.source === 'knowledge' && isHostPanelKnowledgeSessionProductOwned(owned)) {
-      await cancelKnowledgeNoteAgentRun({
-        skipHostLifecycle: true,
-        revision: payload.revision,
-      });
-      return;
-    }
-    // Residual 423/425/427/437/571/579/581: cancel path from shared settlement classifiers.
-    if (payload.item.source === 'task') {
-      if (isHostPanelProcessLocalTaskCreateOwned(owned)) {
-        // Residual 437: process-local cancel resume (store → cancelled).
-        await cancelTaskAgentRun({
-          skipHostLifecycle: true,
-          revision: payload.revision,
-        });
-        if (!clientSettledHostProposalIds.value.includes(payload.item.proposalId)) {
-          clientSettledHostProposalIds.value = [
-            ...clientSettledHostProposalIds.value,
-            payload.item.proposalId,
-          ];
-        }
-      } else if (!clientSettledHostProposalIds.value.includes(payload.item.proposalId)) {
-        // Residual 425: client-settle orphan task proposals (no AgentRun owner to cancel).
-        clientSettledHostProposalIds.value = [
-          ...clientSettledHostProposalIds.value,
-          payload.item.proposalId,
-        ];
-      }
-      return;
-    }
-  } finally {
-    hostProposalBusy.value = false;
-  }
-}
-
-// Residual 371/379/443/611: auto-open right workbench for Host proposals or execution receipts.
-// Residual 443: default-focus when nothing is focused yet (conversation restore + task.create start).
-// Residual 611: exclusive session focus (task > goal > knowledge; dual-mirror + ghost rules)
-// matching residual 603 selectAgentRun / residual 443 selectConversation — not raw items[0]
-// (goal-first builder order would steal focus from exclusive task when both pending).
-// Desktop already shows the rail; mobile needs open=true to unhide the sheet.
-watch(
-  [hasPendingHostProposals, hasHostExecutionReceipts, hostProposalItems, hostExecutionReceiptItems],
-  ([pending, receipts]) => {
-    if (pending || receipts) {
-      requestContextPanel('automatic');
-      if (!focusedHostProposalId.value) {
-        focusedHostProposalId.value = resolveDefaultHostWorkbenchFocusProposalId({
-          taskAgentRun: taskAgentRun.value,
-          goalAgentRun: null,
-          noteAgentRun: noteAgentRun.value,
-          proposalItems: hostProposalItems.value,
-          receiptItems: hostExecutionReceiptItems.value,
-        });
-      }
-    }
-  },
-  { immediate: true },
-);
 
 watch(
   [hasWorkflowContext, workflowSurfaceItemCount],
   ([available, itemCount], [wasAvailable]) => {
-    if (!shellStore) return;
-    shellStore.setWorkflowAvailable(available, itemCount);
-    if (available && !wasAvailable) {
-      requestContextPanel('automatic');
-    }
-    if (!available) {
-      workflowDeferredNotificationShown.value = false;
-    }
+    shellStore?.setWorkflowAvailable(available, itemCount);
+    if (available && !wasAvailable) requestContextPanel('automatic');
   },
   { immediate: true },
 );
 
-/**
- * Prefill composer + set tool mode from welcome shortcut cards (V2 §6.0).
- */
+watch([goalWorkflowRun, automatedGoalId, toolMode], () => {
+  if (
+    toolMode.value !== 'goal-create' ||
+    goalWorkflowRun.value?.status !== 'completed' ||
+    !automatedGoalId.value ||
+    lastOpenedGoalId.value === automatedGoalId.value
+  ) {
+    return;
+  }
+  lastOpenedGoalId.value = automatedGoalId.value;
+  try {
+    shellStore?.openTab({
+      module: 'goal',
+      route: `/goals/${automatedGoalId.value}`,
+      title: t('nav.capsule.goal'),
+      intent: 'deeplink',
+    });
+  } catch {
+    // Isolated component tests may not have a Pinia shell.
+  }
+  void router.push(`/goals/${automatedGoalId.value}`);
+});
+
 function handleWelcomeShortcut(mode: WorkflowMode) {
   const prefillKey = {
     chat: 'aiAssistant.chatPage.shortcuts.chat.prefill',
     'goal-create': 'aiAssistant.chatPage.shortcuts.goalCreate.prefill',
     'task-create': 'aiAssistant.chatPage.shortcuts.taskCreate.prefill',
-    'knowledge-generate': 'aiAssistant.chatPage.shortcuts.knowledgeGenerate.prefill',
+    'knowledge-capture': 'aiAssistant.chatPage.shortcuts.knowledgeGenerate.prefill',
     'knowledge-qa': 'aiAssistant.chatPage.shortcuts.knowledgeQa.prefill',
   }[mode];
-
   startNewConversation(mode);
-  if (prefillKey) {
-    chatMessage.value = t(prefillKey);
-  }
+  if (prefillKey) chatMessage.value = t(prefillKey);
 }
-
-/**
- * When a workflow product is ready, open a business panel Tab without stealing
- * a different already-open route (shell openTab intent: deeplink + router push).
- * Pinia may be absent in isolated unit mounts — store call is best-effort.
- */
-function openArtifactBusinessTab(
-  module: 'goal' | 'note',
-  route: string,
-  title: string,
-  artifactKey: string,
-) {
-  if (lastOpenedArtifactKey.value === artifactKey) return;
-
-  if (shellStore && (!shellStore.rightPanelOpen || shellStore.surfaceStatus !== 'clean')) {
-    requestContextPanel('automatic');
-    return;
-  }
-  lastOpenedArtifactKey.value = artifactKey;
-
-  try {
-    const shellStore = useAppShellStore();
-    shellStore.openTab({
-      module,
-      route,
-      title,
-      intent: 'deeplink',
-    });
-  } catch {
-    // no active pinia (unit tests) — router push still exercises navigation
-  }
-
-  void router.push(route);
-}
-
-// Only open tabs for ready products: created goal / created note.
-// Do not open merely because an Agent run is in progress (avoids mid-flow jumps).
-// Open panel Tabs for ready products only (V2 §6.0 / §2.3 deeplink, no steal).
-// A pending goal_draft_review is NOT a ready product: HITL confirm/cancel/retry
-// lives on the Workflow panel in the AI workspace. Auto-navigating to /goals
-// would clobber that surface (and session-restored pending runs must not yank
-// the user out of the AI workspace). Even after approval, a recovery_required
-// suspension (partial execution) is not ready: the user must see the recovery
-// + retry controls before being deep-linked. Only a *completed* goal run is a
-// ready product worth a deeplink.
-watch([goalWorkflowRun, automatedGoalId, noteSummary, toolMode], () => {
-  if (toolMode.value === 'goal-create') {
-    if (automatedGoalId.value && goalWorkflowRun.value?.status === 'completed') {
-      openArtifactBusinessTab(
-        'goal',
-        `/goals/${automatedGoalId.value}`,
-        t('nav.capsule.goal'),
-        `goal-created:${automatedGoalId.value}`,
-      );
-    }
-    return;
-  }
-
-  if (
-    (toolMode.value === 'knowledge-generate' || toolMode.value === 'knowledge-qa') &&
-    noteSummary.value
-  ) {
-    const summary = noteSummary.value as { resolvedPath?: string; path?: string };
-    const path = summary.resolvedPath || summary.path || 'note';
-    openArtifactBusinessTab(
-      'note',
-      '/repository',
-      t('aiAssistant.chatPage.workflow.openCreatedNote'),
-      `note-created:${path}`,
-    );
-  }
-});
 
 function toggleContextPanel() {
   if (shellStore) {
     if (shellStore.panelSurface === 'workflow' && shellStore.rightPanelOpen) {
       shellStore.closeWorkflowSurface();
-    } else {
-      requestContextPanel('explicit');
-    }
+    } else requestContextPanel('explicit');
     return;
   }
   contextPanelOpen.value = !contextPanelOpen.value;
 }
 
 function closeContextPanel() {
-  if (shellStore) {
-    shellStore.closeWorkflowSurface();
-    return;
-  }
-  contextPanelOpen.value = false;
+  if (shellStore) shellStore.closeWorkflowSurface();
+  else contextPanelOpen.value = false;
 }
+function openMobileSidebar() { mobileSidebarOpen.value = true; }
+function closeMobileSidebar() { mobileSidebarOpen.value = false; }
 
-function openMobileSidebar() {
-  mobileSidebarOpen.value = true;
-}
-
-function closeMobileSidebar() {
-  mobileSidebarOpen.value = false;
-}
-
-/**
- * Residual 445: new conversation clears client Host settlement/receipts.
- */
 function startNewConversation(mode: WorkflowMode | string = 'chat') {
-  clientSettledHostProposalIds.value = [];
-  clientTaskHostReceipts.value = [];
+  lastOpenedGoalId.value = null;
   startNewConversationBase(mode);
-  focusedHostProposalId.value = null;
 }
-
 function startNewConversationFromMobile() {
   closeMobileSidebar();
   startNewConversation();
-  lastOpenedArtifactKey.value = null;
 }
-
+async function selectConversation(item: ConversationSummary) {
+  await selectConversationBase(item);
+  if (hasWorkflowContext.value) requestContextPanel('explicit');
+}
 async function selectConversationFromMobile(item: ConversationSummary) {
   closeMobileSidebar();
   await selectConversation(item);
 }
-
-/**
- * Residual 443: Conversation restore reopens + focuses Host workbench when the
- * restored session owns task/goal/knowledge Host rows (process-local task.create included).
- */
-async function selectConversation(item: ConversationSummary) {
-  // Residual 445: client Host settlement/receipts are session-scoped UI state —
-  // clear before restore so previous conversation rows cannot leak into the next.
-  clientSettledHostProposalIds.value = [];
-  clientTaskHostReceipts.value = [];
-  await selectConversationBase(item);
-  const focus = resolveHostWorkbenchFocusFromSessionRuns({
-    taskAgentRun: taskAgentRun.value,
-    goalAgentRun: null,
-    noteAgentRun: noteAgentRun.value,
-  });
-  if (focus || hasPendingHostProposals.value || hasHostExecutionReceipts.value) {
-    requestContextPanel('explicit');
-    focusedHostProposalId.value = focus?.proposalId ?? null;
-  } else {
-    focusedHostProposalId.value = null;
-  }
-}
-
-/**
- * Residual 381/441/603: AgentRun history (Conversation sidebar) reopens Host workbench.
- * Residual 441: also focus the matching proposal/receipt row.
- * Residual 603: prefer session exclusive focus (dual-mirror + ghost rules) after
- * syncSelectedAgentRun, fall back to single-run focus when session has no Host row.
- */
-async function selectAgentRun(run: AgentRun) {
-  const result = await selectAgentRunBase(run);
-  if (
-    shouldOpenHostWorkbenchFromAgentRun(result) ||
-    hasPendingHostProposals.value ||
-    hasHostExecutionReceipts.value
-  ) {
-    requestContextPanel('explicit');
-    const focus =
-      resolveHostWorkbenchFocusFromSessionRuns({
-        taskAgentRun: taskAgentRun.value,
-        goalAgentRun: null,
-        noteAgentRun: noteAgentRun.value,
-      }) ?? resolveHostWorkbenchFocusFromAgentRun(result);
-    focusedHostProposalId.value = focus?.proposalId ?? null;
-  } else {
-    focusedHostProposalId.value = null;
-  }
-}
-
-async function selectAgentRunFromMobile(run: AgentRun) {
-  closeMobileSidebar();
-  await selectAgentRun(run);
-}
-
 async function openRecentGoalFromMobile(goalId: string) {
   closeMobileSidebar();
   await openRecentGoal(goalId);
 }
-
 async function openRecentKnowledgeNoteFromMobile(resourceId: string) {
   closeMobileSidebar();
   await openRecentKnowledgeNote(resourceId);
 }
-
-function openSettingsFromMobile() {
-  closeMobileSidebar();
-  openSettings();
-}
-
-function openAISettings() {
-  void router.push('/settings?tab=ai');
-}
-
-function openGoalWithoutAI() {
-  void router.push('/goals?dialog=goal');
-}
-
-function openQuickTaskWithoutAI() {
-  void router.push('/tasks?dialog=quick-task');
-}
-
-function handleClarificationAnswersUpdate(answers: string[]) {
-  clarificationAnswers.value = answers;
-}
+function openSettingsFromMobile() { closeMobileSidebar(); openSettings(); }
+function openAISettings() { void router.push('/settings?tab=ai'); }
+function openGoalWithoutAI() { void router.push('/goals?dialog=goal'); }
+function openQuickTaskWithoutAI() { void router.push('/tasks?dialog=quick-task'); }
+function handleClarificationAnswersUpdate(answers: string[]) { clarificationAnswers.value = answers; }
 
 onMounted(() => {
   const viewport = messagePanelRef.value?.viewport;
-  if (viewport) {
-    messagesViewport.value = viewport;
-  }
+  if (viewport) messagesViewport.value = viewport;
 });
+onBeforeUnmount(() => shellStore?.setWorkflowAvailable(false));
 
-onBeforeUnmount(() => {
-  shellStore?.setWorkflowAvailable(false);
-});
-
-/**
- * Surface exposed to the V2 AppShell (template ref):
- * feeds the shell-level ConversationSidebar and its actions without
- * duplicating `useAIChatView` state (single chat session instance).
- */
 defineExpose({
   conversationList,
   conversationListLoading,

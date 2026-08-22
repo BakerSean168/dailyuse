@@ -175,10 +175,6 @@ async function installMastraOpenChatMocks(page: Page): Promise<MastraOpenChatCap
     });
   });
 
-  await page.route('**/api/v1/ai/agents/runs?*', async (route) => {
-    await fulfillJson(route, { data: [], total: 0, page: 1, pageSize: 20 });
-  });
-
   await page.route('**/api/v1/ai/runtime/assistant/history', async (route) => {
     const body = (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
     capture.historyRequests.push(body);

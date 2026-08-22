@@ -4,6 +4,10 @@
  *
  * Re-exports the composition root, adapters, and runtime composition roots.
  * 重新导出组合根、适配器与运行时组合根。
+ *
+ * AI-VNEXT-07: legacy chat-execution, turn-engine, workflow, proposal-kernel,
+ * capability-resolver, model-gateway and assistant-facade exports are removed —
+ * Mastra is the only runtime.
  */
 
 // ---------------------------------------------------------------------------
@@ -25,9 +29,7 @@ export type { AIApplicationPort } from '../application';
 // PowerSync 便捷工厂
 // ---------------------------------------------------------------------------
 export {
-  createAIPowerSyncModule,
   createAIPowerSyncRepositories,
-  type AIModulePowerSyncOptions,
   type AIPowerSyncRepositorySet,
 } from './powersync';
 
@@ -57,70 +59,9 @@ export {
 } from './adapters/fs';
 
 // ---------------------------------------------------------------------------
-// Chat Execution Adapters
+// OpenAI-compatible BYOK gateway + chat execution adapter (Mastra-only runtime)
+// OpenAI-compatible BYOK gateway + chat execution adapter（Mastra-only runtime）
 // ---------------------------------------------------------------------------
-export {
-  AIServiceAnalyticsQueryAdapter,
-  AIServiceAgentRuntimeAdapter,
-  AIServiceChatExecutionAdapter,
-  AIServiceGoalAutomationAdapter,
-  AIServiceGoalPlanningAdapter,
-  AIServiceKnowledgeIngestionAdapter,
-  AIServiceKnowledgeQueryAdapter,
-  AIServiceKnowledgeNoteGenerationAdapter,
-  DirectProviderChatExecutionAdapter,
-  DirectProviderGoalPlanningAdapter,
-  DirectProviderKnowledgeNoteGenerationAdapter,
-  type AIServiceInternalClientOptions,
-  INTERNAL_CONTENT_HASH_HEADER,
-  INTERNAL_SERVICE_HEADER,
-  INTERNAL_SIGNATURE_HEADER,
-  INTERNAL_TIMESTAMP_HEADER,
-  buildInternalSignaturePayload,
-  computeContentSha256,
-  signInternalRequest,
-} from './chat-execution';
-
-// ---------------------------------------------------------------------------
-// Turn Engine (ADR-035)
-// ---------------------------------------------------------------------------
-export {
-  DirectTurnEngine,
-  DIRECT_TURN_ENGINE_ID,
-  ReadonlyAnalysisTurnEngine,
-  PI_READONLY_TURN_ENGINE_ID,
-  PiReadonlyProcessAdapter,
-  PI_READONLY_PROCESS_ADAPTER_ID,
-  PI_SPIKE_PINNED_LABEL,
-  PI_SPIKE_BINARY_ENV,
-  PI_SPIKE_ENABLED_ENV,
-} from './turn-engine';
-export type {
-  PiReadonlyProcessAdapterOptions,
-  PiReadonlyProcessDryRunSpawnPlan,
-} from './turn-engine';
-
-// ---------------------------------------------------------------------------
-// Workflow Adapter (ADR-035)
-// ---------------------------------------------------------------------------
-export { LangGraphWorkflowAdapter, LANGGRAPH_WORKFLOW_ADAPTER_ID } from './workflow';
-
-// ---------------------------------------------------------------------------
-// Proposal Kernel (ADR-035)
-// ---------------------------------------------------------------------------
-export { ProposalKernel, PROPOSAL_KERNEL_PROVIDER_ID } from './proposal-kernel';
-
-// ---------------------------------------------------------------------------
-// Capability Resolver (ADR-035)
-// ---------------------------------------------------------------------------
-export { CapabilityResolver, CAPABILITY_RESOLVER_ENGINE_ID } from './capability-resolver';
-
-// ---------------------------------------------------------------------------
-// Model Gateway (ADR-035)
-// ---------------------------------------------------------------------------
-export { CustomModelGateway, CUSTOM_MODEL_GATEWAY_ID } from './model-gateway';
-
-// ---------------------------------------------------------------------------
-// Assistant Facade (ADR-035)
-// ---------------------------------------------------------------------------
-export { AssistantFacade, ASSISTANT_FACADE_ID } from './assistant-facade';
+export { OpenAICompatibleChatExecutionAdapter } from './adapters/openai-compatible-chat-execution.adapter';
+export { OpenAICompatibleGateway } from './gateways/openai-compatible.gateway';
+export { OpenAICompatibleModelCatalogGateway } from './gateways/openai-compatible-model-catalog.gateway';

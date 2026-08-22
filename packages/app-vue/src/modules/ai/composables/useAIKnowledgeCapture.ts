@@ -3,15 +3,14 @@ import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type { AIWorkflowRunView } from '@memoflow/contracts/ai';
 import type { KnowledgeCaptureWorkflowStage, UseAIKnowledgeCaptureOptions } from './types';
-import { getAIErrorMessage } from './error';
+import { getAIErrorMessage, getAIWorkflowFailureMessage } from './error';
 
 /**
  * ADR-052 knowledge.capture UI projection.
  *
  * The durable Mastra Workflow is authoritative. This composable owns only
  * editable presentation state and maps existing UI action names onto typed
- * Workflow commands. It deliberately does not create or resume AgentRun,
- * AgentAction, Host Proposal or legacy knowledge-generate lifecycles.
+ * Workflow commands.
  */
 export function useAIKnowledgeCapture(options: UseAIKnowledgeCaptureOptions) {
   const { t, locale } = useI18n();
@@ -62,7 +61,7 @@ export function useAIKnowledgeCapture(options: UseAIKnowledgeCaptureOptions) {
     try {
       projectRun(await options.workflowRuntime.get({ runId }));
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     }
   }
 
@@ -112,7 +111,7 @@ export function useAIKnowledgeCapture(options: UseAIKnowledgeCaptureOptions) {
     if (suspension?.type !== 'recovery_required') return null;
     return {
       canRetry: suspension.retryable,
-      suggestions: suspension.failures.map((failure) => failure.message),
+      suggestions: suspension.failures.map((failure) => getAIWorkflowFailureMessage(failure, t)),
     };
   });
 
@@ -135,7 +134,7 @@ export function useAIKnowledgeCapture(options: UseAIKnowledgeCaptureOptions) {
         await options.maybeRenameCurrentConversation(run.suspension.draft.title);
       }
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       knowledgeCaptureLoading.value = false;
     }
@@ -158,7 +157,7 @@ export function useAIKnowledgeCapture(options: UseAIKnowledgeCaptureOptions) {
         await options.openCreatedNote?.(next.result.noteId);
       }
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       knowledgeCaptureResuming.value = false;
     }
@@ -179,7 +178,7 @@ export function useAIKnowledgeCapture(options: UseAIKnowledgeCaptureOptions) {
     try {
       projectRun(await options.workflowRuntime.cancel({ runId: run.runId }));
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       knowledgeCaptureResuming.value = false;
     }

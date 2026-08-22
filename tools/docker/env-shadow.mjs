@@ -9,7 +9,6 @@ export const HOST_SHADOW_WARN_KEYS = [
   'JWT_SECRET',
   'NODE_ENV',
   'REDIS_PASSWORD',
-  'SERVICE_SECRET',
   'DB_USER',
   'DB_NAME',
   'DB_HOST',

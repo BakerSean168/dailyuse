@@ -2,9 +2,6 @@
  * AI Module API Contracts (Grouped by operation type)
  */
 
-export * from './ai-goal-generation.dto';
-export * from './ai-goal-automation.dto';
-export * from './ai-agent.dto';
 export * from './ai-runtime.dto';
 export * from './ai-goal-create-workflow.dto';
 export * from './ai-task-create-workflow.dto';

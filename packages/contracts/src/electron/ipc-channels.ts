@@ -159,54 +159,35 @@ export const AIChannels = {
   PROVIDER_TEST: 'ai:provider:test',
   PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
   PROVIDER_REFRESH_MODELS: 'ai:provider:refresh-models',
-  GOAL_GENERATE: 'ai:goal:generate',
   CONVERSATION_CREATE: 'ai:chat:conversation:create',
   CONVERSATION_UPDATE: 'ai:chat:conversation:update',
   CONVERSATION_LIST: 'ai:chat:conversation:list',
   CONVERSATION_GET: 'ai:chat:conversation:get',
   CONVERSATION_DELETE: 'ai:chat:conversation:delete',
-  MESSAGE_SEND: 'ai:chat:message:send',
-  MESSAGE_LIST: 'ai:chat:message:list',
-  MESSAGE_STREAM_START: 'ai:chat:message:stream:start',
-  MESSAGE_STREAM_CANCEL: 'ai:chat:message:stream:cancel',
   /** AI vNext canonical Mastra Assistant stream start/cancel. */
   RUNTIME_ASSISTANT_START: 'ai:runtime:assistant:start',
   RUNTIME_ASSISTANT_CANCEL: 'ai:runtime:assistant:cancel',
   RUNTIME_ASSISTANT_HISTORY: 'ai:runtime:assistant:history',
   RUNTIME_ASSISTANT_DELETE: 'ai:runtime:assistant:delete',
+  /** Cross-runtime durable token/cost projection by conversation or run. */
+  RUNTIME_USAGE_GET: 'ai:runtime:usage:get',
   /** AI vNext canonical Workflow request/response surface. */
   RUNTIME_WORKFLOW_START: 'ai:runtime:workflow:start',
   RUNTIME_WORKFLOW_RESUME: 'ai:runtime:workflow:resume',
   RUNTIME_WORKFLOW_GET: 'ai:runtime:workflow:get',
   RUNTIME_WORKFLOW_LIST: 'ai:runtime:workflow:list',
   RUNTIME_WORKFLOW_CANCEL: 'ai:runtime:workflow:cancel',
-  /** Residual 353: AssistantFacade dispatch stream start/cancel. */
-  ASSISTANT_DISPATCH_START: 'ai:assistant:dispatch:start',
-  ASSISTANT_DISPATCH_CANCEL: 'ai:assistant:dispatch:cancel',
   KNOWLEDGE_EXPAND: 'ai:knowledge:expand',
   KNOWLEDGE_QUERY: 'ai:knowledge:query',
   KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
-  KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
   ANALYTICS_QUERY: 'ai:analytics:query',
-  AGENT_RUN_LIST: 'ai:agent:run:list',
-  AGENT_RUN_START: 'ai:agent:run:start',
-  AGENT_RUN_RESUME: 'ai:agent:run:resume',
-  AGENT_RUN_GET: 'ai:agent:run:get',
-  AGENT_EVENTS_GET: 'ai:agent:events:get',
   EVALUATION_OVERVIEW_GET: 'ai:evaluations:overview:get',
 } as const;
 
 export const AIStreamChannels = {
-  MESSAGE_STREAM_CHUNK: 'ai:chat:message:stream:chunk',
-  MESSAGE_STREAM_DONE: 'ai:chat:message:stream:done',
-  MESSAGE_STREAM_ERROR: 'ai:chat:message:stream:error',
   /** AI vNext canonical runtime events plus transport-only fatal framing. */
   RUNTIME_ASSISTANT_EVENT: 'ai:runtime:assistant:event',
   RUNTIME_ASSISTANT_ERROR: 'ai:runtime:assistant:error',
-  /** Residual 353: AssistantFacade Host event stream. */
-  ASSISTANT_DISPATCH_EVENT: 'ai:assistant:dispatch:event',
-  ASSISTANT_DISPATCH_DONE: 'ai:assistant:dispatch:done',
-  ASSISTANT_DISPATCH_ERROR: 'ai:assistant:dispatch:error',
 } as const;
 
 export const NotificationChannels = {

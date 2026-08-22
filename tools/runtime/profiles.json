@@ -3,13 +3,33 @@
   "version": 1,
   "description": "Single source of truth for MemoFlow local runtime host ports and lane rules. Compose defaults, preflight, Playwright, and docs must not invent conflicting host ports.",
   "reservedHostPorts": {
-    "3000": ["host-dev", "e2e"],
-    "5173": ["host-dev", "e2e"],
-    "5432": ["host-dev", "dev-infra"],
-    "5433": ["e2e", "test-infra"],
-    "6384": ["host-dev", "dev-infra"],
-    "8080": ["host-dev", "dev-infra"],
-    "8081": ["host-dev"]
+    "3000": [
+      "host-dev",
+      "e2e"
+    ],
+    "5173": [
+      "host-dev",
+      "e2e"
+    ],
+    "5432": [
+      "host-dev",
+      "dev-infra"
+    ],
+    "5433": [
+      "e2e",
+      "test-infra"
+    ],
+    "6384": [
+      "host-dev",
+      "dev-infra"
+    ],
+    "8080": [
+      "host-dev",
+      "dev-infra"
+    ],
+    "8081": [
+      "host-dev"
+    ]
   },
   "profiles": {
     "host-dev": {
@@ -31,7 +51,9 @@
         "web": "http://localhost:5173",
         "powersync": "http://localhost:8080"
       },
-      "mutexWith": ["local-docker"]
+      "mutexWith": [
+        "local-docker"
+      ]
     },
     "e2e": {
       "title": "Playwright core e2e",
@@ -50,7 +72,9 @@
         "web": "http://127.0.0.1:5173"
       },
       "runtimeLane": "e2e",
-      "mutexWith": ["local-docker"]
+      "mutexWith": [
+        "local-docker"
+      ]
     },
     "local-docker": {
       "title": "Local prod-like Docker stack",
@@ -61,7 +85,6 @@
       "ports": {
         "api": 53080,
         "web": 58080,
-        "ai": 58100,
         "powersync": 58081,
         "postgres": 55432,
         "redis": 56379
@@ -69,7 +92,6 @@
       "hostPortEnv": {
         "API_HOST_PORT": 53080,
         "WEB_HOST_PORT": 58080,
-        "AI_SERVICE_HOST_PORT": 58100,
         "POWERSYNC_HOST_PORT": 58081,
         "POSTGRES_HOST_PORT": 55432,
         "REDIS_HOST_PORT": 56379
@@ -77,10 +99,12 @@
       "urls": {
         "api": "http://localhost:53080",
         "web": "http://localhost:58080",
-        "ai": "http://localhost:58100",
         "powersync": "http://localhost:58081"
       },
-      "mutexWith": ["host-dev", "e2e"]
+      "mutexWith": [
+        "host-dev",
+        "e2e"
+      ]
     },
     "dev-infra": {
       "title": "Dev infrastructure only",

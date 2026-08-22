@@ -14,17 +14,15 @@
  * （每个流的 AbortController、按发送方取消）与通道清理。
  *
  * The host (apps/desktop) is responsible for composition: it selects the
- * PowerSync adapters, builds the repository set, the service runtime adapters
- * (chat execution, knowledge ingestion/query, analytics, agent runtime,
- * evaluation report, host knowledge/analytics ports) and the runtime
- * contributions, calls `createAIModule(...)`, and passes the resulting instance
+ * PowerSync adapters, builds the repository set, the canonical Mastra runtime,
+ * evaluation report and host knowledge/analytics/product-mutation ports, calls
+ * `createAIModule(...)`, and passes the resulting instance
  * in through `AIElectronModuleOptions`. This factory never reads `ctx.db`,
  * never constructs repositories/adapters, and never starts a runtime adapter.
  *
  * 宿主（apps/desktop）负责组合：选择 PowerSync 适配器、构建 repository set、
- * 服务 runtime 适配器（chat execution、knowledge ingestion/query、analytics、
- * agent runtime、evaluation report、宿主 knowledge/analytics ports）与 runtime
- * contribution、调用 `createAIModule(...)`，再把组装结果通过
+ * canonical Mastra runtime、evaluation report 与宿主 knowledge/analytics/
+ * product-mutation ports，调用 `createAIModule(...)`，再把组装结果通过
  * `AIElectronModuleOptions` 传入。本工厂不读取 `ctx.db`，不创建
  * repository/adapter，也不启动任何 runtime adapter。
  *
@@ -72,12 +70,13 @@ import {
   type IElectronModuleContext,
 } from '@memoflow/contracts/electron';
 import {
-  AssistantClientCommandSchema,
   AssistantRuntimeClientCommandSchema,
   AssistantRuntimeConversationDeleteResultSchema,
   AssistantRuntimeEventSchema,
   AssistantRuntimeHistoryClientRequestSchema,
   AssistantRuntimeHistoryViewSchema,
+  AIRuntimeUsageQueryClientRequestSchema,
+  AIRuntimeUsageSummarySchema,
   AIWorkflowCancelClientRequestSchema,
   AIWorkflowGetClientRequestSchema,
   AIWorkflowListClientRequestSchema,
@@ -86,16 +85,12 @@ import {
   AIWorkflowStartClientRequestSchema,
 } from '@memoflow/contracts/ai';
 import { fail, ok } from '@memoflow/contracts/result';
-import type { GenerateGoalsReq } from '@memoflow/contracts/ai';
 import { formatZodErrors } from '@memoflow/utils/result';
 import { createLogger } from '@memoflow/utils/logger';
 import type { AIModuleInstance } from '../server/infrastructure';
 import { withAuthenticatedValue } from './authenticated-ipc';
-import { toHostCommand } from '../server/transport/ai-assistant-facade.controller';
 
 const logger = createLogger('AIElectron');
-
-const allChannels = Object.values(AIChannels);
 
 type StreamSession = {
   abortController: AbortController;
@@ -160,6 +155,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
   }
   let state: ModuleHandleState = 'created';
   const activeStreamSessions = new Map<string, StreamSession>();
+  const ownedChannels: string[] = [];
 
   return {
     name: 'AI',
@@ -240,13 +236,6 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         );
         installed.push(AIChannels.PROVIDER_REFRESH_MODELS);
 
-        // -- Goal Generation --
-        ipcMain.handle(AIChannels.GOAL_GENERATE, async (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.generateGoal(dto as GenerateGoalsReq, requestContext),
-          ),
-        );
-        installed.push(AIChannels.GOAL_GENERATE);
 
         // -- Conversations --
         ipcMain.handle(AIChannels.CONVERSATION_CREATE, async (_, dto) =>
@@ -294,97 +283,6 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         );
         installed.push(AIChannels.CONVERSATION_DELETE);
 
-        // -- Chat Messages --
-        ipcMain.handle(AIChannels.MESSAGE_SEND, async (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.sendMessage(
-              String(dto.conversationId),
-              String(dto.content),
-              requestContext,
-              dto.providerId,
-              dto.model,
-            ),
-          ),
-        );
-        installed.push(AIChannels.MESSAGE_SEND);
-        ipcMain.handle(AIChannels.MESSAGE_STREAM_START, async (event, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            const payload = dto as {
-              streamId?: unknown;
-              conversationId?: unknown;
-              content?: unknown;
-              providerId?: unknown;
-              model?: unknown;
-            };
-            const streamId = String(payload.streamId ?? '');
-            if (!streamId) {
-              return fail({ code: 'VALIDATION_ERROR', message: 'Missing streamId' });
-            }
-
-            const abortController = new AbortController();
-            activeStreamSessions.set(streamId, {
-              abortController,
-              webContentsId: event.sender.id,
-            });
-
-            void (async () => {
-              try {
-                const result = await aiModule.api.streamMessage(
-                  String(payload.conversationId ?? ''),
-                  String(payload.content ?? ''),
-                  (chunk) => {
-                    if (!event.sender.isDestroyed()) {
-                      event.sender.send(AIStreamChannels.MESSAGE_STREAM_CHUNK, {
-                        streamId,
-                        chunk,
-                      });
-                    }
-                  },
-                  requestContext,
-                  typeof payload.providerId === 'string' ? payload.providerId : undefined,
-                  typeof payload.model === 'string' ? payload.model : undefined,
-                  abortController.signal,
-                );
-
-                if (!event.sender.isDestroyed()) {
-                  event.sender.send(AIStreamChannels.MESSAGE_STREAM_DONE, {
-                    streamId,
-                    result,
-                  });
-                }
-              } catch (error) {
-                const code =
-                  error instanceof Error &&
-                  (error as Error & { category?: string }).category === 'aborted'
-                    ? 'ABORTED'
-                    : 'INTERNAL_ERROR';
-                if (!event.sender.isDestroyed()) {
-                  event.sender.send(AIStreamChannels.MESSAGE_STREAM_ERROR, {
-                    streamId,
-                    code,
-                    message: error instanceof Error ? error.message : 'AI stream failed',
-                  });
-                }
-              } finally {
-                activeStreamSessions.delete(streamId);
-              }
-            })();
-
-            return ok(null);
-          }),
-        );
-        installed.push(AIChannels.MESSAGE_STREAM_START);
-        ipcMain.handle(AIChannels.MESSAGE_STREAM_CANCEL, async (event, streamId) =>
-          withAuthenticatedValue(ctx, async () => {
-            const session = activeStreamSessions.get(String(streamId));
-            if (session && session.webContentsId === event.sender.id) {
-              session.abortController.abort();
-              activeStreamSessions.delete(String(streamId));
-            }
-            return ok(null);
-          }),
-        );
-        installed.push(AIChannels.MESSAGE_STREAM_CANCEL);
 
         // AI vNext canonical Mastra Assistant transport. The renderer sends only
         // a typed client command; authenticated identity is injected here. All
@@ -428,6 +326,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
               try {
                 for await (const runtimeEvent of aiModule.mastraRuntime!.dispatchMessage({
                   identityId: requestContext.identityId,
+                  context: requestContext,
                   conversationId: messageCommand.conversationId,
                   content: messageCommand.content,
                   providerId: messageCommand.providerId,
@@ -552,9 +451,39 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         );
         installed.push(AIChannels.RUNTIME_ASSISTANT_DELETE);
 
-        // AI vNext canonical Workflow request/response transport. The concrete
-        // Mastra workflow runtime is introduced in Batch C; until then these
-        // channels are deliberately present but fail closed with SERVICE_UNAVAILABLE.
+        ipcMain.handle(AIChannels.RUNTIME_USAGE_GET, async (_, request) =>
+          withAuthenticatedValue(ctx, async (requestContext) => {
+            if (!aiModule.mastraRuntime) {
+              return fail({ code: 'SERVICE_UNAVAILABLE', message: 'AI runtime unavailable' });
+            }
+            const parsed = AIRuntimeUsageQueryClientRequestSchema.safeParse(request);
+            if (!parsed.success) {
+              return fail({
+                code: 'VALIDATION_ERROR',
+                message: 'Invalid runtime usage request',
+                details: formatZodErrors(parsed.error.issues),
+              });
+            }
+            try {
+              const summary = AIRuntimeUsageSummarySchema.parse(
+                await aiModule.mastraRuntime.summarizeUsage({
+                  identityId: requestContext.identityId,
+                  ...(parsed.data.conversationId
+                    ? { conversationId: parsed.data.conversationId }
+                    : {}),
+                  ...(parsed.data.runId ? { runId: parsed.data.runId } : {}),
+                }),
+              );
+              return ok(summary);
+            } catch {
+              return fail({ code: 'AI_RUNTIME_ERROR', message: 'AI runtime request failed' });
+            }
+          }),
+        );
+        installed.push(AIChannels.RUNTIME_USAGE_GET);
+
+        // AI vNext canonical Workflow request/response transport. Mastra owns
+        // workflow execution/snapshots; MemoFlow owns authenticated product mutations.
         ipcMain.handle(AIChannels.RUNTIME_WORKFLOW_START, async (_, request) =>
           withAuthenticatedValue(ctx, async (requestContext) => {
             if (!aiModule.workflowRuntime) {
@@ -700,151 +629,8 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         );
         installed.push(AIChannels.RUNTIME_WORKFLOW_CANCEL);
 
-        // Residual 353: AssistantFacade Host dispatch stream (open chat / approve / cancel).
-        // Hardened (plan Step B §5.2): shared AssistantClientCommandSchema validation
-        // rejects a renderer identityId; identity is injected from the authenticated
-        // context; the session is bound to the sender webContentsId; every
-        // success/error/catch/abort path deletes the session exactly once and never
-        // emits a second DONE/ERROR frame.
-        ipcMain.handle(AIChannels.ASSISTANT_DISPATCH_START, async (event, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            const payload = dto as {
-              streamId?: unknown;
-              command?: unknown;
-            };
-            const streamId = String(payload.streamId ?? '');
-            if (!streamId) {
-              return fail({ code: 'VALIDATION_ERROR', message: 'Missing streamId' });
-            }
-
-            const parsed = AssistantClientCommandSchema.safeParse(payload.command);
-            if (!parsed.success) {
-              return fail({
-                code: 'VALIDATION_ERROR',
-                message: 'Invalid assistant command',
-                details: formatZodErrors(parsed.error.issues),
-              });
-            }
-
-            const abortController = new AbortController();
-            activeStreamSessions.set(streamId, {
-              abortController,
-              webContentsId: event.sender.id,
-            });
-
-            let settled = false;
-            const settle = (frame: 'done' | 'error', data: unknown) => {
-              if (settled) {
-                return;
-              }
-              settled = true;
-              activeStreamSessions.delete(streamId);
-              if (event.sender.isDestroyed()) {
-                return;
-              }
-              event.sender.send(
-                frame === 'done'
-                  ? AIStreamChannels.ASSISTANT_DISPATCH_DONE
-                  : AIStreamChannels.ASSISTANT_DISPATCH_ERROR,
-                {
-                  streamId,
-                  ...(data as object),
-                },
-              );
-            };
-
-            void (async () => {
-              try {
-                const result = await aiModule.api.dispatchAssistant(
-                  toHostCommand(parsed.data, requestContext.identityId),
-                  {
-                    onEvent: (assistantEvent) => {
-                      if (event.sender.isDestroyed()) {
-                        return;
-                      }
-                      event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_EVENT, {
-                        streamId,
-                        event: assistantEvent,
-                      });
-                    },
-                  },
-                  abortController.signal,
-                  requestContext.requestId,
-                );
-
-                if (abortController.signal.aborted) {
-                  // Renderer already initiated CANCEL; no terminal frame after abort.
-                  settled = true;
-                  activeStreamSessions.delete(streamId);
-                  return;
-                }
-
-                if (!result.ok) {
-                  settle('error', {
-                    code: result.error.code,
-                    message: result.error.message,
-                    details: result.error.details,
-                  });
-                  return;
-                }
-                settle('done', { result: result.data });
-              } catch (error) {
-                if (abortController.signal.aborted) {
-                  settled = true;
-                  activeStreamSessions.delete(streamId);
-                  return;
-                }
-                settle('error', {
-                  code: 'INTERNAL_ERROR',
-                  message: error instanceof Error ? error.message : 'Assistant dispatch failed',
-                });
-              }
-            })();
-
-            return ok(null);
-          }),
-        );
-        installed.push(AIChannels.ASSISTANT_DISPATCH_START);
-        ipcMain.handle(AIChannels.ASSISTANT_DISPATCH_CANCEL, async (event, streamId) =>
-          withAuthenticatedValue(ctx, async () => {
-            const session = activeStreamSessions.get(String(streamId));
-            if (session && session.webContentsId === event.sender.id) {
-              session.abortController.abort();
-              activeStreamSessions.delete(String(streamId));
-            }
-            return ok(null);
-          }),
-        );
-        installed.push(AIChannels.ASSISTANT_DISPATCH_CANCEL);
-        ipcMain.handle(AIChannels.MESSAGE_LIST, async (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await aiModule.api.getConversation(
-              String(dto.conversationId),
-              requestContext,
-              true,
-            );
-            if (!result.ok) return result;
-            if (!result.data) {
-              return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
-            }
-            const messages = result.data.messages ?? [];
-            return ok({
-              data: messages,
-              total: messages.length,
-              page: Number(dto?.page ?? 1),
-              pageSize: Number(dto?.pageSize ?? 50),
-            });
-          }),
-        );
-        installed.push(AIChannels.MESSAGE_LIST);
 
         // -- Knowledge Notes --
-        ipcMain.handle(AIChannels.KNOWLEDGE_NOTE_CREATE, async (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.createKnowledgeNote(dto, requestContext),
-          ),
-        );
-        installed.push(AIChannels.KNOWLEDGE_NOTE_CREATE);
         ipcMain.handle(AIChannels.KNOWLEDGE_QUERY, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
             aiModule.api.queryKnowledge(dto, requestContext),
@@ -869,48 +655,13 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
           ),
         );
         installed.push(AIChannels.ANALYTICS_QUERY);
-        ipcMain.handle(AIChannels.AGENT_RUN_LIST, async (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.listAgentRuns(dto ?? {}, requestContext),
-          ),
-        );
-        installed.push(AIChannels.AGENT_RUN_LIST);
-        ipcMain.handle(AIChannels.AGENT_RUN_START, async (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.startAgentRun(
-              {
-                ...dto,
-                identityId: requestContext.identityId,
-              },
-              requestContext,
-            ),
-          ),
-        );
-        installed.push(AIChannels.AGENT_RUN_START);
-        ipcMain.handle(AIChannels.AGENT_RUN_RESUME, async (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.resumeAgentRun(String(dto.runId), dto.payload, requestContext),
-          ),
-        );
-        installed.push(AIChannels.AGENT_RUN_RESUME);
-        ipcMain.handle(AIChannels.AGENT_RUN_GET, async (_, runId) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getAgentRun(String(runId), requestContext),
-          ),
-        );
-        installed.push(AIChannels.AGENT_RUN_GET);
-        ipcMain.handle(AIChannels.AGENT_EVENTS_GET, async (_, runId) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.getAgentEvents(String(runId), requestContext),
-          ),
-        );
-        installed.push(AIChannels.AGENT_EVENTS_GET);
         ipcMain.handle(AIChannels.EVALUATION_OVERVIEW_GET, async (_, dto) =>
           withAuthenticatedValue(ctx, async () => aiModule.api.getEvaluationOverview(dto ?? {})),
         );
         installed.push(AIChannels.EVALUATION_OVERVIEW_GET);
 
         await aiModule.start();
+        ownedChannels.push(...installed);
         state = 'registered';
 
         logger.info('AI module registered');
@@ -940,7 +691,7 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
         return;
       }
 
-      for (const channel of allChannels) {
+      for (const channel of ownedChannels.splice(0)) {
         ipcMain.removeHandler(channel);
       }
       for (const session of activeStreamSessions.values()) {

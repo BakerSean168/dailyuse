@@ -2,6 +2,9 @@ export type {
   AICostEstimate,
   AIExecutionLogInput,
   IAIExecutionLogPort,
+  IAIUsageReadPort,
+  AIUsageQuery,
+  AIUsageSummary,
 } from './ai-execution-log.port';
 export type {
   AIEvaluationCheckRecord,
@@ -13,36 +16,6 @@ export type {
   GetAIEvaluationOverviewInput,
   IAIEvaluationReportPort,
 } from './ai-evaluation-report.port';
-export type {
-  AgentCheckpointDeleteInput,
-  AgentCheckpointGetInput,
-  AgentCheckpointListInput,
-  AgentCheckpointUpsertInput,
-  IAgentCheckpointPort,
-} from './agent-checkpoint.port';
-export type {
-  ILangGraphCheckpointPort,
-  LangGraphCheckpointDeleteThreadInput,
-  LangGraphCheckpointGetInput,
-  LangGraphCheckpointListInput,
-  LangGraphCheckpointPutInput,
-  LangGraphCheckpointPutWritesInput,
-  LangGraphCheckpointRecord,
-  LangGraphCheckpointTupleRecord,
-  LangGraphCheckpointWriteRecord,
-  SerializedLangGraphValue,
-} from './langgraph-checkpoint.port';
-export type {
-  AgentRuntimeListInput,
-  AgentRuntimeResumeInput,
-  AgentRuntimeRunInput,
-  AgentRuntimeStartInput,
-  IAgentRuntimePort,
-} from './agent-runtime.port';
-export type {
-  GoalAutomationExecutionInput,
-  IAIAutomationToolExecutorPort,
-} from './automation-tool-execution.port';
 export type {
   AnalyticsQueryContext,
   AnalyticsQueryInput,
@@ -63,22 +36,7 @@ export type {
   ChatExecutionUsage,
   IAIChatExecutionPort,
 } from './chat-execution.port';
-export type {
-  IOpenChatTurnPort,
-  OpenChatTurnInput,
-  OpenChatTurnResult,
-} from './open-chat-turn.port';
 
-export type {
-  GoalPlanningInput,
-  GoalPlanningResult,
-  IGoalPlanningPort,
-} from './goal-planning.port';
-export type {
-  GoalAutomationPlanningInput,
-  GoalAutomationPlanningResult,
-  IGoalAutomationPlanningPort,
-} from './goal-automation.port';
 export type {
   IKnowledgeIngestionPort,
   KnowledgeIndexedChunk,
@@ -100,11 +58,6 @@ export type {
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
 } from './knowledge-note-persistence.port';
-export type {
-  KnowledgeNoteGenerationInput,
-  KnowledgeNoteGenerationResult,
-  IKnowledgeNoteGenerationPort,
-} from './knowledge-note-generation.port';
 export type {
   KnowledgeExpansionInput,
   KnowledgeExpansionResult,

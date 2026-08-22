@@ -18,28 +18,20 @@ import type {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const DEFAULT_HISTORY_LIMIT = 5;
 
 function resolveWorkspaceRoot(startDir: string): string {
   let current = startDir;
-
   while (true) {
-    if (existsSync(path.join(current, 'pnpm-workspace.yaml'))) {
-      return current;
-    }
-
+    if (existsSync(path.join(current, 'pnpm-workspace.yaml'))) return current;
     const parent = path.dirname(current);
-    if (parent === current) {
-      return process.cwd();
-    }
-
+    if (parent === current) return process.cwd();
     current = parent;
   }
 }
 
 function resolveDefaultReportsRoot(): string {
-  return path.join(resolveWorkspaceRoot(__dirname), 'reports', 'apps', 'ai-service', 'evals');
+  return path.join(resolveWorkspaceRoot(__dirname), 'reports', 'apps', 'ai', 'evals');
 }
 
 function buildHistoryEntry(
@@ -60,52 +52,19 @@ function buildHistoryEntry(
   };
 }
 
-/**
- * On-disk eval reports are written by Python ai-service in snake_case only.
- * Normalize to contracts camelCase without accepting camelCase dual-track files.
- */
-function normalizeReportShape(raw: Record<string, unknown>): Record<string, unknown> {
-  return {
-    generatedAt: raw.generated_at,
-    mode: raw.mode,
-    provider: raw.provider ?? undefined,
-    model: raw.model ?? undefined,
-    baseUrl: raw.base_url ?? undefined,
-    casesPath: raw.cases_path,
-    totalCases: raw.total_cases,
-    passedCases: raw.passed_cases,
-    failedCases: raw.failed_cases,
-    passRate: raw.pass_rate,
-    byType: raw.by_type,
-    failedCaseIds: raw.failed_case_ids,
-    gatePassed: raw.gate_passed,
-    gateFailures: raw.gate_failures,
-    baselinePath: raw.baseline_path ?? undefined,
-    archivePath: raw.archive_path ?? undefined,
-    results: Array.isArray(raw.results)
-      ? raw.results.map((result) => {
-          if (!result || typeof result !== 'object') {
-            return result;
-          }
-          return {
-            id: (result as Record<string, unknown>).id,
-            type: (result as Record<string, unknown>).type,
-            description: (result as Record<string, unknown>).description,
-            passed: (result as Record<string, unknown>).passed,
-            score: (result as Record<string, unknown>).score,
-            checks: (result as Record<string, unknown>).checks,
-            metadata: (result as Record<string, unknown>).metadata,
-          };
-        })
-      : raw.results,
-  };
-}
-
 export interface AIEvaluationReportFileAdapterOptions {
+  /** Canonical Mastra-native report root. */
   reportsRoot?: string;
   defaultHistoryLimit?: number;
 }
 
+/**
+ * Reads canonical Mastra-native evaluation reports.
+ *
+ * Retired Python report formats are intentionally not accepted here. Historical
+ * data must be migrated explicitly instead of keeping a second runtime-era wire
+ * format alive in the product read path.
+ */
 export class AIEvaluationReportFileAdapter implements IAIEvaluationReportPort {
   private readonly reportsRoot: string;
   private readonly defaultHistoryLimit: number;
@@ -119,7 +78,6 @@ export class AIEvaluationReportFileAdapter implements IAIEvaluationReportPort {
     input: GetAIEvaluationOverviewInput = {},
   ): Promise<GetAIEvaluationOverviewRes> {
     const historyLimit = input.historyLimit ?? this.defaultHistoryLimit;
-
     const [deterministicLatest, liveLatest, deterministicHistory, liveHistory] = await Promise.all([
       this.readOptionalReport(path.join(this.reportsRoot, 'latest.json')),
       this.readOptionalReport(path.join(this.reportsRoot, 'live-latest.json')),
@@ -139,7 +97,9 @@ export class AIEvaluationReportFileAdapter implements IAIEvaluationReportPort {
     };
   }
 
-  private async readOptionalReport(filePath: string): Promise<AIEvaluationReportRecord | undefined> {
+  private async readOptionalReport(
+    filePath: string,
+  ): Promise<AIEvaluationReportRecord | undefined> {
     try {
       return await this.readReport(filePath);
     } catch (error) {
@@ -151,7 +111,6 @@ export class AIEvaluationReportFileAdapter implements IAIEvaluationReportPort {
       ) {
         return undefined;
       }
-
       throw error;
     }
   }
@@ -162,7 +121,6 @@ export class AIEvaluationReportFileAdapter implements IAIEvaluationReportPort {
     limit: number,
   ): Promise<AIEvaluationHistoryRecord[]> {
     const directoryPath = path.join(this.reportsRoot, directoryName);
-
     let fileNames: string[] = [];
     try {
       fileNames = await readdir(directoryPath);
@@ -175,7 +133,6 @@ export class AIEvaluationReportFileAdapter implements IAIEvaluationReportPort {
       ) {
         return [];
       }
-
       throw error;
     }
 
@@ -183,25 +140,24 @@ export class AIEvaluationReportFileAdapter implements IAIEvaluationReportPort {
       fileNames
         .filter((fileName) => fileName.endsWith('.json'))
         .sort((left, right) => right.localeCompare(left))
-        .slice(0, limit)
         .map(async (fileName) => {
           try {
             const report = await this.readReport(path.join(directoryPath, fileName));
-            if (report.mode !== mode) {
-              return null;
-            }
-            return buildHistoryEntry(fileName, report);
+            return report.mode === mode ? buildHistoryEntry(fileName, report) : null;
           } catch {
             return null;
           }
         }),
     );
 
-    return reports.filter((entry): entry is AIEvaluationHistoryRecord => entry !== null);
+    return reports
+      .filter((entry): entry is AIEvaluationHistoryRecord => entry !== null)
+      .sort((left, right) => right.generatedAt.localeCompare(left.generatedAt))
+      .slice(0, limit);
   }
 
   private async readReport(filePath: string): Promise<AIEvaluationReportRecord> {
-    const raw = JSON.parse(await readFile(filePath, 'utf8'));
-    return AIEvaluationReportSchema.parse(normalizeReportShape(raw));
+    const raw = JSON.parse(await readFile(filePath, 'utf8')) as unknown;
+    return AIEvaluationReportSchema.parse(raw);
   }
 }

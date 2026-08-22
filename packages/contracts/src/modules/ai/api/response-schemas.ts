@@ -1,18 +1,11 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { AiProviderConfigId, AiConversationId, AiMessageId, IdentityId } from '../../../primitives';
-import {
-  GenerateGoalResultDTOSchema,
-  GeneratedGoalDraftSchema,
-  KeyResultPreviewSchema,
-} from '../dtos/goal-generation-result.dto';
-import {
-  GoalWorkflowClarificationResultDTOSchema,
-  GoalWorkflowConfirmResultDTOSchema,
-  GoalWorkflowDraftResultDTOSchema,
-  GoalWorkflowExecutionResultDTOSchema,
-  GoalWorkflowResultDTOSchema,
-} from '../dtos/goal-workflow-result.dto';
+import type {
+  AiProviderConfigId,
+  AiConversationId,
+  AiMessageId,
+  IdentityId,
+} from '../../../primitives';
 import { TestAIProviderResultDTOSchema } from '../dtos/provider-test-result.dto';
 import { TokenUsageSchema } from '../value-objects/token-usage';
 import { ConversationStatus } from '../value-objects/conversation-status';
@@ -26,23 +19,9 @@ import {
 // Residual 811: AIProviderConfigClientDTOSchema owned by aggregates (ClientDTO is z.infer alias).
 export { AIModelInfoSchema, AIProviderConfigClientDTOSchema };
 
-// Residual 719: draft/preview/result schemas owned by goal-generation-result.dto.ts
-// (GenerateGoalResultDTOSchema re-exported for OpenAPI route consumers).
-export { GenerateGoalResultDTOSchema, GeneratedGoalDraftSchema, KeyResultPreviewSchema };
-
 // Residual 727: TokenUsageSchema owned by value-objects/token-usage.ts
 // (re-exported for OpenAPI nested response consumers).
 export { TokenUsageSchema };
-
-// Residual 729: goal workflow schemas owned by goal-workflow-result.dto.ts
-// (re-exported for OpenAPI route consumers).
-export {
-  GoalWorkflowClarificationResultDTOSchema,
-  GoalWorkflowConfirmResultDTOSchema,
-  GoalWorkflowDraftResultDTOSchema,
-  GoalWorkflowExecutionResultDTOSchema,
-  GoalWorkflowResultDTOSchema,
-};
 
 // ============ Route Response Schemas ============
 
@@ -79,7 +58,6 @@ export const AIConversationClientDTOSchema = z.object({
   deletedAt: z.number().nullable(),
   messages: z.array(MessageClientDTOSchema).nullable(),
 });
-
 
 // Residual 647: AIProviderConfigSummarySchema dual-track retired.
 // Residual 811: ClientDTOSchema owned by aggregates; list/get envelopes use it only.
@@ -179,4 +157,3 @@ export const QueryAnalyticsResSchema = z.object({
 export const ListAIProviderConfigsResSchema = z.object({
   data: z.array(AIProviderConfigClientDTOSchema),
 });
-

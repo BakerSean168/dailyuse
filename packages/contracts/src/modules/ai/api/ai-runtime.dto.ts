@@ -25,7 +25,7 @@ import {
  * client payload that attempts to smuggle identityId is rejected.
  */
 
-export const AIRuntimeSurfaceSchema = z.enum(['web', 'desktop', 'server']);
+export const AIRuntimeSurfaceSchema = z.enum(['web', 'desktop', 'mobile', 'server']);
 export type AIRuntimeSurface = z.infer<typeof AIRuntimeSurfaceSchema>;
 
 export const AssistantRuntimeClientCommandSchema = z.discriminatedUnion('type', [
@@ -302,6 +302,25 @@ export const AIRuntimeUsageSchema = z.object({
   estimatedCost: z.number().nonnegative().optional(),
 });
 export type AIRuntimeUsage = z.infer<typeof AIRuntimeUsageSchema>;
+
+export const AIRuntimeUsageQueryClientRequestSchema = z
+  .object({
+    conversationId: z.string().min(1).optional(),
+    runId: z.string().min(1).optional(),
+    identityId: z.never().optional(),
+  })
+  .strict()
+  .refine((value) => Boolean(value.conversationId || value.runId), {
+    message: 'conversationId or runId is required',
+  });
+export type AIRuntimeUsageQueryClientRequest = z.infer<
+  typeof AIRuntimeUsageQueryClientRequestSchema
+>;
+
+export const AIRuntimeUsageSummarySchema = AIRuntimeUsageSchema.extend({
+  executionCount: z.number().int().nonnegative(),
+});
+export type AIRuntimeUsageSummary = z.infer<typeof AIRuntimeUsageSummarySchema>;
 
 const WorkflowRunViewBaseShape = {
   runId: z.string().min(1),

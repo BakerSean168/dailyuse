@@ -29,9 +29,9 @@ trace、video、screenshot 和 JSON report。
 
 CI/CD Platform V2 现在把平台事实收敛到 `tools/ci-cd-platform/`：`lane-registry` 声明每个 lane 的
 capability、输入输出、隔离、cache、owner 和失败策略；`create-lane-input.mjs` 把同一份 delivery
-manifest 转换为可验证的 `lane-input-v1`。workspace action 先消费 manifest，再按 capability 和
-`ai-service` 是否受影响决定是否安装 Python/uv，并生成带 digest 和 setup timing 的
-`workspace-receipt-v1`。
+manifest 转换为可验证的 `lane-input-v1`。workspace action 先消费 manifest，再严格按 lane capability
+决定是否安装可选工具链，并生成带 digest 和 setup timing 的 `workspace-receipt-v1`。Web lane 在
+Mastra-native cutover 后只需要 Node/pnpm/Playwright/Postgres，不再为已退役的 Python runtime 安装 Python/uv。
 
 每条命令输出唯一的 `lane-result-v1`，`publish-lane-evidence` 生成 `lane-summary-v1`；CI 末尾的
 `Delivery Observation` 递归聚合各 job 的证据为 `run-summary-v1`。这些对象都绑定 commit、manifest

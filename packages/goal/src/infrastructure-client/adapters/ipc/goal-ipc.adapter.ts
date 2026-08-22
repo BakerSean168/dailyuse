@@ -6,8 +6,7 @@
  */
 
 import type { Result } from '@memoflow/contracts/result';
-import { fail } from '@memoflow/contracts/result';
-import { AIChannels, GoalChannels } from '@memoflow/contracts/electron';
+import { GoalChannels } from '@memoflow/contracts/electron';
 import type { IGoalApiClient, IResultIpcClient } from '../types';
 import type {
   GoalClientDTO,
@@ -224,56 +223,5 @@ export class GoalIpcAdapter implements IGoalApiClient {
 
   async cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.CLONE, goalId, request);
-  }
-
-  // ===== AI Generation =====
-
-  async generateKeyResults(request: {
-    goalTitle: string;
-    goalDescription?: string;
-    startDate: number;
-    endDate: number;
-    goalContext?: string;
-  }): Promise<
-    Result<{
-      keyResults: Array<{
-        title: string;
-        description?: string;
-        targetValue?: number;
-        unit?: string;
-      }>;
-      tokenUsage: unknown;
-      generatedAt: number;
-    }>
-  > {
-    const result = await this.ipcClient.invoke<{
-      goal: { title: string; description?: string };
-      keyResults?: Array<{
-        title: string;
-        description?: string;
-        targetValue?: number;
-        unit?: string;
-      }>;
-      tokenUsage: unknown;
-      generatedAt: number;
-    }>(AIChannels.GOAL_GENERATE, {
-      idea: [request.goalTitle, request.goalDescription, request.goalContext]
-        .filter(Boolean)
-        .join('\n\n'),
-      includeKeyResults: true,
-    });
-
-    if (!result.ok) {
-      return fail(result.error);
-    }
-
-    return {
-      ok: true,
-      data: {
-        keyResults: result.data.keyResults ?? [],
-        tokenUsage: result.data.tokenUsage,
-        generatedAt: result.data.generatedAt,
-      },
-    };
   }
 }

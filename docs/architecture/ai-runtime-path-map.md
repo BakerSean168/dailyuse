@@ -4,30 +4,29 @@ tags:
   - ai
   - path-map
   - mastra
-description: AI vNext 运行路径地图——Mastra open chat / canonical Workflow / transitional legacy paths
+description: MemoFlow AI vNext 当前运行路径地图——Mastra 是唯一 Assistant/Workflow runtime
 created: 2026-07-26T00:00:00
-updated: 2026-08-20T14:10:00+08:00
+updated: 2026-08-22T12:50:00+08:00
 ---
 
 # AI 运行路径地图
 
-> ADR-050 / AI-VNEXT-03。**产品默认 open chat 只允许走 Mastra Assistant runtime。**
-> `AIClientService.dispatchAssistant`、`DirectTurnEngine`、`pi_readonly` 和 classic
-> `streamMessage/sendMessage` 都是迁移中的 legacy surfaces，不得成为 open-chat fallback。
+> ADR-050 / ADR-051 / ADR-052 已完成目标态切换。**TypeScript + Mastra 是唯一核心 AI execution runtime。**
+> Python `apps/ai-service`、Agent Host、LangGraph bridge、TurnEngine、ProposalKernel、AgentRun checkpoint 双轨均已退役。
 
-## 当前四条路径
+## 当前权威路径
 
-| #     | 路径                             | 主入口                                                                           | Authority                          | 当前用途                                             |
-| ----- | -------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------- |
-| **①** | **Mastra open chat**             | `AssistantRuntimeClient` → `/ai/runtime/assistant/*` 或 `ai:runtime:assistant:*` | Mastra Thread / Memory             | **Web + Desktop 默认聊天**                           |
-| **②** | **Canonical Workflow**           | `WorkflowRuntimeClient` → `/ai/runtime/workflow/*` 或 `ai:runtime:workflow:*`    | Mastra Workflow runtime            | vNext Goal/Knowledge/Task workflow；具体实现逐批迁移 |
-| **③** | **Legacy Agent Host / AgentRun** | `dispatchAssistant`, `startAgentRun`, `resumeAgentRun`                           | legacy Host / AgentRun persistence | 尚未迁移的 Goal/Knowledge workflow 与兼容面          |
-| **④** | **Legacy message API**           | `sendMessage` / `streamMessage`                                                  | `AiMessage` / legacy chat service  | 非 vNext 调用方与待删除兼容面                        |
+| 路径                             | Client / Transport                                                              | Runtime authority                                    | Product authority                          |
+| -------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------ |
+| Open chat                        | `AssistantRuntimeClient` → `/ai/runtime/assistant/*` / `ai:runtime:assistant:*` | `MastraAIRuntime` + Mastra thread/memory             | Conversation shell + provider config       |
+| Goal / Task / Knowledge workflow | `WorkflowRuntimeClient` → `/ai/runtime/workflow/*` / `ai:runtime:workflow:*`    | `MastraAIRuntime` + durable Mastra workflow snapshot | Goal / Task / Repository application ports |
+| Usage / cost                     | `RuntimeUsageClient` → `/ai/runtime/usage` / `ai:runtime:usage:get`             | indexed `ai_generation_tasks` execution log          | Host-injected identity boundary            |
+| Eval / release gate              | `ai:eval:replay` + canonical report adapter                                     | TypeScript eval runner                               | `reports/apps/ai/evals`                    |
 
-## ① Mastra open chat — 唯一默认聊天路径
+## 1. Open chat
 
 ```text
-app-vue useAIChatSession
+AIChatView / useAIChatSession
   → AI_ASSISTANT_RUNTIME_KEY
     → Web: AssistantRuntimeHttpClient
        → POST /ai/runtime/assistant/history
@@ -35,86 +34,96 @@ app-vue useAIChatSession
        → POST /ai/runtime/assistant/sse
        → POST /ai/runtime/assistant/cancel
     → Desktop: AssistantRuntimeIpcClient
-       → ai:runtime:assistant:history
-       → ai:runtime:assistant:delete
-       → ai:runtime:assistant:start + push event
-       → ai:runtime:assistant:cancel
-          → MastraAIRuntime
-            → MemoFlow Assistant
-            → Mastra Memory / Thread
+      → MastraAIRuntime.dispatchMessage()
+        → Mastra Assistant
+        → provider/model resolved from encrypted ProviderConfig
+        → canonical assistant.* events
+        → Mastra thread/memory persistence
+        → execution log (request/trace/provider/model/token/cost)
 ```
 
-### Cross-boundary contract
+### Contract rules
 
-- client command 不携带 `identityId`；Web auth / Desktop authenticated IPC 注入 identity；
-- `identityId -> resourceId`；`conversationId -> threadId`；
-- BYOK model selection 只携带 `providerId/modelId` 标识，credential 留在 server-side resolver；
-- runtime event 只暴露 canonical `assistant.*` event，不暴露 Mastra private snapshot / provider raw error；
-- cancel 使用 runtime 产生的 `runId`，并由 server 以 authenticated identity 做 owner check；
-- usage 通过 `assistant.usage.updated` 投影；model metadata 通过 canonical run-start metadata 投影；
-- stream 结束后 UI 重新读取 Mastra persisted history，以持久化 transcript 覆盖 local draft。
+- Client command 永不携带 `identityId`；HTTP auth / authenticated IPC 在 host boundary 注入。
+- `identityId` 映射 Mastra resource，`conversationId` 映射 thread。
+- BYOK credential 只存在于 server-side model resolver；transport/event/log 不返回 API key。
+- UI 只消费 canonical `assistant.*` event，不消费 provider/Mastra 私有 event。
+- cancel 使用 runtime 生成的 `runId` 并进行 owner check。
+- stream 中可显示即时 usage；terminal/history restore 后通过 `RuntimeUsageClient` 读取 durable conversation 累计 usage。
+- history authority 是 Mastra thread。旧 `AiMessage` 只在一次性 transcript bootstrap 时只读；新消息不双写。
+- 禁止默认聊天回退 `AIClientService.dispatchAssistant` / `AssistantFacade`；不存在 legacy open-chat fallback。
 
-### Transcript cutover
-
-旧 Conversation aggregate 暂时只保留 shell（id/name/list/delete 等产品壳能力）。第一次访问旧 conversation 时：
-
-1. `ConversationTranscriptBootstrapSource` 先用 authenticated identity 验证 ownership；
-2. 只读提取现有 `AiMessage` transcript；
-3. 使用旧 message id 幂等 upsert 到同 id Mastra thread；
-4. 成功后在 thread metadata 写 `memoflowTranscriptBootstrapVersion` marker；
-5. marker 存在后永远不再读取旧 transcript；后续 history 只读 Mastra Memory；
-6. 新 open-chat message **不双写 `AiMessage`**；
-7. 删除 conversation 时先 owner-scoped 删除 Mastra thread，再删除 legacy shell。若 shell delete 失败，仍可由保留的 shell/transcript 重新 bootstrap；不会留下不可见的 Mastra orphan。
-
-这使中断重试保持幂等，并允许进程重启后直接从 Mastra storage 恢复同一 conversation。
-
-### 禁止
-
-- 默认聊天回退 `AIClientService.dispatchAssistant` / `AssistantFacade`；
-- 默认聊天进入 `DirectTurnEngine` 或 Python `AIServiceChatExecutionAdapter`；
-- UI 暴露 `direct_turn` / `pi_readonly` execution-profile selector；
-- client 自造 Host runId；
-- history 从 legacy `listMessages` 读取；
-- transcript 同时写 Mastra + `AiMessage`；
-- provider API key、Mastra private snapshot、raw provider exception 跨 transport。
-
-## ② Canonical Workflow
+## 2. Durable workflows
 
 ```text
-WorkflowRuntimeClient
-  → workflow start / resume / get / list / cancel
-    → AIWorkflowRuntimePort
-      → concrete Mastra Workflow runtime
+Goal / Task / Knowledge panel
+  → WorkflowRuntimeClient
+    → start / resume / get / list / cancel
+      → MastraAIRuntime
+        → goal.create / task.create / knowledge.capture workflow
+          → typed PlannerWorker
+          → optional clarification/revise/reject
+          → explicit approve/confirm
+          → product mutation port
+             ├─ GoalApplicationPort
+             ├─ TaskApplicationPort
+             └─ Repository knowledge persistence
 ```
 
-Transport contract 已在 AI-VNEXT-02 固定。未注册具体 Workflow runtime 时必须
-`SERVICE_UNAVAILABLE` fail closed，**不得自动回退 AgentRun**。`goal.create` 是第一条参考实现。
+Mastra 只拥有 workflow execution/snapshot。业务事实仍由 MemoFlow domain/application module 拥有；Mastra tool/workflow 不允许直写 Prisma/PowerSync repository。
 
-## ③ Legacy Agent Host / AgentRun
+`AIWorkflowRunView` 是 Web/Desktop 的唯一 workflow view contract。UI 不维护 AgentAction DAG、`pendingActions`、`approvedActions`、`dependsOn` 或第二套 approval lifecycle。
 
-`dispatchAssistant`、`AssistantFacade`、`ProposalKernel`、`startAgentRun/resumeAgentRun`
-暂时服务尚未迁移的 Goal/Knowledge/Task workflow。它们不再是 open-chat architecture。
+## 3. Usage / tracing / cost
 
-迁移约束：
+Assistant turn 与 Goal/Task/Knowledge planner 调用都写入统一 execution log：
 
-- 新 `server/mastra/**` 不得依赖旧 Host / LangGraph / TurnEngine；
-- legacy workflow 每迁移一条，即从该调用链删除对应 client/server surface；
-- `listAgentRuns` 不能作为 Mastra open-chat history authority。
+- 一等索引：`identity_id`, `conversation_id`, `run_id`, `request_id`, `trace_id`, `provider_id`, `model`；
+- usage：prompt/completion/total token；
+- cost：静态 pricing catalog 的 `estimated_cost_usd`；
+- input 只记录安全元数据（例如 `contentLength` / planner `mode`），不记录 raw prompt；
+- failure/cancel 使用稳定公开分类，不持久化 raw provider exception。
 
-## ④ Legacy message API
+`IAIUsageReadPort` 必须把 authenticated identity 放进数据库查询条件，再按 conversation/run 聚合；禁止从 JSON payload 全表扫描后在内存做 owner filtering。
 
-`sendMessage/streamMessage` 与对应 HTTP/IPC adapters 仍可能有非 vNext 调用方，但 Vue
-默认 open chat 禁止调用。其 Python-backed chat adapter 已从 API/Desktop 默认 composition 移除。
+## 4. Evaluation / release gate
 
-## Surface locks
+Canonical report root：`reports/apps/ai/evals`。
 
-- `use-ai-chat-host-dispatch.surface.spec.ts` 锁定 Mastra-only default chat；
-- `mastra-vnext-architecture.surface.spec.ts` 锁定新 runtime 不反向依赖 legacy Host；
-- Assistant HTTP/IPC/client parity tests 锁定 auth injection、history、delete、stream、cancel；
-- transcript bootstrap + real LibSQL restart tests 锁定一次性迁移和 restart recovery。
+`pnpm nx run ai:eval:replay` 使用同一 TypeScript runner 比较完整 configuration bundle（runtime/provider/model/prompt/tool-policy），覆盖：
+
+- open chat；
+- goal planning；
+- knowledge answer；
+- quality / case regression；
+- estimated cost；
+- p95 latency。
+
+当前 `recorded_replay` 是离线、可复现的 CI 证据，不冒充 live model evaluation。未来 live executor 复用同一 dataset、comparison policy 与 report schema。
+
+旧 `reports/apps/ai-service/evals` 只保留为版本历史证据；当前 runtime adapter 不读取该目录，也不存在 legacy report fallback。
+
+## 5. Host composition
+
+API 与 Desktop 都只创建一个 `MastraAIRuntime`，并将同一对象同时作为：
+
+- `mastraRuntime`（Assistant）；
+- `workflowRuntime`（durable Workflow）；
+- execution-log producer；
+- durable usage read consumer。
+
+API 使用 PostgreSQL-backed Mastra storage；Desktop 使用 profile-local LibSQL storage。两端共享 contracts/client 语义，不共享 framework private types。
+
+## 6. 反回退锁
+
+- `ai-vnext-no-legacy.surface.spec.ts`：旧 Python/AgentHost/dual-runtime 文件、transport token、AgentAction DAG、deploy env 不得回归。
+- `architecture-surface-audit.mjs` 的 `AI_MASTRA_RUNTIME_AUTHORITY`：锁 `MastraAIRuntime`、API/Desktop composition root 与 retired files。
+- package/public-surface audits：禁止重新把 concrete legacy runtime adapter 暴露到 public root。
+- HTTP/IPC parity tests：锁 host-owned identity、runtime usage、Assistant/Workflow transport。
 
 ## 相关
 
 - [ADR-050 — Mastra Native AI Runtime](./adr/ADR-050-mastra-native-ai-runtime.md)
 - [ADR-051 — AI Primitive Taxonomy](./adr/ADR-051-ai-primitive-taxonomy.md)
+- [ADR-052 — Goal Create Reference Workflow](./adr/ADR-052-goal-create-reference-workflow.md)
 - [AI vNext active plan](../plan/active/2026-08-20-mastra-native-ai-vnext-refactor.md)

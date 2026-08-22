@@ -2,9 +2,9 @@ import { computed, nextTick, ref } from 'vue';
 import type {
   AIRuntimeUsage,
   AssistantRuntimeEvent,
-  AssistantSurface,
+  AIRuntimeSurface,
 } from '@memoflow/contracts/ai';
-import type { AssistantRuntimeClient } from '@memoflow/ai/client';
+import type { AssistantRuntimeClient, RuntimeUsageClient } from '@memoflow/ai/client';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type { AIChatService, ChatItem, ChatModelOption, ConversationSummary } from './types';
@@ -19,8 +19,10 @@ export interface UseAIChatSessionOptions {
   service: AIChatService;
   /** Mastra-native authoritative history/stream/cancel client. */
   runtime: AssistantRuntimeClient;
+  /** Durable conversation/run usage projection. */
+  usageRuntime: RuntimeUsageClient;
   /** Host-provided Assistant surface tag (web / desktop / server). */
-  surface: AssistantSurface;
+  surface: AIRuntimeSurface;
   getDefaultConversationName: (mode: string) => string;
   onConversationCreated?: (id: string) => void;
   restoreWorkflowState?: (id: string) => void;
@@ -153,6 +155,22 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     );
   }
 
+  async function refreshRuntimeUsage(conversationId: string): Promise<void> {
+    try {
+      const usage = await options.usageRuntime.get({ conversationId });
+      if (chatConversationId.value !== conversationId) return;
+      lastRuntimeUsage.value = {
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+        totalTokens: usage.totalTokens,
+        ...(usage.estimatedCost !== undefined ? { estimatedCost: usage.estimatedCost } : {}),
+      };
+    } catch {
+      // Usage is observability-only: failure must never block chat/history recovery.
+      if (chatConversationId.value === conversationId) lastRuntimeUsage.value = null;
+    }
+  }
+
   async function selectConversation(
     item: ConversationSummary,
     _loadService: AIChatService,
@@ -166,7 +184,10 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     syncModel(getConversationModelKey(String(item.id)));
 
     try {
-      await refreshRuntimeHistory(String(item.id));
+      await Promise.all([
+        refreshRuntimeHistory(String(item.id)),
+        refreshRuntimeUsage(String(item.id)),
+      ]);
       options.restoreWorkflowState?.(String(item.id));
     } catch (error) {
       toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.chat.loadFailed'));
@@ -316,7 +337,10 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
 
       // Mastra memory is the authority after cutover. Refresh from persisted
       // history instead of accepting draft ids/content as durable truth.
-      await refreshRuntimeHistory(conversationId);
+      await Promise.all([
+        refreshRuntimeHistory(conversationId),
+        refreshRuntimeUsage(conversationId),
+      ]);
     } catch (error) {
       const assistantDraft = chatTimeline.value.find((item) => item.id === assistantDraftId);
       const userDraft = chatTimeline.value.find((item) => item.id === userDraftId);
@@ -374,6 +398,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     clearLastActiveConversation,
     buildConversationTranscript,
     loadConversationList,
+    refreshRuntimeUsage,
     selectConversation,
     deleteConversation,
     ensureConversationCreated,

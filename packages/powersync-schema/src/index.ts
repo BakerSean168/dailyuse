@@ -823,6 +823,13 @@ const ai_generation_tasks = new Table({
   identity_id: column.text,
   task_type: column.text,
   status: column.text,
+  conversation_id: column.text,
+  run_id: column.text,
+  request_id: column.text,
+  trace_id: column.text,
+  provider_id: column.text,
+  model: column.text,
+  estimated_cost_usd: column.real,
   input: column.text, // JSON
   result: column.text, // JSON
   error: column.text,

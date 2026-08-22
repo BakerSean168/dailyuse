@@ -16,6 +16,8 @@ const webPort = Number(process.env.AI_WORKSPACE_E2E_PORT ?? '4174');
 const webBaseUrl = `http://${webHost}:${webPort}`;
 /** Residual 1337: goal-workflow still registers via real API; Vite-only boot left :3000 refused. */
 const apiOrigin = process.env.E2E_API_BASE_URL ?? 'http://localhost:3000';
+const apiUrl = new URL(apiOrigin);
+const apiPort = apiUrl.port || (apiUrl.protocol === 'https:' ? '443' : '80');
 const apiHealthUrl = `${apiOrigin.replace(/\/$/, '')}/healthz`;
 
 /** Residual 1192: dual delay retired onto @memoflow/utils/frontend sole. */
@@ -119,7 +121,10 @@ async function main(): Promise<void> {
     // Residual 1337: register/login needs the e2e API (same as default web:e2e webServer).
     // CORS must allow the external Vite origin (4174), not only the default 5173 e2e web.
     const corsOrigins = [
-      ...(process.env.CORS_ORIGIN ?? '').split(',').map((o) => o.trim()).filter(Boolean),
+      ...(process.env.CORS_ORIGIN ?? '')
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean),
       webBaseUrl,
       'http://127.0.0.1:5173',
       'http://localhost:5173',
@@ -131,6 +136,7 @@ async function main(): Promise<void> {
         NODE_ENV: 'test',
         RUNTIME_LANE: 'e2e',
         E2E_API_BASE_URL: apiOrigin,
+        API_PORT: apiPort,
         CORS_ORIGIN: [...new Set(corsOrigins)].join(','),
       },
     });
@@ -153,7 +159,13 @@ async function main(): Promise<void> {
 
     playwrightProcess = spawnChild(
       process.execPath,
-      [playwrightCliPath, 'test', '--config', 'playwright.ai-workspace.config.ts', ...process.argv.slice(2)],
+      [
+        playwrightCliPath,
+        'test',
+        '--config',
+        'playwright.ai-workspace.config.ts',
+        ...process.argv.slice(2),
+      ],
       {
         cwd: webRoot,
         env: {

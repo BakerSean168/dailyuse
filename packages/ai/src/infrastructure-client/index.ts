@@ -1,48 +1,31 @@
-/**
- * AI Module - Infrastructure Client
- *
- * Exports:
- * - Types: IAIConversationApiClient, IAIMessageApiClient, AIAgentRuntimeApiClient, etc.
- * - Adapters: HTTP and IPC implementations
- * - Providers: OpenAI and other LLM providers
- * - Prompts: AI prompt templates
- */
+/** Product-only AI infrastructure clients after the Mastra runtime cutover. */
 
-// Types (port interfaces + transport interfaces)
 export type {
   IResultHttpClient,
   IResultIpcClient,
   IAICapabilitiesApiClient,
   AIEvaluationReportApiClient,
-  AIAgentRuntimeApiClient,
   AIAnalyticsQueryApiClient,
   IAIConversationApiClient,
-  IAIMessageApiClient,
-  IAIGoalApiClient,
   AIKnowledgeQueryApiClient,
-  AIKnowledgeNoteApiClient,
   IAIProviderConfigApiClient,
 } from './adapters/types';
 
-// Adapters
 export {
-  // HTTP
+  AICapabilitiesHttpAdapter,
+  AIAnalyticsQueryHttpAdapter,
   AIConversationHttpAdapter,
-  AIMessageHttpAdapter,
-  AIProviderConfigHttpAdapter,
   AIEvaluationReportHttpAdapter,
-  AIAgentRuntimeHttpAdapter,
+  AIKnowledgeQueryHttpAdapter,
+  AIProviderConfigHttpAdapter,
   createAIHttpAdapters,
-  // IPC
+  AICapabilitiesIpcAdapter,
+  AIAnalyticsQueryIpcAdapter,
   AIConversationIpcAdapter,
-  AIMessageIpcAdapter,
-  AIProviderConfigIpcAdapter,
   AIEvaluationReportIpcAdapter,
-  AIAgentRuntimeIpcAdapter,
-  AIGoalIpcAdapter,
-  AIKnowledgeNoteIpcAdapter,
+  AIKnowledgeQueryIpcAdapter,
+  AIProviderConfigIpcAdapter,
   createAIIpcAdapters,
 } from './adapters';
 
-// Prompts
 export * from './prompts';

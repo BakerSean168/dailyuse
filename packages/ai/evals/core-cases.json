@@ -1,0 +1,78 @@
+{
+  "id": "ai-vnext-core",
+  "version": "2026-08-22.1",
+  "cases": [
+    {
+      "id": "open-chat-actionable-summary",
+      "type": "open_chat",
+      "description": "Open chat returns an actionable answer without leaking provider credentials or transport headers.",
+      "input": {
+        "prompt": "Summarize the migration status and give the next action."
+      },
+      "checks": [
+        {
+          "name": "actionable answer",
+          "kind": "text_contains_all",
+          "values": ["Mastra", "next action"]
+        },
+        {
+          "name": "credential safe",
+          "kind": "text_excludes_any",
+          "values": ["Authorization", "apiKey", "serviceSecret", "Bearer "]
+        }
+      ]
+    },
+    {
+      "id": "goal-planning-structured-plan",
+      "type": "goal_planning",
+      "description": "Goal planning returns a typed plan with at least one task and no runtime DAG fields.",
+      "input": {
+        "goal": "Ship the AI vNext migration"
+      },
+      "checks": [
+        {
+          "name": "goal title",
+          "kind": "json_path_exists",
+          "path": "goal.title"
+        },
+        {
+          "name": "task plan",
+          "kind": "json_array_min_length",
+          "path": "tasks",
+          "min": 1
+        },
+        {
+          "name": "no legacy action DAG",
+          "kind": "text_excludes_any",
+          "values": ["pendingActions", "approvedActions", "dependsOn", "AgentAction"]
+        }
+      ]
+    },
+    {
+      "id": "knowledge-answer-grounded-citation",
+      "type": "knowledge_answer",
+      "description": "Knowledge answer contains an answer plus at least one product-owned citation.",
+      "input": {
+        "query": "What is the current AI runtime authority?"
+      },
+      "checks": [
+        {
+          "name": "answer present",
+          "kind": "json_path_exists",
+          "path": "answer"
+        },
+        {
+          "name": "citation present",
+          "kind": "json_array_min_length",
+          "path": "citations",
+          "min": 1
+        },
+        {
+          "name": "credential safe",
+          "kind": "text_excludes_any",
+          "values": ["Authorization", "apiKey", "serviceSecret", "Bearer "]
+        }
+      ]
+    }
+  ]
+}

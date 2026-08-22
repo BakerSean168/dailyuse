@@ -12,6 +12,8 @@ describe('ai infrastructure-client transport types surface', () => {
   const index = readFileSync(resolve(__dirname, '../../index.ts'), 'utf8');
 
   it('exports Result transport ports only', () => {
+    expect(types).toContain("import type { IResultHttpClient } from '@memoflow/http-client'");
+    expect(types).not.toContain("import type { IResultIpcClient } from '@memoflow/ipc-client'");
     expect(types).toContain('export type { IResultHttpClient }');
     expect(types).toContain("export type { IResultIpcClient } from '@memoflow/ipc-client'");
     expect(types).not.toContain('export type { IHttpClient }');

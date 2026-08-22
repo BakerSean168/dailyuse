@@ -8,7 +8,6 @@ import {
   KnowledgeClarificationStateSchema,
   KnowledgeDraftSchema,
   type KnowledgeCaptureDecision,
-  type KnowledgeClarificationState,
   type KnowledgeDraft,
   type KnowledgeCaptureWorkflowInput,
 } from '@memoflow/contracts/ai';
@@ -221,6 +220,7 @@ export function createKnowledgeCaptureWorkflow(input: {
           revisionInstruction: options.instruction,
           targetRevision: options.targetRevision,
         });
+        requestContext.setRaw('workflowRunId', runId);
         const decision = await input.planner.plan(
           {
             input: current.input,

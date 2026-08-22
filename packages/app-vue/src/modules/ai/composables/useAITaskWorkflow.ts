@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type { AIWorkflowRunView } from '@memoflow/contracts/ai';
 import type { TaskWorkflowStage, UseAITaskWorkflowOptions } from './types';
-import { getAIErrorMessage } from './error';
+import { getAIErrorMessage, getAIWorkflowFailureMessage } from './error';
 
 /** Thin presentation projection for the durable task.create Mastra Workflow. */
 export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
@@ -33,7 +33,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   async function syncTaskWorkflowRun(runId: string): Promise<void> {
     if (!runId) return;
     try { projectRun(await options.workflowRuntime.get({ runId })); }
-    catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed')); }
+    catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed')); }
   }
   const taskAgentWaitingForClarification = computed(() => taskWorkflowRun.value?.status === 'suspended' && taskWorkflowRun.value.suspension?.type === 'clarification_required');
   const taskAgentWaitingForApproval = computed(() => taskWorkflowRun.value?.status === 'suspended' && taskWorkflowRun.value.suspension?.type === 'task_draft_review');
@@ -41,7 +41,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   const canRetryTaskAgentExecution = computed(() => taskWorkflowRun.value?.status === 'suspended' && taskWorkflowRun.value.suspension?.type === 'recovery_required' && taskWorkflowRun.value.suspension.retryable && !taskAgentResuming.value);
   const canRunTaskAgent = computed(() => Boolean(options.selectedModel.value) && Boolean(options.chatConversationId.value) && !options.chatLoading.value && !taskAgentLoading.value && !taskAgentResuming.value && options.hasWorkflowUserMessages.value && (!taskWorkflowRun.value || ['completed', 'failed', 'cancelled'].includes(taskWorkflowRun.value.status)));
   const taskExecutionSummary = computed(() => { const receipt = taskWorkflowRun.value?.result; return receipt ? { status: receipt.status, executedCount: receipt.taskIds.length, failedCount: receipt.failures.length } : null; });
-  const taskExecutionRecovery = computed(() => { const suspension = taskWorkflowRun.value?.suspension; return suspension?.type === 'recovery_required' ? { canRetry: suspension.retryable, suggestions: suspension.failures.map((failure) => failure.message) } : null; });
+  const taskExecutionRecovery = computed(() => { const suspension = taskWorkflowRun.value?.suspension; return suspension?.type === 'recovery_required' ? { canRetry: suspension.retryable, suggestions: suspension.failures.map((failure) => getAIWorkflowFailureMessage(failure, t)) } : null; });
 
   async function startTaskAgentRun(): Promise<void> {
     if (!canRunTaskAgent.value || !options.selectedModel.value) return;
@@ -52,7 +52,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
       const run = await options.workflowRuntime.start({ kind: 'task.create', conversationId: options.chatConversationId.value, input: { idea, ...(goalId ? { goalId } : {}) }, providerId: options.selectedModel.value.providerId, modelId: options.selectedModel.value.modelId, locale: locale.value.startsWith('en') ? 'en-US' : 'zh-CN' });
       projectRun(run);
       if (run.kind === 'task.create' && run.suspension?.type === 'task_draft_review') await options.maybeRenameCurrentConversation(run.suspension.draft.task.title);
-    } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed')); }
+    } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed')); }
     finally { taskAgentLoading.value = false; }
   }
   async function resume(command: Parameters<typeof options.workflowRuntime.resume>[0]['command']): Promise<void> {
@@ -61,14 +61,14 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
     try {
       const next = await options.workflowRuntime.resume({ runId: run.runId, command }); projectRun(next);
       if (next.kind === 'task.create' && next.status === 'completed' && next.result?.taskTemplateId) await options.openCreatedTask?.(next.result.taskTemplateId);
-    } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed')); }
+    } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed')); }
     finally { taskAgentResuming.value = false; }
   }
   const confirmTaskAgentRun = () => resume({ type: 'approve' });
   const submitTaskClarification = () => resume({ type: 'answer', answers: clarificationAnswers.value.map((answer) => answer.trim()) });
   const retryTaskAgentExecution = () => resume({ type: 'retry' });
   const reviseTaskAgentRun = (patch: Record<string, unknown>) => resume({ type: 'edit_structured', patch });
-  async function cancelTaskAgentRun(): Promise<void> { const run = taskWorkflowRun.value; if (!run || taskAgentResuming.value) return; if (run.status === 'suspended') return resume({ type: 'cancel' }); taskAgentResuming.value = true; try { projectRun(await options.workflowRuntime.cancel({ runId: run.runId })); } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed')); } finally { taskAgentResuming.value = false; } }
+  async function cancelTaskAgentRun(): Promise<void> { const run = taskWorkflowRun.value; if (!run || taskAgentResuming.value) return; if (run.status === 'suspended') return resume({ type: 'cancel' }); taskAgentResuming.value = true; try { projectRun(await options.workflowRuntime.cancel({ runId: run.runId })); } catch (error) { toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed')); } finally { taskAgentResuming.value = false; } }
   const completeTaskAgentRun = confirmTaskAgentRun;
   function setLinkedGoalId(goalId: string | null | undefined) { linkedGoalId.value = goalId?.trim() || null; }
   function resetTaskWorkflowLocalState() { taskWorkflowRun.value = null; taskWorkflowStage.value = 'collect'; clarificationAnswers.value = []; linkedGoalId.value = null; showTaskDraftEditor.value = false; taskAgentLoading.value = false; taskAgentResuming.value = false; }

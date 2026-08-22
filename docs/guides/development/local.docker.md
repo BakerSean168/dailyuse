@@ -15,8 +15,8 @@ updated: 2026-07-31T00:00:00
 
 它的定位不是“随便起一下服务”，而是：
 
-- 尽量贴近生产拓扑：`postgres + redis + ai-service + migrator + api + powersync + web`
-- 强制本地构建 `api` / `web` / `ai-service` 镜像
+- 尽量贴近生产拓扑：`postgres + redis + migrator + api + powersync + web`
+- 强制本地构建 `api` / `web` 镜像
 - 在进入 PR 和 release 链路前，先验证本地容器运行结果
 - **host 端口与 host-dev / Playwright e2e 隔离**（SSOT：`tools/runtime/profiles.json`）
 
@@ -27,7 +27,7 @@ updated: 2026-07-31T00:00:00
 - Dockerfile
 - `docker-compose.local.yml`
 - `docker-compose.prod.yml`
-- API / Web / AI Service 启动链路
+- API / Web 启动链路
 - PowerSync / snapshot / cron / runtime path / env 注入
 - “只在容器里会出问题”的依赖、bundling、入口脚本问题
 
@@ -40,7 +40,7 @@ pnpm runtime:preflight:local-docker
 pnpm docker:local:up
 ```
 
-该入口会把当前 Git revision 和 UTC 构建时间写入 Web、API、AI Service 的 OCI 镜像标签；工作区存在未提交修改时，revision 带 `-dirty` 后缀。构建后可用以下命令核对：
+该入口会把当前 Git revision 和 UTC 构建时间写入 Web、API 的 OCI 镜像标签；工作区存在未提交修改时，revision 带 `-dirty` 后缀。构建后可用以下命令核对：
 
 ```bash
 docker image inspect memoflow-api:local --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}'
@@ -49,7 +49,7 @@ docker image inspect memoflow-api:local --format '{{ index .Config.Labels "org.o
 等价底层命令：
 
 ```bash
-VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
+VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.local.yml --env-file .env.production --env-file .env.production.local up -d --build
 ```
 
 > 若直接调用底层 compose 且 `.env.production.local` 把 `API_HOST_PORT` 设成 `3000`，会与宿主 Nx dev target / Playwright 抢口。
@@ -59,7 +59,6 @@ VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.loc
 
 - Web: `http://localhost:58080`
 - API: `http://localhost:53080`
-- AI: `http://localhost:58100`
 - PowerSync: `http://localhost:58081`
 - PostgreSQL: `127.0.0.1:55432`
 - Redis: `127.0.0.1:56379`
@@ -71,7 +70,7 @@ VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.loc
 ```bash
 pnpm docker:local:up
 # 或（不跑 build-prep 时请自知风险）
-docker compose -f docker-compose.local.yml --env-file .env.production.local up -d
+docker compose -f docker-compose.local.yml --env-file .env.production --env-file .env.production.local up -d
 ```
 
 查看日志：
@@ -109,7 +108,6 @@ pnpm docker:local:down
 - `api` healthy
 - `migrator` 为 `Exited (0)`，且日志包含 `Database initialization completed`
 - `web` healthy
-- `ai-service` healthy
 - `powersync` healthy
 - 相关改动相关的 env / volume 已在本地 compose 中接通
 - 关键用户链路在本地容器环境下能跑通
@@ -130,9 +128,9 @@ pnpm nx run web:e2e:local-docker
 
 该 target 在 Playwright 前后同时收集证据：
 
-- Web、API、AI Service 的 host TCP listener 已打开。
+- Web、API 的 host TCP listener 已打开。
 - Compose 的 host → container 端口映射与运行时 profile 一致。
-- 三个产品容器均 healthy，且 OCI revision 与本次验证 revision 完全一致。
+- Web、API 产品容器均 healthy，且 OCI revision 与本次验证 revision 完全一致。
 - Chromium 发出的唯一 query token 出现在当前 Web 容器的 Nginx 日志中。
 
 机器可读证据写入（已被 Git 忽略）：

@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import type {
   AIWorkflowRunView,
-  GoalClarificationDTO,
   GoalPlanDraft,
   GoalPlanDraftContent,
 } from '@memoflow/contracts/ai';
@@ -16,8 +15,8 @@ import {
   type EditableKeyResult,
   type EditableGoalReminder,
   type EditableGoalTaskTemplate,
-  type GoalAutomationResult,
   type GoalWorkflowStage,
+  type GoalClarificationView,
   type UseAIGoalWorkflowOptions,
 } from './types';
 import { getAIErrorMessage } from './error';
@@ -28,8 +27,7 @@ import { normalizeReminderTimeOfDay } from '@memoflow/utils/shared';
  *
  * The durable Mastra Workflow is authoritative. This composable owns only
  * editable presentation state and maps existing UI action names onto typed
- * Workflow commands. It deliberately does not create or resume AgentRun,
- * AgentAction, Host Proposal or legacy goal automation lifecycles.
+ * Workflow commands. The durable Workflow is the only execution owner.
  */
 export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   const { t, locale } = useI18n();
@@ -39,11 +37,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
 
   const goalDraftLoading = ref(false);
   const goalWorkflowStage = ref<GoalWorkflowStage>('collect');
-  // Retired legacy draft/automation result surfaces stay null until their
-  // component sections are removed below. Canonical draft lives in suspension.
-  const goalDraft = ref<null>(null);
-  const goalAutomationResult = ref<GoalAutomationResult | null>(null);
-  const goalClarification = ref<GoalClarificationDTO | null>(null);
+  const goalClarification = ref<GoalClarificationView | null>(null);
   const clarificationAnswers = ref<string[]>([]);
   const showGoalDraftEditor = ref(false);
   const creatingGoal = ref(false);
@@ -152,7 +146,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     try {
       projectRun(await options.workflowRuntime.get({ runId }));
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     }
   }
 
@@ -356,7 +350,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
           : null;
       if (draft?.goal.name) await options.maybeRenameCurrentConversation(draft.goal.name);
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       goalAgentLoading.value = false;
       goalDraftLoading.value = false;
@@ -382,7 +376,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         }),
       );
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       goalAgentResuming.value = false;
     }
@@ -416,7 +410,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         toast.success(t('aiAssistant.goalAutomation.executionSuccess'));
       }
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       goalAgentResuming.value = false;
       creatingGoal.value = false;
@@ -442,7 +436,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         projectRun(await options.workflowRuntime.cancel({ runId: run.runId }));
       }
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       goalAgentResuming.value = false;
     }
@@ -462,7 +456,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     try {
       await flushStructuredEdits();
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       goalAgentResuming.value = false;
     }
@@ -480,7 +474,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         }),
       );
     } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.agentRunFailed'));
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.errors.workflowExecutionFailed'));
     } finally {
       goalAgentResuming.value = false;
     }
@@ -553,7 +547,6 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     goalWorkflowRun.value = null;
     goalWorkflowStage.value = 'collect';
     goalClarification.value = null;
-    goalAutomationResult.value = null;
     clarificationAnswers.value = [];
     showGoalDraftEditor.value = false;
     editableGoal.value = createEmptyGoalDraft();
@@ -561,21 +554,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableTaskTemplates.value = [];
     editableReminders.value = [];
   }
-  function clearGoalAutomationResult(): void {
-    goalAutomationResult.value = null;
-  }
-
-  // Legacy automation entry names remain inert until the old panel sections are
-  // removed; they cannot execute a second domain-writing path.
-  async function handlePlanGoalAutomation(): Promise<void> {}
-  async function handleExecuteGoalAutomation(): Promise<void> {}
-
   return {
     goalDraftLoading,
     goalWorkflowStage,
-    goalDraft,
     goalClarification,
-    goalAutomationResult,
     goalWorkflowRun,
     clarificationAnswers,
     showGoalDraftEditor,
@@ -602,10 +584,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     canContinueGoalAgentExecution,
     canRetryGoalAgentExecution,
     resetGoalArtifacts,
-    clearGoalAutomationResult,
     generateGoalDraftFromConversation,
-    handlePlanGoalAutomation,
-    handleExecuteGoalAutomation,
     startGoalAgentRun,
     submitGoalAgentClarification,
     confirmGoalAgentRun,
