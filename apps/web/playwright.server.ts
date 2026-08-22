@@ -12,7 +12,7 @@ const VITE_BIN_PATH = resolve(WORKSPACE_ROOT, 'node_modules/vite/bin/vite.js');
 const DEFAULT_API_ORIGIN = 'http://localhost:3000';
 const DEFAULT_WEB_ORIGIN = 'http://127.0.0.1:5173';
 const LEGACY_LOCALHOST_WEB_ORIGIN = 'http://localhost:5173';
-const DEFAULT_OPENAI_MOCK_ORIGIN = 'http://127.0.0.1:58102';
+const DEFAULT_OPENAI_MOCK_PORT = '58102';
 const DEFAULT_AI_PROVIDER_ENCRYPTION_KEY = 'e2e-ai-provider-encryption-key-32-bytes';
 
 function quoteShellArgument(value: string): string {
@@ -73,6 +73,11 @@ function getApiOrigin(): string {
 
 export function getE2EWebOrigin(): string {
   return normalizeOrigin(process.env.E2E_WEB_BASE_URL ?? DEFAULT_WEB_ORIGIN);
+}
+
+export function getE2EOpenAIMockOrigin(): string {
+  const port = process.env.E2E_OPENAI_MOCK_PORT?.trim() || DEFAULT_OPENAI_MOCK_PORT;
+  return `http://127.0.0.1:${port}`;
 }
 
 function getWebServerRuntimeConfig() {
@@ -242,13 +247,14 @@ export function createWebServer(url = `${getE2EWebOrigin()}/auth`) {
 }
 
 export function createOpenAICompatibleMockServer() {
+  const origin = getE2EOpenAIMockOrigin();
   return {
     command: 'pnpm exec tsx ./e2e/helpers/start-openai-compatible-mock.ts',
     cwd: '.',
-    url: `${DEFAULT_OPENAI_MOCK_ORIGIN}/healthz`,
+    url: `${origin}/healthz`,
     env: {
       ...process.env,
-      E2E_OPENAI_MOCK_PORT: new URL(DEFAULT_OPENAI_MOCK_ORIGIN).port,
+      E2E_OPENAI_MOCK_PORT: new URL(origin).port,
     },
     reuseExistingServer: false,
     timeout: 60 * 1000,
