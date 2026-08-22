@@ -126,4 +126,4 @@ API 使用 PostgreSQL-backed Mastra storage；Desktop 使用 profile-local LibSQ
 - [ADR-050 — Mastra Native AI Runtime](./adr/ADR-050-mastra-native-ai-runtime.md)
 - [ADR-051 — AI Primitive Taxonomy](./adr/ADR-051-ai-primitive-taxonomy.md)
 - [ADR-052 — Goal Create Reference Workflow](./adr/ADR-052-goal-create-reference-workflow.md)
-- [AI vNext active plan](../plan/active/2026-08-20-mastra-native-ai-vnext-refactor.md)
+- [AI vNext archived implementation plan](../plan/archive/2026-08-20-mastra-native-ai-vnext-refactor.md)

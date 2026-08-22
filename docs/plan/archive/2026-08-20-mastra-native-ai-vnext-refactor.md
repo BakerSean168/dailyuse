@@ -1,17 +1,19 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - ai
   - agent
   - mastra
   - refactor
 description: MemoFlow AI vNext Mastra-native 一次性大重构实施计划
 created: 2026-08-20T00:00:00+08:00
-updated: 2026-08-21T03:40:00+08:00
+updated: 2026-08-23T00:05:00+08:00
 ---
 
 # MemoFlow AI vNext — Mastra-native 一次性大重构实施计划
+
+> **归档结论（2026-08-23）**：AI-VNEXT-01–09 全部完成。实施 PR [#252](https://github.com/BakerSean168/memoflow/pull/252) 已 squash merge 为 `5507722e2`；最终 required CI run `32581922602` 全绿。合并前 clean-HEAD local Docker 验收基于 `f23d9cb184d64d5a6abe3e9e2bb81141ec436b9e`：API/Web first-party image revision 精确匹配、API/Web/PowerSync/Postgres/Redis healthy、PowerSync 派生镜像配置与仓库 SHA256 一致；最终 review 无未解决 P0/P1/P2。
 
 ## 1. 文档地位
 
@@ -21,7 +23,7 @@ updated: 2026-08-21T03:40:00+08:00
 - [ADR-051](../../architecture/adr/ADR-051-ai-primitive-taxonomy.md)
 - [ADR-052](../../architecture/adr/ADR-052-goal-create-reference-workflow.md)
 
-这是 AI runtime 的**唯一 active 重构计划**。旧 Agent Host / LangGraph / Pi 目标态计划已归档，不再作为目标架构约束。
+本计划已完成并归档；实现后的 canonical AI runtime 以代码、ADR-050/051/052 与 current-system docs 为真值。旧 Agent Host / LangGraph / Pi 目标态计划同样只保留历史参考价值。
 
 ## 2. 实施姿态
 
@@ -402,7 +404,7 @@ workflow.cancelled
 - local validation 暴露的 Better Auth `3/10s` shared-IP flake 已修：生产默认限流保持不变，`LOCAL_VALIDATION` 使用正确的 `/**` nested-path override，反代 IP 明确读取 `x-forwarded-for` / `x-real-ip`；
 - Phase E refresh/approval fixture 已从旧 `/ai/agents/runs` 迁到 canonical `/ai/runtime/workflow/get` + `AIWorkflowRunView`，没有为通过测试恢复 AgentHost。
 
-**Next owner:** `AI-VNEXT-09 / Batch H` 只剩最终全仓门禁、diff/review、commit/rebase/push、PR 与 required CI checks；不再新增 runtime 迁移范围。
+**Delivery closure:** `AI-VNEXT-09 / Batch H` 已完成：最终全仓门禁、diff/review、commit/rebase/push、PR #252、required CI 与 clean-HEAD local Docker 验收均闭合。
 
 ## 6. Implementation Batches
 
@@ -551,7 +553,7 @@ workflow.cancelled
 
 ### Batch H — Review / repair / delivery
 
-**Current status:** **IN PROGRESS — AI-VNEXT-09 delivery only**。Runtime migration 已结束；剩余工作仅为最终全仓 gate、review、Git/PR/CI。
+**Current status:** **COMPLETE — AI-VNEXT-09 closed**。Runtime migration、最终全仓 gate、review、Git/PR/CI 与 local Docker acceptance 均已闭合。
 
 **Goal:** zero known blockers，完整 PR 可合并。
 
@@ -632,7 +634,7 @@ workflow.cancelled
 
 ### AI-VNEXT-09 — Whole-repo validation + PR
 
-**Status:** **LOCAL DELIVERY GATES COMPLETE**。全仓 typecheck/lint/test/build/docs/governance、fresh Docker、11/11 AI Workspace E2E 与 P0/P1/P2 review 已闭合；剩余仅 commit/rebase/push、PR 与 required CI。
+**Status:** **COMPLETE**。全仓 typecheck/lint/test/build/docs/governance、fresh Docker、11/11 AI Workspace E2E、P0/P1/P2 review、PR #252 与 required CI 均已闭合。
 **Goal:** complete delivery。
 **Dependency:** all。
 **Acceptance:** required local gates + GitHub CI green。
@@ -663,5 +665,5 @@ P0/P1/P2 在 PR ready 前全部修复或有明确不可实施的外部理由；�
 - [x] Web + Desktop transport parity；
 - [x] full typecheck/lint/test/build/docs/governance green；
 - [x] local Docker AI journey 通过；
-- [ ] PR opened and required CI checks green；
+- [x] PR opened and required CI checks green；
 - [x] no unresolved P0/P1/P2 review findings。
