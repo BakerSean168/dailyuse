@@ -6,7 +6,7 @@ tags:
   - ci-cd
 description: MemoFlow 0.10.0 发布闭环与 Release Lifecycle V2 实施计划
 created: 2026-08-23T11:48:00+08:00
-updated: 2026-08-23T19:15:41+08:00
+updated: 2026-08-23T19:30:55+08:00
 ---
 
 # Release Lifecycle V2 — 0.10.0 发布闭环
@@ -159,6 +159,7 @@ Next gate: run package/affected/governance validation, merge the focused repair,
 - The Windows lane no longer pins `npm_config_msvs_version=2022`; MSBuild discovery is x64 and may select the toolchain installed on the hosted runner.
 - The ACR password secret was refreshed after the failed run. Its value was not exposed; the post-merge retry proved registry authentication succeeds.
 - That retry exposed a separate ACR compatibility boundary: image layers and the normal image manifest uploaded, but the registry rejected BuildKit's `application/vnd.oci.empty.v1+json` SBOM/provenance attestation manifest. Release image builds therefore disable registry-side BuildKit attestations while retaining the canonical Docker/release manifests and GitHub-hosted promotion provenance artifact.
+- The same retry proved both Windows and Linux Desktop build lanes succeed, then the Desktop upload job downloaded every artifact in the parent run and failed while extracting an unrelated Docker build record. Desktop release upload now filters `actions/download-artifact` to `desktop-*`, preserving lane isolation.
 - Verification completed before PR: release workflow contract 5/5, CI/CD platform 45/45, Desktop 40 files / 230 tests, Desktop lint/typecheck, governance/docs/inventory, `actionlint`, and `git diff --check` all pass.
 - A real Linux AppImage was built twice: once from the repaired branch and once from the untouched `v0.10.0` release SHA using the new external packaging configuration. Both produced the `memoflow` ELF executable and verified all 76 packaged runtime dependencies.
 

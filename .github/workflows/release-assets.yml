@@ -188,6 +188,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v7
         with:
+          pattern: desktop-*
           path: artifacts
 
       - name: Require an existing draft release
