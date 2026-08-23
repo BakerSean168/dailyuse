@@ -206,8 +206,10 @@ jobs:
             USE_PREBUILT_ARTIFACT=1
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
-          provenance: true
-          sbom: true
+          # This ACR endpoint rejects BuildKit's OCI empty attestation manifests.
+          # Release provenance remains in the GitHub-hosted workflow evidence below.
+          provenance: false
+          sbom: false
 
       - name: Build and push Migrator image
         id: build-migrator
@@ -225,8 +227,8 @@ jobs:
             VERSION=${{ needs.prepare-release.outputs.release_tag }}
             USE_PREBUILT_ARTIFACT=1
           cache-from: type=gha,scope=api
-          provenance: true
-          sbom: true
+          provenance: false
+          sbom: false
 
       - name: Build and push Web image
         id: build-web
@@ -243,8 +245,8 @@ jobs:
             VERSION=${{ needs.prepare-release.outputs.release_tag }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
-          provenance: true
-          sbom: true
+          provenance: false
+          sbom: false
 
       - name: Build Docker release evidence
         env:
