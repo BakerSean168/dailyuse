@@ -148,6 +148,10 @@ export function createApiServer() {
       ...process.env,
       NODE_ENV: 'test',
       RUNTIME_LANE: 'e2e',
+      // Keep the isolated host-E2E auth transaction on the same API/Web pair even
+      // when a machine .env.local points Docker validation at a MagicDNS origin.
+      AUTH_BASE_URL: `${apiOrigin}/api/auth`,
+      MEMOFLOW_WEB_URL: getE2EWebOrigin(),
       CORS_ORIGIN: getCorsOrigins(),
     },
     ...apiServerOptions,
@@ -195,6 +199,8 @@ export function createRealOAuthApiServer() {
       E2E_REAL_GITHUB_OAUTH: '1',
       GITHUB_OAUTH_CLIENT_ID: clientId,
       GITHUB_OAUTH_CLIENT_SECRET: clientSecret,
+      AUTH_BASE_URL: `${apiOrigin}/api/auth`,
+      MEMOFLOW_WEB_URL: getE2EWebOrigin(),
       CORS_ORIGIN: getCorsOrigins(),
     },
     ...apiServerOptions,

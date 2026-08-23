@@ -66,6 +66,19 @@ describe('playwright.server', () => {
     expect(process.env.E2E_API_FULL_URL).toBe('http://localhost:3000/api/v1');
   });
 
+  it('isolates API canonical auth and web URLs from machine-local Docker origins', async () => {
+    process.env.AUTH_BASE_URL = 'http://gcp-dev-01.example.ts.net:53080/api/auth';
+    process.env.MEMOFLOW_WEB_URL = 'http://gcp-dev-01.example.ts.net:58080';
+    process.env.E2E_API_BASE_URL = 'http://localhost:3000';
+    process.env.E2E_WEB_BASE_URL = 'http://127.0.0.1:5173';
+
+    const { createApiServer } = await import('../playwright.server');
+    const apiServer = createApiServer();
+
+    expect(apiServer.env?.AUTH_BASE_URL).toBe('http://localhost:3000/api/auth');
+    expect(apiServer.env?.MEMOFLOW_WEB_URL).toBe('http://127.0.0.1:5173');
+  });
+
   it('uses overridden E2E origins for both API and web servers', async () => {
     process.env.E2E_API_BASE_URL = 'http://127.0.0.1:3001/';
     process.env.E2E_WEB_BASE_URL = 'http://localhost:4173/';
@@ -158,6 +171,8 @@ describe('playwright.server', () => {
     const realLane = createRealOAuthApiServer();
     expect(realLane.env?.RUNTIME_LANE).toBe('host-dev');
     expect(realLane.env?.E2E_REAL_GITHUB_OAUTH).toBe('1');
+    expect(realLane.env?.AUTH_BASE_URL).toBe('http://localhost:3000/api/auth');
+    expect(realLane.env?.MEMOFLOW_WEB_URL).toBe('http://127.0.0.1:5173');
     expect(realLane.env?.GITHUB_OAUTH_CLIENT_ID).toBe('Ov23test-real-client');
     expect(realLane.env?.GITHUB_OAUTH_CLIENT_SECRET).toBe('real-secret-for-test-only');
   });
