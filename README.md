@@ -1,94 +1,182 @@
 # 知行 MemoFlow
 
-知行 MemoFlow 是一个使用 `pnpm` + `Nx` 管理的多应用工作区，承载桌面端、Web、API 与共享领域包；AI runtime 由 API/Desktop 内嵌的 TypeScript + Mastra 组合提供。项目旨在构建一个 AI 驱动的个人效能管理系统，支持目标管理、任务调度、知识资源、AI 对话等功能。仓库中的文档、配置和测试以当前代码现实为准；如果文档与代码冲突，以代码、`project.json`、`nx.json`、测试配置和测试结果为准。
+> **AI-first personal productivity workspace** — 让对话、目标、任务、知识、日程、提醒与执行结果处在同一个持续工作流里。
 
-## 工作区概览
+<p align="left">
+  <a href="https://memoflow.bakersean.top"><strong>Live Web App</strong></a> ·
+  <a href="https://bakersean168.github.io/memoflow/"><strong>Project Page</strong></a> ·
+  <a href="./docs/product/README.md"><strong>Product Docs</strong></a> ·
+  <a href="./docs/architecture/README.md"><strong>Architecture</strong></a>
+</p>
 
-- `apps/desktop`：Electron 桌面应用，前端栈是 Vue 3 + Vite。
-- `apps/web`：Web 应用，使用 Vue 3 + Vite。
-- `apps/api`：Express 5 API，配合 Zod、OpenAPI、Prisma，并组合服务端 Mastra AI runtime。
-- `apps/mobile`：移动端应用容器（规划中）。
-- `packages/*`：按领域拆分的共享业务包（account、ai、goal、task 等），以及 `contracts`、`domain-shared`、`ui-*`、`utils` 等基础包。
-- `tools/*`：工作区脚本、测试治理和 Docker 辅助工具。
-- `docs/`：唯一维护中的正式文档入口。
+MemoFlow 是一个面向个人长期使用的 AI 效能工作区。它不是把 Chatbot 放到传统 Todo App 旁边，而是让 AI 对话与 Goal、Task、Note、Schedule、Reminder、Notification 等业务对象共享同一套产品上下文：用户可以在对话中形成意图，再进入结构化工作区确认、编辑、执行和追踪结果。
 
-## 技术基线
+当前仓库同时包含 Web、Electron Desktop、API、共享领域包、契约、AI runtime、同步与发布基础设施，是一个完整的多端产品工程，而不只是前端 Demo。
 
-- 包管理：`pnpm@11`
-- 工作区编排：`nx@22`
-- 语言：TypeScript 5
-- 桌面端：Electron 39 + Vue 3
-- Web：Vue 3 + Vite
-- API：Express 5 + Zod + Prisma
-- 测试与质量：Vitest、Playwright、ESLint flat config、Prettier
+## Product model
 
-## 目录结构
+```mermaid
+flowchart LR
+    A[Think / Ask AI] --> B[Goal · Task · Knowledge]
+    B --> C[Schedule · Reminder]
+    C --> D[Execution / Delivery]
+    D --> E[Timeline · Outcome]
+    E --> A
+    B <--> F[Web + Desktop]
+```
+
+### What you can do
+
+- **AI workspace** — 持续对话、open chat，以及面向 Goal / Task / Knowledge 的 typed AI workflow。
+- **Goals & tasks** — 把方向拆成可执行目标和任务，并保留业务状态、关系与结果。
+- **Notes / repository** — 管理知识与资源，并把内容作为工作流中的可引用上下文。
+- **Schedule & reminders** — 把任务和计划连接到时间语义，而不是维护另一套孤立日历数据。
+- **Notifications & delivery** — 通过统一 operation / delivery contract 追踪通知意图、尝试与结果。
+- **Web + Desktop** — Vue Web 与 Electron Desktop 共享核心业务契约；PowerSync 支撑跨端数据同步路径。
+
+## Workspace experience
+
+桌面工作区采用三栏模型：
 
 ```text
-.
-├── apps/
-│   ├── api/
-│   ├── desktop/
-│   ├── mobile/
-│   └── web/
-├── packages/
-│   ├── account/ ai/ authentication/ dashboard/ goal/ governance/
-│   ├── notification/ reminder/ schedule/ setting/ task/ ...
-│   ├── contracts/ domain-shared/
-│   ├── app-vue/ app-react/
-│   ├── ui-core/ ui-vue-shadcn/ ui-react-native/
-│   └── utils/ assets/ test-utils/
-├── tools/
-├── docs/
-│   ├── product/
-│   ├── architecture/
-│   ├── standards/
-│   ├── guides/
-│   ├── test/
-│   ├── governance/
-│   └── plan/
-├── nx.json
-├── eslint.config.ts
-├── project.json
-└── package.json
+Conversation sidebar | AI collaboration | Business workspace
+                     |                  | Goal / Task / Note /
+                     |                  | Schedule / Reminder ...
 ```
 
-## 常用命令
+AI 区是持续协作入口，右侧业务区则拥有结构化状态和更大的编辑面积。顶部全局入口可以直接打开 Goal、Task、Note、Reminder、Schedule、Notification；业务 Tab 表达当前上下文，而不是再复制一套导航。
 
-开发服务统一直接使用 Nx：单项目使用
-`pnpm nx run <project>:<target>`，多项目使用 `pnpm nx run-many ...`。
+See [`docs/product/workspace-ui.md`](./docs/product/workspace-ui.md) for the current workspace contract.
+
+## Engineering highlights
+
+| Concern | MemoFlow approach |
+| --- | --- |
+| Cross-surface consistency | centralized `@memoflow/contracts` + transport parity |
+| AI runtime | TypeScript + Mastra, hosted inside the product runtime |
+| Durable AI workflows | typed workflow state, recovery/cancel paths, product-owned projections |
+| Modular business domains | Goal / Task / Schedule / Reminder / Notification / Repository packages |
+| Multi-client data | PostgreSQL + PowerSync + explicit offline/query-cache policy |
+| Delivery semantics | operation, occurrence, delivery intent/attempt/receipt contracts |
+| Auditability | unified operation timeline, replay and execution context |
+| Quality gates | Nx-governed lint/typecheck/test, browser flows, coverage/performance/delivery oracles |
+
+## Architecture
+
+```text
+┌──────────────────────────────────────────────┐
+│ Web (Vue)          Desktop (Electron + Vue) │
+└───────────────┬───────────────┬──────────────┘
+                │ shared contracts / client APIs
+                ▼
+┌──────────────────────────────────────────────┐
+│ API / composition root                      │
+│ Express · Zod · Prisma · Mastra runtime     │
+└───────────────┬───────────────┬──────────────┘
+                │               │
+                ▼               ▼
+          PostgreSQL          Redis
+                │
+                ▼
+            PowerSync
+```
+
+The monorepo keeps product surfaces thin and pushes reusable business behavior into shared packages:
+
+```text
+apps/
+├── api/        Express API + server composition
+├── desktop/    Electron desktop client
+├── web/        Vue web client
+└── mobile/     Mobile container / future surface
+
+packages/
+├── contracts/  Public cross-layer contracts
+├── ai/         Mastra-based AI runtime and workflows
+├── goal/ task/ schedule/ reminder/ notification/ ...
+├── app-vue/    Shared Vue application layer
+├── ui-*/       UI primitives / adapters
+└── utils/      Shared support code
+
+docs/           Product, architecture, ADR, standards, deployment and plans
+tools/          CI, governance, runtime and test-system tooling
+```
+
+## Tech stack
+
+- **Language:** TypeScript 6
+- **Workspace:** Nx 23, pnpm 11
+- **Web:** Vue 3, Vite 8, Tailwind CSS 4, shadcn-vue
+- **Desktop:** Electron 43 + Vue 3
+- **API:** Express 5, Zod, Prisma
+- **AI:** Mastra 1.x
+- **Data:** PostgreSQL, Redis, PowerSync
+- **Testing:** Vitest, Playwright, Storybook, axe-core
+- **Delivery:** GitHub Actions, Docker Compose, Alibaba Cloud ACR + ECS
+
+## Quick start
+
+### Prerequisites
+
+- Node.js 22.13+
+- pnpm 11+
+- Docker with Compose for local infrastructure
+
+### Install and run
 
 ```bash
+git clone https://github.com/BakerSean168/memoflow.git
+cd memoflow
 pnpm install
+cp .env.example .env.local
+pnpm docker:dev:up
 pnpm nx run-many -t serve --projects=api,web --parallel=2
-pnpm nx run desktop:serve-safe
-pnpm nx run-many -t lint,typecheck --all
-pnpm nx run memoflow:docs-check
 ```
 
-Desktop 的 `desktop:serve-safe` 会执行依赖准备和 Electron 原生模块重编译；
-环境已经准备好时可使用 `pnpm nx run desktop:serve` 进入快速热更新内环。
-完整的本机端口、Docker 服务替换和命令规范见
-[`docs/guides/development/local-development.md`](docs/guides/development/local-development.md)。
+For Desktop development:
 
-## 文档导航
+```bash
+pnpm nx run desktop:serve-safe
+```
 
-- 入门：[`docs/getting-started/README.md`](docs/getting-started/README.md)
-- 产品功能资产：[`docs/product/README.md`](docs/product/README.md)
-- 架构：[`docs/architecture/README.md`](docs/architecture/README.md)
-- ADR 索引：[`docs/architecture/adr/README.md`](docs/architecture/adr/README.md)
-- 规范：[`docs/standards/README.md`](docs/standards/README.md)
-- 开发指南：[`docs/guides/development/README.md`](docs/guides/development/README.md)
-- 测试：[`docs/test/README.md`](docs/test/README.md)
-- 治理：[`docs/governance/README.md`](docs/governance/README.md)
-- 计划：[`docs/plan/README.md`](docs/plan/README.md)
-- 部署：[`docs/deployment/README.md`](docs/deployment/README.md)
+`desktop:serve-safe` prepares dependencies and rebuilds Electron native modules. Once the environment is warm, `pnpm nx run desktop:serve` is the faster inner loop.
 
-## Onboarding
+Full local-development guidance: [`docs/guides/development/local-development.md`](./docs/guides/development/local-development.md).
 
-1. 先看根 README，确认 app、package 与文档入口。
-2. 再看 [`docs/getting-started/README.md`](docs/getting-started/README.md) 和 [`docs/guides/development/README.md`](docs/guides/development/README.md)。
-3. 需要规则时看 `docs/standards`；需要决策背景时看 ADR；需要真实行为时读代码、配置和测试。
+## Quality & verification
 
-桌面端在 Windows 开发模式下的日志目录：
-`C:\Users\xx\AppData\Roaming\MemoFlow-Dev\logs`
+The repository treats product and architecture contracts as executable gates rather than README promises.
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm e2e
+pnpm docs:check
+pnpm governance:check
+```
+
+CI also runs dedicated governance, integration, browser-flow, coverage, performance and delivery observations before protected `main` can move.
+
+## Production
+
+The current Web production entry is **[memoflow.bakersean.top](https://memoflow.bakersean.top)**.
+
+The GitHub Pages site is intentionally only the public **project showcase**. The actual product continues to use the existing production stack with Web/API/PowerSync/PostgreSQL/Redis behind the repository's deployment contracts.
+
+See [`docs/deployment/README.md`](./docs/deployment/README.md) and [`docs/guides/development/release-workflow.md`](./docs/guides/development/release-workflow.md).
+
+## Documentation map
+
+- [`docs/getting-started/README.md`](./docs/getting-started/README.md) — onboarding.
+- [`docs/product/README.md`](./docs/product/README.md) — product capabilities and module map.
+- [`docs/product/workspace-ui.md`](./docs/product/workspace-ui.md) — current workspace experience.
+- [`docs/architecture/README.md`](./docs/architecture/README.md) — architecture entry point.
+- [`docs/architecture/adr/README.md`](./docs/architecture/adr/README.md) — architectural decisions.
+- [`docs/standards/README.md`](./docs/standards/README.md) — engineering standards.
+- [`docs/test/README.md`](./docs/test/README.md) — testing system.
+- [`docs/deployment/README.md`](./docs/deployment/README.md) — production topology and operations.
+
+## Repository status & license
+
+MemoFlow is a **public source repository**, but this repository currently does **not** include an open-source license. Public visibility alone does not grant permission to copy, modify, or redistribute the code; copyright remains with the repository owner unless a license is added later.
