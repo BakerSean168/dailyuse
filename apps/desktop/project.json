@@ -64,7 +64,7 @@
     },
     "package": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build", "native-rebuild"],
+      "dependsOn": ["build"],
       "options": {
         "commands": ["electron-builder --dir", "node ./scripts/verify-packaged-runtime-deps.mjs"],
         "cwd": "apps/desktop",
@@ -75,13 +75,13 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "pnpm exec electron-rebuild -f -o better-sqlite3",
+        "command": "pnpm exec electron-builder install-app-deps",
         "cwd": "apps/desktop"
       }
     },
     "dist": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build", "native-rebuild"],
+      "dependsOn": ["build"],
       "options": {
         "commands": [
           "electron-builder --publish never",

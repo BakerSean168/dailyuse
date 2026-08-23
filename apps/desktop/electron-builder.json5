@@ -16,6 +16,11 @@
   ],
   "electronVersion": "43.1.0",
   "productName": "MemoFlow",
+  "executableName": "memoflow",
+  "extraMetadata": {
+    "productName": "MemoFlow",
+    "desktopName": "memoflow.desktop"
+  },
   "directories": {
     "output": "dist-package",
     "buildResources": "build" // 添加资源目录配置
@@ -23,7 +28,22 @@
   "files": [
     "dist-renderer/**/*",
     "dist-electron/**/*",
-    "package.json"
+    "package.json",
+    {
+      "from": "../../packages/database",
+      "to": "node_modules/@memoflow/database",
+      "filter": ["package.json", "dist/**/*"]
+    },
+    {
+      "from": "../../node_modules/dotenv",
+      "to": "node_modules/dotenv",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "../../node_modules/dotenv-expand",
+      "to": "node_modules/dotenv-expand",
+      "filter": ["**/*"]
+    }
   ],
   "extraResources": [
     {
@@ -36,7 +56,7 @@
     }
   ],
   "mac": {
-    "icon": "build/icon.icns",
+    "icon": "../../packages/assets/dist/images/logos/MemoFlow.icns",
     "target": [
       "dmg",
       "zip"  // 添加 zip 格式支持自动更新
@@ -45,7 +65,7 @@
     "category": "public.app-category.productivity" // 添加应用类别
   },
   "win": {
-    "icon": "build/icon.ico",
+    "icon": "../../packages/assets/dist/images/logos/MemoFlow.ico",
     "target": [
       {
         "target": "nsis",
@@ -75,7 +95,8 @@
     ],
   },
   "linux": {
-    "icon": "build/icon.png",
+    "icon": "../../packages/assets/dist/images/logos/MemoFlow-512.png",
+    "syncDesktopName": true,
     "target": [
       "AppImage",
       "deb",  // 添加 deb 格式
@@ -91,5 +112,5 @@
     "releaseType": "release" // 配置发布选项
   },
   "generateUpdatesFilesForAllChannels": true, // 为所有渠道生成更新文件
-  "npmRebuild": false // 禁用自动原生模块重编译，由 package/dist 命令显式重编译 better-sqlite3
+  "npmRebuild": true // electron-builder owns the Electron ABI rebuild for packaged native dependencies
 }

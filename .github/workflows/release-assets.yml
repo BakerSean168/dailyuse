@@ -84,16 +84,23 @@ jobs:
         include:
           - os: windows-latest
             platform: windows
-            dist_configuration: windows
+            builder_args: --win --x64
           - os: ubuntu-latest
             platform: linux
-            dist_configuration: linux
+            builder_args: --linux AppImage deb rpm --x64
 
     steps:
-      - name: Checkout exact release SHA
+      - name: Checkout release packaging tooling
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: release-tooling
+
+      - name: Checkout exact release source
         uses: actions/checkout@v6
         with:
           ref: ${{ needs.prepare-release.outputs.release_sha }}
+          path: release-source
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -109,11 +116,13 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version-file: apps/desktop/.python-version
+          python-version-file: release-source/apps/desktop/.python-version
 
       - name: Setup MSBuild (Windows)
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
 
       - name: Install Linux packaging dependencies
         if: runner.os == 'Linux'
@@ -122,41 +131,44 @@ jobs:
           sudo apt-get install -y rpm fakeroot
 
       - name: Install dependencies
+        working-directory: release-source
         env:
           PYTHON: ${{ env.pythonLocation }}/python
           npm_config_python: ${{ env.pythonLocation }}/python
-          npm_config_msvs_version: 2022
         run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: Validate release contract
+        working-directory: release-source
         shell: bash
         env:
           RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
         run: node ./tools/ci-cd-platform/release-tools/release-contract.mjs --require-release --expected-tag "$RELEASE_TAG"
 
       - name: Build desktop application
+        working-directory: release-source
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+          NODE_OPTIONS: --require=${{ github.workspace }}/release-source/tools/ci/node-process-bootstrap.cjs
           PYTHON: ${{ env.pythonLocation }}/python
           npm_config_python: ${{ env.pythonLocation }}/python
-          npm_config_msvs_version: 2022
         run: pnpm nx run desktop:build:production --outputStyle=static
 
       - name: Package desktop application
+        working-directory: release-source/apps/desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+          NODE_OPTIONS: --require=${{ github.workspace }}/release-source/tools/ci/node-process-bootstrap.cjs
           PYTHON: ${{ env.pythonLocation }}/python
           npm_config_python: ${{ env.pythonLocation }}/python
-          npm_config_msvs_version: 2022
-        run: pnpm nx run desktop:dist:${{ matrix.dist_configuration }} --outputStyle=static
+        run: |
+          pnpm exec electron-builder ${{ matrix.builder_args }} --publish never --config ../../../release-tooling/apps/desktop/electron-builder.json5
+          node ./scripts/verify-packaged-runtime-deps.mjs
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
           name: desktop-${{ matrix.platform }}
-          path: apps/desktop/dist-package
+          path: release-source/apps/desktop/dist-package
           if-no-files-found: error
           compression-level: 9
 
@@ -171,7 +183,7 @@ jobs:
       - name: Checkout release tooling
         uses: actions/checkout@v6
         with:
-          ref: ${{ needs.prepare-release.outputs.release_sha }}
+          ref: ${{ github.workflow_sha }}
 
       - name: Download build artifacts
         uses: actions/download-artifact@v7
