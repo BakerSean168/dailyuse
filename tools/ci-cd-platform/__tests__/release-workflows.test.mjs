@@ -90,6 +90,14 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.match(workflow, /msbuild-architecture: x64/);
 });
 
+test('release image publication uses registry-compatible image manifests', async () => {
+  const workflow = await readRepoFile('.github/workflows/publish-images.yml');
+
+  assert.equal(workflow.match(/^\s+provenance: false$/gmu)?.length, 3);
+  assert.equal(workflow.match(/^\s+sbom: false$/gmu)?.length, 3);
+  assert.doesNotMatch(workflow, /^\s+(?:provenance|sbom): true$/mu);
+});
+
 test('release tooling exposes fail-closed identity and evidence builders', async () => {
   const [contract, desktop, docker, aggregate] = await Promise.all([
     readRepoFile('tools/ci-cd-platform/release-tools/release-contract.mjs'),
