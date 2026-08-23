@@ -454,7 +454,28 @@ function startPanelResize(e: PointerEvent) {
   document.body.style.cursor = 'col-resize';
   isPanelResizing.value = true;
 
-  const cleanup = (pointerId?: number) => {
+  const restoreFocusedElement = () => {
+    if (!focusedElement) return;
+    if (focusedElement.isConnected) {
+      if (document.activeElement !== focusedElement) {
+        focusedElement.focus({ preventScroll: true });
+      }
+      return;
+    }
+
+    // 拖拽触发布局重渲染导致原元素被替换（如任务搜索框）时，
+    // 按 data-testid 定位新元素恢复焦点，保持用户输入上下文。
+    const testId = focusedElement.getAttribute('data-testid');
+    if (!testId) return;
+    const replacement = document.querySelector<HTMLElement>(
+      `[data-testid="${CSS.escape(testId)}"]`,
+    );
+    if (replacement && document.activeElement !== replacement) {
+      replacement.focus({ preventScroll: true });
+    }
+  };
+
+  const cleanup = (pointerId?: number, restoreFocusAfterGesture = true) => {
     if (typeof pointerId === 'number') {
       try {
         captureTarget?.releasePointerCapture?.(pointerId);
@@ -470,25 +491,17 @@ function startPanelResize(e: PointerEvent) {
     document.body.style.userSelect = previousUserSelect;
     document.body.style.cursor = previousCursor;
     isPanelResizing.value = false;
-    if (focusedElement?.isConnected && document.activeElement !== focusedElement) {
-      focusedElement.focus({ preventScroll: true });
-    } else if (focusedElement && !focusedElement.isConnected) {
-      // 拖拽触发布局重渲染导致原元素被替换（如任务搜索框）时，
-      // 按 data-testid 定位新元素恢复焦点，保持用户输入上下文。
-      const testId = focusedElement.getAttribute('data-testid');
-      if (testId) {
-        const replacement = document.querySelector<HTMLElement>(
-          `[data-testid="${CSS.escape(testId)}"]`,
-        );
-        replacement?.focus({ preventScroll: true });
-      }
+    if (restoreFocusAfterGesture) {
+      // Chromium may apply the native pointer/mouse focus default after pointerup listeners.
+      // Restore on the next frame so the user's active input wins after the full gesture settles.
+      window.requestAnimationFrame(restoreFocusedElement);
     }
   };
 
   const move = (ev: PointerEvent) => {
     const width = panelWidthFromPointer(ev.clientX, window.innerWidth, occupiedSidebarWidth());
     if (shouldCollapsePanelWidth(width)) {
-      cleanup(ev.pointerId);
+      cleanup(ev.pointerId, false);
       void sync.closePanel();
       return;
     }
