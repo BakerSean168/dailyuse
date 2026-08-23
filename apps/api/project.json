@@ -70,16 +70,13 @@
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "dependsOn": ["prisma:generate", "^build"],
+      "dependsOn": [
+        { "target": "prisma-generate", "projects": ["database"] },
+        "^build"
+      ],
       "options": {
         "command": "tsc --noEmit -p tsconfig.typecheck.json && tsc --noEmit -p tsconfig.typecheck.spec.json",
         "cwd": "apps/api"
-      }
-    },
-    "prisma:generate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm nx run database:prisma-generate"
       }
     },
     "prisma:migrate": {
