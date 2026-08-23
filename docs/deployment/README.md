@@ -90,16 +90,16 @@ watchtower
 
 仓库里的 [`docker-compose.prod.yml`](D:\home\projects\memoflow\docker-compose.prod.yml) 已定义以下服务：
 
-| 服务 | 镜像 | 作用 | 建议来源 |
-|------|------|------|---------|
-| `postgres` | `pgvector/pgvector:pg16` | 主数据库 | 本地离线预加载 |
-| `redis` | `redis:7-alpine` | 缓存 / 队列 | 本地离线预加载 |
-| `migrator` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator` | 一次性数据库初始化 | 阿里云 ACR |
-| `api` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api` | 后端 API | 阿里云 ACR |
-| `powersync` | `journeyapps/powersync-service:latest` | Desktop / Web 实时同步服务 | 本地离线预加载 |
-| `web` | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-web` | 前端站点 | 阿里云 ACR |
-| `caddy` | `caddy:2-alpine` | HTTPS 入口 | 本地离线预加载 |
-| `watchtower` | `containrrr/watchtower` | 自动更新 | 本地离线预加载 |
+| 服务         | 镜像                                               | 作用                       | 建议来源       |
+| ------------ | -------------------------------------------------- | -------------------------- | -------------- |
+| `postgres`   | `pgvector/pgvector:pg16`                           | 主数据库                   | 本地离线预加载 |
+| `redis`      | `redis:7-alpine`                                   | 缓存 / 队列                | 本地离线预加载 |
+| `migrator`   | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator` | 一次性数据库初始化         | 阿里云 ACR     |
+| `api`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api`      | 后端 API                   | 阿里云 ACR     |
+| `powersync`  | `journeyapps/powersync-service:latest`             | Desktop / Web 实时同步服务 | 本地离线预加载 |
+| `web`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-web`      | 前端站点                   | 阿里云 ACR     |
+| `caddy`      | `caddy:2-alpine`                                   | HTTPS 入口                 | 本地离线预加载 |
+| `watchtower` | `containrrr/watchtower`                            | 自动更新                   | 本地离线预加载 |
 
 其中：
 
@@ -569,38 +569,18 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 
 ### 11.1 正常发布
 
-仓库当前采用 `release-please + docker-deploy` 的工程化发布链路：
+仓库使用 **Release Lifecycle V2**。版本准备与正式发布是两个阶段：
 
-- [`release-please.yml`](D:\home\projects\memoflow\.github\workflows\release-please.yml) 在 `main` 分支推进后运行
-- [`release-please-config.json`](D:\home\projects\memoflow\release-please-config.json) 和 [`.release-please-manifest.json`](D:\home\projects\memoflow\.release-please-manifest.json) 负责版本策略与当前版本状态
-- [`docker-deploy.yml`](D:\home\projects\memoflow\.github\workflows\docker-deploy.yml) 监听 `v*` tag，构建并推送业务镜像
+- `release-please.yml`（`Prepare Release`）只在到达发布里程碑时手工运行，负责版本、CHANGELOG 与 Release PR；
+- Release PR 合并后必须先等待 merge SHA 的 `CI` success；
+- `release-publish.yml` 随后创建 Draft/tag，并直接调用 `release-assets.yml` 与 `publish-images.yml`；
+- 两条 lane 与 release evidence 全绿后 GitHub Release 才从 Draft 变为 Published。
 
-推荐发布方式不是手工 `git tag`，而是：
+`publish-images.yml` 只负责把 API/Migrator/Web 的不可变 release tags 发布到 ACR，并产生 digest/provenance；它**不更新 `prod-latest`，也不等于已经部署生产服务器**。`prod-latest` 与生产 compose 更新属于后续 rollout/promotion，仍按本章后续步骤显式执行。
 
-```bash
-git push origin main
-```
-
-随后由 release-please 负责：
-
-1. 计算版本号
-2. 更新版本文件和 `CHANGELOG.md`
-3. 创建或更新 release PR
-4. 在 release PR 合并后自动创建 GitHub Release 和正式 tag
-
-正式 tag 创建后，`docker-deploy.yml` 才会继续执行：
-
-1. 构建 `api`、`migrator`、`web`
-2. 推送不可变镜像 tag
-3. 同时更新 `prod-latest`
+标准发布动作见 [Release 工作流](../guides/development/release-workflow.md)。不要手工创建/移动正式 tag，也不要在 postflight 之前公开 Draft。
 
 Watchtower 仍可自动更新 `web`。`api` 和 `migrator` 明确禁用 Watchtower：数据库初始化必须使用与 API 匹配的镜像先成功完成，不能让 Watchtower 单独替换 API。
-
-结论：
-
-- 不要把“手工推送 tag”当作日常标准发布方式
-- 日常版本、tag、changelog 由 release-please 管理
-- `docker-deploy` 只消费 release-please 产出的正式 tag
 
 ### 11.2 更稳妥的生产更新建议
 

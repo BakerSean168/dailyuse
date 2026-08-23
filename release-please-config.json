@@ -13,7 +13,8 @@
           "path": "apps/desktop/package.json",
           "jsonpath": "$.version"
         }
-      ]
+      ],
+      "skip-github-release": true
     }
   }
 }

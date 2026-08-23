@@ -39,9 +39,10 @@
 - 默认顺序固定为：
   1. 本地用 `pnpm docker:local:up` 验证；该入口会注入当前 Git revision 与构建时间到本地镜像标签
   2. 发起 PR，合并到 `main`
-  3. 等待 `release-please` 更新或创建 release PR
-  4. 合并 release PR，触发正式 tag / release
-  5. 由 `docker-deploy.yml` 构建并推送生产镜像
+  3. 到达发布里程碑时手工运行 `Prepare Release`，由 release-please 更新或创建 release PR
+  4. 合并 release PR，并等待该 **exact SHA** 的 `CI` 成功
+  5. `Release Publish` 创建 Draft/tag，直接调用 Desktop assets 与 `publish-images.yml` 两条 release lane
+  6. 两条 lane 与 release evidence 全部通过后才公开 GitHub Release；生产服务器 rollout 仍是独立运维步骤
 - 不把“手工替换生产镜像 tag”“手工改生产 compose”“直接在生产机试错”当成默认开发流程；这些只属于例外的 rollout、回滚或故障处理动作。
 
 ## 变更策略

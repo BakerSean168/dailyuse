@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-23T10:30:00+08:00
+updated: 2026-08-23T11:48:00+08:00
 ---
 
 # Active Plans
@@ -13,20 +13,22 @@ updated: 2026-08-23T10:30:00+08:00
 
 ## 当前计划
 
-当前无未归档实施计划。
+| 计划                                                                           | 当前状态                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------- |
+| [Release Lifecycle V2 — 0.10.0 发布闭环](./2026-08-23-release-lifecycle-v2.md) | **In progress**：发布基础设施重构；0.10.0 尚未发布 |
 
 ## 近期完成的基础计划
 
-| 计划                                                                                              | 当前状态                                                                                                                                                                                            |
-| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [应用契约与架构大重构](../archive/2026-08-17-application-contract-and-architecture-refactor.md)   | **ADR-049 implemented**：failure-contract inventory 219→1；8 批次 #234–#241 全绿合并；DomainError 退役、baseline 收敛至唯一内部开发面。见 `docs/analysis/2026-08-18-adr-049-completion-evidence.md` |
-| [CI/CD Platform V2 一次性重构](../archive/2026-08-05-ci-cd-platform-v2-refactor.md)               | **Archived（2026-08-19）**：架构实施+PR cutover 完成；baseline-v1 采集 7 同范围 run，DoD 性能项确认未达标（wall 10.66 vs 7-8），按偏差接受归档；契约/运营闭环已验证                                 |
+| 计划                                                                                            | 当前状态                                                                                                                                                                                            |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [应用契约与架构大重构](../archive/2026-08-17-application-contract-and-architecture-refactor.md) | **ADR-049 implemented**：failure-contract inventory 219→1；8 批次 #234–#241 全绿合并；DomainError 退役、baseline 收敛至唯一内部开发面。见 `docs/analysis/2026-08-18-adr-049-completion-evidence.md` |
+| [CI/CD Platform V2 一次性重构](../archive/2026-08-05-ci-cd-platform-v2-refactor.md)             | **Archived（2026-08-19）**：架构实施+PR cutover 完成；baseline-v1 采集 7 同范围 run，DoD 性能项确认未达标（wall 10.66 vs 7-8），按偏差接受归档；契约/运营闭环已验证                                 |
 
 ## 本轮已归档（2026-08-23）
 
-| 计划 | 结果 |
-| --- | --- |
-| [MemoFlow AI vNext — Mastra-native 一次性大重构](../archive/2026-08-20-mastra-native-ai-vnext-refactor.md) | AI-VNEXT-01–09 全部完成；TypeScript + Mastra 成为唯一核心 AI runtime；Python/LangGraph/AgentHost 退役；PR #252 required CI 全绿并合入 `5507722e2` |
+| 计划                                                                                                             | 结果                                                                                                                                                                |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [MemoFlow AI vNext — Mastra-native 一次性大重构](../archive/2026-08-20-mastra-native-ai-vnext-refactor.md)       | AI-VNEXT-01–09 全部完成；TypeScript + Mastra 成为唯一核心 AI runtime；Python/LangGraph/AgentHost 退役；PR #252 required CI 全绿并合入 `5507722e2`                   |
 | [Oracle2 / Hermes2 本地部署与产品流验证加固](../archive/2026-08-18-oracle2-hermes-local-validation-hardening.md) | Oracle2 历史里程碑保留；开发/验证主机迁移到 GCP Dev 后完成 MagicDNS + clean OCI revision + Auth/A–E 15/15 + host-E2E 隔离；Hermes2 parity 因主机架构变更 superseded |
 
 ## 本轮已归档（2026-08-16）

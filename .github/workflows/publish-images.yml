@@ -1,0 +1,280 @@
+name: Publish Docker Images
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      sha:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing draft release tag to publish images for
+        required: true
+        type: string
+      sha:
+        description: Exact release SHA; empty resolves from the tag
+        required: false
+        type: string
+
+concurrency:
+  group: publish-images-${{ inputs.tag }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  NODE_VERSION: '24'
+  PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+  ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+jobs:
+  prepare-release:
+    name: Resolve Release Context
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      release_sha: ${{ steps.resolve.outputs.release_sha }}
+    steps:
+      - name: Resolve exact tag and SHA
+        id: resolve
+        uses: actions/github-script@v8
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_SHA: ${{ inputs.sha }}
+        with:
+          script: |
+            const tag = process.env.RELEASE_TAG;
+            const requestedSha = process.env.RELEASE_SHA;
+            if (!tag) {
+              core.setFailed('release tag is required');
+              return;
+            }
+            const ref = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `tags/${tag}`,
+            });
+            let tagSha = ref.data.object.sha;
+            if (ref.data.object.type === 'tag') {
+              const annotated = await github.rest.git.getTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_sha: tagSha,
+              });
+              tagSha = annotated.data.object.sha;
+            }
+            if (requestedSha && requestedSha !== tagSha) {
+              core.setFailed(`${tag} points to ${tagSha}, requested SHA was ${requestedSha}`);
+              return;
+            }
+            core.setOutput('release_tag', tag);
+            core.setOutput('release_sha', tagSha);
+
+  resolve-build-artifact:
+    needs: prepare-release
+    name: Resolve Verified Main Artifact
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.resolve.outputs.run_id }}
+    steps:
+      - uses: actions/github-script@v8
+        id: resolve
+        env:
+          RELEASE_SHA: ${{ needs.prepare-release.outputs.release_sha }}
+        with:
+          script: |
+            const sha = process.env.RELEASE_SHA;
+            const response = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci.yml',
+              head_sha: sha,
+              status: 'success',
+              per_page: 20,
+            });
+            const run = response.data.workflow_runs.find(
+              (candidate) => candidate.head_sha === sha && candidate.event === 'push',
+            );
+            if (!run) core.setFailed(`No successful main CI run found for ${sha}; refusing production image promotion.`);
+            else core.setOutput('run_id', String(run.id));
+      - name: Resolve summary
+        run: echo "Using verified CI run ${{ steps.resolve.outputs.run_id }} for ${{ needs.prepare-release.outputs.release_sha }}"
+
+  build-and-push:
+    name: Build & Push Release Images
+    needs:
+      - prepare-release
+      - resolve-build-artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout exact release SHA
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate release contract
+        env:
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+        run: node ./tools/ci-cd-platform/release-tools/release-contract.mjs --require-release --expected-tag "$RELEASE_TAG"
+
+      - name: Download verified build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: ci-build-artifacts
+          path: .
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve-build-artifact.outputs.run_id }}
+
+      - name: Validate delivery manifest and resolve digest
+        run: |
+          node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
+          DIGEST="$(node -p "require('./scope/delivery-manifest-v1.json').digest")"
+          echo "DELIVERY_MANIFEST_DIGEST=$DIGEST" >> "$GITHUB_ENV"
+
+      - name: Restore API runtime dependency closure
+        run: node ./tools/ci-cd-platform/restore-runtime-closure.mjs reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json api-runtime-closure . "$DELIVERY_MANIFEST_DIGEST"
+
+      - name: Verify API and Web artifact manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json api-runtime-closure "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/migrator-artifact-manifest.json apps/migrator/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist "$DELIVERY_MANIFEST_DIGEST"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-runtime-artifact-manifest.json packages/database/dist/runtime-scripts "$DELIVERY_MANIFEST_DIGEST"
+          test -f apps/migrator/dist/main.js
+          test -f packages/database/dist/index.js
+          test -d packages/database/dist/runtime-scripts
+
+      - name: Create production promotion manifest
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: node ./tools/ci-cd-platform/promote-artifact.mjs reports/ci-cd-platform "${{ needs.prepare-release.outputs.release_sha }}" production reports/ci-cd-platform/promotion-manifest.json
+
+      - name: Resolve immutable image tags
+        id: tag
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+          RELEASE_SHA: ${{ needs.prepare-release.outputs.release_sha }}
+        run: |
+          SHA_SHORT="${RELEASE_SHA:0:12}"
+          IMMUTABLE_TAG="${RELEASE_TAG}-${SHA_SHORT}"
+          echo "immutable_tag=$IMMUTABLE_TAG" >> "$GITHUB_OUTPUT"
+          echo "### Image release: \`$RELEASE_TAG\` / \`$IMMUTABLE_TAG\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push API image
+        id: build-api
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.api
+          push: true
+          tags: |
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-api:${{ needs.prepare-release.outputs.release_tag }}
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-api:${{ steps.tag.outputs.immutable_tag }}
+          build-args: |
+            VCS_REF=${{ needs.prepare-release.outputs.release_sha }}
+            VERSION=${{ needs.prepare-release.outputs.release_tag }}
+            USE_PREBUILT_ARTIFACT=1
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+          provenance: true
+          sbom: true
+
+      - name: Build and push Migrator image
+        id: build-migrator
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.api
+          target: migrator-runtime
+          push: true
+          tags: |
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-migrator:${{ needs.prepare-release.outputs.release_tag }}
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-migrator:${{ steps.tag.outputs.immutable_tag }}
+          build-args: |
+            VCS_REF=${{ needs.prepare-release.outputs.release_sha }}
+            VERSION=${{ needs.prepare-release.outputs.release_tag }}
+            USE_PREBUILT_ARTIFACT=1
+          cache-from: type=gha,scope=api
+          provenance: true
+          sbom: true
+
+      - name: Build and push Web image
+        id: build-web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: true
+          tags: |
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-web:${{ needs.prepare-release.outputs.release_tag }}
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-web:${{ steps.tag.outputs.immutable_tag }}
+          build-args: |
+            VCS_REF=${{ needs.prepare-release.outputs.release_sha }}
+            VERSION=${{ needs.prepare-release.outputs.release_tag }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+          provenance: true
+          sbom: true
+
+      - name: Build Docker release evidence
+        env:
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+          RELEASE_SHA: ${{ needs.prepare-release.outputs.release_sha }}
+          RELEASE_CI_RUN_ID: ${{ needs.resolve-build-artifact.outputs.run_id }}
+          RELEASE_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          RELEASE_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+          RELEASE_IMMUTABLE_TAG: ${{ steps.tag.outputs.immutable_tag }}
+          API_DIGEST: ${{ steps.build-api.outputs.digest }}
+          MIGRATOR_DIGEST: ${{ steps.build-migrator.outputs.digest }}
+          WEB_DIGEST: ${{ steps.build-web.outputs.digest }}
+          OUTPUT_FILE: docker-release-manifest.json
+        run: node ./tools/ci-cd-platform/release-tools/create-docker-manifest.mjs
+
+      - name: Upload Docker evidence to draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+        run: |
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = "true"
+          gh release upload "$RELEASE_TAG" docker-release-manifest.json --clobber
+
+      - name: Upload promotion provenance
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: production-promotion-${{ needs.prepare-release.outputs.release_sha }}
+          path: |
+            reports/ci-cd-platform/promotion-manifest.json
+            docker-release-manifest.json
+          if-no-files-found: ignore
+          retention-days: 90

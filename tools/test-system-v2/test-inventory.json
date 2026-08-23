@@ -9562,6 +9562,22 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/ci-cd-platform/__tests__/release-tooling.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "ci-cd-platform:test"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/release-workflows.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "ci-cd-platform:test"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/ci-cd-platform/__tests__/risk.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -10214,7 +10230,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "node-test",
-      "fileCount": 16
+      "fileCount": 18
     },
     {
       "id": "tools/governance/vitest.config.ts",
@@ -10860,6 +10876,6 @@
     "boundary-main": 5,
     "e2e": 63,
     "perf": 4,
-    "governance": 35
+    "governance": 37
   }
 }

@@ -2,7 +2,7 @@
 
 当前 PR workflow 是 `.github/workflows/ci.yml`。`Scope Detector` 使用统一 `NX_BASE` / `NX_HEAD`
 生成 versioned `delivery-manifest-v1.json` artifact；后续 child 只消费并校验同一份 manifest，不重新解释 affected 范围。
-job 的执行条件也只消费 manifest 的 lane policy：docs-only PR 只保留 governance，root/release/full policy
+job 的执行条件也只消费 manifest 的 lane policy：docs-only PR 只保留 governance，ro../release-tools/full policy
 则显式开启对应的完整 lane，避免 scope 输出与实际门禁分叉。
 
 稳定 required Oracle 始终出现：`Governance Oracle`、`Validate Oracle`、`Boundary Oracle`、
@@ -38,7 +38,7 @@ Mastra-native cutover 后只需要 Node/pnpm/Playwright/Postgres，不再为已�
 digest 和上游对象 digest，来源不一致或证据缺失时 fail closed；Observation 不再通过跳过聚合产生
 false-green。API、API runtime dependency closure、Web、
 Migrator、Database、Database Runtime 属于同一 production artifact closure；closure 由 API workspace
-dependencies 递归计算。Web shard 和 `docker-deploy.yml` 都会在使用前验证每个内容 digest、source
+dependencies 递归计算。Web shard 和 `publish-images.yml` 都会在使用前验证每个内容 digest、source
 manifest digest 以及 closure 目录集合。
 
 PR coverage 由 `Coverage Oracle` 门禁；`.github/workflows/coverage.yml` 的 schedule/manual 车道继续
