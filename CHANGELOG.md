@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.11.0](https://github.com/BakerSean168/memoflow/compare/v0.10.0...v0.11.0) (2026-08-23)
+
+
+### Features
+
+* redesign project showcase ([51454f3](https://github.com/BakerSean168/memoflow/commit/51454f39286842244bb61a6920ea926a77c2eb76))
+* redesign project showcase ([6e25cdc](https://github.com/BakerSean168/memoflow/commit/6e25cdc2b079debe1bd17166893478b9da92f90a))
+
+
+### Bug Fixes
+
+* **release:** isolate desktop release artifacts ([#266](https://github.com/BakerSean168/memoflow/issues/266)) ([53ee48c](https://github.com/BakerSean168/memoflow/commit/53ee48cb454a691fdc2009ab93eb42a84eab3034))
+* **release:** publish registry-compatible image manifests ([#265](https://github.com/BakerSean168/memoflow/issues/265)) ([a5fb130](https://github.com/BakerSean168/memoflow/commit/a5fb1301574ffeafc955648288820567ccc2f52b))
+* **release:** reconcile published release PR labels ([#267](https://github.com/BakerSean168/memoflow/issues/267)) ([71d2940](https://github.com/BakerSean168/memoflow/commit/71d294069bbd79bf5a40a50120fea719f908b581))
+* **release:** stabilize v0.10.0 packaging retries ([#264](https://github.com/BakerSean168/memoflow/issues/264)) ([0e31760](https://github.com/BakerSean168/memoflow/commit/0e317602f4570adbfe33f207d39913db4737c139))
+
 ## [0.10.0](https://github.com/BakerSean168/memoflow/compare/v0.9.0...v0.10.0) (2026-08-23)
 
 ### Highlights
