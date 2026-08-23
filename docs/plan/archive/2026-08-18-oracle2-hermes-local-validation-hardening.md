@@ -1,10 +1,28 @@
-# Oracle2 / Hermes2 本地部署与产品流验证加固计划
+# Oracle2 / Hermes2 本地部署与产品流验证加固计划（已归档）
 
-> 状态：实施中  
+> 状态：**已归档 / GCP Dev 接管后完成最终闭环**
 > 日期：2026-08-18  
 > 基线：`def2b2cd88c73c880f9f2c2fcf55c109a8728103`  
 > 范围：Test System V2、local-docker prod-like 验收、Tailscale MagicDNS 公网面配置。  
-> 非范围：ADR-049 全应用 219 个历史 failure-contract finding 的本轮清零；该工作继续由 application-contract-refactor 主计划负责。
+> 历史非范围：计划建立时 ADR-049 的 219 个 failure-contract finding 由 application-contract-refactor 主计划负责；该主计划后续已完成 219→1 收敛。
+
+## 0. 归档结论（2026-08-23）
+
+本计划不再作为 active plan。Oracle2 阶段的实施与验收证据保留为历史事实，但 MemoFlow 的开发与 prod-like 验证主机已迁移到 **GCP Dev (`gcp-dev-01`)**；原 O2V-05 “Hermes2 parity” 因基础设施目标变更而 **superseded**，不再作为未完成阻塞项。
+
+最终证据链：
+
+- PR #233 / `4a0e49518`：O2V-02、O2V-03、O2V-03B 的公开 URL browser path、Auth Docker acceptance、长套件 determinism / scheduler takeover 等能力落地；
+- PR #247 / `fd19224b3`：O2V-01 MagicDNS Web origin 自动进入 API trusted origins / CORS 与 AI allowlist；
+- PR #248 / `4861cffda`：记录 Oracle2 O2V-04 历史里程碑；该证据明确只完成当时的 steps 1–3，浏览器级闭环仍待补；
+- PR #255 / `9d80795ca`：GCP Dev 的 HTTP MagicDNS local-validation 安全头语义收敛，避免 Chromium 因无效 COOP header 将通过的产品流误判为 console failure；
+- PR #256 / `4d055441f`：修复业务面板 resize 后输入焦点的 pointerup timing race，required Web Flow 全绿；
+- PR #257 / `7e11385d8`：隔离 host-E2E canonical Auth/Web origin，确保 GCP `.env.local` 的 MagicDNS Docker URL 不会污染 localhost Playwright 数据库与验证链接；
+- GCP Dev MagicDNS：`gcp-dev-01.taile92a8e.ts.net`，本机 WSL 实测 Web `:58080/`、API `:53080/healthz`、PowerSync `:58081/probes/liveness` 均返回 HTTP 200；
+- 最终 clean-main Docker / browser acceptance：`7e11385d8`，Web/API OCI revision 精确匹配 HEAD，local-docker Auth + A–E 共 **15/15** 通过，`validate-local-deploy` PASS；
+- 当前 failure-contract governance 为 **1 个受控 finding (`UI_RAW_RESULT_MESSAGE`)**，不是本计划建立时的 219 个历史 finding。
+
+因此，本计划的可复用目标（公开 URL、Auth、prod-like Docker、MagicDNS、clean revision、浏览器验证）已经迁移并在 GCP Dev 闭环；Oracle2/Hermes2 机器语义不再是当前架构约束。
 
 ## 1. 目标
 
@@ -39,9 +57,9 @@
 7. Settings 主题持久化测试在长时间套件中可能在 settings hydration 完成前打开 Select，造成瞬时关闭与假失败；
 8. Vite 端口被其他网卡/容器占用时会自动漂移到下一端口，而 Playwright 继续等待原端口，失败反馈过慢。
 
-### 2.3 本轮不假装完成的结构性债务
+### 2.3 计划建立时的结构性债务（历史基线）
 
-ADR-049 仍在实施。当前 failure-contract inventory 仍有 219 个历史 finding：
+2026-08-18 建立本计划时，ADR-049 尚在实施，failure-contract inventory 有 219 个历史 finding：
 
 - 51 `DOMAIN_ERROR_SUBCLASS`
 - 54 `FAILURE_MESSAGE_BRANCH`
@@ -49,7 +67,7 @@ ADR-049 仍在实施。当前 failure-contract inventory 仍有 219 个历史 fi
 - 26 `RAW_RESULT_MESSAGE_RETHROW`
 - 82 `UI_RAW_RESULT_MESSAGE`
 
-治理已对“新增 finding” fail closed，但历史 finding 尚未清零，因此不能宣称全应用错误契约重构完成。
+这段数字只代表**计划建立时的基线**。后续 application-contract-refactor 已完成 ADR-049，inventory 从 219 收敛为 1 个永久允许的内部开发诊断面 `UI_RAW_RESULT_MESSAGE`；当前治理继续对新增/过期 finding fail closed。
 
 ## 3. 实施批次
 
@@ -109,11 +127,11 @@ Oracle2 `.env.local` 使用：
 6. 从 MagicDNS URL 发起浏览器注册 / 验证 / 登录产品流；
 7. 保留 stack 供人工验收。
 
-### O2V-05 — Hermes2 parity
+### O2V-05 — Hermes2 parity（Superseded）
 
-在 Hermes2 连接可用后重复 O2V-04，不复用 Oracle2 的端口假设或环境文件。
+原计划要求在 Hermes2 可达后重复 O2V-04。后续基础设施决策已明确：**GCP Dev 成为 MemoFlow 的开发与本地 prod-like 验证主机**，Oracle2 不再承担开发/验证职责，也不存在需要继续等待的 Hermes2 parity gate。
 
-阻塞条件：Hermes2 必须出现在可用控制通道或 Tailnet/SSH 可达节点中。当前 Oracle2 的 `tailscale status` 与 SSH 配置均未发现 Hermes2，因此本批次在连接恢复前不得伪造为已验证。
+因此本批次不是“伪造为完成”，而是因目标主机架构变更被 **superseded**；它的业务意图已由 GCP Dev 的同等且更完整验收矩阵接管。
 
 ## 4. 验证矩阵
 
@@ -122,13 +140,13 @@ Oracle2 `.env.local` 使用：
 | Failure governance   | `pnpm nx run memoflow:governance-check --skip-nx-cache`      | PASS                    |
 | Auth unit            | `pnpm nx run cloud-auth:test --skip-nx-cache`                | PASS                    |
 | Web unit             | `pnpm nx run web:test --skip-nx-cache`                       | PASS                    |
-| Required Web Flow    | `pnpm exec playwright test --config=playwright.config.ts`    | 74/74                   |
-| Local compose tests  | `node --test tools/docker/local-compose.env-shadow.spec.mjs` | PASS                    |
-| Local Docker runtime | `pnpm docker:local:ps`                                       | all healthy             |
-| Docker product/Auth  | `pnpm nx run web:e2e:local-docker`                           | PASS                    |
-| Deployment evidence  | validate-local-deploy skill runner                           | PASS                    |
-| MagicDNS             | Browser + HTTP probes to `oracle.taile92a8e.ts.net`          | PASS                    |
-| Hermes2              | same matrix on Hermes2                                       | BLOCKED until reachable |
+| Required Web Flow    | CI Web Flow shards                                           | PASS on final repair PRs |
+| Local compose tests  | `node --test tools/docker/local-compose.env-shadow.spec.mjs` | PASS                     |
+| Local Docker runtime | `pnpm docker:local:ps`                                       | all healthy on GCP Dev   |
+| Docker product/Auth  | `pnpm nx run web:e2e:local-docker`                           | 15/15 on final main      |
+| Deployment evidence  | validate-local-deploy skill runner                           | PASS                     |
+| MagicDNS             | browser + host/WSL probes to `gcp-dev-01.taile92a8e.ts.net` | PASS                     |
+| Hermes2              | historical machine-parity target                            | SUPERSEDED by GCP Dev    |
 
 ## 5. 回滚
 

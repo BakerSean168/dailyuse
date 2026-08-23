@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-23T00:05:00+08:00
+updated: 2026-08-23T10:30:00+08:00
 ---
 
 # Active Plans
@@ -12,6 +12,10 @@ updated: 2026-08-23T00:05:00+08:00
 本目录存放仍在推进中的计划。
 
 ## 当前计划
+
+当前无未归档实施计划。
+
+## 近期完成的基础计划
 
 | 计划                                                                                              | 当前状态                                                                                                                                                                                            |
 | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -23,6 +27,7 @@ updated: 2026-08-23T00:05:00+08:00
 | 计划 | 结果 |
 | --- | --- |
 | [MemoFlow AI vNext — Mastra-native 一次性大重构](../archive/2026-08-20-mastra-native-ai-vnext-refactor.md) | AI-VNEXT-01–09 全部完成；TypeScript + Mastra 成为唯一核心 AI runtime；Python/LangGraph/AgentHost 退役；PR #252 required CI 全绿并合入 `5507722e2` |
+| [Oracle2 / Hermes2 本地部署与产品流验证加固](../archive/2026-08-18-oracle2-hermes-local-validation-hardening.md) | Oracle2 历史里程碑保留；开发/验证主机迁移到 GCP Dev 后完成 MagicDNS + clean OCI revision + Auth/A–E 15/15 + host-E2E 隔离；Hermes2 parity 因主机架构变更 superseded |
 
 ## 本轮已归档（2026-08-16）
 
@@ -79,5 +84,3 @@ updated: 2026-08-23T00:05:00+08:00
 - 新计划默认放这里
 - 文件名使用 `YYYY-MM-DD-topic-slug.md`
 - 计划完成、终止或只保留历史参考价值后，移动到 `../archive`
-
-- [Oracle2 / Hermes2 本地部署与产品流验证加固计划](./2026-08-18-oracle2-hermes-local-validation-hardening.md)
