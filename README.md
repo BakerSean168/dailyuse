@@ -1,6 +1,10 @@
-# 知行 MemoFlow
+# MemoFlow
 
-> **AI-first personal productivity workspace** — 让对话、目标、任务、知识、日程、提醒与执行结果处在同一个持续工作流里。
+> **AI-first personal productivity workspace** — keeping conversations, goals, tasks, knowledge, schedules, reminders, and execution outcomes inside one continuous workflow.
+
+<p align="left">
+  <strong>Language:</strong> English · <a href="./docs/zh-CN/README.md">Simplified Chinese</a>
+</p>
 
 <p align="left">
   <a href="https://memoflow.bakersean.top"><strong>Live Web App</strong></a> ·
@@ -9,9 +13,9 @@
   <a href="./docs/architecture/README.md"><strong>Architecture</strong></a>
 </p>
 
-MemoFlow 是一个面向个人长期使用的 AI 效能工作区。它不是把 Chatbot 放到传统 Todo App 旁边，而是让 AI 对话与 Goal、Task、Note、Schedule、Reminder、Notification 等业务对象共享同一套产品上下文：用户可以在对话中形成意图，再进入结构化工作区确认、编辑、执行和追踪结果。
+MemoFlow is an AI-first productivity workspace designed for long-term personal use. It does not place a chatbot next to a traditional todo application. Instead, AI conversations and business objects such as Goal, Task, Note, Schedule, Reminder, and Notification share the same product context: an intention can begin in conversation, move into a structured workspace for confirmation and editing, execute through product contracts, and return as a traceable outcome.
 
-当前仓库同时包含 Web、Electron Desktop、API、共享领域包、契约、AI runtime、同步与发布基础设施，是一个完整的多端产品工程，而不只是前端 Demo。
+The repository contains the Web client, Electron Desktop client, API, shared domain packages, contracts, AI runtime, synchronization, and delivery infrastructure. It is a complete multi-surface product system rather than a frontend demo.
 
 ## Product model
 
@@ -27,16 +31,16 @@ flowchart LR
 
 ### What you can do
 
-- **AI workspace** — 持续对话、open chat，以及面向 Goal / Task / Knowledge 的 typed AI workflow。
-- **Goals & tasks** — 把方向拆成可执行目标和任务，并保留业务状态、关系与结果。
-- **Notes / repository** — 管理知识与资源，并把内容作为工作流中的可引用上下文。
-- **Schedule & reminders** — 把任务和计划连接到时间语义，而不是维护另一套孤立日历数据。
-- **Notifications & delivery** — 通过统一 operation / delivery contract 追踪通知意图、尝试与结果。
-- **Web + Desktop** — Vue Web 与 Electron Desktop 共享核心业务契约；PowerSync 支撑跨端数据同步路径。
+- **AI workspace** — maintain long-running conversations, open chat, and typed AI workflows for Goal / Task / Knowledge.
+- **Goals & tasks** — turn direction into executable goals and tasks while preserving business state, relationships, and outcomes.
+- **Notes / repository** — manage knowledge and resources as first-class workflow context.
+- **Schedule & reminders** — connect tasks and plans to shared time semantics instead of maintaining an isolated calendar model.
+- **Notifications & delivery** — track notification intent, attempt, and outcome through unified operation and delivery contracts.
+- **Web + Desktop** — Vue Web and Electron Desktop share core business contracts; PowerSync supports the cross-device data path.
 
 ## Workspace experience
 
-桌面工作区采用三栏模型：
+The desktop workspace follows a three-pane model:
 
 ```text
 Conversation sidebar | AI collaboration | Business workspace
@@ -44,7 +48,7 @@ Conversation sidebar | AI collaboration | Business workspace
                      |                  | Schedule / Reminder ...
 ```
 
-AI 区是持续协作入口，右侧业务区则拥有结构化状态和更大的编辑面积。顶部全局入口可以直接打开 Goal、Task、Note、Reminder、Schedule、Notification；业务 Tab 表达当前上下文，而不是再复制一套导航。
+The AI area is a persistent collaboration surface, while the business workspace owns structured state and provides room for editing. Global entry points can open Goal, Task, Note, Reminder, Schedule, and Notification directly; business tabs express current context instead of duplicating another navigation system.
 
 See [`docs/product/workspace-ui.md`](./docs/product/workspace-ui.md) for the current workspace contract.
 
@@ -156,7 +160,7 @@ pnpm docs:check
 pnpm governance:check
 ```
 
-CI also runs dedicated governance, integration, browser-flow, coverage, performance and delivery observations before protected `main` can move.
+CI also runs dedicated governance, integration, browser-flow, coverage, performance, and delivery observations before protected `main` can move.
 
 ## Production
 
@@ -179,4 +183,4 @@ See [`docs/deployment/README.md`](./docs/deployment/README.md) and [`docs/guides
 
 ## Repository status & license
 
-MemoFlow is a **public source repository**, but this repository currently does **not** include an open-source license. Public visibility alone does not grant permission to copy, modify, or redistribute the code; copyright remains with the repository owner unless a license is added later.
+MemoFlow is a **public source repository**, but it currently does **not** include an open-source license. Public visibility alone does not grant permission to copy, modify, or redistribute the code; copyright remains with the repository owner unless a license is added later.
