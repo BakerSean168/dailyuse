@@ -1,12 +1,13 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - release
   - ci-cd
 description: MemoFlow 0.10.0 发布闭环与 Release Lifecycle V2 实施计划
 created: 2026-08-23T11:48:00+08:00
-updated: 2026-08-23T20:10:29+08:00
+updated: 2026-08-23T20:26:28+08:00
+status: archive
 ---
 
 # Release Lifecycle V2 — 0.10.0 发布闭环
@@ -166,3 +167,14 @@ Next gate: run package/affected/governance validation, merge the focused repair,
 - A real Linux AppImage was built twice: once from the repaired branch and once from the untouched `v0.10.0` release SHA using the new external packaging configuration. Both produced the `memoflow` ELF executable and verified all 76 packaged runtime dependencies.
 
 Next gate: merge the packaging repair, rerun the existing Draft release, confirm Desktop and immutable Docker assets plus postflight evidence, publish `v0.10.0`, verify Prepare Release uses it as the new baseline, then archive this plan.
+
+## Completion checkpoint — v0.10.0 published and lifecycle closed
+
+- Packaging repair PRs #264, #265 and #266 merged after full required CI, covering exact-SHA retry tooling, Desktop identity/runtime closure, ACR-compatible image manifests and lane-isolated Desktop artifact download.
+- Release Publish run `32637603289` completed successfully and published Latest `v0.10.0` at unchanged SHA `318f5380e04623c5f01f9ada673ee05897159d10` on 2026-08-23T12:05:10Z.
+- The release contains 12 assets: Windows installer/zip/update metadata, Linux AppImage/deb/rpm/update metadata, SHA256 evidence, Desktop/Docker lane manifests and the canonical release manifest.
+- API, Migrator and Web images each have only `v0.10.0` and `v0.10.0-318f5380e046` release tags with recorded digests; no `prod-latest` tag was produced.
+- Release PR state reconciliation PR #267 merged after full required CI. Idempotent run `32639272559` changed exact-SHA release PR #196 from `autorelease: pending` to `autorelease: tagged` without rebuilding or republishing assets.
+- Prepare Release run `32639333916` then succeeded from the `v0.10.0` baseline and opened PR #268 for `0.11.0`, proving the next lifecycle no longer backscans from `v0.9.0`.
+
+All acceptance gates are complete; this plan is archived.
