@@ -307,7 +307,7 @@ API 和 migrator 均禁用 Watchtower，防止 Watchtower 只替换 API、绕过
 | `docker-compose.local.yml`                          | 本地 migrator → API 完成依赖                      |
 | `docker-compose.prod.yml`                           | 生产 migrator → API 发布顺序                      |
 | `tools/governance/api-runtime-dependency-audit.mjs` | API production closure 治理检查                   |
-| `.github/workflows/docker-deploy.yml`               | API/migrator 镜像构建、缓存和推送                 |
+| `.github/workflows/publish-images.yml`              | API/migrator 镜像构建、缓存和推送                 |
 | `tools/docker/publish-images.ps1`                   | 手工发布两个运行时目标                            |
 
 ## 后续可继续优化的方向

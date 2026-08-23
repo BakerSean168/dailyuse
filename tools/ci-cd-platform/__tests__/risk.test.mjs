@@ -10,7 +10,12 @@ test('classifies highest-risk root and release changes', () => {
     'web-flow',
   );
   assert.equal(classifyRisk(['.github/workflows/ci.yml']).level, 'root');
-  assert.equal(classifyRisk(['.github/workflows/docker-deploy.yml']).level, 'release');
+  assert.equal(classifyRisk(['.github/workflows/publish-images.yml']).level, 'release');
+  assert.equal(classifyRisk(['.github/workflows/release-publish.yml']).level, 'release');
+  assert.equal(
+    classifyRisk(['tools/ci-cd-platform/release-tools/release-contract.mjs']).level,
+    'release',
+  );
 });
 
 test('selects lanes without letting docs-only changes skip governance', () => {

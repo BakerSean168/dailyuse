@@ -156,9 +156,10 @@ node tools/testing/cleanup-local-docker-pm-data.mjs
 
 1. 在短生命周期分支上提交改动并发起 PR
 2. PR 合并到 `main`
-3. `release-please` 工作流更新或创建 release PR
-4. release PR 合并后生成正式 tag / release
-5. `docker-deploy.yml` 基于正式 tag 构建并推送生产镜像
+3. 到达发布里程碑时手工运行 `Prepare Release`，由 release-please 更新或创建 Release PR
+4. Release PR 合并后的 exact SHA 先通过 `CI`
+5. `Release Publish` 创建 Draft/tag，调用 Desktop assets 与 `publish-images.yml`
+6. postflight 全绿后才公开 GitHub Release；生产 rollout 独立执行
 
 不要把“直接改生产 compose / 直接换线上 tag / 手工试 production 镜像”当作默认开发流程。  
 这些只应作为例外的生产验收或故障处理动作，并且应晚于本地 Docker 验证。

@@ -1,0 +1,216 @@
+name: Release Assets
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      sha:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing draft release tag to build and upload assets for
+        required: true
+        type: string
+      sha:
+        description: Exact release SHA; empty resolves from the tag
+        required: false
+        type: string
+
+concurrency:
+  group: release-assets-${{ inputs.tag }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '24'
+  PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+
+jobs:
+  prepare-release:
+    name: Resolve Release Context
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      release_sha: ${{ steps.resolve.outputs.release_sha }}
+    steps:
+      - name: Resolve exact tag and SHA
+        id: resolve
+        uses: actions/github-script@v8
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_SHA: ${{ inputs.sha }}
+        with:
+          script: |
+            const tag = process.env.RELEASE_TAG;
+            const requestedSha = process.env.RELEASE_SHA;
+            if (!tag) {
+              core.setFailed('release tag is required');
+              return;
+            }
+            const ref = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `tags/${tag}`,
+            });
+            let tagSha = ref.data.object.sha;
+            if (ref.data.object.type === 'tag') {
+              const annotated = await github.rest.git.getTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_sha: tagSha,
+              });
+              tagSha = annotated.data.object.sha;
+            }
+            if (requestedSha && requestedSha !== tagSha) {
+              core.setFailed(`${tag} points to ${tagSha}, requested SHA was ${requestedSha}`);
+              return;
+            }
+            core.setOutput('release_tag', tag);
+            core.setOutput('release_sha', tagSha);
+
+  build-release-assets:
+    needs: prepare-release
+    name: Build ${{ matrix.platform }} Assets
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            dist_configuration: windows
+          - os: ubuntu-latest
+            platform: linux
+            dist_configuration: linux
+
+    steps:
+      - name: Checkout exact release SHA
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
+
+      - name: Setup pnpm
+        run: |
+          corepack enable
+          pnpm --version
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: apps/desktop/.python-version
+
+      - name: Setup MSBuild (Windows)
+        if: runner.os == 'Windows'
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install Linux packaging dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm fakeroot
+
+      - name: Install dependencies
+        env:
+          PYTHON: ${{ env.pythonLocation }}/python
+          npm_config_python: ${{ env.pythonLocation }}/python
+          npm_config_msvs_version: 2022
+        run: pnpm install --frozen-lockfile --reporter=append-only
+
+      - name: Validate release contract
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+        run: node ./tools/ci-cd-platform/release-tools/release-contract.mjs --require-release --expected-tag "$RELEASE_TAG"
+
+      - name: Build desktop application
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+          PYTHON: ${{ env.pythonLocation }}/python
+          npm_config_python: ${{ env.pythonLocation }}/python
+          npm_config_msvs_version: 2022
+        run: pnpm nx run desktop:build:production --outputStyle=static
+
+      - name: Package desktop application
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+          PYTHON: ${{ env.pythonLocation }}/python
+          npm_config_python: ${{ env.pythonLocation }}/python
+          npm_config_msvs_version: 2022
+        run: pnpm nx run desktop:dist:${{ matrix.dist_configuration }} --outputStyle=static
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: apps/desktop/dist-package
+          if-no-files-found: error
+          compression-level: 9
+
+  upload-release-assets:
+    name: Upload Draft Release Assets
+    needs:
+      - prepare-release
+      - build-release-assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout release tooling
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+
+      - name: Require an existing draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+        shell: bash
+        run: |
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = "true"
+
+      - name: Build desktop release evidence
+        env:
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+          RELEASE_SHA: ${{ needs.prepare-release.outputs.release_sha }}
+        shell: bash
+        run: |
+          node ./tools/ci-cd-platform/release-tools/create-desktop-manifest.mjs artifacts "$RELEASE_TAG" "$RELEASE_SHA" desktop-release-manifest.json
+          node --input-type=module <<'NODE'
+          import { readFile, writeFile } from 'node:fs/promises';
+          const manifest = JSON.parse(await readFile('desktop-release-manifest.json', 'utf8'));
+          await writeFile('SHA256SUMS.txt', `${manifest.assets.map((asset) => `${asset.sha256}  ${asset.name}`).join('\n')}\n`);
+          NODE
+
+      - name: Upload assets to draft GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+        shell: bash
+        run: |
+          mapfile -d '' files < <(find artifacts -type f \
+            \( -name '*Setup.exe' -o -name '*Setup.zip' -o -name '*.blockmap' -o \
+               -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name 'latest*.yml' \) \
+            -print0 | sort -z)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No release assets were found in downloaded artifacts."
+            exit 1
+          fi
+          gh release upload "$RELEASE_TAG" "${files[@]}" desktop-release-manifest.json SHA256SUMS.txt --clobber

@@ -1,24 +1,21 @@
+name: Prepare Release
+
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
 
-name: release-please
-
 jobs:
   release-please:
+    name: Prepare Release PR
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          # Prefer a PAT so release-created pull requests can trigger follow-up
-          # workflows; fall back to the job token when no PAT is configured.
+          # This workflow only prepares/updates the release PR. Publishing is
+          # owned by release-publish.yml after the release commit passes exact-SHA CI.
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
-          # use manifest mode for a single product release and keep the
-          # desktop package version aligned with the root release version
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
