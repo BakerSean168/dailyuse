@@ -27,6 +27,11 @@ test('release publish waits for exact CI then calls both reusable release lanes 
   assert.match(workflow, /draft:\s*true|draft: true/);
   assert.match(workflow, /release-manifest\.json/);
   assert.match(workflow, /--draft=false/);
+  assert.match(workflow, /pull-requests: write/);
+  assert.match(workflow, /merge_commit_sha === sha/);
+  assert.match(workflow, /autorelease: pending/);
+  assert.match(workflow, /autorelease: tagged/);
+  assert.match(workflow, /already_published == 'true' \|\| needs\.finalize\.result == 'success'/);
 });
 
 test('desktop assets and image publishing are reusable retryable lanes, not publish-event or tag-push side effects', async () => {

@@ -19,7 +19,7 @@ concurrency:
 permissions:
   contents: write
   actions: read
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   resolve:
@@ -264,3 +264,61 @@ jobs:
           gh release upload "$RELEASE_TAG" release-manifest.json --clobber
           gh release edit "$RELEASE_TAG" --draft=false --latest
           echo "Published $RELEASE_TAG after exact-SHA CI, Desktop assets, Docker images, and release evidence all passed." >> "$GITHUB_STEP_SUMMARY"
+
+  reconcile-release-pr:
+    name: Mark Release PR Tagged
+    needs:
+      - resolve
+      - prepare
+      - finalize
+    if: >-
+      always() &&
+      needs.resolve.outputs.eligible == 'true' &&
+      needs.prepare.result == 'success' &&
+      (needs.prepare.outputs.already_published == 'true' || needs.finalize.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reconcile release-please labels
+        uses: actions/github-script@v8
+        env:
+          RELEASE_SHA: ${{ needs.resolve.outputs.sha }}
+        with:
+          script: |
+            const sha = process.env.RELEASE_SHA;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: 'closed',
+              base: context.payload.repository.default_branch,
+              per_page: 100,
+            });
+            const releasePr = pulls.find(
+              (pull) => pull.merged_at && pull.merge_commit_sha === sha,
+            );
+            if (!releasePr) {
+              core.setFailed(`No merged release PR found for ${sha}`);
+              return;
+            }
+
+            const labels = releasePr.labels
+              .map((label) => (typeof label === 'string' ? label : label.name))
+              .filter(Boolean);
+            if (!labels.includes('autorelease: tagged')) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: releasePr.number,
+                labels: ['autorelease: tagged'],
+              });
+            }
+            if (labels.includes('autorelease: pending')) {
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number: releasePr.number,
+                name: 'autorelease: pending',
+              });
+            }
+            core.info(`Marked release PR #${releasePr.number} tagged for ${sha}`);
