@@ -121,7 +121,10 @@ const GoalRouteProbe = defineComponent({
     onMounted(() => {
       goalRouteMountCount += 1;
     });
-    return () => h('div', { 'data-testid': 'goal-draft-probe' });
+    return () =>
+      h('div', { 'data-testid': 'goal-draft-probe' }, [
+        h('input', { 'data-testid': 'shell-resize-focus-probe' }),
+      ]);
   },
 });
 
@@ -157,7 +160,7 @@ const i18n = createI18n({
   },
 });
 
-async function mountShell(initialPath = '/') {
+async function mountShell(initialPath = '/', attachTo?: Element) {
   const pinia = createPinia();
   setActivePinia(pinia);
   const router = createRouter({
@@ -176,6 +179,7 @@ async function mountShell(initialPath = '/') {
   await router.isReady();
 
   const wrapper = mount(AppShell, {
+    attachTo,
     global: {
       plugins: [pinia, router, i18n],
       stubs: {
@@ -227,6 +231,39 @@ describe('AppShell right-panel integration', () => {
     expect(wrapper.get('[data-testid="conversation-sidebar"]').exists()).toBe(true);
     expect(wrapper.get('[data-testid="app-shell"]').attributes('data-shell-state')).toBe('focus');
     wrapper.unmount();
+  });
+
+  it('restores the active input after a panel-resize pointer gesture settles', async () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const { wrapper } = await mountShell('/goals', host);
+    const input = wrapper.get('[data-testid="shell-resize-focus-probe"]').element as HTMLInputElement;
+    const resizer = wrapper.get('[data-testid="business-panel-resizer"]');
+    const scheduledFrames: FrameRequestCallback[] = [];
+    const animationFrame = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback: FrameRequestCallback) => {
+        scheduledFrames.push(callback);
+        return scheduledFrames.length;
+      });
+
+    input.focus();
+    expect(document.activeElement).toBe(input);
+
+    await resizer.trigger('pointerdown', { pointerId: 7, clientX: 700 });
+    window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 7, bubbles: true }));
+
+    // Model the browser's trailing native focus behavior after the pointerup listener.
+    (resizer.element as HTMLElement).focus();
+    expect(document.activeElement).toBe(resizer.element);
+    expect(scheduledFrames).toHaveLength(1);
+
+    scheduledFrames[0]?.(performance.now());
+    expect(document.activeElement).toBe(input);
+
+    animationFrame.mockRestore();
+    wrapper.unmount();
+    host.remove();
   });
 
   it('restores explicit focus/split layout independently for each AI conversation', async () => {
