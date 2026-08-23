@@ -85,6 +85,7 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.match(workflow, /Checkout exact release source/);
   assert.match(workflow, /path: release-source/);
   assert.match(workflow, /release-tooling\/apps\/desktop\/electron-builder\.json5/);
+  assert.match(workflow, /name: Download build artifacts[\s\S]*?pattern: desktop-\*/);
   assert.doesNotMatch(workflow, /desktop:dist/);
   assert.doesNotMatch(workflow, /npm_config_msvs_version/);
   assert.match(workflow, /msbuild-architecture: x64/);
