@@ -37,6 +37,7 @@ async function openModuleFromCapsule(page: Page, moduleId: string): Promise<void
 async function dragPanelToExtreme(page: Page, direction: 'max' | 'min'): Promise<void> {
   const resizer = page.getByTestId('business-panel-resizer');
   await expect(resizer).toBeVisible();
+  await resizer.hover();
   const box = await resizer.boundingBox();
   if (!box) throw new Error('business-panel-resizer has no box');
 

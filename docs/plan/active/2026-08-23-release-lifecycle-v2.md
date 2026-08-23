@@ -6,7 +6,7 @@ tags:
   - ci-cd
 description: MemoFlow 0.10.0 发布闭环与 Release Lifecycle V2 实施计划
 created: 2026-08-23T11:48:00+08:00
-updated: 2026-08-23T11:48:00+08:00
+updated: 2026-08-23T12:55:00+08:00
 ---
 
 # Release Lifecycle V2 — 0.10.0 发布闭环
@@ -137,3 +137,16 @@ Verified before PR:
 - standard `validate-local-deploy` verdict: **pass**, `ready for PR: yes`; repository policy classified this workflow-only change as not requiring a Docker runtime rebuild.
 
 Next gate: merge this infrastructure PR, update existing Release PR #196 onto the new main, then exercise the real 0.10.0 Draft → assets/images → postflight → Publish path.
+
+## Implementation checkpoint — #259 merged / 0.10.0 focus-gate repair
+
+- Release Lifecycle V2 infrastructure merged as PR #259 at `main@2c2171905`; the exact-SHA `Release Publish` workflow subsequently ran against that ordinary main commit and correctly completed as a no-op without creating a tag or release.
+- Release PR #196 is rebased directly on `2c2171905` as `f3221c4a3 chore(main): release 0.10.0`; version identity is 0.10.0 across root/Desktop/manifest.
+- #196 exposed an existing Web Flow Shard 4 focus failure in Task/Reminder resize journeys. The same failure reproduced on main, so it is not caused by release metadata.
+- Browser event evidence showed failed drags sometimes read the resizer bounding box while the 200ms panel-width transition was still settling; `pointerdown` then landed on adjacent AI/workspace content, so `startPanelResize()` never owned the gesture and no focus restoration could occur.
+- Focused repair: keep the resize hit target fully inside the clipped business panel with explicit stacking, and centralize Web E2E panel dragging through a helper that calls Playwright `hover()` before reading geometry. `hover()` supplies the missing stable/receives-events actionability gate instead of relying on stale coordinates.
+- Verification so far: Task resize journey 3/3, Reminder resize journey 3/3, Goal/Notification/Schedule resize journeys 3/3 all pass.
+- Package/repository validation: app-vue 183 files / 759 tests, app-vue typecheck, affected lint/typecheck/test, governance, docs, inventory, and diff check all pass.
+- Standard local-deploy validator reran on isolated machine-local ports `63180-63184`: all five Docker services healthy, verdict `pass`, `readyForPr: yes`, no blocking issues or warnings. The canonical main validation stack remained untouched.
+
+Next gate: run package/affected/governance validation, merge the focused repair, rebase #196 onto the repaired main, then resume the real 0.10.0 publish path.

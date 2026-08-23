@@ -1,6 +1,7 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 import { TIMEOUT_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
+import { dragBusinessPanel } from '../helpers/business-panel';
 
 const testPassword = 'Test123456!';
 
@@ -102,7 +103,10 @@ test.describe('Schedule calendar workspace', () => {
 
     await page.getByTestId('schedule-view-tab-day').click();
     await expect(page.getByTestId('schedule-day-calendar')).toBeVisible();
-    await expect(page.getByTestId('schedule-view-tab-day')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('schedule-view-tab-day')).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
   });
 
   test('[P0] creates a schedule from the only primary action', async ({ page }) => {
@@ -163,19 +167,4 @@ async function expectElementToFit(locator: Locator): Promise<void> {
     scrollWidth: element.scrollWidth,
   }));
   expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
-}
-
-async function dragBusinessPanel(page: Page, direction: 'wider' | 'narrower'): Promise<void> {
-  const resizer = page.getByTestId('business-panel-resizer');
-  await expect(resizer).toBeVisible();
-  const box = await resizer.boundingBox();
-  if (!box) throw new Error('business-panel-resizer has no bounding box');
-
-  const startX = box.x + box.width / 2;
-  const startY = box.y + box.height / 2;
-  const endX = direction === 'wider' ? Math.max(40, startX - 160) : startX + 120;
-  await page.mouse.move(startX, startY);
-  await page.mouse.down();
-  await page.mouse.move(endX, startY, { steps: 12 });
-  await page.mouse.up();
 }

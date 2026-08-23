@@ -125,6 +125,8 @@ describe('BusinessPanel surfaces', () => {
       'aria-orientation': 'vertical',
       'aria-label': 'Resize business panel',
     });
+    expect(separator.classes()).toEqual(expect.arrayContaining(['left-0', 'z-20']));
+    expect(separator.classes()).not.toContain('-translate-x-1/2');
 
     await separator.trigger('keydown', { key: 'ArrowLeft' });
     await separator.trigger('keydown', { key: 'ArrowRight' });
