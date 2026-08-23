@@ -1,6 +1,7 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { TIMEOUT_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
+import { dragBusinessPanel } from '../helpers/business-panel';
 
 const generateTestEmail = () =>
   `e2e-reminder-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
@@ -51,9 +52,7 @@ test.describe('Reminder Template CRUD Operations', () => {
     const content = page.getByTestId('reminder-content');
     const searchInput = page.getByTestId('reminder-search-input');
     const scrollHost = page.getByTestId('reminder-scroll-host');
-    const primaryCreate = page.locator(
-      '[data-primary-action="create-reminder-template"]:visible',
-    );
+    const primaryCreate = page.locator('[data-primary-action="create-reminder-template"]:visible');
 
     await expect(toolbar).toBeVisible();
     await expect(primaryCreate).toHaveCount(1);
@@ -201,21 +200,6 @@ async function expectElementToFit(locator: Locator): Promise<void> {
     scrollWidth: element.scrollWidth,
   }));
   expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
-}
-
-async function dragBusinessPanel(page: Page, direction: 'wider' | 'narrower'): Promise<void> {
-  const resizer = page.getByTestId('business-panel-resizer');
-  await expect(resizer).toBeVisible();
-  const box = await resizer.boundingBox();
-  if (!box) throw new Error('business-panel-resizer has no bounding box');
-
-  const startX = box.x + box.width / 2;
-  const startY = box.y + box.height / 2;
-  const endX = direction === 'wider' ? Math.max(40, startX - 160) : startX + 120;
-  await page.mouse.move(startX, startY);
-  await page.mouse.down();
-  await page.mouse.move(endX, startY, { steps: 12 });
-  await page.mouse.up();
 }
 
 async function createReminderTemplate(page: Page, title: string) {

@@ -215,7 +215,7 @@ const isFocused = computed(() => props.layout === 'focus');
       :aria-label="t('shell.panel.resize')"
       :aria-valuemin="BUSINESS_HARD_MIN"
       :aria-valuenow="Math.round(panelContentWidth ?? 720)"
-      class="absolute left-0 top-0 h-full w-2 -translate-x-1/2 cursor-col-resize bg-transparent transition-colors hover:bg-primary/40 focus-visible:bg-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      class="absolute left-0 top-0 z-20 h-full w-2 cursor-col-resize bg-transparent transition-colors hover:bg-primary/40 focus-visible:bg-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       :title="t('shell.panel.resize')"
       @pointerdown="emit('start-resize', $event)"
       @dblclick.stop="emit('reset-width')"
