@@ -101,9 +101,14 @@ jobs:
           echo "has_target=$([ -n "$selected_projects" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "projects=$selected_projects" >> "$GITHUB_OUTPUT"
 
-      - name: No coverage targets selected
+      - name: Record no coverage targets selected
         if: steps.detect-coverage.outputs.has_target != 'true'
-        run: echo "No coverage targets selected for this run."
+        env:
+          DELIVERY_LANE: coverage
+          TEST_REPORT_NAME: coverage-no-targets
+        run: >-
+          node ./tools/test-system-v2/run-command.mjs -- node -e
+          "console.log('No governed coverage targets selected for this push.')"
 
       - name: Run governed coverage gates
         if: steps.detect-coverage.outputs.has_target == 'true'
