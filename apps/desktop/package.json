@@ -1,5 +1,7 @@
 {
   "name": "@memoflow/desktop",
+  "productName": "MemoFlow",
+  "desktopName": "memoflow.desktop",
   "author": {
     "name": "bakersean",
     "email": "lulouhao@stu.sicau.edu.cn"
@@ -25,6 +27,8 @@
     "@memoflow/domain-shared": "workspace:*",
     "@memoflow/goal": "workspace:*",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.4.0",
+    "dotenv-expand": "13.0.0",
     "gray-matter": "4.0.3",
     "@memoflow/governance": "workspace:*",
     "@memoflow/ipc-client": "workspace:*",
@@ -79,7 +83,6 @@
     "xtend": "4.0.2"
   },
   "devDependencies": {
-    "@electron/rebuild": "4.2.0",
     "@eslint/js": "^10.0.1",
     "@eslint/markdown": "^7.1.0",
     "@types/uuid": "^11.0.0",

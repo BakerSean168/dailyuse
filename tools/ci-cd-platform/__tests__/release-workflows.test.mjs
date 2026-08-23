@@ -47,6 +47,49 @@ test('desktop assets and image publishing are reusable retryable lanes, not publ
   assert.match(images, /requested SHA was/);
 });
 
+test('desktop packaging has one stable product identity and one native rebuild owner', async () => {
+  const [packageText, builder, projectText, workflow] = await Promise.all([
+    readRepoFile('apps/desktop/package.json'),
+    readRepoFile('apps/desktop/electron-builder.json5'),
+    readRepoFile('apps/desktop/project.json'),
+    readRepoFile('.github/workflows/release-assets.yml'),
+  ]);
+  const packageJson = JSON.parse(packageText);
+  const project = JSON.parse(projectText);
+
+  assert.equal(packageJson.productName, 'MemoFlow');
+  assert.equal(packageJson.desktopName, 'memoflow.desktop');
+  assert.equal(packageJson.dependencies['dotenv-expand'], '13.0.0');
+  assert.equal(packageJson.devDependencies['@electron/rebuild'], undefined);
+  assert.match(builder, /"appId": "com\.memoflow\.app"/);
+  assert.match(builder, /"productName": "MemoFlow"/);
+  assert.match(builder, /"executableName": "memoflow"/);
+  assert.match(builder, /"desktopName": "memoflow\.desktop"/);
+  assert.match(builder, /"syncDesktopName": true/);
+  assert.match(builder, /"npmRebuild": true/);
+  assert.match(builder, /\.\.\/\.\.\/packages\/assets\/dist\/images\/logos\/MemoFlow\.ico/);
+  assert.match(builder, /\.\.\/\.\.\/packages\/assets\/dist\/images\/logos\/MemoFlow-512\.png/);
+  assert.match(builder, /"from": "\.\.\/\.\.\/packages\/database"/);
+  assert.match(builder, /"to": "node_modules\/@memoflow\/database"/);
+  assert.match(builder, /"from": "\.\.\/\.\.\/node_modules\/dotenv-expand"/);
+  assert.deepEqual(project.targets.package.dependsOn, ['build']);
+  assert.deepEqual(project.targets.dist.dependsOn, ['build']);
+  assert.match(
+    project.targets['native-rebuild'].options.command,
+    /electron-builder install-app-deps/,
+  );
+
+  assert.match(workflow, /Checkout release packaging tooling/);
+  assert.match(workflow, /ref: \$\{\{ github\.workflow_sha \}\}/);
+  assert.match(workflow, /path: release-tooling/);
+  assert.match(workflow, /Checkout exact release source/);
+  assert.match(workflow, /path: release-source/);
+  assert.match(workflow, /release-tooling\/apps\/desktop\/electron-builder\.json5/);
+  assert.doesNotMatch(workflow, /desktop:dist/);
+  assert.doesNotMatch(workflow, /npm_config_msvs_version/);
+  assert.match(workflow, /msbuild-architecture: x64/);
+});
+
 test('release tooling exposes fail-closed identity and evidence builders', async () => {
   const [contract, desktop, docker, aggregate] = await Promise.all([
     readRepoFile('tools/ci-cd-platform/release-tools/release-contract.mjs'),

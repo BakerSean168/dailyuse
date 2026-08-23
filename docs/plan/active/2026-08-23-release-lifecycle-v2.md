@@ -6,7 +6,7 @@ tags:
   - ci-cd
 description: MemoFlow 0.10.0 发布闭环与 Release Lifecycle V2 实施计划
 created: 2026-08-23T11:48:00+08:00
-updated: 2026-08-23T12:55:00+08:00
+updated: 2026-08-23T18:56:43+08:00
 ---
 
 # Release Lifecycle V2 — 0.10.0 发布闭环
@@ -150,3 +150,15 @@ Next gate: merge this infrastructure PR, update existing Release PR #196 onto th
 - Standard local-deploy validator reran on isolated machine-local ports `63180-63184`: all five Docker services healthy, verdict `pass`, `readyForPr: yes`, no blocking issues or warnings. The canonical main validation stack remained untouched.
 
 Next gate: run package/affected/governance validation, merge the focused repair, rebase #196 onto the repaired main, then resume the real 0.10.0 publish path.
+
+## Implementation checkpoint — v0.10.0 packaging retry repair
+
+- The first real `Release Publish` run preserved `v0.10.0` as a Draft and exposed three release-lane blockers: Linux derived an invalid scoped-package executable name, Windows forced a Visual Studio 2022 toolchain on the newer hosted image, and ACR rejected the stored login credential.
+- Desktop packaging now has a stable `MemoFlow` / `memoflow` product identity, canonical platform icons, one native dependency rebuild owner (`electron-builder`), and an explicit packaged runtime closure for the workspace database package plus `dotenv` / `dotenv-expand`.
+- Manual retries keep the immutable release source at tag SHA `318f5380e04623c5f01f9ada673ee05897159d10` while loading packaging workflow/configuration from the retrying workflow revision. This makes the existing tag repairable without moving or recreating it.
+- The Windows lane no longer pins `npm_config_msvs_version=2022`; MSBuild discovery is x64 and may select the toolchain installed on the hosted runner.
+- The ACR password secret was refreshed after the failed run. Its value was not exposed; registry authentication remains to be proven by the post-merge release retry.
+- Verification completed before PR: release workflow contract 5/5, CI/CD platform 45/45, Desktop 40 files / 230 tests, Desktop lint/typecheck, governance/docs/inventory, `actionlint`, and `git diff --check` all pass.
+- A real Linux AppImage was built twice: once from the repaired branch and once from the untouched `v0.10.0` release SHA using the new external packaging configuration. Both produced the `memoflow` ELF executable and verified all 76 packaged runtime dependencies.
+
+Next gate: merge the packaging repair, rerun the existing Draft release, confirm Desktop and immutable Docker assets plus postflight evidence, publish `v0.10.0`, verify Prepare Release uses it as the new baseline, then archive this plan.
