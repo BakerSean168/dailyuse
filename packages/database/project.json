@@ -7,11 +7,11 @@
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/src/generated/prisma", "{projectRoot}/dist"],
-      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": ["^build", "prisma-generate"],
       "options": {
         "cwd": "packages/database",
-        "command": "prisma generate --config ./prisma/prisma.config.ts && node ../../tools/build/normalize-generated-prisma.mjs && tsc --build && node ../../tools/build/copy-with-retry.mjs src/generated/prisma dist/generated/prisma"
+        "command": "tsc --build && node ../../tools/build/copy-with-retry.mjs src/generated/prisma dist/generated/prisma"
       },
       "inputs": [
         "{projectRoot}/prisma/schema/**/*",
@@ -58,6 +58,7 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "cache": true,
+      "dependsOn": ["prisma-generate", "^build"],
       "options": {
         "command": "tsc --noEmit -p tsconfig.json",
         "cwd": "packages/database"

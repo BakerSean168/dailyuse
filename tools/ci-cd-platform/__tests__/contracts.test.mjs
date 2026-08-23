@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
   buildProvenance,
@@ -156,4 +157,30 @@ test('run summary timing rejects invalid measurements', () => {
   const invalid = { ...summary, timing: { ...summary.timing, setupMs: -1 } };
   invalid.digest = digest(invalid);
   assert.throws(() => validateRunSummary(invalid), /timing\.setupMs must be non-negative/);
+});
+
+test('Prisma client generation has one Nx-owned writer in the typecheck graph', async () => {
+  const [databaseProject, apiProject] = await Promise.all([
+    readFile(new URL('../../../packages/database/project.json', import.meta.url), 'utf8').then(JSON.parse),
+    readFile(new URL('../../../apps/api/project.json', import.meta.url), 'utf8').then(JSON.parse),
+  ]);
+
+  const databaseBuild = databaseProject.targets.build;
+  const databaseTypecheck = databaseProject.targets.typecheck;
+  const apiTypecheck = apiProject.targets.typecheck;
+
+  assert.ok(databaseBuild.dependsOn.includes('prisma-generate'));
+  assert.doesNotMatch(databaseBuild.options.command, /prisma generate/u);
+  assert.ok(databaseTypecheck.dependsOn.includes('prisma-generate'));
+
+  assert.ok(
+    apiTypecheck.dependsOn.some(
+      (dependency) =>
+        typeof dependency === 'object' &&
+        dependency.target === 'prisma-generate' &&
+        Array.isArray(dependency.projects) &&
+        dependency.projects.includes('database'),
+    ),
+  );
+  assert.equal(apiProject.targets['prisma:generate'], undefined);
 });
