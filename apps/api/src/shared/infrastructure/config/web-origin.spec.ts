@@ -1,7 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { deriveWebOrigin, getTrustedWebOrigins } from './web-origin.js';
+import {
+  deriveWebOrigin,
+  getTrustedWebOrigins,
+  shouldDisableCrossOriginOpenerPolicyForLocalValidation,
+} from './web-origin.js';
 
 /**
  * O2V-01: the MagicDNS public Web origin is auto-included in the API trusted
@@ -11,9 +15,9 @@ import { deriveWebOrigin, getTrustedWebOrigins } from './web-origin.js';
 
 describe('deriveWebOrigin', () => {
   it('strips the trailing path from a MagicDNS Web URL', () => {
-    expect(
-      deriveWebOrigin('http://oracle.taile92a8e.ts.net:58080/auth/verify'),
-    ).toBe('http://oracle.taile92a8e.ts.net:58080');
+    expect(deriveWebOrigin('http://oracle.taile92a8e.ts.net:58080/auth/verify')).toBe(
+      'http://oracle.taile92a8e.ts.net:58080',
+    );
   });
 
   it('keeps an already-origin URL unchanged', () => {
@@ -27,6 +31,50 @@ describe('deriveWebOrigin', () => {
 
   it('returns undefined for an unparseable URL', () => {
     expect(deriveWebOrigin('not a url')).toBeUndefined();
+  });
+});
+
+describe('shouldDisableCrossOriginOpenerPolicyForLocalValidation', () => {
+  it('disables inert COOP for controlled non-loopback HTTP validation origins', () => {
+    expect(
+      shouldDisableCrossOriginOpenerPolicyForLocalValidation(
+        'http://gcp-dev-01.taile92a8e.ts.net:53080/api/auth',
+        true,
+      ),
+    ).toBe(true);
+  });
+
+  it('preserves Helmet COOP for HTTPS validation origins', () => {
+    expect(
+      shouldDisableCrossOriginOpenerPolicyForLocalValidation(
+        'https://gcp-dev-01.taile92a8e.ts.net/api/auth',
+        true,
+      ),
+    ).toBe(false);
+  });
+
+  it('preserves Helmet COOP for potentially trustworthy loopback HTTP', () => {
+    expect(
+      shouldDisableCrossOriginOpenerPolicyForLocalValidation(
+        'http://127.0.0.1:53080/api/auth',
+        true,
+      ),
+    ).toBe(false);
+    expect(
+      shouldDisableCrossOriginOpenerPolicyForLocalValidation(
+        'http://localhost:53080/api/auth',
+        true,
+      ),
+    ).toBe(false);
+  });
+
+  it('never relaxes COOP outside LOCAL_VALIDATION', () => {
+    expect(
+      shouldDisableCrossOriginOpenerPolicyForLocalValidation(
+        'http://gcp-dev-01.taile92a8e.ts.net:53080/api/auth',
+        false,
+      ),
+    ).toBe(false);
   });
 });
 
@@ -60,10 +108,7 @@ describe('getTrustedWebOrigins', () => {
 
   it('does not mutate the input list', () => {
     const base = ['http://localhost:58080'];
-    const result = getTrustedWebOrigins(
-      base,
-      'http://oracle.taile92a8e.ts.net:58080',
-    );
+    const result = getTrustedWebOrigins(base, 'http://oracle.taile92a8e.ts.net:58080');
     expect(result).not.toBe(base);
     expect(base).toEqual(['http://localhost:58080']);
   });
@@ -83,11 +128,10 @@ describe('O2V-01 machine-public URL wiring', () => {
   });
 
   it('global.ts CORS allowedOrigins includes the derived WEB origin', () => {
-    const globalMiddleware = readFileSync(
-      resolve(__dirname, '../middleware/global.ts'),
-      'utf8',
-    );
+    const globalMiddleware = readFileSync(resolve(__dirname, '../middleware/global.ts'), 'utf8');
     expect(globalMiddleware).toContain('getTrustedWebOrigins');
     expect(globalMiddleware).toContain('env.MEMOFLOW_WEB_URL');
+    expect(globalMiddleware).toContain('shouldDisableCrossOriginOpenerPolicyForLocalValidation');
+    expect(globalMiddleware).toContain('crossOriginOpenerPolicy: false');
   });
 });

@@ -23,6 +23,37 @@ export function deriveWebOrigin(webUrl: string | undefined): string | undefined 
 }
 
 /**
+ * Plain HTTP is intentionally allowed for controlled local-validation origins,
+ * including Tailscale MagicDNS. Chromium does not treat those non-loopback HTTP
+ * origins as potentially trustworthy, so Helmet's COOP header is ignored and
+ * reported as a console error even though the header has no effect.
+ *
+ * Disable only that inert header in this narrow lane. HTTPS and loopback HTTP
+ * keep Helmet's default COOP protection unchanged.
+ */
+export function shouldDisableCrossOriginOpenerPolicyForLocalValidation(
+  authBaseUrl: string | undefined,
+  localValidation: boolean,
+): boolean {
+  if (!localValidation || !authBaseUrl) return false;
+
+  try {
+    const url = new URL(authBaseUrl);
+    if (url.protocol !== 'http:') return false;
+
+    const hostname = url.hostname.toLowerCase();
+    const loopback =
+      hostname === 'localhost' ||
+      hostname.endsWith('.localhost') ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1';
+    return !loopback;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Merge the API CORS/trusted-origins list with the MEMOFLOW_WEB_URL-derived
  * origin, deduped. Without MEMOFLOW_WEB_URL the input list is returned
  * unchanged (fresh array copy).

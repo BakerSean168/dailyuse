@@ -27,7 +27,10 @@ import {
 import type { HttpRequestMetricsRecorder } from '../observability/http-request-metrics';
 import type { HttpRequestTrace } from '../observability/http-request-trace';
 import { getCorsOrigins, isAllCorsOriginsAllowed, env } from '../config/env.js';
-import { getTrustedWebOrigins } from '../config/web-origin.js';
+import {
+  getTrustedWebOrigins,
+  shouldDisableCrossOriginOpenerPolicyForLocalValidation,
+} from '../config/web-origin.js';
 
 export class CorsRejectionError extends Error {
   constructor(readonly origin?: string) {
@@ -65,8 +68,16 @@ export function applyGlobalMiddleware(
     }),
   );
 
-  // Security
-  app.use(helmet());
+  // Security. Controlled HTTP local-validation origins (for example Tailscale
+  // MagicDNS) are not potentially trustworthy in Chromium. COOP is inert there
+  // and Chromium reports it as a console error, so disable only that header in
+  // the narrow local-validation HTTP lane while preserving Helmet defaults for
+  // production HTTPS and loopback development.
+  const disableCrossOriginOpenerPolicy = shouldDisableCrossOriginOpenerPolicyForLocalValidation(
+    env.AUTH_BASE_URL,
+    env.LOCAL_VALIDATION,
+  );
+  app.use(helmet(disableCrossOriginOpenerPolicy ? { crossOriginOpenerPolicy: false } : undefined));
 
   // Body parsing
   app.use(cookieParser());
