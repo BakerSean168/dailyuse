@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { APP_DISPLAY_NAME, logo128 } from '@memoflow/assets';
 import { Button } from '@memoflow/ui-vue-shadcn/components/ui/button';
@@ -10,6 +10,7 @@ import {
   usePassword,
   useAuthenticationStore,
 } from '@memoflow/app-vue/modules/authentication';
+import { loadWebAuthCapabilities } from './capabilities';
 import { useWebAuth } from './useWebAuth';
 import {
   applyAuthLocale,
@@ -25,7 +26,6 @@ import {
   validateLogin,
   validateRegistration,
   validateResetPassword,
-  type AuthValidationKey,
   type ForgotField,
   type LoginField,
   type RegisterField,
@@ -60,6 +60,7 @@ const name = ref('');
 const newPassword = ref('');
 const confirmNewPassword = ref('');
 const action = ref<Scene | 'github' | null>(null);
+const githubLoginAvailable = ref(false);
 
 const loginErrors = reactive<ValidationErrors<LoginField>>({});
 const registerErrors = reactive<ValidationErrors<RegisterField>>({});
@@ -89,6 +90,12 @@ const authStore = useAuthenticationStore();
 const receipt = computed(() => authStore.passwordMutationError);
 const passwordLoading = computed(() => passwordActions.isLoading.value);
 const localSuccessMessage = ref<string | null>(null);
+
+onMounted(() => {
+  void loadWebAuthCapabilities().then((capabilities) => {
+    githubLoginAvailable.value = capabilities.github;
+  });
+});
 
 const INPUT_CLASS =
   'h-10 rounded-md border-white/10 bg-white/[0.05] px-3 text-sm text-white placeholder:text-white/25 focus-visible:border-blue-400/60 focus-visible:ring-1 focus-visible:ring-blue-400/40 aria-[invalid=true]:border-red-400/70';
@@ -397,7 +404,7 @@ watch([newPassword, confirmNewPassword], () => {
           <Loader2 v-if="isLoading && action === 'login'" class="mr-2 h-4 w-4 animate-spin" />
           {{ t(isLoading && action === 'login' ? 'auth.login.submitting' : 'auth.login.submit') }}
         </Button>
-        <Button data-testid="login-github-button" type="button" variant="outline" :disabled="isLoading" @click="handleGithubLogin">
+        <Button v-if="githubLoginAvailable" data-testid="login-github-button" type="button" variant="outline" :disabled="isLoading" @click="handleGithubLogin">
           {{ t('auth.login.github', 'Continue with GitHub') }}
         </Button>
       </form>

@@ -14,6 +14,14 @@ vi.mock('vue-sonner', () => ({
   },
 }));
 
+const authCapabilityMocks = vi.hoisted(() => ({
+  loadWebAuthCapabilities: vi.fn(async () => ({ github: true })),
+}));
+
+vi.mock('./capabilities', () => ({
+  loadWebAuthCapabilities: authCapabilityMocks.loadWebAuthCapabilities,
+}));
+
 const webAuthMocks = vi.hoisted(() => ({
   loginByEmail: vi.fn(async () => true as const),
   registerByEmail: vi.fn(async () => true as const),
@@ -139,6 +147,8 @@ function mountView(service = createService(), pinia = createPinia()) {
 
 describe('WebAuthView three-login surface contract', () => {
   beforeEach(() => {
+    authCapabilityMocks.loadWebAuthCapabilities.mockReset();
+    authCapabilityMocks.loadWebAuthCapabilities.mockResolvedValue({ github: true });
     webAuthMocks.startGithubLogin.mockReset();
     webAuthMocks.loginByEmail.mockReset();
     webAuthMocks.startGithubLogin.mockResolvedValue(true);
@@ -169,6 +179,18 @@ describe('WebAuthView three-login surface contract', () => {
     expect(wrapper.find('[data-testid="login-phone-input"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="send-sms-code-button"]').exists()).toBe(false);
     expect(wrapper.find('#verify-code').exists()).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  it('hides GitHub OAuth when the API reports that the provider is unavailable', async () => {
+    authCapabilityMocks.loadWebAuthCapabilities.mockResolvedValueOnce({ github: false });
+    const wrapper = mountView();
+    await flushPromises();
+    await nextTick();
+
+    expect(wrapper.find('[data-testid="login-submit-button"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="login-github-button"]').exists()).toBe(false);
 
     wrapper.unmount();
   });

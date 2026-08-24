@@ -175,7 +175,9 @@ async function bootstrap(): Promise<void> {
   });
 
   // 2. 白名单注册 & 启动
-  bootstrapper = new ApiBootstrapper(prisma, cloudAuth, testEmailLinks, traceRuntime?.trace);
+  bootstrapper = new ApiBootstrapper(prisma, cloudAuth, testEmailLinks, traceRuntime?.trace, {
+    github: Boolean(githubOAuthConfig),
+  });
 
   // Step C：宿主 runtime 负责 feature 装配。所有 remaining 模块（account /
   // notification / reminder / repository / schedule / setting / data-portability）
