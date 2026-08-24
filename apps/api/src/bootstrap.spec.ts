@@ -64,6 +64,21 @@ describe('ApiBootstrapper', () => {
     expect(destroyed).toEqual(['broken', 'healthy']);
   });
 
+  it('exposes public auth provider capabilities before the Better Auth wildcard', async () => {
+    const unavailableApp = await new ApiBootstrapper({}, createCloudAuthStub()).init();
+    const unavailable = await request(unavailableApp).get('/api/auth/capabilities');
+    expect(unavailable.status).toBe(200);
+    expect(unavailable.headers['cache-control']).toBe('no-store');
+    expect(unavailable.body).toEqual({ providers: { github: false } });
+
+    const githubApp = await new ApiBootstrapper({}, createCloudAuthStub(), undefined, undefined, {
+      github: true,
+    }).init();
+    const enabled = await request(githubApp).get('/api/auth/capabilities');
+    expect(enabled.status).toBe(200);
+    expect(enabled.body).toEqual({ providers: { github: true } });
+  });
+
   it('exposes captured Better Auth links only when the test collector is injected', async () => {
     const capture = {
       findLatest: vi.fn((email: string, kind: string) => ({

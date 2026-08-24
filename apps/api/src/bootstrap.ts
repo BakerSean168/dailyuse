@@ -49,6 +49,12 @@ import type { HttpRequestTrace } from './shared/infrastructure/observability/htt
 
 const logger = createLogger('Bootstrapper');
 
+export interface PublicAuthCapabilities {
+  github: boolean;
+}
+
+const NO_PUBLIC_AUTH_CAPABILITIES: PublicAuthCapabilities = Object.freeze({ github: false });
+
 export class ApiBootstrapper {
   private readonly app: Express;
   private readonly rootRouter: Router;
@@ -62,6 +68,7 @@ export class ApiBootstrapper {
     private readonly cloudAuth: CloudAuth,
     private readonly testEmailLinks?: Pick<CloudAuthEmailLinkCapture, 'findLatest'>,
     trace: HttpRequestTrace = NOOP_HTTP_REQUEST_TRACE,
+    private readonly authCapabilities: PublicAuthCapabilities = NO_PUBLIC_AUTH_CAPABILITIES,
   ) {
     this.app = express();
     this.rootRouter = Router();
@@ -95,6 +102,11 @@ export class ApiBootstrapper {
     applyGlobalMiddleware(this.app, this.metricsRecorder, {
       trace: this.trace,
       beforeBodyParsing: (app) => {
+        app.get('/api/auth/capabilities', (_req, res) => {
+          res.setHeader('Cache-Control', 'no-store');
+          res.json({ providers: this.authCapabilities });
+        });
+
         const testEmailLinks = this.testEmailLinks;
         if (testEmailLinks) {
           app.get('/api/auth/test/last-email-link', (req, res) => {
