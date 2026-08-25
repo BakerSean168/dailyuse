@@ -7,8 +7,13 @@
  */
 
 import type { PrismaClient, Prisma } from '@memoflow/database';
-import type { INotificationRepository } from '../../../domain';
-import type { NotificationCategory, NotificationEventMap, NotificationStatus } from '@memoflow/contracts/notification';
+import type {
+  INotificationRepository,
+  NotificationDeliveryUsage,
+  NotificationOutboxDispatchPlan,
+} from '../../../domain/repositories/i-notification-repository';
+import type { NotificationDeliveryDecision } from '../../../domain/services/notification-policy';
+import type { NotificationCategory, NotificationEventMap, NotificationStatus, NotificationChannelType } from '@memoflow/contracts/notification';
 import { Notification } from '../../../domain/aggregates/notification';
 import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
 import {
@@ -16,10 +21,8 @@ import {
   type PrismaNotificationWithRelations,
 } from './mappers/notification-prisma.mapper';
 
-import {
-  NotificationOutboxDispatchInputSchema,
-  type NotificationOutboxDispatchInput,
-} from '@memoflow/contracts/reliable-messaging';
+import { NotificationOutboxDispatchInputSchema } from '@memoflow/contracts/reliable-messaging';
+import { randomUUID } from 'crypto';
 
 const notificationEventPublisher = createTypedEventPublisher<NotificationEventMap>(eventBus);
 
@@ -47,7 +50,8 @@ export class NotificationPrismaRepository implements INotificationRepository {
 
   async save(
     notification: Notification,
-    outboxDispatches?: NotificationOutboxDispatchInput[],
+    outboxDispatches?: NotificationOutboxDispatchPlan[],
+    deliveryDecisions?: readonly NotificationDeliveryDecision[],
   ): Promise<void> {
     const dto = notification.toServerDTO();
 
@@ -166,9 +170,10 @@ export class NotificationPrismaRepository implements INotificationRepository {
                 channel: validatedInput.channel,
                 payloadJson: validatedInput.payloadJson,
                 idempotencyKey: validatedInput.idempotencyKey,
-                status: 'pending',
+                status: outboxInput.deferUntil ? 'retryable' : 'pending',
                 attempt: 0,
                 fencingToken: 0,
+                nextRetryAt: outboxInput.deferUntil ?? null,
                 createdAt: now,
                 updatedAt: now,
               },
@@ -180,6 +185,25 @@ export class NotificationPrismaRepository implements INotificationRepository {
           this.metricsService.recordPersisted(insertedCount);
         }
       }
+
+      for (const decision of deliveryDecisions ?? []) {
+        if (decision.outcome === 'deliver_now') continue;
+        await tx.notificationHistory.create({
+          data: {
+            id: randomUUID(),
+            identityId: String(dto.identityId),
+            notificationId: String(dto.id),
+            action: 'delivery_policy',
+            details: JSON.stringify({
+              channel: decision.channel,
+              outcome: decision.outcome,
+              reason: decision.reason,
+              retryAt: decision.retryAt?.toISOString() ?? null,
+            }),
+            actorId: null,
+          },
+        });
+      }
     });
 
     flushDomainEvents(notificationEventPublisher, notification);
@@ -189,6 +213,37 @@ export class NotificationPrismaRepository implements INotificationRepository {
     for (const notification of notifications) {
       await this.save(notification);
     }
+  }
+
+  async getDeliveryUsage(
+    identityId: string,
+    category: NotificationCategory,
+    channel: NotificationChannelType,
+    now: Date,
+  ): Promise<NotificationDeliveryUsage> {
+    const hourStart = new Date(now.getTime() - 60 * 60 * 1000);
+    const dayStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const baseWhere = {
+      identityId,
+      channelType: channel,
+    };
+
+    const [hourCount, dayCount] = await Promise.all([
+      this.prisma.notificationChannel.count({
+        where: {
+          ...baseWhere,
+          notification: { is: { category, createdAt: { gte: hourStart } } },
+        },
+      }),
+      this.prisma.notificationChannel.count({
+        where: {
+          ...baseWhere,
+          notification: { is: { category, createdAt: { gte: dayStart } } },
+        },
+      }),
+    ]);
+
+    return { hourCount, dayCount };
   }
 
   async findChannelsByStatus(status: string, limit?: number): Promise<Notification[]> {

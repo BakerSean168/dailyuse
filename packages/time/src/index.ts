@@ -43,6 +43,28 @@ export type { InputApi } from './input/input';
 export type { CalendarApi } from './calendar/calendar';
 
 export { asInstant, asTransferDate, asYmd, asHm } from './codec/brand';
+export {
+  calendarDateValueToYmd,
+  ymdToCalendarDateValue,
+  timeValueToHm,
+  hmToTimeValue,
+} from './ui/calendar-date-adapter';
+
+export type {
+  RecurrenceEnginePort,
+  RecurrenceFrequency,
+  RecurrenceRange,
+  RecurrenceSchedule,
+  RecurrenceWeekday,
+} from './recurrence/recurrence-engine.port';
+export { createRecurrenceEngine } from './recurrence';
+export type { TimeZoneSource } from './timezone/time-zone';
+export {
+  createFixedTimeZoneSource,
+  createSystemTimeZoneSource,
+  isIanaTimeZoneId,
+  resolveTimeZoneId,
+} from './timezone/time-zone';
 export { createDateFnsEngine, combineYmdHmWithTimeZone } from './engine/date-fns-engine';
 
 // Free-function helpers (thin defaultTime wrappers). Prefer facade.format.* when Style injection is available.

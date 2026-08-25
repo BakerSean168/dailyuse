@@ -22,3 +22,6 @@ export * from './protocol';
 
 // ============ API ============
 export * from './api';
+
+// ============ Neutral scheduling seam (ADR-061) ============
+export * from './scheduling';

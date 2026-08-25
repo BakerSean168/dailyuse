@@ -10,7 +10,19 @@
 
 import type { Notification } from '../aggregates/notification';
 import { NotificationCategory, NotificationStatus } from '@memoflow/contracts/notification';
+import type { NotificationChannelType } from '@memoflow/contracts/notification';
 import type { NotificationOutboxDispatchInput } from '@memoflow/contracts/reliable-messaging';
+import type { NotificationDeliveryDecision } from '../services/notification-policy';
+
+export interface NotificationOutboxDispatchPlan extends NotificationOutboxDispatchInput {
+  /** Existing durable worker will hold retryable rows until this instant. */
+  deferUntil?: Date | null;
+}
+
+export interface NotificationDeliveryUsage {
+  hourCount: number;
+  dayCount: number;
+}
 
 /**
  * INotificationRepository 浠撳偍鎺ュ彛
@@ -26,13 +38,25 @@ export interface INotificationRepository {
    */
   save(
     notification: Notification,
-    outboxDispatches?: NotificationOutboxDispatchInput[],
+    outboxDispatches?: NotificationOutboxDispatchPlan[],
+    deliveryDecisions?: readonly NotificationDeliveryDecision[],
   ): Promise<void>;
 
   /**
    * 鎵归噺淇濆瓨閫氱煡
    */
   saveMany(notifications: Notification[]): Promise<void>;
+
+  /**
+   * Counts already planned delivery channels for the same workflow surrogate
+   * (current NotificationCategory) and channel over rolling 1h / 24h windows.
+   */
+  getDeliveryUsage(
+    identityId: string,
+    category: NotificationCategory,
+    channel: NotificationChannelType,
+    now: Date,
+  ): Promise<NotificationDeliveryUsage>;
 
   /**
    * Find notification by id + identity (ownership fence).

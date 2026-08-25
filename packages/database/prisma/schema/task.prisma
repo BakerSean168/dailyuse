@@ -117,8 +117,10 @@ model TaskTemplate {
   // 实例
   instances TaskInstance[]
   history   TaskTemplateHistory[]
+  labelLinks TaskLabel[]
 
   // ============ 索引优化 ============
+  @@unique([id, identityId])
   @@index([identityId])
   @@index([status])
   @@index([importance])

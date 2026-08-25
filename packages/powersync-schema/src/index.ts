@@ -371,6 +371,31 @@ const task_statistics = new Table({
 });
 
 // ──────────────────────────────────────────────
+// Shared Labels (ADR-054)
+// ──────────────────────────────────────────────
+
+const labels = new Table({
+  identity_id: column.text,
+  name: column.text,
+  normalized_name: column.text,
+  color: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const goal_labels = new Table({
+  identity_id: column.text,
+  goal_id: column.text,
+  label_id: column.text,
+});
+
+const task_labels = new Table({
+  identity_id: column.text,
+  task_template_id: column.text,
+  label_id: column.text,
+});
+
+// ──────────────────────────────────────────────
 // Schedule
 // ──────────────────────────────────────────────
 
@@ -397,6 +422,12 @@ const schedule_tasks = new Table({
   description: column.text,
   source_module: column.text,
   source_entity_id: column.text,
+  scheduling_key: column.text,
+  owner_type: column.text,
+  owner_id: column.text,
+  handler_key: column.text,
+  payload_version: column.integer,
+  source_revision: column.text,
   status: column.text,
   enabled: column.integer, // boolean
   cron_expression: column.text,
@@ -423,6 +454,24 @@ const schedule_tasks = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
+});
+
+const scheduling_reconcile_operations = new Table({
+  identity_id: column.text,
+  owner_type: column.text,
+  owner_id: column.text,
+  status: column.text,
+  desired_count: column.integer,
+  created_count: column.integer,
+  updated_count: column.integer,
+  deleted_count: column.integer,
+  unchanged_count: column.integer,
+  failure_code: column.text,
+  failure_message: column.text,
+  failure_retryable: column.integer,
+  started_at: column.text,
+  finished_at: column.text,
+  created_at: column.text,
 });
 
 const schedule_executions = new Table({
@@ -1059,6 +1108,9 @@ export const PowerSyncAppSchema = new Schema({
   focus_sessions,
   focus_modes,
   goal_operation_receipts,
+  labels,
+  goal_labels,
+  task_labels,
   // Task
   task_folders,
   task_templates,
@@ -1069,6 +1121,7 @@ export const PowerSyncAppSchema = new Schema({
   // Schedule
   schedules,
   schedule_tasks,
+  scheduling_reconcile_operations,
   schedule_executions,
   schedule_statistics,
   schedule_domain_event_outbox,

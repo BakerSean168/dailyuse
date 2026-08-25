@@ -8,6 +8,7 @@
 export { createScheduleOrchestrationModule } from './infrastructure-server';
 export type {
   CreateScheduleOrchestrationModuleOptions,
+  ScheduleOrchestrationHandlerRegistry,
   ScheduleOrchestrationModule,
   ScheduleOrchestrationProjectionDeps,
 } from './ports/projection';

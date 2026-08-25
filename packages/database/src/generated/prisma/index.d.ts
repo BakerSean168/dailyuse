@@ -187,6 +187,21 @@ export type HabitCheckIn = $Result.DefaultSelection<Prisma.$HabitCheckInPayload>
  */
 export type HabitStreakProjection = $Result.DefaultSelection<Prisma.$HabitStreakProjectionPayload>
 /**
+ * Model Label
+ *
+ */
+export type Label = $Result.DefaultSelection<Prisma.$LabelPayload>
+/**
+ * Model GoalLabel
+ *
+ */
+export type GoalLabel = $Result.DefaultSelection<Prisma.$GoalLabelPayload>
+/**
+ * Model TaskLabel
+ *
+ */
+export type TaskLabel = $Result.DefaultSelection<Prisma.$TaskLabelPayload>
+/**
  * Model Notification
  *
  */
@@ -380,6 +395,12 @@ export type Schedule = $Result.DefaultSelection<Prisma.$SchedulePayload>
  *
  */
 export type ScheduleTask = $Result.DefaultSelection<Prisma.$ScheduleTaskPayload>
+/**
+ * Model SchedulingReconcileOperation
+ * Durable evidence for one owner-level desired-state reconcile.
+ * Successful rows are written inside the same transaction as ScheduleTask upsert/delete.
+ */
+export type SchedulingReconcileOperation = $Result.DefaultSelection<Prisma.$SchedulingReconcileOperationPayload>
 /**
  * Model ScheduleExecution
  *
@@ -931,6 +952,36 @@ export class PrismaClient<
   get habitStreakProjection(): Prisma.HabitStreakProjectionDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.label`: Exposes CRUD operations for the **Label** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Labels
+    * const labels = await prisma.label.findMany()
+    * ```
+    */
+  get label(): Prisma.LabelDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.goalLabel`: Exposes CRUD operations for the **GoalLabel** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GoalLabels
+    * const goalLabels = await prisma.goalLabel.findMany()
+    * ```
+    */
+  get goalLabel(): Prisma.GoalLabelDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.taskLabel`: Exposes CRUD operations for the **TaskLabel** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TaskLabels
+    * const taskLabels = await prisma.taskLabel.findMany()
+    * ```
+    */
+  get taskLabel(): Prisma.TaskLabelDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
     * Example usage:
     * ```ts
@@ -1299,6 +1350,16 @@ export class PrismaClient<
     * ```
     */
   get scheduleTask(): Prisma.ScheduleTaskDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.schedulingReconcileOperation`: Exposes CRUD operations for the **SchedulingReconcileOperation** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SchedulingReconcileOperations
+    * const schedulingReconcileOperations = await prisma.schedulingReconcileOperation.findMany()
+    * ```
+    */
+  get schedulingReconcileOperation(): Prisma.SchedulingReconcileOperationDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.scheduleExecution`: Exposes CRUD operations for the **ScheduleExecution** model.
@@ -1936,6 +1997,9 @@ export namespace Prisma {
     HabitOccurrence: 'HabitOccurrence',
     HabitCheckIn: 'HabitCheckIn',
     HabitStreakProjection: 'HabitStreakProjection',
+    Label: 'Label',
+    GoalLabel: 'GoalLabel',
+    TaskLabel: 'TaskLabel',
     Notification: 'Notification',
     NotificationChannel: 'NotificationChannel',
     NotificationHistory: 'NotificationHistory',
@@ -1973,6 +2037,7 @@ export namespace Prisma {
     KnowledgeRepositoryLease: 'KnowledgeRepositoryLease',
     Schedule: 'Schedule',
     ScheduleTask: 'ScheduleTask',
+    SchedulingReconcileOperation: 'SchedulingReconcileOperation',
     ScheduleExecution: 'ScheduleExecution',
     ScheduleStatistic: 'ScheduleStatistic',
     ScheduleLease: 'ScheduleLease',
@@ -2005,7 +2070,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
+      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "label" | "goalLabel" | "taskLabel" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "schedulingReconcileOperation" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4448,6 +4513,228 @@ export namespace Prisma {
           count: {
             args: Prisma.HabitStreakProjectionCountArgs<ExtArgs>
             result: $Utils.Optional<HabitStreakProjectionCountAggregateOutputType> | number
+          }
+        }
+      }
+      Label: {
+        payload: Prisma.$LabelPayload<ExtArgs>
+        fields: Prisma.LabelFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LabelFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LabelFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>
+          }
+          findFirst: {
+            args: Prisma.LabelFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LabelFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>
+          }
+          findMany: {
+            args: Prisma.LabelFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>[]
+          }
+          create: {
+            args: Prisma.LabelCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>
+          }
+          createMany: {
+            args: Prisma.LabelCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LabelCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>[]
+          }
+          delete: {
+            args: Prisma.LabelDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>
+          }
+          update: {
+            args: Prisma.LabelUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>
+          }
+          deleteMany: {
+            args: Prisma.LabelDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LabelUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LabelUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>[]
+          }
+          upsert: {
+            args: Prisma.LabelUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LabelPayload>
+          }
+          aggregate: {
+            args: Prisma.LabelAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLabel>
+          }
+          groupBy: {
+            args: Prisma.LabelGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LabelGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LabelCountArgs<ExtArgs>
+            result: $Utils.Optional<LabelCountAggregateOutputType> | number
+          }
+        }
+      }
+      GoalLabel: {
+        payload: Prisma.$GoalLabelPayload<ExtArgs>
+        fields: Prisma.GoalLabelFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GoalLabelFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GoalLabelFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>
+          }
+          findFirst: {
+            args: Prisma.GoalLabelFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GoalLabelFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>
+          }
+          findMany: {
+            args: Prisma.GoalLabelFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>[]
+          }
+          create: {
+            args: Prisma.GoalLabelCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>
+          }
+          createMany: {
+            args: Prisma.GoalLabelCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GoalLabelCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>[]
+          }
+          delete: {
+            args: Prisma.GoalLabelDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>
+          }
+          update: {
+            args: Prisma.GoalLabelUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>
+          }
+          deleteMany: {
+            args: Prisma.GoalLabelDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GoalLabelUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GoalLabelUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>[]
+          }
+          upsert: {
+            args: Prisma.GoalLabelUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalLabelPayload>
+          }
+          aggregate: {
+            args: Prisma.GoalLabelAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGoalLabel>
+          }
+          groupBy: {
+            args: Prisma.GoalLabelGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GoalLabelGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GoalLabelCountArgs<ExtArgs>
+            result: $Utils.Optional<GoalLabelCountAggregateOutputType> | number
+          }
+        }
+      }
+      TaskLabel: {
+        payload: Prisma.$TaskLabelPayload<ExtArgs>
+        fields: Prisma.TaskLabelFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TaskLabelFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TaskLabelFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>
+          }
+          findFirst: {
+            args: Prisma.TaskLabelFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TaskLabelFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>
+          }
+          findMany: {
+            args: Prisma.TaskLabelFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>[]
+          }
+          create: {
+            args: Prisma.TaskLabelCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>
+          }
+          createMany: {
+            args: Prisma.TaskLabelCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TaskLabelCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>[]
+          }
+          delete: {
+            args: Prisma.TaskLabelDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>
+          }
+          update: {
+            args: Prisma.TaskLabelUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>
+          }
+          deleteMany: {
+            args: Prisma.TaskLabelDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TaskLabelUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TaskLabelUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>[]
+          }
+          upsert: {
+            args: Prisma.TaskLabelUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskLabelPayload>
+          }
+          aggregate: {
+            args: Prisma.TaskLabelAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTaskLabel>
+          }
+          groupBy: {
+            args: Prisma.TaskLabelGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TaskLabelGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TaskLabelCountArgs<ExtArgs>
+            result: $Utils.Optional<TaskLabelCountAggregateOutputType> | number
           }
         }
       }
@@ -7189,6 +7476,80 @@ export namespace Prisma {
           }
         }
       }
+      SchedulingReconcileOperation: {
+        payload: Prisma.$SchedulingReconcileOperationPayload<ExtArgs>
+        fields: Prisma.SchedulingReconcileOperationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SchedulingReconcileOperationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SchedulingReconcileOperationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>
+          }
+          findFirst: {
+            args: Prisma.SchedulingReconcileOperationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SchedulingReconcileOperationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>
+          }
+          findMany: {
+            args: Prisma.SchedulingReconcileOperationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>[]
+          }
+          create: {
+            args: Prisma.SchedulingReconcileOperationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>
+          }
+          createMany: {
+            args: Prisma.SchedulingReconcileOperationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SchedulingReconcileOperationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>[]
+          }
+          delete: {
+            args: Prisma.SchedulingReconcileOperationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>
+          }
+          update: {
+            args: Prisma.SchedulingReconcileOperationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>
+          }
+          deleteMany: {
+            args: Prisma.SchedulingReconcileOperationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SchedulingReconcileOperationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.SchedulingReconcileOperationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>[]
+          }
+          upsert: {
+            args: Prisma.SchedulingReconcileOperationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SchedulingReconcileOperationPayload>
+          }
+          aggregate: {
+            args: Prisma.SchedulingReconcileOperationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSchedulingReconcileOperation>
+          }
+          groupBy: {
+            args: Prisma.SchedulingReconcileOperationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SchedulingReconcileOperationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SchedulingReconcileOperationCountArgs<ExtArgs>
+            result: $Utils.Optional<SchedulingReconcileOperationCountAggregateOutputType> | number
+          }
+        }
+      }
       ScheduleExecution: {
         payload: Prisma.$ScheduleExecutionPayload<ExtArgs>
         fields: Prisma.ScheduleExecutionFieldRefs
@@ -8588,6 +8949,9 @@ export namespace Prisma {
     habitOccurrence?: HabitOccurrenceOmit
     habitCheckIn?: HabitCheckInOmit
     habitStreakProjection?: HabitStreakProjectionOmit
+    label?: LabelOmit
+    goalLabel?: GoalLabelOmit
+    taskLabel?: TaskLabelOmit
     notification?: NotificationOmit
     notificationChannel?: NotificationChannelOmit
     notificationHistory?: NotificationHistoryOmit
@@ -8625,6 +8989,7 @@ export namespace Prisma {
     knowledgeRepositoryLease?: KnowledgeRepositoryLeaseOmit
     schedule?: ScheduleOmit
     scheduleTask?: ScheduleTaskOmit
+    schedulingReconcileOperation?: SchedulingReconcileOperationOmit
     scheduleExecution?: ScheduleExecutionOmit
     scheduleStatistic?: ScheduleStatisticOmit
     scheduleLease?: ScheduleLeaseOmit
@@ -8729,6 +9094,9 @@ export namespace Prisma {
     focusSessions: number
     focusModes: number
     goals: number
+    labels: number
+    goalLabels: number
+    taskLabels: number
     goalFolders: number
     reminderGroups: number
     reminderTemplates: number
@@ -8737,6 +9105,7 @@ export namespace Prisma {
     repositoryExplorers: number
     schedules: number
     scheduleTasks: number
+    schedulingReconcileOperations: number
     habits: number
     relations: number
     walletAccounts: number
@@ -8775,6 +9144,9 @@ export namespace Prisma {
     focusSessions?: boolean | AccountCountOutputTypeCountFocusSessionsArgs
     focusModes?: boolean | AccountCountOutputTypeCountFocusModesArgs
     goals?: boolean | AccountCountOutputTypeCountGoalsArgs
+    labels?: boolean | AccountCountOutputTypeCountLabelsArgs
+    goalLabels?: boolean | AccountCountOutputTypeCountGoalLabelsArgs
+    taskLabels?: boolean | AccountCountOutputTypeCountTaskLabelsArgs
     goalFolders?: boolean | AccountCountOutputTypeCountGoalFoldersArgs
     reminderGroups?: boolean | AccountCountOutputTypeCountReminderGroupsArgs
     reminderTemplates?: boolean | AccountCountOutputTypeCountReminderTemplatesArgs
@@ -8783,6 +9155,7 @@ export namespace Prisma {
     repositoryExplorers?: boolean | AccountCountOutputTypeCountRepositoryExplorersArgs
     schedules?: boolean | AccountCountOutputTypeCountSchedulesArgs
     scheduleTasks?: boolean | AccountCountOutputTypeCountScheduleTasksArgs
+    schedulingReconcileOperations?: boolean | AccountCountOutputTypeCountSchedulingReconcileOperationsArgs
     habits?: boolean | AccountCountOutputTypeCountHabitsArgs
     relations?: boolean | AccountCountOutputTypeCountRelationsArgs
     walletAccounts?: boolean | AccountCountOutputTypeCountWalletAccountsArgs
@@ -8876,6 +9249,27 @@ export namespace Prisma {
   /**
    * AccountCountOutputType without action
    */
+  export type AccountCountOutputTypeCountLabelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LabelWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountGoalLabelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoalLabelWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountTaskLabelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskLabelWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
   export type AccountCountOutputTypeCountGoalFoldersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GoalFolderWhereInput
   }
@@ -8927,6 +9321,13 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountScheduleTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ScheduleTaskWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountSchedulingReconcileOperationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SchedulingReconcileOperationWhereInput
   }
 
   /**
@@ -9309,6 +9710,7 @@ export namespace Prisma {
     reviews: number
     keyResultWeightSnapshots: number
     focusSessions: number
+    labelLinks: number
   }
 
   export type GoalCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9317,6 +9719,7 @@ export namespace Prisma {
     reviews?: boolean | GoalCountOutputTypeCountReviewsArgs
     keyResultWeightSnapshots?: boolean | GoalCountOutputTypeCountKeyResultWeightSnapshotsArgs
     focusSessions?: boolean | GoalCountOutputTypeCountFocusSessionsArgs
+    labelLinks?: boolean | GoalCountOutputTypeCountLabelLinksArgs
   }
 
   // Custom InputTypes
@@ -9363,6 +9766,13 @@ export namespace Prisma {
    */
   export type GoalCountOutputTypeCountFocusSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FocusSessionWhereInput
+  }
+
+  /**
+   * GoalCountOutputType without action
+   */
+  export type GoalCountOutputTypeCountLabelLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoalLabelWhereInput
   }
 
 
@@ -9545,6 +9955,46 @@ export namespace Prisma {
    */
   export type HabitOccurrenceCountOutputTypeCountCheckInsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: HabitCheckInWhereInput
+  }
+
+
+  /**
+   * Count Type LabelCountOutputType
+   */
+
+  export type LabelCountOutputType = {
+    goalLinks: number
+    taskLinks: number
+  }
+
+  export type LabelCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    goalLinks?: boolean | LabelCountOutputTypeCountGoalLinksArgs
+    taskLinks?: boolean | LabelCountOutputTypeCountTaskLinksArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * LabelCountOutputType without action
+   */
+  export type LabelCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LabelCountOutputType
+     */
+    select?: LabelCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * LabelCountOutputType without action
+   */
+  export type LabelCountOutputTypeCountGoalLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoalLabelWhereInput
+  }
+
+  /**
+   * LabelCountOutputType without action
+   */
+  export type LabelCountOutputTypeCountTaskLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskLabelWhereInput
   }
 
 
@@ -9963,6 +10413,7 @@ export namespace Prisma {
     successorDependencies: number
     instances: number
     history: number
+    labelLinks: number
   }
 
   export type TaskTemplateCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9971,6 +10422,7 @@ export namespace Prisma {
     successorDependencies?: boolean | TaskTemplateCountOutputTypeCountSuccessorDependenciesArgs
     instances?: boolean | TaskTemplateCountOutputTypeCountInstancesArgs
     history?: boolean | TaskTemplateCountOutputTypeCountHistoryArgs
+    labelLinks?: boolean | TaskTemplateCountOutputTypeCountLabelLinksArgs
   }
 
   // Custom InputTypes
@@ -10017,6 +10469,13 @@ export namespace Prisma {
    */
   export type TaskTemplateCountOutputTypeCountHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TaskTemplateHistoryWhereInput
+  }
+
+  /**
+   * TaskTemplateCountOutputType without action
+   */
+  export type TaskTemplateCountOutputTypeCountLabelLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskLabelWhereInput
   }
 
 
@@ -10349,6 +10808,9 @@ export namespace Prisma {
     focusSessions?: boolean | Account$focusSessionsArgs<ExtArgs>
     focusModes?: boolean | Account$focusModesArgs<ExtArgs>
     goals?: boolean | Account$goalsArgs<ExtArgs>
+    labels?: boolean | Account$labelsArgs<ExtArgs>
+    goalLabels?: boolean | Account$goalLabelsArgs<ExtArgs>
+    taskLabels?: boolean | Account$taskLabelsArgs<ExtArgs>
     goalFolders?: boolean | Account$goalFoldersArgs<ExtArgs>
     reminderGroups?: boolean | Account$reminderGroupsArgs<ExtArgs>
     reminderTemplates?: boolean | Account$reminderTemplatesArgs<ExtArgs>
@@ -10360,6 +10822,7 @@ export namespace Prisma {
     repositoryStatistics?: boolean | Account$repositoryStatisticsArgs<ExtArgs>
     schedules?: boolean | Account$schedulesArgs<ExtArgs>
     scheduleTasks?: boolean | Account$scheduleTasksArgs<ExtArgs>
+    schedulingReconcileOperations?: boolean | Account$schedulingReconcileOperationsArgs<ExtArgs>
     scheduleStatistics?: boolean | Account$scheduleStatisticsArgs<ExtArgs>
     habits?: boolean | Account$habitsArgs<ExtArgs>
     relations?: boolean | Account$relationsArgs<ExtArgs>
@@ -10468,6 +10931,9 @@ export namespace Prisma {
     focusSessions?: boolean | Account$focusSessionsArgs<ExtArgs>
     focusModes?: boolean | Account$focusModesArgs<ExtArgs>
     goals?: boolean | Account$goalsArgs<ExtArgs>
+    labels?: boolean | Account$labelsArgs<ExtArgs>
+    goalLabels?: boolean | Account$goalLabelsArgs<ExtArgs>
+    taskLabels?: boolean | Account$taskLabelsArgs<ExtArgs>
     goalFolders?: boolean | Account$goalFoldersArgs<ExtArgs>
     reminderGroups?: boolean | Account$reminderGroupsArgs<ExtArgs>
     reminderTemplates?: boolean | Account$reminderTemplatesArgs<ExtArgs>
@@ -10479,6 +10945,7 @@ export namespace Prisma {
     repositoryStatistics?: boolean | Account$repositoryStatisticsArgs<ExtArgs>
     schedules?: boolean | Account$schedulesArgs<ExtArgs>
     scheduleTasks?: boolean | Account$scheduleTasksArgs<ExtArgs>
+    schedulingReconcileOperations?: boolean | Account$schedulingReconcileOperationsArgs<ExtArgs>
     scheduleStatistics?: boolean | Account$scheduleStatisticsArgs<ExtArgs>
     habits?: boolean | Account$habitsArgs<ExtArgs>
     relations?: boolean | Account$relationsArgs<ExtArgs>
@@ -10532,6 +10999,9 @@ export namespace Prisma {
       focusSessions: Prisma.$FocusSessionPayload<ExtArgs>[]
       focusModes: Prisma.$FocusModePayload<ExtArgs>[]
       goals: Prisma.$GoalPayload<ExtArgs>[]
+      labels: Prisma.$LabelPayload<ExtArgs>[]
+      goalLabels: Prisma.$GoalLabelPayload<ExtArgs>[]
+      taskLabels: Prisma.$TaskLabelPayload<ExtArgs>[]
       goalFolders: Prisma.$GoalFolderPayload<ExtArgs>[]
       reminderGroups: Prisma.$ReminderGroupPayload<ExtArgs>[]
       reminderTemplates: Prisma.$ReminderTemplatePayload<ExtArgs>[]
@@ -10543,6 +11013,7 @@ export namespace Prisma {
       repositoryStatistics: Prisma.$RepositoryStatisticPayload<ExtArgs> | null
       schedules: Prisma.$SchedulePayload<ExtArgs>[]
       scheduleTasks: Prisma.$ScheduleTaskPayload<ExtArgs>[]
+      schedulingReconcileOperations: Prisma.$SchedulingReconcileOperationPayload<ExtArgs>[]
       scheduleStatistics: Prisma.$ScheduleStatisticPayload<ExtArgs> | null
       habits: Prisma.$HabitPayload<ExtArgs>[]
       relations: Prisma.$RelationPayload<ExtArgs>[]
@@ -10997,6 +11468,9 @@ export namespace Prisma {
     focusSessions<T extends Account$focusSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Account$focusSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FocusSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     focusModes<T extends Account$focusModesArgs<ExtArgs> = {}>(args?: Subset<T, Account$focusModesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FocusModePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     goals<T extends Account$goalsArgs<ExtArgs> = {}>(args?: Subset<T, Account$goalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    labels<T extends Account$labelsArgs<ExtArgs> = {}>(args?: Subset<T, Account$labelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    goalLabels<T extends Account$goalLabelsArgs<ExtArgs> = {}>(args?: Subset<T, Account$goalLabelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    taskLabels<T extends Account$taskLabelsArgs<ExtArgs> = {}>(args?: Subset<T, Account$taskLabelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     goalFolders<T extends Account$goalFoldersArgs<ExtArgs> = {}>(args?: Subset<T, Account$goalFoldersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalFolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     reminderGroups<T extends Account$reminderGroupsArgs<ExtArgs> = {}>(args?: Subset<T, Account$reminderGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReminderGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     reminderTemplates<T extends Account$reminderTemplatesArgs<ExtArgs> = {}>(args?: Subset<T, Account$reminderTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReminderTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11008,6 +11482,7 @@ export namespace Prisma {
     repositoryStatistics<T extends Account$repositoryStatisticsArgs<ExtArgs> = {}>(args?: Subset<T, Account$repositoryStatisticsArgs<ExtArgs>>): Prisma__RepositoryStatisticClient<$Result.GetResult<Prisma.$RepositoryStatisticPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     schedules<T extends Account$schedulesArgs<ExtArgs> = {}>(args?: Subset<T, Account$schedulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchedulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     scheduleTasks<T extends Account$scheduleTasksArgs<ExtArgs> = {}>(args?: Subset<T, Account$scheduleTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    schedulingReconcileOperations<T extends Account$schedulingReconcileOperationsArgs<ExtArgs> = {}>(args?: Subset<T, Account$schedulingReconcileOperationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     scheduleStatistics<T extends Account$scheduleStatisticsArgs<ExtArgs> = {}>(args?: Subset<T, Account$scheduleStatisticsArgs<ExtArgs>>): Prisma__ScheduleStatisticClient<$Result.GetResult<Prisma.$ScheduleStatisticPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     habits<T extends Account$habitsArgs<ExtArgs> = {}>(args?: Subset<T, Account$habitsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HabitPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     relations<T extends Account$relationsArgs<ExtArgs> = {}>(args?: Subset<T, Account$relationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11656,6 +12131,78 @@ export namespace Prisma {
   }
 
   /**
+   * Account.labels
+   */
+  export type Account$labelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    where?: LabelWhereInput
+    orderBy?: LabelOrderByWithRelationInput | LabelOrderByWithRelationInput[]
+    cursor?: LabelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LabelScalarFieldEnum | LabelScalarFieldEnum[]
+  }
+
+  /**
+   * Account.goalLabels
+   */
+  export type Account$goalLabelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    where?: GoalLabelWhereInput
+    orderBy?: GoalLabelOrderByWithRelationInput | GoalLabelOrderByWithRelationInput[]
+    cursor?: GoalLabelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GoalLabelScalarFieldEnum | GoalLabelScalarFieldEnum[]
+  }
+
+  /**
+   * Account.taskLabels
+   */
+  export type Account$taskLabelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    where?: TaskLabelWhereInput
+    orderBy?: TaskLabelOrderByWithRelationInput | TaskLabelOrderByWithRelationInput[]
+    cursor?: TaskLabelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskLabelScalarFieldEnum | TaskLabelScalarFieldEnum[]
+  }
+
+  /**
    * Account.goalFolders
    */
   export type Account$goalFoldersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11902,6 +12449,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ScheduleTaskScalarFieldEnum | ScheduleTaskScalarFieldEnum[]
+  }
+
+  /**
+   * Account.schedulingReconcileOperations
+   */
+  export type Account$schedulingReconcileOperationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    where?: SchedulingReconcileOperationWhereInput
+    orderBy?: SchedulingReconcileOperationOrderByWithRelationInput | SchedulingReconcileOperationOrderByWithRelationInput[]
+    cursor?: SchedulingReconcileOperationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SchedulingReconcileOperationScalarFieldEnum | SchedulingReconcileOperationScalarFieldEnum[]
   }
 
   /**
@@ -34299,6 +34870,7 @@ export namespace Prisma {
     reviews?: boolean | Goal$reviewsArgs<ExtArgs>
     keyResultWeightSnapshots?: boolean | Goal$keyResultWeightSnapshotsArgs<ExtArgs>
     focusSessions?: boolean | Goal$focusSessionsArgs<ExtArgs>
+    labelLinks?: boolean | Goal$labelLinksArgs<ExtArgs>
     _count?: boolean | GoalCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["goal"]>
 
@@ -34402,6 +34974,7 @@ export namespace Prisma {
     reviews?: boolean | Goal$reviewsArgs<ExtArgs>
     keyResultWeightSnapshots?: boolean | Goal$keyResultWeightSnapshotsArgs<ExtArgs>
     focusSessions?: boolean | Goal$focusSessionsArgs<ExtArgs>
+    labelLinks?: boolean | Goal$labelLinksArgs<ExtArgs>
     _count?: boolean | GoalCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GoalIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -34438,6 +35011,7 @@ export namespace Prisma {
        * 专注会话记录（一对多，级联删除）
        */
       focusSessions: Prisma.$FocusSessionPayload<ExtArgs>[]
+      labelLinks: Prisma.$GoalLabelPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -34924,6 +35498,7 @@ export namespace Prisma {
     reviews<T extends Goal$reviewsArgs<ExtArgs> = {}>(args?: Subset<T, Goal$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     keyResultWeightSnapshots<T extends Goal$keyResultWeightSnapshotsArgs<ExtArgs> = {}>(args?: Subset<T, Goal$keyResultWeightSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeyResultWeightSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     focusSessions<T extends Goal$focusSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Goal$focusSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FocusSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    labelLinks<T extends Goal$labelLinksArgs<ExtArgs> = {}>(args?: Subset<T, Goal$labelLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -35534,6 +36109,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FocusSessionScalarFieldEnum | FocusSessionScalarFieldEnum[]
+  }
+
+  /**
+   * Goal.labelLinks
+   */
+  export type Goal$labelLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    where?: GoalLabelWhereInput
+    orderBy?: GoalLabelOrderByWithRelationInput | GoalLabelOrderByWithRelationInput[]
+    cursor?: GoalLabelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GoalLabelScalarFieldEnum | GoalLabelScalarFieldEnum[]
   }
 
   /**
@@ -51276,6 +51875,3259 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: HabitStreakProjectionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Label
+   */
+
+  export type AggregateLabel = {
+    _count: LabelCountAggregateOutputType | null
+    _min: LabelMinAggregateOutputType | null
+    _max: LabelMaxAggregateOutputType | null
+  }
+
+  export type LabelMinAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    name: string | null
+    normalizedName: string | null
+    color: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LabelMaxAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    name: string | null
+    normalizedName: string | null
+    color: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LabelCountAggregateOutputType = {
+    id: number
+    identityId: number
+    name: number
+    normalizedName: number
+    color: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LabelMinAggregateInputType = {
+    id?: true
+    identityId?: true
+    name?: true
+    normalizedName?: true
+    color?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LabelMaxAggregateInputType = {
+    id?: true
+    identityId?: true
+    name?: true
+    normalizedName?: true
+    color?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LabelCountAggregateInputType = {
+    id?: true
+    identityId?: true
+    name?: true
+    normalizedName?: true
+    color?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LabelAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Label to aggregate.
+     */
+    where?: LabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Labels to fetch.
+     */
+    orderBy?: LabelOrderByWithRelationInput | LabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: LabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Labels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Labels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Labels
+    **/
+    _count?: true | LabelCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: LabelMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: LabelMaxAggregateInputType
+  }
+
+  export type GetLabelAggregateType<T extends LabelAggregateArgs> = {
+        [P in keyof T & keyof AggregateLabel]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLabel[P]>
+      : GetScalarType<T[P], AggregateLabel[P]>
+  }
+
+
+
+
+  export type LabelGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LabelWhereInput
+    orderBy?: LabelOrderByWithAggregationInput | LabelOrderByWithAggregationInput[]
+    by: LabelScalarFieldEnum[] | LabelScalarFieldEnum
+    having?: LabelScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LabelCountAggregateInputType | true
+    _min?: LabelMinAggregateInputType
+    _max?: LabelMaxAggregateInputType
+  }
+
+  export type LabelGroupByOutputType = {
+    id: string
+    identityId: string
+    name: string
+    normalizedName: string
+    color: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: LabelCountAggregateOutputType | null
+    _min: LabelMinAggregateOutputType | null
+    _max: LabelMaxAggregateOutputType | null
+  }
+
+  type GetLabelGroupByPayload<T extends LabelGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LabelGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LabelGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LabelGroupByOutputType[P]>
+            : GetScalarType<T[P], LabelGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LabelSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    name?: boolean
+    normalizedName?: boolean
+    color?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    goalLinks?: boolean | Label$goalLinksArgs<ExtArgs>
+    taskLinks?: boolean | Label$taskLinksArgs<ExtArgs>
+    _count?: boolean | LabelCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["label"]>
+
+  export type LabelSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    name?: boolean
+    normalizedName?: boolean
+    color?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["label"]>
+
+  export type LabelSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    name?: boolean
+    normalizedName?: boolean
+    color?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["label"]>
+
+  export type LabelSelectScalar = {
+    id?: boolean
+    identityId?: boolean
+    name?: boolean
+    normalizedName?: boolean
+    color?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LabelOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "name" | "normalizedName" | "color" | "createdAt" | "updatedAt", ExtArgs["result"]["label"]>
+  export type LabelInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    goalLinks?: boolean | Label$goalLinksArgs<ExtArgs>
+    taskLinks?: boolean | Label$taskLinksArgs<ExtArgs>
+    _count?: boolean | LabelCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type LabelIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type LabelIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+
+  export type $LabelPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Label"
+    objects: {
+      account: Prisma.$AccountPayload<ExtArgs>
+      goalLinks: Prisma.$GoalLabelPayload<ExtArgs>[]
+      taskLinks: Prisma.$TaskLabelPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      identityId: string
+      name: string
+      normalizedName: string
+      color: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["label"]>
+    composites: {}
+  }
+
+  type LabelGetPayload<S extends boolean | null | undefined | LabelDefaultArgs> = $Result.GetResult<Prisma.$LabelPayload, S>
+
+  type LabelCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LabelFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LabelCountAggregateInputType | true
+    }
+
+  export interface LabelDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Label'], meta: { name: 'Label' } }
+    /**
+     * Find zero or one Label that matches the filter.
+     * @param {LabelFindUniqueArgs} args - Arguments to find a Label
+     * @example
+     * // Get one Label
+     * const label = await prisma.label.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LabelFindUniqueArgs>(args: SelectSubset<T, LabelFindUniqueArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Label that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LabelFindUniqueOrThrowArgs} args - Arguments to find a Label
+     * @example
+     * // Get one Label
+     * const label = await prisma.label.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LabelFindUniqueOrThrowArgs>(args: SelectSubset<T, LabelFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Label that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LabelFindFirstArgs} args - Arguments to find a Label
+     * @example
+     * // Get one Label
+     * const label = await prisma.label.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LabelFindFirstArgs>(args?: SelectSubset<T, LabelFindFirstArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Label that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LabelFindFirstOrThrowArgs} args - Arguments to find a Label
+     * @example
+     * // Get one Label
+     * const label = await prisma.label.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LabelFindFirstOrThrowArgs>(args?: SelectSubset<T, LabelFindFirstOrThrowArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Labels that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LabelFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Labels
+     * const labels = await prisma.label.findMany()
+     *
+     * // Get first 10 Labels
+     * const labels = await prisma.label.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const labelWithIdOnly = await prisma.label.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends LabelFindManyArgs>(args?: SelectSubset<T, LabelFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Label.
+     * @param {LabelCreateArgs} args - Arguments to create a Label.
+     * @example
+     * // Create one Label
+     * const Label = await prisma.label.create({
+     *   data: {
+     *     // ... data to create a Label
+     *   }
+     * })
+     *
+     */
+    create<T extends LabelCreateArgs>(args: SelectSubset<T, LabelCreateArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Labels.
+     * @param {LabelCreateManyArgs} args - Arguments to create many Labels.
+     * @example
+     * // Create many Labels
+     * const label = await prisma.label.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends LabelCreateManyArgs>(args?: SelectSubset<T, LabelCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Labels and returns the data saved in the database.
+     * @param {LabelCreateManyAndReturnArgs} args - Arguments to create many Labels.
+     * @example
+     * // Create many Labels
+     * const label = await prisma.label.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Labels and only return the `id`
+     * const labelWithIdOnly = await prisma.label.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends LabelCreateManyAndReturnArgs>(args?: SelectSubset<T, LabelCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Label.
+     * @param {LabelDeleteArgs} args - Arguments to delete one Label.
+     * @example
+     * // Delete one Label
+     * const Label = await prisma.label.delete({
+     *   where: {
+     *     // ... filter to delete one Label
+     *   }
+     * })
+     *
+     */
+    delete<T extends LabelDeleteArgs>(args: SelectSubset<T, LabelDeleteArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Label.
+     * @param {LabelUpdateArgs} args - Arguments to update one Label.
+     * @example
+     * // Update one Label
+     * const label = await prisma.label.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends LabelUpdateArgs>(args: SelectSubset<T, LabelUpdateArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Labels.
+     * @param {LabelDeleteManyArgs} args - Arguments to filter Labels to delete.
+     * @example
+     * // Delete a few Labels
+     * const { count } = await prisma.label.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends LabelDeleteManyArgs>(args?: SelectSubset<T, LabelDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Labels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LabelUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Labels
+     * const label = await prisma.label.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends LabelUpdateManyArgs>(args: SelectSubset<T, LabelUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Labels and returns the data updated in the database.
+     * @param {LabelUpdateManyAndReturnArgs} args - Arguments to update many Labels.
+     * @example
+     * // Update many Labels
+     * const label = await prisma.label.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Labels and only return the `id`
+     * const labelWithIdOnly = await prisma.label.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends LabelUpdateManyAndReturnArgs>(args: SelectSubset<T, LabelUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Label.
+     * @param {LabelUpsertArgs} args - Arguments to update or create a Label.
+     * @example
+     * // Update or create a Label
+     * const label = await prisma.label.upsert({
+     *   create: {
+     *     // ... data to create a Label
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Label we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LabelUpsertArgs>(args: SelectSubset<T, LabelUpsertArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Labels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LabelCountArgs} args - Arguments to filter Labels to count.
+     * @example
+     * // Count the number of Labels
+     * const count = await prisma.label.count({
+     *   where: {
+     *     // ... the filter for the Labels we want to count
+     *   }
+     * })
+    **/
+    count<T extends LabelCountArgs>(
+      args?: Subset<T, LabelCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LabelCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Label.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LabelAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LabelAggregateArgs>(args: Subset<T, LabelAggregateArgs>): Prisma.PrismaPromise<GetLabelAggregateType<T>>
+
+    /**
+     * Group by Label.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LabelGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<
+      T extends LabelGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LabelGroupByArgs['orderBy'] }
+        : { orderBy?: LabelGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LabelGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLabelGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Label model
+   */
+  readonly fields: LabelFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Label.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LabelClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    goalLinks<T extends Label$goalLinksArgs<ExtArgs> = {}>(args?: Subset<T, Label$goalLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    taskLinks<T extends Label$taskLinksArgs<ExtArgs> = {}>(args?: Subset<T, Label$taskLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Label model
+   */
+  interface LabelFieldRefs {
+    readonly id: FieldRef<"Label", 'String'>
+    readonly identityId: FieldRef<"Label", 'String'>
+    readonly name: FieldRef<"Label", 'String'>
+    readonly normalizedName: FieldRef<"Label", 'String'>
+    readonly color: FieldRef<"Label", 'String'>
+    readonly createdAt: FieldRef<"Label", 'DateTime'>
+    readonly updatedAt: FieldRef<"Label", 'DateTime'>
+  }
+
+
+  // Custom InputTypes
+  /**
+   * Label findUnique
+   */
+  export type LabelFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * Filter, which Label to fetch.
+     */
+    where: LabelWhereUniqueInput
+  }
+
+  /**
+   * Label findUniqueOrThrow
+   */
+  export type LabelFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * Filter, which Label to fetch.
+     */
+    where: LabelWhereUniqueInput
+  }
+
+  /**
+   * Label findFirst
+   */
+  export type LabelFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * Filter, which Label to fetch.
+     */
+    where?: LabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Labels to fetch.
+     */
+    orderBy?: LabelOrderByWithRelationInput | LabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Labels.
+     */
+    cursor?: LabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Labels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Labels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Labels.
+     */
+    distinct?: LabelScalarFieldEnum | LabelScalarFieldEnum[]
+  }
+
+  /**
+   * Label findFirstOrThrow
+   */
+  export type LabelFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * Filter, which Label to fetch.
+     */
+    where?: LabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Labels to fetch.
+     */
+    orderBy?: LabelOrderByWithRelationInput | LabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Labels.
+     */
+    cursor?: LabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Labels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Labels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Labels.
+     */
+    distinct?: LabelScalarFieldEnum | LabelScalarFieldEnum[]
+  }
+
+  /**
+   * Label findMany
+   */
+  export type LabelFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * Filter, which Labels to fetch.
+     */
+    where?: LabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Labels to fetch.
+     */
+    orderBy?: LabelOrderByWithRelationInput | LabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Labels.
+     */
+    cursor?: LabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Labels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Labels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Labels.
+     */
+    distinct?: LabelScalarFieldEnum | LabelScalarFieldEnum[]
+  }
+
+  /**
+   * Label create
+   */
+  export type LabelCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Label.
+     */
+    data: XOR<LabelCreateInput, LabelUncheckedCreateInput>
+  }
+
+  /**
+   * Label createMany
+   */
+  export type LabelCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Labels.
+     */
+    data: LabelCreateManyInput | LabelCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Label createManyAndReturn
+   */
+  export type LabelCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * The data used to create many Labels.
+     */
+    data: LabelCreateManyInput | LabelCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Label update
+   */
+  export type LabelUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Label.
+     */
+    data: XOR<LabelUpdateInput, LabelUncheckedUpdateInput>
+    /**
+     * Choose, which Label to update.
+     */
+    where: LabelWhereUniqueInput
+  }
+
+  /**
+   * Label updateMany
+   */
+  export type LabelUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Labels.
+     */
+    data: XOR<LabelUpdateManyMutationInput, LabelUncheckedUpdateManyInput>
+    /**
+     * Filter which Labels to update
+     */
+    where?: LabelWhereInput
+    /**
+     * Limit how many Labels to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Label updateManyAndReturn
+   */
+  export type LabelUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * The data used to update Labels.
+     */
+    data: XOR<LabelUpdateManyMutationInput, LabelUncheckedUpdateManyInput>
+    /**
+     * Filter which Labels to update
+     */
+    where?: LabelWhereInput
+    /**
+     * Limit how many Labels to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Label upsert
+   */
+  export type LabelUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Label to update in case it exists.
+     */
+    where: LabelWhereUniqueInput
+    /**
+     * In case the Label found by the `where` argument doesn't exist, create a new Label with this data.
+     */
+    create: XOR<LabelCreateInput, LabelUncheckedCreateInput>
+    /**
+     * In case the Label was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LabelUpdateInput, LabelUncheckedUpdateInput>
+  }
+
+  /**
+   * Label delete
+   */
+  export type LabelDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+    /**
+     * Filter which Label to delete.
+     */
+    where: LabelWhereUniqueInput
+  }
+
+  /**
+   * Label deleteMany
+   */
+  export type LabelDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Labels to delete
+     */
+    where?: LabelWhereInput
+    /**
+     * Limit how many Labels to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Label.goalLinks
+   */
+  export type Label$goalLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    where?: GoalLabelWhereInput
+    orderBy?: GoalLabelOrderByWithRelationInput | GoalLabelOrderByWithRelationInput[]
+    cursor?: GoalLabelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GoalLabelScalarFieldEnum | GoalLabelScalarFieldEnum[]
+  }
+
+  /**
+   * Label.taskLinks
+   */
+  export type Label$taskLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    where?: TaskLabelWhereInput
+    orderBy?: TaskLabelOrderByWithRelationInput | TaskLabelOrderByWithRelationInput[]
+    cursor?: TaskLabelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskLabelScalarFieldEnum | TaskLabelScalarFieldEnum[]
+  }
+
+  /**
+   * Label without action
+   */
+  export type LabelDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Label
+     */
+    select?: LabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Label
+     */
+    omit?: LabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LabelInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model GoalLabel
+   */
+
+  export type AggregateGoalLabel = {
+    _count: GoalLabelCountAggregateOutputType | null
+    _min: GoalLabelMinAggregateOutputType | null
+    _max: GoalLabelMaxAggregateOutputType | null
+  }
+
+  export type GoalLabelMinAggregateOutputType = {
+    identityId: string | null
+    goalId: string | null
+    labelId: string | null
+  }
+
+  export type GoalLabelMaxAggregateOutputType = {
+    identityId: string | null
+    goalId: string | null
+    labelId: string | null
+  }
+
+  export type GoalLabelCountAggregateOutputType = {
+    identityId: number
+    goalId: number
+    labelId: number
+    _all: number
+  }
+
+
+  export type GoalLabelMinAggregateInputType = {
+    identityId?: true
+    goalId?: true
+    labelId?: true
+  }
+
+  export type GoalLabelMaxAggregateInputType = {
+    identityId?: true
+    goalId?: true
+    labelId?: true
+  }
+
+  export type GoalLabelCountAggregateInputType = {
+    identityId?: true
+    goalId?: true
+    labelId?: true
+    _all?: true
+  }
+
+  export type GoalLabelAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GoalLabel to aggregate.
+     */
+    where?: GoalLabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GoalLabels to fetch.
+     */
+    orderBy?: GoalLabelOrderByWithRelationInput | GoalLabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: GoalLabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GoalLabels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GoalLabels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned GoalLabels
+    **/
+    _count?: true | GoalLabelCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: GoalLabelMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: GoalLabelMaxAggregateInputType
+  }
+
+  export type GetGoalLabelAggregateType<T extends GoalLabelAggregateArgs> = {
+        [P in keyof T & keyof AggregateGoalLabel]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGoalLabel[P]>
+      : GetScalarType<T[P], AggregateGoalLabel[P]>
+  }
+
+
+
+
+  export type GoalLabelGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoalLabelWhereInput
+    orderBy?: GoalLabelOrderByWithAggregationInput | GoalLabelOrderByWithAggregationInput[]
+    by: GoalLabelScalarFieldEnum[] | GoalLabelScalarFieldEnum
+    having?: GoalLabelScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GoalLabelCountAggregateInputType | true
+    _min?: GoalLabelMinAggregateInputType
+    _max?: GoalLabelMaxAggregateInputType
+  }
+
+  export type GoalLabelGroupByOutputType = {
+    identityId: string
+    goalId: string
+    labelId: string
+    _count: GoalLabelCountAggregateOutputType | null
+    _min: GoalLabelMinAggregateOutputType | null
+    _max: GoalLabelMaxAggregateOutputType | null
+  }
+
+  type GetGoalLabelGroupByPayload<T extends GoalLabelGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GoalLabelGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GoalLabelGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GoalLabelGroupByOutputType[P]>
+            : GetScalarType<T[P], GoalLabelGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GoalLabelSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    identityId?: boolean
+    goalId?: boolean
+    labelId?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goalLabel"]>
+
+  export type GoalLabelSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    identityId?: boolean
+    goalId?: boolean
+    labelId?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goalLabel"]>
+
+  export type GoalLabelSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    identityId?: boolean
+    goalId?: boolean
+    labelId?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goalLabel"]>
+
+  export type GoalLabelSelectScalar = {
+    identityId?: boolean
+    goalId?: boolean
+    labelId?: boolean
+  }
+
+  export type GoalLabelOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"identityId" | "goalId" | "labelId", ExtArgs["result"]["goalLabel"]>
+  export type GoalLabelInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }
+  export type GoalLabelIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }
+  export type GoalLabelIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }
+
+  export type $GoalLabelPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GoalLabel"
+    objects: {
+      account: Prisma.$AccountPayload<ExtArgs>
+      goal: Prisma.$GoalPayload<ExtArgs>
+      label: Prisma.$LabelPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      identityId: string
+      goalId: string
+      labelId: string
+    }, ExtArgs["result"]["goalLabel"]>
+    composites: {}
+  }
+
+  type GoalLabelGetPayload<S extends boolean | null | undefined | GoalLabelDefaultArgs> = $Result.GetResult<Prisma.$GoalLabelPayload, S>
+
+  type GoalLabelCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GoalLabelFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GoalLabelCountAggregateInputType | true
+    }
+
+  export interface GoalLabelDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GoalLabel'], meta: { name: 'GoalLabel' } }
+    /**
+     * Find zero or one GoalLabel that matches the filter.
+     * @param {GoalLabelFindUniqueArgs} args - Arguments to find a GoalLabel
+     * @example
+     * // Get one GoalLabel
+     * const goalLabel = await prisma.goalLabel.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GoalLabelFindUniqueArgs>(args: SelectSubset<T, GoalLabelFindUniqueArgs<ExtArgs>>): Prisma__GoalLabelClient<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GoalLabel that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GoalLabelFindUniqueOrThrowArgs} args - Arguments to find a GoalLabel
+     * @example
+     * // Get one GoalLabel
+     * const goalLabel = await prisma.goalLabel.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GoalLabelFindUniqueOrThrowArgs>(args: SelectSubset<T, GoalLabelFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GoalLabelClient<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GoalLabel that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalLabelFindFirstArgs} args - Arguments to find a GoalLabel
+     * @example
+     * // Get one GoalLabel
+     * const goalLabel = await prisma.goalLabel.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GoalLabelFindFirstArgs>(args?: SelectSubset<T, GoalLabelFindFirstArgs<ExtArgs>>): Prisma__GoalLabelClient<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GoalLabel that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalLabelFindFirstOrThrowArgs} args - Arguments to find a GoalLabel
+     * @example
+     * // Get one GoalLabel
+     * const goalLabel = await prisma.goalLabel.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GoalLabelFindFirstOrThrowArgs>(args?: SelectSubset<T, GoalLabelFindFirstOrThrowArgs<ExtArgs>>): Prisma__GoalLabelClient<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GoalLabels that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalLabelFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GoalLabels
+     * const goalLabels = await prisma.goalLabel.findMany()
+     *
+     * // Get first 10 GoalLabels
+     * const goalLabels = await prisma.goalLabel.findMany({ take: 10 })
+     *
+     * // Only select the `identityId`
+     * const goalLabelWithIdentityIdOnly = await prisma.goalLabel.findMany({ select: { identityId: true } })
+     *
+     */
+    findMany<T extends GoalLabelFindManyArgs>(args?: SelectSubset<T, GoalLabelFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GoalLabel.
+     * @param {GoalLabelCreateArgs} args - Arguments to create a GoalLabel.
+     * @example
+     * // Create one GoalLabel
+     * const GoalLabel = await prisma.goalLabel.create({
+     *   data: {
+     *     // ... data to create a GoalLabel
+     *   }
+     * })
+     *
+     */
+    create<T extends GoalLabelCreateArgs>(args: SelectSubset<T, GoalLabelCreateArgs<ExtArgs>>): Prisma__GoalLabelClient<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GoalLabels.
+     * @param {GoalLabelCreateManyArgs} args - Arguments to create many GoalLabels.
+     * @example
+     * // Create many GoalLabels
+     * const goalLabel = await prisma.goalLabel.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends GoalLabelCreateManyArgs>(args?: SelectSubset<T, GoalLabelCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GoalLabels and returns the data saved in the database.
+     * @param {GoalLabelCreateManyAndReturnArgs} args - Arguments to create many GoalLabels.
+     * @example
+     * // Create many GoalLabels
+     * const goalLabel = await prisma.goalLabel.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many GoalLabels and only return the `identityId`
+     * const goalLabelWithIdentityIdOnly = await prisma.goalLabel.createManyAndReturn({
+     *   select: { identityId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends GoalLabelCreateManyAndReturnArgs>(args?: SelectSubset<T, GoalLabelCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a GoalLabel.
+     * @param {GoalLabelDeleteArgs} args - Arguments to delete one GoalLabel.
+     * @example
+     * // Delete one GoalLabel
+     * const GoalLabel = await prisma.goalLabel.delete({
+     *   where: {
+     *     // ... filter to delete one GoalLabel
+     *   }
+     * })
+     *
+     */
+    delete<T extends GoalLabelDeleteArgs>(args: SelectSubset<T, GoalLabelDeleteArgs<ExtArgs>>): Prisma__GoalLabelClient<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GoalLabel.
+     * @param {GoalLabelUpdateArgs} args - Arguments to update one GoalLabel.
+     * @example
+     * // Update one GoalLabel
+     * const goalLabel = await prisma.goalLabel.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends GoalLabelUpdateArgs>(args: SelectSubset<T, GoalLabelUpdateArgs<ExtArgs>>): Prisma__GoalLabelClient<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GoalLabels.
+     * @param {GoalLabelDeleteManyArgs} args - Arguments to filter GoalLabels to delete.
+     * @example
+     * // Delete a few GoalLabels
+     * const { count } = await prisma.goalLabel.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends GoalLabelDeleteManyArgs>(args?: SelectSubset<T, GoalLabelDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GoalLabels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalLabelUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GoalLabels
+     * const goalLabel = await prisma.goalLabel.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends GoalLabelUpdateManyArgs>(args: SelectSubset<T, GoalLabelUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GoalLabels and returns the data updated in the database.
+     * @param {GoalLabelUpdateManyAndReturnArgs} args - Arguments to update many GoalLabels.
+     * @example
+     * // Update many GoalLabels
+     * const goalLabel = await prisma.goalLabel.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more GoalLabels and only return the `identityId`
+     * const goalLabelWithIdentityIdOnly = await prisma.goalLabel.updateManyAndReturn({
+     *   select: { identityId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends GoalLabelUpdateManyAndReturnArgs>(args: SelectSubset<T, GoalLabelUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one GoalLabel.
+     * @param {GoalLabelUpsertArgs} args - Arguments to update or create a GoalLabel.
+     * @example
+     * // Update or create a GoalLabel
+     * const goalLabel = await prisma.goalLabel.upsert({
+     *   create: {
+     *     // ... data to create a GoalLabel
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GoalLabel we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GoalLabelUpsertArgs>(args: SelectSubset<T, GoalLabelUpsertArgs<ExtArgs>>): Prisma__GoalLabelClient<$Result.GetResult<Prisma.$GoalLabelPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of GoalLabels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalLabelCountArgs} args - Arguments to filter GoalLabels to count.
+     * @example
+     * // Count the number of GoalLabels
+     * const count = await prisma.goalLabel.count({
+     *   where: {
+     *     // ... the filter for the GoalLabels we want to count
+     *   }
+     * })
+    **/
+    count<T extends GoalLabelCountArgs>(
+      args?: Subset<T, GoalLabelCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GoalLabelCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GoalLabel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalLabelAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GoalLabelAggregateArgs>(args: Subset<T, GoalLabelAggregateArgs>): Prisma.PrismaPromise<GetGoalLabelAggregateType<T>>
+
+    /**
+     * Group by GoalLabel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalLabelGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<
+      T extends GoalLabelGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GoalLabelGroupByArgs['orderBy'] }
+        : { orderBy?: GoalLabelGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GoalLabelGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGoalLabelGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GoalLabel model
+   */
+  readonly fields: GoalLabelFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GoalLabel.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GoalLabelClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    goal<T extends GoalDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GoalDefaultArgs<ExtArgs>>): Prisma__GoalClient<$Result.GetResult<Prisma.$GoalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    label<T extends LabelDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LabelDefaultArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GoalLabel model
+   */
+  interface GoalLabelFieldRefs {
+    readonly identityId: FieldRef<"GoalLabel", 'String'>
+    readonly goalId: FieldRef<"GoalLabel", 'String'>
+    readonly labelId: FieldRef<"GoalLabel", 'String'>
+  }
+
+
+  // Custom InputTypes
+  /**
+   * GoalLabel findUnique
+   */
+  export type GoalLabelFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalLabel to fetch.
+     */
+    where: GoalLabelWhereUniqueInput
+  }
+
+  /**
+   * GoalLabel findUniqueOrThrow
+   */
+  export type GoalLabelFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalLabel to fetch.
+     */
+    where: GoalLabelWhereUniqueInput
+  }
+
+  /**
+   * GoalLabel findFirst
+   */
+  export type GoalLabelFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalLabel to fetch.
+     */
+    where?: GoalLabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GoalLabels to fetch.
+     */
+    orderBy?: GoalLabelOrderByWithRelationInput | GoalLabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for GoalLabels.
+     */
+    cursor?: GoalLabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GoalLabels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GoalLabels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of GoalLabels.
+     */
+    distinct?: GoalLabelScalarFieldEnum | GoalLabelScalarFieldEnum[]
+  }
+
+  /**
+   * GoalLabel findFirstOrThrow
+   */
+  export type GoalLabelFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalLabel to fetch.
+     */
+    where?: GoalLabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GoalLabels to fetch.
+     */
+    orderBy?: GoalLabelOrderByWithRelationInput | GoalLabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for GoalLabels.
+     */
+    cursor?: GoalLabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GoalLabels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GoalLabels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of GoalLabels.
+     */
+    distinct?: GoalLabelScalarFieldEnum | GoalLabelScalarFieldEnum[]
+  }
+
+  /**
+   * GoalLabel findMany
+   */
+  export type GoalLabelFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalLabels to fetch.
+     */
+    where?: GoalLabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GoalLabels to fetch.
+     */
+    orderBy?: GoalLabelOrderByWithRelationInput | GoalLabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing GoalLabels.
+     */
+    cursor?: GoalLabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GoalLabels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GoalLabels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of GoalLabels.
+     */
+    distinct?: GoalLabelScalarFieldEnum | GoalLabelScalarFieldEnum[]
+  }
+
+  /**
+   * GoalLabel create
+   */
+  export type GoalLabelCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GoalLabel.
+     */
+    data: XOR<GoalLabelCreateInput, GoalLabelUncheckedCreateInput>
+  }
+
+  /**
+   * GoalLabel createMany
+   */
+  export type GoalLabelCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GoalLabels.
+     */
+    data: GoalLabelCreateManyInput | GoalLabelCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GoalLabel createManyAndReturn
+   */
+  export type GoalLabelCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * The data used to create many GoalLabels.
+     */
+    data: GoalLabelCreateManyInput | GoalLabelCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GoalLabel update
+   */
+  export type GoalLabelUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GoalLabel.
+     */
+    data: XOR<GoalLabelUpdateInput, GoalLabelUncheckedUpdateInput>
+    /**
+     * Choose, which GoalLabel to update.
+     */
+    where: GoalLabelWhereUniqueInput
+  }
+
+  /**
+   * GoalLabel updateMany
+   */
+  export type GoalLabelUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GoalLabels.
+     */
+    data: XOR<GoalLabelUpdateManyMutationInput, GoalLabelUncheckedUpdateManyInput>
+    /**
+     * Filter which GoalLabels to update
+     */
+    where?: GoalLabelWhereInput
+    /**
+     * Limit how many GoalLabels to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GoalLabel updateManyAndReturn
+   */
+  export type GoalLabelUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * The data used to update GoalLabels.
+     */
+    data: XOR<GoalLabelUpdateManyMutationInput, GoalLabelUncheckedUpdateManyInput>
+    /**
+     * Filter which GoalLabels to update
+     */
+    where?: GoalLabelWhereInput
+    /**
+     * Limit how many GoalLabels to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GoalLabel upsert
+   */
+  export type GoalLabelUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GoalLabel to update in case it exists.
+     */
+    where: GoalLabelWhereUniqueInput
+    /**
+     * In case the GoalLabel found by the `where` argument doesn't exist, create a new GoalLabel with this data.
+     */
+    create: XOR<GoalLabelCreateInput, GoalLabelUncheckedCreateInput>
+    /**
+     * In case the GoalLabel was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GoalLabelUpdateInput, GoalLabelUncheckedUpdateInput>
+  }
+
+  /**
+   * GoalLabel delete
+   */
+  export type GoalLabelDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+    /**
+     * Filter which GoalLabel to delete.
+     */
+    where: GoalLabelWhereUniqueInput
+  }
+
+  /**
+   * GoalLabel deleteMany
+   */
+  export type GoalLabelDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GoalLabels to delete
+     */
+    where?: GoalLabelWhereInput
+    /**
+     * Limit how many GoalLabels to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GoalLabel without action
+   */
+  export type GoalLabelDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalLabel
+     */
+    select?: GoalLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalLabel
+     */
+    omit?: GoalLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalLabelInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TaskLabel
+   */
+
+  export type AggregateTaskLabel = {
+    _count: TaskLabelCountAggregateOutputType | null
+    _min: TaskLabelMinAggregateOutputType | null
+    _max: TaskLabelMaxAggregateOutputType | null
+  }
+
+  export type TaskLabelMinAggregateOutputType = {
+    identityId: string | null
+    taskTemplateId: string | null
+    labelId: string | null
+  }
+
+  export type TaskLabelMaxAggregateOutputType = {
+    identityId: string | null
+    taskTemplateId: string | null
+    labelId: string | null
+  }
+
+  export type TaskLabelCountAggregateOutputType = {
+    identityId: number
+    taskTemplateId: number
+    labelId: number
+    _all: number
+  }
+
+
+  export type TaskLabelMinAggregateInputType = {
+    identityId?: true
+    taskTemplateId?: true
+    labelId?: true
+  }
+
+  export type TaskLabelMaxAggregateInputType = {
+    identityId?: true
+    taskTemplateId?: true
+    labelId?: true
+  }
+
+  export type TaskLabelCountAggregateInputType = {
+    identityId?: true
+    taskTemplateId?: true
+    labelId?: true
+    _all?: true
+  }
+
+  export type TaskLabelAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TaskLabel to aggregate.
+     */
+    where?: TaskLabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of TaskLabels to fetch.
+     */
+    orderBy?: TaskLabelOrderByWithRelationInput | TaskLabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: TaskLabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` TaskLabels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` TaskLabels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned TaskLabels
+    **/
+    _count?: true | TaskLabelCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: TaskLabelMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: TaskLabelMaxAggregateInputType
+  }
+
+  export type GetTaskLabelAggregateType<T extends TaskLabelAggregateArgs> = {
+        [P in keyof T & keyof AggregateTaskLabel]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTaskLabel[P]>
+      : GetScalarType<T[P], AggregateTaskLabel[P]>
+  }
+
+
+
+
+  export type TaskLabelGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskLabelWhereInput
+    orderBy?: TaskLabelOrderByWithAggregationInput | TaskLabelOrderByWithAggregationInput[]
+    by: TaskLabelScalarFieldEnum[] | TaskLabelScalarFieldEnum
+    having?: TaskLabelScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TaskLabelCountAggregateInputType | true
+    _min?: TaskLabelMinAggregateInputType
+    _max?: TaskLabelMaxAggregateInputType
+  }
+
+  export type TaskLabelGroupByOutputType = {
+    identityId: string
+    taskTemplateId: string
+    labelId: string
+    _count: TaskLabelCountAggregateOutputType | null
+    _min: TaskLabelMinAggregateOutputType | null
+    _max: TaskLabelMaxAggregateOutputType | null
+  }
+
+  type GetTaskLabelGroupByPayload<T extends TaskLabelGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TaskLabelGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TaskLabelGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TaskLabelGroupByOutputType[P]>
+            : GetScalarType<T[P], TaskLabelGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TaskLabelSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    identityId?: boolean
+    taskTemplateId?: boolean
+    labelId?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    taskTemplate?: boolean | TaskTemplateDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taskLabel"]>
+
+  export type TaskLabelSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    identityId?: boolean
+    taskTemplateId?: boolean
+    labelId?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    taskTemplate?: boolean | TaskTemplateDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taskLabel"]>
+
+  export type TaskLabelSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    identityId?: boolean
+    taskTemplateId?: boolean
+    labelId?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    taskTemplate?: boolean | TaskTemplateDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taskLabel"]>
+
+  export type TaskLabelSelectScalar = {
+    identityId?: boolean
+    taskTemplateId?: boolean
+    labelId?: boolean
+  }
+
+  export type TaskLabelOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"identityId" | "taskTemplateId" | "labelId", ExtArgs["result"]["taskLabel"]>
+  export type TaskLabelInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    taskTemplate?: boolean | TaskTemplateDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }
+  export type TaskLabelIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    taskTemplate?: boolean | TaskTemplateDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }
+  export type TaskLabelIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    taskTemplate?: boolean | TaskTemplateDefaultArgs<ExtArgs>
+    label?: boolean | LabelDefaultArgs<ExtArgs>
+  }
+
+  export type $TaskLabelPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TaskLabel"
+    objects: {
+      account: Prisma.$AccountPayload<ExtArgs>
+      taskTemplate: Prisma.$TaskTemplatePayload<ExtArgs>
+      label: Prisma.$LabelPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      identityId: string
+      taskTemplateId: string
+      labelId: string
+    }, ExtArgs["result"]["taskLabel"]>
+    composites: {}
+  }
+
+  type TaskLabelGetPayload<S extends boolean | null | undefined | TaskLabelDefaultArgs> = $Result.GetResult<Prisma.$TaskLabelPayload, S>
+
+  type TaskLabelCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TaskLabelFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TaskLabelCountAggregateInputType | true
+    }
+
+  export interface TaskLabelDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TaskLabel'], meta: { name: 'TaskLabel' } }
+    /**
+     * Find zero or one TaskLabel that matches the filter.
+     * @param {TaskLabelFindUniqueArgs} args - Arguments to find a TaskLabel
+     * @example
+     * // Get one TaskLabel
+     * const taskLabel = await prisma.taskLabel.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TaskLabelFindUniqueArgs>(args: SelectSubset<T, TaskLabelFindUniqueArgs<ExtArgs>>): Prisma__TaskLabelClient<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TaskLabel that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TaskLabelFindUniqueOrThrowArgs} args - Arguments to find a TaskLabel
+     * @example
+     * // Get one TaskLabel
+     * const taskLabel = await prisma.taskLabel.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TaskLabelFindUniqueOrThrowArgs>(args: SelectSubset<T, TaskLabelFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TaskLabelClient<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TaskLabel that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskLabelFindFirstArgs} args - Arguments to find a TaskLabel
+     * @example
+     * // Get one TaskLabel
+     * const taskLabel = await prisma.taskLabel.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TaskLabelFindFirstArgs>(args?: SelectSubset<T, TaskLabelFindFirstArgs<ExtArgs>>): Prisma__TaskLabelClient<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TaskLabel that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskLabelFindFirstOrThrowArgs} args - Arguments to find a TaskLabel
+     * @example
+     * // Get one TaskLabel
+     * const taskLabel = await prisma.taskLabel.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TaskLabelFindFirstOrThrowArgs>(args?: SelectSubset<T, TaskLabelFindFirstOrThrowArgs<ExtArgs>>): Prisma__TaskLabelClient<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TaskLabels that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskLabelFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TaskLabels
+     * const taskLabels = await prisma.taskLabel.findMany()
+     *
+     * // Get first 10 TaskLabels
+     * const taskLabels = await prisma.taskLabel.findMany({ take: 10 })
+     *
+     * // Only select the `identityId`
+     * const taskLabelWithIdentityIdOnly = await prisma.taskLabel.findMany({ select: { identityId: true } })
+     *
+     */
+    findMany<T extends TaskLabelFindManyArgs>(args?: SelectSubset<T, TaskLabelFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TaskLabel.
+     * @param {TaskLabelCreateArgs} args - Arguments to create a TaskLabel.
+     * @example
+     * // Create one TaskLabel
+     * const TaskLabel = await prisma.taskLabel.create({
+     *   data: {
+     *     // ... data to create a TaskLabel
+     *   }
+     * })
+     *
+     */
+    create<T extends TaskLabelCreateArgs>(args: SelectSubset<T, TaskLabelCreateArgs<ExtArgs>>): Prisma__TaskLabelClient<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TaskLabels.
+     * @param {TaskLabelCreateManyArgs} args - Arguments to create many TaskLabels.
+     * @example
+     * // Create many TaskLabels
+     * const taskLabel = await prisma.taskLabel.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends TaskLabelCreateManyArgs>(args?: SelectSubset<T, TaskLabelCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TaskLabels and returns the data saved in the database.
+     * @param {TaskLabelCreateManyAndReturnArgs} args - Arguments to create many TaskLabels.
+     * @example
+     * // Create many TaskLabels
+     * const taskLabel = await prisma.taskLabel.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many TaskLabels and only return the `identityId`
+     * const taskLabelWithIdentityIdOnly = await prisma.taskLabel.createManyAndReturn({
+     *   select: { identityId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends TaskLabelCreateManyAndReturnArgs>(args?: SelectSubset<T, TaskLabelCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a TaskLabel.
+     * @param {TaskLabelDeleteArgs} args - Arguments to delete one TaskLabel.
+     * @example
+     * // Delete one TaskLabel
+     * const TaskLabel = await prisma.taskLabel.delete({
+     *   where: {
+     *     // ... filter to delete one TaskLabel
+     *   }
+     * })
+     *
+     */
+    delete<T extends TaskLabelDeleteArgs>(args: SelectSubset<T, TaskLabelDeleteArgs<ExtArgs>>): Prisma__TaskLabelClient<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TaskLabel.
+     * @param {TaskLabelUpdateArgs} args - Arguments to update one TaskLabel.
+     * @example
+     * // Update one TaskLabel
+     * const taskLabel = await prisma.taskLabel.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends TaskLabelUpdateArgs>(args: SelectSubset<T, TaskLabelUpdateArgs<ExtArgs>>): Prisma__TaskLabelClient<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TaskLabels.
+     * @param {TaskLabelDeleteManyArgs} args - Arguments to filter TaskLabels to delete.
+     * @example
+     * // Delete a few TaskLabels
+     * const { count } = await prisma.taskLabel.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends TaskLabelDeleteManyArgs>(args?: SelectSubset<T, TaskLabelDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TaskLabels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskLabelUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TaskLabels
+     * const taskLabel = await prisma.taskLabel.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends TaskLabelUpdateManyArgs>(args: SelectSubset<T, TaskLabelUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TaskLabels and returns the data updated in the database.
+     * @param {TaskLabelUpdateManyAndReturnArgs} args - Arguments to update many TaskLabels.
+     * @example
+     * // Update many TaskLabels
+     * const taskLabel = await prisma.taskLabel.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more TaskLabels and only return the `identityId`
+     * const taskLabelWithIdentityIdOnly = await prisma.taskLabel.updateManyAndReturn({
+     *   select: { identityId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends TaskLabelUpdateManyAndReturnArgs>(args: SelectSubset<T, TaskLabelUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one TaskLabel.
+     * @param {TaskLabelUpsertArgs} args - Arguments to update or create a TaskLabel.
+     * @example
+     * // Update or create a TaskLabel
+     * const taskLabel = await prisma.taskLabel.upsert({
+     *   create: {
+     *     // ... data to create a TaskLabel
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TaskLabel we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TaskLabelUpsertArgs>(args: SelectSubset<T, TaskLabelUpsertArgs<ExtArgs>>): Prisma__TaskLabelClient<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of TaskLabels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskLabelCountArgs} args - Arguments to filter TaskLabels to count.
+     * @example
+     * // Count the number of TaskLabels
+     * const count = await prisma.taskLabel.count({
+     *   where: {
+     *     // ... the filter for the TaskLabels we want to count
+     *   }
+     * })
+    **/
+    count<T extends TaskLabelCountArgs>(
+      args?: Subset<T, TaskLabelCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TaskLabelCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TaskLabel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskLabelAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TaskLabelAggregateArgs>(args: Subset<T, TaskLabelAggregateArgs>): Prisma.PrismaPromise<GetTaskLabelAggregateType<T>>
+
+    /**
+     * Group by TaskLabel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskLabelGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<
+      T extends TaskLabelGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TaskLabelGroupByArgs['orderBy'] }
+        : { orderBy?: TaskLabelGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TaskLabelGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTaskLabelGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TaskLabel model
+   */
+  readonly fields: TaskLabelFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TaskLabel.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TaskLabelClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    taskTemplate<T extends TaskTemplateDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TaskTemplateDefaultArgs<ExtArgs>>): Prisma__TaskTemplateClient<$Result.GetResult<Prisma.$TaskTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    label<T extends LabelDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LabelDefaultArgs<ExtArgs>>): Prisma__LabelClient<$Result.GetResult<Prisma.$LabelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TaskLabel model
+   */
+  interface TaskLabelFieldRefs {
+    readonly identityId: FieldRef<"TaskLabel", 'String'>
+    readonly taskTemplateId: FieldRef<"TaskLabel", 'String'>
+    readonly labelId: FieldRef<"TaskLabel", 'String'>
+  }
+
+
+  // Custom InputTypes
+  /**
+   * TaskLabel findUnique
+   */
+  export type TaskLabelFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskLabel to fetch.
+     */
+    where: TaskLabelWhereUniqueInput
+  }
+
+  /**
+   * TaskLabel findUniqueOrThrow
+   */
+  export type TaskLabelFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskLabel to fetch.
+     */
+    where: TaskLabelWhereUniqueInput
+  }
+
+  /**
+   * TaskLabel findFirst
+   */
+  export type TaskLabelFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskLabel to fetch.
+     */
+    where?: TaskLabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of TaskLabels to fetch.
+     */
+    orderBy?: TaskLabelOrderByWithRelationInput | TaskLabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for TaskLabels.
+     */
+    cursor?: TaskLabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` TaskLabels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` TaskLabels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of TaskLabels.
+     */
+    distinct?: TaskLabelScalarFieldEnum | TaskLabelScalarFieldEnum[]
+  }
+
+  /**
+   * TaskLabel findFirstOrThrow
+   */
+  export type TaskLabelFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskLabel to fetch.
+     */
+    where?: TaskLabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of TaskLabels to fetch.
+     */
+    orderBy?: TaskLabelOrderByWithRelationInput | TaskLabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for TaskLabels.
+     */
+    cursor?: TaskLabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` TaskLabels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` TaskLabels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of TaskLabels.
+     */
+    distinct?: TaskLabelScalarFieldEnum | TaskLabelScalarFieldEnum[]
+  }
+
+  /**
+   * TaskLabel findMany
+   */
+  export type TaskLabelFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskLabels to fetch.
+     */
+    where?: TaskLabelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of TaskLabels to fetch.
+     */
+    orderBy?: TaskLabelOrderByWithRelationInput | TaskLabelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing TaskLabels.
+     */
+    cursor?: TaskLabelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` TaskLabels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` TaskLabels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of TaskLabels.
+     */
+    distinct?: TaskLabelScalarFieldEnum | TaskLabelScalarFieldEnum[]
+  }
+
+  /**
+   * TaskLabel create
+   */
+  export type TaskLabelCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TaskLabel.
+     */
+    data: XOR<TaskLabelCreateInput, TaskLabelUncheckedCreateInput>
+  }
+
+  /**
+   * TaskLabel createMany
+   */
+  export type TaskLabelCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TaskLabels.
+     */
+    data: TaskLabelCreateManyInput | TaskLabelCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TaskLabel createManyAndReturn
+   */
+  export type TaskLabelCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * The data used to create many TaskLabels.
+     */
+    data: TaskLabelCreateManyInput | TaskLabelCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TaskLabel update
+   */
+  export type TaskLabelUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TaskLabel.
+     */
+    data: XOR<TaskLabelUpdateInput, TaskLabelUncheckedUpdateInput>
+    /**
+     * Choose, which TaskLabel to update.
+     */
+    where: TaskLabelWhereUniqueInput
+  }
+
+  /**
+   * TaskLabel updateMany
+   */
+  export type TaskLabelUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TaskLabels.
+     */
+    data: XOR<TaskLabelUpdateManyMutationInput, TaskLabelUncheckedUpdateManyInput>
+    /**
+     * Filter which TaskLabels to update
+     */
+    where?: TaskLabelWhereInput
+    /**
+     * Limit how many TaskLabels to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TaskLabel updateManyAndReturn
+   */
+  export type TaskLabelUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * The data used to update TaskLabels.
+     */
+    data: XOR<TaskLabelUpdateManyMutationInput, TaskLabelUncheckedUpdateManyInput>
+    /**
+     * Filter which TaskLabels to update
+     */
+    where?: TaskLabelWhereInput
+    /**
+     * Limit how many TaskLabels to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TaskLabel upsert
+   */
+  export type TaskLabelUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TaskLabel to update in case it exists.
+     */
+    where: TaskLabelWhereUniqueInput
+    /**
+     * In case the TaskLabel found by the `where` argument doesn't exist, create a new TaskLabel with this data.
+     */
+    create: XOR<TaskLabelCreateInput, TaskLabelUncheckedCreateInput>
+    /**
+     * In case the TaskLabel was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TaskLabelUpdateInput, TaskLabelUncheckedUpdateInput>
+  }
+
+  /**
+   * TaskLabel delete
+   */
+  export type TaskLabelDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    /**
+     * Filter which TaskLabel to delete.
+     */
+    where: TaskLabelWhereUniqueInput
+  }
+
+  /**
+   * TaskLabel deleteMany
+   */
+  export type TaskLabelDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TaskLabels to delete
+     */
+    where?: TaskLabelWhereInput
+    /**
+     * Limit how many TaskLabels to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TaskLabel without action
+   */
+  export type TaskLabelDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
   }
 
 
@@ -94676,6 +98528,7 @@ export namespace Prisma {
   }
 
   export type ScheduleTaskAvgAggregateOutputType = {
+    payloadVersion: number | null
     maxExecutions: number | null
     executionCount: number | null
     lastExecutionDuration: number | null
@@ -94689,6 +98542,7 @@ export namespace Prisma {
   }
 
   export type ScheduleTaskSumAggregateOutputType = {
+    payloadVersion: number | null
     maxExecutions: number | null
     executionCount: number | null
     lastExecutionDuration: number | null
@@ -94708,6 +98562,12 @@ export namespace Prisma {
     description: string | null
     sourceModule: string | null
     sourceEntityId: string | null
+    schedulingKey: string | null
+    ownerType: string | null
+    ownerId: string | null
+    handlerKey: string | null
+    payloadVersion: number | null
+    sourceRevision: string | null
     status: string | null
     enabled: boolean | null
     cronExpression: string | null
@@ -94743,6 +98603,12 @@ export namespace Prisma {
     description: string | null
     sourceModule: string | null
     sourceEntityId: string | null
+    schedulingKey: string | null
+    ownerType: string | null
+    ownerId: string | null
+    handlerKey: string | null
+    payloadVersion: number | null
+    sourceRevision: string | null
     status: string | null
     enabled: boolean | null
     cronExpression: string | null
@@ -94778,6 +98644,12 @@ export namespace Prisma {
     description: number
     sourceModule: number
     sourceEntityId: number
+    schedulingKey: number
+    ownerType: number
+    ownerId: number
+    handlerKey: number
+    payloadVersion: number
+    sourceRevision: number
     status: number
     enabled: number
     cronExpression: number
@@ -94809,6 +98681,7 @@ export namespace Prisma {
 
 
   export type ScheduleTaskAvgAggregateInputType = {
+    payloadVersion?: true
     maxExecutions?: true
     executionCount?: true
     lastExecutionDuration?: true
@@ -94822,6 +98695,7 @@ export namespace Prisma {
   }
 
   export type ScheduleTaskSumAggregateInputType = {
+    payloadVersion?: true
     maxExecutions?: true
     executionCount?: true
     lastExecutionDuration?: true
@@ -94841,6 +98715,12 @@ export namespace Prisma {
     description?: true
     sourceModule?: true
     sourceEntityId?: true
+    schedulingKey?: true
+    ownerType?: true
+    ownerId?: true
+    handlerKey?: true
+    payloadVersion?: true
+    sourceRevision?: true
     status?: true
     enabled?: true
     cronExpression?: true
@@ -94876,6 +98756,12 @@ export namespace Prisma {
     description?: true
     sourceModule?: true
     sourceEntityId?: true
+    schedulingKey?: true
+    ownerType?: true
+    ownerId?: true
+    handlerKey?: true
+    payloadVersion?: true
+    sourceRevision?: true
     status?: true
     enabled?: true
     cronExpression?: true
@@ -94911,6 +98797,12 @@ export namespace Prisma {
     description?: true
     sourceModule?: true
     sourceEntityId?: true
+    schedulingKey?: true
+    ownerType?: true
+    ownerId?: true
+    handlerKey?: true
+    payloadVersion?: true
+    sourceRevision?: true
     status?: true
     enabled?: true
     cronExpression?: true
@@ -95033,6 +98925,12 @@ export namespace Prisma {
     description: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey: string | null
+    ownerType: string | null
+    ownerId: string | null
+    handlerKey: string | null
+    payloadVersion: number | null
+    sourceRevision: string | null
     status: string
     enabled: boolean
     cronExpression: string | null
@@ -95087,6 +98985,12 @@ export namespace Prisma {
     description?: boolean
     sourceModule?: boolean
     sourceEntityId?: boolean
+    schedulingKey?: boolean
+    ownerType?: boolean
+    ownerId?: boolean
+    handlerKey?: boolean
+    payloadVersion?: boolean
+    sourceRevision?: boolean
     status?: boolean
     enabled?: boolean
     cronExpression?: boolean
@@ -95125,6 +99029,12 @@ export namespace Prisma {
     description?: boolean
     sourceModule?: boolean
     sourceEntityId?: boolean
+    schedulingKey?: boolean
+    ownerType?: boolean
+    ownerId?: boolean
+    handlerKey?: boolean
+    payloadVersion?: boolean
+    sourceRevision?: boolean
     status?: boolean
     enabled?: boolean
     cronExpression?: boolean
@@ -95161,6 +99071,12 @@ export namespace Prisma {
     description?: boolean
     sourceModule?: boolean
     sourceEntityId?: boolean
+    schedulingKey?: boolean
+    ownerType?: boolean
+    ownerId?: boolean
+    handlerKey?: boolean
+    payloadVersion?: boolean
+    sourceRevision?: boolean
     status?: boolean
     enabled?: boolean
     cronExpression?: boolean
@@ -95197,6 +99113,12 @@ export namespace Prisma {
     description?: boolean
     sourceModule?: boolean
     sourceEntityId?: boolean
+    schedulingKey?: boolean
+    ownerType?: boolean
+    ownerId?: boolean
+    handlerKey?: boolean
+    payloadVersion?: boolean
+    sourceRevision?: boolean
     status?: boolean
     enabled?: boolean
     cronExpression?: boolean
@@ -95225,7 +99147,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type ScheduleTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "name" | "description" | "sourceModule" | "sourceEntityId" | "status" | "enabled" | "cronExpression" | "timezone" | "startDate" | "endDate" | "maxExecutions" | "nextRunAt" | "lastRunAt" | "executionCount" | "lastExecutionStatus" | "lastExecutionDuration" | "consecutiveFailures" | "maxRetries" | "initialDelayMs" | "maxDelayMs" | "backoffMultiplier" | "retryableStatuses" | "payload" | "tags" | "priority" | "timeout" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["scheduleTask"]>
+  export type ScheduleTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "name" | "description" | "sourceModule" | "sourceEntityId" | "schedulingKey" | "ownerType" | "ownerId" | "handlerKey" | "payloadVersion" | "sourceRevision" | "status" | "enabled" | "cronExpression" | "timezone" | "startDate" | "endDate" | "maxExecutions" | "nextRunAt" | "lastRunAt" | "executionCount" | "lastExecutionStatus" | "lastExecutionDuration" | "consecutiveFailures" | "maxRetries" | "initialDelayMs" | "maxDelayMs" | "backoffMultiplier" | "retryableStatuses" | "payload" | "tags" | "priority" | "timeout" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["scheduleTask"]>
   export type ScheduleTaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     executions?: boolean | ScheduleTask$executionsArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
@@ -95251,6 +99173,12 @@ export namespace Prisma {
       description: string | null
       sourceModule: string
       sourceEntityId: string
+      schedulingKey: string | null
+      ownerType: string | null
+      ownerId: string | null
+      handlerKey: string | null
+      payloadVersion: number | null
+      sourceRevision: string | null
       status: string
       enabled: boolean
       cronExpression: string | null
@@ -95708,6 +99636,12 @@ export namespace Prisma {
     readonly description: FieldRef<"ScheduleTask", 'String'>
     readonly sourceModule: FieldRef<"ScheduleTask", 'String'>
     readonly sourceEntityId: FieldRef<"ScheduleTask", 'String'>
+    readonly schedulingKey: FieldRef<"ScheduleTask", 'String'>
+    readonly ownerType: FieldRef<"ScheduleTask", 'String'>
+    readonly ownerId: FieldRef<"ScheduleTask", 'String'>
+    readonly handlerKey: FieldRef<"ScheduleTask", 'String'>
+    readonly payloadVersion: FieldRef<"ScheduleTask", 'Int'>
+    readonly sourceRevision: FieldRef<"ScheduleTask", 'String'>
     readonly status: FieldRef<"ScheduleTask", 'String'>
     readonly enabled: FieldRef<"ScheduleTask", 'Boolean'>
     readonly cronExpression: FieldRef<"ScheduleTask", 'String'>
@@ -96174,6 +100108,1262 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ScheduleTaskInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model SchedulingReconcileOperation
+   */
+
+  export type AggregateSchedulingReconcileOperation = {
+    _count: SchedulingReconcileOperationCountAggregateOutputType | null
+    _avg: SchedulingReconcileOperationAvgAggregateOutputType | null
+    _sum: SchedulingReconcileOperationSumAggregateOutputType | null
+    _min: SchedulingReconcileOperationMinAggregateOutputType | null
+    _max: SchedulingReconcileOperationMaxAggregateOutputType | null
+  }
+
+  export type SchedulingReconcileOperationAvgAggregateOutputType = {
+    desiredCount: number | null
+    createdCount: number | null
+    updatedCount: number | null
+    deletedCount: number | null
+    unchangedCount: number | null
+  }
+
+  export type SchedulingReconcileOperationSumAggregateOutputType = {
+    desiredCount: number | null
+    createdCount: number | null
+    updatedCount: number | null
+    deletedCount: number | null
+    unchangedCount: number | null
+  }
+
+  export type SchedulingReconcileOperationMinAggregateOutputType = {
+    operationId: string | null
+    identityId: string | null
+    ownerType: string | null
+    ownerId: string | null
+    status: string | null
+    desiredCount: number | null
+    createdCount: number | null
+    updatedCount: number | null
+    deletedCount: number | null
+    unchangedCount: number | null
+    failureCode: string | null
+    failureMessage: string | null
+    failureRetryable: boolean | null
+    startedAt: Date | null
+    finishedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type SchedulingReconcileOperationMaxAggregateOutputType = {
+    operationId: string | null
+    identityId: string | null
+    ownerType: string | null
+    ownerId: string | null
+    status: string | null
+    desiredCount: number | null
+    createdCount: number | null
+    updatedCount: number | null
+    deletedCount: number | null
+    unchangedCount: number | null
+    failureCode: string | null
+    failureMessage: string | null
+    failureRetryable: boolean | null
+    startedAt: Date | null
+    finishedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type SchedulingReconcileOperationCountAggregateOutputType = {
+    operationId: number
+    identityId: number
+    ownerType: number
+    ownerId: number
+    status: number
+    desiredCount: number
+    createdCount: number
+    updatedCount: number
+    deletedCount: number
+    unchangedCount: number
+    failureCode: number
+    failureMessage: number
+    failureRetryable: number
+    startedAt: number
+    finishedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type SchedulingReconcileOperationAvgAggregateInputType = {
+    desiredCount?: true
+    createdCount?: true
+    updatedCount?: true
+    deletedCount?: true
+    unchangedCount?: true
+  }
+
+  export type SchedulingReconcileOperationSumAggregateInputType = {
+    desiredCount?: true
+    createdCount?: true
+    updatedCount?: true
+    deletedCount?: true
+    unchangedCount?: true
+  }
+
+  export type SchedulingReconcileOperationMinAggregateInputType = {
+    operationId?: true
+    identityId?: true
+    ownerType?: true
+    ownerId?: true
+    status?: true
+    desiredCount?: true
+    createdCount?: true
+    updatedCount?: true
+    deletedCount?: true
+    unchangedCount?: true
+    failureCode?: true
+    failureMessage?: true
+    failureRetryable?: true
+    startedAt?: true
+    finishedAt?: true
+    createdAt?: true
+  }
+
+  export type SchedulingReconcileOperationMaxAggregateInputType = {
+    operationId?: true
+    identityId?: true
+    ownerType?: true
+    ownerId?: true
+    status?: true
+    desiredCount?: true
+    createdCount?: true
+    updatedCount?: true
+    deletedCount?: true
+    unchangedCount?: true
+    failureCode?: true
+    failureMessage?: true
+    failureRetryable?: true
+    startedAt?: true
+    finishedAt?: true
+    createdAt?: true
+  }
+
+  export type SchedulingReconcileOperationCountAggregateInputType = {
+    operationId?: true
+    identityId?: true
+    ownerType?: true
+    ownerId?: true
+    status?: true
+    desiredCount?: true
+    createdCount?: true
+    updatedCount?: true
+    deletedCount?: true
+    unchangedCount?: true
+    failureCode?: true
+    failureMessage?: true
+    failureRetryable?: true
+    startedAt?: true
+    finishedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type SchedulingReconcileOperationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SchedulingReconcileOperation to aggregate.
+     */
+    where?: SchedulingReconcileOperationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of SchedulingReconcileOperations to fetch.
+     */
+    orderBy?: SchedulingReconcileOperationOrderByWithRelationInput | SchedulingReconcileOperationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: SchedulingReconcileOperationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` SchedulingReconcileOperations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` SchedulingReconcileOperations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned SchedulingReconcileOperations
+    **/
+    _count?: true | SchedulingReconcileOperationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+    **/
+    _avg?: SchedulingReconcileOperationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+    **/
+    _sum?: SchedulingReconcileOperationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: SchedulingReconcileOperationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: SchedulingReconcileOperationMaxAggregateInputType
+  }
+
+  export type GetSchedulingReconcileOperationAggregateType<T extends SchedulingReconcileOperationAggregateArgs> = {
+        [P in keyof T & keyof AggregateSchedulingReconcileOperation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSchedulingReconcileOperation[P]>
+      : GetScalarType<T[P], AggregateSchedulingReconcileOperation[P]>
+  }
+
+
+
+
+  export type SchedulingReconcileOperationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SchedulingReconcileOperationWhereInput
+    orderBy?: SchedulingReconcileOperationOrderByWithAggregationInput | SchedulingReconcileOperationOrderByWithAggregationInput[]
+    by: SchedulingReconcileOperationScalarFieldEnum[] | SchedulingReconcileOperationScalarFieldEnum
+    having?: SchedulingReconcileOperationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SchedulingReconcileOperationCountAggregateInputType | true
+    _avg?: SchedulingReconcileOperationAvgAggregateInputType
+    _sum?: SchedulingReconcileOperationSumAggregateInputType
+    _min?: SchedulingReconcileOperationMinAggregateInputType
+    _max?: SchedulingReconcileOperationMaxAggregateInputType
+  }
+
+  export type SchedulingReconcileOperationGroupByOutputType = {
+    operationId: string
+    identityId: string
+    ownerType: string
+    ownerId: string
+    status: string
+    desiredCount: number
+    createdCount: number
+    updatedCount: number
+    deletedCount: number
+    unchangedCount: number
+    failureCode: string | null
+    failureMessage: string | null
+    failureRetryable: boolean | null
+    startedAt: Date
+    finishedAt: Date
+    createdAt: Date
+    _count: SchedulingReconcileOperationCountAggregateOutputType | null
+    _avg: SchedulingReconcileOperationAvgAggregateOutputType | null
+    _sum: SchedulingReconcileOperationSumAggregateOutputType | null
+    _min: SchedulingReconcileOperationMinAggregateOutputType | null
+    _max: SchedulingReconcileOperationMaxAggregateOutputType | null
+  }
+
+  type GetSchedulingReconcileOperationGroupByPayload<T extends SchedulingReconcileOperationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SchedulingReconcileOperationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SchedulingReconcileOperationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SchedulingReconcileOperationGroupByOutputType[P]>
+            : GetScalarType<T[P], SchedulingReconcileOperationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SchedulingReconcileOperationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    operationId?: boolean
+    identityId?: boolean
+    ownerType?: boolean
+    ownerId?: boolean
+    status?: boolean
+    desiredCount?: boolean
+    createdCount?: boolean
+    updatedCount?: boolean
+    deletedCount?: boolean
+    unchangedCount?: boolean
+    failureCode?: boolean
+    failureMessage?: boolean
+    failureRetryable?: boolean
+    startedAt?: boolean
+    finishedAt?: boolean
+    createdAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["schedulingReconcileOperation"]>
+
+  export type SchedulingReconcileOperationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    operationId?: boolean
+    identityId?: boolean
+    ownerType?: boolean
+    ownerId?: boolean
+    status?: boolean
+    desiredCount?: boolean
+    createdCount?: boolean
+    updatedCount?: boolean
+    deletedCount?: boolean
+    unchangedCount?: boolean
+    failureCode?: boolean
+    failureMessage?: boolean
+    failureRetryable?: boolean
+    startedAt?: boolean
+    finishedAt?: boolean
+    createdAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["schedulingReconcileOperation"]>
+
+  export type SchedulingReconcileOperationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    operationId?: boolean
+    identityId?: boolean
+    ownerType?: boolean
+    ownerId?: boolean
+    status?: boolean
+    desiredCount?: boolean
+    createdCount?: boolean
+    updatedCount?: boolean
+    deletedCount?: boolean
+    unchangedCount?: boolean
+    failureCode?: boolean
+    failureMessage?: boolean
+    failureRetryable?: boolean
+    startedAt?: boolean
+    finishedAt?: boolean
+    createdAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["schedulingReconcileOperation"]>
+
+  export type SchedulingReconcileOperationSelectScalar = {
+    operationId?: boolean
+    identityId?: boolean
+    ownerType?: boolean
+    ownerId?: boolean
+    status?: boolean
+    desiredCount?: boolean
+    createdCount?: boolean
+    updatedCount?: boolean
+    deletedCount?: boolean
+    unchangedCount?: boolean
+    failureCode?: boolean
+    failureMessage?: boolean
+    failureRetryable?: boolean
+    startedAt?: boolean
+    finishedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type SchedulingReconcileOperationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"operationId" | "identityId" | "ownerType" | "ownerId" | "status" | "desiredCount" | "createdCount" | "updatedCount" | "deletedCount" | "unchangedCount" | "failureCode" | "failureMessage" | "failureRetryable" | "startedAt" | "finishedAt" | "createdAt", ExtArgs["result"]["schedulingReconcileOperation"]>
+  export type SchedulingReconcileOperationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type SchedulingReconcileOperationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type SchedulingReconcileOperationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+
+  export type $SchedulingReconcileOperationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SchedulingReconcileOperation"
+    objects: {
+      account: Prisma.$AccountPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      operationId: string
+      identityId: string
+      ownerType: string
+      ownerId: string
+      status: string
+      desiredCount: number
+      createdCount: number
+      updatedCount: number
+      deletedCount: number
+      unchangedCount: number
+      failureCode: string | null
+      failureMessage: string | null
+      failureRetryable: boolean | null
+      startedAt: Date
+      finishedAt: Date
+      createdAt: Date
+    }, ExtArgs["result"]["schedulingReconcileOperation"]>
+    composites: {}
+  }
+
+  type SchedulingReconcileOperationGetPayload<S extends boolean | null | undefined | SchedulingReconcileOperationDefaultArgs> = $Result.GetResult<Prisma.$SchedulingReconcileOperationPayload, S>
+
+  type SchedulingReconcileOperationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SchedulingReconcileOperationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SchedulingReconcileOperationCountAggregateInputType | true
+    }
+
+  export interface SchedulingReconcileOperationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SchedulingReconcileOperation'], meta: { name: 'SchedulingReconcileOperation' } }
+    /**
+     * Find zero or one SchedulingReconcileOperation that matches the filter.
+     * @param {SchedulingReconcileOperationFindUniqueArgs} args - Arguments to find a SchedulingReconcileOperation
+     * @example
+     * // Get one SchedulingReconcileOperation
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SchedulingReconcileOperationFindUniqueArgs>(args: SelectSubset<T, SchedulingReconcileOperationFindUniqueArgs<ExtArgs>>): Prisma__SchedulingReconcileOperationClient<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SchedulingReconcileOperation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SchedulingReconcileOperationFindUniqueOrThrowArgs} args - Arguments to find a SchedulingReconcileOperation
+     * @example
+     * // Get one SchedulingReconcileOperation
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SchedulingReconcileOperationFindUniqueOrThrowArgs>(args: SelectSubset<T, SchedulingReconcileOperationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SchedulingReconcileOperationClient<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SchedulingReconcileOperation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SchedulingReconcileOperationFindFirstArgs} args - Arguments to find a SchedulingReconcileOperation
+     * @example
+     * // Get one SchedulingReconcileOperation
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SchedulingReconcileOperationFindFirstArgs>(args?: SelectSubset<T, SchedulingReconcileOperationFindFirstArgs<ExtArgs>>): Prisma__SchedulingReconcileOperationClient<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SchedulingReconcileOperation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SchedulingReconcileOperationFindFirstOrThrowArgs} args - Arguments to find a SchedulingReconcileOperation
+     * @example
+     * // Get one SchedulingReconcileOperation
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SchedulingReconcileOperationFindFirstOrThrowArgs>(args?: SelectSubset<T, SchedulingReconcileOperationFindFirstOrThrowArgs<ExtArgs>>): Prisma__SchedulingReconcileOperationClient<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SchedulingReconcileOperations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SchedulingReconcileOperationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SchedulingReconcileOperations
+     * const schedulingReconcileOperations = await prisma.schedulingReconcileOperation.findMany()
+     *
+     * // Get first 10 SchedulingReconcileOperations
+     * const schedulingReconcileOperations = await prisma.schedulingReconcileOperation.findMany({ take: 10 })
+     *
+     * // Only select the `operationId`
+     * const schedulingReconcileOperationWithOperationIdOnly = await prisma.schedulingReconcileOperation.findMany({ select: { operationId: true } })
+     *
+     */
+    findMany<T extends SchedulingReconcileOperationFindManyArgs>(args?: SelectSubset<T, SchedulingReconcileOperationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SchedulingReconcileOperation.
+     * @param {SchedulingReconcileOperationCreateArgs} args - Arguments to create a SchedulingReconcileOperation.
+     * @example
+     * // Create one SchedulingReconcileOperation
+     * const SchedulingReconcileOperation = await prisma.schedulingReconcileOperation.create({
+     *   data: {
+     *     // ... data to create a SchedulingReconcileOperation
+     *   }
+     * })
+     *
+     */
+    create<T extends SchedulingReconcileOperationCreateArgs>(args: SelectSubset<T, SchedulingReconcileOperationCreateArgs<ExtArgs>>): Prisma__SchedulingReconcileOperationClient<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SchedulingReconcileOperations.
+     * @param {SchedulingReconcileOperationCreateManyArgs} args - Arguments to create many SchedulingReconcileOperations.
+     * @example
+     * // Create many SchedulingReconcileOperations
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends SchedulingReconcileOperationCreateManyArgs>(args?: SelectSubset<T, SchedulingReconcileOperationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SchedulingReconcileOperations and returns the data saved in the database.
+     * @param {SchedulingReconcileOperationCreateManyAndReturnArgs} args - Arguments to create many SchedulingReconcileOperations.
+     * @example
+     * // Create many SchedulingReconcileOperations
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many SchedulingReconcileOperations and only return the `operationId`
+     * const schedulingReconcileOperationWithOperationIdOnly = await prisma.schedulingReconcileOperation.createManyAndReturn({
+     *   select: { operationId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends SchedulingReconcileOperationCreateManyAndReturnArgs>(args?: SelectSubset<T, SchedulingReconcileOperationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a SchedulingReconcileOperation.
+     * @param {SchedulingReconcileOperationDeleteArgs} args - Arguments to delete one SchedulingReconcileOperation.
+     * @example
+     * // Delete one SchedulingReconcileOperation
+     * const SchedulingReconcileOperation = await prisma.schedulingReconcileOperation.delete({
+     *   where: {
+     *     // ... filter to delete one SchedulingReconcileOperation
+     *   }
+     * })
+     *
+     */
+    delete<T extends SchedulingReconcileOperationDeleteArgs>(args: SelectSubset<T, SchedulingReconcileOperationDeleteArgs<ExtArgs>>): Prisma__SchedulingReconcileOperationClient<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SchedulingReconcileOperation.
+     * @param {SchedulingReconcileOperationUpdateArgs} args - Arguments to update one SchedulingReconcileOperation.
+     * @example
+     * // Update one SchedulingReconcileOperation
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends SchedulingReconcileOperationUpdateArgs>(args: SelectSubset<T, SchedulingReconcileOperationUpdateArgs<ExtArgs>>): Prisma__SchedulingReconcileOperationClient<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SchedulingReconcileOperations.
+     * @param {SchedulingReconcileOperationDeleteManyArgs} args - Arguments to filter SchedulingReconcileOperations to delete.
+     * @example
+     * // Delete a few SchedulingReconcileOperations
+     * const { count } = await prisma.schedulingReconcileOperation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends SchedulingReconcileOperationDeleteManyArgs>(args?: SelectSubset<T, SchedulingReconcileOperationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SchedulingReconcileOperations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SchedulingReconcileOperationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SchedulingReconcileOperations
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends SchedulingReconcileOperationUpdateManyArgs>(args: SelectSubset<T, SchedulingReconcileOperationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SchedulingReconcileOperations and returns the data updated in the database.
+     * @param {SchedulingReconcileOperationUpdateManyAndReturnArgs} args - Arguments to update many SchedulingReconcileOperations.
+     * @example
+     * // Update many SchedulingReconcileOperations
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more SchedulingReconcileOperations and only return the `operationId`
+     * const schedulingReconcileOperationWithOperationIdOnly = await prisma.schedulingReconcileOperation.updateManyAndReturn({
+     *   select: { operationId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends SchedulingReconcileOperationUpdateManyAndReturnArgs>(args: SelectSubset<T, SchedulingReconcileOperationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one SchedulingReconcileOperation.
+     * @param {SchedulingReconcileOperationUpsertArgs} args - Arguments to update or create a SchedulingReconcileOperation.
+     * @example
+     * // Update or create a SchedulingReconcileOperation
+     * const schedulingReconcileOperation = await prisma.schedulingReconcileOperation.upsert({
+     *   create: {
+     *     // ... data to create a SchedulingReconcileOperation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SchedulingReconcileOperation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SchedulingReconcileOperationUpsertArgs>(args: SelectSubset<T, SchedulingReconcileOperationUpsertArgs<ExtArgs>>): Prisma__SchedulingReconcileOperationClient<$Result.GetResult<Prisma.$SchedulingReconcileOperationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of SchedulingReconcileOperations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SchedulingReconcileOperationCountArgs} args - Arguments to filter SchedulingReconcileOperations to count.
+     * @example
+     * // Count the number of SchedulingReconcileOperations
+     * const count = await prisma.schedulingReconcileOperation.count({
+     *   where: {
+     *     // ... the filter for the SchedulingReconcileOperations we want to count
+     *   }
+     * })
+    **/
+    count<T extends SchedulingReconcileOperationCountArgs>(
+      args?: Subset<T, SchedulingReconcileOperationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SchedulingReconcileOperationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SchedulingReconcileOperation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SchedulingReconcileOperationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SchedulingReconcileOperationAggregateArgs>(args: Subset<T, SchedulingReconcileOperationAggregateArgs>): Prisma.PrismaPromise<GetSchedulingReconcileOperationAggregateType<T>>
+
+    /**
+     * Group by SchedulingReconcileOperation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SchedulingReconcileOperationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<
+      T extends SchedulingReconcileOperationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SchedulingReconcileOperationGroupByArgs['orderBy'] }
+        : { orderBy?: SchedulingReconcileOperationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SchedulingReconcileOperationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSchedulingReconcileOperationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SchedulingReconcileOperation model
+   */
+  readonly fields: SchedulingReconcileOperationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SchedulingReconcileOperation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SchedulingReconcileOperationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SchedulingReconcileOperation model
+   */
+  interface SchedulingReconcileOperationFieldRefs {
+    readonly operationId: FieldRef<"SchedulingReconcileOperation", 'String'>
+    readonly identityId: FieldRef<"SchedulingReconcileOperation", 'String'>
+    readonly ownerType: FieldRef<"SchedulingReconcileOperation", 'String'>
+    readonly ownerId: FieldRef<"SchedulingReconcileOperation", 'String'>
+    readonly status: FieldRef<"SchedulingReconcileOperation", 'String'>
+    readonly desiredCount: FieldRef<"SchedulingReconcileOperation", 'Int'>
+    readonly createdCount: FieldRef<"SchedulingReconcileOperation", 'Int'>
+    readonly updatedCount: FieldRef<"SchedulingReconcileOperation", 'Int'>
+    readonly deletedCount: FieldRef<"SchedulingReconcileOperation", 'Int'>
+    readonly unchangedCount: FieldRef<"SchedulingReconcileOperation", 'Int'>
+    readonly failureCode: FieldRef<"SchedulingReconcileOperation", 'String'>
+    readonly failureMessage: FieldRef<"SchedulingReconcileOperation", 'String'>
+    readonly failureRetryable: FieldRef<"SchedulingReconcileOperation", 'Boolean'>
+    readonly startedAt: FieldRef<"SchedulingReconcileOperation", 'DateTime'>
+    readonly finishedAt: FieldRef<"SchedulingReconcileOperation", 'DateTime'>
+    readonly createdAt: FieldRef<"SchedulingReconcileOperation", 'DateTime'>
+  }
+
+
+  // Custom InputTypes
+  /**
+   * SchedulingReconcileOperation findUnique
+   */
+  export type SchedulingReconcileOperationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * Filter, which SchedulingReconcileOperation to fetch.
+     */
+    where: SchedulingReconcileOperationWhereUniqueInput
+  }
+
+  /**
+   * SchedulingReconcileOperation findUniqueOrThrow
+   */
+  export type SchedulingReconcileOperationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * Filter, which SchedulingReconcileOperation to fetch.
+     */
+    where: SchedulingReconcileOperationWhereUniqueInput
+  }
+
+  /**
+   * SchedulingReconcileOperation findFirst
+   */
+  export type SchedulingReconcileOperationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * Filter, which SchedulingReconcileOperation to fetch.
+     */
+    where?: SchedulingReconcileOperationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of SchedulingReconcileOperations to fetch.
+     */
+    orderBy?: SchedulingReconcileOperationOrderByWithRelationInput | SchedulingReconcileOperationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for SchedulingReconcileOperations.
+     */
+    cursor?: SchedulingReconcileOperationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` SchedulingReconcileOperations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` SchedulingReconcileOperations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of SchedulingReconcileOperations.
+     */
+    distinct?: SchedulingReconcileOperationScalarFieldEnum | SchedulingReconcileOperationScalarFieldEnum[]
+  }
+
+  /**
+   * SchedulingReconcileOperation findFirstOrThrow
+   */
+  export type SchedulingReconcileOperationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * Filter, which SchedulingReconcileOperation to fetch.
+     */
+    where?: SchedulingReconcileOperationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of SchedulingReconcileOperations to fetch.
+     */
+    orderBy?: SchedulingReconcileOperationOrderByWithRelationInput | SchedulingReconcileOperationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for SchedulingReconcileOperations.
+     */
+    cursor?: SchedulingReconcileOperationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` SchedulingReconcileOperations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` SchedulingReconcileOperations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of SchedulingReconcileOperations.
+     */
+    distinct?: SchedulingReconcileOperationScalarFieldEnum | SchedulingReconcileOperationScalarFieldEnum[]
+  }
+
+  /**
+   * SchedulingReconcileOperation findMany
+   */
+  export type SchedulingReconcileOperationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * Filter, which SchedulingReconcileOperations to fetch.
+     */
+    where?: SchedulingReconcileOperationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of SchedulingReconcileOperations to fetch.
+     */
+    orderBy?: SchedulingReconcileOperationOrderByWithRelationInput | SchedulingReconcileOperationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing SchedulingReconcileOperations.
+     */
+    cursor?: SchedulingReconcileOperationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` SchedulingReconcileOperations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` SchedulingReconcileOperations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of SchedulingReconcileOperations.
+     */
+    distinct?: SchedulingReconcileOperationScalarFieldEnum | SchedulingReconcileOperationScalarFieldEnum[]
+  }
+
+  /**
+   * SchedulingReconcileOperation create
+   */
+  export type SchedulingReconcileOperationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a SchedulingReconcileOperation.
+     */
+    data: XOR<SchedulingReconcileOperationCreateInput, SchedulingReconcileOperationUncheckedCreateInput>
+  }
+
+  /**
+   * SchedulingReconcileOperation createMany
+   */
+  export type SchedulingReconcileOperationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SchedulingReconcileOperations.
+     */
+    data: SchedulingReconcileOperationCreateManyInput | SchedulingReconcileOperationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SchedulingReconcileOperation createManyAndReturn
+   */
+  export type SchedulingReconcileOperationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * The data used to create many SchedulingReconcileOperations.
+     */
+    data: SchedulingReconcileOperationCreateManyInput | SchedulingReconcileOperationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SchedulingReconcileOperation update
+   */
+  export type SchedulingReconcileOperationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a SchedulingReconcileOperation.
+     */
+    data: XOR<SchedulingReconcileOperationUpdateInput, SchedulingReconcileOperationUncheckedUpdateInput>
+    /**
+     * Choose, which SchedulingReconcileOperation to update.
+     */
+    where: SchedulingReconcileOperationWhereUniqueInput
+  }
+
+  /**
+   * SchedulingReconcileOperation updateMany
+   */
+  export type SchedulingReconcileOperationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SchedulingReconcileOperations.
+     */
+    data: XOR<SchedulingReconcileOperationUpdateManyMutationInput, SchedulingReconcileOperationUncheckedUpdateManyInput>
+    /**
+     * Filter which SchedulingReconcileOperations to update
+     */
+    where?: SchedulingReconcileOperationWhereInput
+    /**
+     * Limit how many SchedulingReconcileOperations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SchedulingReconcileOperation updateManyAndReturn
+   */
+  export type SchedulingReconcileOperationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * The data used to update SchedulingReconcileOperations.
+     */
+    data: XOR<SchedulingReconcileOperationUpdateManyMutationInput, SchedulingReconcileOperationUncheckedUpdateManyInput>
+    /**
+     * Filter which SchedulingReconcileOperations to update
+     */
+    where?: SchedulingReconcileOperationWhereInput
+    /**
+     * Limit how many SchedulingReconcileOperations to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SchedulingReconcileOperation upsert
+   */
+  export type SchedulingReconcileOperationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the SchedulingReconcileOperation to update in case it exists.
+     */
+    where: SchedulingReconcileOperationWhereUniqueInput
+    /**
+     * In case the SchedulingReconcileOperation found by the `where` argument doesn't exist, create a new SchedulingReconcileOperation with this data.
+     */
+    create: XOR<SchedulingReconcileOperationCreateInput, SchedulingReconcileOperationUncheckedCreateInput>
+    /**
+     * In case the SchedulingReconcileOperation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SchedulingReconcileOperationUpdateInput, SchedulingReconcileOperationUncheckedUpdateInput>
+  }
+
+  /**
+   * SchedulingReconcileOperation delete
+   */
+  export type SchedulingReconcileOperationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
+    /**
+     * Filter which SchedulingReconcileOperation to delete.
+     */
+    where: SchedulingReconcileOperationWhereUniqueInput
+  }
+
+  /**
+   * SchedulingReconcileOperation deleteMany
+   */
+  export type SchedulingReconcileOperationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SchedulingReconcileOperations to delete
+     */
+    where?: SchedulingReconcileOperationWhereInput
+    /**
+     * Limit how many SchedulingReconcileOperations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SchedulingReconcileOperation without action
+   */
+  export type SchedulingReconcileOperationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SchedulingReconcileOperation
+     */
+    select?: SchedulingReconcileOperationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SchedulingReconcileOperation
+     */
+    omit?: SchedulingReconcileOperationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SchedulingReconcileOperationInclude<ExtArgs> | null
   }
 
 
@@ -106938,6 +112128,7 @@ export namespace Prisma {
     successorDependencies?: boolean | TaskTemplate$successorDependenciesArgs<ExtArgs>
     instances?: boolean | TaskTemplate$instancesArgs<ExtArgs>
     history?: boolean | TaskTemplate$historyArgs<ExtArgs>
+    labelLinks?: boolean | TaskTemplate$labelLinksArgs<ExtArgs>
     _count?: boolean | TaskTemplateCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["taskTemplate"]>
 
@@ -107098,6 +112289,7 @@ export namespace Prisma {
     successorDependencies?: boolean | TaskTemplate$successorDependenciesArgs<ExtArgs>
     instances?: boolean | TaskTemplate$instancesArgs<ExtArgs>
     history?: boolean | TaskTemplate$historyArgs<ExtArgs>
+    labelLinks?: boolean | TaskTemplate$labelLinksArgs<ExtArgs>
     _count?: boolean | TaskTemplateCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TaskTemplateIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -107125,6 +112317,7 @@ export namespace Prisma {
       successorDependencies: Prisma.$TaskDependencyPayload<ExtArgs>[]
       instances: Prisma.$TaskInstancePayload<ExtArgs>[]
       history: Prisma.$TaskTemplateHistoryPayload<ExtArgs>[]
+      labelLinks: Prisma.$TaskLabelPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -107597,6 +112790,7 @@ export namespace Prisma {
     successorDependencies<T extends TaskTemplate$successorDependenciesArgs<ExtArgs> = {}>(args?: Subset<T, TaskTemplate$successorDependenciesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskDependencyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     instances<T extends TaskTemplate$instancesArgs<ExtArgs> = {}>(args?: Subset<T, TaskTemplate$instancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskInstancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     history<T extends TaskTemplate$historyArgs<ExtArgs> = {}>(args?: Subset<T, TaskTemplate$historyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskTemplateHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    labelLinks<T extends TaskTemplate$labelLinksArgs<ExtArgs> = {}>(args?: Subset<T, TaskTemplate$labelLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -108244,6 +113438,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TaskTemplateHistoryScalarFieldEnum | TaskTemplateHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * TaskTemplate.labelLinks
+   */
+  export type TaskTemplate$labelLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskLabel
+     */
+    select?: TaskLabelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskLabel
+     */
+    omit?: TaskLabelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskLabelInclude<ExtArgs> | null
+    where?: TaskLabelWhereInput
+    orderBy?: TaskLabelOrderByWithRelationInput | TaskLabelOrderByWithRelationInput[]
+    cursor?: TaskLabelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskLabelScalarFieldEnum | TaskLabelScalarFieldEnum[]
   }
 
   /**
@@ -117467,6 +122685,37 @@ export namespace Prisma {
   export type HabitStreakProjectionScalarFieldEnum = (typeof HabitStreakProjectionScalarFieldEnum)[keyof typeof HabitStreakProjectionScalarFieldEnum]
 
 
+  export const LabelScalarFieldEnum: {
+    id: 'id',
+    identityId: 'identityId',
+    name: 'name',
+    normalizedName: 'normalizedName',
+    color: 'color',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LabelScalarFieldEnum = (typeof LabelScalarFieldEnum)[keyof typeof LabelScalarFieldEnum]
+
+
+  export const GoalLabelScalarFieldEnum: {
+    identityId: 'identityId',
+    goalId: 'goalId',
+    labelId: 'labelId'
+  };
+
+  export type GoalLabelScalarFieldEnum = (typeof GoalLabelScalarFieldEnum)[keyof typeof GoalLabelScalarFieldEnum]
+
+
+  export const TaskLabelScalarFieldEnum: {
+    identityId: 'identityId',
+    taskTemplateId: 'taskTemplateId',
+    labelId: 'labelId'
+  };
+
+  export type TaskLabelScalarFieldEnum = (typeof TaskLabelScalarFieldEnum)[keyof typeof TaskLabelScalarFieldEnum]
+
+
   export const NotificationScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
@@ -118180,6 +123429,12 @@ export namespace Prisma {
     description: 'description',
     sourceModule: 'sourceModule',
     sourceEntityId: 'sourceEntityId',
+    schedulingKey: 'schedulingKey',
+    ownerType: 'ownerType',
+    ownerId: 'ownerId',
+    handlerKey: 'handlerKey',
+    payloadVersion: 'payloadVersion',
+    sourceRevision: 'sourceRevision',
     status: 'status',
     enabled: 'enabled',
     cronExpression: 'cronExpression',
@@ -118209,6 +123464,28 @@ export namespace Prisma {
   };
 
   export type ScheduleTaskScalarFieldEnum = (typeof ScheduleTaskScalarFieldEnum)[keyof typeof ScheduleTaskScalarFieldEnum]
+
+
+  export const SchedulingReconcileOperationScalarFieldEnum: {
+    operationId: 'operationId',
+    identityId: 'identityId',
+    ownerType: 'ownerType',
+    ownerId: 'ownerId',
+    status: 'status',
+    desiredCount: 'desiredCount',
+    createdCount: 'createdCount',
+    updatedCount: 'updatedCount',
+    deletedCount: 'deletedCount',
+    unchangedCount: 'unchangedCount',
+    failureCode: 'failureCode',
+    failureMessage: 'failureMessage',
+    failureRetryable: 'failureRetryable',
+    startedAt: 'startedAt',
+    finishedAt: 'finishedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type SchedulingReconcileOperationScalarFieldEnum = (typeof SchedulingReconcileOperationScalarFieldEnum)[keyof typeof SchedulingReconcileOperationScalarFieldEnum]
 
 
   export const ScheduleExecutionScalarFieldEnum: {
@@ -118748,6 +124025,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionListRelationFilter
     focusModes?: FocusModeListRelationFilter
     goals?: GoalListRelationFilter
+    labels?: LabelListRelationFilter
+    goalLabels?: GoalLabelListRelationFilter
+    taskLabels?: TaskLabelListRelationFilter
     goalFolders?: GoalFolderListRelationFilter
     reminderGroups?: ReminderGroupListRelationFilter
     reminderTemplates?: ReminderTemplateListRelationFilter
@@ -118759,6 +124039,7 @@ export namespace Prisma {
     repositoryStatistics?: XOR<RepositoryStatisticNullableScalarRelationFilter, RepositoryStatisticWhereInput> | null
     schedules?: ScheduleListRelationFilter
     scheduleTasks?: ScheduleTaskListRelationFilter
+    schedulingReconcileOperations?: SchedulingReconcileOperationListRelationFilter
     scheduleStatistics?: XOR<ScheduleStatisticNullableScalarRelationFilter, ScheduleStatisticWhereInput> | null
     habits?: HabitListRelationFilter
     relations?: RelationListRelationFilter
@@ -118820,6 +124101,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionOrderByRelationAggregateInput
     focusModes?: FocusModeOrderByRelationAggregateInput
     goals?: GoalOrderByRelationAggregateInput
+    labels?: LabelOrderByRelationAggregateInput
+    goalLabels?: GoalLabelOrderByRelationAggregateInput
+    taskLabels?: TaskLabelOrderByRelationAggregateInput
     goalFolders?: GoalFolderOrderByRelationAggregateInput
     reminderGroups?: ReminderGroupOrderByRelationAggregateInput
     reminderTemplates?: ReminderTemplateOrderByRelationAggregateInput
@@ -118831,6 +124115,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticOrderByWithRelationInput
     schedules?: ScheduleOrderByRelationAggregateInput
     scheduleTasks?: ScheduleTaskOrderByRelationAggregateInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationOrderByRelationAggregateInput
     scheduleStatistics?: ScheduleStatisticOrderByWithRelationInput
     habits?: HabitOrderByRelationAggregateInput
     relations?: RelationOrderByRelationAggregateInput
@@ -118895,6 +124180,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionListRelationFilter
     focusModes?: FocusModeListRelationFilter
     goals?: GoalListRelationFilter
+    labels?: LabelListRelationFilter
+    goalLabels?: GoalLabelListRelationFilter
+    taskLabels?: TaskLabelListRelationFilter
     goalFolders?: GoalFolderListRelationFilter
     reminderGroups?: ReminderGroupListRelationFilter
     reminderTemplates?: ReminderTemplateListRelationFilter
@@ -118906,6 +124194,7 @@ export namespace Prisma {
     repositoryStatistics?: XOR<RepositoryStatisticNullableScalarRelationFilter, RepositoryStatisticWhereInput> | null
     schedules?: ScheduleListRelationFilter
     scheduleTasks?: ScheduleTaskListRelationFilter
+    schedulingReconcileOperations?: SchedulingReconcileOperationListRelationFilter
     scheduleStatistics?: XOR<ScheduleStatisticNullableScalarRelationFilter, ScheduleStatisticWhereInput> | null
     habits?: HabitListRelationFilter
     relations?: RelationListRelationFilter
@@ -120678,6 +125967,7 @@ export namespace Prisma {
     reviews?: GoalReviewListRelationFilter
     keyResultWeightSnapshots?: KeyResultWeightSnapshotListRelationFilter
     focusSessions?: FocusSessionListRelationFilter
+    labelLinks?: GoalLabelListRelationFilter
   }
 
   export type GoalOrderByWithRelationInput = {
@@ -120714,6 +126004,7 @@ export namespace Prisma {
     reviews?: GoalReviewOrderByRelationAggregateInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotOrderByRelationAggregateInput
     focusSessions?: FocusSessionOrderByRelationAggregateInput
+    labelLinks?: GoalLabelOrderByRelationAggregateInput
   }
 
   export type GoalWhereUniqueInput = Prisma.AtLeast<{
@@ -120754,6 +126045,7 @@ export namespace Prisma {
     reviews?: GoalReviewListRelationFilter
     keyResultWeightSnapshots?: KeyResultWeightSnapshotListRelationFilter
     focusSessions?: FocusSessionListRelationFilter
+    labelLinks?: GoalLabelListRelationFilter
   }, "id" | "id_identityId">
 
   export type GoalOrderByWithAggregationInput = {
@@ -121994,6 +127286,183 @@ export namespace Prisma {
     longestStreak?: IntWithAggregatesFilter<"HabitStreakProjection"> | number
     lastCheckInDate?: DateTimeNullableWithAggregatesFilter<"HabitStreakProjection"> | Date | string | null
     updatedAt?: DateTimeWithAggregatesFilter<"HabitStreakProjection"> | Date | string
+  }
+
+  export type LabelWhereInput = {
+    AND?: LabelWhereInput | LabelWhereInput[]
+    OR?: LabelWhereInput[]
+    NOT?: LabelWhereInput | LabelWhereInput[]
+    id?: StringFilter<"Label"> | string
+    identityId?: StringFilter<"Label"> | string
+    name?: StringFilter<"Label"> | string
+    normalizedName?: StringFilter<"Label"> | string
+    color?: StringNullableFilter<"Label"> | string | null
+    createdAt?: DateTimeFilter<"Label"> | Date | string
+    updatedAt?: DateTimeFilter<"Label"> | Date | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+    goalLinks?: GoalLabelListRelationFilter
+    taskLinks?: TaskLabelListRelationFilter
+  }
+
+  export type LabelOrderByWithRelationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    name?: SortOrder
+    normalizedName?: SortOrder
+    color?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    account?: AccountOrderByWithRelationInput
+    goalLinks?: GoalLabelOrderByRelationAggregateInput
+    taskLinks?: TaskLabelOrderByRelationAggregateInput
+  }
+
+  export type LabelWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    id_identityId?: LabelIdIdentityIdCompoundUniqueInput
+    identityId_normalizedName?: LabelIdentityIdNormalizedNameCompoundUniqueInput
+    AND?: LabelWhereInput | LabelWhereInput[]
+    OR?: LabelWhereInput[]
+    NOT?: LabelWhereInput | LabelWhereInput[]
+    identityId?: StringFilter<"Label"> | string
+    name?: StringFilter<"Label"> | string
+    normalizedName?: StringFilter<"Label"> | string
+    color?: StringNullableFilter<"Label"> | string | null
+    createdAt?: DateTimeFilter<"Label"> | Date | string
+    updatedAt?: DateTimeFilter<"Label"> | Date | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+    goalLinks?: GoalLabelListRelationFilter
+    taskLinks?: TaskLabelListRelationFilter
+  }, "id" | "id_identityId" | "identityId_normalizedName">
+
+  export type LabelOrderByWithAggregationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    name?: SortOrder
+    normalizedName?: SortOrder
+    color?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LabelCountOrderByAggregateInput
+    _max?: LabelMaxOrderByAggregateInput
+    _min?: LabelMinOrderByAggregateInput
+  }
+
+  export type LabelScalarWhereWithAggregatesInput = {
+    AND?: LabelScalarWhereWithAggregatesInput | LabelScalarWhereWithAggregatesInput[]
+    OR?: LabelScalarWhereWithAggregatesInput[]
+    NOT?: LabelScalarWhereWithAggregatesInput | LabelScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Label"> | string
+    identityId?: StringWithAggregatesFilter<"Label"> | string
+    name?: StringWithAggregatesFilter<"Label"> | string
+    normalizedName?: StringWithAggregatesFilter<"Label"> | string
+    color?: StringNullableWithAggregatesFilter<"Label"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Label"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Label"> | Date | string
+  }
+
+  export type GoalLabelWhereInput = {
+    AND?: GoalLabelWhereInput | GoalLabelWhereInput[]
+    OR?: GoalLabelWhereInput[]
+    NOT?: GoalLabelWhereInput | GoalLabelWhereInput[]
+    identityId?: StringFilter<"GoalLabel"> | string
+    goalId?: StringFilter<"GoalLabel"> | string
+    labelId?: StringFilter<"GoalLabel"> | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+    goal?: XOR<GoalScalarRelationFilter, GoalWhereInput>
+    label?: XOR<LabelScalarRelationFilter, LabelWhereInput>
+  }
+
+  export type GoalLabelOrderByWithRelationInput = {
+    identityId?: SortOrder
+    goalId?: SortOrder
+    labelId?: SortOrder
+    account?: AccountOrderByWithRelationInput
+    goal?: GoalOrderByWithRelationInput
+    label?: LabelOrderByWithRelationInput
+  }
+
+  export type GoalLabelWhereUniqueInput = Prisma.AtLeast<{
+    identityId_goalId_labelId?: GoalLabelIdentityIdGoalIdLabelIdCompoundUniqueInput
+    AND?: GoalLabelWhereInput | GoalLabelWhereInput[]
+    OR?: GoalLabelWhereInput[]
+    NOT?: GoalLabelWhereInput | GoalLabelWhereInput[]
+    identityId?: StringFilter<"GoalLabel"> | string
+    goalId?: StringFilter<"GoalLabel"> | string
+    labelId?: StringFilter<"GoalLabel"> | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+    goal?: XOR<GoalScalarRelationFilter, GoalWhereInput>
+    label?: XOR<LabelScalarRelationFilter, LabelWhereInput>
+  }, "identityId_goalId_labelId">
+
+  export type GoalLabelOrderByWithAggregationInput = {
+    identityId?: SortOrder
+    goalId?: SortOrder
+    labelId?: SortOrder
+    _count?: GoalLabelCountOrderByAggregateInput
+    _max?: GoalLabelMaxOrderByAggregateInput
+    _min?: GoalLabelMinOrderByAggregateInput
+  }
+
+  export type GoalLabelScalarWhereWithAggregatesInput = {
+    AND?: GoalLabelScalarWhereWithAggregatesInput | GoalLabelScalarWhereWithAggregatesInput[]
+    OR?: GoalLabelScalarWhereWithAggregatesInput[]
+    NOT?: GoalLabelScalarWhereWithAggregatesInput | GoalLabelScalarWhereWithAggregatesInput[]
+    identityId?: StringWithAggregatesFilter<"GoalLabel"> | string
+    goalId?: StringWithAggregatesFilter<"GoalLabel"> | string
+    labelId?: StringWithAggregatesFilter<"GoalLabel"> | string
+  }
+
+  export type TaskLabelWhereInput = {
+    AND?: TaskLabelWhereInput | TaskLabelWhereInput[]
+    OR?: TaskLabelWhereInput[]
+    NOT?: TaskLabelWhereInput | TaskLabelWhereInput[]
+    identityId?: StringFilter<"TaskLabel"> | string
+    taskTemplateId?: StringFilter<"TaskLabel"> | string
+    labelId?: StringFilter<"TaskLabel"> | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+    taskTemplate?: XOR<TaskTemplateScalarRelationFilter, TaskTemplateWhereInput>
+    label?: XOR<LabelScalarRelationFilter, LabelWhereInput>
+  }
+
+  export type TaskLabelOrderByWithRelationInput = {
+    identityId?: SortOrder
+    taskTemplateId?: SortOrder
+    labelId?: SortOrder
+    account?: AccountOrderByWithRelationInput
+    taskTemplate?: TaskTemplateOrderByWithRelationInput
+    label?: LabelOrderByWithRelationInput
+  }
+
+  export type TaskLabelWhereUniqueInput = Prisma.AtLeast<{
+    identityId_taskTemplateId_labelId?: TaskLabelIdentityIdTaskTemplateIdLabelIdCompoundUniqueInput
+    AND?: TaskLabelWhereInput | TaskLabelWhereInput[]
+    OR?: TaskLabelWhereInput[]
+    NOT?: TaskLabelWhereInput | TaskLabelWhereInput[]
+    identityId?: StringFilter<"TaskLabel"> | string
+    taskTemplateId?: StringFilter<"TaskLabel"> | string
+    labelId?: StringFilter<"TaskLabel"> | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+    taskTemplate?: XOR<TaskTemplateScalarRelationFilter, TaskTemplateWhereInput>
+    label?: XOR<LabelScalarRelationFilter, LabelWhereInput>
+  }, "identityId_taskTemplateId_labelId">
+
+  export type TaskLabelOrderByWithAggregationInput = {
+    identityId?: SortOrder
+    taskTemplateId?: SortOrder
+    labelId?: SortOrder
+    _count?: TaskLabelCountOrderByAggregateInput
+    _max?: TaskLabelMaxOrderByAggregateInput
+    _min?: TaskLabelMinOrderByAggregateInput
+  }
+
+  export type TaskLabelScalarWhereWithAggregatesInput = {
+    AND?: TaskLabelScalarWhereWithAggregatesInput | TaskLabelScalarWhereWithAggregatesInput[]
+    OR?: TaskLabelScalarWhereWithAggregatesInput[]
+    NOT?: TaskLabelScalarWhereWithAggregatesInput | TaskLabelScalarWhereWithAggregatesInput[]
+    identityId?: StringWithAggregatesFilter<"TaskLabel"> | string
+    taskTemplateId?: StringWithAggregatesFilter<"TaskLabel"> | string
+    labelId?: StringWithAggregatesFilter<"TaskLabel"> | string
   }
 
   export type NotificationWhereInput = {
@@ -125677,6 +131146,12 @@ export namespace Prisma {
     description?: StringNullableFilter<"ScheduleTask"> | string | null
     sourceModule?: StringFilter<"ScheduleTask"> | string
     sourceEntityId?: StringFilter<"ScheduleTask"> | string
+    schedulingKey?: StringNullableFilter<"ScheduleTask"> | string | null
+    ownerType?: StringNullableFilter<"ScheduleTask"> | string | null
+    ownerId?: StringNullableFilter<"ScheduleTask"> | string | null
+    handlerKey?: StringNullableFilter<"ScheduleTask"> | string | null
+    payloadVersion?: IntNullableFilter<"ScheduleTask"> | number | null
+    sourceRevision?: StringNullableFilter<"ScheduleTask"> | string | null
     status?: StringFilter<"ScheduleTask"> | string
     enabled?: BoolFilter<"ScheduleTask"> | boolean
     cronExpression?: StringNullableFilter<"ScheduleTask"> | string | null
@@ -125714,6 +131189,12 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     sourceModule?: SortOrder
     sourceEntityId?: SortOrder
+    schedulingKey?: SortOrderInput | SortOrder
+    ownerType?: SortOrderInput | SortOrder
+    ownerId?: SortOrderInput | SortOrder
+    handlerKey?: SortOrderInput | SortOrder
+    payloadVersion?: SortOrderInput | SortOrder
+    sourceRevision?: SortOrderInput | SortOrder
     status?: SortOrder
     enabled?: SortOrder
     cronExpression?: SortOrderInput | SortOrder
@@ -125746,6 +131227,7 @@ export namespace Prisma {
 
   export type ScheduleTaskWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    identityId_ownerType_ownerId_schedulingKey?: ScheduleTaskIdentityIdOwnerTypeOwnerIdSchedulingKeyCompoundUniqueInput
     AND?: ScheduleTaskWhereInput | ScheduleTaskWhereInput[]
     OR?: ScheduleTaskWhereInput[]
     NOT?: ScheduleTaskWhereInput | ScheduleTaskWhereInput[]
@@ -125754,6 +131236,12 @@ export namespace Prisma {
     description?: StringNullableFilter<"ScheduleTask"> | string | null
     sourceModule?: StringFilter<"ScheduleTask"> | string
     sourceEntityId?: StringFilter<"ScheduleTask"> | string
+    schedulingKey?: StringNullableFilter<"ScheduleTask"> | string | null
+    ownerType?: StringNullableFilter<"ScheduleTask"> | string | null
+    ownerId?: StringNullableFilter<"ScheduleTask"> | string | null
+    handlerKey?: StringNullableFilter<"ScheduleTask"> | string | null
+    payloadVersion?: IntNullableFilter<"ScheduleTask"> | number | null
+    sourceRevision?: StringNullableFilter<"ScheduleTask"> | string | null
     status?: StringFilter<"ScheduleTask"> | string
     enabled?: BoolFilter<"ScheduleTask"> | boolean
     cronExpression?: StringNullableFilter<"ScheduleTask"> | string | null
@@ -125782,7 +131270,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"ScheduleTask"> | Date | string | null
     executions?: ScheduleExecutionListRelationFilter
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }, "id">
+  }, "id" | "identityId_ownerType_ownerId_schedulingKey">
 
   export type ScheduleTaskOrderByWithAggregationInput = {
     id?: SortOrder
@@ -125791,6 +131279,12 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     sourceModule?: SortOrder
     sourceEntityId?: SortOrder
+    schedulingKey?: SortOrderInput | SortOrder
+    ownerType?: SortOrderInput | SortOrder
+    ownerId?: SortOrderInput | SortOrder
+    handlerKey?: SortOrderInput | SortOrder
+    payloadVersion?: SortOrderInput | SortOrder
+    sourceRevision?: SortOrderInput | SortOrder
     status?: SortOrder
     enabled?: SortOrder
     cronExpression?: SortOrderInput | SortOrder
@@ -125834,6 +131328,12 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"ScheduleTask"> | string | null
     sourceModule?: StringWithAggregatesFilter<"ScheduleTask"> | string
     sourceEntityId?: StringWithAggregatesFilter<"ScheduleTask"> | string
+    schedulingKey?: StringNullableWithAggregatesFilter<"ScheduleTask"> | string | null
+    ownerType?: StringNullableWithAggregatesFilter<"ScheduleTask"> | string | null
+    ownerId?: StringNullableWithAggregatesFilter<"ScheduleTask"> | string | null
+    handlerKey?: StringNullableWithAggregatesFilter<"ScheduleTask"> | string | null
+    payloadVersion?: IntNullableWithAggregatesFilter<"ScheduleTask"> | number | null
+    sourceRevision?: StringNullableWithAggregatesFilter<"ScheduleTask"> | string | null
     status?: StringWithAggregatesFilter<"ScheduleTask"> | string
     enabled?: BoolWithAggregatesFilter<"ScheduleTask"> | boolean
     cronExpression?: StringNullableWithAggregatesFilter<"ScheduleTask"> | string | null
@@ -125860,6 +131360,118 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"ScheduleTask"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ScheduleTask"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"ScheduleTask"> | Date | string | null
+  }
+
+  export type SchedulingReconcileOperationWhereInput = {
+    AND?: SchedulingReconcileOperationWhereInput | SchedulingReconcileOperationWhereInput[]
+    OR?: SchedulingReconcileOperationWhereInput[]
+    NOT?: SchedulingReconcileOperationWhereInput | SchedulingReconcileOperationWhereInput[]
+    operationId?: StringFilter<"SchedulingReconcileOperation"> | string
+    identityId?: StringFilter<"SchedulingReconcileOperation"> | string
+    ownerType?: StringFilter<"SchedulingReconcileOperation"> | string
+    ownerId?: StringFilter<"SchedulingReconcileOperation"> | string
+    status?: StringFilter<"SchedulingReconcileOperation"> | string
+    desiredCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    createdCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    updatedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    deletedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    unchangedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    failureCode?: StringNullableFilter<"SchedulingReconcileOperation"> | string | null
+    failureMessage?: StringNullableFilter<"SchedulingReconcileOperation"> | string | null
+    failureRetryable?: BoolNullableFilter<"SchedulingReconcileOperation"> | boolean | null
+    startedAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
+    finishedAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
+    createdAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }
+
+  export type SchedulingReconcileOperationOrderByWithRelationInput = {
+    operationId?: SortOrder
+    identityId?: SortOrder
+    ownerType?: SortOrder
+    ownerId?: SortOrder
+    status?: SortOrder
+    desiredCount?: SortOrder
+    createdCount?: SortOrder
+    updatedCount?: SortOrder
+    deletedCount?: SortOrder
+    unchangedCount?: SortOrder
+    failureCode?: SortOrderInput | SortOrder
+    failureMessage?: SortOrderInput | SortOrder
+    failureRetryable?: SortOrderInput | SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrder
+    createdAt?: SortOrder
+    account?: AccountOrderByWithRelationInput
+  }
+
+  export type SchedulingReconcileOperationWhereUniqueInput = Prisma.AtLeast<{
+    operationId?: string
+    AND?: SchedulingReconcileOperationWhereInput | SchedulingReconcileOperationWhereInput[]
+    OR?: SchedulingReconcileOperationWhereInput[]
+    NOT?: SchedulingReconcileOperationWhereInput | SchedulingReconcileOperationWhereInput[]
+    identityId?: StringFilter<"SchedulingReconcileOperation"> | string
+    ownerType?: StringFilter<"SchedulingReconcileOperation"> | string
+    ownerId?: StringFilter<"SchedulingReconcileOperation"> | string
+    status?: StringFilter<"SchedulingReconcileOperation"> | string
+    desiredCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    createdCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    updatedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    deletedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    unchangedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    failureCode?: StringNullableFilter<"SchedulingReconcileOperation"> | string | null
+    failureMessage?: StringNullableFilter<"SchedulingReconcileOperation"> | string | null
+    failureRetryable?: BoolNullableFilter<"SchedulingReconcileOperation"> | boolean | null
+    startedAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
+    finishedAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
+    createdAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }, "operationId">
+
+  export type SchedulingReconcileOperationOrderByWithAggregationInput = {
+    operationId?: SortOrder
+    identityId?: SortOrder
+    ownerType?: SortOrder
+    ownerId?: SortOrder
+    status?: SortOrder
+    desiredCount?: SortOrder
+    createdCount?: SortOrder
+    updatedCount?: SortOrder
+    deletedCount?: SortOrder
+    unchangedCount?: SortOrder
+    failureCode?: SortOrderInput | SortOrder
+    failureMessage?: SortOrderInput | SortOrder
+    failureRetryable?: SortOrderInput | SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrder
+    createdAt?: SortOrder
+    _count?: SchedulingReconcileOperationCountOrderByAggregateInput
+    _avg?: SchedulingReconcileOperationAvgOrderByAggregateInput
+    _max?: SchedulingReconcileOperationMaxOrderByAggregateInput
+    _min?: SchedulingReconcileOperationMinOrderByAggregateInput
+    _sum?: SchedulingReconcileOperationSumOrderByAggregateInput
+  }
+
+  export type SchedulingReconcileOperationScalarWhereWithAggregatesInput = {
+    AND?: SchedulingReconcileOperationScalarWhereWithAggregatesInput | SchedulingReconcileOperationScalarWhereWithAggregatesInput[]
+    OR?: SchedulingReconcileOperationScalarWhereWithAggregatesInput[]
+    NOT?: SchedulingReconcileOperationScalarWhereWithAggregatesInput | SchedulingReconcileOperationScalarWhereWithAggregatesInput[]
+    operationId?: StringWithAggregatesFilter<"SchedulingReconcileOperation"> | string
+    identityId?: StringWithAggregatesFilter<"SchedulingReconcileOperation"> | string
+    ownerType?: StringWithAggregatesFilter<"SchedulingReconcileOperation"> | string
+    ownerId?: StringWithAggregatesFilter<"SchedulingReconcileOperation"> | string
+    status?: StringWithAggregatesFilter<"SchedulingReconcileOperation"> | string
+    desiredCount?: IntWithAggregatesFilter<"SchedulingReconcileOperation"> | number
+    createdCount?: IntWithAggregatesFilter<"SchedulingReconcileOperation"> | number
+    updatedCount?: IntWithAggregatesFilter<"SchedulingReconcileOperation"> | number
+    deletedCount?: IntWithAggregatesFilter<"SchedulingReconcileOperation"> | number
+    unchangedCount?: IntWithAggregatesFilter<"SchedulingReconcileOperation"> | number
+    failureCode?: StringNullableWithAggregatesFilter<"SchedulingReconcileOperation"> | string | null
+    failureMessage?: StringNullableWithAggregatesFilter<"SchedulingReconcileOperation"> | string | null
+    failureRetryable?: BoolNullableWithAggregatesFilter<"SchedulingReconcileOperation"> | boolean | null
+    startedAt?: DateTimeWithAggregatesFilter<"SchedulingReconcileOperation"> | Date | string
+    finishedAt?: DateTimeWithAggregatesFilter<"SchedulingReconcileOperation"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"SchedulingReconcileOperation"> | Date | string
   }
 
   export type ScheduleExecutionWhereInput = {
@@ -126648,6 +132260,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyListRelationFilter
     instances?: TaskInstanceListRelationFilter
     history?: TaskTemplateHistoryListRelationFilter
+    labelLinks?: TaskLabelListRelationFilter
   }
 
   export type TaskTemplateOrderByWithRelationInput = {
@@ -126703,10 +132316,12 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyOrderByRelationAggregateInput
     instances?: TaskInstanceOrderByRelationAggregateInput
     history?: TaskTemplateHistoryOrderByRelationAggregateInput
+    labelLinks?: TaskLabelOrderByRelationAggregateInput
   }
 
   export type TaskTemplateWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    id_identityId?: TaskTemplateIdIdentityIdCompoundUniqueInput
     AND?: TaskTemplateWhereInput | TaskTemplateWhereInput[]
     OR?: TaskTemplateWhereInput[]
     NOT?: TaskTemplateWhereInput | TaskTemplateWhereInput[]
@@ -126761,7 +132376,8 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyListRelationFilter
     instances?: TaskInstanceListRelationFilter
     history?: TaskTemplateHistoryListRelationFilter
-  }, "id">
+    labelLinks?: TaskLabelListRelationFilter
+  }, "id" | "id_identityId">
 
   export type TaskTemplateOrderByWithAggregationInput = {
     id?: SortOrder
@@ -127612,6 +133228,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -127623,6 +133242,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -127683,6 +133303,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -127694,6 +133317,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -127754,6 +133378,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -127765,6 +133392,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -127825,6 +133453,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -127836,6 +133467,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -129833,6 +135465,7 @@ export namespace Prisma {
     reviews?: GoalReviewCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateInput = {
@@ -129866,6 +135499,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUpdateInput = {
@@ -129899,6 +135533,7 @@ export namespace Prisma {
     reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateInput = {
@@ -129932,6 +135567,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalCreateManyInput = {
@@ -131317,6 +136953,163 @@ export namespace Prisma {
     longestStreak?: IntFieldUpdateOperationsInput | number
     lastCheckInDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LabelCreateInput = {
+    id: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    account: AccountCreateNestedOneWithoutLabelsInput
+    goalLinks?: GoalLabelCreateNestedManyWithoutLabelInput
+    taskLinks?: TaskLabelCreateNestedManyWithoutLabelInput
+  }
+
+  export type LabelUncheckedCreateInput = {
+    id: string
+    identityId: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    goalLinks?: GoalLabelUncheckedCreateNestedManyWithoutLabelInput
+    taskLinks?: TaskLabelUncheckedCreateNestedManyWithoutLabelInput
+  }
+
+  export type LabelUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    account?: AccountUpdateOneRequiredWithoutLabelsNestedInput
+    goalLinks?: GoalLabelUpdateManyWithoutLabelNestedInput
+    taskLinks?: TaskLabelUpdateManyWithoutLabelNestedInput
+  }
+
+  export type LabelUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    goalLinks?: GoalLabelUncheckedUpdateManyWithoutLabelNestedInput
+    taskLinks?: TaskLabelUncheckedUpdateManyWithoutLabelNestedInput
+  }
+
+  export type LabelCreateManyInput = {
+    id: string
+    identityId: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LabelUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LabelUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GoalLabelCreateInput = {
+    account: AccountCreateNestedOneWithoutGoalLabelsInput
+    goal: GoalCreateNestedOneWithoutLabelLinksInput
+    label: LabelCreateNestedOneWithoutGoalLinksInput
+  }
+
+  export type GoalLabelUncheckedCreateInput = {
+    identityId: string
+    goalId: string
+    labelId: string
+  }
+
+  export type GoalLabelUpdateInput = {
+    account?: AccountUpdateOneRequiredWithoutGoalLabelsNestedInput
+    goal?: GoalUpdateOneRequiredWithoutLabelLinksNestedInput
+    label?: LabelUpdateOneRequiredWithoutGoalLinksNestedInput
+  }
+
+  export type GoalLabelUncheckedUpdateInput = {
+    identityId?: StringFieldUpdateOperationsInput | string
+    goalId?: StringFieldUpdateOperationsInput | string
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type GoalLabelCreateManyInput = {
+    identityId: string
+    goalId: string
+    labelId: string
+  }
+
+  export type GoalLabelUpdateManyMutationInput = {
+
+  }
+
+  export type GoalLabelUncheckedUpdateManyInput = {
+    identityId?: StringFieldUpdateOperationsInput | string
+    goalId?: StringFieldUpdateOperationsInput | string
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskLabelCreateInput = {
+    account: AccountCreateNestedOneWithoutTaskLabelsInput
+    taskTemplate: TaskTemplateCreateNestedOneWithoutLabelLinksInput
+    label: LabelCreateNestedOneWithoutTaskLinksInput
+  }
+
+  export type TaskLabelUncheckedCreateInput = {
+    identityId: string
+    taskTemplateId: string
+    labelId: string
+  }
+
+  export type TaskLabelUpdateInput = {
+    account?: AccountUpdateOneRequiredWithoutTaskLabelsNestedInput
+    taskTemplate?: TaskTemplateUpdateOneRequiredWithoutLabelLinksNestedInput
+    label?: LabelUpdateOneRequiredWithoutTaskLinksNestedInput
+  }
+
+  export type TaskLabelUncheckedUpdateInput = {
+    identityId?: StringFieldUpdateOperationsInput | string
+    taskTemplateId?: StringFieldUpdateOperationsInput | string
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskLabelCreateManyInput = {
+    identityId: string
+    taskTemplateId: string
+    labelId: string
+  }
+
+  export type TaskLabelUpdateManyMutationInput = {
+
+  }
+
+  export type TaskLabelUncheckedUpdateManyInput = {
+    identityId?: StringFieldUpdateOperationsInput | string
+    taskTemplateId?: StringFieldUpdateOperationsInput | string
+    labelId?: StringFieldUpdateOperationsInput | string
   }
 
   export type NotificationCreateInput = {
@@ -135549,6 +141342,12 @@ export namespace Prisma {
     description?: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey?: string | null
+    ownerType?: string | null
+    ownerId?: string | null
+    handlerKey?: string | null
+    payloadVersion?: number | null
+    sourceRevision?: string | null
     status: string
     enabled: boolean
     cronExpression?: string | null
@@ -135586,6 +141385,12 @@ export namespace Prisma {
     description?: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey?: string | null
+    ownerType?: string | null
+    ownerId?: string | null
+    handlerKey?: string | null
+    payloadVersion?: number | null
+    sourceRevision?: string | null
     status: string
     enabled: boolean
     cronExpression?: string | null
@@ -135621,6 +141426,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -135658,6 +141469,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -135694,6 +141511,12 @@ export namespace Prisma {
     description?: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey?: string | null
+    ownerType?: string | null
+    ownerId?: string | null
+    handlerKey?: string | null
+    payloadVersion?: number | null
+    sourceRevision?: string | null
     status: string
     enabled: boolean
     cronExpression?: string | null
@@ -135728,6 +141551,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -135763,6 +141592,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -135789,6 +141624,138 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type SchedulingReconcileOperationCreateInput = {
+    operationId: string
+    ownerType: string
+    ownerId: string
+    status: string
+    desiredCount: number
+    createdCount: number
+    updatedCount: number
+    deletedCount: number
+    unchangedCount: number
+    failureCode?: string | null
+    failureMessage?: string | null
+    failureRetryable?: boolean | null
+    startedAt: Date | string
+    finishedAt: Date | string
+    createdAt?: Date | string
+    account: AccountCreateNestedOneWithoutSchedulingReconcileOperationsInput
+  }
+
+  export type SchedulingReconcileOperationUncheckedCreateInput = {
+    operationId: string
+    identityId: string
+    ownerType: string
+    ownerId: string
+    status: string
+    desiredCount: number
+    createdCount: number
+    updatedCount: number
+    deletedCount: number
+    unchangedCount: number
+    failureCode?: string | null
+    failureMessage?: string | null
+    failureRetryable?: boolean | null
+    startedAt: Date | string
+    finishedAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type SchedulingReconcileOperationUpdateInput = {
+    operationId?: StringFieldUpdateOperationsInput | string
+    ownerType?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    desiredCount?: IntFieldUpdateOperationsInput | number
+    createdCount?: IntFieldUpdateOperationsInput | number
+    updatedCount?: IntFieldUpdateOperationsInput | number
+    deletedCount?: IntFieldUpdateOperationsInput | number
+    unchangedCount?: IntFieldUpdateOperationsInput | number
+    failureCode?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    failureRetryable?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    account?: AccountUpdateOneRequiredWithoutSchedulingReconcileOperationsNestedInput
+  }
+
+  export type SchedulingReconcileOperationUncheckedUpdateInput = {
+    operationId?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    ownerType?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    desiredCount?: IntFieldUpdateOperationsInput | number
+    createdCount?: IntFieldUpdateOperationsInput | number
+    updatedCount?: IntFieldUpdateOperationsInput | number
+    deletedCount?: IntFieldUpdateOperationsInput | number
+    unchangedCount?: IntFieldUpdateOperationsInput | number
+    failureCode?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    failureRetryable?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SchedulingReconcileOperationCreateManyInput = {
+    operationId: string
+    identityId: string
+    ownerType: string
+    ownerId: string
+    status: string
+    desiredCount: number
+    createdCount: number
+    updatedCount: number
+    deletedCount: number
+    unchangedCount: number
+    failureCode?: string | null
+    failureMessage?: string | null
+    failureRetryable?: boolean | null
+    startedAt: Date | string
+    finishedAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type SchedulingReconcileOperationUpdateManyMutationInput = {
+    operationId?: StringFieldUpdateOperationsInput | string
+    ownerType?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    desiredCount?: IntFieldUpdateOperationsInput | number
+    createdCount?: IntFieldUpdateOperationsInput | number
+    updatedCount?: IntFieldUpdateOperationsInput | number
+    deletedCount?: IntFieldUpdateOperationsInput | number
+    unchangedCount?: IntFieldUpdateOperationsInput | number
+    failureCode?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    failureRetryable?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SchedulingReconcileOperationUncheckedUpdateManyInput = {
+    operationId?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    ownerType?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    desiredCount?: IntFieldUpdateOperationsInput | number
+    createdCount?: IntFieldUpdateOperationsInput | number
+    updatedCount?: IntFieldUpdateOperationsInput | number
+    deletedCount?: IntFieldUpdateOperationsInput | number
+    unchangedCount?: IntFieldUpdateOperationsInput | number
+    failureCode?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    failureRetryable?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ScheduleExecutionCreateInput = {
@@ -136661,6 +142628,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateInput = {
@@ -136712,6 +142680,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUpdateInput = {
@@ -136762,6 +142731,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateInput = {
@@ -136813,6 +142783,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateCreateManyInput = {
@@ -137910,6 +143881,24 @@ export namespace Prisma {
     none?: GoalWhereInput
   }
 
+  export type LabelListRelationFilter = {
+    every?: LabelWhereInput
+    some?: LabelWhereInput
+    none?: LabelWhereInput
+  }
+
+  export type GoalLabelListRelationFilter = {
+    every?: GoalLabelWhereInput
+    some?: GoalLabelWhereInput
+    none?: GoalLabelWhereInput
+  }
+
+  export type TaskLabelListRelationFilter = {
+    every?: TaskLabelWhereInput
+    some?: TaskLabelWhereInput
+    none?: TaskLabelWhereInput
+  }
+
   export type GoalFolderListRelationFilter = {
     every?: GoalFolderWhereInput
     some?: GoalFolderWhereInput
@@ -137971,6 +143960,12 @@ export namespace Prisma {
     every?: ScheduleTaskWhereInput
     some?: ScheduleTaskWhereInput
     none?: ScheduleTaskWhereInput
+  }
+
+  export type SchedulingReconcileOperationListRelationFilter = {
+    every?: SchedulingReconcileOperationWhereInput
+    some?: SchedulingReconcileOperationWhereInput
+    none?: SchedulingReconcileOperationWhereInput
   }
 
   export type ScheduleStatisticNullableScalarRelationFilter = {
@@ -138199,6 +144194,18 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type LabelOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GoalLabelOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TaskLabelOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type GoalFolderOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -138228,6 +144235,10 @@ export namespace Prisma {
   }
 
   export type ScheduleTaskOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type SchedulingReconcileOperationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -140518,6 +146529,104 @@ export namespace Prisma {
     longestStreak?: SortOrder
   }
 
+  export type LabelIdIdentityIdCompoundUniqueInput = {
+    id: string
+    identityId: string
+  }
+
+  export type LabelIdentityIdNormalizedNameCompoundUniqueInput = {
+    identityId: string
+    normalizedName: string
+  }
+
+  export type LabelCountOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    name?: SortOrder
+    normalizedName?: SortOrder
+    color?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LabelMaxOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    name?: SortOrder
+    normalizedName?: SortOrder
+    color?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LabelMinOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    name?: SortOrder
+    normalizedName?: SortOrder
+    color?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LabelScalarRelationFilter = {
+    is?: LabelWhereInput
+    isNot?: LabelWhereInput
+  }
+
+  export type GoalLabelIdentityIdGoalIdLabelIdCompoundUniqueInput = {
+    identityId: string
+    goalId: string
+    labelId: string
+  }
+
+  export type GoalLabelCountOrderByAggregateInput = {
+    identityId?: SortOrder
+    goalId?: SortOrder
+    labelId?: SortOrder
+  }
+
+  export type GoalLabelMaxOrderByAggregateInput = {
+    identityId?: SortOrder
+    goalId?: SortOrder
+    labelId?: SortOrder
+  }
+
+  export type GoalLabelMinOrderByAggregateInput = {
+    identityId?: SortOrder
+    goalId?: SortOrder
+    labelId?: SortOrder
+  }
+
+  export type TaskTemplateScalarRelationFilter = {
+    is?: TaskTemplateWhereInput
+    isNot?: TaskTemplateWhereInput
+  }
+
+  export type TaskLabelIdentityIdTaskTemplateIdLabelIdCompoundUniqueInput = {
+    identityId: string
+    taskTemplateId: string
+    labelId: string
+  }
+
+  export type TaskLabelCountOrderByAggregateInput = {
+    identityId?: SortOrder
+    taskTemplateId?: SortOrder
+    labelId?: SortOrder
+  }
+
+  export type TaskLabelMaxOrderByAggregateInput = {
+    identityId?: SortOrder
+    taskTemplateId?: SortOrder
+    labelId?: SortOrder
+  }
+
+  export type TaskLabelMinOrderByAggregateInput = {
+    identityId?: SortOrder
+    taskTemplateId?: SortOrder
+    labelId?: SortOrder
+  }
+
   export type NotificationCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
@@ -142752,6 +148861,13 @@ export namespace Prisma {
     version?: SortOrder
   }
 
+  export type ScheduleTaskIdentityIdOwnerTypeOwnerIdSchedulingKeyCompoundUniqueInput = {
+    identityId: string
+    ownerType: string
+    ownerId: string
+    schedulingKey: string
+  }
+
   export type ScheduleTaskCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
@@ -142759,6 +148875,12 @@ export namespace Prisma {
     description?: SortOrder
     sourceModule?: SortOrder
     sourceEntityId?: SortOrder
+    schedulingKey?: SortOrder
+    ownerType?: SortOrder
+    ownerId?: SortOrder
+    handlerKey?: SortOrder
+    payloadVersion?: SortOrder
+    sourceRevision?: SortOrder
     status?: SortOrder
     enabled?: SortOrder
     cronExpression?: SortOrder
@@ -142788,6 +148910,7 @@ export namespace Prisma {
   }
 
   export type ScheduleTaskAvgOrderByAggregateInput = {
+    payloadVersion?: SortOrder
     maxExecutions?: SortOrder
     executionCount?: SortOrder
     lastExecutionDuration?: SortOrder
@@ -142807,6 +148930,12 @@ export namespace Prisma {
     description?: SortOrder
     sourceModule?: SortOrder
     sourceEntityId?: SortOrder
+    schedulingKey?: SortOrder
+    ownerType?: SortOrder
+    ownerId?: SortOrder
+    handlerKey?: SortOrder
+    payloadVersion?: SortOrder
+    sourceRevision?: SortOrder
     status?: SortOrder
     enabled?: SortOrder
     cronExpression?: SortOrder
@@ -142842,6 +148971,12 @@ export namespace Prisma {
     description?: SortOrder
     sourceModule?: SortOrder
     sourceEntityId?: SortOrder
+    schedulingKey?: SortOrder
+    ownerType?: SortOrder
+    ownerId?: SortOrder
+    handlerKey?: SortOrder
+    payloadVersion?: SortOrder
+    sourceRevision?: SortOrder
     status?: SortOrder
     enabled?: SortOrder
     cronExpression?: SortOrder
@@ -142871,6 +149006,7 @@ export namespace Prisma {
   }
 
   export type ScheduleTaskSumOrderByAggregateInput = {
+    payloadVersion?: SortOrder
     maxExecutions?: SortOrder
     executionCount?: SortOrder
     lastExecutionDuration?: SortOrder
@@ -142881,6 +149017,79 @@ export namespace Prisma {
     backoffMultiplier?: SortOrder
     timeout?: SortOrder
     version?: SortOrder
+  }
+
+  export type SchedulingReconcileOperationCountOrderByAggregateInput = {
+    operationId?: SortOrder
+    identityId?: SortOrder
+    ownerType?: SortOrder
+    ownerId?: SortOrder
+    status?: SortOrder
+    desiredCount?: SortOrder
+    createdCount?: SortOrder
+    updatedCount?: SortOrder
+    deletedCount?: SortOrder
+    unchangedCount?: SortOrder
+    failureCode?: SortOrder
+    failureMessage?: SortOrder
+    failureRetryable?: SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SchedulingReconcileOperationAvgOrderByAggregateInput = {
+    desiredCount?: SortOrder
+    createdCount?: SortOrder
+    updatedCount?: SortOrder
+    deletedCount?: SortOrder
+    unchangedCount?: SortOrder
+  }
+
+  export type SchedulingReconcileOperationMaxOrderByAggregateInput = {
+    operationId?: SortOrder
+    identityId?: SortOrder
+    ownerType?: SortOrder
+    ownerId?: SortOrder
+    status?: SortOrder
+    desiredCount?: SortOrder
+    createdCount?: SortOrder
+    updatedCount?: SortOrder
+    deletedCount?: SortOrder
+    unchangedCount?: SortOrder
+    failureCode?: SortOrder
+    failureMessage?: SortOrder
+    failureRetryable?: SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SchedulingReconcileOperationMinOrderByAggregateInput = {
+    operationId?: SortOrder
+    identityId?: SortOrder
+    ownerType?: SortOrder
+    ownerId?: SortOrder
+    status?: SortOrder
+    desiredCount?: SortOrder
+    createdCount?: SortOrder
+    updatedCount?: SortOrder
+    deletedCount?: SortOrder
+    unchangedCount?: SortOrder
+    failureCode?: SortOrder
+    failureMessage?: SortOrder
+    failureRetryable?: SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SchedulingReconcileOperationSumOrderByAggregateInput = {
+    desiredCount?: SortOrder
+    createdCount?: SortOrder
+    updatedCount?: SortOrder
+    deletedCount?: SortOrder
+    unchangedCount?: SortOrder
   }
 
   export type ScheduleTaskScalarRelationFilter = {
@@ -143345,6 +149554,11 @@ export namespace Prisma {
     isNot?: TaskTemplateWhereInput | null
   }
 
+  export type TaskTemplateIdIdentityIdCompoundUniqueInput = {
+    id: string
+    identityId: string
+  }
+
   export type TaskTemplateCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
@@ -143513,11 +149727,6 @@ export namespace Prisma {
     generateAheadDays?: SortOrder
     goalRecordValue?: SortOrder
     version?: SortOrder
-  }
-
-  export type TaskTemplateScalarRelationFilter = {
-    is?: TaskTemplateWhereInput
-    isNot?: TaskTemplateWhereInput
   }
 
   export type TaskInstanceTemplateIdOccurrenceKeyCompoundUniqueInput = {
@@ -144073,6 +150282,27 @@ export namespace Prisma {
     connect?: GoalWhereUniqueInput | GoalWhereUniqueInput[]
   }
 
+  export type LabelCreateNestedManyWithoutAccountInput = {
+    create?: XOR<LabelCreateWithoutAccountInput, LabelUncheckedCreateWithoutAccountInput> | LabelCreateWithoutAccountInput[] | LabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: LabelCreateOrConnectWithoutAccountInput | LabelCreateOrConnectWithoutAccountInput[]
+    createMany?: LabelCreateManyAccountInputEnvelope
+    connect?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+  }
+
+  export type GoalLabelCreateNestedManyWithoutAccountInput = {
+    create?: XOR<GoalLabelCreateWithoutAccountInput, GoalLabelUncheckedCreateWithoutAccountInput> | GoalLabelCreateWithoutAccountInput[] | GoalLabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutAccountInput | GoalLabelCreateOrConnectWithoutAccountInput[]
+    createMany?: GoalLabelCreateManyAccountInputEnvelope
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+  }
+
+  export type TaskLabelCreateNestedManyWithoutAccountInput = {
+    create?: XOR<TaskLabelCreateWithoutAccountInput, TaskLabelUncheckedCreateWithoutAccountInput> | TaskLabelCreateWithoutAccountInput[] | TaskLabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutAccountInput | TaskLabelCreateOrConnectWithoutAccountInput[]
+    createMany?: TaskLabelCreateManyAccountInputEnvelope
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+  }
+
   export type GoalFolderCreateNestedManyWithoutAccountInput = {
     create?: XOR<GoalFolderCreateWithoutAccountInput, GoalFolderUncheckedCreateWithoutAccountInput> | GoalFolderCreateWithoutAccountInput[] | GoalFolderUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: GoalFolderCreateOrConnectWithoutAccountInput | GoalFolderCreateOrConnectWithoutAccountInput[]
@@ -144145,6 +150375,13 @@ export namespace Prisma {
     connectOrCreate?: ScheduleTaskCreateOrConnectWithoutAccountInput | ScheduleTaskCreateOrConnectWithoutAccountInput[]
     createMany?: ScheduleTaskCreateManyAccountInputEnvelope
     connect?: ScheduleTaskWhereUniqueInput | ScheduleTaskWhereUniqueInput[]
+  }
+
+  export type SchedulingReconcileOperationCreateNestedManyWithoutAccountInput = {
+    create?: XOR<SchedulingReconcileOperationCreateWithoutAccountInput, SchedulingReconcileOperationUncheckedCreateWithoutAccountInput> | SchedulingReconcileOperationCreateWithoutAccountInput[] | SchedulingReconcileOperationUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: SchedulingReconcileOperationCreateOrConnectWithoutAccountInput | SchedulingReconcileOperationCreateOrConnectWithoutAccountInput[]
+    createMany?: SchedulingReconcileOperationCreateManyAccountInputEnvelope
+    connect?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
   }
 
   export type ScheduleStatisticCreateNestedOneWithoutAccountInput = {
@@ -144422,6 +150659,27 @@ export namespace Prisma {
     connect?: GoalWhereUniqueInput | GoalWhereUniqueInput[]
   }
 
+  export type LabelUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<LabelCreateWithoutAccountInput, LabelUncheckedCreateWithoutAccountInput> | LabelCreateWithoutAccountInput[] | LabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: LabelCreateOrConnectWithoutAccountInput | LabelCreateOrConnectWithoutAccountInput[]
+    createMany?: LabelCreateManyAccountInputEnvelope
+    connect?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+  }
+
+  export type GoalLabelUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<GoalLabelCreateWithoutAccountInput, GoalLabelUncheckedCreateWithoutAccountInput> | GoalLabelCreateWithoutAccountInput[] | GoalLabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutAccountInput | GoalLabelCreateOrConnectWithoutAccountInput[]
+    createMany?: GoalLabelCreateManyAccountInputEnvelope
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+  }
+
+  export type TaskLabelUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<TaskLabelCreateWithoutAccountInput, TaskLabelUncheckedCreateWithoutAccountInput> | TaskLabelCreateWithoutAccountInput[] | TaskLabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutAccountInput | TaskLabelCreateOrConnectWithoutAccountInput[]
+    createMany?: TaskLabelCreateManyAccountInputEnvelope
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+  }
+
   export type GoalFolderUncheckedCreateNestedManyWithoutAccountInput = {
     create?: XOR<GoalFolderCreateWithoutAccountInput, GoalFolderUncheckedCreateWithoutAccountInput> | GoalFolderCreateWithoutAccountInput[] | GoalFolderUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: GoalFolderCreateOrConnectWithoutAccountInput | GoalFolderCreateOrConnectWithoutAccountInput[]
@@ -144494,6 +150752,13 @@ export namespace Prisma {
     connectOrCreate?: ScheduleTaskCreateOrConnectWithoutAccountInput | ScheduleTaskCreateOrConnectWithoutAccountInput[]
     createMany?: ScheduleTaskCreateManyAccountInputEnvelope
     connect?: ScheduleTaskWhereUniqueInput | ScheduleTaskWhereUniqueInput[]
+  }
+
+  export type SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<SchedulingReconcileOperationCreateWithoutAccountInput, SchedulingReconcileOperationUncheckedCreateWithoutAccountInput> | SchedulingReconcileOperationCreateWithoutAccountInput[] | SchedulingReconcileOperationUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: SchedulingReconcileOperationCreateOrConnectWithoutAccountInput | SchedulingReconcileOperationCreateOrConnectWithoutAccountInput[]
+    createMany?: SchedulingReconcileOperationCreateManyAccountInputEnvelope
+    connect?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
   }
 
   export type ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput = {
@@ -144860,6 +151125,48 @@ export namespace Prisma {
     deleteMany?: GoalScalarWhereInput | GoalScalarWhereInput[]
   }
 
+  export type LabelUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<LabelCreateWithoutAccountInput, LabelUncheckedCreateWithoutAccountInput> | LabelCreateWithoutAccountInput[] | LabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: LabelCreateOrConnectWithoutAccountInput | LabelCreateOrConnectWithoutAccountInput[]
+    upsert?: LabelUpsertWithWhereUniqueWithoutAccountInput | LabelUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: LabelCreateManyAccountInputEnvelope
+    set?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+    disconnect?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+    delete?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+    connect?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+    update?: LabelUpdateWithWhereUniqueWithoutAccountInput | LabelUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: LabelUpdateManyWithWhereWithoutAccountInput | LabelUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: LabelScalarWhereInput | LabelScalarWhereInput[]
+  }
+
+  export type GoalLabelUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<GoalLabelCreateWithoutAccountInput, GoalLabelUncheckedCreateWithoutAccountInput> | GoalLabelCreateWithoutAccountInput[] | GoalLabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutAccountInput | GoalLabelCreateOrConnectWithoutAccountInput[]
+    upsert?: GoalLabelUpsertWithWhereUniqueWithoutAccountInput | GoalLabelUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: GoalLabelCreateManyAccountInputEnvelope
+    set?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    disconnect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    delete?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    update?: GoalLabelUpdateWithWhereUniqueWithoutAccountInput | GoalLabelUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: GoalLabelUpdateManyWithWhereWithoutAccountInput | GoalLabelUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: GoalLabelScalarWhereInput | GoalLabelScalarWhereInput[]
+  }
+
+  export type TaskLabelUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<TaskLabelCreateWithoutAccountInput, TaskLabelUncheckedCreateWithoutAccountInput> | TaskLabelCreateWithoutAccountInput[] | TaskLabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutAccountInput | TaskLabelCreateOrConnectWithoutAccountInput[]
+    upsert?: TaskLabelUpsertWithWhereUniqueWithoutAccountInput | TaskLabelUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: TaskLabelCreateManyAccountInputEnvelope
+    set?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    disconnect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    delete?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    update?: TaskLabelUpdateWithWhereUniqueWithoutAccountInput | TaskLabelUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: TaskLabelUpdateManyWithWhereWithoutAccountInput | TaskLabelUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: TaskLabelScalarWhereInput | TaskLabelScalarWhereInput[]
+  }
+
   export type GoalFolderUpdateManyWithoutAccountNestedInput = {
     create?: XOR<GoalFolderCreateWithoutAccountInput, GoalFolderUncheckedCreateWithoutAccountInput> | GoalFolderCreateWithoutAccountInput[] | GoalFolderUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: GoalFolderCreateOrConnectWithoutAccountInput | GoalFolderCreateOrConnectWithoutAccountInput[]
@@ -145000,6 +151307,20 @@ export namespace Prisma {
     update?: ScheduleTaskUpdateWithWhereUniqueWithoutAccountInput | ScheduleTaskUpdateWithWhereUniqueWithoutAccountInput[]
     updateMany?: ScheduleTaskUpdateManyWithWhereWithoutAccountInput | ScheduleTaskUpdateManyWithWhereWithoutAccountInput[]
     deleteMany?: ScheduleTaskScalarWhereInput | ScheduleTaskScalarWhereInput[]
+  }
+
+  export type SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<SchedulingReconcileOperationCreateWithoutAccountInput, SchedulingReconcileOperationUncheckedCreateWithoutAccountInput> | SchedulingReconcileOperationCreateWithoutAccountInput[] | SchedulingReconcileOperationUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: SchedulingReconcileOperationCreateOrConnectWithoutAccountInput | SchedulingReconcileOperationCreateOrConnectWithoutAccountInput[]
+    upsert?: SchedulingReconcileOperationUpsertWithWhereUniqueWithoutAccountInput | SchedulingReconcileOperationUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: SchedulingReconcileOperationCreateManyAccountInputEnvelope
+    set?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
+    disconnect?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
+    delete?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
+    connect?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
+    update?: SchedulingReconcileOperationUpdateWithWhereUniqueWithoutAccountInput | SchedulingReconcileOperationUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: SchedulingReconcileOperationUpdateManyWithWhereWithoutAccountInput | SchedulingReconcileOperationUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: SchedulingReconcileOperationScalarWhereInput | SchedulingReconcileOperationScalarWhereInput[]
   }
 
   export type ScheduleStatisticUpdateOneWithoutAccountNestedInput = {
@@ -145542,6 +151863,48 @@ export namespace Prisma {
     deleteMany?: GoalScalarWhereInput | GoalScalarWhereInput[]
   }
 
+  export type LabelUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<LabelCreateWithoutAccountInput, LabelUncheckedCreateWithoutAccountInput> | LabelCreateWithoutAccountInput[] | LabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: LabelCreateOrConnectWithoutAccountInput | LabelCreateOrConnectWithoutAccountInput[]
+    upsert?: LabelUpsertWithWhereUniqueWithoutAccountInput | LabelUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: LabelCreateManyAccountInputEnvelope
+    set?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+    disconnect?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+    delete?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+    connect?: LabelWhereUniqueInput | LabelWhereUniqueInput[]
+    update?: LabelUpdateWithWhereUniqueWithoutAccountInput | LabelUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: LabelUpdateManyWithWhereWithoutAccountInput | LabelUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: LabelScalarWhereInput | LabelScalarWhereInput[]
+  }
+
+  export type GoalLabelUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<GoalLabelCreateWithoutAccountInput, GoalLabelUncheckedCreateWithoutAccountInput> | GoalLabelCreateWithoutAccountInput[] | GoalLabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutAccountInput | GoalLabelCreateOrConnectWithoutAccountInput[]
+    upsert?: GoalLabelUpsertWithWhereUniqueWithoutAccountInput | GoalLabelUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: GoalLabelCreateManyAccountInputEnvelope
+    set?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    disconnect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    delete?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    update?: GoalLabelUpdateWithWhereUniqueWithoutAccountInput | GoalLabelUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: GoalLabelUpdateManyWithWhereWithoutAccountInput | GoalLabelUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: GoalLabelScalarWhereInput | GoalLabelScalarWhereInput[]
+  }
+
+  export type TaskLabelUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<TaskLabelCreateWithoutAccountInput, TaskLabelUncheckedCreateWithoutAccountInput> | TaskLabelCreateWithoutAccountInput[] | TaskLabelUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutAccountInput | TaskLabelCreateOrConnectWithoutAccountInput[]
+    upsert?: TaskLabelUpsertWithWhereUniqueWithoutAccountInput | TaskLabelUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: TaskLabelCreateManyAccountInputEnvelope
+    set?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    disconnect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    delete?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    update?: TaskLabelUpdateWithWhereUniqueWithoutAccountInput | TaskLabelUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: TaskLabelUpdateManyWithWhereWithoutAccountInput | TaskLabelUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: TaskLabelScalarWhereInput | TaskLabelScalarWhereInput[]
+  }
+
   export type GoalFolderUncheckedUpdateManyWithoutAccountNestedInput = {
     create?: XOR<GoalFolderCreateWithoutAccountInput, GoalFolderUncheckedCreateWithoutAccountInput> | GoalFolderCreateWithoutAccountInput[] | GoalFolderUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: GoalFolderCreateOrConnectWithoutAccountInput | GoalFolderCreateOrConnectWithoutAccountInput[]
@@ -145682,6 +152045,20 @@ export namespace Prisma {
     update?: ScheduleTaskUpdateWithWhereUniqueWithoutAccountInput | ScheduleTaskUpdateWithWhereUniqueWithoutAccountInput[]
     updateMany?: ScheduleTaskUpdateManyWithWhereWithoutAccountInput | ScheduleTaskUpdateManyWithWhereWithoutAccountInput[]
     deleteMany?: ScheduleTaskScalarWhereInput | ScheduleTaskScalarWhereInput[]
+  }
+
+  export type SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<SchedulingReconcileOperationCreateWithoutAccountInput, SchedulingReconcileOperationUncheckedCreateWithoutAccountInput> | SchedulingReconcileOperationCreateWithoutAccountInput[] | SchedulingReconcileOperationUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: SchedulingReconcileOperationCreateOrConnectWithoutAccountInput | SchedulingReconcileOperationCreateOrConnectWithoutAccountInput[]
+    upsert?: SchedulingReconcileOperationUpsertWithWhereUniqueWithoutAccountInput | SchedulingReconcileOperationUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: SchedulingReconcileOperationCreateManyAccountInputEnvelope
+    set?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
+    disconnect?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
+    delete?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
+    connect?: SchedulingReconcileOperationWhereUniqueInput | SchedulingReconcileOperationWhereUniqueInput[]
+    update?: SchedulingReconcileOperationUpdateWithWhereUniqueWithoutAccountInput | SchedulingReconcileOperationUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: SchedulingReconcileOperationUpdateManyWithWhereWithoutAccountInput | SchedulingReconcileOperationUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: SchedulingReconcileOperationScalarWhereInput | SchedulingReconcileOperationScalarWhereInput[]
   }
 
   export type ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput = {
@@ -146802,6 +153179,13 @@ export namespace Prisma {
     connect?: FocusSessionWhereUniqueInput | FocusSessionWhereUniqueInput[]
   }
 
+  export type GoalLabelCreateNestedManyWithoutGoalInput = {
+    create?: XOR<GoalLabelCreateWithoutGoalInput, GoalLabelUncheckedCreateWithoutGoalInput> | GoalLabelCreateWithoutGoalInput[] | GoalLabelUncheckedCreateWithoutGoalInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutGoalInput | GoalLabelCreateOrConnectWithoutGoalInput[]
+    createMany?: GoalLabelCreateManyGoalInputEnvelope
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+  }
+
   export type GoalUncheckedCreateNestedManyWithoutParentGoalInput = {
     create?: XOR<GoalCreateWithoutParentGoalInput, GoalUncheckedCreateWithoutParentGoalInput> | GoalCreateWithoutParentGoalInput[] | GoalUncheckedCreateWithoutParentGoalInput[]
     connectOrCreate?: GoalCreateOrConnectWithoutParentGoalInput | GoalCreateOrConnectWithoutParentGoalInput[]
@@ -146835,6 +153219,13 @@ export namespace Prisma {
     connectOrCreate?: FocusSessionCreateOrConnectWithoutGoalInput | FocusSessionCreateOrConnectWithoutGoalInput[]
     createMany?: FocusSessionCreateManyGoalInputEnvelope
     connect?: FocusSessionWhereUniqueInput | FocusSessionWhereUniqueInput[]
+  }
+
+  export type GoalLabelUncheckedCreateNestedManyWithoutGoalInput = {
+    create?: XOR<GoalLabelCreateWithoutGoalInput, GoalLabelUncheckedCreateWithoutGoalInput> | GoalLabelCreateWithoutGoalInput[] | GoalLabelUncheckedCreateWithoutGoalInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutGoalInput | GoalLabelCreateOrConnectWithoutGoalInput[]
+    createMany?: GoalLabelCreateManyGoalInputEnvelope
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
   }
 
   export type GoalUpdatetagsInput = {
@@ -146940,6 +153331,20 @@ export namespace Prisma {
     deleteMany?: FocusSessionScalarWhereInput | FocusSessionScalarWhereInput[]
   }
 
+  export type GoalLabelUpdateManyWithoutGoalNestedInput = {
+    create?: XOR<GoalLabelCreateWithoutGoalInput, GoalLabelUncheckedCreateWithoutGoalInput> | GoalLabelCreateWithoutGoalInput[] | GoalLabelUncheckedCreateWithoutGoalInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutGoalInput | GoalLabelCreateOrConnectWithoutGoalInput[]
+    upsert?: GoalLabelUpsertWithWhereUniqueWithoutGoalInput | GoalLabelUpsertWithWhereUniqueWithoutGoalInput[]
+    createMany?: GoalLabelCreateManyGoalInputEnvelope
+    set?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    disconnect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    delete?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    update?: GoalLabelUpdateWithWhereUniqueWithoutGoalInput | GoalLabelUpdateWithWhereUniqueWithoutGoalInput[]
+    updateMany?: GoalLabelUpdateManyWithWhereWithoutGoalInput | GoalLabelUpdateManyWithWhereWithoutGoalInput[]
+    deleteMany?: GoalLabelScalarWhereInput | GoalLabelScalarWhereInput[]
+  }
+
   export type GoalUncheckedUpdateManyWithoutParentGoalNestedInput = {
     create?: XOR<GoalCreateWithoutParentGoalInput, GoalUncheckedCreateWithoutParentGoalInput> | GoalCreateWithoutParentGoalInput[] | GoalUncheckedCreateWithoutParentGoalInput[]
     connectOrCreate?: GoalCreateOrConnectWithoutParentGoalInput | GoalCreateOrConnectWithoutParentGoalInput[]
@@ -147008,6 +153413,20 @@ export namespace Prisma {
     update?: FocusSessionUpdateWithWhereUniqueWithoutGoalInput | FocusSessionUpdateWithWhereUniqueWithoutGoalInput[]
     updateMany?: FocusSessionUpdateManyWithWhereWithoutGoalInput | FocusSessionUpdateManyWithWhereWithoutGoalInput[]
     deleteMany?: FocusSessionScalarWhereInput | FocusSessionScalarWhereInput[]
+  }
+
+  export type GoalLabelUncheckedUpdateManyWithoutGoalNestedInput = {
+    create?: XOR<GoalLabelCreateWithoutGoalInput, GoalLabelUncheckedCreateWithoutGoalInput> | GoalLabelCreateWithoutGoalInput[] | GoalLabelUncheckedCreateWithoutGoalInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutGoalInput | GoalLabelCreateOrConnectWithoutGoalInput[]
+    upsert?: GoalLabelUpsertWithWhereUniqueWithoutGoalInput | GoalLabelUpsertWithWhereUniqueWithoutGoalInput[]
+    createMany?: GoalLabelCreateManyGoalInputEnvelope
+    set?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    disconnect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    delete?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    update?: GoalLabelUpdateWithWhereUniqueWithoutGoalInput | GoalLabelUpdateWithWhereUniqueWithoutGoalInput[]
+    updateMany?: GoalLabelUpdateManyWithWhereWithoutGoalInput | GoalLabelUpdateManyWithWhereWithoutGoalInput[]
+    deleteMany?: GoalLabelScalarWhereInput | GoalLabelScalarWhereInput[]
   }
 
   export type AccountCreateNestedOneWithoutGoalFoldersInput = {
@@ -147607,6 +154026,188 @@ export namespace Prisma {
     upsert?: HabitUpsertWithoutStreakInput
     connect?: HabitWhereUniqueInput
     update?: XOR<XOR<HabitUpdateToOneWithWhereWithoutStreakInput, HabitUpdateWithoutStreakInput>, HabitUncheckedUpdateWithoutStreakInput>
+  }
+
+  export type AccountCreateNestedOneWithoutLabelsInput = {
+    create?: XOR<AccountCreateWithoutLabelsInput, AccountUncheckedCreateWithoutLabelsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutLabelsInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type GoalLabelCreateNestedManyWithoutLabelInput = {
+    create?: XOR<GoalLabelCreateWithoutLabelInput, GoalLabelUncheckedCreateWithoutLabelInput> | GoalLabelCreateWithoutLabelInput[] | GoalLabelUncheckedCreateWithoutLabelInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutLabelInput | GoalLabelCreateOrConnectWithoutLabelInput[]
+    createMany?: GoalLabelCreateManyLabelInputEnvelope
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+  }
+
+  export type TaskLabelCreateNestedManyWithoutLabelInput = {
+    create?: XOR<TaskLabelCreateWithoutLabelInput, TaskLabelUncheckedCreateWithoutLabelInput> | TaskLabelCreateWithoutLabelInput[] | TaskLabelUncheckedCreateWithoutLabelInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutLabelInput | TaskLabelCreateOrConnectWithoutLabelInput[]
+    createMany?: TaskLabelCreateManyLabelInputEnvelope
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+  }
+
+  export type GoalLabelUncheckedCreateNestedManyWithoutLabelInput = {
+    create?: XOR<GoalLabelCreateWithoutLabelInput, GoalLabelUncheckedCreateWithoutLabelInput> | GoalLabelCreateWithoutLabelInput[] | GoalLabelUncheckedCreateWithoutLabelInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutLabelInput | GoalLabelCreateOrConnectWithoutLabelInput[]
+    createMany?: GoalLabelCreateManyLabelInputEnvelope
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+  }
+
+  export type TaskLabelUncheckedCreateNestedManyWithoutLabelInput = {
+    create?: XOR<TaskLabelCreateWithoutLabelInput, TaskLabelUncheckedCreateWithoutLabelInput> | TaskLabelCreateWithoutLabelInput[] | TaskLabelUncheckedCreateWithoutLabelInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutLabelInput | TaskLabelCreateOrConnectWithoutLabelInput[]
+    createMany?: TaskLabelCreateManyLabelInputEnvelope
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+  }
+
+  export type AccountUpdateOneRequiredWithoutLabelsNestedInput = {
+    create?: XOR<AccountCreateWithoutLabelsInput, AccountUncheckedCreateWithoutLabelsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutLabelsInput
+    upsert?: AccountUpsertWithoutLabelsInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutLabelsInput, AccountUpdateWithoutLabelsInput>, AccountUncheckedUpdateWithoutLabelsInput>
+  }
+
+  export type GoalLabelUpdateManyWithoutLabelNestedInput = {
+    create?: XOR<GoalLabelCreateWithoutLabelInput, GoalLabelUncheckedCreateWithoutLabelInput> | GoalLabelCreateWithoutLabelInput[] | GoalLabelUncheckedCreateWithoutLabelInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutLabelInput | GoalLabelCreateOrConnectWithoutLabelInput[]
+    upsert?: GoalLabelUpsertWithWhereUniqueWithoutLabelInput | GoalLabelUpsertWithWhereUniqueWithoutLabelInput[]
+    createMany?: GoalLabelCreateManyLabelInputEnvelope
+    set?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    disconnect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    delete?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    update?: GoalLabelUpdateWithWhereUniqueWithoutLabelInput | GoalLabelUpdateWithWhereUniqueWithoutLabelInput[]
+    updateMany?: GoalLabelUpdateManyWithWhereWithoutLabelInput | GoalLabelUpdateManyWithWhereWithoutLabelInput[]
+    deleteMany?: GoalLabelScalarWhereInput | GoalLabelScalarWhereInput[]
+  }
+
+  export type TaskLabelUpdateManyWithoutLabelNestedInput = {
+    create?: XOR<TaskLabelCreateWithoutLabelInput, TaskLabelUncheckedCreateWithoutLabelInput> | TaskLabelCreateWithoutLabelInput[] | TaskLabelUncheckedCreateWithoutLabelInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutLabelInput | TaskLabelCreateOrConnectWithoutLabelInput[]
+    upsert?: TaskLabelUpsertWithWhereUniqueWithoutLabelInput | TaskLabelUpsertWithWhereUniqueWithoutLabelInput[]
+    createMany?: TaskLabelCreateManyLabelInputEnvelope
+    set?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    disconnect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    delete?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    update?: TaskLabelUpdateWithWhereUniqueWithoutLabelInput | TaskLabelUpdateWithWhereUniqueWithoutLabelInput[]
+    updateMany?: TaskLabelUpdateManyWithWhereWithoutLabelInput | TaskLabelUpdateManyWithWhereWithoutLabelInput[]
+    deleteMany?: TaskLabelScalarWhereInput | TaskLabelScalarWhereInput[]
+  }
+
+  export type GoalLabelUncheckedUpdateManyWithoutLabelNestedInput = {
+    create?: XOR<GoalLabelCreateWithoutLabelInput, GoalLabelUncheckedCreateWithoutLabelInput> | GoalLabelCreateWithoutLabelInput[] | GoalLabelUncheckedCreateWithoutLabelInput[]
+    connectOrCreate?: GoalLabelCreateOrConnectWithoutLabelInput | GoalLabelCreateOrConnectWithoutLabelInput[]
+    upsert?: GoalLabelUpsertWithWhereUniqueWithoutLabelInput | GoalLabelUpsertWithWhereUniqueWithoutLabelInput[]
+    createMany?: GoalLabelCreateManyLabelInputEnvelope
+    set?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    disconnect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    delete?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    connect?: GoalLabelWhereUniqueInput | GoalLabelWhereUniqueInput[]
+    update?: GoalLabelUpdateWithWhereUniqueWithoutLabelInput | GoalLabelUpdateWithWhereUniqueWithoutLabelInput[]
+    updateMany?: GoalLabelUpdateManyWithWhereWithoutLabelInput | GoalLabelUpdateManyWithWhereWithoutLabelInput[]
+    deleteMany?: GoalLabelScalarWhereInput | GoalLabelScalarWhereInput[]
+  }
+
+  export type TaskLabelUncheckedUpdateManyWithoutLabelNestedInput = {
+    create?: XOR<TaskLabelCreateWithoutLabelInput, TaskLabelUncheckedCreateWithoutLabelInput> | TaskLabelCreateWithoutLabelInput[] | TaskLabelUncheckedCreateWithoutLabelInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutLabelInput | TaskLabelCreateOrConnectWithoutLabelInput[]
+    upsert?: TaskLabelUpsertWithWhereUniqueWithoutLabelInput | TaskLabelUpsertWithWhereUniqueWithoutLabelInput[]
+    createMany?: TaskLabelCreateManyLabelInputEnvelope
+    set?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    disconnect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    delete?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    update?: TaskLabelUpdateWithWhereUniqueWithoutLabelInput | TaskLabelUpdateWithWhereUniqueWithoutLabelInput[]
+    updateMany?: TaskLabelUpdateManyWithWhereWithoutLabelInput | TaskLabelUpdateManyWithWhereWithoutLabelInput[]
+    deleteMany?: TaskLabelScalarWhereInput | TaskLabelScalarWhereInput[]
+  }
+
+  export type AccountCreateNestedOneWithoutGoalLabelsInput = {
+    create?: XOR<AccountCreateWithoutGoalLabelsInput, AccountUncheckedCreateWithoutGoalLabelsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutGoalLabelsInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type GoalCreateNestedOneWithoutLabelLinksInput = {
+    create?: XOR<GoalCreateWithoutLabelLinksInput, GoalUncheckedCreateWithoutLabelLinksInput>
+    connectOrCreate?: GoalCreateOrConnectWithoutLabelLinksInput
+    connect?: GoalWhereUniqueInput
+  }
+
+  export type LabelCreateNestedOneWithoutGoalLinksInput = {
+    create?: XOR<LabelCreateWithoutGoalLinksInput, LabelUncheckedCreateWithoutGoalLinksInput>
+    connectOrCreate?: LabelCreateOrConnectWithoutGoalLinksInput
+    connect?: LabelWhereUniqueInput
+  }
+
+  export type AccountUpdateOneRequiredWithoutGoalLabelsNestedInput = {
+    create?: XOR<AccountCreateWithoutGoalLabelsInput, AccountUncheckedCreateWithoutGoalLabelsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutGoalLabelsInput
+    upsert?: AccountUpsertWithoutGoalLabelsInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutGoalLabelsInput, AccountUpdateWithoutGoalLabelsInput>, AccountUncheckedUpdateWithoutGoalLabelsInput>
+  }
+
+  export type GoalUpdateOneRequiredWithoutLabelLinksNestedInput = {
+    create?: XOR<GoalCreateWithoutLabelLinksInput, GoalUncheckedCreateWithoutLabelLinksInput>
+    connectOrCreate?: GoalCreateOrConnectWithoutLabelLinksInput
+    upsert?: GoalUpsertWithoutLabelLinksInput
+    connect?: GoalWhereUniqueInput
+    update?: XOR<XOR<GoalUpdateToOneWithWhereWithoutLabelLinksInput, GoalUpdateWithoutLabelLinksInput>, GoalUncheckedUpdateWithoutLabelLinksInput>
+  }
+
+  export type LabelUpdateOneRequiredWithoutGoalLinksNestedInput = {
+    create?: XOR<LabelCreateWithoutGoalLinksInput, LabelUncheckedCreateWithoutGoalLinksInput>
+    connectOrCreate?: LabelCreateOrConnectWithoutGoalLinksInput
+    upsert?: LabelUpsertWithoutGoalLinksInput
+    connect?: LabelWhereUniqueInput
+    update?: XOR<XOR<LabelUpdateToOneWithWhereWithoutGoalLinksInput, LabelUpdateWithoutGoalLinksInput>, LabelUncheckedUpdateWithoutGoalLinksInput>
+  }
+
+  export type AccountCreateNestedOneWithoutTaskLabelsInput = {
+    create?: XOR<AccountCreateWithoutTaskLabelsInput, AccountUncheckedCreateWithoutTaskLabelsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutTaskLabelsInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type TaskTemplateCreateNestedOneWithoutLabelLinksInput = {
+    create?: XOR<TaskTemplateCreateWithoutLabelLinksInput, TaskTemplateUncheckedCreateWithoutLabelLinksInput>
+    connectOrCreate?: TaskTemplateCreateOrConnectWithoutLabelLinksInput
+    connect?: TaskTemplateWhereUniqueInput
+  }
+
+  export type LabelCreateNestedOneWithoutTaskLinksInput = {
+    create?: XOR<LabelCreateWithoutTaskLinksInput, LabelUncheckedCreateWithoutTaskLinksInput>
+    connectOrCreate?: LabelCreateOrConnectWithoutTaskLinksInput
+    connect?: LabelWhereUniqueInput
+  }
+
+  export type AccountUpdateOneRequiredWithoutTaskLabelsNestedInput = {
+    create?: XOR<AccountCreateWithoutTaskLabelsInput, AccountUncheckedCreateWithoutTaskLabelsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutTaskLabelsInput
+    upsert?: AccountUpsertWithoutTaskLabelsInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutTaskLabelsInput, AccountUpdateWithoutTaskLabelsInput>, AccountUncheckedUpdateWithoutTaskLabelsInput>
+  }
+
+  export type TaskTemplateUpdateOneRequiredWithoutLabelLinksNestedInput = {
+    create?: XOR<TaskTemplateCreateWithoutLabelLinksInput, TaskTemplateUncheckedCreateWithoutLabelLinksInput>
+    connectOrCreate?: TaskTemplateCreateOrConnectWithoutLabelLinksInput
+    upsert?: TaskTemplateUpsertWithoutLabelLinksInput
+    connect?: TaskTemplateWhereUniqueInput
+    update?: XOR<XOR<TaskTemplateUpdateToOneWithWhereWithoutLabelLinksInput, TaskTemplateUpdateWithoutLabelLinksInput>, TaskTemplateUncheckedUpdateWithoutLabelLinksInput>
+  }
+
+  export type LabelUpdateOneRequiredWithoutTaskLinksNestedInput = {
+    create?: XOR<LabelCreateWithoutTaskLinksInput, LabelUncheckedCreateWithoutTaskLinksInput>
+    connectOrCreate?: LabelCreateOrConnectWithoutTaskLinksInput
+    upsert?: LabelUpsertWithoutTaskLinksInput
+    connect?: LabelWhereUniqueInput
+    update?: XOR<XOR<LabelUpdateToOneWithWhereWithoutTaskLinksInput, LabelUpdateWithoutTaskLinksInput>, LabelUncheckedUpdateWithoutTaskLinksInput>
   }
 
   export type NotificationChannelCreateNestedManyWithoutNotificationInput = {
@@ -149165,6 +155766,20 @@ export namespace Prisma {
     deleteMany?: ScheduleExecutionScalarWhereInput | ScheduleExecutionScalarWhereInput[]
   }
 
+  export type AccountCreateNestedOneWithoutSchedulingReconcileOperationsInput = {
+    create?: XOR<AccountCreateWithoutSchedulingReconcileOperationsInput, AccountUncheckedCreateWithoutSchedulingReconcileOperationsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutSchedulingReconcileOperationsInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type AccountUpdateOneRequiredWithoutSchedulingReconcileOperationsNestedInput = {
+    create?: XOR<AccountCreateWithoutSchedulingReconcileOperationsInput, AccountUncheckedCreateWithoutSchedulingReconcileOperationsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutSchedulingReconcileOperationsInput
+    upsert?: AccountUpsertWithoutSchedulingReconcileOperationsInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutSchedulingReconcileOperationsInput, AccountUpdateWithoutSchedulingReconcileOperationsInput>, AccountUncheckedUpdateWithoutSchedulingReconcileOperationsInput>
+  }
+
   export type AccountCreateNestedOneWithoutScheduleExecutionsInput = {
     create?: XOR<AccountCreateWithoutScheduleExecutionsInput, AccountUncheckedCreateWithoutScheduleExecutionsInput>
     connectOrCreate?: AccountCreateOrConnectWithoutScheduleExecutionsInput
@@ -149336,6 +155951,13 @@ export namespace Prisma {
     connect?: TaskTemplateHistoryWhereUniqueInput | TaskTemplateHistoryWhereUniqueInput[]
   }
 
+  export type TaskLabelCreateNestedManyWithoutTaskTemplateInput = {
+    create?: XOR<TaskLabelCreateWithoutTaskTemplateInput, TaskLabelUncheckedCreateWithoutTaskTemplateInput> | TaskLabelCreateWithoutTaskTemplateInput[] | TaskLabelUncheckedCreateWithoutTaskTemplateInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutTaskTemplateInput | TaskLabelCreateOrConnectWithoutTaskTemplateInput[]
+    createMany?: TaskLabelCreateManyTaskTemplateInputEnvelope
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+  }
+
   export type TaskTemplateUncheckedCreateNestedManyWithoutParentTaskInput = {
     create?: XOR<TaskTemplateCreateWithoutParentTaskInput, TaskTemplateUncheckedCreateWithoutParentTaskInput> | TaskTemplateCreateWithoutParentTaskInput[] | TaskTemplateUncheckedCreateWithoutParentTaskInput[]
     connectOrCreate?: TaskTemplateCreateOrConnectWithoutParentTaskInput | TaskTemplateCreateOrConnectWithoutParentTaskInput[]
@@ -149369,6 +155991,13 @@ export namespace Prisma {
     connectOrCreate?: TaskTemplateHistoryCreateOrConnectWithoutTemplateInput | TaskTemplateHistoryCreateOrConnectWithoutTemplateInput[]
     createMany?: TaskTemplateHistoryCreateManyTemplateInputEnvelope
     connect?: TaskTemplateHistoryWhereUniqueInput | TaskTemplateHistoryWhereUniqueInput[]
+  }
+
+  export type TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput = {
+    create?: XOR<TaskLabelCreateWithoutTaskTemplateInput, TaskLabelUncheckedCreateWithoutTaskTemplateInput> | TaskLabelCreateWithoutTaskTemplateInput[] | TaskLabelUncheckedCreateWithoutTaskTemplateInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutTaskTemplateInput | TaskLabelCreateOrConnectWithoutTaskTemplateInput[]
+    createMany?: TaskLabelCreateManyTaskTemplateInputEnvelope
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
   }
 
   export type AccountUpdateOneRequiredWithoutTaskTemplatesNestedInput = {
@@ -149479,6 +156108,20 @@ export namespace Prisma {
     deleteMany?: TaskTemplateHistoryScalarWhereInput | TaskTemplateHistoryScalarWhereInput[]
   }
 
+  export type TaskLabelUpdateManyWithoutTaskTemplateNestedInput = {
+    create?: XOR<TaskLabelCreateWithoutTaskTemplateInput, TaskLabelUncheckedCreateWithoutTaskTemplateInput> | TaskLabelCreateWithoutTaskTemplateInput[] | TaskLabelUncheckedCreateWithoutTaskTemplateInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutTaskTemplateInput | TaskLabelCreateOrConnectWithoutTaskTemplateInput[]
+    upsert?: TaskLabelUpsertWithWhereUniqueWithoutTaskTemplateInput | TaskLabelUpsertWithWhereUniqueWithoutTaskTemplateInput[]
+    createMany?: TaskLabelCreateManyTaskTemplateInputEnvelope
+    set?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    disconnect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    delete?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    update?: TaskLabelUpdateWithWhereUniqueWithoutTaskTemplateInput | TaskLabelUpdateWithWhereUniqueWithoutTaskTemplateInput[]
+    updateMany?: TaskLabelUpdateManyWithWhereWithoutTaskTemplateInput | TaskLabelUpdateManyWithWhereWithoutTaskTemplateInput[]
+    deleteMany?: TaskLabelScalarWhereInput | TaskLabelScalarWhereInput[]
+  }
+
   export type TaskTemplateUncheckedUpdateManyWithoutParentTaskNestedInput = {
     create?: XOR<TaskTemplateCreateWithoutParentTaskInput, TaskTemplateUncheckedCreateWithoutParentTaskInput> | TaskTemplateCreateWithoutParentTaskInput[] | TaskTemplateUncheckedCreateWithoutParentTaskInput[]
     connectOrCreate?: TaskTemplateCreateOrConnectWithoutParentTaskInput | TaskTemplateCreateOrConnectWithoutParentTaskInput[]
@@ -149547,6 +156190,20 @@ export namespace Prisma {
     update?: TaskTemplateHistoryUpdateWithWhereUniqueWithoutTemplateInput | TaskTemplateHistoryUpdateWithWhereUniqueWithoutTemplateInput[]
     updateMany?: TaskTemplateHistoryUpdateManyWithWhereWithoutTemplateInput | TaskTemplateHistoryUpdateManyWithWhereWithoutTemplateInput[]
     deleteMany?: TaskTemplateHistoryScalarWhereInput | TaskTemplateHistoryScalarWhereInput[]
+  }
+
+  export type TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput = {
+    create?: XOR<TaskLabelCreateWithoutTaskTemplateInput, TaskLabelUncheckedCreateWithoutTaskTemplateInput> | TaskLabelCreateWithoutTaskTemplateInput[] | TaskLabelUncheckedCreateWithoutTaskTemplateInput[]
+    connectOrCreate?: TaskLabelCreateOrConnectWithoutTaskTemplateInput | TaskLabelCreateOrConnectWithoutTaskTemplateInput[]
+    upsert?: TaskLabelUpsertWithWhereUniqueWithoutTaskTemplateInput | TaskLabelUpsertWithWhereUniqueWithoutTaskTemplateInput[]
+    createMany?: TaskLabelCreateManyTaskTemplateInputEnvelope
+    set?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    disconnect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    delete?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    connect?: TaskLabelWhereUniqueInput | TaskLabelWhereUniqueInput[]
+    update?: TaskLabelUpdateWithWhereUniqueWithoutTaskTemplateInput | TaskLabelUpdateWithWhereUniqueWithoutTaskTemplateInput[]
+    updateMany?: TaskLabelUpdateManyWithWhereWithoutTaskTemplateInput | TaskLabelUpdateManyWithWhereWithoutTaskTemplateInput[]
+    deleteMany?: TaskLabelScalarWhereInput | TaskLabelScalarWhereInput[]
   }
 
   export type AccountCreateNestedOneWithoutTaskInstancesInput = {
@@ -150433,6 +157090,7 @@ export namespace Prisma {
     reviews?: GoalReviewCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutAccountInput = {
@@ -150465,6 +157123,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutAccountInput = {
@@ -150474,6 +157133,78 @@ export namespace Prisma {
 
   export type GoalCreateManyAccountInputEnvelope = {
     data: GoalCreateManyAccountInput | GoalCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LabelCreateWithoutAccountInput = {
+    id: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    goalLinks?: GoalLabelCreateNestedManyWithoutLabelInput
+    taskLinks?: TaskLabelCreateNestedManyWithoutLabelInput
+  }
+
+  export type LabelUncheckedCreateWithoutAccountInput = {
+    id: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    goalLinks?: GoalLabelUncheckedCreateNestedManyWithoutLabelInput
+    taskLinks?: TaskLabelUncheckedCreateNestedManyWithoutLabelInput
+  }
+
+  export type LabelCreateOrConnectWithoutAccountInput = {
+    where: LabelWhereUniqueInput
+    create: XOR<LabelCreateWithoutAccountInput, LabelUncheckedCreateWithoutAccountInput>
+  }
+
+  export type LabelCreateManyAccountInputEnvelope = {
+    data: LabelCreateManyAccountInput | LabelCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GoalLabelCreateWithoutAccountInput = {
+    goal: GoalCreateNestedOneWithoutLabelLinksInput
+    label: LabelCreateNestedOneWithoutGoalLinksInput
+  }
+
+  export type GoalLabelUncheckedCreateWithoutAccountInput = {
+    goalId: string
+    labelId: string
+  }
+
+  export type GoalLabelCreateOrConnectWithoutAccountInput = {
+    where: GoalLabelWhereUniqueInput
+    create: XOR<GoalLabelCreateWithoutAccountInput, GoalLabelUncheckedCreateWithoutAccountInput>
+  }
+
+  export type GoalLabelCreateManyAccountInputEnvelope = {
+    data: GoalLabelCreateManyAccountInput | GoalLabelCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TaskLabelCreateWithoutAccountInput = {
+    taskTemplate: TaskTemplateCreateNestedOneWithoutLabelLinksInput
+    label: LabelCreateNestedOneWithoutTaskLinksInput
+  }
+
+  export type TaskLabelUncheckedCreateWithoutAccountInput = {
+    taskTemplateId: string
+    labelId: string
+  }
+
+  export type TaskLabelCreateOrConnectWithoutAccountInput = {
+    where: TaskLabelWhereUniqueInput
+    create: XOR<TaskLabelCreateWithoutAccountInput, TaskLabelUncheckedCreateWithoutAccountInput>
+  }
+
+  export type TaskLabelCreateManyAccountInputEnvelope = {
+    data: TaskLabelCreateManyAccountInput | TaskLabelCreateManyAccountInput[]
     skipDuplicates?: boolean
   }
 
@@ -150931,6 +157662,12 @@ export namespace Prisma {
     description?: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey?: string | null
+    ownerType?: string | null
+    ownerId?: string | null
+    handlerKey?: string | null
+    payloadVersion?: number | null
+    sourceRevision?: string | null
     status: string
     enabled: boolean
     cronExpression?: string | null
@@ -150966,6 +157703,12 @@ export namespace Prisma {
     description?: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey?: string | null
+    ownerType?: string | null
+    ownerId?: string | null
+    handlerKey?: string | null
+    payloadVersion?: number | null
+    sourceRevision?: string | null
     status: string
     enabled: boolean
     cronExpression?: string | null
@@ -151002,6 +157745,52 @@ export namespace Prisma {
 
   export type ScheduleTaskCreateManyAccountInputEnvelope = {
     data: ScheduleTaskCreateManyAccountInput | ScheduleTaskCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SchedulingReconcileOperationCreateWithoutAccountInput = {
+    operationId: string
+    ownerType: string
+    ownerId: string
+    status: string
+    desiredCount: number
+    createdCount: number
+    updatedCount: number
+    deletedCount: number
+    unchangedCount: number
+    failureCode?: string | null
+    failureMessage?: string | null
+    failureRetryable?: boolean | null
+    startedAt: Date | string
+    finishedAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type SchedulingReconcileOperationUncheckedCreateWithoutAccountInput = {
+    operationId: string
+    ownerType: string
+    ownerId: string
+    status: string
+    desiredCount: number
+    createdCount: number
+    updatedCount: number
+    deletedCount: number
+    unchangedCount: number
+    failureCode?: string | null
+    failureMessage?: string | null
+    failureRetryable?: boolean | null
+    startedAt: Date | string
+    finishedAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type SchedulingReconcileOperationCreateOrConnectWithoutAccountInput = {
+    where: SchedulingReconcileOperationWhereUniqueInput
+    create: XOR<SchedulingReconcileOperationCreateWithoutAccountInput, SchedulingReconcileOperationUncheckedCreateWithoutAccountInput>
+  }
+
+  export type SchedulingReconcileOperationCreateManyAccountInputEnvelope = {
+    data: SchedulingReconcileOperationCreateManyAccountInput | SchedulingReconcileOperationCreateManyAccountInput[]
     skipDuplicates?: boolean
   }
 
@@ -151308,6 +158097,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutAccountInput = {
@@ -151358,6 +158148,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutAccountInput = {
@@ -152752,6 +159543,85 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Goal"> | Date | string | null
   }
 
+  export type LabelUpsertWithWhereUniqueWithoutAccountInput = {
+    where: LabelWhereUniqueInput
+    update: XOR<LabelUpdateWithoutAccountInput, LabelUncheckedUpdateWithoutAccountInput>
+    create: XOR<LabelCreateWithoutAccountInput, LabelUncheckedCreateWithoutAccountInput>
+  }
+
+  export type LabelUpdateWithWhereUniqueWithoutAccountInput = {
+    where: LabelWhereUniqueInput
+    data: XOR<LabelUpdateWithoutAccountInput, LabelUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type LabelUpdateManyWithWhereWithoutAccountInput = {
+    where: LabelScalarWhereInput
+    data: XOR<LabelUpdateManyMutationInput, LabelUncheckedUpdateManyWithoutAccountInput>
+  }
+
+  export type LabelScalarWhereInput = {
+    AND?: LabelScalarWhereInput | LabelScalarWhereInput[]
+    OR?: LabelScalarWhereInput[]
+    NOT?: LabelScalarWhereInput | LabelScalarWhereInput[]
+    id?: StringFilter<"Label"> | string
+    identityId?: StringFilter<"Label"> | string
+    name?: StringFilter<"Label"> | string
+    normalizedName?: StringFilter<"Label"> | string
+    color?: StringNullableFilter<"Label"> | string | null
+    createdAt?: DateTimeFilter<"Label"> | Date | string
+    updatedAt?: DateTimeFilter<"Label"> | Date | string
+  }
+
+  export type GoalLabelUpsertWithWhereUniqueWithoutAccountInput = {
+    where: GoalLabelWhereUniqueInput
+    update: XOR<GoalLabelUpdateWithoutAccountInput, GoalLabelUncheckedUpdateWithoutAccountInput>
+    create: XOR<GoalLabelCreateWithoutAccountInput, GoalLabelUncheckedCreateWithoutAccountInput>
+  }
+
+  export type GoalLabelUpdateWithWhereUniqueWithoutAccountInput = {
+    where: GoalLabelWhereUniqueInput
+    data: XOR<GoalLabelUpdateWithoutAccountInput, GoalLabelUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type GoalLabelUpdateManyWithWhereWithoutAccountInput = {
+    where: GoalLabelScalarWhereInput
+    data: XOR<GoalLabelUpdateManyMutationInput, GoalLabelUncheckedUpdateManyWithoutAccountInput>
+  }
+
+  export type GoalLabelScalarWhereInput = {
+    AND?: GoalLabelScalarWhereInput | GoalLabelScalarWhereInput[]
+    OR?: GoalLabelScalarWhereInput[]
+    NOT?: GoalLabelScalarWhereInput | GoalLabelScalarWhereInput[]
+    identityId?: StringFilter<"GoalLabel"> | string
+    goalId?: StringFilter<"GoalLabel"> | string
+    labelId?: StringFilter<"GoalLabel"> | string
+  }
+
+  export type TaskLabelUpsertWithWhereUniqueWithoutAccountInput = {
+    where: TaskLabelWhereUniqueInput
+    update: XOR<TaskLabelUpdateWithoutAccountInput, TaskLabelUncheckedUpdateWithoutAccountInput>
+    create: XOR<TaskLabelCreateWithoutAccountInput, TaskLabelUncheckedCreateWithoutAccountInput>
+  }
+
+  export type TaskLabelUpdateWithWhereUniqueWithoutAccountInput = {
+    where: TaskLabelWhereUniqueInput
+    data: XOR<TaskLabelUpdateWithoutAccountInput, TaskLabelUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type TaskLabelUpdateManyWithWhereWithoutAccountInput = {
+    where: TaskLabelScalarWhereInput
+    data: XOR<TaskLabelUpdateManyMutationInput, TaskLabelUncheckedUpdateManyWithoutAccountInput>
+  }
+
+  export type TaskLabelScalarWhereInput = {
+    AND?: TaskLabelScalarWhereInput | TaskLabelScalarWhereInput[]
+    OR?: TaskLabelScalarWhereInput[]
+    NOT?: TaskLabelScalarWhereInput | TaskLabelScalarWhereInput[]
+    identityId?: StringFilter<"TaskLabel"> | string
+    taskTemplateId?: StringFilter<"TaskLabel"> | string
+    labelId?: StringFilter<"TaskLabel"> | string
+  }
+
   export type GoalFolderUpsertWithWhereUniqueWithoutAccountInput = {
     where: GoalFolderWhereUniqueInput
     update: XOR<GoalFolderUpdateWithoutAccountInput, GoalFolderUncheckedUpdateWithoutAccountInput>
@@ -153156,6 +160026,12 @@ export namespace Prisma {
     description?: StringNullableFilter<"ScheduleTask"> | string | null
     sourceModule?: StringFilter<"ScheduleTask"> | string
     sourceEntityId?: StringFilter<"ScheduleTask"> | string
+    schedulingKey?: StringNullableFilter<"ScheduleTask"> | string | null
+    ownerType?: StringNullableFilter<"ScheduleTask"> | string | null
+    ownerId?: StringNullableFilter<"ScheduleTask"> | string | null
+    handlerKey?: StringNullableFilter<"ScheduleTask"> | string | null
+    payloadVersion?: IntNullableFilter<"ScheduleTask"> | number | null
+    sourceRevision?: StringNullableFilter<"ScheduleTask"> | string | null
     status?: StringFilter<"ScheduleTask"> | string
     enabled?: BoolFilter<"ScheduleTask"> | boolean
     cronExpression?: StringNullableFilter<"ScheduleTask"> | string | null
@@ -153182,6 +160058,44 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ScheduleTask"> | Date | string
     updatedAt?: DateTimeFilter<"ScheduleTask"> | Date | string
     deletedAt?: DateTimeNullableFilter<"ScheduleTask"> | Date | string | null
+  }
+
+  export type SchedulingReconcileOperationUpsertWithWhereUniqueWithoutAccountInput = {
+    where: SchedulingReconcileOperationWhereUniqueInput
+    update: XOR<SchedulingReconcileOperationUpdateWithoutAccountInput, SchedulingReconcileOperationUncheckedUpdateWithoutAccountInput>
+    create: XOR<SchedulingReconcileOperationCreateWithoutAccountInput, SchedulingReconcileOperationUncheckedCreateWithoutAccountInput>
+  }
+
+  export type SchedulingReconcileOperationUpdateWithWhereUniqueWithoutAccountInput = {
+    where: SchedulingReconcileOperationWhereUniqueInput
+    data: XOR<SchedulingReconcileOperationUpdateWithoutAccountInput, SchedulingReconcileOperationUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type SchedulingReconcileOperationUpdateManyWithWhereWithoutAccountInput = {
+    where: SchedulingReconcileOperationScalarWhereInput
+    data: XOR<SchedulingReconcileOperationUpdateManyMutationInput, SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountInput>
+  }
+
+  export type SchedulingReconcileOperationScalarWhereInput = {
+    AND?: SchedulingReconcileOperationScalarWhereInput | SchedulingReconcileOperationScalarWhereInput[]
+    OR?: SchedulingReconcileOperationScalarWhereInput[]
+    NOT?: SchedulingReconcileOperationScalarWhereInput | SchedulingReconcileOperationScalarWhereInput[]
+    operationId?: StringFilter<"SchedulingReconcileOperation"> | string
+    identityId?: StringFilter<"SchedulingReconcileOperation"> | string
+    ownerType?: StringFilter<"SchedulingReconcileOperation"> | string
+    ownerId?: StringFilter<"SchedulingReconcileOperation"> | string
+    status?: StringFilter<"SchedulingReconcileOperation"> | string
+    desiredCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    createdCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    updatedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    deletedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    unchangedCount?: IntFilter<"SchedulingReconcileOperation"> | number
+    failureCode?: StringNullableFilter<"SchedulingReconcileOperation"> | string | null
+    failureMessage?: StringNullableFilter<"SchedulingReconcileOperation"> | string | null
+    failureRetryable?: BoolNullableFilter<"SchedulingReconcileOperation"> | boolean | null
+    startedAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
+    finishedAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
+    createdAt?: DateTimeFilter<"SchedulingReconcileOperation"> | Date | string
   }
 
   export type ScheduleStatisticUpsertWithoutAccountInput = {
@@ -154456,6 +161370,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -154467,6 +161384,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -154526,6 +161444,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -154537,6 +161458,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -154612,6 +161534,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -154623,6 +161548,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -154682,6 +161608,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -154693,6 +161622,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -154752,6 +161682,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -154763,6 +161696,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -154822,6 +161756,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -154833,6 +161770,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -154936,6 +161874,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -154947,6 +161888,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -155006,6 +161948,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -155017,6 +161962,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -155092,6 +162038,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -155103,6 +162052,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -155162,6 +162112,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -155173,6 +162126,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -155279,6 +162233,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -155290,6 +162247,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -155349,6 +162307,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -155360,6 +162321,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -155456,6 +162418,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -155467,6 +162432,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -155526,6 +162492,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -155537,6 +162506,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -155612,6 +162582,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -155623,6 +162596,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -155682,6 +162656,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -155693,6 +162670,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -155752,6 +162730,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -155763,6 +162744,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -155822,6 +162804,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -155833,6 +162818,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -155908,6 +162894,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -155919,6 +162908,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -155978,6 +162968,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -155989,6 +162982,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -156048,6 +163042,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -156059,6 +163056,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -156118,6 +163116,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -156129,6 +163130,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -156204,6 +163206,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -156215,6 +163220,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -156274,6 +163280,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -156285,6 +163294,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -156344,6 +163354,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -156355,6 +163368,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -156414,6 +163428,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -156425,6 +163442,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -156500,6 +163518,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -156511,6 +163532,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -156570,6 +163592,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -156581,6 +163606,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -156640,6 +163666,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -156651,6 +163680,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -156710,6 +163740,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -156721,6 +163754,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -156796,6 +163830,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -156807,6 +163844,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -156866,6 +163904,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -156877,6 +163918,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -157039,6 +164081,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -157050,6 +164095,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -157109,6 +164155,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -157120,6 +164169,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -157292,6 +164342,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -157303,6 +164356,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -157362,6 +164416,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -157373,6 +164430,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -157696,6 +164754,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -157707,6 +164768,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -157766,6 +164828,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -157777,6 +164842,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -157868,6 +164934,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -157879,6 +164948,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -157938,6 +165008,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -157949,6 +165022,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -158046,6 +165120,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -158057,6 +165134,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -158116,6 +165194,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -158127,6 +165208,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -158257,6 +165339,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -158268,6 +165353,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -158327,6 +165413,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -158338,6 +165427,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -158488,6 +165578,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -158499,6 +165592,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -158558,6 +165652,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -158569,6 +165666,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -158691,6 +165789,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -158702,6 +165803,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -158761,6 +165863,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -158772,6 +165877,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -158868,6 +165974,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -158879,6 +165988,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -158938,6 +166048,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -158949,6 +166062,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -159057,6 +166171,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -159068,6 +166185,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -159127,6 +166245,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -159138,6 +166259,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -159236,6 +166358,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -159247,6 +166372,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -159306,6 +166432,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -159317,6 +166446,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -159428,6 +166558,7 @@ export namespace Prisma {
     reviews?: GoalReviewCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutChildGoalsInput = {
@@ -159460,6 +166591,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutChildGoalsInput = {
@@ -159497,6 +166629,7 @@ export namespace Prisma {
     reviews?: GoalReviewCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutParentGoalInput = {
@@ -159529,6 +166662,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutParentGoalInput = {
@@ -159715,6 +166849,25 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type GoalLabelCreateWithoutGoalInput = {
+    account: AccountCreateNestedOneWithoutGoalLabelsInput
+    label: LabelCreateNestedOneWithoutGoalLinksInput
+  }
+
+  export type GoalLabelUncheckedCreateWithoutGoalInput = {
+    labelId: string
+  }
+
+  export type GoalLabelCreateOrConnectWithoutGoalInput = {
+    where: GoalLabelWhereUniqueInput
+    create: XOR<GoalLabelCreateWithoutGoalInput, GoalLabelUncheckedCreateWithoutGoalInput>
+  }
+
+  export type GoalLabelCreateManyGoalInputEnvelope = {
+    data: GoalLabelCreateManyGoalInput | GoalLabelCreateManyGoalInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AccountUpsertWithoutGoalsInput = {
     update: XOR<AccountUpdateWithoutGoalsInput, AccountUncheckedUpdateWithoutGoalsInput>
     create: XOR<AccountCreateWithoutGoalsInput, AccountUncheckedCreateWithoutGoalsInput>
@@ -159750,6 +166903,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -159761,6 +166917,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -159820,6 +166977,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -159831,6 +166991,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -159954,6 +167115,7 @@ export namespace Prisma {
     reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutChildGoalsInput = {
@@ -159986,6 +167148,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUpsertWithWhereUniqueWithoutParentGoalInput = {
@@ -160127,6 +167290,22 @@ export namespace Prisma {
     data: XOR<FocusSessionUpdateManyMutationInput, FocusSessionUncheckedUpdateManyWithoutGoalInput>
   }
 
+  export type GoalLabelUpsertWithWhereUniqueWithoutGoalInput = {
+    where: GoalLabelWhereUniqueInput
+    update: XOR<GoalLabelUpdateWithoutGoalInput, GoalLabelUncheckedUpdateWithoutGoalInput>
+    create: XOR<GoalLabelCreateWithoutGoalInput, GoalLabelUncheckedCreateWithoutGoalInput>
+  }
+
+  export type GoalLabelUpdateWithWhereUniqueWithoutGoalInput = {
+    where: GoalLabelWhereUniqueInput
+    data: XOR<GoalLabelUpdateWithoutGoalInput, GoalLabelUncheckedUpdateWithoutGoalInput>
+  }
+
+  export type GoalLabelUpdateManyWithWhereWithoutGoalInput = {
+    where: GoalLabelScalarWhereInput
+    data: XOR<GoalLabelUpdateManyMutationInput, GoalLabelUncheckedUpdateManyWithoutGoalInput>
+  }
+
   export type AccountCreateWithoutGoalFoldersInput = {
     status?: string
     profile: JsonNullValueInput | InputJsonValue
@@ -160152,6 +167331,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
     reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
@@ -160162,6 +167344,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -160222,6 +167405,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
     reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -160232,6 +167418,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -160389,6 +167576,7 @@ export namespace Prisma {
     reviews?: GoalReviewCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutFolderInput = {
@@ -160421,6 +167609,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutFolderInput = {
@@ -160469,6 +167658,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
     reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
@@ -160479,6 +167671,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -160539,6 +167732,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
     reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -160549,6 +167745,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -160693,6 +167890,7 @@ export namespace Prisma {
     reviews?: GoalReviewCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutKeyResultsInput = {
@@ -160725,6 +167923,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutKeyResultsInput = {
@@ -160779,6 +167978,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutKeyResultInput = {
@@ -160827,6 +168027,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutKeyResultInput = {
@@ -160947,6 +168148,7 @@ export namespace Prisma {
     reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutKeyResultsInput = {
@@ -160979,6 +168181,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type TaskTemplateUpsertWithWhereUniqueWithoutKeyResultInput = {
@@ -161169,6 +168372,7 @@ export namespace Prisma {
     keyResults?: KeyResultCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutReviewsInput = {
@@ -161201,6 +168405,7 @@ export namespace Prisma {
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutReviewsInput = {
@@ -161249,6 +168454,7 @@ export namespace Prisma {
     keyResults?: KeyResultUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutReviewsInput = {
@@ -161281,6 +168487,7 @@ export namespace Prisma {
     keyResults?: KeyResultUncheckedUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalCreateWithoutKeyResultWeightSnapshotsInput = {
@@ -161313,6 +168520,7 @@ export namespace Prisma {
     keyResults?: KeyResultCreateNestedManyWithoutGoalInput
     reviews?: GoalReviewCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutKeyResultWeightSnapshotsInput = {
@@ -161345,6 +168553,7 @@ export namespace Prisma {
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutGoalInput
     reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutKeyResultWeightSnapshotsInput = {
@@ -161437,6 +168646,7 @@ export namespace Prisma {
     keyResults?: KeyResultUpdateManyWithoutGoalNestedInput
     reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutKeyResultWeightSnapshotsInput = {
@@ -161469,6 +168679,7 @@ export namespace Prisma {
     keyResults?: KeyResultUncheckedUpdateManyWithoutGoalNestedInput
     reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type KeyResultUpsertWithoutKeyResultWeightSnapshotsInput = {
@@ -161545,6 +168756,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -161556,6 +168770,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -161615,6 +168830,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -161626,6 +168844,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -161696,6 +168915,7 @@ export namespace Prisma {
     keyResults?: KeyResultCreateNestedManyWithoutGoalInput
     reviews?: GoalReviewCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutFocusSessionsInput = {
@@ -161728,6 +168948,7 @@ export namespace Prisma {
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutGoalInput
     reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
+    labelLinks?: GoalLabelUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutFocusSessionsInput = {
@@ -161770,6 +168991,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -161781,6 +169005,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -161840,6 +169065,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -161851,6 +169079,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -161927,6 +169156,7 @@ export namespace Prisma {
     keyResults?: KeyResultUpdateManyWithoutGoalNestedInput
     reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutFocusSessionsInput = {
@@ -161959,6 +169189,7 @@ export namespace Prisma {
     keyResults?: KeyResultUncheckedUpdateManyWithoutGoalNestedInput
     reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type AccountCreateWithoutFocusModesInput = {
@@ -161985,6 +169216,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -161996,6 +169230,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -162055,6 +169290,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -162066,6 +169304,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -162141,6 +169380,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -162152,6 +169394,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -162211,6 +169454,9 @@ export namespace Prisma {
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -162222,6 +169468,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -162433,6 +169680,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -162444,6 +169694,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
     walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
@@ -162503,6 +169754,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -162514,6 +169768,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
     walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
@@ -162638,6 +169893,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -162649,6 +169907,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
     walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
@@ -162708,6 +169967,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -162719,6 +169981,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
     walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
@@ -163055,6 +170318,1498 @@ export namespace Prisma {
     occurrences?: HabitOccurrenceUncheckedUpdateManyWithoutHabitNestedInput
   }
 
+  export type AccountCreateWithoutLabelsInput = {
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
+    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
+    goals?: GoalCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
+    habits?: HabitCreateNestedManyWithoutAccountInput
+    relations?: RelationCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
+    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
+    notifications?: NotificationCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
+    folders?: FolderCreateNestedManyWithoutIdentityInput
+    resources?: ResourceCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountUncheckedCreateWithoutLabelsInput = {
+    id: string
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
+    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
+    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
+    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
+    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
+    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountCreateOrConnectWithoutLabelsInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutLabelsInput, AccountUncheckedCreateWithoutLabelsInput>
+  }
+
+  export type GoalLabelCreateWithoutLabelInput = {
+    account: AccountCreateNestedOneWithoutGoalLabelsInput
+    goal: GoalCreateNestedOneWithoutLabelLinksInput
+  }
+
+  export type GoalLabelUncheckedCreateWithoutLabelInput = {
+    goalId: string
+  }
+
+  export type GoalLabelCreateOrConnectWithoutLabelInput = {
+    where: GoalLabelWhereUniqueInput
+    create: XOR<GoalLabelCreateWithoutLabelInput, GoalLabelUncheckedCreateWithoutLabelInput>
+  }
+
+  export type GoalLabelCreateManyLabelInputEnvelope = {
+    data: GoalLabelCreateManyLabelInput | GoalLabelCreateManyLabelInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TaskLabelCreateWithoutLabelInput = {
+    account: AccountCreateNestedOneWithoutTaskLabelsInput
+    taskTemplate: TaskTemplateCreateNestedOneWithoutLabelLinksInput
+  }
+
+  export type TaskLabelUncheckedCreateWithoutLabelInput = {
+    taskTemplateId: string
+  }
+
+  export type TaskLabelCreateOrConnectWithoutLabelInput = {
+    where: TaskLabelWhereUniqueInput
+    create: XOR<TaskLabelCreateWithoutLabelInput, TaskLabelUncheckedCreateWithoutLabelInput>
+  }
+
+  export type TaskLabelCreateManyLabelInputEnvelope = {
+    data: TaskLabelCreateManyLabelInput | TaskLabelCreateManyLabelInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AccountUpsertWithoutLabelsInput = {
+    update: XOR<AccountUpdateWithoutLabelsInput, AccountUncheckedUpdateWithoutLabelsInput>
+    create: XOR<AccountCreateWithoutLabelsInput, AccountUncheckedCreateWithoutLabelsInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutLabelsInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutLabelsInput, AccountUncheckedUpdateWithoutLabelsInput>
+  }
+
+  export type AccountUpdateWithoutLabelsInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
+    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
+    goals?: GoalUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
+    habits?: HabitUpdateManyWithoutAccountNestedInput
+    relations?: RelationUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
+    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutLabelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
+    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
+    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
+  }
+
+  export type GoalLabelUpsertWithWhereUniqueWithoutLabelInput = {
+    where: GoalLabelWhereUniqueInput
+    update: XOR<GoalLabelUpdateWithoutLabelInput, GoalLabelUncheckedUpdateWithoutLabelInput>
+    create: XOR<GoalLabelCreateWithoutLabelInput, GoalLabelUncheckedCreateWithoutLabelInput>
+  }
+
+  export type GoalLabelUpdateWithWhereUniqueWithoutLabelInput = {
+    where: GoalLabelWhereUniqueInput
+    data: XOR<GoalLabelUpdateWithoutLabelInput, GoalLabelUncheckedUpdateWithoutLabelInput>
+  }
+
+  export type GoalLabelUpdateManyWithWhereWithoutLabelInput = {
+    where: GoalLabelScalarWhereInput
+    data: XOR<GoalLabelUpdateManyMutationInput, GoalLabelUncheckedUpdateManyWithoutLabelInput>
+  }
+
+  export type TaskLabelUpsertWithWhereUniqueWithoutLabelInput = {
+    where: TaskLabelWhereUniqueInput
+    update: XOR<TaskLabelUpdateWithoutLabelInput, TaskLabelUncheckedUpdateWithoutLabelInput>
+    create: XOR<TaskLabelCreateWithoutLabelInput, TaskLabelUncheckedCreateWithoutLabelInput>
+  }
+
+  export type TaskLabelUpdateWithWhereUniqueWithoutLabelInput = {
+    where: TaskLabelWhereUniqueInput
+    data: XOR<TaskLabelUpdateWithoutLabelInput, TaskLabelUncheckedUpdateWithoutLabelInput>
+  }
+
+  export type TaskLabelUpdateManyWithWhereWithoutLabelInput = {
+    where: TaskLabelScalarWhereInput
+    data: XOR<TaskLabelUpdateManyMutationInput, TaskLabelUncheckedUpdateManyWithoutLabelInput>
+  }
+
+  export type AccountCreateWithoutGoalLabelsInput = {
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
+    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
+    goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
+    habits?: HabitCreateNestedManyWithoutAccountInput
+    relations?: RelationCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
+    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
+    notifications?: NotificationCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
+    folders?: FolderCreateNestedManyWithoutIdentityInput
+    resources?: ResourceCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountUncheckedCreateWithoutGoalLabelsInput = {
+    id: string
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
+    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
+    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
+    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
+    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
+    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountCreateOrConnectWithoutGoalLabelsInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutGoalLabelsInput, AccountUncheckedCreateWithoutGoalLabelsInput>
+  }
+
+  export type GoalCreateWithoutLabelLinksInput = {
+    id: string
+    name: string
+    description?: string | null
+    color?: string
+    feasibilityAnalysis?: string | null
+    motivation?: string | null
+    status?: string
+    importance?: string
+    priority?: number
+    category?: string | null
+    tags?: GoalCreatetagsInput | string[]
+    startDate?: Date | string | null
+    targetDate?: Date | string | null
+    completedAt?: Date | string | null
+    archivedAt?: Date | string | null
+    rollupPolicy?: string
+    sortOrder?: number
+    reminderConfig?: string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    account: AccountCreateNestedOneWithoutGoalsInput
+    folder?: GoalFolderCreateNestedOneWithoutGoalsInput
+    parentGoal?: GoalCreateNestedOneWithoutChildGoalsInput
+    childGoals?: GoalCreateNestedManyWithoutParentGoalInput
+    keyResults?: KeyResultCreateNestedManyWithoutGoalInput
+    reviews?: GoalReviewCreateNestedManyWithoutGoalInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutGoalInput
+    focusSessions?: FocusSessionCreateNestedManyWithoutGoalInput
+  }
+
+  export type GoalUncheckedCreateWithoutLabelLinksInput = {
+    id: string
+    identityId: string
+    name: string
+    description?: string | null
+    color?: string
+    feasibilityAnalysis?: string | null
+    motivation?: string | null
+    status?: string
+    importance?: string
+    priority?: number
+    category?: string | null
+    tags?: GoalCreatetagsInput | string[]
+    startDate?: Date | string | null
+    targetDate?: Date | string | null
+    completedAt?: Date | string | null
+    archivedAt?: Date | string | null
+    folderId?: string | null
+    parentGoalId?: string | null
+    rollupPolicy?: string
+    sortOrder?: number
+    reminderConfig?: string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    childGoals?: GoalUncheckedCreateNestedManyWithoutParentGoalInput
+    keyResults?: KeyResultUncheckedCreateNestedManyWithoutGoalInput
+    reviews?: GoalReviewUncheckedCreateNestedManyWithoutGoalInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutGoalInput
+    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutGoalInput
+  }
+
+  export type GoalCreateOrConnectWithoutLabelLinksInput = {
+    where: GoalWhereUniqueInput
+    create: XOR<GoalCreateWithoutLabelLinksInput, GoalUncheckedCreateWithoutLabelLinksInput>
+  }
+
+  export type LabelCreateWithoutGoalLinksInput = {
+    id: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    account: AccountCreateNestedOneWithoutLabelsInput
+    taskLinks?: TaskLabelCreateNestedManyWithoutLabelInput
+  }
+
+  export type LabelUncheckedCreateWithoutGoalLinksInput = {
+    id: string
+    identityId: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    taskLinks?: TaskLabelUncheckedCreateNestedManyWithoutLabelInput
+  }
+
+  export type LabelCreateOrConnectWithoutGoalLinksInput = {
+    where: LabelWhereUniqueInput
+    create: XOR<LabelCreateWithoutGoalLinksInput, LabelUncheckedCreateWithoutGoalLinksInput>
+  }
+
+  export type AccountUpsertWithoutGoalLabelsInput = {
+    update: XOR<AccountUpdateWithoutGoalLabelsInput, AccountUncheckedUpdateWithoutGoalLabelsInput>
+    create: XOR<AccountCreateWithoutGoalLabelsInput, AccountUncheckedCreateWithoutGoalLabelsInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutGoalLabelsInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutGoalLabelsInput, AccountUncheckedUpdateWithoutGoalLabelsInput>
+  }
+
+  export type AccountUpdateWithoutGoalLabelsInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
+    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
+    goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
+    habits?: HabitUpdateManyWithoutAccountNestedInput
+    relations?: RelationUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
+    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutGoalLabelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
+    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
+    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
+  }
+
+  export type GoalUpsertWithoutLabelLinksInput = {
+    update: XOR<GoalUpdateWithoutLabelLinksInput, GoalUncheckedUpdateWithoutLabelLinksInput>
+    create: XOR<GoalCreateWithoutLabelLinksInput, GoalUncheckedCreateWithoutLabelLinksInput>
+    where?: GoalWhereInput
+  }
+
+  export type GoalUpdateToOneWithWhereWithoutLabelLinksInput = {
+    where?: GoalWhereInput
+    data: XOR<GoalUpdateWithoutLabelLinksInput, GoalUncheckedUpdateWithoutLabelLinksInput>
+  }
+
+  export type GoalUpdateWithoutLabelLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: StringFieldUpdateOperationsInput | string
+    feasibilityAnalysis?: NullableStringFieldUpdateOperationsInput | string | null
+    motivation?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    importance?: StringFieldUpdateOperationsInput | string
+    priority?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: GoalUpdatetagsInput | string[]
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rollupPolicy?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    reminderConfig?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    account?: AccountUpdateOneRequiredWithoutGoalsNestedInput
+    folder?: GoalFolderUpdateOneWithoutGoalsNestedInput
+    parentGoal?: GoalUpdateOneWithoutChildGoalsNestedInput
+    childGoals?: GoalUpdateManyWithoutParentGoalNestedInput
+    keyResults?: KeyResultUpdateManyWithoutGoalNestedInput
+    reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
+    focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+  }
+
+  export type GoalUncheckedUpdateWithoutLabelLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: StringFieldUpdateOperationsInput | string
+    feasibilityAnalysis?: NullableStringFieldUpdateOperationsInput | string | null
+    motivation?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    importance?: StringFieldUpdateOperationsInput | string
+    priority?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: GoalUpdatetagsInput | string[]
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    folderId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentGoalId?: NullableStringFieldUpdateOperationsInput | string | null
+    rollupPolicy?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    reminderConfig?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    childGoals?: GoalUncheckedUpdateManyWithoutParentGoalNestedInput
+    keyResults?: KeyResultUncheckedUpdateManyWithoutGoalNestedInput
+    reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
+    focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+  }
+
+  export type LabelUpsertWithoutGoalLinksInput = {
+    update: XOR<LabelUpdateWithoutGoalLinksInput, LabelUncheckedUpdateWithoutGoalLinksInput>
+    create: XOR<LabelCreateWithoutGoalLinksInput, LabelUncheckedCreateWithoutGoalLinksInput>
+    where?: LabelWhereInput
+  }
+
+  export type LabelUpdateToOneWithWhereWithoutGoalLinksInput = {
+    where?: LabelWhereInput
+    data: XOR<LabelUpdateWithoutGoalLinksInput, LabelUncheckedUpdateWithoutGoalLinksInput>
+  }
+
+  export type LabelUpdateWithoutGoalLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    account?: AccountUpdateOneRequiredWithoutLabelsNestedInput
+    taskLinks?: TaskLabelUpdateManyWithoutLabelNestedInput
+  }
+
+  export type LabelUncheckedUpdateWithoutGoalLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    taskLinks?: TaskLabelUncheckedUpdateManyWithoutLabelNestedInput
+  }
+
+  export type AccountCreateWithoutTaskLabelsInput = {
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
+    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
+    goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
+    habits?: HabitCreateNestedManyWithoutAccountInput
+    relations?: RelationCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
+    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
+    notifications?: NotificationCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
+    folders?: FolderCreateNestedManyWithoutIdentityInput
+    resources?: ResourceCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountUncheckedCreateWithoutTaskLabelsInput = {
+    id: string
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
+    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
+    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
+    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
+    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
+    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountCreateOrConnectWithoutTaskLabelsInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutTaskLabelsInput, AccountUncheckedCreateWithoutTaskLabelsInput>
+  }
+
+  export type TaskTemplateCreateWithoutLabelLinksInput = {
+    id: string
+    name: string
+    description?: string | null
+    status: string
+    importance?: string
+    priority?: number | null
+    color?: string | null
+    tags: string
+    timeConfigType?: string | null
+    timeConfigStartTime?: Date | string | null
+    timeConfigEndTime?: Date | string | null
+    timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
+    recurrenceRuleType?: string | null
+    recurrenceRuleInterval?: number | null
+    recurrenceRuleDaysOfWeek?: string | null
+    recurrenceRuleDayOfMonth?: number | null
+    recurrenceRuleMonthOfYear?: number | null
+    recurrenceRuleEndDate?: Date | string | null
+    recurrenceRuleCount?: number | null
+    reminderConfigEnabled?: boolean | null
+    reminderConfigTimeOffsetMinutes?: number | null
+    reminderConfigUnit?: string | null
+    reminderConfigChannel?: string | null
+    lastGeneratedDate?: Date | string | null
+    generateAheadDays?: number | null
+    goalRecordValue?: number | null
+    goalProgressTrigger?: string | null
+    checklist?: string | null
+    blockingReason?: string | null
+    dependencyStatus?: string
+    isBlocked?: boolean
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    account: AccountCreateNestedOneWithoutTaskTemplatesInput
+    folder?: TaskFolderCreateNestedOneWithoutTemplatesInput
+    keyResult?: KeyResultCreateNestedOneWithoutLinkedTaskTemplatesInput
+    parentTask?: TaskTemplateCreateNestedOneWithoutSubtasksInput
+    subtasks?: TaskTemplateCreateNestedManyWithoutParentTaskInput
+    predecessorDependencies?: TaskDependencyCreateNestedManyWithoutPredecessorTaskInput
+    successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
+    instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
+    history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+  }
+
+  export type TaskTemplateUncheckedCreateWithoutLabelLinksInput = {
+    id: string
+    identityId: string
+    name: string
+    description?: string | null
+    status: string
+    importance?: string
+    priority?: number | null
+    color?: string | null
+    tags: string
+    folderId?: string | null
+    parentTaskId?: string | null
+    timeConfigType?: string | null
+    timeConfigStartTime?: Date | string | null
+    timeConfigEndTime?: Date | string | null
+    timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
+    recurrenceRuleType?: string | null
+    recurrenceRuleInterval?: number | null
+    recurrenceRuleDaysOfWeek?: string | null
+    recurrenceRuleDayOfMonth?: number | null
+    recurrenceRuleMonthOfYear?: number | null
+    recurrenceRuleEndDate?: Date | string | null
+    recurrenceRuleCount?: number | null
+    reminderConfigEnabled?: boolean | null
+    reminderConfigTimeOffsetMinutes?: number | null
+    reminderConfigUnit?: string | null
+    reminderConfigChannel?: string | null
+    lastGeneratedDate?: Date | string | null
+    generateAheadDays?: number | null
+    goalId?: string | null
+    keyResultId?: string | null
+    goalRecordValue?: number | null
+    goalProgressTrigger?: string | null
+    checklist?: string | null
+    blockingReason?: string | null
+    dependencyStatus?: string
+    isBlocked?: boolean
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    subtasks?: TaskTemplateUncheckedCreateNestedManyWithoutParentTaskInput
+    predecessorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutPredecessorTaskInput
+    successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
+    instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
+    history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+  }
+
+  export type TaskTemplateCreateOrConnectWithoutLabelLinksInput = {
+    where: TaskTemplateWhereUniqueInput
+    create: XOR<TaskTemplateCreateWithoutLabelLinksInput, TaskTemplateUncheckedCreateWithoutLabelLinksInput>
+  }
+
+  export type LabelCreateWithoutTaskLinksInput = {
+    id: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    account: AccountCreateNestedOneWithoutLabelsInput
+    goalLinks?: GoalLabelCreateNestedManyWithoutLabelInput
+  }
+
+  export type LabelUncheckedCreateWithoutTaskLinksInput = {
+    id: string
+    identityId: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    goalLinks?: GoalLabelUncheckedCreateNestedManyWithoutLabelInput
+  }
+
+  export type LabelCreateOrConnectWithoutTaskLinksInput = {
+    where: LabelWhereUniqueInput
+    create: XOR<LabelCreateWithoutTaskLinksInput, LabelUncheckedCreateWithoutTaskLinksInput>
+  }
+
+  export type AccountUpsertWithoutTaskLabelsInput = {
+    update: XOR<AccountUpdateWithoutTaskLabelsInput, AccountUncheckedUpdateWithoutTaskLabelsInput>
+    create: XOR<AccountCreateWithoutTaskLabelsInput, AccountUncheckedCreateWithoutTaskLabelsInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutTaskLabelsInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutTaskLabelsInput, AccountUncheckedUpdateWithoutTaskLabelsInput>
+  }
+
+  export type AccountUpdateWithoutTaskLabelsInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
+    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
+    goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
+    habits?: HabitUpdateManyWithoutAccountNestedInput
+    relations?: RelationUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
+    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutTaskLabelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
+    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
+    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
+  }
+
+  export type TaskTemplateUpsertWithoutLabelLinksInput = {
+    update: XOR<TaskTemplateUpdateWithoutLabelLinksInput, TaskTemplateUncheckedUpdateWithoutLabelLinksInput>
+    create: XOR<TaskTemplateCreateWithoutLabelLinksInput, TaskTemplateUncheckedCreateWithoutLabelLinksInput>
+    where?: TaskTemplateWhereInput
+  }
+
+  export type TaskTemplateUpdateToOneWithWhereWithoutLabelLinksInput = {
+    where?: TaskTemplateWhereInput
+    data: XOR<TaskTemplateUpdateWithoutLabelLinksInput, TaskTemplateUncheckedUpdateWithoutLabelLinksInput>
+  }
+
+  export type TaskTemplateUpdateWithoutLabelLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    importance?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: StringFieldUpdateOperationsInput | string
+    timeConfigType?: NullableStringFieldUpdateOperationsInput | string | null
+    timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceRuleDayOfMonth?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrenceRuleMonthOfYear?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrenceRuleEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    recurrenceRuleCount?: NullableIntFieldUpdateOperationsInput | number | null
+    reminderConfigEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    reminderConfigTimeOffsetMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    reminderConfigUnit?: NullableStringFieldUpdateOperationsInput | string | null
+    reminderConfigChannel?: NullableStringFieldUpdateOperationsInput | string | null
+    lastGeneratedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    generateAheadDays?: NullableIntFieldUpdateOperationsInput | number | null
+    goalRecordValue?: NullableFloatFieldUpdateOperationsInput | number | null
+    goalProgressTrigger?: NullableStringFieldUpdateOperationsInput | string | null
+    checklist?: NullableStringFieldUpdateOperationsInput | string | null
+    blockingReason?: NullableStringFieldUpdateOperationsInput | string | null
+    dependencyStatus?: StringFieldUpdateOperationsInput | string
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    account?: AccountUpdateOneRequiredWithoutTaskTemplatesNestedInput
+    folder?: TaskFolderUpdateOneWithoutTemplatesNestedInput
+    keyResult?: KeyResultUpdateOneWithoutLinkedTaskTemplatesNestedInput
+    parentTask?: TaskTemplateUpdateOneWithoutSubtasksNestedInput
+    subtasks?: TaskTemplateUpdateManyWithoutParentTaskNestedInput
+    predecessorDependencies?: TaskDependencyUpdateManyWithoutPredecessorTaskNestedInput
+    successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
+    instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
+    history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type TaskTemplateUncheckedUpdateWithoutLabelLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    importance?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: StringFieldUpdateOperationsInput | string
+    folderId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentTaskId?: NullableStringFieldUpdateOperationsInput | string | null
+    timeConfigType?: NullableStringFieldUpdateOperationsInput | string | null
+    timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceRuleDayOfMonth?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrenceRuleMonthOfYear?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrenceRuleEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    recurrenceRuleCount?: NullableIntFieldUpdateOperationsInput | number | null
+    reminderConfigEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    reminderConfigTimeOffsetMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    reminderConfigUnit?: NullableStringFieldUpdateOperationsInput | string | null
+    reminderConfigChannel?: NullableStringFieldUpdateOperationsInput | string | null
+    lastGeneratedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    generateAheadDays?: NullableIntFieldUpdateOperationsInput | number | null
+    goalId?: NullableStringFieldUpdateOperationsInput | string | null
+    keyResultId?: NullableStringFieldUpdateOperationsInput | string | null
+    goalRecordValue?: NullableFloatFieldUpdateOperationsInput | number | null
+    goalProgressTrigger?: NullableStringFieldUpdateOperationsInput | string | null
+    checklist?: NullableStringFieldUpdateOperationsInput | string | null
+    blockingReason?: NullableStringFieldUpdateOperationsInput | string | null
+    dependencyStatus?: StringFieldUpdateOperationsInput | string
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subtasks?: TaskTemplateUncheckedUpdateManyWithoutParentTaskNestedInput
+    predecessorDependencies?: TaskDependencyUncheckedUpdateManyWithoutPredecessorTaskNestedInput
+    successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
+    instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
+    history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type LabelUpsertWithoutTaskLinksInput = {
+    update: XOR<LabelUpdateWithoutTaskLinksInput, LabelUncheckedUpdateWithoutTaskLinksInput>
+    create: XOR<LabelCreateWithoutTaskLinksInput, LabelUncheckedCreateWithoutTaskLinksInput>
+    where?: LabelWhereInput
+  }
+
+  export type LabelUpdateToOneWithWhereWithoutTaskLinksInput = {
+    where?: LabelWhereInput
+    data: XOR<LabelUpdateWithoutTaskLinksInput, LabelUncheckedUpdateWithoutTaskLinksInput>
+  }
+
+  export type LabelUpdateWithoutTaskLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    account?: AccountUpdateOneRequiredWithoutLabelsNestedInput
+    goalLinks?: GoalLabelUpdateManyWithoutLabelNestedInput
+  }
+
+  export type LabelUncheckedUpdateWithoutTaskLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    goalLinks?: GoalLabelUncheckedUpdateManyWithoutLabelNestedInput
+  }
+
   export type NotificationChannelCreateWithoutNotificationInput = {
     id: string
     channelType: string
@@ -163212,6 +171967,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -163223,6 +171981,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -163282,6 +172041,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -163293,6 +172055,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -163416,6 +172179,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -163427,6 +172193,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -163486,6 +172253,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -163497,6 +172267,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -163556,6 +172327,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -163567,6 +172341,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -163626,6 +172401,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -163637,6 +172415,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -163771,6 +172550,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -163782,6 +172564,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -163841,6 +172624,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -163852,6 +172638,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -163976,6 +172763,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -163987,6 +172777,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -164046,6 +172837,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -164057,6 +172851,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -164191,6 +172986,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -164202,6 +173000,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -164261,6 +173060,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -164272,6 +173074,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -164455,6 +173258,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -164466,6 +173272,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -164525,6 +173332,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -164536,6 +173346,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -164676,6 +173487,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -164687,6 +173501,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -164746,6 +173561,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -164757,6 +173575,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -164816,6 +173635,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -164827,6 +173649,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
@@ -164886,6 +173709,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -164897,6 +173723,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
@@ -164972,6 +173799,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -164983,6 +173813,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
@@ -165042,6 +173873,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -165053,6 +173887,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
@@ -165268,6 +174103,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
@@ -165278,6 +174116,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -165338,6 +174177,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -165348,6 +174190,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -165529,6 +174372,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
@@ -165539,6 +174385,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -165599,6 +174446,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -165609,6 +174459,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -165716,6 +174567,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
     reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
@@ -165726,6 +174580,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -165786,6 +174641,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
     reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -165796,6 +174654,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -165968,6 +174827,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
     reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
@@ -165978,6 +174840,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -166038,6 +174901,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
     reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -166048,6 +174914,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -166124,6 +174991,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -166134,6 +175004,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -166194,6 +175065,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -166204,6 +175078,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -166371,6 +175246,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -166381,6 +175259,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -166441,6 +175320,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -166451,6 +175333,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -166608,6 +175491,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -166619,6 +175505,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -166678,6 +175565,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -166689,6 +175579,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -166855,6 +175746,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -166866,6 +175760,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -166925,6 +175820,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -166936,6 +175834,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -167092,6 +175991,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -167102,6 +176004,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -167162,6 +176065,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -167172,6 +176078,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -167248,6 +176155,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -167258,6 +176168,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -167318,6 +176229,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -167328,6 +176242,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -167388,6 +176303,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -167399,6 +176317,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -167458,6 +176377,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -167469,6 +176391,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -167635,6 +176558,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -167646,6 +176572,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -167705,6 +176632,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -167716,6 +176646,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -167872,6 +176803,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -167882,6 +176816,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -167942,6 +176877,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -167952,6 +176890,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -168028,6 +176967,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -168038,6 +176980,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -168098,6 +177041,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -168108,6 +177054,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -168259,6 +177206,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -168270,6 +177220,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -168329,6 +177280,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -168340,6 +177294,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -168512,6 +177467,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -168523,6 +177481,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -168582,6 +177541,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -168593,6 +177555,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -168652,6 +177615,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -168662,6 +177628,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -168722,6 +177689,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -168732,6 +177702,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -168996,6 +177967,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -169006,6 +177980,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -169066,6 +178041,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -169076,6 +178054,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -169200,6 +178179,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -169211,6 +178193,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -169270,6 +178253,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -169281,6 +178267,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -169478,6 +178465,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -169489,6 +178479,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -169548,6 +178539,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -169559,6 +178553,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -169730,6 +178725,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -169741,6 +178739,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -169800,6 +178799,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -169811,6 +178813,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -169937,6 +178940,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -169948,6 +178954,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -170007,6 +179014,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -170018,6 +179028,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -170176,6 +179187,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -170187,6 +179201,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -170246,6 +179261,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -170257,6 +179275,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -170479,6 +179498,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -170490,6 +179512,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -170549,6 +179572,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -170560,6 +179586,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -171034,6 +180061,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -171044,6 +180074,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -171104,6 +180135,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -171114,6 +180148,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -171241,6 +180276,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -171251,6 +180289,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -171311,6 +180350,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -171321,6 +180363,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -171438,6 +180481,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -171448,6 +180494,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -171508,6 +180555,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -171518,6 +180568,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -171594,6 +180645,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -171604,6 +180658,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -171664,6 +180719,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -171674,6 +180732,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -171734,6 +180793,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -171745,6 +180807,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -171804,6 +180867,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -171815,6 +180881,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -172078,6 +181145,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -172089,6 +181159,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -172148,6 +181219,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -172159,6 +181233,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -172809,6 +181884,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -172820,6 +181898,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -172879,6 +181958,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -172890,6 +181972,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -173018,6 +182101,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -173029,6 +182115,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -173088,6 +182175,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -173099,6 +182189,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -173217,6 +182308,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -173227,6 +182321,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -173287,6 +182382,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -173297,6 +182395,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -173373,6 +182472,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -173383,6 +182485,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -173443,6 +182546,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -173453,6 +182559,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -173547,6 +182654,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -173557,6 +182667,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -173617,6 +182728,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -173627,6 +182741,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -173719,6 +182834,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -173729,6 +182847,7 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -173789,6 +182908,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -173799,6 +182921,319 @@ export namespace Prisma {
     repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
+    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
+    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountCreateWithoutSchedulingReconcileOperationsInput = {
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
+    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
+    goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
+    habits?: HabitCreateNestedManyWithoutAccountInput
+    relations?: RelationCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
+    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
+    notifications?: NotificationCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
+    folders?: FolderCreateNestedManyWithoutIdentityInput
+    resources?: ResourceCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountUncheckedCreateWithoutSchedulingReconcileOperationsInput = {
+    id: string
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
+    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
+    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
+    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
+    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
+    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountCreateOrConnectWithoutSchedulingReconcileOperationsInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutSchedulingReconcileOperationsInput, AccountUncheckedCreateWithoutSchedulingReconcileOperationsInput>
+  }
+
+  export type AccountUpsertWithoutSchedulingReconcileOperationsInput = {
+    update: XOR<AccountUpdateWithoutSchedulingReconcileOperationsInput, AccountUncheckedUpdateWithoutSchedulingReconcileOperationsInput>
+    create: XOR<AccountCreateWithoutSchedulingReconcileOperationsInput, AccountUncheckedCreateWithoutSchedulingReconcileOperationsInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutSchedulingReconcileOperationsInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutSchedulingReconcileOperationsInput, AccountUncheckedUpdateWithoutSchedulingReconcileOperationsInput>
+  }
+
+  export type AccountUpdateWithoutSchedulingReconcileOperationsInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
+    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
+    goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
+    habits?: HabitUpdateManyWithoutAccountNestedInput
+    relations?: RelationUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
+    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutSchedulingReconcileOperationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -173859,6 +183294,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -173870,6 +183308,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -173929,6 +183368,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -173940,6 +183382,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -173985,6 +183428,12 @@ export namespace Prisma {
     description?: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey?: string | null
+    ownerType?: string | null
+    ownerId?: string | null
+    handlerKey?: string | null
+    payloadVersion?: number | null
+    sourceRevision?: string | null
     status: string
     enabled: boolean
     cronExpression?: string | null
@@ -174021,6 +183470,12 @@ export namespace Prisma {
     description?: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey?: string | null
+    ownerType?: string | null
+    ownerId?: string | null
+    handlerKey?: string | null
+    payloadVersion?: number | null
+    sourceRevision?: string | null
     status: string
     enabled: boolean
     cronExpression?: string | null
@@ -174090,6 +183545,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -174101,6 +183559,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -174160,6 +183619,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -174171,6 +183633,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -174222,6 +183685,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -174258,6 +183727,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -174311,6 +183786,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -174322,6 +183800,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
     walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
@@ -174381,6 +183860,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -174392,6 +183874,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
     walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
@@ -174467,6 +183950,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -174478,6 +183964,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
     walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
@@ -174537,6 +184024,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -174548,6 +184038,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
     walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
@@ -174607,6 +184098,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -174618,6 +184112,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -174677,6 +184172,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -174688,6 +184186,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -174763,6 +184262,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -174774,6 +184276,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -174833,6 +184336,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -174844,6 +184350,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -174903,6 +184410,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -174914,6 +184424,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -174973,6 +184484,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -174984,6 +184498,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -175070,6 +184585,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutFolderInput = {
@@ -175120,6 +184636,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutFolderInput = {
@@ -175168,6 +184685,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -175179,6 +184699,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -175238,6 +184759,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -175249,6 +184773,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -175324,6 +184849,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -175335,6 +184863,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -175394,6 +184923,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -175405,6 +184937,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -175566,6 +185099,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutSubtasksInput = {
@@ -175616,6 +185150,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutSubtasksInput = {
@@ -175670,6 +185205,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutParentTaskInput = {
@@ -175720,6 +185256,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutParentTaskInput = {
@@ -175872,6 +185409,25 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TaskLabelCreateWithoutTaskTemplateInput = {
+    account: AccountCreateNestedOneWithoutTaskLabelsInput
+    label: LabelCreateNestedOneWithoutTaskLinksInput
+  }
+
+  export type TaskLabelUncheckedCreateWithoutTaskTemplateInput = {
+    labelId: string
+  }
+
+  export type TaskLabelCreateOrConnectWithoutTaskTemplateInput = {
+    where: TaskLabelWhereUniqueInput
+    create: XOR<TaskLabelCreateWithoutTaskTemplateInput, TaskLabelUncheckedCreateWithoutTaskTemplateInput>
+  }
+
+  export type TaskLabelCreateManyTaskTemplateInputEnvelope = {
+    data: TaskLabelCreateManyTaskTemplateInput | TaskLabelCreateManyTaskTemplateInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AccountUpsertWithoutTaskTemplatesInput = {
     update: XOR<AccountUpdateWithoutTaskTemplatesInput, AccountUncheckedUpdateWithoutTaskTemplatesInput>
     create: XOR<AccountCreateWithoutTaskTemplatesInput, AccountUncheckedCreateWithoutTaskTemplatesInput>
@@ -175908,6 +185464,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -175919,6 +185478,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -175978,6 +185538,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -175989,6 +185552,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -176168,6 +185732,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutSubtasksInput = {
@@ -176218,6 +185783,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUpsertWithWhereUniqueWithoutParentTaskInput = {
@@ -176300,6 +185866,22 @@ export namespace Prisma {
     data: XOR<TaskTemplateHistoryUpdateManyMutationInput, TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateInput>
   }
 
+  export type TaskLabelUpsertWithWhereUniqueWithoutTaskTemplateInput = {
+    where: TaskLabelWhereUniqueInput
+    update: XOR<TaskLabelUpdateWithoutTaskTemplateInput, TaskLabelUncheckedUpdateWithoutTaskTemplateInput>
+    create: XOR<TaskLabelCreateWithoutTaskTemplateInput, TaskLabelUncheckedCreateWithoutTaskTemplateInput>
+  }
+
+  export type TaskLabelUpdateWithWhereUniqueWithoutTaskTemplateInput = {
+    where: TaskLabelWhereUniqueInput
+    data: XOR<TaskLabelUpdateWithoutTaskTemplateInput, TaskLabelUncheckedUpdateWithoutTaskTemplateInput>
+  }
+
+  export type TaskLabelUpdateManyWithWhereWithoutTaskTemplateInput = {
+    where: TaskLabelScalarWhereInput
+    data: XOR<TaskLabelUpdateManyMutationInput, TaskLabelUncheckedUpdateManyWithoutTaskTemplateInput>
+  }
+
   export type AccountCreateWithoutTaskInstancesInput = {
     status?: string
     profile: JsonNullValueInput | InputJsonValue
@@ -176325,6 +185907,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -176336,6 +185921,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -176395,6 +185981,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -176406,6 +185995,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -176492,6 +186082,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyCreateNestedManyWithoutPredecessorTaskInput
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutInstancesInput = {
@@ -176542,6 +186133,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutPredecessorTaskInput
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutInstancesInput = {
@@ -176585,6 +186177,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -176596,6 +186191,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -176655,6 +186251,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -176666,6 +186265,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -176758,6 +186358,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUpdateManyWithoutPredecessorTaskNestedInput
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutInstancesInput = {
@@ -176808,6 +186409,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUncheckedUpdateManyWithoutPredecessorTaskNestedInput
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type AccountCreateWithoutTaskDependenciesInput = {
@@ -176835,6 +186437,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -176846,6 +186451,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -176905,6 +186511,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -176916,6 +186525,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -177002,6 +186612,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutPredecessorDependenciesInput = {
@@ -177052,6 +186663,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutPredecessorDependenciesInput = {
@@ -177106,6 +186718,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyCreateNestedManyWithoutPredecessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutSuccessorDependenciesInput = {
@@ -177156,6 +186769,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutPredecessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
     history?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutSuccessorDependenciesInput = {
@@ -177199,6 +186813,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -177210,6 +186827,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -177269,6 +186887,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -177280,6 +186901,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -177372,6 +186994,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutPredecessorDependenciesInput = {
@@ -177422,6 +187045,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUpsertWithoutSuccessorDependenciesInput = {
@@ -177482,6 +187106,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUpdateManyWithoutPredecessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutSuccessorDependenciesInput = {
@@ -177532,6 +187157,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUncheckedUpdateManyWithoutPredecessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type AccountCreateWithoutTaskTemplateHistoryInput = {
@@ -177559,6 +187185,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -177570,6 +187199,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -177629,6 +187259,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -177640,6 +187273,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -177726,6 +187360,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyCreateNestedManyWithoutPredecessorTaskInput
     successorDependencies?: TaskDependencyCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateUncheckedCreateWithoutHistoryInput = {
@@ -177776,6 +187411,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutPredecessorTaskInput
     successorDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutSuccessorTaskInput
     instances?: TaskInstanceUncheckedCreateNestedManyWithoutTemplateInput
+    labelLinks?: TaskLabelUncheckedCreateNestedManyWithoutTaskTemplateInput
   }
 
   export type TaskTemplateCreateOrConnectWithoutHistoryInput = {
@@ -177819,6 +187455,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -177830,6 +187469,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -177889,6 +187529,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -177900,6 +187543,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -177992,6 +187636,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUpdateManyWithoutPredecessorTaskNestedInput
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutHistoryInput = {
@@ -178042,6 +187687,7 @@ export namespace Prisma {
     predecessorDependencies?: TaskDependencyUncheckedUpdateManyWithoutPredecessorTaskNestedInput
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type AccountCreateWithoutTaskStatisticsInput = {
@@ -178069,6 +187715,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -178080,6 +187729,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -178139,6 +187789,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -178150,6 +187803,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -178225,6 +187879,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -178236,6 +187893,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -178295,6 +187953,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -178306,6 +187967,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -178365,6 +188027,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -178376,6 +188041,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -178435,6 +188101,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -178446,6 +188115,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -178555,6 +188225,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -178566,6 +188239,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -178625,6 +188299,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -178636,6 +188313,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -178736,6 +188414,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeCreateNestedManyWithoutAccountInput
     goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
@@ -178747,6 +188428,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
     habits?: HabitCreateNestedManyWithoutAccountInput
     relations?: RelationCreateNestedManyWithoutAccountInput
@@ -178806,6 +188488,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
     focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
     goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
     goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
     reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
     reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
@@ -178817,6 +188502,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
     habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
     relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
@@ -178923,6 +188609,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
     goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
@@ -178934,6 +188623,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
     habits?: HabitUpdateManyWithoutAccountNestedInput
     relations?: RelationUpdateManyWithoutAccountNestedInput
@@ -178993,6 +188683,9 @@ export namespace Prisma {
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
     focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
     goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
     goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
     reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
     reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
@@ -179004,6 +188697,7 @@ export namespace Prisma {
     repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
     habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
     relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
@@ -179158,6 +188852,25 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
+  export type LabelCreateManyAccountInput = {
+    id: string
+    name: string
+    normalizedName: string
+    color?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GoalLabelCreateManyAccountInput = {
+    goalId: string
+    labelId: string
+  }
+
+  export type TaskLabelCreateManyAccountInput = {
+    taskTemplateId: string
+    labelId: string
+  }
+
   export type GoalFolderCreateManyAccountInput = {
     id: string
     name: string
@@ -179300,6 +189013,12 @@ export namespace Prisma {
     description?: string | null
     sourceModule: string
     sourceEntityId: string
+    schedulingKey?: string | null
+    ownerType?: string | null
+    ownerId?: string | null
+    handlerKey?: string | null
+    payloadVersion?: number | null
+    sourceRevision?: string | null
     status: string
     enabled: boolean
     cronExpression?: string | null
@@ -179326,6 +189045,24 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+  }
+
+  export type SchedulingReconcileOperationCreateManyAccountInput = {
+    operationId: string
+    ownerType: string
+    ownerId: string
+    status: string
+    desiredCount: number
+    createdCount: number
+    updatedCount: number
+    deletedCount: number
+    unchangedCount: number
+    failureCode?: string | null
+    failureMessage?: string | null
+    failureRetryable?: boolean | null
+    startedAt: Date | string
+    finishedAt: Date | string
+    createdAt?: Date | string
   }
 
   export type HabitCreateManyAccountInput = {
@@ -180109,6 +189846,7 @@ export namespace Prisma {
     reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutAccountInput = {
@@ -180141,6 +189879,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateManyWithoutAccountInput = {
@@ -180168,6 +189907,67 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LabelUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    goalLinks?: GoalLabelUpdateManyWithoutLabelNestedInput
+    taskLinks?: TaskLabelUpdateManyWithoutLabelNestedInput
+  }
+
+  export type LabelUncheckedUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    goalLinks?: GoalLabelUncheckedUpdateManyWithoutLabelNestedInput
+    taskLinks?: TaskLabelUncheckedUpdateManyWithoutLabelNestedInput
+  }
+
+  export type LabelUncheckedUpdateManyWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GoalLabelUpdateWithoutAccountInput = {
+    goal?: GoalUpdateOneRequiredWithoutLabelLinksNestedInput
+    label?: LabelUpdateOneRequiredWithoutGoalLinksNestedInput
+  }
+
+  export type GoalLabelUncheckedUpdateWithoutAccountInput = {
+    goalId?: StringFieldUpdateOperationsInput | string
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type GoalLabelUncheckedUpdateManyWithoutAccountInput = {
+    goalId?: StringFieldUpdateOperationsInput | string
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskLabelUpdateWithoutAccountInput = {
+    taskTemplate?: TaskTemplateUpdateOneRequiredWithoutLabelLinksNestedInput
+    label?: LabelUpdateOneRequiredWithoutTaskLinksNestedInput
+  }
+
+  export type TaskLabelUncheckedUpdateWithoutAccountInput = {
+    taskTemplateId?: StringFieldUpdateOperationsInput | string
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskLabelUncheckedUpdateManyWithoutAccountInput = {
+    taskTemplateId?: StringFieldUpdateOperationsInput | string
+    labelId?: StringFieldUpdateOperationsInput | string
   }
 
   export type GoalFolderUpdateWithoutAccountInput = {
@@ -180606,6 +190406,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -180641,6 +190447,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -180676,6 +190488,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     sourceModule?: StringFieldUpdateOperationsInput | string
     sourceEntityId?: StringFieldUpdateOperationsInput | string
+    schedulingKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerType?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    handlerKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    sourceRevision?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     cronExpression?: NullableStringFieldUpdateOperationsInput | string | null
@@ -180702,6 +190520,60 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type SchedulingReconcileOperationUpdateWithoutAccountInput = {
+    operationId?: StringFieldUpdateOperationsInput | string
+    ownerType?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    desiredCount?: IntFieldUpdateOperationsInput | number
+    createdCount?: IntFieldUpdateOperationsInput | number
+    updatedCount?: IntFieldUpdateOperationsInput | number
+    deletedCount?: IntFieldUpdateOperationsInput | number
+    unchangedCount?: IntFieldUpdateOperationsInput | number
+    failureCode?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    failureRetryable?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SchedulingReconcileOperationUncheckedUpdateWithoutAccountInput = {
+    operationId?: StringFieldUpdateOperationsInput | string
+    ownerType?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    desiredCount?: IntFieldUpdateOperationsInput | number
+    createdCount?: IntFieldUpdateOperationsInput | number
+    updatedCount?: IntFieldUpdateOperationsInput | number
+    deletedCount?: IntFieldUpdateOperationsInput | number
+    unchangedCount?: IntFieldUpdateOperationsInput | number
+    failureCode?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    failureRetryable?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountInput = {
+    operationId?: StringFieldUpdateOperationsInput | string
+    ownerType?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    desiredCount?: IntFieldUpdateOperationsInput | number
+    createdCount?: IntFieldUpdateOperationsInput | number
+    updatedCount?: IntFieldUpdateOperationsInput | number
+    deletedCount?: IntFieldUpdateOperationsInput | number
+    unchangedCount?: IntFieldUpdateOperationsInput | number
+    failureCode?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    failureRetryable?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type HabitUpdateWithoutAccountInput = {
@@ -180972,6 +190844,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutAccountInput = {
@@ -181022,6 +190895,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateManyWithoutAccountInput = {
@@ -182596,6 +192470,10 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
+  export type GoalLabelCreateManyGoalInput = {
+    labelId: string
+  }
+
   export type GoalUpdateWithoutParentGoalInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -182626,6 +192504,7 @@ export namespace Prisma {
     reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutParentGoalInput = {
@@ -182658,6 +192537,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateManyWithoutParentGoalInput = {
@@ -182885,6 +192765,19 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type GoalLabelUpdateWithoutGoalInput = {
+    account?: AccountUpdateOneRequiredWithoutGoalLabelsNestedInput
+    label?: LabelUpdateOneRequiredWithoutGoalLinksNestedInput
+  }
+
+  export type GoalLabelUncheckedUpdateWithoutGoalInput = {
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type GoalLabelUncheckedUpdateManyWithoutGoalInput = {
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
   export type GoalFolderCreateManyParentFolderInput = {
     id: string
     identityId: string
@@ -183010,6 +192903,7 @@ export namespace Prisma {
     reviews?: GoalReviewUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutFolderInput = {
@@ -183042,6 +192936,7 @@ export namespace Prisma {
     reviews?: GoalReviewUncheckedUpdateManyWithoutGoalNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalNestedInput
     focusSessions?: FocusSessionUncheckedUpdateManyWithoutGoalNestedInput
+    labelLinks?: GoalLabelUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateManyWithoutFolderInput = {
@@ -183184,6 +193079,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutKeyResultInput = {
@@ -183232,6 +193128,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateManyWithoutKeyResultInput = {
@@ -183451,6 +193348,40 @@ export namespace Prisma {
     checkedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GoalLabelCreateManyLabelInput = {
+    goalId: string
+  }
+
+  export type TaskLabelCreateManyLabelInput = {
+    taskTemplateId: string
+  }
+
+  export type GoalLabelUpdateWithoutLabelInput = {
+    account?: AccountUpdateOneRequiredWithoutGoalLabelsNestedInput
+    goal?: GoalUpdateOneRequiredWithoutLabelLinksNestedInput
+  }
+
+  export type GoalLabelUncheckedUpdateWithoutLabelInput = {
+    goalId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type GoalLabelUncheckedUpdateManyWithoutLabelInput = {
+    goalId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskLabelUpdateWithoutLabelInput = {
+    account?: AccountUpdateOneRequiredWithoutTaskLabelsNestedInput
+    taskTemplate?: TaskTemplateUpdateOneRequiredWithoutLabelLinksNestedInput
+  }
+
+  export type TaskLabelUncheckedUpdateWithoutLabelInput = {
+    taskTemplateId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskLabelUncheckedUpdateManyWithoutLabelInput = {
+    taskTemplateId?: StringFieldUpdateOperationsInput | string
   }
 
   export type NotificationChannelCreateManyNotificationInput = {
@@ -184955,6 +194886,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutFolderInput = {
@@ -185005,6 +194937,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateManyWithoutFolderInput = {
@@ -185147,6 +195080,10 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type TaskLabelCreateManyTaskTemplateInput = {
+    labelId: string
+  }
+
   export type TaskTemplateUpdateWithoutParentTaskInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -185194,6 +195131,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateWithoutParentTaskInput = {
@@ -185244,6 +195182,7 @@ export namespace Prisma {
     successorDependencies?: TaskDependencyUncheckedUpdateManyWithoutSuccessorTaskNestedInput
     instances?: TaskInstanceUncheckedUpdateManyWithoutTemplateNestedInput
     history?: TaskTemplateHistoryUncheckedUpdateManyWithoutTemplateNestedInput
+    labelLinks?: TaskLabelUncheckedUpdateManyWithoutTaskTemplateNestedInput
   }
 
   export type TaskTemplateUncheckedUpdateManyWithoutParentTaskInput = {
@@ -185439,6 +195378,19 @@ export namespace Prisma {
     action?: StringFieldUpdateOperationsInput | string
     changes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TaskLabelUpdateWithoutTaskTemplateInput = {
+    account?: AccountUpdateOneRequiredWithoutTaskLabelsNestedInput
+    label?: LabelUpdateOneRequiredWithoutTaskLinksNestedInput
+  }
+
+  export type TaskLabelUncheckedUpdateWithoutTaskTemplateInput = {
+    labelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskLabelUncheckedUpdateManyWithoutTaskTemplateInput = {
+    labelId?: StringFieldUpdateOperationsInput | string
   }
 
   export type WalletTransactionCreateManyAccountInput = {

@@ -16,9 +16,18 @@ import type {
 } from '@memoflow/database';
 import type { IScheduleTaskRepository } from '../../../domain/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
-import type { SourceModule } from '@memoflow/contracts/schedule';
+import type {
+  SchedulingOwner,
+  SchedulingReconcileReceipt,
+  SourceModule,
+} from '@memoflow/contracts/schedule';
 import { ScheduleTaskStatus } from '@memoflow/contracts/schedule';
-import { AggregateRepositoryBase, createEventBusAdapter, type IOutboxWriter } from '@memoflow/patterns';
+import {
+  AggregateRepositoryBase,
+  createEventBusAdapter,
+  publishAggregateEvents,
+  type IOutboxWriter,
+} from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import {
   PrismaScheduleTaskMapper,
@@ -35,6 +44,7 @@ const eventBusAdapter = createEventBusAdapter(eventBus);
 interface ScheduleTaskDb {
   scheduleTask: PrismaClient['scheduleTask'];
   scheduleExecution: PrismaClient['scheduleExecution'];
+  schedulingReconcileOperation: PrismaClient['schedulingReconcileOperation'];
 }
 
 type PrismaTransactionRoot = Pick<PrismaClient, '$transaction'>;
@@ -68,16 +78,19 @@ export class ScheduleTaskPrismaRepository
 {
   private readonly db: ScheduleTaskDb;
   private readonly rootClient: PrismaTransactionRoot | null;
+  private readonly transactionDeferredAggregates: Set<ScheduleTask> | null;
 
   constructor(
     prisma: ScheduleTaskDb | PrismaClient,
     rootClient?: PrismaTransactionRoot,
     outboxWriter?: IOutboxWriter,
+    transactionDeferredAggregates?: Set<ScheduleTask>,
   ) {
     // R1-2：事件总线失败时的 durable outbox 兜底（可选）。
     super(eventBusAdapter, outboxWriter);
     this.db = prisma;
     this.rootClient = rootClient ?? (isScheduleTaskRootDb(prisma) ? prisma : null);
+    this.transactionDeferredAggregates = transactionDeferredAggregates ?? null;
   }
 
   // ===== Mapping =====
@@ -95,45 +108,63 @@ export class ScheduleTaskPrismaRepository
   // ===== Core CRUD =====
 
   /**
+   * Transaction-scoped repositories persist directly into the caller's Prisma
+   * transaction and defer domain-event publication until the outer commit.
+   */
+  override async save(task: ScheduleTask): Promise<void> {
+    if (!this.transactionDeferredAggregates) {
+      await super.save(task);
+      return;
+    }
+
+    await this.persistWithin(this.db, task);
+    this.transactionDeferredAggregates.add(task);
+  }
+
+  /**
    * Protected persistence method — called by base class before event publishing.
-   * Persists the ScheduleTask root and all ScheduleExecution child entities
-   * atomically within a single transaction.
+   * Normal single-aggregate saves retain their existing atomic transaction.
    */
   protected async persist(task: ScheduleTask): Promise<void> {
     if (!this.rootClient) {
       throw new Error('persist with transaction requires a root PrismaClient');
     }
-    const data = this.toPrisma(task);
-
     await this.rootClient.$transaction(async (tx) => {
-      await tx.scheduleTask.upsert({
-        where: { id: data.id },
-        create: data,
-        update: data,
-      });
-
-      // Save execution records
-      const executions = task.executions;
-      if (executions && executions.length > 0) {
-        for (const execution of executions) {
-          const execData = PrismaScheduleExecutionMapper.toCreateInput(execution) as Record<string, unknown> & { id: string; status: string };
-          await tx.scheduleExecution.upsert({
-            where: { id: execData.id },
-            create: {
-              ...execData,
-              identityId: task.identityId,
-            } as unknown as Prisma.ScheduleExecutionCreateInput,
-            update: {
-              status: execData.status,
-              duration: (execData.duration as number | null) ?? null,
-              result: execData.result ?? null,
-              error: (execData.error as string | null) ?? null,
-              retryCount: (execData.retryCount as number) ?? 0,
-            },
-          });
-        }
-      }
+      await this.persistWithin(tx, task);
     });
+  }
+
+  private async persistWithin(db: ScheduleTaskDb, task: ScheduleTask): Promise<void> {
+    const data = this.toPrisma(task);
+    await db.scheduleTask.upsert({
+      where: { id: data.id },
+      create: data,
+      update: data,
+    });
+
+    const executions = task.executions;
+    if (executions && executions.length > 0) {
+      for (const execution of executions) {
+        const execData = PrismaScheduleExecutionMapper.toCreateInput(execution) as Record<string, unknown> & {
+          id: string;
+          status: string;
+        };
+        await db.scheduleExecution.upsert({
+          where: { id: execData.id },
+          create: {
+            ...execData,
+            identityId: task.identityId,
+          } as unknown as Prisma.ScheduleExecutionCreateInput,
+          update: {
+            status: execData.status,
+            duration: (execData.duration as number | null) ?? null,
+            result: execData.result ?? null,
+            error: (execData.error as string | null) ?? null,
+            retryCount: (execData.retryCount as number) ?? 0,
+          },
+        });
+      }
+    }
   }
 
   async findById(id: string): Promise<ScheduleTask | null> {
@@ -226,6 +257,47 @@ export class ScheduleTaskPrismaRepository
     });
 
     return tasks.map((task) => this.toDomain(task));
+  }
+
+  async findBySchedulingOwner(owner: SchedulingOwner): Promise<ScheduleTask[]> {
+    const tasks = await this.db.scheduleTask.findMany({
+      where: {
+        identityId: owner.identityId,
+        ownerType: owner.type,
+        ownerId: owner.id,
+        schedulingKey: { not: null },
+      },
+      include: {
+        executions: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+      },
+    });
+
+    return tasks.map((task) => this.toDomain(task));
+  }
+
+  async appendSchedulingReconcileReceipt(receipt: SchedulingReconcileReceipt): Promise<void> {
+    await this.db.schedulingReconcileOperation.create({
+      data: {
+        operationId: receipt.operationId,
+        identityId: receipt.owner.identityId,
+        ownerType: receipt.owner.type,
+        ownerId: receipt.owner.id,
+        status: receipt.status,
+        desiredCount: receipt.desiredCount,
+        createdCount: receipt.createdCount,
+        updatedCount: receipt.updatedCount,
+        deletedCount: receipt.deletedCount,
+        unchangedCount: receipt.unchangedCount,
+        failureCode: receipt.failure?.code ?? null,
+        failureMessage: receipt.failure?.message ?? null,
+        failureRetryable: receipt.failure?.retryable ?? null,
+        startedAt: new Date(receipt.startedAt),
+        finishedAt: new Date(receipt.finishedAt),
+      },
+    });
   }
 
   async findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]> {
@@ -361,12 +433,34 @@ export class ScheduleTaskPrismaRepository
   // ===== Transaction Support =====
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
+    if (this.transactionDeferredAggregates) {
+      return fn(this);
+    }
     if (!this.rootClient) {
       throw new Error('withTransaction requires a root PrismaClient (not a TransactionClient)');
     }
-    return this.rootClient.$transaction(async (tx) => {
-      const txRepo = new ScheduleTaskPrismaRepository(tx);
-      return fn(txRepo);
-    });
+
+    const deferredAggregates = new Set<ScheduleTask>();
+    const result = await this.rootClient.$transaction(
+      async (tx) => {
+        const txRepo = new ScheduleTaskPrismaRepository(
+          tx,
+          undefined,
+          this.outboxWriter,
+          deferredAggregates,
+        );
+        return fn(txRepo);
+      },
+      { isolationLevel: 'Serializable' },
+    );
+
+    // Publish only after the owner-level transaction committed successfully.
+    for (const aggregate of deferredAggregates) {
+      await publishAggregateEvents(aggregate, {
+        eventBus: eventBusAdapter,
+        outboxWriter: this.outboxWriter,
+      });
+    }
+    return result;
   }
 }

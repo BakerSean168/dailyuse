@@ -8,6 +8,8 @@ import type {
 import type { Result } from '@memoflow/contracts/result';
 import { error, ok } from '@memoflow/contracts/result';
 import type { INotificationPreferenceRepository } from '../../../domain/repositories';
+import { DoNotDisturbConfig } from '../../../domain/value-objects/do-not-disturb-config';
+import { RateLimit } from '../../../domain/value-objects/rate-limit';
 import { toNotificationPreferenceClientDTO } from './notification-dto-converters';
 
 const CHANNEL_MAP = {
@@ -68,6 +70,13 @@ export class UpdateNotificationPreferenceUseCase {
       for (const moduleName of DEFAULT_MODULES) {
         preference.setModuleChannels(moduleName, disabled ? [] : fallbackChannels);
       }
+    }
+
+    if (input.doNotDisturb) {
+      preference.setDoNotDisturb(DoNotDisturbConfig.create(input.doNotDisturb));
+    }
+    if (input.rateLimit) {
+      preference.setRateLimit(RateLimit.create(input.rateLimit));
     }
 
     await this.preferenceRepository.save(preference);

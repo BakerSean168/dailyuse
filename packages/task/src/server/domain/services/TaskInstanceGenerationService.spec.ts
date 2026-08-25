@@ -74,7 +74,7 @@ describe('TaskInstanceGenerationService', () => {
 
     it('should return empty array when fromDate exceeds targetDate', () => {
       // Create a template where lastGeneratedDate is far in the future
-      const farFuture = new Date(Date.now() + 200 * DAY_MS);
+      const farFuture = Date.now() + 200 * DAY_MS;
       const template = aLoadedTaskTemplate({
         taskType: TaskType.Recurring,
         timeConfig: anAllDayTimeConfig(),
@@ -88,7 +88,7 @@ describe('TaskInstanceGenerationService', () => {
     });
 
     it('should use forceGenerate to start from today even if lastGeneratedDate exists', () => {
-      const yesterday = new Date(Date.now() - DAY_MS);
+      const yesterday = Date.now() - DAY_MS;
       const createTemplate = () =>
         aLoadedTaskTemplate({
           taskType: TaskType.Recurring,

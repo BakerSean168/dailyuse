@@ -14,7 +14,10 @@ import { parseJsonSafe } from '@memoflow/utils/shared';
  */
 
 import { NotificationPreference } from '../../../../domain/aggregates/notification-preference';
+import { DoNotDisturbConfig } from '../../../../domain/value-objects/do-not-disturb-config';
+import { RateLimit } from '../../../../domain/value-objects/rate-limit';
 import { NotificationChannelType } from '@memoflow/contracts/notification';
+import type { DoNotDisturbConfigDTO, RateLimitDTO } from '@memoflow/contracts/notification';
 
 // Prisma row type (matches the raw query result)
 export type PrismaNotificationPreferenceRow = {
@@ -47,6 +50,8 @@ export type NotificationPreferenceRowLike = Pick<
   | 'enabled'
   | 'channels'
   | 'categories'
+  | 'doNotDisturb'
+  | 'rateLimit'
   | 'version'
   | 'createdAt'
   | 'updatedAt'
@@ -101,6 +106,14 @@ export class NotificationPreferencePrismaMapper {
       id: row.id as never,
       identityId: row.identityId as never,
       settings,
+      doNotDisturb: (() => {
+        const dto = parseJsonSafe<DoNotDisturbConfigDTO>(row.doNotDisturb);
+        return dto ? DoNotDisturbConfig.fromDTO(dto) : null;
+      })(),
+      rateLimit: (() => {
+        const dto = parseJsonSafe<RateLimitDTO>(row.rateLimit);
+        return dto ? RateLimit.fromDTO(dto) : null;
+      })(),
       version: row.version,
       deletedAt: row.deletedAt,
       createdAt: row.createdAt,
@@ -157,6 +170,10 @@ export class NotificationPreferencePrismaMapper {
       enabled,
       channels: JSON.stringify(channels),
       categories: JSON.stringify(categories),
+      doNotDisturb: preference.doNotDisturb
+        ? JSON.stringify(preference.doNotDisturb.toDTO())
+        : null,
+      rateLimit: preference.rateLimit ? JSON.stringify(preference.rateLimit.toDTO()) : null,
     };
   }
 }

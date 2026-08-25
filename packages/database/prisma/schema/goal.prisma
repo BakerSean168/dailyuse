@@ -54,6 +54,7 @@ model Goal {
   reviews                  GoalReview[] /// 目标评审记录（一对多，级联删除）
   keyResultWeightSnapshots KeyResultWeightSnapshot[] /// KR权重快照（一对多，级联删除）
   focusSessions            FocusSession[] /// 专注会话记录（一对多，级联删除）
+  labelLinks                GoalLabel[]
 
   @@unique([id, identityId])
   // ============ 索引优化 ============

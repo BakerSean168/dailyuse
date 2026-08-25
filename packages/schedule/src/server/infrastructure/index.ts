@@ -41,6 +41,13 @@ export {
   type ScheduleTaskExecutionResult,
   type ScheduleTaskSourceExecutor,
 } from './runtime';
+export {
+  LegacyScheduleTaskSchedulingAdapter,
+  createHandlerRegistryScheduleTaskSourceExecutor,
+  createScheduleTaskSchedulingPort,
+  toScheduledInvocationContext,
+  type ScheduleTaskSchedulingAdapterOptions,
+} from './scheduling';
 
 // ============ P1-1 Reliable consumer ============
 export {

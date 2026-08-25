@@ -16,6 +16,8 @@ status: active
 # Goal / Task vNext — Personal Outcome & Execution Refactor
 
 > **Orchestration notice (2026-08-25):** 本文件保留 Goal/Task 的业务细节与验收场景；实际实施顺序、并行 lane、shared Contract/Schema Train 与跨模块依赖以 `2026-08-25-core-vnext-orchestration.md` 为唯一真值。不要再按本文 Phase 1→12 独立顺序执行。
+>
+> Old-phase mapping: Phase 0 -> `CORE-0001~0005`; Phase 1 -> `LABEL-1101`; Phase 2 -> `GOAL-2101`; Phase 3 -> `GOAL-2102`; Phase 4 -> `GOAL-2103`; Phase 5 -> `TASK-2201~2204`; Phase 6 -> `TASK-2205` + `SETTLE-3401`; Phase 7/8 -> W5 Goal/Task UI tickets; Phase 9/10 -> W6 Mobile/AI; Phase 11/12 -> `CLEAN-*` + `HARD-*`. Scheduling projector/handler work follows W3 tickets, not this child-plan phase order.
 
 ## Outcome
 

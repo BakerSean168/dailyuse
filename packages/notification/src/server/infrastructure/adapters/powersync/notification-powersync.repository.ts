@@ -5,9 +5,15 @@ import type {
   NotificationServerDTO,
   NotificationStatus,
   NotificationType,
+  NotificationChannelType,
 } from '@memoflow/contracts/notification';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
-import type { INotificationRepository } from '../../../domain/repositories/i-notification-repository';
+import type {
+  INotificationRepository,
+  NotificationDeliveryUsage,
+  NotificationOutboxDispatchPlan,
+} from '../../../domain/repositories/i-notification-repository';
+import type { NotificationDeliveryDecision } from '../../../domain/services/notification-policy';
 import { Notification } from '../../../domain/aggregates/notification';
 import { NotificationChannel } from '../../../domain/entities/notification-channel';
 import { NotificationId, NotificationAction, NotificationMetadata, NotificationChannelId, ChannelError, ChannelResponse } from '../../../domain/value-objects';
@@ -136,8 +142,8 @@ function hydrateNotification(row: NotificationRow, channels: NotificationChannel
   });
 }
 
-import type { NotificationOutboxDispatchInput } from '@memoflow/contracts/reliable-messaging';
 import { NotificationOutboxDispatchInputSchema } from '@memoflow/contracts/reliable-messaging';
+import { randomUUID } from 'crypto';
 import type { NotificationMetricsService } from '../../../domain/services/notification-metrics-service';
 
 export class PowerSyncNotificationRepository implements INotificationRepository {
@@ -167,6 +173,17 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
         response TEXT,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await this.db.execute(`
+      CREATE TABLE IF NOT EXISTS notification_history (
+        id TEXT PRIMARY KEY,
+        identity_id TEXT NOT NULL,
+        notification_id TEXT NOT NULL,
+        action TEXT NOT NULL,
+        details TEXT,
+        actor_id TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
     `);
     await this.db.execute(`
@@ -203,7 +220,8 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
 
   async save(
     notification: Notification,
-    outboxDispatches?: NotificationOutboxDispatchInput[],
+    outboxDispatches?: NotificationOutboxDispatchPlan[],
+    deliveryDecisions?: readonly NotificationDeliveryDecision[],
   ): Promise<void> {
     await this.ensureTablesExist();
     const dto = notification.toServerDTO();
@@ -391,8 +409,9 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
           await tx.execute(
             `INSERT INTO notification_dispatch_outbox (
               id, identity_id, notification_id, source, occurrence_key, channel,
-              payload_json, idempotency_key, status, attempt, fencing_token, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 0, ?, ?)`,
+              payload_json, idempotency_key, status, attempt, fencing_token, next_retry_at,
+              created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?)`,
             [
               validatedInput.operationId,
               validatedInput.identityId,
@@ -402,6 +421,8 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
               validatedInput.channel,
               validatedInput.payloadJson,
               validatedInput.idempotencyKey,
+              outboxInput.deferUntil ? 'retryable' : 'pending',
+              outboxInput.deferUntil?.toISOString() ?? null,
               nowIso,
               nowIso,
             ],
@@ -411,6 +432,26 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
       }
     }
 
+    for (const decision of deliveryDecisions ?? []) {
+      if (decision.outcome === 'deliver_now') continue;
+      await tx.execute(
+        `INSERT INTO notification_history (
+          id, identity_id, notification_id, action, details, actor_id, created_at
+        ) VALUES (?, ?, ?, 'delivery_policy', ?, NULL, ?)`,
+        [
+          randomUUID(),
+          dto.identityId,
+          dto.id,
+          JSON.stringify({
+            channel: decision.channel,
+            outcome: decision.outcome,
+            reason: decision.reason,
+            retryAt: decision.retryAt?.toISOString() ?? null,
+          }),
+          new Date().toISOString(),
+        ],
+      );
+    }
 
     });
     flushDomainEvents(notificationEventPublisher, notification);
@@ -420,6 +461,33 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     for (const notification of notifications) {
       await this.save(notification);
     }
+  }
+
+  async getDeliveryUsage(
+    identityId: string,
+    category: NotificationCategory,
+    channel: NotificationChannelType,
+    now: Date,
+  ): Promise<NotificationDeliveryUsage> {
+    const hourStart = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+    const dayStart = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    const row = await this.db.getOptional<{ hour_count: number | null; day_count: number | null }>(
+      `SELECT
+         SUM(CASE WHEN n.created_at >= ? THEN 1 ELSE 0 END) AS hour_count,
+         COUNT(*) AS day_count
+       FROM notification_channels c
+       JOIN notifications n ON n.id = c.notification_id
+       WHERE c.identity_id = ?
+         AND c.channel_type = ?
+         AND n.category = ?
+         AND n.created_at >= ?`,
+      [hourStart, identityId, channel, category, dayStart],
+    );
+
+    return {
+      hourCount: Number(row?.hour_count ?? 0),
+      dayCount: Number(row?.day_count ?? 0),
+    };
   }
 
   private async loadChannels(notificationId: string): Promise<NotificationChannelRow[]> {

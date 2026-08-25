@@ -5,7 +5,6 @@
  * Extracted from TaskTemplate aggregate to reduce aggregate size.
  */
 
-import { DayOfWeek, RecurrenceFrequency } from '@memoflow/contracts/task';
 import { createTimeFacade } from '@memoflow/time';
 
 const taskTime = createTimeFacade();
@@ -21,6 +20,11 @@ import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { IdentityId } from '@memoflow/domain-shared';
 import type { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import { TaskInstance } from './task-instance';
+import {
+  nextRecurrenceDate,
+  recurrenceDatesBetween,
+  recurrenceOccursOn,
+} from './task-recurrence-date.adapter';
 
 /** Parameters for instance generation. */
 export interface InstanceGenerationContext {
@@ -90,6 +94,43 @@ export function createInstanceFromTemplate(
   });
 }
 
+function passesBusinessGenerationGuards(
+  ctx: InstanceGenerationContext,
+  candidateDay: number,
+): boolean {
+  if (ctx.status !== TaskTemplateStatus.Active) return false;
+  if (ctx.taskType !== TaskType.Recurring) return false;
+  if (!ctx.recurrenceRule) return false;
+
+  const alreadyGenerated = ctx.existingInstances.some(
+    (instance) =>
+      !instance.deletedAt && startOfLocalDay(instance.instanceDate) === candidateDay,
+  );
+  if (alreadyGenerated) return false;
+
+  if (ctx.timeConfig?.startDate) {
+    const templateStartDay = startOfLocalDay(ctx.timeConfig.startDate);
+    if (candidateDay < templateStartDay) return false;
+  }
+
+  if (
+    ctx.recurrenceRule.endDate &&
+    candidateDay > startOfLocalDay(ctx.recurrenceRule.endDate)
+  ) {
+    return false;
+  }
+
+  if (
+    ctx.recurrenceRule.occurrences !== null &&
+    ctx.existingInstances.filter((instance) => !instance.deletedAt).length >=
+      ctx.recurrenceRule.occurrences
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 /**
  * Generates task instances within the specified date range.
  */
@@ -139,7 +180,8 @@ export function generateInstances(
     ctx.timeConfig
   ) {
     const fromDay = startOfLocalDay(fromDate);
-    const endDate = startOfLocalDay(toDate);
+    const toDay = startOfLocalDay(toDate);
+    const rangeEnd = taskTime.calendar.endOfDay(toDay);
     const maxOccurrences = ctx.recurrenceRule.occurrences;
     const existingInstanceCount = ctx.existingInstances.filter(
       (instance) => !instance.deletedAt,
@@ -149,24 +191,29 @@ export function generateInstances(
       return { instances: [], lastGeneratedDate: null };
     }
 
-    let currentDate = fromDay;
+    const candidateDates = recurrenceDatesBetween(
+      ctx.recurrenceRule,
+      ctx.timeConfig,
+      fromDay,
+      rangeEnd,
+    );
 
-    while (
-      currentDate <= endDate &&
-      (maxOccurrences === null || existingInstanceCount + instances.length < maxOccurrences)
-    ) {
-      if (shouldGenerateInstance(ctx, currentDate)) {
-        instances.push(
-          TaskInstance.create({
-            templateId: ctx.templateId,
-            identityId: ctx.identityId,
-            instanceDate: currentDate,
-            timeConfig: ctx.timeConfig,
-            importance: ctx.importance,
-          }),
-        );
+    for (const occurrence of candidateDates) {
+      if (maxOccurrences !== null && existingInstanceCount + instances.length >= maxOccurrences) {
+        break;
       }
-      currentDate = taskTime.calendar.addDays(currentDate, 1);
+      const candidateDay = startOfLocalDay(occurrence);
+      if (!passesBusinessGenerationGuards(ctx, candidateDay)) continue;
+
+      instances.push(
+        TaskInstance.create({
+          templateId: ctx.templateId,
+          identityId: ctx.identityId,
+          instanceDate: candidateDay,
+          timeConfig: ctx.timeConfig,
+          importance: ctx.importance,
+        }),
+      );
     }
   }
 
@@ -181,86 +228,11 @@ export function shouldGenerateInstance(
   ctx: InstanceGenerationContext,
   date: number,
 ): boolean {
-  if (ctx.status !== TaskTemplateStatus.Active) {
-    return false;
-  }
-  if (ctx.taskType === TaskType.OneTime) {
-    return false;
-  }
-  if (!ctx.recurrenceRule) {
-    return false;
-  }
-
   const candidateDay = startOfLocalDay(date);
-  const alreadyGenerated = ctx.existingInstances.some(
-    (instance) =>
-      !instance.deletedAt && startOfLocalDay(instance.instanceDate) === candidateDay,
-  );
-  if (alreadyGenerated) {
-    return false;
-  }
+  if (!passesBusinessGenerationGuards(ctx, candidateDay)) return false;
+  if (!ctx.recurrenceRule) return false;
 
-  if (ctx.timeConfig?.startDate) {
-    const templateStartDay = startOfLocalDay(ctx.timeConfig.startDate);
-    if (candidateDay < templateStartDay) {
-      return false;
-    }
-  }
-
-  if (
-    ctx.recurrenceRule.endDate &&
-    candidateDay > startOfLocalDay(ctx.recurrenceRule.endDate)
-  ) {
-    return false;
-  }
-
-  if (
-    ctx.recurrenceRule.occurrences !== null &&
-    ctx.existingInstances.filter((instance) => !instance.deletedAt).length >=
-      ctx.recurrenceRule.occurrences
-  ) {
-    return false;
-  }
-
-  const rule = ctx.recurrenceRule;
-  const dateObj = new Date(candidateDay);
-
-  switch (rule.frequency) {
-    case RecurrenceFrequency.Daily:
-      if (!ctx.timeConfig?.startDate) {
-        return true;
-      }
-      return (
-        taskTime.calendar.diffCalendarDays(dateObj.getTime(), ctx.timeConfig.startDate) %
-          rule.interval ===
-        0
-      );
-
-    case RecurrenceFrequency.Weekly:
-      if (!ctx.timeConfig?.startDate) {
-        return false;
-      }
-      if (
-        taskTime.calendar.diffCalendarWeeks(
-          dateObj.getTime(),
-          ctx.timeConfig.startDate,
-        ) %
-          rule.interval !==
-        0
-      ) {
-        return false;
-      }
-      return rule.daysOfWeek.includes(dateObj.getDay() as DayOfWeek);
-
-    case RecurrenceFrequency.Monthly:
-      return true;
-
-    case RecurrenceFrequency.Yearly:
-      return true;
-
-    default:
-      return false;
-  }
+  return recurrenceOccursOn(ctx.recurrenceRule, ctx.timeConfig, candidateDay);
 }
 
 /**
@@ -304,6 +276,6 @@ export function getNextOccurrence(
   if (!ctx.recurrenceRule) {
     return null;
   }
-  const ONE_DAY_MS = 86400000;
-  return afterDate + ONE_DAY_MS;
+
+  return nextRecurrenceDate(ctx.recurrenceRule, ctx.timeConfig, afterDate);
 }

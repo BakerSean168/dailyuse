@@ -33,6 +33,13 @@ model ScheduleTask {
   description           String?
   sourceModule          String    @map("source_module")
   sourceEntityId        String    @map("source_entity_id")
+  // ADR-061 neutral scheduling identity. Legacy projector rows remain NULL until migrated.
+  schedulingKey         String?   @map("scheduling_key")
+  ownerType             String?   @map("owner_type")
+  ownerId               String?   @map("owner_id")
+  handlerKey             String?   @map("handler_key")
+  payloadVersion         Int?      @map("payload_version")
+  sourceRevision        String?   @map("source_revision")
   status                String
   enabled               Boolean
   cronExpression        String?   @map("cron_expression")
@@ -64,7 +71,35 @@ model ScheduleTask {
   account    Account             @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   @@index([status])
+  @@unique([identityId, ownerType, ownerId, schedulingKey], map: "schedule_tasks_owner_scheduling_key_unique")
+  @@index([identityId, ownerType, ownerId], map: "schedule_tasks_owner_lookup_idx")
   @@map("schedule_tasks")
+}
+
+/// Durable evidence for one owner-level desired-state reconcile.
+/// Successful rows are written inside the same transaction as ScheduleTask upsert/delete.
+model SchedulingReconcileOperation {
+  operationId      String   @id @map("operation_id")
+  identityId       String   @map("identity_id")
+  ownerType        String   @map("owner_type")
+  ownerId          String   @map("owner_id")
+  status           String
+  desiredCount     Int      @map("desired_count")
+  createdCount     Int      @map("created_count")
+  updatedCount     Int      @map("updated_count")
+  deletedCount     Int      @map("deleted_count")
+  unchangedCount   Int      @map("unchanged_count")
+  failureCode      String?  @map("failure_code")
+  failureMessage   String?  @map("failure_message")
+  failureRetryable Boolean? @map("failure_retryable")
+  startedAt        DateTime @map("started_at")
+  finishedAt       DateTime @map("finished_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId, ownerType, ownerId, finishedAt], map: "scheduling_reconcile_owner_history_idx")
+  @@map("scheduling_reconcile_operations")
 }
 
 model ScheduleExecution {

@@ -3,7 +3,13 @@ import type {
   IScheduleTaskRepository,
 } from '../../../domain/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
-import { ScheduleTaskStatus, type ScheduleEventMap, type SourceModule } from '@memoflow/contracts/schedule';
+import {
+  ScheduleTaskStatus,
+  type ScheduleEventMap,
+  type SchedulingOwner,
+  type SchedulingReconcileReceipt,
+  type SourceModule,
+} from '@memoflow/contracts/schedule';
 import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
 import { createLogger } from '@memoflow/utils/logger';
 import {
@@ -17,7 +23,15 @@ const logger = createLogger('ScheduleTaskPowerSyncRepo');
 const scheduleEventPublisher = createTypedEventPublisher<ScheduleEventMap>(eventBus);
 
 export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository {
-  constructor(private readonly db: IElectronDatabase) {}
+  constructor(
+    private readonly db: IElectronDatabase,
+    private readonly transaction: IElectronDatabaseTransaction | null = null,
+    private readonly transactionDeferredAggregates: Set<ScheduleTask> | null = null,
+  ) {}
+
+  private get queryDb(): IElectronDatabaseTransaction {
+    return this.transaction ?? this.db;
+  }
 
   async save(task: ScheduleTask): Promise<void> {
     const data = PowerSyncScheduleTaskMapper.toPersistence(task);
@@ -34,6 +48,12 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
       executionCount: task.executionCount,
       pendingDomainEvents,
     });
+
+    if (this.transaction) {
+      await this.saveWithin(this.transaction, task, data);
+      this.transactionDeferredAggregates?.add(task);
+      return;
+    }
 
     // 任务与其执行记录多条写入放进单事务，避免半持久化。
     await this.db.writeTransaction(async (tx: IElectronDatabaseTransaction) => {
@@ -71,6 +91,12 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
              description = ?,
              source_module = ?,
              source_entity_id = ?,
+             scheduling_key = ?,
+             owner_type = ?,
+             owner_id = ?,
+             handler_key = ?,
+             payload_version = ?,
+             source_revision = ?,
              status = ?,
              enabled = ?,
              cron_expression = ?,
@@ -102,6 +128,12 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
           data.description,
           data.sourceModule,
           data.sourceEntityId,
+          data.schedulingKey,
+          data.ownerType,
+          data.ownerId,
+          data.handlerKey,
+          data.payloadVersion,
+          data.sourceRevision,
           data.status,
           data.enabled,
           data.cronExpression,
@@ -133,12 +165,13 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     } else {
       await tx.execute(
         `INSERT INTO schedule_tasks (
-          id, identity_id, name, description, source_module, source_entity_id, status, enabled,
-          cron_expression, timezone, start_date, end_date, max_executions, next_run_at, last_run_at,
-          execution_count, last_execution_status, last_execution_duration, consecutive_failures,
-          max_retries, initial_delay_ms, max_delay_ms, backoff_multiplier, retryable_statuses,
-          payload, tags, priority, timeout, version, created_at, updated_at, deleted_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          id, identity_id, name, description, source_module, source_entity_id,
+          scheduling_key, owner_type, owner_id, handler_key, payload_version, source_revision,
+          status, enabled, cron_expression, timezone, start_date, end_date, max_executions,
+          next_run_at, last_run_at, execution_count, last_execution_status, last_execution_duration,
+          consecutive_failures, max_retries, initial_delay_ms, max_delay_ms, backoff_multiplier,
+          retryable_statuses, payload, tags, priority, timeout, version, created_at, updated_at, deleted_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.id,
           data.identityId,
@@ -146,6 +179,12 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
           data.description,
           data.sourceModule,
           data.sourceEntityId,
+          data.schedulingKey,
+          data.ownerType,
+          data.ownerId,
+          data.handlerKey,
+          data.payloadVersion,
+          data.sourceRevision,
           data.status,
           data.enabled,
           data.cronExpression,
@@ -224,7 +263,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
   }
 
   async findById(id: string): Promise<ScheduleTask | null> {
-    const row = await this.db.getOptional<PowerSyncScheduleTaskRow>(
+    const row = await this.queryDb.getOptional<PowerSyncScheduleTaskRow>(
       'SELECT * FROM schedule_tasks WHERE id = ? LIMIT 1',
       [id],
     );
@@ -234,7 +273,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
   }
 
   async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleTask | null> {
-    const row = await this.db.getOptional<PowerSyncScheduleTaskRow>(
+    const row = await this.queryDb.getOptional<PowerSyncScheduleTaskRow>(
       'SELECT * FROM schedule_tasks WHERE id = ? AND identity_id = ? LIMIT 1',
       [id, identityId],
     );
@@ -248,7 +287,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     if (!existing) {
       throw new Error('Schedule task not found for the current identity.');
     }
-    await this.db.execute('DELETE FROM schedule_tasks WHERE id = ? AND identity_id = ?', [
+    await this.queryDb.execute('DELETE FROM schedule_tasks WHERE id = ? AND identity_id = ?', [
       id,
       identityId,
     ]);
@@ -279,6 +318,43 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     );
   }
 
+  async findBySchedulingOwner(owner: SchedulingOwner): Promise<ScheduleTask[]> {
+    return this.queryRows(
+      `SELECT * FROM schedule_tasks
+       WHERE identity_id = ? AND owner_type = ? AND owner_id = ? AND scheduling_key IS NOT NULL
+       ORDER BY next_run_at ASC`,
+      [owner.identityId, owner.type, owner.id],
+    );
+  }
+
+  async appendSchedulingReconcileReceipt(receipt: SchedulingReconcileReceipt): Promise<void> {
+    await this.queryDb.execute(
+      `INSERT INTO scheduling_reconcile_operations (
+        id, identity_id, owner_type, owner_id, status, desired_count, created_count,
+        updated_count, deleted_count, unchanged_count, failure_code, failure_message,
+        failure_retryable, started_at, finished_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        receipt.operationId,
+        receipt.owner.identityId,
+        receipt.owner.type,
+        receipt.owner.id,
+        receipt.status,
+        receipt.desiredCount,
+        receipt.createdCount,
+        receipt.updatedCount,
+        receipt.deletedCount,
+        receipt.unchangedCount,
+        receipt.failure?.code ?? null,
+        receipt.failure?.message ?? null,
+        receipt.failure?.retryable === undefined ? null : receipt.failure.retryable ? 1 : 0,
+        new Date(receipt.startedAt).toISOString(),
+        new Date(receipt.finishedAt).toISOString(),
+        new Date(receipt.finishedAt).toISOString(),
+      ],
+    );
+  }
+
   async findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]> {
     return this.queryRows(
       `SELECT * FROM schedule_tasks WHERE status = ? AND identity_id = ? ORDER BY next_run_at ASC`,
@@ -294,17 +370,24 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
   }
 
   async claimForExecution(id: string, expectedNextRunAt: Date): Promise<boolean> {
-    let claimed = 0;
-    await this.db.writeTransaction(async (tx) => {
+    const claim = async (tx: IElectronDatabaseTransaction): Promise<boolean> => {
       const result = await tx.execute(
         `UPDATE schedule_tasks
          SET last_run_at = ?
          WHERE id = ? AND status = ? AND enabled = 1 AND next_run_at = ?`,
         [new Date().toISOString(), id, ScheduleTaskStatus.Active, expectedNextRunAt.toISOString()],
       );
-      claimed = result.rowsAffected;
+      return result.rowsAffected > 0;
+    };
+
+    if (this.transaction) {
+      return claim(this.transaction);
+    }
+    let claimed = false;
+    await this.db.writeTransaction(async (tx) => {
+      claimed = await claim(tx);
     });
-    return claimed > 0;
+    return claimed;
   }
 
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {
@@ -375,7 +458,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     }
 
     const sql = `SELECT COUNT(*) as count FROM schedule_tasks WHERE ${clauses.join(' AND ')}`;
-    const row = await this.db.getOptional<{ count: number }>(sql, params);
+    const row = await this.queryDb.getOptional<{ count: number }>(sql, params);
     return Number(row?.count ?? 0);
   }
 
@@ -388,18 +471,38 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
   async deleteBatch(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
-    await this.db.execute(
+    await this.queryDb.execute(
       `DELETE FROM schedule_tasks WHERE identity_id = ? AND id IN (${placeholders})`,
       [identityId, ...ids],
     );
   }
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
-    return fn(this);
+    if (this.transaction) {
+      return fn(this);
+    }
+
+    const deferredAggregates = new Set<ScheduleTask>();
+    const result = await this.db.writeTransaction(async (tx) => {
+      const txRepository = new PowerSyncScheduleTaskRepository(
+        this.db,
+        tx,
+        deferredAggregates,
+      );
+      return fn(txRepository);
+    });
+
+    // Match Prisma semantics: domain events become visible only after commit.
+    for (const aggregate of deferredAggregates) {
+      if (aggregate.domainEvents.length > 0) {
+        flushDomainEvents(scheduleEventPublisher, aggregate);
+      }
+    }
+    return result;
   }
 
   private async queryRows(sql: string, params: unknown[]): Promise<ScheduleTask[]> {
-    const rows = await this.db.getAll<PowerSyncScheduleTaskRow>(sql, params);
+    const rows = await this.queryDb.getAll<PowerSyncScheduleTaskRow>(sql, params);
     return Promise.all(
       rows.map(async (row) => {
         const executions = await this.loadExecutions(row.id, 10);
@@ -412,7 +515,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     taskId: string,
     limit: number,
   ): Promise<PowerSyncScheduleExecutionRow[]> {
-    return this.db.getAll<PowerSyncScheduleExecutionRow>(
+    return this.queryDb.getAll<PowerSyncScheduleExecutionRow>(
       'SELECT * FROM schedule_executions WHERE task_id = ? ORDER BY created_at DESC LIMIT ?',
       [taskId, limit],
     );

@@ -41,6 +41,7 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
   contracts: [
     './task',
     './goal',
+    './label',
     './governance',
     './reminder',
     './repository',

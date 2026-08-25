@@ -620,6 +620,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
   /** Creates a new task. */
   public static create(params: {
+    id?: string;
     identityId: string;
     name: string;
     sourceModule: SourceModule;
@@ -649,7 +650,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     const nextRunAt = schedule.calculateNextRun(now.getTime());
 
     const state: ScheduleTaskState = {
-      id: ScheduleTaskId.generate(),
+      id: params.id ? ScheduleTaskId.of(params.id) : ScheduleTaskId.generate(),
       identityId: params.identityId as IdentityId,
       name: params.name,
       description: params.description ?? null,

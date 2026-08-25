@@ -69,6 +69,31 @@ function makeWeeklyRule(
   return RecurrenceRule.createWeekly(days, interval);
 }
 
+function makeMonthlyRule(interval = 1): RecurrenceRule {
+  return RecurrenceRule.create({
+    frequency: 'Monthly',
+    interval,
+    daysOfWeek: [],
+    endDate: null,
+    occurrences: null,
+  });
+}
+
+function makeYearlyRule(interval = 1): RecurrenceRule {
+  return RecurrenceRule.create({
+    frequency: 'Yearly',
+    interval,
+    daysOfWeek: [],
+    endDate: null,
+    occurrences: null,
+  });
+}
+
+function localYmd(instant: number): string {
+  const date = new Date(instant);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateState {
   const now = new Date();
   return {
@@ -977,6 +1002,51 @@ describe('TaskTemplate Aggregate', () => {
         });
       });
 
+      it('should use standard month-day recurrence instead of scanning every day', () => {
+        const startDate = new Date(2026, 0, 31, 12, 0, 0);
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeMonthlyRule(),
+          }),
+        );
+
+        const instances = template.generateInstances(
+          new Date(2026, 0, 1, 0, 0, 0).getTime(),
+          new Date(2026, 4, 31, 23, 59, 59).getTime(),
+        );
+
+        expect(instances.map((instance) => localYmd(instance.instanceDate))).toEqual([
+          '2026-01-31',
+          '2026-03-31',
+          '2026-05-31',
+        ]);
+      });
+
+      it('should apply finite COUNT to recurrence dates rather than arbitrary scanned days', () => {
+        const startDate = new Date(2026, 0, 31, 12, 0, 0);
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeMonthlyRule().setOccurrences(2),
+          }),
+        );
+
+        const instances = template.generateInstances(
+          new Date(2026, 0, 1, 0, 0, 0).getTime(),
+          new Date(2026, 6, 31, 23, 59, 59).getTime(),
+        );
+
+        expect(instances.map((instance) => localYmd(instance.instanceDate))).toEqual([
+          '2026-01-31',
+          '2026-03-31',
+        ]);
+      });
+
       it('should update lastGeneratedDate after generation', () => {
         const template = TaskTemplate.load(
           makeState({
@@ -1171,6 +1241,25 @@ describe('TaskTemplate Aggregate', () => {
         expect(
           template.shouldGenerateInstance(new Date('2025-06-30T12:00:00.000Z').getTime()),
         ).toBe(true);
+      });
+
+      it('should preserve leap-day yearly recurrence', () => {
+        const startDate = new Date(2024, 1, 29, 12, 0, 0);
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeYearlyRule(),
+          }),
+        );
+
+        expect(template.shouldGenerateInstance(new Date(2025, 1, 28, 12, 0, 0).getTime())).toBe(
+          false,
+        );
+        expect(template.shouldGenerateInstance(new Date(2028, 1, 29, 12, 0, 0).getTime())).toBe(
+          true,
+        );
       });
 
       it('should respect recurrence endDate', () => {
@@ -1418,18 +1507,37 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.getNextOccurrence(Date.now())).toBeNull();
       });
 
-      it('should return afterDate + 1 day for recurring tasks', () => {
+      it('should route recurring next-occurrence through the recurrence calendar', () => {
+        const startDate = new Date(2026, 0, 1, 12, 0, 0);
         const template = TaskTemplate.load(
           makeState({
             taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
-            recurrenceRule: makeDailyRule(),
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeDailyRule(2),
           }),
         );
 
-        const afterDate = Date.now();
-        const next = template.getNextOccurrence(afterDate);
-        expect(next).toBe(afterDate + 86400000);
+        const next = template.getNextOccurrence(new Date(2026, 0, 1, 12, 0, 0).getTime());
+        expect(next).not.toBeNull();
+        expect(localYmd(next!)).toBe('2026-01-03');
+        expect(new Date(next!).getHours()).toBe(0);
+      });
+
+      it('should skip non-leap years when finding the next yearly leap-day occurrence', () => {
+        const startDate = new Date(2024, 1, 29, 12, 0, 0);
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeYearlyRule(),
+          }),
+        );
+
+        const next = template.getNextOccurrence(new Date(2024, 1, 29, 12, 0, 0).getTime());
+        expect(next).not.toBeNull();
+        expect(localYmd(next!)).toBe('2028-02-29');
       });
     });
 

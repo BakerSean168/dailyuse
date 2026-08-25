@@ -11,6 +11,7 @@
  */
 
 import type { ScheduleTask } from '../aggregates/schedule-task';
+import type { SchedulingOwner, SchedulingReconcileReceipt } from '@memoflow/contracts/schedule';
 import { ScheduleTaskStatus, SourceModule } from '@memoflow/contracts/schedule';
 
 /**
@@ -71,6 +72,16 @@ export interface IScheduleTaskRepository {
     entityId: string,
     identityId: string,
   ): Promise<ScheduleTask[]>;
+
+  /** ADR-061 neutral desired-state owner lookup. Required by SchedulingPort adapters. */
+  findBySchedulingOwner?(owner: SchedulingOwner): Promise<ScheduleTask[]>;
+
+  /**
+   * Persist a successful owner reconcile receipt inside the caller's transaction.
+   * Optional on the legacy domain interface so unrelated test doubles do not become
+   * scheduling-aware; SchedulingPort fails closed when the capability is absent.
+   */
+  appendSchedulingReconcileReceipt?(receipt: SchedulingReconcileReceipt): Promise<void>;
 
   /**
    * 鏌ヨ鎸囧畾鐘舵€佺殑浠诲姟

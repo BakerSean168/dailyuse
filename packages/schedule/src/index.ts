@@ -26,6 +26,8 @@ export {
   createSchedulePrismaRepositories,
   createScheduleTaskPrismaRepository,
   createScheduleRuntimeContribution,
+  createScheduleTaskSchedulingPort,
+  createHandlerRegistryScheduleTaskSourceExecutor,
   type ScheduleApplicationPort,
   type ScheduleModuleDependencies,
   type ScheduleModuleInstance,
@@ -39,3 +41,6 @@ export {
 export { ScheduleTask } from './server';
 export type { IScheduleRepository, IScheduleTaskRepository, IScheduleExecutionRepository } from './server';
 export type { ScheduleTaskExecutionResult, ScheduleTaskSourceExecutor } from './server';
+
+// HandlerRegistry is runtime infrastructure; public data contracts stay in @memoflow/contracts/schedule.
+export { ScheduledHandlerRegistry } from './scheduling';
