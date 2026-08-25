@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": false,
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "description": "Product time facade: Clock, Style, Codec, Format, Input, Calendar (ADR-037)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,12 +16,12 @@
     }
   },
   "dependencies": {
+    "@internationalized/date": "3.11.0",
     "@memoflow/contracts": "workspace:*",
     "date-fns": "^4.1.0",
     "rrule": "2.8.1"
   },
   "devDependencies": {
-    "@internationalized/date": "3.11.0",
     "tsup": "^8.3.5",
     "typescript": "~6.0.3",
     "vitest": "^3.2.4"
