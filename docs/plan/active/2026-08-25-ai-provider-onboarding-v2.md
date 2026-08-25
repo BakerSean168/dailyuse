@@ -8,7 +8,7 @@ tags:
   - byok
 description: MemoFlow AI Provider 连接、凭据验证、模型发现与选择的一次性重构计划
 created: 2026-08-25T12:20:00+08:00
-updated: 2026-08-25T12:20:00+08:00
+updated: 2026-08-25T13:30:00+08:00
 status: active
 ---
 
@@ -80,8 +80,11 @@ status: active
 5. **Atomic persistence**：第一次 onboarding 在验证与选择完成前不创建持久 Provider 记录；最终一次 transaction 写入 encrypted secret + selection + default invariant。
 6. **Discovery fail-open, auth fail-closed**：`/models` 不支持时允许手工 model fallback；401/403 等明确 credential failure 不允许保存成“已连接”。
 7. **Provider inventory is authority; registry is enrichment**：真实 `/models` / provider catalog 决定“当前 Key 能看到什么”；models.dev 只补充显示信息。
-8. **Secret never becomes model/catalog state**：Key 不进入 client DTO、日志、workflow snapshot、Mastra RequestContext、model metadata cache。
-9. **No hidden global registry coupling**：identity-scoped Provider ID 与 Mastra framework registration key 继续分离。
+8. **Secret sent once**：首次 onboarding 的 raw API Key 只在 credential probe 时从浏览器上传一次；验证成功后换成 identity-bound、短 TTL、one-time credential handle，模型选择与最终 commit 不再重复传 raw Key。
+9. **Secret never becomes model/catalog state**：Key 不进入 client DTO、日志、workflow snapshot、Mastra RequestContext、model metadata cache。
+10. **TLS, not home-grown browser crypto**：公网/生产依赖 HTTPS/TLS 保护传输，不在 Vue 中自造 RSA/AES“二次加密”；浏览器侧自定义加密无法防 XSS，反而增加 key rotation/协议复杂度。
+11. **Custom endpoint is an SSRF boundary**：用户可控 Base URL 必须经过 server-side egress policy；默认拒绝 loopback/link-local/private/cloud-metadata 等目标与 redirect/DNS-rebinding 绕过，受控 self-hosted 地址只能由部署管理员显式 allowlist。
+12. **No hidden global registry coupling**：identity-scoped Provider ID 与 Mastra framework registration key 继续分离。
 
 ## Target domain split
 
@@ -135,7 +138,7 @@ Catalog 只负责 onboarding metadata；不保存用户 secret，不成为 Mastr
 
 返回内置 Provider onboarding metadata。Web/Desktop 共用同一 contract，不在 Vue 内硬编码一份、server 又硬编码一份。
 
-### B. Probe / Discover（不持久化）
+### B. Probe / Discover（不创建 Provider；raw Key 只上传一次）
 
 `POST /api/v1/ai/provider-connections/probe`
 
@@ -149,10 +152,13 @@ Request：
 }
 ```
 
+服务端先做 endpoint/SSRF policy，再验证 credential 与发现 models。验证可继续进入 onboarding 时，将 credential 放入**短时 onboarding credential store**（优先复用 Redis；payload 仍用 AEAD 加密），生成 identity-bound、约 10 分钟 TTL、one-time handle。raw Key 不写 Provider 表，也不返回客户端。
+
 Response：
 
 ```json
 {
+  "onboardingId": "opaque-short-lived-id",
   "credential": { "status": "valid" },
   "discovery": { "status": "available", "source": "provider_api" },
   "models": ["...normalized model views..."],
@@ -160,7 +166,9 @@ Response：
 }
 ```
 
-Custom 同一 endpoint，只是 `catalogId=custom` 且 baseUrl 必填。
+浏览器收到成功 response 后立即清空 API Key 输入与内存状态，后续只保留 `onboardingId`。
+
+Custom 同一 endpoint，只是 `catalogId=custom` 且 baseUrl 必填；它必须经过与 LibreChat 等成熟项目同类的 SSRF/egress guard，而不是对任意用户 URL 做 unrestricted server-side `fetch()`。
 
 错误分类至少区分：
 
@@ -178,24 +186,30 @@ OpenRouter credential probe 优先使用 `/api/v1/key`；generic OpenAI-compatib
 
 仅在需要时对**用户已经选择的 model**做小成本 chat completion，确认 selected model / account entitlement / request shape 能实际工作。UI 应明确这一步可能产生极少量模型调用费用；不应偷偷消费。
 
-### D. Atomic commit
+### D. Atomic commit（不再重传 raw Key）
 
 `POST /api/v1/ai/providers`
 
-最终创建才要求 `defaultModelId`：
+最终创建只提交已验证 onboarding handle + 用户显式选择的模型：
 
 ```json
 {
-  "catalogId": "openrouter",
+  "onboardingId": "opaque-short-lived-id",
   "name": "OpenRouter",
-  "baseUrl": "https://openrouter.ai/api/v1",
-  "apiKey": "<secret>",
   "defaultModelId": "google/gemini-2.5-flash",
   "isDefault": true
 }
 ```
 
-服务端在 transaction 中加密 secret、写 Provider、维护 per-identity default invariant。API 命名应统一 `defaultModelId`，不再让 create body 的 `model` 同时承担 onboarding input 与 persisted default semantics。
+服务端必须：
+
+1. 验证 handle 属于当前 identity、未过期、未消费；
+2. 读取其 catalog/baseUrl/validated credential；
+3. 可选确认 `defaultModelId` 属于 probe inventory 或已通过 manual-model test；
+4. 在 transaction 中写 Provider + encrypted secret + default invariant；
+5. 成功后原子消费/删除 onboarding handle。
+
+这样 raw Key 在浏览器→MemoFlow 方向只出现一次。API 命名统一 `defaultModelId`，不再让 create body 的 `model` 同时承担 onboarding input 与 persisted default semantics。
 
 ### E. Saved provider operations
 
@@ -208,15 +222,26 @@ OpenRouter credential probe 优先使用 `/api/v1/key`；generic OpenAI-compatib
 
 ### Entry screen
 
-不再用“卡片 + Key + 连接后偷偷填 model”的 Quick Provider。
+不再用“卡片 + Key + 连接后偷偷填 model”的 Quick Provider，也**不在 Settings 首页直接平铺一批尚未连接的默认 Provider**。
 
-建议：
+首页只承担已配置状态管理：
 
 - 顶部：当前默认 Provider / Model 状态摘要；
 - `添加 Provider` 主 CTA；
-- 已连接 Provider cards：状态、Base URL、默认模型、上次验证、模型数（动态）、是否默认；
-- Popular catalog：OpenRouter / OpenAI / Gemini / DeepSeek；
-- More / Custom：Groq、Mistral、SiliconFlow/LiteLLM 等可按 catalog 扩展；Custom OpenAI-compatible 永远存在。
+- 已连接 Provider cards/list：状态、Base URL、默认模型、上次验证、模型数（动态）、是否默认；
+- 空状态只解释“添加一个模型服务”，不塞多个品牌卡片和 Key 输入框。
+
+### Add Provider picker（参考 CC Switch / LobeChat 类目录交互）
+
+点击 `添加 Provider` 后进入独立 drawer/dialog/full-page picker，而不是直接展开一个万能表单：
+
+- 顶部搜索；
+- searchable catalog grid/list，Provider logo + name + 简短类型（Official / Gateway / Compatible）；
+- `Custom OpenAI-compatible` 固定可见且足够突出；
+- Provider 数量较多时在 picker 内分类/搜索，不污染 Settings 首页；
+- 选中预设后再进入 Connection step；预设只提供 metadata/default endpoint，不携带隐藏模型选择。
+
+UI/资产优先复用成熟开源生态而不是自画品牌标识：可评估 MIT 的 `@lobehub/icons-static-svg` 作为 Vue 可直接消费的静态 AI Provider SVG 资产；交互结构参考 CC Switch/Open WebUI/LobeChat，但不复制其框架绑定 UI 代码。
 
 ### Onboarding drawer/dialog
 
@@ -249,7 +274,7 @@ OpenRouter credential probe 优先使用 `/api/v1/key`；generic OpenAI-compatib
 
 ## Provider catalog recommendation
 
-首屏不追求“越多越好”，建议四个高频入口：
+Provider catalog 放在 `添加 Provider` picker 内，不放 Settings 首屏。Catalog 本身也不追求“越多越好”，第一批建议：
 
 1. OpenRouter — aggregator / 多模型；
 2. OpenAI — 官方；
@@ -294,13 +319,39 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 
 ## Deployment / security hardening
 
+### Transport and browser
+
+- **标准做法是 raw API Key 通过 HTTPS request body 传到受信任后端**；不在浏览器再造一层应用级 RSA/AES。TLS 已提供机密性/完整性/服务端身份认证；自定义前端加密无法防止页面 XSS 在加密前窃取 Key。
+- 当前 GCP MagicDNS `http://...:58080` 的网络流量虽处于 Tailscale/WireGuard 私网加密隧道内，可用于 dev validation，但浏览器层仍是 HTTP；正式 production 必须 HTTPS，后续也建议把 canonical GCP validation 迁到 Tailscale Serve/HTTPS 以与生产安全语义一致。
+- API Key input 使用 password/reveal pattern，禁用 spellcheck/autocorrect，避免写入 localStorage/sessionStorage/URL/query；probe 成功、cancel、dialog unmount 时主动清空 raw value。
+
+### In-flight secret handling
+
+- raw Key 首次只出现在 `provider-connections/probe` body 一次；成功后变成短 TTL、identity-bound、one-time `onboardingId`。
+- onboarding credential store 优先复用 Redis 以支持 multi-instance；即使是 TTL 临时数据也不得以 plaintext 存 Redis，应使用 AEAD-encrypted payload，并在 commit/cancel/expiry 时删除。
+- 更新已有 Provider 的 Key 也走“probe replacement credential → one-time handle → atomic swap”，而不是先 PATCH 明文再测试。
+- request logger / tracing / analytics / error reporting 一律不捕获 body/header secret。当前 MemoFlow terminal request observation 已只记录 method/route/status/duration/identity，不记录 body；需要新增 `apiKey` 专项 regression lock。Nginx access log 当前也只记录 request line/status/referer/UA，不记录 body。
+
+### At-rest secret handling
+
+- 当前 `AISecretCipher` 的 AES-256-GCM + random IV + auth tag 方向正确，而且比仅“编码/掩码”强；Client DTO 继续只返回 masked key。
 - `AI_PROVIDER_ENCRYPTION_KEY` 在 production / local-docker 的“启用 Provider 设置”路径必须进入 preflight contract；不能等用户第一次保存 key 才 500。
 - 密钥必须 >=32 chars，生产随机生成；不允许 public fallback。
-- provider probe request body 禁止日志记录/telemetry capture。
-- Client DTO 只返回 masked key。
+- 下一层可借鉴 Dify 的 tenant-aware key-provider abstraction：把当前 env-backed cipher 抽成 `ProviderSecretVaultPort`，默认 local AES-GCM，生产可接 cloud KMS/secret manager；本轮不要求先引入云 KMS。
+- 需要设计 key rotation/kid，而不是永远只有一个不可轮换 `AI_PROVIDER_ENCRYPTION_KEY`；至少允许 active key + previous decrypt keys 后平滑重加密。
+
+### Custom endpoint egress / SSRF
+
+- Custom Provider 会导致服务端对用户 URL 发 `/models`/chat 请求，因此它是明确 SSRF boundary。
+- 默认只允许 `https:` public destinations；拒绝 loopback、link-local、RFC1918/private、Unix/socket、cloud metadata IP/hostname 与非 HTTP(S) scheme。
+- DNS resolve 后校验实际 IP；禁止或逐跳重新验证 redirects，防 DNS rebinding/redirect-to-private。
+- 如果 self-hosted MemoFlow 的管理员确实要连内网 LiteLLM/Ollama，使用**部署级 allowlist**显式放行 host:port，不能由普通用户自己绕过。LibreChat 当前也对 user-provided baseURL 采用同类 SSRF allowlist 模型。
+- discovery 设置严格 timeout、response size/model count 上限与 schema normalization，避免恶意/错误 endpoint 用超大 `/models` 响应拖垮 API。
+
+### Output/error boundary
+
 - model discovery cache 永不缓存 raw credential。
 - Provider errors 对客户端返回 typed category，不透传原始 body/headers/key。
-- 需要考虑 HTTP MagicDNS dev 环境只是私有验证；正式生产必须 HTTPS。
 
 ## Migration strategy
 
@@ -315,11 +366,13 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 - Web/Desktop/API 继续共用同一 catalog contract；
 - 将 `defaultModel` 的隐藏 bootstrap 语义改为 `recommendedModelIds[]`，只用于 UI ranking/推荐，不自动成为用户默认选择。
 
-### Phase 2 — Probe/discovery service
+### Phase 2 — Probe/discovery service + secure onboarding session
 
 - 新增 CredentialProbePort + ProviderModelCatalogPort orchestration；
 - OpenRouter dedicated `/key` credential strategy；
 - generic `/models` discovery；
+- Custom baseURL SSRF/egress policy；
+- 新增短 TTL identity-bound onboarding credential store；raw Key probe 后不再返回/重传；
 - typed failure taxonomy + manual fallback。
 
 ### Phase 3 — Model catalog normalization/cache
@@ -330,14 +383,16 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 
 ### Phase 4 — Create contract V2 / atomic persistence
 
-- create 从 `model` 改为 `defaultModelId`；
+- create 从 `model + apiKey` 改为 `onboardingId + defaultModelId`；
 - onboarding 完成后才 create；
+- one-time handle 在成功 transaction 后消费；失败可安全重试且不产生半成品 Provider；
 - transactional default provider invariant 保留。
 
 ### Phase 5 — Vue UX rewrite
 
 - 删除 Quick Provider silent-model path；
-- 新 Add Provider flow：Connection → Models → Review；
+- Settings 首页只显示已连接 Provider + `添加 Provider`，不平铺未配置品牌卡片；
+- 新 Add Provider picker：searchable presets / Custom → Connection → Models → Review；
 - Custom 也 discovery-first；
 - manual model fallback；
 - saved cards/refresh/switch/test 状态一致。
@@ -362,6 +417,11 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 
 - [ ] Quick Provider 不再在用户不可见的情况下提交模板默认 `model`
 - [ ] 首次 Provider 接入在验证/选模型前零持久化 side effect
+- [ ] raw API Key 在首次 onboarding 中只从 browser 上传一次；后续选择/commit 使用短时 one-time handle
+- [ ] Settings 首页不再平铺未配置 Provider；Add Provider picker 支持搜索预设 + Custom
+- [ ] Custom Base URL 有 SSRF/redirect/DNS-rebinding 防护与部署级 private-address allowlist
+- [ ] request/access/trace logs 有测试锁定不会捕获 `apiKey`/Authorization/body secret
+- [ ] production HTTPS 为硬门槛；MagicDNS validation 的 HTTP/Tailscale 特例有明确边界
 - [ ] OpenRouter Key 有 dedicated authenticated validation；无效 Key 无法保存为 connected
 - [ ] OpenRouter live models 可搜索选择，用户必须显式选 default model
 - [ ] Custom OpenAI-compatible 默认尝试 `/models` 自动发现
