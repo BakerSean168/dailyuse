@@ -248,3 +248,24 @@ describe('API runtime image boundary', () => {
     assert.ok(!apiRuntime.includes('prisma'));
   });
 });
+
+
+describe('GitHub server-only compose environment contract', () => {
+  const requiredKeys = [
+    'GITHUB_OAUTH_CLIENT_ID',
+    'GITHUB_OAUTH_CLIENT_SECRET',
+    'GITHUB_APP_ID',
+    'GITHUB_APP_SLUG',
+    'GITHUB_APP_PRIVATE_KEY',
+    'GITHUB_APP_WEBHOOK_SECRET',
+  ];
+
+  for (const composeFile of ['docker-compose.local.yml', 'docker-compose.prod.yml']) {
+    it(`${composeFile} passes all GitHub identity and installation credentials to API`, () => {
+      const source = readFileSync(resolve(process.cwd(), composeFile), 'utf8');
+      for (const key of requiredKeys) {
+        assert.ok(source.includes(key + ': ${' + key + ':'));
+      }
+    });
+  }
+});

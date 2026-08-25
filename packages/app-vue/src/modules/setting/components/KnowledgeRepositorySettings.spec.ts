@@ -379,7 +379,7 @@ describe('KnowledgeRepositorySettings', () => {
     expect(confirmMock).not.toHaveBeenCalled();
   });
 
-  it('completes the GitHub callback and connects only the selected verified repository', async () => {
+  it('completes the GitHub callback and connects a Contents-write repository without admin permission', async () => {
     routerMocks.query = {
       tab: 'repository',
       state: 'state-state-state-state',
@@ -401,7 +401,7 @@ describe('KnowledgeRepositorySettings', () => {
             archived: false,
             disabled: false,
             defaultBranch: 'main',
-            permissions: { admin: true, push: true, pull: true },
+            permissions: { admin: false, push: true, pull: true },
           },
         ],
       }),

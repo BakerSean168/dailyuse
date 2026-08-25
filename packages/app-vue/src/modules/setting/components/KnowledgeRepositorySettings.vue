@@ -717,7 +717,7 @@ function canConnect(repository: GitHubInstallationRepositoryDTO): boolean {
     repository.private &&
     !repository.archived &&
     !repository.disabled &&
-    repository.permissions.admin
+    repository.permissions.push
   );
 }
 
