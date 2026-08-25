@@ -5,7 +5,6 @@
  */
 
 import { NotificationPolicy } from '../../../domain/services/notification-policy';
-import { BusinessRuleViolationError } from '@memoflow/utils/errors';
 import { createLogger } from '@memoflow/utils/logger';
 import type {
   NotificationClientDTO,
@@ -23,11 +22,12 @@ import type {
   INotificationRepository,
   INotificationTemplateRepository,
   INotificationPreferenceRepository,
+  NotificationOutboxDispatchPlan,
 } from '../../../domain/repositories';
+import type { NotificationDeliveryDecision } from '../../../domain/services/notification-policy';
 import { randomUUID } from 'crypto';
 import {
   buildIdempotencyKeyString,
-  type NotificationOutboxDispatchInput,
 } from '@memoflow/contracts/reliable-messaging';
 import { toNotificationClientDTO } from './notification-dto-converters';
 import { Notification } from '../../../domain/aggregates/notification';
@@ -47,6 +47,7 @@ export class CreateNotificationUseCase {
     private readonly templateRepository: INotificationTemplateRepository,
     private readonly preferenceRepository: INotificationPreferenceRepository,
     closureChecker?: (identityId: string) => Promise<boolean>,
+    private readonly clock: () => Date = () => new Date(),
   ) {
     if (!closureChecker) {
       throw new Error('[FAIL-CLOSED] CreateNotificationUseCase requires closureChecker');
@@ -67,6 +68,8 @@ export class CreateNotificationUseCase {
     navigationIntent?: NotificationNavigationIntentDTO | null;
     channels?: NotificationChannelType[];
     expiresAt?: number | null;
+    /** DND bypass is never inferred from type/category; callers must opt in explicitly. */
+    bypassDoNotDisturb?: boolean;
   }): Promise<Result<NotificationClientDTO>> {
     if (await this.closureChecker(params.identityId)) {
       return error('FORBIDDEN', 'Account is closed or closure in progress');
@@ -80,20 +83,10 @@ export class CreateNotificationUseCase {
 
     const preference = await this.preferenceRepository.findByIdentityId(params.identityId);
     const channels = params.channels ?? [ChannelTypeEnum.InApp];
+    const now = this.clock();
 
-    try {
-      this.policy.assertCanSend({
-        category: params.category,
-        channel: channels[0],
-        preference,
-      });
-    } catch (err) {
-      if (err instanceof BusinessRuleViolationError) {
-        return error('FORBIDDEN', err.message);
-      }
-      throw err;
-    }
-
+    // Notification is the durable user-visible Fact. Delivery policy is evaluated
+    // independently per channel below and must never erase read/unread truth.
     const notification = Notification.create({
       identityId: params.identityId as IdentityId,
       title: params.title,
@@ -104,9 +97,40 @@ export class CreateNotificationUseCase {
       expiresAt: params.expiresAt,
     });
 
-    const outboxDispatches: NotificationOutboxDispatchInput[] = [];
+    const outboxDispatches: NotificationOutboxDispatchPlan[] = [];
+    const deliveryDecisions: NotificationDeliveryDecision[] = [];
 
     for (const channelType of channels) {
+      const rateLimitUsage = preference?.rateLimit?.enabled
+        ? await this.notificationRepository.getDeliveryUsage(
+            params.identityId,
+            params.category,
+            channelType,
+            now,
+          )
+        : undefined;
+      const decision = this.policy.evaluate({
+        category: params.category,
+        channel: channelType,
+        preference,
+        doNotDisturb: preference?.doNotDisturb,
+        rateLimit: preference?.rateLimit,
+        rateLimitUsage,
+        now,
+        bypassDoNotDisturb: params.bypassDoNotDisturb === true,
+      });
+      deliveryDecisions.push(decision);
+
+      if (decision.outcome === 'suppressed' || decision.outcome === 'rate_limited') {
+        continue;
+      }
+      if (decision.outcome === 'deferred' && !decision.retryAt) {
+        logger.warn('DND decision has no retryAt; keeping delivery suppressed rather than enqueueing immediately', {
+          identityId: params.identityId,
+          channelType,
+        });
+        continue;
+      }
       const channel = NotificationChannel.create({
         notificationId: notification.id,
         channelType,
@@ -137,11 +161,12 @@ export class CreateNotificationUseCase {
           navigationIntent: params.navigationIntent ?? null,
         }),
         idempotencyKey,
+        ...(decision.outcome === 'deferred' ? { deferUntil: decision.retryAt } : {}),
       });
     }
 
-    await notification.send();
-    await this.notificationRepository.save(notification, outboxDispatches);
+    notification.send();
+    await this.notificationRepository.save(notification, outboxDispatches, deliveryDecisions);
     const clientDTO = toNotificationClientDTO(notification.toServerDTO());
 
     logger.info('✅✅✅ [应用服务] 通知创建完成', {

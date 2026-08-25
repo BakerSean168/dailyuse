@@ -20,7 +20,7 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
   constructor(private readonly prisma: PrismaClient) {}
 
   async save(preference: NotificationPreference): Promise<void> {
-    const { dto, enabled, channels, categories } =
+    const { dto, enabled, channels, categories, doNotDisturb, rateLimit } =
       NotificationPreferencePrismaMapper.toPersistence(preference);
 
     await this.prisma.notificationPreference.upsert({
@@ -31,6 +31,8 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
         enabled,
         channels,
         categories,
+        doNotDisturb,
+        rateLimit,
         version: dto.version,
         deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       },
@@ -38,6 +40,8 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
         enabled,
         channels,
         categories,
+        doNotDisturb,
+        rateLimit,
         version: dto.version,
         deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       },

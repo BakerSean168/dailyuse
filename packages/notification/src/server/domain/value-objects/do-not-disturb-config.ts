@@ -143,6 +143,27 @@ export class DoNotDisturbConfig extends ValueObject<DoNotDisturbConfigDTO> imple
     }
   }
 
+  /** Returns the first local wall-clock instant at which the current DND window is inactive. */
+  public nextInactiveAt(time: Date): Date | null {
+    if (!this.isActiveAt(time)) return null;
+
+    const [endH, endM] = this.props.endTime.split(':').map(Number);
+    const [startH, startM] = this.props.startTime.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+    const currentMinutes = time.getHours() * 60 + time.getMinutes();
+    const end = new Date(time);
+    end.setHours(endH, endM, 0, 0);
+
+    if (startMinutes >= endMinutes && currentMinutes >= startMinutes) {
+      end.setDate(end.getDate() + 1);
+    } else if (end.getTime() <= time.getTime()) {
+      end.setDate(end.getDate() + 1);
+    }
+
+    return end;
+  }
+
   // ================= 序列化 =================
 
   public toDTO(): DoNotDisturbConfigDTO {

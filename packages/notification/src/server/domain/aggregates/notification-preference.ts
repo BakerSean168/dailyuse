@@ -12,6 +12,8 @@ import { AggregateRoot } from '@memoflow/utils/domain';
 import {
   NotificationPreferenceId,
 } from '../value-objects/notification-preference-id';
+import { DoNotDisturbConfig } from '../value-objects/do-not-disturb-config';
+import { RateLimit } from '../value-objects/rate-limit';
 
 /**
  * NotificationPreference 内部状态接口
@@ -20,6 +22,8 @@ export interface NotificationPreferenceState {
   id: NotificationPreferenceId;
   identityId: IdentityId;
   settings: Map<string, NotificationChannelType[]>;
+  doNotDisturb?: DoNotDisturbConfig | null;
+  rateLimit?: RateLimit | null;
   version: number;
   deletedAt: Date | null;
   createdAt: Date;
@@ -51,6 +55,14 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
 
   public get settings(): Map<string, NotificationChannelType[]> {
     return new Map(this._props.settings);
+  }
+
+  public get doNotDisturb(): DoNotDisturbConfig | null {
+    return this._props.doNotDisturb ?? null;
+  }
+
+  public get rateLimit(): RateLimit | null {
+    return this._props.rateLimit ?? null;
   }
 
   public get version(): number {
@@ -113,6 +125,16 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
    */
   public disableModule(moduleName: string): void {
     this._props.settings.set(moduleName, []);
+  }
+
+  public setDoNotDisturb(config: DoNotDisturbConfig | null): void {
+    this._props.doNotDisturb = config;
+    this._props.updatedAt = new Date();
+  }
+
+  public setRateLimit(rateLimit: RateLimit | null): void {
+    this._props.rateLimit = rateLimit;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -190,6 +212,8 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
       id,
       identityId: params.identityId,
       settings,
+      doNotDisturb: null,
+      rateLimit: null,
       version: 1,
       deletedAt: null,
       createdAt: now,

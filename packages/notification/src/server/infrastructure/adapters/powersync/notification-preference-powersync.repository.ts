@@ -1,7 +1,10 @@
-import { generateUUID } from '@memoflow/utils/shared';
+import { generateUUID, parseJsonSafe } from '@memoflow/utils/shared';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import { NotificationChannelType } from '@memoflow/contracts/notification';
 import { NotificationPreference } from '../../../domain/aggregates/notification-preference';
+import { DoNotDisturbConfig } from '../../../domain/value-objects/do-not-disturb-config';
+import { RateLimit } from '../../../domain/value-objects/rate-limit';
+import type { DoNotDisturbConfigDTO, RateLimitDTO } from '@memoflow/contracts/notification';
 import type { INotificationPreferenceRepository } from '../../../domain/repositories/i-notification-preference-repository';
 
 interface NotificationPreferenceRow {
@@ -10,6 +13,8 @@ interface NotificationPreferenceRow {
   channels: string | null;
   categories: string | null;
   enabled: number | null;
+  do_not_disturb: string | null;
+  rate_limit: string | null;
   version: number | null;
   created_at: string;
   updated_at: string;
@@ -54,6 +59,14 @@ function hydratePreference(row: NotificationPreferenceRow): NotificationPreferen
     id: row.id as never,
     identityId: row.identity_id as never,
     settings: new Map(Object.entries(toSettings(row))),
+    doNotDisturb: (() => {
+      const dto = parseJsonSafe<DoNotDisturbConfigDTO>(row.do_not_disturb);
+      return dto ? DoNotDisturbConfig.fromDTO(dto) : null;
+    })(),
+    rateLimit: (() => {
+      const dto = parseJsonSafe<RateLimitDTO>(row.rate_limit);
+      return dto ? RateLimit.fromDTO(dto) : null;
+    })(),
     version: row.version ?? 1,
     deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
     createdAt: new Date(row.created_at),
@@ -90,6 +103,10 @@ function serializePreference(preference: NotificationPreference) {
     enabled: Object.values(categories).some((value) => Object.values(value).some(Boolean)) ? 1 : 0,
     channels: JSON.stringify(channels),
     categories: JSON.stringify(categories),
+    doNotDisturb: preference.doNotDisturb
+      ? JSON.stringify(preference.doNotDisturb.toDTO())
+      : null,
+    rateLimit: preference.rateLimit ? JSON.stringify(preference.rateLimit.toDTO()) : null,
   };
 }
 
@@ -97,17 +114,20 @@ export class PowerSyncNotificationPreferenceRepository implements INotificationP
   constructor(private readonly db: IElectronDatabase) {}
 
   async save(preference: NotificationPreference): Promise<void> {
-    const { dto, enabled, channels, categories } = serializePreference(preference);
+    const { dto, enabled, channels, categories, doNotDisturb, rateLimit } = serializePreference(preference);
     await this.db.execute(
       `INSERT OR REPLACE INTO notification_preferences (
-         id, identity_id, enabled, channels, categories, version, created_at, updated_at, deleted_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         id, identity_id, enabled, channels, categories, do_not_disturb, rate_limit,
+         version, created_at, updated_at, deleted_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         dto.id,
         dto.identityId,
         enabled,
         channels,
         categories,
+        doNotDisturb,
+        rateLimit,
         dto.version,
         new Date(dto.createdAt).toISOString(),
         new Date(dto.updatedAt).toISOString(),

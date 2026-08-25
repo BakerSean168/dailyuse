@@ -14,6 +14,10 @@ import {
 import { CreateNotificationUseCase } from '../../../../application/use-cases/commands/create-notification.use-case';
 import { RealDesktopChannelDeliverer } from '../../deliverers/real-channel-deliverers';
 import { NotificationChannelType } from '@memoflow/contracts/notification';
+import { NotificationPreference } from '../../../../domain/aggregates/notification-preference';
+import { DoNotDisturbConfig } from '../../../../domain/value-objects/do-not-disturb-config';
+import { RateLimit } from '../../../../domain/value-objects/rate-limit';
+import { PowerSyncNotificationPreferenceRepository } from '../notification-preference-powersync.repository';
 import { Notification } from '../../../../domain/aggregates/notification';
 import { NotificationChannel } from '../../../../domain/entities/notification-channel';
 import { buildIdempotencyKeyString } from '@memoflow/contracts/reliable-messaging';
@@ -100,6 +104,9 @@ function createTestSqliteDatabase(): IElectronDatabase {
     CREATE TABLE IF NOT EXISTS notification_preferences (
       id TEXT PRIMARY KEY,
       identity_id TEXT NOT NULL,
+      enabled INTEGER DEFAULT 1,
+      do_not_disturb TEXT,
+      rate_limit TEXT,
       global_do_not_disturb INTEGER DEFAULT 0,
       quiet_hours TEXT,
       channels TEXT,
@@ -274,6 +281,9 @@ function createFileSqliteDatabase(dbPath: string): { db: IElectronDatabase; clos
     CREATE TABLE IF NOT EXISTS notification_preferences (
       id TEXT PRIMARY KEY,
       identity_id TEXT NOT NULL,
+      enabled INTEGER DEFAULT 1,
+      do_not_disturb TEXT,
+      rate_limit TEXT,
       global_do_not_disturb INTEGER DEFAULT 0,
       quiet_hours TEXT,
       channels TEXT,
@@ -898,4 +908,102 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
       }
     }
   });
+  it('persists DND/rate policy configuration through the PowerSync preference repository', async () => {
+    const db = createTestSqliteDatabase();
+    const repository = new PowerSyncNotificationPreferenceRepository(db);
+    const preference = NotificationPreference.create({
+      identityId: 'user-policy-pref',
+      defaultChannels: [NotificationChannelType.InApp],
+    });
+    preference.setDoNotDisturb(
+      DoNotDisturbConfig.create({
+        enabled: true,
+        startTime: '22:00',
+        endTime: '08:00',
+        daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      }),
+    );
+    preference.setRateLimit(RateLimit.create({ enabled: true, maxPerHour: 2, maxPerDay: 9 }));
+
+    await repository.save(preference);
+    const loaded = await repository.findByIdentityId('user-policy-pref');
+
+    expect(loaded?.doNotDisturb?.toDTO()).toEqual(preference.doNotDisturb?.toDTO());
+    expect(loaded?.rateLimit?.toDTO()).toEqual(preference.rateLimit?.toDTO());
+  });
+
+  it('stores deferred policy outcomes and does not claim deferred outbox work before retryAt', async () => {
+    const db = createTestSqliteDatabase();
+    const repository = new PowerSyncNotificationRepository(db);
+    const notification = Notification.create({
+      identityId: 'user-deferred' as never,
+      title: 'Deferred delivery',
+      content: 'Quiet hours',
+      type: 'Info',
+      category: 'System',
+    });
+    const channel = NotificationChannel.create({
+      notificationId: notification.id,
+      channelType: NotificationChannelType.InApp,
+      recipient: 'user-deferred',
+    });
+    notification.addChannel(channel);
+    notification.send();
+
+    const occurrenceKey = `${notification.id}:${NotificationChannelType.InApp}`;
+    const idempotencyKey = buildIdempotencyKeyString({
+      identityId: 'user-deferred',
+      source: 'notification',
+      occurrenceKey,
+    });
+    const retryAt = new Date(Date.now() + 60_000);
+
+    await repository.save(
+      notification,
+      [
+        {
+          operationId: randomUUID(),
+          identityId: 'user-deferred',
+          source: 'notification',
+          occurrenceKey,
+          channel: NotificationChannelType.InApp,
+          payloadJson: JSON.stringify({ notificationId: String(notification.id) }),
+          idempotencyKey,
+          deferUntil: retryAt,
+        },
+      ],
+      [
+        {
+          channel: NotificationChannelType.InApp,
+          outcome: 'deferred',
+          reason: 'dnd_active',
+          retryAt,
+        },
+      ],
+    );
+
+    const outbox = await db.get<{ status: string; next_retry_at: string | null }>(
+      'SELECT status, next_retry_at FROM notification_dispatch_outbox WHERE idempotency_key = ?',
+      [idempotencyKey],
+    );
+    expect(outbox.status).toBe('retryable');
+    expect(outbox.next_retry_at).toBe(retryAt.toISOString());
+
+    const history = await db.get<{ action: string; details: string }>(
+      'SELECT action, details FROM notification_history WHERE notification_id = ?',
+      [notification.id],
+    );
+    expect(history.action).toBe('delivery_policy');
+    expect(JSON.parse(history.details)).toMatchObject({
+      channel: NotificationChannelType.InApp,
+      outcome: 'deferred',
+      reason: 'dnd_active',
+      retryAt: retryAt.toISOString(),
+    });
+
+    const adapter = new PowerSyncNotificationReliableAdapter(db);
+    const claims = await adapter.claimOutboxDispatch({ ownerToken: 'worker-before-dnd-end', limit: 1 });
+    expect(claims).toHaveLength(0);
+  });
+
 });

@@ -12,6 +12,8 @@ import {
   NotificationStatus,
 } from '@memoflow/contracts/notification';
 import { NotificationPreference } from '../../../../domain/aggregates/notification-preference';
+import { DoNotDisturbConfig } from '../../../../domain/value-objects/do-not-disturb-config';
+import { RateLimit } from '../../../../domain/value-objects/rate-limit';
 
 describe('CreateNotificationUseCase', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;
@@ -24,6 +26,7 @@ describe('CreateNotificationUseCase', () => {
 
     notificationRepo = createMockRepo<INotificationRepository>({
       save: vi.fn().mockResolvedValue(undefined),
+      getDeliveryUsage: vi.fn().mockResolvedValue({ hourCount: 0, dayCount: 0 }),
     });
     templateRepo = createMockRepo<INotificationTemplateRepository>();
     preferenceRepo = createMockRepo<INotificationPreferenceRepository>({
@@ -100,24 +103,198 @@ describe('CreateNotificationUseCase', () => {
     expect(result.data.notificationChannels).toHaveLength(2);
   });
 
-  it('should return error when preference blocks the notification', async () => {
+  it('does not enqueue a disabled channel when another requested channel is allowed', async () => {
+    const identityId = anIdentityId();
+    const preference = NotificationPreference.create({ identityId });
+    preference.setModuleChannels(NotificationCategory.System, [NotificationChannelType.InApp]);
+    vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(preference);
+
+    const result = await useCase.execute({
+      identityId,
+      title: 'Mixed channels',
+      content: 'Only InApp is allowed',
+      type: NotificationType.Info,
+      category: NotificationCategory.System,
+      channels: [NotificationChannelType.InApp, NotificationChannelType.Email],
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.notificationChannels?.map((channel) => channel.channelType)).toEqual([
+      NotificationChannelType.InApp,
+    ]);
+
+    const [, outboxDispatches, decisions] = vi.mocked(notificationRepo.save).mock.calls[0];
+    expect(outboxDispatches?.map((dispatch) => dispatch.channel)).toEqual([
+      NotificationChannelType.InApp,
+    ]);
+    expect(decisions).toContainEqual({
+      channel: NotificationChannelType.Email,
+      outcome: 'suppressed',
+      reason: 'user_preference_disabled',
+    });
+  });
+
+  it('preserves the unread Notification Fact when the requested channel is suppressed', async () => {
     const identityId = anIdentityId();
     const pref = NotificationPreference.create({ identityId });
-    // No channels configured for System category => shouldSendNotification returns false
     pref.setModuleChannels(NotificationCategory.System, []);
     vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(pref);
 
     const result = await useCase.execute({
       identityId,
-      title: 'Blocked',
-      content: 'Content',
+      title: 'Blocked delivery',
+      content: 'Fact remains visible',
       type: NotificationType.Info,
       category: NotificationCategory.System,
     });
 
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('Expected error');
-    expect(result.error.code).toBe('FORBIDDEN');
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.isRead).toBe(false);
+    expect(result.data.notificationChannels).toBeNull();
+
+    const [, outboxDispatches, decisions] = vi.mocked(notificationRepo.save).mock.calls[0];
+    expect(outboxDispatches).toEqual([]);
+    expect(decisions).toContainEqual({
+      channel: NotificationChannelType.InApp,
+      outcome: 'suppressed',
+      reason: 'user_preference_disabled',
+    });
+  });
+
+  it('defers an allowed channel during DND and records the retry instant', async () => {
+    const identityId = anIdentityId();
+    const now = new Date('2026-08-25T23:30:00');
+    const pref = NotificationPreference.create({ identityId });
+    pref.setModuleChannels(NotificationCategory.System, [NotificationChannelType.InApp]);
+    const dnd = DoNotDisturbConfig.create({
+      enabled: true,
+      startTime: '22:00',
+      endTime: '08:00',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+    pref.setDoNotDisturb(dnd);
+    vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(pref);
+    const dndUseCase = new CreateNotificationUseCase(
+      notificationRepo,
+      templateRepo,
+      preferenceRepo,
+      async () => false,
+      () => now,
+    );
+
+    const result = await dndUseCase.execute({
+      identityId,
+      title: 'Quiet hours',
+      content: 'Deliver later',
+      type: NotificationType.Info,
+      category: NotificationCategory.System,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.isRead).toBe(false);
+    expect(result.data.notificationChannels?.map((channel) => channel.channelType)).toEqual([
+      NotificationChannelType.InApp,
+    ]);
+
+    const [, outboxDispatches, decisions] = vi.mocked(notificationRepo.save).mock.calls[0];
+    const retryAt = dnd.nextInactiveAt(now);
+    expect(retryAt).not.toBeNull();
+    expect(outboxDispatches?.[0].deferUntil?.toISOString()).toBe(retryAt?.toISOString());
+    expect(decisions?.[0]).toMatchObject({
+      channel: NotificationChannelType.InApp,
+      outcome: 'deferred',
+      reason: 'dnd_active',
+    });
+  });
+
+  it('delivers immediately when DND has ended', async () => {
+    const identityId = anIdentityId();
+    const now = new Date('2026-08-26T08:00:00');
+    const pref = NotificationPreference.create({ identityId });
+    pref.setModuleChannels(NotificationCategory.System, [NotificationChannelType.InApp]);
+    pref.setDoNotDisturb(
+      DoNotDisturbConfig.create({
+        enabled: true,
+        startTime: '22:00',
+        endTime: '08:00',
+        daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      }),
+    );
+    vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(pref);
+    const afterDndUseCase = new CreateNotificationUseCase(
+      notificationRepo,
+      templateRepo,
+      preferenceRepo,
+      async () => false,
+      () => now,
+    );
+
+    const result = await afterDndUseCase.execute({
+      identityId,
+      title: 'Morning',
+      content: 'Deliver now',
+      type: NotificationType.Info,
+      category: NotificationCategory.System,
+    });
+
+    expect(result.ok).toBe(true);
+    const [, outboxDispatches, decisions] = vi.mocked(notificationRepo.save).mock.calls[0];
+    expect(outboxDispatches).toHaveLength(1);
+    expect(outboxDispatches?.[0].deferUntil).toBeUndefined();
+    expect(decisions?.[0]).toMatchObject({ outcome: 'deliver_now', reason: 'allowed' });
+  });
+
+  it('rate-limits the channel without removing the Notification Fact', async () => {
+    const identityId = anIdentityId();
+    const pref = NotificationPreference.create({ identityId });
+    pref.setModuleChannels(NotificationCategory.System, [NotificationChannelType.InApp]);
+    pref.setRateLimit(RateLimit.create({ enabled: true, maxPerHour: 1, maxPerDay: 10 }));
+    vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(pref);
+    vi.mocked(notificationRepo.getDeliveryUsage).mockResolvedValue({ hourCount: 1, dayCount: 3 });
+
+    const result = await useCase.execute({
+      identityId,
+      title: 'Burst',
+      content: 'Rate limited',
+      type: NotificationType.Info,
+      category: NotificationCategory.System,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.isRead).toBe(false);
+    expect(result.data.notificationChannels).toBeNull();
+    const [, outboxDispatches, decisions] = vi.mocked(notificationRepo.save).mock.calls[0];
+    expect(outboxDispatches).toEqual([]);
+    expect(decisions?.[0]).toMatchObject({
+      outcome: 'rate_limited',
+      reason: 'rate_limit_hour',
+    });
+  });
+
+  it('queues the channel after the rolling hourly rate window resets', async () => {
+    const identityId = anIdentityId();
+    const pref = NotificationPreference.create({ identityId });
+    pref.setModuleChannels(NotificationCategory.System, [NotificationChannelType.InApp]);
+    pref.setRateLimit(RateLimit.create({ enabled: true, maxPerHour: 1, maxPerDay: 10 }));
+    vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(pref);
+    vi.mocked(notificationRepo.getDeliveryUsage).mockResolvedValue({ hourCount: 0, dayCount: 3 });
+
+    const result = await useCase.execute({
+      identityId,
+      title: 'Window reset',
+      content: 'Allowed again',
+      type: NotificationType.Info,
+      category: NotificationCategory.System,
+    });
+
+    expect(result.ok).toBe(true);
+    const [, outboxDispatches, decisions] = vi.mocked(notificationRepo.save).mock.calls[0];
+    expect(outboxDispatches).toHaveLength(1);
+    expect(decisions?.[0]).toMatchObject({ outcome: 'deliver_now', reason: 'allowed' });
   });
 
   it('should proceed when no preference exists (null)', async () => {

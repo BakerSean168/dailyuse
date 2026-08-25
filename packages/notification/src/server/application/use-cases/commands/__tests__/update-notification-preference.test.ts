@@ -69,6 +69,36 @@ describe('UpdateNotificationPreferenceUseCase', () => {
     ]);
   });
 
+  it('persists DND and rate-limit policy configuration from the existing preference input', async () => {
+    const identityId = anIdentityId();
+    const preference = aPreference(identityId);
+    vi.mocked(preferenceRepo.getOrCreate).mockResolvedValue(preference);
+
+    const result = await useCase.execute(identityId, {
+      doNotDisturb: {
+        enabled: true,
+        startTime: '22:00',
+        endTime: '08:00',
+        daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      },
+      rateLimit: { enabled: true, maxPerHour: 3, maxPerDay: 12 },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(preference.doNotDisturb?.toDTO()).toEqual({
+      enabled: true,
+      startTime: '22:00',
+      endTime: '08:00',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+    expect(preference.rateLimit?.toDTO()).toEqual({
+      enabled: true,
+      maxPerHour: 3,
+      maxPerDay: 12,
+    });
+    expect(preferenceRepo.save).toHaveBeenCalledWith(preference);
+  });
+
   it('returns BAD_REQUEST when identityId is empty (residual 194)', async () => {
     const result = await useCase.execute('', { channels: { inApp: true } });
 

@@ -185,4 +185,102 @@ describe('NotificationPolicy', () => {
       ).toThrow(BusinessRuleViolationError);
     });
   });
+  describe('evaluate()', () => {
+    it('returns a per-channel suppression reason for disabled preferences', () => {
+      const pref = NotificationPreference.create({ identityId: 'user-1' });
+      pref.setModuleChannels(NotificationCategory.System, [NotificationChannelType.InApp]);
+
+      expect(
+        policy.evaluate({
+          category: NotificationCategory.System,
+          channel: NotificationChannelType.Email,
+          preference: pref,
+        }),
+      ).toEqual({
+        channel: NotificationChannelType.Email,
+        outcome: 'suppressed',
+        reason: 'user_preference_disabled',
+      });
+    });
+
+    it('returns deferred with retryAt while DND is active and deliver_now at the end boundary', () => {
+      const dnd = DoNotDisturbConfig.create({
+        enabled: true,
+        startTime: '22:00',
+        endTime: '08:00',
+        daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      });
+      const activeAt = new Date('2026-08-25T23:30:00');
+      const activeDecision = policy.evaluate({
+        category: NotificationCategory.System,
+        channel: NotificationChannelType.InApp,
+        doNotDisturb: dnd,
+        now: activeAt,
+      });
+
+      expect(activeDecision).toMatchObject({
+        outcome: 'deferred',
+        reason: 'dnd_active',
+      });
+      expect(activeDecision.retryAt?.toISOString()).toBe(dnd.nextInactiveAt(activeAt)?.toISOString());
+
+      const endedDecision = policy.evaluate({
+        category: NotificationCategory.System,
+        channel: NotificationChannelType.InApp,
+        doNotDisturb: dnd,
+        now: new Date('2026-08-26T08:00:00'),
+      });
+      expect(endedDecision).toMatchObject({ outcome: 'deliver_now', reason: 'allowed' });
+    });
+
+    it('only bypasses DND when the caller explicitly opts in', () => {
+      const dnd = DoNotDisturbConfig.create({
+        enabled: true,
+        startTime: '00:00',
+        endTime: '23:59',
+        daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      });
+      const decision = policy.evaluate({
+        category: NotificationCategory.System,
+        channel: NotificationChannelType.InApp,
+        doNotDisturb: dnd,
+        now: new Date('2026-08-25T12:00:00'),
+        bypassDoNotDisturb: true,
+      });
+
+      expect(decision).toMatchObject({ outcome: 'deliver_now', reason: 'allowed' });
+    });
+
+    it('distinguishes hourly and daily rate-limit reasons and resets when usage drops', () => {
+      const rateLimit = RateLimit.create({ enabled: true, maxPerHour: 2, maxPerDay: 5 });
+
+      expect(
+        policy.evaluate({
+          category: NotificationCategory.System,
+          channel: NotificationChannelType.InApp,
+          rateLimit,
+          rateLimitUsage: { hourCount: 2, dayCount: 3 },
+        }),
+      ).toMatchObject({ outcome: 'rate_limited', reason: 'rate_limit_hour' });
+
+      expect(
+        policy.evaluate({
+          category: NotificationCategory.System,
+          channel: NotificationChannelType.InApp,
+          rateLimit,
+          rateLimitUsage: { hourCount: 0, dayCount: 5 },
+        }),
+      ).toMatchObject({ outcome: 'rate_limited', reason: 'rate_limit_day' });
+
+      expect(
+        policy.evaluate({
+          category: NotificationCategory.System,
+          channel: NotificationChannelType.InApp,
+          rateLimit,
+          rateLimitUsage: { hourCount: 0, dayCount: 4 },
+        }),
+      ).toMatchObject({ outcome: 'deliver_now', reason: 'allowed' });
+    });
+  });
+
 });
