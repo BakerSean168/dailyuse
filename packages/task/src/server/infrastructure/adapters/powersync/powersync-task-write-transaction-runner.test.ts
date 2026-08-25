@@ -266,7 +266,7 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
   it('publishes buffered domain events only after the write transaction commits', async () => {
     const db = new FakePowerSyncTaskDb();
     const runner = new PowerSyncTaskWriteTransactionRunner(db);
-    const sendSpy = vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const dispatchSpy = vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
     const template = TaskTemplate.create({
       identityId: anIdentityId(),
       title: 'PowerSync write',
@@ -281,14 +281,14 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
 
     await runner.run(async ({ templateRepository }) => {
       await templateRepository.save(template);
-      sentBeforeCommit = sendSpy.mock.calls.length > 0;
+      sentBeforeCommit = dispatchSpy.mock.calls.length > 0;
     });
 
     expect(sentBeforeCommit).toBe(false);
     expect(db.templateCount).toBe(1);
     // W5 metadata contract: the reliable delivery adapter passes envelope metadata
     // (aggregateId / occurredAt / optional idempotencyKey) as the 3rd arg.
-    expect(sendSpy).toHaveBeenCalledWith(
+    expect(dispatchSpy).toHaveBeenCalledWith(
       'task:created',
       expect.objectContaining({ templateId: template.id }),
       expect.objectContaining({
@@ -301,7 +301,7 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
   it('rolls back task module writes and publishes nothing when instance persistence fails', async () => {
     const db = new FakePowerSyncTaskDb();
     const module = createTaskPowerSyncModule(db);
-    const sendSpy = vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const dispatchSpy = vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
     vi.spyOn(PowerSyncTaskInstanceRepository.prototype, 'saveMany').mockRejectedValue(
       new Error('saveMany failed'),
     );
@@ -330,7 +330,7 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
     expect(result).toBeErrorWithCode('INTERNAL_ERROR');
     expect(db.templateCount).toBe(0);
     expect(db.instanceCount).toBe(0);
-    expect(sendSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
 
     module.dispose();
   });
@@ -338,7 +338,7 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
   it('rolls back task module writes, outbox and publishes nothing when task_goal_outbox insert fails', async () => {
     const db = new FakePowerSyncTaskDb();
     const module = createTaskPowerSyncModule(db);
-    const sendSpy = vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const dispatchSpy = vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
 
     const identityId = anIdentityId();
     const createRes = await module.api.createTaskTemplate({
@@ -373,7 +373,7 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
     expect(db.instanceCount).toBeGreaterThan(0);
     const instanceId = Array.from((db as any).state.instances.keys())[0] as string;
 
-    sendSpy.mockClear();
+    dispatchSpy.mockClear();
 
     db.failOutbox = true;
 
@@ -382,7 +382,7 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
     expect(result).toBeErrorWithCode('INTERNAL_ERROR');
     expect(db.templateCount).toBe(1);
     expect(db.outboxCount).toBe(0);
-    expect(sendSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
 
     // The completed instance must have ROLLED BACK to its pre-complete status
     const instanceRow = await db.getOptional<{ status: string }>(

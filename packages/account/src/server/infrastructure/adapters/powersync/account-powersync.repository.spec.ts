@@ -27,7 +27,7 @@ describe('PowerSyncAccountRepository', () => {
       writeTransaction: vi.fn(),
     } satisfies Transactional;
     const tx = createQueryable();
-    const sendSpy = vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const dispatchSpy = vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
     const account = Account.create({
       id: IdentityId.generate(),
       email: 'transaction@example.com',
@@ -42,7 +42,7 @@ describe('PowerSyncAccountRepository', () => {
     expect(defaultDb.execute).not.toHaveBeenCalled();
     // W5 metadata contract: the reliable delivery adapter now passes the envelope
     // metadata (aggregateId / occurredAt / optional idempotencyKey) as the 3rd arg.
-    expect(sendSpy).toHaveBeenCalledWith(
+    expect(dispatchSpy).toHaveBeenCalledWith(
       'account:created',
       expect.any(Object),
       expect.objectContaining({

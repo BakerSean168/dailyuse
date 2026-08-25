@@ -86,7 +86,7 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
 
     const prisma = await getPrisma();
     const runner = new PrismaTaskWriteTransactionRunner(prisma);
-    const sendSpy = vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const dispatchSpy = vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
     const template = TaskTemplate.create({
       identityId,
       title: 'Daily Review',
@@ -101,13 +101,13 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
 
     await runner.run(async ({ templateRepository }) => {
       await templateRepository.save(template);
-      sentBeforeCommit = sendSpy.mock.calls.length > 0;
+      sentBeforeCommit = dispatchSpy.mock.calls.length > 0;
     });
 
     expect(sentBeforeCommit).toBe(false);
     // W5 metadata contract: the reliable delivery adapter passes envelope metadata
     // (aggregateId / occurredAt / optional idempotencyKey) as the 3rd arg.
-    expect(sendSpy).toHaveBeenCalledWith(
+    expect(dispatchSpy).toHaveBeenCalledWith(
       'task:created',
       expect.objectContaining({ templateId: template.id }),
       expect.objectContaining({
@@ -128,7 +128,7 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
 
     const prisma = await getPrisma();
     const module = createTaskPrismaModule(prisma);
-    const sendSpy = vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const dispatchSpy = vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
     vi.spyOn(TaskInstancePrismaRepository.prototype, 'saveMany').mockRejectedValue(
       new Error('saveMany failed'),
     );
@@ -157,13 +157,13 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
     expect(result).toBeErrorWithCode('INTERNAL_ERROR');
     expect(await prisma.taskTemplate.count()).toBe(0);
     expect(await prisma.taskInstance.count()).toBe(0);
-    expect(sendSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
 
     module.dispose();
   });
 
   it('propagates plan updates only to future pending instances through the production module', async () => {
-    vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
     const {
       identityId,
       prisma,
@@ -204,7 +204,7 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
   });
 
   it('rolls back future pending propagation when the template write fails', async () => {
-    vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
     const { identityId, module, template, futurePending } =
       await seedPlanWithPropagationStates();
     vi.spyOn(
@@ -263,7 +263,7 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
       },
     });
     const module = createTaskPrismaModule(prisma);
-    const sendSpy = vi.spyOn(eventBus, 'send').mockImplementation(() => undefined);
+    const dispatchSpy = vi.spyOn(eventBus, 'dispatch').mockResolvedValue(undefined);
 
     const createRes = await module.api.createTaskTemplate({
       identityId,
@@ -301,7 +301,7 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
     expect(instances.length).toBeGreaterThan(0);
     const instanceId = String(instances[0].id);
 
-    sendSpy.mockClear();
+    dispatchSpy.mockClear();
 
     // Fail the outbox write INSIDE the transaction: the runner uses the tx-bound
     // client (not the top-level prisma), so wrap $transaction with a Proxy tx.
@@ -347,7 +347,7 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
     });
     expect(outboxCount).toBe(0);
 
-    expect(sendSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
 
     module.dispose();
   });
