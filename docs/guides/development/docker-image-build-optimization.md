@@ -254,7 +254,7 @@ docker logs memoflow-migrator-1
 检查 API：
 
 ```bash
-curl http://localhost:53080/healthz
+curl http://localhost:20201/healthz
 ```
 
 预期返回：

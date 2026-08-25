@@ -323,17 +323,17 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 
 - **Secret Vault V3**：保留 AES-256-GCM，但密文升级为带 `key id` 的 `enc_v3:<kid>:<payload>`；active key + previous keyring 支持平滑轮换。现有 `enc_v2` 继续可读，下一次 Provider 保存/更新时自然 rewrap 到 active `enc_v3`。
 - **Port abstraction**：Provider repositories 依赖最小 `ProviderSecretVault` port，而不是直接依赖某个 env cipher；默认实现仍是 env-backed AES-GCM，未来可替换 GCP/Aliyun KMS，而不改 domain/application。
-- **GCP canonical TLS**：local-Docker 的 API/Web/PowerSync host publish 默认只绑定 loopback；Tailnet 远程入口由 Tailscale Serve 做 TLS termination。保持既有端口语义：API `https://gcp-dev-01.taile92a8e.ts.net:53080`、Web `https://gcp-dev-01.taile92a8e.ts.net:58080`、PowerSync `https://gcp-dev-01.taile92a8e.ts.net:58081`。
+- **GCP canonical TLS**：local-Docker 的 API/Web/PowerSync host publish 默认只绑定 loopback；Tailnet 远程入口由 Tailscale Serve 做 TLS termination。保持既有端口语义：API `https://gcp-dev-01.taile92a8e.ts.net:20201`、Web `https://gcp-dev-01.taile92a8e.ts.net:20200`、PowerSync `https://gcp-dev-01.taile92a8e.ts.net:20202`。
 - **不占用 443 根入口**：当前 `https://gcp-dev-01.taile92a8e.ts.net/` 已由 `model-control-plane` 使用；MemoFlow 继续使用独立端口，避免破坏 ChatGPT/GCP Dev 控制面。
 - **No plaintext bypass**：GCP Docker host ports 绑定 `127.0.0.1` 后，Tailnet 无法再绕过 Serve 直接命中明文 HTTP；远程验证只走 Serve HTTPS。
-- GitHub App user-authorization callback 同步升级为 `https://gcp-dev-01.taile92a8e.ts.net:53080/api/auth/callback/github`；这是 GitHub App registration 的外部配置项，需与 `AUTH_BASE_URL` exact match。
+- GitHub App user-authorization callback 同步升级为 `https://gcp-dev-01.taile92a8e.ts.net:20201/api/auth/callback/github`；这是 GitHub App registration 的外部配置项，需与 `AUTH_BASE_URL` exact match。
 
 ## Deployment / security hardening
 
 ### Transport and browser
 
 - **标准做法是 raw API Key 通过 HTTPS request body 传到受信任后端**；不在浏览器再造一层应用级 RSA/AES。TLS 已提供机密性/完整性/服务端身份认证；自定义前端加密无法防止页面 XSS 在加密前窃取 Key。
-- 当前 GCP MagicDNS `http://...:58080` 的网络流量虽处于 Tailscale/WireGuard 私网加密隧道内，可用于 dev validation，但浏览器层仍是 HTTP；正式 production 必须 HTTPS，后续也建议把 canonical GCP validation 迁到 Tailscale Serve/HTTPS 以与生产安全语义一致。
+- 当前 GCP MagicDNS `http://...:20200` 的网络流量虽处于 Tailscale/WireGuard 私网加密隧道内，可用于 dev validation，但浏览器层仍是 HTTP；正式 production 必须 HTTPS，后续也建议把 canonical GCP validation 迁到 Tailscale Serve/HTTPS 以与生产安全语义一致。
 - API Key input 使用 password/reveal pattern，禁用 spellcheck/autocorrect，避免写入 localStorage/sessionStorage/URL/query；probe 成功、cancel、dialog unmount 时主动清空 raw value。
 
 ### In-flight secret handling

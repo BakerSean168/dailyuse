@@ -31,7 +31,7 @@ updated: 2026-07-14T00:00:00
 | -------------- | ------------------- | ------------------------------------------------ | ---------------------------------- |
 | `host-dev`     | API+Web 热更新      | API `3000`，Web `5173`，PG `5432`                | Docker dev infra + Nx `run-many`   |
 | `e2e`          | Playwright 核心 e2e | API `3000`，Web `5173`，PG **`5433`**            | `pnpm docker:test:up` + `pnpm e2e` |
-| `local-docker` | 近生产全栈容器      | API **`53080`**，Web **`58080`**，PG **`55432`** | `pnpm docker:local:up`             |
+| `local-docker` | 近生产全栈容器      | API **`20201`**，Web **`20200`**，PG **`20210`** | `pnpm docker:local:up`             |
 | `dev-infra`    | 仅开发依赖          | PG `5432`，Redis `6384`，PowerSync `8080`        | `pnpm docker:dev:up`               |
 | `test-infra`   | 仅测试库            | PG `5433`                                        | `pnpm docker:test:up`              |
 
@@ -61,7 +61,7 @@ pnpm nx run-many -t serve --projects=api,web --parallel=2
 # 近生产容器验证（host 端口由工具强制隔离）
 pnpm runtime:preflight:local-docker
 pnpm docker:local:up
-# Web http://localhost:58080  API http://localhost:53080
+# Web http://localhost:20200  API http://localhost:20201
 ```
 
 ## Playwright 复用策略
@@ -74,7 +74,7 @@ pnpm docker:local:up
 ## local-docker 与 `.env.production.local`
 
 - 密钥与镜像 tag 仍可放在 `.env.production.local`。
-- **Host 端口以 SSOT 为准**：`pnpm docker:local:up` 会覆盖与 host-dev/e2e 冲突的 `*_HOST_PORT`（例如把 `API_HOST_PORT=3000` 强制回 `53080`）。
+- **Host 端口以 SSOT 为准**：`pnpm docker:local:up` 会覆盖与 host-dev/e2e 冲突的 `*_HOST_PORT`（例如把 `API_HOST_PORT=3000` 强制回 `20201`）。
 - 推荐把本机 env 中的 host 端口改成与 SSOT 一致，避免下次手工 `docker compose ...` 时再次踩坑。
 
 ### 可选的机器级端口覆盖
@@ -102,9 +102,9 @@ REDIS_HOST_PORT=12141
 
 | 现象                                 | 原因                        | 处理                                                                       |
 | ------------------------------------ | --------------------------- | -------------------------------------------------------------------------- |
-| e2e 报 3000 被占用 / lane missing    | Docker 或 host-dev 占着 API | `pnpm docker:local:down` 或释放 3000；确认 local API 在 53080              |
+| e2e 报 3000 被占用 / lane missing    | Docker 或 host-dev 占着 API | `pnpm docker:local:down` 或释放 3000；确认 local API 在 20201              |
 | 修了代码 e2e 仍旧行为 / 页面一直加载 | API 或 Web 旧进程被复用     | 默认已禁止两端复用；确认没有 `E2E_REUSE_SERVERS=1`，并释放 `3000` / `5173` |
-| 文档写 53080，浏览器却 3000          | env 把 host 端口改回经典口  | 使用 `pnpm docker:local:*`，或修正 env                                     |
+| 文档写 20201，浏览器却 3000          | env 把 host 端口改回经典口  | 使用 `pnpm docker:local:*`，或修正 env                                     |
 | e2e DB 连不上                        | 5433 未起                   | `pnpm docker:test:up`                                                      |
 
 ## 维护约定

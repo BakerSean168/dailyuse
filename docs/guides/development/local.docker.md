@@ -57,25 +57,25 @@ VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.loc
 
 默认本地访问端口：
 
-- Web: `http://localhost:58080`
-- API: `http://localhost:53080`
-- PowerSync: `http://localhost:58081`
-- PostgreSQL: `127.0.0.1:55432`
-- Redis: `127.0.0.1:56379`
+- Web: `http://localhost:20200`
+- API: `http://localhost:20201`
+- PowerSync: `http://localhost:20202`
+- PostgreSQL: `127.0.0.1:20210`
+- Redis: `127.0.0.1:20211`
 
 local-docker 的 API/Web/PowerSync host publish 默认只绑定 `127.0.0.1`，避免局域网/Tailnet 直接绕过 TLS 命中明文 HTTP。需要远程验证时，应在宿主机使用受信任 TLS terminator。GCP Dev 的 canonical 方式是 Tailscale Serve：
 
 ```bash
-sudo tailscale serve --bg --https=53080 http://127.0.0.1:53080
-sudo tailscale serve --bg --https=58080 http://127.0.0.1:58080
-sudo tailscale serve --bg --https=58081 http://127.0.0.1:58081
+sudo tailscale serve --bg --https=20201 http://127.0.0.1:20201
+sudo tailscale serve --bg --https=20200 http://127.0.0.1:20200
+sudo tailscale serve --bg --https=20202 http://127.0.0.1:20202
 ```
 
 对应远程入口：
 
-- Web: `https://<magicdns>:58080`
-- API / Better Auth: `https://<magicdns>:53080`
-- PowerSync: `https://<magicdns>:58081`
+- Web: `https://<magicdns>:20200`
+- API / Better Auth: `https://<magicdns>:20201`
+- PowerSync: `https://<magicdns>:20202`
 
 GitHub/OAuth callback、`AUTH_BASE_URL`、`MEMOFLOW_WEB_URL`、`POWERSYNC_URL` 必须与这些 HTTPS public origins 保持一致。默认 443 若已被其他控制面使用，不要覆盖；使用 local-docker 既有独立端口即可。
 
@@ -105,7 +105,7 @@ pnpm docker:local:down
 
 | 车道         | API   | Web   | PG    | 说明                                                        |
 | ------------ | ----- | ----- | ----- | ----------------------------------------------------------- |
-| local-docker | 53080 | 58080 | 55432 | 本文件                                                      |
+| local-docker | 20201 | 20200 | 20210 | 本文件                                                      |
 | host-dev     | 3000  | 5173  | 5432  | `pnpm nx run-many -t serve --projects=api,web --parallel=2` |
 | e2e          | 3000  | 5173  | 5433  | Playwright                                                  |
 

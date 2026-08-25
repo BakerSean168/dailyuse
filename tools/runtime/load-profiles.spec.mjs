@@ -15,8 +15,8 @@ test('keeps the shared local-docker SSOT by default', () => {
   const result = resolveLocalDockerHostPorts(machinePorts);
 
   assert.equal(result.ok, true);
-  assert.equal(result.forced.API_HOST_PORT, '53080');
-  assert.equal(result.forced.WEB_HOST_PORT, '58080');
+  assert.equal(result.forced.API_HOST_PORT, '20201');
+  assert.equal(result.forced.WEB_HOST_PORT, '20200');
 });
 
 test('accepts an explicit machine-local port range', () => {

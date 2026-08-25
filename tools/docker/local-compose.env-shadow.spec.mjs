@@ -170,11 +170,11 @@ describe('mergeLocalDockerWebOrigins', () => {
 
 describe('MagicDNS browser-facing local Docker URLs', () => {
   it('normalizes the public Web URL into an allowlist origin', () => {
-    const publicWebOrigin = extractHttpOrigin('https://oracle.taile92a8e.ts.net:58080/auth');
-    assert.equal(publicWebOrigin, 'https://oracle.taile92a8e.ts.net:58080');
+    const publicWebOrigin = extractHttpOrigin('https://oracle.taile92a8e.ts.net:20200/auth');
+    assert.equal(publicWebOrigin, 'https://oracle.taile92a8e.ts.net:20200');
     assert.equal(
-      mergeLocalDockerWebOrigins('58080', publicWebOrigin).includes(
-        'https://oracle.taile92a8e.ts.net:58080',
+      mergeLocalDockerWebOrigins('20200', publicWebOrigin).includes(
+        'https://oracle.taile92a8e.ts.net:20200',
       ),
       true,
     );
@@ -182,23 +182,23 @@ describe('MagicDNS browser-facing local Docker URLs', () => {
 
   it('preserves an explicit public PowerSync URL instead of forcing localhost', () => {
     assert.equal(
-      resolveLocalDockerPowerSyncUrl('58081', 'https://oracle.taile92a8e.ts.net:58081'),
-      'https://oracle.taile92a8e.ts.net:58081',
+      resolveLocalDockerPowerSyncUrl('20202', 'https://oracle.taile92a8e.ts.net:20202'),
+      'https://oracle.taile92a8e.ts.net:20202',
     );
-    assert.equal(resolveLocalDockerPowerSyncUrl('58081'), 'http://localhost:58081');
+    assert.equal(resolveLocalDockerPowerSyncUrl('20202'), 'http://localhost:20202');
   });
 
   it('runs browser validation through the configured public Web and API origins', () => {
     assert.deepEqual(
       resolveLocalDockerBrowserValidationOrigins({
-        apiHostPort: '53080',
-        webHostPort: '58080',
-        authBaseUrl: 'https://oracle.taile92a8e.ts.net:53080/api/auth',
-        webUrl: 'https://oracle.taile92a8e.ts.net:58080',
+        apiHostPort: '20201',
+        webHostPort: '20200',
+        authBaseUrl: 'https://oracle.taile92a8e.ts.net:20201/api/auth',
+        webUrl: 'https://oracle.taile92a8e.ts.net:20200',
       }),
       {
-        apiOrigin: 'https://oracle.taile92a8e.ts.net:53080',
-        webOrigin: 'https://oracle.taile92a8e.ts.net:58080',
+        apiOrigin: 'https://oracle.taile92a8e.ts.net:20201',
+        webOrigin: 'https://oracle.taile92a8e.ts.net:20200',
       },
     );
   });
@@ -273,9 +273,9 @@ describe('local Docker external bind contract', () => {
   it('binds API/Web/PowerSync to loopback by default so remote access must use a TLS terminator', () => {
     const source = readFileSync(resolve(process.cwd(), 'docker-compose.local.yml'), 'utf8');
     for (const mapping of [
-      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${API_HOST_PORT:-53080}:3000',
-      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${WEB_HOST_PORT:-58080}:80',
-      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${POWERSYNC_HOST_PORT:-58081}:${POWERSYNC_PORT:-8080}',
+      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${API_HOST_PORT:-20201}:3000',
+      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${WEB_HOST_PORT:-20200}:80',
+      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${POWERSYNC_HOST_PORT:-20202}:${POWERSYNC_PORT:-8080}',
     ]) {
       assert.ok(source.includes(mapping));
     }

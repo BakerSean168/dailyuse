@@ -12,9 +12,9 @@
 #   - 不引入 caddy/watchtower，改为直接暴露调试端口
 #
 # 本地访问入口：
-#   - Web:       http://localhost:58080
-#   - API:       http://localhost:53080
-#   - PowerSync: http://localhost:58081
+#   - Web:       http://localhost:20200
+#   - API:       http://localhost:20201
+#   - PowerSync: http://localhost:20202
 # =============================================================================
 
 services:
@@ -28,7 +28,7 @@ services:
       POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - '127.0.0.1:${POSTGRES_HOST_PORT:-55432}:5432'
+      - '127.0.0.1:${POSTGRES_HOST_PORT:-20210}:5432'
     volumes:
       - postgres-local-data:/var/lib/postgresql
     command:
@@ -60,7 +60,7 @@ services:
       - --requirepass
       - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
     ports:
-      - '127.0.0.1:${REDIS_HOST_PORT:-56379}:6379'
+      - '127.0.0.1:${REDIS_HOST_PORT:-20211}:6379'
     volumes:
       - redis-local-data:/data
     networks:
@@ -154,8 +154,8 @@ services:
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-memoflow-api}
       API_PORT: 3000
       API_HOST: 0.0.0.0
-      AUTH_BASE_URL: ${AUTH_BASE_URL:-http://localhost:53080/api/auth}
-      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:-http://localhost:58080}
+      AUTH_BASE_URL: ${AUTH_BASE_URL:-http://localhost:20201/api/auth}
+      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:-http://localhost:20200}
       GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID:-}
       GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET:-}
       GITHUB_APP_ID: ${GITHUB_APP_ID:-}
@@ -174,7 +174,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
-      CORS_ORIGIN: ${LOCAL_DOCKER_CORS_ORIGIN:-http://localhost:58080,http://127.0.0.1:58080,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:53080,http://127.0.0.1:53080}
+      CORS_ORIGIN: ${LOCAL_DOCKER_CORS_ORIGIN:-http://localhost:20200,http://127.0.0.1:20200,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:20201,http://127.0.0.1:20201}
       UPLOAD_MAX_SIZE: ${UPLOAD_MAX_SIZE:-10485760}
       ENABLE_DAILY_ANALYSIS: ${ENABLE_DAILY_ANALYSIS:-true}
       USE_PRIORITY_QUEUE_SCHEDULER: ${USE_PRIORITY_QUEUE_SCHEDULER:-true}
@@ -197,7 +197,7 @@ services:
       SNAPSHOT_REBUILD_SCHEDULE: '${SNAPSHOT_REBUILD_SCHEDULE:-0 */4 * * *}'
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${API_HOST_PORT:-53080}:3000'
+      - '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${API_HOST_PORT:-20201}:3000'
     volumes:
       - api-local-logs:/app/apps/api/logs
       - api-local-uploads:/app/uploads
@@ -250,7 +250,7 @@ services:
       PS_JWK_KID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${POWERSYNC_HOST_PORT:-58081}:${POWERSYNC_PORT:-8080}'
+      - '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${POWERSYNC_HOST_PORT:-20202}:${POWERSYNC_PORT:-8080}'
     networks:
       - memoflow-local-network
     healthcheck:
@@ -282,7 +282,7 @@ services:
       api:
         condition: service_healthy
     ports:
-      - '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${WEB_HOST_PORT:-58080}:80'
+      - '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${WEB_HOST_PORT:-20200}:80'
     networks:
       - memoflow-local-network
     healthcheck:

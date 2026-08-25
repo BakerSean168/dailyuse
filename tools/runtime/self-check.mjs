@@ -5,7 +5,7 @@ import {
 } from './load-profiles.mjs';
 
 const local = getRuntimeProfile('local-docker');
-assert.equal(local.ports.api, 53080);
+assert.equal(local.ports.api, 20201);
 
 const resolved = resolveLocalDockerHostPorts({
   API_HOST_PORT: '3000',
@@ -16,11 +16,11 @@ const resolved = resolveLocalDockerHostPorts({
 });
 
 assert.equal(resolved.ok, true);
-assert.equal(resolved.forced.API_HOST_PORT, '53080');
-assert.equal(resolved.forced.WEB_HOST_PORT, '58080');
-assert.equal(resolved.forced.POWERSYNC_HOST_PORT, '58081');
-assert.equal(resolved.forced.POSTGRES_HOST_PORT, '55432');
-assert.equal(resolved.forced.REDIS_HOST_PORT, '56379');
+assert.equal(resolved.forced.API_HOST_PORT, '20201');
+assert.equal(resolved.forced.WEB_HOST_PORT, '20200');
+assert.equal(resolved.forced.POWERSYNC_HOST_PORT, '20202');
+assert.equal(resolved.forced.POSTGRES_HOST_PORT, '20210');
+assert.equal(resolved.forced.REDIS_HOST_PORT, '20211');
 assert.ok(resolved.warnings.length >= 5);
 
 console.log('tools/runtime self-check OK');

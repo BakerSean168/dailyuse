@@ -26,13 +26,13 @@ status: active
 ## Current evidence — 2026-08-25
 
 - canonical `main@c175f5bb5`；GCP local Docker Web/API/Migrator OCI revision 与 main 一致。
-- MagicDNS Web：`http://gcp-dev-01.taile92a8e.ts.net:58080`；API：`http://gcp-dev-01.taile92a8e.ts.net:53080`。
+- MagicDNS Web：`http://gcp-dev-01.taile92a8e.ts.net:20200`；API：`http://gcp-dev-01.taile92a8e.ts.net:20201`。
 - canonical MagicDNS prod-like E2E：Auth + Phase A–E **15/15**；PR #271 required CI / Web Flow 4 shards / Oracles 全绿。
 - GitHub identity provider 已注册；运行时 `GITHUB_OAUTH_CLIENT_ID` 与 GitHub App `MemoFlow Dev Test` Client ID 一致，secret 已配置。
-- Better Auth 当前公开 `AUTH_BASE_URL=http://gcp-dev-01.taile92a8e.ts.net:53080/api/auth`，因此实际发出的 user-authorization callback 为：
-  `http://gcp-dev-01.taile92a8e.ts.net:53080/api/auth/callback/github`。
+- Better Auth 当前公开 `AUTH_BASE_URL=http://gcp-dev-01.taile92a8e.ts.net:20201/api/auth`，因此实际发出的 user-authorization callback 为：
+  `http://gcp-dev-01.taile92a8e.ts.net:20201/api/auth/callback/github`。
 - GitHub App UI 当前登记的 Redirect URI 为：
-  `http://gcp-dev-01.taile92a8e.ts.net:58080/api/auth/callback/github`。
+  `http://gcp-dev-01.taile92a8e.ts.net:20200/api/auth/callback/github`。
   端口不一致，真实点击 GitHub 登录会被 GitHub 拒绝为 `redirect_uri is not associated with this application`。
 - GitHub App runtime installation 四件套已从 Oracle2 同一 App 的受保护凭据安全迁移至 GCP gitignored `.env.production.local`；补齐 local/prod Compose passthrough 后 API runtime 已能读取 App ID/slug/private key/webhook secret。
 - GitHub App Setup URL 仍为历史 localhost：`http://localhost:5173/settings?tab=account`；当前 Web installation completion contract 实际是 `/settings?tab=repository`。
@@ -46,13 +46,13 @@ status: active
 - **Repository 503 removed**：MagicDNS authenticated `GET /api/v1/repositories/knowledge-connections` = 200；installation start = 200，生成 `/apps/memoflow-dev-test/installations/new?state=...`。
 - **Installation completion verified**：使用 identity-bound 一次性 state + 现存 installation 完成 inventory = 200；返回 1 个 private/active repository。
 - **GH-14 implemented**：真实 GitHub inventory 为 `admin=false / push=true / pull=true`，Web `canConnect()` 已从 `admin` 改为 `push`；canonical Nx component spec **13/13**。
-- **Still external/manual**：GH-01 / GH-03 / GH-04 属于 GitHub App registration UI；当前 callback 仍需用户把 `:58080` 改成 Better Auth canonical `:53080`，Setup/Homepage 也需同步。
+- **Still external/manual**：GH-01 / GH-03 / GH-04 属于 GitHub App registration UI；当前 callback 仍需用户把 `:20200` 改成 Better Auth canonical `:20201`，Setup/Homepage 也需同步。
 
 ## Findings / priority
 
 | ID | Priority | Finding | Current impact | Target |
 | --- | --- | --- | --- | --- |
-| GH-01 | P0 | GitHub App OAuth Redirect URI 登记 `:58080`，Better Auth 实际发送 `:53080` | GitHub 登录在 GitHub 页面直接拒绝 | callback 与 `AUTH_BASE_URL` exact match；关闭不必要 wildcard |
+| GH-01 | P0 | GitHub App OAuth Redirect URI 登记 `:20200`，Better Auth 实际发送 `:20201` | GitHub 登录在 GitHub 页面直接拒绝 | callback 与 `AUTH_BASE_URL` exact match；关闭不必要 wildcard |
 | GH-02 | P1 | GitHub App runtime 四件套未配置 | Knowledge Repository API 503，无法开始 installation | 配置 App ID / slug / private key / webhook secret，启动后能力可用 |
 | GH-03 | P1 | Setup URL 仍为 `localhost:5173/settings?tab=account` | installation 后不能回到当前 GCP repository settings 完成 claim | 改为 MagicDNS `/settings?tab=repository` |
 | GH-04 | P1 | Homepage URL 指向已退役 Oracle2 | App metadata / 用户信任边界错误 | 改为 GCP MagicDNS Web origin（dev App） |
@@ -79,13 +79,13 @@ status: active
 ## Phase A — GitHub App registration 修正
 
 1. User authorization callback 改为当前 Better Auth canonical callback：
-   `http://gcp-dev-01.taile92a8e.ts.net:53080/api/auth/callback/github`。
+   `http://gcp-dev-01.taile92a8e.ts.net:20201/api/auth/callback/github`。
 2. 禁用该 callback 的 wildcard matching；当前不需要子域/子路径泛匹配。
 3. Setup URL 改为：
-   `http://gcp-dev-01.taile92a8e.ts.net:58080/settings?tab=repository`。
+   `http://gcp-dev-01.taile92a8e.ts.net:20200/settings?tab=repository`。
 4. 保留 `Redirect on update`，使 repository selection 变化后回到 MemoFlow 重新验证 installation inventory。
 5. Homepage URL 改为：
-   `http://gcp-dev-01.taile92a8e.ts.net:58080/`。
+   `http://gcp-dev-01.taile92a8e.ts.net:20200/`。
 6. `Request user authorization (OAuth) during installation` 保持关闭；登录入口已经独立发起 user authorization，安装仓库不应隐式扩大身份流程。
 7. Device Flow 保持关闭；当前 Desktop 有独立 Better Auth device authorization，不依赖 GitHub Device Flow。
 8. Webhook 在纯 MagicDNS dev 环境保持 inactive；需要 push webhook E2E 时再配置公网 HTTPS tunnel endpoint。
